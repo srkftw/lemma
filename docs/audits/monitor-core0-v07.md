@@ -64,7 +64,8 @@ mixing is independent and based on the reported completed quanta, not elapsed
 time. TRAP_TEST invokes only the fixed authorized ECALL/EBREAK primitives and
 checks context and the compiled dispatch's actual recovery-count increment.
 
-TIMER_START validates the period/domain, arms with interrupts masked, witnesses
+TIMER_START admits 10,000--1,000,000 ticks (1--100 ms at the pinned timebase),
+validates the deadline domain, arms with interrupts masked, witnesses
 pending with zero entries, then runs the full asynchronous register probe and
 requires a real entry before returning. TIMER_STOP masks, clears MTIE, parks
 compare at MAX, marks inactive, and checks stable count during bounded work.
@@ -73,6 +74,15 @@ counters/timing/state or peeks/pops a checked ring record under saved/masked MIE
 restoring it before UART formatting. EXIT stops, checks guards, replies and drains.
 The immutable hardware references and no-NMI/full-frame/non-nesting premises
 remain those of [Gate 8](timers-core0-v07.md).
+
+The monitor's minimum period is deliberately narrower than the lower-level
+Core0/Gate 8 deadline policy. An actual development period-one request failed
+to return within three seconds (retained at
+`build/foundation/gate9-period1-diagnostic-eoo8qb_n`); QEMU was killed/reaped.
+Continuous pending delivery can starve foreground progress when ISR work exceeds
+the requested period. Requests below 10,000 now receive bounded status 22 rather
+than arming. This is an empirically qualified diagnostic policy, not a proof of
+worst-case service time or a hard-real-time guarantee.
 
 Acceptance must use differing post-boot request streams against the same ELF,
 including malformed frames, denied intervals, real trap recovery, hardware

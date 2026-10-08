@@ -12,6 +12,7 @@ from pathlib import Path
 
 import audit_device
 import audit_memory
+import audit_monitor
 import audit_timer
 import audit_trap
 from build_core0 import LINK_ARGUMENTS, LLC_ARGUMENTS, STARTUP_ARGUMENTS
@@ -144,6 +145,26 @@ TIMER_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+MONITOR_IMAGE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "device-contract.json",
+    "monitor-manifest.json",
+    "monitor-normalized.txt",
+    "monitor-abi.json",
+    "symbols.txt",
+    "platform.dtb",
+    "platform.dts",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
@@ -154,6 +175,7 @@ TEST_MEMORY_SUITE_POLICY = "test-memory-suite"
 TEST_DEVICE_SUITE_POLICY = "test-device-suite"
 TEST_TRAP_SUITE_POLICY = "test-trap-suite"
 TEST_TIMER_SUITE_POLICY = "test-timer-suite"
+TEST_MONITOR_IMAGE_POLICY = "test-monitor-image"
 SCALAR_SUITE_POLICIES = frozenset(
     {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
 )
@@ -167,6 +189,7 @@ STACK_SIZE_POLICIES = frozenset(
         TEST_DEVICE_SUITE_POLICY,
         TEST_TRAP_SUITE_POLICY,
         TEST_TIMER_SUITE_POLICY,
+        TEST_MONITOR_IMAGE_POLICY,
     }
 )
 AUDIT_POLICIES = (
@@ -180,6 +203,7 @@ AUDIT_POLICIES = (
     TEST_DEVICE_SUITE_POLICY,
     TEST_TRAP_SUITE_POLICY,
     TEST_TIMER_SUITE_POLICY,
+    TEST_MONITOR_IMAGE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -4580,6 +4604,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_MONITOR_IMAGE_POLICY:
+        required_artifacts = MONITOR_IMAGE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy == TEST_TIMER_SUITE_POLICY:
         required_artifacts = TIMER_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -4644,7 +4674,26 @@ def audit(
     trap_ir_audit: dict[str, object] | None = None
     timer_test_abi: dict[str, object] | None = None
     timer_ir_audit: dict[str, object] | None = None
-    if policy == TEST_TIMER_SUITE_POLICY:
+    monitor_abi: dict[str, object] | None = None
+    monitor_ir_audit: dict[str, object] | None = None
+    if policy == TEST_MONITOR_IMAGE_POLICY:
+        manifest = audit_monitor.validate_monitor_manifest(
+            load_json(paths["monitor-manifest.json"])
+        )
+        monitor_abi = audit_monitor.validate_monitor_abi(
+            load_json(paths["monitor-abi.json"]), manifest
+        )
+        device_contract = load_json(paths["device-contract.json"])
+        if device_contract != manifest["device_contract"]:
+            raise Core0Error(
+                "device-contract.json does not match the checked monitor manifest"
+            )
+        audit_monitor.validate_monitor_companions(
+            manifest,
+            paths["monitor-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy == TEST_TIMER_SUITE_POLICY:
         manifest = audit_timer.validate_timer_suite_manifest(
             load_json(paths["timer-suite-manifest.json"])
         )
@@ -4846,7 +4895,11 @@ def audit(
         raise Core0Error(
             f"{policy} provenance rejects exporter configuration"
         )
-    if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
+    if policy in {
+        TEST_TRAP_SUITE_POLICY,
+        TEST_TIMER_SUITE_POLICY,
+        TEST_MONITOR_IMAGE_POLICY,
+    }:
         qemu_dtb_command = [
             "qemu-system-riscv64",
             "-machine", "virt,acpi=off,dumpdtb=platform.dtb",
@@ -5008,6 +5061,57 @@ def audit(
                 "timer provenance omits required source/checker inputs: "
                 + repr(sorted(missing_timer_sources))
             )
+    elif policy == TEST_MONITOR_IMAGE_POLICY:
+        required_monitor_sources = {
+            "examples/foundation/MonitorBuild.lean",
+            "examples/foundation/MonitorProtocol.lean",
+            "examples/foundation/Monitor.lean",
+            "examples/foundation/MonitorPolicyProbes.lean",
+            "examples/foundation/DeviceConformanceSupport.lean",
+            "examples/foundation/TrapConformance.lean",
+            "examples/foundation/TimerConformance.lean",
+            "examples/foundation/TimerFrontendProbes.lean",
+            "examples/foundation/TimerPolicyProbes.lean",
+            "examples/foundation/gate8-reject/HiddenExternTimer.lean",
+            "examples/foundation/gate8-reject/PureTimerResult.lean",
+            "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
+            "examples/foundation/gate8-reject/V06Timer.lean",
+            "examples/foundation/gate8-reject/rejections.json",
+            "Lemma/Compiler/Test/MonitorExport.lean",
+            "Lemma/Compiler/Test/TimerExport.lean",
+            "Lemma/Core0/Timer.lean",
+            "Lemma/Core0/TimerModel.lean",
+            "Lemma/Machine/TimerPrimitives.lean",
+            "Lemma/Machine/TrapPrimitives.lean",
+            "Lemma/Machine/TrapLayout.lean",
+            "scripts/build_core0.py",
+            "scripts/core0_common.py",
+            "scripts/build_monitor.py",
+            "scripts/audit_core0.py",
+            "scripts/audit_device.py",
+            "scripts/audit_memory.py",
+            "scripts/audit_monitor.py",
+            "scripts/audit_timer.py",
+            "scripts/audit_trap.py",
+            "scripts/check_foundation.py",
+            "scripts/gate6_corpus.py",
+            "scripts/run_device_session.py",
+            "scripts/gate8_corpus.py",
+            "scripts/run_timer_case.py",
+            "scripts/run_trap_case.py",
+            "scripts/check_foundation_gate8.py",
+            "scripts/gate9_corpus.py",
+            "scripts/run_monitor_session.py",
+            "scripts/check_foundation_gate9.py",
+            "docs/audits/timers-core0-v07.md",
+            "docs/audits/monitor-core0-v07.md",
+        }
+        missing_monitor_sources = required_monitor_sources - observed_sources
+        if missing_monitor_sources:
+            raise Core0Error(
+                "monitor provenance omits required source/checker inputs: "
+                + repr(sorted(missing_monitor_sources))
+            )
     expected_elaboration_commands: list[list[str]] = []
     if provenance_schema == 2:
         elaborated_inputs = provenance_obj.get("elaborated_inputs")
@@ -5086,6 +5190,19 @@ def audit(
         ]:
             raise Core0Error(
                 "timer provenance elaboration sequence differs from the exact checked inputs"
+            )
+        if policy == TEST_MONITOR_IMAGE_POLICY and [
+            item.get("source") for item in elaborated_inputs
+        ] != [
+            "examples/core0/Positive.lean",
+            "examples/foundation/DeviceConformanceSupport.lean",
+            "examples/foundation/TrapConformance.lean",
+            "examples/foundation/TimerConformance.lean",
+            "examples/foundation/MonitorProtocol.lean",
+            "examples/foundation/Monitor.lean",
+        ]:
+            raise Core0Error(
+                "monitor provenance elaboration sequence differs from the exact checked inputs"
             )
     linked = provenance_obj.get("linked_inputs")
     if not isinstance(linked, list) or len(linked) != 2:
@@ -5188,8 +5305,19 @@ def audit(
                 "bounded event-ring behavior, and freestanding QEMU interaction"
             ),
         },
+        TEST_MONITOR_IMAGE_POLICY: {
+            "kind": "test-monitor-image-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.7 monitor Action suite "
+                "through validated device, trap, and machine-timer lowering"
+            ),
+            "purpose": (
+                "test-only bounded binary monitor protocol, compiled command policies, "
+                "asynchronous timer dispatch, and freestanding QEMU interaction"
+            ),
+        },
     }[policy]
-    if policy == TEST_TIMER_SUITE_POLICY:
+    if policy in {TEST_TIMER_SUITE_POLICY, TEST_MONITOR_IMAGE_POLICY}:
         startup_input_details = {
             "kind": "lean-structured-timer-startup",
             "generation_command": EXPECTED_STARTUP_COMMAND,
@@ -5289,7 +5417,11 @@ def audit(
         validate_scalar_export_command_log(
             timer_export_configuration, command_argv
         )
-    if trap_export_configuration is not None or timer_export_configuration is not None:
+    if (
+        trap_export_configuration is not None
+        or timer_export_configuration is not None
+        or policy == TEST_MONITOR_IMAGE_POLICY
+    ):
         for platform_command in (
             qemu_dtb_command,
             [
@@ -5340,6 +5472,7 @@ def audit(
         TEST_DEVICE_SUITE_POLICY,
         TEST_TRAP_SUITE_POLICY,
         TEST_TIMER_SUITE_POLICY,
+        TEST_MONITOR_IMAGE_POLICY,
     }:
         scalar_functions = manifest.get("scalar_functions")
         action_functions = manifest.get("action_functions")
@@ -5357,12 +5490,23 @@ def audit(
     }
     machine_ir_functions = (
         DEVICE_MACHINE_IR_FUNCTIONS
-        if policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
+        if policy in {
+            TEST_DEVICE_SUITE_POLICY,
+            TEST_TRAP_SUITE_POLICY,
+            TEST_TIMER_SUITE_POLICY,
+            TEST_MONITOR_IMAGE_POLICY,
+        }
         else MACHINE_IR_FUNCTIONS
     )
     expected_pre_definitions = manifest_user_symbols | machine_ir_functions
     scalar_abi_ir: dict[str, object] | None = None
-    if policy == TEST_TIMER_SUITE_POLICY:
+    if policy == TEST_MONITOR_IMAGE_POLICY:
+        monitor_ir_audit = audit_monitor.validate_monitor_ir(
+            manifest, pre_ir, post_ir, optimization
+        )
+        source_identity = audit_monitor.SOURCE_IDENTITY
+        root_llvm = None
+    elif policy == TEST_TIMER_SUITE_POLICY:
         timer_ir_audit = audit_timer.validate_timer_ir(
             manifest, pre_ir, post_ir, optimization
         )
@@ -5426,6 +5570,7 @@ def audit(
                 TEST_DEVICE_SUITE_POLICY,
                 TEST_TRAP_SUITE_POLICY,
                 TEST_TIMER_SUITE_POLICY,
+                TEST_MONITOR_IMAGE_POLICY,
             }
         ):
             raise Core0Error("optimized IR unexpectedly contains an inbounds promise")
@@ -5452,6 +5597,8 @@ def audit(
                 for item in manifest["used_trap_ops"]
                 if isinstance(item, dict)
             )
+        elif policy == TEST_MONITOR_IMAGE_POLICY:
+            expected_externals.update(audit_monitor.MONITOR_EXTERNALS)
         if (
             policy in {
                 TEST_FRONTEND_SUITE_POLICY,
@@ -5489,6 +5636,7 @@ def audit(
                 TEST_DEVICE_SUITE_POLICY,
                 TEST_TRAP_SUITE_POLICY,
                 TEST_TIMER_SUITE_POLICY,
+                TEST_MONITOR_IMAGE_POLICY,
             }:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
@@ -5521,6 +5669,7 @@ def audit(
                 TEST_DEVICE_SUITE_POLICY,
                 TEST_TRAP_SUITE_POLICY,
                 TEST_TIMER_SUITE_POLICY,
+                TEST_MONITOR_IMAGE_POLICY,
             }:
                 flag_counts = {
                     flag: len(re.findall(rf"\b{flag}\b", ir))
@@ -5624,6 +5773,7 @@ def audit(
         TEST_DEVICE_SUITE_POLICY,
         TEST_TRAP_SUITE_POLICY,
         TEST_TIMER_SUITE_POLICY,
+        TEST_MONITOR_IMAGE_POLICY,
     }:
         required_alloc_sections.add(".rodata")
     if not required_alloc_sections <= alloc_sections:
@@ -5667,7 +5817,14 @@ def audit(
     trap_startup_audit: dict[str, object] | None = None
     timer_layout_audit: dict[str, object] | None = None
     timer_startup_audit: dict[str, object] | None = None
-    if policy == TEST_TIMER_SUITE_POLICY:
+    monitor_layout_audit: dict[str, object] | None = None
+    monitor_startup_audit: dict[str, object] | None = None
+    if policy == TEST_MONITOR_IMAGE_POLICY:
+        monitor_layout_audit = audit_trap.validate_trap_layout(layout, symbol_addresses)
+        monitor_startup_audit = audit_monitor.validate_monitor_startup_assembly(
+            paths["startup.S"].read_text(encoding="utf-8"), manifest, layout
+        )
+    elif policy == TEST_TIMER_SUITE_POLICY:
         timer_layout_audit = audit_trap.validate_trap_layout(layout, symbol_addresses)
         timer_startup_audit = audit_timer.validate_timer_startup_assembly(
             paths["startup.S"].read_text(encoding="utf-8"), manifest, layout
@@ -5707,7 +5864,11 @@ def audit(
     if re.search(r"(?:^|_)[afdcv](?:\d|_|$)", arch):
         raise Core0Error(f"ELF advertises a forbidden non-integer extension: {arch}")
     if (
-        policy not in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
+        policy not in {
+            TEST_TRAP_SUITE_POLICY,
+            TEST_TIMER_SUITE_POLICY,
+            TEST_MONITOR_IMAGE_POLICY,
+        }
         and re.search(r"\b(?:gp|f[0-9]+|v[0-9]+)\b", disassembly)
     ):
         raise Core0Error("disassembly uses gp, floating-point, or vector registers")
@@ -5733,7 +5894,11 @@ def audit(
             r"<core0_main>",
             r"\bwfi\b",
         )
-        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
+        if policy in {
+            TEST_TRAP_SUITE_POLICY,
+            TEST_TIMER_SUITE_POLICY,
+            TEST_MONITOR_IMAGE_POLICY,
+        }
         else (
             r"\bauipc\s+sp,",
             r"\bmv\s+sp,\s*sp",
@@ -5757,6 +5922,7 @@ def audit(
     device_machine_audit: dict[str, object] | None = None
     trap_machine_audit: dict[str, object] | None = None
     timer_machine_audit: dict[str, object] | None = None
+    monitor_machine_audit: dict[str, object] | None = None
     if policy == TEST_DEVICE_SUITE_POLICY:
         device_machine_audit = validate_device_machine_disassembly(
             disassembly, symbol_addresses, optimization=optimization
@@ -5783,6 +5949,36 @@ def audit(
             raise Core0Error("trap layout/startup audit evidence is missing")
         trap_machine_audit["layout"] = trap_layout_audit
         trap_machine_audit["startup"] = trap_startup_audit
+    elif policy == TEST_MONITOR_IMAGE_POLICY:
+        monitor_program_symbols = set(ir_findings["post_optimization"]["definitions"])
+        monitor_program_start = min(
+            symbol_addresses[name] for name in monitor_program_symbols
+        )
+        if not audit_monitor.MONITOR_MACHINE_ACCESS_SEQUENCE:
+            raise Core0Error("monitor final UART access sequence has not been pinned")
+        if not audit_monitor.MONITOR_MACHINE_DENIED_METADATA:
+            raise Core0Error("monitor denied-UART metadata inventory has not been pinned")
+        device_machine_audit = validate_device_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            expected_access_sequence=audit_monitor.MONITOR_MACHINE_ACCESS_SEQUENCE,
+            expected_denied_metadata=audit_monitor.MONITOR_MACHINE_DENIED_METADATA,
+            optimization=optimization,
+            ignored_functions=frozenset(audit_monitor.MONITOR_STARTUP_FUNCTIONS),
+            ignored_address_ranges=((symbol_addresses["_start"], monitor_program_start),),
+        )
+        monitor_machine_audit = audit_monitor.validate_monitor_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            monitor_program_symbols,
+            paths["startup.S"].read_text(encoding="utf-8"),
+            manifest,
+            optimization,
+        )
+        if monitor_layout_audit is None or monitor_startup_audit is None:
+            raise Core0Error("monitor layout/startup audit evidence is missing")
+        monitor_machine_audit["layout"] = monitor_layout_audit
+        monitor_machine_audit["startup"] = monitor_startup_audit
     elif policy == TEST_TIMER_SUITE_POLICY:
         timer_program_symbols = set(ir_findings["post_optimization"]["definitions"])
         timer_program_start = min(
@@ -5844,7 +6040,9 @@ def audit(
             "program.o defined-function closure differs from optimized LLVM: "
             + repr(sorted(object_function_symbols["program.o"]))
         )
-    if policy == TEST_TIMER_SUITE_POLICY:
+    if policy == TEST_MONITOR_IMAGE_POLICY:
+        expected_startup_functions = audit_monitor.MONITOR_STARTUP_FUNCTIONS
+    elif policy == TEST_TIMER_SUITE_POLICY:
         expected_startup_functions = audit_timer.TIMER_STARTUP_FUNCTIONS
     elif policy == TEST_TRAP_SUITE_POLICY:
         expected_startup_functions = audit_trap.TRAP_STARTUP_FUNCTIONS
@@ -5882,7 +6080,11 @@ def audit(
                 + repr(oversized_frames)
             )
         stack_and_call_graph = validate_loop_stack_call_graph(post_ir, stack_sizes)
-        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
+        if policy in {
+            TEST_TRAP_SUITE_POLICY,
+            TEST_TIMER_SUITE_POLICY,
+            TEST_MONITOR_IMAGE_POLICY,
+        }:
             frame_chains = stack_and_call_graph.get("frame_chains")
             foreground_chain = (
                 frame_chains.get("core0_main")
@@ -5956,7 +6158,11 @@ def audit(
         name: tool_text("llvm-nm", ["--undefined-only", str(directory / name)], root).splitlines()
         for name in expected_inputs
     }
-    if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
+    if policy in {
+        TEST_TRAP_SUITE_POLICY,
+        TEST_TIMER_SUITE_POLICY,
+        TEST_MONITOR_IMAGE_POLICY,
+    }:
         dispatcher_symbol = (
             audit_trap.DISPATCH_SYMBOL
             if policy == TEST_TRAP_SUITE_POLICY
@@ -6001,6 +6207,8 @@ def audit(
             for item in manifest["used_trap_ops"]
             if isinstance(item, dict)
         )
+    elif policy == TEST_MONITOR_IMAGE_POLICY:
+        expected_program_names.update(audit_monitor.MONITOR_EXTERNALS)
     if program_names != expected_program_names:
         raise Core0Error(
             "LLVM program object undefined-symbol closure differs from the exact allowlist: "
@@ -6012,7 +6220,11 @@ def audit(
         relocation_text = tool_text("llvm-readelf", ["-r", str(directory / name)], root)
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
-        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY} and name == "startup.o":
+        if policy in {
+            TEST_TRAP_SUITE_POLICY,
+            TEST_TIMER_SUITE_POLICY,
+            TEST_MONITOR_IMAGE_POLICY,
+        } and name == "startup.o":
             allowed_relocations.add("R_RISCV_JAL")
         if name == "program.o" and (
             policy in STACK_SIZE_POLICIES
@@ -6049,6 +6261,16 @@ def audit(
             and optimization == "O2"
         ):
             expected_jump_table_relocations = TIMER_O2_JUMP_TABLE_RELOCATIONS
+        elif (
+            policy == TEST_MONITOR_IMAGE_POLICY
+            and name == "program.o"
+            and optimization == "O2"
+        ):
+            if audit_monitor.MONITOR_O2_JUMP_TABLE_RELOCATIONS < 0:
+                raise Core0Error("monitor O2 jump-table relocation count has not been pinned")
+            expected_jump_table_relocations = (
+                audit_monitor.MONITOR_O2_JUMP_TABLE_RELOCATIONS
+            )
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
@@ -6080,6 +6302,7 @@ def audit(
                                 TEST_DEVICE_SUITE_POLICY,
                                 TEST_TRAP_SUITE_POLICY,
                                 TEST_TIMER_SUITE_POLICY,
+                                TEST_MONITOR_IMAGE_POLICY,
                             }
                         )
                         and optimization == "O2"
@@ -6206,6 +6429,12 @@ def audit(
         report["timer_ir_audit"] = timer_ir_audit
     if timer_machine_audit is not None:
         report["timer_machine_audit"] = timer_machine_audit
+    if monitor_abi is not None:
+        report["monitor_abi"] = monitor_abi
+    if monitor_ir_audit is not None:
+        report["monitor_ir_audit"] = monitor_ir_audit
+    if monitor_machine_audit is not None:
+        report["monitor_machine_audit"] = monitor_machine_audit
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")

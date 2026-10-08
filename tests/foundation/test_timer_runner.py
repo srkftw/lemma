@@ -276,7 +276,7 @@ class TimerBindingTests(unittest.TestCase):
             "compiled_privileged_instructions": 0, "compiled_functions": 80,
             "fatal_stackless_self_loops": 2, "startup_functions": 16, "timer_functions": 7,
             "timer_mmio_accesses": 3, "timer_mmio_width_bits": 64, "timer_fence_operations": 14,
-            "machine_csr_operations": 11, "mutation": corpus.MUTATION_IDENTITIES[mutation],
+            "machine_csr_operations": 28, "mutation": corpus.MUTATION_IDENTITIES[mutation],
             "timer_machine_body_sha256": body_hashes,
             "timer_start_machine_body_sha256": {
                 "O0": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
@@ -407,6 +407,7 @@ class TimerBindingTests(unittest.TestCase):
             (("timer_machine_audit", "layout", "canaries"), 0),
             (("timer_machine_audit", "timer_mmio_accesses"), 3.0),
             (("timer_machine_audit", "timer_functions"), True),
+            (("timer_machine_audit", "machine_csr_operations"), 11),
             (("timer_machine_audit", "timer_mmio_machine"), None),
             (("timer_machine_audit", "timer_mmio_machine", "access_count"), 3.0),
             (("timer_machine_audit", "timer_mmio_machine", "width_bits"), 32),

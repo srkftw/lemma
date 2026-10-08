@@ -171,7 +171,7 @@ def _validate_timer_audit(audit: dict[str, object], manifest: dict[str, object],
         "fatal_stackless_self_loops": 2, "startup_functions": 16,
         "timer_functions": 7, "timer_mmio_accesses": 3,
         "timer_mmio_width_bits": 64, "timer_fence_operations": 14,
-        "machine_csr_operations": 11,
+        "machine_csr_operations": 28,
         "mutation": manifest["timer_mutation"]["identity"]}
     for key, expected in invariants.items():
         _same_evidence(machine.get(key), expected, f"machine {key}")

@@ -11,6 +11,7 @@ audited images, and QEMU. Gate 6 adds the explicitly versioned compiled UART
 device session, ordered MMIO audit, and live two-request interaction. Gate 7
 adds synchronous traps and context checks; Gate 8 adds real machine-timer
 interrupts, bounded event buffering, and distinguishing valid-image mutations.
+Gate 9 integrates those capabilities in one compiled, bounded UART monitor.
 """
 
 from __future__ import annotations
@@ -46,6 +47,7 @@ from check_foundation_gate5 import Gate5Failure, check_gate5
 from check_foundation_gate6 import Gate6Failure, check_gate6
 from check_foundation_gate7 import Gate7Failure, check_gate7
 from check_foundation_gate8 import Gate8Failure, check_gate8
+from check_foundation_gate9 import Gate9Failure, check_gate9
 
 
 U64_MAX = (1 << 64) - 1
@@ -973,8 +975,8 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--qemu-timeout", type=float, default=5.0)
     ns = parser.parse_args()
-    if ns.phase is not None and ns.phase not in {1, 2, 3, 4, 5, 6, 7, 8}:
-        parser.error("only implemented phases 1 through 8 are available; later gates fail closed")
+    if ns.phase is not None and ns.phase not in {1, 2, 3, 4, 5, 6, 7, 8, 9}:
+        parser.error("only implemented phases 1 through 9 are available; later gates fail closed")
     root = repo_root()
 
     def resolve(path: Path) -> Path:
@@ -1055,12 +1057,28 @@ def main() -> int:
                 timeout_seconds=ns.timeout,
                 qemu_timeout=ns.qemu_timeout,
             )
+            selected_gate = 9
+            gate9 = check_gate9(
+                root=root,
+                work=work / "gate9",
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
             report = {
                 "schema_version": 1,
                 "status": "pass",
-                "gates": [gate1, gate2, gate3, gate4, gate5, gate6, gate7, gate8],
+                "gates": [gate1, gate2, gate3, gate4, gate5, gate6, gate7, gate8, gate9],
             }
             write_json(work / "all-results.json", report)
+        elif ns.phase == 9:
+            report = check_gate9(
+                root=root,
+                work=work,
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
         elif ns.phase == 8:
             report = check_gate8(
                 root=root,
@@ -1145,6 +1163,7 @@ def main() -> int:
                 Gate6Failure,
                 Gate7Failure,
                 Gate8Failure,
+                Gate9Failure,
             ),
         ):
             failure_record["failure_category"] = error.category
@@ -1158,8 +1177,14 @@ def main() -> int:
         print(f"FOUNDATION CHECK FAIL: {error}", file=sys.stderr)
         return 1
     if ns.all:
-        print("FOUNDATION GATES 1-8 PASS")
+        print("FOUNDATION GATES 1-9 PASS")
         print(f"evidence: {work / 'all-results.json'}")
+    elif ns.phase == 9:
+        counts = report["counts"]
+        if not isinstance(counts, dict):
+            raise Core0Error("Gate 9 PASS report lacks its count summary")
+        print("FOUNDATION GATE 9 PASS: " + json.dumps(counts, sort_keys=True))
+        print(f"evidence: {work / 'gate9-results.json'}")
     elif ns.phase == 8:
         counts = report["counts"]
         if not isinstance(counts, dict):

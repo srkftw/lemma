@@ -130,6 +130,18 @@ TIMER_SUITE_GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+MONITOR_IMAGE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "monitor-manifest.json",
+    "monitor-normalized.txt",
+    "monitor-abi.json",
+    "symbols.txt",
+)
+
 ARTIFACT_CATEGORIES = (
     "release",
     "test-compiler-control",
@@ -141,6 +153,7 @@ ARTIFACT_CATEGORIES = (
     "test-device-suite",
     "test-trap-suite",
     "test-timer-suite",
+    "test-monitor-image",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -430,8 +443,7 @@ def _program_object_provenance(
             "test-only M-mode synchronous-trap dispatch, full-context preservation, "
             "fatal containment, and freestanding QEMU interaction"
         )
-    else:
-        assert artifact_category == "test-timer-suite"
+    elif artifact_category == "test-timer-suite":
         kind = "test-timer-suite-llvm"
         source = (
             "program.ll generated from the checked Core0 v0.7 Action suite through "
@@ -440,6 +452,17 @@ def _program_object_provenance(
         purpose = (
             "test-only machine-timer policy, asynchronous M-mode interrupt dispatch, "
             "bounded event-ring behavior, and freestanding QEMU interaction"
+        )
+    else:
+        assert artifact_category == "test-monitor-image"
+        kind = "test-monitor-image-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.7 monitor Action suite "
+            "through validated device, trap, and machine-timer lowering"
+        )
+        purpose = (
+            "test-only bounded binary monitor protocol, compiled command policies, "
+            "asynchronous timer dispatch, and freestanding QEMU interaction"
         )
     return {
         "path": "program.o",
@@ -707,7 +730,9 @@ def build(
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    if artifact_category == "test-timer-suite":
+    if artifact_category == "test-monitor-image":
+        generated_by_lean = list(MONITOR_IMAGE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-timer-suite":
         generated_by_lean = list(TIMER_SUITE_GENERATED_BY_LEAN)
     elif artifact_category == "test-trap-suite":
         generated_by_lean = list(TRAP_SUITE_GENERATED_BY_LEAN)
@@ -764,6 +789,7 @@ def build(
                 "test-device-suite",
                 "test-trap-suite",
                 "test-timer-suite",
+                "test-monitor-image",
             }
             else []
         ),
@@ -846,7 +872,7 @@ def build(
             "dtc",
         )
     }
-    if artifact_category == "test-timer-suite":
+    if artifact_category in {"test-timer-suite", "test-monitor-image"}:
         startup_provenance = {
             "path": "startup.o",
             "kind": "lean-structured-timer-startup",

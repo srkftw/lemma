@@ -1656,6 +1656,8 @@ def validate_timer_machine_disassembly(
     startup_assembly: str,
     manifest: Mapping[str, object],
     optimization: str,
+    *,
+    expected_start_body_sha256: Mapping[str, str] | None = None,
 ) -> dict[str, object]:
     """Bind critical startup.S memory/CSR phases to the final linked RV64 image."""
     dispatcher = str(_list(manifest.get("roots"), "timer roots")[1]["llvm"])
@@ -1732,9 +1734,14 @@ def validate_timer_machine_disassembly(
     timer_mmio_machine = _validate_timer_mmio_machine_closure(all_by_function)
     observed_body_hashes = _validate_timer_machine_body_hashes(by_function, mutation)
     start_body_sha256 = _machine_body_sha256(by_function["_start"])
+    start_hashes = (
+        TIMER_START_MACHINE_BODY_SHA256
+        if expected_start_body_sha256 is None
+        else expected_start_body_sha256
+    )
     if (
-        optimization not in TIMER_START_MACHINE_BODY_SHA256
-        or start_body_sha256 != TIMER_START_MACHINE_BODY_SHA256[optimization]
+        optimization not in start_hashes
+        or start_body_sha256 != start_hashes[optimization]
     ):
         raise Core0Error(
             f"timer _start final machine body differs from the exact {optimization} inventory"
@@ -1838,6 +1845,7 @@ def validate_timer_machine_disassembly(
         "machine_csr_by_function": {
             name: count for name, count in sorted(csr_counts.items()) if count
         },
+        "machine_csr_operations": sum(csr_counts.values()),
         "timer_probe": {
             "iterations": 65536,
             "caller_saves": 16,

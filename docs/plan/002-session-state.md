@@ -8,6 +8,8 @@
   no Gate 9 acceptance exists.
 - Latest clean passing implementation: `42674c1ba773454c36c277620e2acd289539e5a2`
   (tree `f7bea0b4f126275773bbc84e8fb534849ac6bb35`).
+- Gate 8 report-bearing commit: `427f2663cc20573ea13c0f50297ae44de938f0b8`;
+  current monitor/compiler-audit additions remain uncommitted and unpushed.
 - Current acceptance: cumulative Gates 1--8 passed 456 fresh boots, including
   Gate 8's complete 30-boot matrix and 1,474 positive-corpus hardware timer entries;
   same-source legacy passed 23 boots. All 39 cumulative and eight legacy provenance
@@ -26,6 +28,56 @@
   attempt or new actual CI result is claimed. Read-only GitHub metadata confirms
   PR #1 remains open/draft/unmerged, with Task 001 head `b8e9c593...` and main
   base `f384f13d9f4981023b88008f87f1aa7685372d5a`.
+
+## Gate 9 development (not accepted)
+
+The frozen focused development command passed on 2026-10-08:
+
+```text
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-integration-01 --clean --timeout 300 --qemu-timeout 20
+  exit 0; 18 boots, 1598 handled requests, 1465 observed hardware IRQs,
+  20 synchronous recoveries, 192 retained records, 50 probes, 4 rejections
+```
+
+All 398 foundation host tests, 32 legacy host tests, 18 scaffold tests, and
+metadata checks passed. Both final central monitor audits passed with exactly
+139 compiled functions, 16 startup functions, 28 named CSR operations, three
+timer MMIO sites and six UART sites. This dirty-source development result is
+not yet clean committed acceptance; commit and rerun the focused command.
+
+The new compiled monitor source elaborates/checks/lowers genuinely under v0.7:
+54 scalar and 85 Action functions, seven timer/two synchronous trap/four UART
+operations. The first 48 direct policy/encoder probes passed; after the period
+correction below, all 50 updated probes passed. The new exporter and two-object
+O0 build work. Final artifact audits and the strict host matrix passed in the
+development command above; clean committed qualification remains required.
+
+One actual O0 development boot completed 13 post-READY UART requests in the same
+PID/ELF: HELLO, STATUS, fresh ADD, FILL/CHECKSUM, ECALL, timer start, IRQ-progress
+mixing, TICKS, EBREAK while active, STOP, TICKS and EXIT. Work completed 1,210
+quanta with real IRQ count 4 to 36; the independent post-exit host checksum
+matched `16801469857605892336`. Both trap context masks were zero with one actual
+sync recovery each. Ring overflow was visible; STOP observed 44 before/after;
+EXIT returned (13 handled, 2 sync recoveries, 44 IRQs, 0), process exit zero.
+Raw streams and `manual-smoke.json` are retained at
+`build/foundation/gate9-manual-smoke-pjx963im`, image SHA-256
+`22d53ea26c9cda03d4875268ffc06fe409a53a000f7facce167424873f6bee62`, PID 284170.
+This intentionally bypassed incomplete image/audit binding for diagnosis and
+is not Gate 9 acceptance. The strict checker must rebuild and requalify it.
+
+A period-one TIMER_START diagnostic reproduced nonresponse within three seconds,
+with QEMU killed/reaped, retained at
+`build/foundation/gate9-period1-diagnostic-eoo8qb_n`. Monitor command policy now
+admits only 10,000--1,000,000 ticks, rejecting smaller periods with status 22;
+the lower-level Core0/Gate 8 API is unchanged. Fresh Monitor elaboration and all
+50 source probes passed after this correction. Actual boundary-rejection/recovery
+tests against rebuilt images are still required.
+
+Current audit metadata correction: the accepted Gate 8 report's inherited
+`machine_csr_operations=11` aggregate is stale; its fully checked named map sums
+28 (vector 12). Current audit/runner now derive/require 28, with all 22 runner
+tests passing. Historical reports remain unchanged and disclosed in evidence.
 
 ## Gate 8 clean checkpoint
 
