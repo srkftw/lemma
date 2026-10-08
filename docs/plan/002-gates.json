@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T03:51:19-07:00",
+  "updated_at": "2026-10-08T05:02:34-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,10 +9,10 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 4,
+  "highest_passing_gate": 5,
   "latest_clean_passing_source": {
-    "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
-    "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
+    "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
+    "tree": "c1172034c1dedc0a91375b2eb21dd6fe5fd9b187",
     "clean": true
   },
   "gates": [
@@ -454,7 +454,94 @@
         "This profile adds no memory API, interrupt, trap, scheduler, managed-runtime, physical-board, G1-completion, or G2-completion claim."
       ]
     },
-    {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {
+      "gate": 5,
+      "name": "checked fixed-region memory",
+      "status": "passed",
+      "source": {
+        "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
+        "tree": "c1172034c1dedc0a91375b2eb21dd6fe5fd9b187",
+        "clean": true
+      },
+      "commands": [
+        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 37, "compile_time_cfg_checks": 40},
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass", "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "result": "pass", "tests": 196},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
+        {"command": "git status --short --branch", "exit_code": 0, "result": "pass", "output": "## task/002-machine-foundation"},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 5 --work-dir build/foundation/gate5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15", "exit_code": 0, "result": "pass", "roots": 26, "cases_per_profile": 52, "fresh_qemu_boots": 104},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15", "exit_code": 0, "result": "pass", "gate_1_fresh_qemu_boots": 24, "gate_2_fresh_qemu_boots": 136, "gate_3_fresh_qemu_boots": 88, "gate_4_fresh_qemu_boots": 14, "gate_5_fresh_qemu_boots": 104}
+      ],
+      "artifacts": [
+        {"path": "build/foundation/gate5-clean-ff8ef0f/gate5-results.json", "sha256": "fa670e195ce2b4f8988850f8b1e2f10c3dc9eda7cb993b5f0dcf09f20cbe25d7", "role": "authoritative_focused_report"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/corpus/gate5-cases.json", "sha256": "6051b6f7e38eecb7b95501bbd36296699a3840c8e74c3b6e768051c69b30a6a4"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O0/audit.json", "sha256": "dc5552bf57556d512aca363c58eafdbada6836d2690e22d9ba6771cc42ceafda"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O0/image.elf", "sha256": "976cceb9dd09346b518067b56a73f98ec93b54dfe597ada7cf5fe1df10e7bfce"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O0/program.ll", "sha256": "58cf81fd9781be78de568fbb8a20488dda7d7e39bb4bfd1f6241131fa77ed8e3"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O0/program.opt.ll", "sha256": "6d4b9a7b684f8e47633c15b62e679ef2292eb756ed96d6c2707043842ea0a100"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O0/program.o.stack-sizes.txt", "sha256": "98fd3b38a21d3acd3a9757aee979478422b42c5d5b0d93c6974f9b5d19c90494"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O2/audit.json", "sha256": "b3f4a02ff6df0ac0c9973dfe1775d47d332a6687b25cc431b3b62610c10bfd90"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O2/image.elf", "sha256": "400e909ae118746a361053e59aad102779a11397907cbfbb061e8ffb56bb4018"},
+        {"path": "build/foundation/gate5-clean-ff8ef0f/O2/program.opt.ll", "sha256": "fea3cb038478e58c16983a421634fac7c8e6b8a0257698f17d8ec746b06caa7f"},
+        {"path": "build/foundation/gates1-5-clean-ff8ef0f/all-results.json", "sha256": "635c1ca0c7d3a4647297a978b109ce5b42d015a6ab46de676d8791b66261b863", "role": "cumulative_gates_1_5"},
+        {"path": "build/core0/check/check-results.json", "sha256": "ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f", "role": "legacy_core0_regression"}
+      ],
+      "tests": {
+        "contract_version": "core0-v0.4",
+        "legacy_contract_versions": ["core0-v0.1", "core0-v0.2", "core0-v0.3"],
+        "test_abi": "lemma-memory-test-v1",
+        "checked_result": {"logical": ["status:u8", "value:u64"], "llvm": "{ i64, i64 }", "rv64": ["a0", "a1"], "sret": false},
+        "suite_id": "0xa20c6fd4108dbf27",
+        "source_seed": "0x4c454d4d41353035",
+        "runtime_seed": "0x52554e54494d4535",
+        "optimization_profiles": ["O0", "O2"],
+        "roots": 26,
+        "action_functions": 31,
+        "distinct_cases_per_profile": 52,
+        "qemu_boots_per_profile": 52,
+        "total_fresh_qemu_boots": 104,
+        "independent_model_target_matches": 104,
+        "complete_post_state_target_matches": 104,
+        "ordinary_region_bytes_per_boot": 16384,
+        "ordinary_region_bytes_observed": 1703936,
+        "canaries_per_boot": 10,
+        "canary_observations": 1040,
+        "result_sha256": "66aef0a96804cba0e71f1c17d5e2cab272a3cc448b7abdf7a5caa752d2c71d19",
+        "post_state_result_sha256": "4b508bee3b64f17c8548a7db1dc6cbb11b6afc1514e440a8ce214db8eb06d544",
+        "audited_access_sites_per_profile": 37,
+        "audited_range_sites_per_profile": 8,
+        "manifest_mutants_detected": 19,
+        "ir_mutants_detected": 32,
+        "frontend_rejections": 14,
+        "legacy_profile_rejections": 3,
+        "memory_lemmas_checked": 5,
+        "pinned_memory_probes": 18,
+        "maximum_frame_chain_bytes": {"O0": 1568, "O2": 240},
+        "stack_limit_bytes": 65536
+      },
+      "memory_contract": {
+        "guard_order": ["lookup", "class", "permission", "width", "bounds", "alignment"],
+        "bounds": "validate width, then offset <= length - width; never accept via wrapping offset + width",
+        "successful_access_volatile": true,
+        "device_regions_excluded": true,
+        "security_scope": "checked access inside one trusted M-mode image; not hardware isolation"
+      },
+      "unit_mapping": {
+        "stage": 1,
+        "directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
+        "regression_only": ["1.2", "1.6"],
+        "statuses_remain": "partial"
+      },
+      "notes": [
+        "The v0.4 Action profile is additive and does not silently expand v0.1-v0.3.",
+        "Build and unit suites ran on the final tree immediately before commit; focused, cumulative, and legacy artifact checks ran afterward from the clean implementation commit.",
+        "Complete ordinary-memory post-state is target-observed; model event traces are not separately instrumented on target.",
+        "Direct source operand bindings cover a documented subset; finite tests and local lemmas do not prove compiler correctness.",
+        "This gate adds no device driver, trap, interrupt, scheduler, managed runtime, physical-board, G1-completion, or G2-completion claim."
+      ]
+    },
     {"gate": 6, "name": "compiled Lean device routines", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 7, "name": "synchronous traps", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 8, "name": "timer interrupts", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},

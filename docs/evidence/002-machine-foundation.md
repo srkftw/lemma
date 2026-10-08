@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 4 have passed. Gate 5 and every later gate remain open. This record does not
+through 5 have passed. Gate 6 and every later gate remain open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -19,20 +19,23 @@ Task 002 machine foundation.
 - Gate 3 implementation checkpoint:
   `9519adcc1f72fbf06a5f888e387e561df9f1604a`, tree
   `ef80a9cdf95e150606344ee84551128231092937`.
-- Gate 4 implementation and current cumulative clean verification source:
+- Gate 4 implementation checkpoint:
   `16e7461e009e09390c0e9682d5800cae9fdd90d3`, tree
   `ee8840a642aa3acc03a8759242cc477a7b8c2eb2`.
+- Gate 5 implementation and current cumulative clean verification source:
+  `ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98`, tree
+  `c1172034c1dedc0a91375b2eb21dd6fe5fd9b187`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
 
 The historical Gate 0 clean aggregate was `build/core0/check/check-results.json`,
 SHA-256 `3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c`.
 Gate 1 first passed at `8878d2c...`; it was then rerun as part of the cumulative clean
-Gates 1-2 command at `687ee7e...`. All 14 current Gate 1 control/mutant provenance
-records, both Gate 2 profiles, and the current Task 001 O0/O2 release records name the
-full `687ee7e...` commit and record `dirty_tree: false`.
+Gates 1-2 command at `687ee7e...`. All 14 Gate 1 control/mutant provenance records,
+both Gate 2 profiles, and the Task 001 O0/O2 release records in that historical
+checkpoint name the full `687ee7e...` commit and record `dirty_tree: false`.
 
-The current cumulative clean run repeated Gates 1-4 at `16e7461...`. Its Gate 1
-records and all Gate 2, Gate 3, and Gate 4 profiles name that full commit and record
+The current cumulative clean run repeated Gates 1-5 at `ff8ef0f...`. Its Gate 1
+records and all Gate 2, Gate 3, Gate 4, and Gate 5 profiles name that full commit and record
 `dirty_tree: false`; the earlier per-gate identities remain historical checkpoints
 rather than being overwritten.
 
@@ -55,25 +58,35 @@ clean records are:
 | `build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json` | `13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4` |
 | `build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json` | `ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059` |
 | `build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json` | `6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7` |
-| `build/core0/check/check-results.json` (same-source legacy regression) | `36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404` |
+| `build/foundation/gate5-clean-ff8ef0f/gate5-results.json` (authoritative focused Gate 5 report) | `fa670e195ce2b4f8988850f8b1e2f10c3dc9eda7cb993b5f0dcf09f20cbe25d7` |
+| `build/foundation/gates1-5-clean-ff8ef0f/all-results.json` | `635c1ca0c7d3a4647297a978b109ce5b42d015a6ab46de676d8791b66261b863` |
+| `build/foundation/gates1-5-clean-ff8ef0f/gate1/gate1-results.json` | `d2d8abeeb5bb709863074941e13580c5edcd30b76de6d9bb985de1050de8be04` |
+| `build/foundation/gates1-5-clean-ff8ef0f/gate2/gate2-results.json` | `24d07cda88c3e318547b0af3fa116d56f30b854cb9ab099a28658c7d53811045` |
+| `build/foundation/gates1-5-clean-ff8ef0f/gate3/gate3-results.json` | `dd742d894dabd5714dad387212421fc12e376e23e86acb763d4cfd2a5eb1dbcf` |
+| `build/foundation/gates1-5-clean-ff8ef0f/gate4/gate4-results.json` | `60e29f2c73934c0dc2ad761c6df3ab0ab0a10310295b63901bbb9948efde1a4a` |
+| `build/foundation/gates1-5-clean-ff8ef0f/gate5/gate5-results.json` | `c331d3f4210d3bdaef88def71c892606d0dc4caa85cee8e07f092092b55de8f6` |
+| `build/core0/check/check-results.json` (same-source legacy regression) | `ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f` |
 
-## Commands actually executed at the current clean source
+## Commands executed for the current implementation checkpoint
 
 | Command | Exit | Actual result |
 |---|---:|---|
-| `nix develop --no-write-lock-file --command lake build` | 0 | 29 jobs; complete Lean library build; 36 compile-time CFG validator checks |
+| `nix develop --no-write-lock-file --command lake build` | 0 | 37 jobs; complete Lean library build; 40 compile-time CFG validator checks |
 | `python3 scripts/check_scaffold.py` | 0 | metadata valid: 7 gates, 56 software units, 6 physical units |
 | `python3 -m unittest discover -s tests/scaffold -v` | 0 | 18/18 passed |
 | `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v` | 0 | 21/21 passed |
-| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 142/142 passed |
+| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 196/196 passed |
 | `nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean` | 0 | 10 cases/profile, 13 intended rejections, 23 fresh QEMU boots |
-| `git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10` | 0 | Clean status `## task/002-machine-foundation`; Gate 4 passed: 7 roots, 112 cases/profile, 14 fresh QEMU boots |
-| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10` | 0 | Gates 1-4 passed: Gate 1 used 24 boots, Gate 2 used 136, Gate 3 used 88, Gate 4 used 14 |
+| `git status --short --branch` | 0 | Before authoritative runs: clean status `## task/002-machine-foundation` |
+| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 5 --work-dir build/foundation/gate5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15` | 0 | Gate 5 passed: 26 roots, 52 cases/profile, 104 fresh QEMU boots |
+| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15` | 0 | Gates 1-5 passed: Gate 1 used 24 boots, Gate 2 used 136, Gate 3 used 88, Gate 4 used 14, Gate 5 used 104 |
 
-All commands in this table ran after the implementation was committed, from clean
-source `16e7461...`. The focused Gate 4 report is the detailed authority for Gate 4;
-the cumulative report separately proves that Gates 1-4 still pass together. The
-legacy Core0 report also binds both O0/O2 audits to `16e7461...` with
+The build and unit suites ran against the final implementation tree immediately
+before its checkpoint commit. The focused Gate 5, cumulative Gates 1-5, and legacy
+Core0 commands then ran after the implementation was committed, from clean source
+`ff8ef0f...`. Those reports are the source-attributable authorities: the focused
+report details Gate 5, the cumulative report proves Gates 1-5 still pass together,
+and the legacy Core0 report binds both O0/O2 audits to `ff8ef0f...` with
 `dirty_tree: false`.
 
 ## Gate 1: incorrect-compiler detection
@@ -501,17 +514,139 @@ addition to the full comparison matrix. Its SHA-256 is
 The separate cumulative Gates 1-4 report and all four child identities are listed in
 the source-identity table above.
 
+## Gate 5: checked fixed-region memory and explicit effects
+
+Gate 5 adds the explicitly selected, additive `core0-v0.4` profile. It preserves
+v0.1--v0.3 and introduces closed `Action` syntax rather than hiding effects behind a
+scalar function. The checker resolves continuations, direct Action calls, and
+bounded-fold callbacks statically; computes `checkedAccess`, `ramRead`, and
+`ramWrite` transitively; and rejects runtime Action values, captures, recursion,
+arbitrary externs, lookalikes, unsafe definitions, and Action use under older
+profiles. No Action, closure, allocator, exception object, or managed state monad is
+present in the target image.
+
+The fixed table contains four 4 KiB ordinary regions: read/write scratch at
+`0x80801000`, read-only input at `0x81000000`, read/write output at `0x80803000`,
+and width-4/8 event storage at `0x80805000`. Image and stack regions are reserved;
+UART and SiFive-test are classified as devices and cannot reach the ordinary-RAM
+pointer path. Loads/stores admit 8, 32, and 64 bits as allowed by each table entry.
+The exact failure order is lookup, class, permission, width, bounds, alignment.
+Bounds are subtraction-first (`offset <= length - width`) after width/interval
+validation, so `offset + width` cannot wrap into acceptance. Range checks are pure
+preflights. A pointer and one volatile physical access are emitted only on success.
+
+The result is logically `(status : UInt8, value : UInt64)`, physically LLVM
+`{ i64, i64 }`, and directly returned in RV64 `a0/a1` with the status zero-extended.
+Status codes 0--9 cover success, unknown/reserved/device region, read/write/width
+denial, out-of-bounds, misalignment, and iteration-budget exhaustion. Status 4 is
+defined but unreachable under this exact table because every ordinary region is
+readable and class checks precede permission checks.
+
+### Source/model/target state agreement
+
+The closed suite uses ID `0xa20c6fd4108dbf27`, source seed
+`0x4c454d4d41353035`, and runtime seed `0x52554e54494d4535`. It contains 26 genuine
+elaborated roots and 52 deterministic cases/profile. The roots exercise each width,
+endianness and overlapping loads, last-valid and one-past accesses, misalignment,
+maximum offsets, read-only writes, forged IDs, reserved/device denial, range
+preflight, selected-branch writes, runtime-counted stores, bounded fill, byte
+checksum, non-overlap helper copy, and overlap-aware copy. The source algorithms are
+ordinary declarations in `examples/foundation/MemoryConformance.lean`; the host does
+not substitute their target implementation.
+
+The independent Python finite-memory transition model records every successful
+read/write event and the complete final contents of all four ordinary regions. The
+pinned Lean model separately evaluates the original elaborated Action declarations;
+18 probes cover outcome/event behavior. Their shared fixture/layout assumptions are
+explicit: the Python model imports the runner's frozen catalog and deterministic
+initial-region generator, while implementing transitions separately.
+
+Each O0/O2 case used a fresh QEMU boot. After the checked root returned, test glue
+emitted the exact 16,384-byte ordinary-region post-state as reversible aligned-word
+frames, followed by all ten 16-byte boundary canaries. The runner enforces exact
+frame order, IDs, lengths, payload sizes, case/image binding, and terminal framing;
+it decodes every word to little-endian bytes. Acceptance reparses the retained raw
+UART rather than trusting summary metadata and compares SHA-256 over
+`region-id || complete-region-bytes` with the independently recomputed model state.
+
+Both profiles matched all 52 scalar outcomes and all 52 complete post-states. Across
+104 boots this is 104 outcome matches, 104 post-state matches, 1,703,936 observed
+ordinary-region bytes, and 1,040 exact canary observations. O0, O2, and the model
+share scalar-result digest
+`66aef0a96804cba0e71f1c17d5e2cab272a3cc448b7abdf7a5caa752d2c71d19`
+and post-state aggregate digest
+`4b508bee3b64f17c8548a7db1dc6cbb11b6afc1514e440a8ce214db8eb06d544`.
+The corpus SHA-256 is
+`6051b6f7e38eecb7b95501bbd36296699a3840c8e74c3b6e768051c69b30a6a4`.
+
+### Lowering, mutation, proof, and closure evidence
+
+The pre-optimization audit finds 31 Action functions, 37 successful physical access
+sites (18 loads and 19 stores), eight range sites, and five Action-fold sites. It
+checks region dispatch; exact class/permission/width metadata; guard order and CFG
+dominance; subtraction-first bounds; alignment; pointer construction; volatility;
+the direct aggregate ABI; Action-call closure; and source/effect manifests. Its
+focused source-binding layer connects stable sites to directly auditable normalized
+region, offset, store-value, and range-length operands. Computed expressions and
+Action-bound variables remain outside that narrow binding claim; they retain the
+generic guard/CFG checks and finite target comparisons.
+
+All 51 audit mutations were rejected: 19 manifest/effect/closure mutations and 32
+pre-optimization IR mutations. The latter include nonvolatile/wrong-width/wrong-
+alignment/extra accesses; changed source store value, checked offset, region
+selection, and branch route; reserved/device inversion; bounds, permission, width,
+alignment, range, and address-construction defects; poison-sensitive flags; checked
+result corruption; indirect calls; and wrong direct callees. Focused target-state
+tests separately show that a wrong stored byte, wrong checked offset, or wrong branch
+destination changes the complete-state observation and fails comparison.
+
+All 14 exact frontend fixtures rejected, including three older-profile Action uses.
+Five local Lean theorems were checked: fixed-table validity, interval containment,
+physical interval containment, and rejected-store preservation of memory and model
+events. Their dependency reports contain no `sorryAx`; the allowed dependencies are
+only standard `propext`, `Classical.choice`, and `Quot.sound` where present. These are
+facts about the finite model, not a compiler-correctness proof or refinement proof
+for emitted RV64.
+
+O0 and O2 have byte-identical checked source artifacts and clean provenance at
+`ff8ef0f...`:
+
+| Shared checked artifact | SHA-256 |
+|---|---|
+| `memory-suite-manifest.json` | `3e88850ba609f598d1e8ae52668880bb99e06367bf6dde4b0810e5558400292d` |
+| `memory-suite-normalized.txt` | `d254f79b53d115488f5536dc7840072f1e28282edc35f5791307b7242028d7d2` |
+| `memory-test-abi.json` | `cb261785b0bf5de2e51c41eb78ad4a511ae9d407cc3b518697230a1516d19ab2` |
+| `symbols.txt` | `d630fd5c2a9f86650218cdc1e80a88c25a72fa8755d0f1f1c86c98eed25081d0` |
+| `program.ll` | `58cf81fd9781be78de568fbb8a20488dda7d7e39bb4bfd1f6241131fa77ed8e3` |
+
+| Profile | Audit SHA-256 | Optimized IR SHA-256 | Stack-size report SHA-256 | Image SHA-256 |
+|---|---|---|---|---|
+| O0 | `dc5552bf57556d512aca363c58eafdbada6836d2690e22d9ba6771cc42ceafda` | `6d4b9a7b684f8e47633c15b62e679ef2292eb756ed96d6c2707043842ea0a100` | `98fd3b38a21d3acd3a9757aee979478422b42c5d5b0d93c6974f9b5d19c90494` | `976cceb9dd09346b518067b56a73f98ec93b54dfe597ada7cf5fe1df10e7bfce` |
+| O2 | `b3f4a02ff6df0ac0c9973dfe1775d47d332a6687b25cc431b3b62610c10bfd90` | `fea3cb038478e58c16983a421634fac7c8e6b8a0257698f17d8ec746b06caa7f` | `dd0e9652e263356c9fdf7d5fd0dd72f8827cd74622cf749d300ede780941d5bf` | `400e909ae118746a361053e59aad102779a11397907cbfbb061e8ffb56bb4018` |
+
+The optimized direct-call graph is acyclic and has no dynamic allocation. Its
+maximum frame chain is 1,568 bytes at O0 and 240 bytes at O2, below the fixed 64 KiB
+stack. Pre-optimization IR contains no `disjoint`, `inbounds`, `nsw`, or `nuw`.
+O2's closed inventory contains 54 `or disjoint`, five `inbounds`, 85 `nsw`, and 84
+`nuw` inferences, each classified by the audit; no such premise is attributed to the
+source emitter.
+
+Gate 5 establishes checked ordinary-RAM access inside one trusted M-mode image. It
+does not establish protection against arbitrary privileged machine code, MMIO
+ordering, a device driver, traps, interrupts, address-space isolation, allocation,
+or a managed runtime.
+
 ## Shared assumptions, stage mapping, and limits
 
 The direct and checked-model routes are deliberately separate computations, but both
 share the pinned Lean 4 host elaborator and type checker. They are not absolutely
 independent proof systems; the target route also consumes the same checked source
-before LLVM lowering. Gate 4 adds an independent Python computation that shares only
-the documented bounded arithmetic contract, but this fourth route is still finite
-testing rather than a proof. The exhaustive UInt8 comparison, 1,024-case wider-type
+before LLVM lowering. Gates 4 and 5 add independent Python computations that share
+their documented contracts and selected fixed fixture/layout definitions, but these
+routes are still finite testing rather than proofs. The exhaustive UInt8 comparison, 1,024-case wider-type
 matrix, Gate 3's 708-case matrix, Gate 4's 112-case matrix, and metamorphic/body-change
 checks are strong finite evidence, not a compiler-correctness or semantic-preservation
-proof. Gates 3 and 4 add local mathematical lemmas with recorded axiom dependencies,
+proof. Gates 3--5 add local mathematical lemmas with recorded axiom dependencies,
 but no whole-compiler proof or separate kernel-reduction comparison. The exact ABI
 audit covers one deliberate ten-argument shape, not every possible RISC-V ABI
 signature.
@@ -525,13 +660,18 @@ lowering, dangerous-operation audit mutations, and differential target execution
 Gate 4 advances the same partial Stage I units with a versioned bounded construct,
 transitive callback checks, validated loop lowering, machine backedge/callback
 evidence, stack bounds, mutations, and source/model/Python/target comparison. The
-explicit profiles and trust manifests plus source-bound images account for the added
-1.1 and 1.7 evidence. Units 1.2 and 1.6 receive regression coverage only; neither
-Gate 3 nor Gate 4 adds a new LemmaVM or machine-primitive capability. Every listed
-construction unit remains `partial`; checked fixed-region memory, device, trap,
-timer, monitor, and qualification gates remain open.
+Gate 5 Action profile advances Units 1.1, 1.3, 1.4, 1.5, 1.7, and 1.8 with an
+explicit RAM/effect contract, finite executable semantics and local proofs, audited
+checked-memory lowering, source/manifest/IR mutations, and complete target post-state
+comparison. It gives Unit 1.6 only regression coverage because its physical memory
+observer and existing UART/finisher remain test glue rather than a new compiled
+device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
+1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
+construction unit remains `partial`; compiled device, trap, timer, monitor, and
+qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
 incomplete, and Task 002 is not complete. Gate 5 checked fixed-region memory is the
-next executable gate.
+highest passing gate. Gate 6 compiled Lean device routines are the next executable
+gate.
