@@ -10,6 +10,7 @@ open Lean Elab Command
 syntax (name := core0Check) "#core0_check " ident : command
 syntax (name := core0CheckV02) "#core0_check_v0_2 " ident : command
 syntax (name := core0CheckV03) "#core0_check_v0_3 " ident : command
+syntax (name := core0CheckV04) "#core0_check_v0_4 " ident : command
 
 elab_rules : command
   | `(#core0_check $decl:ident) => do
@@ -35,5 +36,16 @@ elab_rules : command
       | .error diag => throwErrorAt decl diag.render
       | .ok program =>
           logInfoAt decl m!"Core0 v0.3 accepted `{name}`\n{program.renderManifest}"
+
+  | `(#core0_check_v0_4 $decl:ident) => do
+      let name ← resolveGlobalConstNoOverload decl
+      let env ← getEnv
+      match checkAndLowerActionSuiteV04 env #[name] with
+      | .error diag => throwErrorAt decl diag.render
+      | .ok suite =>
+          let summary := s!"Core0 v0.4 Action accepted `{name}` " ++
+            s!"(roots={suite.roots.size}, action-functions={suite.actionFunctions.size}, " ++
+            s!"scalar-functions={suite.scalarFunctions.size})"
+          logInfoAt decl summary
 
 end Lemma.Core0

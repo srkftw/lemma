@@ -82,6 +82,18 @@ BOUNDED_SUITE_GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+MEMORY_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "memory-fixtures.json",
+    "memory-suite-manifest.json",
+    "memory-suite-normalized.txt",
+    "memory-test-abi.json",
+    "symbols.txt",
+)
+
 ARTIFACT_CATEGORIES = (
     "release",
     "test-compiler-control",
@@ -89,6 +101,7 @@ ARTIFACT_CATEGORIES = (
     "test-frontend-suite",
     "test-cfg-suite",
     "test-loop-suite",
+    "test-memory-suite",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -338,8 +351,7 @@ def _program_object_provenance(
             "test-only structured CFG, total scalar-operation semantics, and "
             "freestanding source/model/RV64 comparison"
         )
-    else:
-        assert artifact_category == "test-loop-suite"
+    elif artifact_category == "test-loop-suite":
         kind = "test-loop-suite-llvm"
         source = (
             "program.ll generated from the checked Core0 v0.3 bounded-iteration "
@@ -348,6 +360,17 @@ def _program_object_provenance(
         purpose = (
             "test-only runtime-counted bounded iteration, stack measurement, and "
             "freestanding source/model/RV64 comparison"
+        )
+    else:
+        assert artifact_category == "test-memory-suite"
+        kind = "test-memory-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.4 Action suite through "
+            "validated fixed-region memory lowering and the bounded memory harness"
+        )
+        purpose = (
+            "test-only checked ordinary-RAM access, explicit effects, canary "
+            "observation, and freestanding source/model/RV64 comparison"
         )
     return {
         "path": "program.o",
@@ -545,32 +568,45 @@ def build(
     export_env = os.environ.copy()
     export_env["LEMMA_CORE0_OUT"] = str(output_dir.resolve())
     if export_environment is not None:
-        if artifact_category not in {
+        if artifact_category in {
             "test-frontend-suite",
             "test-cfg-suite",
             "test-loop-suite",
         }:
+            expected_export_keys = {
+                "LEMMA_SCALAR_SUITE_ID",
+                "LEMMA_SCALAR_SOURCE_SEED",
+                "LEMMA_SCALAR_RUNTIME_SEED",
+            }
+            exporter_kind = "scalar"
+        elif artifact_category == "test-memory-suite":
+            expected_export_keys = {
+                "LEMMA_MEMORY_SUITE_ID",
+                "LEMMA_MEMORY_SOURCE_SEED",
+                "LEMMA_MEMORY_RUNTIME_SEED",
+            }
+            exporter_kind = "memory"
+        else:
             raise Core0Error(
-                "only closed scalar-suite test builds accept exporter configuration"
+                "only closed scalar/memory-suite test builds accept exporter configuration"
             )
-        expected_export_keys = {
-            "LEMMA_SCALAR_SUITE_ID",
-            "LEMMA_SCALAR_SOURCE_SEED",
-            "LEMMA_SCALAR_RUNTIME_SEED",
-        }
         observed_export_keys = set(export_environment)
         if observed_export_keys != expected_export_keys:
             raise Core0Error(
-                "scalar exporter configuration fields differ from the closed schema: "
+                f"{exporter_kind} exporter configuration fields differ from the closed schema: "
                 f"missing={sorted(expected_export_keys - observed_export_keys)!r}, "
                 f"unexpected={sorted(observed_export_keys - expected_export_keys)!r}"
             )
         for key, value in export_environment.items():
             if not isinstance(value, str) or not value or not value.isdecimal():
-                raise Core0Error(f"scalar exporter setting {key} is not a decimal natural")
+                raise Core0Error(
+                    f"{exporter_kind} exporter setting {key} is not a decimal natural"
+                )
             parsed = int(value, 10)
             if parsed < 0 or parsed > 0xFFFFFFFFFFFFFFFF:
-                raise Core0Error(f"scalar exporter setting {key} exceeds UInt64")
+                raise Core0Error(
+                    f"{exporter_kind} exporter setting {key} exceeds UInt64"
+                )
             export_env[key] = value
     export_argv = ("lake", "env", "lean", str(export_source))
     _invoke(
@@ -581,7 +617,9 @@ def build(
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    if artifact_category == "test-loop-suite":
+    if artifact_category == "test-memory-suite":
+        generated_by_lean = list(MEMORY_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-loop-suite":
         generated_by_lean = list(BOUNDED_SUITE_GENERATED_BY_LEAN)
     elif artifact_category in {"test-frontend-suite", "test-cfg-suite"}:
         generated_by_lean = list(SCALAR_SUITE_GENERATED_BY_LEAN)
@@ -622,7 +660,11 @@ def build(
     llc_argv = [
         "llc",
         *LLC_ARGUMENTS,
-        *(["-stack-size-section"] if artifact_category == "test-loop-suite" else []),
+        *(
+            ["-stack-size-section"]
+            if artifact_category in {"test-loop-suite", "test-memory-suite"}
+            else []
+        ),
         f"-{opt_level}",
         "program.opt.ll",
         "-o",

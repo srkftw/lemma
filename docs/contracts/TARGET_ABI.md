@@ -1,7 +1,9 @@
 # Target ABI — G1 proposal
 
 Status: Task 001 validates the scalar RV64/LP64 bootstrap profile against the pinned
-compiler and emitted ELF; the managed Lean ABI remains future work.
+compiler and emitted ELF. Task 002 Gates 2--5 preserve that profile, exercise wider
+integer call shapes, and add the explicit v0.4 checked-result ABI below. The managed
+Lean ABI remains future work.
 
 | Field | Proposal |
 | --- | --- |
@@ -17,6 +19,28 @@ compiler and emitted ELF; the managed Lean ABI remains future work.
 
 Choosing the integer ABI for G1 is a scoped bootstrap choice, not a claim that the
 managed Lean ABI has been ported. Record all changes before linking objects from another profile.
+
+## Core0 scalar and checked-result conventions
+
+The v0.1--v0.3 scalar profiles use the standard integer LP64 convention for admitted
+`Bool`, `UInt8`, `UInt32`, and `UInt64` arguments/results. Narrow arguments and results
+are zero-extended at the explicit project ABI boundary. Calls with more than eight
+integer arguments use the psABI stack slots and retain 16-byte call-boundary stack
+alignment; the conformance suites keep dedicated non-inlined calls to exercise this.
+
+`core0-v0.4` Actions have the logical result
+`{ status : UInt8, value : UInt64 }`. The project LLVM ABI is exactly
+`{ i64, i64 }`, returned directly rather than through `sret`; RV64 returns status in
+`a0` and value in `a1`. The status word must have bits 63 through 8 clear. Action
+callers and the test harness reject a noncanonical status or a mismatched aggregate
+shape. This two-word convention is a versioned Core0 ABI only; it is not a general
+managed-Lean object layout.
+
+The Gate 5 test image reserves four fixed 4 KiB ordinary regions plus separate image,
+stack, UART, and SiFive-test entries as recorded in `CORE0.md`. Those addresses are a
+pinned LemmaVM/test-image contract, not arbitrary pointers supplied through the ABI.
+Runtime request metadata is loaded from the declared input fixture at `0x81000000`;
+it is data, not executable code or a second boot image.
 
 ## Entry and layout
 

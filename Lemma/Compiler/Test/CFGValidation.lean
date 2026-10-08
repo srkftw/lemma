@@ -138,6 +138,85 @@ private def validLoopModule : LLVM.Module := {
   functions := #[validLoopCallback, validLoop]
 }
 
+/-! Gate 5 returns a lossless `(status, UInt64)` pair in the closed
+`{ i64, i64 }` ABI representation.  These checks keep aggregate construction,
+extraction, and direct-call typing inside the validated subset. -/
+private def checkedResultTarget : LLVM.Function := {
+  name := "validation_checked_result_target"
+  returnType := .checkedResult
+  parameters := #[
+    { ty := .i8, name := "status" },
+    { ty := .i64, name := "value" }
+  ]
+  parameterExtensions := #[some .zeroext, none]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .zext "status.word" .i8 (ssa "status") .i64,
+      .insertResultStatus "result.status" (ssa "status.word"),
+      .insertResultValue "result" (ssa "result.status") (ssa "value"),
+      .ret .checkedResult (ssa "result")
+    ]
+  }]
+}
+
+private def checkedResultCaller : LLVM.Function := {
+  name := "validation_checked_result_caller"
+  returnType := .i64
+  parameters := #[{ ty := .i64, name := "value" }]
+  parameterExtensions := #[none]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .abiCall (some "outcome") .checkedResult none checkedResultTarget.name #[
+        { ty := .i8, value := i8 0, extension := some .zeroext },
+        { ty := .i64, value := ssa "value", extension := none }
+      ],
+      .extractResultStatus "status.word" (ssa "outcome"),
+      .extractResultValue "result.value" (ssa "outcome"),
+      .bin "combined" .xor .i64 (ssa "status.word") (ssa "result.value"),
+      .ret .i64 (ssa "combined")
+    ]
+  }]
+}
+
+private def checkedResultModule : LLVM.Module := {
+  sourceName := "CFG validator checked result test"
+  functions := #[checkedResultTarget, checkedResultCaller]
+}
+
+private def checkedResultWrongStatus : LLVM.Function := {
+  checkedResultTarget with
+  name := "validation_checked_result_wrong_status"
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .insertResultStatus "result.status" (ssa "status"),
+      .insertResultValue "result" (ssa "result.status") (ssa "value"),
+      .ret .checkedResult (ssa "result")
+    ]
+  }]
+}
+
+private def checkedResultWrongExtract : LLVM.Function := {
+  name := "validation_checked_result_wrong_extract"
+  returnType := .i64
+  parameters := #[{ ty := .i64, name := "value" }]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .extractResultValue "result" (ssa "value"),
+      .ret .i64 (ssa "result")
+    ]
+  }]
+}
+
+private def checkedResultInvalidExtension : LLVM.Function := {
+  checkedResultTarget with
+  name := "validation_checked_result_invalid_extension"
+  returnExtension := some .zeroext
+}
+
 private def loopMissingBackedgeInput : LLVM.Function := {
   validLoop with
   name := "loop_missing_backedge_input"
@@ -585,6 +664,7 @@ run_cmd do
   checks ← pass checks "legacy-harness-module" (LLVM.validateModule legacyHarnessModule)
   checks ← pass checks "scalar-harness-module" (LLVM.validateModule scalarHarnessModule)
   checks ← pass checks "bounded-loop-module" (LLVM.validateModule validLoopModule)
+  checks ← pass checks "checked-result-module" (LLVM.validateModule checkedResultModule)
 
   checks ← reject checks "missing-terminator" "final instruction is not a terminator"
     (LLVM.validateFunction missingTerminator)
@@ -637,9 +717,15 @@ run_cmd do
     (LLVM.validateFunction loopBackedgeToEntry)
   checks ← reject checks "loop-callback-arity" "ABI call arity disagrees"
     (LLVM.validateModule loopCallbackMismatchModule)
+  checks ← reject checks "checked-result-status-type" "checked-result status expects `i64`"
+    (LLVM.validateFunction checkedResultWrongStatus)
+  checks ← reject checks "checked-result-extract-type" "checked result expects `{ i64, i64 }`"
+    (LLVM.validateFunction checkedResultWrongExtract)
+  checks ← reject checks "checked-result-return-extension" "invalid return extension"
+    (LLVM.validateFunction checkedResultInvalidExtension)
 
-  unless checks == 36 do
-    throwError m!"CFG validator suite count changed: {checks} != 36"
+  unless checks == 40 do
+    throwError m!"CFG validator suite count changed: {checks} != 40"
   logInfo m!"CFG validator: {checks} compile-time checks passed"
 
 end Lemma.Compiler.Test.CFGValidation

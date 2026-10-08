@@ -1,6 +1,9 @@
 # Trust and dependency manifest
 
-Status: required audit structure; executable audit and target manifest generation begin in task 001.
+Status: required audit structure. Task 001 implements executable scalar-image audit
+and provenance; Task 002 Gates 1--5 extend it with fault manifests, versioned suites,
+control-flow/loop checks, and checked-memory/effect evidence. Later machine/runtime
+categories remain open.
 
 ## Categories
 

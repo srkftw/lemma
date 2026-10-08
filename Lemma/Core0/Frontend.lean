@@ -2,8 +2,10 @@ import Lean
 import Lean.Compiler.ExternAttr
 import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.InitAttr
+import Lemma.Core0.ActionIR
 import Lemma.Core0.Bounded
 import Lemma.Core0.IR
+import Lemma.Core0.Memory
 
 /-!
 Genuine Lean-environment frontend for the versioned Core0 profiles.
@@ -205,6 +207,10 @@ recorded separately because its static budget and callback are not scalar runtim
 arguments. -/
 def primitiveAllowlistV03 : Array PrimitiveSpec := primitiveAllowlistV02
 
+/-- `core0-v0.4` is additive: Action syntax is recorded separately, while scalar
+subexpressions retain the complete v0.3 primitive closure. -/
+def primitiveAllowlistV04 : Array PrimitiveSpec := primitiveAllowlistV03
+
 /-- Exact compiler-recognized contract for the v0.3 bounded fold. -/
 def boundedFoldU32Spec : IterationSpec := {
   stableId := boundedFoldU32StableId
@@ -218,10 +224,15 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_1 => primitiveAllowlist
   | .v0_2 => primitiveAllowlistV02
   | .v0_3 => primitiveAllowlistV03
+  | .v0_4 => primitiveAllowlistV04
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
-  | .v0_2 | .v0_3 => true
+  | .v0_2 | .v0_3 | .v0_4 => true
+
+private def profileHasBoundedFold : Profile → Bool
+  | .v0_1 | .v0_2 => false
+  | .v0_3 | .v0_4 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -260,8 +271,12 @@ private structure LowerContext where
 private structure LowerState where
   nextVar : Nat
   dependencies : Array Name := #[]
+  actionDependencies : Array Name := #[]
   usedPrimitives : Array String := #[]
   usedIterations : Array IterationUse := #[]
+  usedMemoryOps : Array MemoryOpUse := #[]
+  usedActionIterations : Array ActionIterationUse := #[]
+  directEffects : EffectSet := .empty
 
 private abbrev LowerM := StateT LowerState (Except Diagnostic)
 
@@ -289,6 +304,26 @@ private def addDependency (name : Name) : LowerM Unit := do
   let state ← get
   unless state.dependencies.contains name do
     set { state with dependencies := state.dependencies.push name }
+
+private def addActionDependency (name : Name) : LowerM Unit := do
+  let state ← get
+  unless state.actionDependencies.contains name do
+    set { state with actionDependencies := state.actionDependencies.push name }
+
+private def markMemoryOp (use : MemoryOpUse) (effects : EffectSet) : LowerM Unit := do
+  let state ← get
+  let uses := if state.usedMemoryOps.contains use then state.usedMemoryOps
+    else state.usedMemoryOps.push use
+  set {
+    state with
+    usedMemoryOps := uses
+    directEffects := state.directEffects ∪ effects
+  }
+
+private def markActionIteration (site : ActionIterationUse) : LowerM Unit := do
+  let state ← get
+  unless state.usedActionIterations.contains site do
+    set { state with usedActionIterations := state.usedActionIterations.push site }
 
 private def markIteration (site : IterationUse) : LowerM Unit := do
   let state ← get
@@ -673,7 +708,7 @@ mutual
           "dynamic/higher-order application is outside Core0 (possible capturing closure)"
 
     if name == boundedFoldU32Spec.leanDecl then
-      unless ctx.profile == .v0_3 do
+      unless profileHasBoundedFold ctx.profile do
         fail ctx .unsupportedPrimitive
           s!"`{boundedFoldU32Spec.leanDecl}` requires {Profile.v0_3.contractVersion}"
           (ctx.path ++ [name])
@@ -1090,5 +1125,530 @@ def checkAndLowerSuiteForProfile (env : Environment) (profile : Profile)
 def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
     Except Diagnostic CheckedSuite :=
   checkAndLowerSuiteForProfile env .v0_1 declaredRoots
+
+/-! ## Explicit Action frontend (`core0-v0.4`) -/
+
+private def isActionType (type : Lean.Expr) : Bool :=
+  constName? type == some ``Lemma.Core0.Memory.Action
+
+private def parseActionSignatureCore (ctx : LowerContext) (type : Lean.Expr) :
+    Except Diagnostic (ActionSignature × Array Name) := do
+  let rec go (fuel : Nat) (type : Lean.Expr) (argTypes : Array Ty)
+      (argNames : Array Name) := do
+    let fuel + 1 := fuel
+      | throw <| mkDiagnostic ctx .unsupportedType
+          "Action signature exceeds the Core0 limit of 1024 scalar parameters"
+    match stripMData type with
+    | .forallE name domain body binderInfo => do
+        unless binderInfo == .default do
+          throw <| mkDiagnostic ctx .unsupportedBinder
+            s!"implicit, strict-implicit, and instance Action parameters are outside Core0 (`{name}`)"
+        let some ty := typeExpr? domain
+          | throw <| mkDiagnostic ctx .unsupportedType
+              s!"Action parameter `{name}` is not Bool/UInt8/UInt32/UInt64"
+        go fuel body (argTypes.push ty) (argNames.push name)
+    | result => do
+        unless isActionType result do
+          throw <| mkDiagnostic ctx .unsupportedType
+            "effectful declaration result is not the exact Lemma.Core0.Memory.Action type"
+        pure ({ args := argTypes }, argNames)
+  go 1024 type #[] #[]
+
+private def declarationActionSignature (ctx : LowerContext) (name : Name) :
+    Except Diagnostic ActionSignature := do
+  let some info := ctx.env.find? name
+    | throw <| mkDiagnostic ctx .unknownDeclaration
+        s!"Action declaration `{name}` is not in the Lean environment" (ctx.path ++ [name])
+  let (signature, _) ← parseActionSignatureCore { ctx with declaration := name } info.type
+  pure signature
+
+private def freshActionBinder (name : Name) (ty : Ty) : LowerM Param := do
+  let state ← get
+  let binder : Param := { id := state.nextVar, name, ty }
+  set { state with nextVar := state.nextVar + 1 }
+  pure binder
+
+private def widthValueType : Memory.Width → Ty
+  | .w8 => .u8
+  | .w32 => .u32
+  | .w64 => .u64
+
+private def loadConstructor? (name : Name) : Option Memory.Width :=
+  if name == ``Lemma.Core0.Memory.Action.load8 then some .w8
+  else if name == ``Lemma.Core0.Memory.Action.load32 then some .w32
+  else if name == ``Lemma.Core0.Memory.Action.load64 then some .w64
+  else none
+
+private def storeConstructor? (name : Name) : Option Memory.Width :=
+  if name == ``Lemma.Core0.Memory.Action.store8 then some .w8
+  else if name == ``Lemma.Core0.Memory.Action.store32 then some .w32
+  else if name == ``Lemma.Core0.Memory.Action.store64 then some .w64
+  else none
+
+private def substituteScalar (id : Nat) (replacement : Expr) : Expr → Expr
+  | .var candidate ty => if candidate == id then replacement else .var candidate ty
+  | .lit ty value => .lit ty value
+  | .boolLit value => .boolLit value
+  | .letE localId name ty value body =>
+      .letE localId name ty (substituteScalar id replacement value)
+        (substituteScalar id replacement body)
+  | .bin op ty lhs rhs =>
+      .bin op ty (substituteScalar id replacement lhs) (substituteScalar id replacement rhs)
+  | .unary op ty value => .unary op ty (substituteScalar id replacement value)
+  | .cmp op ty lhs rhs =>
+      .cmp op ty (substituteScalar id replacement lhs) (substituteScalar id replacement rhs)
+  | .ite ty condition thenBranch elseBranch =>
+      .ite ty (substituteScalar id replacement condition)
+        (substituteScalar id replacement thenBranch)
+        (substituteScalar id replacement elseBranch)
+  | .call callee ty args =>
+      .call callee ty (args.map (substituteScalar id replacement))
+  | .cast op sourceTy targetTy value =>
+      .cast op sourceTy targetTy (substituteScalar id replacement value)
+  | .boundedFoldU32 budget callback count initial =>
+      .boundedFoldU32 budget callback (substituteScalar id replacement count)
+        (substituteScalar id replacement initial)
+
+private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr → ActionExpr
+  | .done status value =>
+      .done (substituteScalar id replacement status) (substituteScalar id replacement value)
+  | .bind first status value next =>
+      .bind (substituteActionScalar id replacement first) status value
+        (substituteActionScalar id replacement next)
+  | .load width region offset status value next =>
+      .load width (substituteScalar id replacement region)
+        (substituteScalar id replacement offset) status value
+        (substituteActionScalar id replacement next)
+  | .store width region offset value status next =>
+      .store width (substituteScalar id replacement region)
+        (substituteScalar id replacement offset) (substituteScalar id replacement value)
+        status (substituteActionScalar id replacement next)
+  | .checkRange access region offset length status next =>
+      .checkRange access (substituteScalar id replacement region)
+        (substituteScalar id replacement offset) (substituteScalar id replacement length)
+        status (substituteActionScalar id replacement next)
+  | .ite condition thenBranch elseBranch =>
+      .ite (substituteScalar id replacement condition)
+        (substituteActionScalar id replacement thenBranch)
+        (substituteActionScalar id replacement elseBranch)
+  | .call callee args => .call callee (args.map (substituteScalar id replacement))
+  | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next =>
+      .boundedFoldU64 budget callback
+        (substituteScalar id replacement count) (substituteScalar id replacement initial)
+        (substituteScalar id replacement ctx0) (substituteScalar id replacement ctx1)
+        (substituteScalar id replacement ctx2) (substituteScalar id replacement ctx3)
+        status value (substituteActionScalar id replacement next)
+
+mutual
+
+  private def lowerAction (fuel : Nat) (ctx : LowerContext)
+      (source : Lean.Expr) : LowerM ActionExpr := do
+    let fuel + 1 := fuel
+      | fail ctx .internal "Core0 Action traversal fuel exhausted"
+    let source := stripMData source
+    if let .letE name type value body _nondep := source then
+      let some ty := typeExpr? type
+        | fail ctx .unsupportedType
+            s!"Action let binding `{name}` must have a scalar type"
+      let loweredValue ← lowerExpr fuel ctx value
+      ensureType ctx ty loweredValue
+      let binder ← freshActionBinder name ty
+      let loweredBody ← lowerAction fuel { ctx with locals := ctx.locals.push binder } body
+      return substituteActionScalar binder.id loweredValue loweredBody
+    let some (name, args) := appView? source
+      | fail ctx .unsupportedExpression
+          "Action value is not an exact closed constructor or direct Action declaration"
+
+    if name == ``Lemma.Core0.Memory.Action.done then
+      unless args.size == 2 do fail ctx .arityMismatch "malformed Action.done application"
+      let status ← lowerExpr fuel ctx args[0]!
+      let value ← lowerExpr fuel ctx args[1]!
+      ensureType ctx .u8 status
+      ensureType ctx .u64 value
+      pure (.done status value)
+
+    else if name == ``Lemma.Core0.Memory.Action.bind then
+      unless args.size == 2 do fail ctx .arityMismatch "malformed Action.bind application"
+      let first ← lowerAction fuel ctx args[0]!
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[1]!
+      pure (.bind first status value next)
+
+    else if let some width := loadConstructor? name then
+      unless args.size == 3 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let region ← lowerExpr fuel ctx args[0]!
+      let offset ← lowerExpr fuel ctx args[1]!
+      ensureType ctx .u8 region
+      ensureType ctx .u64 offset
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[2]!
+      markMemoryOp { access := .read, width? := some width } .read
+      pure (.load width region offset status value next)
+
+    else if let some width := storeConstructor? name then
+      unless args.size == 4 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let region ← lowerExpr fuel ctx args[0]!
+      let offset ← lowerExpr fuel ctx args[1]!
+      let value ← lowerExpr fuel ctx args[2]!
+      ensureType ctx .u8 region
+      ensureType ctx .u64 offset
+      ensureType ctx (widthValueType width) value
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[3]!
+      markMemoryOp { access := .write, width? := some width } .write
+      pure (.store width region offset value status next)
+
+    else if name == ``Lemma.Core0.Memory.Action.checkReadRange ||
+        name == ``Lemma.Core0.Memory.Action.checkWriteRange then
+      unless args.size == 4 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let access := if name == ``Lemma.Core0.Memory.Action.checkReadRange then
+        MemoryAccess.read else .write
+      let region ← lowerExpr fuel ctx args[0]!
+      let offset ← lowerExpr fuel ctx args[1]!
+      let length ← lowerExpr fuel ctx args[2]!
+      ensureType ctx .u8 region
+      ensureType ctx .u64 offset
+      ensureType ctx .u64 length
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[3]!
+      markMemoryOp { access, width? := none, range := true } .check
+      pure (.checkRange access region offset length status next)
+
+    else if name == ``Lemma.Core0.Memory.Action.boundedFoldU64 then
+      unless args.size == 9 do
+        fail ctx .arityMismatch "malformed Action.boundedFoldU64 application"
+      let budget ← canonicalNatLiteral ctx args[0]!
+      unless budget ≤ Memory.maximumBudget do
+        fail ctx .unsupportedExpression
+          s!"Action-fold budget {budget} exceeds maximum {Memory.maximumBudget}"
+      let callback ← match stripMData args[1]! with
+        | .const callback levels =>
+            unless levels.isEmpty do
+              fail ctx .polymorphicDeclaration
+                "Action-fold callback must be a monomorphic top-level constant"
+            pure callback
+        | .lam .. =>
+            fail ctx .unsupportedExpression
+              "Action-fold callback must be a closed top-level constant; closures are rejected"
+        | _ => do
+            fail ctx .unsupportedExpression
+              "Action-fold callback must be a direct top-level constant"
+      let callbackCtx := { ctx with path := ctx.path ++ [callback] }
+      let callbackSignature ← match declarationActionSignature callbackCtx callback with
+        | .ok signature => pure signature
+        | .error diagnostic => throw diagnostic
+      let expected : Array Ty := #[.u32, .u32, .u64, .u64, .u64, .u64, .u64]
+      unless callbackSignature.args == expected do
+        fail ctx .typeMismatch
+          (s!"Action-fold callback `{callback}` must have signature " ++
+            "(u32,u32,u64,u64,u64,u64,u64)->Action") callbackCtx.path
+      let count ← lowerExpr fuel ctx args[2]!
+      let initial ← lowerExpr fuel ctx args[3]!
+      let ctx0 ← lowerExpr fuel ctx args[4]!
+      let ctx1 ← lowerExpr fuel ctx args[5]!
+      let ctx2 ← lowerExpr fuel ctx args[6]!
+      let ctx3 ← lowerExpr fuel ctx args[7]!
+      ensureType ctx .u32 count
+      for value in #[initial, ctx0, ctx1, ctx2, ctx3] do ensureType ctx .u64 value
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[8]!
+      addActionDependency callback
+      markActionIteration {
+        stableId := boundedFoldU64StableId
+        budget
+        callback
+      }
+      pure (.boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3
+        status value next)
+
+    else if name == ``ite then
+      unless args.size == 5 do fail ctx .arityMismatch "malformed Action ite application"
+      unless isActionType args[0]! do
+        fail ctx .unsupportedType "Action conditional result type is not Memory.Action"
+      let (condition, decider) ← lowerPredicate fuel ctx args[1]!
+      validateDecider ctx decider args[2]!
+      let thenBranch ← lowerAction fuel ctx args[3]!
+      let elseBranch ← lowerAction fuel ctx args[4]!
+      pure (.ite condition thenBranch elseBranch)
+
+    else
+      let callCtx := { ctx with path := ctx.path ++ [name] }
+      let signature ← match declarationActionSignature callCtx name with
+        | .ok signature => pure signature
+        | .error diagnostic => throw diagnostic
+      unless args.size == signature.args.size do
+        fail ctx .arityMismatch
+          s!"call to Action declaration `{name}` expected {signature.args.size} scalar arguments, got {args.size}"
+          callCtx.path
+      let mut lowered : Array Expr := #[]
+      for h : index in [:args.size] do
+        let argument ← lowerExpr fuel ctx args[index]
+        ensureType ctx signature.args[index]! argument
+        lowered := lowered.push argument
+      addActionDependency name
+      pure (.call name lowered.toList)
+
+  private def lowerActionContinuation1 (fuel : Nat) (ctx : LowerContext)
+      (source : Lean.Expr) : LowerM (Param × ActionExpr) := do
+    let fuel + 1 := fuel
+      | fail ctx .internal "Action continuation traversal fuel exhausted"
+    match stripMData source with
+    | .lam name domain body binderInfo => do
+        unless binderInfo == .default && typeExpr? domain == some .u8 do
+          fail ctx .unsupportedBinder
+            "Action status continuation must be an immediate explicit UInt8 lambda"
+        let status ← freshActionBinder name .u8
+        let next ← lowerAction fuel { ctx with locals := ctx.locals.push status } body
+        return (status, next)
+    | _ => do
+        fail ctx .unsupportedExpression
+          "Action status continuation must be an immediate lambda; stored/dynamic continuations are rejected"
+
+  private def lowerActionContinuation2 (fuel : Nat) (ctx : LowerContext)
+      (source : Lean.Expr) : LowerM (Param × Param × ActionExpr) := do
+    let fuel + 1 := fuel
+      | fail ctx .internal "Action continuation traversal fuel exhausted"
+    match stripMData source with
+    | .lam statusName statusDomain afterStatus statusBinder => do
+        unless statusBinder == .default && typeExpr? statusDomain == some .u8 do
+          fail ctx .unsupportedBinder
+            "Action result continuation's first binder must be explicit UInt8 status"
+        let status ← freshActionBinder statusName .u8
+        match stripMData afterStatus with
+        | .lam valueName valueDomain body valueBinder => do
+            unless valueBinder == .default && typeExpr? valueDomain == some .u64 do
+              fail ctx .unsupportedBinder
+                "Action result continuation's second binder must be explicit UInt64 value"
+            let value ← freshActionBinder valueName .u64
+            let locals := (ctx.locals.push status).push value
+            let next ← lowerAction fuel { ctx with locals } body
+            return (status, value, next)
+        | _ => do
+            fail ctx .unsupportedExpression
+              "Action result continuation must bind both status and value immediately"
+    | _ => do
+        fail ctx .unsupportedExpression
+          "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected"
+
+end
+
+private def lowerActionFunction (env : Environment) (root name : Name)
+    (path : List Name) : Except Diagnostic ActionFunction := do
+  let baseCtx : LowerContext := {
+    env, profile := .v0_4, root, declaration := name, path, locals := #[]
+  }
+  let some info := env.find? name
+    | throw <| mkDiagnostic baseCtx .unknownDeclaration
+        s!"Action declaration `{name}` is not in the Lean environment"
+  if (getExternAttrData? env name).isSome then
+    throw <| mkDiagnostic baseCtx .unsupportedDeclaration
+      s!"Action declaration `{name}` has an arbitrary @[extern] implementation"
+  if hasInitAttr env name || isIOUnitInitFn env name then
+    throw <| mkDiagnostic baseCtx .unsupportedDeclaration
+      s!"Action declaration `{name}` has a runtime initialization effect"
+  if let some replacement := Compiler.getImplementedBy? env name then
+    throw <| mkDiagnostic baseCtx .unsupportedDeclaration
+      s!"Action declaration `{name}` has unchecked compiler replacement `{replacement}`"
+  let value ← match info with
+    | .defnInfo definition =>
+        unless definition.levelParams.isEmpty do
+          throw <| mkDiagnostic baseCtx .polymorphicDeclaration
+            s!"Action declaration `{name}` has universe parameters"
+        unless definition.safety == .safe do
+          throw <| mkDiagnostic baseCtx .unsafeDeclaration
+            s!"Action declaration `{name}` is {repr definition.safety}; unsafe/partial declarations are outside Core0"
+        pure definition.value
+    | _ => throw (mkDiagnostic baseCtx .unsupportedDeclaration
+        s!"Action declaration `{name}` is not an inspectable safe definition")
+  let (signature, typeNames) ← parseActionSignatureCore baseCtx info.type
+  let mut body := stripMData value
+  let mut params : Array Param := #[]
+  for _h : index in [:signature.args.size] do
+    match stripMData body with
+    | .lam valueName domain next binderInfo =>
+        unless binderInfo == .default && typeExpr? domain == some signature.args[index]! do
+          throw <| mkDiagnostic baseCtx .typeMismatch
+            s!"Action lambda binder #{index} of `{name}` differs from its scalar signature"
+        let typeName := typeNames[index]!
+        let binderName := if valueName.isAnonymous then typeName else valueName
+        params := params.push { id := index, name := binderName, ty := signature.args[index]! }
+        body := next
+    | _ => throw (mkDiagnostic baseCtx .arityMismatch
+        s!"body of Action declaration `{name}` has fewer lambdas than its signature")
+  match stripMData body with
+  | .lam .. => throw (mkDiagnostic baseCtx .unsupportedExpression
+      s!"body of Action declaration `{name}` returns an unrecognized closure")
+  | _ => pure ()
+  let ctx := { baseCtx with locals := params }
+  let initialState : LowerState := { nextVar := params.size }
+  let (loweredBody, state) ← lowerAction 65536 ctx body |>.run initialState
+  pure {
+    name
+    signature
+    params
+    body := loweredBody
+    scalarDependencies := state.dependencies
+    actionDependencies := state.actionDependencies
+    directEffects := state.directEffects
+    effects := state.directEffects
+  }
+
+private inductive ActionVisitTask where
+  | enter (name : Name) (path : List Name)
+  | exit (function : ActionFunction)
+
+private structure ActionClosure where
+  scalarFunctions : Array Function := #[]
+  actionFunctions : Array ActionFunction := #[]
+  usedPrimitives : Array String := #[]
+  usedIterations : Array IterationUse := #[]
+  usedMemoryOps : Array MemoryOpUse := #[]
+  usedActionIterations : Array ActionIterationUse := #[]
+
+private def pushUnique [BEq α] (values : Array α) (value : α) : Array α :=
+  if values.contains value then values else values.push value
+
+private def mergeScalarProgram (closure : ActionClosure) (program : Program) :
+    Except Diagnostic ActionClosure := do
+  let mut closure := closure
+  for function in program.functions do
+    match closure.scalarFunctions.find? (fun candidate => candidate.name == function.name) with
+    | some existing =>
+        unless existing == function do
+          throw {
+            code := .internal
+            root := program.root
+            declaration := function.name
+            path := [program.root, function.name]
+            message := s!"scalar declaration `{function.name}` lowered inconsistently in Action closure"
+          }
+    | none => closure := { closure with
+        scalarFunctions := closure.scalarFunctions.push function }
+  for primitive in program.usedPrimitives do
+    closure := { closure with
+      usedPrimitives := pushUnique closure.usedPrimitives primitive }
+  for iteration in program.usedIterations do
+    closure := { closure with
+      usedIterations := pushUnique closure.usedIterations iteration }
+  pure closure
+
+/-- Check genuine elaborated Action roots and their complete scalar/Action closure
+under the explicit `core0-v0.4` contract. -/
+def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedActionSuite := do
+  unless !declaredRoots.isEmpty do
+    throw {
+      code := .invalidSuite
+      root := .anonymous
+      declaration := .anonymous
+      path := []
+      message := "a checked Action suite must declare at least one root"
+    }
+  let mut seenRoots : Array Name := #[]
+  let mut roots : Array CheckedActionRoot := #[]
+  let mut closure : ActionClosure := {}
+  let mut done : Array Name := #[]
+  for root in declaredRoots do
+    if seenRoots.contains root then
+      throw {
+        code := .invalidSuite
+        root
+        declaration := root
+        path := [root]
+        message := s!"checked Action suite declares duplicate root `{root}`"
+      }
+    seenRoots := seenRoots.push root
+    let mut stack : List ActionVisitTask := [.enter root [root]]
+    let mut visiting : List Name := []
+    while !stack.isEmpty do
+      match stack with
+      | [] => pure ()
+      | task :: rest =>
+        stack := rest
+        match task with
+        | .enter name path =>
+            if done.contains name then pure ()
+            else if visiting.contains name then
+              let ctx : LowerContext := {
+                env, profile := .v0_4, root, declaration := name, path, locals := #[]
+              }
+              throw <| mkDiagnostic ctx .recursiveDependency
+                s!"recursive/cyclic Action dependency reaches `{name}`" path
+            else
+              let function ← lowerActionFunction env root name path
+              visiting := name :: visiting
+              -- Re-run once to obtain the complete use metadata retained in LowerState.
+              let baseCtx : LowerContext := {
+                env, profile := .v0_4, root, declaration := name, path,
+                locals := function.params
+              }
+              let some info := env.find? name
+                | throw <| mkDiagnostic baseCtx .unknownDeclaration s!"missing Action declaration `{name}`"
+              let value := match info with
+                | .defnInfo definition => definition.value
+                | _ => Lean.Expr.const name []
+              let mut body := stripMData value
+              for _ in [:function.params.size] do
+                match stripMData body with
+                | .lam _ _ next _ => body := next
+                | _ => pure ()
+              let initialState : LowerState := { nextVar := function.params.size }
+              let (_, state) ← lowerAction 65536 baseCtx body |>.run initialState
+              for dependency in function.scalarDependencies do
+                let program ← checkAndLowerForProfile env .v0_4 dependency
+                closure ← mergeScalarProgram closure program
+              for primitive in state.usedPrimitives do
+                closure := { closure with
+                  usedPrimitives := pushUnique closure.usedPrimitives primitive }
+              for iteration in state.usedIterations do
+                closure := { closure with
+                  usedIterations := pushUnique closure.usedIterations iteration }
+              for operation in state.usedMemoryOps do
+                closure := { closure with
+                  usedMemoryOps := pushUnique closure.usedMemoryOps operation }
+              for iteration in state.usedActionIterations do
+                closure := { closure with
+                  usedActionIterations := pushUnique closure.usedActionIterations iteration }
+              let entries := function.actionDependencies.toList.map fun dependency =>
+                ActionVisitTask.enter dependency (path ++ [dependency])
+              stack := entries ++ [.exit function] ++ stack
+        | .exit function =>
+            visiting := visiting.filter (fun candidate => candidate != function.name)
+            unless done.contains function.name do
+              let mut effects := function.directEffects
+              for dependency in function.actionDependencies do
+                let some callee := closure.actionFunctions.find?
+                    (fun candidate => candidate.name == dependency)
+                  | let ctx : LowerContext := {
+                      env, profile := .v0_4, root,
+                      declaration := function.name,
+                      path := [root, function.name, dependency], locals := #[]
+                    }
+                    throw <| mkDiagnostic ctx .internal
+                      s!"Action dependency `{dependency}` was not emitted before `{function.name}`"
+                effects := effects ∪ callee.effects
+              let function := { function with effects }
+              closure := { closure with
+                actionFunctions := closure.actionFunctions.push function }
+              done := done.push function.name
+    let some rootFunction := closure.actionFunctions.find?
+        (fun function => function.name == root)
+      | throw {
+          code := .internal
+          root
+          declaration := root
+          path := [root]
+          message := s!"checked Action closure omitted root `{root}`"
+        }
+    roots := roots.push {
+      id := roots.size + 1
+      source := root
+      signature := rootFunction.signature
+    }
+  pure {
+    contractVersion := Profile.v0_4.contractVersion
+    roots
+    scalarFunctions := closure.scalarFunctions
+    actionFunctions := closure.actionFunctions
+    usedPrimitives := closure.usedPrimitives
+    usedIterations := closure.usedIterations
+    usedMemoryOps := closure.usedMemoryOps
+    usedActionIterations := closure.usedActionIterations
+  }
 
 end Lemma.Core0

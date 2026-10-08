@@ -3,7 +3,9 @@
 Status: Task 001 implements and tests the bounded `core0-v0.1` scalar membership
 checker. Task 002 Gate 3 adds the explicitly separate `core0-v0.2` scalar/CFG
 profile. Task 002 Gate 4 adds the narrowly bounded `core0-v0.3` iteration profile
-described below. The broader effectful Core0 contract remains proposed.
+described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
+checked-memory/Action profile. Device effects and the broader Core0 contract remain
+future work.
 
 ## Purpose
 
@@ -79,13 +81,78 @@ accumulator phis, one direct callback call on the body edge, and an actual backe
 It uses fixed call frames rather than recursive iteration. The profile adds no heap,
 arrays, boxed tuples, allocator, exception machinery, or managed Lean runtime.
 
-## Broader proposed profile
+## Implemented checked-memory profile
+
+`core0-v0.4` is additive and must be selected explicitly with the v0.4 checker.
+It preserves v0.1--v0.3 and adds an explicit, compiler-recognized `Action` syntax.
+An Action is closed first-order syntax with statically resolved continuations and
+bounded-fold callbacks; it is not `IO`, a general state monad, a runtime closure, or
+permission to call arbitrary externs. The checker computes `checkedAccess`,
+`ramRead`, and `ramWrite` effects transitively through direct calls and loop bodies.
+Scalar profiles reject Actions, and a scalar result cannot conceal an Action effect.
+
+The source operations are `done`, `bind`, `load8`, `load32`, `load64`, `store8`,
+`store32`, `store64`, `checkReadRange`, `checkWriteRange`, and the v0.4
+`boundedFoldU64`. The fold has the same static-callback and literal-budget discipline
+as v0.3, carries fixed scalar state, has a maximum admitted budget of 256, and returns
+the checked status `budget-exceeded` without executing its callback when the runtime
+count exceeds the declared budget. The logical result is
+`{ status : UInt8, value : UInt64 }`; its physical ABI is specified in
+`TARGET_ABI.md`.
+
+The fixed region catalog is part of the profile, not caller-supplied authority:
+
+| ID | Name | Base | Length | Class/permission | Widths |
+| --- | --- | --- | --- | --- | --- |
+| 1 | scratch | `0x80801000` | `0x1000` | ordinary RAM, read/write | 1, 4, 8 |
+| 2 | input | `0x81000000` | `0x1000` | ordinary RAM, read-only | 1, 4, 8 |
+| 3 | output | `0x80803000` | `0x1000` | ordinary RAM, read/write | 1, 4, 8 |
+| 4 | events | `0x80805000` | `0x1000` | ordinary RAM, read/write | 4, 8 |
+| `0x70` | image | `0x80000000` | `0x7f0000` | reserved | none |
+| `0x71` | stack | `0x807f0000` | `0x10000` | reserved | none |
+| `0x80` | UART | `0x10000000` | device | device, denied here | none |
+| `0x81` | SiFive test | `0x00100000` | device | device, denied here | none |
+
+Every access evaluates guards in this order: region lookup, class, permission,
+width, bounds, alignment. Bounds checking first establishes a valid region interval,
+then validates the width, then compares `offset <= length - width`; it never relies
+on a potentially wrapping `offset + width`. A pointer and a volatile physical load or
+store are constructed only on the success edge. Range preflight performs no physical
+access. The fixed status codes are:
+
+| Code | Meaning |
+| --- | --- |
+| 0 | success |
+| 1 | unknown region |
+| 2 | reserved region |
+| 3 | device region |
+| 4 | read denied |
+| 5 | write denied |
+| 6 | width denied |
+| 7 | out of bounds |
+| 8 | misaligned |
+| 9 | iteration budget exceeded |
+
+Status 4 is catalogued but unreachable under this exact table because every ordinary
+region is readable and class checks precede permission checks. Rejected operations
+return zero as their value, do not perform a physical access, and do not append a
+model event. Successful modeled loads/stores append one ordered event containing the
+operation, region, offset, width, and transferred value. The finite-memory model and
+its interval/rejected-write lemmas describe this contract; they are not a proof that
+the compiler preserves it.
+
+The v0.4 region API is checked access inside one trusted M-mode image. It is not a
+hardware protection boundary against arbitrary privileged code, an allocator, an
+address-space system, or a device API. MMIO remains excluded from ordinary RAM and
+requires a later, separately versioned effect and ordering contract.
+
+## Future profile work
 
 - `UInt8`, `UInt32`, `UInt64`, explicitly represented Boolean values, and literal data.
 - First-order monomorphic scalar functions, direct calls, let bindings, conditionals,
   unsigned comparisons, bit operations and wrapping integer addition/subtraction/multiplication.
-- A small, separately named primitive boundary for startup, bounds/alignment-checked
-  fixed memory access, ordered MMIO and bounded polling. Record effects explicitly.
+- A separately named primitive boundary for ordered MMIO and bounded polling, with
+  explicit device effects distinct from the implemented v0.4 RAM effects.
 - No floating point, vectors, atomics, dynamic allocation or concurrency in this first profile.
 - General recursion and dynamic loops may be rejected initially. Any admitted bounded loop
   needs an explicit representation and lowering; the compiler must not ignore its body.

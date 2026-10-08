@@ -2,6 +2,9 @@ namespace Lemma.Compiler.LLVM
 
 inductive Ty where
   | void | i1 | i8 | i32 | i64 | ptr
+  /-- Gate 5's non-allocating checked-result ABI.  Word zero carries a
+  zero-extended status byte and word one carries the complete `UInt64` payload. -/
+  | checkedResult
   deriving Repr, BEq
 
 def Ty.render : Ty → String
@@ -11,12 +14,15 @@ def Ty.render : Ty → String
   | .i32 => "i32"
   | .i64 => "i64"
   | .ptr => "ptr"
+  | .checkedResult => "{ i64, i64 }"
 
 inductive Operand where
   | local (name : String)
   | global (name : String)
   | int (ty : Ty) (value : Nat)
   | null
+  /-- Used only as the initial aggregate operand for `insertResultStatus`. -/
+  | poison
   deriving Repr, BEq
 
 def Operand.render : Operand → String
@@ -24,6 +30,7 @@ def Operand.render : Operand → String
   | .global name => "@" ++ name
   | .int _ value => toString value
   | .null => "null"
+  | .poison => "poison"
 
 def Operand.typed (op : Operand) (ty : Ty) : String :=
   ty.render ++ " " ++ op.render
@@ -97,6 +104,14 @@ inductive Instruction where
   | intToPtr (result : String) (value : Operand)
   | load (result : String) (ty : Ty) (address : Operand) (alignment : Nat) (volatile : Bool)
   | store (ty : Ty) (value address : Operand) (alignment : Nat) (volatile : Bool)
+  /-- Construct word zero of the Gate 5 checked result.  `status` is already
+  zero-extended to `i64`; keeping the aggregate operation closed prevents an
+  arbitrary aggregate language from entering the backend. -/
+  | insertResultStatus (result : String) (status : Operand)
+  /-- Complete word one of a checked result. -/
+  | insertResultValue (result : String) (aggregate value : Operand)
+  | extractResultStatus (result : String) (aggregate : Operand)
+  | extractResultValue (result : String) (aggregate : Operand)
   | call (result : Option String) (returnType : Ty) (callee : String)
       (args : Array (Ty × Operand))
   | abiCall (result : Option String) (returnType : Ty)
@@ -134,6 +149,16 @@ def Instruction.render : Instruction → String
   | .store ty value address alignment volatile =>
       "store " ++ (if volatile then "volatile " else "") ++
         s!"{ty.render} {value.render}, ptr {address.render}, align {alignment}"
+  | .insertResultStatus result status =>
+      assignment result ++
+        s!"insertvalue {Ty.checkedResult.render} poison, i64 {status.render}, 0"
+  | .insertResultValue result aggregate value =>
+      assignment result ++
+        s!"insertvalue {Ty.checkedResult.render} {aggregate.render}, i64 {value.render}, 1"
+  | .extractResultStatus result aggregate =>
+      assignment result ++ s!"extractvalue {Ty.checkedResult.render} {aggregate.render}, 0"
+  | .extractResultValue result aggregate =>
+      assignment result ++ s!"extractvalue {Ty.checkedResult.render} {aggregate.render}, 1"
   | .call result returnType callee args =>
       let pre := result.map (fun name => assignment name) |>.getD ""
       let renderedArgs := args.toList.map (fun (ty, value) => value.typed ty)

@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.4",
+  "legacy_profiles": [
+    "core0-v0.1",
+    "core0-v0.2",
+    "core0-v0.3"
+  ],
+  "cases": [
+    {
+      "name": "capturing-action-callback",
+      "path": "examples/foundation/gate5-reject/CapturingActionCallback.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action-fold callback must be a closed top-level constant; closures are rejected",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "dynamic-action-callback",
+      "path": "examples/foundation/gate5-reject/DynamicActionCallback.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "Action parameter `step` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "nonliteral-action-budget",
+      "path": "examples/foundation/gate5-reject/NonliteralActionBudget.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "bounded-fold budget must be a canonical standard Nat literal",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "over-action-budget",
+      "path": "examples/foundation/gate5-reject/OverActionBudget.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action-fold budget 257 exceeds maximum 256",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "stored-load-continuation",
+      "path": "examples/foundation/gate5-reject/StoredLoadContinuation.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "hidden-extern-action",
+      "path": "examples/foundation/gate5-reject/HiddenExternAction.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+        "dependency path: root -> forbidden"
+      ]
+    },
+    {
+      "name": "recursive-action",
+      "path": "examples/foundation/gate5-reject/RecursiveAction.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Action declaration `recursiveAction` is not an inspectable safe definition",
+        "dependency path: root -> recursiveAction"
+      ]
+    },
+    {
+      "name": "lookalike-action",
+      "path": "examples/foundation/gate5-reject/LookalikeAction.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+        "dependency path: Lookalike.root"
+      ]
+    },
+    {
+      "name": "action-parameter",
+      "path": "examples/foundation/gate5-reject/ActionParameter.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "Action parameter `dynamic` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "pure-result-action",
+      "path": "examples/foundation/gate5-reject/PureResultAction.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "v01-action",
+      "path": "examples/foundation/gate5-reject/V01Action.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "function result is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "v02-action",
+      "path": "examples/foundation/gate5-reject/V02Action.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "function result is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "v03-action",
+      "path": "examples/foundation/gate5-reject/V03Action.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "function result is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "unsafe-action",
+      "path": "examples/foundation/gate5-reject/UnsafeAction.lean",
+      "diagnostic_code": "unsafe-declaration",
+      "required_fragments": [
+        "unsafe/partial declarations are outside Core0",
+        "dependency path: root"
+      ]
+    }
+  ]
+}

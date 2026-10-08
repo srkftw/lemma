@@ -7,6 +7,8 @@ import Lemma.Compiler.Test.ScalarV2Eval
 import Lemma.Compiler.Test.ScalarV2Export
 import Lemma.Compiler.Test.BoundedEval
 import Lemma.Compiler.Test.BoundedExport
+import Lemma.Compiler.Test.MemoryExport
 import Lemma.Core0.ScalarLemmas
+import Lemma.Core0.MemoryLemmas
 
 /-! Public root for the preserved Task 001 path and additive Task 002 test profiles. -/

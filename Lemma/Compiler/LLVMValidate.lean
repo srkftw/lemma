@@ -43,7 +43,7 @@ private def integerWidth? : Ty → Option Nat
   | .i8 => some 8
   | .i32 => some 32
   | .i64 => some 64
-  | .void | .ptr => none
+  | .void | .ptr | .checkedResult => none
 
 private def isInteger (ty : Ty) : Bool := integerWidth? ty |>.isSome
 
@@ -74,6 +74,10 @@ private def resultDefinition? : Instruction → Option (String × Ty)
   | .ptrFromInt result _ => some (result, .ptr)
   | .intToPtr result _ => some (result, .ptr)
   | .load result ty _ _ _ => some (result, ty)
+  | .insertResultStatus result _ => some (result, .checkedResult)
+  | .insertResultValue result _ _ => some (result, .checkedResult)
+  | .extractResultStatus result _ => some (result, .i64)
+  | .extractResultValue result _ => some (result, .i64)
   | .call (some result) returnType _ _ => some (result, returnType)
   | .abiCall (some result) returnType _ _ _ => some (result, returnType)
   | .phi result ty _ => some (result, ty)
@@ -197,6 +201,9 @@ private def validateOperandType (fn : Function) (block context : String)
   | .null =>
       unless expected == .ptr do
         failIn fn block s!"{context} uses `null` where `{expected.render}` is required"
+  | .poison =>
+      failIn fn block
+        s!"{context} uses explicit `poison`; poison is only implicit in checked-result construction"
 
 private def validateOrdinaryDominance (fn : Function) (block : String) (instructionIndex : Nat)
     (definitions : Array Definition) (dominators : Array DominatorEntry)
@@ -291,16 +298,29 @@ private def validateInstruction (fn : Function) (block : Block) (instructionInde
         failIn fn block.label s!"{context} pointer address exceeds i64"
   | .intToPtr _ value => operand value .i64 (context ++ " integer address")
   | .load _ ty address alignment _ =>
-      unless ty != .void do failIn fn block.label s!"{context} loads void"
+      unless ty != .void && ty != .checkedResult do
+        failIn fn block.label s!"{context} loads unsupported type `{ty.render}`"
       operand address .ptr (context ++ " address")
       validateAlignment fn block.label context alignment
   | .store ty value address alignment _ =>
-      unless ty != .void do failIn fn block.label s!"{context} stores void"
+      unless ty != .void && ty != .checkedResult do
+        failIn fn block.label s!"{context} stores unsupported type `{ty.render}`"
       operand value ty (context ++ " value")
       operand address .ptr (context ++ " address")
       validateAlignment fn block.label context alignment
+  | .insertResultStatus _ status =>
+      operand status .i64 (context ++ " checked-result status")
+  | .insertResultValue _ aggregate value =>
+      operand aggregate .checkedResult (context ++ " partial checked result")
+      operand value .i64 (context ++ " checked-result value")
+  | .extractResultStatus _ aggregate =>
+      operand aggregate .checkedResult (context ++ " checked result")
+  | .extractResultValue _ aggregate =>
+      operand aggregate .checkedResult (context ++ " checked result")
   | .call result returnType callee args =>
       unless !callee.isEmpty do failIn fn block.label s!"{context} has an empty callee"
+      if returnType == .checkedResult then
+        failIn fn block.label s!"{context} checked-result call requires explicit ABI call"
       if returnType == .void && result.isSome then
         failIn fn block.label s!"{context} assigns the result of a void call"
       for argument in args do
@@ -340,6 +360,8 @@ private def collectDefinitions (fn : Function) : Except String (Array Definition
     if (lookupDefinition? definitions parameter.name).isSome then
       failAt fn s!"has duplicate SSA definition `%{parameter.name}`"
     unless parameter.ty != .void do failAt fn s!"parameter `%{parameter.name}` has void type"
+    if parameter.ty == .checkedResult then
+      failAt fn s!"parameter `%{parameter.name}` uses the non-parameter checked-result ABI type"
     definitions := definitions.push {
       name := parameter.name
       ty := parameter.ty

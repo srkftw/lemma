@@ -9,6 +9,7 @@ import re
 import sys
 from pathlib import Path
 
+import audit_memory
 from build_core0 import LINK_ARGUMENTS, LLC_ARGUMENTS, STARTUP_ARGUMENTS
 from core0_common import Core0Error, checked, load_json, repo_root, require_tools, sha256, write_json
 
@@ -63,14 +64,36 @@ BOUNDED_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+MEMORY_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "memory-fixtures.json",
+    "memory-suite-manifest.json",
+    "memory-suite-normalized.txt",
+    "memory-test-abi.json",
+    "symbols.txt",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
 TEST_FRONTEND_SUITE_POLICY = "test-frontend-suite"
 TEST_CFG_SUITE_POLICY = "test-cfg-suite"
 TEST_LOOP_SUITE_POLICY = "test-loop-suite"
+TEST_MEMORY_SUITE_POLICY = "test-memory-suite"
 SCALAR_SUITE_POLICIES = frozenset(
     {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
+)
+DISPATCH_SUITE_POLICIES = frozenset(
+    {*SCALAR_SUITE_POLICIES, TEST_MEMORY_SUITE_POLICY}
 )
 AUDIT_POLICIES = (
     RELEASE_POLICY,
@@ -79,6 +102,7 @@ AUDIT_POLICIES = (
     TEST_FRONTEND_SUITE_POLICY,
     TEST_CFG_SUITE_POLICY,
     TEST_LOOP_SUITE_POLICY,
+    TEST_MEMORY_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -186,6 +210,7 @@ SCALAR_TEST_ABI = "lemma-scalar-test-v1"
 SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarBuild.lean"
 CFG_SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarV2Build.lean"
 LOOP_SCALAR_EXPORT_DRIVER = "examples/foundation/BoundedBuild.lean"
+MEMORY_EXPORT_DRIVER = "examples/foundation/MemoryBuild.lean"
 SCALAR_BASE = "Lemma.Examples.Foundation.Conformance"
 SCALAR_SUPPORT = f"{SCALAR_BASE}.Support"
 SCALAR_ABI_ROOT = f"{SCALAR_BASE}.abiNoInlineRoot"
@@ -433,7 +458,11 @@ def expected_program_command(
     return [
         "llc",
         *LLC_ARGUMENTS,
-        *(["-stack-size-section"] if policy == TEST_LOOP_SUITE_POLICY else []),
+        *(
+            ["-stack-size-section"]
+            if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+            else []
+        ),
         f"-{optimization}",
         "program.opt.ll",
         "-o",
@@ -1087,6 +1116,168 @@ def validate_scalar_export_configuration(
             "scalar exporter configuration values differ from the checked suite manifest"
         )
     return value
+
+
+def validate_memory_export_configuration(
+    value: object, manifest: dict[str, object], root: Path
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("memory-suite provenance lacks exporter configuration")
+    _exact_keys(
+        value,
+        {"driver", "generation_command", "environment"},
+        "memory exporter configuration",
+    )
+    expected_command = [
+        "lake",
+        "env",
+        "lean",
+        str((root / MEMORY_EXPORT_DRIVER).resolve()),
+    ]
+    if value.get("driver") != MEMORY_EXPORT_DRIVER:
+        raise Core0Error("memory exporter configuration names the wrong Lean driver")
+    if value.get("generation_command") != expected_command:
+        raise Core0Error("memory exporter generation command differs from the executed driver")
+    environment = value.get("environment")
+    if not isinstance(environment, dict):
+        raise Core0Error("memory exporter configuration environment is not an object")
+    expected_environment = {
+        "LEMMA_MEMORY_RUNTIME_SEED": str(int(str(manifest["runtime_seed"]), 16)),
+        "LEMMA_MEMORY_SOURCE_SEED": str(int(str(manifest["source_seed"]), 16)),
+        "LEMMA_MEMORY_SUITE_ID": str(int(str(manifest["suite_id"]), 16)),
+    }
+    _exact_keys(
+        environment,
+        set(expected_environment),
+        "memory exporter configuration environment",
+    )
+    if environment != expected_environment:
+        raise Core0Error(
+            "memory exporter configuration values differ from the checked suite manifest"
+        )
+    return value
+
+
+def validate_memory_test_abi(
+    value: object, manifest: dict[str, object]
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("memory-test-abi.json is not an object")
+    expected = {
+        "schema_version": 1,
+        "contract_version": "core0-v0.4",
+        "name": "lemma-memory-test-v1",
+        "result_tag": "checked-result-v1",
+        "physical_result_words": ["status:i64", "value:i64"],
+        "byte_order": "little-endian",
+        "magic_bytes": "4c454d4d41303035",
+        "magic_word": "0x353030414d4d454c",
+        "version": 1,
+        "header_bytes": 128,
+        "control_bytes": 256,
+        "maximum_arguments": 16,
+        "tags": {"bool": 1, "u8": 2, "u32": 3, "u64": 4},
+        "header_words": [
+            "magic", "version", "header_bytes", "control_bytes", "suite_id",
+            "case_id", "root_id", "argument_count", "argument_tags_0_7",
+            "argument_tags_8_15", "source_seed", "runtime_seed",
+            "reserved_zero", "reserved_zero", "reserved_zero", "reserved_zero",
+        ],
+        "argument_layout": "16xu64; unused slots zero",
+        "transport_rules": (
+            "Bool=0/1; UInt8<=255; UInt32<=4294967295; UInt64 unrestricted; "
+            "reject before truncation"
+        ),
+        "output_protocol": {
+            "banner": "LEMMA_MEMORY/1\n",
+            "case": "CASE:<suite16>:<case16>:<root16>\n",
+            "outcome": "OUTCOME:<case16>:<status16>:<value16>\n",
+            "region": "REGION:<id2>:<length16>:<little-endian-i64-words>\n",
+            "canary": "CANARY:<id2>:<low16>:<high16>\n",
+            "end": "END:<case16>\n",
+        },
+        "suite_id": manifest["suite_id"],
+        "source_seed": manifest["source_seed"],
+        "runtime_seed": manifest["runtime_seed"],
+    }
+    _exact_keys(value, set(expected), "memory test ABI")
+    if value != expected:
+        raise Core0Error("memory test ABI differs from the exact v0.4 transport contract")
+    return value
+
+
+def validate_memory_manifest_companions(
+    manifest: dict[str, object], normalized_text: str, symbols_text: str
+) -> None:
+    roots = manifest.get("roots")
+    scalar_functions = manifest.get("scalar_functions")
+    action_functions = manifest.get("action_functions")
+    memory_ops = manifest.get("used_memory_ops")
+    iterations = manifest.get("action_iterations")
+    if not all(
+        isinstance(value, list)
+        for value in (roots, scalar_functions, action_functions, memory_ops, iterations)
+    ):
+        raise Core0Error("memory manifest companion inputs are malformed")
+    assert isinstance(roots, list)
+    assert isinstance(scalar_functions, list)
+    assert isinstance(action_functions, list)
+    assert isinstance(memory_ops, list)
+    assert isinstance(iterations, list)
+    lines = [f"contract={manifest['contract_version']}"]
+    for root in roots:
+        if not isinstance(root, dict) or not isinstance(root.get("signature"), dict):
+            raise Core0Error("memory manifest has a malformed root companion")
+        signature = json.dumps(root["signature"], separators=(",", ":"))
+        lines.append(
+            f"root={root['root_id']};source={root['source']};signature={signature}"
+        )
+    for function in scalar_functions:
+        if not isinstance(function, dict):
+            raise Core0Error("memory manifest has a malformed scalar companion")
+        lines.append(f"scalar={function['source']};body={function['body']}")
+    for function in action_functions:
+        if not isinstance(function, dict):
+            raise Core0Error("memory manifest has a malformed Action companion")
+        direct = "[" + ",".join(str(item) for item in function["direct_effects"]) + "]"
+        transitive = (
+            "[" + ",".join(str(item) for item in function["transitive_effects"]) + "]"
+        )
+        lines.append(
+            f"action={function['source']};direct={direct};transitive={transitive};"
+            f"body={function['body']}"
+        )
+    by_id = {
+        str(operation["stable_id"]): operation
+        for operation in memory_ops
+        if isinstance(operation, dict)
+    }
+    operation_order = (
+        "ram.read8", "ram.read32", "ram.read64", "ram.write8", "ram.write32",
+        "ram.write64", "ram.check-read-range", "ram.check-write-range",
+    )
+    if set(by_id) != set(operation_order):
+        raise Core0Error("memory normalized operation closure differs from v0.4")
+    lines.extend(f"memory-op={stable_id}" for stable_id in operation_order)
+    for site in iterations:
+        if not isinstance(site, dict):
+            raise Core0Error("memory manifest has a malformed iteration companion")
+        lines.append(
+            f"action-iteration={site['stable_id']};budget={site['static_budget']};"
+            f"callback={site['callback']}"
+        )
+    if normalized_text != "\n".join(lines) + "\n":
+        raise Core0Error(
+            "memory-suite-normalized.txt does not match the checked memory manifest"
+        )
+    functions = [*scalar_functions, *action_functions]
+    symbol_lines = []
+    for function in functions:
+        if not isinstance(function, dict):
+            raise Core0Error("memory manifest has a malformed symbol companion")
+        symbol_lines.append(f"source={function['source']};llvm={function['llvm']}")
+    if symbols_text != "\n".join(symbol_lines) + "\n":
+        raise Core0Error("symbols.txt does not match the memory source-to-LLVM mapping")
 
 
 def validate_scalar_export_command_log(
@@ -2671,6 +2862,164 @@ def validate_optimizer_disjoint(
     }
 
 
+def validate_memory_optimizer_flags(post_ir: str, optimization: str) -> dict[str, object]:
+    """Close the pinned optimizer's Gate 5 poison-sensitive flag inventory.
+
+    The source renderer emits none of these flags.  At O2 LLVM converts proven
+    region-base additions to disjoint ORs, creates five bounded switch tables,
+    and retains the existing hexadecimal formatter idiom.  This audit accepts
+    only that exact inventory and checks that every non-format OR either feeds
+    an ``inttoptr`` address (possibly through one other OR) or is the one
+    byte-packing expression whose shifted/high and zero-extended/low bytes do
+    not overlap.
+    """
+    token_counts = {
+        flag: len(re.findall(rf"\b{flag}\b", post_ir))
+        for flag in ("nsw", "nuw", "inbounds", "disjoint")
+    }
+    if optimization == "O0":
+        if any(token_counts.values()):
+            raise Core0Error(
+                f"O0 memory IR unexpectedly contains optimizer flags: {token_counts!r}"
+            )
+        return {"optimization": optimization, "counts": token_counts, "records": []}
+
+    inbounds_pattern = re.compile(
+        r"^\s*%switch\.gep = getelementptr inbounds \[(3|4) x i64\], "
+        r"ptr @switch\.table\.core0_action_(6|11), i64 0, i64 %[A-Za-z0-9_.$-]+\s*$"
+    )
+    inbounds_lines = [
+        line for line in post_ir.splitlines() if re.search(r"\binbounds\b", line)
+    ]
+    if len(inbounds_lines) != 5 or any(
+        inbounds_pattern.fullmatch(line) is None for line in inbounds_lines
+    ):
+        raise Core0Error(
+            "O2 memory IR inbounds inventory differs from the five closed switch-table GEPs"
+        )
+    expected_tables = {
+        "6": (3, [2155876352, 2164260864, 2155884544]),
+        "11": (4, [2155876352, 2164260864, 2155884544, 2155892736]),
+    }
+    for suffix, (size, values) in expected_tables.items():
+        rendered = ", ".join(f"i64 {value}" for value in values)
+        declaration = (
+            f"@switch.table.core0_action_{suffix} = private unnamed_addr constant "
+            f"[{size} x i64] [{rendered}], align 8"
+        )
+        if post_ir.count(declaration) != 1:
+            raise Core0Error(f"O2 memory switch table {suffix} differs from its closed bases")
+
+    definitions, _declarations, _calls = parse_definitions_and_calls(post_ir)
+    records: list[dict[str, object]] = []
+    hexadecimal_count = 0
+    address_count = 0
+    address_intermediate_count = 0
+    byte_pack_count = 0
+    or_pattern = re.compile(
+        r"^\s*%([A-Za-z_.$][A-Za-z0-9_.$-]*) = or disjoint i64 ([^,]+), (.+?)\s*$"
+    )
+    for symbol in sorted(definitions):
+        body = _ir_definition_body(post_ir, symbol)
+        matches = [
+            match for line in body.splitlines()
+            if "or disjoint i64" in line and (match := or_pattern.fullmatch(line))
+        ]
+        if len(matches) != len(
+            [line for line in body.splitlines() if "or disjoint i64" in line]
+        ):
+            raise Core0Error(f"O2 memory function {symbol} has an unparseable disjoint OR")
+        results = {match.group(1) for match in matches}
+        address_results = {
+            result
+            for result in results
+            if re.search(rf"\binttoptr i64 %{re.escape(result)} to ptr\b", body)
+        }
+        changed = True
+        while changed:
+            changed = False
+            for match in matches:
+                result, left, right = match.groups()
+                if result not in address_results:
+                    continue
+                for operand in (left.strip(), right.strip()):
+                    if operand.startswith("%") and operand[1:] in results:
+                        before = len(address_results)
+                        address_results.add(operand[1:])
+                        changed = changed or len(address_results) != before
+        for match in matches:
+            result, left, right = match.groups()
+            if right in {"48", "9223372036854775808", "-9223372036854775808"}:
+                if right != "48":
+                    raise Core0Error("Gate 5 O2 unexpectedly contains an exhaustion-tag OR")
+                operand = left.removeprefix("%")
+                producer = re.search(
+                    rf"^\s*%{re.escape(operand)} = (?:and i64 [^\n]+, 15|"
+                    r"lshr i64 [^\n]+, 60)\s*$",
+                    body,
+                    re.MULTILINE,
+                )
+                if producer is None:
+                    raise Core0Error("Gate 5 hexadecimal disjoint operand is not a low nibble")
+                hexadecimal_count += 1
+                kind = "hexadecimal-digit"
+            elif result in address_results:
+                kind = "checked-address" if ".address." in result else "checked-address-stage"
+                if kind == "checked-address":
+                    address_count += 1
+                else:
+                    address_intermediate_count += 1
+            elif result == "bin81":
+                high = left.removeprefix("%")
+                low = right.removeprefix("%")
+                high_match = re.search(
+                    rf"^\s*%{re.escape(high)} = shl nuw nsw i64 "
+                    r"%([A-Za-z0-9_.$-]+), 8\s*$",
+                    body,
+                    re.MULTILINE,
+                )
+                low_match = re.search(
+                    rf"^\s*%{re.escape(low)} = zext i8 [^\n]+ to i64\s*$",
+                    body,
+                    re.MULTILINE,
+                )
+                if high_match is None or low_match is None or re.search(
+                    rf"^\s*%{re.escape(high_match.group(1))} = zext i8 [^\n]+ to i64\s*$",
+                    body,
+                    re.MULTILINE,
+                ) is None:
+                    raise Core0Error("Gate 5 byte-pack disjoint operands lack exact byte ranges")
+                byte_pack_count += 1
+                kind = "two-byte-pack"
+            else:
+                raise Core0Error(
+                    f"O2 memory IR contains an unaudited disjoint OR in {symbol}: %{result}"
+                )
+            records.append({"function": symbol, "result": result, "kind": kind})
+    if (
+        len(records) != 54
+        or hexadecimal_count != 16
+        or address_count != 35
+        or address_intermediate_count != 2
+        or byte_pack_count != 1
+        or token_counts["disjoint"] != len(records)
+    ):
+        raise Core0Error(
+            "O2 memory disjoint inventory differs from the closed 16/35/2/1 catalog"
+        )
+    return {
+        "optimization": optimization,
+        "counts": token_counts,
+        "inbounds_switch_tables": len(inbounds_lines),
+        "hexadecimal_digits": hexadecimal_count,
+        "checked_addresses": address_count,
+        "checked_address_stages": address_intermediate_count,
+        "two_byte_packs": byte_pack_count,
+        "all_disjoint_operands_classified": True,
+        "records": records,
+    }
+
+
 def _disassembly_function(disassembly: str, symbol: str) -> str:
     marker = f"<{symbol}>:"
     parts = disassembly.split(marker, 1)
@@ -3129,6 +3478,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_MEMORY_SUITE_POLICY:
+        required_artifacts = MEMORY_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy == TEST_LOOP_SUITE_POLICY:
         required_artifacts = BOUNDED_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -3164,7 +3519,20 @@ def audit(
         )
 
     scalar_test_abi: dict[str, object] | None = None
-    if policy == TEST_LOOP_SUITE_POLICY:
+    memory_ir_audit: dict[str, object] | None = None
+    if policy == TEST_MEMORY_SUITE_POLICY:
+        manifest = audit_memory.validate_memory_suite_manifest(
+            load_json(paths["memory-suite-manifest.json"])
+        )
+        validate_memory_test_abi(
+            load_json(paths["memory-test-abi.json"]), manifest
+        )
+        validate_memory_manifest_companions(
+            manifest,
+            paths["memory-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy == TEST_LOOP_SUITE_POLICY:
         manifest = validate_loop_suite_manifest(
             load_json(paths["bounded-suite-manifest.json"])
         )
@@ -3275,13 +3643,18 @@ def audit(
     if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
         raise Core0Error("provenance lacks a full Git source commit")
     scalar_export_configuration: dict[str, object] | None = None
+    memory_export_configuration: dict[str, object] | None = None
     if policy in SCALAR_SUITE_POLICIES:
         scalar_export_configuration = validate_scalar_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
+    elif policy == TEST_MEMORY_SUITE_POLICY:
+        memory_export_configuration = validate_memory_export_configuration(
+            provenance_obj.get("export_configuration"), manifest, root
+        )
     elif "export_configuration" in provenance_obj:
         raise Core0Error(
-            f"{policy} provenance rejects scalar exporter configuration"
+            f"{policy} provenance rejects exporter configuration"
         )
     optimization = provenance_obj.get("optimization")
     if optimization not in {"O0", "O2"}:
@@ -3441,6 +3814,17 @@ def audit(
                 "freestanding source/model/RV64 comparison"
             ),
         },
+        TEST_MEMORY_SUITE_POLICY: {
+            "kind": "test-memory-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.4 Action suite through "
+                "validated fixed-region memory lowering and the bounded memory harness"
+            ),
+            "purpose": (
+                "test-only checked ordinary-RAM access, explicit effects, canary "
+                "observation, and freestanding source/model/RV64 comparison"
+            ),
+        },
     }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
@@ -3503,6 +3887,10 @@ def audit(
         validate_scalar_export_command_log(
             scalar_export_configuration, command_argv
         )
+    if memory_export_configuration is not None:
+        validate_scalar_export_command_log(
+            memory_export_configuration, command_argv
+        )
     for expected_command in expected_elaboration_commands:
         if expected_command not in command_argv:
             raise Core0Error(
@@ -3537,9 +3925,16 @@ def audit(
             pre_ir,
             clean_ir_path.read_text(encoding="utf-8"),
         )
-    manifest_functions = manifest["functions"]
-    if not isinstance(manifest_functions, list):
-        raise Core0Error("target manifest function array is malformed")
+    if policy == TEST_MEMORY_SUITE_POLICY:
+        scalar_functions = manifest.get("scalar_functions")
+        action_functions = manifest.get("action_functions")
+        if not isinstance(scalar_functions, list) or not isinstance(action_functions, list):
+            raise Core0Error("memory target manifest function arrays are malformed")
+        manifest_functions = [*scalar_functions, *action_functions]
+    else:
+        manifest_functions = manifest["functions"]
+        if not isinstance(manifest_functions, list):
+            raise Core0Error("target manifest function array is malformed")
     manifest_user_symbols = {
         str(function["llvm"])
         for function in manifest_functions
@@ -3547,7 +3942,11 @@ def audit(
     }
     expected_pre_definitions = manifest_user_symbols | MACHINE_IR_FUNCTIONS
     scalar_abi_ir: dict[str, object] | None = None
-    if policy in SCALAR_SUITE_POLICIES:
+    if policy == TEST_MEMORY_SUITE_POLICY:
+        memory_ir_audit = audit_memory.validate_memory_pre_ir(manifest, pre_ir)
+        source_identity = "Lemma Gate 5 checked fixed-memory suite"
+        root_llvm = None
+    elif policy in SCALAR_SUITE_POLICIES:
         scalar_abi_ir = validate_scalar_pre_abi(manifest, pre_ir)
         validate_scalar_post_noinline(manifest, post_ir)
         if policy == TEST_CFG_SUITE_POLICY:
@@ -3584,19 +3983,31 @@ def audit(
         # optimized `inbounds` remains unexpected.
         if label == "pre_optimization" and inferred_flags:
             raise Core0Error(f"{label} IR contains unjustified flags: {inferred_flags}")
-        if label == "post_optimization" and "inbounds" in inferred_flags:
+        if (
+            label == "post_optimization"
+            and "inbounds" in inferred_flags
+            and policy != TEST_MEMORY_SUITE_POLICY
+        ):
             raise Core0Error("optimized IR unexpectedly contains an inbounds promise")
         definitions, declarations, calls = parse_definitions_and_calls(ir)
         if re.search(r"\b(?:invoke|callbr)\b|\basm\b", ir):
             raise Core0Error(f"{label} IR contains indirect control flow or inline assembly")
         for line in ir.splitlines():
-            if re.search(r"\bcall\b", line) and re.search(
+            stripped = line.strip()
+            is_call = re.match(
+                r"^(?:%[A-Za-z0-9_.$-]+\s*=\s*)?(?:(?:musttail|tail|notail)\s+)?call\b",
+                stripped,
+            ) is not None
+            if is_call and re.search(
                 r"\bcall\b[^@\n]*@[A-Za-z0-9_.$-]+\(", line
             ) is None:
-                raise Core0Error(f"{label} IR contains an indirect or unparseable call: {line.strip()}")
+                raise Core0Error(f"{label} IR contains an indirect or unparseable call: {stripped}")
         expected_externals = set(ALLOWED_EXTERNALS)
         if (
-            policy in {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY}
+            policy in {
+                TEST_FRONTEND_SUITE_POLICY,
+                TEST_CFG_SUITE_POLICY,
+            }
             and label == "post_optimization"
             and optimization == "O2"
         ):
@@ -3618,7 +4029,7 @@ def audit(
                 f"machine allowlist: {sorted(definitions)!r}"
             )
         if label == "post_optimization":
-            if policy in SCALAR_SUITE_POLICIES:
+            if policy in SCALAR_SUITE_POLICIES or policy == TEST_MEMORY_SUITE_POLICY:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
                 if root_llvm is None:
@@ -3642,14 +4053,19 @@ def audit(
             },
         }
         if label == "post_optimization":
-            ir_findings[label]["optimizer_disjoint"] = validate_optimizer_disjoint(
-                ir,
-                expected_exhaustion_tags=(
-                    len(LOOP_ROOT_SOURCES)
-                    if policy == TEST_LOOP_SUITE_POLICY and optimization == "O2"
-                    else 0
-                ),
-            )
+            if policy == TEST_MEMORY_SUITE_POLICY:
+                ir_findings[label]["optimizer_flags"] = validate_memory_optimizer_flags(
+                    ir, optimization
+                )
+            else:
+                ir_findings[label]["optimizer_disjoint"] = validate_optimizer_disjoint(
+                    ir,
+                    expected_exhaustion_tags=(
+                        len(LOOP_ROOT_SOURCES)
+                        if policy == TEST_LOOP_SUITE_POLICY and optimization == "O2"
+                        else 0
+                    ),
+                )
 
     elf = paths["image.elf"]
     header = tool_text("llvm-readelf", ["-h", str(elf)], root)
@@ -3860,12 +4276,13 @@ def audit(
         )
     stack_sizes_text: str | None = None
     stack_sizes: dict[str, int] | None = None
+    stack_and_call_graph: dict[str, object] | None = None
     has_stack_sizes = ".stack_sizes" in object_inventories["program.o"]
-    if policy == TEST_LOOP_SUITE_POLICY:
+    if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}:
         if not has_stack_sizes:
-            raise Core0Error("bounded-loop program.o lacks LLVM stack-size sections")
+            raise Core0Error(f"{policy} program.o lacks LLVM stack-size sections")
         if ".stack_sizes" not in sections:
-            raise Core0Error("bounded-loop final ELF lacks its linked stack-size section")
+            raise Core0Error(f"{policy} final ELF lacks its linked stack-size section")
         stack_sizes_text = tool_text(
             "llvm-readelf", ["--stack-sizes", str(directory / "program.o")], root
         )
@@ -3883,11 +4300,11 @@ def audit(
                 "program.o declares a stack frame larger than the 64-KiB stack: "
                 + repr(oversized_frames)
             )
-        if not isinstance(scalar_abi_machine, dict):
-            raise Core0Error("bounded-loop machine audit record is missing")
-        scalar_abi_machine["stack_and_call_graph"] = validate_loop_stack_call_graph(
-            post_ir, stack_sizes
-        )
+        stack_and_call_graph = validate_loop_stack_call_graph(post_ir, stack_sizes)
+        if policy == TEST_LOOP_SUITE_POLICY:
+            if not isinstance(scalar_abi_machine, dict):
+                raise Core0Error("bounded-loop machine audit record is missing")
+            scalar_abi_machine["stack_and_call_graph"] = stack_and_call_graph
     elif has_stack_sizes or ".stack_sizes" in sections:
         raise Core0Error(f"{policy} program.o unexpectedly contains Gate-4 stack metadata")
     final_function_symbols = defined_function_symbols(sections)
@@ -3930,15 +4347,15 @@ def audit(
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
         if name == "program.o" and (
-            policy == TEST_LOOP_SUITE_POLICY
-            or (policy in SCALAR_SUITE_POLICIES and optimization == "O2")
+            policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+            or (policy in DISPATCH_SUITE_POLICIES and optimization == "O2")
         ):
             # Gate 4 stack metadata and O2 scalar root dispatch both use
             # narrowly audited local absolute-address relocations.
             allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
         expected_jump_table_relocations = 0
         if (
-            policy in SCALAR_SUITE_POLICIES
+            policy in DISPATCH_SUITE_POLICIES
             and name == "program.o"
             and optimization == "O2"
         ):
@@ -3963,7 +4380,7 @@ def audit(
                     current_section = section_match.group(1)
                 if SCALAR_O2_JUMP_TABLE_RELOCATION in line:
                     if (
-                        policy == TEST_LOOP_SUITE_POLICY
+                        policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
                         and current_section == ".rela.stack_sizes"
                         and re.search(
                         r"\bR_RISCV_64\b.*\s\.L0\s+\+ 0\s*$", line
@@ -3971,7 +4388,7 @@ def audit(
                     ):
                         stack_size_rows.append(line)
                     elif (
-                        policy in SCALAR_SUITE_POLICIES
+                        policy in DISPATCH_SUITE_POLICIES
                         and optimization == "O2"
                         and current_section == ".rela.rodata"
                         and re.search(
@@ -3986,7 +4403,7 @@ def audit(
                         )
             expected_stack_rows = (
                 len(object_function_symbols["program.o"])
-                if policy == TEST_LOOP_SUITE_POLICY
+                if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
                 else 0
             )
             if len(stack_size_rows) != expected_stack_rows:
@@ -4060,6 +4477,8 @@ def audit(
             "function_bytes": dict(sorted(stack_sizes.items())),
             "maximum_frame_bytes": max(stack_sizes.values()),
         }
+        if stack_and_call_graph is not None:
+            report["stack_sizes"]["call_graph"] = stack_and_call_graph
     if mutation_manifest is not None:
         report["compiler_mutation"] = mutation_manifest
         if clean_control_directory is None or clean_control_report is None:
@@ -4078,6 +4497,8 @@ def audit(
             "pre_optimization": scalar_abi_ir,
             "machine_code": scalar_abi_machine,
         }
+    if memory_ir_audit is not None:
+        report["memory_ir_audit"] = memory_ir_audit
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")
