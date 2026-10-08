@@ -34,20 +34,29 @@ class ScaffoldTests(unittest.TestCase):
         self.change('docs/plan/construction-units.json', lambda p: p['units'][0].update(depends_on=['1.8']))
         self.assertTrue(any('cycle' in e for e in validate(self.root)))
     def test_gate_without_evidence_fails(self):
-        self.change('docs/plan/construction-units.json', lambda p: p['gates'][0].update(status='passed'))
+        self.change(
+            'docs/plan/construction-units.json',
+            lambda p: p['gates'][0].update(status='passed', evidence_records=[]),
+        )
         self.assertTrue(any('lacks integration evidence' in e for e in validate(self.root)))
     def test_unit_without_evidence_fails(self):
-        self.change('docs/plan/construction-units.json', lambda p: p['units'][0].update(status='passed'))
+        self.change(
+            'docs/plan/construction-units.json',
+            lambda p: p['units'][0].update(status='passed', evidence_records=[]),
+        )
         self.assertTrue(any('evidence records' in e for e in validate(self.root)))
     def test_public_visibility_fails(self):
         self.change('repository.json', lambda p: p.update(intended_visibility='public'))
         self.assertTrue(any('visibility' in e for e in validate(self.root)))
     def test_false_toolchain_pin_fails(self):
-        self.change('tooling/toolchain-lock.json', lambda p: p.update(status='pinned'))
+        self.change(
+            'tooling/toolchain-lock.json',
+            lambda p: p['tools']['lean'].update(verified=False),
+        )
         self.assertTrue(any('verified immutable identity' in e for e in validate(self.root)))
     def test_target_c_fails(self):
         p = self.root/'Lemma/Boot.c'
-        p.parent.mkdir()
+        p.parent.mkdir(exist_ok=True)
         p.write_text('void boot(void) {}\n')
         self.assertTrue(any('non-Lean target' in e for e in validate(self.root)))
     def test_malformed_json_fails(self):

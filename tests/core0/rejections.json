@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "reachable-allocation",
+      "path": "examples/core0/reject/Allocation.lean",
+      "required_fragments": [
+        "Core0[unsupported-type]",
+        "let binding `boxed` has a non-scalar/boxed type",
+        "dependency path: Lemma.Examples.Core0.Reject.Allocation.root"
+      ]
+    },
+    {
+      "name": "arbitrary-extern",
+      "path": "examples/core0/reject/ArbitraryExtern.lean",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "has an arbitrary @[extern] implementation",
+        "Lemma.Examples.Core0.Reject.ArbitraryExtern.root -> Lemma.Examples.Core0.Reject.ArbitraryExtern.foreignStep"
+      ]
+    },
+    {
+      "name": "capturing-closure",
+      "path": "examples/core0/reject/CapturingClosure.lean",
+      "required_fragments": [
+        "Core0[unsupported-expression]",
+        "creates a nested/capturing closure",
+        "dependency path: Lemma.Examples.Core0.Reject.CapturingClosure.root"
+      ]
+    },
+    {
+      "name": "unchecked-compiler-replacement",
+      "path": "examples/core0/reject/CompilerReplacement.lean",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "has unchecked compiler replacement",
+        "dependency path: Lemma.Examples.Core0.Reject.CompilerReplacement.root"
+      ]
+    },
+    {
+      "name": "non-allowlisted-typeclass-instance",
+      "path": "examples/core0/reject/CustomInstance.lean",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "used a non-allowlisted instance",
+        "dependency path: Lemma.Examples.Core0.Reject.CustomInstance.root"
+      ]
+    },
+    {
+      "name": "unsupported-division",
+      "path": "examples/core0/reject/Division.lean",
+      "required_fragments": [
+        "Core0[unsupported-primitive]",
+        "division, remainder, shifts, and complement are deliberately unsupported",
+        "Lemma.Examples.Core0.Reject.Division.root -> HDiv.hDiv"
+      ]
+    },
+    {
+      "name": "extern-on-definition-with-body",
+      "path": "examples/core0/reject/ExternWithBody.lean",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "has an arbitrary @[extern] implementation",
+        "dependency path: Lemma.Examples.Core0.Reject.ExternWithBody.root"
+      ]
+    },
+    {
+      "name": "hidden-forbidden-helper",
+      "path": "examples/core0/reject/HiddenDependency.lean",
+      "required_fragments": [
+        "Core0[unsupported-primitive]",
+        "Lemma.Examples.Core0.Reject.HiddenDependency.hiddenDivision",
+        "Lemma.Examples.Core0.Reject.HiddenDependency.root -> Lemma.Examples.Core0.Reject.HiddenDependency.hiddenDivision -> HDiv.hDiv"
+      ]
+    },
+    {
+      "name": "hosted-io-result",
+      "path": "examples/core0/reject/HostedIO.lean",
+      "required_fragments": [
+        "Core0[unsupported-type]",
+        "function result is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: Lemma.Examples.Core0.Reject.HostedIO.root"
+      ]
+    },
+    {
+      "name": "initialization-effect",
+      "path": "examples/core0/reject/InitializationEffect.lean",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "has a runtime initialization effect",
+        "Lemma.Examples.Core0.Reject.InitializationEffect.root -> Lemma.Examples.Core0.Reject.InitializationEffect.state"
+      ]
+    },
+    {
+      "name": "partial-recursion",
+      "path": "examples/core0/reject/Recursion.lean",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "partial definitions are rejected",
+        "dependency path: Lemma.Examples.Core0.Reject.Recursion.root"
+      ]
+    },
+    {
+      "name": "unsupported-shift",
+      "path": "examples/core0/reject/Shift.lean",
+      "required_fragments": [
+        "Core0[unsupported-primitive]",
+        "HShiftLeft.hShiftLeft",
+        "Lemma.Examples.Core0.Reject.Shift.root -> HShiftLeft.hShiftLeft"
+      ]
+    },
+    {
+      "name": "unsupported-complement",
+      "path": "examples/core0/reject/UnknownOperation.lean",
+      "required_fragments": [
+        "Core0[unsupported-primitive]",
+        "Complement.complement",
+        "Lemma.Examples.Core0.Reject.UnknownOperation.root -> Complement.complement"
+      ]
+    }
+  ]
+}

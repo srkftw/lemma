@@ -60,14 +60,31 @@ change repository visibility, licensing, branch protection, or credentials.
 
 ## Available checks
 
-At scaffold stage:
+Metadata-only checks:
 
 ```sh
 python3 scripts/check_scaffold.py
 python3 -m unittest discover -s tests/scaffold -v
 ```
 
-Run both after changes. Task 001 must add the actual pinned build and target tests,
-then update this section with commands that exist and have been executed. A project's
-proof-kernel sources, compiler and target runtime remain Lean; Python checks here are
-host-only preparation tools.
+Host-harness failure tests and the complete pinned target acceptance run:
+
+```sh
+nix develop --command python3 -m unittest discover -s tests/core0 -v
+nix develop --command ./scripts/check-core0.sh --clean
+```
+
+Focused interfaces, run inside `nix develop`, are:
+
+```sh
+./scripts/build-core0.sh --opt-level O2 --output-dir build/core0/O2 --clean
+./scripts/audit-core0.sh build/core0/O2
+./scripts/run-core0.sh --image build/core0/O2/image.elf \
+  --output-dir build/core0/O2/manual-run --case-id 1 --arg 0 --arg 0 --arg 0
+```
+
+The full check performs real O0/O2 RV64 QEMU boots, negative-source checks,
+independent-reference comparisons, clean-directory reproducibility builds, a source
+mutation, and an audit-regression link.  Missing tools or evidence fail; there is no
+skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
+programs are host-only orchestration; compiler and target logic remain Lean.

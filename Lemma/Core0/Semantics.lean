@@ -1,0 +1,230 @@
+import Lemma.Core0.IR
+
+/-!
+Independent executable semantics for checked Core0.
+
+The model evaluates the typed Core0 tree directly with mathematical `Nat` values
+reduced modulo 2^width.  It does not invoke the source Lean declaration and does not
+share code with the LLVM lowering.  Finite differential tests are evidence, not a
+compiler-correctness proof.
+-/
+
+namespace Lemma.Core0
+
+open Lean
+
+structure Scalar where
+  ty : Ty
+  value : Nat
+  deriving BEq, Inhabited, Repr
+
+namespace Scalar
+
+def modulus (ty : Ty) : Nat :=
+  2 ^ ty.width
+
+def normalize (ty : Ty) (value : Nat) : Nat :=
+  value % modulus ty
+
+def make (ty : Ty) (value : Nat) : Option Scalar :=
+  if ty.isInteger then some { ty, value := normalize ty value } else none
+
+def u8 (value : Nat) : Scalar := { ty := .u8, value := normalize .u8 value }
+
+def u32 (value : Nat) : Scalar := { ty := .u32, value := normalize .u32 value }
+
+def u64 (value : Nat) : Scalar := { ty := .u64, value := normalize .u64 value }
+
+end Scalar
+
+inductive Value where
+  | bool (value : Bool)
+  | scalar (value : Scalar)
+  deriving BEq, Inhabited, Repr
+
+def Value.type : Value → Ty
+  | .bool _ => .bool
+  | .scalar value => value.ty
+
+inductive EvalDiagnosticCode where
+  | unknownFunction
+  | arityMismatch
+  | typeMismatch
+  | invalidCheckedIR
+  | fuelExhausted
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace EvalDiagnosticCode
+
+def render : EvalDiagnosticCode → String
+  | .unknownFunction => "unknown-function"
+  | .arityMismatch => "arity-mismatch"
+  | .typeMismatch => "type-mismatch"
+  | .invalidCheckedIR => "invalid-checked-ir"
+  | .fuelExhausted => "fuel-exhausted"
+
+end EvalDiagnosticCode
+
+structure EvalDiagnostic where
+  code : EvalDiagnosticCode
+  message : String
+  callStack : List Name
+  deriving Inhabited, Repr
+
+def EvalDiagnostic.render (diag : EvalDiagnostic) : String :=
+  let stack := String.intercalate " -> " (diag.callStack.reverse.map Name.toString)
+  s!"Core0 reference[{diag.code.render}]: {diag.message}\n  call stack: {stack}"
+
+private abbrev Locals := List (Nat × Value)
+
+private def lookupLocal? (locals : Locals) (id : Nat) : Option Value :=
+  (locals.find? (fun entry => entry.1 == id)).map (·.2)
+
+private def evalFail (stack : List Name) (code : EvalDiagnosticCode)
+    (message : String) : Except EvalDiagnostic α :=
+  throw { code, message, callStack := stack }
+
+private def expectType (stack : List Name) (expected : Ty) (value : Value) :
+    Except EvalDiagnostic Unit := do
+  unless value.type == expected do
+    evalFail stack .typeMismatch s!"expected {expected.render}, got {value.type.render}"
+
+private def expectScalar (stack : List Name) (expected : Ty) (value : Value) :
+    Except EvalDiagnostic Scalar := do
+  expectType stack expected value
+  match value with
+  | .scalar scalar => pure scalar
+  | .bool _ => evalFail stack .invalidCheckedIR "integer operation received Bool"
+
+private def expectBool (stack : List Name) (value : Value) :
+    Except EvalDiagnostic Bool := do
+  expectType stack .bool value
+  match value with
+  | .bool boolean => pure boolean
+  | .scalar _ => evalFail stack .invalidCheckedIR "condition received an integer"
+
+private def evalBin (stack : List Name) (op : BinOp) (ty : Ty)
+    (lhs rhs : Value) : Except EvalDiagnostic Value := do
+  unless ty.isInteger do
+    evalFail stack .invalidCheckedIR s!"{op.render} cannot operate on Bool"
+  let lhs ← expectScalar stack ty lhs
+  let rhs ← expectScalar stack ty rhs
+  let modulus := Scalar.modulus ty
+  let result := match op with
+    | .add => lhs.value + rhs.value
+    | .sub => lhs.value + modulus - rhs.value
+    | .mul => lhs.value * rhs.value
+    | .band => Nat.land lhs.value rhs.value
+    | .bor => Nat.lor lhs.value rhs.value
+    | .bxor => Nat.xor lhs.value rhs.value
+  pure (.scalar { ty, value := result % modulus })
+
+private def evalCmp (stack : List Name) (op : CmpOp) (ty : Ty)
+    (lhs rhs : Value) : Except EvalDiagnostic Value := do
+  expectType stack ty lhs
+  expectType stack ty rhs
+  let result ← match op, lhs, rhs with
+    | .eq, .bool a, .bool b => pure (a == b)
+    | .eq, .scalar a, .scalar b => pure (a.value == b.value)
+    | .ult, .scalar a, .scalar b => pure (a.value < b.value)
+    | .ule, .scalar a, .scalar b => pure (a.value ≤ b.value)
+    | _, _, _ => evalFail stack .invalidCheckedIR s!"{op.render} is invalid for {ty.render}"
+  pure (.bool result)
+
+mutual
+
+  private def evalExpr (fuel : Nat) (program : Program) (stack : List Name)
+      (locals : Locals) (expr : Expr) : Except EvalDiagnostic Value := do
+    let fuel + 1 := fuel
+      | evalFail stack .fuelExhausted "expression/call limit exhausted"
+    match expr with
+    | .var id ty =>
+        let some value := lookupLocal? locals id
+          | evalFail stack .invalidCheckedIR s!"unknown local %{id}"
+        expectType stack ty value
+        pure value
+    | .lit ty value =>
+        unless ty.isInteger do
+          evalFail stack .invalidCheckedIR "integer literal was tagged Bool"
+        pure (.scalar { ty, value := Scalar.normalize ty value })
+    | .boolLit value => pure (.bool value)
+    | .letE id _ ty value body =>
+        let value ← evalExpr fuel program stack locals value
+        expectType stack ty value
+        evalExpr fuel program stack ((id, value) :: locals) body
+    | .bin op ty lhs rhs =>
+        let lhs ← evalExpr fuel program stack locals lhs
+        let rhs ← evalExpr fuel program stack locals rhs
+        evalBin stack op ty lhs rhs
+    | .cmp op ty lhs rhs =>
+        let lhs ← evalExpr fuel program stack locals lhs
+        let rhs ← evalExpr fuel program stack locals rhs
+        evalCmp stack op ty lhs rhs
+    | .ite resultTy condition thenBranch elseBranch =>
+        let condition ← evalExpr fuel program stack locals condition >>= expectBool stack
+        let value ← if condition then
+          evalExpr fuel program stack locals thenBranch
+        else
+          evalExpr fuel program stack locals elseBranch
+        expectType stack resultTy value
+        pure value
+    | .call callee resultTy args =>
+        let mut values : Array Value := #[]
+        for arg in args do
+          values := values.push (← evalExpr fuel program stack locals arg)
+        let result ← evalFunction fuel program stack callee values
+        expectType stack resultTy result
+        pure result
+    | .cast op sourceTy targetTy value =>
+        unless sourceTy.isInteger && targetTy.isInteger do
+          evalFail stack .invalidCheckedIR "conversion involved Bool"
+        let value ← evalExpr fuel program stack locals value
+        let source ← expectScalar stack sourceTy value
+        unless (op == .zext && sourceTy.width < targetTy.width) ||
+            (op == .trunc && targetTy.width < sourceTy.width) do
+          evalFail stack .invalidCheckedIR "conversion direction disagrees with its type widths"
+        pure (.scalar { ty := targetTy, value := Scalar.normalize targetTy source.value })
+
+  private def evalFunction (fuel : Nat) (program : Program) (stack : List Name)
+      (name : Name) (args : Array Value) : Except EvalDiagnostic Value := do
+    let fuel + 1 := fuel
+      | evalFail (name :: stack) .fuelExhausted "function-call limit exhausted"
+    let some function := program.findFunction? name
+      | evalFail (name :: stack) .unknownFunction s!"checked program has no function `{name}`"
+    unless args.size == function.params.size do
+      evalFail (name :: stack) .arityMismatch
+        s!"`{name}` expected {function.params.size} arguments, got {args.size}"
+    let mut locals : Locals := []
+    for h : index in [:args.size] do
+      let param := function.params[index]!
+      let value := match args[index] with
+        | .bool boolean => Value.bool boolean
+        | .scalar scalar => Value.scalar {
+            scalar with value := Scalar.normalize scalar.ty scalar.value
+          }
+      expectType (name :: stack) param.ty value
+      locals := (param.id, value) :: locals
+    let result ← evalExpr fuel program (name :: stack) locals function.body
+    expectType (name :: stack) function.signature.result result
+    pure result
+
+end
+
+/-- Evaluate a checked root with Bool/integer values. -/
+def evalProgram (program : Program) (args : Array Value) : Except EvalDiagnostic Value :=
+  evalFunction 65536 program [] program.root args
+
+/-- Scalar-only convenience entry point used by the differential target harness. -/
+def evalProgramScalars (program : Program) (args : Array Scalar) :
+    Except EvalDiagnostic Scalar :=
+  let values := args.map Value.scalar
+  match evalProgram program values with
+  | .error diag => .error diag
+  | .ok (.scalar scalar) => .ok scalar
+  | .ok (.bool _) => .error {
+      code := .typeMismatch
+      message := "scalar evaluator entry point was used with a Bool-returning root"
+      callStack := [program.root]
+    }
+
+end Lemma.Core0

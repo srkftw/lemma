@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "seed": "0x4c454d4d41303031",
+  "root": "Lemma.Examples.Core0.Positive.entry",
+  "cases": [
+    {
+      "name": "all-zero",
+      "case_id": "0x0000000000000001",
+      "args": [
+        "0x0000000000000000",
+        "0x0000000000000000",
+        "0x0000000000000000"
+      ],
+      "covers": [
+        "zero",
+        "entry-then",
+        "runtime-input",
+        "uart-output"
+      ]
+    },
+    {
+      "name": "ordinary-then-branch",
+      "case_id": "0x0000000000000002",
+      "args": [
+        "0x0000000000000002",
+        "0x0000000000000003",
+        "0x0000000000000013"
+      ],
+      "covers": [
+        "direct-call",
+        "entry-then",
+        "unsigned-comparison"
+      ]
+    },
+    {
+      "name": "ordinary-else-branch",
+      "case_id": "0x0000000000000003",
+      "args": [
+        "0x0000000000000003",
+        "0x0000000000000002",
+        "0x0000000000000013"
+      ],
+      "covers": [
+        "direct-call",
+        "entry-else",
+        "xor"
+      ]
+    },
+    {
+      "name": "maximum-width-x",
+      "case_id": "0x0000000000000004",
+      "args": [
+        "0xffffffffffffffff",
+        "0x0000000000000000",
+        "0x0000000000000001"
+      ],
+      "covers": [
+        "uint64-maximum",
+        "entry-else",
+        "uint64-wraparound"
+      ]
+    },
+    {
+      "name": "maximum-width-y",
+      "case_id": "0x0000000000000005",
+      "args": [
+        "0x0000000000000000",
+        "0xffffffffffffffff",
+        "0x0000000000000001"
+      ],
+      "covers": [
+        "uint64-maximum",
+        "entry-then",
+        "uint32-truncation"
+      ]
+    },
+    {
+      "name": "uint32-conversion-wrap",
+      "case_id": "0x0000000000000006",
+      "args": [
+        "0x00000000ffffffff",
+        "0x0000000000000000",
+        "0x0000000000000001"
+      ],
+      "covers": [
+        "uint32-truncation",
+        "uint32-to-uint64-zero-extension",
+        "uint32-conversion-wraparound"
+      ]
+    },
+    {
+      "name": "all-maximum",
+      "case_id": "0x0000000000000007",
+      "args": [
+        "0xffffffffffffffff",
+        "0xffffffffffffffff",
+        "0xffffffffffffffff"
+      ],
+      "covers": [
+        "uint64-maximum",
+        "multiplication-wraparound",
+        "callee-overflow-branch"
+      ]
+    },
+    {
+      "name": "maximum-versus-one",
+      "case_id": "0x0000000000000008",
+      "args": [
+        "0xffffffffffffffff",
+        "0x0000000000000001",
+        "0x0000000000000002"
+      ],
+      "covers": [
+        "entry-else",
+        "bit-operations",
+        "subtraction"
+      ]
+    },
+    {
+      "name": "discarded-upper-word",
+      "case_id": "0x0000000000000009",
+      "args": [
+        "0x0000000100000000",
+        "0x0000000000000000",
+        "0x0000000000000000"
+      ],
+      "covers": [
+        "uint32-truncation",
+        "entry-else",
+        "zero-extension"
+      ]
+    },
+    {
+      "name": "alternating-bits",
+      "case_id": "0x000000000000000a",
+      "args": [
+        "0xaaaaaaaaaaaaaaaa",
+        "0x5555555555555555",
+        "0x0123456789abcdef"
+      ],
+      "covers": [
+        "xor",
+        "entry-else",
+        "conversion",
+        "runtime-dependent-result"
+      ]
+    }
+  ]
+}

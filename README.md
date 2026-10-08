@@ -4,9 +4,12 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: construction scaffold.** No Core0 compiler, target runtime, bootable
-image, or passing hardware milestone is claimed by this initial commit. The first
-implementation assignment is [Codex task 001](codex/prompts/001-core0-freestanding-slice.md).
+**Current state: first scalar vertical slice.** Task 001 implements a narrow checked
+Core0 profile and a reproducible Lean elaboration -> checked Core0 -> LLVM -> static
+RV64 ELF -> QEMU `virt` path.  It is evidence for a bounded part of Stage I, not the
+managed Lean runtime, an operating system, a hardware milestone, or completion of G1.
+See [the Task 001 evidence](docs/evidence/001-core0.md) and the explicit limitations
+there.
 
 ## Invariants
 
@@ -35,7 +38,8 @@ implementation assignment is [Codex task 001](codex/prompts/001-core0-freestandi
 
 See [the detailed construction plan](docs/plan/BUILD_ORDER.md) and its
 [machine-readable backlog](docs/plan/construction-units.json): 56 software units
-and six physical-port units, all initially `planned`.
+and six physical-port units.  The Stage I entries remain partial until their broader
+gate evidence is complete.
 
 ## Start here
 
@@ -46,19 +50,28 @@ Read [AGENTS.md](AGENTS.md), [the architecture](docs/ARCHITECTURE.md), and the f
 3. [LemmaVM](docs/contracts/LEMMA_VM.md)
 4. [Trust and dependencies](docs/contracts/TRUST_MANIFEST.md)
 
-The first task must choose and verify immutable toolchain pins. This scaffold does
-not invent a working Lean/LLVM combination, a `lean-toolchain`, or a build command.
-The intended code boundaries are documented in [the source map](docs/SOURCE_MAP.md).
+Task 001 pins the tested Lean/LLVM/LLD/QEMU environment in `flake.lock`,
+`lean-toolchain`, and `tooling/toolchain-lock.json`.  The chosen frontend reads genuine
+Lean-elaborated declarations and uses a narrow project lowering because the pinned
+Lean package does not contain its optional upstream LLVM emitter.  The audit and choice
+are documented in [the LLVM/Core0 audit](docs/audits/llvm-core0.md).  Code boundaries
+are documented in [the source map](docs/SOURCE_MAP.md).
 
-## Checks that exist today
+## Checks
 
 ```sh
 python3 scripts/check_scaffold.py
 python3 -m unittest discover -s tests/scaffold -v
+nix develop --command python3 -m unittest discover -s tests/core0 -v
+nix develop --command ./scripts/check-core0.sh --clean
 ```
 
-These validate **repository metadata and safety of the publishing helper**. They do
-not compile Lean, boot QEMU, or qualify G1. Target tests are the first Codex task's work.
+The first two remain metadata/publishing-helper checks.  The Core0 acceptance command
+builds Lean, audits the two-object target closure, validates the QEMU DTB, executes a
+nonempty O0/O2 differential corpus on fresh RV64 boots, tests expected rejections,
+checks repeat-build hashes, mutates accepted source, and proves the audit rejects a
+statically resolved foreign object.  A finite green corpus is not a compiler proof and
+does not qualify all of G1.
 
 ## GitHub and Codex
 

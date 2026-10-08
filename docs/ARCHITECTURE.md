@@ -1,6 +1,6 @@
 # Architecture baseline
 
-Status: design constraints, not implementation evidence.
+Status: architecture baseline; Task 001 implementation evidence is recorded separately.
 
 ## Layers
 
@@ -44,10 +44,11 @@ all target inputs and generated code must have an explicit origin.
 
 ## What is deliberately not frozen
 
-The exact Lean/LLVM revision pair, complete Core0 feature set, managed Lean ABI,
-physical board firmware closure, peripheral ISAs, screen connectors, waveforms,
-FPGA resources, and native network cryptography are not validated by this scaffold.
-The first task freezes only a tested scalar profile and its toolchain.
+Task 001 freezes only the tested scalar profile and its Lean 4.34.1 / LLVM 20.1.8 /
+QEMU 11.1.1 toolchain.  A complete Core0 feature set, managed Lean ABI, physical board
+firmware closure, peripheral ISAs, screen connectors, waveforms, FPGA resources, and
+native network cryptography remain unfrozen.  See `docs/audits/core0-lowering.md` for
+the exact accepted semantics and `docs/audits/qemu-core0.md` for the machine handoff.
 
 ## Third-party reference points
 
