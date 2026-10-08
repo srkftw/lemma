@@ -117,6 +117,7 @@ private def renderABI (config : Configuration) : String :=
   String.intercalate "\n" [
     "{",
     "  \"schema_version\": 1,",
+    "  \"contract_version\": \"core0-v0.1\",",
     "  \"name\": " ++ quoted name ++ ",",
     "  \"byte_order\": \"little-endian\",",
     "  \"magic_bytes\": \"4c454d4d41303032\",",

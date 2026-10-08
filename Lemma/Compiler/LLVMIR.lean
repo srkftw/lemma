@@ -29,7 +29,7 @@ def Operand.typed (op : Operand) (ty : Ty) : String :=
   ty.render ++ " " ++ op.render
 
 inductive BinOp where
-  | add | sub | mul | and | or | xor | lshr
+  | add | sub | mul | and | or | xor | shl | lshr | udiv | urem
   deriving Repr, BEq
 
 def BinOp.render : BinOp → String
@@ -39,7 +39,10 @@ def BinOp.render : BinOp → String
   | .and => "and"
   | .or => "or"
   | .xor => "xor"
+  | .shl => "shl"
   | .lshr => "lshr"
+  | .udiv => "udiv"
+  | .urem => "urem"
 
 inductive Predicate where
   | eq | ne | ult | ule | ugt | uge | slt

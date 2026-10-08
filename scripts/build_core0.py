@@ -76,6 +76,7 @@ ARTIFACT_CATEGORIES = (
     "test-compiler-control",
     "test-compiler-mutant",
     "test-frontend-suite",
+    "test-cfg-suite",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -305,7 +306,7 @@ def _program_object_provenance(
             f"recorded in {COMPILER_FAULT_MANIFEST}"
         )
         purpose = "test-only compiler mutant and freestanding machine harness"
-    else:
+    elif artifact_category == "test-frontend-suite":
         kind = "test-frontend-suite-llvm"
         source = (
             "program.ll generated from the deduplicated checked Core0 root suite "
@@ -314,6 +315,17 @@ def _program_object_provenance(
         purpose = (
             "test-only multi-root frontend conformance, RV64 LP64 ABI, and "
             "freestanding batch execution"
+        )
+    else:
+        assert artifact_category == "test-cfg-suite"
+        kind = "test-cfg-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.2 suite through "
+            "validated structured control-flow lowering and the typed scalar harness"
+        )
+        purpose = (
+            "test-only structured CFG, total scalar-operation semantics, and "
+            "freestanding source/model/RV64 comparison"
         )
     return {
         "path": "program.o",
@@ -511,9 +523,9 @@ def build(
     export_env = os.environ.copy()
     export_env["LEMMA_CORE0_OUT"] = str(output_dir.resolve())
     if export_environment is not None:
-        if artifact_category != "test-frontend-suite":
+        if artifact_category not in {"test-frontend-suite", "test-cfg-suite"}:
             raise Core0Error(
-                "only test-frontend-suite builds accept scalar exporter configuration"
+                "only closed scalar-suite test builds accept exporter configuration"
             )
         expected_export_keys = {
             "LEMMA_SCALAR_SUITE_ID",
@@ -545,7 +557,7 @@ def build(
     )
     generated_by_lean = list(
         SCALAR_SUITE_GENERATED_BY_LEAN
-        if artifact_category == "test-frontend-suite"
+        if artifact_category in {"test-frontend-suite", "test-cfg-suite"}
         else GENERATED_BY_LEAN
     )
     if compiler_fault_manifest is not None:

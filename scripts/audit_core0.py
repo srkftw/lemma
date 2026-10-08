@@ -50,11 +50,14 @@ RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
 TEST_FRONTEND_SUITE_POLICY = "test-frontend-suite"
+TEST_CFG_SUITE_POLICY = "test-cfg-suite"
+SCALAR_SUITE_POLICIES = frozenset({TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY})
 AUDIT_POLICIES = (
     RELEASE_POLICY,
     TEST_COMPILER_CONTROL_POLICY,
     TEST_COMPILER_MUTANT_POLICY,
     TEST_FRONTEND_SUITE_POLICY,
+    TEST_CFG_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -160,6 +163,7 @@ LLVM_IDENTIFIER = re.compile(r"[A-Za-z_.$][A-Za-z0-9_.$-]*")
 
 SCALAR_TEST_ABI = "lemma-scalar-test-v1"
 SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarBuild.lean"
+CFG_SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarV2Build.lean"
 SCALAR_BASE = "Lemma.Examples.Foundation.Conformance"
 SCALAR_SUPPORT = f"{SCALAR_BASE}.Support"
 SCALAR_ABI_ROOT = f"{SCALAR_BASE}.abiNoInlineRoot"
@@ -263,6 +267,143 @@ SCALAR_ROOT_SOURCES = (
     *(source for source, _args, _result, _deps in SCALAR_FUNCTION_CONTRACTS[37:]),
 )
 
+CFG_SCALAR_BASE = "Lemma.Examples.Foundation.ScalarV2"
+CFG_SCALAR_SUPPORT = f"{CFG_SCALAR_BASE}.Support"
+CFG_OPERATION_PARTS = (
+    ("Complement", ("single",)),
+    ("Shl", ("binary",)),
+    ("Shr", ("binary",)),
+    ("Div", ("binary",)),
+    ("Rem", ("binary",)),
+)
+
+
+def _cfg_primitive_contract_rows() -> tuple[
+    tuple[str, tuple[str, ...], str, tuple[str, ...]], ...
+]:
+    rows: list[tuple[str, tuple[str, ...], str, tuple[str, ...]]] = []
+    for ty in ("u8", "u32", "u64"):
+        for operation, shape in CFG_OPERATION_PARTS:
+            args = (ty,) if shape == ("single",) else (ty, ty)
+            prefix = f"{CFG_SCALAR_BASE}.{ty}{operation}"
+            rows.append((prefix + "Notation", args, ty, ()))
+            rows.append((prefix + "Direct", args, ty, ()))
+    return tuple(rows)
+
+
+CFG_PRIMITIVE_FUNCTION_CONTRACTS = _cfg_primitive_contract_rows()
+CFG_CHOOSE_U8 = f"{CFG_SCALAR_SUPPORT}.chooseU8"
+CFG_CHOOSE_U32 = f"{CFG_SCALAR_SUPPORT}.chooseU32"
+CFG_CHOOSE_U64 = f"{CFG_SCALAR_SUPPORT}.chooseU64"
+CFG_FUNCTION_CONTRACTS = (
+    *CFG_PRIMITIVE_FUNCTION_CONTRACTS,
+    (CFG_CHOOSE_U8, ("bool", "bool", "u8", "u8", "u8"), "u8", ()),
+    (
+        f"{CFG_SCALAR_BASE}.cfgBool",
+        ("bool", "bool", "u8", "u8", "u8"),
+        "bool",
+        (CFG_CHOOSE_U8,),
+    ),
+    (
+        f"{CFG_SCALAR_BASE}.cfgU8",
+        ("bool", "bool", "u8", "u8", "u8"),
+        "u8",
+        (CFG_CHOOSE_U8,),
+    ),
+    (CFG_CHOOSE_U32, ("bool", "bool", "u32", "u32", "u32"), "u32", ()),
+    (
+        f"{CFG_SCALAR_BASE}.cfgU32",
+        ("bool", "bool", "u32", "u32", "u32"),
+        "u32",
+        (CFG_CHOOSE_U32,),
+    ),
+    (CFG_CHOOSE_U64, ("bool", "bool", "u64", "u64", "u64"), "u64", ()),
+    (
+        f"{CFG_SCALAR_BASE}.cfgU64",
+        ("bool", "bool", "u64", "u64", "u64"),
+        "u64",
+        (CFG_CHOOSE_U64,),
+    ),
+    (
+        f"{CFG_SCALAR_BASE}.nestedHelperCall",
+        ("bool", "bool", "bool", "u64", "u64", "u64"),
+        "u64",
+        (CFG_CHOOSE_U64,),
+    ),
+    (f"{CFG_SCALAR_BASE}.u8LegacyArithmetic", ("u8", "u8", "u8"), "u8", ()),
+    (f"{CFG_SCALAR_BASE}.u32LegacyArithmetic", ("u32", "u32", "u32"), "u32", ()),
+    (f"{CFG_SCALAR_BASE}.u64LegacyArithmetic", ("u64", "u64", "u64"), "u64", ()),
+    (
+        f"{CFG_SCALAR_BASE}.u8LegacyCompare",
+        ("bool", "bool", "u8", "u8", "u8"),
+        "u8",
+        (),
+    ),
+    (
+        f"{CFG_SCALAR_BASE}.u32LegacyCompare",
+        ("bool", "bool", "u32", "u32", "u32"),
+        "u32",
+        (),
+    ),
+    (
+        f"{CFG_SCALAR_BASE}.u64LegacyCompare",
+        ("bool", "bool", "u64", "u64", "u64"),
+        "u64",
+        (),
+    ),
+    (f"{CFG_SCALAR_BASE}.u8LegacyCasts", ("u8",), "u64", ()),
+    (f"{CFG_SCALAR_BASE}.u32LegacyCasts", ("u32",), "u64", ()),
+    (f"{CFG_SCALAR_BASE}.u64LegacyCasts", ("u64",), "u64", ()),
+)
+CFG_ROOT_SOURCES = (
+    *(row[0] for row in CFG_PRIMITIVE_FUNCTION_CONTRACTS),
+    f"{CFG_SCALAR_BASE}.cfgBool",
+    f"{CFG_SCALAR_BASE}.cfgU8",
+    f"{CFG_SCALAR_BASE}.cfgU32",
+    f"{CFG_SCALAR_BASE}.cfgU64",
+    f"{CFG_SCALAR_BASE}.nestedHelperCall",
+    f"{CFG_SCALAR_BASE}.u8LegacyArithmetic",
+    f"{CFG_SCALAR_BASE}.u32LegacyArithmetic",
+    f"{CFG_SCALAR_BASE}.u64LegacyArithmetic",
+    f"{CFG_SCALAR_BASE}.u8LegacyCompare",
+    f"{CFG_SCALAR_BASE}.u32LegacyCompare",
+    f"{CFG_SCALAR_BASE}.u64LegacyCompare",
+    f"{CFG_SCALAR_BASE}.u8LegacyCasts",
+    f"{CFG_SCALAR_BASE}.u32LegacyCasts",
+    f"{CFG_SCALAR_BASE}.u64LegacyCasts",
+)
+CFG_USED_PRIMITIVES = frozenset(
+    {
+        *(
+            f"{ty}.{op}"
+            for ty in ("u8", "u32", "u64")
+            for op in (
+                "add",
+                "sub",
+                "mul",
+                "and",
+                "or",
+                "xor",
+                "ult",
+                "ule",
+                "eq",
+                "complement",
+                "shl",
+                "lshr",
+                "udiv",
+                "urem",
+            )
+        ),
+        "bool.eq",
+        "u8.to-u32.zext",
+        "u8.to-u64.zext",
+        "u32.to-u8.trunc",
+        "u32.to-u64.zext",
+        "u64.to-u8.trunc",
+        "u64.to-u32.trunc",
+    }
+)
+
 
 def expected_program_command(optimization: str) -> list[str]:
     return [
@@ -340,6 +481,35 @@ def _primitive_contracts() -> dict[str, dict[str, object]]:
 
 
 PRIMITIVE_CONTRACTS = _primitive_contracts()
+
+
+def _primitive_contracts_v02() -> dict[str, dict[str, object]]:
+    contracts = dict(PRIMITIVE_CONTRACTS)
+    for ty, lean_ty in (("u8", "UInt8"), ("u32", "UInt32"), ("u64", "UInt64")):
+        for stable_op, lean_op in (
+            ("shl", "shiftLeft"),
+            ("lshr", "shiftRight"),
+            ("udiv", "div"),
+            ("urem", "mod"),
+        ):
+            stable_id = f"{ty}.{stable_op}"
+            contracts[stable_id] = {
+                "stable_id": stable_id,
+                "lean_identities": [f"{lean_ty}.{lean_op}"],
+                "signature": {"args": [ty, ty], "result": ty},
+                "effect": "pure",
+            }
+        stable_id = f"{ty}.complement"
+        contracts[stable_id] = {
+            "stable_id": stable_id,
+            "lean_identities": [f"{lean_ty}.complement"],
+            "signature": {"args": [ty], "result": ty},
+            "effect": "pure",
+        }
+    return contracts
+
+
+PRIMITIVE_CONTRACTS_V02 = _primitive_contracts_v02()
 
 
 def _validate_audit_policy(policy: str) -> str:
@@ -712,13 +882,18 @@ def validate_scalar_export_configuration(
         {"driver", "generation_command", "environment"},
         "scalar exporter configuration",
     )
+    expected_driver = (
+        CFG_SCALAR_EXPORT_DRIVER
+        if manifest.get("contract_version") == "core0-v0.2"
+        else SCALAR_EXPORT_DRIVER
+    )
     expected_command = [
         "lake",
         "env",
         "lean",
-        str((root / SCALAR_EXPORT_DRIVER).resolve()),
+        str((root / expected_driver).resolve()),
     ]
-    if value.get("driver") != SCALAR_EXPORT_DRIVER:
+    if value.get("driver") != expected_driver:
         raise Core0Error("scalar exporter configuration names the wrong Lean driver")
     if value.get("generation_command") != expected_command:
         raise Core0Error("scalar exporter generation command differs from the executed driver")
@@ -919,36 +1094,189 @@ def validate_scalar_suite_manifest(value: object) -> dict[str, object]:
     return value
 
 
+def validate_cfg_suite_manifest(value: object) -> dict[str, object]:
+    """Validate the closed 44-root/47-function `core0-v0.2` Gate 3 suite."""
+    if not isinstance(value, dict):
+        raise Core0Error("structured scalar-suite manifest is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "artifact_category",
+            "contract_version",
+            "test_abi",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+            "cfg_validation",
+            "roots",
+            "functions",
+            "used_primitives",
+            "machine_primitives",
+        },
+        "structured scalar-suite manifest",
+    )
+    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
+        raise Core0Error("structured scalar-suite manifest has an unsupported schema")
+    if value.get("artifact_category") != TEST_CFG_SUITE_POLICY:
+        raise Core0Error("structured scalar-suite manifest has the wrong artifact category")
+    if value.get("contract_version") != "core0-v0.2":
+        raise Core0Error("structured scalar-suite manifest has an unsupported Core0 contract")
+    if value.get("test_abi") != SCALAR_TEST_ABI:
+        raise Core0Error("structured scalar-suite manifest has an unsupported typed test ABI")
+    for field in ("suite_id", "source_seed", "runtime_seed"):
+        _validate_scalar_u64_hex(value.get(field), f"structured scalar manifest {field}")
+    if value.get("cfg_validation") != {
+        "validator": "Lemma.Compiler.LLVM.validateModule",
+        "source_conditionals": "branch-phi",
+        "division": "zero-guarded",
+        "shift_counts": "masked-to-width",
+    }:
+        raise Core0Error("structured scalar-suite CFG contract differs from the closed profile")
+
+    functions = value.get("functions")
+    if not isinstance(functions, list) or len(functions) != len(CFG_FUNCTION_CONTRACTS):
+        raise Core0Error("structured scalar suite lacks its exact 47-function closure")
+    source_symbols: dict[str, str] = {}
+    for index, (function, contract) in enumerate(zip(functions, CFG_FUNCTION_CONTRACTS)):
+        source, args, result, dependencies = contract
+        if not isinstance(function, dict):
+            raise Core0Error(f"structured scalar function #{index} is not an object")
+        _exact_keys(
+            function,
+            {
+                "source",
+                "llvm",
+                "signature",
+                "dependencies",
+                "body",
+                "return_extension",
+                "parameter_extensions",
+                "noinline",
+            },
+            f"structured scalar function #{index}",
+        )
+        expected_symbol = f"core0_user_{index}"
+        if function.get("source") != source or function.get("llvm") != expected_symbol:
+            raise Core0Error(f"structured scalar function #{index} has wrong source/symbol")
+        if _validate_signature(
+            function.get("signature"), f"structured function {source}"
+        ) != _scalar_signature(args, result):
+            raise Core0Error(f"structured scalar function {source} has wrong signature")
+        if function.get("dependencies") != list(dependencies):
+            raise Core0Error(f"structured scalar function {source} has wrong dependencies")
+        body = function.get("body")
+        if (
+            not isinstance(body, str)
+            or not body.startswith("(")
+            or not body.endswith(")")
+            or "\n" in body
+            or "\r" in body
+        ):
+            raise Core0Error(f"structured scalar function {source} lacks normalized body")
+        if function.get("return_extension") != _scalar_abi_extension(result):
+            raise Core0Error(f"structured scalar function {source} has wrong return extension")
+        if function.get("parameter_extensions") != [
+            _scalar_abi_extension(arg) for arg in args
+        ]:
+            raise Core0Error(f"structured scalar function {source} has wrong parameter extensions")
+        if function.get("noinline") is not True:
+            raise Core0Error(f"structured scalar function {source} is not pinned noinline")
+        source_symbols[source] = expected_symbol
+
+    roots = value.get("roots")
+    if not isinstance(roots, list) or len(roots) != len(CFG_ROOT_SOURCES):
+        raise Core0Error("structured scalar suite lacks its exact 44-root catalog")
+    contracts = {
+        source: (args, result)
+        for source, args, result, _dependencies in CFG_FUNCTION_CONTRACTS
+    }
+    for index, (root, source) in enumerate(zip(roots, CFG_ROOT_SOURCES)):
+        if not isinstance(root, dict):
+            raise Core0Error(f"structured scalar root #{index} is not an object")
+        _exact_keys(
+            root,
+            {
+                "root_id",
+                "source",
+                "llvm",
+                "signature",
+                "return_extension",
+                "parameter_extensions",
+            },
+            f"structured scalar root #{index}",
+        )
+        args, result = contracts[source]
+        if (
+            type(root.get("root_id")) is not int
+            or root.get("root_id") != index + 1
+            or root.get("source") != source
+            or root.get("llvm") != source_symbols[source]
+        ):
+            raise Core0Error(f"structured scalar root #{index} has wrong canonical identity")
+        if _validate_signature(
+            root.get("signature"), f"structured root {source}"
+        ) != _scalar_signature(args, result):
+            raise Core0Error(f"structured scalar root {source} has wrong signature")
+        if root.get("return_extension") != _scalar_abi_extension(result):
+            raise Core0Error(f"structured scalar root {source} has wrong return extension")
+        if root.get("parameter_extensions") != [
+            _scalar_abi_extension(arg) for arg in args
+        ]:
+            raise Core0Error(f"structured scalar root {source} has wrong parameter extensions")
+
+    primitives = value.get("used_primitives")
+    if not isinstance(primitives, list) or len(primitives) != len(CFG_USED_PRIMITIVES):
+        raise Core0Error("structured scalar primitive manifest has the wrong size")
+    seen: set[str] = set()
+    for index, primitive in enumerate(primitives):
+        if not isinstance(primitive, dict):
+            raise Core0Error(f"structured scalar primitive #{index} is not an object")
+        stable_id = primitive.get("stable_id")
+        if not isinstance(stable_id, str) or stable_id in seen:
+            raise Core0Error(f"structured scalar primitive #{index} has invalid identity")
+        if stable_id not in CFG_USED_PRIMITIVES or primitive != PRIMITIVE_CONTRACTS_V02.get(stable_id):
+            raise Core0Error(f"structured scalar primitive is unknown/malformed: {stable_id!r}")
+        seen.add(stable_id)
+    if seen != CFG_USED_PRIMITIVES:
+        raise Core0Error("structured scalar suite does not cover the exact primitive set")
+    if value.get("machine_primitives") != EXPECTED_SCALAR_MACHINE_PRIMITIVES:
+        raise Core0Error("structured suite machine primitives differ from exact allowlist")
+    return value
+
+
 def validate_scalar_test_abi(
     value: object, manifest: dict[str, object]
 ) -> dict[str, object]:
     if not isinstance(value, dict):
         raise Core0Error("scalar-test-abi.json is not an object")
-    _exact_keys(
-        value,
-        {
-            "schema_version",
-            "name",
-            "byte_order",
-            "magic_bytes",
-            "magic_word",
-            "version",
-            "header_bytes",
-            "record_bytes",
-            "maximum_arguments",
-            "maximum_cases",
-            "tags",
-            "header_words",
-            "record_layout",
-            "transport_rules",
-            "output_protocol",
-            "suite_id",
-            "source_seed",
-            "runtime_seed",
-        },
-        "scalar test ABI manifest",
-    )
+    contract_version = manifest.get("contract_version")
+    if contract_version not in {"core0-v0.1", "core0-v0.2"}:
+        raise Core0Error("scalar test ABI suite manifest has an unsupported Core0 contract")
+    expected_fields = {
+        "contract_version",
+        "schema_version",
+        "name",
+        "byte_order",
+        "magic_bytes",
+        "magic_word",
+        "version",
+        "header_bytes",
+        "record_bytes",
+        "maximum_arguments",
+        "maximum_cases",
+        "tags",
+        "header_words",
+        "record_layout",
+        "transport_rules",
+        "output_protocol",
+        "suite_id",
+        "source_seed",
+        "runtime_seed",
+    }
+    _exact_keys(value, expected_fields, "scalar test ABI manifest")
     static = {
+        "contract_version": contract_version,
         "schema_version": 1,
         "name": SCALAR_TEST_ABI,
         "byte_order": "little-endian",
@@ -1224,6 +1552,280 @@ def validate_scalar_post_noinline(
             raise Core0Error(f"optimized scalar function {symbol} lost its noinline attribute")
 
 
+def _structured_ir_blocks(body: str) -> dict[str, list[str]]:
+    blocks: dict[str, list[str]] = {}
+    current: str | None = None
+    for raw_line in body.splitlines():
+        label = re.fullmatch(r"([A-Za-z_.$][A-Za-z0-9_.$-]*):", raw_line.strip())
+        if label is not None:
+            current = label.group(1)
+            if current in blocks:
+                raise Core0Error(f"structured LLVM repeats block label {current!r}")
+            blocks[current] = []
+        elif raw_line.strip():
+            if current is None:
+                raise Core0Error("structured LLVM instruction precedes its first block label")
+            blocks[current].append(raw_line.strip())
+    if not blocks:
+        raise Core0Error("structured LLVM function has no parseable blocks")
+    return blocks
+
+
+def _structured_successors(blocks: dict[str, list[str]]) -> dict[str, tuple[str, ...]]:
+    """Parse the closed branch syntax rendered by Lemma's structured LLVM IR."""
+    successors: dict[str, tuple[str, ...]] = {}
+    for label, lines in blocks.items():
+        if not lines:
+            raise Core0Error(f"structured LLVM block {label!r} is empty")
+        terminator = lines[-1]
+        conditional = re.fullmatch(
+            r"br i1 [^,]+, label %([A-Za-z_.$][A-Za-z0-9_.$-]*), label %"
+            r"([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+            terminator,
+        )
+        jump = re.fullmatch(
+            r"br label %([A-Za-z_.$][A-Za-z0-9_.$-]*)", terminator
+        )
+        if conditional is not None:
+            successors[label] = conditional.groups()
+        elif jump is not None:
+            successors[label] = (jump.group(1),)
+        else:
+            successors[label] = ()
+    unknown = {
+        target
+        for targets in successors.values()
+        for target in targets
+        if target not in blocks
+    }
+    if unknown:
+        raise Core0Error(
+            f"structured LLVM branches to unknown blocks: {sorted(unknown)!r}"
+        )
+    return successors
+
+
+def _structured_predecessors(
+    successors: dict[str, tuple[str, ...]],
+) -> dict[str, set[str]]:
+    predecessors = {label: set() for label in successors}
+    for source, targets in successors.items():
+        for target in targets:
+            predecessors[target].add(source)
+    return predecessors
+
+
+def _structured_reachable(
+    successors: dict[str, tuple[str, ...]], start: str, target: str
+) -> bool:
+    pending = [start]
+    visited: set[str] = set()
+    while pending:
+        label = pending.pop()
+        if label == target:
+            return True
+        if label in visited:
+            continue
+        visited.add(label)
+        pending.extend(successors.get(label, ()))
+    return False
+
+
+def _normalized_shift_count_arguments(
+    normalized: str,
+) -> dict[tuple[str, str], list[str]]:
+    """Map each closed source shift to the LLVM parameter carrying its count.
+
+    The exact Gate 3 source catalog admits direct parameter operands for shifts.
+    Rejecting any other normalized shape keeps this independent audit fail-closed
+    instead of guessing how an arbitrary source expression maps to SSA.
+    """
+    result: dict[tuple[str, str], list[str]] = {}
+    pattern = re.compile(
+        r"\(bin (shl|lshr) (u8|u32|u64) "
+        r"\(var [0-9]+ (?:u8|u32|u64)\) "
+        r"\(var ([0-9]+) \2\)\)"
+    )
+    for operation, source_ty, variable in pattern.findall(normalized):
+        llvm_ty = {"u8": "i8", "u32": "i32", "u64": "i64"}[source_ty]
+        result.setdefault((operation, llvm_ty), []).append(f"%arg{variable}")
+    return result
+
+
+def validate_cfg_pre_semantics(
+    manifest: dict[str, object], pre_ir: str
+) -> dict[str, object]:
+    """Independently audit v0.2 source CFGs and poison-sensitive operations."""
+    functions = manifest["functions"]
+    assert isinstance(functions, list)
+    division_records: list[dict[str, object]] = []
+    shift_records: list[dict[str, object]] = []
+    source_branch_functions = 0
+    for function in functions:
+        assert isinstance(function, dict)
+        symbol = str(function["llvm"])
+        source = str(function["source"])
+        normalized = str(function["body"])
+        body = _ir_definition_body(pre_ir, symbol)
+        if re.search(r"\bselect\b", body):
+            raise Core0Error(f"v0.2 source function {source} contains eager LLVM select")
+        blocks = _structured_ir_blocks(body)
+        successors = _structured_successors(blocks)
+        predecessors = _structured_predecessors(successors)
+        normalized_shift_counts = _normalized_shift_count_arguments(normalized)
+        if "(ite " in normalized:
+            source_branch_functions += 1
+            if "br i1 " not in body or not any(
+                re.search(r"\bphi\s+i(?:1|8|32|64)\b", line)
+                for lines in blocks.values()
+                for line in lines
+            ):
+                raise Core0Error(
+                    f"v0.2 source conditional {source} lacks branch/phi lowering"
+                )
+
+        guard_edges: list[tuple[str, str, str, str, str]] = []
+        for guard_block, lines in blocks.items():
+            for index, line in enumerate(lines):
+                match = re.fullmatch(
+                    r"%([A-Za-z_.$][A-Za-z0-9_.$-]*) = icmp eq "
+                    r"(i(?:8|32|64)) ([^,]+), 0",
+                    line,
+                )
+                if match is None or index + 1 >= len(lines):
+                    continue
+                branch = re.fullmatch(
+                    rf"br i1 %{re.escape(match.group(1))}, label %"
+                    r"([A-Za-z_.$][A-Za-z0-9_.$-]*), label %"
+                    r"([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+                    lines[index + 1],
+                )
+                if branch is not None:
+                    guard_edges.append(
+                        (
+                            guard_block,
+                            match.group(2),
+                            match.group(3),
+                            branch.group(1),
+                            branch.group(2),
+                        )
+                    )
+
+        definitions: dict[str, tuple[str, int, str, str, str]] = {}
+        for block, lines in blocks.items():
+            for index, line in enumerate(lines):
+                definition = re.fullmatch(
+                    r"%([A-Za-z_.$][A-Za-z0-9_.$-]*) = and "
+                    r"(i(?:8|32|64)) ([^,]+), ([0-9]+)",
+                    line,
+                )
+                if definition is not None:
+                    definitions[definition.group(1)] = (
+                        block,
+                        index,
+                        definition.group(2),
+                        definition.group(3).strip(),
+                        definition.group(4),
+                    )
+
+        for block, lines in blocks.items():
+            for index, line in enumerate(lines):
+                dangerous = re.fullmatch(
+                    r"%[A-Za-z_.$][A-Za-z0-9_.$-]* = (udiv|urem) "
+                    r"(i(?:8|32|64)) ([^,]+), (.+)",
+                    line,
+                )
+                if dangerous is not None:
+                    operation, ty, divisor = dangerous.group(1, 2, 4)
+                    matching_guards = [
+                        edge for edge in guard_edges
+                        if edge[1] == ty and edge[2] == divisor and edge[4] == block
+                    ]
+                    if len(matching_guards) != 1:
+                        raise Core0Error(
+                            f"{source} {operation} in %{block} is not the unique false "
+                            "successor of an exact divisor-zero guard"
+                        )
+                    if matching_guards[0][3] == block:
+                        raise Core0Error(f"{source} {operation} executes on the zero edge")
+                    guard_block = matching_guards[0][0]
+                    if _structured_reachable(successors, matching_guards[0][3], block):
+                        raise Core0Error(
+                            f"{source} {operation} block %{block} is reachable from "
+                            "the divisor-zero successor"
+                        )
+                    if predecessors[block] != {guard_block}:
+                        raise Core0Error(
+                            f"{source} {operation} block %{block} has an unguarded "
+                            f"predecessor set {sorted(predecessors[block])!r}; expected "
+                            f"only %{guard_block}"
+                        )
+                    division_records.append(
+                        {
+                            "source": source,
+                            "operation": operation,
+                            "type": ty,
+                            "guard_block": matching_guards[0][0],
+                            "nonzero_block": block,
+                        }
+                    )
+                shift = re.fullmatch(
+                    r"%[A-Za-z_.$][A-Za-z0-9_.$-]* = (shl|lshr) "
+                    r"(i(?:8|32|64)) [^,]+, %([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+                    line,
+                )
+                if shift is not None:
+                    operation, ty, count_name = shift.groups()
+                    definition = definitions.get(count_name)
+                    expected_mask = {"i8": "7", "i32": "31", "i64": "63"}[ty]
+                    expected_counts = normalized_shift_counts.get((operation, ty), [])
+                    if (
+                        definition is None
+                        or definition[0] != block
+                        or definition[1] >= index
+                        or definition[2] != ty
+                        or definition[3] not in expected_counts
+                        or definition[4] != expected_mask
+                    ):
+                        raise Core0Error(
+                            f"{source} {operation} count is not produced by the exact "
+                            f"same-block source-count `{ty} and {expected_mask}` mask"
+                        )
+                    expected_counts.remove(definition[3])
+                    shift_records.append(
+                        {
+                            "source": source,
+                            "operation": operation,
+                            "type": ty,
+                            "block": block,
+                            "mask": int(expected_mask),
+                            "source_count": definition[3],
+                        }
+                    )
+        remaining_shift_counts = {
+            f"{operation}/{ty}": values
+            for (operation, ty), values in normalized_shift_counts.items()
+            if values
+        }
+        if remaining_shift_counts:
+            raise Core0Error(
+                f"{source} normalized shifts lack exact emitted masks: "
+                f"{remaining_shift_counts!r}"
+            )
+    if not division_records or not shift_records or source_branch_functions == 0:
+        raise Core0Error("v0.2 structured suite lacks division, shifts, or source conditionals")
+    observed_divisions = {str(record["operation"]) for record in division_records}
+    observed_shifts = {str(record["operation"]) for record in shift_records}
+    if observed_divisions != {"udiv", "urem"} or observed_shifts != {"shl", "lshr"}:
+        raise Core0Error("v0.2 structured suite does not cover every dangerous operation")
+    return {
+        "source_selects": 0,
+        "source_branch_functions": source_branch_functions,
+        "guarded_division_remainder": division_records,
+        "masked_shifts": shift_records,
+    }
+
+
 def _disassembly_function(disassembly: str, symbol: str) -> str:
     marker = f"<{symbol}>:"
     parts = disassembly.split(marker, 1)
@@ -1335,6 +1937,22 @@ def validate_scalar_abi_disassembly(
         "callee_stack_load_offsets": sorted(required_callee_offsets),
         "real_call": True,
     }
+
+
+def validate_cfg_machine_disassembly(disassembly: str) -> dict[str, object]:
+    """Require native integer operations for the v0.2 scalar closure."""
+    counts = {
+        "unsigned_divide": len(re.findall(r"\bdivu(?:w)?\b", disassembly)),
+        "unsigned_remainder": len(re.findall(r"\bremu(?:w)?\b", disassembly)),
+        "left_shift": len(re.findall(r"\bsll(?:i|w|iw)?\b", disassembly)),
+        "logical_right_shift": len(re.findall(r"\bsrl(?:i|w|iw)?\b", disassembly)),
+    }
+    missing = [name for name, count in counts.items() if count == 0]
+    if missing:
+        raise Core0Error(
+            "structured scalar machine code lacks native operations: " + ", ".join(missing)
+        )
+    return {"native_integer_instruction_counts": counts}
 
 
 def validate_manifest_companions(
@@ -1492,7 +2110,7 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
-    elif policy == TEST_FRONTEND_SUITE_POLICY:
+    elif policy in SCALAR_SUITE_POLICIES:
         required_artifacts = SCALAR_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
             raise Core0Error(
@@ -1521,9 +2139,12 @@ def audit(
         )
 
     scalar_test_abi: dict[str, object] | None = None
-    if policy == TEST_FRONTEND_SUITE_POLICY:
-        manifest = validate_scalar_suite_manifest(
-            load_json(paths["scalar-suite-manifest.json"])
+    if policy in SCALAR_SUITE_POLICIES:
+        raw_scalar_manifest = load_json(paths["scalar-suite-manifest.json"])
+        manifest = (
+            validate_scalar_suite_manifest(raw_scalar_manifest)
+            if policy == TEST_FRONTEND_SUITE_POLICY
+            else validate_cfg_suite_manifest(raw_scalar_manifest)
         )
         scalar_test_abi = validate_scalar_test_abi(
             load_json(paths["scalar-test-abi.json"]), manifest
@@ -1617,7 +2238,7 @@ def audit(
     if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
         raise Core0Error("provenance lacks a full Git source commit")
     scalar_export_configuration: dict[str, object] | None = None
-    if policy == TEST_FRONTEND_SUITE_POLICY:
+    if policy in SCALAR_SUITE_POLICIES:
         scalar_export_configuration = validate_scalar_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
@@ -1760,6 +2381,17 @@ def audit(
                 "freestanding batch execution"
             ),
         },
+        TEST_CFG_SUITE_POLICY: {
+            "kind": "test-cfg-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.2 suite through "
+                "validated structured control-flow lowering and the typed scalar harness"
+            ),
+            "purpose": (
+                "test-only structured CFG, total scalar-operation semantics, and "
+                "freestanding source/model/RV64 comparison"
+            ),
+        },
     }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
@@ -1864,10 +2496,16 @@ def audit(
     }
     expected_pre_definitions = manifest_user_symbols | MACHINE_IR_FUNCTIONS
     scalar_abi_ir: dict[str, object] | None = None
-    if policy == TEST_FRONTEND_SUITE_POLICY:
+    if policy in SCALAR_SUITE_POLICIES:
         scalar_abi_ir = validate_scalar_pre_abi(manifest, pre_ir)
         validate_scalar_post_noinline(manifest, post_ir)
-        source_identity = "Lemma Gate 2 typed scalar suite"
+        if policy == TEST_CFG_SUITE_POLICY:
+            scalar_abi_ir["structured_semantics"] = validate_cfg_pre_semantics(
+                manifest, pre_ir
+            )
+            source_identity = "Lemma Gate 3 structured scalar suite"
+        else:
+            source_identity = "Lemma Gate 2 typed scalar suite"
         root_llvm: str | None = None
     else:
         source_identity = str(manifest["root"])
@@ -1899,7 +2537,7 @@ def audit(
                 raise Core0Error(f"{label} IR contains an indirect or unparseable call: {line.strip()}")
         expected_externals = set(ALLOWED_EXTERNALS)
         if (
-            policy == TEST_FRONTEND_SUITE_POLICY
+            policy in SCALAR_SUITE_POLICIES
             and label == "post_optimization"
             and optimization == "O2"
         ):
@@ -1921,7 +2559,7 @@ def audit(
                 f"machine allowlist: {sorted(definitions)!r}"
             )
         if label == "post_optimization":
-            if policy == TEST_FRONTEND_SUITE_POLICY:
+            if policy in SCALAR_SUITE_POLICIES:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
                 assert root_llvm is not None
@@ -2117,6 +2755,8 @@ def audit(
         scalar_abi_machine = validate_scalar_abi_disassembly(
             manifest, disassembly, optimization
         )
+    elif policy == TEST_CFG_SUITE_POLICY:
+        scalar_abi_machine = validate_cfg_machine_disassembly(disassembly)
 
     map_text = paths["image.map"].read_text(encoding="utf-8", errors="strict")
     for name in expected_inputs:
@@ -2187,12 +2827,14 @@ def audit(
         allowed_relocations = set(ALLOWED_RELOCATIONS)
         expected_jump_table_relocations = 0
         if (
-            policy == TEST_FRONTEND_SUITE_POLICY
+            policy in SCALAR_SUITE_POLICIES
             and name == "program.o"
             and optimization == "O2"
         ):
             allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
-            expected_jump_table_relocations = len(SCALAR_ROOT_SOURCES)
+            manifest_roots = manifest["roots"]
+            assert isinstance(manifest_roots, list)
+            expected_jump_table_relocations = len(manifest_roots)
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
@@ -2200,7 +2842,7 @@ def audit(
             )
         if "R_RISCV_RELAX" in relocation_text:
             raise Core0Error(f"{name} contains relaxation relocations despite the no-relax policy")
-        if policy == TEST_FRONTEND_SUITE_POLICY and name == "program.o":
+        if policy in SCALAR_SUITE_POLICIES and name == "program.o":
             current_section: str | None = None
             jump_table_rows: list[str] = []
             for line in relocation_text.splitlines():

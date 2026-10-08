@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.2",
+  "legacy_profile": "core0-v0.1",
+  "cases": [
+    {
+      "name": "custom-division-instance",
+      "path": "examples/foundation/gate3-reject/CustomDivision.lean",
+      "diagnostic_code": "invalid-primitive-instance",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "u64.udiv used a non-allowlisted instance",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.CustomDivision.root"
+      ]
+    },
+    {
+      "name": "custom-remainder-instance",
+      "path": "examples/foundation/gate3-reject/CustomRemainder.lean",
+      "diagnostic_code": "invalid-primitive-instance",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "u32.urem used a non-allowlisted instance",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.CustomRemainder.root"
+      ]
+    },
+    {
+      "name": "custom-left-shift-instance",
+      "path": "examples/foundation/gate3-reject/CustomLeftShift.lean",
+      "diagnostic_code": "invalid-primitive-instance",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "u8.shl used a non-allowlisted instance",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.CustomLeftShift.root"
+      ]
+    },
+    {
+      "name": "custom-right-shift-instance",
+      "path": "examples/foundation/gate3-reject/CustomRightShift.lean",
+      "diagnostic_code": "invalid-primitive-instance",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "u64.lshr used a non-allowlisted instance",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.CustomRightShift.root"
+      ]
+    },
+    {
+      "name": "custom-complement-instance",
+      "path": "examples/foundation/gate3-reject/CustomComplement.lean",
+      "diagnostic_code": "invalid-primitive-instance",
+      "required_fragments": [
+        "Core0[invalid-primitive-instance]",
+        "u64.complement used a non-allowlisted Complement instance",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.CustomComplement.root"
+      ]
+    },
+    {
+      "name": "signed-division",
+      "path": "examples/foundation/gate3-reject/SignedDivision.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "Core0[unsupported-type]",
+        "parameter `x` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.SignedDivision.root"
+      ]
+    },
+    {
+      "name": "unsupported-uint16-width",
+      "path": "examples/foundation/gate3-reject/UnsupportedWidth.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "Core0[unsupported-type]",
+        "parameter `x` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.UnsupportedWidth.root"
+      ]
+    },
+    {
+      "name": "branch-hidden-arbitrary-extern",
+      "path": "examples/foundation/gate3-reject/BranchHiddenExtern.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Core0[unsupported-declaration]",
+        "has an arbitrary @[extern] implementation",
+        "dependency path: Lemma.Examples.Foundation.Gate3Reject.BranchHiddenExtern.root -> Lemma.Examples.Foundation.Gate3Reject.BranchHiddenExtern.helper -> Lemma.Examples.Foundation.Gate3Reject.BranchHiddenExtern.foreignStep"
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "name": "unsupported-profile-parser-and-model",
+      "path": "examples/foundation/gate3-reject/UnsupportedProfileModel.lean",
+      "required_fragments": [
+        "Core0 reference[invalid-checked-ir]",
+        "unsupported Core0 contract `core0-v0.3`",
+        "call stack: unsupportedProfileRoot"
+      ]
+    }
+  ]
+}

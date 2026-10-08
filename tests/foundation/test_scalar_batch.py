@@ -402,6 +402,7 @@ class RunBatchTests(unittest.TestCase):
             json.dumps(
                 {
                     "artifact_category": "test-frontend-suite",
+                    "contract_version": "core0-v0.1",
                     **identity,
                     "roots": [
                         {
@@ -418,7 +419,14 @@ class RunBatchTests(unittest.TestCase):
             encoding="utf-8",
         )
         (self.artifacts / "scalar-test-abi.json").write_text(
-            json.dumps({"name": "lemma-scalar-test-v1", **identity}), encoding="utf-8"
+            json.dumps(
+                {
+                    "name": "lemma-scalar-test-v1",
+                    "contract_version": "core0-v0.1",
+                    **identity,
+                }
+            ),
+            encoding="utf-8",
         )
         (self.artifacts / "provenance.json").write_text(
             json.dumps({"artifact_category": "test-frontend-suite"}), encoding="utf-8"
@@ -605,6 +613,58 @@ class RunBatchTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(core0_common.Core0Error, "identity/signature"):
             run_scalar_batch.validate_image_binding(self.image, forged)
+
+    def test_structured_profile_category_is_bound_without_changing_wire_abi(self) -> None:
+        manifest_path = self.artifacts / "scalar-suite-manifest.json"
+        abi_path = self.artifacts / "scalar-test-abi.json"
+        provenance_path = self.artifacts / "provenance.json"
+        build_path = self.artifacts / "build.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        abi = json.loads(abi_path.read_text(encoding="utf-8"))
+        manifest.update(
+            artifact_category="test-cfg-suite", contract_version="core0-v0.2"
+        )
+        abi["contract_version"] = "core0-v0.2"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        abi_path.write_text(json.dumps(abi), encoding="utf-8")
+        provenance_path.write_text(
+            json.dumps({"artifact_category": "test-cfg-suite"}), encoding="utf-8"
+        )
+        build_path.write_text(
+            json.dumps(
+                {
+                    "artifact_category": "test-cfg-suite",
+                    "artifacts": {
+                        name: core0_common.sha256(self.artifacts / name)
+                        for name in (
+                            "image.elf",
+                            "scalar-suite-manifest.json",
+                            "scalar-test-abi.json",
+                        )
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        run_scalar_batch.validate_image_binding(self.image, self.descriptor)
+
+        manifest["contract_version"] = "core0-v0.1"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(core0_common.Core0Error, "profile disagrees"):
+            run_scalar_batch.validate_image_binding(self.image, self.descriptor)
+
+    def test_legacy_scalar_abi_requires_its_exact_profile(self) -> None:
+        abi_path = self.artifacts / "scalar-test-abi.json"
+        abi = json.loads(abi_path.read_text(encoding="utf-8"))
+        for profile in ("core0-v0.2", "core0-v9.9", None):
+            with self.subTest(profile=profile):
+                if profile is None:
+                    abi.pop("contract_version", None)
+                else:
+                    abi["contract_version"] = profile
+                abi_path.write_text(json.dumps(abi), encoding="utf-8")
+                with self.assertRaisesRegex(core0_common.Core0Error, "profile disagrees"):
+                    run_scalar_batch.validate_image_binding(self.image, self.descriptor)
 
     def test_test_only_raw_fixture_path_records_exact_guest_rejection(self) -> None:
         raw_fixture = replace_u64(run_scalar_batch.pack_fixture(self.descriptor), 0, 0)

@@ -3,8 +3,9 @@
 
 Only gates whose complete construction and evidence checks exist are accepted by
 this driver. Gate 1 exercises quarantined compiler faults; Gate 2 adds the
-versioned typed multi-root source/model/RV64 conformance pipeline. Both routes
-use genuine Lean elaboration, structured lowering, audited images, and QEMU.
+versioned typed multi-root source/model/RV64 conformance pipeline; Gate 3 adds
+the versioned structured-CFG scalar path. All routes use genuine Lean
+elaboration, audited images, and QEMU.
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from core0_common import (
 )
 from run_core0 import run_case
 from check_foundation_gate2 import Gate2Failure, check_gate2
+from check_foundation_gate3 import Gate3Failure, check_gate3
 
 
 U64_MAX = (1 << 64) - 1
@@ -961,15 +963,15 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--qemu-timeout", type=float, default=5.0)
     ns = parser.parse_args()
-    if ns.phase is not None and ns.phase not in {1, 2}:
-        parser.error("only completed phases 1 and 2 are implemented; later gates fail closed")
+    if ns.phase is not None and ns.phase not in {1, 2, 3}:
+        parser.error("only completed phases 1, 2, and 3 are implemented; later gates fail closed")
     root = repo_root()
 
     def resolve(path: Path) -> Path:
         return (root / path).resolve() if not path.is_absolute() else path.resolve()
 
     work = resolve(ns.work_dir)
-    selected_gate = 2 if ns.phase == 2 else 1
+    selected_gate = ns.phase if ns.phase is not None else 1
     try:
         # `--all` owns this one exact aggregate output. Remove an earlier PASS
         # before either child gate starts so a failed cumulative rerun is fail-closed.
@@ -995,8 +997,28 @@ def main() -> int:
                 timeout_seconds=ns.timeout,
                 qemu_timeout=ns.qemu_timeout,
             )
-            report = {"schema_version": 1, "status": "pass", "gates": [gate1, gate2]}
+            selected_gate = 3
+            gate3 = check_gate3(
+                root=root,
+                work=work / "gate3",
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
+            report = {
+                "schema_version": 1,
+                "status": "pass",
+                "gates": [gate1, gate2, gate3],
+            }
             write_json(work / "all-results.json", report)
+        elif ns.phase == 3:
+            report = check_gate3(
+                root=root,
+                work=work,
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
         elif ns.phase == 2:
             report = check_gate2(
                 root=root,
@@ -1022,7 +1044,7 @@ def main() -> int:
             "gate": selected_gate,
             "error": str(error),
         }
-        if isinstance(error, (Gate1Failure, Gate2Failure)):
+        if isinstance(error, (Gate1Failure, Gate2Failure, Gate3Failure)):
             failure_record["failure_category"] = error.category
             failure_record["failure_context"] = error.context
             failure_record["failure_detail"] = error.detail
@@ -1034,8 +1056,17 @@ def main() -> int:
         print(f"FOUNDATION CHECK FAIL: {error}", file=sys.stderr)
         return 1
     if ns.all:
-        print("FOUNDATION GATES 1-2 PASS")
+        print("FOUNDATION GATES 1-3 PASS")
         print(f"evidence: {work / 'all-results.json'}")
+    elif ns.phase == 3:
+        counts = report["counts"]
+        assert isinstance(counts, dict)
+        print(
+            "FOUNDATION GATE 3 PASS: "
+            f"{counts['roots']} roots; {counts['cases_per_profile']} cases/profile; "
+            f"{counts['qemu_boots_total']} QEMU boots"
+        )
+        print(f"evidence: {work / 'gate3-results.json'}")
     elif ns.phase == 2:
         counts = report["counts"]
         assert isinstance(counts, dict)

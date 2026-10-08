@@ -13,6 +13,26 @@ namespace Lemma.Core0
 
 open Lean
 
+/-- Closed, versioned source-language profiles.  New operations are never made
+available by silently changing the meaning of an older contract string. -/
+inductive Profile where
+  | v0_1
+  | v0_2
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace Profile
+
+def contractVersion : Profile → String
+  | .v0_1 => "core0-v0.1"
+  | .v0_2 => "core0-v0.2"
+
+def ofContractVersion? : String → Option Profile
+  | "core0-v0.1" => some .v0_1
+  | "core0-v0.2" => some .v0_2
+  | _ => none
+
+end Profile
+
 /-- Runtime scalar types admitted by Core0 v0.1. -/
 inductive Ty where
   | bool
@@ -48,6 +68,10 @@ inductive BinOp where
   | band
   | bor
   | bxor
+  | shl
+  | lshr
+  | udiv
+  | urem
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace BinOp
@@ -59,8 +83,23 @@ def render : BinOp → String
   | .band => "and"
   | .bor => "or"
   | .bxor => "xor"
+  | .shl => "shl"
+  | .lshr => "lshr"
+  | .udiv => "udiv"
+  | .urem => "urem"
 
 end BinOp
+
+inductive UnaryOp where
+  | complement
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace UnaryOp
+
+def render : UnaryOp → String
+  | .complement => "complement"
+
+end UnaryOp
 
 inductive CmpOp where
   | eq
@@ -98,6 +137,7 @@ inductive Expr where
   | boolLit (value : Bool)
   | letE (id : Nat) (name : Name) (ty : Ty) (value body : Expr)
   | bin (op : BinOp) (ty : Ty) (lhs rhs : Expr)
+  | unary (op : UnaryOp) (ty : Ty) (value : Expr)
   | cmp (op : CmpOp) (operandTy : Ty) (lhs rhs : Expr)
   | ite (resultTy : Ty) (cond thenBranch elseBranch : Expr)
   | call (callee : Name) (resultTy : Ty) (args : List Expr)
@@ -110,6 +150,7 @@ def Expr.type : Expr → Ty
   | .boolLit _ => .bool
   | .letE _ _ _ _ body => body.type
   | .bin _ ty _ _ => ty
+  | .unary _ ty _ => ty
   | .cmp .. => .bool
   | .ite ty _ _ _ => ty
   | .call _ ty _ => ty
@@ -126,6 +167,8 @@ def Expr.renderNormalized : Expr → String
       s!"(let {id} {name} {ty.render} {value.renderNormalized} {body.renderNormalized})"
   | .bin op ty lhs rhs =>
       s!"(bin {op.render} {ty.render} {lhs.renderNormalized} {rhs.renderNormalized})"
+  | .unary op ty value =>
+      s!"(unary {op.render} {ty.render} {value.renderNormalized})"
   | .cmp op operandTy lhs rhs =>
       s!"(cmp {op.render} {operandTy.render} {lhs.renderNormalized} {rhs.renderNormalized})"
   | .ite resultTy cond thenBranch elseBranch =>

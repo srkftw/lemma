@@ -147,8 +147,14 @@ def _safe_repo_file(root: Path, relative: object, *, suffix: str) -> Path:
 
 def load_rejections(path: Path, root: Path) -> tuple[RejectionCase, ...]:
     raw = load_json(path)
-    if not isinstance(raw, dict) or raw.get("schema_version") != 1:
+    if not isinstance(raw, dict):
+        raise Core0Error("rejection manifest is not an object")
+    if set(raw) != {"schema_version", "profile", "cases"}:
+        raise Core0Error("rejection manifest fields differ from the closed schema")
+    if raw.get("schema_version") != 1:
         raise Core0Error("rejection manifest has an unsupported schema")
+    if raw.get("profile") != "core0-v0.1":
+        raise Core0Error("rejection manifest has an unsupported Core0 profile")
     values = raw.get("cases")
     if not isinstance(values, list) or not values:
         raise Core0Error("rejection corpus is empty")
@@ -158,6 +164,8 @@ def load_rejections(path: Path, root: Path) -> tuple[RejectionCase, ...]:
     for index, item in enumerate(values):
         if not isinstance(item, dict):
             raise Core0Error(f"rejection #{index} is not an object")
+        if set(item) != {"name", "path", "required_fragments"}:
+            raise Core0Error(f"rejection #{index} fields differ from the closed schema")
         name = item.get("name")
         if not isinstance(name, str) or not name or name in names:
             raise Core0Error(f"rejection #{index} has an empty or duplicate name")

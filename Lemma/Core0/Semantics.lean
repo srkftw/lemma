@@ -117,7 +117,24 @@ private def evalBin (stack : List Name) (op : BinOp) (ty : Ty)
     | .band => Nat.land lhs.value rhs.value
     | .bor => Nat.lor lhs.value rhs.value
     | .bxor => Nat.xor lhs.value rhs.value
+    | .shl => lhs.value * 2 ^ (rhs.value % ty.width)
+    | .lshr => lhs.value / 2 ^ (rhs.value % ty.width)
+    | .udiv => if rhs.value == 0 then 0 else lhs.value / rhs.value
+    | .urem => if rhs.value == 0 then lhs.value else lhs.value % rhs.value
   pure (.scalar { ty, value := result % modulus })
+
+private def evalUnary (stack : List Name) (op : UnaryOp) (ty : Ty)
+    (value : Value) : Except EvalDiagnostic Value := do
+  unless ty.isInteger do
+    evalFail stack .invalidCheckedIR s!"{op.render} cannot operate on Bool"
+  let value ← expectScalar stack ty value
+  let result := match op with
+    | .complement => Nat.xor value.value (Scalar.modulus ty - 1)
+  pure (.scalar { ty, value := Scalar.normalize ty result })
+
+private def isV02OnlyBin : BinOp → Bool
+  | .shl | .lshr | .udiv | .urem => true
+  | _ => false
 
 private def evalCmp (stack : List Name) (op : CmpOp) (ty : Ty)
     (lhs rhs : Value) : Except EvalDiagnostic Value := do
@@ -153,9 +170,18 @@ mutual
         expectType stack ty value
         evalExpr fuel program stack ((id, value) :: locals) body
     | .bin op ty lhs rhs =>
+        if program.contractVersion == Profile.v0_1.contractVersion && isV02OnlyBin op then
+          evalFail stack .invalidCheckedIR
+            s!"{op.render} is not available in {Profile.v0_1.contractVersion}"
         let lhs ← evalExpr fuel program stack locals lhs
         let rhs ← evalExpr fuel program stack locals rhs
         evalBin stack op ty lhs rhs
+    | .unary op ty value =>
+        if program.contractVersion == Profile.v0_1.contractVersion then
+          evalFail stack .invalidCheckedIR
+            s!"{op.render} is not available in {Profile.v0_1.contractVersion}"
+        let value ← evalExpr fuel program stack locals value
+        evalUnary stack op ty value
     | .cmp op ty lhs rhs =>
         let lhs ← evalExpr fuel program stack locals lhs
         let rhs ← evalExpr fuel program stack locals rhs
@@ -212,7 +238,13 @@ end
 
 /-- Evaluate a checked root with Bool/integer values. -/
 def evalProgram (program : Program) (args : Array Value) : Except EvalDiagnostic Value :=
-  evalFunction 65536 program [] program.root args
+  match Profile.ofContractVersion? program.contractVersion with
+  | none => .error {
+      code := .invalidCheckedIR
+      message := s!"unsupported Core0 contract `{program.contractVersion}`"
+      callStack := [program.root]
+    }
+  | some _ => evalFunction 65536 program [] program.root args
 
 /-- Scalar-only convenience entry point used by the differential target harness. -/
 def evalProgramScalars (program : Program) (args : Array Scalar) :

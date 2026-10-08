@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -14,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import audit_core0  # noqa: E402
+import check_core0  # noqa: E402
 from core0_common import Core0Error  # noqa: E402
 
 
@@ -76,6 +78,7 @@ def manifest_fixture() -> dict[str, object]:
 def abi_fixture(manifest: dict[str, object]) -> dict[str, object]:
     return {
         "schema_version": 1,
+        "contract_version": manifest["contract_version"],
         "name": audit_core0.SCALAR_TEST_ABI,
         "byte_order": "little-endian",
         "magic_bytes": "4c454d4d41303032",
@@ -250,6 +253,27 @@ class ScalarAuditTests(unittest.TestCase):
                 with self.assertRaisesRegex(Core0Error, diagnostic):
                     audit_core0.validate_scalar_test_abi(tampered, self.manifest)
 
+    def test_wire_abi_requires_the_exact_supported_profile(self) -> None:
+        for profile in ("core0-v0.2", "core0-v9.9", "", None):
+            with self.subTest(profile=profile):
+                tampered = abi_fixture(self.manifest)
+                tampered["contract_version"] = profile
+                with self.assertRaisesRegex(Core0Error, "contract_version differs"):
+                    audit_core0.validate_scalar_test_abi(tampered, self.manifest)
+
+        missing = abi_fixture(self.manifest)
+        del missing["contract_version"]
+        with self.assertRaisesRegex(Core0Error, "fields differ from the schema"):
+            audit_core0.validate_scalar_test_abi(missing, self.manifest)
+
+        unsupported_manifest = copy.deepcopy(self.manifest)
+        unsupported_manifest["contract_version"] = "core0-v9.9"
+        matching_unknown = abi_fixture(unsupported_manifest)
+        with self.assertRaisesRegex(Core0Error, "unsupported Core0 contract"):
+            audit_core0.validate_scalar_test_abi(
+                matching_unknown, unsupported_manifest
+            )
+
     def test_export_configuration_is_bound_to_manifest_seeds(self) -> None:
         value = {
             "driver": audit_core0.SCALAR_EXPORT_DRIVER,
@@ -324,6 +348,46 @@ class ScalarAuditTests(unittest.TestCase):
                     audit_core0.validate_scalar_abi_disassembly(
                         self.manifest, tampered, "O2"
                     )
+
+
+class LegacyRejectionManifestTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.path = ROOT / "tests/core0/rejections.json"
+        self.manifest = json.loads(self.path.read_text(encoding="utf-8"))
+
+    def validate_mutation(self, value: dict[str, object]) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "rejections.json"
+            path.write_text(json.dumps(value), encoding="utf-8")
+            check_core0.load_rejections(path, ROOT)
+
+    def test_exact_legacy_profile_manifest_is_accepted(self) -> None:
+        self.assertEqual(set(self.manifest), {"schema_version", "profile", "cases"})
+        self.assertEqual(self.manifest["profile"], "core0-v0.1")
+        self.assertTrue(check_core0.load_rejections(self.path, ROOT))
+
+    def test_legacy_rejection_manifest_rejects_profile_and_schema_extensions(self) -> None:
+        for profile in ("core0-v0.2", "core0-v9.9", "", None):
+            with self.subTest(profile=profile):
+                tampered = copy.deepcopy(self.manifest)
+                tampered["profile"] = profile
+                with self.assertRaisesRegex(Core0Error, "unsupported Core0 profile"):
+                    self.validate_mutation(tampered)
+
+        missing = copy.deepcopy(self.manifest)
+        del missing["profile"]
+        with self.assertRaisesRegex(Core0Error, "fields differ from the closed schema"):
+            self.validate_mutation(missing)
+
+        extended = copy.deepcopy(self.manifest)
+        extended["contract_version"] = "core0-v0.1"
+        with self.assertRaisesRegex(Core0Error, "fields differ from the closed schema"):
+            self.validate_mutation(extended)
+
+        case_extended = copy.deepcopy(self.manifest)
+        case_extended["cases"][0]["profile"] = "core0-v0.1"
+        with self.assertRaisesRegex(Core0Error, "fields differ from the closed schema"):
+            self.validate_mutation(case_extended)
 
 
 if __name__ == "__main__":

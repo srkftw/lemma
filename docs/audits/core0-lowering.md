@@ -62,6 +62,45 @@ digits); the post-optimization audit inventories those inferred flags and still 
 and generic memory access have no Core0 IR constructor and are rejected.  This avoids
 importing accidental LLVM poison or a compiler helper whose behavior was not specified.
 
+## Additive Core0 v0.2 scalar and control-flow profile
+
+Task 002 adds `core0-v0.2`; it does not change the `core0-v0.1` rules above.  The
+profile is selected explicitly, recorded in the checked-suite and typed-ABI
+manifests, and rejected when unknown.  The frontend still accepts only the closed,
+exact primitive identities and signatures recorded by the checker.  In addition to
+all v0.1 scalar operations, v0.2 admits fixed-width complement, left shift, logical
+right shift, unsigned division, and unsigned remainder for `UInt8`, `UInt32`, and
+`UInt64`.  Signed arithmetic remains unsupported.
+
+For a width `w`, v0.2 gives the new operations these total source semantics:
+
+| Core0 operation | Source/model result | Pre-optimization LLVM rule |
+| --- | --- | --- |
+| complement | low `w` bits of bitwise complement | `xor` with the all-ones `i<w>` value |
+| left shift | `(value << (count % w)) mod 2^w` | mask the actual count operand with `w - 1`, then `shl` |
+| logical right shift | `value >> (count % w)` | mask the actual count operand with `w - 1`, then `lshr` |
+| unsigned division | `0` when divisor is zero; otherwise unsigned quotient | branch on divisor; execute `udiv` only in the nonzero block; merge with zero using `phi` |
+| unsigned remainder | dividend when divisor is zero; otherwise unsigned remainder | branch on divisor; execute `urem` only in the nonzero block; merge with the dividend using `phi` |
+
+The count mask is exact for the supported power-of-two widths.  The compiler does
+not rely on a later `select` to hide an invalid LLVM shift or division.  Its structured
+lowerer emits basic blocks with one terminator each, explicit predecessor edges, and
+merge `phi` nodes.  The validator checks labels, terminators, branch targets,
+predecessor sets, phi incoming labels and types, SSA uniqueness, use-before-definition,
+dominance, call signatures, and return types before LLVM text is exported.  Every
+source conditional also uses branch-and-merge lowering in this profile, so only the
+chosen branch executes.  LLVM may later fold a safe pure branch back to a `select`;
+the audit instead requires that every remaining `udiv`, `urem`, `shl`, and `lshr`
+stays within LLVM's operand domain.
+
+The pre-optimization audit rejects source-emitted `nsw`, `nuw`, `inbounds`, exact
+division, and other unproved promises.  It additionally verifies that each division
+or remainder is dominated by its nonzero-divisor edge, that the zero edge cannot
+reach the dangerous instruction, and that each shift consumes a mask of the same
+normalized source count operand.  The v0.2 corpus exercises the retained v0.1
+operations through this new lowerer as well as the five new operations.  These
+checks and finite executions are not a proof of whole-compiler correctness.
+
 ## Machine boundary
 
 Machine effects do not masquerade as source primitives.  Separate Lean-authored

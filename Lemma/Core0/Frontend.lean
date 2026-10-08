@@ -100,7 +100,25 @@ private def directBinName (ty : Ty) (op : BinOp) : Name :=
   | .u64, .band => ``UInt64.land
   | .u64, .bor => ``UInt64.lor
   | .u64, .bxor => ``UInt64.xor
+  | .u8, .shl => ``UInt8.shiftLeft
+  | .u8, .lshr => ``UInt8.shiftRight
+  | .u8, .udiv => ``UInt8.div
+  | .u8, .urem => ``UInt8.mod
+  | .u32, .shl => ``UInt32.shiftLeft
+  | .u32, .lshr => ``UInt32.shiftRight
+  | .u32, .udiv => ``UInt32.div
+  | .u32, .urem => ``UInt32.mod
+  | .u64, .shl => ``UInt64.shiftLeft
+  | .u64, .lshr => ``UInt64.shiftRight
+  | .u64, .udiv => ``UInt64.div
+  | .u64, .urem => ``UInt64.mod
   | .bool, _ => .anonymous
+
+private def directComplementName : Ty → Name
+  | .u8 => ``UInt8.complement
+  | .u32 => ``UInt32.complement
+  | .u64 => ``UInt64.complement
+  | .bool => .anonymous
 
 private def directCmpName (ty : Ty) (op : CmpOp) : Name :=
   match ty, op with
@@ -163,6 +181,28 @@ def primitiveAllowlist : Array PrimitiveSpec := Id.run do
     }
   return specs
 
+/-- `core0-v0.2` is an additive scalar profile.  Keeping a distinct allowlist
+lets manifests and audits reject accidental version/operation mismatches. -/
+def primitiveAllowlistV02 : Array PrimitiveSpec := Id.run do
+  let mut specs := primitiveAllowlist
+  for ty in #[Ty.u8, Ty.u32, Ty.u64] do
+    for op in #[BinOp.shl, .lshr, .udiv, .urem] do
+      specs := specs.push {
+        stableId := s!"{ty.render}.{op.render}"
+        leanDecl := directBinName ty op
+        signature := binarySig ty ty
+      }
+    specs := specs.push {
+      stableId := s!"{ty.render}.complement"
+      leanDecl := directComplementName ty
+      signature := singletonSig ty ty
+    }
+  return specs
+
+def primitiveAllowlistFor : Profile → Array PrimitiveSpec
+  | .v0_1 => primitiveAllowlist
+  | .v0_2 => primitiveAllowlistV02
+
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
   | e => e
@@ -191,6 +231,7 @@ private def sourcePosition? (env : Environment) (decl : Name) : Option String :=
 
 private structure LowerContext where
   env : Environment
+  profile : Profile
   root : Name
   declaration : Name
   path : List Name
@@ -258,7 +299,7 @@ private def expectedArithmeticInstance (ty : Ty) (op : BinOp) : Option (Name × 
   | .bxor, .u8 => some (``instHXorOfXorOp, ``instXorOpUInt8)
   | .bxor, .u32 => some (``instHXorOfXorOp, ``instXorOpUInt32)
   | .bxor, .u64 => some (``instHXorOfXorOp, ``instXorOpUInt64)
-  | _, .bool => none
+  | _, _ => none
 
 private def wrapperBinOp? (name : Name) : Option BinOp :=
   if name == ``HAdd.hAdd then some .add
@@ -274,6 +315,53 @@ private def directBinOp? (name : Name) : Option (Ty × BinOp) := Id.run do
     for op in #[BinOp.add, .sub, .mul, .band, .bor, .bxor] do
       if name == directBinName ty op then return some (ty, op)
   return none
+
+private def wrapperV02BinOp? (name : Name) : Option BinOp :=
+  if name == ``HShiftLeft.hShiftLeft then some .shl
+  else if name == ``HShiftRight.hShiftRight then some .lshr
+  else if name == ``HDiv.hDiv then some .udiv
+  else if name == ``HMod.hMod then some .urem
+  else none
+
+private def directV02BinOp? (name : Name) : Option (Ty × BinOp) := Id.run do
+  for ty in #[Ty.u8, Ty.u32, Ty.u64] do
+    for op in #[BinOp.shl, .lshr, .udiv, .urem] do
+      if name == directBinName ty op then return some (ty, op)
+  return none
+
+private def expectedV02BinInstance (ty : Ty) (op : BinOp) : Option (Name × Name) :=
+  match op, ty with
+  | .shl, .u8 => some (``instHShiftLeftOfShiftLeft, ``instShiftLeftUInt8)
+  | .shl, .u32 => some (``instHShiftLeftOfShiftLeft, ``instShiftLeftUInt32)
+  | .shl, .u64 => some (``instHShiftLeftOfShiftLeft, ``instShiftLeftUInt64)
+  | .lshr, .u8 => some (``instHShiftRightOfShiftRight, ``instShiftRightUInt8)
+  | .lshr, .u32 => some (``instHShiftRightOfShiftRight, ``instShiftRightUInt32)
+  | .lshr, .u64 => some (``instHShiftRightOfShiftRight, ``instShiftRightUInt64)
+  | .udiv, .u8 => some (``instHDiv, ``instDivUInt8)
+  | .udiv, .u32 => some (``instHDiv, ``instDivUInt32)
+  | .udiv, .u64 => some (``instHDiv, ``instDivUInt64)
+  | .urem, .u8 => some (``instHMod, ``instModUInt8)
+  | .urem, .u32 => some (``instHMod, ``instModUInt32)
+  | .urem, .u64 => some (``instHMod, ``instModUInt64)
+  | _, _ => none
+
+private def checkV02BinInstance (ctx : LowerContext) (ty : Ty) (op : BinOp)
+    (instanceExpr : Lean.Expr) : LowerM Unit := do
+  let some (outerName, operationName) := expectedV02BinInstance ty op
+    | fail ctx .invalidPrimitiveInstance s!"no {op.render} instance is allowed for {ty.render}"
+  let some (actualOuter, args) := appView? instanceExpr
+    | fail ctx .invalidPrimitiveInstance s!"{ty.render}.{op.render} did not use the standard instance"
+  unless actualOuter == outerName && args.size == 2 do
+    fail ctx .invalidPrimitiveInstance s!"{ty.render}.{op.render} used a non-allowlisted instance"
+  unless typeExpr? args[0]! == some ty && constName? args[1]! == some operationName do
+    fail ctx .invalidPrimitiveInstance
+      s!"{ty.render}.{op.render} used a non-allowlisted operation dictionary"
+
+private def complementInstanceName : Ty → Name
+  | .u8 => ``instComplementUInt8
+  | .u32 => ``instComplementUInt32
+  | .u64 => ``instComplementUInt64
+  | .bool => .anonymous
 
 private def checkArithmeticInstance (ctx : LowerContext) (ty : Ty) (op : BinOp)
     (instanceExpr : Lean.Expr) : LowerM Unit := do
@@ -534,6 +622,55 @@ mutual
       markPrimitive s!"{ty.render}.{op.render}"
       pure (.bin op ty lhs rhs)
 
+    else if ctx.profile == .v0_2 && (wrapperV02BinOp? name).isSome then
+      let some op := wrapperV02BinOp? name
+        | fail ctx .internal "v0.2 binary wrapper match disappeared"
+      unless args.size == 6 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let some ty := typeExpr? args[0]!
+        | fail ctx .unsupportedType s!"`{name}` operand is not a Core0 integer"
+      unless ty.isInteger && typeExpr? args[1]! == some ty && typeExpr? args[2]! == some ty do
+        fail ctx .typeMismatch s!"`{name}` is not homogeneous on an admitted integer type"
+      checkV02BinInstance ctx ty op args[3]!
+      let lhs ← lowerExpr fuel ctx args[4]!
+      let rhs ← lowerExpr fuel ctx args[5]!
+      ensureType ctx ty lhs
+      ensureType ctx ty rhs
+      markPrimitive s!"{ty.render}.{op.render}"
+      pure (.bin op ty lhs rhs)
+
+    else if ctx.profile == .v0_2 && (directV02BinOp? name).isSome then
+      let some (ty, op) := directV02BinOp? name
+        | fail ctx .internal "v0.2 direct binary match disappeared"
+      unless args.size == 2 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let lhs ← lowerExpr fuel ctx args[0]!
+      let rhs ← lowerExpr fuel ctx args[1]!
+      ensureType ctx ty lhs
+      ensureType ctx ty rhs
+      markPrimitive s!"{ty.render}.{op.render}"
+      pure (.bin op ty lhs rhs)
+
+    else if ctx.profile == .v0_2 && name == ``Complement.complement then
+      unless args.size == 3 do fail ctx .arityMismatch "malformed complement application"
+      let some ty := typeExpr? args[0]!
+        | fail ctx .unsupportedType "complement operand is not a Core0 integer"
+      unless ty.isInteger && constName? args[1]! == some (complementInstanceName ty) do
+        fail ctx .invalidPrimitiveInstance
+          s!"{ty.render}.complement used a non-allowlisted Complement instance"
+      let value ← lowerExpr fuel ctx args[2]!
+      ensureType ctx ty value
+      markPrimitive s!"{ty.render}.complement"
+      pure (.unary .complement ty value)
+
+    else if ctx.profile == .v0_2 &&
+        (#[Ty.u8, Ty.u32, Ty.u64].any fun ty => name == directComplementName ty) then
+      let some ty := #[Ty.u8, Ty.u32, Ty.u64].find? fun ty => name == directComplementName ty
+        | fail ctx .internal "v0.2 direct complement match disappeared"
+      unless args.size == 1 do fail ctx .arityMismatch s!"malformed `{name}` application"
+      let value ← lowerExpr fuel ctx args[0]!
+      ensureType ctx ty value
+      markPrimitive s!"{ty.render}.complement"
+      pure (.unary .complement ty value)
+
     else
       let mut cast? : Option (Ty × Ty) := none
       for pair in #[(Ty.u8, Ty.u32), (.u8, .u64), (.u32, .u8), (.u32, .u64), (.u64, .u8), (.u64, .u32)] do
@@ -583,9 +720,9 @@ mutual
 
 end
 
-private def lowerFunction (env : Environment) (root : Name) (name : Name)
+private def lowerFunction (env : Environment) (profile : Profile) (root : Name) (name : Name)
     (path : List Name) : Except Diagnostic (Function × Array String) := do
-  let baseCtx : LowerContext := { env, root, declaration := name, path, locals := #[] }
+  let baseCtx : LowerContext := { env, profile, root, declaration := name, path, locals := #[] }
   let some info := env.find? name
     | throw <| mkDiagnostic baseCtx .unknownDeclaration s!"declaration `{name}` is not in the Lean environment"
   if (getExternAttrData? env name).isSome then
@@ -659,7 +796,8 @@ private inductive VisitTask where
 Read a Lean-elaborated declaration and its transitive declaration bodies, reject all
 operations outside Core0, and return dependency-first checked IR.
 -/
-def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program := do
+def checkAndLowerForProfile (env : Environment) (profile : Profile) (root : Name) :
+    Except Diagnostic Program := do
   let mut stack : List VisitTask := [.enter root [root]]
   let mut visiting : List Name := []
   let mut done : List Name := []
@@ -675,11 +813,13 @@ def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program 
           if done.contains name then
             pure ()
           else if visiting.contains name then
-            let ctx : LowerContext := { env, root, declaration := name, path, locals := #[] }
+            let ctx : LowerContext := {
+              env, profile, root, declaration := name, path, locals := #[]
+            }
             throw <| mkDiagnostic ctx .recursiveDependency
               s!"recursive/cyclic dependency reaches `{name}`" path
           else
-            let (function, used) ← lowerFunction env root name path
+            let (function, used) ← lowerFunction env profile root name path
             visiting := name :: visiting
             for primitive in used do
               unless usedPrimitives.contains primitive do
@@ -693,12 +833,17 @@ def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program 
           unless done.contains function.name do
             done := function.name :: done
             functions := functions.push function
-  pure { root, functions, usedPrimitives }
+  pure { contractVersion := profile.contractVersion, root, functions, usedPrimitives }
+
+/-- Historical Task 001/Core0 v0.1 entry point. -/
+def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program :=
+  checkAndLowerForProfile env .v0_1 root
 
 /-- Check several genuine elaborated roots with the unchanged Core0 v0.1 frontend,
 then form one deterministic, dependency-first corpus.  Shared declarations are keyed
 by exact Lean identity and must lower identically from every root that reaches them. -/
-def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
+def checkAndLowerSuiteForProfile (env : Environment) (profile : Profile)
+    (declaredRoots : Array Name) :
     Except Diagnostic CheckedSuite := do
   unless !declaredRoots.isEmpty do
     throw {
@@ -722,8 +867,8 @@ def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
         message := s!"checked suite declares duplicate root `{root}`"
       }
     seenRoots := seenRoots.push root
-    let program ← checkAndLower env root
-    unless program.contractVersion == "core0-v0.1" do
+    let program ← checkAndLowerForProfile env profile root
+    unless program.contractVersion == profile.contractVersion do
       throw {
         code := .invalidSuite
         root
@@ -770,6 +915,16 @@ def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
     for primitive in program.usedPrimitives do
       unless usedPrimitives.contains primitive do
         usedPrimitives := usedPrimitives.push primitive
-  pure { roots, functions, usedPrimitives }
+  pure {
+    contractVersion := profile.contractVersion
+    roots
+    functions
+    usedPrimitives
+  }
+
+/-- Historical Gate 2/Core0 v0.1 suite entry point. -/
+def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedSuite :=
+  checkAndLowerSuiteForProfile env .v0_1 declaredRoots
 
 end Lemma.Core0

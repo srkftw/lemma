@@ -53,6 +53,10 @@ TYPE_MAX = {
     "u64": (1 << 64) - 1,
 }
 U64_MAX = TYPE_MAX["u64"]
+IMAGE_ARTIFACT_PROFILES = {
+    "test-frontend-suite": "core0-v0.1",
+    "test-cfg-suite": "core0-v0.2",
+}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\Z")
 HEX16 = rb"([0-9a-f]{16})"
 BATCH_LINE = re.compile(
@@ -531,17 +535,25 @@ def validate_image_binding(image: Path, descriptor: ScalarBatchDescriptor) -> No
     abi = load_json(directory / "scalar-test-abi.json")
     provenance = load_json(directory / "provenance.json")
     build_record = load_json(directory / "build.json")
-    if not isinstance(manifest, dict) or manifest.get("artifact_category") != "test-frontend-suite":
+    if not isinstance(manifest, dict):
+        raise Core0Error("image scalar-suite manifest is not an object")
+    artifact_category = manifest.get("artifact_category")
+    expected_profile = IMAGE_ARTIFACT_PROFILES.get(artifact_category)
+    if expected_profile is None:
         raise Core0Error("image scalar-suite manifest has the wrong artifact category")
+    if manifest.get("contract_version") != expected_profile:
+        raise Core0Error("image scalar-suite manifest profile disagrees with its artifact category")
     if not isinstance(abi, dict) or abi.get("name") != "lemma-scalar-test-v1":
         raise Core0Error("image scalar test ABI manifest is missing or unsupported")
+    if abi.get("contract_version") != expected_profile:
+        raise Core0Error("image scalar test ABI profile disagrees with its artifact category")
     if (
         not isinstance(provenance, dict)
-        or provenance.get("artifact_category") != "test-frontend-suite"
+        or provenance.get("artifact_category") != artifact_category
         or not isinstance(build_record, dict)
-        or build_record.get("artifact_category") != "test-frontend-suite"
+        or build_record.get("artifact_category") != artifact_category
     ):
-        raise Core0Error("image provenance/build category is not test-frontend-suite")
+        raise Core0Error("image provenance/build category disagrees with the suite manifest")
 
     identities = (
         ("suite_id", descriptor.suite_id),

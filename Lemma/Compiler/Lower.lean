@@ -68,6 +68,10 @@ private def llvmBinOp : Lemma.Core0.BinOp → LLVM.BinOp
   | .band => .and
   | .bor => .or
   | .bxor => .xor
+  | .shl => .shl
+  | .lshr => .lshr
+  | .udiv => .udiv
+  | .urem => .urem
 
 private def llvmCmpOp : Lemma.Core0.CmpOp → LLVM.Predicate
   | .eq => .eq
@@ -125,11 +129,15 @@ private def lowerExpr (abi : LoweringABI) (functions : Array Lemma.Core0.Functio
       let value ← lowerExpr abi functions symbols value
       withLocal id value (lowerExpr abi functions symbols body)
   | .bin op ty lhs rhs => do
+      if op == .shl || op == .lshr || op == .udiv || op == .urem then
+        throw s!"{op.render} requires structured {Lemma.Core0.Profile.v0_2.contractVersion} lowering"
       let lhs ← lowerExpr abi functions symbols lhs
       let rhs ← lowerExpr abi functions symbols rhs
       let result ← fresh "bin"
       emit (.bin result (llvmBinOp op) (llvmTy ty) lhs rhs)
       pure (.local result)
+  | .unary op _ _ =>
+      throw s!"{op.render} requires structured {Lemma.Core0.Profile.v0_2.contractVersion} lowering"
   | .cmp op operandTy lhs rhs => do
       let lhs ← lowerExpr abi functions symbols lhs
       let rhs ← lowerExpr abi functions symbols rhs
@@ -217,6 +225,8 @@ private def lowerFunction (symbols : Array Symbol) (root : Lean.Name)
   }
 
 def lowerApplication (program : Lemma.Core0.Program) : Except String LoweredApplication := do
+  unless program.contractVersion == Lemma.Core0.Profile.v0_1.contractVersion do
+    throw s!"legacy lowering requires `{Lemma.Core0.Profile.v0_1.contractVersion}`, got `{program.contractVersion}`"
   unless !program.functions.isEmpty do
     throw "checked Core0 program has an empty function corpus"
   let symbols := program.functions.mapIdx fun index function =>
