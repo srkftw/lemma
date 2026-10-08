@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T02:05:25-07:00",
+  "updated_at": "2026-10-08T03:08:52-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,10 +9,10 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 2,
+  "highest_passing_gate": 3,
   "latest_clean_passing_source": {
-    "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
-    "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
+    "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+    "tree": "ef80a9cdf95e150606344ee84551128231092937",
     "clean": true
   },
   "gates": [
@@ -73,6 +73,19 @@
         "artifact": {
           "path": "build/foundation/gates1-2-clean/gate1/gate1-results.json",
           "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
+        }
+      },
+      "latest_cumulative_verification": {
+        "source": {
+          "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+          "tree": "ef80a9cdf95e150606344ee84551128231092937",
+          "clean": true
+        },
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+        "exit_code": 0,
+        "artifact": {
+          "path": "build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json",
+          "sha256": "d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46"
         }
       },
       "tests": {
@@ -149,6 +162,19 @@
         "same_symbol_map": true,
         "same_pre_optimization_ir": true
       },
+      "latest_cumulative_verification": {
+        "source": {
+          "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+          "tree": "ef80a9cdf95e150606344ee84551128231092937",
+          "clean": true
+        },
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+        "exit_code": 0,
+        "artifact": {
+          "path": "build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json",
+          "sha256": "b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf"
+        }
+      },
       "notes": [
         "Direct-source, checked-model, and RV64 results agree across the recorded matrix.",
         "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker; they are not absolutely independent proof systems.",
@@ -159,12 +185,133 @@
     {
       "gate": 3,
       "name": "structured control flow and scalar operations",
-      "status": "in-progress",
-      "source": null,
-      "commands": [],
-      "artifacts": [],
-      "tests": {},
-      "notes": ["No Gate 3 passing claim has been made."]
+      "status": "passed",
+      "source": {
+        "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+        "tree": "ef80a9cdf95e150606344ee84551128231092937",
+        "clean": true
+      },
+      "commands": [
+        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 26, "compile_time_cfg_checks": 29},
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass", "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "result": "pass", "tests": 125},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
+        {"command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 3 --work-dir build/foundation/gate3-clean-9519adc --clean --timeout 180 --qemu-timeout 5", "exit_code": 0, "result": "pass", "clean_status_output": "## task/002-machine-foundation", "roots": 44, "cases_per_profile": 708, "fresh_qemu_boots": 88},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10", "exit_code": 0, "result": "pass", "gate_1_fresh_qemu_boots": 24, "gate_2_fresh_qemu_boots": 136, "gate_3_fresh_qemu_boots": 88}
+      ],
+      "artifacts": [
+        {"path": "build/foundation/gate3-clean-9519adc/gate3-results.json", "sha256": "82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c", "role": "authoritative_focused_report"},
+        {"path": "build/foundation/gate3-clean-9519adc/corpus/gate3-cases.json", "sha256": "54b81d6a0b2279a15743bde72cce92b43b63cbffbaceec031f8b544ff9bba85a"},
+        {"path": "build/foundation/gate3-clean-9519adc/O0/audit.json", "sha256": "9d41571fe1667da1e05f5f05af556bde3408495d100c896829256d96e621761a"},
+        {"path": "build/foundation/gate3-clean-9519adc/O0/image.elf", "sha256": "48c3c1b04a5532d8cb441a824b8aa68532598c6eeea8c234cdccf07a34ebb2c0"},
+        {"path": "build/foundation/gate3-clean-9519adc/O0/program.ll", "sha256": "9e3053f7dbceb2c4cd423e3e29056afaf0710431ca848f8aab43aa9fed18cf2b"},
+        {"path": "build/foundation/gate3-clean-9519adc/O0/program.opt.ll", "sha256": "0414c988cd850b7a9e4bd892767562797be9b0719de1744c52800073024311c7"},
+        {"path": "build/foundation/gate3-clean-9519adc/O2/audit.json", "sha256": "03fa90658dc63a483007860a424f4af20c6b980ca071a5c541f13e4686d030f5"},
+        {"path": "build/foundation/gate3-clean-9519adc/O2/image.elf", "sha256": "4e14cae828732613cbaa427905bdffc508a5060a78b7118d3e439472de8ab7f1"},
+        {"path": "build/foundation/gate3-clean-9519adc/O2/program.ll", "sha256": "9e3053f7dbceb2c4cd423e3e29056afaf0710431ca848f8aab43aa9fed18cf2b"},
+        {"path": "build/foundation/gate3-clean-9519adc/O2/program.opt.ll", "sha256": "06f09dcca3ce1df8afc4e2fc56e13e8231a59d45e482c4cc3980b419afa59e85"},
+        {"path": "build/foundation/gates1-3-clean-9519adc/all-results.json", "sha256": "023ed2f602194dbf376de335fc8a507a0b496727b85498dde2ce0049915dea34", "role": "cumulative_gates_1_3"},
+        {"path": "build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json", "sha256": "d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46"},
+        {"path": "build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json", "sha256": "b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf"},
+        {"path": "build/foundation/gates1-3-clean-9519adc/gate3/gate3-results.json", "sha256": "707315b5875d12f2a0c1dd33276ff35f143d0aafae0ad20ce44b8a8e315df4a6"},
+        {"path": "build/core0/check/check-results.json", "sha256": "a8812a1ea1b2b1c2794d088d25a1fb5f8e878bfd022bd93a71159f04f46e0daa", "role": "legacy_core0_regression"}
+      ],
+      "tests": {
+        "contract_version": "core0-v0.2",
+        "legacy_contract_version": "core0-v0.1",
+        "test_abi": "lemma-scalar-test-v1",
+        "suite_id": "0xb15c8d071a8dc520",
+        "source_seed": "0x4c454d4d41333033",
+        "runtime_seed": "0x52554e54494d4533",
+        "optimization_profiles": ["O0", "O2"],
+        "roots": 44,
+        "functions": 47,
+        "used_primitives": 49,
+        "primitive_notation_direct_pairs": 15,
+        "distinct_cases_per_profile": 708,
+        "batches_per_profile": 44,
+        "qemu_boots_per_profile": 44,
+        "total_fresh_qemu_boots": 88,
+        "direct_source_model_matches": 708,
+        "source_model_target_matches": 1416,
+        "result_sha256": "eabc0c7033b47f1d96c2df0164195e10221886447989b4152287fa65f858b4a9",
+        "metamorphic_pairs": 15,
+        "pinned_source_probes": 18,
+        "legacy_profile_rejections": 13,
+        "new_profile_rejections": 8,
+        "unsupported_profile_probes": 1,
+        "scalar_lemmas_checked": 8,
+        "cfg_mutants_detected": 6,
+        "profile_mutants_detected": 1,
+        "audited_pre_optimization_calls": 51,
+        "audited_guarded_division_remainder_sites": 18,
+        "audited_masked_shift_sites": 18,
+        "audited_source_branch_functions": 8,
+        "audited_source_selects": 0,
+        "legacy_core0": {"cases_per_profile": 10, "rejections": 13, "fresh_qemu_boots": 23}
+      },
+      "source_equivalence": {
+        "profiles": ["O0", "O2"],
+        "same_clean_source_commit": true,
+        "same_checked_suite_manifest": true,
+        "same_normalized_suite": true,
+        "same_typed_abi": true,
+        "same_symbol_map": true,
+        "same_pre_optimization_ir": true,
+        "checked_suite_manifest_sha256": "0b6ab4f9051c9f688236e771a8d5b3dc24baf09500b3807f804f50eefb068b62",
+        "normalized_suite_sha256": "804b3bc0cd5e7608e0f613d2736c9dc36e6ed54c2cd533cabc62b831fc530836",
+        "typed_abi_sha256": "b1beaa206470404f55c6a1b1fec8efb1fd26d7967495671034a113eed06fa515",
+        "symbol_map_sha256": "ac4ab5a6da285c70ba30617c2a57114674336bdf780dddd27e6aa0b17cff6cc4",
+        "pre_optimization_ir_sha256": "9e3053f7dbceb2c4cd423e3e29056afaf0710431ca848f8aab43aa9fed18cf2b"
+      },
+      "pinned_source_semantics": {
+        "lean_version": "Lean (version 4.34.1, Release)",
+        "lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+        "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94",
+        "lean_runtime_header_sha256": "866d80c309a9945b401e61fcf335a3b8545fb75c8b0a8b721fb1d3d3143d5d9c",
+        "probe_source_sha256": "2d45bfa0bd410c3bbfb0f4694c50191e06e4a7f60060851ae4fb34d13a710e82",
+        "probe_stdout_sha256": "f6f6edc79d777fef3d6df66d721df9f91876d41e78877366a2118fae308a067e",
+        "division_by_zero": "zero",
+        "remainder_by_zero": "dividend",
+        "shift_counts": "modulo_width",
+        "complement": "fixed_width"
+      },
+      "scalar_lemmas": {
+        "source_sha256": "6fa63d2d99f94092eb96942c294deaef7b5f0d17e2e0c5ce5989a3847a459497",
+        "dependency_probe_source_sha256": "c0978395ea7deb6aa254e705cec63c9096f2c0c82a273e71e031db869ea0562d",
+        "dependency_probe_stdout_sha256": "f7b2ebfe4a7eeafdb60b823a29fffc05da67b9f3b2780932b9107e37e10adfd8",
+        "theorem_count": 8,
+        "scope": "local scalar invariants; not a proof of compiler correctness"
+      },
+      "toolchain": {
+        "lock_path": "tooling/toolchain-lock.json",
+        "lock_sha256": "314fa2842766f300308c8a703581a1f07f12eb2332f9e63bb2e96e7c58230872",
+        "lean_toolchain_sha256": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+        "flake_lock_sha256": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+        "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
+        "lean": {"version": "4.34.1", "lake_version": "5.0.0-src", "source_ref": "v4.34.1", "revision": "5045d0056413266e57c625dcd7c365b10e377c52", "binary_githash_available": false},
+        "llvm_clang_lld": {"version": "20.1.8", "source_ref": "llvmorg-20.1.8", "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261", "tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8"},
+        "qemu": {"version": "11.1.1", "source_ref": "v11.1.1", "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943", "tag_object": "5e35f26695645b20931e10d8567c7e0169e62c07"},
+        "dtc_version": "1.8.1",
+        "python_version": "3.14.7",
+        "jq_version": "1.8.2",
+        "nix_version": "2.31.2",
+        "target": {"triple": "riscv64-unknown-elf", "llvm_triple": "riscv64-unknown-unknown-elf", "abi": "lp64", "machine": "virt", "isa": "rv64im_zicsr_zifencei"}
+      },
+      "unit_mapping": {
+        "stage": 1,
+        "directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
+        "regression_only": ["1.2", "1.6"],
+        "statuses_remain": "partial"
+      },
+      "notes": [
+        "The six IR mutations cover wrong guard operand, inverted guard edges, reachability from the zero edge, an alternate dangerous predecessor, a wrong shift mask, and a wrong shift-count source; the seventh mutation rejects an unsupported contract version.",
+        "The local lemmas, finite corpus, and audit checks do not prove compiler correctness or full semantic preservation.",
+        "This profile adds no signed arithmetic, loop, memory, trap, managed-runtime, scheduler, or physical-board claim.",
+        "This advances only partial Stage I units and does not complete G1 or G2."
+      ]
     },
     {"gate": 4, "name": "bounded iteration", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},

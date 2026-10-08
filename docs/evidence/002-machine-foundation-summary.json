@@ -2,17 +2,38 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 2,
-  "next_gate": {
-    "gate": 3,
-    "status": "in-progress"
-  },
+  "highest_passing_gate": 3,
+  "next_gate": {"gate": 4, "status": "not-started", "name": "bounded iteration"},
   "source": {
-    "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
-    "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
+    "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+    "tree": "ef80a9cdf95e150606344ee84551128231092937",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
+  "commands": [
+    {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "lean_build_jobs": 26, "compile_time_cfg_validator_checks": 29},
+    {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
+    {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "tests": 18},
+    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "tests": 21},
+    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "tests": 125},
+    {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "cases_per_profile": 10, "rejections": 13, "qemu_boots": 23},
+    {
+      "command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 3 --work-dir build/foundation/gate3-clean-9519adc --clean --timeout 180 --qemu-timeout 5",
+      "exit_code": 0,
+      "clean_status_output": "## task/002-machine-foundation",
+      "roots": 44,
+      "cases_per_profile": 708,
+      "qemu_boots": 88
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+      "exit_code": 0,
+      "highest_gate": 3,
+      "gate_1_qemu_boots": 24,
+      "gate_2_qemu_boots": 136,
+      "gate_3_qemu_boots": 88
+    }
+  ],
   "gate_0": {
     "source_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
     "source_tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75",
@@ -20,7 +41,6 @@
   },
   "gate_1": {
     "first_passing_implementation": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
-    "cumulative_clean_source": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
     "closed_faults": 6,
     "optimization_profiles": ["O0", "O2"],
     "control_builds": 2,
@@ -30,9 +50,15 @@
     "verified_behavioral_mismatches": 12,
     "intended_rejections": 3,
     "audit_regressions": 7,
-    "aggregate": {
+    "historical_aggregate": {
+      "source_commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
       "path": "build/foundation/gates1-2-clean/gate1/gate1-results.json",
       "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
+    },
+    "current_cumulative_aggregate": {
+      "source_commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+      "path": "build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json",
+      "sha256": "d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46"
     }
   },
   "gate_2": {
@@ -69,15 +95,111 @@
       "real_call_retained_o0": true,
       "real_call_retained_o2": true
     },
-    "profiles": {
-      "O0": {
-        "audit_sha256": "26fccf1bafee4b03e24a95ba7b32df3765dd985bc09fa370f4df8c73f32de2c0",
-        "image_sha256": "84ad3a6e5c0397d460bb272ebbfe64c1e3d94e5c0d8fe06907e254ba96b35d48"
+    "historical_aggregate": {
+      "source_commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
+      "path": "build/foundation/gates1-2-clean/gate2/gate2-results.json",
+      "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
+    },
+    "current_cumulative_aggregate": {
+      "source_commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
+      "path": "build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json",
+      "sha256": "b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf"
+    }
+  },
+  "gate_3": {
+    "contract_version": "core0-v0.2",
+    "legacy_contract_version": "core0-v0.1",
+    "test_abi": "lemma-scalar-test-v1",
+    "suite_id": "0xb15c8d071a8dc520",
+    "source_seed": "0x4c454d4d41333033",
+    "runtime_seed": "0x52554e54494d4533",
+    "roots": 44,
+    "functions": 47,
+    "used_primitives": 49,
+    "cases_per_profile": 708,
+    "batches_per_profile": 44,
+    "qemu_boots_per_profile": 44,
+    "qemu_boots_total": 88,
+    "direct_source_model_matches": 708,
+    "source_model_target_matches": 1416,
+    "result_sha256": "eabc0c7033b47f1d96c2df0164195e10221886447989b4152287fa65f858b4a9",
+    "metamorphic_pairs": 15,
+    "pinned_source_probes": 18,
+    "legacy_profile_rejections": 13,
+    "new_profile_rejections": 8,
+    "unsupported_profile_probes": 1,
+    "scalar_lemmas_checked": 8,
+    "cfg_mutants_detected": 6,
+    "profile_mutants_detected": 1,
+    "corpus": {"path": "build/foundation/gate3-clean-9519adc/corpus/gate3-cases.json", "sha256": "54b81d6a0b2279a15743bde72cce92b43b63cbffbaceec031f8b544ff9bba85a"},
+    "pinned_source_semantics": {
+      "probe_names": [
+        "u32-complement", "u32-div-zero", "u32-rem-zero", "u32-shl-width", "u32-shl-width-plus-one", "u32-shr-max-count",
+        "u64-complement", "u64-div-zero", "u64-rem-zero", "u64-shl-width", "u64-shl-width-plus-one", "u64-shr-max-count",
+        "u8-complement", "u8-div-zero", "u8-rem-zero", "u8-shl-width", "u8-shl-width-plus-one", "u8-shr-max-count"
+      ],
+      "division_by_zero": "zero",
+      "remainder_by_zero": "dividend",
+      "shift_counts": "modulo_width",
+      "complement": "fixed_width",
+      "source_sha256": "2d45bfa0bd410c3bbfb0f4694c50191e06e4a7f60060851ae4fb34d13a710e82",
+      "stdout_sha256": "f6f6edc79d777fef3d6df66d721df9f91876d41e78877366a2118fae308a067e",
+      "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94",
+      "lean_runtime_header_sha256": "866d80c309a9945b401e61fcf335a3b8545fb75c8b0a8b721fb1d3d3143d5d9c"
+    },
+    "negative_profiles": {
+      "core0-v0.1": 13,
+      "core0-v0.2": {
+        "count": 8,
+        "names": ["custom-division-instance", "custom-remainder-instance", "custom-left-shift-instance", "custom-right-shift-instance", "custom-complement-instance", "signed-division", "unsupported-uint16-width", "branch-hidden-arbitrary-extern"]
       },
-      "O2": {
-        "audit_sha256": "c29900d25bffdf71e0543cd58fd93dc3a6a3a5eb246c5d45657c6f667d000efc",
-        "image_sha256": "6ea70385af020d53edf40e19bb7b0f74a9eca4cb2890b7e0b8bfed5d6c7c0cb9"
+      "unsupported-profile-probes": ["unsupported-profile-parser-and-model"]
+    },
+    "cfg_audit": {
+      "validator": "Lemma.Compiler.LLVM.validateModule",
+      "division": "zero-guarded",
+      "shift_counts": "masked-to-width",
+      "source_conditionals": "branch-phi",
+      "pre_optimization_call_sites": 51,
+      "guarded_division_remainder_sites": 18,
+      "masked_shift_sites": 18,
+      "source_branch_functions": 8,
+      "source_selects": 0,
+      "emitter_poison_sensitive_flags": {"inbounds": 0, "nsw": 0, "nuw": 0},
+      "post_optimization_flags": {
+        "O0": {"inbounds": 0, "nsw": 0, "nuw": 0},
+        "O2": {"inbounds": 0, "nsw": 518, "nuw": 622}
+      },
+      "native_integer_instruction_counts": {
+        "O0": {"left_shift": 90, "logical_right_shift": 67, "unsigned_divide": 9, "unsigned_remainder": 9},
+        "O2": {"left_shift": 44, "logical_right_shift": 53, "unsigned_divide": 9, "unsigned_remainder": 9}
       }
+    },
+    "audit_mutations": [
+      {"name": "wrong-divisor-guard-operand", "kind": "wrong-guard", "mutant_ir_sha256": "f842cdeec0f3d67bd9dda9781717372e03e6d71b967c14cdf4d6eed7313c9058", "required_diagnostic": "not the unique false successor", "status": "detected"},
+      {"name": "inverted-divisor-guard-edges", "kind": "wrong-guard", "mutant_ir_sha256": "7cfa67adca6f0072bee9e6efa7cc809e7eb3c9a40e608b91f50390c5ecd4dfa9", "required_diagnostic": "not the unique false successor", "status": "detected"},
+      {"name": "zero-edge-reaches-dangerous-block", "kind": "wrong-guard", "mutant_ir_sha256": "f7d14d3032903698fba215517c458b7dfbbc1c61a7c6fd3f66f83b66c6895773", "required_diagnostic": "reachable from the divisor-zero successor", "status": "detected"},
+      {"name": "unguarded-dangerous-block-predecessor", "kind": "wrong-guard", "mutant_ir_sha256": "86b81cb40b018fcca5e58df810ea0385b2d06b153b3970a3f5e0659a28b6039b", "required_diagnostic": "unguarded predecessor set", "status": "detected"},
+      {"name": "wrong-shift-count-mask", "kind": "wrong-count-handling", "mutant_ir_sha256": "839e6f54ba4b23aaeeacf48a08d615e1dacc933ee5fee632e478745e427e6daf", "required_diagnostic": "same-block source-count", "status": "detected"},
+      {"name": "wrong-shift-count-source", "kind": "wrong-count-handling", "mutant_ir_sha256": "e5f182911f2c9764b74d393c0da96d25a2a845fb3f321c7b4cc842616d8dd71c", "required_diagnostic": "same-block source-count", "status": "detected"},
+      {"name": "unsupported-contract-version", "kind": "profile-version", "mutant_ir_sha256": null, "required_diagnostic": "unsupported Core0 contract", "status": "detected"}
+    ],
+    "scalar_lemmas": {
+      "source": "Lemma/Core0/ScalarLemmas.lean",
+      "source_sha256": "6fa63d2d99f94092eb96942c294deaef7b5f0d17e2e0c5ce5989a3847a459497",
+      "dependency_probe_source_sha256": "c0978395ea7deb6aa254e705cec63c9096f2c0c82a273e71e031db869ea0562d",
+      "dependency_probe_stdout_sha256": "f7b2ebfe4a7eeafdb60b823a29fffc05da67b9f3b2780932b9107e37e10adfd8",
+      "scope": "local scalar invariants; not a proof of compiler correctness",
+      "theorems": [
+        {"name": "fixedWidthNormalize_lt", "axioms": []},
+        {"name": "fixedWidthNormalize_idempotent", "axioms": ["propext"]},
+        {"name": "maskedShiftCount_lt", "axioms": []},
+        {"name": "shiftCountMask_eq_mod", "axioms": ["propext", "Classical.choice", "Quot.sound"]},
+        {"name": "shiftCountMask_lt", "axioms": ["propext", "Classical.choice", "Quot.sound"]},
+        {"name": "u8ToU32ToU8", "axioms": ["propext"]},
+        {"name": "u8ToU64ToU8", "axioms": ["propext"]},
+        {"name": "u32ToU64ToU32", "axioms": ["propext"]}
+      ]
     },
     "source_equivalence": {
       "clean": true,
@@ -86,45 +208,87 @@
       "same_normalized_suite": true,
       "same_typed_abi": true,
       "same_symbol_map": true,
-      "same_pre_optimization_ir": true
+      "same_pre_optimization_ir": true,
+      "checked_manifest_sha256": "0b6ab4f9051c9f688236e771a8d5b3dc24baf09500b3807f804f50eefb068b62",
+      "normalized_suite_sha256": "804b3bc0cd5e7608e0f613d2736c9dc36e6ed54c2cd533cabc62b831fc530836",
+      "typed_abi_sha256": "b1beaa206470404f55c6a1b1fec8efb1fd26d7967495671034a113eed06fa515",
+      "symbol_map_sha256": "ac4ab5a6da285c70ba30617c2a57114674336bdf780dddd27e6aa0b17cff6cc4",
+      "program_ll_sha256": "9e3053f7dbceb2c4cd423e3e29056afaf0710431ca848f8aab43aa9fed18cf2b"
     },
-    "aggregate": {
-      "path": "build/foundation/gates1-2-clean/gate2/gate2-results.json",
-      "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
-    }
+    "profiles": {
+      "O0": {
+        "audit_sha256": "9d41571fe1667da1e05f5f05af556bde3408495d100c896829256d96e621761a",
+        "build_sha256": "450b12a9ed04af1a8240162dc24dea5571550ce1b07af729700ea1cb0878a6e3",
+        "image_sha256": "48c3c1b04a5532d8cb441a824b8aa68532598c6eeea8c234cdccf07a34ebb2c0",
+        "optimized_ir_sha256": "0414c988cd850b7a9e4bd892767562797be9b0719de1744c52800073024311c7",
+        "provenance_sha256": "f42efcff8b580e6f2e24aca581d80eebf80c6b38f7989fb79365b27378826136",
+        "inventory_sha256": "292be3c76884e82f9528991c607a11abf1bfe299175ec2d8f133d5bfbc3e7974"
+      },
+      "O2": {
+        "audit_sha256": "03fa90658dc63a483007860a424f4af20c6b980ca071a5c541f13e4686d030f5",
+        "build_sha256": "ad3f4b26515159ebbfe3d9c8a93cf7318f03f1f720239ffb2bed7e5658e2cb2a",
+        "image_sha256": "4e14cae828732613cbaa427905bdffc508a5060a78b7118d3e439472de8ab7f1",
+        "optimized_ir_sha256": "06f09dcca3ce1df8afc4e2fc56e13e8231a59d45e482c4cc3980b419afa59e85",
+        "provenance_sha256": "191b84c7619c4ff8a3a0305822365d8089dd4debc558dea378d664da65cb7b8a",
+        "inventory_sha256": "356de353298f1e9c85973872a4ed210c07461eb27761d34ccb3312272045e3c8"
+      }
+    },
+    "focused_aggregate": {"path": "build/foundation/gate3-clean-9519adc/gate3-results.json", "sha256": "82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c"},
+    "cumulative_aggregate": {"path": "build/foundation/gates1-3-clean-9519adc/gate3/gate3-results.json", "sha256": "707315b5875d12f2a0c1dd33276ff35f143d0aafae0ad20ce44b8a8e315df4a6"}
   },
   "cumulative_foundation": {
-    "path": "build/foundation/gates1-2-clean/all-results.json",
-    "sha256": "45ba122a148518e76062512f7358d536c16924f1bd881380d69c4819da02a158"
+    "path": "build/foundation/gates1-3-clean-9519adc/all-results.json",
+    "sha256": "023ed2f602194dbf376de335fc8a507a0b496727b85498dde2ce0049915dea34"
   },
-  "cumulative_regression": {
-    "lean_build_jobs": 20,
-    "scaffold_tests": 18,
-    "core0_host_tests": 21,
-    "foundation_host_tests": 86,
-    "core0_cases_per_profile": 10,
-    "core0_expected_rejections": 13,
-    "core0_fresh_qemu_boots": 23,
-    "aggregate": {
-      "path": "build/core0/check/check-results.json",
-      "sha256": "30a4b52daf4703df172137eef828a5b6d4052efa42b7cc6c95b099edf05361fe"
+  "legacy_core0_regression": {
+    "cases_per_profile": 10,
+    "expected_rejections": 13,
+    "fresh_qemu_boots": 23,
+    "path": "build/core0/check/check-results.json",
+    "sha256": "a8812a1ea1b2b1c2794d088d25a1fb5f8e878bfd022bd93a71159f04f46e0daa",
+    "profiles": {
+      "O0": {"image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b"},
+      "O2": {"image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b"}
     }
   },
+  "toolchain": {
+    "lock_path": "tooling/toolchain-lock.json",
+    "lock_sha256": "314fa2842766f300308c8a703581a1f07f12eb2332f9e63bb2e96e7c58230872",
+    "lean_toolchain_sha256": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
+    "flake_lock_sha256": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+    "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
+    "lean": {"version": "4.34.1", "lake_version": "5.0.0-src", "source_ref": "v4.34.1", "revision": "5045d0056413266e57c625dcd7c365b10e377c52", "binary_githash_available": false},
+    "llvm_clang_lld": {"version": "20.1.8", "source_ref": "llvmorg-20.1.8", "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261", "tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8"},
+    "qemu": {"version": "11.1.1", "source_ref": "v11.1.1", "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943", "tag_object": "5e35f26695645b20931e10d8567c7e0169e62c07"},
+    "dtc_version": "1.8.1",
+    "python_version": "3.14.7",
+    "jq_version": "1.8.2",
+    "nix_version": "2.31.2",
+    "target": {"triple": "riscv64-unknown-elf", "llvm_triple": "riscv64-unknown-unknown-elf", "abi": "lp64", "machine": "virt", "isa": "rv64im_zicsr_zifencei", "harts": 1, "memory": "128M", "firmware": "none"}
+  },
   "shared_assumptions": [
-    "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker.",
-    "The finite and exhaustive subdomain matrices are evidence, not a compiler-correctness proof.",
-    "The exact ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature."
+    "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker; the direct route does not import or call the Core0 checker/evaluator.",
+    "Finite differential tests and local lemmas are not a compiler-correctness proof.",
+    "Gate 3 adds a scalar/CFG profile, not a managed Lean runtime.",
+    "The exact Gate 2 ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature."
   ],
   "unit_mapping": {
-    "directly_advanced": ["1.8"],
-    "additional_evidence": ["1.1", "1.3", "1.4", "1.5", "1.7"],
-    "statuses_remain": "partial"
+    "stage": 1,
+    "gate_1_directly_advanced": ["1.8"],
+    "gate_2_directly_advanced": ["1.8"],
+    "gate_2_additional_evidence": ["1.1", "1.3", "1.4", "1.5", "1.7"],
+    "gate_3_directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
+    "gate_3_regression_only": ["1.2", "1.6"],
+    "statuses_remain": "partial",
+    "stage_2_units_advanced": []
   },
   "claims": {
-    "gate_3_passed": false,
+    "gate_3_passed": true,
+    "gate_4_started": false,
     "g1_complete": false,
     "g2_complete": false,
     "task_002_complete": false,
-    "compiler_correctness_proved": false
+    "compiler_correctness_proved": false,
+    "managed_lean_runtime_present": false
   }
 }
