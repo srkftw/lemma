@@ -22,9 +22,40 @@
   `build/foundation/gate10-host-dev-postfix/`. Root's actual malformed-CLI probe
   returned 2, removed the copied PASS and classified failure as harness-input-failure
   (`build/foundation/gate10-malformed-cli-dev.mBxPSQ/`).
-- Next: commit this implementation, then run all target checks, legacy Core0
-  and `qualify_foundation.py` in a separate clean detached worktree without copying
-  outputs. Gate 10 is not passed until those actual checks succeed.
+- Qualification candidate committed: `8fe29c4d435ab12841dbc80f09580f580b0e3fc0`,
+  tree `8bdaf06023726917b25f209613b9ab6d17cd5ad5`.
+  Separate clean detached worktree:
+  `/home/sreekumaar/Downloads/lemma/build/qualification-worktree.BeCycl`.
+  It initially had neither `.lake` nor `build`; no prior outputs were copied.
+- Fresh detached metadata/hosts passed: scaffold 18, Core0 32, foundation 433
+  (32.102 seconds), and cold `lake build` 53 jobs; all exit 0. Logs are in the
+  detached worktree's `build/qualification-host/`.
+- Fresh detached `./scripts/check-foundation.sh --all --stress --work-dir
+  build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20`
+  passed 482 boots. Monitor: 26 boots, 2,742 requests, 4,374 observed IRQs,
+  60 synchronous recoveries and 576 retained records. Aggregate SHA-256:
+  `84510c8134fe8dcf9bfc77cc0ef0eff41c1fa44b53c601d061c7b29abfbcb1d5`.
+- Fresh detached `./scripts/check-core0.sh --work-dir
+  build/core0/qualification-legacy --clean` passed 23 boots, ten cases per
+  profile and 13 expected rejections. Report SHA-256:
+  `03a7b5bbe7fbc1c7b27659a1a94ddc4c45e658e413968ae5b22045487dc2e1ab`.
+- Actual detached `python3 scripts/qualify_foundation.py --gate9-dir
+  build/foundation/gates1-9-clean/gate9 --work-dir build/foundation/qualification
+  --clean --timeout 300 --qemu-timeout 20` failed (exit 1) during final catalog
+  validation: `qualification artifact roles are duplicate`. Canonical PASS is
+  absent; rebuilds and five failure experiments remain retained. Failure report
+  SHA-256: `50f784c97c1fd53c47763f951c4d7a3d7b2b85ba234446b36df84dcec16c21fd`.
+  Log: detached `build/qualification-host/qualification.log`.
+- The qualifier fix assigns distinct semantic roles to all four experiment command
+  streams, preserves the strict 66-artifact/eight-mandatory-role closure, and adds
+  actual-callsite and full-catalog regressions (focused qualification suite 15/15).
+  Independent review found no weakening or further composition mismatch.
+- Precommit role-fix checks passed: foundation 435/435 (35.318 seconds), Core0
+  32/32, scaffold 18/18 and metadata; all exit 0. Logs:
+  `build/foundation/gate10-role-fix-host/`.
+- Current: commit this fix, then repeat clean detached verification.
+  Gate 10 is not passed. The valid cumulative/legacy results
+  above remain bound to `8fe29c4`, not to the later fix.
 - Gate 11 publication is unrun: no Task 002 push, PR, publication attempt or new
   actual CI result. No G1/G2, Stage II, scheduler, managed runtime, isolation or
   physical-board completion claim.

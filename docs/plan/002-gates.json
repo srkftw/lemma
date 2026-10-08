@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T17:26:43+00:00",
+  "updated_at": "2026-10-08T17:53:22+00:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -1975,6 +1975,40 @@
       "name": "integrated qualification",
       "status": "in-progress",
       "source": null,
+      "last_clean_attempt": {
+        "source": {
+          "commit": "8fe29c4d435ab12841dbc80f09580f580b0e3fc0",
+          "tree": "8bdaf06023726917b25f209613b9ab6d17cd5ad5",
+          "clean": true
+        },
+        "worktree": "build/qualification-worktree.BeCycl",
+        "host_tests": {"foundation": 433, "core0": 32, "scaffold": 18, "cold_lean_build_jobs": 53},
+        "commands": [
+          {
+            "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
+            "exit_code": 0,
+            "fresh_qemu_boots": 482
+          },
+          {
+            "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/qualification-legacy --clean",
+            "exit_code": 0,
+            "fresh_qemu_boots": 23
+          },
+          {
+            "command": "nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py --gate9-dir build/foundation/gates1-9-clean/gate9 --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20",
+            "exit_code": 1,
+            "error": "qualification artifact roles are duplicate",
+            "canonical_pass_absent": true
+          }
+        ],
+        "artifacts": [
+          {"path": "build/qualification-worktree.BeCycl/build/foundation/gates1-9-clean/all-results.json", "sha256": "84510c8134fe8dcf9bfc77cc0ef0eff41c1fa44b53c601d061c7b29abfbcb1d5"},
+          {"path": "build/qualification-worktree.BeCycl/build/core0/qualification-legacy/check-results.json", "sha256": "03a7b5bbe7fbc1c7b27659a1a94ddc4c45e658e413968ae5b22045487dc2e1ab"},
+          {"path": "build/qualification-worktree.BeCycl/build/foundation/qualification/qualification-failure.json", "sha256": "50f784c97c1fd53c47763f951c4d7a3d7b2b85ba234446b36df84dcec16c21fd"}
+        ],
+        "status": "failed",
+        "next_action": "Fix qualifier catalog construction, retain strict validation, commit and reverify clean source."
+      },
       "commands": [{
         "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-stress-dev-01 --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
@@ -2004,7 +2038,7 @@
         "Review fixes implemented and independently closed: strict process/schema integers, full retained session/ELF binding, malformed CLI stale-PASS invalidation and fresh CI host build ordering.",
         "Post-fix full hosts passed: foundation 433, Core0 32, scaffold 18 and metadata. Logs build/foundation/gate10-host-dev-postfix/.",
         "Actual malformed-CLI stale-PASS probe returned 2, removed copied old aggregate PASS and emitted harness-input-failure/CLI at build/foundation/gate10-malformed-cli-dev.mBxPSQ/.",
-        "Full clean detached cumulative/legacy/rebuild qualification and actual CI remain unrun."
+        "Clean detached cumulative and legacy passed at 8fe29c4; final qualifier failed on duplicate artifact roles. Results are not rebound to the later fix. Actual CI remains unrun."
       ]
     },
     {

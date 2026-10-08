@@ -610,7 +610,8 @@ def rebuild_and_compare(
 
 
 def _record_command(
-    *, root: Path, directory: Path, name: str, argv: tuple[str, ...], timeout_seconds: float
+    *, root: Path, directory: Path, name: str, evidence_role: str,
+    argv: tuple[str, ...], timeout_seconds: float,
 ) -> tuple[object, dict[str, object]]:
     result = run_bounded(argv, cwd=root, timeout_seconds=timeout_seconds)
     stdout_path, stderr_path = directory / f"{name}.stdout.bin", directory / f"{name}.stderr.bin"
@@ -620,8 +621,8 @@ def _record_command(
         "argv": list(argv),
         "returncode": result.returncode,
         "elapsed_seconds": round(result.elapsed_seconds, 6),
-        "stdout": _artifact(root, stdout_path, f"{name} stdout"),
-        "stderr": _artifact(root, stderr_path, f"{name} stderr"),
+        "stdout": _artifact(root, stdout_path, f"{evidence_role} stdout"),
+        "stderr": _artifact(root, stderr_path, f"{evidence_role} stderr"),
     }
 
 
@@ -650,7 +651,8 @@ def stale_pass_experiments(
         *(("--stress",) if stress else ()),
     )
     phase_result, phase_command = _record_command(
-        root=root, directory=phase_dir, name="failure", argv=phase_argv,
+        root=root, directory=phase_dir, name="failure",
+        evidence_role="stale Gate 9 command", argv=phase_argv,
         timeout_seconds=command_timeout,
     )
     if phase_result.returncode == 0 or (phase_dir / gate9_checker.RESULT_FILE).exists():
@@ -698,7 +700,8 @@ def stale_pass_experiments(
         "--timeout", "nan",
     )
     runner_result, runner_command = _record_command(
-        root=root, directory=runner_dir, name="failure", argv=runner_argv,
+        root=root, directory=runner_dir, name="failure",
+        evidence_role="stale monitor runner command", argv=runner_argv,
         timeout_seconds=command_timeout,
     )
     failed_run_path = runner_dir / monitor_runner.RESULT_FILE
@@ -772,7 +775,8 @@ def artifact_failure_experiments(
         )
         result, command = _record_command(
             root=root, directory=directory.parent, name="audit-failure",
-            argv=argv, timeout_seconds=command_timeout,
+            evidence_role=f"{identifier} audit command", argv=argv,
+            timeout_seconds=command_timeout,
         )
         stderr_path = Path(command["stderr"]["path"])
         stderr = (root / stderr_path).read_text(encoding="utf-8", errors="replace")
@@ -848,6 +852,87 @@ def artifact_failure_experiments(
     experiments.append(raw_experiment)
     evidence.extend([raw_experiment["record"], raw_experiment["retained_old_report"]])
     return experiments, evidence
+
+
+def _mandatory_artifact_role_paths(
+    root: Path, gate9_directory: Path, work: Path
+) -> dict[str, str]:
+    return {
+        "input Gate 9 result": _relative(
+            gate9_directory / gate9_checker.RESULT_FILE, root
+        ),
+        "O0 rebuilt image.elf": _relative(work / "rebuild/O0/image.elf", root),
+        "O2 rebuilt image.elf": _relative(work / "rebuild/O2/image.elf", root),
+        "early Gate 9 failure report": _relative(
+            work / "failure-experiments/stale-phase9/check-failure.json", root
+        ),
+        "early runner failure report": _relative(
+            work / "failure-experiments/stale-runner/run.json", root
+        ),
+        "missing-program-object experiment": _relative(
+            work / "failure-experiments/missing-program-object/experiment.json", root
+        ),
+        "tampered-program-ir experiment": _relative(
+            work / "failure-experiments/tampered-program-ir/experiment.json", root
+        ),
+        "missing raw evidence experiment": _relative(
+            work / "failure-experiments/missing-raw-evidence/experiment.json", root
+        ),
+    }
+
+
+def _validate_artifact_role_closure(
+    artifacts: list[dict[str, object]], *, root: Path,
+    gate9_directory: Path, work: Path,
+) -> None:
+    if len(artifacts) != 66:
+        raise Core0Error("qualification artifact catalog has an incomplete closed count")
+    paths: set[str] = set()
+    role_paths: dict[str, str] = {}
+    for artifact in artifacts:
+        if set(artifact) != {"path", "bytes", "sha256", "role"}:
+            raise Core0Error("qualification artifact record fields differ")
+        path, role = artifact.get("path"), artifact.get("role")
+        if (
+            not isinstance(path, str) or not path or Path(path).is_absolute()
+            or path in paths
+        ):
+            raise Core0Error("qualification artifact path is unsafe/duplicate")
+        if not isinstance(role, str) or not role or role in role_paths:
+            raise Core0Error("qualification artifact roles are duplicate")
+        paths.add(path)
+        role_paths[role] = path
+    required = _mandatory_artifact_role_paths(root, gate9_directory, work)
+    if any(role_paths.get(role) != path for role, path in required.items()):
+        raise Core0Error("qualification mandatory evidence roles are absent")
+
+
+def _qualification_artifact_catalog(
+    *, root: Path, gate9_directory: Path, work: Path,
+    rebuild_evidence: list[dict[str, object]],
+    stale_evidence: list[dict[str, object]],
+    artifact_evidence: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    artifacts = [
+        _artifact(
+            root, gate9_directory / gate9_checker.RESULT_FILE, "input Gate 9 result"
+        ),
+        *[
+            _artifact(
+                root, gate9_directory / optimization / name,
+                f"input Gate 9 {optimization} {name}",
+            )
+            for optimization in PROFILES
+            for name in ("build.json", "audit.json", "provenance.json", "image.elf")
+        ],
+        *rebuild_evidence,
+        *stale_evidence,
+        *artifact_evidence,
+    ]
+    _validate_artifact_role_closure(
+        artifacts, root=root, gate9_directory=gate9_directory, work=work
+    )
+    return artifacts
 
 
 def validate_qualification_report(
@@ -1052,28 +1137,9 @@ def validate_qualification_report(
     }
     if len(role_paths) != len(artifacts):
         raise Core0Error("qualification artifact roles are duplicate")
-    required_role_paths = {
-        "input Gate 9 result": _relative(
-            gate9_directory / gate9_checker.RESULT_FILE, root
-        ),
-        "O0 rebuilt image.elf": _relative(work / "rebuild/O0/image.elf", root),
-        "O2 rebuilt image.elf": _relative(work / "rebuild/O2/image.elf", root),
-        "early Gate 9 failure report": _relative(
-            work / "failure-experiments/stale-phase9/check-failure.json", root
-        ),
-        "early runner failure report": _relative(
-            work / "failure-experiments/stale-runner/run.json", root
-        ),
-        "missing-program-object experiment": _relative(
-            work / "failure-experiments/missing-program-object/experiment.json", root
-        ),
-        "tampered-program-ir experiment": _relative(
-            work / "failure-experiments/tampered-program-ir/experiment.json", root
-        ),
-        "missing raw evidence experiment": _relative(
-            work / "failure-experiments/missing-raw-evidence/experiment.json", root
-        ),
-    }
+    required_role_paths = _mandatory_artifact_role_paths(
+        root, gate9_directory, work
+    )
     if any(role_paths.get(role) != path for role, path in required_role_paths.items()):
         raise Core0Error("qualification mandatory evidence roles are absent")
     counts = _object(report.get("counts"), "qualification counts")
@@ -1159,20 +1225,14 @@ def qualify_foundation(
             timeout_seconds=timeout_seconds,
         ),
     )
-    artifacts = [
-        _artifact(
-            root, gate9_directory / gate9_checker.RESULT_FILE, "input Gate 9 result"
-        ),
-        *[
-            _artifact(root, gate9_directory / optimization / name,
-                f"input Gate 9 {optimization} {name}")
-            for optimization in PROFILES
-            for name in ("build.json", "audit.json", "provenance.json", "image.elf")
-        ],
-        *rebuild_evidence,
-        *stale_evidence,
-        *artifact_evidence,
-    ]
+    artifacts = _qualification_artifact_catalog(
+        root=root,
+        gate9_directory=gate9_directory,
+        work=work,
+        rebuild_evidence=rebuild_evidence,
+        stale_evidence=stale_evidence,
+        artifact_evidence=artifact_evidence,
+    )
     report = {
         "schema_version": 1,
         "status": "PASS",

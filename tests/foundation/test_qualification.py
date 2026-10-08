@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Gate 10 qualification orchestration and fail-closed evidence tests."""
 
+import ast
 import json
 import sys
 import tempfile
@@ -20,6 +21,46 @@ from core0_common import CommandResult, Core0Error, sha256, write_json
 
 
 class FoundationQualificationTests(unittest.TestCase):
+    def test_real_command_callsites_have_distinct_semantic_evidence_roles(self):
+        source = (ROOT / "scripts/qualify_foundation.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        calls = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "_record_command"
+        ]
+        self.assertEqual(len(calls), 3)
+        observed = []
+        for call in calls:
+            keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+            self.assertEqual(set(("name", "evidence_role")) - set(keywords), set())
+            self.assertIsInstance(keywords["name"], ast.Constant)
+            observed.append((keywords["name"].value, keywords["evidence_role"]))
+        stale_roles = {
+            role.value for name, role in observed
+            if name == "failure" and isinstance(role, ast.Constant)
+        }
+        self.assertEqual(stale_roles, {
+            "stale Gate 9 command", "stale monitor runner command",
+        })
+        audit_roles = [role for name, role in observed if name == "audit-failure"]
+        self.assertEqual(len(audit_roles), 1)
+        self.assertIsInstance(audit_roles[0], ast.JoinedStr)
+        self.assertTrue(any(
+            isinstance(value, ast.FormattedValue)
+            and isinstance(value.value, ast.Name)
+            and value.value.id == "identifier"
+            for value in audit_roles[0].values
+        ))
+        self.assertEqual(
+            "".join(
+                value.value for value in audit_roles[0].values
+                if isinstance(value, ast.Constant) and isinstance(value.value, str)
+            ),
+            " audit command",
+        )
+
     def test_reproducibility_catalog_and_provenance_closure_are_exact(self):
         self.assertEqual(
             qualifier.DETERMINISTIC_ARTIFACTS,
@@ -38,6 +79,118 @@ class FoundationQualificationTests(unittest.TestCase):
         self.assertIn(Path("scripts/qualify_foundation.py"), build_monitor.HOST_INPUTS)
         source = (ROOT / "scripts/audit_core0.py").read_text(encoding="utf-8")
         self.assertIn('"scripts/qualify_foundation.py"', source)
+
+    def test_actual_success_artifact_role_composition_is_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            gate9 = root / "build/gate9"
+            work = root / "build/qualification"
+
+            def evidence(path, role):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes((role + "\n").encode())
+                return qualifier._artifact(root, path, role)
+
+            evidence(
+                gate9 / qualifier.gate9_checker.RESULT_FILE,
+                "input Gate 9 result",
+            )
+            for optimization in qualifier.PROFILES:
+                for name in ("build.json", "audit.json", "provenance.json", "image.elf"):
+                    evidence(
+                        gate9 / optimization / name,
+                        f"input Gate 9 {optimization} {name}",
+                    )
+
+            rebuild = []
+            for optimization in qualifier.PROFILES:
+                for name in (
+                    *qualifier.DETERMINISTIC_ARTIFACTS,
+                    "build.json", "audit.json", "provenance.json",
+                ):
+                    rebuild.append(evidence(
+                        work / "rebuild" / optimization / name,
+                        f"{optimization} rebuilt {name}",
+                    ))
+
+            phase = work / "failure-experiments/stale-phase9"
+            runner_failure = work / "failure-experiments/stale-runner"
+            stale = [
+                evidence(phase / "check-failure.json", "early Gate 9 failure report"),
+                evidence(phase / "old-gate9-results.retained.json", "retained old Gate 9 PASS input"),
+            ]
+            command_result = CommandResult(("false",), 1, b"stdout", b"stderr", 0.1)
+            with mock.patch.object(
+                qualifier, "run_bounded", return_value=command_result
+            ):
+                _, phase_command = qualifier._record_command(
+                    root=root, directory=phase, name="failure",
+                    evidence_role="stale Gate 9 command", argv=("false",),
+                    timeout_seconds=1,
+                )
+            stale.extend((phase_command["stdout"], phase_command["stderr"]))
+            stale.extend((
+                evidence(runner_failure / "run.json", "early runner failure report"),
+                evidence(runner_failure / "old-run.retained.json", "retained old runner PASS input"),
+            ))
+            for name in ("sent.bin", "received.bin", "stderr.bin"):
+                stale.append(evidence(
+                    runner_failure / name, f"failed runner {name}"
+                ))
+            with mock.patch.object(
+                qualifier, "run_bounded", return_value=command_result
+            ):
+                _, runner_command = qualifier._record_command(
+                    root=root, directory=runner_failure, name="failure",
+                    evidence_role="stale monitor runner command", argv=("false",),
+                    timeout_seconds=1,
+                )
+            stale.extend((runner_command["stdout"], runner_command["stderr"]))
+
+            artifact_failures = []
+            for identifier in ("missing-program-object", "tampered-program-ir"):
+                directory = work / "failure-experiments" / identifier
+                artifact_failures.append(evidence(
+                    directory / "experiment.json", f"{identifier} experiment"
+                ))
+                with mock.patch.object(
+                    qualifier, "run_bounded", return_value=command_result
+                ):
+                    _, command = qualifier._record_command(
+                        root=root, directory=directory, name="audit-failure",
+                        evidence_role=f"{identifier} audit command", argv=("false",),
+                        timeout_seconds=1,
+                    )
+                artifact_failures.extend((command["stdout"], command["stderr"]))
+            raw = work / "failure-experiments/missing-raw-evidence"
+            artifact_failures.extend((
+                evidence(raw / "experiment.json", "missing raw evidence experiment"),
+                evidence(
+                    raw / "old-run.retained.json",
+                    "missing raw evidence retained old runner PASS input",
+                ),
+            ))
+
+            catalog = qualifier._qualification_artifact_catalog(
+                root=root, gate9_directory=gate9, work=work,
+                rebuild_evidence=rebuild, stale_evidence=stale,
+                artifact_evidence=artifact_failures,
+            )
+            self.assertEqual((len(catalog), len({item["path"] for item in catalog}),
+                              len({item["role"] for item in catalog})), (66, 66, 66))
+            by_role = {item["role"]: item["path"] for item in catalog}
+            self.assertEqual(
+                {role: by_role[role] for role in qualifier._mandatory_artifact_role_paths(
+                    root, gate9, work
+                )},
+                qualifier._mandatory_artifact_role_paths(root, gate9, work),
+            )
+            forged = json.loads(json.dumps(catalog))
+            forged[-1]["role"] = forged[0]["role"]
+            with self.assertRaisesRegex(Core0Error, "roles are duplicate"):
+                qualifier._validate_artifact_role_closure(
+                    forged, root=root, gate9_directory=gate9, work=work
+                )
 
     def test_normalized_build_and_audit_only_hide_output_bound_fields(self):
         build = {
@@ -376,6 +529,9 @@ class FoundationQualificationTests(unittest.TestCase):
                     "artifact_failure_experiments",
                     return_value=(failures, []),
                 ),
+                mock.patch.object(
+                    qualifier, "_qualification_artifact_catalog", return_value=[]
+                ),
                 mock.patch.object(qualifier, "validate_qualification_report") as validate,
             ):
                 report = qualifier.qualify_foundation(
@@ -434,6 +590,9 @@ class FoundationQualificationTests(unittest.TestCase):
                     qualifier,
                     "artifact_failure_experiments",
                     return_value=([{"id": "missing-program-object"}], []),
+                ),
+                mock.patch.object(
+                    qualifier, "_qualification_artifact_catalog", return_value=[]
                 ),
                 mock.patch.object(
                     qualifier,
