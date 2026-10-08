@@ -66,23 +66,31 @@ private def renderCore0Manifest (program : Lemma.Core0.Program) (lowered : Lower
     "}", ""
   ]
 
-private def exactTargetRoot (program : Lemma.Core0.Program) : Except String Unit := do
+/-- Check the fixed Task 001 harness ABI. Additive test profiles use separate exporters. -/
+def checkLegacyTargetRoot (program : Lemma.Core0.Program) : Except String Unit := do
   let some root := program.findFunction? program.root
     | throw "checked Core0 program does not contain its root"
   unless root.signature.args == #[Lemma.Core0.Ty.u64, .u64, .u64] &&
       root.signature.result == Lemma.Core0.Ty.u64 do
     throw "freestanding harness root must have type UInt64 -> UInt64 -> UInt64 -> UInt64"
 
-private def exportProgram (env : Environment) (name : Name) (outputDir : System.FilePath) : IO Unit := do
+/-- Run genuine frontend checking and ordinary structured lowering for the legacy harness. -/
+def prepareLegacyApplication (env : Environment) (name : Name) :
+    IO (Lemma.Core0.Program × LoweredApplication) := do
   let program ← match Lemma.Core0.checkAndLower env name with
     | .ok program => pure program
     | .error diagnostic => throw <| IO.userError diagnostic.render
-  match exactTargetRoot program with
+  match checkLegacyTargetRoot program with
   | .error message => throw <| IO.userError message
   | .ok () => pure ()
   let lowered ← match lowerApplication program with
     | .ok lowered => pure lowered
     | .error message => throw <| IO.userError s!"Core0 LLVM lowering failed: {message}"
+  pure (program, lowered)
+
+/-- Emit the common legacy harness artifacts from an already checked/lowered application. -/
+def writeLegacyArtifacts (name : Name) (outputDir : System.FilePath)
+    (program : Lemma.Core0.Program) (lowered : LoweredApplication) : IO Unit := do
   let layout := Lemma.Machine.core0Layout
   let linkScript ← match layout.linkerScript with
     | .ok script => pure script
@@ -103,6 +111,10 @@ private def exportProgram (env : Environment) (name : Name) (outputDir : System.
   IO.FS.writeFile (outputDir / "core0-manifest.json") (renderCore0Manifest program lowered)
   IO.FS.writeFile (outputDir / "core0-normalized.txt") program.renderManifest
   IO.FS.writeFile (outputDir / "symbols.txt") lowered.renderSymbolManifest
+
+private def exportProgram (env : Environment) (name : Name) (outputDir : System.FilePath) : IO Unit := do
+  let (program, lowered) ← prepareLegacyApplication env name
+  writeLegacyArtifacts name outputDir program lowered
 
 syntax (name := core0Export) "#core0_export " ident : command
 

@@ -42,7 +42,7 @@ def BinOp.render : BinOp → String
   | .lshr => "lshr"
 
 inductive Predicate where
-  | eq | ne | ult | ule | ugt | uge
+  | eq | ne | ult | ule | ugt | uge | slt
   deriving Repr, BEq
 
 def Predicate.render : Predicate → String
@@ -52,11 +52,13 @@ def Predicate.render : Predicate → String
   | .ule => "ule"
   | .ugt => "ugt"
   | .uge => "uge"
+  | .slt => "slt"
 
 inductive Instruction where
   | bin (result : String) (op : BinOp) (ty : Ty) (lhs rhs : Operand)
   | icmp (result : String) (predicate : Predicate) (ty : Ty) (lhs rhs : Operand)
   | zext (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
+  | sext (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
   | trunc (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
   | select (result : String) (condition : Operand) (ty : Ty) (onTrue onFalse : Operand)
   | ptrFromInt (result : String) (value : Nat)
@@ -81,6 +83,8 @@ def Instruction.render : Instruction → String
       assignment result ++ s!"icmp {predicate.render} {ty.render} {lhs.render}, {rhs.render}"
   | .zext result sourceTy value targetTy =>
       assignment result ++ s!"zext {sourceTy.render} {value.render} to {targetTy.render}"
+  | .sext result sourceTy value targetTy =>
+      assignment result ++ s!"sext {sourceTy.render} {value.render} to {targetTy.render}"
   | .trunc result sourceTy value targetTy =>
       assignment result ++ s!"trunc {sourceTy.render} {value.render} to {targetTy.render}"
   | .select result condition ty onTrue onFalse =>

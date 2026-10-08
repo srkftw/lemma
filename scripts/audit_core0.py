@@ -29,6 +29,35 @@ REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+RELEASE_POLICY = "release"
+TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
+TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
+AUDIT_POLICIES = (
+    RELEASE_POLICY,
+    TEST_COMPILER_CONTROL_POLICY,
+    TEST_COMPILER_MUTANT_POLICY,
+)
+COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
+COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
+COMPILER_MUTATION_FAULTS = frozenset(
+    {
+        "ult-as-ule",
+        "ult-as-slt",
+        "add-as-sub",
+        "zext-as-sext",
+        "trunc-high-half",
+        "swap-call-args",
+    }
+)
+MUTANT_CONTROL_IDENTICAL_ARTIFACTS = (
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "core0-manifest.json",
+    "core0-normalized.txt",
+    "symbols.txt",
+)
+
 FORBIDDEN_SYMBOL = re.compile(
     r"(^|[^A-Za-z0-9_])(lean_|malloc|calloc|realloc|free|memcpy|memmove|memset|"
     r"pthread|uv_|__div|__mod|__muldi3|__udiv|__umod|__atomic|__stack_chk)",
@@ -159,6 +188,212 @@ def _primitive_contracts() -> dict[str, dict[str, object]]:
 
 
 PRIMITIVE_CONTRACTS = _primitive_contracts()
+
+
+def _validate_audit_policy(policy: str) -> str:
+    if policy not in AUDIT_POLICIES:
+        raise Core0Error(
+            f"unknown Core0 audit policy {policy!r}; expected one of {AUDIT_POLICIES!r}"
+        )
+    return policy
+
+
+def validate_compiler_mutation_manifest(
+    value: object, manifest: dict[str, object]
+) -> dict[str, object]:
+    """Validate the closed, test-only structured-LLVM mutation declaration."""
+    if not isinstance(value, dict):
+        raise Core0Error("compiler-mutation.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "artifact_category",
+            "transform_stage",
+            "production_selectable",
+            "source_root",
+            "fault",
+            "target_source",
+            "target_llvm",
+            "match_count",
+            "before",
+            "after",
+        },
+        "compiler mutation manifest",
+    )
+    mutation_schema = value.get("schema_version")
+    if (
+        isinstance(mutation_schema, bool)
+        or not isinstance(mutation_schema, int)
+        or mutation_schema != 1
+    ):
+        raise Core0Error("compiler mutation manifest has an unsupported schema")
+    if value.get("artifact_category") != TEST_COMPILER_MUTANT_POLICY:
+        raise Core0Error("compiler mutation manifest has the wrong artifact category")
+    if value.get("transform_stage") != COMPILER_MUTATION_STAGE:
+        raise Core0Error("compiler mutation manifest has the wrong transform stage")
+    if value.get("production_selectable") is not False:
+        raise Core0Error("compiler mutation must be explicitly non-production-selectable")
+    if value.get("source_root") != manifest.get("root"):
+        raise Core0Error("compiler mutation source root differs from the Core0 manifest")
+
+    fault = value.get("fault")
+    if not isinstance(fault, str) or fault not in COMPILER_MUTATION_FAULTS:
+        raise Core0Error(f"compiler mutation fault is outside the closed allowlist: {fault!r}")
+    match_count = value.get("match_count")
+    if isinstance(match_count, bool) or not isinstance(match_count, int) or match_count != 1:
+        raise Core0Error("compiler mutation must record exactly one matched instruction")
+
+    functions = manifest.get("functions")
+    assert isinstance(functions, list)
+    source_to_llvm = {
+        str(function["source"]): str(function["llvm"])
+        for function in functions
+        if isinstance(function, dict)
+    }
+    target_source, target_llvm = value.get("target_source"), value.get("target_llvm")
+    if (
+        not isinstance(target_source, str)
+        or not isinstance(target_llvm, str)
+        or source_to_llvm.get(target_source) != target_llvm
+    ):
+        raise Core0Error(
+            "compiler mutation target source/LLVM identity is absent or inconsistent"
+        )
+    before, after = value.get("before"), value.get("after")
+    if (
+        not isinstance(before, str)
+        or not before
+        or not isinstance(after, str)
+        or not after
+        or before == after
+    ):
+        raise Core0Error("compiler mutation before/after instructions are missing or unchanged")
+    return value
+
+
+def _expected_mutation_after(fault: str, before: str) -> str:
+    replacements = {
+        "ult-as-ule": (" = icmp ult ", " = icmp ule "),
+        "ult-as-slt": (" = icmp ult ", " = icmp slt "),
+        "add-as-sub": (" = add ", " = sub "),
+    }
+    replacement = replacements.get(fault)
+    if replacement is not None:
+        old, new = replacement
+        if before.count(old) != 1 or "\n" in before or "\r" in before:
+            raise Core0Error(f"compiler mutation {fault!r} has the wrong before instruction")
+        return before.replace(old, new, 1)
+    if fault == "zext-as-sext":
+        match = re.fullmatch(
+            r"%[A-Za-z_.$][A-Za-z0-9_.$-]* = zext i32 .+ to i64", before
+        )
+        if match is None or "\n" in before or "\r" in before:
+            raise Core0Error("compiler mutation 'zext-as-sext' has the wrong before instruction")
+        return before.replace(" = zext ", " = sext ", 1)
+    if fault == "trunc-high-half":
+        match = re.fullmatch(
+            r"%([A-Za-z_.$][A-Za-z0-9_.$-]*) = trunc i64 (.+) to i32", before
+        )
+        if match is None or "\n" in match.group(2) or "\r" in match.group(2):
+            raise Core0Error("compiler mutation 'trunc-high-half' has the wrong before instruction")
+        result, operand = match.groups()
+        shifted = result + "_fault_high"
+        return (
+            f"%{shifted} = lshr i64 {operand}, 32\n"
+            f"%{result} = trunc i64 %{shifted} to i32"
+        )
+    if fault == "swap-call-args":
+        match = re.fullmatch(
+            r"(.+ = call [^\s]+ @core0_user_[A-Za-z0-9_.$-]+\()"
+            r"([^,()]+), ([^,()]+)(.*\))",
+            before,
+        )
+        if match is None or "\n" in before or "\r" in before:
+            raise Core0Error("compiler mutation 'swap-call-args' has the wrong before instruction")
+        prefix, first, second, suffix = match.groups()
+        first_type = first.split(" ", 1)[0]
+        second_type = second.split(" ", 1)[0]
+        if first_type != second_type or not first_type:
+            raise Core0Error("compiler mutation 'swap-call-args' swaps unequal argument types")
+        return f"{prefix}{second}, {first}{suffix}"
+    raise Core0Error(f"compiler mutation fault is outside the closed allowlist: {fault!r}")
+
+
+def validate_compiler_mutation_ir(value: dict[str, object], pre_ir: str) -> None:
+    """Bind the mutation report to the exact changed instructions in program.ll."""
+    fault = str(value["fault"])
+    before = str(value["before"])
+    after = str(value["after"])
+    expected_after = _expected_mutation_after(fault, before)
+    if after != expected_after:
+        raise Core0Error(
+            f"compiler mutation {fault!r} before/after relationship is malformed"
+        )
+
+    target_llvm = str(value["target_llvm"])
+    definition = re.compile(
+        rf"^define\s+[^\n]*@{re.escape(target_llvm)}\([^\n]*\)[^\n]*\{{\n"
+        rf"(?P<body>.*?)^\}}\s*$",
+        re.MULTILINE | re.DOTALL,
+    )
+    matches = list(definition.finditer(pre_ir))
+    if len(matches) != 1:
+        raise Core0Error(
+            "compiler mutation target does not have exactly one program.ll definition"
+        )
+    body_lines = [line.strip() for line in matches[0].group("body").splitlines()]
+    after_lines = after.splitlines()
+    occurrence_count = sum(
+        body_lines[index : index + len(after_lines)] == after_lines
+        for index in range(len(body_lines) - len(after_lines) + 1)
+    )
+    if occurrence_count != 1:
+        raise Core0Error(
+            "compiler mutation after-instruction sequence does not occur exactly once "
+            "in its target function"
+        )
+    if before in body_lines:
+        raise Core0Error("compiler mutation target still contains its reported before instruction")
+
+
+def validate_mutant_control_delta(
+    value: dict[str, object],
+    mutant_ir: str,
+    clean_ir: str,
+) -> None:
+    """Require the reported instruction replacement to be the sole pre-opt IR delta."""
+    before = str(value["before"])
+    after = str(value["after"])
+    rendered_before = "  " + before
+    rendered_after = "\n".join("  " + line for line in after.splitlines())
+    target_llvm = str(value["target_llvm"])
+    definition = re.compile(
+        rf"^define\s+[^\n]*@{re.escape(target_llvm)}\([^\n]*\)[^\n]*\{{\n"
+        rf"(?P<body>.*?)^\}}\s*$",
+        re.MULTILINE | re.DOTALL,
+    )
+    definitions = list(definition.finditer(mutant_ir))
+    if len(definitions) != 1:
+        raise Core0Error(
+            "compiler mutant sole-delta check cannot isolate its target definition"
+        )
+    match = definitions[0]
+    body = match.group("body")
+    if body.count(rendered_after) != 1:
+        raise Core0Error(
+            "compiler mutant does not contain exactly one rendered reported replacement"
+        )
+    reconstructed_body = body.replace(rendered_after, rendered_before, 1)
+    reconstructed = (
+        mutant_ir[: match.start("body")]
+        + reconstructed_body
+        + mutant_ir[match.end("body") :]
+    )
+    if reconstructed != clean_ir:
+        raise Core0Error(
+            "compiler mutant has an unreported pre-optimization IR delta from its clean control"
+        )
 
 
 def tool_text(name: str, args: list[str], root: Path) -> str:
@@ -402,11 +637,62 @@ def hex_field(mapping: object, section: str, field: str) -> int:
         raise Core0Error(f"layout.json {section}.{field} is malformed: {value!r}") from error
 
 
-def audit(directory: Path, root: Path) -> dict[str, object]:
+def audit(
+    directory: Path,
+    root: Path,
+    *,
+    policy: str = RELEASE_POLICY,
+    expected_fault: str | None = None,
+    expected_target_source: str | None = None,
+    clean_control_directory: Path | None = None,
+) -> dict[str, object]:
+    """Audit one complete image under an explicit release or quarantined-test policy.
+
+    The default remains the public release audit.  Test compiler controls and
+    mutants must opt in by keyword so mutation-bearing artifacts cannot become
+    release artifacts through directory contents alone.
+    """
+    policy = _validate_audit_policy(policy)
+    expected_mutation = expected_fault is not None or expected_target_source is not None
+    if policy != TEST_COMPILER_MUTANT_POLICY and expected_mutation:
+        raise Core0Error("only the test-compiler-mutant audit accepts expected fault selectors")
+    if expected_fault is not None and (
+        not isinstance(expected_fault, str) or expected_fault not in COMPILER_MUTATION_FAULTS
+    ):
+        raise Core0Error(
+            f"expected compiler fault is outside the closed allowlist: {expected_fault!r}"
+        )
+    if (
+        expected_target_source is not None
+        and (
+            not isinstance(expected_target_source, str)
+            or LEAN_IDENTIFIER.fullmatch(expected_target_source) is None
+        )
+    ):
+        raise Core0Error(
+            f"expected compiler-fault target is not a Lean identity: {expected_target_source!r}"
+        )
+    if policy == TEST_COMPILER_MUTANT_POLICY:
+        if clean_control_directory is None:
+            raise Core0Error("test-compiler-mutant audit requires a clean-control directory")
+        clean_control_directory = clean_control_directory.resolve()
+        if clean_control_directory == directory.resolve():
+            raise Core0Error("compiler mutant and clean control must be different directories")
+    elif clean_control_directory is not None:
+        raise Core0Error("only the test-compiler-mutant audit accepts a clean-control directory")
     require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump"))
     if not directory.is_dir():
         raise Core0Error(f"artifact directory is missing: {directory}")
-    paths = {name: directory / name for name in REQUIRED_ARTIFACTS}
+    mutation_path = directory / COMPILER_MUTATION_ARTIFACT
+    if policy == TEST_COMPILER_MUTANT_POLICY:
+        required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    else:
+        required_artifacts = REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
+    paths = {name: directory / name for name in required_artifacts}
     missing = [name for name, path in paths.items() if not path.is_file()]
     if missing:
         raise Core0Error("missing audit artifacts: " + ", ".join(missing))
@@ -414,16 +700,93 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
     if empty:
         raise Core0Error("empty audit artifacts: " + ", ".join(empty))
 
+    clean_control_report: dict[str, object] | None = None
+    if clean_control_directory is not None:
+        clean_control_report = audit(
+            clean_control_directory,
+            root,
+            policy=TEST_COMPILER_CONTROL_POLICY,
+        )
+
     manifest = validate_core0_manifest(load_json(paths["core0-manifest.json"]))
     validate_manifest_companions(
         manifest,
         paths["core0-normalized.txt"].read_text(encoding="utf-8"),
         paths["symbols.txt"].read_text(encoding="utf-8"),
     )
+    mutation_manifest: dict[str, object] | None = None
+    if policy == TEST_COMPILER_MUTANT_POLICY:
+        mutation_manifest = validate_compiler_mutation_manifest(
+            load_json(paths[COMPILER_MUTATION_ARTIFACT]), manifest
+        )
+        if expected_fault is not None and mutation_manifest.get("fault") != expected_fault:
+            raise Core0Error(
+                "compiler mutation fault differs from the requested test build: "
+                f"{mutation_manifest.get('fault')!r} != {expected_fault!r}"
+            )
+        if (
+            expected_target_source is not None
+            and mutation_manifest.get("target_source") != expected_target_source
+        ):
+            raise Core0Error(
+                "compiler mutation target differs from the requested test build: "
+                f"{mutation_manifest.get('target_source')!r} != {expected_target_source!r}"
+            )
 
     provenance_obj = load_json(paths["provenance.json"])
-    if not isinstance(provenance_obj, dict) or provenance_obj.get("schema_version") != 1:
+    if not isinstance(provenance_obj, dict):
+        raise Core0Error("provenance.json is not an object")
+    provenance_schema = provenance_obj.get("schema_version")
+    if (
+        isinstance(provenance_schema, bool)
+        or not isinstance(provenance_schema, int)
+        or provenance_schema not in {1, 2}
+    ):
         raise Core0Error("provenance.json has an unsupported schema")
+    has_provenance_category = "artifact_category" in provenance_obj
+    provenance_category = provenance_obj.get("artifact_category")
+    has_compiler_fault = "compiler_fault" in provenance_obj
+    if provenance_schema == 1:
+        if policy != RELEASE_POLICY:
+            raise Core0Error(
+                "historical provenance schema 1 is accepted only by the release audit"
+            )
+        if has_provenance_category:
+            raise Core0Error(
+                "historical provenance schema 1 must use its implicit release category"
+            )
+    elif provenance_category != policy:
+        raise Core0Error(
+            "provenance artifact category differs from the selected audit policy: "
+            f"{provenance_category!r} != {policy!r}"
+        )
+    if policy != TEST_COMPILER_MUTANT_POLICY:
+        if has_compiler_fault:
+            raise Core0Error(f"{policy} provenance rejects compiler-fault metadata")
+    else:
+        compiler_fault = provenance_obj.get("compiler_fault")
+        if not isinstance(compiler_fault, dict):
+            raise Core0Error("mutant provenance lacks compiler-fault metadata")
+        _exact_keys(
+            compiler_fault,
+            {"manifest_path", "manifest_sha256", "program_ll_sha256"},
+            "compiler-fault provenance",
+        )
+        if compiler_fault.get("manifest_path") != COMPILER_MUTATION_ARTIFACT:
+            raise Core0Error("compiler-fault provenance names the wrong manifest path")
+        for field, artifact_name in (
+            ("manifest_sha256", COMPILER_MUTATION_ARTIFACT),
+            ("program_ll_sha256", "program.ll"),
+        ):
+            digest = compiler_fault.get(field)
+            if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+                raise Core0Error(f"compiler-fault provenance {field} is not a SHA-256")
+            actual_digest = sha256(paths[artifact_name])
+            if digest != actual_digest:
+                raise Core0Error(
+                    f"compiler-fault provenance hash mismatch for {artifact_name}: "
+                    f"{digest} != {actual_digest}"
+                )
     source_commit = provenance_obj.get("source_commit")
     if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
         raise Core0Error("provenance lacks a full Git source commit")
@@ -470,10 +833,88 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
                 f"{source_digest} != {actual_source_digest}"
             )
         observed_sources.add(source_path)
+    expected_elaboration_commands: list[list[str]] = []
+    if provenance_schema == 2:
+        elaborated_inputs = provenance_obj.get("elaborated_inputs")
+        if not isinstance(elaborated_inputs, list) or not elaborated_inputs:
+            raise Core0Error("schema-2 provenance lacks elaborated Lean input identities")
+        seen_elaboration_sources: set[str] = set()
+        seen_oleans: set[str] = set()
+        for index, item in enumerate(elaborated_inputs):
+            if not isinstance(item, dict):
+                raise Core0Error(f"elaborated Lean input #{index} is not an object")
+            _exact_keys(
+                item,
+                {
+                    "source",
+                    "source_sha256",
+                    "olean",
+                    "olean_sha256",
+                    "generation_command",
+                },
+                f"elaborated Lean input #{index}",
+            )
+            source_name, olean_name = item.get("source"), item.get("olean")
+            source_digest, olean_digest = item.get("source_sha256"), item.get("olean_sha256")
+            generation_command = item.get("generation_command")
+            if (
+                not isinstance(source_name, str)
+                or Path(source_name).is_absolute()
+                or not source_name.endswith(".lean")
+                or not isinstance(olean_name, str)
+                or Path(olean_name).is_absolute()
+                or not olean_name.startswith(".lake/build/lib/lean/")
+                or not olean_name.endswith(".olean")
+                or not isinstance(source_digest, str)
+                or re.fullmatch(r"[0-9a-f]{64}", source_digest) is None
+                or not isinstance(olean_digest, str)
+                or re.fullmatch(r"[0-9a-f]{64}", olean_digest) is None
+            ):
+                raise Core0Error(f"elaborated Lean input #{index} has malformed identities")
+            if source_name in seen_elaboration_sources or olean_name in seen_oleans:
+                raise Core0Error("duplicate elaborated Lean source or olean identity")
+            expected_command = ["lake", "env", "lean", "-o", olean_name, source_name]
+            if generation_command != expected_command:
+                raise Core0Error(
+                    f"elaborated Lean input {source_name} has an unexpected generation command"
+                )
+            if source_name not in observed_sources or olean_name not in observed_sources:
+                raise Core0Error(
+                    f"elaborated Lean input {source_name} is absent from source-input hashes"
+                )
+            for name, digest in ((source_name, source_digest), (olean_name, olean_digest)):
+                actual = sha256(root / name)
+                if digest != actual:
+                    raise Core0Error(
+                        f"elaborated Lean input hash mismatch for {name}: {digest} != {actual}"
+                    )
+            seen_elaboration_sources.add(source_name)
+            seen_oleans.add(olean_name)
+            expected_elaboration_commands.append(expected_command)
     linked = provenance_obj.get("linked_inputs")
     if not isinstance(linked, list) or len(linked) != 2:
         raise Core0Error("provenance must name exactly the two linked objects")
     assert isinstance(optimization, str)
+    program_input_details = {
+        RELEASE_POLICY: {
+            "kind": "core0-llvm",
+            "source": "program.ll generated from the checked elaborated Core0 program",
+            "purpose": "compiled Core0 application and freestanding machine harness",
+        },
+        TEST_COMPILER_CONTROL_POLICY: {
+            "kind": "test-compiler-control-llvm",
+            "source": "program.ll generated by the unmodified checked Core0 lowering",
+            "purpose": "test-only clean compiler control and freestanding machine harness",
+        },
+        TEST_COMPILER_MUTANT_POLICY: {
+            "kind": "test-compiler-mutant-llvm",
+            "source": (
+                "program.ll generated by the quarantined Lean compiler-fault transform "
+                "recorded in compiler-mutation.json"
+            ),
+            "purpose": "test-only compiler mutant and freestanding machine harness",
+        },
+    }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
             "kind": "lean-structured-startup",
@@ -482,10 +923,10 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
             "purpose": "M-mode entry, BSS clearing, a0/a1 boot-input preservation, and I/O fence",
         },
         "program.o": {
-            "kind": "core0-llvm",
+            "kind": program_input_details["kind"],
             "generation_command": expected_program_command(optimization),
-            "source": "program.ll generated from the checked elaborated Core0 program",
-            "purpose": "compiled Core0 application and freestanding machine harness",
+            "source": program_input_details["source"],
+            "purpose": program_input_details["purpose"],
         },
     }
     expected_inputs = {
@@ -531,6 +972,11 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
     if not isinstance(commands, list) or any(not isinstance(command, dict) for command in commands):
         raise Core0Error("provenance command log is missing or malformed")
     command_argv = [command.get("argv") for command in commands]
+    for expected_command in expected_elaboration_commands:
+        if expected_command not in command_argv:
+            raise Core0Error(
+                f"provenance command log omits Lean elaboration command: {expected_command!r}"
+            )
     for expected_command in (
         expected_program_command(optimization),
         EXPECTED_STARTUP_COMMAND,
@@ -541,6 +987,24 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
 
     pre_ir = paths["program.ll"].read_text(encoding="utf-8")
     post_ir = paths["program.opt.ll"].read_text(encoding="utf-8")
+    if mutation_manifest is not None:
+        validate_compiler_mutation_ir(mutation_manifest, pre_ir)
+        assert clean_control_directory is not None
+        for name in MUTANT_CONTROL_IDENTICAL_ARTIFACTS:
+            mutant_digest = sha256(directory / name)
+            control_digest = sha256(clean_control_directory / name)
+            if mutant_digest != control_digest:
+                raise Core0Error(
+                    f"compiler mutant {name} differs from its immutable clean control"
+                )
+        clean_ir_path = clean_control_directory / "program.ll"
+        if not clean_ir_path.is_file():
+            raise Core0Error("compiler mutant clean control lacks program.ll")
+        validate_mutant_control_delta(
+            mutation_manifest,
+            pre_ir,
+            clean_ir_path.read_text(encoding="utf-8"),
+        )
     manifest_functions = manifest["functions"]
     assert isinstance(manifest_functions, list)
     manifest_user_symbols = {
@@ -868,6 +1332,8 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
     report: dict[str, object] = {
         "schema_version": 1,
         "status": "pass",
+        "artifact_category": policy,
+        "provenance_schema_version": provenance_schema,
         "directory": str(directory.relative_to(root)),
         "source_commit": source_commit,
         "dirty_tree": dirty_tree,
@@ -901,6 +1367,15 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
             name: findings["types"] for name, findings in object_relocations.items()
         },
     }
+    if mutation_manifest is not None:
+        report["compiler_mutation"] = mutation_manifest
+        assert clean_control_directory is not None and clean_control_report is not None
+        report["clean_control"] = {
+            "directory": str(clean_control_directory.relative_to(root)),
+            "program_ll_sha256": sha256(clean_control_directory / "program.ll"),
+            "audit_status": clean_control_report.get("status"),
+            "artifact_category": clean_control_report.get("artifact_category"),
+        }
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")
@@ -929,11 +1404,45 @@ def audit(directory: Path, root: Path) -> dict[str, object]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("artifact_dir", type=Path)
+    parser.add_argument(
+        "--policy",
+        choices=AUDIT_POLICIES,
+        default=RELEASE_POLICY,
+        help="release by default; test compiler policies are explicit and quarantined",
+    )
+    parser.add_argument(
+        "--expected-fault",
+        choices=sorted(COMPILER_MUTATION_FAULTS),
+        help="bind a mutant audit to the requested closed fault ID",
+    )
+    parser.add_argument(
+        "--expected-target-source",
+        help="bind a mutant audit to the requested Lean source declaration",
+    )
+    parser.add_argument(
+        "--clean-control-dir",
+        type=Path,
+        help="required clean-control artifact directory for a mutant sole-delta audit",
+    )
     ns = parser.parse_args()
     root = repo_root()
     directory = (root / ns.artifact_dir).resolve() if not ns.artifact_dir.is_absolute() else ns.artifact_dir
+    clean_control = None
+    if ns.clean_control_dir is not None:
+        clean_control = (
+            (root / ns.clean_control_dir).resolve()
+            if not ns.clean_control_dir.is_absolute()
+            else ns.clean_control_dir.resolve()
+        )
     try:
-        report = audit(directory, root)
+        report = audit(
+            directory,
+            root,
+            policy=ns.policy,
+            expected_fault=ns.expected_fault,
+            expected_target_source=ns.expected_target_source,
+            clean_control_directory=clean_control,
+        )
     except Core0Error as error:
         print(f"CORE0 AUDIT FAIL: {error}", file=sys.stderr)
         return 1

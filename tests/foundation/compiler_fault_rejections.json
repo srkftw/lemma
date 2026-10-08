@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "unknown-compiler-fault",
+      "path": "examples/foundation/reject/UnknownCompilerFault.lean",
+      "required_fragments": [
+        "unknown closed compiler fault `not-a-closed-fault`"
+      ]
+    },
+    {
+      "name": "zero-mutation-matches",
+      "path": "examples/foundation/reject/ZeroMutationMatches.lean",
+      "required_fragments": [
+        "compiler fault `add-as-sub`",
+        "matched 0 instructions; exactly one is required"
+      ]
+    },
+    {
+      "name": "multiple-mutation-matches",
+      "path": "examples/foundation/reject/MultipleMutationMatches.lean",
+      "required_fragments": [
+        "compiler fault `add-as-sub`",
+        "matched 2 instructions; exactly one is required"
+      ]
+    }
+  ]
+}
