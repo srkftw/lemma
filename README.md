@@ -6,12 +6,13 @@ the physical device is **Lemma One**.
 
 **Current state: tested freestanding diagnostic monitor and machine foundation.**
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–9 extend it with compiler-fault
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–10 extend and qualify it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
 checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
 traps with checked context preservation, and actual timer interrupts during
-foreground computation. The integrated ten-command monitor passed clean O0/O2
-acceptance at `8fd45d8`; extended qualification and publication remain in progress.
+foreground computation. The integrated ten-command monitor and full cumulative/
+legacy suite passed clean detached O0/O2 qualification at `e0e1f21`.
+Task 002 publication and actual CI inspection remain in progress.
 This is not a managed runtime, complete OS, hardware milestone,
 or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
 [Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
@@ -82,19 +83,42 @@ does not qualify all of G1.
 The recorded Task 002 passing prefix also has real host/target checks:
 
 ```sh
+nix develop --no-write-lock-file --command lake build
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
 nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
   --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
 ```
 
-Phase 9 builds and audits O0/O2 images and runs 18 fresh QEMU boots. Clean
-acceptance handled 1,598 requests, observed 1,461 hardware interrupts and 20
+Phase 9 builds and audits O0/O2 images and runs 18 fresh QEMU boots. Historical
+focused acceptance at `8fd45d8` handled 1,598 requests, observed 1,461 hardware interrupts and 20
 synchronous recoveries, and checked 192 ring records, with malformed-request
 recovery, bounds checks, timer restart/shutdown and both session-budget edges.
 The earlier clean cumulative Gates 1–8 run passed 456 boots at `42674c1`;
 legacy acceptance separately passed 23 boots. The current extended cumulative
-and detached-worktree qualification must have their own fresh evidence; they
+and detached-worktree qualification have separate fresh evidence below; they
 do not inherit these historical passes.
+
+The cumulative/stress and final qualification interfaces are:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+```
+
+Qualification requires committed, clean source. It independently replays retained
+monitor evidence, repeats same-profile builds, and exercises stale-PASS and missing/
+tampered-evidence failures. Clean `e0e1f21` passed 435 foundation, 32 Core0 and
+18 scaffold host tests, a cold 53-job Lean build, 482 cumulative and 23 legacy
+QEMU boots, 26 raw-session replays, 16 reproducible artifacts/profile and five
+failure experiments. The monitor handled 2,742 requests with 4,243 observed
+hardware IRQs, 60 synchronous recoveries and 576 retained records. A catalog-
+construction defect in the first qualification attempt was caught, fixed and
+retested; its failed evidence remains retained. See the report for exact source
+and later publication identities. CI separately runs metadata/host,
+legacy RV64, and cumulative foundation/qualification jobs with retained artifacts.
 
 ## GitHub and Codex
 

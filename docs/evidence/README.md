@@ -14,12 +14,13 @@ Task 002's current passing prefix is recorded in
 [002-machine-foundation.md](002-machine-foundation.md), with a
 [machine-readable summary](002-machine-foundation-summary.json) and
 [hash inventory](002-machine-foundation-sha256s.txt). It currently covers passing
-Gates 0--9, including checked memory, compiled polling UART sessions, synchronous
-M-mode traps, actual timer interrupts, and the integrated bounded UART monitor.
-Gate 10 qualification is in progress; G1, G2, the remaining Task 002 gates,
-separate-worktree qualification,
-and publication remain open. Tested implementation and later report-bearing
-identities are kept separate.
+Gates 0--10: checked memory, compiled UART, real M-mode traps/timer interrupts,
+the integrated monitor, and clean detached cumulative/stress/legacy/reproducibility
+and failure-path qualification. Gate 11 is in progress; Task 002 publication and
+actual GitHub CI remain unrun. G1/G2 and complete construction-unit qualification
+remain open. Tested implementation and later report-bearing identities stay separate.
+The report includes a Gate 0--11 status table and the profile-bound RV64 capability
+delta from Task 001.
 
 Use `templates/EVIDENCE_REPORT.md` as a reporting structure. Never rename scaffold
 metadata tests to imply that the freestanding image booted.

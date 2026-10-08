@@ -101,17 +101,34 @@ mutation, and an audit-regression link.  Missing tools or evidence fail; there i
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
 
-Task 002 has a separate host suite and incremental target checker. Gates 0–9
-have recorded clean-source acceptance; Gate 10 qualification is in progress:
+Task 002 has a separate host suite and incremental target checker. Gates 0–10
+have recorded clean-source acceptance at `e0e1f21` (full identity in the ledger):
 
 ```sh
+nix develop --no-write-lock-file --command lake build
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
 nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
   --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
 ```
 
-The focused monitor interface passed at clean `8fd45d8`. Current `--all` and its
-optional extended stress must be judged by fresh reports and source identities,
-not assumed green from the earlier cumulative Gates 1--8 run. Follow the task
-ledger/checkpoint when resuming. Full detached-worktree qualification,
-publication and actual CI remain separate Task 002 obligations.
+The focused monitor interface passed historically at clean `8fd45d8`. The current
+`--all --stress`, legacy and qualifier passed separately in a cold detached
+worktree at `e0e1f21`: 482 cumulative/23 legacy boots and 26 raw-session replays.
+These do not inherit earlier passes. Follow the task ledger/checkpoint when
+resuming. Publication and actual CI remain separate Task 002 obligations.
+
+The cumulative/stress and qualification commands (the latter requires committed,
+clean source) are:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+```
+
+The first detached qualification failed closed on duplicate evidence-role labels;
+its valid cumulative/legacy results and failed report remain retained. The fixed
+candidate's complete detached rerun passed. Do not relabel earlier artifacts as
+outputs of the fix, or infer CI success from the workflow file.
