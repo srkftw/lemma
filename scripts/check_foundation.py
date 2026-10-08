@@ -2,8 +2,9 @@
 """Fail-closed acceptance driver for the incremental Task 002 foundation gates.
 
 Only gates whose complete construction and evidence checks exist are accepted by
-this driver.  Gate 1 exercises quarantined compiler faults through the genuine
-Lean frontend, structured lowering, LLVM, the audited RV64 image, and QEMU.
+this driver. Gate 1 exercises quarantined compiler faults; Gate 2 adds the
+versioned typed multi-root source/model/RV64 conformance pipeline. Both routes
+use genuine Lean elaboration, structured lowering, audited images, and QEMU.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from pathlib import Path
 from typing import TypeVar
 
 import audit_core0
-from build_core0 import build, prepare_output_directory
+from build_core0 import build, invalidate_output_file, prepare_output_directory
 from core0_common import (
     Core0Error,
     checked,
@@ -32,6 +33,7 @@ from core0_common import (
     write_json,
 )
 from run_core0 import run_case
+from check_foundation_gate2 import Gate2Failure, check_gate2
 
 
 U64_MAX = (1 << 64) - 1
@@ -651,6 +653,9 @@ def check_gate1(
     timeout_seconds: float,
     qemu_timeout: float,
 ) -> dict[str, object]:
+    # Invalidate the canonical PASS record before even descriptor/tool checks.
+    # A failed rerun therefore cannot be mistaken for current evidence.
+    invalidate_output_file(work / "gate1-results.json", root)
     # Validate the immutable descriptor before tool discovery or artifact creation.
     corpus = load_compiler_fault_corpus(corpus_path)
     rejections = load_compiler_fault_rejections(rejections_path, root)
@@ -956,32 +961,68 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--qemu-timeout", type=float, default=5.0)
     ns = parser.parse_args()
-    if ns.phase is not None and ns.phase != 1:
-        parser.error("only completed phase 1 is implemented; later gates fail closed")
+    if ns.phase is not None and ns.phase not in {1, 2}:
+        parser.error("only completed phases 1 and 2 are implemented; later gates fail closed")
     root = repo_root()
 
     def resolve(path: Path) -> Path:
         return (root / path).resolve() if not path.is_absolute() else path.resolve()
 
     work = resolve(ns.work_dir)
+    selected_gate = 2 if ns.phase == 2 else 1
     try:
-        report = check_gate1(
-            root=root,
-            work=work,
-            corpus_path=resolve(ns.compiler_faults),
-            rejections_path=resolve(ns.compiler_fault_rejections),
-            clean=ns.clean,
-            timeout_seconds=ns.timeout,
-            qemu_timeout=ns.qemu_timeout,
-        )
+        # `--all` owns this one exact aggregate output. Remove an earlier PASS
+        # before either child gate starts so a failed cumulative rerun is fail-closed.
+        if ns.all:
+            invalidate_output_file(work / "all-results.json", root)
+        # A new invocation supersedes the prior diagnostic regardless of scope.
+        invalidate_output_file(work / "check-failure.json", root)
+        if ns.all:
+            gate1 = check_gate1(
+                root=root,
+                work=work / "gate1",
+                corpus_path=resolve(ns.compiler_faults),
+                rejections_path=resolve(ns.compiler_fault_rejections),
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
+            selected_gate = 2
+            gate2 = check_gate2(
+                root=root,
+                work=work / "gate2",
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
+            report = {"schema_version": 1, "status": "pass", "gates": [gate1, gate2]}
+            write_json(work / "all-results.json", report)
+        elif ns.phase == 2:
+            report = check_gate2(
+                root=root,
+                work=work,
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
+        else:
+            report = check_gate1(
+                root=root,
+                work=work,
+                corpus_path=resolve(ns.compiler_faults),
+                rejections_path=resolve(ns.compiler_fault_rejections),
+                clean=ns.clean,
+                timeout_seconds=ns.timeout,
+                qemu_timeout=ns.qemu_timeout,
+            )
     except (Core0Error, OSError, ValueError, json.JSONDecodeError) as error:
         failure_record: dict[str, object] = {
             "schema_version": 1,
             "status": "fail",
-            "gate": 1,
+            "gate": selected_gate,
             "error": str(error),
         }
-        if isinstance(error, Gate1Failure):
+        if isinstance(error, (Gate1Failure, Gate2Failure)):
             failure_record["failure_category"] = error.category
             failure_record["failure_context"] = error.context
             failure_record["failure_detail"] = error.detail
@@ -992,14 +1033,27 @@ def main() -> int:
                 pass
         print(f"FOUNDATION CHECK FAIL: {error}", file=sys.stderr)
         return 1
-    counts = report["counts"]
-    assert isinstance(counts, dict)
-    print(
-        "FOUNDATION GATE 1 PASS: "
-        f"{counts['clean_control_qemu_boots']} clean-control boots; "
-        f"{counts['verified_behavioral_mismatches']} verified compiler-fault mismatches"
-    )
-    print(f"evidence: {work / 'gate1-results.json'}")
+    if ns.all:
+        print("FOUNDATION GATES 1-2 PASS")
+        print(f"evidence: {work / 'all-results.json'}")
+    elif ns.phase == 2:
+        counts = report["counts"]
+        assert isinstance(counts, dict)
+        print(
+            "FOUNDATION GATE 2 PASS: "
+            f"{counts['roots']} roots; {counts['cases_per_profile']} cases/profile; "
+            f"{counts['qemu_boots_total']} QEMU boots"
+        )
+        print(f"evidence: {work / 'gate2-results.json'}")
+    else:
+        counts = report["counts"]
+        assert isinstance(counts, dict)
+        print(
+            "FOUNDATION GATE 1 PASS: "
+            f"{counts['clean_control_qemu_boots']} clean-control boots; "
+            f"{counts['verified_behavioral_mismatches']} verified compiler-fault mismatches"
+        )
+        print(f"evidence: {work / 'gate1-results.json'}")
     return 0
 
 

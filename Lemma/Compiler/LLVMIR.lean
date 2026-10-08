@@ -54,6 +54,35 @@ def Predicate.render : Predicate → String
   | .uge => "uge"
   | .slt => "slt"
 
+/-- Integer extension attributes that participate in a platform calling convention.
+This is deliberately closed instead of accepting arbitrary textual LLVM attributes. -/
+inductive ABIExtension where
+  | zeroext
+  | signext
+  deriving Repr, BEq, DecidableEq
+
+def ABIExtension.render : ABIExtension → String
+  | .zeroext => "zeroext"
+  | .signext => "signext"
+
+private def renderExtensionPrefix : Option ABIExtension → String
+  | some extension => extension.render ++ " "
+  | none => ""
+
+private def renderExtensionSuffix : Option ABIExtension → String
+  | some extension => " " ++ extension.render
+  | none => ""
+
+/-- A call operand together with the exact ABI extension attached at that call site. -/
+structure ABIArgument where
+  ty : Ty
+  value : Operand
+  extension : Option ABIExtension := none
+  deriving Repr, BEq
+
+def ABIArgument.render (argument : ABIArgument) : String :=
+  argument.ty.render ++ renderExtensionSuffix argument.extension ++ " " ++ argument.value.render
+
 inductive Instruction where
   | bin (result : String) (op : BinOp) (ty : Ty) (lhs rhs : Operand)
   | icmp (result : String) (predicate : Predicate) (ty : Ty) (lhs rhs : Operand)
@@ -62,10 +91,13 @@ inductive Instruction where
   | trunc (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
   | select (result : String) (condition : Operand) (ty : Ty) (onTrue onFalse : Operand)
   | ptrFromInt (result : String) (value : Nat)
+  | intToPtr (result : String) (value : Operand)
   | load (result : String) (ty : Ty) (address : Operand) (alignment : Nat) (volatile : Bool)
   | store (ty : Ty) (value address : Operand) (alignment : Nat) (volatile : Bool)
   | call (result : Option String) (returnType : Ty) (callee : String)
       (args : Array (Ty × Operand))
+  | abiCall (result : Option String) (returnType : Ty)
+      (returnExtension : Option ABIExtension) (callee : String) (args : Array ABIArgument)
   | phi (result : String) (ty : Ty) (incoming : Array (Operand × String))
   | branch (condition : Operand) (onTrue onFalse : String)
   | jump (target : String)
@@ -91,6 +123,8 @@ def Instruction.render : Instruction → String
       assignment result ++ s!"select i1 {condition.render}, {ty.render} {onTrue.render}, {ty.render} {onFalse.render}"
   | .ptrFromInt result value =>
       assignment result ++ s!"inttoptr i64 {value} to ptr"
+  | .intToPtr result value =>
+      assignment result ++ s!"inttoptr i64 {value.render} to ptr"
   | .load result ty address alignment volatile =>
       assignment result ++ "load " ++ (if volatile then "volatile " else "") ++
         s!"{ty.render}, ptr {address.render}, align {alignment}"
@@ -101,6 +135,11 @@ def Instruction.render : Instruction → String
       let pre := result.map (fun name => assignment name) |>.getD ""
       let renderedArgs := args.toList.map (fun (ty, value) => value.typed ty)
       pre ++ s!"call {returnType.render} @{callee}(" ++ String.intercalate ", " renderedArgs ++ ")"
+  | .abiCall result returnType returnExtension callee args =>
+      let pre := result.map (fun name => assignment name) |>.getD ""
+      let renderedArgs := args.toList.map ABIArgument.render
+      pre ++ "call " ++ renderExtensionPrefix returnExtension ++
+        s!"{returnType.render} @{callee}(" ++ String.intercalate ", " renderedArgs ++ ")"
   | .phi result ty incoming =>
       let rendered := incoming.toList.map fun (value, label) => s!"[ {value.render}, %{label} ]"
       assignment result ++ s!"phi {ty.render} " ++ String.intercalate ", " rendered
@@ -127,7 +166,11 @@ structure Parameter where
 structure Function where
   name : String
   returnType : Ty
+  returnExtension : Option ABIExtension := none
   parameters : Array Parameter
+  /-- Empty means no ABI extensions (the legacy representation).  Typed ABI
+  producers provide one entry per parameter. -/
+  parameterExtensions : Array (Option ABIExtension) := #[]
   linkage : Option String := none
   attributes : Array String := #["nounwind"]
   blocks : Array Block
@@ -135,9 +178,12 @@ structure Function where
 
 def Function.render (fn : Function) : String :=
   let linkage := fn.linkage.map (· ++ " ") |>.getD ""
-  let params := fn.parameters.toList.map fun p => p.ty.render ++ " %" ++ p.name
+  let params := fn.parameters.mapIdx (fun index p =>
+    let extension := (fn.parameterExtensions[index]?).getD none
+    p.ty.render ++ renderExtensionSuffix extension ++ " %" ++ p.name) |>.toList
   let attrs := if fn.attributes.isEmpty then "" else " " ++ String.intercalate " " fn.attributes.toList
-  let header := s!"define {linkage}{fn.returnType.render} @{fn.name}(" ++ String.intercalate ", " params ++ ")" ++ attrs ++ " {"
+  let header := "define " ++ linkage ++ renderExtensionPrefix fn.returnExtension ++
+    s!"{fn.returnType.render} @{fn.name}(" ++ String.intercalate ", " params ++ ")" ++ attrs ++ " {"
   header ++ "\n" ++ String.intercalate "\n" (fn.blocks.toList.map Block.render) ++ "\n}"
 
 structure Declaration where

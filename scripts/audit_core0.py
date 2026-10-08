@@ -29,13 +29,32 @@ REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+SCALAR_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "scalar-suite-manifest.json",
+    "scalar-suite-normalized.txt",
+    "scalar-test-abi.json",
+    "symbols.txt",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
+TEST_FRONTEND_SUITE_POLICY = "test-frontend-suite"
 AUDIT_POLICIES = (
     RELEASE_POLICY,
     TEST_COMPILER_CONTROL_POLICY,
     TEST_COMPILER_MUTANT_POLICY,
+    TEST_FRONTEND_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -70,6 +89,7 @@ ALLOWED_RELOCATIONS = {
     "R_RISCV_PCREL_HI20",
     "R_RISCV_PCREL_LO12_I",
 }
+SCALAR_O2_JUMP_TABLE_RELOCATION = "R_RISCV_64"
 EXPECTED_LINK_COMMAND = ["ld.lld", *LINK_ARGUMENTS, "-o", "image.elf", "startup.o", "program.o"]
 EXPECTED_STARTUP_COMMAND = ["clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"]
 EXPECTED_MACHINE_PRIMITIVES = [
@@ -99,6 +119,33 @@ EXPECTED_MACHINE_PRIMITIVES = [
         "implementation": "Lemma.Machine.Harness.exitSuccess/exitFailure",
     },
 ]
+EXPECTED_SCALAR_MACHINE_PRIMITIVES = [
+    {
+        "identity": "startup",
+        "effect": "machine-state",
+        "implementation": "Lemma.Machine.Primitives.startup",
+    },
+    {
+        "identity": "io-fence",
+        "effect": "ordered-mmio",
+        "implementation": "Lemma.Machine.Primitives.ioFence",
+    },
+    {
+        "identity": "uart16550",
+        "effect": "bounded-ordered-mmio",
+        "implementation": "Lemma.Machine.Harness.uartPutc/uartDrain",
+    },
+    {
+        "identity": "typed-runtime-input",
+        "effect": "fixed-memory-read",
+        "implementation": "Lemma.Machine.ScalarHarness.main",
+    },
+    {
+        "identity": "sifive-test",
+        "effect": "vm-termination-mmio",
+        "implementation": "Lemma.Machine.Harness.exitSuccess/exitFailure",
+    },
+]
 MACHINE_IR_FUNCTIONS = {
     "core0_exit_failure",
     "core0_exit_success",
@@ -110,6 +157,111 @@ MACHINE_IR_FUNCTIONS = {
 FINAL_ALLOC_SECTIONS = {".text", ".rodata", ".data", ".bss"}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")
 LLVM_IDENTIFIER = re.compile(r"[A-Za-z_.$][A-Za-z0-9_.$-]*")
+
+SCALAR_TEST_ABI = "lemma-scalar-test-v1"
+SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarBuild.lean"
+SCALAR_BASE = "Lemma.Examples.Foundation.Conformance"
+SCALAR_SUPPORT = f"{SCALAR_BASE}.Support"
+SCALAR_ABI_ROOT = f"{SCALAR_BASE}.abiNoInlineRoot"
+SCALAR_ABI_CALLEE = f"{SCALAR_SUPPORT}.abiNoInlineCallee"
+
+# This is deliberately independent of the corpus generator.  The audit accepts
+# exactly the reviewed Gate 2 declaration closure, in dependency-first order;
+# changing the generated corpus does not silently change this allowlist.
+SCALAR_FUNCTION_CONTRACTS: tuple[
+    tuple[str, tuple[str, ...], str, tuple[str, ...]], ...
+] = (
+    (f"{SCALAR_BASE}.constantU64", (), "u64", ()),
+    (f"{SCALAR_BASE}.boolEq", ("bool", "bool"), "bool", ()),
+    (f"{SCALAR_BASE}.boolSelect", ("bool", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.u8Add", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8Sub", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8Mul", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8And", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8Or", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8Xor", ("u8", "u8"), "u8", ()),
+    (f"{SCALAR_BASE}.u8Eq", ("u8", "u8"), "bool", ()),
+    (f"{SCALAR_BASE}.u8Lt", ("u8", "u8"), "bool", ()),
+    (f"{SCALAR_BASE}.u8Le", ("u8", "u8"), "bool", ()),
+    (f"{SCALAR_BASE}.u32Arithmetic", ("u32", "u32", "u32"), "u32", ()),
+    (f"{SCALAR_BASE}.u32Bits", ("u32", "u32", "u32"), "u32", ()),
+    (f"{SCALAR_BASE}.u32Comparisons", ("u32", "u32", "u32"), "u32", ()),
+    (f"{SCALAR_BASE}.u64Arithmetic", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.u64Bits", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.u64Comparisons", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.u8ToU32", ("u8",), "u32", ()),
+    (f"{SCALAR_BASE}.u8ToU64", ("u8",), "u64", ()),
+    (f"{SCALAR_BASE}.u32ToU8", ("u32",), "u8", ()),
+    (f"{SCALAR_BASE}.u32ToU64", ("u32",), "u64", ()),
+    (f"{SCALAR_BASE}.u64ToU8", ("u64",), "u8", ()),
+    (f"{SCALAR_BASE}.u64ToU32", ("u64",), "u32", ()),
+    (f"{SCALAR_SUPPORT}.mixedLeaf", ("bool", "u8", "u32", "u64"), "u64", ()),
+    (
+        f"{SCALAR_BASE}.mixedWidthCall",
+        ("bool", "u8", "u32", "u64"),
+        "u64",
+        (f"{SCALAR_SUPPORT}.mixedLeaf",),
+    ),
+    (f"{SCALAR_SUPPORT}.sharedLeaf", ("u64", "u64"), "u64", ()),
+    (
+        f"{SCALAR_SUPPORT}.sharedLeft",
+        ("u64", "u64"),
+        "u64",
+        (f"{SCALAR_SUPPORT}.sharedLeaf",),
+    ),
+    (
+        f"{SCALAR_SUPPORT}.sharedRight",
+        ("u64", "u64"),
+        "u64",
+        (f"{SCALAR_SUPPORT}.sharedLeaf",),
+    ),
+    (
+        f"{SCALAR_BASE}.sharedDiamond",
+        ("u64", "u64"),
+        "u64",
+        (f"{SCALAR_SUPPORT}.sharedLeft", f"{SCALAR_SUPPORT}.sharedRight"),
+    ),
+    (
+        SCALAR_ABI_CALLEE,
+        ("u64", "u8", "u32", "bool", "u64", "u8", "u32", "bool", "u8", "u32"),
+        "u64",
+        (),
+    ),
+    (
+        SCALAR_ABI_ROOT,
+        ("u64", "u8", "u32", "bool", "u64", "u8", "u32", "bool", "u8", "u32"),
+        "u64",
+        (SCALAR_ABI_CALLEE,),
+    ),
+    (f"{SCALAR_BASE}.metamorphicAlphaOriginal", ("u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.metamorphicAlphaRenamed", ("u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.metamorphicInline", ("u64", "u64"), "u64", ()),
+    (f"{SCALAR_SUPPORT}.extractedStep", ("u64", "u64"), "u64", ()),
+    (
+        f"{SCALAR_BASE}.metamorphicExtracted",
+        ("u64", "u64"),
+        "u64",
+        (f"{SCALAR_SUPPORT}.extractedStep",),
+    ),
+    (f"{SCALAR_BASE}.metamorphicLetFlat", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.metamorphicLetNested", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.MovedA.metamorphicModule", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.MovedB.metamorphicModule", ("u64", "u64", "u64"), "u64", ()),
+    (f"{SCALAR_BASE}.ImportBase.metamorphicImport", ("u32", "u32"), "u32", ()),
+    (f"{SCALAR_BASE}.ImportExtra.metamorphicImport", ("u32", "u32"), "u32", ()),
+)
+
+# Preserve the exact declaration order from ScalarBuild.lean rather than deriving
+# roots from dependency shape (some roots themselves contain direct calls).
+SCALAR_ROOT_SOURCES = (
+    *(source for source, _args, _result, _deps in SCALAR_FUNCTION_CONTRACTS[:24]),
+    f"{SCALAR_BASE}.mixedWidthCall",
+    f"{SCALAR_BASE}.sharedDiamond",
+    SCALAR_ABI_ROOT,
+    *(source for source, _args, _result, _deps in SCALAR_FUNCTION_CONTRACTS[32:35]),
+    f"{SCALAR_BASE}.metamorphicExtracted",
+    *(source for source, _args, _result, _deps in SCALAR_FUNCTION_CONTRACTS[37:]),
+)
 
 
 def expected_program_command(optimization: str) -> list[str]:
@@ -531,6 +683,660 @@ def validate_core0_manifest(value: object) -> dict[str, object]:
     return value
 
 
+def _scalar_abi_extension(ty: str) -> str:
+    return {
+        "bool": "zeroext",
+        "u8": "zeroext",
+        "u32": "signext",
+        "u64": "none",
+    }[ty]
+
+
+def _scalar_signature(args: tuple[str, ...], result: str) -> dict[str, object]:
+    return {"args": list(args), "result": result}
+
+
+def _validate_scalar_u64_hex(value: object, context: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{16}", value) is None:
+        raise Core0Error(f"{context} is not a canonical 16-digit UInt64 hexadecimal value")
+    return value
+
+
+def validate_scalar_export_configuration(
+    value: object, manifest: dict[str, object], root: Path
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("scalar-suite provenance lacks exporter configuration")
+    _exact_keys(
+        value,
+        {"driver", "generation_command", "environment"},
+        "scalar exporter configuration",
+    )
+    expected_command = [
+        "lake",
+        "env",
+        "lean",
+        str((root / SCALAR_EXPORT_DRIVER).resolve()),
+    ]
+    if value.get("driver") != SCALAR_EXPORT_DRIVER:
+        raise Core0Error("scalar exporter configuration names the wrong Lean driver")
+    if value.get("generation_command") != expected_command:
+        raise Core0Error("scalar exporter generation command differs from the executed driver")
+    environment = value.get("environment")
+    if not isinstance(environment, dict):
+        raise Core0Error("scalar exporter configuration environment is not an object")
+    expected_environment = {
+        "LEMMA_SCALAR_RUNTIME_SEED": str(int(str(manifest["runtime_seed"]), 16)),
+        "LEMMA_SCALAR_SOURCE_SEED": str(int(str(manifest["source_seed"]), 16)),
+        "LEMMA_SCALAR_SUITE_ID": str(int(str(manifest["suite_id"]), 16)),
+    }
+    _exact_keys(
+        environment,
+        set(expected_environment),
+        "scalar exporter configuration environment",
+    )
+    if environment != expected_environment:
+        raise Core0Error(
+            "scalar exporter configuration values differ from the checked suite manifest"
+        )
+    return value
+
+
+def validate_scalar_export_command_log(
+    configuration: dict[str, object], command_argv: list[object]
+) -> None:
+    expected = configuration.get("generation_command")
+    if expected not in command_argv:
+        raise Core0Error(
+            "provenance command log omits the exact scalar exporter invocation"
+        )
+
+
+def validate_scalar_suite_manifest(value: object) -> dict[str, object]:
+    """Validate the closed 37-root Gate 2 suite and its 43-function closure."""
+    if not isinstance(value, dict):
+        raise Core0Error("scalar-suite-manifest.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "artifact_category",
+            "contract_version",
+            "test_abi",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+            "roots",
+            "functions",
+            "used_primitives",
+            "machine_primitives",
+        },
+        "scalar suite manifest",
+    )
+    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
+        raise Core0Error("scalar suite manifest has an unsupported schema")
+    if value.get("artifact_category") != TEST_FRONTEND_SUITE_POLICY:
+        raise Core0Error("scalar suite manifest has the wrong artifact category")
+    if value.get("contract_version") != "core0-v0.1":
+        raise Core0Error("scalar suite manifest has an unsupported Core0 contract")
+    if value.get("test_abi") != SCALAR_TEST_ABI:
+        raise Core0Error("scalar suite manifest has an unsupported typed test ABI")
+    for field in ("suite_id", "source_seed", "runtime_seed"):
+        _validate_scalar_u64_hex(value.get(field), f"scalar suite manifest {field}")
+
+    function_contract = {
+        source: (args, result, dependencies)
+        for source, args, result, dependencies in SCALAR_FUNCTION_CONTRACTS
+    }
+    functions = value.get("functions")
+    if not isinstance(functions, list) or len(functions) != len(SCALAR_FUNCTION_CONTRACTS):
+        raise Core0Error(
+            "scalar suite manifest must contain the exact 43-function dependency closure"
+        )
+    source_symbols: dict[str, str] = {}
+    seen_symbols: set[str] = set()
+    for index, (function, contract) in enumerate(
+        zip(functions, SCALAR_FUNCTION_CONTRACTS)
+    ):
+        expected_source = contract[0]
+        if not isinstance(function, dict) or function.get("source") != expected_source:
+            raise Core0Error(f"scalar suite function #{index} has the wrong source identity")
+        symbol = function.get("llvm")
+        if (
+            not isinstance(symbol, str)
+            or LLVM_IDENTIFIER.fullmatch(symbol) is None
+            or symbol in seen_symbols
+        ):
+            raise Core0Error(f"scalar suite function {expected_source} has an invalid/duplicate LLVM symbol")
+        source_symbols[expected_source] = symbol
+        seen_symbols.add(symbol)
+    roots = value.get("roots")
+    if not isinstance(roots, list) or len(roots) != len(SCALAR_ROOT_SOURCES):
+        raise Core0Error(
+            "scalar suite manifest must contain the exact 37-root declaration catalog"
+        )
+    for index, (root, expected_source) in enumerate(zip(roots, SCALAR_ROOT_SOURCES)):
+        if not isinstance(root, dict):
+            raise Core0Error(f"scalar suite root #{index} is not an object")
+        _exact_keys(
+            root,
+            {
+                "root_id",
+                "source",
+                "llvm",
+                "signature",
+                "return_extension",
+                "parameter_extensions",
+            },
+            f"scalar suite root #{index}",
+        )
+        args, result, _dependencies = function_contract[expected_source]
+        expected_id = index + 1
+        expected_symbol = source_symbols[expected_source]
+        if type(root.get("root_id")) is not int or root.get("root_id") != expected_id:
+            raise Core0Error(f"scalar suite root #{index} has a non-canonical root ID")
+        if root.get("source") != expected_source or root.get("llvm") != expected_symbol:
+            raise Core0Error(f"scalar suite root #{index} has the wrong source/symbol identity")
+        signature = _validate_signature(root.get("signature"), f"scalar suite root {expected_source}")
+        if signature != _scalar_signature(args, result):
+            raise Core0Error(f"scalar suite root {expected_source} has the wrong signature")
+        if root.get("return_extension") != _scalar_abi_extension(result):
+            raise Core0Error(f"scalar suite root {expected_source} has the wrong return extension")
+        if root.get("parameter_extensions") != [
+            _scalar_abi_extension(arg) for arg in args
+        ]:
+            raise Core0Error(
+                f"scalar suite root {expected_source} has the wrong parameter extensions"
+            )
+
+    for index, (function, contract) in enumerate(
+        zip(functions, SCALAR_FUNCTION_CONTRACTS)
+    ):
+        source, args, result, dependencies = contract
+        if not isinstance(function, dict):
+            raise Core0Error(f"scalar suite function #{index} is not an object")
+        _exact_keys(
+            function,
+            {
+                "source",
+                "llvm",
+                "signature",
+                "dependencies",
+                "body",
+                "return_extension",
+                "parameter_extensions",
+                "noinline",
+            },
+            f"scalar suite function #{index}",
+        )
+        if function.get("source") != source or function.get("llvm") != source_symbols[source]:
+            raise Core0Error(f"scalar suite function #{index} has the wrong source/symbol identity")
+        signature = _validate_signature(function.get("signature"), f"scalar suite function {source}")
+        if signature != _scalar_signature(args, result):
+            raise Core0Error(f"scalar suite function {source} has the wrong signature")
+        if function.get("dependencies") != list(dependencies):
+            raise Core0Error(f"scalar suite function {source} has the wrong dependency closure")
+        body = function.get("body")
+        if (
+            not isinstance(body, str)
+            or not body.startswith("(")
+            or not body.endswith(")")
+            or "\n" in body
+            or "\r" in body
+        ):
+            raise Core0Error(f"scalar suite function {source} lacks a normalized typed body")
+        if function.get("return_extension") != _scalar_abi_extension(result):
+            raise Core0Error(f"scalar suite function {source} has the wrong return extension")
+        if function.get("parameter_extensions") != [
+            _scalar_abi_extension(arg) for arg in args
+        ]:
+            raise Core0Error(
+                f"scalar suite function {source} has the wrong parameter extensions"
+            )
+        if function.get("noinline") is not True:
+            raise Core0Error(f"scalar suite function {source} is not pinned noinline")
+
+    primitives = value.get("used_primitives")
+    if not isinstance(primitives, list) or len(primitives) != len(PRIMITIVE_CONTRACTS):
+        raise Core0Error("scalar suite primitive manifest is not the complete Core0 allowlist")
+    seen_primitives: set[str] = set()
+    for index, primitive in enumerate(primitives):
+        if not isinstance(primitive, dict):
+            raise Core0Error(f"scalar suite primitive #{index} is not an object")
+        stable_id = primitive.get("stable_id")
+        if not isinstance(stable_id, str) or stable_id in seen_primitives:
+            raise Core0Error(f"scalar suite primitive #{index} has an invalid or duplicate ID")
+        expected = PRIMITIVE_CONTRACTS.get(stable_id)
+        if expected is None or primitive != expected:
+            raise Core0Error(f"scalar suite primitive contract is unknown or malformed: {stable_id!r}")
+        seen_primitives.add(stable_id)
+    if seen_primitives != set(PRIMITIVE_CONTRACTS):
+        raise Core0Error("scalar suite primitive manifest does not cover the exact allowlist")
+    if value.get("machine_primitives") != EXPECTED_SCALAR_MACHINE_PRIMITIVES:
+        raise Core0Error(
+            "scalar suite machine-primitive contracts differ from the exact allowlist"
+        )
+    return value
+
+
+def validate_scalar_test_abi(
+    value: object, manifest: dict[str, object]
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("scalar-test-abi.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "name",
+            "byte_order",
+            "magic_bytes",
+            "magic_word",
+            "version",
+            "header_bytes",
+            "record_bytes",
+            "maximum_arguments",
+            "maximum_cases",
+            "tags",
+            "header_words",
+            "record_layout",
+            "transport_rules",
+            "output_protocol",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+        },
+        "scalar test ABI manifest",
+    )
+    static = {
+        "schema_version": 1,
+        "name": SCALAR_TEST_ABI,
+        "byte_order": "little-endian",
+        "magic_bytes": "4c454d4d41303032",
+        "magic_word": "0x323030414d4d454c",
+        "version": 1,
+        "header_bytes": 128,
+        "record_bytes": 136,
+        "maximum_arguments": 16,
+        "maximum_cases": 29,
+        "tags": {"bool": 1, "u8": 2, "u32": 3, "u64": 4},
+        "header_words": [
+            "magic",
+            "version",
+            "header_bytes",
+            "record_bytes",
+            "suite_id",
+            "batch_id",
+            "root_id",
+            "case_count",
+            "argument_count",
+            "result_tag",
+            "argument_tags_0_7",
+            "argument_tags_8_15",
+            "source_seed",
+            "runtime_seed",
+            "reserved_zero",
+            "reserved_zero",
+        ],
+        "record_layout": "case_id:u64,arguments:16xu64; unused slots zero",
+        "transport_rules": (
+            "Bool=0/1; UInt8<=255; UInt32<=4294967295; UInt64 unrestricted; "
+            "reject before truncation; zero-extend narrow results to u64"
+        ),
+        "output_protocol": {
+            "banner": "LEMMA_SCALAR/1\n",
+            "batch": "BATCH:<suite16>:<batch16>:<root16>:<count16>\n",
+            "result": "RESULT:<case16>:<tag16>:<value16>\n",
+            "end": "END:<batch16>:<count16>\n",
+            "hex": "lowercase fixed-width",
+        },
+    }
+    for field, expected in static.items():
+        observed = value.get(field)
+        if isinstance(expected, int) and type(observed) is not int:
+            raise Core0Error(f"scalar test ABI {field} has the wrong JSON type")
+        if observed != expected:
+            raise Core0Error(f"scalar test ABI {field} differs from the closed wire contract")
+    tags = value.get("tags")
+    if not isinstance(tags, dict) or any(type(item) is not int for item in tags.values()):
+        raise Core0Error("scalar test ABI tags have the wrong JSON types")
+    for field in ("suite_id", "source_seed", "runtime_seed"):
+        observed = _validate_scalar_u64_hex(value.get(field), f"scalar test ABI {field}")
+        if observed != manifest.get(field):
+            raise Core0Error(f"scalar test ABI {field} differs from the suite manifest")
+    return value
+
+
+def validate_scalar_manifest_companions(
+    manifest: dict[str, object], normalized_text: str, symbols_text: str
+) -> None:
+    roots = manifest["roots"]
+    functions = manifest["functions"]
+    primitives = manifest["used_primitives"]
+    assert isinstance(roots, list) and isinstance(functions, list) and isinstance(primitives, list)
+    normalized_lines = [f"contract={manifest['contract_version']}"]
+    for root in roots:
+        assert isinstance(root, dict) and isinstance(root["signature"], dict)
+        signature = json.dumps(root["signature"], separators=(",", ":"))
+        normalized_lines.append(
+            f"root={root['root_id']};source={root['source']};signature={signature}"
+        )
+    symbol_lines: list[str] = []
+    for function in functions:
+        assert isinstance(function, dict) and isinstance(function["signature"], dict)
+        signature = json.dumps(function["signature"], separators=(",", ":"))
+        normalized_lines.append(
+            f"function={function['source']};signature={signature};body={function['body']}"
+        )
+        symbol_lines.append(f"source={function['source']};llvm={function['llvm']}")
+    for primitive in primitives:
+        assert isinstance(primitive, dict)
+        normalized_lines.append(f"primitive={primitive['stable_id']}")
+    expected_normalized = "\n".join(normalized_lines) + "\n"
+    expected_symbols = "\n".join(symbol_lines) + "\n"
+    if normalized_text != expected_normalized:
+        raise Core0Error(
+            "scalar-suite-normalized.txt does not match the parsed scalar manifest"
+        )
+    if symbols_text != expected_symbols:
+        raise Core0Error("symbols.txt does not match the scalar source-to-LLVM mapping")
+
+
+def _llvm_scalar_type(ty: str) -> str:
+    return {"bool": "i1", "u8": "i8", "u32": "i32", "u64": "i64"}[ty]
+
+
+def _llvm_scalar_return(ty: str) -> str:
+    extension = _scalar_abi_extension(ty)
+    prefix = "" if extension == "none" else extension + " "
+    return prefix + _llvm_scalar_type(ty)
+
+
+def _llvm_scalar_parameter(ty: str) -> str:
+    extension = _scalar_abi_extension(ty)
+    suffix = "" if extension == "none" else " " + extension
+    return _llvm_scalar_type(ty) + suffix
+
+
+def _ir_definition_body(ir: str, symbol: str) -> str:
+    pattern = re.compile(
+        rf"^define\s+[^\n]*@{re.escape(symbol)}\([^\n]*\)[^\n]*\{{\n"
+        rf"(?P<body>.*?)^\}}\s*$",
+        re.MULTILINE | re.DOTALL,
+    )
+    matches = list(pattern.finditer(ir))
+    if len(matches) != 1:
+        raise Core0Error(f"LLVM IR does not contain exactly one definition of {symbol}")
+    return matches[0].group("body")
+
+
+def validate_scalar_pre_abi(
+    manifest: dict[str, object], pre_ir: str
+) -> dict[str, object]:
+    """Bind every source definition and direct call to the reviewed LP64 attributes."""
+    functions = manifest["functions"]
+    roots = manifest["roots"]
+    assert isinstance(functions, list) and isinstance(roots, list)
+    root_symbols = {
+        str(root["llvm"]) for root in roots if isinstance(root, dict)
+    }
+    by_symbol: dict[str, dict[str, object]] = {}
+    source_to_symbol: dict[str, str] = {}
+    for function in functions:
+        assert isinstance(function, dict)
+        symbol = str(function["llvm"])
+        source = str(function["source"])
+        signature = function["signature"]
+        assert isinstance(signature, dict)
+        args = signature["args"]
+        result = signature["result"]
+        assert isinstance(args, list) and isinstance(result, str)
+        return_text = _llvm_scalar_return(result)
+        parameters = ", ".join(
+            f"{_llvm_scalar_parameter(arg)} %arg{index}"
+            for index, arg in enumerate(args)
+        )
+        header = re.compile(
+            rf"^define (?P<linkage>internal )?{re.escape(return_text)} "
+            rf"@{re.escape(symbol)}\({re.escape(parameters)}\) nounwind noinline "
+            rf'"disable\-tail\-calls"="true" \{{$',
+            re.MULTILINE,
+        )
+        matches = list(header.finditer(pre_ir))
+        if len(matches) != 1:
+            raise Core0Error(
+                f"pre_optimization IR definition for {source} lacks its exact LP64 ABI/noinline header"
+            )
+        if matches[0].group("linkage") is not None:
+            raise Core0Error(
+                f"dedicated scalar ABI function {source} is not externally/default-CC callable"
+            )
+        by_symbol[symbol] = function
+        source_to_symbol[source] = symbol
+
+    call_pattern = re.compile(
+        r"\bcall\s+(?P<return>(?:(?:zeroext|signext)\s+)?i(?:1|8|32|64))\s+"
+        r"@(?P<callee>[A-Za-z_.$][A-Za-z0-9_.$-]*)\((?P<args>[^)]*)\)"
+    )
+    call_counts = {symbol: 0 for symbol in by_symbol}
+    for line in pre_ir.splitlines():
+        target_match = re.search(
+            r"\bcall\s+[^@\n]*@([A-Za-z_.$][A-Za-z0-9_.$-]*)\(", line
+        )
+        if target_match is None or target_match.group(1) not in by_symbol:
+            continue
+        match = call_pattern.search(line)
+        if match is None or match.group("callee") != target_match.group(1):
+            raise Core0Error(f"pre_optimization scalar call is not parseable: {line.strip()}")
+        callee = match.group("callee")
+        function = by_symbol[callee]
+        signature = function["signature"]
+        assert isinstance(signature, dict)
+        expected_args = signature["args"]
+        expected_result = signature["result"]
+        assert isinstance(expected_args, list) and isinstance(expected_result, str)
+        if match.group("return") != _llvm_scalar_return(expected_result):
+            raise Core0Error(
+                f"pre_optimization call to {callee} has the wrong LP64 return attribute"
+            )
+        rendered_args = [] if not match.group("args") else match.group("args").split(", ")
+        if len(rendered_args) != len(expected_args):
+            raise Core0Error(f"pre_optimization call to {callee} has the wrong arity")
+        for index, (rendered, expected_ty) in enumerate(zip(rendered_args, expected_args)):
+            prefix = _llvm_scalar_parameter(expected_ty) + " "
+            if not rendered.startswith(prefix):
+                raise Core0Error(
+                    f"pre_optimization call to {callee} argument #{index} has the wrong LP64 attribute"
+                )
+            operand = rendered[len(prefix) :]
+            if re.fullmatch(r"(?:%[A-Za-z_.$][A-Za-z0-9_.$-]*|-?[0-9]+)", operand) is None:
+                raise Core0Error(
+                    f"pre_optimization call to {callee} argument #{index} is not a scalar operand"
+                )
+        call_counts[callee] += 1
+
+    for function in functions:
+        assert isinstance(function, dict)
+        symbol = str(function["llvm"])
+        dependencies = function["dependencies"]
+        assert isinstance(dependencies, list)
+        expected_callees = {source_to_symbol[str(dependency)] for dependency in dependencies}
+        body = _ir_definition_body(pre_ir, symbol)
+        _definitions, _declarations, observed_callees = parse_definitions_and_calls(body)
+        observed_user_callees = observed_callees & set(by_symbol)
+        if observed_user_callees != expected_callees:
+            raise Core0Error(
+                f"pre_optimization call graph for {function['source']} differs from its manifest: "
+                f"{sorted(observed_user_callees)!r} != {sorted(expected_callees)!r}"
+            )
+
+    main_body = _ir_definition_body(pre_ir, "core0_main")
+    _definitions, _declarations, main_calls = parse_definitions_and_calls(main_body)
+    if main_calls & set(by_symbol) != root_symbols:
+        raise Core0Error("typed scalar harness call closure differs from the exact root catalog")
+    for root_symbol in root_symbols:
+        if len(re.findall(rf"\bcall\s+[^\n]*@{re.escape(root_symbol)}\(", main_body)) != 1:
+            raise Core0Error(
+                f"typed scalar harness does not call root {root_symbol} exactly once"
+            )
+    unused = sorted(symbol for symbol, count in call_counts.items() if count == 0)
+    if unused:
+        raise Core0Error(f"scalar suite contains functions with no typed call site: {unused!r}")
+    return {
+        "function_count": len(functions),
+        "root_count": len(roots),
+        "call_site_count": sum(call_counts.values()),
+        "call_sites_by_symbol": call_counts,
+    }
+
+
+def validate_scalar_post_noinline(
+    manifest: dict[str, object], post_ir: str
+) -> None:
+    functions = manifest["functions"]
+    assert isinstance(functions, list)
+    attribute_groups = {
+        int(identifier): body
+        for identifier, body in re.findall(
+            r"^attributes #(\d+) = \{([^\n]*)\}$", post_ir, re.MULTILINE
+        )
+    }
+    for function in functions:
+        assert isinstance(function, dict)
+        symbol = str(function["llvm"])
+        header = re.search(
+            rf"^define\s+[^\n]*@{re.escape(symbol)}\([^\n]*\)(?P<suffix>[^\n]*)\{{$",
+            post_ir,
+            re.MULTILINE,
+        )
+        if header is None:
+            raise Core0Error(f"optimized IR removed required noinline scalar function {symbol}")
+        group = re.search(r"#(\d+)(?:\s|$)", header.group("suffix"))
+        inline_noinline = re.search(r"\bnoinline\b", header.group("suffix")) is not None
+        grouped_noinline = (
+            group is not None
+            and re.search(
+                r"\bnoinline\b", attribute_groups.get(int(group.group(1)), "")
+            )
+            is not None
+        )
+        if not inline_noinline and not grouped_noinline:
+            raise Core0Error(f"optimized scalar function {symbol} lost its noinline attribute")
+
+
+def _disassembly_function(disassembly: str, symbol: str) -> str:
+    marker = f"<{symbol}>:"
+    parts = disassembly.split(marker, 1)
+    if len(parts) != 2:
+        raise Core0Error(f"disassembly lacks required scalar ABI symbol {symbol}")
+    return parts[1].split("\n\n", 1)[0]
+
+
+def _parse_assembly_offset(text: str) -> int:
+    try:
+        return int(text, 0)
+    except ValueError as error:
+        raise Core0Error(f"cannot parse audited RISC-V stack offset {text!r}") from error
+
+
+def _stack_frame_size(body: str, symbol: str, *, required: bool) -> int:
+    match = re.search(r"\baddi\s+sp,\s*sp,\s*(-(?:0x[0-9a-f]+|[0-9]+))\b", body)
+    if match is None:
+        if required:
+            raise Core0Error(f"scalar ABI caller {symbol} has no inspectable stack frame")
+        return 0
+    size = -_parse_assembly_offset(match.group(1))
+    if size <= 0 or size % 16 != 0:
+        raise Core0Error(
+            f"scalar ABI function {symbol} has a non-16-byte-aligned frame size: {size}"
+        )
+    return size
+
+
+def validate_scalar_abi_disassembly(
+    manifest: dict[str, object], disassembly: str, optimization: str
+) -> dict[str, object]:
+    functions = manifest["functions"]
+    assert isinstance(functions, list)
+    source_to_symbol = {
+        str(function["source"]): str(function["llvm"])
+        for function in functions
+        if isinstance(function, dict)
+    }
+    caller = source_to_symbol.get(SCALAR_ABI_ROOT)
+    callee = source_to_symbol.get(SCALAR_ABI_CALLEE)
+    if caller is None or callee is None:
+        raise Core0Error("scalar ABI anchor source identities are absent from the manifest")
+    caller_body = _disassembly_function(disassembly, caller)
+    callee_body = _disassembly_function(disassembly, callee)
+    frame_size = _stack_frame_size(caller_body, caller, required=True)
+    call = re.search(
+        rf"\b(?:jal|jalr)\b[^\n]*<{re.escape(callee)}>", caller_body
+    )
+    if call is None:
+        raise Core0Error(
+            f"{optimization} disassembly lacks a real link-register call from {caller} to {callee}"
+        )
+    before_call = caller_body[: call.start()]
+    after_call = caller_body[call.end() :]
+    if re.search(
+        rf"\baddi\s+sp,\s*sp,\s*(?:0x{frame_size:x}|{frame_size})\b", after_call
+    ) is None:
+        raise Core0Error(
+            f"{optimization} scalar ABI caller does not restore its aligned frame after the call"
+        )
+
+    incoming_registers: dict[int, str] = {}
+    for register, raw_offset in re.findall(
+        r"\bld\s+([a-z][a-z0-9]*),\s*(0x[0-9a-f]+|[0-9]+)\(sp\)", before_call
+    ):
+        incoming_registers[_parse_assembly_offset(raw_offset)] = register
+    expected_incoming = {
+        frame_size: 0,
+        frame_size + 8: 8,
+    }
+    aliases = {"sp"}
+    aliases.update(
+        re.findall(r"\bmv\s+([a-z][a-z0-9]*),\s*sp\b", before_call)
+    )
+    outgoing: dict[int, str] = {}
+    for register, raw_offset, base in re.findall(
+        r"\bsd\s+([a-z][a-z0-9]*),\s*(0x[0-9a-f]+|[0-9]+)\(([a-z][a-z0-9]*)\)",
+        before_call,
+    ):
+        if base in aliases:
+            outgoing[_parse_assembly_offset(raw_offset)] = register
+    for incoming_offset, outgoing_offset in expected_incoming.items():
+        register = incoming_registers.get(incoming_offset)
+        if register is None or outgoing.get(outgoing_offset) != register:
+            raise Core0Error(
+                f"{optimization} scalar ABI call does not pass argument "
+                f"{8 + outgoing_offset // 8} through stack offset {outgoing_offset}"
+            )
+
+    callee_frame = _stack_frame_size(callee_body, callee, required=False)
+    callee_load_offsets = {
+        _parse_assembly_offset(offset)
+        for offset in re.findall(
+            r"\bld\s+[a-z][a-z0-9]*,\s*(0x[0-9a-f]+|[0-9]+)\(sp\)", callee_body
+        )
+    }
+    required_callee_offsets = {callee_frame, callee_frame + 8}
+    if not required_callee_offsets <= callee_load_offsets:
+        raise Core0Error(
+            f"{optimization} scalar ABI callee does not consume stack-passed arguments 8/9"
+        )
+    return {
+        "caller": caller,
+        "callee": callee,
+        "caller_frame_bytes": frame_size,
+        "caller_frame_alignment": 16,
+        "stack_argument_offsets": [0, 8],
+        "callee_stack_load_offsets": sorted(required_callee_offsets),
+        "real_call": True,
+    }
+
+
 def validate_manifest_companions(
     manifest: dict[str, object], normalized_text: str, symbols_text: str
 ) -> None:
@@ -646,11 +1452,11 @@ def audit(
     expected_target_source: str | None = None,
     clean_control_directory: Path | None = None,
 ) -> dict[str, object]:
-    """Audit one complete image under an explicit release or quarantined-test policy.
+    """Audit one complete image under an explicit release or test policy.
 
     The default remains the public release audit.  Test compiler controls and
-    mutants must opt in by keyword so mutation-bearing artifacts cannot become
-    release artifacts through directory contents alone.
+    mutants, and the typed frontend suite, must opt in by keyword so test-only
+    artifacts cannot become release artifacts through directory contents alone.
     """
     policy = _validate_audit_policy(policy)
     expected_mutation = expected_fault is not None or expected_target_source is not None
@@ -686,6 +1492,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_FRONTEND_SUITE_POLICY:
+        required_artifacts = SCALAR_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     else:
         required_artifacts = REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -708,12 +1520,26 @@ def audit(
             policy=TEST_COMPILER_CONTROL_POLICY,
         )
 
-    manifest = validate_core0_manifest(load_json(paths["core0-manifest.json"]))
-    validate_manifest_companions(
-        manifest,
-        paths["core0-normalized.txt"].read_text(encoding="utf-8"),
-        paths["symbols.txt"].read_text(encoding="utf-8"),
-    )
+    scalar_test_abi: dict[str, object] | None = None
+    if policy == TEST_FRONTEND_SUITE_POLICY:
+        manifest = validate_scalar_suite_manifest(
+            load_json(paths["scalar-suite-manifest.json"])
+        )
+        scalar_test_abi = validate_scalar_test_abi(
+            load_json(paths["scalar-test-abi.json"]), manifest
+        )
+        validate_scalar_manifest_companions(
+            manifest,
+            paths["scalar-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    else:
+        manifest = validate_core0_manifest(load_json(paths["core0-manifest.json"]))
+        validate_manifest_companions(
+            manifest,
+            paths["core0-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
     mutation_manifest: dict[str, object] | None = None
     if policy == TEST_COMPILER_MUTANT_POLICY:
         mutation_manifest = validate_compiler_mutation_manifest(
@@ -790,6 +1616,15 @@ def audit(
     source_commit = provenance_obj.get("source_commit")
     if not isinstance(source_commit, str) or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
         raise Core0Error("provenance lacks a full Git source commit")
+    scalar_export_configuration: dict[str, object] | None = None
+    if policy == TEST_FRONTEND_SUITE_POLICY:
+        scalar_export_configuration = validate_scalar_export_configuration(
+            provenance_obj.get("export_configuration"), manifest, root
+        )
+    elif "export_configuration" in provenance_obj:
+        raise Core0Error(
+            f"{policy} provenance rejects scalar exporter configuration"
+        )
     optimization = provenance_obj.get("optimization")
     if optimization not in {"O0", "O2"}:
         raise Core0Error("provenance optimization profile is missing or unsupported")
@@ -914,6 +1749,17 @@ def audit(
             ),
             "purpose": "test-only compiler mutant and freestanding machine harness",
         },
+        TEST_FRONTEND_SUITE_POLICY: {
+            "kind": "test-frontend-suite-llvm",
+            "source": (
+                "program.ll generated from the deduplicated checked Core0 root suite "
+                "and typed scalar batch harness"
+            ),
+            "purpose": (
+                "test-only multi-root frontend conformance, RV64 LP64 ABI, and "
+                "freestanding batch execution"
+            ),
+        },
     }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
@@ -972,6 +1818,10 @@ def audit(
     if not isinstance(commands, list) or any(not isinstance(command, dict) for command in commands):
         raise Core0Error("provenance command log is missing or malformed")
     command_argv = [command.get("argv") for command in commands]
+    if scalar_export_configuration is not None:
+        validate_scalar_export_command_log(
+            scalar_export_configuration, command_argv
+        )
     for expected_command in expected_elaboration_commands:
         if expected_command not in command_argv:
             raise Core0Error(
@@ -1013,10 +1863,18 @@ def audit(
         if isinstance(function, dict)
     }
     expected_pre_definitions = manifest_user_symbols | MACHINE_IR_FUNCTIONS
-    root_llvm = str(manifest["root_llvm"])
+    scalar_abi_ir: dict[str, object] | None = None
+    if policy == TEST_FRONTEND_SUITE_POLICY:
+        scalar_abi_ir = validate_scalar_pre_abi(manifest, pre_ir)
+        validate_scalar_post_noinline(manifest, post_ir)
+        source_identity = "Lemma Gate 2 typed scalar suite"
+        root_llvm: str | None = None
+    else:
+        source_identity = str(manifest["root"])
+        root_llvm = str(manifest["root_llvm"])
     ir_findings: dict[str, object] = {}
     for label, ir in (("pre_optimization", pre_ir), ("post_optimization", post_ir)):
-        if f'source_filename = "{manifest["root"]}"' not in ir:
+        if f'source_filename = "{source_identity}"' not in ir:
             raise Core0Error(f"{label} IR source identity differs from the target manifest")
         if 'target triple = "riscv64-unknown-unknown-elf"' not in ir:
             raise Core0Error(f"{label} IR has the wrong or missing target triple")
@@ -1039,13 +1897,20 @@ def audit(
                 r"\bcall\b[^@\n]*@[A-Za-z0-9_.$-]+\(", line
             ) is None:
                 raise Core0Error(f"{label} IR contains an indirect or unparseable call: {line.strip()}")
-        if declarations != ALLOWED_EXTERNALS:
+        expected_externals = set(ALLOWED_EXTERNALS)
+        if (
+            policy == TEST_FRONTEND_SUITE_POLICY
+            and label == "post_optimization"
+            and optimization == "O2"
+        ):
+            expected_externals.add("llvm.umax.i64")
+        if declarations != expected_externals:
             raise Core0Error(
                 f"{label} IR external declarations differ from the exact machine-primitive "
                 f"allowlist: {sorted(declarations)}"
             )
         unresolved_calls = calls - definitions
-        if unresolved_calls != ALLOWED_EXTERNALS:
+        if unresolved_calls != expected_externals:
             raise Core0Error(f"{label} IR has unresolved calls: {sorted(unresolved_calls)}")
         forbidden = sorted(name for name in definitions | calls if FORBIDDEN_SYMBOL.search(name))
         if forbidden:
@@ -1055,14 +1920,20 @@ def audit(
                 "pre_optimization IR function closure differs from the manifest and "
                 f"machine allowlist: {sorted(definitions)!r}"
             )
-        if label == "post_optimization" and (
-            not definitions <= expected_pre_definitions
-            or not {root_llvm, "core0_main"} <= definitions
-        ):
-            raise Core0Error(
-                "post_optimization IR created an unknown function or removed a required root: "
-                f"{sorted(definitions)!r}"
-            )
+        if label == "post_optimization":
+            if policy == TEST_FRONTEND_SUITE_POLICY:
+                required_post_definitions = manifest_user_symbols | {"core0_main"}
+            else:
+                assert root_llvm is not None
+                required_post_definitions = {root_llvm, "core0_main"}
+            if (
+                not definitions <= expected_pre_definitions
+                or not required_post_definitions <= definitions
+            ):
+                raise Core0Error(
+                    "post_optimization IR created an unknown function or removed a required root: "
+                    f"{sorted(definitions)!r}"
+                )
         ir_findings[label] = {
             "definitions": sorted(definitions),
             "calls": sorted(calls),
@@ -1240,6 +2111,12 @@ def audit(
     fence_body = fence_body_parts[1].split("\n\n", 1)[0]
     if re.search(r"\bfence\b", fence_body) is None or re.search(r"\bret\b", fence_body) is None:
         raise Core0Error("core0_io_fence does not lower to a fence followed by return")
+    scalar_abi_machine: dict[str, object] | None = None
+    if policy == TEST_FRONTEND_SUITE_POLICY:
+        assert isinstance(optimization, str)
+        scalar_abi_machine = validate_scalar_abi_disassembly(
+            manifest, disassembly, optimization
+        )
 
     map_text = paths["image.map"].read_text(encoding="utf-8", errors="strict")
     for name in expected_inputs:
@@ -1307,13 +2184,43 @@ def audit(
     for name in expected_inputs:
         relocation_text = tool_text("llvm-readelf", ["-r", str(directory / name)], root)
         observed = relocation_types(relocation_text)
-        forbidden_relocations = observed - ALLOWED_RELOCATIONS
+        allowed_relocations = set(ALLOWED_RELOCATIONS)
+        expected_jump_table_relocations = 0
+        if (
+            policy == TEST_FRONTEND_SUITE_POLICY
+            and name == "program.o"
+            and optimization == "O2"
+        ):
+            allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
+            expected_jump_table_relocations = len(SCALAR_ROOT_SOURCES)
+        forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
                 f"{name} contains an unexpected relocation type: {sorted(forbidden_relocations)}"
             )
         if "R_RISCV_RELAX" in relocation_text:
             raise Core0Error(f"{name} contains relaxation relocations despite the no-relax policy")
+        if policy == TEST_FRONTEND_SUITE_POLICY and name == "program.o":
+            current_section: str | None = None
+            jump_table_rows: list[str] = []
+            for line in relocation_text.splitlines():
+                section_match = re.match(r"Relocation section '([^']+)'", line)
+                if section_match is not None:
+                    current_section = section_match.group(1)
+                if SCALAR_O2_JUMP_TABLE_RELOCATION in line:
+                    if current_section != ".rela.rodata" or re.search(
+                        r"\bR_RISCV_64\b.*\s\.L0\s+\+ 0\s*$", line
+                    ) is None:
+                        raise Core0Error(
+                            "scalar suite R_RISCV_64 relocation is not a local O2 root-dispatch jump-table entry"
+                        )
+                    jump_table_rows.append(line)
+            if len(jump_table_rows) != expected_jump_table_relocations:
+                raise Core0Error(
+                    "scalar suite root-dispatch jump-table relocation count differs from "
+                    f"the exact root closure: {len(jump_table_rows)} != "
+                    f"{expected_jump_table_relocations}"
+                )
         object_relocations[name] = {
             "types": sorted(observed),
             "text": relocation_text,
@@ -1376,6 +2283,13 @@ def audit(
             "audit_status": clean_control_report.get("status"),
             "artifact_category": clean_control_report.get("artifact_category"),
         }
+    if scalar_test_abi is not None:
+        assert scalar_abi_ir is not None and scalar_abi_machine is not None
+        report["scalar_test_abi"] = scalar_test_abi
+        report["scalar_abi_audit"] = {
+            "pre_optimization": scalar_abi_ir,
+            "machine_code": scalar_abi_machine,
+        }
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")
@@ -1408,7 +2322,7 @@ def main() -> int:
         "--policy",
         choices=AUDIT_POLICIES,
         default=RELEASE_POLICY,
-        help="release by default; test compiler policies are explicit and quarantined",
+        help="release by default; all test-only policies require an explicit selection",
     )
     parser.add_argument(
         "--expected-fault",

@@ -102,7 +102,7 @@ inductive Expr where
   | ite (resultTy : Ty) (cond thenBranch elseBranch : Expr)
   | call (callee : Name) (resultTy : Ty) (args : List Expr)
   | cast (op : CastOp) (sourceTy targetTy : Ty) (value : Expr)
-  deriving Inhabited, Repr
+  deriving BEq, Inhabited, Repr
 
 def Expr.type : Expr → Ty
   | .var _ ty => ty
@@ -155,7 +155,7 @@ structure Function where
   body : Expr
   /-- Direct user-declaration dependencies, in first-occurrence order. -/
   dependencies : Array Name
-  deriving Inhabited, Repr
+  deriving BEq, Inhabited, Repr
 
 inductive Effect where
   | pure
@@ -182,8 +182,36 @@ structure Program where
   usedPrimitives : Array String
   deriving Inhabited, Repr
 
+/-- One externally callable root in an additive, multi-root checked corpus.  IDs are
+assigned deterministically from the caller's declared root order and start at one. -/
+structure CheckedRoot where
+  id : Nat
+  source : Name
+  signature : Signature
+  deriving BEq, Inhabited, Repr
+
+/-- A deduplicated union of ordinary Core0 v0.1 programs.  This changes the test
+packaging, not the accepted source language or its contract version. -/
+structure CheckedSuite where
+  contractVersion : String := "core0-v0.1"
+  roots : Array CheckedRoot
+  /-- Dependency-first order across the complete root set. -/
+  functions : Array Function
+  /-- Stable primitive IDs in first-use order across the declared roots. -/
+  usedPrimitives : Array String
+  deriving BEq, Inhabited, Repr
+
 def Program.findFunction? (program : Program) (name : Name) : Option Function :=
   program.functions.find? (fun f => f.name == name)
+
+def CheckedSuite.findFunction? (suite : CheckedSuite) (name : Name) : Option Function :=
+  suite.functions.find? (fun f => f.name == name)
+
+def CheckedSuite.findRoot? (suite : CheckedSuite) (name : Name) : Option CheckedRoot :=
+  suite.roots.find? (fun root => root.source == name)
+
+def CheckedSuite.findRootById? (suite : CheckedSuite) (id : Nat) : Option CheckedRoot :=
+  suite.roots.find? (fun root => root.id == id)
 
 private def joinNames (names : Array Name) : String :=
   String.intercalate "," (names.toList.map Name.toString)

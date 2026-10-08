@@ -30,6 +30,7 @@ inductive DiagnosticCode where
   | arityMismatch
   | typeMismatch
   | recursiveDependency
+  | invalidSuite
   | internal
   deriving BEq, DecidableEq, Inhabited, Repr
 
@@ -48,6 +49,7 @@ def render : DiagnosticCode → String
   | .arityMismatch => "arity-mismatch"
   | .typeMismatch => "type-mismatch"
   | .recursiveDependency => "recursive-dependency"
+  | .invalidSuite => "invalid-suite"
   | .internal => "internal"
 
 end DiagnosticCode
@@ -692,5 +694,82 @@ def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program 
             done := function.name :: done
             functions := functions.push function
   pure { root, functions, usedPrimitives }
+
+/-- Check several genuine elaborated roots with the unchanged Core0 v0.1 frontend,
+then form one deterministic, dependency-first corpus.  Shared declarations are keyed
+by exact Lean identity and must lower identically from every root that reaches them. -/
+def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedSuite := do
+  unless !declaredRoots.isEmpty do
+    throw {
+      code := .invalidSuite
+      root := .anonymous
+      declaration := .anonymous
+      path := []
+      message := "a checked suite must declare at least one root"
+    }
+  let mut seenRoots : Array Name := #[]
+  let mut roots : Array CheckedRoot := #[]
+  let mut functions : Array Function := #[]
+  let mut usedPrimitives : Array String := #[]
+  for root in declaredRoots do
+    if seenRoots.contains root then
+      throw {
+        code := .invalidSuite
+        root
+        declaration := root
+        path := [root]
+        message := s!"checked suite declares duplicate root `{root}`"
+      }
+    seenRoots := seenRoots.push root
+    let program ← checkAndLower env root
+    unless program.contractVersion == "core0-v0.1" do
+      throw {
+        code := .invalidSuite
+        root
+        declaration := root
+        path := [root]
+        message := s!"checked suite root `{root}` used unsupported contract `{program.contractVersion}`"
+      }
+    let some rootFunction := program.findFunction? root
+      | throw {
+          code := .internal
+          root
+          declaration := root
+          path := [root]
+          message := s!"checked program omitted its root `{root}`"
+        }
+    roots := roots.push {
+      id := roots.size + 1
+      source := root
+      signature := rootFunction.signature
+    }
+    for function in program.functions do
+      match functions.find? (fun candidate => candidate.name == function.name) with
+      | some existing =>
+          unless existing == function do
+            throw {
+              code := .internal
+              root
+              declaration := function.name
+              path := [root, function.name]
+              message := s!"shared declaration `{function.name}` lowered inconsistently across suite roots"
+            }
+      | none =>
+          let missing := function.dependencies.filter fun dependency =>
+            !(functions.any fun candidate => candidate.name == dependency)
+          unless missing.isEmpty do
+            throw {
+              code := .internal
+              root
+              declaration := function.name
+              path := [root, function.name]
+              message := s!"suite merge encountered non-topological dependencies in `{function.name}`"
+            }
+          functions := functions.push function
+    for primitive in program.usedPrimitives do
+      unless usedPrimitives.contains primitive do
+        usedPrimitives := usedPrimitives.push primitive
+  pure { roots, functions, usedPrimitives }
 
 end Lemma.Core0
