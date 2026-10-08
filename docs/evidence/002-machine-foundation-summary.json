@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "task": "002-machine-foundation",
+  "status": "passing-prefix",
+  "highest_passing_gate": 1,
+  "source": {
+    "commit": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
+    "tree": "a110453f7d92b342f193cd36e889db9a370d3232",
+    "clean": true,
+    "branch": "task/002-machine-foundation"
+  },
+  "gate_1": {
+    "closed_faults": 6,
+    "optimization_profiles": ["O0", "O2"],
+    "control_builds": 2,
+    "mutant_builds": 12,
+    "clean_control_qemu_boots": 12,
+    "mutant_qemu_boots": 12,
+    "verified_behavioral_mismatches": 12,
+    "intended_rejections": 3,
+    "audit_regressions": 7,
+    "aggregate": {
+      "path": "build/foundation/check/gate1-results.json",
+      "sha256": "a3fd012ad0dac0d20e16321c32c7006502b8c22921499517bab1468b669bf50c"
+    }
+  },
+  "cumulative_regression": {
+    "core0_host_tests": 21,
+    "core0_cases_per_profile": 10,
+    "core0_expected_rejections": 13,
+    "core0_fresh_qemu_boots": 23,
+    "aggregate": {
+      "path": "build/core0/check/check-results.json",
+      "sha256": "690732e4a97a29bc25cf168c46d9f8f857667d432c5c6271463bde1fdaff4f18"
+    }
+  },
+  "unit_mapping": {
+    "directly_advanced": ["1.8"],
+    "additional_evidence": ["1.1", "1.5", "1.7"],
+    "statuses_remain": "partial"
+  },
+  "claims": {
+    "g1_complete": false,
+    "g2_complete": false,
+    "task_002_complete": false,
+    "compiler_correctness_proved": false
+  }
+}

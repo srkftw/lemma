@@ -10,5 +10,11 @@ Large generated outputs remain under ignored `build/`; CI uploads the correspond
 Core0 build directory as a retrievable artifact. Checked-in evidence contains hashes,
 not toolchains or target binaries.
 
+Task 002's current passing prefix is recorded in
+[002-machine-foundation.md](002-machine-foundation.md), with a
+[machine-readable summary](002-machine-foundation-summary.json) and
+[hash inventory](002-machine-foundation-sha256s.txt). It currently covers only Gates
+0 and 1 and explicitly leaves G1, G2, and later Task 002 gates open.
+
 Use `templates/EVIDENCE_REPORT.md` as a reporting structure. Never rename scaffold
 metadata tests to imply that the freestanding image booted.

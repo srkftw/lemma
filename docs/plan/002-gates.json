@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T00:34:14-07:00",
+  "updated_at": "2026-10-08T01:02:45-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,7 +9,7 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 0,
+  "highest_passing_gate": 1,
   "gates": [
     {
       "gate": 0,
@@ -34,8 +34,44 @@
         "Recorded historical, report-bearing, push-CI, and synthetic-merge identities separately."
       ]
     },
-    {"gate": 1, "name": "incorrect-compiler detection", "status": "in-progress", "source": null, "commands": [], "artifacts": [], "tests": {}},
-    {"gate": 2, "name": "multi-root frontend conformance", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {
+      "gate": 1,
+      "name": "incorrect-compiler detection",
+      "status": "passed",
+      "source": {
+        "commit": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
+        "tree": "a110453f7d92b342f193cd36e889db9a370d3232",
+        "clean": true
+      },
+      "commands": [
+        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 15},
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass"},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "result": "pass", "tests": 19},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 1 --clean", "exit_code": 0, "result": "pass", "clean_control_builds": 2, "mutant_builds": 12, "intended_rejections": 3, "audit_regressions": 7, "fresh_qemu_boots": 24, "verified_behavioral_mismatches": 12}
+      ],
+      "artifacts": [
+        {"path": "build/foundation/check/gate1-results.json", "sha256": "a3fd012ad0dac0d20e16321c32c7006502b8c22921499517bab1468b669bf50c"},
+        {"path": "build/core0/check/check-results.json", "sha256": "690732e4a97a29bc25cf168c46d9f8f857667d432c5c6271463bde1fdaff4f18"}
+      ],
+      "tests": {
+        "closed_faults": 6,
+        "optimization_profiles": ["O0", "O2"],
+        "clean_control_qemu_boots": 12,
+        "mutant_qemu_boots": 12,
+        "verified_behavioral_mismatches": 12,
+        "intended_rejections": 3,
+        "audit_regressions": 7
+      },
+      "notes": [
+        "Mutants are test-only structured-LLVM transformations with no production build selector.",
+        "Each mutant is compared with an audited clean control and must have exactly one reported pre-optimization IR delta.",
+        "This advances Unit 1.8 but does not complete Unit 1.8, G1, or G2."
+      ]
+    },
+    {"gate": 2, "name": "multi-root frontend conformance", "status": "in-progress", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 3, "name": "structured control flow and scalar operations", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 4, "name": "bounded iteration", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
