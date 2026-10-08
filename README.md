@@ -4,13 +4,13 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested compiler/device foundation, with traps under construction.**
+**Current state: tested compiler/device/trap foundation, with timers under construction.**
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–6 extend it with compiler-fault
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–7 extend it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
-checked fixed-region RAM, and compiled Lean UART interaction. Gate 7's synchronous
-trap implementation is being qualified; timers and the integrated monitor have
-not yet passed. This is not a managed runtime, complete OS, hardware milestone,
+checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
+traps with checked context preservation. Gate 8's timer implementation is in
+progress; timers and the integrated monitor have not yet passed. This is not a managed runtime, complete OS, hardware milestone,
 or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
 [Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
 [continuation checkpoint](docs/plan/002-session-state.md).
@@ -81,13 +81,14 @@ The recorded Task 002 passing prefix also has real host/target checks:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 \
-  --work-dir build/foundation/gate6-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-check --clean --timeout 300 --qemu-timeout 20
 ```
 
-Phase 6 builds and audits O0/O2 images and runs 28 fresh QEMU UART sessions,
-including live two-request sessions and bounded failures. It is not a trap or
-interrupt test. The evidence records exact tested revisions; current uncommitted
+Phase 7 builds and audits O0/O2 images and runs 32 fresh QEMU boots, including
+repeated ECALL/EBREAK, fatal and nested traps, and live restore-mutant detection.
+The clean cumulative Gates 1–7 run passed 426 boots. These are not timer or
+interrupt tests. The evidence records exact tested revisions; current uncommitted
 work must not inherit a clean-source pass automatically.
 
 ## GitHub and Codex

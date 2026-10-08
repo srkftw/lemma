@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 6 have passed. Gate 7 is in progress; Gates 8--11 remain open. This record does not
+through 7 have passed. Gate 8 is in progress; Gates 9--11 remain open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -25,9 +25,12 @@ Task 002 machine foundation.
 - Gate 5 implementation checkpoint:
   `ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98`, tree
   `c1172034c1dedc0a91375b2eb21dd6fe5fd9b187`.
-- Gate 6 implementation and current cumulative clean verification source:
+- Gate 6 implementation and historical cumulative clean verification source:
   `179ef541e7cfa53235322610222a01ccdf9364cd`, tree
   `9ff742607b5b1d73924928bf147dabada037f406`.
+- Gate 7 implementation and current cumulative clean verification source:
+  `6c1b6a8ded1e94a822cff9977578b7c292075f75`, tree
+  `5c53acabde200edd2ef7061ba65830c7c00b5b5b`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
 - Report-bearing revision: a later evidence checkpoint, not yet assigned here; the
   tested implementation identity above is intentionally separate.
@@ -39,12 +42,20 @@ Gates 1-2 command at `687ee7e...`. All 14 Gate 1 control/mutant provenance recor
 both Gate 2 profiles, and the Task 001 O0/O2 release records in that historical
 checkpoint name the full `687ee7e...` commit and record `dirty_tree: false`.
 
-The current cumulative clean run repeated Gates 1--6 at `179ef54...`. All 29
+The previous cumulative clean run repeated Gates 1--6 at `179ef54...`. All 29
 cumulative build provenance records name that full commit and record
 `dirty_tree: false`; the focused Gate 6 and legacy O0/O2 audits do likewise. The
 earlier per-gate identities remain historical checkpoints rather than being
 overwritten. These are clean committed-source runs in the existing checkout, not
 the separate detached-worktree qualification still required by Gate 10.
+
+The current cumulative clean run repeated Gates 1--7 at `6c1b6a8...`, with all
+33 build provenance records naming that exact commit and `dirty_tree: false`.
+The focused Gate 7 run's four build records and the legacy regression's eight
+build records likewise name clean `6c1b6a8...`. Later report/guidance updates and
+Gate 8 work are not retroactively covered by those source identities. The source
+snapshot in the hash inventory uses `git show 6c1b6a8...:<path>`, not the later
+worktree; its report-bearing files are explicitly hashed separately.
 
 Generated build output remains ignored. The durable identities of the cumulative
 clean records are:
@@ -81,9 +92,19 @@ clean records are:
 | `build/foundation/gates1-6-clean-readback/gate4/gate4-results.json` | `b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a` |
 | `build/foundation/gates1-6-clean-readback/gate5/gate5-results.json` | `dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1` |
 | `build/foundation/gates1-6-clean-readback/gate6/gate6-results.json` | `bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2` |
-| `build/core0/check/check-results.json` (current same-source legacy regression) | `1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09` |
+| `build/core0/check/check-results.json` (historical same-source Gate 6 legacy regression) | `1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09` |
+| `build/foundation/gate7-clean-6c1b6a8/gate7-results.json` (authoritative focused Gate 7 report) | `34e27a775b18d06195133e8c05e3d048e78dc849b06188447d2d849638aad7c5` |
+| `build/foundation/gates1-7-clean-6c1b6a8/all-results.json` | `12837b1bf0d38df75ad9744a120da5702c3651b1bfff22234092721e3d182339` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate1/gate1-results.json` | `59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate2/gate2-results.json` | `d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate3/gate3-results.json` | `2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate4/gate4-results.json` | `a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json` | `4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json` | `c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0` |
+| `build/foundation/gates1-7-clean-6c1b6a8/gate7/gate7-results.json` | `0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b` |
+| `build/core0/task002-gate7-clean/check-results.json` (current same-source legacy regression) | `f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2` |
 
-## Commands executed for the current implementation checkpoint
+## Commands executed for the historical Gate 6 implementation checkpoint
 
 | Command | Exit | Actual result |
 |---|---:|---|
@@ -787,8 +808,168 @@ O0/O2 have byte-identical checked manifest, normalized source, wire ABI, symbol
 map, layout, startup, and pre-optimization IR. The pre-IR SHA-256 is
 `06993acef2e38439afc6e49ce682f4f32d2e3d4785a2eaca7a6e7a1057d4504c`.
 The full identities are in the machine-readable summary and SHA-256 inventory.
-Gate 6 adds no traps, interrupts, scheduler, managed runtime, or physical-board
-claim. Gates 7--11, separate-worktree qualification, and publication remain open.
+Gate 6 itself adds no traps, interrupts, scheduler, managed runtime, or physical-board
+claim. Gate 7's later synchronous-trap acceptance is recorded below; Gates 8--11,
+separate-worktree qualification, and publication remain open.
+
+## Gate 7: synchronous M-mode traps, dispatch, and return
+
+The explicitly selected additive profile is `core0-v0.6`, ABI
+`lemma-sync-trap-test-v1`, artifact category `test-trap-suite`. Genuine elaboration
+checks two roots, `Lemma.Examples.Foundation.Trap.foreground` and `dispatch`, with
+21 Action and 26 scalar functions. Four exact no-address source operations admit
+ECALL, EBREAK, an unauthorized ECALL fixture, and an illegal-instruction fixture;
+their `sync-trap` and `machine-state` effects propagate through calls, branches,
+and bounded folds. Scalar wrappers and older profiles cannot hide these effects.
+The finite RAM/UART models explicitly reject trap execution rather than simulating
+hardware success.
+
+The machine contract remains one-hart QEMU `virt`, `-bios none`, integer-only
+RV64IM/Zicsr/Zifencei, LP64, no compressed/FP/vector/atomic instructions or target
+runtime libraries. The privileged reference is the official RISC-V 20240411
+Machine ISA 1.13 PDF, SHA-256
+`538f3b17e1990ffabde30a6b96aaa2a0111afb63c174a6ef02b55a7aeb0e701d`.
+Exact ISA sections and inspected pinned QEMU 11.1.1 source hashes are in the
+[trap construction audit](../audits/traps-core0-v06.md); the earlier toolchain pins
+above are unchanged. Pinned TCG disables Smrnmi/Smdbltrp, a relevant premise of the
+tested software double-fault latch, not a general hardware double-trap claim.
+
+### Clean-source commands and actual results
+
+The final build and unit suites ran on the implementation tree immediately before
+commit: Lean build 48 jobs/52 compile-time CFG checks, scaffold metadata valid,
+18/18 scaffold, 32/32 Core0 host, and 281/281 foundation host tests passed. The
+following commands then ran from exact clean `6c1b6a8...` source; all exited zero:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate7-clean --clean
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+```
+
+Focused Gate 7 passed 32 fresh boots: eight positive, six negative, one extra
+clean-control, and one behavioral restore-mutant boot per O0/O2 profile. The eight
+positive cases use counts 0, 1, 7, and 64 with two distinguishing seeds each. They
+observed 288 actual ECALL/EBREAK resumptions per profile, 576 total, separately
+from the extra clean-control/mutant completions and fatal/nested entries. Both
+profiles' foreground checksums matched the unchanged independent arithmetic oracle
+and an interrupt-disabled, trap-free control fold. Every positive case also passed
+14 software-denial checks with the vector active: exact error/value, unchanged
+trap count, and unchanged scratch guard. Full register/canary masks were zero in
+the returning probes. Zero-count cases execute no returning trap.
+
+Unauthorized ECALL and actual illegal instruction each produced five correctly
+framed source-encoded diagnostic values and exit 18, with causes 11 and 2,
+exact ELF-bound faulting PCs, relevant status/mie checks, and permitted trap values
+(observed illegal mtval `0x0b`). An actual ECALL from compiled dispatch hit the
+zero-latch stackless nested-fault path and exited 19. Semantic count 65, non-UInt32
+count, and invalid scenario terminated with 9, 16, and 14 respectively, without
+fabricated normal frames. Protocol errors, timeout, process failure, and malformed
+artifact/provenance are distinct failures, not accepted trap outcomes.
+
+The quarantined Lean structured mutation changes exactly
+`ld s3,144(sp)` to `ld s3,152(sp)` on restore. In both profiles it compiled, passed
+its declared test-only audit, booted, entered compiled dispatch, returned from the
+real ECALL, and emitted frame ID `0x71ff`, status 20, mask `0x40000`, before exit 20.
+Both outcomes were `verified-behavioral-context-mismatch`; a compilation, audit,
+timeout, or protocol failure would not count as detection. The source and compiled
+program remain identical to the clean control; production inputs cannot select
+the mutation.
+
+All four exact frontend fixtures rejected with their intended reasons. Twenty
+direct-source policy probes and the actual transitive frontend/lowering/model-refusal
+probe passed. Two conditional local lemmas, `approvedEcallResume` and
+`approvedBreakpointResume`, were checked with only `propext` and `Quot.sound`.
+They establish the source return-policy facts under the stated status premise, not
+entry/return correctness, compiler refinement, or hardware correctness.
+
+The cumulative Gates 1--7 command passed 426 boots
+(`24+136+88+14+104+28+32`); all seven fresh child reports passed and all 33 build
+provenance records identify clean `6c1b6a8...`. The separate legacy command passed
+10 cases/profile, all 13 intended rejections, and 23 fresh boots, with repeat-build,
+source mutation, and foreign-object audit checks preserved. These are clean runs
+in the existing checkout, not Gate 10's detached-worktree qualification.
+
+### Context/resource and artifact audits
+
+Lean-authored typed machine instructions mask interrupts, initialize the direct
+vector and dedicated private stack, save x1--x31 including interrupted SP, capture
+five CSRs in an aligned 288-byte frame, and call the nine-word compiled dispatcher
+with its ninth argument in a separate 16-byte outgoing frame. Only the exact
+four-byte authorized ECALL/EBREAK site/continuation pairs may resume; dispatch
+does not blindly increment an arbitrary PC. GP/TP are saved then zeroed for compiled
+dispatch, whose emitted code must use neither. MRET's architectural status changes
+are accounted for rather than requiring invalid raw pre/post mstatus equality.
+
+Each returning probe initializes all 31 integer sentinels and a valid private SP,
+snapshots them before comparison clobbers any register, and checks six canary pairs
+covering foreground/trap/probe stacks. The private trap/probe storage grants no
+ordinary RAM-region authority. Non-nesting is explicit: dispatch faults are caught
+by the zero `mscratch` latch, while fixed aligned RAM/CSR accesses in the entry and
+final return tail, MPRV clear, an approved M-mode continuation, and no NMI remain
+premises. Interrupt masking alone is not claimed to suppress synchronous faults.
+
+The central audit retains exactly two named linked objects and the closed 17-file
+build bundle. It binds exact signatures, effects, normalized source, ABI, platform,
+provenance, hashes, LLVM call closure, ELF attributes/layout/sections/relocations,
+full vector/probe register-slot sequences, stack adjustments, direct vector/latch
+targets, ordered CSR operations, and stackless terminal fatal loops. It finds 48
+compiled functions using zero privileged instructions, eleven vector CSR operations,
+two approved resume pairs, and the two bounded fatal loops. Checked pre-IR has 24
+physical ordinary-RAM sites (16 loads/eight stores) and one range preflight. UART
+machine audit finds four exact byte accesses with eight fence calls; denied UART
+metadata constants are 24 at O0 and zero at O2. Its alias inference is bounded
+straight-line analysis, not a general machine CFG proof.
+
+The optimized LLVM acyclic direct-call graph weighted by object `.stack_sizes`
+measures foreground chains O0 3,536 and O2 288 bytes against 65,520 usable bytes;
+compiled dispatcher chains are 1,312 and 272 against 16,048 bytes. The separate
+288-byte frame plus 16-byte outgoing slot fit the 16,352-byte usable trap stack.
+These bounds and observed canaries are complementary evidence, not exhaustive
+machine call-graph reconstruction or a compiler proof.
+
+| Profile | Audit SHA-256 | Optimized IR SHA-256 | Image SHA-256 |
+|---|---|---|---|
+| O0 | `177e94b0080f4f5debd9fe9b7e8e704c18c3f13a8951240d4c37d8f31d5887ab` | `f8b5c6fef9a9cf6585ad6a353c0d4a421abbd1123c54aed547adeaeda5e1df8b` | `3652a3ac62db05112ade80e318c5131ff8ca97371d39e920643ad540a10e626d` |
+| O2 | `0abc7f10fe76b9a1900b35b0f1e6f5333fb4b08a6bf3363a7f108846991dbff5` | `3a92c31e0fa8560c4671852fc2a1fee87b2ebd91c8907e60770db4a3a5a712ab` | `6e8d8f630657ff5a61659490eef1317c27d34bdac201ce53a1addd1563e39928` |
+
+The shared pre-optimization IR SHA-256 is
+`85a460be25445ef2330d5cb0e144bd62a0126af98683a8cfa4c74386a7ad0ac9`.
+O0/O2 checked source artifacts are byte-identical; the summary and full hash
+inventory retain their identities and every fresh artifact under the focused,
+cumulative, and legacy output directories.
+
+### Retained synchronous-trap transcript and limits
+
+The focused O2 `several-pattern-a` run used PID 246658 and the O2 ELF above. Its
+24-byte loader fixture was generated after image binding, with seed
+`0x0123456789abcdef`, count 7, and scenario 0. These are runtime loader data, not
+interactive UART requests or precomputed target answers. Raw bytes and `run.json`
+are under `build/foundation/gate7-clean-6c1b6a8/runs/O2/several-pattern-a/`.
+
+```text
+guest READY: LEMMA_DEVICE/1\nREADY\n
+guest frame: 4c4d533601000800017100000000000082204bc33116f6d4
+decoded: id=0x7101 status=0 checksum=0xd4f61631c34b2082
+guest frame: 4c4d53360100080002710000000000000e00000000000000
+decoded: id=0x7102 status=0 actual returning trap count=14
+guest frame: 4c4d53360100080003710000000000000e00000000000000
+decoded: id=0x7103 status=0 software denials=14
+guest frame: 4c4d53360100080004710000000000000000000000000000
+decoded: id=0x7104 status=0 register/canary mismatch mask=0
+QEMU exit: 0; raw UART SHA-256 b4a634d16835a3e42ad7f615962f858020383f66906bedeb9e57e56c991c5c19
+```
+
+Gate 7 establishes only synchronous, non-nested M-mode trap behavior under the
+declared pinned-machine premises. Gate 8 hardware timer work is now in progress;
+no actual timer interrupts, integrated monitor, detached-worktree qualification,
+new actual CI result, or Task 002 publication has passed. Publication has not yet
+been attempted; it is not labeled externally blocked. No scheduler, managed runtime,
+privilege transition, hardware isolation, physical-board result, or G1/G2 completion
+is claimed.
 
 ## Shared assumptions, stage mapping, and limits
 
@@ -821,15 +1002,26 @@ comparison. It gives Unit 1.6 only regression coverage because its physical memo
 observer and existing UART/finisher remain test glue rather than a new compiled
 device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
 1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
-construction unit remains `partial`; trap, timer, monitor, and
+construction unit remains `partial`; timer, monitor, and
 qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
-incomplete, and Task 002 is not complete. Gate 6 compiled Lean device routines are
-the highest passing gate. Gate 7 synchronous traps are now in progress, with no
-Gate 7 acceptance result claimed. Gate 6 directly advances partial Units 1.1,
+incomplete, and Task 002 is not complete. Gate 7 synchronous traps are the highest
+passing gate; hardware timer Gate 8 is in progress with no acceptance claimed.
+Gate 6 directly advances partial Units 1.1,
 1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
 finite semantics, ordered lowering, machine audit, source-bound image, branch RAM
 readbacks, and real runtime UART exchanges. Unit 1.2 retains regression coverage
 only; all Stage I statuses remain partial and no Stage II unit is marked passed.
+
+Gate 7 directly adds evidence for partial Units 1.1, 1.3, 1.4, 1.5, 1.6, 1.7,
+and 1.8 through its versioned trap effects, exact membership checks, source policy
+probes/local lemmas, structured entry/return lowering, machine audit, full-context
+target observations, and distinguishing restore mutant. Unit 1.2 retains regression
+coverage only. It also contributes narrowly scoped early Stage II evidence to
+Unit 2.1 (M-mode entry and bounded stacks, not supervisor entry) and Unit 2.2
+(synchronous cause/PC identification, diagnostics, saved integer state, and approved
+return, not timer interrupts). Those two units still have `planned` status in the
+construction backlog; this evidence does not mark them or any Stage II unit passed.
+Backlog reconciliation and broader qualification remain later obligations.

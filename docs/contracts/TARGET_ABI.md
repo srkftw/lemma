@@ -58,7 +58,7 @@ pinned LemmaVM/test-image contract, not arbitrary pointers supplied through the 
 Runtime request metadata is loaded from the declared input fixture at `0x81000000`;
 it is data, not executable code or a second boot image.
 
-## Gate 7 synchronous-trap ABI under qualification
+## Gate 7 synchronous-trap ABI
 
 `core0-v0.6` retains the Action `{i64,i64}` return and integer LP64 convention.
 Its dispatcher has nine `UInt64` arguments; the machine caller places the ninth
@@ -72,7 +72,8 @@ storage and exact offsets are specified in
 [`traps-core0-v06.md`](../audits/traps-core0-v06.md). Saved GP/TP are temporarily
 zeroed for compiled dispatch, whose object code must use neither register;
 no relaxation is permitted. MRET architectural changes to mstatus are not
-mistaken for arbitrary context corruption. Target acceptance is still pending.
+mistaken for arbitrary context corruption. Clean O0/O2 target acceptance is
+recorded in Task 002 evidence; asynchronous timer handling is not implied.
 
 ## Entry and layout
 

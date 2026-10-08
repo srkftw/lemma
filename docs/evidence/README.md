@@ -14,8 +14,9 @@ Task 002's current passing prefix is recorded in
 [002-machine-foundation.md](002-machine-foundation.md), with a
 [machine-readable summary](002-machine-foundation-summary.json) and
 [hash inventory](002-machine-foundation-sha256s.txt). It currently covers passing
-Gates 0--6, including checked memory and compiled polling UART sessions. Gate 7 is
-in progress; G1, G2, the remaining Task 002 gates, separate-worktree qualification,
+Gates 0--7, including checked memory, compiled polling UART sessions, and tested
+synchronous M-mode traps. Gate 8 is in progress; G1, G2, the remaining Task 002
+gates, separate-worktree qualification,
 and publication remain open. Tested implementation and later report-bearing
 identities are kept separate.
 

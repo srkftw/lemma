@@ -101,13 +101,13 @@ mutation, and an audit-regression link.  Missing tools or evidence fail; there i
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
 
-Task 002 has a separate host suite and incremental target checker. Gates 0–6
-have recorded clean-source acceptance; Gate 7 is under qualification:
+Task 002 has a separate host suite and incremental target checker. Gates 0–7
+have recorded clean-source acceptance; Gate 8 is under construction:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 \
-  --work-dir build/foundation/gate6-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-check --clean --timeout 300 --qemu-timeout 20
 ```
 
 These interfaces have actually run. Later phases and `--all` must be judged by

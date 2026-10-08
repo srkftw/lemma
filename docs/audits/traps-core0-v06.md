@@ -1,7 +1,11 @@
 # Gate 7 synchronous-trap construction audit
 
-Status: implementation in progress. This document records the design and inspected
-source, not a passing target run. Acceptance belongs to the retained Gate 7 reports.
+Status: synchronous-trap acceptance passed at clean implementation
+`6c1b6a8ded1e94a822cff9977578b7c292075f75`, tree
+`5c53acabde200edd2ef7061ba65830c7c00b5b5b`. The focused O0/O2 matrix passed 32 boots
+and both behavioral restore mutants; cumulative Gates 1–7 passed 426 boots and
+legacy Task 001 passed separately. Exact commands/hashes are in Task 002 evidence.
+This is not a compiler proof, asynchronous-interrupt result, or G1/G2 completion.
 
 ## Immutable references
 

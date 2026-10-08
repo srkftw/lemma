@@ -5,8 +5,8 @@ checker. Task 002 Gate 3 adds the explicitly separate `core0-v0.2` scalar/CFG
 profile. Task 002 Gate 4 adds the narrowly bounded `core0-v0.3` iteration profile
 described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
 checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
-`core0-v0.5` polling-device profile. Gate 7 is implementing the separate
-`core0-v0.6` synchronous-trap profile below; its target acceptance is pending.
+`core0-v0.5` polling-device profile. Task 002 Gate 7 adds the separately selected
+`core0-v0.6` synchronous-trap profile below, with recorded clean target acceptance.
 Timers and the broader Core0 contract remain future work.
 
 ## Purpose
@@ -193,7 +193,7 @@ those models. This profile is specific to the pinned QEMU machine; it is not a
 general driver framework, physical-board port, interrupt implementation, hosted IO,
 or managed runtime.
 
-## Synchronous-trap profile under construction
+## Implemented synchronous-trap profile
 
 `core0-v0.6` must be selected explicitly. It preserves v0.5 and adds exactly
 `Action.trapEcall`, `trapBreakpoint`, `trapUnexpectedEcall`, and
@@ -216,8 +216,8 @@ dispatcher checks cause, exact PC, relevant mstatus bits, mie, and specification
 permitted trap values; only explicit site/continuation pairs may resume. The
 machine entry/return and resource premises are in
 [`traps-core0-v06.md`](../audits/traps-core0-v06.md). This contract describes the
-implementation being qualified, not a compiler-correctness proof or a completed
-Gate 7 acceptance run.
+tested implementation, not a compiler-correctness proof. Gate 7 acceptance is
+recorded at clean `6c1b6a8...`; timer work remains separate and unqualified.
 
 ## Future profile work
 

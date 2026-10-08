@@ -1,9 +1,9 @@
 # Trust and dependency manifest
 
 Status: required audit structure. Task 001 implements executable scalar-image audit
-and provenance; Task 002 Gates 1--6 extend it with fault manifests, versioned suites,
-control-flow/loop checks, checked-memory effects, and a closed compiled-device path.
-Later trap/timer/runtime categories remain open.
+and provenance; Task 002 Gates 1--7 extend it with fault manifests, versioned suites,
+control-flow/loop checks, checked-memory effects, a closed compiled-device path,
+and synchronous-trap audits. Timer/runtime categories remain open.
 
 ## Categories
 
@@ -49,7 +49,7 @@ logic appearing in the harness. QEMU and its emulated UART remain host/emulator 
 not guest code and not a physical-device result. The finite model and four local
 theorems are mathematical evidence with narrower claims than the target executions.
 
-## Gate 7 trap trust boundary under qualification
+## Gate 7 trap trust boundary
 
 `core0-v0.6` adds only four exact synchronous-trap source identities and a
 closed typed Lean machine sequence for masking, vector entry, complete integer
@@ -64,8 +64,8 @@ must be a declared valid-image mutation, not an unexplained audit bypass.
 Local policy lemmas, source probes, resource/disassembly audits, and actual trap
 executions are distinct evidence. The fixed-RAM/no-NMI entry-tail premises and
 single-hart non-nesting limitations remain explicit; see
-[`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 target acceptance is
-pending, and timer/concurrency/runtime categories are not thereby qualified.
+[`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 clean target acceptance
+has passed; timer/concurrency/runtime categories are not thereby qualified.
 
 ## Prohibited shortcuts
 

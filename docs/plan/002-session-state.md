@@ -3,17 +3,20 @@
 - Base: Task 001 report-bearing commit `b8e9c59365ae8e9925e0bf6fbca6a963d990ec85`
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
-- Highest passing gate: Gate 6.
-- Current gate: Gate 7, development matrix passed; clean-source acceptance pending.
-- Current failure: none. The fresh O0/O2 Gate 7 matrix passed 32 boots, including
-  both live restore mutants, fatal diagnostics, and nested traps. Host suites pass.
-- Latest clean passing implementation: `179ef541e7cfa53235322610222a01ccdf9364cd`
-  (tree `9ff742607b5b1d73924928bf147dabada037f406`).
+- Highest passing gate: Gate 7.
+- Current gate: Gate 8, actual pinned-machine hardware timer implementation in progress;
+  no Gate 8 acceptance exists.
+- Current failure: none. Clean focused Gate 7 passed 32 boots and both live restore
+  mutants; cumulative Gates 1--7 passed 426 boots, legacy passed 23 boots.
+- Latest clean passing implementation: `6c1b6a8ded1e94a822cff9977578b7c292075f75`
+  (tree `5c53acabde200edd2ef7061ba65830c7c00b5b5b`).
 - Report-bearing revision: later/unassigned; do not confuse it with tested source.
-- Next executable action: commit the passing Gate 7 implementation, then repeat
-  `check-foundation.sh --phase 7`, `--all`, and legacy `check-core0.sh` against
-  clean source in fresh build directories. Record exact source/report identities,
-  then continue through Gates 8--11 without waiting for another user message.
+- Next executable action: implement Gate 8 real timer arming/rearming and compiled
+  Lean ISR/event-ring logic using the accepted trap substrate; execute actual MTIP
+  delivery, masked/pending, overflow/catch-up/shutdown, context-corruption, and
+  disabled-arming checks. Continue through Gates 9--11 after those checks pass.
+- Publication: Task 002 has not been pushed or submitted as a PR; no publication
+  attempt or new actual CI result is claimed. PR #1 remains open/draft/unmerged.
 
 ## Gate 0 historical checkpoint
 
@@ -42,7 +45,7 @@ aggregate SHA-256 was
 `a3fd012ad0dac0d20e16321c32c7006502b8c22921499517bab1468b669bf50c`.
 
 The same complete Gate 1 checks were rerun in the cumulative clean Gates 1-2 command
-at `687ee7e...`. The current Gate 1 aggregate is
+at `687ee7e...`. That historical Gate 1 aggregate is
 `build/foundation/gates1-2-clean/gate1/gate1-results.json`, SHA-256
 `b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe`.
 All 14 control/mutant provenance records name that commit and are clean.
@@ -299,7 +302,7 @@ focused report SHA-256 is
 `da4726d0c7f312c72295b70651a94cd4eeb69f5e99072dd6ba3f07676acd73a1`;
 the cumulative aggregate is
 `b82597eced2cd1e23bc9c589142c353e36d6f3414746194cdbb47be00ce3c2de`;
-the current legacy aggregate is
+the legacy aggregate at that checkpoint is
 `1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09`.
 Earlier legacy hashes above are historical because that output path was reused.
 
@@ -351,6 +354,54 @@ a missing audit import) were fixed before this matrix; they did not count as
 mutant detection. Formal acceptance must rebuild rather than reuse these dirty
 development artifacts.
 
+## Gate 7 clean checkpoint
+
+Verified committed implementation `6c1b6a8...` on 2026-10-08. Final precommit build
+48 jobs/52 compile-time CFG checks; metadata valid; scaffold 18/18, Core0 host
+32/32, foundation host 281/281 passed. The commands below then ran from exact clean
+committed source, all exit zero:
+
+```text
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+  Gate 7 PASS: 32 boots, 288 positive-corpus resumptions/profile,
+  14 software denials/positive case, 2 behavioral restore mutants detected,
+  4 exact frontend rejections, 20 policy probes, 2 conditional local lemmas
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate7-clean --clean
+  legacy PASS: 10 cases/profile, 13 intended rejections, 23 boots
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20
+  Gates 1--7 PASS: 24+136+88+14+104+28+32 = 426 fresh boots
+```
+
+All 33 cumulative provenance records name full clean `6c1b6a8...`; focused and
+legacy build records do likewise. Focused aggregate SHA-256:
+`34e27a775b18d06195133e8c05e3d048e78dc849b06188447d2d849638aad7c5`;
+cumulative aggregate:
+`12837b1bf0d38df75ad9744a120da5702c3651b1bfff22234092721e3d182339`;
+its Gate 7 child:
+`0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b`;
+legacy aggregate:
+`f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2`.
+
+The additive synchronous profile is `core0-v0.6`, ABI `lemma-sync-trap-test-v1`.
+Two elaborated roots lower through 21 Action/26 scalar functions. Save/restore
+covers all 31 integer registers, five CSRs, a 288-byte frame, and six canary pairs.
+Only exact ECALL/EBREAK site/continuation pairs resume. Unauthorized ECALL/illegal
+instruction exit 18 with checked diagnostics; nested compiled-dispatch ECALL exits
+19. The sole test-only wrong S3 restore slot boots and returns mask `0x40000`,
+status/exit 20 in both profiles. The 576 positive-corpus resumptions are separate
+from extra clean-control/mutant completions and fatal/nested entries.
+
+Machine audit finds four ordered UART accesses/eight fences, eleven vector CSR
+operations, and zero privileged instructions in 48 compiled functions. O0/O2
+foreground frame chains are 3,536/288 bytes against 65,520 usable; dispatcher
+chains 1,312/272 against 16,048. Entry/return-tail fixed aligned RAM/CSR accesses,
+MPRV clear, approved M-mode state, and no NMI remain explicit premises. This is
+synchronous pinned-QEMU evidence, not interrupts, isolation, a compiler proof,
+physical hardware, detached-worktree qualification, actual CI, or G1/G2 completion.
+
 ## Decisions that must survive a resume
 
 - Preserve `core0-v0.1` and its rejection corpus. Gate 3 added the explicitly
@@ -371,8 +422,9 @@ development artifacts.
   the direct route does not import or call the Core0 checker/evaluator. Do not describe
   the three comparison routes as absolutely independent proof systems.
 - Schema-2 provenance binds exact source and `.olean` inputs. O0/O2 Gate 2 profiles
-  share byte-identical checked suite/ABI/source artifacts. The current cumulative
-  run names clean `179ef54...` source; the earlier Gate 2 checkpoint remains
+  share byte-identical checked suite/ABI/source artifacts. The historical cumulative
+  Gate 6 run names clean `179ef54...` source; the current Gates 1--7 run names
+  clean `6c1b6a8...`; the earlier Gate 2 checkpoint remains
   historically bound to `687ee7e...`.
 - Gate 3 pins Lean 4.34.1 revision `5045d0056413266e57c625dcd7c365b10e377c52`
   and the inspected `Init/Data/UInt/Basic.lean` SHA-256
@@ -414,5 +466,14 @@ development artifacts.
   or CFG proofs.
 - Gates 0--6 advance Stage I only. Later M-mode work cannot by itself mark Stage II
   Unit 2.1 or 2.2 passed, and neither G1 nor G2 is complete.
+- Gate 7 adds partial early Stage II 2.1/2.2 evidence only: no supervisor entry
+  or timer interrupts. Their construction-backlog statuses remain planned.
+- Preserve `core0-v0.6` as synchronous and non-nested. Gate 8 needs a separately
+  versioned timer/interrupt and single-hart synchronization contract; do not
+  retroactively attribute timer behavior or later source changes to Gate 7.
+- Inventoried tested-source paths are hashes from `git show 6c1b6a8...:<path>`;
+  later guidance/evidence files are report-bearing changes, not clean-source
+  requalification. Gate 10's separate detached worktree and Gate 11 publication
+  and actual CI inspection remain open.
 
 Machine-readable status is in `docs/plan/002-gates.json`.

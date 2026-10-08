@@ -2,10 +2,9 @@
 
 Status: Task 001 executes and pins the bounded QEMU scalar-boot profile. Task 002
 Gate 5 retains that boot contract and adds the fixed ordinary-memory test layout;
-Gate 6 adds the polling-only compiled UART contract below. Traps, timers, privilege
-transitions, and the remaining roadmap are still unqualified at this checkpoint.
-Gate 7's separate synchronous-trap implementation is under construction below;
-its target acceptance has not yet passed.
+Gate 6 adds the polling-only compiled UART contract below. Gate 7's separately
+versioned synchronous-trap profile has passed clean O0/O2 target acceptance.
+Timers, privilege transitions, and the remaining roadmap remain unqualified.
 
 The reference backend is QEMU system emulation, RISC-V `virt`, one RV64 hart,
 128 MiB RAM, no network or disk for the first smoke test, a UART for target output,
@@ -81,7 +80,7 @@ cleanup. The machine harness itself performs only the zero-argument Action call 
 status-coded SiFive-test write; it contains no UART parser, polling loop, formatter, or
 drain routine.
 
-## Gate 7 synchronous-trap machine profile under construction
+## Gate 7 synchronous-trap machine profile
 
 The existing one-hart, 128 MiB, integer-only `virt` launch with `-bios none`
 is retained. Direct `mtvec`, masked interrupts, a private bounded 16 KiB trap
@@ -97,7 +96,8 @@ return-tail accesses presume fixed mapped/aligned RAM, approved machine state,
 and no NMI; masking interrupts alone is not claimed to prevent synchronous
 double faults. Exact immutable ISA/QEMU references, layout, frame offsets, and
 these limitations are in [`traps-core0-v06.md`](../audits/traps-core0-v06.md).
-No target Gate 7 pass is implied by the existence of this implementation.
+The retained clean Gate 7 reports establish its finite target acceptance matrix,
+not asynchronous interrupts or the broader machine roadmap.
 
 ## Roadmap, not current guarantees
 
