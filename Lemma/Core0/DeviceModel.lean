@@ -194,6 +194,7 @@ structure Dispatch where
   responseStatus? : Option UInt8
   value : UInt64
   uartPrefix : Array UInt8 := #[]
+  /-- Final scratch+64 byte read back by command 3. -/
   scratchMarker? : Option UInt8 := none
   deriving BEq, Inhabited, Repr
 
@@ -216,15 +217,17 @@ def dispatch (request : Request) : Dispatch :=
     else if request.payload.getD 0 0 = 0 then {
       actionStatus := Status.ok
       responseStatus? := some Status.ok
-      value := 0
+      value := 0x5a00
       scratchMarker? := some 0x5a
     } else if request.payload.getD 0 0 = 1 then {
       actionStatus := Status.ok
       responseStatus? := some Status.ok
-      value := 1
+      value := 0x3c01
       uartPrefix := #[0xa5]
+      scratchMarker? := some 0x3c
     } else
-      { actionStatus := Status.malformedFrame, responseStatus? := none, value := 0 }
+      { actionStatus := Status.malformedFrame, responseStatus? := none, value := 0,
+        scratchMarker? := some 0x3c }
   else if request.command = 4 then
     if request.payload.size != 4 then
       { actionStatus := Status.invalidLength, responseStatus? := none, value := 0 }

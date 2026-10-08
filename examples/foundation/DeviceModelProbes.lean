@@ -46,16 +46,21 @@ def deviceModelProbe : IO Unit := do
   let falseBranch := dispatch { command := 3, requestId := 10, payload := #[0] }
   expect "false-branch-only-ram"
     (falseBranch.actionStatus == Status.ok &&
-      falseBranch.scratchMarker? == some 0x5a && falseBranch.uartPrefix.isEmpty)
+      falseBranch.responseStatus? == some Status.ok &&
+      falseBranch.scratchMarker? == some 0x5a && falseBranch.value == 0x5a00 &&
+      falseBranch.uartPrefix.isEmpty)
 
   let trueBranch := dispatch { command := 3, requestId := 11, payload := #[1] }
   expect "true-branch-only-uart"
-    (trueBranch.actionStatus == Status.ok && trueBranch.scratchMarker?.isNone &&
+    (trueBranch.actionStatus == Status.ok &&
+      trueBranch.responseStatus? == some Status.ok &&
+      trueBranch.scratchMarker? == some 0x3c && trueBranch.value == 0x3c01 &&
       trueBranch.uartPrefix == #[0xa5])
 
   let invalidBool := dispatch { command := 3, requestId := 12, payload := #[2] }
   expect "invalid-bool-terminal"
-    (invalidBool.actionStatus == Status.malformedFrame && invalidBool.responseStatus?.isNone)
+    (invalidBool.actionStatus == Status.malformedFrame &&
+      invalidBool.responseStatus?.isNone && invalidBool.scratchMarker? == some 0x3c)
 
   let stress := dispatch {
     command := 4, requestId := 13, payload := #[3, 0, 0, 0]

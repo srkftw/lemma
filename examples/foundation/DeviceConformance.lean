@@ -33,26 +33,42 @@ def dispatchXor64 (requestId : UInt64) : Action :=
     else
       Action.done leftStatus 0
 
-/-- The selected branch alone performs its designated effect.  False writes
-the fixed scratch marker; true emits the raw UART marker immediately before the
-common response frame. -/
+/-- Initialize a scratch sentinel, then let only the selected branch perform its
+designated effect.  False overwrites the sentinel with the fixed RAM marker;
+true emits the raw UART marker and must leave the sentinel intact.  Both paths
+read the marker back into the response value, so the target result observes RAM
+placement rather than relying only on source/CFG inspection. -/
 def dispatchBranch (requestId : UInt64) : Action :=
   Action.load8 RegionId.scratch 16 fun readStatus branchValue =>
     if readStatus = Status.ok then
-      if branchValue = 0 then
-        Action.store8 RegionId.scratch 64 0x5a fun writeStatus =>
-          if writeStatus = Status.ok then
-            sendResponse Status.ok requestId 0
+      Action.store8 RegionId.scratch 64 0x3c fun sentinelStatus =>
+        if sentinelStatus = Status.ok then
+          if branchValue = 0 then
+            Action.store8 RegionId.scratch 64 0x5a fun writeStatus =>
+              if writeStatus = Status.ok then
+                Action.load8 RegionId.scratch 64 fun markerStatus markerValue =>
+                  if markerStatus = Status.ok then
+                    sendResponse Status.ok requestId
+                      ((markerValue <<< 8) + branchValue)
+                  else
+                    Action.done markerStatus 0
+              else
+                Action.done writeStatus 0
+          else if branchValue = 1 then
+            Action.bind (sendByte 0xa5) fun markerStatus _value =>
+              if markerStatus = Status.ok then
+                Action.load8 RegionId.scratch 64 fun readbackStatus markerValue =>
+                  if readbackStatus = Status.ok then
+                    sendResponse Status.ok requestId
+                      ((markerValue <<< 8) + branchValue)
+                  else
+                    Action.done readbackStatus 0
+              else
+                Action.done markerStatus 0
           else
-            Action.done writeStatus 0
-      else if branchValue = 1 then
-        Action.bind (sendByte 0xa5) fun markerStatus _value =>
-          if markerStatus = Status.ok then
-            sendResponse Status.ok requestId 1
-          else
-            Action.done markerStatus 0
-      else
-        Action.done Status.malformedFrame 0
+            Action.done Status.malformedFrame 0
+        else
+          Action.done sentinelStatus 0
     else
       Action.done readStatus 0
 

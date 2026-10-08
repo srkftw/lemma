@@ -119,20 +119,29 @@ def _direct_body_tokens(source: str) -> list[str]:
 def _action_body(source: str, dependencies: tuple[str, ...]) -> str:
     if source == audit_device.BRANCH_SOURCE:
         send_response = "Lemma.Examples.Foundation.Device.Support.sendResponse"
+        scratch = "(call Lemma.Core0.Memory.RegionId.scratch u8 [])"
+
+        def readback(status: int, value: int) -> str:
+            return (
+                f"(action.load8 {scratch} (lit u64 64) "
+                f"(status %{status}) (value %{value}) "
+                f"(action.call {send_response} [(lit u8 0) (var 0 u64) "
+                f"(bin add u64 (bin shl u64 (var {value} u64) "
+                "(lit u64 8)) (var 2 u64))]))"
+            )
+
         return (
-            "(action.load8 (call Lemma.Core0.Memory.RegionId.scratch u8 []) "
+            f"(action.load8 {scratch} "
             "(lit u64 16) (status %1) (value %2) "
             "(action.ite (cmp eq u8 (var 1 u8) (lit u8 0)) "
+            f"(action.store8 {scratch} (lit u64 64) (lit u8 60) (status %3) "
             "(action.ite (cmp eq u64 (var 2 u64) (lit u64 0)) "
-            "(action.bind (action.store8 "
-            "(call Lemma.Core0.Memory.RegionId.scratch u8 []) "
-            "(lit u64 64) (lit u8 90) (status %3)) "
-            f"(action.call {send_response} [])) "
+            f"(action.store8 {scratch} (lit u64 64) (lit u8 90) (status %4) "
+            f"{readback(5, 6)}) "
             "(action.ite (cmp eq u64 (var 2 u64) (lit u64 1)) "
             f"(action.bind (action.call {audit_device.SEND_BYTE_SOURCE} "
-            "[(lit u8 165)]) "
-            f"(action.call {send_response} [])) "
-            "(action.done (lit u8 14) (lit u64 0)))) "
+            f"[(lit u8 165)]) (status %7) (value %8) {readback(9, 10)}) "
+            "(action.done (lit u8 14) (lit u64 0))))) "
             "(action.done (var 1 u8) (lit u64 0))))"
         )
     pieces = [f"(action.call {dependency} [])" for dependency in dependencies]
@@ -268,6 +277,9 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
             "define { i64, i64 } @core0_action_13(i64 %arg0) nounwind noinline {",
             "entry:",
             f"  %branch.value = load volatile i8, ptr inttoptr (i64 {0x80801010} to ptr), align 1",
+            "  %mem.0.value.0 = zext i8 %branch.value to i64",
+            "  store volatile i8 60, ptr inttoptr "
+            f"(i64 {audit_device.BRANCH_MARKER_ADDRESS} to ptr), align 1",
         )
     )
     if optimized:
@@ -296,10 +308,34 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
             "branch.zero:",
             "  store volatile i8 90, ptr inttoptr "
             f"(i64 {audit_device.BRANCH_MARKER_ADDRESS} to ptr), align {marker_alignment}",
+            "  br label %branch.zero.readback",
+            "branch.zero.readback:",
+            "  %false.loaded = load volatile i8, ptr inttoptr "
+            f"(i64 {audit_device.BRANCH_MARKER_ADDRESS} to ptr), align {marker_alignment}",
+            "  %false.wide = zext i8 %false.loaded to i64",
+            "  br label %branch.zero.response",
+            "branch.zero.response:",
+            "  %false.value = phi i64 [ %false.wide, %branch.zero.readback ]",
+            "  %false.shift = shl i64 %false.value, 8",
+            "  %false.encoded = add i64 %false.shift, %mem.0.value.0",
+            "  %false.response = call { i64, i64 } "
+            "@core0_action_10(i8 zeroext 0, i64 %arg0, i64 %false.encoded)",
             "  br label %branch.merge",
             "branch.one:",
             "  %branch.send = call { i64, i64 } "
             f"@core0_action_1(i8 zeroext {send_value})",
+            "  br label %branch.one.readback",
+            "branch.one.readback:",
+            "  %true.loaded = load volatile i8, ptr inttoptr "
+            f"(i64 {audit_device.BRANCH_MARKER_ADDRESS} to ptr), align {marker_alignment}",
+            "  %true.wide = zext i8 %true.loaded to i64",
+            "  br label %branch.one.response",
+            "branch.one.response:",
+            "  %true.value = phi i64 [ %true.wide, %branch.one.readback ]",
+            "  %true.shift = shl i64 %true.value, 8",
+            "  %true.encoded = add i64 %true.shift, %mem.0.value.0",
+            "  %true.response = call { i64, i64 } "
+            "@core0_action_10(i8 zeroext 0, i64 %arg0, i64 %true.encoded)",
             "  br label %branch.merge",
             "branch.default:",
             "  br label %branch.merge",
@@ -324,8 +360,30 @@ class DeviceManifestAuditTests(unittest.TestCase):
         branch = report["branch_effects"]
         self.assertEqual(branch["source_function"], audit_device.BRANCH_SOURCE)
         self.assertTrue(branch["separate_subtrees"])
+        self.assertEqual(branch["readback"], audit_device.BRANCH_READBACK)
+        self.assertTrue(branch["common_sentinel_before_selection"])
+        self.assertTrue(branch["branch_local_readbacks"])
+        self.assertTrue(branch["readbacks_encoded"])
         abi = audit_device.validate_device_test_abi(abi_fixture(), manifest)
         self.assertEqual(abi["requests_per_session"], 2)
+
+    def test_source_readbacks_require_sentinel_offset_and_observed_value(self) -> None:
+        body = _action_body(
+            audit_device.BRANCH_SOURCE,
+            (audit_device.SEND_BYTE_SOURCE, "Lemma.Examples.Foundation.Device.Support.sendResponse"),
+        )
+        mutations = {
+            "wrong-sentinel": body.replace("(lit u8 60)", "(lit u8 61)", 1),
+            "wrong-readback-offset": body.replace(
+                "(lit u64 64) (status %5)", "(lit u64 63) (status %5)", 1
+            ),
+            "constant-false-response": body.replace("(var 6 u64)", "(lit u64 90)", 1),
+            "constant-true-response": body.replace("(var 10 u64)", "(lit u64 60)", 1),
+            "wrong-encoding-shift": body.replace("(lit u64 8)", "(lit u64 7)", 1),
+        }
+        for name, mutated in mutations.items():
+            with self.subTest(name=name), self.assertRaises(Core0Error):
+                audit_device.validate_branch_source_placement(mutated)
 
     def test_exact_device_catalog_rejects_duplicate_unknown_and_wrong_address(self) -> None:
         for mutate in ("duplicate", "unknown", "wrong-address"):
@@ -391,6 +449,8 @@ class DeviceIRAuditTests(unittest.TestCase):
             list(range(6)),
         )
         self.assertTrue(pre_report["branch_effects"]["exclusive_reachability"])
+        self.assertTrue(pre_report["branch_effects"]["sentinel_dominates_selection"])
+        self.assertTrue(pre_report["branch_effects"]["readbacks_encoded"])
         for optimized in (False, True):
             with self.subTest(optimized=optimized):
                 post = ir_fixture(markers=False, optimized=optimized)
@@ -400,6 +460,25 @@ class DeviceIRAuditTests(unittest.TestCase):
                     report["branch_effects"]["dispatch"],
                     "switch" if optimized else "conditional-branches",
                 )
+
+    def test_ir_readbacks_reject_stale_initialization_address_and_encoding(self) -> None:
+        for optimized in (False, True):
+            control = ir_fixture(markers=not optimized, optimized=optimized)
+            mutations = {
+                "wrong-sentinel": control.replace("store volatile i8 60", "store volatile i8 61", 1),
+                "wrong-readback-address": control.replace(
+                    "%false.loaded = load volatile i8, ptr inttoptr "
+                    f"(i64 {audit_device.BRANCH_MARKER_ADDRESS}",
+                    "%false.loaded = load volatile i8, ptr inttoptr "
+                    f"(i64 {audit_device.BRANCH_MARKER_ADDRESS + 1}", 1
+                ),
+                "wrong-shift": control.replace("shl i64 %false.value, 8", "shl i64 %false.value, 7", 1),
+                "constant-response": control.replace("i64 %false.encoded)", "i64 23040)", 1),
+                "missing-selector": control.replace("add i64 %true.shift, %mem.0.value.0", "add i64 %true.shift, 0", 1),
+            }
+            for name, mutated in mutations.items():
+                with self.subTest(optimized=optimized, name=name), self.assertRaises(Core0Error):
+                    audit_device.validate_branch_ir_placement(mutated, optimized=optimized)
 
     def test_required_manifest_and_ir_mutation_matrix(self) -> None:
         manifest = closed_manifest_fixture()

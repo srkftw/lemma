@@ -209,7 +209,24 @@ class DeviceRunnerTests(unittest.TestCase):
     def test_branch_prefix_and_terminal_raw_or_no_input_are_supported(self) -> None:
         branch = gate6_corpus.BRANCH_EFFECTS
         branch_record = self.run_child(branch, _success_child(branch))
+        self.assertEqual(branch_record["exchanges"][0]["prefix_hex"], "")
+        self.assertEqual(
+            branch_record["exchanges"][0]["response"],
+            {
+                "status": gate6_corpus.STATUS_OK,
+                "request_id": 0x2001,
+                "value": 0x5A00,
+            },
+        )
         self.assertEqual(branch_record["exchanges"][1]["prefix_hex"], "a5")
+        self.assertEqual(
+            branch_record["exchanges"][1]["response"],
+            {
+                "status": gate6_corpus.STATUS_OK,
+                "request_id": 0x2002,
+                "value": 0x3C01,
+            },
+        )
 
         for scenario in (gate6_corpus.RX_TIMEOUT, gate6_corpus.MALFORMED_MAGIC):
             with self.subTest(scenario=scenario.name):

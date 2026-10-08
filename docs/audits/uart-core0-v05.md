@@ -46,7 +46,8 @@ interrupt delivery, or a physical serial link. Packet/encoder probes and local
 lemmas have correspondingly local claims. QEMU execution separately tests receive,
 transmit, bounded timeouts, and request/response behavior.
 
-The branch test observes the true UART marker directly. The false RAM marker's
-placement is checked in normalized source and pre/post LLVM reachability; the UART
-session does not read that marker back. The acceptance report records this evidence
-boundary explicitly.
+The branch test initializes the RAM marker to `0x3c`, then reads it through the
+compiled checked-RAM API after the selected branch. Its response carries the actual
+readback in bits 15..8 and the selector in bit zero. The host requires `0x5a00` with
+no raw UART prefix for false, and `0x3c01` with raw prefix `a5` for true. Normalized
+source and pre/post LLVM reachability separately check exclusive effect placement.

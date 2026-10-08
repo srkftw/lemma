@@ -85,6 +85,16 @@ class Gate6DriverTests(unittest.TestCase):
             "send_byte_0xa5": False,
         }
         selector_1 = {"scratch_marker_store": False, "sent_byte": 165}
+        readback = {
+            "scratch_offset": 64,
+            "width_bits": 8,
+            "sentinel_byte": 60,
+            "false_marker_byte": 90,
+            "response_shift": 8,
+            "includes_selector": True,
+            "selector_0_expected": 0x5A00,
+            "selector_1_expected": 0x3C01,
+        }
 
         def layer(dispatch: str) -> dict[str, object]:
             return {
@@ -97,6 +107,13 @@ class Gate6DriverTests(unittest.TestCase):
                 "marker_store_block": "marker.store",
                 "send_byte_block": "send.byte",
                 "exclusive_reachability": True,
+                "sentinel_store_block": "sentinel.store",
+                "sentinel_dominates_selection": True,
+                "sentinel_dominance_kind": "checked-success",
+                "selector_0_readback_block": "selector.zero.readback",
+                "selector_1_readback_block": "selector.one.readback",
+                "branch_local_readbacks": True,
+                "readbacks_encoded": True,
             }
 
         record = {
@@ -104,12 +121,17 @@ class Gate6DriverTests(unittest.TestCase):
             "llvm_symbol": symbol,
             "selector_0": selector_0,
             "selector_1": selector_1,
+            "readback": readback,
             "source": {
                 "source_function": source_function,
                 "llvm_symbol": symbol,
                 "selector_0": selector_0,
                 "selector_1": selector_1,
+                "readback": readback,
                 "separate_subtrees": True,
+                "common_sentinel_before_selection": True,
+                "branch_local_readbacks": True,
+                "readbacks_encoded": True,
             },
             "pre_ir": layer("conditional-branches"),
             "post_ir": layer("switch"),
@@ -125,6 +147,18 @@ class Gate6DriverTests(unittest.TestCase):
         with self.assertRaisesRegex(Core0Error, "CFG placement"):
             check_foundation_gate6._validate_branch_structural_audit(
                 tampered, profile="O2"
+            )
+        stale_readback = copy.deepcopy(record)
+        stale_readback["readback"]["selector_1_expected"] = 1
+        with self.assertRaisesRegex(Core0Error, "source/selector evidence"):
+            check_foundation_gate6._validate_branch_structural_audit(
+                stale_readback, profile="O2"
+            )
+        missing_encoding = copy.deepcopy(record)
+        missing_encoding["pre_ir"]["readbacks_encoded"] = False
+        with self.assertRaisesRegex(Core0Error, "CFG placement"):
+            check_foundation_gate6._validate_branch_structural_audit(
+                missing_encoding, profile="O2"
             )
 
     def test_mutation_matrix_requires_source_and_both_ir_branch_mutants(self) -> None:
@@ -303,7 +337,7 @@ class Gate6DriverTests(unittest.TestCase):
                     record=tampered,
                 )
 
-    def test_branch_runtime_evidence_is_explicit_about_ram_observation_gap(self) -> None:
+    def test_branch_runtime_evidence_decodes_actual_ram_readbacks(self) -> None:
         build_root = ROOT / "build"
         build_root.mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=build_root) as raw:
@@ -324,9 +358,22 @@ class Gate6DriverTests(unittest.TestCase):
             )
             self.assertEqual(
                 [item["response"]["value"] for item in evidence["observations"]],
+                [0x5A00, 0x3C01],
+            )
+            self.assertEqual(
+                [item["decoded_scratch_marker"] for item in evidence["observations"]],
+                [0x5A, 0x3C],
+            )
+            self.assertEqual(
+                [item["decoded_branch"] for item in evidence["observations"]],
                 [0, 1],
             )
-            self.assertIs(evidence["ram_marker_directly_read_back"], False)
+            self.assertIs(evidence["ram_marker_directly_read_back"], True)
+
+            tampered = copy.deepcopy(record)
+            tampered["exchanges"][0]["response"]["value"] = 0
+            with self.assertRaisesRegex(Core0Error, "independent oracle"):
+                check_foundation_gate6._branch_runtime_evidence(tampered)
 
     def test_early_rerun_failure_invalidates_stale_pass_record(self) -> None:
         build_root = ROOT / "build"

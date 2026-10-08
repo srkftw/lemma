@@ -34,6 +34,10 @@ COMMAND_XOR64 = 2
 COMMAND_BRANCH = 3
 COMMAND_TX_STRESS = 4
 
+BRANCH_SENTINEL = 0x3C
+BRANCH_FALSE_MARKER = 0x5A
+BRANCH_TRUE_UART_MARKER = 0xA5
+
 STATUS_OK = 0
 STATUS_POLL_AGAIN_INTERNAL = 10
 STATUS_TX_TIMEOUT = 11
@@ -186,8 +190,10 @@ def expected_exchange(request: Request) -> Exchange:
         if declared != 1 or request.payload[0] not in (0, 1):
             raise CorpusError("BRANCH normal exchange requires one canonical Bool byte")
         branch = request.payload[0]
-        prefix = b"\xa5" if branch else b""
-        response = Response(STATUS_OK, request.request_id, branch)
+        observed_marker = BRANCH_SENTINEL if branch else BRANCH_FALSE_MARKER
+        prefix = bytes((BRANCH_TRUE_UART_MARKER,)) if branch else b""
+        response_value = (observed_marker << 8) | branch
+        response = Response(STATUS_OK, request.request_id, response_value)
     elif request.command == COMMAND_TX_STRESS:
         if declared != 4:
             raise CorpusError("TX_STRESS requires a 4-byte payload")
@@ -223,7 +229,10 @@ BRANCH_EFFECTS = Scenario(
         expected_exchange(_request(COMMAND_BRANCH, 0x2001, b"\x00")),
         expected_exchange(_request(COMMAND_BRANCH, 0x2002, b"\x01")),
     ),
-    purpose="false RAM marker versus true raw UART marker",
+    purpose=(
+        "target-observed scratch+64 readback distinguishes false 0x5a overwrite "
+        "from true 0x3c sentinel preservation, while true also emits raw 0xa5"
+    ),
 )
 
 UNSUPPORTED_RECOVERY = Scenario(

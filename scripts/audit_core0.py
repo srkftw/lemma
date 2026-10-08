@@ -4138,7 +4138,7 @@ def validate_device_machine_disassembly(
         "core0_action_9": 1,
         "core0_action_11": 2,
         "core0_action_12": 2,
-        "core0_action_13": 2,
+        "core0_action_13": 5,
         "core0_action_16": 1,
         "core0_action_18": 6,
     })

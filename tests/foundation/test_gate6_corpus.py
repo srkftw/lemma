@@ -81,10 +81,16 @@ class Gate6CorpusTests(unittest.TestCase):
 
     def test_branch_and_recovery_expectations_are_distinguishing(self) -> None:
         false_exchange, true_exchange = gate6_corpus.BRANCH_EFFECTS.exchanges
+        self.assertEqual(false_exchange.request.request_id, 0x2001)
         self.assertEqual(false_exchange.expected_prefix, b"")
-        self.assertEqual(false_exchange.expected_response.value, 0)
+        self.assertEqual(false_exchange.expected_response.value, 0x5A00)
+        self.assertEqual(false_exchange.expected_response.value >> 8, 0x5A)
+        self.assertEqual(false_exchange.expected_response.value & 0xFF, 0)
+        self.assertEqual(true_exchange.request.request_id, 0x2002)
         self.assertEqual(true_exchange.expected_prefix, b"\xa5")
-        self.assertEqual(true_exchange.expected_response.value, 1)
+        self.assertEqual(true_exchange.expected_response.value, 0x3C01)
+        self.assertEqual(true_exchange.expected_response.value >> 8, 0x3C)
+        self.assertEqual(true_exchange.expected_response.value & 0xFF, 1)
         unsupported, recovered = gate6_corpus.UNSUPPORTED_RECOVERY.exchanges
         self.assertEqual(
             unsupported.expected_response.status,

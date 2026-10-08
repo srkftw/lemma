@@ -49,6 +49,8 @@ header is `LMQ6`, version, command, payload length, zero flags, and a little-end
 64-bit request ID. Its response is exactly 24 bytes: `LMS6`, version, status, length
 8, zero flags, the echoed request ID, and a little-endian 64-bit value. Protocol bytes
 arrive after boot and are never linker or loader inputs.
+For the branch command, the result word contains the checked RAM-marker readback in
+bits 15..8 and the selector in bit zero: `0x5a00` for false and `0x3c01` for true.
 
 The Gate 5 test image reserves four fixed 4 KiB ordinary regions plus separate image,
 stack, UART, and SiFive-test entries as recorded in `CORE0.md`. Those addresses are a

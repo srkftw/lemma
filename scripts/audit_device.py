@@ -737,6 +737,52 @@ def _is_false_marker_store(value: object) -> bool:
     )
 
 
+BRANCH_READBACK = {
+    "scratch_offset": 64,
+    "width_bits": 8,
+    "sentinel_byte": 60,
+    "false_marker_byte": 90,
+    "response_shift": 8,
+    "includes_selector": True,
+    "selector_0_expected": 0x5a00,
+    "selector_1_expected": 0x3c01,
+}
+
+
+def _is_scratch_readback(value: object) -> bool:
+    return (
+        isinstance(value, list)
+        and len(value) == 6
+        and value[0] == "action.load8"
+        and value[1] == ["call", "Lemma.Core0.Memory.RegionId.scratch", "u8", ["[]"]]
+        and value[2] == ["lit", "u64", "64"]
+    )
+
+
+def _readback_response_encoded(readback: list[object], selector: object) -> bool:
+    binder = readback[4]
+    if not isinstance(binder, list) or len(binder) != 2 or binder[0] != "value":
+        return False
+    variable = str(binder[1]).removeprefix("%")
+    expression = [
+        "bin", "add", "u64",
+        ["bin", "shl", "u64", ["var", variable, "u64"], ["lit", "u64", "8"]],
+        selector,
+    ]
+    responses = [
+        node for node in _walk_expr(readback[5])
+        if _expr_head(node, "action.call")
+        and len(node) == 3
+        and node[1] == "Lemma.Examples.Foundation.Device.Support.sendResponse"
+    ]
+    return (
+        len(responses) == 1
+        and isinstance(responses[0][2], list)
+        and len(responses[0][2]) == 4
+        and responses[0][2][-1] == expression
+    )
+
+
 def _is_true_uart_call(value: object) -> bool:
     return (
         isinstance(value, list)
@@ -752,6 +798,17 @@ def validate_branch_source_placement(body: str) -> dict[str, object]:
     tree = _parse_normalized_expr(body)
     nodes = _walk_expr(tree)
     markers = [node for node in nodes if _is_false_marker_store(node)]
+    sentinels = [
+        node for node in nodes
+        if isinstance(node, list) and len(node) == 6
+        and node[:3] == [
+            "action.store8",
+            ["call", "Lemma.Core0.Memory.RegionId.scratch", "u8", ["[]"]],
+            ["lit", "u64", "64"],
+        ]
+        and node[3] == ["lit", "u8", "60"]
+    ]
+    readbacks = [node for node in nodes if _is_scratch_readback(node)]
     sends = [node for node in nodes if _is_true_uart_call(node)]
     zero_branches = [
         node
@@ -788,6 +845,26 @@ def validate_branch_source_placement(body: str) -> dict[str, object]:
         raise Core0Error("dispatchBranch selector 1 does not exclusively own sendByte(0xa5)")
     if markers[0] in default_nodes or sends[0] in default_nodes:
         raise Core0Error("dispatchBranch default path contains a branch-only effect")
+    if len(sentinels) != 1 or zero not in _walk_expr(sentinels[0][5]):
+        raise Core0Error("dispatchBranch common scratch sentinel does not precede selection")
+    if sentinels[0] in false_nodes or sentinels[0] in true_nodes:
+        raise Core0Error("dispatchBranch sentinel initialization is branch-local")
+    false_reads = [node for node in readbacks if node in false_nodes]
+    true_reads = [node for node in readbacks if node in true_nodes]
+    if len(readbacks) != 2 or len(false_reads) != 1 or len(true_reads) != 1:
+        raise Core0Error("dispatchBranch must contain one scratch readback in each selected branch")
+    if any(node in default_nodes for node in readbacks):
+        raise Core0Error("dispatchBranch default path performs a readback")
+    if false_reads[0] not in _walk_expr(markers[0]):
+        raise Core0Error("dispatchBranch false readback does not follow its marker write")
+    send_binds = [
+        node for node in true_nodes
+        if _expr_head(node, "action.bind") and len(node) == 5 and node[1] == sends[0]
+    ]
+    if len(send_binds) != 1 or true_reads[0] not in _walk_expr(send_binds[0][4]):
+        raise Core0Error("dispatchBranch true readback does not follow its UART marker")
+    if not all(_readback_response_encoded(readback, selector) for readback in readbacks):
+        raise Core0Error("dispatchBranch response does not encode its actual readback and selector")
     return {
         "source_function": BRANCH_SOURCE,
         "llvm_symbol": BRANCH_SYMBOL,
@@ -801,6 +878,10 @@ def validate_branch_source_placement(body: str) -> dict[str, object]:
             "sent_byte": 165,
         },
         "separate_subtrees": True,
+        "readback": dict(BRANCH_READBACK),
+        "common_sentinel_before_selection": True,
+        "branch_local_readbacks": True,
+        "readbacks_encoded": True,
     }
 
 
@@ -1486,26 +1567,20 @@ def _selector_successors(
     return _conditional_successors(blocks, successors, marker_block, send_block)
 
 
-def _validate_marker_store(
-    function: Sequence[str], line: str, *, optimized: bool
+def _validate_scratch_pointer(
+    function: Sequence[str], pointer_text: str, alignment: int, *, optimized: bool
 ) -> None:
-    direct = re.fullmatch(
-        r"\s*store volatile i8 90, ptr inttoptr \(i64 ([0-9]+) to ptr\), align ([0-9]+)",
-        line,
-    )
+    direct = re.fullmatch(r"inttoptr \(i64 ([0-9]+) to ptr\)", pointer_text)
     if direct:
-        address, alignment = int(direct.group(1)), int(direct.group(2))
+        address = int(direct.group(1))
         if address != BRANCH_MARKER_ADDRESS or not _valid_access_alignment(
             address, alignment, optimized=optimized
         ):
-            raise Core0Error("dispatchBranch marker store has the wrong address/alignment")
+            raise Core0Error("dispatchBranch scratch access has the wrong address/alignment")
         return
-    dynamic = re.fullmatch(
-        r"\s*store volatile i8 90, ptr (%[-A-Za-z0-9._]+), align 1", line
-    )
-    if dynamic is None:
-        raise Core0Error("dispatchBranch marker is not one volatile i8 store")
-    pointer = re.escape(dynamic.group(1))
+    if alignment != 1 or re.fullmatch(r"%[-A-Za-z0-9._]+", pointer_text) is None:
+        raise Core0Error("dispatchBranch scratch pointer/alignment is unsupported")
+    pointer = re.escape(pointer_text)
     pointer_definition = next(
         (
             candidate
@@ -1526,11 +1601,151 @@ def _validate_marker_store(
         raise Core0Error("dispatchBranch marker pointer is not the checked offset 64")
 
 
+def _validate_marker_store(
+    function: Sequence[str], line: str, *, optimized: bool, byte: int = 90
+) -> None:
+    store = re.fullmatch(
+        rf"\s*store volatile i8 {byte}, ptr (.+), align ([0-9]+)", line
+    )
+    if store is None:
+        raise Core0Error("dispatchBranch marker is not one volatile i8 store")
+    _validate_scratch_pointer(
+        function, store.group(1), int(store.group(2)), optimized=optimized
+    )
+
+
+def _dominators(successors: Mapping[str, set[str]]) -> dict[str, set[str]]:
+    reachable = _reachable(successors, "entry")
+    predecessors = {label: set() for label in successors}
+    for label, targets in successors.items():
+        for target in targets:
+            predecessors[target].add(label)
+    dominators = {
+        label: ({"entry"} if label == "entry" else set(reachable))
+        for label in reachable
+    }
+    changed = True
+    while changed:
+        changed = False
+        for label in reachable - {"entry"}:
+            incoming = predecessors[label] & reachable
+            common = set.intersection(*(dominators[parent] for parent in incoming)) if incoming else set()
+            updated = {label} | common
+            if updated != dominators[label]:
+                dominators[label] = updated
+                changed = True
+    return dominators
+
+
+def _sentinel_dominance(
+    ir: str, blocks: Mapping[str, Sequence[str]], successors: Mapping[str, set[str]],
+    sentinel: str, selected: Sequence[str],
+) -> str:
+    dominators = _dominators(successors)
+    if all(sentinel in dominators.get(target, set()) for target in selected):
+        return "direct"
+    # Before optimization, checked-memory failure edges meet the successful
+    # store at its status phi.  Verify the sole zero predecessor is the actual
+    # sentinel store and that only the status-zero continuation selects a case.
+    if not re.search(
+        r"define zeroext i8 @core0_scalar_0\(\)[^{]*\{\s*entry:\s*ret i8 0\s*\}", ir
+    ):
+        raise Core0Error("dispatchBranch Status.ok scalar definition is not exactly zero")
+    for label, lines in blocks.items():
+        text = "\n".join(lines)
+        for phi in re.finditer(r"(%[-A-Za-z0-9._]+) = phi i8 ([^\n]+)", text):
+            entry_pattern = r"\[ ([0-9]+), %([-A-Za-z0-9_.$]+) \]"
+            entries = re.findall(entry_pattern, phi.group(2))
+            residue = re.sub(entry_pattern, "", phi.group(2)).replace(",", "").strip()
+            if residue or not entries or any(int(status) > 8 for status, _ in entries) or [
+                parent for status, parent in entries if int(status) == 0
+            ] != [sentinel]:
+                continue
+            call = re.search(r"(%[-A-Za-z0-9._]+) = call zeroext i8 @core0_scalar_0\(\)", text)
+            if call is None:
+                continue
+            comparison = re.search(
+                rf"(%[-A-Za-z0-9._]+) = icmp eq i8 {re.escape(phi.group(1))}, {re.escape(call.group(1))}",
+                text,
+            )
+            if comparison is None:
+                continue
+            branch = re.search(
+                rf"br i1 {re.escape(comparison.group(1))}, label %([-A-Za-z0-9_.$]+), label %([-A-Za-z0-9_.$]+)",
+                text,
+            )
+            if branch and all(
+                label in dominators.get(target, set())
+                and branch.group(1) in dominators.get(target, set())
+                and target not in _reachable(successors, branch.group(2))
+                for target in selected
+            ):
+                return "checked-success"
+    raise Core0Error("dispatchBranch common sentinel does not dominate successful selection")
+
+
+def _validate_readback_encoding(
+    function: Sequence[str], load_name: str, selector_index: int, *, optimized: bool
+) -> None:
+    text = "\n".join(function)
+    variable = r"%[-A-Za-z0-9._]+"
+    wide = re.search(rf"({variable}) = zext i8 {re.escape(load_name)} to i64", text)
+    if wide is None:
+        raise Core0Error("dispatchBranch readback is not zero-extended")
+    source = wide.group(1)
+    phi = re.search(
+        rf"({variable}) = phi i64 [^\n]*\[ {re.escape(source)}, %[-A-Za-z0-9_.$]+ \]", text
+    )
+    checked_readback = phi is not None
+    if phi is not None:
+        source = phi.group(1)
+    elif not optimized:
+        raise Core0Error("dispatchBranch checked readback value phi is absent")
+    shift = re.search(rf"({variable}) = shl(?: nuw)?(?: nsw)? i64 {re.escape(source)}, (8|{variable})\s*$", text, re.MULTILINE)
+    if shift is None:
+        raise Core0Error("dispatchBranch readback response has no eight-bit shift")
+    if shift.group(2) != "8" and re.search(
+        rf"{re.escape(shift.group(2))} = and i64 8, 63\s*$", text, re.MULTILINE
+    ) is None:
+        raise Core0Error("dispatchBranch readback shift count differs from eight")
+    encoded = shift.group(1)
+    if checked_readback:
+        addition = re.search(
+            rf"({variable}) = add i64 {re.escape(encoded)}, %mem\.0\.value\.[0-9]+\s*$", text, re.MULTILINE
+        )
+        if addition is None:
+            raise Core0Error("dispatchBranch response omits its runtime selector")
+        encoded = addition.group(1)
+    elif selector_index == 1:
+        addition = re.search(
+            rf"({variable}) = (?:or(?: disjoint)?|add(?: nuw)?(?: nsw)?) i64 {re.escape(encoded)}, 1\s*$", text, re.MULTILINE
+        )
+        if addition is None:
+            raise Core0Error("dispatchBranch true response omits selector one")
+        encoded = addition.group(1)
+    # O2 may merge the two response calls through a phi.  Follow only phi
+    # forwarding here; unrelated arithmetic cannot masquerade as the encoding.
+    forwarded = {encoded}
+    changed = True
+    while changed:
+        changed = False
+        for phi in re.finditer(rf"({variable}) = phi i64 ([^\n]+)", text):
+            incoming = set(re.findall(variable, phi.group(2)))
+            if incoming & forwarded and phi.group(1) not in forwarded:
+                forwarded.add(phi.group(1))
+                changed = True
+    calls = re.findall(r"call \{ i64, i64 \} @core0_action_10\([^\n]+\)", text)
+    if not any(any(re.search(rf", i64 {re.escape(value)}\)$", call) for value in forwarded) for call in calls):
+        raise Core0Error("dispatchBranch response does not consume its actual RAM readback")
+
+
 def validate_branch_ir_placement(ir: str, *, optimized: bool) -> dict[str, object]:
     function = _llvm_function_lines(ir, BRANCH_SYMBOL)
     blocks = _llvm_blocks(function)
     successors = _block_successors(blocks)
     marker_sites: list[tuple[str, str]] = []
+    sentinel_sites: list[tuple[str, str]] = []
+    load_sites: list[tuple[str, str, str]] = []
     send_sites: list[tuple[str, str]] = []
     send_pattern = re.compile(
         r"\bcall \{ i64, i64 \} @core0_action_1\(i8 zeroext (?:165|-91)\)"
@@ -1539,15 +1754,23 @@ def validate_branch_ir_placement(ir: str, *, optimized: bool) -> dict[str, objec
         for line in lines:
             if re.search(r"\bstore volatile i8 90, ptr ", line):
                 marker_sites.append((label, line))
+            if re.search(r"\bstore volatile i8 60, ptr ", line):
+                sentinel_sites.append((label, line))
+            if load := re.fullmatch(
+                r"\s*(%[-A-Za-z0-9._]+) = load volatile i8, ptr (.+), align ([0-9]+)", line
+            ):
+                load_sites.append((label, line, load.group(1)))
             if send_pattern.search(line):
                 send_sites.append((label, line))
-    if len(marker_sites) != 1 or len(send_sites) != 1:
+    if len(marker_sites) != 1 or len(send_sites) != 1 or len(sentinel_sites) != 1:
         raise Core0Error(
-            "dispatchBranch LLVM must contain one marker store and one sendByte(0xa5) call"
+            "dispatchBranch LLVM must contain one common sentinel, one marker store, and one sendByte(0xa5) call"
         )
     marker_block, marker_line = marker_sites[0]
     send_block, _send_line = send_sites[0]
     _validate_marker_store(function, marker_line, optimized=optimized)
+    sentinel_block, sentinel_line = sentinel_sites[0]
+    _validate_marker_store(function, sentinel_line, optimized=optimized, byte=60)
 
     zero_successor, one_successor, default_successor, dispatch = _selector_successors(
         blocks, successors, marker_block, send_block
@@ -1564,6 +1787,37 @@ def validate_branch_ir_placement(ir: str, *, optimized: bool) -> dict[str, objec
         raise Core0Error("dispatchBranch selector 1 CFG does not exclusively own sendByte(0xa5)")
     if marker_block in default_reachable or send_block in default_reachable:
         raise Core0Error("dispatchBranch default CFG reaches a branch-only effect")
+    dominance_kind = _sentinel_dominance(
+        ir, blocks, successors, sentinel_block, (zero_successor, one_successor, default_successor)
+    )
+    if sentinel_block in zero_reachable or sentinel_block in one_reachable:
+        raise Core0Error("dispatchBranch sentinel initialization is not common before selection")
+    false_reads = [site for site in load_sites if site[0] in zero_reachable]
+    true_reads = [site for site in load_sites if site[0] in one_reachable]
+    if len(load_sites) != 3 or len(false_reads) != 1 or len(true_reads) != 1:
+        raise Core0Error("dispatchBranch LLVM must retain one exclusive RAM readback per branch")
+    if false_reads[0] in true_reads or true_reads[0] in false_reads or any(
+        site[0] in default_reachable for site in false_reads + true_reads
+    ):
+        raise Core0Error("dispatchBranch readbacks are not branch-local")
+    for selector_index, (label, line, name) in enumerate((false_reads[0], true_reads[0])):
+        load = re.fullmatch(
+            r"\s*%[-A-Za-z0-9._]+ = load volatile i8, ptr (.+), align ([0-9]+)", line
+        )
+        assert load is not None
+        _validate_scratch_pointer(function, load.group(1), int(load.group(2)), optimized=optimized)
+        _validate_readback_encoding(function, name, selector_index, optimized=optimized)
+        effect_block = marker_block if selector_index == 0 else send_block
+        if label not in _reachable(successors, effect_block):
+            raise Core0Error("dispatchBranch readback precedes its designated effect")
+        if label == effect_block:
+            effect_line = marker_line if selector_index == 0 else send_sites[0][1]
+            if blocks[label].index(effect_line) >= blocks[label].index(line):
+                raise Core0Error("dispatchBranch readback appears before its designated effect")
+        elif selector_index == 0:
+            _sentinel_dominance(ir, blocks, successors, effect_block, (label,))
+        elif effect_block not in _dominators(successors).get(label, set()):
+            raise Core0Error("dispatchBranch true UART marker does not dominate its readback")
     return {
         "source_function": BRANCH_SOURCE,
         "llvm_symbol": BRANCH_SYMBOL,
@@ -1574,6 +1828,13 @@ def validate_branch_ir_placement(ir: str, *, optimized: bool) -> dict[str, objec
         "marker_store_block": marker_block,
         "send_byte_block": send_block,
         "exclusive_reachability": True,
+        "sentinel_store_block": sentinel_block,
+        "sentinel_dominates_selection": True,
+        "sentinel_dominance_kind": dominance_kind,
+        "selector_0_readback_block": false_reads[0][0],
+        "selector_1_readback_block": true_reads[0][0],
+        "branch_local_readbacks": True,
+        "readbacks_encoded": True,
     }
 
 
@@ -2008,6 +2269,7 @@ def audit_device_directory(directory: Path, root: Path | None = None) -> dict[st
             "scratch_marker_store": False,
             "sent_byte": 165,
         },
+        "readback": dict(BRANCH_READBACK),
         "source": manifest_report["branch_effects"],
         "pre_ir": ir_report["pre"]["branch_effects"],
         "post_ir": ir_report["post"]["branch_effects"],

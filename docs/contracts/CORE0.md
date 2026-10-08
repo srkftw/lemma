@@ -179,6 +179,12 @@ gets status 17 and preserves framing for the next request; malformed, truncated,
 invalid-length, and bounded polling failures terminate with their declared Action
 status.
 
+The branch command initializes `scratch+64` to `0x3c`. Selector zero alone writes
+`0x5a`; selector one alone sends the raw UART byte `0xa5`. Each selected branch then
+reads the marker through checked RAM and returns `(observedMarker << 8) | selector`.
+The independent target oracle therefore requires `0x5a00` and `0x3c01`, respectively,
+and can observe both the false write and the true branch's marker preservation.
+
 The finite UART and packet models describe register side effects, ordered access
 events, polling outcomes, parsing, dispatch, and encoding. Their local lemmas and
 executable comparisons do not prove that the frontend or LLVM lowering preserves

@@ -127,7 +127,7 @@ def device_disassembly() -> str:
 def denied_uart_metadata() -> str:
     lines: list[str] = []
     address = 0x80000400
-    for action, count in ((6, 1), (9, 1), (11, 2), (12, 2), (13, 2), (16, 1), (18, 6)):
+    for action, count in ((6, 1), (9, 1), (11, 2), (12, 2), (13, 5), (16, 1), (18, 6)):
         lines.append(f"{address:x} <core0_action_{action}>:")
         for _ in range(count):
             for instruction in (
@@ -242,7 +242,7 @@ class DeviceAuditPolicyTests(unittest.TestCase):
             {"core0_io_fence": 0x80000100},
         )
         self.assertEqual(report["access_count"], 6)
-        self.assertEqual(report["denied_region_metadata_materializations"], 15)
+        self.assertEqual(report["denied_region_metadata_materializations"], 18)
 
     def test_machine_audit_rejects_reused_and_aliased_uart_pointer(self) -> None:
         control = device_disassembly()

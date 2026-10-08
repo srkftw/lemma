@@ -145,6 +145,12 @@ DEVICE_MODEL_PROBES = (
     "response-size",
 )
 
+BRANCH_INITIAL_MARKER = 0x3C
+BRANCH_FALSE_MARKER = 0x5A
+BRANCH_FALSE_RESPONSE = 0x5A00
+BRANCH_TRUE_RESPONSE = 0x3C01
+BRANCH_REQUEST_IDS = (0x2001, 0x2002)
+
 REQUIRED_DEVICE_MUTATIONS = frozenset(
     {
         "duplicate-device-op",
@@ -413,6 +419,7 @@ def _validate_branch_structural_audit(
             "llvm_symbol",
             "selector_0",
             "selector_1",
+            "readback",
             "source",
             "pre_ir",
             "post_ir",
@@ -427,18 +434,33 @@ def _validate_branch_structural_audit(
         "send_byte_0xa5": False,
     }
     selector_1 = {"scratch_marker_store": False, "sent_byte": 165}
+    readback = {
+        "scratch_offset": 64,
+        "width_bits": 8,
+        "sentinel_byte": BRANCH_INITIAL_MARKER,
+        "false_marker_byte": BRANCH_FALSE_MARKER,
+        "response_shift": 8,
+        "includes_selector": True,
+        "selector_0_expected": BRANCH_FALSE_RESPONSE,
+        "selector_1_expected": BRANCH_TRUE_RESPONSE,
+    }
     if (
         value.get("source_function") != source_function
         or value.get("llvm_symbol") != llvm_symbol
         or value.get("selector_0") != selector_0
         or value.get("selector_1") != selector_1
+        or value.get("readback") != readback
         or value.get("source")
         != {
             "source_function": source_function,
             "llvm_symbol": llvm_symbol,
             "selector_0": selector_0,
             "selector_1": selector_1,
+            "readback": readback,
             "separate_subtrees": True,
+            "common_sentinel_before_selection": True,
+            "branch_local_readbacks": True,
+            "readbacks_encoded": True,
         }
     ):
         raise Core0Error("branch-effect source/selector evidence differs from the closed contract")
@@ -460,6 +482,13 @@ def _validate_branch_structural_audit(
                 "marker_store_block",
                 "send_byte_block",
                 "exclusive_reachability",
+                "sentinel_store_block",
+                "sentinel_dominates_selection",
+                "sentinel_dominance_kind",
+                "selector_0_readback_block",
+                "selector_1_readback_block",
+                "branch_local_readbacks",
+                "readbacks_encoded",
             },
             f"branch-effect {layer} audit",
         )
@@ -469,12 +498,23 @@ def _validate_branch_structural_audit(
             or record.get("dispatch") != expected_dispatch[layer]
             or record.get("separate_successors") is not True
             or record.get("exclusive_reachability") is not True
+            or record.get("sentinel_dominates_selection") is not True
+            or record.get("sentinel_dominance_kind") not in {"direct", "checked-success"}
+            or record.get("branch_local_readbacks") is not True
+            or record.get("readbacks_encoded") is not True
             or not isinstance(record.get("selector_0_successor"), str)
             or not isinstance(record.get("selector_1_successor"), str)
             or record.get("selector_0_successor") == record.get("selector_1_successor")
             or not isinstance(record.get("marker_store_block"), str)
             or not isinstance(record.get("send_byte_block"), str)
             or record.get("marker_store_block") == record.get("send_byte_block")
+            or not isinstance(record.get("sentinel_store_block"), str)
+            or record.get("sentinel_store_block")
+            in {record.get("marker_store_block"), record.get("send_byte_block")}
+            or not isinstance(record.get("selector_0_readback_block"), str)
+            or not isinstance(record.get("selector_1_readback_block"), str)
+            or record.get("selector_0_readback_block")
+            == record.get("selector_1_readback_block")
         ):
             raise Core0Error(f"branch-effect {layer} CFG placement evidence differs")
     return value
@@ -960,7 +1000,7 @@ def _session_digest(records: Sequence[Mapping[str, object]]) -> str:
 
 
 def _branch_runtime_evidence(record: Mapping[str, object]) -> dict[str, object]:
-    """Summarize what the UART transcript directly observes for both branches."""
+    """Strictly decode the target's selected-branch RAM-marker readbacks."""
     if record.get("scenario") != gate6_corpus.BRANCH_EFFECTS.name:
         raise Core0Error("branch-effect evidence was derived from the wrong scenario")
     exchanges = record.get("exchanges")
@@ -968,21 +1008,47 @@ def _branch_runtime_evidence(record: Mapping[str, object]) -> dict[str, object]:
         raise Core0Error("branch-effect session lacks its exact two exchanges")
     expected = gate6_corpus.BRANCH_EFFECTS.exchanges
     observations: list[dict[str, object]] = []
+    expected_values = (BRANCH_FALSE_RESPONSE, BRANCH_TRUE_RESPONSE)
+    expected_markers = (BRANCH_FALSE_MARKER, BRANCH_INITIAL_MARKER)
+    expected_prefixes = ("", "a5")
     for branch, (raw, exchange) in enumerate(zip(exchanges, expected, strict=True)):
         if not isinstance(raw, dict):
             raise Core0Error("branch-effect exchange is malformed")
         response = raw.get("response")
         if (
             raw.get("index") != branch
-            or raw.get("prefix_hex") != exchange.expected_prefix.hex()
+            or raw.get("prefix_hex") != expected_prefixes[branch]
+            or exchange.expected_prefix.hex() != expected_prefixes[branch]
             or response != asdict(exchange.expected_response)
+            or exchange.request.request_id != BRANCH_REQUEST_IDS[branch]
+            or not isinstance(response, dict)
+            or response.get("status") != gate6_corpus.STATUS_OK
+            or response.get("request_id") != BRANCH_REQUEST_IDS[branch]
+            or response.get("value") != expected_values[branch]
         ):
             raise Core0Error("branch-effect exchange differs from its independent oracle")
+        value = response["value"]
+        assert isinstance(value, int)
+        marker, decoded_branch, high = (value >> 8) & 0xFF, value & 0xFF, value >> 16
+        if (
+            high != 0
+            or marker != expected_markers[branch]
+            or decoded_branch != branch
+        ):
+            raise Core0Error("branch-effect response does not encode marker<<8|branch")
         observations.append(
             {
                 "branch_value": branch,
                 "uart_prefix_hex": raw["prefix_hex"],
                 "response": response,
+                "response_value_hex": f"0x{value:04x}",
+                "decoded_scratch_marker": marker,
+                "decoded_branch": decoded_branch,
+                "selected_effect": (
+                    "scratch+64 overwritten with 0x5a"
+                    if branch == 0
+                    else "raw UART 0xa5 emitted; scratch+64 preserved at sentinel 0x3c"
+                ),
             }
         )
     return {
@@ -990,11 +1056,14 @@ def _branch_runtime_evidence(record: Mapping[str, object]) -> dict[str, object]:
         "single_qemu_pid": record.get("qemu_pid"),
         "single_elf_sha256": record.get("image_sha256"),
         "observations": observations,
+        "response_encoding": "(scratch+64 readback << 8) | branch",
+        "initial_scratch_marker": BRANCH_INITIAL_MARKER,
         "direct_target_observation": (
-            "the false request emits no raw UART marker and returns value 0; the true "
-            "request emits raw byte 0xa5 and returns value 1"
+            "the false request emits no raw UART marker and returns 0x5a00 after its "
+            "scratch write/readback; the true request emits raw byte 0xa5 and returns "
+            "0x3c01 after reading back the preserved sentinel"
         ),
-        "ram_marker_directly_read_back": False,
+        "ram_marker_directly_read_back": True,
     }
 
 
@@ -1369,10 +1438,11 @@ def check_gate6(
                 for profile in ("O0", "O2")
             },
             "evidence_boundary": (
-                "QEMU directly observes the selected UART prefixes and response values; "
-                "the scratch+64=0x5a false-branch write is established by the executable "
-                "finite model plus audited checked source and exclusive pre/post-LLVM CFG "
-                "placement, not by a target RAM readback command"
+                "QEMU directly observes both selected UART behavior and the scratch+64 "
+                "byte read back by compiled Lean: false returns 0x5a00 after writing "
+                "0x5a, while true emits 0xa5 and returns 0x3c01 with the initialized "
+                "0x3c sentinel preserved; source/model and exclusive pre/post-LLVM CFG "
+                "audits bind those observations to the selected branches"
             ),
         },
         "counts": {
@@ -1385,6 +1455,7 @@ def check_gate6(
             "terminal_sessions_per_profile": terminal_per_profile,
             "runtime_requests_per_profile": requests_per_profile,
             "single_pid_two_request_sessions": interactive_per_profile * 2,
+            "branch_marker_target_readbacks": 4,
             "qemu_boots_total": len(gate6_corpus.SCENARIOS) * 2,
             "frontend_rejections": len(rejection_records),
             "legacy_profile_rejections": 1,
