@@ -11,8 +11,13 @@ detection, multi-root conformance, validated control flow, bounded iteration,
 checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
 traps with checked context preservation, and actual timer interrupts during
 foreground computation. The integrated ten-command monitor and full cumulative/
-legacy suite passed clean detached O0/O2 qualification at `e0e1f21`.
-Task 002 publication and actual CI inspection remain in progress.
+legacy suite passed clean detached O0/O2 qualification at `09c47ba`.
+Task 002 is published as [draft stacked PR #2](https://github.com/srkftw/lemma/pull/2);
+the initial actual CI failed at Gate 3's pinned-source materialization. Its repair
+passed full fresh local qualification and all three jobs in both actual
+[push](https://github.com/srkftw/lemma/actions/runs/37825241614) and
+[PR CI](https://github.com/srkftw/lemma/actions/runs/37825247231) runs. Tested
+implementation and later report-bearing commits remain distinct.
 This is not a managed runtime, complete OS, hardware milestone,
 or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
 [Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
@@ -110,27 +115,31 @@ nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py
 
 Qualification requires committed, clean source. It independently replays retained
 monitor evidence, repeats same-profile builds, and exercises stale-PASS and missing/
-tampered-evidence failures. Clean `e0e1f21` passed 435 foundation, 32 Core0 and
+tampered-evidence failures. Clean `09c47ba` passed 438 foundation, 32 Core0 and
 18 scaffold host tests, a cold 53-job Lean build, 482 cumulative and 23 legacy
 QEMU boots, 26 raw-session replays, 16 reproducible artifacts/profile and five
-failure experiments. The monitor handled 2,742 requests with 4,243 observed
+failure experiments. The monitor handled 2,742 requests with 4,229 observed
 hardware IRQs, 60 synchronous recoveries and 576 retained records. A catalog-
 construction defect in the first qualification attempt was caught, fixed and
-retested; its failed evidence remains retained. See the report for exact source
+retested; its failed evidence remains retained. A later fresh-CI pinned-source
+materialization defect was repaired and the full clean suite repeated; the earlier
+successful `e0e1f21` run is historical, not rebound. See the report for exact source
 and later publication identities. CI separately runs metadata/host,
 legacy RV64, and cumulative foundation/qualification jobs with retained artifacts.
 
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
-The owner created the empty GitHub repository; the prepared starter is published
-through the connected GitHub file/tree/commit operations. No Codex task is launched
-by publication.
+Task 001 is [draft PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
+[draft PR #2](https://github.com/srkftw/lemma/pull/2), stacked against
+`task/001-core0-freestanding-slice` because Task 001 remains unmerged. Neither PR
+is merged automatically; `main` still contains the starter rather than this
+implementation.
 
-Select this repository and `main` in Codex, then assign
-`codex/prompts/001-core0-freestanding-slice.md`. Have Codex work on a task branch and
-return a reviewable change. The first task audits/pins the toolchain and builds the
-first real scalar Core0 -> LLVM -> bare-metal RV64 execution path.
+For the current work, select `task/002-machine-foundation` and read
+`codex/prompts/002-machine-foundation.md`, the gate ledger and resume checkpoint.
+Task 001's original assignment remains preserved at
+`codex/prompts/001-core0-freestanding-slice.md`.
 
 `scripts/publish-github.sh` is retained as a tested bootstrap helper for the original
 empty-remote workflow. **Do not run it on this already-published repository.** It

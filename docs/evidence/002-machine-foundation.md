@@ -1,10 +1,11 @@
 # Task 002 machine-foundation evidence
 
-This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 10 have passed local acceptance. Gate 11 is in progress; publication and
-actual GitHub CI remain unrun. This record does not
-claim completion of G1, G2, the full compiler-conformance construction unit, or the
-Task 002 machine foundation.
+Task 002's bounded Gates 0--11 have passed. Repaired source `09c47ba` passed full
+cold clean detached local qualification and both actual GitHub push/PR CI runs.
+The branch is pushed with an upstream; draft stacked PR #2 remains open and
+unmerged. Initial CI failures and earlier local results remain historical evidence.
+This does not complete G1, G2, the broader compiler-conformance construction unit,
+any Stage II unit, or a general-purpose OS/runtime.
 
 ## Gate status and RV64 capability delta
 
@@ -21,7 +22,7 @@ Task 002 machine foundation.
 | 8 | Passed | Hardware timer IRQs, bounded ring and useful foreground work. |
 | 9 | Passed | One coherent post-boot interactive monitor ELF/profile. |
 | 10 | Passed locally | Fresh clean detached hosts, cumulative stress, legacy, rebuilds and failure-path qualification. |
-| 11 | In progress | Local handoff prepared; publication and actual CI unrun. |
+| 11 | Passed | Branch/upstream/draft stacked PR published; actual repair push/PR CI, retained artifacts and bounded evidence handoff checked. |
 
 Task 001 executed a bounded scalar program from post-build fixture input.
 Task 002 now executes multiple typed scalar roots/ABI shapes, validated CFG with
@@ -66,12 +67,19 @@ scheduling, physical hardware, or G1/G2 completion.
   `f7bea0b4f126275773bbc84e8fb534849ac6bb35`.
 - Historical Gate 9 clean focused monitor implementation: `8fd45d8458f4901c7a2d4debcb60ebd71f18a39c`,
   tree `965b550c576f80284a1a24c427d9704b517d160d`.
-- Current clean detached/local qualification implementation:
+- Historical successful clean detached/local qualification implementation:
   `e0e1f2188fba1d26fbdd8723f37091001802064d`, tree
   `9660ade13a0b202bb0a76325eb36cf0c2b75a7d4`.
+- Current repaired clean detached/local qualification implementation:
+  `09c47ba24577da87390f4c693237fe71ab67c965`, tree
+  `7051d19087e09a6eede78210fdbe7652105e355d`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
-- Report-bearing revision: a later evidence checkpoint, not yet assigned here; the
-  tested implementation identity above is intentionally separate.
+- Initial post-test report-bearing/published revision:
+  `ac2a95ec460d271ef00f92335ae3ea821d1b329d`, tree
+  `6e129a2ed43608d2bd728df26d09037d93e72fb9`. This later publication-status edit
+  is not self-referenced or claimed to be in that revision. At that initial
+  publication tested source was `e0e1f2`; current tested source is the separately
+  identified `09c47ba` implementation above.
 
 The historical Gate 0 clean aggregate was `build/core0/check/check-results.json`,
 SHA-256 `3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c`.
@@ -86,7 +94,8 @@ negative-audit records) name that full commit and record
 `dirty_tree: false`; the focused Gate 6 and legacy O0/O2 audits do likewise. The
 earlier per-gate identities remain historical checkpoints rather than being
 overwritten. These are clean committed-source runs in the existing checkout, not
-the separate detached-worktree qualification still required by Gate 10.
+the separate detached-worktree qualification then still required by Gate 10
+(and subsequently passed at the later checkpoints below).
 
 The previous cumulative clean run repeated Gates 1--7 at `6c1b6a8...`, with all
 33 retained provenance records (28 actual builds and five copied Gate 1
@@ -104,12 +113,12 @@ regression provenance records do likewise. Gate 8 acceptance is the complete
 checker executed as the cumulative child, not a separate clean focused run.
 The historical focused Gate 9 run binds both profiles to exact `8fd45d8...`
 with `dirty_tree: false` and 101 source inputs/profile. Current local Gate 10
-acceptance is a full clean detached run at `e0e1f2...`: 41 retained cumulative
+acceptance is a full clean detached run at `09c47ba...` (successful `e0e1f2` remains historical): 41 retained cumulative
 provenance records (36 actual builds plus five copied Gate 1 negative-audit records),
 eight retained legacy records (seven actual builds plus one copied negative-audit
 record) and two qualifier rebuild records all bind that
 exact clean source. Monitor source inputs now number 102/profile. The current
-inventory hashes source with `git show e0e1f2...:<path>`, including guidance bytes
+inventory hashes source with `git show 09c47ba...:<path>`, including guidance bytes
 as they existed then; later report/root-guidance updates are explicitly separate.
 
 Generated build output remains ignored. The durable identities of the cumulative
@@ -162,10 +171,10 @@ clean records are:
 | `build/foundation/gates1-8-clean-42674c1/gate8/gate8-results.json` (authoritative clean Gate 8 child) | `09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9` |
 | `build/core0/task002-gate8-clean/check-results.json` (historical accepted legacy baseline) | `7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82` |
 | `build/foundation/gate9-clean-8fd45d8/gate9-results.json` (clean focused Gate 9) | `69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6` |
-| `build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json` (current clean cumulative stress) | `8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f` |
-| `build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json` (current monitor normal/stress) | `cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be` |
-| `build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json` (current legacy) | `1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd` |
-| `build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json` (current local Gate 10 qualifier) | `3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9` |
+| `build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json` (historical successful e0e1f2 cumulative stress) | `8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f` |
+| `build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json` (historical successful e0e1f2 monitor normal/stress) | `cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be` |
+| `build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json` (historical successful e0e1f2 legacy) | `1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd` |
+| `build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json` (historical successful e0e1f2 qualifier) | `3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9` |
 
 ## Commands executed for the historical Gate 6 implementation checkpoint
 
@@ -873,8 +882,8 @@ map, layout, startup, and pre-optimization IR. The pre-IR SHA-256 is
 The full identities are in the machine-readable summary and SHA-256 inventory.
 Gate 6 itself adds no traps, interrupts, scheduler, managed runtime, or physical-board
 claim. Later Gate 7 synchronous traps and Gate 8 timer acceptance are recorded
-below, followed by local Gate 10 detached qualification; actual CI and
-publication remain open.
+below, followed by local Gate 10 detached qualification and Gate 11 publication;
+actual CI subsequently failed as recorded under Gate 11.
 
 ## Gate 7: synchronous M-mode traps, dispatch, and return
 
@@ -1029,9 +1038,9 @@ QEMU exit: 0; raw UART SHA-256 b4a634d16835a3e42ad7f615962f858020383f66906bedeb9
 
 Gate 7 itself establishes only synchronous, non-nested M-mode trap behavior under
 the declared pinned-machine premises. Gate 8's later actual timer acceptance is
-recorded below; no integrated monitor, detached-worktree qualification,
-new actual CI result, or Task 002 publication has passed. Publication has not yet
-been attempted; it is not labeled externally blocked. No scheduler, managed runtime,
+recorded below, followed by integrated monitor/local detached qualification and
+Gate 11 publication. At the historical Gate 7 checkpoint those later checks and
+publication had not yet run; no later success is attributed to Gate 7 source. No scheduler, managed runtime,
 privilege transition, hardware isolation, physical-board result, or G1/G2 completion
 is claimed.
 
@@ -1191,7 +1200,8 @@ UART SHA-256 is
 `31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb`.
 This uses post-build loader data, not the integrated interactive monitor.
 Later Gate 9 monitor and local Gate 10 detached qualification are recorded below;
-actual CI and Task 002 publication remain unrun. No Stage II unit, G1, G2, scheduler,
+publication and the later actual CI failure are recorded under Gate 11. No Stage II
+unit, G1, G2, scheduler,
 managed runtime, isolation, physical board, or hard-real-time claim is completed.
 
 ## Gate 9: integrated freestanding diagnostic monitor
@@ -1313,7 +1323,8 @@ and legacy baseline is `42674c1`; neither is silently attributed to `8fd45d8`.
 Later clean cumulative/legacy checks at `8fe29c4` passed, but its qualifier failed
 as recorded below. Fixed-candidate local Gate 10 acceptance is recorded later;
 actual CI remains separate.
-Gate 11 publication has not been attempted. The monitor adds finite integration
+Publication had not been attempted at the focused Gate 9 checkpoint; current
+publication/CI state is under Gate 11 below. The monitor adds finite integration
 tests and audits, not new proof lemmas or any Stage II/G1/G2 completion.
 
 ## Gate 10 development and failed first qualification (historical)
@@ -1366,8 +1377,9 @@ That worktree also began without `.lake` or build outputs and copied no prior
 outputs. Its fresh cold Lean build passed 53 jobs; metadata and scaffold 18,
 Core0 32 and foundation 435 tests (35.382 seconds) passed. These were the completed
 checks at the preparatory checkpoint. The later cumulative, legacy and qualifier
-all actually passed as recorded below; current inventory now binds that exact
-`e0e1f2` source and its closed artifacts, preserving the failed earlier attempt.
+all actually passed as recorded below. That successful `e0e1f2` checkpoint and
+the failed earlier attempt remain historical; the current inventory now binds
+the later fully qualified repair source `09c47ba`.
 
 The earlier development `--all --stress` command at dirty `8fd45d8` passed
 482 boots in `build/foundation/gates1-9-stress-dev-01`. The monitor child ran the
@@ -1398,7 +1410,7 @@ behavioral compiler/timer mutant. The later clean cumulative/legacy passes above
 remain distinct from the failed qualifier. No actual CI result or Gate 11 publication is inferred from these development
 checks; successful local Gate 10 qualification is recorded separately below.
 
-## Gate 10: completed local clean detached qualification
+## Gate 10: historical successful clean detached qualification at e0e1f2
 
 The entire fresh sequential pipeline passed at exact clean implementation
 `e0e1f2188fba1d26fbdd8723f37091001802064d`, tree
@@ -1413,10 +1425,10 @@ paths in commands are relative to it; root-relative retained artifact paths need
 the prefix `build/qualification-worktree.hJDCyB/`.
 
 ```sh
-python3 scripts/check_scaffold.py
-python3 -m unittest discover -s tests/scaffold -v
-nix develop --no-write-lock-file --command lake build
+nix develop --no-write-lock-file --command python3 scripts/check_scaffold.py
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/scaffold -v
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v
+nix develop --no-write-lock-file --command lake build
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
 nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
   --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
@@ -1499,7 +1511,7 @@ source/provenance-bound audit hashes are now
 `b87d3fe456de85ea817098921b1dadc30f5260c6f0631a324e53944b5eb37cb8` and
 `b4c3425874cbe7d735927f89a3ccd1e022dc5fbdc5ed0d7abbe34544f995b7ea`.
 
-Actual final O2 mixed-zero sample, PID 332603 (IDs/checksums/PCs/tag hexadecimal;
+Actual final O2 mixed-zero sample, PID 332603 (IDs/checksums/PCs/tag/capability bitmap hexadecimal;
 other numbers decimal):
 
 ```text
@@ -1532,13 +1544,249 @@ nix develop --no-write-lock-file --command python3 scripts/run_monitor_session.p
 ```
 
 The cumulative checker invoked that interface; the example does not claim an extra
-manual boot. Local Gate 10 is accepted and highest passing gate is 10. Gate 11 is
-in progress: Task 002 has not yet been pushed, no new PR/publication has been attempted,
-and no actual GitHub CI run is claimed. The pinned CI workflow and local checks are
-not themselves remote CI evidence. All construction units remain partial; conditional
+manual boot. At this historical e0e1f2 checkpoint, local Gate 10 was the highest
+passing gate. Gate 11
+publication now exists as recorded below. Initial CI later exposed the Gate 3
+pinned-source prerequisite; subsequent repaired-source local qualification is
+recorded next. The pinned CI workflow and local checks are not themselves
+remote CI success evidence. All construction units remain partial; conditional
 models/lemmas, artifact audits, finite target tests and physical measurements remain
 distinct. No compiler proof, WCET, supervisor/user isolation, managed runtime,
 scheduler, physical-board compatibility, G1/G2 or full Task 002 completion is claimed.
+
+## Gate 10: current repaired-source clean qualification at 09c47ba
+
+The minimal host-only repair realizes immutable `pkgs.lean4.src` with
+`nix build --no-link --print-out-paths` before checking the pinned UInt source and
+hash. It changes no target semantics, accepted language or toolchain pins. Three
+focused host regressions and an actual realization probe passed; their development
+logs remain separate from the following complete clean run.
+
+All eight commands listed in the historical Gate 10 command block above ran again,
+in exactly that order and each via `nix develop --no-write-lock-file --command`,
+in a new cold detached worktree:
+`/home/sreekumaar/Downloads/lemma/build/qualification-worktree.exc0kN`.
+Exact source is `09c47ba24577da87390f4c693237fe71ab67c965`, tree
+`7051d19087e09a6eede78210fdbe7652105e355d`. It initially contained no `.lake`/build
+outputs, copied no prior outputs and stayed clean throughout. Every command exited 0:
+metadata, scaffold 18 (2.696 s), Core0 32 (1.156 s), cold Lean 53 jobs/52 CFG checks,
+foundation 438 (24.635 s), cumulative stress, legacy and qualifier. All eight
+closed command logs are at child `build/qualification-host/`.
+
+| Fresh local scope | Boots / replays | Result |
+|---|---:|---|
+| Cumulative Gates 1--9 with stress | 482 boots | 24+136+88+14+104+28+32+30+26; all passed. |
+| Same-source legacy Core0 | 23 boots | 10 cases/profile, 13 rejections, mutation/audit/reproducibility passed. |
+| Independent qualifier | 26 retained-session replays | Two profiles, 16 byte-identical artifacts/profile, five actual failure experiments, 66 unique paths/roles. |
+
+There are **505 actual target boots**, not 531; qualification adds no target boots.
+The complete monitor sessions handled 2,742 requests with **4,229 actual hardware
+IRQs**, 60 synchronous recoveries and 576 checked retained records. Default
+18 sessions accounted for 1,598 requests/1,414 IRQs/20 recoveries/192 records;
+additional eight stress sessions accounted for 1,144/2,815/40/384. These are fresh
+observations, not the earlier `e0e1f2` counters. The same-profile reproducibility,
+intentional provenance/time/path differences, negative-child `NaN` caveat and
+proof/audit/testing limits in the preceding qualification section still apply.
+
+Current report identities (prefix `build/qualification-worktree.exc0kN/`):
+
+- `build/foundation/gates1-9-clean/all-results.json`:
+  `205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0`.
+- `build/foundation/gates1-9-clean/gate9/gate9-results.json`:
+  `712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e`.
+- `build/core0/qualification-legacy/check-results.json`:
+  `822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9`.
+- `build/foundation/qualification/qualification-results.json`:
+  `9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1`.
+
+The cumulative 41 retained provenance records are 36 actual builds plus five copied
+negative-audit records; legacy eight are seven actual builds plus one copied
+negative-audit record. Two qualifier rebuilds are actual builds, not copied records.
+The O0/O2 monitor images retain the ELF hashes shown in the earlier qualification;
+current source-bound audit hashes are
+`60ac99783e9804b6ab0a8539f0bc58c4b07ea4c31a28b38b8e60e28ec7593f31` and
+`5ccf622b52e811455f67419d3adf619b449eecdaaf1401794c813ee077db2dca`.
+Independent artifact review verified the complete reports, source/ELF/audit bindings,
+all 26 raw sessions and their 78 raw streams, exact request/frame counts, actual
+machine witnesses and qualifier closure. This is an evidence review, not an extra
+QEMU run, additional replay credit or a compiler proof.
+
+Actual latest O2 mixed-zero sample, PID 357202 (IDs/checksums/PCs/tag hexadecimal;
+capability bitmap and other counts decimal):
+
+```text
+id=9000 HELLO -> status=0 [31304e4f4d4d454c,7,1,1023]
+id=9014 FILL(0,3840,90) -> status=0 [3840,345600,0,0]
+id=9015 CHECKSUM(0,3840) -> status=0 [345600,3840,0,0]
+id=901b FILL(3840,1,0) -> status=7 [0,0,0,0]
+id=9021 TRAP_TEST(ECALL) -> status=0 [0,1,0,0]
+id=902e TIMER_START(10000) -> status=0 [1,10000,914475,0]
+id=9031 TRAP_TEST(ECALL, timer active) -> status=0 [0,1,3,3]
+id=9033 EVAL(IRQ-progress,seed=0,delta=64) -> status=0 [3e882f3e44836000,5768,5,69]
+id=9036 TICKS(peek,0) -> status=0 [1,904475,80001afc,8000000000000007]
+id=908d STATUS -> status=0 [142,25,5,bce3223f72cdbf5a]
+id=908e EXIT -> status=0 [143,5,17,0]; QEMU exit=0
+```
+
+This one session observed 360 hardware IRQs across timer lifetimes,
+five synchronous recoveries, 48 checked records and overflow/wrap, with useful
+validated computation. Its final lifetime counter is 17, not the aggregate
+IRQ count. Raw run directory is child
+`build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero/`;
+received SHA-256 is `fcdfa16d5305fab2fefb025ef48c3350193dca7bbd88d947b3eaef1d22dd1916`.
+The cumulative checker used the same actual `run_monitor_session.py` interaction
+command shown above, against this child's O2 image, with fresh post-READY UART input.
+No extra manual boot is claimed. Detailed latest counts/source/command/report
+references are compactly recorded in the summary; the full inventory includes every
+retained current artifact and hashes 305 tracked source files from exact
+`git show 09c47ba:<path>` bytes. Historical artifacts are not relabeled or removed.
+Gate 11 actual repair CI and final bounded evidence closure passed as recorded below.
+
+## Gate 11: publication, retained initial CI failure and repair reverification
+
+Normal publication succeeded after local qualification. Initial report-bearing
+commit `ac2a95ec460d271ef00f92335ae3ea821d1b329d` (tree
+`6e129a2ed43608d2bd728df26d09037d93e72fb9`) was committed after the tests, then:
+
+```sh
+env GIT_TERMINAL_PROMPT=0 git push --set-upstream origin task/002-machine-foundation
+```
+
+Exit 0; upstream is `origin/task/002-machine-foundation`. At publication the root
+worktree was clean and had no ahead/behind difference. Later evidence/ledger edits
+are separate reporting changes, not a claim that the current worktree is unchanged.
+No force push or automatic merge was performed.
+
+[Draft PR #2](https://github.com/srkftw/lemma/pull/2) was created at
+2026-10-08 18:19:37 UTC and is open, draft and unmerged. It is stacked against
+`task/001-core0-freestanding-slice` at
+`b8e9c59365ae8e9925e0bf6fbca6a963d990ec85`, because fresh read-only inspection
+still found PR #1 open/draft/unmerged. PR #1 was not modified. PR #2's initial published
+head was `ac2a95ec460d271ef00f92335ae3ea821d1b329d`; its body was inspected and the
+435-test host count corrected. At that initial publication, tested target source
+was `e0e1f2`, not this
+later report commit or a synthetic PR merge. The later repaired implementation
+`09c47ba` is now the latest locally qualified source, as recorded above.
+
+Actual [Lemma pinned acceptance run #4](https://github.com/srkftw/lemma/actions/runs/37823411915)
+completed with conclusion **failure**: run ID `37823411915`, attempt 1, event
+`pull_request`, head `ac2a95ec...`, updated 2026-10-08 18:25:15 UTC. Full logs
+confirm the actual checkout, not merely a candidate: synthetic PR merge
+`0755c817d35c5d466875a2df0e7339a681d3cda4`, ref `refs/remotes/pull/2/merge`,
+tree `6e129a2ed43608d2bd728df26d09037d93e72fb9`, parents Task 001 base `b8e9c593...`
+and published report-bearing head `ac2a95ec...`. This is distinct from the locally
+then-locally tested implementation `e0e1f2`.
+
+Metadata job `113469966392` passed: metadata, 18 scaffold, 32 Core0, 53 Lean build
+jobs/52 CFG checks and 435 foundation host tests (28.076 seconds). Legacy job
+`113469965796` passed: 23 fresh boots, 10 differential cases/profile, 13 expected
+source rejections, source-mutation boots and audit/reproducibility checks.
+Foundation job `113469965539` passed Gates 1/2 (24/136 fresh boots) before its Gate 3
+prerequisite failed. The recorded Gate 1/2 report hashes are respectively
+`191b43ad556804f5b1837c5cc4ded627c7658534d18a46c6bc9102e35340e73e` and
+`fe21cbda02c10384311926992f56f998d167a4b188cfd0b035a135665ea64733`.
+Gate 3 did not reach target acceptance; Gates 4--9 did not run and qualification
+was skipped. Evidence upload succeeded.
+
+The actual failure was `pinned-source-semantics-failure[UInt8/UInt32/UInt64]`:
+
+```text
+pinned UInt source is missing:
+/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean
+```
+
+The assignment-owned Gate 3 driver evaluated `pkgs.lean4.src` but did not realize
+its source derivation in the fresh Nix store. The warm local store masked that
+prerequisite. This is not external CI unavailability or evidence of a failed RV64
+operation. The later code-only repair passed full clean local qualification at `09c47ba`.
+Actual repair CI terminal successes are separately recorded below; this failed run
+is never relabeled as green.
+
+Full logs for all three jobs, terminal observation, extracted failure record and
+earlier partial observations are retained under `build/foundation/gate11-ci/`.
+The finalized terminal observation SHA-256 is
+`b6fa35b57a1314563c6361b795e8bd2dbc7f8894abe0a71057df82cb6f066e7a`;
+`foundation-check-failure.json` is
+`1600f4afb91a9a89722d8045d8c9a8674212700cc8618fa17d055495c8a0087e`.
+All retained local files and full job-log hashes are in the inventory/summary.
+Earlier partial observations remain historical, not the terminal run status.
+
+GitHub retained these artifact archives (reported metadata, not locally downloaded
+archive bytes):
+
+- Foundation `11569704127`, `foundation-rv64-37823411915-1`: 3,200,685 bytes,
+  1,898 members, digest `sha256:91d590ab60ecf3c5b0e8013c69903e3ebd06adcef00f4daaa83a05ec905a9119`.
+- Legacy `11570427723`, `legacy-rv64-37823411915-1`: 391,130 bytes, 341 members,
+  digest `sha256:ddb8c446df9dc74dc9d91c8950ff5048c4a2f3d83e9b2e6f991f2de6586fbc7e`.
+- Metadata `11570936129`, `metadata-host-suites-37823411915-1`: 25,972 bytes,
+  five members, reported digest `sha256:21abd67ba63557783e2e341f188f94a777bed22adaad354cf89718ae22af6083`.
+
+Artifact URLs, creation/expiry times and retained observation hashes are in the
+machine-readable summary. No nonexistent local archive/member bytes are inventoried.
+Existing local clean artifacts remain intact and independently inventoried.
+
+At the initial failure checkpoint Gate 11 remained unaccepted. Historical local Gate 10 at exact
+`e0e1f2` remains valid; latest repaired-source local Gate 10 passed at `09c47ba`.
+The remote failure above remains scoped to its confirmed synthetic merge checkout.
+Code-only repair candidate
+`09c47ba24577da87390f4c693237fe71ab67c965` (tree
+`7051d19087e09a6eede78210fdbe7652105e355d`) was normally pushed after the failure.
+Three focused host tests and an actual source-realization probe passed in the
+root development checkout; their closed logs are retained. Its new cold detached
+full rerun at `build/qualification-worktree.exc0kN` passed, as recorded above.
+That full run, not the narrow development checks, binds the current tested source.
+Both later repair CI runs and final bounded evidence closure passed as recorded below.
+### Gate 11 final actual repair CI and evidence closure
+
+Both repair runs finished **success**, all six jobs:
+[push run #5, 37825241614](https://github.com/srkftw/lemma/actions/runs/37825241614)
+and [PR run #6, 37825247231](https://github.com/srkftw/lemma/actions/runs/37825247231).
+Push checkout was exact `09c47ba24577da87390f4c693237fe71ab67c965`; actual PR
+checkout was synthetic merge `e292d4359fabbf46d2c18423103333217a58c062`, parents
+Task 001 base `b8e9c593...` and repair `09c47ba...`. Logs and the GitHub commit
+record confirm both share tree `7051d19087e09a6eede78210fdbe7652105e355d`.
+These checkout identities are distinct from the initial report-bearing `ac2a95`
+and failed initial synthetic merge `0755c817`; no CI is inferred from a candidate.
+
+Each actual run passed metadata/scaffold 18/Core0 32/cold Lean 53 jobs/52 CFG
+checks/foundation 438 hosts; cumulative Gates 1--9 with stress (482 target boots);
+legacy Core0 (23 target boots); and qualification (26 retained-session replays,
+two profiles/16 byte-identical artifacts each/66 unique paths and roles/five
+failure experiments). Push monitor observed 4,348 hardware IRQs, PR monitor 4,445;
+local observed 4,229. These separate time-dependent observations are not substituted
+for one another. All retain 26 monitor boots/60 synchronous recoveries; request
+and record counts remain the same bounded corpus. Gate 3's report records actual
+source realization and pinned UInt SHA-256
+`d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94`.
+The checked subprocess captures realization output; no direct source-cache-copy
+line is claimed in the wrapper log.
+
+Six uploaded archives were downloaded and stream-inspected; their zip SHA-256
+matched GitHub API digests. Archive bytes were **not retained locally**. IDs/digests,
+all six job IDs, actual source/report hashes and detailed inspected member counts
+are recorded in the summary and retained terminal observation. Foundation artifacts
+are push `11571767094` (29,934,938 bytes) and PR `11572411330` (29,933,650 bytes),
+3,819 members each. The full seven closed job logs (six successful plus historical
+failed push foundation) and terminal metadata are retained under
+`build/foundation/gate11-ci-repair/`; terminal SHA-256 is
+`af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2`.
+Initial failed push run #3 (`37823368652`) and PR run #4 remain failures in that
+metadata, with their missing-source record and logs retained. No failed run is
+rewritten as a pass, and no nonexistent local archive/member bytes are inventoried.
+
+Supplemental final report metadata and scaffold checks passed (18 tests, 1.939 s);
+closed logs are in `build/foundation/gate11-final-report-checks/`. These check
+later documentation consistency, not new target acceptance. Gate 11 is accepted
+for bounded Task 002 publication/CI/evidence handoff. PR #2 stays draft/unmerged;
+no force push or automatic merge occurred. G1/G2 and all broader construction
+units remain partial/incomplete. Future report-only commit/push identities are
+external Git metadata, not invented self-referential hashes; tests remain bound
+to the explicit implementation/CI revisions above.
+
+The initial report-bearing commit is identified externally rather than embedded
+as its own future hash. The current source inventory still hashes exact tested
+`git show 09c47ba:<path>` bytes; later reporting/remote metadata updates do not
+silently requalify source or change the historical artifact identities.
 
 ## Shared assumptions, stage mapping, and limits
 
@@ -1572,13 +1820,15 @@ observer and existing UART/finisher remain test glue rather than a new compiled
 device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
 1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
 construction unit remains `partial`; broader G1/G2 obligations
-and remote CI/publication remain open.
+remain open; bounded Task 002 remote CI/evidence handoff now passed.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
-incomplete, and Task 002 is not complete. Gate 7 synchronous traps remain a historical passing checkpoint;
-Local Gate 10 clean detached qualification is now the highest passing gate;
-Gate 11 publication and actual CI remain in progress without acceptance.
+incomplete. Bounded Task 002 gates are complete; Gate 7 synchronous traps remain a historical passing checkpoint;
+Local Gate 10 clean detached qualification passed; highest passing gate is now 11;
+Gate 11 has published the branch/draft PR. Its initial CI failure is preserved;
+the later repair passed full local qualification and both actual CI runs.
+Gate 11 bounded acceptance passed without broadening any construction-unit claim.
 Gate 6 directly advances partial Units 1.1,
 1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
 finite semantics, ordered lowering, machine audit, source-bound image, branch RAM

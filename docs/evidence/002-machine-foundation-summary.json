@@ -1,24 +1,33 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "status": "passing-prefix",
-  "highest_passing_gate": 10,
-  "next_gate": {
-    "gate": 11,
-    "status": "in-progress",
-    "name": "publication, draft stacked PR, actual CI and final handoff",
-    "acceptance_checks_run": false,
-    "acceptance_passed": false,
-    "meaning": "Local Gate 10 qualification passed; publication and actual GitHub CI remain unrun."
-  },
+  "status": "passed",
+  "highest_passing_gate": 11,
+  "next_gate": null,
   "source": {
-    "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-    "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+    "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+    "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
     "clean": true,
     "branch": "task/002-machine-foundation",
     "verification": "separate clean detached worktree, no prior .lake/build or copied outputs"
   },
   "commands": [
+    {
+      "command": "nix develop --no-write-lock-file --command python3 scripts/check_scaffold.py",
+      "exit_code": 0
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/scaffold -v",
+      "exit_code": 0,
+      "tests": 18,
+      "elapsed_seconds": 2.696
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "exit_code": 0,
+      "tests": 32,
+      "elapsed_seconds": 1.156
+    },
     {
       "command": "nix develop --no-write-lock-file --command lake build",
       "exit_code": 0,
@@ -27,24 +36,10 @@
       "scope": "cold detached build, initially no .lake/build"
     },
     {
-      "command": "python3 scripts/check_scaffold.py",
-      "exit_code": 0
-    },
-    {
-      "command": "python3 -m unittest discover -s tests/scaffold -v",
-      "exit_code": 0,
-      "tests": 18
-    },
-    {
-      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
-      "exit_code": 0,
-      "tests": 32
-    },
-    {
       "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
       "exit_code": 0,
-      "tests": 435,
-      "elapsed_seconds": 35.382
+      "tests": 438,
+      "elapsed_seconds": 24.635
     },
     {
       "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
@@ -101,10 +96,10 @@
       "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate1/gate1-results.json",
-      "sha256": "34d5e8a0b577bf799e29a9fa1f53f18b5f5752e8769a1eed9f218e045c9435f9",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate1/gate1-results.json",
+      "sha256": "74a367c96619f27ef032f4bf17e2231090320d899a59a7b5e28491a334911d25",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
@@ -127,6 +122,12 @@
         "sha256": "792acaec7f8e0ce43fcd74bd2de86fee1aaa2098b802a3ad2df2d0866e4b7afd",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate1/gate1-results.json",
+        "sha256": "34d5e8a0b577bf799e29a9fa1f53f18b5f5752e8769a1eed9f218e045c9435f9",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
@@ -176,10 +177,10 @@
       "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate2/gate2-results.json",
-      "sha256": "edfaf62516da9cc08f4401ea1daa91956f34c8eadabd345d10138a62f1e7b507",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate2/gate2-results.json",
+      "sha256": "57d21e04b806ad84d4c980606d44f861497a1a1654176e0f60bd0d14bc4e3cf3",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
@@ -202,6 +203,12 @@
         "sha256": "be5452f1a5624c47e89b26b164618706d6462bc5dc997ee83c42e45855b12775",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate2/gate2-results.json",
+        "sha256": "edfaf62516da9cc08f4401ea1daa91956f34c8eadabd345d10138a62f1e7b507",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
@@ -479,10 +486,10 @@
       "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate3/gate3-results.json",
-      "sha256": "ad5ad563131fde8a9058d69d77e3127e967b25e2139af46177c3f247422b2c09",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate3/gate3-results.json",
+      "sha256": "83376707e308b21a67eb87ebf032815fb33d3f84f43761744154eae65f36dbcd",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_cumulative_aggregates": [
       {
@@ -495,6 +502,12 @@
         "sha256": "ca688d7610795e6e4c02f834482b4acc22315b3a6e00414742f7681430f3988d",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate3/gate3-results.json",
+        "sha256": "ad5ad563131fde8a9058d69d77e3127e967b25e2139af46177c3f247422b2c09",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
@@ -698,10 +711,10 @@
       "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate4/gate4-results.json",
-      "sha256": "90979bf5626fd967bd7db5efbdc9336846cb44f62f0ecbc7634d8bee50470e28",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate4/gate4-results.json",
+      "sha256": "a34af752f6dd639704475a1fb5b6756616a4c6570e1c8592bca95be382da775d",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_cumulative_aggregates": [
       {
@@ -714,46 +727,52 @@
         "sha256": "aa3b4d3b5a42020ed8ea6073f1737d34fd500b74cbbcd537b19ab80c967af8e4",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate4/gate4-results.json",
+        "sha256": "90979bf5626fd967bd7db5efbdc9336846cb44f62f0ecbc7634d8bee50470e28",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
   "cumulative_foundation": {
-    "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json",
-    "sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f",
-    "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+    "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/all-results.json",
+    "sha256": "205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0",
+    "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
     "fresh_qemu_boots": 482,
     "retained_clean_provenance_records": 41,
     "actual_build_provenance_records": 36,
     "copied_gate_1_negative_audit_provenance_records": 5,
     "children": {
-      "gate_1_sha256": "34d5e8a0b577bf799e29a9fa1f53f18b5f5752e8769a1eed9f218e045c9435f9",
-      "gate_2_sha256": "edfaf62516da9cc08f4401ea1daa91956f34c8eadabd345d10138a62f1e7b507",
-      "gate_3_sha256": "ad5ad563131fde8a9058d69d77e3127e967b25e2139af46177c3f247422b2c09",
-      "gate_4_sha256": "90979bf5626fd967bd7db5efbdc9336846cb44f62f0ecbc7634d8bee50470e28",
-      "gate_5_sha256": "fe23bc3d7dab2a9684438af0d81ebe5af7e2165ff5dc133102e1617eac76c9b7",
-      "gate_6_sha256": "077bb65fa831935f224116994af71dc0a0f43c9f0ecb31f59466c64b9888e7fc",
-      "gate_7_sha256": "b5670f53809d8da85eb335ac71837b6680900b5ebfb1558ee88739017d5c5198",
-      "gate_8_sha256": "43092540d96be4ba0d26a07ade6b8a9c582300ff42cf2a25fd70b8169fe9e19e",
-      "gate_9_sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be"
+      "gate_1_sha256": "74a367c96619f27ef032f4bf17e2231090320d899a59a7b5e28491a334911d25",
+      "gate_2_sha256": "57d21e04b806ad84d4c980606d44f861497a1a1654176e0f60bd0d14bc4e3cf3",
+      "gate_3_sha256": "83376707e308b21a67eb87ebf032815fb33d3f84f43761744154eae65f36dbcd",
+      "gate_4_sha256": "a34af752f6dd639704475a1fb5b6756616a4c6570e1c8592bca95be382da775d",
+      "gate_5_sha256": "30cdef436f5f52a28a8740036c344882bb58f408e3d217c7ef9e3049732cb317",
+      "gate_6_sha256": "06ab5625dbc34edb544915492cc6ecb1a87aa01bf9d506c9c4a6ae45256a74ef",
+      "gate_7_sha256": "b58bdc0571f445c04301eeb4571d69dd8368ec24a7a35bd9c0b2fdf59553be6f",
+      "gate_8_sha256": "201bfdd2931e5c42fb5cfc52576616ba1b66a812832e8ff111538b50d85b6de6",
+      "gate_9_sha256": "712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e"
     },
     "classification": "Current clean detached cumulative --all --stress acceptance, qualified locally."
   },
   "legacy_core0_regression": {
-    "path": "build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json",
-    "sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd",
-    "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+    "path": "build/qualification-worktree.exc0kN/build/core0/qualification-legacy/check-results.json",
+    "sha256": "822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9",
+    "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
     "cases_per_profile": 10,
     "expected_rejections": 13,
     "fresh_qemu_boots": 23,
     "profiles": {
       "O0": {
         "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
-        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
         "dirty_tree": false
       },
       "O2": {
         "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
-        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
         "dirty_tree": false
       }
     },
@@ -813,10 +832,9 @@
     "Gate 6 scripts finite UART availability and separately tests source encoders; its model is not a timing-accurate FIFO model.",
     "Gate 6 directly observes branch marker readbacks; source/CFG audits are not a whole-compiler proof.",
     "Gate 6 machine register tracking is bounded per-function straight-line constant/alias inference, not a general CFG proof.",
-    "Clean committed-source checks ran in the existing checkout; separate detached-worktree qualification, later gates, publication and CI remain open."
+    "Historical existing-checkout results, successful cold detached e0e1f2 and repaired 09c47ba qualifications, and failed initial CI runs are separately retained. Both repair-source push and pull-request CI runs passed with verified checkout/source/tree/artifact identities. This establishes bounded Task 002 acceptance, not compiler correctness, G1/G2, construction-unit completion or physical hardware support."
   ],
   "unit_mapping": {
-    "stage": 1,
     "gate_1_directly_advanced": [
       "1.8"
     ],
@@ -950,7 +968,8 @@
       "2.1",
       "2.2"
     ],
-    "gate_10_scope": "Detached reproducibility, full cumulative/legacy regression, bounded stress, exact catalog and failure-path qualification. Construction units remain partial; no G1/G2 or Stage II unit completion."
+    "gate_10_scope": "Detached reproducibility, full cumulative/legacy regression, bounded stress, exact catalog and failure-path qualification. Construction units remain partial; no G1/G2 or Stage II unit completion.",
+    "primary_stage": 1
   },
   "claims": {
     "gate_3_passed": true,
@@ -958,7 +977,7 @@
     "gate_5_started": true,
     "g1_complete": false,
     "g2_complete": false,
-    "task_002_complete": false,
+    "task_002_complete": true,
     "compiler_correctness_proved": false,
     "managed_lean_runtime_present": false,
     "gate_5_passed": true,
@@ -966,21 +985,25 @@
     "gate_7_started": true,
     "gate_7_acceptance_passed": true,
     "separate_clean_detached_worktree_verification_complete": true,
-    "publication_complete": false,
+    "publication_complete": true,
     "gate_8_started": true,
     "gate_8_acceptance_passed": true,
-    "actual_ci_complete": false,
-    "publication_attempted": false,
+    "actual_ci_complete": true,
+    "publication_attempted": true,
     "gate_9_started": true,
     "gate_9_acceptance_passed": true,
     "gate_10_started": true,
     "gate_10_acceptance_passed": true,
     "gate_11_started": true,
-    "gate_11_acceptance_passed": false
+    "gate_11_acceptance_passed": true,
+    "actual_ci_terminal_result_observed": true,
+    "actual_ci_passed": true,
+    "completion_scope": "Task 002 bounded Gates 0\u201311 only; G1/G2 and all construction units remain incomplete/partial."
   },
   "report_bearing_revision": {
-    "commit": null,
-    "meaning": "later evidence checkpoint; separate from tested implementation"
+    "commit": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+    "tree": "6e129a2ed43608d2bd728df26d09037d93e72fb9",
+    "meaning": "Initial post-test evidence/guidance commit, normally pushed and used as original PR #2 head, reporting historical e0e1f2 qualification. Current tested implementation is 09c47ba; subsequent report edits are not claimed to be in ac2a95."
   },
   "historical_commands_gate_4": [
     {
@@ -1038,7 +1061,7 @@
       "gate_4_qemu_boots": 14
     }
   ],
-  "command_source_scope": "All current commands ran sequentially in the fresh clean detached qualification-worktree.hJDCyB at exact e0e1f2 source; no prior outputs were copied. Relative command work directories are relative to that detached repository. Original-root artifact paths include build/qualification-worktree.hJDCyB/. Qualifier replays retained sessions, not additional QEMU boots. Later report-bearing source guidance and Gate 11 work are not retroactively tested; actual CI/publication pending.",
+  "command_source_scope": "All eight current commands ran in listed order, each through nix develop --no-write-lock-file --command, sequentially in fresh clean detached qualification-worktree.exc0kN at exact 09c47ba; no outputs copied. Relative command directories are relative to the child; original-root artifact paths include build/qualification-worktree.exc0kN/. Qualifier replays retained sessions, not extra boots. Historical successful e0e1f2, failed 8fe29 qualification and failed actual CI run #4 remain separate. Later report/guidance is not retroactively tested; both repair CI runs are now separately verified terminal successes; no remote counts or source identity are substituted for the local run.",
   "gate_5": {
     "source": {
       "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
@@ -1227,10 +1250,10 @@
       "This result does not complete G1 or G2."
     ],
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate5/gate5-results.json",
-      "sha256": "fe23bc3d7dab2a9684438af0d81ebe5af7e2165ff5dc133102e1617eac76c9b7",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate5/gate5-results.json",
+      "sha256": "30cdef436f5f52a28a8740036c344882bb58f408e3d217c7ef9e3049732cb317",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_cumulative_aggregates": [
       {
@@ -1243,6 +1266,12 @@
         "sha256": "f8ebd9db67ea26a2da2fddd2cd30b263bf4e6c6a831c6bed1608a7d28d6fa5c0",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate5/gate5-results.json",
+        "sha256": "fe23bc3d7dab2a9684438af0d81ebe5af7e2165ff5dc133102e1617eac76c9b7",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
@@ -1754,10 +1783,10 @@
       "This result does not complete G1 or G2."
     ],
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate6/gate6-results.json",
-      "sha256": "077bb65fa831935f224116994af71dc0a0f43c9f0ecb31f59466c64b9888e7fc",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate6/gate6-results.json",
+      "sha256": "06ab5625dbc34edb544915492cc6ecb1a87aa01bf9d506c9c4a6ae45256a74ef",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_cumulative_aggregates": [
       {
@@ -1770,6 +1799,12 @@
         "sha256": "c47b37052c6c5c9e062bcbf7be8e992383b60fd6921e97dc6e7d978322d83706",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate6/gate6-results.json",
+        "sha256": "077bb65fa831935f224116994af71dc0a0f43c9f0ecb31f59466c64b9888e7fc",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
@@ -1941,6 +1976,13 @@
       "tree": "965b550c576f80284a1a24c427d9704b517d160d",
       "clean": true,
       "branch": "task/002-machine-foundation"
+    },
+    {
+      "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+      "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+      "clean": true,
+      "branch": "task/002-machine-foundation",
+      "verification": "separate clean detached worktree, no prior .lake/build or copied outputs"
     }
   ],
   "historical_commands_gate_6": [
@@ -2602,10 +2644,10 @@
       "Pinned QEMU observations do not claim physical-board validation or completion of G1/G2."
     ],
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate7/gate7-results.json",
-      "sha256": "b5670f53809d8da85eb335ac71837b6680900b5ebfb1558ee88739017d5c5198",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate7/gate7-results.json",
+      "sha256": "b58bdc0571f445c04301eeb4571d69dd8368ec24a7a35bd9c0b2fdf59553be6f",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "historical_cumulative_aggregates": [
       {
@@ -2613,10 +2655,16 @@
         "sha256": "42ea563433b71eae08297124ef3596f0d0c200b7134160be3ab02482f411beb6",
         "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
         "classification": "Historical accepted Gates 1\u20138 baseline at 42674c1; compatibility key is not a claim this is the latest executed cumulative run."
+      },
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate7/gate7-results.json",
+        "sha256": "b5670f53809d8da85eb335ac71837b6680900b5ebfb1558ee88739017d5c5198",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
       }
     ]
   },
-  "publication_status": "not-attempted; task branch is local, no Gate 11 remote publication or actual CI result claimed",
+  "publication_status": "pushed-with-upstream; open draft stacked PR #2; repaired 09c47ba full local qualification and both actual push/PR CI passed; initial CI failures preserved, no merge",
   "historical_commands_gate_7": [
     {
       "command": "nix develop --no-write-lock-file --command lake build",
@@ -4045,11 +4093,19 @@
       "behavioral_mutant_detection_credit": false
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate8/gate8-results.json",
-      "sha256": "43092540d96be4ba0d26a07ade6b8a9c582300ff42cf2a25fd70b8169fe9e19e",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
-    }
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate8/gate8-results.json",
+      "sha256": "201bfdd2931e5c42fb5cfc52576616ba1b66a812832e8ff111538b50d85b6de6",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate8/gate8-results.json",
+        "sha256": "43092540d96be4ba0d26a07ade6b8a9c582300ff42cf2a25fd70b8169fe9e19e",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
+      }
+    ]
   },
   "gate_7_report_bearing_revision": "530fb1ec80687569e5f5def5ac870153b3256227",
   "historical_commands_gate_8": [
@@ -5567,14 +5623,14 @@
       ]
     },
     "current_cumulative_aggregate": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json",
-      "sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "classification": "Current clean detached cumulative/stress acceptance at e0e1f2; locally qualified, actual CI pending."
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/gate9-results.json",
+      "sha256": "712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "classification": "Current repaired 09c47ba clean detached cumulative/stress acceptance; qualified locally. Separate repair push/PR CI runs also passed with their own source-bound records."
     },
     "current_qualified_monitor_counts": {
       "active_terminal_cleanup_sessions": 2,
-      "actual_hardware_irqs": 4243,
+      "actual_hardware_irqs": 4229,
       "fresh_qemu_boots": 26,
       "frontend_lowering": 1,
       "handled_requests": 2742,
@@ -5584,17 +5640,25 @@
       "source_rejections": 4,
       "synchronous_recoveries": 60,
       "terminal_sessions": 12
-    }
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json",
+        "sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be",
+        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "classification": "Historical successful clean detached e0e1f2 cumulative/stress qualification. Later CI failure and repair are separately scoped."
+      }
+    ]
   },
   "gate_10": {
     "status": "passed",
     "acceptance_passed": true,
     "candidate_source": {
-      "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4"
+      "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "tree": "7051d19087e09a6eede78210fdbe7652105e355d"
     },
     "detached_worktree": {
-      "path": "/home/sreekumaar/Downloads/lemma/build/qualification-worktree.hJDCyB",
+      "path": "/home/sreekumaar/Downloads/lemma/build/qualification-worktree.exc0kN",
       "initial_lake_build_present": false,
       "initial_build_output_present": false,
       "prior_outputs_copied": false,
@@ -5604,9 +5668,11 @@
         "cold_lean_build_jobs": 53,
         "metadata": "pass",
         "scaffold_tests": 18,
+        "scaffold_elapsed_seconds": 2.696,
         "core0_tests": 32,
-        "foundation_tests": 435,
-        "foundation_elapsed_seconds": 35.382
+        "core0_elapsed_seconds": 1.156,
+        "foundation_tests": 438,
+        "foundation_elapsed_seconds": 24.635
       },
       "cumulative_target_status": "passed",
       "source_clean_throughout": true
@@ -5682,9 +5748,7 @@
         "sha256": "a81a1ece8363d50c8a2eea047d156014c6e7acec99fa03d75d9d0169739c92fc"
       }
     },
-    "pending_acceptance": [
-      "Actual GitHub CI and Gate 11 publication remain unrun."
-    ],
+    "pending_acceptance": [],
     "accepted_source_inventory_rebound": true,
     "historical_clean_attempts": [
       {
@@ -5830,51 +5894,51 @@
         }
       ]
     },
-    "acceptance_scope": "Completed local clean detached qualification; remote publication and actual CI remain Gate 11 work, not claimed passed.",
+    "acceptance_scope": "Completed local cold clean detached qualification at repaired 09c47ba. Historical e0e1f2 success and initial CI failures remain retained; later actual repair push/PR CI successes have separate checkout/report/artifact identities.",
     "source": {
-      "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-      "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+      "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
       "clean": true,
       "branch": "task/002-machine-foundation",
       "verification": "separate clean detached worktree, no prior .lake/build or copied outputs"
     },
     "final_cumulative": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json",
-      "sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+      "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/all-results.json",
+      "sha256": "205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
       "fresh_qemu_boots": 482,
       "retained_clean_provenance_records": 41,
       "actual_build_provenance_records": 36,
       "copied_gate_1_negative_audit_provenance_records": 5,
       "children": {
-        "gate_1_sha256": "34d5e8a0b577bf799e29a9fa1f53f18b5f5752e8769a1eed9f218e045c9435f9",
-        "gate_2_sha256": "edfaf62516da9cc08f4401ea1daa91956f34c8eadabd345d10138a62f1e7b507",
-        "gate_3_sha256": "ad5ad563131fde8a9058d69d77e3127e967b25e2139af46177c3f247422b2c09",
-        "gate_4_sha256": "90979bf5626fd967bd7db5efbdc9336846cb44f62f0ecbc7634d8bee50470e28",
-        "gate_5_sha256": "fe23bc3d7dab2a9684438af0d81ebe5af7e2165ff5dc133102e1617eac76c9b7",
-        "gate_6_sha256": "077bb65fa831935f224116994af71dc0a0f43c9f0ecb31f59466c64b9888e7fc",
-        "gate_7_sha256": "b5670f53809d8da85eb335ac71837b6680900b5ebfb1558ee88739017d5c5198",
-        "gate_8_sha256": "43092540d96be4ba0d26a07ade6b8a9c582300ff42cf2a25fd70b8169fe9e19e",
-        "gate_9_sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be"
+        "gate_1_sha256": "74a367c96619f27ef032f4bf17e2231090320d899a59a7b5e28491a334911d25",
+        "gate_2_sha256": "57d21e04b806ad84d4c980606d44f861497a1a1654176e0f60bd0d14bc4e3cf3",
+        "gate_3_sha256": "83376707e308b21a67eb87ebf032815fb33d3f84f43761744154eae65f36dbcd",
+        "gate_4_sha256": "a34af752f6dd639704475a1fb5b6756616a4c6570e1c8592bca95be382da775d",
+        "gate_5_sha256": "30cdef436f5f52a28a8740036c344882bb58f408e3d217c7ef9e3049732cb317",
+        "gate_6_sha256": "06ab5625dbc34edb544915492cc6ecb1a87aa01bf9d506c9c4a6ae45256a74ef",
+        "gate_7_sha256": "b58bdc0571f445c04301eeb4571d69dd8368ec24a7a35bd9c0b2fdf59553be6f",
+        "gate_8_sha256": "201bfdd2931e5c42fb5cfc52576616ba1b66a812832e8ff111538b50d85b6de6",
+        "gate_9_sha256": "712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e"
       },
       "classification": "Current clean detached cumulative --all --stress acceptance, qualified locally."
     },
     "final_legacy": {
-      "path": "build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json",
-      "sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd",
-      "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+      "path": "build/qualification-worktree.exc0kN/build/core0/qualification-legacy/check-results.json",
+      "sha256": "822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9",
+      "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
       "cases_per_profile": 10,
       "expected_rejections": 13,
       "fresh_qemu_boots": 23,
       "profiles": {
         "O0": {
           "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
-          "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
           "dirty_tree": false
         },
         "O2": {
           "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
-          "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
           "dirty_tree": false
         }
       },
@@ -5885,7 +5949,7 @@
     },
     "monitor_counts": {
       "active_terminal_cleanup_sessions": 2,
-      "actual_hardware_irqs": 4243,
+      "actual_hardware_irqs": 4229,
       "fresh_qemu_boots": 26,
       "frontend_lowering": 1,
       "handled_requests": 2742,
@@ -5898,7 +5962,7 @@
     },
     "monitor_normal_counts": {
       "active_terminal_cleanup_sessions": 2,
-      "actual_hardware_irqs": 1417,
+      "actual_hardware_irqs": 1414,
       "fresh_qemu_boots": 18,
       "handled_requests": 1598,
       "mixed_sessions": 4,
@@ -5908,7 +5972,7 @@
     },
     "monitor_stress_counts": {
       "active_terminal_cleanup_sessions": 0,
-      "actual_hardware_irqs": 2826,
+      "actual_hardware_irqs": 2815,
       "fresh_qemu_boots": 8,
       "handled_requests": 1144,
       "mixed_sessions": 8,
@@ -5918,8 +5982,8 @@
     },
     "monitor_source_input_count_per_profile": 102,
     "qualifier": {
-      "path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json",
-      "sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9",
+      "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/qualification-results.json",
+      "sha256": "9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1",
       "exit_code": 0,
       "counts": {
         "deterministic_artifacts_per_profile": 16,
@@ -5946,25 +6010,25 @@
           "passed": true,
           "observed_category": "harness-input-failure",
           "canonical_pass_absent": true,
+          "command_returncode": 1,
           "failure_report": {
             "bytes": 275,
-            "path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/failure-experiments/stale-phase9/check-failure.json",
+            "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/failure-experiments/stale-phase9/check-failure.json",
             "role": "early Gate 9 failure report",
             "sha256": "d555189a5464fe7dc75d5658f002725cfda49808cbcd28b107018ab4171b6d01"
-          },
-          "command_returncode": 1
+          }
         },
         {
           "id": "runner-stale-pass",
           "passed": true,
           "observed_category": "image-or-harness-rejection",
+          "command_returncode": 1,
           "failure_report": {
-            "bytes": 919,
-            "path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/failure-experiments/stale-runner/run.json",
+            "bytes": 920,
+            "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/failure-experiments/stale-runner/run.json",
             "role": "early runner failure report",
-            "sha256": "7ebeb90465c38afde550bb42fa2fcc49d3017af8d2aa272b4a5fbbbbbfc53a6d"
-          },
-          "command_returncode": 1
+            "sha256": "730af9e181f21041f8496da0799ff8c867888dcb5797502ccc445d549379a9ff"
+          }
         },
         {
           "id": "missing-program-object",
@@ -5973,7 +6037,13 @@
           "accepted_image_modified": false,
           "target": "program.o",
           "mode": "missing",
-          "command_returncode": 1
+          "command_returncode": 1,
+          "record": {
+            "bytes": 1301,
+            "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/failure-experiments/missing-program-object/experiment.json",
+            "role": "missing-program-object experiment",
+            "sha256": "85e1e7389ac79dd1d14865f9bd243b31bfd3ad37b2b7e5d30bd7520b3f40af03"
+          }
         },
         {
           "id": "tampered-program-ir",
@@ -5982,138 +6052,72 @@
           "accepted_image_modified": false,
           "target": "program.ll",
           "mode": "tamper",
-          "command_returncode": 1
+          "command_returncode": 1,
+          "record": {
+            "bytes": 1345,
+            "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/failure-experiments/tampered-program-ir/experiment.json",
+            "role": "tampered-program-ir experiment",
+            "sha256": "8c212a13c5cfc2247c207eeec4c30a313151ce1fcd6a7a2358ec5893b05626de"
+          }
         },
         {
           "id": "missing-raw-evidence",
           "passed": true,
           "canonical_pass_absent": true,
-          "diagnostic": "monitor successful retained raw evidence is missing/stale: received.bin"
+          "diagnostic": "monitor successful retained raw evidence is missing/stale: received.bin",
+          "record": {
+            "bytes": 294,
+            "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/failure-experiments/missing-raw-evidence/experiment.json",
+            "role": "missing raw evidence experiment",
+            "sha256": "f4fe846704320e7cb3d4d12e442b3280453fefc4abf53bd0a370ec81e32b5faa"
+          }
         }
       ],
       "reproducibility": {
         "O0": {
-          "rebuilt_directory": "build/qualification-worktree.hJDCyB/build/foundation/qualification/rebuild/O0",
-          "deterministic_artifacts": {
-            "device-contract.json": {
-              "baseline_sha256": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
-              "bytes": 1234,
-              "identical": true,
-              "rebuilt_sha256": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a"
-            },
-            "image.elf": {
-              "baseline_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
-              "bytes": 89776,
-              "identical": true,
-              "rebuilt_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68"
-            },
-            "image.map": {
-              "baseline_sha256": "63d3b16ca682211d10af6d863884337db9ca6cc3ce1391e828cd398c15f11138",
-              "bytes": 46832,
-              "identical": true,
-              "rebuilt_sha256": "63d3b16ca682211d10af6d863884337db9ca6cc3ce1391e828cd398c15f11138"
-            },
-            "layout.json": {
-              "baseline_sha256": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
-              "bytes": 2248,
-              "identical": true,
-              "rebuilt_sha256": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095"
-            },
-            "link.ld": {
-              "baseline_sha256": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
-              "bytes": 1098,
-              "identical": true,
-              "rebuilt_sha256": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c"
-            },
-            "monitor-abi.json": {
-              "baseline_sha256": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333",
-              "bytes": 11345,
-              "identical": true,
-              "rebuilt_sha256": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333"
-            },
-            "monitor-manifest.json": {
-              "baseline_sha256": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a",
-              "bytes": 180024,
-              "identical": true,
-              "rebuilt_sha256": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a"
-            },
-            "monitor-normalized.txt": {
-              "baseline_sha256": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96",
-              "bytes": 101247,
-              "identical": true,
-              "rebuilt_sha256": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96"
-            },
-            "platform.dtb": {
-              "baseline_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
-              "bytes": 5044,
-              "identical": true,
-              "rebuilt_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f"
-            },
-            "platform.dts": {
-              "baseline_sha256": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8",
-              "bytes": 6035,
-              "identical": true,
-              "rebuilt_sha256": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8"
-            },
-            "program.ll": {
-              "baseline_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
-              "bytes": 462512,
-              "identical": true,
-              "rebuilt_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541"
-            },
-            "program.o": {
-              "baseline_sha256": "4c6c9c9797eed6bb81ac4a1f77b09f8576b350a0ac9f910cf1c273f7f7dcaed0",
-              "bytes": 90560,
-              "identical": true,
-              "rebuilt_sha256": "4c6c9c9797eed6bb81ac4a1f77b09f8576b350a0ac9f910cf1c273f7f7dcaed0"
-            },
-            "program.opt.ll": {
-              "baseline_sha256": "f6f154be553e77a7ac2e39f6a530644956e0b24cae9a28d00d436d6265d6494c",
-              "bytes": 595199,
-              "identical": true,
-              "rebuilt_sha256": "f6f154be553e77a7ac2e39f6a530644956e0b24cae9a28d00d436d6265d6494c"
-            },
-            "startup.S": {
-              "baseline_sha256": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd",
-              "bytes": 31751,
-              "identical": true,
-              "rebuilt_sha256": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd"
-            },
-            "startup.o": {
-              "baseline_sha256": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f",
-              "bytes": 12192,
-              "identical": true,
-              "rebuilt_sha256": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f"
-            },
-            "symbols.txt": {
-              "baseline_sha256": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10",
-              "bytes": 10334,
-              "identical": true,
-              "rebuilt_sha256": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10"
-            }
-          },
+          "rebuilt_directory": "build/qualification-worktree.exc0kN/build/foundation/qualification/rebuild/O0",
+          "deterministic_artifacts_compared": 16,
+          "all_deterministic_artifacts_identical": true,
+          "deterministic_artifact_names": [
+            "device-contract.json",
+            "image.elf",
+            "image.map",
+            "layout.json",
+            "link.ld",
+            "monitor-abi.json",
+            "monitor-manifest.json",
+            "monitor-normalized.txt",
+            "platform.dtb",
+            "platform.dts",
+            "program.ll",
+            "program.o",
+            "program.opt.ll",
+            "startup.S",
+            "startup.o",
+            "symbols.txt"
+          ],
           "image_map_inspected_and_identical": true,
           "metadata": {
             "audit": {
-              "baseline_sha256": "b87d3fe456de85ea817098921b1dadc30f5260c6f0631a324e53944b5eb37cb8",
+              "baseline_sha256": "60ac99783e9804b6ab0a8539f0bc58c4b07ea4c31a28b38b8e60e28ec7593f31",
               "intentional_differences": [
                 "directory",
                 "hashes.provenance.json"
               ],
               "normalized_equal": true,
-              "rebuilt_sha256": "b71e810fe67fdaa2ae852295d00199c2ef76765c9912defba616c43eb4eb0cae"
+              "rebuilt_sha256": "00eca6e38da41465cfadce89ffc236a7b93f9aa413ac79caba6a5a9b5c9ca10b"
             },
             "build": {
-              "baseline_sha256": "674291348956b037198b6d4c93231cb0c88fe04671a069c4523c71ce22d1f546",
+              "baseline_sha256": "44fb68b9a75de40e8db09f74243c0ca3882163bdef3141655fecafd7208ed6bf",
               "intentional_differences": [
                 "output_directory",
                 "artifacts.provenance.json"
               ],
               "normalized_equal": true,
-              "rebuilt_sha256": "8259616f524bde33e24123c093b2c5560cf241fc7fa4524edda52a3680ed59f3"
+              "rebuilt_sha256": "d64677c93de6ffdae2ba1a92a28510ade0b19635415de69429cf97cf2ae3b3ee"
             },
             "provenance": {
-              "baseline_sha256": "79977abc3c875af9f53b09f817f0b848bfb23a98118eb9af62ca1639eb9eae72",
+              "baseline_sha256": "2fa08467d2ae87c286f2af65a23e1a4e1465378d07ddc17ffdcf9260d82e411b",
               "command_structure_equal": true,
               "intentional_differences": [
                 "commands[*].cwd",
@@ -6121,133 +6125,56 @@
                 "commands[*].stdout",
                 "commands[*].stderr"
               ],
-              "rebuilt_sha256": "aa5aa16192dc44222a71812a6cff235bcaa3c70391dfc3bf94c1028c63791629",
+              "rebuilt_sha256": "2d7f3dfc7d23a08fd3cab92de7e21e7c2b91cadc3da6c71ca0cdd61f41532a94",
               "stable_fields_equal": true
             }
-          }
+          },
+          "full_command_observation_comparisons": "Retained in hashed qualification-results.json; output directories, elapsed times and observed streams are intentional explicitly compared differences."
         },
         "O2": {
-          "rebuilt_directory": "build/qualification-worktree.hJDCyB/build/foundation/qualification/rebuild/O2",
-          "deterministic_artifacts": {
-            "device-contract.json": {
-              "baseline_sha256": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
-              "bytes": 1234,
-              "identical": true,
-              "rebuilt_sha256": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a"
-            },
-            "image.elf": {
-              "baseline_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
-              "bytes": 52120,
-              "identical": true,
-              "rebuilt_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382"
-            },
-            "image.map": {
-              "baseline_sha256": "9923113946b7bc6d64a3cef4e1b1ff8cdc3bca7505d97548292ebe1b0c81b4e1",
-              "bytes": 50535,
-              "identical": true,
-              "rebuilt_sha256": "9923113946b7bc6d64a3cef4e1b1ff8cdc3bca7505d97548292ebe1b0c81b4e1"
-            },
-            "layout.json": {
-              "baseline_sha256": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
-              "bytes": 2248,
-              "identical": true,
-              "rebuilt_sha256": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095"
-            },
-            "link.ld": {
-              "baseline_sha256": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
-              "bytes": 1098,
-              "identical": true,
-              "rebuilt_sha256": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c"
-            },
-            "monitor-abi.json": {
-              "baseline_sha256": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333",
-              "bytes": 11345,
-              "identical": true,
-              "rebuilt_sha256": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333"
-            },
-            "monitor-manifest.json": {
-              "baseline_sha256": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a",
-              "bytes": 180024,
-              "identical": true,
-              "rebuilt_sha256": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a"
-            },
-            "monitor-normalized.txt": {
-              "baseline_sha256": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96",
-              "bytes": 101247,
-              "identical": true,
-              "rebuilt_sha256": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96"
-            },
-            "platform.dtb": {
-              "baseline_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
-              "bytes": 5044,
-              "identical": true,
-              "rebuilt_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f"
-            },
-            "platform.dts": {
-              "baseline_sha256": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8",
-              "bytes": 6035,
-              "identical": true,
-              "rebuilt_sha256": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8"
-            },
-            "program.ll": {
-              "baseline_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
-              "bytes": 462512,
-              "identical": true,
-              "rebuilt_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541"
-            },
-            "program.o": {
-              "baseline_sha256": "c467a9e39ce032df85fea19ad9eb8488fc41230b0577d5b71fb28fb1968cffdd",
-              "bytes": 49184,
-              "identical": true,
-              "rebuilt_sha256": "c467a9e39ce032df85fea19ad9eb8488fc41230b0577d5b71fb28fb1968cffdd"
-            },
-            "program.opt.ll": {
-              "baseline_sha256": "1c076a19fd38a95764f2c8a50bfa61799726f7d0f6da822dd15ef3e04bab9ddb",
-              "bytes": 242547,
-              "identical": true,
-              "rebuilt_sha256": "1c076a19fd38a95764f2c8a50bfa61799726f7d0f6da822dd15ef3e04bab9ddb"
-            },
-            "startup.S": {
-              "baseline_sha256": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd",
-              "bytes": 31751,
-              "identical": true,
-              "rebuilt_sha256": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd"
-            },
-            "startup.o": {
-              "baseline_sha256": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f",
-              "bytes": 12192,
-              "identical": true,
-              "rebuilt_sha256": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f"
-            },
-            "symbols.txt": {
-              "baseline_sha256": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10",
-              "bytes": 10334,
-              "identical": true,
-              "rebuilt_sha256": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10"
-            }
-          },
+          "rebuilt_directory": "build/qualification-worktree.exc0kN/build/foundation/qualification/rebuild/O2",
+          "deterministic_artifacts_compared": 16,
+          "all_deterministic_artifacts_identical": true,
+          "deterministic_artifact_names": [
+            "device-contract.json",
+            "image.elf",
+            "image.map",
+            "layout.json",
+            "link.ld",
+            "monitor-abi.json",
+            "monitor-manifest.json",
+            "monitor-normalized.txt",
+            "platform.dtb",
+            "platform.dts",
+            "program.ll",
+            "program.o",
+            "program.opt.ll",
+            "startup.S",
+            "startup.o",
+            "symbols.txt"
+          ],
           "image_map_inspected_and_identical": true,
           "metadata": {
             "audit": {
-              "baseline_sha256": "b4c3425874cbe7d735927f89a3ccd1e022dc5fbdc5ed0d7abbe34544f995b7ea",
+              "baseline_sha256": "5ccf622b52e811455f67419d3adf619b449eecdaaf1401794c813ee077db2dca",
               "intentional_differences": [
                 "directory",
                 "hashes.provenance.json"
               ],
               "normalized_equal": true,
-              "rebuilt_sha256": "7d6b22ed558237e6b5da38ac9cfa392a650358aef0641c0829363eac4d723aae"
+              "rebuilt_sha256": "13472c2d483b3f3292ea98d3f0d068aaa83fa4d0fcb2539619947e20c300341f"
             },
             "build": {
-              "baseline_sha256": "137a1ea5ff4bddc2393268454670fb8bc30400a518b49245a313b85212f61753",
+              "baseline_sha256": "1898813ff0fe5bdc8b97a78864866c5f3403de1d35df86cd9fa77872c5f6a2fc",
               "intentional_differences": [
                 "output_directory",
                 "artifacts.provenance.json"
               ],
               "normalized_equal": true,
-              "rebuilt_sha256": "864ca3d994663b60432a53a399afbb767bdfe4bd6c89e92297b956d88cd13f74"
+              "rebuilt_sha256": "710c7db60d8330210a97c28d2b2cd5c7a96a637d4f29b756360621ad34314920"
             },
             "provenance": {
-              "baseline_sha256": "302aaa3e1364cdd226fd742b7622a6d7a7bc02c3aa5b3f93354ff26a4e57eeed",
+              "baseline_sha256": "62b4a38ef3b02310b09837608d6c101b55dd426f14ebccd9a3d498216ac410f9",
               "command_structure_equal": true,
               "intentional_differences": [
                 "commands[*].cwd",
@@ -6255,82 +6182,83 @@
                 "commands[*].stdout",
                 "commands[*].stderr"
               ],
-              "rebuilt_sha256": "bb29bc274653d182c5f12a321f0468cdd2674dde5b5ba8d03d9866a979e50cb4",
+              "rebuilt_sha256": "3b163716a307a6f390e0cd88181b710e2678c4ca183e0b3ee2588fccd5faf2e1",
               "stable_fields_equal": true
             }
-          }
+          },
+          "full_command_observation_comparisons": "Retained in hashed qualification-results.json; output directories, elapsed times and observed streams are intentional explicitly compared differences."
         }
       }
     },
     "closed_host_logs": [
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/check-scaffold.log",
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/check-scaffold.log",
         "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/core0-host.log",
-        "sha256": "2f721c7bac83a083267a1c1a63d7437130b089dbc6af146bc629fadc5152d3ba"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/core0-host.log",
+        "sha256": "b3102ef3b0f0693512fbafe3b83a73483fd48bb761d5428c62a6fa75e035d0e9"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/cumulative-stress.log",
-        "sha256": "540f74092fbabcba54e8df7ecced5581f49c538de8c8dc6a8b94984068d53d6a"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/cumulative-stress.log",
+        "sha256": "1c460ee3c5600d9911d9598416ae3f0245d35016c80bdabed7f76a618e5909b2"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/foundation-host.log",
-        "sha256": "2fe50a92e5b20290e73d374b77d4992a9d7ff0cfa0a54d3e1bb25b5d57e85e79"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/foundation-host.log",
+        "sha256": "5efaf355a4c9886227185fc9d3aa424527b2cced1abea30be0d41155e5c65912"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/lake-build.log",
-        "sha256": "8e83f2807fed77ddf89f965a206f14cdfe70efa31a90b44fa8d07feb61db0621"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/lake-build.log",
+        "sha256": "e1fbdb10794f616f803ef0501882c628447c00fb7857580c3610c926853b5ba4"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/legacy-rv64.log",
-        "sha256": "af35d56bee1edd4990cd00c21513609688ced910b8109cb02557aad1547521fd"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/legacy-rv64.log",
+        "sha256": "1445bbda6aca51374fdc25fb4027a9bf37a40e3e9793069f879fcfd420967fb7"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/qualification.log",
-        "sha256": "4850ae8500fa9361cbcf9eaa61442fd6d151a9e1c3415eabc34cff6078c13e08"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/qualification.log",
+        "sha256": "2c016b0a7cbb7008ee6bcfc513870523e1de4a97d8fe39cb1666c3ef9b444623"
       },
       {
-        "path": "build/qualification-worktree.hJDCyB/build/qualification-host/scaffold-host.log",
-        "sha256": "046cd86ae51b0f8849a7722db786100d8ed9b04df9099e0bb449768993a0a283"
+        "path": "build/qualification-worktree.exc0kN/build/qualification-host/scaffold-host.log",
+        "sha256": "d4768f71d118a32752c817c2e7f6d8283a835463683e1cd017d6b2b09840bdcd"
       }
     ],
     "current_profile_identities": {
       "O0": {
-        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
         "dirty_tree": false,
         "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
         "audit": {
-          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O0/audit.json",
-          "sha256": "b87d3fe456de85ea817098921b1dadc30f5260c6f0631a324e53944b5eb37cb8"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/O0/audit.json",
+          "sha256": "60ac99783e9804b6ab0a8539f0bc58c4b07ea4c31a28b38b8e60e28ec7593f31"
         },
         "provenance": {
-          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O0/provenance.json",
-          "sha256": "79977abc3c875af9f53b09f817f0b848bfb23a98118eb9af62ca1639eb9eae72"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/O0/provenance.json",
+          "sha256": "2fa08467d2ae87c286f2af65a23e1a4e1465378d07ddc17ffdcf9260d82e411b"
         }
       },
       "O2": {
-        "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+        "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
         "dirty_tree": false,
         "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
         "audit": {
-          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O2/audit.json",
-          "sha256": "b4c3425874cbe7d735927f89a3ccd1e022dc5fbdc5ed0d7abbe34544f995b7ea"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/O2/audit.json",
+          "sha256": "5ccf622b52e811455f67419d3adf619b449eecdaaf1401794c813ee077db2dca"
         },
         "provenance": {
-          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O2/provenance.json",
-          "sha256": "302aaa3e1364cdd226fd742b7622a6d7a7bc02c3aa5b3f93354ff26a4e57eeed"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/O2/provenance.json",
+          "sha256": "62b4a38ef3b02310b09837608d6c101b55dd426f14ebccd9a3d498216ac410f9"
         }
       }
     },
     "representative_transcript": {
       "profile": "O2",
       "scenario": "mixed-zero",
-      "pid": 332603,
-      "raw_directory": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero",
+      "pid": 357202,
+      "raw_directory": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero",
       "raw_artifacts": {
-        "received.bin": "1a30ecdac0aca89c10a71ba77b999e876846a8e2504cf2349eb41eba1751593d",
+        "received.bin": "fcdfa16d5305fab2fefb025ef48c3350193dca7bbd88d947b3eaef1d22dd1916",
         "sent.bin": "e365c707bd3ad05b61f610b2e60b19afe23cea52029ec2b147849e3ea08c5460",
         "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
@@ -6340,8 +6268,8 @@
         "final_hardware_irqs": 17,
         "handled_requests": 143,
         "hardware_work_commands": 3,
-        "last_work_checksum": 15424524012269225306,
-        "observed_hardware_irqs": 358,
+        "last_work_checksum": 13610760154748141402,
+        "observed_hardware_irqs": 360,
         "observed_overflow": true,
         "observed_ring_wrap": true,
         "records_checked": 48,
@@ -6411,7 +6339,7 @@
           "values": [
             1,
             10000,
-            885109,
+            914475,
             0
           ]
         },
@@ -6431,8 +6359,8 @@
           "request_id": 36915,
           "status": 0,
           "values": [
-            12314291553693375488,
-            6110,
+            4505903371668119552,
+            5768,
             5,
             69
           ]
@@ -6443,7 +6371,7 @@
           "status": 0,
           "values": [
             1,
-            875109,
+            904475,
             2147490556,
             9223372036854775815
           ]
@@ -6456,7 +6384,7 @@
             142,
             25,
             5,
-            15424524012269225306
+            13610760154748141402
           ]
         },
         {
@@ -6471,7 +6399,220 @@
           ]
         }
       ]
-    }
+    },
+    "historical_successful_qualifications": [
+      {
+        "source": {
+          "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+          "clean": true,
+          "branch": "task/002-machine-foundation",
+          "verification": "separate clean detached worktree, no prior .lake/build or copied outputs"
+        },
+        "detached_worktree": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/qualification-worktree.hJDCyB",
+          "initial_lake_build_present": false,
+          "initial_build_output_present": false,
+          "prior_outputs_copied": false,
+          "status": "Full sequential host/cold-build, cumulative stress, legacy and qualifier passed; source clean throughout.",
+          "completed_host_checks": {
+            "exit_code": 0,
+            "cold_lean_build_jobs": 53,
+            "metadata": "pass",
+            "scaffold_tests": 18,
+            "core0_tests": 32,
+            "foundation_tests": 435,
+            "foundation_elapsed_seconds": 35.382
+          },
+          "cumulative_target_status": "passed",
+          "source_clean_throughout": true
+        },
+        "final_cumulative": {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json",
+          "sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f",
+          "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "fresh_qemu_boots": 482,
+          "retained_clean_provenance_records": 41,
+          "actual_build_provenance_records": 36,
+          "copied_gate_1_negative_audit_provenance_records": 5,
+          "children": {
+            "gate_1_sha256": "34d5e8a0b577bf799e29a9fa1f53f18b5f5752e8769a1eed9f218e045c9435f9",
+            "gate_2_sha256": "edfaf62516da9cc08f4401ea1daa91956f34c8eadabd345d10138a62f1e7b507",
+            "gate_3_sha256": "ad5ad563131fde8a9058d69d77e3127e967b25e2139af46177c3f247422b2c09",
+            "gate_4_sha256": "90979bf5626fd967bd7db5efbdc9336846cb44f62f0ecbc7634d8bee50470e28",
+            "gate_5_sha256": "fe23bc3d7dab2a9684438af0d81ebe5af7e2165ff5dc133102e1617eac76c9b7",
+            "gate_6_sha256": "077bb65fa831935f224116994af71dc0a0f43c9f0ecb31f59466c64b9888e7fc",
+            "gate_7_sha256": "b5670f53809d8da85eb335ac71837b6680900b5ebfb1558ee88739017d5c5198",
+            "gate_8_sha256": "43092540d96be4ba0d26a07ade6b8a9c582300ff42cf2a25fd70b8169fe9e19e",
+            "gate_9_sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be"
+          },
+          "classification": "Historical successful e0e1f2 clean detached cumulative/stress acceptance."
+        },
+        "final_legacy": {
+          "path": "build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json",
+          "sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd",
+          "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "cases_per_profile": 10,
+          "expected_rejections": 13,
+          "fresh_qemu_boots": 23,
+          "profiles": {
+            "O0": {
+              "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
+              "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+              "dirty_tree": false
+            },
+            "O2": {
+              "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
+              "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+              "dirty_tree": false
+            }
+          },
+          "classification": "Historical successful same-source e0e1f2 clean detached legacy regression.",
+          "retained_clean_provenance_records": 8,
+          "actual_build_provenance_records": 7,
+          "copied_negative_audit_provenance_records": 1
+        },
+        "monitor_counts": {
+          "active_terminal_cleanup_sessions": 2,
+          "actual_hardware_irqs": 4243,
+          "fresh_qemu_boots": 26,
+          "frontend_lowering": 1,
+          "handled_requests": 2742,
+          "mixed_sessions": 12,
+          "policy_probes": 50,
+          "retained_records_checked": 576,
+          "source_rejections": 4,
+          "synchronous_recoveries": 60,
+          "terminal_sessions": 12
+        },
+        "monitor_normal_counts": {
+          "active_terminal_cleanup_sessions": 2,
+          "actual_hardware_irqs": 1417,
+          "fresh_qemu_boots": 18,
+          "handled_requests": 1598,
+          "mixed_sessions": 4,
+          "retained_records_checked": 192,
+          "synchronous_recoveries": 20,
+          "terminal_sessions": 12
+        },
+        "monitor_stress_counts": {
+          "active_terminal_cleanup_sessions": 0,
+          "actual_hardware_irqs": 2826,
+          "fresh_qemu_boots": 8,
+          "handled_requests": 1144,
+          "mixed_sessions": 8,
+          "retained_records_checked": 384,
+          "synchronous_recoveries": 40,
+          "terminal_sessions": 0
+        },
+        "closed_host_logs": [
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/check-scaffold.log",
+            "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/core0-host.log",
+            "sha256": "2f721c7bac83a083267a1c1a63d7437130b089dbc6af146bc629fadc5152d3ba"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/cumulative-stress.log",
+            "sha256": "540f74092fbabcba54e8df7ecced5581f49c538de8c8dc6a8b94984068d53d6a"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/foundation-host.log",
+            "sha256": "2fe50a92e5b20290e73d374b77d4992a9d7ff0cfa0a54d3e1bb25b5d57e85e79"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/lake-build.log",
+            "sha256": "8e83f2807fed77ddf89f965a206f14cdfe70efa31a90b44fa8d07feb61db0621"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/legacy-rv64.log",
+            "sha256": "af35d56bee1edd4990cd00c21513609688ced910b8109cb02557aad1547521fd"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/qualification.log",
+            "sha256": "4850ae8500fa9361cbcf9eaa61442fd6d151a9e1c3415eabc34cff6078c13e08"
+          },
+          {
+            "path": "build/qualification-worktree.hJDCyB/build/qualification-host/scaffold-host.log",
+            "sha256": "046cd86ae51b0f8849a7722db786100d8ed9b04df9099e0bb449768993a0a283"
+          }
+        ],
+        "current_profile_identities": {
+          "O0": {
+            "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+            "dirty_tree": false,
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "audit": {
+              "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O0/audit.json",
+              "sha256": "b87d3fe456de85ea817098921b1dadc30f5260c6f0631a324e53944b5eb37cb8"
+            },
+            "provenance": {
+              "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O0/provenance.json",
+              "sha256": "79977abc3c875af9f53b09f817f0b848bfb23a98118eb9af62ca1639eb9eae72"
+            }
+          },
+          "O2": {
+            "source_commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+            "dirty_tree": false,
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "audit": {
+              "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O2/audit.json",
+              "sha256": "b4c3425874cbe7d735927f89a3ccd1e022dc5fbdc5ed0d7abbe34544f995b7ea"
+            },
+            "provenance": {
+              "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/O2/provenance.json",
+              "sha256": "302aaa3e1364cdd226fd742b7622a6d7a7bc02c3aa5b3f93354ff26a4e57eeed"
+            }
+          }
+        },
+        "qualifier": {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json",
+          "sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9",
+          "exit_code": 0,
+          "counts": {
+            "deterministic_artifacts_per_profile": 16,
+            "failure_path_experiments": 5,
+            "normal_sessions": 18,
+            "replayed_gate9_sessions": 26,
+            "reproducible_profiles": 2,
+            "stress_sessions": 8
+          },
+          "unique_artifact_paths": 66,
+          "unique_artifact_roles": 66,
+          "artifact_catalog_entries": 66,
+          "additional_qemu_boots": 0,
+          "limitations": [
+            "Qualification replays retained Gate 9 raw frames and does not duplicate its QEMU boots.",
+            "Full cumulative, legacy, detached-worktree and CI execution are separate Gate 10 evidence.",
+            "Reproducibility is same-profile only; O0 and O2 images are intentionally not compared.",
+            "Tests and audits are not a proof of compiler correctness or physical-board support.",
+            "The deliberately invalid-timeout stale-runner negative run.json retains bare NaN and is not RFC-strict JSON; the canonical successful qualification report is strict JSON. No blanket strict-JSON claim applies to negative raw children."
+          ]
+        },
+        "classification": "Historical successful clean detached e0e1f2 qualification, not repair-source evidence. Subsequent actual CI failure remains separately retained.",
+        "representative_transcript_reference": {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/runs/O2/mixed-zero/run.json",
+          "sha256": "3a2a551e34ccb0b4638dd7d6f27a5785dbd0a3ec2e2b153a87e026156dbf0b33",
+          "pid": 332603,
+          "summary": {
+            "active_at_terminal_input": false,
+            "active_trap_commands": 3,
+            "final_hardware_irqs": 17,
+            "handled_requests": 143,
+            "hardware_work_commands": 3,
+            "last_work_checksum": 15424524012269225306,
+            "observed_hardware_irqs": 358,
+            "observed_overflow": true,
+            "observed_ring_wrap": true,
+            "records_checked": 48,
+            "recoverable_errors": 25,
+            "synchronous_recoveries": 5
+          }
+        }
+      }
+    ]
   },
   "gate_status": [
     {
@@ -6527,12 +6668,12 @@
     {
       "gate": 10,
       "status": "passed",
-      "scope": "local qualification; actual CI pending"
+      "scope": "Fresh cold clean detached local qualification; independent actual repair push/PR CI also passed, separately recorded under Gate 11."
     },
     {
       "gate": 11,
-      "status": "in-progress",
-      "scope": "publication/actual CI pending"
+      "status": "passed",
+      "scope": "Published upstream/draft stacked PR; both actual repair push/PR CI terminal successes inspected with checkout/log/archive/report binding; bounded evidence handoff, no merge or G1/G2 completion."
     }
   ],
   "task_001_to_002_capability_delta": {
@@ -6579,5 +6720,624 @@
       "exit_code": 0,
       "fresh_qemu_boots": 18
     }
-  ]
+  ],
+  "publication": {
+    "repository": "srkftw/lemma",
+    "branch": "task/002-machine-foundation",
+    "upstream": "origin/task/002-machine-foundation",
+    "push": {
+      "command": "env GIT_TERMINAL_PROMPT=0 git push --set-upstream origin task/002-machine-foundation",
+      "exit_code": 0,
+      "forced": false,
+      "working_tree_at_push": "clean",
+      "ahead_behind_at_push": [
+        0,
+        0
+      ]
+    },
+    "pull_request": {
+      "number": 2,
+      "url": "https://github.com/srkftw/lemma/pull/2",
+      "created_at": "2026-10-08T18:19:37Z",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base_branch": "task/001-core0-freestanding-slice",
+      "base_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+      "relationship": "Stacked on Task 001 implementation branch because PR #1 remains unmerged; PR #1 was not modified.",
+      "synthetic_merge_candidate": "e292d4359fabbf46d2c18423103333217a58c062",
+      "candidate_is_actual_ci_checkout": true,
+      "actual_ci_checkout_confirmed": true,
+      "initial_head_commit": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+      "head_commit": "09c47ba24577da87390f4c693237fe71ab67c965"
+    },
+    "task_001_pr_1": "Fresh read-only inspection still open/draft/unmerged.",
+    "ci": {
+      "workflow": "Lemma pinned acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "observed_at": "2026-10-08T18:52:59Z",
+      "terminal_observation": {
+        "path": "build/foundation/gate11-ci-repair/terminal-observation.json",
+        "sha256": "af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2"
+      },
+      "actual_checkout_identities_verified": true,
+      "all_six_jobs_success": true,
+      "shared_counts": {
+        "scaffold_tests": 18,
+        "core0_host_tests": 32,
+        "lean_build_jobs": 53,
+        "cfg_compile_time_checks": 52,
+        "foundation_host_tests": 438,
+        "cumulative_fresh_qemu_boots": 482,
+        "legacy_fresh_qemu_boots": 23,
+        "qualifier_replays": 26,
+        "deterministic_artifacts_per_profile": 16,
+        "qualifier_unique_paths": 66,
+        "qualifier_unique_roles": 66,
+        "qualifier_failure_experiments": 5
+      },
+      "gate3_pinned_source_semantics": {
+        "status": "pass",
+        "command": [
+          "nix",
+          "build",
+          "--no-link",
+          "--print-out-paths",
+          "--impure",
+          "--expr",
+          "let flake = builtins.getFlake (toString ./.); pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; in pkgs.lean4.src"
+        ],
+        "uint_source": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+        "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94",
+        "lean_version": "Lean (version 4.34.1, Release)",
+        "lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+        "retained_report_records_realized_file_and_hash": true,
+        "workflow_log_has_direct_source_cache_copy_line": false,
+        "observation": "The checked command captures the derivation-valued realization. The wrapper log does not print that checked subprocess's stdout/stderr, so no direct source-copy line is claimed."
+      },
+      "runs": [
+        {
+          "id": 37825241614,
+          "run_number": 5,
+          "event": "push",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "created_at": "2026-10-08T18:33:44Z",
+          "updated_at": "2026-10-08T18:49:04Z",
+          "url": "https://github.com/srkftw/lemma/actions/runs/37825241614",
+          "checkout": {
+            "kind": "branch head",
+            "sha": "09c47ba24577da87390f4c693237fe71ab67c965",
+            "tree": "7051d19087e09a6eede78210fdbe7652105e355d"
+          },
+          "jobs": [
+            {
+              "id": 113476287926,
+              "name": "Legacy Core0 RV64 acceptance",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "push-job-113476287926-legacy.log",
+              "log_sha256": "349885dc8eef989be352fbae3a9f38b3e95721aa2fc8adb078d31871ae9484c1"
+            },
+            {
+              "id": 113476288227,
+              "name": "Foundation Gates 1-9 and clean qualification",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "push-job-113476288227-foundation.log",
+              "log_sha256": "5a94735ef59a9711b9a4e80e667699267b072b553b24bed7d0ae00a2e2d572fb"
+            },
+            {
+              "id": 113476288262,
+              "name": "Metadata and host-only suites",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "push-job-113476288262-metadata.log",
+              "log_sha256": "74d655f8c2d9fdd5972dbf085c30ad48e68a95e865790b3f4a92b4eec7f0b364"
+            }
+          ],
+          "artifacts": [
+            {
+              "id": 11571767094,
+              "name": "foundation-rv64-37825241614-1",
+              "size_in_bytes": 29934938,
+              "digest": "sha256:f759cea3c81419003a5d8f3887a3b92d4cca9cf28d090536a10373d722105081",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11571767094",
+              "expires_at": "2026-10-22T18:48:55Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 3819,
+                "reports": {
+                  "all-results.json": {
+                    "sha256": "3db27e144456a4db3aba405c04da2ea04fc5dec7ee96d7ac88e92eef60485554",
+                    "status": "pass",
+                    "fresh_qemu_boots": 482
+                  },
+                  "gate3-results.json": {
+                    "sha256": "185e16bf9448179f97a93f0e8f09508aa039021e2df7748f748b574e564413d8",
+                    "status": "pass",
+                    "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965"
+                  },
+                  "gate9-results.json": {
+                    "sha256": "ecb51c012dd71b4cf1fb72694cf2514c24e97c6b95f80e7a4be60b9b2dee6424",
+                    "status": "PASS",
+                    "fresh_qemu_boots": 26,
+                    "actual_hardware_irqs": 4348,
+                    "synchronous_recoveries": 60
+                  },
+                  "qualification-results.json": {
+                    "sha256": "35a752529542e6811fddce63150f8deac11748182a3eacee64cde8ac2325d4e6",
+                    "status": "PASS",
+                    "source_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+                    "source_tree": "7051d19087e09a6eede78210fdbe7652105e355d"
+                  }
+                }
+              }
+            },
+            {
+              "id": 11571192201,
+              "name": "metadata-host-suites-37825241614-1",
+              "size_in_bytes": 26052,
+              "digest": "sha256:6a281ef8929b6b5cdc69cc123ecc4216fbf2647bbd602f8993ebdd972c808f28",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11571192201",
+              "expires_at": "2026-10-22T18:37:40Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 5
+              }
+            },
+            {
+              "id": 11570149909,
+              "name": "legacy-rv64-37825241614-1",
+              "size_in_bytes": 391135,
+              "digest": "sha256:5542a93417822407d16e0c80f222393bfc41abad5dea01fc33c152b9436f4b12",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11570149909",
+              "expires_at": "2026-10-22T18:37:20Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 341,
+                "check_results_sha256": "c0315044a5383b21ce275e758ca564e42c5a9be6486a2f04edbdb7a1ba950a34",
+                "status": "pass"
+              }
+            }
+          ]
+        },
+        {
+          "id": 37825247231,
+          "run_number": 6,
+          "event": "pull_request",
+          "status": "completed",
+          "conclusion": "success",
+          "run_attempt": 1,
+          "created_at": "2026-10-08T18:33:46Z",
+          "updated_at": "2026-10-08T18:50:26Z",
+          "url": "https://github.com/srkftw/lemma/actions/runs/37825247231",
+          "checkout": {
+            "kind": "GitHub pull-request synthetic merge",
+            "sha": "e292d4359fabbf46d2c18423103333217a58c062",
+            "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+            "parents": [
+              "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+              "09c47ba24577da87390f4c693237fe71ab67c965"
+            ]
+          },
+          "jobs": [
+            {
+              "id": 113476307228,
+              "name": "Foundation Gates 1-9 and clean qualification",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "job-113476307228-foundation.log",
+              "log_sha256": "e3d20c3f6d21b24bb6c8687bf4b2391200138fbfaf7b39faa416358f7e3d510f"
+            },
+            {
+              "id": 113476307629,
+              "name": "Legacy Core0 RV64 acceptance",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "job-113476307629-legacy.log",
+              "log_sha256": "5943dfa5de6ef148786b0759721fa807f0de94de543acce0fd5fd849e88b73d4"
+            },
+            {
+              "id": 113476307674,
+              "name": "Metadata and host-only suites",
+              "status": "completed",
+              "conclusion": "success",
+              "log": "job-113476307674-metadata.log",
+              "log_sha256": "6619e4a9b72412a306d052041337bfd668f6fab6206d5f30085e14424b63ef4d"
+            }
+          ],
+          "artifacts": [
+            {
+              "id": 11572411330,
+              "name": "foundation-rv64-37825247231-1",
+              "size_in_bytes": 29933650,
+              "digest": "sha256:6c64cf032f380ff59f9e4e0ab24932fd9d862d841daf3d1a3dbd9f675a4e94ab",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11572411330",
+              "expires_at": "2026-10-22T18:50:17Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 3819,
+                "reports": {
+                  "all-results.json": {
+                    "sha256": "d40bfe38381c9558c204d5745176fc05c12ad583e6b6fd3c0ce3e5e78d411b07",
+                    "status": "pass",
+                    "fresh_qemu_boots": 482
+                  },
+                  "gate3-results.json": {
+                    "sha256": "da1f68c59d306dca44a303efbadbbf1e098ce4f7abbfa7d956727e2c2b5274a0",
+                    "status": "pass",
+                    "source_commit": "e292d4359fabbf46d2c18423103333217a58c062"
+                  },
+                  "gate9-results.json": {
+                    "sha256": "552195a26d345fc63f03ca042800ae9dfed2809cd5e344fd8db6c3909e32282d",
+                    "status": "PASS",
+                    "fresh_qemu_boots": 26,
+                    "actual_hardware_irqs": 4445,
+                    "synchronous_recoveries": 60
+                  },
+                  "qualification-results.json": {
+                    "sha256": "802e113e09395a2c5847e94d6ceb6a15ad613fed8e2dff66cdb37eba09605b95",
+                    "status": "PASS",
+                    "source_commit": "e292d4359fabbf46d2c18423103333217a58c062",
+                    "source_tree": "7051d19087e09a6eede78210fdbe7652105e355d"
+                  }
+                }
+              }
+            },
+            {
+              "id": 11570923628,
+              "name": "metadata-host-suites-37825247231-1",
+              "size_in_bytes": 26069,
+              "digest": "sha256:fdc553df12abee27bc05e59f7ebbe7a947a591d2cd7e115a9f0ffbc76146e7fb",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11570923628",
+              "expires_at": "2026-10-22T18:37:06Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 5
+              }
+            },
+            {
+              "id": 11570529587,
+              "name": "legacy-rv64-37825247231-1",
+              "size_in_bytes": 391103,
+              "digest": "sha256:6a011faff9a308987c88e557d308a231f8923162eaf08d4b5c8d487c663c2491",
+              "html_url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11570529587",
+              "expires_at": "2026-10-22T18:36:58Z",
+              "inspection": {
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true,
+                "member_count": 341,
+                "check_results_sha256": "fd307e400a140f3a5eebff5c348d7fc8b4be2befa3ad1bc2ab8b4996fa55aaa9",
+                "status": "pass"
+              }
+            }
+          ]
+        }
+      ],
+      "retained_local_files": [
+        {
+          "path": "build/foundation/gate11-ci-repair/history-push-job-113469812934-foundation-failure.log",
+          "sha256": "23f81a44c825703080637e2db9a55b65ddeb70f7f1bfd79e2aa26e28b6198621",
+          "size_bytes": 94384
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/job-113476307228-foundation.log",
+          "sha256": "e3d20c3f6d21b24bb6c8687bf4b2391200138fbfaf7b39faa416358f7e3d510f",
+          "size_bytes": 96822
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/job-113476307629-legacy.log",
+          "sha256": "5943dfa5de6ef148786b0759721fa807f0de94de543acce0fd5fd849e88b73d4",
+          "size_bytes": 94734
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/job-113476307674-metadata.log",
+          "sha256": "6619e4a9b72412a306d052041337bfd668f6fab6206d5f30085e14424b63ef4d",
+          "size_bytes": 192677
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/push-job-113476287926-legacy.log",
+          "sha256": "349885dc8eef989be352fbae3a9f38b3e95721aa2fc8adb078d31871ae9484c1",
+          "size_bytes": 93832
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/push-job-113476288227-foundation.log",
+          "sha256": "5a94735ef59a9711b9a4e80e667699267b072b553b24bed7d0ae00a2e2d572fb",
+          "size_bytes": 96020
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/push-job-113476288262-metadata.log",
+          "sha256": "74d655f8c2d9fdd5972dbf085c30ad48e68a95e865790b3f4a92b4eec7f0b364",
+          "size_bytes": 191769
+        },
+        {
+          "path": "build/foundation/gate11-ci-repair/terminal-observation.json",
+          "sha256": "af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2",
+          "size_bytes": 18734
+        }
+      ],
+      "retention_scope": "All six successful job logs, one historical failed push foundation log and terminal observation are local and inventoried. All six repair archive downloads were stream-inspected and SHA-256 checked against API digests, but archive bytes were not retained locally. Archive/report/member identities remain in the hashed terminal observation; no nonexistent archive/member files are inventoried."
+    },
+    "no_auto_merge": true,
+    "initial_published_head": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+    "repair_candidate": {
+      "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+      "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+      "normal_push_exit_code": 0,
+      "scope": "Code-only Gate 3 source-materialization repair, normally pushed; full cold detached local qualification and both actual push/PR CI runs passed.",
+      "focused_host_tests": 3,
+      "focused_host_tests_seconds": 0.003,
+      "source_realization_probe": "Actual nix build --no-link --print-out-paths probe returned the pinned UInt source and expected SHA-256; a dirty development check, not fresh-store/full qualification acceptance.",
+      "fresh_detached_worktree": "build/qualification-worktree.exc0kN",
+      "fresh_detached_acceptance_status": "passed full eight-command cold clean detached qualification; current tested-source inventory rebound to exact 09c47ba bytes"
+    },
+    "historical_ci_runs": [
+      {
+        "run_id": 37823411915,
+        "run_number": 4,
+        "workflow": "Lemma pinned acceptance",
+        "event": "pull_request",
+        "url": "https://github.com/srkftw/lemma/actions/runs/37823411915",
+        "head_sha": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+        "status": "completed",
+        "conclusion": "failure",
+        "actual_checkout_identity": {
+          "kind": "GitHub pull-request synthetic merge checkout",
+          "ref": "refs/remotes/pull/2/merge",
+          "sha": "0755c817d35c5d466875a2df0e7339a681d3cda4",
+          "tree_sha": "6e129a2ed43608d2bd728df26d09037d93e72fb9",
+          "parents": [
+            "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+            "ac2a95ec460d271ef00f92335ae3ea821d1b329d"
+          ],
+          "verified_signature": true
+        },
+        "meaning": "Actual remote terminal failure observed. Metadata and legacy succeeded; Gates 1/2 passed before the Gate 3 source prerequisite failed. Later gates and qualification did not pass. No green CI, automatic rerun or completed Gate 11 claim.",
+        "failure_classification": "assignment-owned Gate 3 pinned-source materialization; pinned-source-semantics-failure",
+        "jobs": [
+          {
+            "id": 113469965539,
+            "name": "Foundation Gates 1-9 and clean qualification",
+            "status": "completed",
+            "conclusion": "failure",
+            "failed_step": "Run cumulative Gates 1-9 with monitor stress",
+            "qualification_step": "skipped",
+            "evidence_upload_step": "success",
+            "log_file": "job-113469965539-foundation.log",
+            "log_sha256": "972e2150f0f8cfe354a0eda88aeda96f63c89ff4fd0a010f23ccad66ba6d7b15",
+            "failure": {
+              "gate": 3,
+              "category": "pinned-source-semantics-failure",
+              "context": "UInt8/UInt32/UInt64",
+              "detail": "pinned UInt source is missing: /nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+              "failure_record_sha256": "1600f4afb91a9a89722d8045d8c9a8674212700cc8618fa17d055495c8a0087e"
+            },
+            "completed_before_failure": {
+              "gate1_status": "pass",
+              "gate1_fresh_qemu_boots": 24,
+              "gate1_results_sha256": "191b43ad556804f5b1837c5cc4ded627c7658534d18a46c6bc9102e35340e73e",
+              "gate2_status": "pass",
+              "gate2_fresh_qemu_boots": 136,
+              "gate2_results_sha256": "fe21cbda02c10384311926992f56f998d167a4b188cfd0b035a135665ea64733"
+            }
+          },
+          {
+            "id": 113469965796,
+            "name": "Legacy Core0 RV64 acceptance",
+            "status": "completed",
+            "conclusion": "success",
+            "log_file": "job-113469965796-legacy.log",
+            "log_sha256": "989d3b7d5eceb245da8e70f4e979ae1d3dd1f9d7b852d1a7003b0d9d1d27023e",
+            "results": {
+              "status": "pass",
+              "fresh_qemu_boots": 23,
+              "differential_cases_per_profile": 10,
+              "optimization_profiles": [
+                "O0",
+                "O2"
+              ],
+              "source_mutation_boots": 3,
+              "expected_source_rejections": 13,
+              "audit_regression": "pass",
+              "reproducibility_profiles": [
+                "O0",
+                "O2"
+              ]
+            }
+          },
+          {
+            "id": 113469966392,
+            "name": "Metadata and host-only suites",
+            "status": "completed",
+            "conclusion": "success",
+            "log_file": "job-113469966392-metadata.log",
+            "log_sha256": "1fc378ab09b03f092bc2fa683419c84c0292024cef20011d906f120d32659369",
+            "results": {
+              "scaffold_metadata": "valid",
+              "scaffold_tests": 18,
+              "core0_host_tests": 32,
+              "lean_build_jobs": 53,
+              "cfg_compile_time_checks": 52,
+              "foundation_host_tests": 435
+            }
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 11569704127,
+            "name": "foundation-rv64-37823411915-1",
+            "size_in_bytes": 3200685,
+            "member_count": 1898,
+            "digest": "sha256:91d590ab60ecf3c5b0e8013c69903e3ebd06adcef00f4daaa83a05ec905a9119",
+            "url": "https://github.com/srkftw/lemma/actions/runs/37823411915/artifacts/11569704127",
+            "created_at": "2026-10-08T18:25:10Z",
+            "expires_at": "2026-10-22T18:25:07Z",
+            "foundation_log_sha256": "d676f177a23cb4b95ef2400b810fc97c6f25055b76957be0dc8203a93084d4b2",
+            "local_archive_path": null,
+            "inspection": "GitHub artifact metadata retained; no local downloaded archive bytes are claimed."
+          },
+          {
+            "id": 11570427723,
+            "name": "legacy-rv64-37823411915-1",
+            "size_in_bytes": 391130,
+            "member_count": 341,
+            "digest": "sha256:ddb8c446df9dc74dc9d91c8950ff5048c4a2f3d83e9b2e6f991f2de6586fbc7e",
+            "url": "https://github.com/srkftw/lemma/actions/runs/37823411915/artifacts/11570427723",
+            "created_at": "2026-10-08T18:22:57Z",
+            "expires_at": "2026-10-22T18:22:56Z",
+            "local_archive_path": null,
+            "inspection": "GitHub artifact metadata retained; no local downloaded archive bytes are claimed."
+          },
+          {
+            "id": 11570936129,
+            "name": "metadata-host-suites-37823411915-1",
+            "size_in_bytes": 25972,
+            "member_count": 5,
+            "digest": "sha256:21abd67ba63557783e2e341f188f94a777bed22adaad354cf89718ae22af6083",
+            "url": "https://github.com/srkftw/lemma/actions/runs/37823411915/artifacts/11570936129",
+            "created_at": "2026-10-08T18:22:51Z",
+            "expires_at": "2026-10-22T18:22:50Z",
+            "local_archive_path": null,
+            "inspection": "GitHub artifact metadata retained; no local downloaded archive bytes are claimed."
+          }
+        ],
+        "workflow_id": 378152075,
+        "run_attempt": 1,
+        "created_at": "2026-10-08T18:19:41Z",
+        "run_started_at": "2026-10-08T18:19:41Z",
+        "updated_at": "2026-10-08T18:25:15Z",
+        "observed_at": "2026-10-08T18:27:30Z",
+        "failure_diagnosis": {
+          "gate": 3,
+          "category": "pinned-source-semantics-failure",
+          "context": "UInt8/UInt32/UInt64",
+          "detail": "pinned UInt source is missing: /nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+          "cause": "Gate 3 evaluated the immutable pkgs.lean4.src path without realizing its source derivation. A warm local store masked the prerequisite; the fresh CI store did not contain UInt/Basic.lean.",
+          "external_unavailability": false,
+          "target_semantic_failure_established": false,
+          "repair_status": "implementation/review in progress; no fixed-source acceptance or CI rerun result claimed"
+        },
+        "retained_local_files": [
+          {
+            "path": "build/foundation/gate11-ci/completed-jobs-observation.json",
+            "size_bytes": 3612,
+            "sha256": "94714d32eb545ce2adbe4537f15dce7c1e1a8faaacad0f96ece81c55e23104d0"
+          },
+          {
+            "path": "build/foundation/gate11-ci/foundation-check-failure.json",
+            "size_bytes": 475,
+            "sha256": "1600f4afb91a9a89722d8045d8c9a8674212700cc8618fa17d055495c8a0087e"
+          },
+          {
+            "path": "build/foundation/gate11-ci/gate3-source-realization-probe.log",
+            "size_bytes": 595,
+            "sha256": "bd91186dd86ad37a5f6be1fab41b929805480e216c533c32fec075e25d4154fa"
+          },
+          {
+            "path": "build/foundation/gate11-ci/gate3-source-realization-tests.log",
+            "size_bytes": 668,
+            "sha256": "13971c5e1f9420d2cabbb60f5dc765c9717d60f28606af164123aa618aebb988"
+          },
+          {
+            "path": "build/foundation/gate11-ci/job-113469965539-foundation.log",
+            "size_bytes": 95184,
+            "sha256": "972e2150f0f8cfe354a0eda88aeda96f63c89ff4fd0a010f23ccad66ba6d7b15"
+          },
+          {
+            "path": "build/foundation/gate11-ci/job-113469965796-legacy.log",
+            "size_bytes": 94735,
+            "sha256": "989d3b7d5eceb245da8e70f4e979ae1d3dd1f9d7b852d1a7003b0d9d1d27023e"
+          },
+          {
+            "path": "build/foundation/gate11-ci/job-113469966392-metadata.log",
+            "size_bytes": 192029,
+            "sha256": "1fc378ab09b03f092bc2fa683419c84c0292024cef20011d906f120d32659369"
+          },
+          {
+            "path": "build/foundation/gate11-ci/run-37823411915-partial.json",
+            "size_bytes": 12228,
+            "sha256": "2dc809e19fb07c6eeeaa824f7d9f48ea4a0c34046df0cd5cb1bf7ae6a42eeb2c"
+          },
+          {
+            "path": "build/foundation/gate11-ci/run-37823411915-terminal.json",
+            "size_bytes": 4918,
+            "sha256": "b6fa35b57a1314563c6361b795e8bd2dbc7f8894abe0a71057df82cb6f066e7a"
+          }
+        ],
+        "retention_scope": "Finalized local full job logs, terminal observation, earlier partial observations and extracted failure record are inventoried. Remote archive metadata/digests are not fabricated local archive files. Earlier in-progress observations are historical, not terminal status."
+      }
+    ],
+    "historical_additional_push_failure": {
+      "id": 37823368652,
+      "run_number": 3,
+      "event": "push",
+      "head_sha": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+      "tree": "6e129a2ed43608d2bd728df26d09037d93e72fb9",
+      "status": "completed",
+      "conclusion": "failure",
+      "foundation_job_id": 113469812934,
+      "metadata_job_id": 113469813352,
+      "legacy_job_id": 113469813423,
+      "foundation_artifact": {
+        "id": 11569923584,
+        "digest": "sha256:e75e093ddd006d3aa0ac70444d4c17f89f3f934ad3b325202fbdf5eee75c4b4b",
+        "size_in_bytes": 3200574,
+        "member_count": 1898
+      },
+      "failure": {
+        "gate": 3,
+        "category": "pinned-source-semantics-failure",
+        "detail": "pinned UInt source is missing: /nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+        "record_sha256": "1600f4afb91a9a89722d8045d8c9a8674212700cc8618fa17d055495c8a0087e"
+      },
+      "log": "history-push-job-113469812934-foundation-failure.log",
+      "log_sha256": "23f81a44c825703080637e2db9a55b65ddeb70f7f1bfd79e2aa26e28b6198621"
+    },
+    "published_head": "09c47ba24577da87390f4c693237fe71ab67c965"
+  },
+  "gate_11": {
+    "status": "passed",
+    "acceptance_passed": true,
+    "publication_passed": true,
+    "actual_ci_complete": true,
+    "actual_ci_runs": [
+      37825241614,
+      37825247231
+    ],
+    "merge_performed": false,
+    "actual_ci_terminal_result_observed": true,
+    "actual_ci_passed": true,
+    "historical_failure_diagnosis": "Initial ac2a95 push/PR runs failed on assignment-owned Gate 3 source materialization. Repair09c47ba realized the pinned source; complete fresh local and remote reverification passed. Historical failures are retained, not relabeled.",
+    "final_handoff_scope": "Bounded Task 002 evidence, capability delta, unit mapping, retained hashes and risks closed. Later docs-only report commit/push has its own external Git identity and is not embedded as a self-referential future hash."
+  },
+  "supplemental_final_report_checks": {
+    "metadata": "pass",
+    "scaffold_tests": 18,
+    "scaffold_elapsed_seconds": 1.939,
+    "scope": "Later documentation consistency checks only, not replacement target acceptance.",
+    "logs": [
+      {
+        "path": "build/foundation/gate11-final-report-checks/check-scaffold.log",
+        "sha256": "c2056e7047613eb50b7959fdf3707c051a802892eef1abb91be2c1117388d049"
+      },
+      {
+        "path": "build/foundation/gate11-final-report-checks/scaffold-host.log",
+        "sha256": "ccbfc3ac0417a2f87350792c1915ebd8287db0faabbc02da8118b817b070ef56"
+      }
+    ]
+  }
 }

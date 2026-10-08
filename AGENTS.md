@@ -102,20 +102,26 @@ skip-to-success mode.  Run both scaffold checks after changes as well.  The Pyth
 programs are host-only orchestration; compiler and target logic remain Lean.
 
 Task 002 has a separate host suite and incremental target checker. Gates 0–10
-have recorded clean-source acceptance at `e0e1f21` (full identity in the ledger):
+have recorded clean-source acceptance at `09c47ba` (full identity in the ledger):
 
 ```sh
 nix develop --no-write-lock-file --command lake build
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
-  --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/qualification-legacy --clean
 ```
 
 The focused monitor interface passed historically at clean `8fd45d8`. The current
 `--all --stress`, legacy and qualifier passed separately in a cold detached
-worktree at `e0e1f21`: 482 cumulative/23 legacy boots and 26 raw-session replays.
+worktree at `09c47ba`: 482 cumulative/23 legacy boots and 26 raw-session replays.
 These do not inherit earlier passes. Follow the task ledger/checkpoint when
-resuming. Publication and actual CI remain separate Task 002 obligations.
+resuming. The branch is pushed with an upstream and published as draft stacked
+PR #2 against Task 001. Its first actual CI run failed at Gate 3 because the pinned
+Lean source was evaluated but not realized in the fresh Nix store. The explicit
+realization repair passed all fresh detached acceptance at `09c47ba` and all
+three jobs in actual push/PR runs `37825241614`/`37825247231`. Push checks exact
+`09c47ba`; PR checks synthetic merge `e292d435...` with the same tree. Later
+report-only commits are separate. Preserve historical failure evidence.
 
 The cumulative/stress and qualification commands (the latter requires committed,
 clean source) are:

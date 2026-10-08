@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T18:13:23+00:00",
+  "updated_at": "2026-10-08T18:52:59Z",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,10 +9,10 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 10,
+  "highest_passing_gate": 11,
   "latest_clean_passing_source": {
-    "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-    "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+    "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+    "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
     "clean": true
   },
   "gates": [
@@ -149,15 +149,25 @@
       },
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate1/gate1-results.json",
-          "sha256": "792acaec7f8e0ce43fcd74bd2de86fee1aaa2098b802a3ad2df2d0866e4b7afd"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate1/gate1-results.json",
+          "sha256": "74a367c96619f27ef032f4bf17e2231090320d899a59a7b5e28491a334911d25"
+        },
+        "counts": {
+          "audit_regressions": 7,
+          "clean_control_builds": 2,
+          "clean_control_qemu_boots": 12,
+          "intended_rejections": 3,
+          "mutant_builds": 12,
+          "mutant_qemu_boots": 12,
+          "total_fresh_qemu_boots": 24,
+          "verified_behavioral_mismatches": 12
         }
       },
       "tests": {
@@ -215,6 +225,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate1/gate1-results.json",
             "sha256": "59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate1/gate1-results.json",
+            "sha256": "792acaec7f8e0ce43fcd74bd2de86fee1aaa2098b802a3ad2df2d0866e4b7afd"
           }
         }
       ]
@@ -361,15 +384,26 @@
       },
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate2/gate2-results.json",
-          "sha256": "be5452f1a5624c47e89b26b164618706d6462bc5dc997ee83c42e45855b12775"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate2/gate2-results.json",
+          "sha256": "57d21e04b806ad84d4c980606d44f861497a1a1654176e0f60bd0d14bc4e3cf3"
+        },
+        "counts": {
+          "cases_per_profile": 1024,
+          "direct_source_model_matches": 1024,
+          "metamorphic_pairs": 5,
+          "qemu_boots_per_profile": 68,
+          "qemu_boots_total": 136,
+          "roots": 37,
+          "source_model_target_matches": 2048,
+          "typed_input_rejection_boots_per_profile": 7,
+          "valid_qemu_boots_per_profile": 61
         }
       },
       "notes": [
@@ -416,6 +450,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate2/gate2-results.json",
             "sha256": "d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate2/gate2-results.json",
+            "sha256": "be5452f1a5624c47e89b26b164618706d6462bc5dc997ee83c42e45855b12775"
           }
         }
       ]
@@ -694,15 +741,32 @@
       ],
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate3/gate3-results.json",
-          "sha256": "ca688d7610795e6e4c02f834482b4acc22315b3a6e00414742f7681430f3988d"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate3/gate3-results.json",
+          "sha256": "83376707e308b21a67eb87ebf032815fb33d3f84f43761744154eae65f36dbcd"
+        },
+        "counts": {
+          "batches_per_profile": 44,
+          "cases_per_profile": 708,
+          "cfg_mutants_detected": 6,
+          "direct_source_model_matches": 708,
+          "legacy_profile_rejections": 13,
+          "metamorphic_pairs": 15,
+          "new_profile_rejections": 8,
+          "pinned_source_probes": 18,
+          "profile_mutants_detected": 1,
+          "qemu_boots_per_profile": 44,
+          "qemu_boots_total": 88,
+          "roots": 44,
+          "scalar_lemmas_checked": 8,
+          "source_model_target_matches": 1416,
+          "unsupported_profile_probes": 1
         }
       },
       "historical_latest_cumulative_verifications": [
@@ -730,6 +794,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate3/gate3-results.json",
             "sha256": "2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate3/gate3-results.json",
+            "sha256": "ca688d7610795e6e4c02f834482b4acc22315b3a6e00414742f7681430f3988d"
           }
         }
       ]
@@ -1062,15 +1139,31 @@
       ],
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate4/gate4-results.json",
-          "sha256": "aa3b4d3b5a42020ed8ea6073f1737d34fd500b74cbbcd537b19ab80c967af8e4"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate4/gate4-results.json",
+          "sha256": "a34af752f6dd639704475a1fb5b6756616a4c6570e1c8592bca95be382da775d"
+        },
+        "counts": {
+          "batches_per_profile": 7,
+          "bounded_lemmas_checked": 3,
+          "cases_per_profile": 112,
+          "frontend_rejections": 11,
+          "legacy_profile_rejections": 2,
+          "loop_ir_mutants_detected": 9,
+          "manifest_mutants_detected": 4,
+          "pinned_source_probes": 7,
+          "profile_mutants_detected": 1,
+          "qemu_boots_per_profile": 7,
+          "qemu_boots_total": 14,
+          "roots": 7,
+          "source_model_python_matches": 112,
+          "source_model_target_matches": 224
         }
       },
       "historical_latest_cumulative_verifications": [
@@ -1098,6 +1191,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate4/gate4-results.json",
             "sha256": "a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate4/gate4-results.json",
+            "sha256": "aa3b4d3b5a42020ed8ea6073f1737d34fd500b74cbbcd537b19ab80c967af8e4"
           }
         }
       ]
@@ -1326,15 +1432,35 @@
       ],
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate5/gate5-results.json",
-          "sha256": "f8ebd9db67ea26a2da2fddd2cd30b263bf4e6c6a831c6bed1608a7d28d6fa5c0"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate5/gate5-results.json",
+          "sha256": "30cdef436f5f52a28a8740036c344882bb58f408e3d217c7ef9e3049732cb317"
+        },
+        "counts": {
+          "audited_pre_ir_accesses_per_profile": 37,
+          "audited_pre_ir_range_checks_per_profile": 8,
+          "canaries_per_boot": 10,
+          "canary_observations": 1040,
+          "cases_per_profile": 52,
+          "complete_post_state_target_matches": 104,
+          "fresh_qemu_boots_per_profile": 52,
+          "frontend_rejections": 14,
+          "independent_model_target_matches": 104,
+          "ir_mutants_detected": 32,
+          "legacy_profile_rejections": 3,
+          "manifest_mutants_detected": 19,
+          "memory_lemmas_checked": 5,
+          "ordinary_region_bytes_observed": 1703936,
+          "ordinary_region_bytes_per_boot": 16384,
+          "pinned_memory_probes": 18,
+          "qemu_boots_total": 104,
+          "roots": 26
         }
       },
       "historical_latest_cumulative_verifications": [
@@ -1362,6 +1488,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json",
             "sha256": "4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate5/gate5-results.json",
+            "sha256": "f8ebd9db67ea26a2da2fddd2cd30b263bf4e6c6a831c6bed1608a7d28d6fa5c0"
           }
         }
       ]
@@ -1645,15 +1784,36 @@
       ],
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate6/gate6-results.json",
-          "sha256": "c47b37052c6c5c9e062bcbf7be8e992383b60fd6921e97dc6e7d978322d83706"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate6/gate6-results.json",
+          "sha256": "06ab5625dbc34edb544915492cc6ecb1a87aa01bf9d506c9c4a6ae45256a74ef"
+        },
+        "counts": {
+          "action_functions": 22,
+          "audit_mutants_detected": 36,
+          "branch_marker_target_readbacks": 4,
+          "device_lemmas_checked": 4,
+          "device_operations": 4,
+          "frontend_rejections": 5,
+          "interactive_sessions_per_profile": 4,
+          "legacy_profile_rejections": 1,
+          "optimized_uart_accesses_per_profile": 6,
+          "ordered_uart_sites_per_profile": 6,
+          "packet_model_probes": 13,
+          "pinned_device_probes": 12,
+          "qemu_boots_total": 28,
+          "roots": 1,
+          "runtime_requests_per_profile": 8,
+          "scalar_functions": 19,
+          "scenarios_per_profile": 14,
+          "single_pid_two_request_sessions": 8,
+          "terminal_sessions_per_profile": 10
         }
       },
       "historical_latest_cumulative_verifications": [
@@ -1668,6 +1828,19 @@
           "artifact": {
             "path": "build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json",
             "sha256": "c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0"
+          }
+        },
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate6/gate6-results.json",
+            "sha256": "c47b37052c6c5c9e062bcbf7be8e992383b60fd6921e97dc6e7d978322d83706"
           }
         }
       ]
@@ -1815,17 +1988,45 @@
       ],
       "latest_cumulative_verification": {
         "source": {
-          "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-          "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-8-clean-42674c1/gate7/gate7-results.json",
-          "sha256": "42ea563433b71eae08297124ef3596f0d0c200b7134160be3ab02482f411beb6"
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate7/gate7-results.json",
+          "sha256": "b58bdc0571f445c04301eeb4571d69dd8368ec24a7a35bd9c0b2fdf59553be6f"
+        },
+        "counts": {
+          "behavioral_restore_mutants_detected": 2,
+          "conditional_policy_lemmas": 2,
+          "direct_policy_probes": 20,
+          "frontend_probe_commands": 1,
+          "frontend_rejections": 4,
+          "negative_cases_per_profile": 6,
+          "positive_cases_per_profile": 8,
+          "profiles": 2,
+          "qemu_boots_total": 32,
+          "resumable_traps_per_profile": 288,
+          "software_denials_per_positive_case": 14
         }
-      }
+      },
+      "historical_latest_cumulative_verifications": [
+        {
+          "source": {
+            "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+            "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+            "clean": true
+          },
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "artifact": {
+            "path": "build/foundation/gates1-8-clean-42674c1/gate7/gate7-results.json",
+            "sha256": "42ea563433b71eae08297124ef3596f0d0c200b7134160be3ab02482f411beb6"
+          }
+        }
+      ]
     },
     {
       "gate": 8,
@@ -1926,12 +2127,39 @@
         "legacy_qemu_boots": 23
       },
       "notes": [
-        "Complete Gate8 checker passed as clean cumulative1\u20138 child; no separate clean focused run occurred.",
+        "Complete Gate8 checker passed as clean cumulative1–8 child; no separate clean focused run occurred.",
         "1474 positive-corpus hardware IRQs exclude extra mutant controls/mutants.",
         "Both wrong-restore controls gave status20/mask0x40000; both disabled-arming controls gave status21/value0 after valid build/audit/boot/protocol.",
         "Earlier source-binding failure and dirty development pass are not clean acceptance or behavioral detection credits.",
         "No integrated monitor, detached-worktree, actual CI, publication, StageII/G1/G2 completion claim."
-      ]
+      ],
+      "latest_cumulative_verification": {
+        "source": {
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+          "clean": true
+        },
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
+        "exit_code": 0,
+        "artifact": {
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate8/gate8-results.json",
+          "sha256": "201bfdd2931e5c42fb5cfc52576616ba1b66a812832e8ff111538b50d85b6de6"
+        },
+        "counts": {
+          "behavioral_restore_mutants_detected": 2,
+          "conditional_model_lemmas": 6,
+          "direct_policy_probes": 26,
+          "disabled_arming_mutants_detected": 2,
+          "finite_model_probes": 6,
+          "frontend_probe_commands": 1,
+          "frontend_rejections": 4,
+          "negative_cases_per_profile": 5,
+          "observed_hardware_irqs_positive_cases": 1474,
+          "positive_cases_per_profile": 6,
+          "profiles": 2,
+          "qemu_boots_total": 30
+        }
+      }
     },
     {
       "gate": 9,
@@ -1942,15 +2170,19 @@
         "tree": "965b550c576f80284a1a24c427d9704b517d160d",
         "clean": true
       },
-      "commands": [{
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20",
-        "exit_code": 0,
-        "qemu_boots": 18
-      }],
-      "artifacts": [{
-        "path": "build/foundation/gate9-clean-8fd45d8/gate9-results.json",
-        "sha256": "69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6"
-      }],
+      "commands": [
+        {
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "qemu_boots": 18
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "build/foundation/gate9-clean-8fd45d8/gate9-results.json",
+          "sha256": "69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6"
+        }
+      ],
       "tests": {
         "foundation_host_tests": 398,
         "core0_host_tests": 32,
@@ -1968,29 +2200,83 @@
         "Default corpus: 2 mixed streams, 5 terminal scenarios and 2 request-budget boundary scenarios per profile.",
         "Prior dirty development pass was 1465 observed IRQs; clean acceptance observed 1461. Counts are not exact timing oracles.",
         "Gates1-8 cumulative acceptance remains separately bound to 42674c1; final current-source cumulative/detached qualification is Gate10."
-      ]
+      ],
+      "latest_cumulative_verification": {
+        "source": {
+          "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+          "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+          "clean": true
+        },
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
+        "exit_code": 0,
+        "artifact": {
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/gate9-results.json",
+          "sha256": "712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e"
+        },
+        "counts": {
+          "active_terminal_cleanup_sessions": 2,
+          "actual_hardware_irqs": 4229,
+          "fresh_qemu_boots": 26,
+          "frontend_lowering": 1,
+          "handled_requests": 2742,
+          "mixed_sessions": 12,
+          "policy_probes": 50,
+          "retained_records_checked": 576,
+          "source_rejections": 4,
+          "synchronous_recoveries": 60,
+          "terminal_sessions": 12
+        }
+      }
     },
     {
       "gate": 10,
       "name": "integrated qualification",
       "status": "passed",
       "source": {
-        "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-        "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+        "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+        "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
         "clean": true
       },
       "clean_detached_verification": {
-        "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
-        "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
-        "worktree": "build/qualification-worktree.hJDCyB",
+        "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+        "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+        "worktree": "build/qualification-worktree.exc0kN",
         "initially_no_project_build_outputs": true,
         "copied_prior_outputs": false,
         "status": "passed",
-        "host_tests": {"foundation": 435, "foundation_seconds": 35.382, "core0": 32, "scaffold": 18, "cold_lean_build_jobs": 53},
-        "host_exit_codes": {"metadata": 0, "foundation": 0, "core0": 0, "scaffold": 0, "cold_lean_build": 0},
-        "cumulative": {"exit_code": 0, "fresh_qemu_boots": 482, "aggregate_sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f"},
-        "legacy": {"exit_code": 0, "fresh_qemu_boots": 23, "aggregate_sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd"},
-        "qualification": {"exit_code": 0, "report_sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9", "replayed_sessions": 26, "reproducible_profiles": 2, "deterministic_artifacts_per_profile": 16, "failure_experiments": 5, "unique_evidence_artifacts": 66}
+        "host_tests": {
+          "foundation": 438,
+          "foundation_seconds": 24.635,
+          "core0": 32,
+          "scaffold": 18,
+          "cold_lean_build_jobs": 53
+        },
+        "host_exit_codes": {
+          "metadata": 0,
+          "foundation": 0,
+          "core0": 0,
+          "scaffold": 0,
+          "cold_lean_build": 0
+        },
+        "cumulative": {
+          "exit_code": 0,
+          "fresh_qemu_boots": 482,
+          "aggregate_sha256": "205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0"
+        },
+        "legacy": {
+          "exit_code": 0,
+          "fresh_qemu_boots": 23,
+          "aggregate_sha256": "822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9"
+        },
+        "qualification": {
+          "exit_code": 0,
+          "report_sha256": "9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1",
+          "replayed_sessions": 26,
+          "reproducible_profiles": 2,
+          "deterministic_artifacts_per_profile": 16,
+          "failure_experiments": 5,
+          "unique_evidence_artifacts": 66
+        }
       },
       "historical_failed_clean_attempt": {
         "source": {
@@ -1999,7 +2285,12 @@
           "clean": true
         },
         "worktree": "build/qualification-worktree.BeCycl",
-        "host_tests": {"foundation": 433, "core0": 32, "scaffold": 18, "cold_lean_build_jobs": 53},
+        "host_tests": {
+          "foundation": 433,
+          "core0": 32,
+          "scaffold": 18,
+          "cold_lean_build_jobs": 53
+        },
         "commands": [
           {
             "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
@@ -2019,43 +2310,114 @@
           }
         ],
         "artifacts": [
-          {"path": "build/qualification-worktree.BeCycl/build/foundation/gates1-9-clean/all-results.json", "sha256": "84510c8134fe8dcf9bfc77cc0ef0eff41c1fa44b53c601d061c7b29abfbcb1d5"},
-          {"path": "build/qualification-worktree.BeCycl/build/core0/qualification-legacy/check-results.json", "sha256": "03a7b5bbe7fbc1c7b27659a1a94ddc4c45e658e413968ae5b22045487dc2e1ab"},
-          {"path": "build/qualification-worktree.BeCycl/build/foundation/qualification/qualification-failure.json", "sha256": "50f784c97c1fd53c47763f951c4d7a3d7b2b85ba234446b36df84dcec16c21fd"}
+          {
+            "path": "build/qualification-worktree.BeCycl/build/foundation/gates1-9-clean/all-results.json",
+            "sha256": "84510c8134fe8dcf9bfc77cc0ef0eff41c1fa44b53c601d061c7b29abfbcb1d5"
+          },
+          {
+            "path": "build/qualification-worktree.BeCycl/build/core0/qualification-legacy/check-results.json",
+            "sha256": "03a7b5bbe7fbc1c7b27659a1a94ddc4c45e658e413968ae5b22045487dc2e1ab"
+          },
+          {
+            "path": "build/qualification-worktree.BeCycl/build/foundation/qualification/qualification-failure.json",
+            "sha256": "50f784c97c1fd53c47763f951c4d7a3d7b2b85ba234446b36df84dcec16c21fd"
+          }
         ],
         "status": "failed",
         "next_action": "Fix qualifier catalog construction, retain strict validation, commit and reverify clean source."
       },
-      "historical_development_commands": [{
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-stress-dev-01 --clean --timeout 300 --qemu-timeout 20",
-        "exit_code": 0,
-        "qemu_boots": 482,
-        "classification": "dirty pre-review-fix development run, not clean acceptance"
-      }],
-      "commands": [
-        {"command": "nix develop --no-write-lock-file --command python3 scripts/check_scaffold.py", "exit_code": 0},
-        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "tests": 18},
-        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "tests": 32},
-        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "cold_build_jobs": 53},
-        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "tests": 435},
-        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20", "exit_code": 0, "fresh_qemu_boots": 482},
-        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/qualification-legacy --clean", "exit_code": 0, "fresh_qemu_boots": 23},
-        {"command": "nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py --gate9-dir build/foundation/gates1-9-clean/gate9 --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20", "exit_code": 0}
+      "historical_development_commands": [
+        {
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-stress-dev-01 --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "qemu_boots": 482,
+          "classification": "dirty pre-review-fix development run, not clean acceptance"
+        }
       ],
-      "artifacts": [{
-        "path": "build/foundation/gates1-9-stress-dev-01/all-results.json",
-        "sha256": "a81a1ece8363d50c8a2eea047d156014c6e7acec99fa03d75d9d0169739c92fc"
-      }, {
-        "path": "build/foundation/gates1-9-stress-dev-01/gate9/gate9-results.json",
-        "sha256": "57c2cfa6832d207c3a3aa038699d87bca450c6ec51dcb275843ee565b12a77df"
-      },
-        {"path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json", "sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f"},
-        {"path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json", "sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be"},
-        {"path": "build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json", "sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd"},
-        {"path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json", "sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9"}
+      "commands": [
+        {
+          "command": "nix develop --no-write-lock-file --command python3 scripts/check_scaffold.py",
+          "exit_code": 0
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/scaffold -v",
+          "exit_code": 0,
+          "tests": 18
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+          "exit_code": 0,
+          "tests": 32
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command lake build",
+          "exit_code": 0,
+          "cold_build_jobs": 53
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
+          "exit_code": 0,
+          "tests": 438
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "fresh_qemu_boots": 482
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/qualification-legacy --clean",
+          "exit_code": 0,
+          "fresh_qemu_boots": 23
+        },
+        {
+          "command": "nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py --gate9-dir build/foundation/gates1-9-clean/gate9 --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "build/foundation/gates1-9-stress-dev-01/all-results.json",
+          "sha256": "a81a1ece8363d50c8a2eea047d156014c6e7acec99fa03d75d9d0169739c92fc"
+        },
+        {
+          "path": "build/foundation/gates1-9-stress-dev-01/gate9/gate9-results.json",
+          "sha256": "57c2cfa6832d207c3a3aa038699d87bca450c6ec51dcb275843ee565b12a77df"
+        },
+        {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/all-results.json",
+          "sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f"
+        },
+        {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/gates1-9-clean/gate9/gate9-results.json",
+          "sha256": "cce7d93e6c830015c4952110c6d05d89abe16dd04127d4c019701e46a9b988be"
+        },
+        {
+          "path": "build/qualification-worktree.hJDCyB/build/core0/qualification-legacy/check-results.json",
+          "sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd"
+        },
+        {
+          "path": "build/qualification-worktree.hJDCyB/build/foundation/qualification/qualification-results.json",
+          "sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9"
+        },
+        {
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/all-results.json",
+          "sha256": "205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0"
+        },
+        {
+          "path": "build/qualification-worktree.exc0kN/build/foundation/gates1-9-clean/gate9/gate9-results.json",
+          "sha256": "712e4e24a3a7c46893c26b85ff9861f0c8d75bedbdd9a17d09a81476f0a1bc9e"
+        },
+        {
+          "path": "build/qualification-worktree.exc0kN/build/core0/qualification-legacy/check-results.json",
+          "sha256": "822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9"
+        },
+        {
+          "path": "build/qualification-worktree.exc0kN/build/foundation/qualification/qualification-results.json",
+          "sha256": "9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1"
+        }
       ],
       "tests": {
-        "foundation_host_tests": 435,
+        "foundation_host_tests": 438,
         "core0_host_tests": 32,
         "scaffold_tests": 18,
         "cold_lean_build_jobs": 53,
@@ -2063,7 +2425,7 @@
         "legacy_fresh_qemu_boots": 23,
         "verified_behavioral_compiler_mutants": 12,
         "monitor_requests": 2742,
-        "monitor_observed_hardware_irqs": 4243,
+        "monitor_observed_hardware_irqs": 4229,
         "monitor_synchronous_recoveries": 60,
         "monitor_retained_records": 576,
         "qualification_replayed_sessions": 26,
@@ -2086,17 +2448,437 @@
         "Historical clean 8fe29c4 cumulative/legacy passed but qualifier failed closed on duplicate roles; all artifacts remain bound to that revision.",
         "Fixed e0e1f2 passed all fresh detached hosts, cumulative stress, legacy and qualification without copied prior build outputs. Source and report-bearing identities remain separate.",
         "Qualification replays 26 existing raw sessions, not 26 additional boots; same-profile 16-artifact byte comparisons retain and explain provenance/timing differences.",
-        "Actual CI and publication are tracked separately under Gate11; neither G1 nor G2 is complete."
+        "Actual CI and publication are tracked separately under Gate11; neither G1 nor G2 is complete.",
+        "After actual PR/push CI exposed an unrealized pinned Lean source, code-only repair 09c47ba explicitly realizes that derivation without changing semantic oracles/hash checks. All eight commands passed again from new clean detached source; prior e0e1 clean acceptance is retained as historical, not rebound."
+      ],
+      "historical_clean_detached_verifications": [
+        {
+          "commit": "e0e1f2188fba1d26fbdd8723f37091001802064d",
+          "tree": "9660ade13a0b202bb0a76325eb36cf0c2b75a7d4",
+          "worktree": "build/qualification-worktree.hJDCyB",
+          "initially_no_project_build_outputs": true,
+          "copied_prior_outputs": false,
+          "status": "passed",
+          "host_tests": {
+            "foundation": 435,
+            "foundation_seconds": 35.382,
+            "core0": 32,
+            "scaffold": 18,
+            "cold_lean_build_jobs": 53
+          },
+          "host_exit_codes": {
+            "metadata": 0,
+            "foundation": 0,
+            "core0": 0,
+            "scaffold": 0,
+            "cold_lean_build": 0
+          },
+          "cumulative": {
+            "exit_code": 0,
+            "fresh_qemu_boots": 482,
+            "aggregate_sha256": "8d8189b489e07643dcacf5f03bf4c5317fab191a5a69584f57c2c51d1c575f5f"
+          },
+          "legacy": {
+            "exit_code": 0,
+            "fresh_qemu_boots": 23,
+            "aggregate_sha256": "1878d6d734d118836ddc4840f686098029339f29a164d11d185c34db3a42cafd"
+          },
+          "qualification": {
+            "exit_code": 0,
+            "report_sha256": "3b7923e051835c2bd2de87b69ac365ced24b95f73d364fcf488fd5373c7284d9",
+            "replayed_sessions": 26,
+            "reproducible_profiles": 2,
+            "deterministic_artifacts_per_profile": 16,
+            "failure_experiments": 5,
+            "unique_evidence_artifacts": 66
+          }
+        }
       ]
     },
     {
       "gate": 11,
       "name": "publication and continuation",
-      "status": "in-progress",
-      "source": null,
-      "commands": [],
-      "artifacts": [],
-      "tests": {}
+      "status": "passed",
+      "source": {
+        "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+        "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+        "clean": true,
+        "meaning": "published, clean local-qualified implementation; later final report-bearing revision is deliberately separate"
+      },
+      "commands": [
+        {
+          "command": "env GIT_TERMINAL_PROMPT=0 git push --set-upstream origin task/002-machine-foundation",
+          "exit_code": 0,
+          "upstream": "origin/task/002-machine-foundation"
+        },
+        {
+          "command": "env GIT_TERMINAL_PROMPT=0 git push origin task/002-machine-foundation",
+          "exit_code": 0,
+          "published_implementation": "09c47ba24577da87390f4c693237fe71ab67c965"
+        }
+      ],
+      "publication": {
+        "pushed": true,
+        "pr_url": "https://github.com/srkftw/lemma/pull/2",
+        "pr_number": 2,
+        "draft": true,
+        "merged": false,
+        "base_branch": "task/001-core0-freestanding-slice",
+        "base_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+        "initial_head_commit": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+        "initial_synthetic_merge_candidate": "0755c817d35c5d466875a2df0e7339a681d3cda4",
+        "published_implementation_commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+        "published_implementation_tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+        "repair_synthetic_merge_checkout": "e292d4359fabbf46d2c18423103333217a58c062",
+        "final_report_bearing_revision": "Recorded externally in final handoff after commit, not self-referenced."
+      },
+      "ci": {
+        "status": "completed",
+        "actual_result": "success",
+        "terminal_metadata": "build/foundation/gate11-ci-repair/terminal-observation.json",
+        "terminal_metadata_sha256": "af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2",
+        "observed_at": "2026-10-08T18:52:59Z",
+        "runs": [
+          {
+            "id": 37825241614,
+            "event": "push",
+            "url": "https://github.com/srkftw/lemma/actions/runs/37825241614",
+            "status": "completed",
+            "conclusion": "success",
+            "checkout": {
+              "kind": "branch head",
+              "sha": "09c47ba24577da87390f4c693237fe71ab67c965",
+              "tree": "7051d19087e09a6eede78210fdbe7652105e355d"
+            },
+            "jobs": [
+              {
+                "id": 113476287926,
+                "name": "Legacy Core0 RV64 acceptance",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "push-job-113476287926-legacy.log",
+                "log_sha256": "349885dc8eef989be352fbae3a9f38b3e95721aa2fc8adb078d31871ae9484c1"
+              },
+              {
+                "id": 113476288227,
+                "name": "Foundation Gates 1-9 and clean qualification",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "push-job-113476288227-foundation.log",
+                "log_sha256": "5a94735ef59a9711b9a4e80e667699267b072b553b24bed7d0ae00a2e2d572fb"
+              },
+              {
+                "id": 113476288262,
+                "name": "Metadata and host-only suites",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "push-job-113476288262-metadata.log",
+                "log_sha256": "74d655f8c2d9fdd5972dbf085c30ad48e68a95e865790b3f4a92b4eec7f0b364"
+              }
+            ],
+            "artifacts": [
+              {
+                "id": 11571767094,
+                "name": "foundation-rv64-37825241614-1",
+                "bytes": 29934938,
+                "digest": "sha256:f759cea3c81419003a5d8f3887a3b92d4cca9cf28d090536a10373d722105081",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11571767094",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              },
+              {
+                "id": 11571192201,
+                "name": "metadata-host-suites-37825241614-1",
+                "bytes": 26052,
+                "digest": "sha256:6a281ef8929b6b5cdc69cc123ecc4216fbf2647bbd602f8993ebdd972c808f28",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11571192201",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              },
+              {
+                "id": 11570149909,
+                "name": "legacy-rv64-37825241614-1",
+                "bytes": 391135,
+                "digest": "sha256:5542a93417822407d16e0c80f222393bfc41abad5dea01fc33c152b9436f4b12",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825241614/artifacts/11570149909",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              }
+            ]
+          },
+          {
+            "id": 37825247231,
+            "event": "pull_request",
+            "url": "https://github.com/srkftw/lemma/actions/runs/37825247231",
+            "status": "completed",
+            "conclusion": "success",
+            "checkout": {
+              "kind": "GitHub pull-request synthetic merge",
+              "sha": "e292d4359fabbf46d2c18423103333217a58c062",
+              "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+              "parents": [
+                "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+                "09c47ba24577da87390f4c693237fe71ab67c965"
+              ]
+            },
+            "jobs": [
+              {
+                "id": 113476307228,
+                "name": "Foundation Gates 1-9 and clean qualification",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "job-113476307228-foundation.log",
+                "log_sha256": "e3d20c3f6d21b24bb6c8687bf4b2391200138fbfaf7b39faa416358f7e3d510f"
+              },
+              {
+                "id": 113476307629,
+                "name": "Legacy Core0 RV64 acceptance",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "job-113476307629-legacy.log",
+                "log_sha256": "5943dfa5de6ef148786b0759721fa807f0de94de543acce0fd5fd849e88b73d4"
+              },
+              {
+                "id": 113476307674,
+                "name": "Metadata and host-only suites",
+                "status": "completed",
+                "conclusion": "success",
+                "log": "job-113476307674-metadata.log",
+                "log_sha256": "6619e4a9b72412a306d052041337bfd668f6fab6206d5f30085e14424b63ef4d"
+              }
+            ],
+            "artifacts": [
+              {
+                "id": 11572411330,
+                "name": "foundation-rv64-37825247231-1",
+                "bytes": 29933650,
+                "digest": "sha256:6c64cf032f380ff59f9e4e0ab24932fd9d862d841daf3d1a3dbd9f675a4e94ab",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11572411330",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              },
+              {
+                "id": 11570923628,
+                "name": "metadata-host-suites-37825247231-1",
+                "bytes": 26069,
+                "digest": "sha256:fdc553df12abee27bc05e59f7ebbe7a947a591d2cd7e115a9f0ffbc76146e7fb",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11570923628",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              },
+              {
+                "id": 11570529587,
+                "name": "legacy-rv64-37825247231-1",
+                "bytes": 391103,
+                "digest": "sha256:6a011faff9a308987c88e557d308a231f8923162eaf08d4b5c8d487c663c2491",
+                "url": "https://github.com/srkftw/lemma/actions/runs/37825247231/artifacts/11570529587",
+                "downloaded_and_stream_inspected": true,
+                "archive_retained_locally": false,
+                "zip_sha256_matches_api_digest": true
+              }
+            ]
+          }
+        ],
+        "shared_results": {
+          "metadata_host_suites": {
+            "scaffold_metadata": {
+              "gates": 7,
+              "software_units": 56,
+              "physical_units": 6
+            },
+            "scaffold_tests": 18,
+            "core0_host_tests": 32,
+            "lean_build_jobs": 53,
+            "cfg_compile_time_checks": 52,
+            "foundation_host_tests": 438
+          },
+          "legacy_core0": {
+            "status": "pass",
+            "fresh_qemu_boots": 23,
+            "differential_cases_per_profile": 10,
+            "expected_rejections": 13,
+            "source_mutation_fresh_qemu_boots": 3,
+            "audit_regression": "pass"
+          },
+          "cumulative_foundation": {
+            "status": "pass",
+            "gate_fresh_qemu_boots": [
+              24,
+              136,
+              88,
+              14,
+              104,
+              28,
+              32,
+              30,
+              26
+            ],
+            "total_fresh_qemu_boots": 482
+          },
+          "qualification": {
+            "status": "PASS",
+            "replayed_gate9_sessions": 26,
+            "normal_sessions": 18,
+            "stress_sessions": 8,
+            "reproducible_profiles": 2,
+            "deterministic_artifacts_per_profile": 16,
+            "evidence_entries": 66,
+            "unique_paths": 66,
+            "unique_roles": 66,
+            "failure_path_experiments": [
+              {
+                "id": "phase9-stale-pass",
+                "passed": true,
+                "returncode": 1,
+                "classification": "harness-input-failure",
+                "diagnostic": "timeout must be finite and positive",
+                "canonical_pass_absent": true
+              },
+              {
+                "id": "runner-stale-pass",
+                "passed": true,
+                "returncode": 1,
+                "classification": "image-or-harness-rejection",
+                "diagnostic": "monitor timeout must be finite and positive"
+              },
+              {
+                "id": "missing-program-object",
+                "passed": true,
+                "returncode": 1,
+                "diagnostic": "missing audit artifacts: program.o",
+                "canonical_audit_absent": true,
+                "accepted_image_modified": false
+              },
+              {
+                "id": "tampered-program-ir",
+                "passed": true,
+                "returncode": 1,
+                "diagnostic": "monitor pre-optimization LLVM closure differs",
+                "canonical_audit_absent": true,
+                "accepted_image_modified": false
+              },
+              {
+                "id": "missing-raw-evidence",
+                "passed": true,
+                "diagnostic": "monitor successful retained raw evidence is missing/stale: received.bin",
+                "canonical_pass_absent": true
+              }
+            ]
+          }
+        },
+        "gate3_pinned_source_semantics": {
+          "status": "pass",
+          "command": [
+            "nix",
+            "build",
+            "--no-link",
+            "--print-out-paths",
+            "--impure",
+            "--expr",
+            "let flake = builtins.getFlake (toString ./.); pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; in pkgs.lean4.src"
+          ],
+          "uint_source": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+          "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94",
+          "lean_version": "Lean (version 4.34.1, Release)",
+          "lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+          "retained_report_records_realized_file_and_hash": true,
+          "workflow_log_has_direct_source_cache_copy_line": false,
+          "observation": "The checked command captures the derivation-valued realization. The wrapper log does not print that checked subprocess's stdout/stderr, so no direct source-copy line is claimed."
+        },
+        "interpretation": "CI checks implementation09c47 and exact synthetic merge e292 with same tree; final docs-only reporting commit and its automatic checks are separate, not implicitly tested"
+      },
+      "repair_candidate": {
+        "commit": "09c47ba24577da87390f4c693237fe71ab67c965",
+        "tree": "7051d19087e09a6eede78210fdbe7652105e355d",
+        "normal_push_exit_code": 0,
+        "focused_tests": 3,
+        "focused_tests_exit_code": 0,
+        "pinned_source_probe_exit_code": 0,
+        "independent_review": "passed",
+        "independent_final_artifact_review": "passed; exact nine children/482 boots, 26 raw sessions/2742 frames, source/ELF/hash bindings, legacy 23, qualification 66 unique evidence entries and all five failures verified without new builds or QEMU",
+        "clean_worktree": "build/qualification-worktree.exc0kN",
+        "initial_lake_and_build_absent": true,
+        "copied_prior_outputs": false,
+        "full_acceptance_status": "passed",
+        "cumulative_exit_code": 0,
+        "cumulative_fresh_qemu_boots": 482,
+        "cumulative_sha256": "205719680253a4287b226f4481e21540014ce71ff6265f218a280ab1f31cdcc0",
+        "legacy_exit_code": 0,
+        "legacy_fresh_qemu_boots": 23,
+        "legacy_sha256": "822c33466924cb5b4ff785d64791ded017800eb233c498804f9a7974e7a7b7b9",
+        "qualification_status": "passed",
+        "actual_new_ci_status": "completed; push and PR success",
+        "actual_new_ci_run_id": 37825247231,
+        "actual_new_ci_run_url": "https://github.com/srkftw/lemma/actions/runs/37825247231",
+        "synthetic_merge_candidate": "e292d4359fabbf46d2c18423103333217a58c062",
+        "source_semantics_or_oracles_changed": false,
+        "qualification_exit_code": 0,
+        "qualification_sha256": "9f8aacd874d9f7c317c9f8573a92ba7b1dfd55892312055066f406ea033e78c1",
+        "push_ci_run_id": 37825241614,
+        "foundation_host_tests": 438
+      },
+      "artifacts": [
+        {
+          "path": "build/foundation/gate11-ci-repair/terminal-observation.json",
+          "sha256": "af6af5e23c1d4ad4613d72ff37868961fb00b35e72ebc3313aae829e5f1783f2"
+        }
+      ],
+      "tests": {
+        "successful_workflow_runs": 2,
+        "successful_jobs": 6,
+        "foundation_host_tests": 438,
+        "cumulative_boots_per_run": 482,
+        "legacy_boots_per_run": 23,
+        "qualification_replays_per_run": 26,
+        "qualification_failure_experiments_per_run": 5
+      },
+      "initial_report_bearing_source": {
+        "commit": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+        "tree": "6e129a2ed43608d2bd728df26d09037d93e72fb9",
+        "meaning": "initial report-bearing revision reported historical e0e1f2 qualification; current clean tested implementation is 09c47ba24577da87390f4c693237fe71ab67c965"
+      },
+      "historical_ci": [
+        {
+          "status": "completed",
+          "actual_result": "failure",
+          "run_id": 37823411915,
+          "event": "pull_request",
+          "run_url": "https://github.com/srkftw/lemma/actions/runs/37823411915",
+          "head_commit": "ac2a95ec460d271ef00f92335ae3ea821d1b329d",
+          "checkout_identity_status": "actual synthetic PR merge checkout confirmed by completed job logs",
+          "checkout_commit": "0755c817d35c5d466875a2df0e7339a681d3cda4",
+          "checkout_tree": "6e129a2ed43608d2bd728df26d09037d93e72fb9",
+          "metadata_job": "success",
+          "legacy_job": "success",
+          "foundation_job": "failure",
+          "qualification_step": "skipped",
+          "failure": {
+            "gate": 3,
+            "category": "pinned-source-semantics-failure",
+            "context": "UInt8/UInt32/UInt64",
+            "cause": "nix eval returns pkgs.lean4.src output path without realizing its source; absent in fresh CI store",
+            "classification": "assignment-owned reproducibility defect",
+            "completed_gate_boots": {
+              "1": 24,
+              "2": 136
+            },
+            "next_action": "explicitly realize pinned source, retain exact file/hash checks, regress and repeat clean acceptance/CI"
+          },
+          "terminal_metadata": "build/foundation/gate11-ci/run-37823411915-terminal.json",
+          "terminal_metadata_sha256": "b6fa35b57a1314563c6361b795e8bd2dbc7f8894abe0a71057df82cb6f066e7a",
+          "foundation_failure_artifact": {
+            "id": 11569704127,
+            "name": "foundation-rv64-37823411915-1",
+            "bytes": 3200685,
+            "sha256": "91d590ab60ecf3c5b0e8013c69903e3ebd06adcef00f4daaa83a05ec905a9119"
+          }
+        }
+      ]
     }
   ]
 }
