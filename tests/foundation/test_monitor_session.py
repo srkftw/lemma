@@ -37,7 +37,7 @@ class MonitorTranscriptTests(unittest.TestCase):
                 runner.validate_transcript(SIMPLE, SENT, data, 0, MACHINE)
 
     def test_request_id_semantics_and_failed_process_never_count_as_success(self):
-        for data, code in ((RECEIVED, -11), (RECEIVED, 18),
+        for data, code in ((RECEIVED, False), (RECEIVED, -11), (RECEIVED, 18),
             (RECEIVED.replace(corpus.words(2, 0, 0, 0), corpus.words(99, 0, 0, 0), 1), 0)):
             with self.assertRaises(runner.MonitorRunFailure):
                 runner.validate_transcript(SIMPLE, SENT, data, code, MACHINE)
@@ -75,6 +75,169 @@ class MonitorTranscriptTests(unittest.TestCase):
             with self.assertRaises(runner.MonitorRunFailure):
                 runner.validate_transcript(scenario, b"".join(request.encode() for request in scenario.requests),
                     received + RESPONSES[0].encode(), scenario.expected_exit, MACHINE)
+
+
+class MonitorRetainedRecordTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.image = self.root / "build/image/image.elf"
+        self.run = self.root / "build/run"
+        self.image.parent.mkdir(parents=True)
+        self.run.mkdir(parents=True)
+        self.image.write_bytes(b"image")
+        for name, data in (
+            ("sent.bin", SENT), ("received.bin", RECEIVED), ("stderr.bin", b""),
+        ):
+            (self.run / name).write_bytes(data)
+        self.binding = {
+            "manifest": {"closed": True}, "abi": {"closed": True},
+            "source_commit": "1" * 40, "optimization": "O0",
+            "audit_sha256": "2" * 64,
+        }
+        self.machine = {
+            "executable_ranges": [[0x80000000, 0x80010000]],
+            "symbols": {
+                "__timer_probe_loop": 0x80001000,
+                "__timer_probe_snapshot": 0x80001004,
+                "__trap_breakpoint_resume": 0x80002004,
+                "__trap_breakpoint_site": 0x80002000,
+                "__trap_ecall_resume": 0x80003004,
+                "__trap_ecall_site": 0x80003000,
+                "core0_trap_vector": 0x80004000,
+            },
+        }
+        observed = runner.validate_transcript(SIMPLE, SENT, RECEIVED, 0, self.machine)
+        self.record = {
+            "schema_version": 1,
+            "status": "PASS",
+            "profile": corpus.PROFILE,
+            "artifact_category": corpus.ARTIFACT_CATEGORY,
+            "test_abi": corpus.TEST_ABI,
+            "scenario": SIMPLE.name,
+            "image": str(self.image.resolve()),
+            "started_at": "2026-10-08T00:00:00+00:00",
+            "timeout_seconds": 20.0,
+            "image_sha256": sha256(self.image),
+            "binding": self.binding,
+            "machine": self.machine,
+            "ready_observed_before_input": True,
+            "first_input_after_ready": True,
+            "stdin_open_until_exit": True,
+            **observed,
+            "single_pid": True,
+            "single_elf": True,
+            "semantic_validation_after_exit": True,
+            "pid": 123,
+            "returncode": 0,
+            "argv": list(runner.qemu_argv(self.image)),
+            "raw_artifacts": {
+                name: sha256(self.run / name)
+                for name in ("sent.bin", "received.bin", "stderr.bin")
+            },
+            "elapsed_seconds": 2.0,
+            "finished_at": "2026-10-08T00:00:02+00:00",
+        }
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def validate(self, record=None):
+        with mock.patch.object(
+            runner, "validate_image_binding", return_value=self.binding
+        ), mock.patch.object(
+            runner, "image_machine_info", return_value=self.machine
+        ):
+            return runner.validate_success_record(
+                root=self.root,
+                image=self.image,
+                run_directory=self.run,
+                scenario=SIMPLE,
+                record=self.record if record is None else record,
+                expected_timeout_seconds=20.0,
+            )
+
+    def changed(self):
+        return json.loads(json.dumps(self.record))
+
+    def test_complete_record_recomputes_binding_machine_and_transcript(self):
+        observed = self.validate()
+        self.assertEqual(observed["summary"]["handled_requests"], 3)
+
+    def test_deleted_required_fields_and_argv_reject(self):
+        for name in ("schema_version", "binding", "machine", "argv", "summary"):
+            with self.subTest(name=name):
+                record = self.changed()
+                del record[name]
+                with self.assertRaisesRegex(Core0Error, "fields"):
+                    self.validate(record)
+        record = self.changed()
+        record["argv"] = record["argv"][:-1]
+        with self.assertRaisesRegex(Core0Error, "QEMU command"):
+            self.validate(record)
+        record = self.changed()
+        record["unreviewed_evidence"] = True
+        with self.assertRaisesRegex(Core0Error, "fields"):
+            self.validate(record)
+
+    def test_bool_version_and_exit_fields_reject(self):
+        for name in ("schema_version", "expected_exit", "returncode"):
+            with self.subTest(name=name):
+                record = self.changed()
+                record[name] = False if name != "schema_version" else True
+                with self.assertRaises(Core0Error):
+                    self.validate(record)
+
+    def test_shrunk_binding_never_substitutes_for_fresh_validation(self):
+        record = self.changed()
+        record["binding"] = {"audit_sha256": self.binding["audit_sha256"]}
+        with self.assertRaisesRegex(Core0Error, "binding"):
+            self.validate(record)
+
+    def test_widened_ranges_and_missing_symbols_never_replace_elf_evidence(self):
+        record = self.changed()
+        record["machine"]["executable_ranges"] = [[0x80000000, 0x90000000]]
+        with self.assertRaisesRegex(Core0Error, "machine evidence"):
+            self.validate(record)
+        record = self.changed()
+        del record["machine"]["symbols"]["core0_trap_vector"]
+        with self.assertRaisesRegex(Core0Error, "machine evidence"):
+            self.validate(record)
+
+    def test_no_request_record_omits_summary_and_preserves_none_input_marker(self):
+        scenario = corpus.SCENARIO_BY_NAME["missing-input"]
+        sent, received = b"", corpus.READY
+        (self.run / "sent.bin").write_bytes(sent)
+        (self.run / "received.bin").write_bytes(received)
+        record = self.changed()
+        record.pop("summary")
+        record.update(
+            scenario=scenario.name,
+            returncode=scenario.expected_exit,
+            first_input_after_ready=None,
+            **runner.validate_transcript(
+                scenario, sent, received, scenario.expected_exit, self.machine
+            ),
+        )
+        record["raw_artifacts"] = {
+            name: sha256(self.run / name)
+            for name in ("sent.bin", "received.bin", "stderr.bin")
+        }
+        with mock.patch.object(
+            runner, "validate_image_binding", return_value=self.binding
+        ), mock.patch.object(
+            runner, "image_machine_info", return_value=self.machine
+        ):
+            runner.validate_success_record(
+                root=self.root, image=self.image, run_directory=self.run,
+                scenario=scenario, record=record, expected_timeout_seconds=20.0,
+            )
+            record["summary"] = {}
+            with self.assertRaisesRegex(Core0Error, "fields"):
+                runner.validate_success_record(
+                    root=self.root, image=self.image, run_directory=self.run,
+                    scenario=scenario, record=record, expected_timeout_seconds=20.0,
+                )
 
 
 class MonitorProcessTests(unittest.TestCase):

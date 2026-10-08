@@ -1,6 +1,9 @@
 # Gate 9 compiled monitor construction contract
 
-Status: under construction, not accepted. Gate 8 is the highest passing gate.
+Status: Gate 9 accepted at clean implementation
+`8fd45d8458f4901c7a2d4debcb60ebd71f18a39c`
+(tree `965b550c576f80284a1a24c427d9704b517d160d`). Gate 10 integrated
+qualification remains separate; this is not G1/G2 or OS completion.
 The monitor reuses `core0-v0.7`; it adds neither a source-language primitive nor
 machine glue. Its closed category is `test-monitor-image`, ABI `lemma-monitor-v1`.
 The elaborated roots are `Monitor.foreground` and the existing nine-word
@@ -84,10 +87,23 @@ the requested period. Requests below 10,000 now receive bounded status 22 rather
 than arming. This is an empirically qualified diagnostic policy, not a proof of
 worst-case service time or a hard-real-time guarantee.
 
-Acceptance must use differing post-boot request streams against the same ELF,
-including malformed frames, denied intervals, real trap recovery, hardware
-progression/overflow/wrap, checked records and shutdown. Exact new source/IR/
-machine inventories, resource bounds, fresh command results and retained raw
-transcripts are not yet available. This document does not establish a general
+Clean acceptance used differing post-boot request streams against one ELF per
+profile, including malformed frames, denied intervals, real trap recovery,
+hardware progression/overflow/wrap, checked records, restart and shutdown.
+The 18 boots handled 1,598 requests, observed 1,461 hardware IRQs and 20
+synchronous recoveries, and checked 192 retained ring records. The shared source
+also passed 50 source probes and four rejection fixtures. Reports and raw
+frames are under `build/foundation/gate9-clean-8fd45d8`; aggregate SHA-256 is
+`69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6`.
+
+The exact final closure is 139 compiled functions and 16 structured startup
+functions, 28 named CSR operations, three timer MMIO sites and six UART sites.
+O0 foreground/dispatcher stack chains are 3,776/976 bytes, below their checked
+65,520/16,048-byte capacities. The pre/post LLVM audit independently checks
+volatile memory guards, machine primitive calls, UART/fence sequence, source
+effects and STOP work retention. Final disassembly, ELF, relocation and two-object
+provenance checks are separate from tests and the conditional Gate 8 model lemmas.
+
+This document does not establish a general
 compiler proof, hard-real-time behavior, isolation, physical compatibility,
 managed runtime, scheduler or G1/G2 completion.

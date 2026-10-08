@@ -88,7 +88,7 @@ backend direct effects are independently recomputed, while dependency metadata
 still originates in the trusted frontend; the closed artifact audit additionally
 checks actual call/role closure.
 
-## Gate 9 monitor category under construction
+## Gate 9 monitor category
 
 `test-monitor-image`/`lemma-monitor-v1` is a separate closed category, not an
 arbitrary-root relaxation of the accepted timer suite. Its own source-function,
@@ -97,7 +97,9 @@ The existing sixteen startup functions and exactly `program.o` plus `startup.o`
 remain named inputs. Full-register/CSR/CLINT closure, forbidden runtime and ISA
 checks, stack bounds, source provenance, and actual ISR call-role separation
 remain mandatory. Fresh post-boot request streams and raw frames are additional
-evidence obligations; this category is not yet accepted.
+evidence obligations. Clean `8fd45d8` acceptance passed all 18 sessions, with
+independent raw replay and complete 101-source bindings. Final cumulative,
+stress, detached-worktree and CI qualification remain distinct.
 
 ## Prohibited shortcuts
 

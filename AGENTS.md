@@ -101,19 +101,17 @@ mutation, and an audit-regression link.  Missing tools or evidence fail; there i
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
 
-Task 002 has a separate host suite and incremental target checker. Gates 0–8
-have recorded clean-source acceptance; Gate 9 is under construction:
+Task 002 has a separate host suite and incremental target checker. Gates 0–9
+have recorded clean-source acceptance; Gate 10 qualification is in progress:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 8 \
-  --work-dir build/foundation/gate8-check --clean --timeout 300 --qemu-timeout 20
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
-  --work-dir build/foundation/gates1-8-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
 ```
 
-These interfaces have actually run. Later phases and `--all` must be judged by
-their fresh reports and source identities, not assumed green from an older
-prefix. Follow the task ledger/checkpoint when resuming. Full detached-worktree
-qualification, integrated monitor acceptance, publication, and actual CI remain
-separate Task 002 obligations.
+The focused monitor interface passed at clean `8fd45d8`. Current `--all` and its
+optional extended stress must be judged by fresh reports and source identities,
+not assumed green from the earlier cumulative Gates 1--8 run. Follow the task
+ledger/checkpoint when resuming. Full detached-worktree qualification,
+publication and actual CI remain separate Task 002 obligations.

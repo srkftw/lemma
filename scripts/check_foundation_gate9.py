@@ -72,31 +72,22 @@ def _run_probes(*, root: Path, work: Path, timeout_seconds: float,
 
 def _target(*, root: Path, output: Path, work: Path, scenario: corpus.Scenario,
             timeout_seconds: float) -> dict[str, object]:
-    record = runner.run_session(root=root, image=output / "image.elf", output_dir=work,
-        scenario=scenario, timeout_seconds=timeout_seconds)
-    if record != load_json(work / runner.RESULT_FILE) or record.get("status") != "PASS":
-        raise Core0Error("monitor returned/persisted run differs or is not PASS")
-    if record.get("image_sha256") != sha256(output / "image.elf"):
-        raise Core0Error("monitor run is not bound to the current ELF")
-    if (type(record.get("pid")) is not int or record["pid"] <= 0
-            or record.get("ready_observed_before_input") is not True
-            or record.get("stdin_open_until_exit") is not True
-            or record.get("semantic_validation_after_exit") is not True
-            or record.get("single_pid") is not True or record.get("single_elf") is not True):
-        raise Core0Error("monitor session lacks its fresh single-process/post-boot input/exit evidence")
-    if (scenario.requests or scenario.terminal_input) and record.get("first_input_after_ready") is not True:
-        raise Core0Error("monitor requests were not written after READY")
-    if record.get("binding", {}).get("audit_sha256") != sha256(output / "audit.json"):
-        raise Core0Error("monitor record binds a stale audit")
-    for name in ("sent.bin", "received.bin", "stderr.bin"):
-        if record.get("raw_artifacts", {}).get(name) != sha256(work / name):
-            raise Core0Error(f"monitor retained raw evidence differs: {name}")
-    if (work / "stderr.bin").read_bytes():
-        raise Core0Error("monitor emulator stderr is not empty")
-    observed = runner.validate_transcript(scenario, (work / "sent.bin").read_bytes(),
-        (work / "received.bin").read_bytes(), record["returncode"], record["machine"])
-    if any(record.get(key) != value for key, value in observed.items()):
-        raise Core0Error("monitor result differs from independent retained transcript revalidation")
+    record = runner._object(runner.run_session(
+        root=root, image=output / "image.elf", output_dir=work,
+        scenario=scenario, timeout_seconds=timeout_seconds,
+    ), "returned successful record")
+    persisted = runner._object(
+        load_json(work / runner.RESULT_FILE), "persisted successful record"
+    )
+    runner._same(record, persisted, "returned/persisted successful record")
+    runner.validate_success_record(
+        root=root,
+        image=output / "image.elf",
+        run_directory=work,
+        scenario=scenario,
+        record=record,
+        expected_timeout_seconds=timeout_seconds,
+    )
     return record
 
 
@@ -110,8 +101,78 @@ def _verify_profiles(outputs: dict[str, Path], root: Path) -> dict[str, object]:
         "no_loader_fixture": True, "all_runtime_inputs_post_boot_uart": True}
 
 
+def _session_counts(targets: list[dict[str, object]]) -> dict[str, int]:
+    return {"fresh_qemu_boots": len(targets),
+        "mixed_sessions": sum(corpus.SCENARIO_BY_NAME[record["scenario"]].integration for record in targets),
+        "terminal_sessions": sum(record["expected_exit"] != 0 for record in targets),
+        "active_terminal_cleanup_sessions": sum(record["scenario"] == "active-truncated-payload" for record in targets),
+        "handled_requests": sum(record.get("summary", {}).get("handled_requests", 0) for record in targets),
+        "actual_hardware_irqs": sum(record.get("summary", {}).get("observed_hardware_irqs", 0) for record in targets),
+        "synchronous_recoveries": sum(record.get("summary", {}).get("synchronous_recoveries", 0) for record in targets),
+        "retained_records_checked": sum(record.get("summary", {}).get("records_checked", 0) for record in targets)}
+
+
+def _completion_counts(profiles: dict[str, object], *, stress: bool = False
+                       ) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
+    scenarios = corpus.selected_scenarios(stress=stress)
+    if set(profiles) != {"O0", "O2"}:
+        raise Gate9Failure("empty-or-incomplete-corpus", "completion", "exact O0/O2 profiles are required")
+    targets = []
+    for profile in ("O0", "O2"):
+        if not isinstance(profiles[profile], dict):
+            raise Gate9Failure("empty-or-incomplete-corpus", profile, "profile is not an object")
+        records = profiles[profile].get("targets")
+        if (not isinstance(records, list) or any(not isinstance(record, dict) for record in records)
+                or [record.get("scenario") for record in records] != [scenario.name for scenario in scenarios]):
+            raise Gate9Failure("empty-or-incomplete-corpus", profile, "selected session sequence differs")
+        for record, scenario in zip(records, scenarios, strict=True):
+            if (type(record.get("schema_version")) is not int or record["schema_version"] != 1
+                    or record.get("status") != "PASS"
+                    or type(record.get("expected_exit")) is not int
+                    or record["expected_exit"] != scenario.expected_exit
+                    or type(record.get("returncode")) is not int
+                    or record["returncode"] != scenario.expected_exit):
+                raise Gate9Failure("incomplete-session-evidence", profile, "target status/expected exit differs")
+            if scenario.requests:
+                summary = record.get("summary")
+                if (not isinstance(summary, dict)
+                        or any(type(summary.get(key)) is not int or summary[key] < 0 for key in (
+                            "handled_requests", "observed_hardware_irqs", "synchronous_recoveries", "records_checked"))
+                        or summary["handled_requests"] != len(scenario.requests)
+                        or len(record.get("responses", [])) != len(scenario.requests)):
+                    raise Gate9Failure("incomplete-session-evidence", scenario.name, "mandatory validated responses/summary are absent")
+            if scenario.integration:
+                if (summary["observed_hardware_irqs"] < 338
+                        or type(summary.get("hardware_work_commands")) is not int or summary["hardware_work_commands"] < 3
+                        or summary["synchronous_recoveries"] != 5 or summary["records_checked"] < 48
+                        or summary.get("observed_overflow") is not True or summary.get("observed_ring_wrap") is not True):
+                    raise Gate9Failure("missing-hardware-integration-evidence", scenario.name,
+                        "mixed summary lacks required real IRQ work/trap/overflow/wrap/retained-record evidence")
+        targets.extend(records)
+    active_terminal = [record for record in targets if record["scenario"] == "active-truncated-payload"]
+    if len(active_terminal) != 2 or any(
+        record.get("outcome") != "verified-terminal-rejection"
+        or record["summary"].get("active_at_terminal_input") is not True
+        or record["summary"]["observed_hardware_irqs"] < 1 for record in active_terminal):
+        raise Gate9Failure("missing-active-terminal-cleanup-evidence", "completion",
+            "both active timer prefixes must validate START then terminate with exact truncation status")
+    normal_names = {scenario.name for scenario in corpus.SCENARIOS}
+    normal = [record for record in targets if record["scenario"] in normal_names]
+    extended = [record for record in targets if record["scenario"] not in normal_names]
+    total_counts, normal_counts, stress_counts = (_session_counts(records) for records in (targets, normal, extended))
+    expected_mixed = 12 if stress else 4
+    if (total_counts["fresh_qemu_boots"] != (26 if stress else 18)
+            or normal_counts["fresh_qemu_boots"] != 18 or normal_counts["mixed_sessions"] != 4
+            or stress_counts["fresh_qemu_boots"] != (8 if stress else 0)
+            or total_counts["mixed_sessions"] != expected_mixed):
+        raise Gate9Failure("empty-or-incomplete-corpus", "completion", "normal/stress session counts differ")
+    if total_counts["actual_hardware_irqs"] < 338 * expected_mixed or total_counts["synchronous_recoveries"] < 5 * expected_mixed:
+        raise Gate9Failure("missing-hardware-integration-evidence", "completion", "aggregate hardware/trap lower bounds differ")
+    return total_counts, normal_counts, stress_counts
+
+
 def check_gate9(*, root: Path, work: Path, clean: bool, timeout_seconds: float,
-                qemu_timeout: float) -> dict[str, object]:
+                qemu_timeout: float, stress: bool = False) -> dict[str, object]:
     root, work = root.resolve(), work.resolve()
     _stage("work-directory-failure", str(work), lambda: (
         invalidate_output_file(work / RESULT_FILE, root),
@@ -120,9 +181,12 @@ def check_gate9(*, root: Path, work: Path, clean: bool, timeout_seconds: float,
     for name, value in (("build", timeout_seconds), ("qemu", qemu_timeout)):
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 < value < float("inf"):
             raise Gate9Failure("harness-input-failure", name, "timeout must be finite and positive")
+    if type(stress) is not bool:
+        raise Gate9Failure("harness-input-failure", "stress", "stress selection must be a boolean")
+    scenarios = _stage("runtime-corpus-rejection", "selection", lambda: corpus.selected_scenarios(stress=stress))
     started = datetime.now(timezone.utc).isoformat()
     corpus_path = work / "corpus/gate9-cases.json"
-    write_json(corpus_path, corpus.corpus_manifest())
+    write_json(corpus_path, corpus.corpus_manifest(stress=stress))
     profiles, outputs = {}, {}
     for index, optimization in enumerate(("O0", "O2")):
         output = outputs[optimization] = work / optimization
@@ -137,12 +201,12 @@ def check_gate9(*, root: Path, work: Path, clean: bool, timeout_seconds: float,
             lambda: runner.validate_image_binding(output / "image.elf", root=root))
         targets = [_stage("target-failure", f"{optimization}/{scenario.name}", lambda scenario=scenario: _target(
             root=root, output=output, work=work / "runs" / optimization / scenario.name,
-            scenario=scenario, timeout_seconds=qemu_timeout)) for scenario in corpus.SCENARIOS]
+            scenario=scenario, timeout_seconds=qemu_timeout)) for scenario in scenarios]
         pids = [record["pid"] for record in targets]
         if len(set(pids)) != len(targets) or len({record["image_sha256"] for record in targets}) != 1:
             raise Gate9Failure("fresh-session-rejection", optimization, "sessions reused a PID or changed ELF")
         streams = [(work / "runs" / optimization / scenario.name / "sent.bin").read_bytes()
-                   for scenario in corpus.MIXED_SCENARIOS]
+                   for scenario in scenarios if scenario.integration]
         if len(streams) < 2 or len(set(streams)) != len(streams):
             raise Gate9Failure("runtime-corpus-rejection", optimization, "mixed streams are empty or identical")
         profiles[optimization] = {"build": build, "audit": audit, "binding": binding, "targets": targets,
@@ -154,44 +218,19 @@ def check_gate9(*, root: Path, work: Path, clean: bool, timeout_seconds: float,
     rejections = _stage("source-rejection-failure", "retained Gate8 fixtures", lambda: _run_rejections(
         root=root, work=work / "rejections", timeout_seconds=timeout_seconds))
     _stage("source-profile-rejection", "final source recheck", lambda: _verify_profiles(outputs, root))
-    targets = [record for profile in profiles.values() for record in profile["targets"]]
-    mixed = [record for record in targets if record["scenario"] in {scenario.name for scenario in corpus.MIXED_SCENARIOS}]
-    active_terminal = [record for record in targets if record["scenario"] == "active-truncated-payload"]
-    if len(active_terminal) != 2 or any(
-        record.get("outcome") != "verified-terminal-rejection" or record.get("expected_exit") != 15
-        or record.get("returncode") != 15 or len(record.get("responses", [])) != 1
-        or record.get("summary", {}).get("active_at_terminal_input") is not True
-        or type(record.get("summary", {}).get("observed_hardware_irqs")) is not int
-        or record["summary"]["observed_hardware_irqs"] < 1 for record in active_terminal):
-        raise Gate9Failure("missing-active-terminal-cleanup-evidence", "completion",
-            "both active timer prefixes must validate START then terminate with exact truncation status")
-    for record in mixed:
-        summary = record.get("summary")
-        if (not isinstance(summary, dict) or type(summary.get("observed_hardware_irqs")) is not int
-                or summary["observed_hardware_irqs"] < 338
-                or type(summary.get("hardware_work_commands")) is not int or summary["hardware_work_commands"] < 3
-                or summary.get("synchronous_recoveries") != 5
-                or summary.get("observed_overflow") is not True or summary.get("observed_ring_wrap") is not True):
-            raise Gate9Failure("missing-hardware-integration-evidence", str(record.get("scenario")),
-                "mixed summary lacks required real IRQ work/trap/overflow/wrap evidence")
-    counts = {"fresh_qemu_boots": len(targets), "mixed_sessions": len(mixed),
-        "terminal_sessions": sum(record["expected_exit"] != 0 for record in targets),
-        "active_terminal_cleanup_sessions": len(active_terminal),
-        "handled_requests": sum(record.get("summary", {}).get("handled_requests", 0) for record in targets),
-        "actual_hardware_irqs": sum(record.get("summary", {}).get("observed_hardware_irqs", 0) for record in targets),
-        "synchronous_recoveries": sum(record.get("summary", {}).get("synchronous_recoveries", 0) for record in targets),
-        "retained_records_checked": sum(record.get("summary", {}).get("records_checked", 0) for record in targets),
-        "source_rejections": len(rejections), "policy_probes": 50, "frontend_lowering": 1}
-    if len(targets) != 2 * len(corpus.SCENARIOS) or len(mixed) != 4 or len(rejections) != 4:
-        raise Gate9Failure("empty-or-incomplete-corpus", "completion", "mandatory sessions/probes are missing")
-    if counts["actual_hardware_irqs"] < 1352 or counts["synchronous_recoveries"] < 20:
-        raise Gate9Failure("missing-hardware-integration-evidence", "completion", "aggregate hardware/trap lower bounds differ")
+    counts, normal_counts, stress_counts = _stage("incomplete-session-evidence", "completion",
+        lambda: _completion_counts(profiles, stress=stress))
+    if len(rejections) != 4:
+        raise Gate9Failure("empty-or-incomplete-corpus", "completion", "mandatory source rejections are missing")
+    counts.update(source_rejections=len(rejections), policy_probes=50, frontend_lowering=1)
     report = {"schema_version": 1, "status": "PASS", "gate": 9, "profile": corpus.PROFILE,
         "artifact_category": corpus.ARTIFACT_CATEGORY, "test_abi": corpus.TEST_ABI,
         "started_at": started, "finished_at": datetime.now(timezone.utc).isoformat(),
         "corpus": str(corpus_path.relative_to(root)), "corpus_sha256": sha256(corpus_path),
         "profiles": profiles, "source_binding": shared, "source_probes": probes,
         "source_rejections": rejections, "counts": counts,
+        "normal_counts": normal_counts, "stress_counts": stress_counts,
+        "stress": corpus.stress_manifest(stress=stress),
         "limitations": ["single-hart pinned QEMU M-mode only", "no scheduler, managed runtime or physical-board claim",
             "tests/audits are not a compiler correctness or real-time latency proof"]}
     write_json(work / (RESULT_FILE + ".tmp"), report)
@@ -205,12 +244,13 @@ def main() -> int:
     parser.add_argument("--clean", action="store_true")
     parser.add_argument("--timeout", type=float, default=300.0)
     parser.add_argument("--qemu-timeout", type=float, default=20.0)
+    parser.add_argument("--stress", action="store_true")
     ns = parser.parse_args()
     root = repo_root()
     work = ns.work_dir.resolve() if ns.work_dir.is_absolute() else (root / ns.work_dir).resolve()
     try:
         report = check_gate9(root=root, work=work, clean=ns.clean,
-            timeout_seconds=ns.timeout, qemu_timeout=ns.qemu_timeout)
+            timeout_seconds=ns.timeout, qemu_timeout=ns.qemu_timeout, stress=ns.stress)
     except Core0Error as error:
         print(f"GATE 9 FAIL: {error}", file=sys.stderr)
         return 1

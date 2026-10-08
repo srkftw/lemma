@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -40,6 +41,7 @@ REQUIRED_SOURCE_INPUTS = frozenset({
     "scripts/audit_trap.py", "scripts/audit_device.py", "scripts/audit_memory.py",
     "scripts/check_foundation.py", "scripts/gate9_corpus.py", "scripts/run_monitor_session.py",
     "scripts/check_foundation_gate9.py", "scripts/run_device_session.py", "scripts/gate6_corpus.py",
+    "scripts/qualify_foundation.py",
     "scripts/run_timer_case.py", "scripts/gate8_corpus.py", "scripts/run_trap_case.py",
     "docs/audits/monitor-core0-v07.md", "docs/audits/timers-core0-v07.md",
 })
@@ -245,7 +247,7 @@ def validate_transcript(scenario: corpus.Scenario, sent: bytes, received: bytes,
     expected_sent = b"".join(request.encode() for request in scenario.requests) + scenario.terminal_input
     if sent != expected_sent:
         raise MonitorRunFailure("runtime-input-mismatch", "retained sent stream differs from the fresh scenario")
-    if returncode != scenario.expected_exit:
+    if type(returncode) is not int or returncode != scenario.expected_exit:
         raise MonitorRunFailure("target-exit-mismatch", f"expected {scenario.expected_exit}, got {returncode}")
     if not received.startswith(corpus.READY) or len(received) != len(corpus.READY) + len(scenario.requests) * corpus.RESPONSE_BYTES:
         raise MonitorRunFailure("protocol-mismatch", "READY/response count/truncation/extra output differs")
@@ -272,6 +274,131 @@ def validate_transcript(scenario: corpus.Scenario, sent: bytes, received: bytes,
     return {"outcome": "verified-monitor-session" if scenario.expected_exit == 0 else "verified-terminal-rejection",
             "expected_exit": scenario.expected_exit,
             "responses": responses, "summary": summary}
+
+
+SUCCESS_RECORD_FIELDS = frozenset({
+    "schema_version", "status", "profile", "artifact_category", "test_abi",
+    "scenario", "image", "started_at", "timeout_seconds", "image_sha256",
+    "binding", "machine", "ready_observed_before_input", "first_input_after_ready",
+    "stdin_open_until_exit", "outcome", "expected_exit", "responses",
+    "single_pid", "single_elf", "semantic_validation_after_exit", "pid",
+    "returncode", "argv", "raw_artifacts", "elapsed_seconds", "finished_at",
+})
+
+
+def _timestamp(value: object, label: str) -> datetime:
+    if not isinstance(value, str):
+        raise Core0Error(f"monitor retained {label} is not an ISO timestamp")
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as error:
+        raise Core0Error(f"monitor retained {label} is not an ISO timestamp") from error
+    if parsed.tzinfo is None or parsed.utcoffset() != timezone.utc.utcoffset(parsed):
+        raise Core0Error(f"monitor retained {label} is not UTC-aware")
+    return parsed
+
+
+def _finite_number(value: object) -> bool:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
+def validate_success_record(
+    *,
+    root: Path,
+    image: Path,
+    run_directory: Path,
+    scenario: corpus.Scenario,
+    record: dict[str, object],
+    expected_timeout_seconds: float | None = None,
+) -> dict[str, object]:
+    """Independently validate one persisted successful monitor process record."""
+    root, image, run_directory = root.resolve(), image.resolve(), run_directory.resolve()
+    corpus.validate_scenario(scenario)
+    expected_fields = set(SUCCESS_RECORD_FIELDS)
+    if scenario.requests:
+        expected_fields.add("summary")
+    if set(record) != expected_fields:
+        raise Core0Error("monitor successful retained-record fields differ")
+    if (
+        type(record.get("schema_version")) is not int
+        or record["schema_version"] != 1
+        or record.get("status") != "PASS"
+        or record.get("profile") != corpus.PROFILE
+        or record.get("artifact_category") != corpus.ARTIFACT_CATEGORY
+        or record.get("test_abi") != corpus.TEST_ABI
+        or record.get("scenario") != scenario.name
+        or record.get("image") != str(image)
+        or record.get("image_sha256") != sha256(image)
+    ):
+        raise Core0Error("monitor successful retained-record identity differs")
+    if (
+        type(record.get("expected_exit")) is not int
+        or record["expected_exit"] != scenario.expected_exit
+        or type(record.get("returncode")) is not int
+        or record["returncode"] != scenario.expected_exit
+        or type(record.get("pid")) is not int
+        or record["pid"] <= 0
+    ):
+        raise Core0Error("monitor successful retained-record process identity differs")
+    timeout = record.get("timeout_seconds")
+    elapsed = record.get("elapsed_seconds")
+    if (
+        not _finite_number(timeout)
+        or timeout <= 0
+        or not _finite_number(elapsed)
+        or elapsed < 0
+    ):
+        raise Core0Error("monitor successful retained-record timing differs")
+    if expected_timeout_seconds is not None:
+        if (
+            not _finite_number(expected_timeout_seconds)
+            or timeout != expected_timeout_seconds
+        ):
+            raise Core0Error("monitor successful retained-record timeout differs")
+    started = _timestamp(record.get("started_at"), "start")
+    finished = _timestamp(record.get("finished_at"), "finish")
+    if finished < started:
+        raise Core0Error("monitor successful retained-record timestamps differ")
+    expected_input_observed = True if scenario.requests or scenario.terminal_input else None
+    if (
+        record.get("ready_observed_before_input") is not True
+        or record.get("first_input_after_ready") is not expected_input_observed
+        or record.get("stdin_open_until_exit") is not True
+        or record.get("semantic_validation_after_exit") is not True
+        or record.get("single_pid") is not True
+        or record.get("single_elf") is not True
+    ):
+        raise Core0Error("monitor successful retained-record process evidence differs")
+    expected_argv = list(qemu_argv(image))
+    if record.get("argv") != expected_argv:
+        raise Core0Error("monitor successful retained-record QEMU command differs")
+    expected_binding = validate_image_binding(image, root=root)
+    _same(record.get("binding"), expected_binding, "successful retained binding")
+    expected_machine = image_machine_info(image, root=root)
+    _same(record.get("machine"), expected_machine, "successful retained ELF machine evidence")
+    raw_catalog = _object(record.get("raw_artifacts"), "successful raw catalog")
+    if set(raw_catalog) != {"sent.bin", "received.bin", "stderr.bin"}:
+        raise Core0Error("monitor successful retained raw catalog differs")
+    raw: dict[str, bytes] = {}
+    for name in ("sent.bin", "received.bin", "stderr.bin"):
+        path = run_directory / name
+        if not path.is_file() or raw_catalog.get(name) != sha256(path):
+            raise Core0Error(f"monitor successful retained raw evidence is missing/stale: {name}")
+        raw[name] = path.read_bytes()
+    if raw["stderr.bin"]:
+        raise Core0Error("monitor successful retained emulator stderr is nonempty")
+    observed = validate_transcript(
+        scenario, raw["sent.bin"], raw["received.bin"], record["returncode"],
+        expected_machine,
+    )
+    for key, value in observed.items():
+        _same(record.get(key), value, f"successful retained transcript {key}")
+    return observed
 
 
 def run_session(*, root: Path, image: Path, output_dir: Path, scenario: corpus.Scenario,

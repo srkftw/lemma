@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T16:24:03.971041+00:00",
+  "updated_at": "2026-10-08T17:26:43+00:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,10 +9,10 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 8,
+  "highest_passing_gate": 9,
   "latest_clean_passing_source": {
-    "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-    "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+    "commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+    "tree": "965b550c576f80284a1a24c427d9704b517d160d",
     "clean": true
   },
   "gates": [
@@ -1936,23 +1936,76 @@
     {
       "gate": 9,
       "name": "diagnostic monitor",
-      "status": "in-progress",
-      "source": null,
-      "commands": [],
-      "artifacts": [],
-      "tests": {},
+      "status": "passed",
+      "source": {
+        "commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+        "tree": "965b550c576f80284a1a24c427d9704b517d160d",
+        "clean": true
+      },
+      "commands": [{
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20",
+        "exit_code": 0,
+        "qemu_boots": 18
+      }],
+      "artifacts": [{
+        "path": "build/foundation/gate9-clean-8fd45d8/gate9-results.json",
+        "sha256": "69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6"
+      }],
+      "tests": {
+        "foundation_host_tests": 398,
+        "core0_host_tests": 32,
+        "scaffold_tests": 18,
+        "fresh_qemu_boots": 18,
+        "handled_requests": 1598,
+        "observed_hardware_irqs": 1461,
+        "synchronous_recoveries": 20,
+        "retained_records_checked": 192,
+        "policy_probes": 50,
+        "source_rejections": 4
+      },
       "notes": [
-        "Gate8 accepted; integrated monitor source/build work starting, no Gate9 acceptance."
+        "Independent review replayed all 18 raw transcripts and checked both clean 101-source provenance envelopes.",
+        "Default corpus: 2 mixed streams, 5 terminal scenarios and 2 request-budget boundary scenarios per profile.",
+        "Prior dirty development pass was 1465 observed IRQs; clean acceptance observed 1461. Counts are not exact timing oracles.",
+        "Gates1-8 cumulative acceptance remains separately bound to 42674c1; final current-source cumulative/detached qualification is Gate10."
       ]
     },
     {
       "gate": 10,
       "name": "integrated qualification",
-      "status": "not-started",
+      "status": "in-progress",
       "source": null,
-      "commands": [],
-      "artifacts": [],
-      "tests": {}
+      "commands": [{
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress --work-dir build/foundation/gates1-9-stress-dev-01 --clean --timeout 300 --qemu-timeout 20",
+        "exit_code": 0,
+        "qemu_boots": 482,
+        "classification": "dirty pre-review-fix development run, not clean acceptance"
+      }],
+      "artifacts": [{
+        "path": "build/foundation/gates1-9-stress-dev-01/all-results.json",
+        "sha256": "a81a1ece8363d50c8a2eea047d156014c6e7acec99fa03d75d9d0169739c92fc"
+      }, {
+        "path": "build/foundation/gates1-9-stress-dev-01/gate9/gate9-results.json",
+        "sha256": "57c2cfa6832d207c3a3aa038699d87bca450c6ec51dcb275843ee565b12a77df"
+      }],
+      "tests": {
+        "development_foundation_host_tests_before_review_fixes": 420,
+        "development_foundation_host_tests_after_review_fixes": 433,
+        "development_core0_host_tests_after_review_fixes": 32,
+        "development_scaffold_tests_after_review_fixes": 18,
+        "development_qemu_boots": 482,
+        "development_monitor_requests": 2742,
+        "development_monitor_observed_irqs": 4389,
+        "development_monitor_synchronous_recoveries": 60,
+        "development_monitor_retained_records": 576
+      },
+      "notes": [
+        "Development run used dirty 8fd45d8 source; retained reports are not rebound to later fixes.",
+        "Review fixes implemented and independently closed: strict process/schema integers, full retained session/ELF binding, malformed CLI stale-PASS invalidation and fresh CI host build ordering.",
+        "Post-fix full hosts passed: foundation 433, Core0 32, scaffold 18 and metadata. Logs build/foundation/gate10-host-dev-postfix/.",
+        "Actual malformed-CLI stale-PASS probe returned 2, removed copied old aggregate PASS and emitted harness-input-failure/CLI at build/foundation/gate10-malformed-cli-dev.mBxPSQ/.",
+        "Full clean detached cumulative/legacy/rebuild qualification and actual CI remain unrun."
+      ]
     },
     {
       "gate": 11,

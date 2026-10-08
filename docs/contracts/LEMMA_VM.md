@@ -115,7 +115,7 @@ range/ordering/resource premises and limitations. Gate 8 target execution passed
 its finite O0/O2 matrix at clean `42674c1`; these addresses do not establish
 physical-board compatibility.
 
-## Gate 9 monitor under construction
+## Gate 9 monitor
 
 The coherent monitor image reuses the same UART, timer, trap stacks, finisher,
 one-hart M-mode launch and integer-only ISA. Its host must wait for compiled
@@ -123,7 +123,9 @@ READY, send fresh bounded requests over the running UART and reuse the same
 ELF for different mixed streams. Ordinary successful termination requires a
 validated EXIT command; a banner, nonempty output or process timeout cannot
 substitute for guest computations. The protocol and buffer layout are in
-[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md). Acceptance is pending.
+[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md). Clean `8fd45d8`
+acceptance passed 18 boots with 1,461 hardware IRQ observations and 20 actual
+synchronous recoveries. Extended/final qualification is a separate obligation.
 
 ## Roadmap, not current guarantees
 

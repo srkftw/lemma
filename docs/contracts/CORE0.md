@@ -242,11 +242,12 @@ full-register probe, and two quarantined mutations are specified in
 [`timers-core0-v07.md`](../audits/timers-core0-v07.md). Local policy/model probes
 are not target acceptance. Fresh audited O0/O2 execution and both behavioral
 failure controls passed at clean `42674c1`, with 1,474 positive-corpus hardware
-entries. The integrated monitor reuses v0.7 and remains separately unqualified.
+entries. The integrated monitor reuses v0.7 and passed its separate clean
+18-boot O0/O2 acceptance at `8fd45d8`.
 
-The Gate 9 monitor under construction is an ordinary v0.7 program, not a new
+The accepted Gate 9 monitor is an ordinary v0.7 program, not a new
 language profile. Its parsing, scalar selection, checked byte fill/sum, trap
-commands, timer lifecycle and bounded request loop must pass the same genuine
+commands, timer lifecycle and bounded request loop pass the same genuine
 elaboration/checked-IR route. See [its protocol contract](../audits/monitor-core0-v07.md).
 
 ## Future profile work

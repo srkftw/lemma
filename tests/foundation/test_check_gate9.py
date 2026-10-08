@@ -16,6 +16,76 @@ from core0_common import CommandResult, Core0Error, sha256, write_json
 
 
 class MonitorCheckerTests(unittest.TestCase):
+    @staticmethod
+    def completion_profiles(stress=False):
+        profiles = {}
+        for optimization in ("O0", "O2"):
+            records = []
+            for scenario in corpus.selected_scenarios(stress=stress):
+                record = {"schema_version": 1, "scenario": scenario.name, "status": "PASS", "expected_exit": scenario.expected_exit,
+                    "returncode": scenario.expected_exit, "responses": [{} for _ in scenario.requests]}
+                if scenario.requests:
+                    record["summary"] = {"handled_requests": len(scenario.requests), "observed_hardware_irqs": 0,
+                        "synchronous_recoveries": 0, "records_checked": 0}
+                if scenario.integration:
+                    record["summary"].update(observed_hardware_irqs=338, synchronous_recoveries=5,
+                        records_checked=48, hardware_work_commands=3, observed_overflow=True, observed_ring_wrap=True)
+                if scenario.name == "active-truncated-payload":
+                    record["outcome"] = "verified-terminal-rejection"
+                    record["summary"].update(active_at_terminal_input=True, observed_hardware_irqs=1)
+                records.append(record)
+            profiles[optimization] = {"targets": records}
+        return profiles
+
+    def test_stress_completion_separates_normal_and_extra_counts(self):
+        total, normal, stress = checker._completion_counts(self.completion_profiles())
+        self.assertEqual(total["fresh_qemu_boots"], 18)
+        self.assertEqual(total, normal)
+        self.assertTrue(all(value == 0 for value in stress.values()))
+        total, normal, stress = checker._completion_counts(self.completion_profiles(True), stress=True)
+        self.assertEqual((total["fresh_qemu_boots"], normal["fresh_qemu_boots"], stress["fresh_qemu_boots"]), (26, 18, 8))
+        self.assertEqual((total["mixed_sessions"], normal["mixed_sessions"], stress["mixed_sessions"]), (12, 4, 8))
+        self.assertEqual(normal["handled_requests"], 1598)
+        self.assertEqual(total["handled_requests"], normal["handled_requests"] + stress["handled_requests"])
+        self.assertGreaterEqual(stress["actual_hardware_irqs"], 2704)
+
+    def test_stress_missing_duplicate_or_weak_session_never_passes(self):
+        for change in ("drop", "duplicate", "wrong-mode", "weak-irqs", "missing-summary", "missing-records", "failed-process"):
+            with self.subTest(change=change):
+                profiles = self.completion_profiles(True)
+                records = profiles["O2"]["targets"]
+                if change == "drop":
+                    records.pop()
+                elif change == "duplicate":
+                    records[-1] = records[-2]
+                elif change == "wrong-mode":
+                    with self.assertRaises(checker.Gate9Failure):
+                        checker._completion_counts(profiles)
+                    continue
+                elif change == "weak-irqs":
+                    records[-1]["summary"]["observed_hardware_irqs"] = 337
+                elif change == "missing-summary":
+                    del records[-1]["summary"]
+                elif change == "missing-records":
+                    records[-1]["summary"]["records_checked"] = 47
+                else:
+                    records[-1]["returncode"] = -9
+                with self.assertRaises(checker.Gate9Failure):
+                    checker._completion_counts(profiles, stress=True)
+
+    def test_unsupported_stress_selection_invalidates_old_pass_before_build(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for index, value in enumerate((0, 1, "stress", None, [], {})):
+                work = root / "build" / str(index)
+                work.mkdir(parents=True)
+                write_json(work / checker.RESULT_FILE, {"status": "PASS"})
+                with mock.patch.object(checker, "build_monitor_image") as build:
+                    with self.assertRaisesRegex(checker.Gate9Failure, "harness-input-failure.*stress"):
+                        checker.check_gate9(root=root, work=work, clean=False, timeout_seconds=1, qemu_timeout=1, stress=value)
+                    build.assert_not_called()
+                self.assertFalse((work / checker.RESULT_FILE).exists())
+
     def test_transport_process_behavior_and_audit_errors_remain_distinct(self):
         for category in ("target-timeout", "target-exit-mismatch", "protocol-mismatch",
                          "behavior-mismatch", "emulator-stderr", "image-or-harness-rejection"):
@@ -91,20 +161,31 @@ class MonitorCheckerTests(unittest.TestCase):
             received = corpus.READY + corpus.Response(0, 1, (0x31304E4F4D4D454C, 7, 1, 0x3FF)).encode() + corpus.Response(0, 2, (2, 0, 0, 0)).encode()
             for name, data in (("sent.bin", sent), ("received.bin", received), ("stderr.bin", b"")):
                 (work / name).write_bytes(data)
-            record = {"status": "PASS", "pid": 100, "image_sha256": sha256(output / "image.elf"),
-                "binding": {"audit_sha256": sha256(output / "audit.json")}, "machine": machine,
-                "returncode": 0, "ready_observed_before_input": True, "stdin_open_until_exit": True,
+            binding = {"audit_sha256": sha256(output / "audit.json")}
+            record = {"schema_version": 1, "status": "PASS", "profile": corpus.PROFILE,
+                "artifact_category": corpus.ARTIFACT_CATEGORY, "test_abi": corpus.TEST_ABI,
+                "scenario": scenario.name, "image": str((output / "image.elf").resolve()),
+                "started_at": "2026-10-08T00:00:00+00:00", "finished_at": "2026-10-08T00:00:00.1+00:00",
+                "timeout_seconds": 1, "elapsed_seconds": 0.1,
+                "pid": 100, "image_sha256": sha256(output / "image.elf"),
+                "binding": binding, "machine": machine, "returncode": 0,
+                "argv": list(runner.qemu_argv(output / "image.elf")),
+                "ready_observed_before_input": True, "stdin_open_until_exit": True,
                 "semantic_validation_after_exit": True, "single_pid": True, "single_elf": True,
                 "first_input_after_ready": True, "raw_artifacts": {name: sha256(work / name)
                     for name in ("sent.bin", "received.bin", "stderr.bin")},
                 **runner.validate_transcript(scenario, sent, received, 0, machine)}
             write_json(work / runner.RESULT_FILE, record)
-            with mock.patch.object(runner, "run_session", return_value=record):
+            with mock.patch.object(runner, "run_session", return_value=record), \
+                 mock.patch.object(runner, "validate_image_binding", return_value=binding), \
+                 mock.patch.object(runner, "image_machine_info", return_value=machine):
                 checker._target(root=root, output=output, work=work, scenario=scenario, timeout_seconds=1)
             (work / "received.bin").write_bytes(received[:-8] + corpus.words(99))
             record["raw_artifacts"]["received.bin"] = sha256(work / "received.bin")
             write_json(work / runner.RESULT_FILE, record)
-            with mock.patch.object(runner, "run_session", return_value=record):
+            with mock.patch.object(runner, "run_session", return_value=record), \
+                 mock.patch.object(runner, "validate_image_binding", return_value=binding), \
+                 mock.patch.object(runner, "image_machine_info", return_value=machine):
                 with self.assertRaisesRegex(Core0Error, "EXIT"):
                     checker._target(root=root, output=output, work=work, scenario=scenario, timeout_seconds=1)
 

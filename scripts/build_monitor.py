@@ -50,6 +50,7 @@ HOST_INPUTS = (
     Path("scripts/gate9_corpus.py"),
     Path("scripts/run_monitor_session.py"),
     Path("scripts/check_foundation_gate9.py"),
+    Path("scripts/qualify_foundation.py"),
     Path("examples/foundation/MonitorPolicyProbes.lean"),
     Path("docs/audits/monitor-core0-v07.md"),
 )

@@ -5,6 +5,7 @@ import struct
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -64,6 +65,50 @@ class MonitorCorpusTests(unittest.TestCase):
             self.assertTrue(any(selector == 3 and count == 256 for selector, _, count, _ in evals))
         self.assertEqual([len(scenario.requests) for scenario in corpus.BUDGET_SCENARIOS], [256, 256])
         self.assertEqual([scenario.expected_exit for scenario in corpus.BUDGET_SCENARIOS], [0, 9])
+
+    def test_stress_is_opt_in_reproducible_and_does_not_change_normal_scenarios(self):
+        normal = corpus.corpus_manifest()
+        extended = corpus.corpus_manifest(stress=True)
+        self.assertEqual(corpus.selected_scenarios(), corpus.SCENARIOS)
+        self.assertEqual(len(corpus.SCENARIOS), 9)
+        self.assertEqual(len(extended["scenarios"]), 13)
+        self.assertEqual(extended["scenarios"][:9], normal["scenarios"])
+        self.assertEqual(extended, corpus.corpus_manifest(stress=True))
+        self.assertFalse(normal["stress"]["enabled"])
+        self.assertEqual(normal["stress"]["parameters"], [])
+        self.assertEqual(extended["stress"]["profile"], "lemma-monitor-stress-v1")
+        self.assertEqual(corpus.STRESS_SEEDS, (1, 1 << 63, 0x0123456789ABCDEF, 0xDEADBEEFCAFEBABE))
+        self.assertEqual([item["seed"] for item in extended["stress"]["parameters"]], list(corpus.STRESS_SEEDS))
+        streams, request_ids = set(), set()
+        for scenario, parameters in zip(corpus.STRESS_SCENARIOS, corpus.STRESS_PARAMETERS, strict=True):
+            name, seed, byte, period, base = parameters
+            self.assertEqual(scenario.name, name)
+            self.assertTrue(scenario.integration)
+            self.assertLess(len(scenario.requests), 256)
+            self.assertTrue(10000 <= period <= 20000)
+            self.assertEqual(scenario.requests[0].request_id, base)
+            self.assertTrue(all(request.request_id not in request_ids for request in scenario.requests))
+            request_ids.update(request.request_id for request in scenario.requests)
+            eval_payloads = [struct.unpack("<QQQQ", request.payload) for request in scenario.requests if request.command == 3]
+            self.assertTrue(any(selector == 0 and a == seed for selector, a, _, _ in eval_payloads))
+            self.assertEqual([count for selector, _, count, _ in eval_payloads if selector == 3][-3:], [64, 256, 16])
+            fills = [struct.unpack("<QQQ", request.payload) for request in scenario.requests if request.command == 4]
+            self.assertIn((0, 3840, byte), fills)
+            streams.add(b"".join(request.encode() for request in scenario.requests))
+            self.assertEqual(corpus.SCENARIO_BY_NAME[name], scenario)
+        self.assertEqual(len(streams), 4)
+
+    def test_stress_invalid_selection_or_missing_stream_fails_closed(self):
+        for value in (0, 1, "true", None, [], {}):
+            with self.assertRaisesRegex(Core0Error, "boolean"):
+                corpus.corpus_manifest(stress=value)
+        with mock.patch.object(corpus, "STRESS_SCENARIOS", corpus.STRESS_SCENARIOS[:-1]):
+            with self.assertRaisesRegex(Core0Error, "four deterministic"):
+                corpus.selected_scenarios(stress=True)
+            self.assertEqual(len(corpus.selected_scenarios()), 9)
+        with mock.patch.object(corpus, "SCENARIOS", corpus.SCENARIOS[:-1]):
+            with self.assertRaisesRegex(Core0Error, "incomplete"):
+                corpus.selected_scenarios(stress=True)
 
     def test_initial_timer_snapshots_and_stop_preserve_default_period(self):
         self.accept(9, (0, 0))

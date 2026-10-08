@@ -223,20 +223,58 @@ BUDGET_SCENARIOS = (
     Scenario("session-limit-without-exit", tuple(Request(1, 0xB000 + index) for index in range(256)), expected_exit=9),
 )
 SCENARIOS = MIXED_SCENARIOS + TERMINAL_SCENARIOS + BUDGET_SCENARIOS
-SCENARIO_BY_NAME = {scenario.name: scenario for scenario in SCENARIOS}
+STRESS_PROFILE = "lemma-monitor-stress-v1"
+STRESS_PARAMETERS = (
+    ("stress-one", 1, 0x11, 10_000, 0xC000),
+    ("stress-high-bit", 0x8000000000000000, 0x80, 12_500, 0xD000),
+    ("stress-pattern", 0x0123456789ABCDEF, 0x3C, 15_000, 0xE000),
+    ("stress-deadbeef", 0xDEADBEEFCAFEBABE, 0xD3, 20_000, 0xF000),
+)
+STRESS_SEEDS = tuple(parameters[1] for parameters in STRESS_PARAMETERS)
+STRESS_SCENARIOS = tuple(_mixed(*parameters) for parameters in STRESS_PARAMETERS)
+# Expose individual stress sessions to the runner CLI without changing the
+# default acceptance catalog. They still require the identical image binding.
+SCENARIO_BY_NAME = {scenario.name: scenario for scenario in (*SCENARIOS, *STRESS_SCENARIOS)}
 
 
-def corpus_manifest() -> dict[str, object]:
-    if len(SCENARIO_BY_NAME) != len(SCENARIOS):
+def selected_scenarios(*, stress: bool = False) -> tuple[Scenario, ...]:
+    if type(stress) is not bool:
+        raise Core0Error("monitor stress selection must be a boolean")
+    normal_names = {"mixed-zero", "mixed-wrap", "oversize-payload", "truncated-header",
+        "truncated-payload", "missing-input", "active-truncated-payload",
+        "exit-at-session-limit", "session-limit-without-exit"}
+    if len(SCENARIOS) != 9 or {scenario.name for scenario in SCENARIOS} != normal_names:
+        raise Core0Error("monitor normal corpus is empty, incomplete or duplicated")
+    if stress and (len(STRESS_SCENARIOS) != 4 or STRESS_SCENARIOS != tuple(_mixed(*parameters) for parameters in STRESS_PARAMETERS)):
+        raise Core0Error("monitor stress corpus differs from its four deterministic mixed streams")
+    scenarios = SCENARIOS + STRESS_SCENARIOS if stress else SCENARIOS
+    if len({scenario.name for scenario in scenarios}) != len(scenarios):
         raise Core0Error("duplicate monitor scenario names")
-    for scenario in SCENARIOS:
+    for scenario in scenarios:
         validate_scenario(scenario)
+        if SCENARIO_BY_NAME.get(scenario.name) != scenario:
+            raise Core0Error("monitor scenario lookup differs from the selected corpus")
+    return scenarios
+
+
+def stress_manifest(*, stress: bool = False) -> dict[str, object]:
+    selected_scenarios(stress=stress)
+    return {"enabled": stress, "profile": STRESS_PROFILE if stress else None,
+        "extra_sessions_per_optimization": 4 if stress else 0,
+        "parameters": [{"name": name, "seed": seed, "fill_byte": byte,
+            "period": period, "request_id_base": base} for name, seed, byte, period, base
+            in STRESS_PARAMETERS] if stress else []}
+
+
+def corpus_manifest(*, stress: bool = False) -> dict[str, object]:
+    scenarios = selected_scenarios(stress=stress)
     return {"schema_version": 1, "artifact_category": ARTIFACT_CATEGORY, "profile": PROFILE,
         "test_abi": TEST_ABI, "request_bytes": REQUEST_BYTES, "response_bytes": RESPONSE_BYTES,
         "maximum_payload_bytes": MAX_PAYLOAD, "fresh_post_boot_uart_only": True,
+        "stress": stress_manifest(stress=stress),
         "scenarios": [{"name": scenario.name, "expected_exit": scenario.expected_exit,
             "integration": scenario.integration, "requests_hex": [request.encode().hex() for request in scenario.requests],
-            "terminal_input_hex": scenario.terminal_input.hex()} for scenario in SCENARIOS]}
+            "terminal_input_hex": scenario.terminal_input.hex()} for scenario in scenarios]}
 
 
 @dataclass

@@ -955,11 +955,64 @@ def check_gate1(
     return report
 
 
+def _invalid_cli_evidence(root: Path, argv: list[str]) -> None:
+    """Invalidate only named canonical reports below a safe build subtree."""
+    work_name = "build/foundation/check"
+    phase = None
+    for index, argument in enumerate(argv):
+        if argument.startswith("--work-dir="):
+            work_name = argument.split("=", 1)[1]
+        elif argument == "--work-dir" and index + 1 < len(argv):
+            work_name = argv[index + 1]
+        phase_name = None
+        if argument.startswith("--phase="):
+            phase_name = argument.split("=", 1)[1]
+        elif argument == "--phase" and index + 1 < len(argv):
+            phase_name = argv[index + 1]
+        if phase_name is not None:
+            try:
+                phase = int(phase_name)
+            except ValueError:
+                phase = None
+    if not work_name or work_name.startswith("-"):
+        return
+    work_path = Path(work_name)
+    work = (work_path if work_path.is_absolute() else root / work_path).resolve()
+    # Validate even when no output exists: invalidate_output_file intentionally
+    # ignores missing paths, but a failure report must never escape build/.
+    relative = work.relative_to((root / "build").resolve())
+    if not relative.parts:
+        raise Core0Error("CLI failure evidence cannot use the build root")
+    names = {"all-results.json"} if "--all" in argv else set()
+    if phase in range(1, 10):
+        names.add(f"gate{phase}-results.json")
+    for name in names:
+        invalidate_output_file(work / name, root)
+        invalidate_output_file(work / (name + ".tmp"), root)
+    failure = {
+        "schema_version": 1,
+        "status": "fail",
+        "gate": phase if phase is not None else 1,
+        "failure_category": "harness-input-failure",
+        "failure_context": "CLI",
+        "failure_detail": "invalid foundation CLI arguments",
+        "error": "invalid foundation CLI arguments",
+    }
+    temporary = work / "check-failure.json.tmp"
+    invalidate_output_file(temporary, root)
+    write_json(temporary, failure)
+    temporary.replace(work / "check-failure.json")
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     scope = parser.add_mutually_exclusive_group(required=True)
     scope.add_argument("--phase", type=int)
     scope.add_argument("--all", action="store_true")
+    parser.add_argument(
+        "--stress", action="store_true",
+        help="include the bounded deterministic extended Gate 9 monitor corpus",
+    )
     parser.add_argument("--work-dir", type=Path, default=Path("build/foundation/check"))
     parser.add_argument(
         "--compiler-faults",
@@ -974,10 +1027,22 @@ def main() -> int:
     parser.add_argument("--clean", action="store_true")
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--qemu-timeout", type=float, default=5.0)
-    ns = parser.parse_args()
-    if ns.phase is not None and ns.phase not in {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-        parser.error("only implemented phases 1 through 9 are available; later gates fail closed")
     root = repo_root()
+    raw_argv = sys.argv[1:]
+    try:
+        ns = parser.parse_args(raw_argv)
+        if ns.phase is not None and ns.phase not in {1, 2, 3, 4, 5, 6, 7, 8, 9}:
+            parser.error("only implemented phases 1 through 9 are available; later gates fail closed")
+        if ns.stress and not ns.all and ns.phase != 9:
+            parser.error("--stress applies only to --phase 9 or --all")
+    except SystemExit as error:
+        if error.code == 0:
+            return 0
+        try:
+            _invalid_cli_evidence(root, raw_argv)
+        except (Core0Error, OSError, ValueError, TypeError):
+            pass
+        return int(error.code or 2)
 
     def resolve(path: Path) -> Path:
         return (root / path).resolve() if not path.is_absolute() else path.resolve()
@@ -989,6 +1054,7 @@ def main() -> int:
         # before either child gate starts so a failed cumulative rerun is fail-closed.
         if ns.all:
             invalidate_output_file(work / "all-results.json", root)
+            invalidate_output_file(work / "all-results.json.tmp", root)
         # A new invocation supersedes the prior diagnostic regardless of scope.
         invalidate_output_file(work / "check-failure.json", root)
         if ns.all:
@@ -1064,13 +1130,16 @@ def main() -> int:
                 clean=ns.clean,
                 timeout_seconds=ns.timeout,
                 qemu_timeout=ns.qemu_timeout,
+                stress=ns.stress,
             )
             report = {
                 "schema_version": 1,
                 "status": "pass",
                 "gates": [gate1, gate2, gate3, gate4, gate5, gate6, gate7, gate8, gate9],
             }
-            write_json(work / "all-results.json", report)
+            temporary = work / "all-results.json.tmp"
+            write_json(temporary, report)
+            temporary.replace(work / "all-results.json")
         elif ns.phase == 9:
             report = check_gate9(
                 root=root,
@@ -1078,6 +1147,7 @@ def main() -> int:
                 clean=ns.clean,
                 timeout_seconds=ns.timeout,
                 qemu_timeout=ns.qemu_timeout,
+                stress=ns.stress,
             )
         elif ns.phase == 8:
             report = check_gate8(

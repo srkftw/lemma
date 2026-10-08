@@ -2,16 +2,16 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 8,
+  "highest_passing_gate": 9,
   "next_gate": {
-    "gate": 9,
+    "gate": 10,
     "status": "in-progress",
-    "name": "integrated UART diagnostic monitor",
+    "name": "integrated qualification, extended stress, detached worktree and actual CI",
     "acceptance_checks_run": false
   },
   "source": {
-    "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
-    "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+    "commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+    "tree": "965b550c576f80284a1a24c427d9704b517d160d",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
@@ -19,9 +19,8 @@
     {
       "command": "nix develop --no-write-lock-file --command lake build",
       "exit_code": 0,
-      "lean_build_jobs": 52,
-      "compile_time_cfg_validator_checks": 52,
-      "scope": "actual Gate8 build before final acceptance, not a claimed second rebuild"
+      "lean_build_jobs": 53,
+      "compile_time_cfg_validator_checks": 52
     },
     {
       "command": "python3 scripts/check_scaffold.py",
@@ -40,29 +39,12 @@
     {
       "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
       "exit_code": 0,
-      "tests": 339
+      "tests": 398
     },
     {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20",
       "exit_code": 0,
-      "qemu_boots": 456,
-      "boots_by_gate": [
-        24,
-        136,
-        88,
-        14,
-        104,
-        28,
-        32,
-        30
-      ]
-    },
-    {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/task002-gate8-clean --clean",
-      "exit_code": 0,
-      "cases_per_profile": 10,
-      "rejections": 13,
-      "qemu_boots": 23
+      "fresh_qemu_boots": 18
     }
   ],
   "gate_0": {
@@ -871,6 +853,22 @@
     "gate_8_stage_2_partial_contributions": {
       "2.1": "M-mode machine services/stacks only; no supervisor entry. Backlog remains planned.",
       "2.2": "Real timer IRQs, masking/pending, bounded ring/loss/catch-up/shutdown and context tests; broader qualification remains open. Backlog remains planned."
+    },
+    "gate_9_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.5",
+      "1.6",
+      "1.7",
+      "1.8"
+    ],
+    "gate_9_regression_only": [
+      "1.2",
+      "1.4"
+    ],
+    "gate_9_stage_2_partial_contributions": {
+      "2.1": "Integrated M-mode monitor and bounded stacks only; no supervisor entry. Backlog remains planned.",
+      "2.2": "Integrated authorized traps, actual timer control, overflow/wrap/records and diagnostics in mixed post-boot UART sessions. Broader qualification remains open; backlog remains planned."
     }
   },
   "claims": {
@@ -893,7 +891,9 @@
     "actual_ci_complete": false,
     "publication_attempted": false,
     "gate_9_started": true,
-    "gate_9_acceptance_passed": false
+    "gate_9_acceptance_passed": true,
+    "gate_10_started": true,
+    "gate_10_acceptance_passed": false
   },
   "report_bearing_revision": {
     "commit": null,
@@ -955,7 +955,7 @@
       "gate_4_qemu_boots": 14
     }
   ],
-  "command_source_scope": "Final host suites ran before commit; cumulative1\u20138 and legacy acceptance ran afterward from exact clean42674c1. No separate clean focused Gate8 run. Later Gate9/report work is outside tested source; detached-worktree qualification and actual CI remain open.",
+  "command_source_scope": "Gate 9 clean focused acceptance binds exact 8fd45d8 committed source. Host suites ran before that implementation commit; the retained build provenance records a successful 53-job Lean build. The latest full cumulative Gates 1\u20138 and legacy acceptance remains at clean 42674c1, not requalified at 8fd45d8. Later Gate 10/report changes are outside tested source; detached worktree, extended stress and actual CI remain open.",
   "gate_5": {
     "source": {
       "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
@@ -1792,6 +1792,12 @@
     {
       "commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
       "tree": "5c53acabde200edd2ef7061ba65830c7c00b5b5b",
+      "clean": true,
+      "branch": "task/002-machine-foundation"
+    },
+    {
+      "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+      "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
       "clean": true,
       "branch": "task/002-machine-foundation"
     }
@@ -3889,5 +3895,1520 @@
       "behavioral_mutant_detection_credit": false
     }
   },
-  "gate_7_report_bearing_revision": "530fb1ec80687569e5f5def5ac870153b3256227"
+  "gate_7_report_bearing_revision": "530fb1ec80687569e5f5def5ac870153b3256227",
+  "historical_commands_gate_8": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build",
+      "exit_code": 0,
+      "lean_build_jobs": 52,
+      "compile_time_cfg_validator_checks": 52,
+      "scope": "actual Gate8 build before final acceptance, not a claimed second rebuild"
+    },
+    {
+      "command": "python3 scripts/check_scaffold.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "exit_code": 0,
+      "tests": 18
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "exit_code": 0,
+      "tests": 32
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
+      "exit_code": 0,
+      "tests": 339
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
+      "exit_code": 0,
+      "qemu_boots": 456,
+      "boots_by_gate": [
+        24,
+        136,
+        88,
+        14,
+        104,
+        28,
+        32,
+        30
+      ]
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/task002-gate8-clean --clean",
+      "exit_code": 0,
+      "cases_per_profile": 10,
+      "rejections": 13,
+      "qemu_boots": 23
+    }
+  ],
+  "gate_9": {
+    "source": {
+      "commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+      "tree": "965b550c576f80284a1a24c427d9704b517d160d",
+      "clean": true,
+      "branch": "task/002-machine-foundation"
+    },
+    "contract_version": "core0-v0.7",
+    "test_abi": "lemma-monitor-v1",
+    "artifact_category": "test-monitor-image",
+    "aggregate": {
+      "path": "build/foundation/gate9-clean-8fd45d8/gate9-results.json",
+      "sha256": "69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6"
+    },
+    "counts": {
+      "active_terminal_cleanup_sessions": 2,
+      "actual_hardware_irqs": 1461,
+      "fresh_qemu_boots": 18,
+      "frontend_lowering": 1,
+      "handled_requests": 1598,
+      "mixed_sessions": 4,
+      "policy_probes": 50,
+      "retained_records_checked": 192,
+      "source_rejections": 4,
+      "synchronous_recoveries": 20,
+      "terminal_sessions": 12
+    },
+    "source_binding": {
+      "same_checked_source": true,
+      "all_runtime_inputs_post_boot_uart": true,
+      "no_loader_fixture": true,
+      "source_input_count_per_profile": 101,
+      "source_artifacts": {
+        "device-contract.json": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
+        "layout.json": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
+        "link.ld": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
+        "monitor-abi.json": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333",
+        "monitor-manifest.json": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a",
+        "monitor-normalized.txt": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96",
+        "program.ll": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
+        "startup.S": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd",
+        "symbols.txt": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10"
+      }
+    },
+    "source_probes": {
+      "argv": [
+        "lake",
+        "env",
+        "lean",
+        "examples/foundation/MonitorPolicyProbes.lean"
+      ],
+      "frontend_lowering": 1,
+      "log": "build/foundation/gate9-clean-8fd45d8/probes/monitor-policy-frontend.txt",
+      "log_sha256": "93bd24954e893e5c0aff70276b730dd30e6a491468495c74365d73ba7714dc62",
+      "policy_probes": 50,
+      "returncode": 0,
+      "scope": "direct source predicates/encoding/frontend observations, not hardware or compiler proof",
+      "source": "examples/foundation/MonitorPolicyProbes.lean",
+      "source_sha256": "e79350bb93994d2466adfc2061e66882177177125c97b92b025c0dac5097a5d4"
+    },
+    "source_rejections": [
+      {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/gate8-reject/V06Timer.lean"
+        ],
+        "diagnostic_code": "unsupported-primitive",
+        "diagnostic_log": "build/foundation/gate9-clean-8fd45d8/rejections/v06-timer.txt",
+        "diagnostic_sha256": "d318a5fa9cb9c5394a64825737b8f5f889f8cbb2f5114690a0f90dbc559e3e78",
+        "name": "v06-timer",
+        "path": "examples/foundation/gate8-reject/V06Timer.lean",
+        "required_fragments": [
+          "timer operation `timer.read-time` requires `core0-v0.7`; `core0-v0.6` does not admit timer/interrupt operations",
+          "dependency path: root"
+        ],
+        "returncode": 1,
+        "source_sha256": "bfbf6157462d79a0d1a3408cdf651666a465b01ed4e9124a1cf53a21221e166c"
+      },
+      {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/gate8-reject/StoredTimerContinuation.lean"
+        ],
+        "diagnostic_code": "unsupported-expression",
+        "diagnostic_log": "build/foundation/gate9-clean-8fd45d8/rejections/stored-timer-continuation.txt",
+        "diagnostic_sha256": "ef6c779a90c9e1fbcf223bb90857d42ccf33b9f9b08ff6550f586cf96ae64221",
+        "name": "stored-timer-continuation",
+        "path": "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
+        "required_fragments": [
+          "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+          "dependency path: root"
+        ],
+        "returncode": 1,
+        "source_sha256": "80f16e23e1b6d152e684c14dba1ef057738a22c9755beb88c063725a2814a2ca"
+      },
+      {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/gate8-reject/HiddenExternTimer.lean"
+        ],
+        "diagnostic_code": "unsupported-declaration",
+        "diagnostic_log": "build/foundation/gate9-clean-8fd45d8/rejections/hidden-extern-timer.txt",
+        "diagnostic_sha256": "92000e1a3f2ade2fe2a6eae62f2ce9213935631f498ea89fc638af09654f9cfb",
+        "name": "hidden-extern-timer",
+        "path": "examples/foundation/gate8-reject/HiddenExternTimer.lean",
+        "required_fragments": [
+          "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+          "dependency path: root -> forbidden"
+        ],
+        "returncode": 1,
+        "source_sha256": "00508a47ce7884fcf64e80a1b4b0885dbfc44bbbd70d09913d7529c5b153cb4d"
+      },
+      {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/gate8-reject/PureTimerResult.lean"
+        ],
+        "diagnostic_code": "unsupported-type",
+        "diagnostic_log": "build/foundation/gate9-clean-8fd45d8/rejections/pure-timer-result.txt",
+        "diagnostic_sha256": "6c481187a2a3a5d1dc9ed5ec1676c43754d25e6e257c8b8948c7a53bd9a5c26d",
+        "name": "pure-timer-result",
+        "path": "examples/foundation/gate8-reject/PureTimerResult.lean",
+        "required_fragments": [
+          "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+          "dependency path: root"
+        ],
+        "returncode": 1,
+        "source_sha256": "6253d8730e70ef0ef4ee88bbc6fe110e06807f47d9876357c0ac40233e4b1925"
+      }
+    ],
+    "profiles": {
+      "O0": {
+        "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+        "audit_sha256": "32fdeafd007ac98675eb55a4e9d9e5a6596edb4f7bba213fd3f74fdf4ac94a73",
+        "artifacts": {
+          "device-contract.json": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
+          "image.elf": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+          "image.map": "63d3b16ca682211d10af6d863884337db9ca6cc3ce1391e828cd398c15f11138",
+          "layout.json": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
+          "link.ld": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
+          "monitor-abi.json": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333",
+          "monitor-manifest.json": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a",
+          "monitor-normalized.txt": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96",
+          "platform.dtb": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
+          "platform.dts": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8",
+          "program.ll": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
+          "program.o": "4c6c9c9797eed6bb81ac4a1f77b09f8576b350a0ac9f910cf1c273f7f7dcaed0",
+          "program.opt.ll": "f6f154be553e77a7ac2e39f6a530644956e0b24cae9a28d00d436d6265d6494c",
+          "provenance.json": "8616ea2bc76da1d4e68966511c731a8526fa492e6088ca03c8ae22617f9acfb3",
+          "startup.S": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd",
+          "startup.o": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f",
+          "symbols.txt": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10"
+        },
+        "source_commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+        "dirty_tree": false,
+        "fresh_processes": 9,
+        "same_elf_differing_streams": true,
+        "action_functions": 85,
+        "scalar_functions": 54,
+        "roots": [
+          {
+            "llvm": "core0_action_77",
+            "root_id": 1,
+            "signature": {
+              "args": []
+            },
+            "source": "Lemma.Examples.Foundation.Monitor.foreground"
+          },
+          {
+            "llvm": "core0_action_84",
+            "root_id": 2,
+            "signature": {
+              "args": [
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64"
+              ]
+            },
+            "source": "Lemma.Examples.Foundation.Timer.dispatch"
+          }
+        ],
+        "suite_id": "9d2c479b0810f351",
+        "source_seed": "4c454d4d41393039",
+        "runtime_seed": "4d4f4e49544f5231",
+        "machine_audit": {
+          "approved_resume_pairs": 2,
+          "compiled_functions": 139,
+          "compiled_gp_tp_free": true,
+          "compiled_privileged_instructions": 0,
+          "direct_mtvec_target": "0x800001b4",
+          "fatal_stackless_self_loops": 2,
+          "layout": {
+            "canaries": 6,
+            "frame_bytes": 288,
+            "regions": {
+              "trap_probe_context": [
+                2155958272,
+                4096
+              ],
+              "trap_probe_stack": [
+                2155970560,
+                4096
+              ],
+              "trap_stack": [
+                2155937792,
+                16384
+              ]
+            }
+          },
+          "machine_csr_by_function": {
+            "_start": 5,
+            "core0_irq_restore": 2,
+            "core0_irq_save_disable": 1,
+            "core0_timer_probe": 2,
+            "core0_timer_read_pending": 1,
+            "core0_timer_set_interrupt": 2,
+            "core0_trap_breakpoint": 1,
+            "core0_trap_ecall": 1,
+            "core0_trap_unexpected_ecall": 1,
+            "core0_trap_vector": 12
+          },
+          "machine_csr_operations": 28,
+          "machine_slot_sequences": {
+            "_start": 16,
+            "core0_io_fence": 0,
+            "core0_irq_restore": 0,
+            "core0_irq_save_disable": 0,
+            "core0_timer_probe": 106,
+            "core0_timer_read_pending": 0,
+            "core0_timer_read_time": 1,
+            "core0_timer_set_compare": 1,
+            "core0_timer_set_interrupt": 0,
+            "core0_trap_breakpoint": 106,
+            "core0_trap_double_fault": 0,
+            "core0_trap_ecall": 106,
+            "core0_trap_fatal_dispatch": 0,
+            "core0_trap_illegal_instruction": 0,
+            "core0_trap_unexpected_ecall": 0,
+            "core0_trap_vector": 75
+          },
+          "mutation": "none",
+          "startup": {
+            "csr_roles": [
+              "mstatus.MIE",
+              "mie.MTIE",
+              "mip.MTIP"
+            ],
+            "mutation": "none",
+            "probe_registers": 31,
+            "startup_compare_parked": true,
+            "synchronous_trap_substrate": "exact core0-v0.6 structured sequence",
+            "timer_functions": 7,
+            "timer_mmio_width_bits": 64,
+            "timer_probe_iterations": 65536
+          },
+          "startup_functions": 16,
+          "timer_fence_operations": 14,
+          "timer_functions": 7,
+          "timer_machine_body_sha256": {
+            "core0_irq_restore": "0d0c3e199cf7209c315be260164d60f2adad9fd292af48c34963f3327f5f9076",
+            "core0_irq_save_disable": "81cd1fa8037c20efdc2cef7fd36a766ab69f7545f43fd7c1cc263a0692104c45",
+            "core0_timer_probe": "407fc011546a4ddcced3cf3e0c9fd26c4b192e92b2af7f226653268da9703ebd",
+            "core0_timer_read_pending": "93c428991f4d9b1013d72ec835989801b2620191d796b7d364faaece4f341bc2",
+            "core0_timer_read_time": "e103c9cb31268a2fe7a1170b1f72dfb2efb062716d320aeac8416adcd7cdc382",
+            "core0_timer_set_compare": "56104ada535d927c3c48e5c5994e8f1e36b6b96fdd6c9f9a08215ce14ccac12f",
+            "core0_timer_set_interrupt": "828d70fc99140850c90fe9444a9a9770c73b09e081d651e8e612c64395d02e0f"
+          },
+          "timer_mmio_accesses": 3,
+          "timer_mmio_machine": {
+            "access_count": 3,
+            "accesses": [
+              {
+                "address": "0x02004000",
+                "function": "_start",
+                "instruction": "sd",
+                "machine_address": "0x80000194",
+                "width_bits": 64
+              },
+              {
+                "address": "0x0200bff8",
+                "function": "core0_timer_read_time",
+                "instruction": "ld",
+                "machine_address": "0x800017bc",
+                "width_bits": 64
+              },
+              {
+                "address": "0x02004000",
+                "function": "core0_timer_set_compare",
+                "instruction": "sd",
+                "machine_address": "0x800017d4",
+                "width_bits": 64
+              }
+            ],
+            "all_inferred_accesses_are_approved": true,
+            "compiled_program_accesses": 0,
+            "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof",
+            "width_bits": 64
+          },
+          "timer_mmio_width_bits": 64,
+          "timer_probe": {
+            "caller_saves": 16,
+            "iterations": 65536,
+            "memory_slots": 106,
+            "mie_window": "after sentinels, bounded counter only, before snapshots",
+            "snapshot_registers": 31
+          },
+          "timer_start_machine_body_sha256": "85e2cf360c82a80b120cd7dc40b88cb77495f91cac9ca8e6f6c792e6d3ecb0ca"
+        },
+        "ir_audit": {
+          "bool_machine_arguments": {
+            "all_pre_ir_zext": 13,
+            "calls": 13,
+            "signed_extensions": 0
+          },
+          "definitions": {
+            "post": 140,
+            "pre": 140
+          },
+          "machine_calls": {
+            "post_optimization": {
+              "core0_irq_restore": 8,
+              "core0_irq_save_disable": 10,
+              "core0_timer_probe": 1,
+              "core0_timer_read_pending": 2,
+              "core0_timer_read_time": 2,
+              "core0_timer_set_compare": 6,
+              "core0_timer_set_interrupt": 5,
+              "core0_trap_breakpoint": 1,
+              "core0_trap_ecall": 1
+            },
+            "pre_optimization": {
+              "core0_irq_restore": 8,
+              "core0_irq_save_disable": 10,
+              "core0_timer_probe": 1,
+              "core0_timer_read_pending": 2,
+              "core0_timer_read_time": 2,
+              "core0_timer_set_compare": 6,
+              "core0_timer_set_interrupt": 5,
+              "core0_trap_breakpoint": 1,
+              "core0_trap_ecall": 1
+            },
+            "source": {
+              "irq.restore": 8,
+              "irq.save-disable": 10,
+              "timer.probe": 1,
+              "timer.read-pending": 2,
+              "timer.read-time": 2,
+              "timer.set-compare": 6,
+              "timer.set-interrupt": 5,
+              "trap.breakpoint": 1,
+              "trap.ecall": 1
+            }
+          },
+          "machine_timer_mmio_in_program": 0,
+          "optimization": "O0",
+          "optimizer_intrinsics": [],
+          "post_ir_sha256": "f6f154be553e77a7ac2e39f6a530644956e0b24cae9a28d00d436d6265d6494c",
+          "pre_ir_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
+          "shutdown_work_witness": {
+            "bounded_quanta": 8,
+            "callback": "Lemma.Examples.Foundation.Timer.controlStep",
+            "callee": "Lemma.Examples.Foundation.Timer.writeWord",
+            "control_step_iterations": 128,
+            "control_step_mix_body_calls": {
+              "post_optimization": 1,
+              "pre_optimization": 1
+            },
+            "offset": 160,
+            "region": "events",
+            "retained_loop_shape": {
+              "post_optimization": "bounded-eight-controlStep-loop",
+              "pre_optimization": "bounded-eight-controlStep-loop"
+            },
+            "site_counts": {
+              "post_optimization": 1,
+              "pre_optimization": 1,
+              "source": 1
+            },
+            "source": "Lemma.Examples.Foundation.Monitor.stoppedWork",
+            "stopped_work_control_step_calls": {
+              "post_optimization": 1,
+              "pre_optimization": 1
+            },
+            "volatile_store_proved_by_memory_audit": true
+          },
+          "uart": {
+            "post": {
+              "accesses": 6,
+              "functions": [
+                "core0_action_10",
+                "core0_action_13",
+                "core0_action_6",
+                "core0_action_77"
+              ],
+              "operations": [
+                "uart.lsr.read8",
+                "uart.thr.write8",
+                "uart.lsr.read8",
+                "uart.lsr.read8",
+                "uart.rbr.read8",
+                "uart.fcr.enable-reset"
+              ]
+            },
+            "pre": {
+              "accesses": 6,
+              "functions": [
+                "core0_action_10",
+                "core0_action_13",
+                "core0_action_6",
+                "core0_action_77"
+              ],
+              "operations": [
+                "uart.lsr.read8",
+                "uart.thr.write8",
+                "uart.lsr.read8",
+                "uart.lsr.read8",
+                "uart.rbr.read8",
+                "uart.fcr.enable-reset"
+              ]
+            }
+          }
+        },
+        "stack": {
+          "foreground": {
+            "bytes": 3776,
+            "capacity_bytes": 65520,
+            "chain": [
+              "core0_main",
+              "core0_action_77",
+              "core0_action_76",
+              "core0_action_75",
+              "core0_action_74",
+              "core0_action_73",
+              "core0_action_72",
+              "core0_action_71",
+              "core0_action_70",
+              "core0_action_69",
+              "core0_action_68",
+              "core0_action_66",
+              "core0_action_65",
+              "core0_action_64",
+              "core0_action_39",
+              "core0_action_23",
+              "core0_action_22",
+              "core0_action_21",
+              "core0_action_20",
+              "core0_scalar_24"
+            ],
+            "checked_root": "core0_action_77",
+            "low_canary_bytes": 16,
+            "machine_entry": "core0_main",
+            "stack_region_bytes": 65536
+          },
+          "trap_dispatcher": {
+            "bytes": 976,
+            "capacity_bytes": 16048,
+            "chain": [
+              "core0_action_84",
+              "core0_action_83",
+              "core0_action_82",
+              "core0_action_81",
+              "core0_action_7",
+              "core0_action_6",
+              "core0_scalar_4"
+            ],
+            "checked_root": "core0_action_84",
+            "outgoing_argument_bytes": 16,
+            "trap_frame_bytes": 288,
+            "usable_trap_stack_bytes": 16352
+          },
+          "acyclic": true,
+          "dynamic_alloca": false,
+          "node_count": 140,
+          "edge_count": 318
+        },
+        "targets": [
+          {
+            "scenario": "mixed-zero",
+            "status": "PASS",
+            "pid": 291020,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "d30e59be41229f45c5185dba8e6f68797568fe697a2f179725df6e223f0819c8",
+              "sent.bin": "e365c707bd3ad05b61f610b2e60b19afe23cea52029ec2b147849e3ea08c5460",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 3,
+              "final_hardware_irqs": 17,
+              "handled_requests": 143,
+              "hardware_work_commands": 3,
+              "last_work_checksum": 9894471962108843866,
+              "observed_hardware_irqs": 376,
+              "observed_overflow": true,
+              "observed_ring_wrap": true,
+              "records_checked": 48,
+              "recoverable_errors": 25,
+              "synchronous_recoveries": 5
+            }
+          },
+          {
+            "scenario": "mixed-wrap",
+            "status": "PASS",
+            "pid": 291034,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "d94ad6a8ee00e7dbd4e9708d81468840d98a4a774e3faa42ae70f5cf368e556d",
+              "sent.bin": "cba4924f894cb889bdc0a186f3d021e67b5990be570124f9ab02f573346d6682",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 3,
+              "final_hardware_irqs": 17,
+              "handled_requests": 143,
+              "hardware_work_commands": 3,
+              "last_work_checksum": 1471087701817496997,
+              "observed_hardware_irqs": 356,
+              "observed_overflow": true,
+              "observed_ring_wrap": true,
+              "records_checked": 48,
+              "recoverable_errors": 25,
+              "synchronous_recoveries": 5
+            }
+          },
+          {
+            "scenario": "oversize-payload",
+            "status": "PASS",
+            "pid": 291042,
+            "returncode": 16,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "7b5c42ceb4530306488de7dc09fc15046ce3bddc19fa3e8506a2ebe33b2e0807",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "truncated-header",
+            "status": "PASS",
+            "pid": 291047,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "4574059cbd5feb3ab1e347fd2e2b5541e413881f5084f21c32ffef455a89a4b3",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "truncated-payload",
+            "status": "PASS",
+            "pid": 291052,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "c662294c7e38ec9a2de7825b970c4b37d8675cfd38942212504bee3a13416947",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "missing-input",
+            "status": "PASS",
+            "pid": 291058,
+            "returncode": 12,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": null,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "active-truncated-payload",
+            "status": "PASS",
+            "pid": 291063,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "4fd8710b982b5b91fe308c9f7ada9bf6b19bc4e376804a5ded0ba8c295291987",
+              "sent.bin": "4884f342cbbbb7c12e3beab46bb24402f06d39e555c6163ad22bee668c2e5b6c",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": true,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 1,
+              "handled_requests": 1,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 1,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          },
+          {
+            "scenario": "exit-at-session-limit",
+            "status": "PASS",
+            "pid": 291068,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "0079473ba041f2f9829537a9c076e2c203ebe4b6ab1d88b4a87e35eeada95932",
+              "sent.bin": "e6f1d10a9ff5a6222dad24d668039b424a62da7de0353b34015472193be92198",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 0,
+              "handled_requests": 256,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 0,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          },
+          {
+            "scenario": "session-limit-without-exit",
+            "status": "PASS",
+            "pid": 291073,
+            "returncode": 9,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68",
+            "raw_artifacts": {
+              "received.bin": "f43bf5be1b94c2b921176c2efb7fc298627e010e432050ec99ca8098a0eb395d",
+              "sent.bin": "dcdd17c82d4706ef3fd10a5eb271902d3ab53a777e6476b9a00e4db91d04e6e4",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 0,
+              "handled_requests": 256,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 0,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          }
+        ]
+      },
+      "O2": {
+        "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+        "audit_sha256": "bd4ade2153cc67a434f374d708af26a87d3383fd38141ac64417916f91a65145",
+        "artifacts": {
+          "device-contract.json": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
+          "image.elf": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+          "image.map": "9923113946b7bc6d64a3cef4e1b1ff8cdc3bca7505d97548292ebe1b0c81b4e1",
+          "layout.json": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
+          "link.ld": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
+          "monitor-abi.json": "c20b4c92e625ff240f76df0dbc686f76539bf3e10a9128493bd60fa401345333",
+          "monitor-manifest.json": "ab73305fdb3ab2cdf4ea904ca43b7352e0aed95663d4be923b12a3672415502a",
+          "monitor-normalized.txt": "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96",
+          "platform.dtb": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
+          "platform.dts": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8",
+          "program.ll": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
+          "program.o": "c467a9e39ce032df85fea19ad9eb8488fc41230b0577d5b71fb28fb1968cffdd",
+          "program.opt.ll": "1c076a19fd38a95764f2c8a50bfa61799726f7d0f6da822dd15ef3e04bab9ddb",
+          "provenance.json": "f2d79a3e536fc8ee2910888c7696c5e5317847e58e93c25142f646d1c9e1b8ba",
+          "startup.S": "76729f39d24df42938dae3ce03769e8fc17642e4102b8001cec651ec8aa4fbfd",
+          "startup.o": "c301d0fe965c46cd9886b65ea07250403358edbfcd50e35004c4db4656e0a29f",
+          "symbols.txt": "33d6322ec75e4e469a1e3435668791cf103f680164166004a3713df372328e10"
+        },
+        "source_commit": "8fd45d8458f4901c7a2d4debcb60ebd71f18a39c",
+        "dirty_tree": false,
+        "fresh_processes": 9,
+        "same_elf_differing_streams": true,
+        "action_functions": 85,
+        "scalar_functions": 54,
+        "roots": [
+          {
+            "llvm": "core0_action_77",
+            "root_id": 1,
+            "signature": {
+              "args": []
+            },
+            "source": "Lemma.Examples.Foundation.Monitor.foreground"
+          },
+          {
+            "llvm": "core0_action_84",
+            "root_id": 2,
+            "signature": {
+              "args": [
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64",
+                "u64"
+              ]
+            },
+            "source": "Lemma.Examples.Foundation.Timer.dispatch"
+          }
+        ],
+        "suite_id": "9d2c479b0810f351",
+        "source_seed": "4c454d4d41393039",
+        "runtime_seed": "4d4f4e49544f5231",
+        "machine_audit": {
+          "approved_resume_pairs": 2,
+          "compiled_functions": 139,
+          "compiled_gp_tp_free": true,
+          "compiled_privileged_instructions": 0,
+          "direct_mtvec_target": "0x800001b4",
+          "fatal_stackless_self_loops": 2,
+          "layout": {
+            "canaries": 6,
+            "frame_bytes": 288,
+            "regions": {
+              "trap_probe_context": [
+                2155958272,
+                4096
+              ],
+              "trap_probe_stack": [
+                2155970560,
+                4096
+              ],
+              "trap_stack": [
+                2155937792,
+                16384
+              ]
+            }
+          },
+          "machine_csr_by_function": {
+            "_start": 5,
+            "core0_irq_restore": 2,
+            "core0_irq_save_disable": 1,
+            "core0_timer_probe": 2,
+            "core0_timer_read_pending": 1,
+            "core0_timer_set_interrupt": 2,
+            "core0_trap_breakpoint": 1,
+            "core0_trap_ecall": 1,
+            "core0_trap_unexpected_ecall": 1,
+            "core0_trap_vector": 12
+          },
+          "machine_csr_operations": 28,
+          "machine_slot_sequences": {
+            "_start": 16,
+            "core0_io_fence": 0,
+            "core0_irq_restore": 0,
+            "core0_irq_save_disable": 0,
+            "core0_timer_probe": 106,
+            "core0_timer_read_pending": 0,
+            "core0_timer_read_time": 1,
+            "core0_timer_set_compare": 1,
+            "core0_timer_set_interrupt": 0,
+            "core0_trap_breakpoint": 106,
+            "core0_trap_double_fault": 0,
+            "core0_trap_ecall": 106,
+            "core0_trap_fatal_dispatch": 0,
+            "core0_trap_illegal_instruction": 0,
+            "core0_trap_unexpected_ecall": 0,
+            "core0_trap_vector": 75
+          },
+          "mutation": "none",
+          "startup": {
+            "csr_roles": [
+              "mstatus.MIE",
+              "mie.MTIE",
+              "mip.MTIP"
+            ],
+            "mutation": "none",
+            "probe_registers": 31,
+            "startup_compare_parked": true,
+            "synchronous_trap_substrate": "exact core0-v0.6 structured sequence",
+            "timer_functions": 7,
+            "timer_mmio_width_bits": 64,
+            "timer_probe_iterations": 65536
+          },
+          "startup_functions": 16,
+          "timer_fence_operations": 14,
+          "timer_functions": 7,
+          "timer_machine_body_sha256": {
+            "core0_irq_restore": "0d0c3e199cf7209c315be260164d60f2adad9fd292af48c34963f3327f5f9076",
+            "core0_irq_save_disable": "81cd1fa8037c20efdc2cef7fd36a766ab69f7545f43fd7c1cc263a0692104c45",
+            "core0_timer_probe": "407fc011546a4ddcced3cf3e0c9fd26c4b192e92b2af7f226653268da9703ebd",
+            "core0_timer_read_pending": "93c428991f4d9b1013d72ec835989801b2620191d796b7d364faaece4f341bc2",
+            "core0_timer_read_time": "e103c9cb31268a2fe7a1170b1f72dfb2efb062716d320aeac8416adcd7cdc382",
+            "core0_timer_set_compare": "56104ada535d927c3c48e5c5994e8f1e36b6b96fdd6c9f9a08215ce14ccac12f",
+            "core0_timer_set_interrupt": "828d70fc99140850c90fe9444a9a9770c73b09e081d651e8e612c64395d02e0f"
+          },
+          "timer_mmio_accesses": 3,
+          "timer_mmio_machine": {
+            "access_count": 3,
+            "accesses": [
+              {
+                "address": "0x02004000",
+                "function": "_start",
+                "instruction": "sd",
+                "machine_address": "0x80000194",
+                "width_bits": 64
+              },
+              {
+                "address": "0x0200bff8",
+                "function": "core0_timer_read_time",
+                "instruction": "ld",
+                "machine_address": "0x800017bc",
+                "width_bits": 64
+              },
+              {
+                "address": "0x02004000",
+                "function": "core0_timer_set_compare",
+                "instruction": "sd",
+                "machine_address": "0x800017d4",
+                "width_bits": 64
+              }
+            ],
+            "all_inferred_accesses_are_approved": true,
+            "compiled_program_accesses": 0,
+            "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof",
+            "width_bits": 64
+          },
+          "timer_mmio_width_bits": 64,
+          "timer_probe": {
+            "caller_saves": 16,
+            "iterations": 65536,
+            "memory_slots": 106,
+            "mie_window": "after sentinels, bounded counter only, before snapshots",
+            "snapshot_registers": 31
+          },
+          "timer_start_machine_body_sha256": "47e29c3da060e84271d9763550523bf52c774048aef1a9d883a1e9205b9c2f6b"
+        },
+        "ir_audit": {
+          "bool_machine_arguments": {
+            "all_pre_ir_zext": 13,
+            "calls": 13,
+            "signed_extensions": 0
+          },
+          "definitions": {
+            "post": 140,
+            "pre": 140
+          },
+          "machine_calls": {
+            "post_optimization": {
+              "core0_irq_restore": 8,
+              "core0_irq_save_disable": 10,
+              "core0_timer_probe": 1,
+              "core0_timer_read_pending": 2,
+              "core0_timer_read_time": 2,
+              "core0_timer_set_compare": 5,
+              "core0_timer_set_interrupt": 5,
+              "core0_trap_breakpoint": 1,
+              "core0_trap_ecall": 1
+            },
+            "pre_optimization": {
+              "core0_irq_restore": 8,
+              "core0_irq_save_disable": 10,
+              "core0_timer_probe": 1,
+              "core0_timer_read_pending": 2,
+              "core0_timer_read_time": 2,
+              "core0_timer_set_compare": 6,
+              "core0_timer_set_interrupt": 5,
+              "core0_trap_breakpoint": 1,
+              "core0_trap_ecall": 1
+            },
+            "source": {
+              "irq.restore": 8,
+              "irq.save-disable": 10,
+              "timer.probe": 1,
+              "timer.read-pending": 2,
+              "timer.read-time": 2,
+              "timer.set-compare": 6,
+              "timer.set-interrupt": 5,
+              "trap.breakpoint": 1,
+              "trap.ecall": 1
+            }
+          },
+          "machine_timer_mmio_in_program": 0,
+          "optimization": "O2",
+          "optimizer_intrinsics": [],
+          "post_ir_sha256": "1c076a19fd38a95764f2c8a50bfa61799726f7d0f6da822dd15ef3e04bab9ddb",
+          "pre_ir_sha256": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
+          "shutdown_work_witness": {
+            "bounded_quanta": 8,
+            "callback": "Lemma.Examples.Foundation.Timer.controlStep",
+            "callee": "Lemma.Examples.Foundation.Timer.writeWord",
+            "control_step_iterations": 128,
+            "control_step_mix_body_calls": {
+              "post_optimization": 1,
+              "pre_optimization": 1
+            },
+            "offset": 160,
+            "region": "events",
+            "retained_loop_shape": {
+              "post_optimization": "eight-ordered-unrolled-controlStep-calls",
+              "pre_optimization": "bounded-eight-controlStep-loop"
+            },
+            "site_counts": {
+              "post_optimization": 1,
+              "pre_optimization": 1,
+              "source": 1
+            },
+            "source": "Lemma.Examples.Foundation.Monitor.stoppedWork",
+            "stopped_work_control_step_calls": {
+              "post_optimization": 8,
+              "pre_optimization": 1
+            },
+            "volatile_store_proved_by_memory_audit": true
+          },
+          "uart": {
+            "post": {
+              "accesses": 6,
+              "functions": [
+                "core0_action_10",
+                "core0_action_13",
+                "core0_action_6",
+                "core0_action_77"
+              ],
+              "operations": [
+                "uart.lsr.read8",
+                "uart.thr.write8",
+                "uart.lsr.read8",
+                "uart.lsr.read8",
+                "uart.rbr.read8",
+                "uart.fcr.enable-reset"
+              ]
+            },
+            "pre": {
+              "accesses": 6,
+              "functions": [
+                "core0_action_10",
+                "core0_action_13",
+                "core0_action_6",
+                "core0_action_77"
+              ],
+              "operations": [
+                "uart.lsr.read8",
+                "uart.thr.write8",
+                "uart.lsr.read8",
+                "uart.lsr.read8",
+                "uart.rbr.read8",
+                "uart.fcr.enable-reset"
+              ]
+            }
+          }
+        },
+        "stack": {
+          "foreground": {
+            "bytes": 720,
+            "capacity_bytes": 65520,
+            "chain": [
+              "core0_main",
+              "core0_action_77",
+              "core0_action_76",
+              "core0_action_75",
+              "core0_action_74",
+              "core0_action_73",
+              "core0_action_72",
+              "core0_action_71",
+              "core0_action_70",
+              "core0_action_69",
+              "core0_action_68",
+              "core0_action_66",
+              "core0_action_65",
+              "core0_action_64",
+              "core0_action_39",
+              "core0_action_23",
+              "core0_action_22",
+              "core0_action_21",
+              "core0_action_7",
+              "core0_action_6"
+            ],
+            "checked_root": "core0_action_77",
+            "low_canary_bytes": 16,
+            "machine_entry": "core0_main",
+            "stack_region_bytes": 65536
+          },
+          "trap_dispatcher": {
+            "bytes": 272,
+            "capacity_bytes": 16048,
+            "chain": [
+              "core0_action_84",
+              "core0_action_83",
+              "core0_action_82",
+              "core0_action_81",
+              "core0_action_7",
+              "core0_action_6"
+            ],
+            "checked_root": "core0_action_84",
+            "outgoing_argument_bytes": 16,
+            "trap_frame_bytes": 288,
+            "usable_trap_stack_bytes": 16352
+          },
+          "acyclic": true,
+          "dynamic_alloca": false,
+          "node_count": 140,
+          "edge_count": 217
+        },
+        "targets": [
+          {
+            "scenario": "mixed-zero",
+            "status": "PASS",
+            "pid": 291257,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "5aaec282cebb41eeab5c3ddd5dc02b7f17ed9b668323b7037d62f2069295abdc",
+              "sent.bin": "e365c707bd3ad05b61f610b2e60b19afe23cea52029ec2b147849e3ea08c5460",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 3,
+              "final_hardware_irqs": 17,
+              "handled_requests": 143,
+              "hardware_work_commands": 3,
+              "last_work_checksum": 5576612600442838362,
+              "observed_hardware_irqs": 373,
+              "observed_overflow": true,
+              "observed_ring_wrap": true,
+              "records_checked": 48,
+              "recoverable_errors": 25,
+              "synchronous_recoveries": 5
+            }
+          },
+          {
+            "scenario": "mixed-wrap",
+            "status": "PASS",
+            "pid": 291293,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "5dc412738aa77d90fb0fc4d5101c1094bbc3127035cf346f2bf0c913dc94327c",
+              "sent.bin": "cba4924f894cb889bdc0a186f3d021e67b5990be570124f9ab02f573346d6682",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 3,
+              "final_hardware_irqs": 17,
+              "handled_requests": 143,
+              "hardware_work_commands": 3,
+              "last_work_checksum": 15191820869252505765,
+              "observed_hardware_irqs": 354,
+              "observed_overflow": true,
+              "observed_ring_wrap": true,
+              "records_checked": 48,
+              "recoverable_errors": 25,
+              "synchronous_recoveries": 5
+            }
+          },
+          {
+            "scenario": "oversize-payload",
+            "status": "PASS",
+            "pid": 291330,
+            "returncode": 16,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "7b5c42ceb4530306488de7dc09fc15046ce3bddc19fa3e8506a2ebe33b2e0807",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "truncated-header",
+            "status": "PASS",
+            "pid": 291335,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "4574059cbd5feb3ab1e347fd2e2b5541e413881f5084f21c32ffef455a89a4b3",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "truncated-payload",
+            "status": "PASS",
+            "pid": 291344,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "c662294c7e38ec9a2de7825b970c4b37d8675cfd38942212504bee3a13416947",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "missing-input",
+            "status": "PASS",
+            "pid": 291349,
+            "returncode": 12,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "779e942479577b5c31514a8e9278c46025c4b466a45c15ad2f13b55b91c5d64f",
+              "sent.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": null,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true
+          },
+          {
+            "scenario": "active-truncated-payload",
+            "status": "PASS",
+            "pid": 291354,
+            "returncode": 15,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "067cac5287dfa1375a85e10dbdfb9c58fbad594f203059f8cebd26b3e8af6a02",
+              "sent.bin": "4884f342cbbbb7c12e3beab46bb24402f06d39e555c6163ad22bee668c2e5b6c",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": true,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 1,
+              "handled_requests": 1,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 1,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          },
+          {
+            "scenario": "exit-at-session-limit",
+            "status": "PASS",
+            "pid": 291364,
+            "returncode": 0,
+            "outcome": "verified-monitor-session",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "0079473ba041f2f9829537a9c076e2c203ebe4b6ab1d88b4a87e35eeada95932",
+              "sent.bin": "e6f1d10a9ff5a6222dad24d668039b424a62da7de0353b34015472193be92198",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 0,
+              "handled_requests": 256,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 0,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          },
+          {
+            "scenario": "session-limit-without-exit",
+            "status": "PASS",
+            "pid": 291369,
+            "returncode": 9,
+            "outcome": "verified-terminal-rejection",
+            "image_sha256": "8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382",
+            "raw_artifacts": {
+              "received.bin": "f43bf5be1b94c2b921176c2efb7fc298627e010e432050ec99ca8098a0eb395d",
+              "sent.bin": "dcdd17c82d4706ef3fd10a5eb271902d3ab53a777e6476b9a00e4db91d04e6e4",
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "ready_observed_before_input": true,
+            "first_input_after_ready": true,
+            "single_elf": true,
+            "single_pid": true,
+            "semantic_validation_after_exit": true,
+            "summary": {
+              "active_at_terminal_input": false,
+              "active_trap_commands": 0,
+              "final_hardware_irqs": 0,
+              "handled_requests": 256,
+              "hardware_work_commands": 0,
+              "last_work_checksum": 0,
+              "observed_hardware_irqs": 0,
+              "observed_overflow": false,
+              "observed_ring_wrap": false,
+              "records_checked": 0,
+              "recoverable_errors": 0,
+              "synchronous_recoveries": 0
+            }
+          }
+        ]
+      }
+    },
+    "limitations": [
+      "single-hart pinned QEMU M-mode only",
+      "no scheduler, managed runtime or physical-board claim",
+      "tests/audits are not a compiler correctness or real-time latency proof",
+      "No cumulative or legacy rerun at this Gate 9 source yet; previous clean Gates 1\u20138 acceptance is historical.",
+      "No extended stress, detached-worktree qualification, actual CI, publication, Stage II unit, G1 or G2 completion.",
+      "Inherited Gate 8 raw CSR aggregate 11 remains historical; Gate 9 machine audit correctly reports 28 named CSR operations."
+    ],
+    "representative_transcript": {
+      "profile": "O2",
+      "scenario": "mixed-zero",
+      "pid": 291257,
+      "raw_directory": "build/foundation/gate9-clean-8fd45d8/runs/O2/mixed-zero",
+      "raw_artifacts": {
+        "received.bin": "5aaec282cebb41eeab5c3ddd5dc02b7f17ed9b668323b7037d62f2069295abdc",
+        "sent.bin": "e365c707bd3ad05b61f610b2e60b19afe23cea52029ec2b147849e3ea08c5460",
+        "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "response_indices": [
+        0,
+        20,
+        21,
+        27,
+        33,
+        46,
+        49,
+        51,
+        54,
+        141,
+        142
+      ],
+      "responses": [
+        {
+          "index": 0,
+          "request_id": 36864,
+          "status": 0,
+          "values": [
+            3544419009246872908,
+            7,
+            1,
+            1023
+          ]
+        },
+        {
+          "index": 20,
+          "request_id": 36884,
+          "status": 0,
+          "values": [
+            3840,
+            345600,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 21,
+          "request_id": 36885,
+          "status": 0,
+          "values": [
+            345600,
+            3840,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 27,
+          "request_id": 36891,
+          "status": 7,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 33,
+          "request_id": 36897,
+          "status": 0,
+          "values": [
+            0,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "index": 46,
+          "request_id": 36910,
+          "status": 0,
+          "values": [
+            1,
+            10000,
+            1555875,
+            0
+          ]
+        },
+        {
+          "index": 49,
+          "request_id": 36913,
+          "status": 0,
+          "values": [
+            0,
+            1,
+            5,
+            5
+          ]
+        },
+        {
+          "index": 51,
+          "request_id": 36915,
+          "status": 0,
+          "values": [
+            15243597257473477888,
+            2705,
+            9,
+            73
+          ]
+        },
+        {
+          "index": 54,
+          "request_id": 36918,
+          "status": 0,
+          "values": [
+            1,
+            1545875,
+            2147490556,
+            9223372036854775815
+          ]
+        },
+        {
+          "index": 141,
+          "request_id": 37005,
+          "status": 0,
+          "values": [
+            142,
+            25,
+            5,
+            5576612600442838362
+          ]
+        },
+        {
+          "index": 142,
+          "request_id": 37006,
+          "status": 0,
+          "values": [
+            143,
+            5,
+            17,
+            0
+          ]
+        }
+      ]
+    }
+  }
 }

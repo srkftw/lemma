@@ -87,7 +87,7 @@ stub. See [`timers-core0-v07.md`](../audits/timers-core0-v07.md); its finite
 O0/O2 target matrix passed at clean `42674c1`. This does not qualify arbitrary
 interrupt handlers, nested execution, or a scheduler.
 
-## Gate 9 monitor wire ABI under construction
+## Gate 9 monitor wire ABI
 
 `lemma-monitor-v1` preserves the v0.7 machine calling convention. Its versioned
 UART requests have a 16-byte header and at most 32 payload bytes; responses have
@@ -95,8 +95,8 @@ a 16-byte header and four UInt64 words (48 bytes total), all little-endian.
 These are compiled encodings in fixed RAM, not heap-backed target objects.
 Only the monitor foreground and existing nine-word timer dispatcher are roots.
 The exact framing and failure rules are in
-[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md); no target acceptance
-is yet claimed for this image.
+[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md). The clean finite O0/O2
+matrix passed at `8fd45d8`; this does not prove the compiler or qualify a board.
 
 ## Entry and layout
 

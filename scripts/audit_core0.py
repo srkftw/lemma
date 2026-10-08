@@ -5103,6 +5103,7 @@ def audit(
             "scripts/gate9_corpus.py",
             "scripts/run_monitor_session.py",
             "scripts/check_foundation_gate9.py",
+            "scripts/qualify_foundation.py",
             "docs/audits/timers-core0-v07.md",
             "docs/audits/monitor-core0-v07.md",
         }

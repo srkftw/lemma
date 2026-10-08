@@ -4,14 +4,15 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested freestanding compiler/device/trap/timer foundation.**
+**Current state: tested freestanding diagnostic monitor and machine foundation.**
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–8 extend it with compiler-fault
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–9 extend it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
 checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
 traps with checked context preservation, and actual timer interrupts during
-foreground computation. The integrated monitor is under construction and has
-not yet passed. This is not a managed runtime, complete OS, hardware milestone,
+foreground computation. The integrated ten-command monitor passed clean O0/O2
+acceptance at `8fd45d8`; extended qualification and publication remain in progress.
+This is not a managed runtime, complete OS, hardware milestone,
 or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
 [Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
 [continuation checkpoint](docs/plan/002-session-state.md).
@@ -82,18 +83,18 @@ The recorded Task 002 passing prefix also has real host/target checks:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 8 \
-  --work-dir build/foundation/gate8-check --clean --timeout 300 --qemu-timeout 20
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
-  --work-dir build/foundation/gates1-8-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
 ```
 
-Phase 8 builds and audits O0/O2 images and runs 30 fresh QEMU boots, including
-1,474 positive-corpus hardware entries, ring overflow/wrap, shutdown, and both
-context-restore and disabled-arming mutants. The clean cumulative Gates 1–8 run
-passed 456 boots at `42674c1`; legacy acceptance separately passed 23 boots.
-The evidence records exact tested revisions; current uncommitted
-work must not inherit a clean-source pass automatically.
+Phase 9 builds and audits O0/O2 images and runs 18 fresh QEMU boots. Clean
+acceptance handled 1,598 requests, observed 1,461 hardware interrupts and 20
+synchronous recoveries, and checked 192 ring records, with malformed-request
+recovery, bounds checks, timer restart/shutdown and both session-budget edges.
+The earlier clean cumulative Gates 1–8 run passed 456 boots at `42674c1`;
+legacy acceptance separately passed 23 boots. The current extended cumulative
+and detached-worktree qualification must have their own fresh evidence; they
+do not inherit these historical passes.
 
 ## GitHub and Codex
 

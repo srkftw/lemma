@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 8 have passed. Gate 9 is in progress; Gates 10--11 remain open. This record does not
+through 9 have passed. Gate 10 is in progress; Gate 11 remains open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -32,9 +32,11 @@ Task 002 machine foundation.
   `6c1b6a8ded1e94a822cff9977578b7c292075f75`, tree
   `5c53acabde200edd2ef7061ba65830c7c00b5b5b`.
 - Gate 7 report-bearing revision: `530fb1ec80687569e5f5def5ac870153b3256227`.
-- Gate 8 implementation and current cumulative clean verification source:
+- Gate 8 implementation and latest cumulative clean verification source:
   `42674c1ba773454c36c277620e2acd289539e5a2`, tree
   `f7bea0b4f126275773bbc84e8fb534849ac6bb35`.
+- Gate 9 clean focused monitor implementation: `8fd45d8458f4901c7a2d4debcb60ebd71f18a39c`,
+  tree `965b550c576f80284a1a24c427d9704b517d160d`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
 - Report-bearing revision: a later evidence checkpoint, not yet assigned here; the
   tested implementation identity above is intentionally separate.
@@ -65,8 +67,11 @@ The current clean cumulative Gates 1--8 run names exact `42674c1...` source in
 all 39 build provenance records, each with `dirty_tree: false`; all eight legacy
 regression provenance records do likewise. Gate 8 acceptance is the complete
 checker executed as the cumulative child, not a separate clean focused run.
-The current inventory's tested-source block hashes `git show 42674c1...:<path>`;
-later report/guidance/monitor edits are outside that snapshot.
+The latest clean focused Gate 9 run binds both profiles to exact `8fd45d8...`
+with `dirty_tree: false`, 101 source inputs/profile, and matching checked source
+artifacts. This is not yet a cumulative rerun at that revision. The current
+inventory's source block hashes `git show 8fd45d8...:<path>`; later report/guidance
+and Gate 10 worktree changes are outside that snapshot.
 
 Generated build output remains ignored. The durable identities of the cumulative
 clean records are:
@@ -117,6 +122,7 @@ clean records are:
 | `build/foundation/gates1-8-clean-42674c1/all-results.json` (current clean cumulative acceptance) | `393a2a649e3f804ea7fc332b53d9c88cdd2d789dc34c7ac7357fbdb1d4aca8de` |
 | `build/foundation/gates1-8-clean-42674c1/gate8/gate8-results.json` (authoritative clean Gate 8 child) | `09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9` |
 | `build/core0/task002-gate8-clean/check-results.json` (current clean legacy regression) | `7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82` |
+| `build/foundation/gate9-clean-8fd45d8/gate9-results.json` (clean focused Gate 9) | `69e37da2266a4c89ddd18243600da1da52300c7edbebe264eae9033bf3841ca6` |
 
 ## Commands executed for the historical Gate 6 implementation checkpoint
 
@@ -1140,9 +1146,129 @@ Raw frames/fixture/run record are at
 UART SHA-256 is
 `31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb`.
 This uses post-build loader data, not the integrated interactive monitor.
-Gate 9 monitor work is now in progress; detached-worktree qualification, actual
-CI, and Task 002 publication remain unrun. No Stage II unit, G1, G2, scheduler,
+Later Gate 9 monitor acceptance is recorded below; detached-worktree qualification,
+actual CI, and Task 002 publication remain unrun. No Stage II unit, G1, G2, scheduler,
 managed runtime, isolation, physical board, or hard-real-time claim is completed.
+
+## Gate 9: integrated freestanding diagnostic monitor
+
+The coherent `test-monitor-image`, ABI `lemma-monitor-v1`, reuses `core0-v0.7`
+without adding a source-language primitive or machine glue. Genuine elaboration
+checks `Lemma.Examples.Foundation.Monitor.foreground` and the nine-word
+`Timer.dispatch`, with 85 Action and 54 scalar functions. The exact two linked
+objects remain `program.o` and `startup.o`; there is no hosted IO, loader fixture,
+managed runtime or host-precomputed guest answer. Parsing, validation, command
+dispatch, byte fill/sum, scalar selection, trap/timer lifecycle and formatting are
+compiled Lean. [The monitor contract](../audits/monitor-core0-v07.md) records the
+wire format and bounded policy in detail.
+
+Clean focused acceptance used implementation `8fd45d8458f4901c7a2d4debcb60ebd71f18a39c`,
+tree `965b550c576f80284a1a24c427d9704b517d160d`:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-clean-8fd45d8 --clean --timeout 300 --qemu-timeout 20
+```
+
+Exit 0: 18 fresh boots, 1,598 handled requests, 1,461 actual hardware IRQs,
+20 synchronous recoveries and 192 retained records checked. Fifty source policy
+probes, the real frontend/lowering probe and four intended source rejections
+passed. Both build provenance records name exact clean `8fd45d8...`, each with
+101 source inputs. An independent review replayed all 18 retained raw sessions,
+hashes, bindings and provenance. Actual Lean build passed 53 jobs with 52 CFG
+checks; precommit host suites passed foundation 398, Core0 32 and scaffold 18,
+with metadata valid. Earlier dirty `gate9-integration-01` observed 1,465 IRQs;
+that is development evidence, not the 1,461-IRQ clean acceptance.
+
+One unchanged ELF per optimization profile serves two differing mixed sessions,
+five terminal sessions and two request-budget cases. Inputs are sent only after
+compiled `LEMMA_MONITOR/1\nREADY\n`; no rebuilding occurs between streams.
+Each mixed session handles 143 requests, including 25 recoverable errors,
+five actual synchronous recoveries and 48 checked records. Observed hardware
+IRQs were O0 376/356 and O2 373/354 for mixed-zero/mixed-wrap; the active truncated
+prefix adds one per profile. Counts may vary with execution, so elapsed time and
+an exact inter-IRQ spacing are not correctness oracles.
+
+Requests use a 16-byte `LMQ9` v1 header with command, length, zero flags and
+UInt64 ID, followed by at most 32 payload bytes. Responses are fixed 48-byte
+`LMS9` frames with echoed ID, status and four UInt64 values. The ten commands are
+HELLO, STATUS, EVAL, FILL, CHECKSUM, TRAP_TEST, TIMER_START, TIMER_STOP, TICKS and EXIT.
+The 256-request limit allows EXIT as request 256; exhausting it without EXIT
+terminates status 9. Bounded malformed headers recover with 14, wrong lengths
+with 16, unknown commands with 17, denied intervals with 7. Oversize input
+terminates 16, truncated header/payload 15, and missing input 12. Active truncated
+input tests cleanup. These expected terminal rejections remain distinct from a
+successful EXIT, a process failure or a host timeout.
+
+The logical user buffer is `[0,3840)` at scratch offsets 256--4095, disjoint from
+parser bytes 0--47. Preflight uses `offset <= 3840` then
+`length <= 3840-offset`; zero length at the end is valid, wrapping/out-of-range
+intervals and values above 255 are rejected before writing. The mixed sessions
+check full-buffer fill/checksum, both endpoints and denied writes, then reuse the
+same image for fresh arithmetic, authorized ECALL/EBREAK, real IRQ-dependent
+mixing, visible overflow, record peek/pop and ring wrap, timer restart/stop and
+orderly EXIT. Host checksum/mixing validation uses actual response data and
+reported useful quanta, not a constant baked into the image.
+
+Monitor TIMER_START deliberately narrows the lower-level deadline domain to
+10,000--1,000,000 ticks. A retained development period-one request timed out after
+three seconds and QEMU was killed/reaped; sustained pending delivery can starve
+foreground progress. Requests below 10,000 now return status 22 without arming.
+This is an empirically qualified bounded monitor policy, not worst-case latency
+or a real-time guarantee. STOP retains eight useful 128-step quanta through a
+volatile private checksum witness; the O2 audit checks its eight ordered unrolled
+calls rather than silently accepting optimized-away work. TICKS snapshots/ring
+access occur with saved/masked MIE, and UART formatting occurs after restore.
+
+The expanded audit retains exact source/effect/IR closure, volatile memory guards,
+UART/fence sequences, fixed machine calls, final ELF/disassembly/relocation checks
+and the two-object provenance rule. It records 139 compiled functions with zero
+privileged instructions and no GP/TP use, 16 structured startup functions,
+28 named CSR operations, three 64-bit timer MMIO sites and six byte-wide UART
+sites. Gate 9 correctly reports the total 28; the stale inherited aggregate 11
+in the immutable Gate 8 raw report remains a disclosed historical metadata issue.
+No optimizer intrinsic appears in either monitor profile. Foreground stack chains
+are O0 3,776/O2 720 bytes against 65,520 usable; dispatcher chains 976/272 against
+16,048. These are optimized LLVM direct-call graphs weighted by object stack
+metadata, not a reconstructed whole-machine CFG or compiler proof.
+
+| Profile | ELF SHA-256 | Audit SHA-256 |
+|---|---|---|
+| O0 | `b72bf055b3d492989d24043a01b7dbeb25eda6c5161d4c3dc9f5a4c037f53d68` | `32fdeafd007ac98675eb55a4e9d9e5a6596edb4f7bba213fd3f74fdf4ac94a73` |
+| O2 | `8b1c19592419c09983a4d2f72731cda9701d48de63b535ad5524be69eee07382` | `bd4ade2153cc67a434f374d708af26a87d3383fd38141ac64417916f91a65145` |
+
+Actual O2 mixed-zero frames (PID 291257), decoded compactly:
+
+```text
+id=9000 HELLO -> status=0 [31304e4f4d4d454c,7,1,3ff]
+id=9014 FILL(0,3840,90) -> status=0 [3840,345600,0,0]
+id=9015 CHECKSUM(0,3840) -> status=0 [345600,3840,0,0]
+id=901b FILL(3840,1,0) -> status=7 [0,0,0,0]
+id=9021 TRAP_TEST(ECALL) -> status=0 [0,1,0,0]
+id=902e TIMER_START(10000) -> status=0 [1,10000,1555875,0]
+id=9031 TRAP_TEST(ECALL, timer active) -> status=0 [0,1,5,5]
+id=9033 EVAL(IRQ-progress,seed=0,delta=64) -> status=0 [d38c22f10ed34d00,2705,9,73]
+id=9036 TICKS(peek,0) -> status=0 [1,1545875,80001afc,8000000000000007]
+id=908d STATUS -> status=0 [142,25,5,4d641b9d2b5cdd5a]
+id=908e EXIT -> status=0 [143,5,17,0]; QEMU exit=0
+```
+
+IDs, checksums, PCs and HELLO tag above are hexadecimal; other numbers are decimal.
+Raw sent/received frames, stderr and `run.json` are at
+`build/foundation/gate9-clean-8fd45d8/runs/O2/mixed-zero/`; received SHA-256 is
+`5aaec282cebb41eeab5c3ddd5dc02b7f17ed9b668323b7037d62f2069295abdc`.
+The session driver used by acceptance is `python3 scripts/run_monitor_session.py
+--image build/foundation/gate9-clean-8fd45d8/O2/image.elf --output-dir <fresh-dir>
+--scenario mixed-zero --timeout 20 --clean`, inside the pinned environment.
+Its exact QEMU argv is retained in each run record. This example is decoded guest
+output, not a host-emitted success banner.
+
+Gate 9 is the highest passing gate. The latest cumulative Gates 1--8 and legacy
+acceptance remains at historical `42674c1`; neither is silently attributed to
+`8fd45d8`. Gate 10 extended stress, fresh cumulative/legacy qualification, detached
+worktree, repeat-build/failure-path qualification and actual CI remain separate.
+Gate 11 publication has not been attempted. The monitor adds finite integration
+tests and audits, not new proof lemmas or any Stage II/G1/G2 completion.
 
 ## Shared assumptions, stage mapping, and limits
 
@@ -1175,14 +1301,14 @@ comparison. It gives Unit 1.6 only regression coverage because its physical memo
 observer and existing UART/finisher remain test glue rather than a new compiled
 device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
 1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
-construction unit remains `partial`; monitor and
+construction unit remains `partial`; broader
 qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
 incomplete, and Task 002 is not complete. Gate 7 synchronous traps remain a historical passing checkpoint;
-Gate 8 hardware timers are now the highest passing gate and
-Gate 9 integrated monitor work is in progress with no acceptance claimed.
+Gate 9 integrated monitor is now the highest passing gate;
+Gate 10 qualification is in progress with no acceptance claimed.
 Gate 6 directly advances partial Units 1.1,
 1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
 finite semantics, ordered lowering, machine audit, source-bound image, branch RAM
@@ -1196,11 +1322,19 @@ target observations, and distinguishing restore mutant. Unit 1.2 retains regress
 coverage only. It also contributes narrowly scoped early Stage II evidence to
 Unit 2.1 (M-mode entry and bounded stacks, not supervisor entry) and Unit 2.2
 (synchronous cause/PC identification, diagnostics, saved integer state, and approved
-return, not timer interrupts). Those two units still have `planned` status in the
+return, not timer interrupts). Those two units are now `partial` in the
 construction backlog; this evidence does not mark them or any Stage II unit passed.
-Backlog reconciliation and broader qualification remain later obligations.
+Supervisor entry and the broader construction obligations remain open.
 
 Gate 8 directly advances the same partial Stage I units as Gate 7 and adds
 narrow early Stage II Unit 2.2 evidence for actual timer delivery, pending/masking,
 context, bounded overflow/catch-up and shutdown. Unit 2.1 still lacks supervisor
-entry; both Stage II backlog entries remain planned and no Stage II unit passes.
+entry; both Stage II backlog entries are partial and no Stage II unit passes.
+
+Gate 9 directly advances partial Units 1.1, 1.3, 1.5, 1.6, 1.7 and 1.8 through
+the integrated protocol/trust contract, genuine checked source, expanded artifact
+audit and mixed target execution. Units 1.2 and 1.4 receive regression/integration
+coverage, not a newly complete VM contract or semantics proof. It contributes
+partial early Stage II 2.1/2.2 integration evidence only; supervisor entry and the
+broader construction-unit obligations remain unmet. The backlog records only
+partial progress for G2 and Units 2.1/2.2; no Stage II unit, G1 or G2 is passed.
