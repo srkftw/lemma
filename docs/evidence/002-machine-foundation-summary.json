@@ -2,14 +2,25 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 1,
+  "highest_passing_gate": 2,
+  "next_gate": {
+    "gate": 3,
+    "status": "in-progress"
+  },
   "source": {
-    "commit": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
-    "tree": "a110453f7d92b342f193cd36e889db9a370d3232",
+    "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
+    "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
+  "gate_0": {
+    "source_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+    "source_tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75",
+    "historical_aggregate_sha256": "3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c"
+  },
   "gate_1": {
+    "first_passing_implementation": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
+    "cumulative_clean_source": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
     "closed_faults": 6,
     "optimization_profiles": ["O0", "O2"],
     "control_builds": 2,
@@ -20,26 +31,97 @@
     "intended_rejections": 3,
     "audit_regressions": 7,
     "aggregate": {
-      "path": "build/foundation/check/gate1-results.json",
-      "sha256": "a3fd012ad0dac0d20e16321c32c7006502b8c22921499517bab1468b669bf50c"
+      "path": "build/foundation/gates1-2-clean/gate1/gate1-results.json",
+      "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
     }
   },
+  "gate_2": {
+    "contract_version": "core0-v0.1",
+    "test_abi": "lemma-scalar-test-v1",
+    "suite_id": "0x7812482420151ea4",
+    "source_seed": "0x4c454d4d41323032",
+    "runtime_seed": "0x52554e54494d4532",
+    "roots": 37,
+    "used_primitives": 34,
+    "cases_per_profile": 1024,
+    "valid_batches_per_profile": 61,
+    "typed_input_rejection_boots_per_profile": 7,
+    "qemu_boots_per_profile": 68,
+    "qemu_boots_total": 136,
+    "direct_source_model_matches": 1024,
+    "source_model_target_matches": 2048,
+    "metamorphic_pairs": 5,
+    "exhaustive_u8": {
+      "roots": 5,
+      "ordered_pairs_per_root": 65536,
+      "total_comparisons": 327680,
+      "direct_and_model_sha256": "fd1b65ef4cff910a3e0179670516b2a9d176d7fefb931027b47cff76ab8b25dd"
+    },
+    "result_sha256": "54aca4404cf28f441ae6d83ba3b4fad0dfc3618ff89fd2414bcae8bfba531933",
+    "abi_call_evidence": {
+      "caller": "core0_user_31",
+      "callee": "core0_user_30",
+      "arguments": 10,
+      "narrow_stack_arguments": ["u8", "u32"],
+      "caller_frame_bytes": 32,
+      "caller_frame_alignment": 16,
+      "outgoing_stack_offsets": [0, 8],
+      "real_call_retained_o0": true,
+      "real_call_retained_o2": true
+    },
+    "profiles": {
+      "O0": {
+        "audit_sha256": "26fccf1bafee4b03e24a95ba7b32df3765dd985bc09fa370f4df8c73f32de2c0",
+        "image_sha256": "84ad3a6e5c0397d460bb272ebbfe64c1e3d94e5c0d8fe06907e254ba96b35d48"
+      },
+      "O2": {
+        "audit_sha256": "c29900d25bffdf71e0543cd58fd93dc3a6a3a5eb246c5d45657c6f667d000efc",
+        "image_sha256": "6ea70385af020d53edf40e19bb7b0f74a9eca4cb2890b7e0b8bfed5d6c7c0cb9"
+      }
+    },
+    "source_equivalence": {
+      "clean": true,
+      "same_source_commit": true,
+      "same_checked_manifest": true,
+      "same_normalized_suite": true,
+      "same_typed_abi": true,
+      "same_symbol_map": true,
+      "same_pre_optimization_ir": true
+    },
+    "aggregate": {
+      "path": "build/foundation/gates1-2-clean/gate2/gate2-results.json",
+      "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
+    }
+  },
+  "cumulative_foundation": {
+    "path": "build/foundation/gates1-2-clean/all-results.json",
+    "sha256": "45ba122a148518e76062512f7358d536c16924f1bd881380d69c4819da02a158"
+  },
   "cumulative_regression": {
+    "lean_build_jobs": 20,
+    "scaffold_tests": 18,
     "core0_host_tests": 21,
+    "foundation_host_tests": 86,
     "core0_cases_per_profile": 10,
     "core0_expected_rejections": 13,
     "core0_fresh_qemu_boots": 23,
     "aggregate": {
       "path": "build/core0/check/check-results.json",
-      "sha256": "690732e4a97a29bc25cf168c46d9f8f857667d432c5c6271463bde1fdaff4f18"
+      "sha256": "30a4b52daf4703df172137eef828a5b6d4052efa42b7cc6c95b099edf05361fe"
     }
   },
+  "shared_assumptions": [
+    "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker.",
+    "The finite and exhaustive subdomain matrices are evidence, not a compiler-correctness proof.",
+    "The exact ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature."
+  ],
   "unit_mapping": {
     "directly_advanced": ["1.8"],
-    "additional_evidence": ["1.1", "1.5", "1.7"],
+    "additional_evidence": ["1.1", "1.3", "1.4", "1.5", "1.7"],
     "statuses_remain": "partial"
   },
   "claims": {
+    "gate_3_passed": false,
     "g1_complete": false,
     "g2_complete": false,
     "task_002_complete": false,

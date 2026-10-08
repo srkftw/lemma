@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T01:02:45-07:00",
+  "updated_at": "2026-10-08T02:05:25-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,7 +9,12 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 1,
+  "highest_passing_gate": 2,
+  "latest_clean_passing_source": {
+    "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
+    "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
+    "clean": true
+  },
   "gates": [
     {
       "gate": 0,
@@ -27,7 +32,7 @@
         {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23}
       ],
       "artifacts": [
-        {"path": "build/core0/check/check-results.json", "sha256": "3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c"}
+        {"path": "build/core0/check/check-results.json", "sha256": "3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c", "historical": true}
       ],
       "notes": [
         "Corrected only the historical documentation's distinction between input wire magic and corpus tag.",
@@ -41,7 +46,8 @@
       "source": {
         "commit": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
         "tree": "a110453f7d92b342f193cd36e889db9a370d3232",
-        "clean": true
+        "clean": true,
+        "meaning": "first passing implementation"
       },
       "commands": [
         {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 15},
@@ -52,10 +58,23 @@
         {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
         {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 1 --clean", "exit_code": 0, "result": "pass", "clean_control_builds": 2, "mutant_builds": 12, "intended_rejections": 3, "audit_regressions": 7, "fresh_qemu_boots": 24, "verified_behavioral_mismatches": 12}
       ],
-      "artifacts": [
+      "historical_artifacts": [
         {"path": "build/foundation/check/gate1-results.json", "sha256": "a3fd012ad0dac0d20e16321c32c7006502b8c22921499517bab1468b669bf50c"},
         {"path": "build/core0/check/check-results.json", "sha256": "690732e4a97a29bc25cf168c46d9f8f857667d432c5c6271463bde1fdaff4f18"}
       ],
+      "cumulative_verification": {
+        "source": {
+          "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
+          "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
+          "clean": true
+        },
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-2-clean --clean --timeout 300 --qemu-timeout 10",
+        "exit_code": 0,
+        "artifact": {
+          "path": "build/foundation/gates1-2-clean/gate1/gate1-results.json",
+          "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
+        }
+      },
       "tests": {
         "closed_faults": 6,
         "optimization_profiles": ["O0", "O2"],
@@ -71,8 +90,82 @@
         "This advances Unit 1.8 but does not complete Unit 1.8, G1, or G2."
       ]
     },
-    {"gate": 2, "name": "multi-root frontend conformance", "status": "in-progress", "source": null, "commands": [], "artifacts": [], "tests": {}},
-    {"gate": 3, "name": "structured control flow and scalar operations", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {
+      "gate": 2,
+      "name": "multi-root frontend conformance",
+      "status": "passed",
+      "source": {
+        "commit": "687ee7e292b7a049f8fd35fcf17097c80c3d5665",
+        "tree": "9b3a8e06a0ce683b887a75ee9c615eb856965a1c",
+        "clean": true
+      },
+      "commands": [
+        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 20},
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass", "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "result": "pass", "tests": 86},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-2-clean --clean --timeout 300 --qemu-timeout 10", "exit_code": 0, "result": "pass", "gate_1_fresh_qemu_boots": 24, "gate_2_fresh_qemu_boots": 136}
+      ],
+      "artifacts": [
+        {"path": "build/foundation/gates1-2-clean/all-results.json", "sha256": "45ba122a148518e76062512f7358d536c16924f1bd881380d69c4819da02a158"},
+        {"path": "build/foundation/gates1-2-clean/gate2/gate2-results.json", "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"},
+        {"path": "build/foundation/gates1-2-clean/gate2/corpus/gate2-cases.json", "sha256": "b035b7aec0218e3132e93c8ec34a2b45e46e992880f4894b28c0f7d311804d1d"},
+        {"path": "build/foundation/gates1-2-clean/gate2/O0/audit.json", "sha256": "26fccf1bafee4b03e24a95ba7b32df3765dd985bc09fa370f4df8c73f32de2c0"},
+        {"path": "build/foundation/gates1-2-clean/gate2/O0/image.elf", "sha256": "84ad3a6e5c0397d460bb272ebbfe64c1e3d94e5c0d8fe06907e254ba96b35d48"},
+        {"path": "build/foundation/gates1-2-clean/gate2/O2/audit.json", "sha256": "c29900d25bffdf71e0543cd58fd93dc3a6a3a5eb246c5d45657c6f667d000efc"},
+        {"path": "build/foundation/gates1-2-clean/gate2/O2/image.elf", "sha256": "6ea70385af020d53edf40e19bb7b0f74a9eca4cb2890b7e0b8bfed5d6c7c0cb9"},
+        {"path": "build/foundation/gates1-2-clean/gate2/exhaustive/exhaustive-u8-source.bin", "sha256": "fd1b65ef4cff910a3e0179670516b2a9d176d7fefb931027b47cff76ab8b25dd"},
+        {"path": "build/foundation/gates1-2-clean/gate2/exhaustive/exhaustive-u8-model.bin", "sha256": "fd1b65ef4cff910a3e0179670516b2a9d176d7fefb931027b47cff76ab8b25dd"},
+        {"path": "build/core0/check/check-results.json", "sha256": "30a4b52daf4703df172137eef828a5b6d4052efa42b7cc6c95b099edf05361fe"}
+      ],
+      "tests": {
+        "contract_version": "core0-v0.1",
+        "test_abi": "lemma-scalar-test-v1",
+        "suite_id": "0x7812482420151ea4",
+        "roots": 37,
+        "used_primitives": 34,
+        "optimization_profiles": ["O0", "O2"],
+        "distinct_cases_per_profile": 1024,
+        "valid_qemu_boots_per_profile": 61,
+        "typed_input_rejection_boots_per_profile": 7,
+        "total_fresh_qemu_boots": 136,
+        "direct_source_model_matches": 1024,
+        "source_model_target_matches": 2048,
+        "metamorphic_pairs": 5,
+        "exhaustive_u8_roots": 5,
+        "ordered_u8_pairs_per_root": 65536,
+        "exhaustive_u8_comparisons": 327680,
+        "source_rejections": 1,
+        "real_ten_argument_calls_audited": ["O0", "O2"]
+      },
+      "source_equivalence": {
+        "profiles": ["O0", "O2"],
+        "same_clean_source_commit": true,
+        "same_checked_suite_manifest": true,
+        "same_normalized_suite": true,
+        "same_typed_abi": true,
+        "same_symbol_map": true,
+        "same_pre_optimization_ir": true
+      },
+      "notes": [
+        "Direct-source, checked-model, and RV64 results agree across the recorded matrix.",
+        "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker; they are not absolutely independent proof systems.",
+        "Finite and exhaustive subdomain tests do not prove compiler correctness; the exact ABI audit covers one deliberate ten-argument shape.",
+        "The gate remains Core0 v0.1, introduces no managed Lean runtime, and does not complete Unit 1.8, G1, or G2."
+      ]
+    },
+    {
+      "gate": 3,
+      "name": "structured control flow and scalar operations",
+      "status": "in-progress",
+      "source": null,
+      "commands": [],
+      "artifacts": [],
+      "tests": {},
+      "notes": ["No Gate 3 passing claim has been made."]
+    },
     {"gate": 4, "name": "bounded iteration", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 6, "name": "compiled Lean device routines", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
