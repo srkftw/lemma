@@ -1,9 +1,9 @@
 # Target ABI — G1 proposal
 
 Status: Task 001 validates the scalar RV64/LP64 bootstrap profile against the pinned
-compiler and emitted ELF. Task 002 Gates 2--5 preserve that profile, exercise wider
-integer call shapes, and add the explicit v0.4 checked-result ABI below. The managed
-Lean ABI remains future work.
+compiler and emitted ELF. Task 002 Gates 2--6 preserve that profile, exercise wider
+integer call shapes, add the explicit checked-result ABI, and use it for a compiled
+polling UART session. The managed Lean ABI remains future work.
 
 | Field | Proposal |
 | --- | --- |
@@ -35,6 +35,20 @@ alignment; the conformance suites keep dedicated non-inlined calls to exercise t
 callers and the test harness reject a noncanonical status or a mismatched aggregate
 shape. This two-word convention is a versioned Core0 ABI only; it is not a general
 managed-Lean object layout.
+
+`core0-v0.5` preserves this exact two-register checked-result convention. Its sole
+device-session root has no scalar arguments. `core0_main` calls that root, treats
+status zero as success, and writes `0x5555` to the fixed SiFive test finisher. A
+nonzero status writes `(status << 16) | 0x3333`, allowing the host to distinguish
+the bounded terminal cause. The root performs its own compiled UART initialization,
+framing, parsing, polling, responses, and final drain; none of those operations are
+part of the harness ABI.
+
+The device wire protocol is independent of the Action calling convention. Its request
+header is `LMQ6`, version, command, payload length, zero flags, and a little-endian
+64-bit request ID. Its response is exactly 24 bytes: `LMS6`, version, status, length
+8, zero flags, the echoed request ID, and a little-endian 64-bit value. Protocol bytes
+arrive after boot and are never linker or loader inputs.
 
 The Gate 5 test image reserves four fixed 4 KiB ordinary regions plus separate image,
 stack, UART, and SiFive-test entries as recorded in `CORE0.md`. Those addresses are a

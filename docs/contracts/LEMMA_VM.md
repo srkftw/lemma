@@ -1,9 +1,9 @@
 # LemmaVM — boot-slice contract proposal
 
 Status: Task 001 executes and pins the bounded QEMU scalar-boot profile. Task 002
-Gate 5 retains that boot contract and adds the fixed ordinary-memory test layout
-below. Device drivers, traps, timers, privilege transitions, and the remaining
-roadmap are still unimplemented at this checkpoint.
+Gate 5 retains that boot contract and adds the fixed ordinary-memory test layout;
+Gate 6 adds the polling-only compiled UART contract below. Traps, timers, privilege
+transitions, and the remaining roadmap are still unimplemented at this checkpoint.
 
 The reference backend is QEMU system emulation, RISC-V `virt`, one RV64 hart,
 128 MiB RAM, no network or disk for the first smoke test, a UART for target output,
@@ -50,6 +50,34 @@ transcript. The target reports its checked result, boundary canaries, and comple
 post-execution ordinary-region state; the host compares that state with the finite
 memory model. These are test observations inside trusted M-mode, not a physical
 memory-protection or process-isolation claim.
+
+## Gate 6 pinned UART session
+
+The Gate 6 device image remains a one-hart, integer-only RV64 QEMU `virt` image with
+`-bios none`. Its machine contract is QEMU 11.1.1 at revision
+`c3d48b7d1e89604920e5b81b91140c2ad39a1943`; the pinned source archive content
+SHA-256 is `079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482`.
+The captured DTB node `/soc/serial@10000000` names `ns16550a`, base
+`0x10000000`, span `0x100`, input clock 3,686,400 Hz, and interrupt 10. Gate 6
+does not enable or claim that interrupt.
+
+Lemma uses byte-wide, register-shift-zero accesses in the first eight bytes. RBR/THR
+is offset 0, FCR/IIR offset 2, and LSR offset 5. LSR bits used are DR `0x01`, line
+errors `0x1e`, THRE `0x20`, and TEMT `0x40`. Reading RBR consumes a receive byte;
+reading LSR clears the modeled BI/OE latches; writing THR updates transmitter state;
+writing FCR `0x07` enables FIFOs and clears RX/TX state. Every compiled access is a
+volatile aligned byte bracketed by full IO fences.
+The DTB clock property is not used as a timing oracle. Source inspection, the
+emitter/optimizer alignment distinction, and the finite model's abstraction limits
+are recorded in `docs/audits/uart-core0-v05.md`.
+
+The host opens one QEMU process, waits for the compiled READY frame, and only then
+sends two independent bounded requests over that process's serial input. It validates
+raw response frames against an independent host oracle and records the one PID, ELF
+hash, exact argv, transmitted/received bytes, exit status, timestamps, and timeout
+cleanup. The machine harness itself performs only the zero-argument Action call and a
+status-coded SiFive-test write; it contains no UART parser, polling loop, formatter, or
+drain routine.
 
 ## Roadmap, not current guarantees
 

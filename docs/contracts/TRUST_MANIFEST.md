@@ -1,9 +1,9 @@
 # Trust and dependency manifest
 
 Status: required audit structure. Task 001 implements executable scalar-image audit
-and provenance; Task 002 Gates 1--5 extend it with fault manifests, versioned suites,
-control-flow/loop checks, and checked-memory/effect evidence. Later machine/runtime
-categories remain open.
+and provenance; Task 002 Gates 1--6 extend it with fault manifests, versioned suites,
+control-flow/loop checks, checked-memory effects, and a closed compiled-device path.
+Later trap/timer/runtime categories remain open.
 
 ## Categories
 
@@ -32,6 +32,22 @@ categories remain open.
 
 An empty test corpus, missing manifest, missing dependency, unknown linked object,
 skipped QEMU run or unrecognized runtime call is not success. Exit nonzero on acceptance failure.
+
+## Gate 6 device trust boundary
+
+The trusted guest machine primitives remain the structured startup, the IO-fence
+primitive, and the status-coded SiFive-test operation in the minimal device harness.
+UART policy and algorithms are compiled from elaborated Lean source. The device catalog
+admits only four exact source identities and records their fixed address, direction,
+byte width, volatility, alignment, ordering, and modeled register side effect.
+
+The audit must bind the manifest to normalized source and symbols, reject stale or
+duplicated operation/effect metadata, and inspect both O0/O2 IR and machine code. It
+checks wrong addresses, widths, volatility, alignment, missing/reordered fences,
+duplicate physical operations, forbidden generic MMIO, hosted dependencies, and UART
+logic appearing in the harness. QEMU and its emulated UART remain host/emulator trust,
+not guest code and not a physical-device result. The finite model and four local
+theorems are mathematical evidence with narrower claims than the target executions.
 
 ## Prohibited shortcuts
 

@@ -1,4 +1,5 @@
 import Lean
+import Lemma.Compiler.CFGLower
 import Lemma.Compiler.LLVMValidate
 import Lemma.Machine.ScalarHarness
 
@@ -183,6 +184,151 @@ private def checkedResultCaller : LLVM.Function := {
 private def checkedResultModule : LLVM.Module := {
   sourceName := "CFG validator checked result test"
   functions := #[checkedResultTarget, checkedResultCaller]
+}
+
+/-! Gate 6 UART operations are closed structured instructions.  This fixture
+exercises all four sites and checks that the renderer exposes exactly the fixed
+fence/volatile-i8/fence shapes consumed by the artifact audit. -/
+private def orderedUARTFunction : LLVM.Function := {
+  name := "validation_ordered_uart"
+  returnType := .i64
+  parameters := #[{ ty := .i8, name := "tx.byte" }]
+  parameterExtensions := #[some .zeroext]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .uartRead8 "rx.byte" 0 .rbr,
+      .uartRead8 "line.status" 1 .lsr,
+      .uartWrite8 2 (ssa "tx.byte"),
+      .uartEnableAndResetFifo 3,
+      .zext "rx.word" .i8 (ssa "rx.byte") .i64,
+      .ret .i64 (ssa "rx.word")
+    ]
+  }]
+}
+
+private def ioFenceDeclaration : LLVM.Declaration := {
+  name := "core0_io_fence"
+  returnType := .void
+  parameters := #[]
+}
+
+private def orderedUARTModule : LLVM.Module := {
+  sourceName := "CFG validator ordered UART test"
+  declarations := #[ioFenceDeclaration]
+  functions := #[orderedUARTFunction]
+}
+
+private def actionParam (id : Nat) (name : String) (ty : Lemma.Core0.Ty) :
+    Lemma.Core0.Param := { id, name := .mkSimple name, ty }
+
+private def checkedDeviceAction : Lemma.Core0.ActionFunction :=
+  let argument := actionParam 0 "byte" .u8
+  let status0 := actionParam 1 "status0" .u8
+  let value0 := actionParam 2 "value0" .u64
+  let status1 := actionParam 3 "status1" .u8
+  let value1 := actionParam 4 "value1" .u64
+  let status2 := actionParam 5 "status2" .u8
+  let status3 := actionParam 6 "status3" .u8
+  {
+    name := .mkSimple "checkedDeviceAction"
+    signature := { args := #[.u8] }
+    params := #[argument]
+    body := .uartReadStatus status0 value0 <|
+      .uartReadByte status1 value1 <|
+      .uartWriteByte (.var argument.id argument.ty) status2 <|
+      .uartEnableAndResetFifo status3 <|
+      .done (.var status3.id status3.ty) (.var value1.id value1.ty)
+    scalarDependencies := #[]
+    actionDependencies := #[]
+    directEffects := { mmioRead := true, mmioWrite := true, ioOrder := true }
+    effects := { mmioRead := true, mmioWrite := true, ioOrder := true }
+  }
+
+private def checkedDeviceSuite : Lemma.Core0.CheckedActionSuite := {
+  contractVersion := Lemma.Core0.Profile.v0_5.contractVersion
+  roots := #[{
+    id := 1
+    source := checkedDeviceAction.name
+    signature := checkedDeviceAction.signature
+  }]
+  scalarFunctions := #[]
+  actionFunctions := #[checkedDeviceAction]
+  usedPrimitives := #[]
+  usedMemoryOps := #[]
+  usedDeviceOps := #[
+    .uartReadStatus,
+    .uartReadByte,
+    .uartWriteByte,
+    .uartEnableAndResetFifo
+  ]
+}
+
+private def forgedV04DeviceSuite : Lemma.Core0.CheckedActionSuite := {
+  checkedDeviceSuite with
+  contractVersion := Lemma.Core0.Profile.v0_4.contractVersion
+}
+
+private def staleDeviceMetadataSuite : Lemma.Core0.CheckedActionSuite := {
+  checkedDeviceSuite with
+  usedDeviceOps := #[.uartReadStatus, .uartReadByte, .uartWriteByte]
+}
+
+private def staleDeviceEffectsSuite : Lemma.Core0.CheckedActionSuite := {
+  checkedDeviceSuite with
+  actionFunctions := #[{
+    checkedDeviceAction with
+    directEffects := {}
+    effects := {}
+  }]
+}
+
+private def orderedUARTMissingFence : LLVM.Module := {
+  orderedUARTModule with declarations := #[]
+}
+
+private def orderedUARTWrongFence : LLVM.Module := {
+  orderedUARTModule with
+  declarations := #[{ ioFenceDeclaration with parameters := #[.i8] }]
+}
+
+private def uartNoncanonicalSite : LLVM.Function := {
+  orderedUARTFunction with
+  name := "validation_uart_noncanonical_site"
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .uartRead8 "rx.byte" 1 .rbr,
+      .zext "rx.word" .i8 (ssa "rx.byte") .i64,
+      .ret .i64 (ssa "rx.word")
+    ]
+  }]
+}
+
+private def uartNoncanonicalSiteModule : LLVM.Module := {
+  orderedUARTModule with functions := #[uartNoncanonicalSite]
+}
+
+private def uartGappedSites : LLVM.Function := {
+  orderedUARTFunction with
+  name := "validation_uart_gapped_sites"
+  blocks := orderedUARTFunction.blocks.modify 0 fun block => {
+    block with instructions := block.instructions.modify 1 fun _ =>
+      .uartRead8 "line.status" 2 .lsr
+  }
+}
+
+private def uartWrongWriteType : LLVM.Function := {
+  name := "validation_uart_wrong_write_type"
+  returnType := .i64
+  parameters := #[{ ty := .i64, name := "wide" }]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .uartWrite8 0 (ssa "wide"),
+      .ret .i64 (ssa "wide")
+    ]
+  }]
 }
 
 private def checkedResultWrongStatus : LLVM.Function := {
@@ -623,6 +769,56 @@ private def extensionMismatchModule : LLVM.Module := {
 private def hasFragment (message fragment : String) : Bool :=
   fragment != "" && (message.splitOn fragment).length > 1
 
+private def fragmentCount (text fragment : String) : Nat :=
+  if fragment.isEmpty then 0 else (text.splitOn fragment).length - 1
+
+private def validateOrderedUARTRendering : Except String Unit := do
+  let rendered := orderedUARTFunction.render
+  unless fragmentCount rendered "call void @core0_io_fence()" == 8 do
+    throw "ordered UART rendering does not contain exactly two fences per site"
+  unless fragmentCount rendered "load volatile i8" == 2 &&
+      fragmentCount rendered "store volatile i8" == 2 do
+    throw "ordered UART rendering does not contain exactly four byte accesses"
+  for required in #[
+      "; lemma.uart-site=0;op=uart.rbr.read8\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  %rx.byte = load volatile i8, ptr inttoptr (i64 268435456 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()",
+      "; lemma.uart-site=1;op=uart.lsr.read8\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  %line.status = load volatile i8, ptr inttoptr (i64 268435461 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()",
+      "; lemma.uart-site=2;op=uart.thr.write8\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  store volatile i8 %tx.byte, ptr inttoptr (i64 268435456 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()",
+      "; lemma.uart-site=3;op=uart.fcr.enable-reset\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  store volatile i8 7, ptr inttoptr (i64 268435458 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+    ] do
+    unless hasFragment rendered required do
+      throw s!"ordered UART rendering is missing exact site shape: {required}"
+
+private def validateCheckedDeviceLowering : Except String Unit := do
+  let lowered ← Lemma.Compiler.lowerActionSuiteV05 checkedDeviceSuite
+  let some function := lowered.functions[0]?
+    | throw "checked device lowering emitted no function"
+  unless lowered.functions.size == 1 && lowered.roots.size == 1 do
+    throw "checked device lowering emitted an unexpected function/root count"
+  let rendered := function.render
+  unless fragmentCount rendered "lemma.uart-site=" == 4 &&
+      fragmentCount rendered "call void @core0_io_fence()" == 8 do
+    throw "checked device lowering did not emit four ordered UART sites"
+  for required in #[
+      "lemma.uart-site=0;op=uart.lsr.read8",
+      "lemma.uart-site=1;op=uart.rbr.read8",
+      "lemma.uart-site=2;op=uart.thr.write8",
+      "lemma.uart-site=3;op=uart.fcr.enable-reset"
+    ] do
+    unless hasFragment rendered required do
+      throw s!"checked device lowering omitted `{required}`"
+
 private def expectPass (label : String) (result : Except String Unit) : CommandElabM Unit := do
   match result with
   | .ok () => pure ()
@@ -665,6 +861,11 @@ run_cmd do
   checks ← pass checks "scalar-harness-module" (LLVM.validateModule scalarHarnessModule)
   checks ← pass checks "bounded-loop-module" (LLVM.validateModule validLoopModule)
   checks ← pass checks "checked-result-module" (LLVM.validateModule checkedResultModule)
+  checks ← pass checks "ordered-uart-function"
+    (LLVM.validateFunction orderedUARTFunction)
+  checks ← pass checks "ordered-uart-module" (LLVM.validateModule orderedUARTModule)
+  checks ← pass checks "ordered-uart-rendering" validateOrderedUARTRendering
+  checks ← pass checks "checked-device-lowering" validateCheckedDeviceLowering
 
   checks ← reject checks "missing-terminator" "final instruction is not a terminator"
     (LLVM.validateFunction missingTerminator)
@@ -723,9 +924,25 @@ run_cmd do
     (LLVM.validateFunction checkedResultWrongExtract)
   checks ← reject checks "checked-result-return-extension" "invalid return extension"
     (LLVM.validateFunction checkedResultInvalidExtension)
+  checks ← reject checks "uart-noncanonical-global-site" "not global canonical site 0"
+    (LLVM.validateModule uartNoncanonicalSiteModule)
+  checks ← reject checks "uart-gapped-function-sites" "expected consecutive site 1"
+    (LLVM.validateFunction uartGappedSites)
+  checks ← reject checks "uart-write-width" "UART THR byte expects `i8`"
+    (LLVM.validateFunction uartWrongWriteType)
+  checks ← reject checks "uart-missing-fence" "requires declaration `@core0_io_fence`"
+    (LLVM.validateModule orderedUARTMissingFence)
+  checks ← reject checks "uart-wrong-fence" "must be declared exactly `void () nounwind`"
+    (LLVM.validateModule orderedUARTWrongFence)
+  checks ← reject checks "v04-forged-device-node" "device operations require `core0-v0.5`"
+    (Lemma.Compiler.lowerActionSuiteV04 forgedV04DeviceSuite |>.map fun _ => ())
+  checks ← reject checks "v05-stale-device-metadata" "stale device-operation metadata"
+    (Lemma.Compiler.lowerActionSuiteV05 staleDeviceMetadataSuite |>.map fun _ => ())
+  checks ← reject checks "v05-stale-device-effects" "stale direct device effects"
+    (Lemma.Compiler.lowerActionSuiteV05 staleDeviceEffectsSuite |>.map fun _ => ())
 
-  unless checks == 40 do
-    throwError m!"CFG validator suite count changed: {checks} != 40"
+  unless checks == 52 do
+    throwError m!"CFG validator suite count changed: {checks} != 52"
   logInfo m!"CFG validator: {checks} compile-time checks passed"
 
 end Lemma.Compiler.Test.CFGValidation

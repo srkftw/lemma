@@ -7,6 +7,7 @@ import argparse
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 import audit_memory
@@ -82,6 +83,24 @@ MEMORY_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+DEVICE_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "device-contract.json",
+    "device-suite-manifest.json",
+    "device-suite-normalized.txt",
+    "device-test-abi.json",
+    "symbols.txt",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
@@ -89,11 +108,15 @@ TEST_FRONTEND_SUITE_POLICY = "test-frontend-suite"
 TEST_CFG_SUITE_POLICY = "test-cfg-suite"
 TEST_LOOP_SUITE_POLICY = "test-loop-suite"
 TEST_MEMORY_SUITE_POLICY = "test-memory-suite"
+TEST_DEVICE_SUITE_POLICY = "test-device-suite"
 SCALAR_SUITE_POLICIES = frozenset(
     {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
 )
 DISPATCH_SUITE_POLICIES = frozenset(
     {*SCALAR_SUITE_POLICIES, TEST_MEMORY_SUITE_POLICY}
+)
+STACK_SIZE_POLICIES = frozenset(
+    {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}
 )
 AUDIT_POLICIES = (
     RELEASE_POLICY,
@@ -103,6 +126,7 @@ AUDIT_POLICIES = (
     TEST_CFG_SUITE_POLICY,
     TEST_LOOP_SUITE_POLICY,
     TEST_MEMORY_SUITE_POLICY,
+    TEST_DEVICE_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -138,6 +162,7 @@ ALLOWED_RELOCATIONS = {
     "R_RISCV_PCREL_LO12_I",
 }
 SCALAR_O2_JUMP_TABLE_RELOCATION = "R_RISCV_64"
+DEVICE_O2_JUMP_TABLE_RELOCATIONS = 23
 EXPECTED_LINK_COMMAND = ["ld.lld", *LINK_ARGUMENTS, "-o", "image.elf", "startup.o", "program.o"]
 EXPECTED_STARTUP_COMMAND = ["clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"]
 EXPECTED_MACHINE_PRIMITIVES = [
@@ -194,6 +219,28 @@ EXPECTED_SCALAR_MACHINE_PRIMITIVES = [
         "implementation": "Lemma.Machine.Harness.exitSuccess/exitFailure",
     },
 ]
+EXPECTED_DEVICE_MACHINE_PRIMITIVES = [
+    {
+        "identity": "startup",
+        "effect": "machine-state",
+        "implementation": "Lemma.Machine.Primitives.startup",
+    },
+    {
+        "identity": "io-fence",
+        "effect": "ordered-mmio",
+        "implementation": "Lemma.Machine.Primitives.ioFence",
+    },
+    {
+        "identity": "device-test-harness",
+        "effect": "action-abi/status-coded-vm-termination",
+        "implementation": "Lemma.Machine.DeviceHarness.main",
+    },
+    {
+        "identity": "sifive-test",
+        "effect": "vm-termination-mmio",
+        "implementation": "Lemma.Machine.DeviceHarness.successBlock/failureBlock",
+    },
+]
 MACHINE_IR_FUNCTIONS = {
     "core0_exit_failure",
     "core0_exit_success",
@@ -202,6 +249,15 @@ MACHINE_IR_FUNCTIONS = {
     "core0_put_hex64",
     "core0_main",
 }
+DEVICE_MACHINE_IR_FUNCTIONS = {"core0_main"}
+DEVICE_MACHINE_ACCESS_SEQUENCE = (
+    ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
+    ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
+    ("uart.lsr.read8", "core0_action_4", "lbu", 0x10000005),
+    ("uart.rbr.read8", "core0_action_4", "lbu", 0x10000000),
+    ("uart.lsr.read8", "core0_action_19", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_21", "sb", 0x10000002),
+)
 FINAL_ALLOC_SECTIONS = {".text", ".rodata", ".data", ".bss"}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")
 LLVM_IDENTIFIER = re.compile(r"[A-Za-z_.$][A-Za-z0-9_.$-]*")
@@ -211,6 +267,7 @@ SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarBuild.lean"
 CFG_SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarV2Build.lean"
 LOOP_SCALAR_EXPORT_DRIVER = "examples/foundation/BoundedBuild.lean"
 MEMORY_EXPORT_DRIVER = "examples/foundation/MemoryBuild.lean"
+DEVICE_EXPORT_DRIVER = "examples/foundation/DeviceBuild.lean"
 SCALAR_BASE = "Lemma.Examples.Foundation.Conformance"
 SCALAR_SUPPORT = f"{SCALAR_BASE}.Support"
 SCALAR_ABI_ROOT = f"{SCALAR_BASE}.abiNoInlineRoot"
@@ -460,7 +517,7 @@ def expected_program_command(
         *LLC_ARGUMENTS,
         *(
             ["-stack-size-section"]
-            if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+            if policy in STACK_SIZE_POLICIES
             else []
         ),
         f"-{optimization}",
@@ -1156,6 +1213,496 @@ def validate_memory_export_configuration(
             "memory exporter configuration values differ from the checked suite manifest"
         )
     return value
+
+
+def validate_device_export_configuration(
+    value: object, manifest: dict[str, object], root: Path
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("device-suite provenance lacks exporter configuration")
+    _exact_keys(
+        value,
+        {"driver", "generation_command", "environment"},
+        "device exporter configuration",
+    )
+    expected_command = [
+        "lake",
+        "env",
+        "lean",
+        str((root / DEVICE_EXPORT_DRIVER).resolve()),
+    ]
+    if value.get("driver") != DEVICE_EXPORT_DRIVER:
+        raise Core0Error("device exporter configuration names the wrong Lean driver")
+    if value.get("generation_command") != expected_command:
+        raise Core0Error("device exporter generation command differs from the executed driver")
+    environment = value.get("environment")
+    if not isinstance(environment, dict):
+        raise Core0Error("device exporter configuration environment is not an object")
+    expected_environment = {
+        "LEMMA_DEVICE_RUNTIME_SEED": str(int(str(manifest["runtime_seed"]), 16)),
+        "LEMMA_DEVICE_SOURCE_SEED": str(int(str(manifest["source_seed"]), 16)),
+        "LEMMA_DEVICE_SUITE_ID": str(int(str(manifest["suite_id"]), 16)),
+    }
+    _exact_keys(
+        environment,
+        set(expected_environment),
+        "device exporter configuration environment",
+    )
+    if environment != expected_environment:
+        raise Core0Error(
+            "device exporter configuration values differ from the checked suite manifest"
+        )
+    return value
+
+
+def _validate_device_action_signature(
+    value: object, context: str
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error(f"{context} signature is not an object")
+    _exact_keys(value, {"args"}, f"{context} signature")
+    args = value.get("args")
+    scalar_types = {"bool", "u8", "u32", "u64"}
+    if (
+        not isinstance(args, list)
+        or any(not isinstance(arg, str) or arg not in scalar_types for arg in args)
+    ):
+        raise Core0Error(f"{context} has an invalid Action signature")
+    return value
+
+
+def _validate_device_dependency_list(
+    value: object, context: str
+) -> list[str]:
+    if (
+        not isinstance(value, list)
+        or any(
+            not isinstance(item, str) or LEAN_IDENTIFIER.fullmatch(item) is None
+            for item in value
+        )
+        or len(value) != len(set(value))
+    ):
+        raise Core0Error(f"{context} is not a unique Lean-identity array")
+    return value
+
+
+def _validate_device_catalog_array(
+    value: object, context: str, *, required: bool = True, unique: bool = True
+) -> list[dict[str, object]]:
+    if not isinstance(value, list) or (required and not value):
+        raise Core0Error(f"device suite {context} is empty or malformed")
+    result: list[dict[str, object]] = []
+    stable_ids: set[str] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            raise Core0Error(f"device suite {context} entry #{index} is not an object")
+        stable_id = item.get("stable_id")
+        if (
+            not isinstance(stable_id, str)
+            or not stable_id
+            or (unique and stable_id in stable_ids)
+        ):
+            raise Core0Error(
+                f"device suite {context} entry #{index} has an invalid or duplicate stable ID"
+            )
+        stable_ids.add(stable_id)
+        result.append(item)
+    return result
+
+
+def validate_device_suite_manifest(value: object) -> dict[str, object]:
+    """Validate the generic v0.5 suite envelope and complete function closure.
+
+    The device-specific operation/IR proof remains the responsibility of the
+    independent Gate 6 audit.  This central audit still binds every scalar and
+    Action definition used to form the ELF, checks dependency closure, and pins
+    the machine boundary exactly.
+    """
+    if not isinstance(value, dict):
+        raise Core0Error("device-suite-manifest.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "artifact_category",
+            "contract_version",
+            "test_abi",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+            "checked_result",
+            "memory_contract",
+            "device_contract",
+            "roots",
+            "scalar_functions",
+            "action_functions",
+            "used_primitives",
+            "used_memory_ops",
+            "used_device_ops",
+            "action_iterations",
+            "machine_primitives",
+        },
+        "device suite manifest",
+    )
+    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
+        raise Core0Error("device suite manifest has an unsupported schema")
+    if value.get("artifact_category") != TEST_DEVICE_SUITE_POLICY:
+        raise Core0Error("device suite manifest has the wrong artifact category")
+    if value.get("contract_version") != "core0-v0.5":
+        raise Core0Error("device suite manifest has an unsupported Core0 contract")
+    if value.get("test_abi") != "lemma-device-session-v1":
+        raise Core0Error("device suite manifest has an unsupported test ABI")
+    for field in ("suite_id", "source_seed", "runtime_seed"):
+        _validate_scalar_u64_hex(value.get(field), f"device suite manifest {field}")
+    if value.get("checked_result") != audit_memory.CHECKED_RESULT_CONTRACT:
+        raise Core0Error("device suite checked-result contract differs from the direct ABI")
+    if value.get("memory_contract") != audit_memory.MEMORY_CONTRACT:
+        raise Core0Error("device suite memory contract differs from the fixed-RAM contract")
+    device_contract = value.get("device_contract")
+    if not isinstance(device_contract, dict):
+        raise Core0Error("device suite device contract is not an object")
+    if (
+        device_contract.get("schema_version") != 1
+        or device_contract.get("contract_version") != "core0-v0.5"
+        or device_contract.get("machine") != "qemu-virt-rv64-single-hart"
+        or device_contract.get("interrupt_use") != "none; Gate 6 is polling-only"
+        or device_contract.get("general_ram_api_access") is not False
+    ):
+        raise Core0Error("device suite contract differs from the polling-only v0.5 machine")
+
+    scalar_functions = value.get("scalar_functions")
+    action_functions = value.get("action_functions")
+    if not isinstance(scalar_functions, list) or not scalar_functions:
+        raise Core0Error("device suite scalar function closure is empty or malformed")
+    if not isinstance(action_functions, list) or not action_functions:
+        raise Core0Error("device suite Action function closure is empty or malformed")
+
+    scalar_sources: set[str] = set()
+    action_sources: set[str] = set()
+    llvm_symbols: set[str] = set()
+    scalar_signatures: dict[str, dict[str, object]] = {}
+    action_signatures: dict[str, dict[str, object]] = {}
+    for index, function in enumerate(scalar_functions):
+        context = f"device scalar function #{index}"
+        if not isinstance(function, dict):
+            raise Core0Error(f"{context} is not an object")
+        _exact_keys(
+            function,
+            {"source", "llvm", "signature", "dependencies", "body", "noinline"},
+            context,
+        )
+        source, symbol = function.get("source"), function.get("llvm")
+        if (
+            not isinstance(source, str)
+            or LEAN_IDENTIFIER.fullmatch(source) is None
+            or source in scalar_sources
+        ):
+            raise Core0Error(f"{context} has an invalid or duplicate source identity")
+        if (
+            not isinstance(symbol, str)
+            or LLVM_IDENTIFIER.fullmatch(symbol) is None
+            or symbol in llvm_symbols
+        ):
+            raise Core0Error(f"{context} has an invalid or duplicate LLVM identity")
+        signature = _validate_signature(function.get("signature"), context)
+        dependencies = _validate_device_dependency_list(
+            function.get("dependencies"), f"{context} dependencies"
+        )
+        if any(dependency not in scalar_sources for dependency in dependencies):
+            raise Core0Error(f"{context} dependencies are not dependency-first and closed")
+        if (
+            not isinstance(function.get("body"), str)
+            or not function["body"]
+            or "\n" in str(function["body"])
+            or "\r" in str(function["body"])
+            or function.get("noinline") is not True
+        ):
+            raise Core0Error(f"{context} lacks a normalized noinline checked body")
+        scalar_sources.add(source)
+        llvm_symbols.add(symbol)
+        scalar_signatures[source] = signature
+
+    effect_order = (
+        "checked-access",
+        "fixed-ram-read",
+        "fixed-ram-write",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+    )
+    for index, function in enumerate(action_functions):
+        context = f"device Action function #{index}"
+        if not isinstance(function, dict):
+            raise Core0Error(f"{context} is not an object")
+        _exact_keys(
+            function,
+            {
+                "source",
+                "llvm",
+                "signature",
+                "scalar_dependencies",
+                "action_dependencies",
+                "direct_effects",
+                "transitive_effects",
+                "body",
+                "noinline",
+            },
+            context,
+        )
+        source, symbol = function.get("source"), function.get("llvm")
+        if (
+            not isinstance(source, str)
+            or LEAN_IDENTIFIER.fullmatch(source) is None
+            or source in scalar_sources
+            or source in action_sources
+        ):
+            raise Core0Error(f"{context} has an invalid or duplicate source identity")
+        if (
+            not isinstance(symbol, str)
+            or LLVM_IDENTIFIER.fullmatch(symbol) is None
+            or symbol in llvm_symbols
+        ):
+            raise Core0Error(f"{context} has an invalid or duplicate LLVM identity")
+        signature = _validate_device_action_signature(function.get("signature"), context)
+        scalar_dependencies = _validate_device_dependency_list(
+            function.get("scalar_dependencies"), f"{context} scalar dependencies"
+        )
+        action_dependencies = _validate_device_dependency_list(
+            function.get("action_dependencies"), f"{context} Action dependencies"
+        )
+        if any(dependency not in scalar_sources for dependency in scalar_dependencies):
+            raise Core0Error(f"{context} scalar dependency closure is incomplete")
+        if any(dependency not in action_sources for dependency in action_dependencies):
+            raise Core0Error(f"{context} Action dependencies are not dependency-first and closed")
+        for field in ("direct_effects", "transitive_effects"):
+            effects = function.get(field)
+            if (
+                not isinstance(effects, list)
+                or any(effect not in effect_order for effect in effects)
+                or effects != [effect for effect in effect_order if effect in effects]
+            ):
+                raise Core0Error(f"{context} {field} is not a canonical effect set")
+        if (
+            not isinstance(function.get("body"), str)
+            or not function["body"]
+            or "\n" in str(function["body"])
+            or "\r" in str(function["body"])
+            or function.get("noinline") is not True
+        ):
+            raise Core0Error(f"{context} lacks a normalized noinline checked body")
+        action_sources.add(source)
+        llvm_symbols.add(symbol)
+        action_signatures[source] = signature
+
+    roots = value.get("roots")
+    if not isinstance(roots, list) or len(roots) != 1 or not isinstance(roots[0], dict):
+        raise Core0Error("device suite must contain exactly one root")
+    root = roots[0]
+    _exact_keys(root, {"root_id", "source", "llvm", "signature"}, "device suite root")
+    root_id, root_source, root_symbol = (
+        root.get("root_id"), root.get("source"), root.get("llvm")
+    )
+    if isinstance(root_id, bool) or not isinstance(root_id, int) or root_id <= 0:
+        raise Core0Error("device suite root ID is not a positive integer")
+    if (
+        not isinstance(root_source, str)
+        or LEAN_IDENTIFIER.fullmatch(root_source) is None
+        or not isinstance(root_symbol, str)
+        or LLVM_IDENTIFIER.fullmatch(root_symbol) is None
+    ):
+        raise Core0Error("device suite root source/LLVM identity is malformed")
+    root_signature = _validate_device_action_signature(
+        root.get("signature"), "device suite root"
+    )
+    if root_signature != {"args": []}:
+        raise Core0Error("device suite root does not have the zero-argument Action ABI")
+    root_entries = [
+        function
+        for function in action_functions
+        if isinstance(function, dict) and function.get("source") == root_source
+    ]
+    if (
+        len(root_entries) != 1
+        or root_source not in action_signatures
+        or root_symbol != root_entries[0].get("llvm")
+        or root_signature != action_signatures[root_source]
+    ):
+        raise Core0Error("device suite root is not bound to its Action function closure")
+
+    primitives = _validate_device_catalog_array(
+        value.get("used_primitives"), "primitive closure"
+    )
+    for primitive in primitives:
+        stable_id = str(primitive["stable_id"])
+        if primitive != PRIMITIVE_CONTRACTS_V02.get(stable_id):
+            raise Core0Error(
+                f"device suite primitive contract is unknown or malformed: {stable_id!r}"
+            )
+    memory_ops = _validate_device_catalog_array(
+        value.get("used_memory_ops"), "memory-operation closure"
+    )
+    for operation in memory_ops:
+        stable_id = str(operation["stable_id"])
+        if operation != audit_memory.MEMORY_OPS.get(stable_id):
+            raise Core0Error(
+                f"device suite memory-operation contract is unknown or malformed: {stable_id!r}"
+            )
+    _validate_device_catalog_array(
+        value.get("used_device_ops"), "device-operation closure"
+    )
+    iterations = _validate_device_catalog_array(
+        value.get("action_iterations"), "Action-iteration closure", unique=False
+    )
+    for index, site in enumerate(iterations):
+        budget, callback = site.get("static_budget"), site.get("callback")
+        if (
+            isinstance(budget, bool)
+            or not isinstance(budget, int)
+            or not 0 <= budget <= 1_000_000
+            or not isinstance(callback, str)
+            or callback not in action_sources
+        ):
+            raise Core0Error(f"device Action-iteration entry #{index} is malformed")
+    if value.get("machine_primitives") != EXPECTED_DEVICE_MACHINE_PRIMITIVES:
+        raise Core0Error(
+            "device suite machine-primitive contracts differ from the exact allowlist"
+        )
+    return value
+
+
+def validate_device_test_abi(
+    value: object, manifest: dict[str, object]
+) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise Core0Error("device-test-abi.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "contract_version",
+            "name",
+            "byte_order",
+            "ready",
+            "requests_per_session",
+            "poll_budget",
+            "request",
+            "response",
+            "commands",
+            "statuses",
+            "terminal_rules",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+        },
+        "device test ABI",
+    )
+    expected_scalars = {
+        "schema_version": 1,
+        "contract_version": "core0-v0.5",
+        "name": "lemma-device-session-v1",
+        "byte_order": "little-endian",
+        "ready": "LEMMA_DEVICE/1\nREADY\n",
+        "requests_per_session": 2,
+        "poll_budget": 1_000_000,
+        "suite_id": manifest["suite_id"],
+        "source_seed": manifest["source_seed"],
+        "runtime_seed": manifest["runtime_seed"],
+    }
+    if any(value.get(field) != expected for field, expected in expected_scalars.items()):
+        raise Core0Error("device test ABI differs from the v0.5 session envelope")
+    if (
+        not isinstance(value.get("request"), dict)
+        or not isinstance(value.get("response"), dict)
+        or not isinstance(value.get("terminal_rules"), dict)
+        or not isinstance(value.get("commands"), list)
+        or not value["commands"]
+        or any(not isinstance(item, dict) for item in value["commands"])
+        or not isinstance(value.get("statuses"), list)
+        or not value["statuses"]
+        or any(not isinstance(item, dict) for item in value["statuses"])
+    ):
+        raise Core0Error("device test ABI request/response catalog is malformed")
+    return value
+
+
+def validate_device_manifest_companions(
+    manifest: dict[str, object], normalized_text: str, symbols_text: str
+) -> None:
+    roots = manifest["roots"]
+    scalar_functions = manifest["scalar_functions"]
+    action_functions = manifest["action_functions"]
+    memory_ops = manifest["used_memory_ops"]
+    device_ops = manifest["used_device_ops"]
+    iterations = manifest["action_iterations"]
+    assert all(
+        isinstance(items, list)
+        for items in (
+            roots,
+            scalar_functions,
+            action_functions,
+            memory_ops,
+            device_ops,
+            iterations,
+        )
+    )
+    lines = [f"contract={manifest['contract_version']}"]
+    for root in roots:
+        assert isinstance(root, dict) and isinstance(root["signature"], dict)
+        signature = json.dumps(root["signature"], separators=(",", ":"))
+        lines.append(
+            f"root={root['root_id']};source={root['source']};signature={signature}"
+        )
+    for function in scalar_functions:
+        assert isinstance(function, dict)
+        lines.append(f"scalar={function['source']};body={function['body']}")
+    for function in action_functions:
+        assert isinstance(function, dict)
+        direct = "[" + ",".join(str(item) for item in function["direct_effects"]) + "]"
+        transitive = (
+            "[" + ",".join(str(item) for item in function["transitive_effects"]) + "]"
+        )
+        lines.append(
+            f"action={function['source']};direct={direct};transitive={transitive};"
+            f"body={function['body']}"
+        )
+    # The manifest intentionally sorts memory operations while the normalized
+    # companion preserves first-use order.  Bind the exact operation multiset
+    # without inventing an order that is not represented in the manifest.
+    prefix_lines = list(lines)
+    memory_lines = []
+    for operation in memory_ops:
+        assert isinstance(operation, dict)
+        memory_lines.append(f"memory-op={operation['stable_id']}")
+    suffix_lines = []
+    for operation in device_ops:
+        assert isinstance(operation, dict)
+        suffix_lines.append(f"device-op={operation['stable_id']}")
+    for site in iterations:
+        assert isinstance(site, dict)
+        suffix_lines.append(
+            f"action-iteration={site['stable_id']};budget={site['static_budget']};"
+            f"callback={site['callback']}"
+        )
+    actual_lines = normalized_text.splitlines()
+    actual_memory_start = len(prefix_lines)
+    actual_memory_stop = actual_memory_start + len(memory_lines)
+    if (
+        not normalized_text.endswith("\n")
+        or actual_lines[:actual_memory_start] != prefix_lines
+        or sorted(actual_lines[actual_memory_start:actual_memory_stop])
+        != sorted(memory_lines)
+        or actual_lines[actual_memory_stop:] != suffix_lines
+    ):
+        raise Core0Error(
+            "device-suite-normalized.txt does not match the checked device manifest"
+        )
+    symbol_lines = [
+        f"source={function['source']};llvm={function['llvm']}"
+        for function in [*scalar_functions, *action_functions]
+        if isinstance(function, dict)
+    ]
+    if symbols_text != "\n".join(symbol_lines) + "\n":
+        raise Core0Error("symbols.txt does not match the device source-to-LLVM mapping")
 
 
 def validate_memory_test_abi(
@@ -3417,6 +3964,442 @@ def parse_stack_sizes(text: str) -> dict[str, int]:
     return result
 
 
+def _device_machine_instructions(disassembly: str) -> list[dict[str, object]]:
+    instructions: list[dict[str, object]] = []
+    function: str | None = None
+    function_pattern = re.compile(
+        r"^([0-9a-fA-F]+) <([A-Za-z_.$][A-Za-z0-9_.$-]*)>:$"
+    )
+    instruction_pattern = re.compile(
+        r"^\s*([0-9a-fA-F]+):\s+([a-z][a-z0-9.]*)\s*(.*?)\s*$"
+    )
+    for line in disassembly.splitlines():
+        function_match = function_pattern.fullmatch(line.strip())
+        if function_match is not None:
+            function = function_match.group(2)
+            continue
+        instruction_match = instruction_pattern.fullmatch(line)
+        if instruction_match is None:
+            continue
+        if function is None:
+            raise Core0Error("device disassembly has an instruction outside a function")
+        instructions.append(
+            {
+                "address": int(instruction_match.group(1), 16),
+                "mnemonic": instruction_match.group(2),
+                "operands": instruction_match.group(3),
+                "function": function,
+            }
+        )
+    if not instructions:
+        raise Core0Error("device disassembly has no parseable instructions")
+    return instructions
+
+
+def _device_machine_integer(text: str, context: str) -> int:
+    try:
+        return int(text, 0)
+    except ValueError as error:
+        raise Core0Error(f"{context} has a malformed immediate {text!r}") from error
+
+
+def _device_machine_call_target(
+    instructions: list[dict[str, object]], index: int
+) -> int | None:
+    if index < 0 or index + 1 >= len(instructions):
+        return None
+    upper, jump = instructions[index], instructions[index + 1]
+    if (
+        upper["mnemonic"] != "auipc"
+        or jump["mnemonic"] != "jalr"
+        or upper["function"] != jump["function"]
+    ):
+        return None
+    upper_match = re.fullmatch(
+        r"ra,\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))",
+        str(upper["operands"]),
+    )
+    if upper_match is None:
+        return None
+    jump_text = str(jump["operands"])
+    jump_match = re.match(
+        r"([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))\(ra\)(?:\s|$)",
+        jump_text,
+    )
+    if jump_match is None:
+        return None
+    encoded_upper = _device_machine_integer(
+        upper_match.group(1), "device AUIPC"
+    )
+    if encoded_upper < 0 or encoded_upper >= 1 << 20:
+        return None
+    if encoded_upper & (1 << 19):
+        encoded_upper -= 1 << 20
+    lower = _device_machine_integer(jump_match.group(1), "device JALR")
+    if lower < -(1 << 11) or lower >= 1 << 11:
+        return None
+    return (int(upper["address"]) + (encoded_upper << 12) + lower) & ~1
+
+
+def validate_device_machine_disassembly(
+    disassembly: str, symbol_addresses: dict[str, int]
+) -> dict[str, object]:
+    """Close the six compiled UART sites at the final RV64 instruction level."""
+    fence_address = symbol_addresses.get("core0_io_fence")
+    if fence_address is None:
+        raise Core0Error("device ELF lacks the core0_io_fence machine primitive")
+    instructions = _device_machine_instructions(disassembly)
+    fence_instructions = [
+        instruction
+        for instruction in instructions
+        if instruction["function"] == "core0_io_fence"
+    ]
+    if [instruction["mnemonic"] for instruction in fence_instructions] != [
+        "fence",
+        "ret",
+    ]:
+        raise Core0Error(
+            "core0_io_fence machine body is not exactly fence iorw,iorw followed by ret"
+        )
+    fence_operands = str(fence_instructions[0]["operands"])
+    if fence_operands not in {"", "iorw, iorw"}:
+        raise Core0Error("core0_io_fence has a noncanonical predecessor/successor mask")
+
+    uart_base_materializations: list[int] = []
+    denied_metadata: Counter[str] = Counter()
+
+    def is_denied_region_metadata(index: int) -> bool:
+        # O0 retains the general RAM guard's device-table case as scalar
+        # metadata.  This exact sequence spills base, length, device class,
+        # and denied width/permission bits, then leaves the case block.  It
+        # does not dereference the device address.  O2 removes these cases.
+        if index < 3 or index + 7 >= len(instructions):
+            return False
+        chunk = instructions[index - 3:index + 8]
+        if len({item["function"] for item in chunk}) != 1:
+            return False
+        if any(
+            int(right["address"]) != int(left["address"]) + 4
+            for left, right in zip(chunk, chunk[1:])
+        ):
+            return False
+        for item, register, value in zip(chunk[:3], ("a0", "a1", "a2"), (0, 2, 256)):
+            match = re.fullmatch(
+                rf"{register},\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))",
+                str(item["operands"]),
+            )
+            if item["mnemonic"] != "li" or match is None or _device_machine_integer(
+                match.group(1), "denied UART region metadata"
+            ) != value:
+                return False
+        if str(chunk[3]["operands"]).split(",", 1)[0] != "a3":
+            return False
+        stack_slot: int | None = None
+        for offset, register in ((4, "a3"), (5, "a2"), (6, "a1"), (8, "a1"), (9, "a0")):
+            item = chunk[offset]
+            match = re.fullmatch(
+                rf"{register},\s*(0x[0-9a-fA-F]+|[0-9]+)\(sp\)",
+                str(item["operands"]),
+            )
+            if item["mnemonic"] != "sd" or match is None:
+                return False
+            slot = _device_machine_integer(match.group(1), "denied UART metadata stack slot")
+            if stack_slot is None:
+                stack_slot = slot
+            expected_offset = {4: 0, 5: 8, 6: 16, 8: 24, 9: 32}[offset]
+            if slot != stack_slot + expected_offset:
+                return False
+        return (
+            chunk[7]["mnemonic"] == "mv"
+            and re.fullmatch(r"a1,\s*a0", str(chunk[7]["operands"])) is not None
+            and chunk[10]["mnemonic"] == "j"
+        )
+
+    for index, instruction in enumerate(instructions):
+        if instruction["mnemonic"] != "lui":
+            continue
+        match = re.fullmatch(
+            r"([a-z][a-z0-9]*),\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))",
+            str(instruction["operands"]),
+        )
+        if match is not None and _device_machine_integer(
+            match.group(2), "device LUI"
+        ) == 0x10000:
+            # Every materialization of the UART base must be accounted for.
+            # Filtering candidates by the following opcode would hide an extra
+            # wide access or pointer arithmetic from the exact-site audit.
+            if is_denied_region_metadata(index):
+                denied_metadata[str(instruction["function"])] += 1
+            else:
+                uart_base_materializations.append(index)
+
+    expected_denied_metadata = Counter({
+        "core0_action_6": 1,
+        "core0_action_9": 1,
+        "core0_action_11": 2,
+        "core0_action_12": 2,
+        "core0_action_13": 2,
+        "core0_action_16": 1,
+        "core0_action_18": 6,
+    })
+    if denied_metadata and denied_metadata != expected_denied_metadata:
+        raise Core0Error("machine UART denied-region metadata differs from the exact O0 closure")
+
+    records: list[dict[str, object]] = []
+    approved_access_indices: set[int] = set()
+    memory_operand = re.compile(
+        r"([a-z][a-z0-9]*),\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))"
+        r"\(([a-z][a-z0-9]*)\)"
+    )
+    for base_index in uart_base_materializations:
+        base_instruction = instructions[base_index]
+        base_match = re.fullmatch(
+            r"([a-z][a-z0-9]*),\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))",
+            str(base_instruction["operands"]),
+        )
+        assert base_match is not None
+        base_register = base_match.group(1)
+        access_index = base_index + 1
+        fixed_write = False
+        if (
+            access_index < len(instructions)
+            and instructions[access_index]["mnemonic"] == "li"
+        ):
+            fixed_write = True
+            access_index += 1
+        if access_index >= len(instructions):
+            raise Core0Error("UART base materialization lacks its byte access")
+        access = instructions[access_index]
+        if (
+            access["function"] != base_instruction["function"]
+            or access["mnemonic"] not in {"lbu", "sb"}
+        ):
+            raise Core0Error(
+                "UART base materialization is not consumed by an exact lbu/sb access"
+            )
+        access_match = memory_operand.fullmatch(str(access["operands"]))
+        if access_match is None or access_match.group(3) != base_register:
+            raise Core0Error("UART byte access does not use its fixed base register")
+        value_register = access_match.group(1)
+        offset = _device_machine_integer(
+            access_match.group(2), "device byte access"
+        )
+        address = 0x10000000 + offset
+        mnemonic = str(access["mnemonic"])
+        if mnemonic == "lbu" and offset == 5 and not fixed_write:
+            operation = "uart.lsr.read8"
+        elif mnemonic == "lbu" and offset == 0 and not fixed_write:
+            operation = "uart.rbr.read8"
+        elif mnemonic == "sb" and offset == 0 and not fixed_write:
+            operation = "uart.thr.write8"
+        elif mnemonic == "sb" and offset == 2 and fixed_write:
+            value_instruction = instructions[base_index + 1]
+            value_match = re.fullmatch(
+                r"([a-z][a-z0-9]*),\s*([+-]?(?:0x[0-9a-fA-F]+|[0-9]+))",
+                str(value_instruction["operands"]),
+            )
+            if (
+                value_match is None
+                or value_match.group(1) != value_register
+                or _device_machine_integer(value_match.group(2), "device FCR write") != 7
+            ):
+                raise Core0Error("UART FCR machine write does not use fixed value 0x07")
+            operation = "uart.fcr.enable-reset"
+        else:
+            raise Core0Error(
+                f"machine code contains an unknown UART byte access {mnemonic} +{offset}"
+            )
+
+        before_index = base_index - 2
+        if (
+            mnemonic == "sb"
+            and offset == 0
+            and _device_machine_call_target(instructions, before_index) != fence_address
+            and base_index > 0
+            and instructions[base_index - 1]["mnemonic"] == "ld"
+            and re.fullmatch(
+                rf"{re.escape(value_register)},\s*"
+                r"(?:0x[0-9a-fA-F]+|[0-9]+)\(sp\)",
+                str(instructions[base_index - 1]["operands"]),
+            )
+            is not None
+        ):
+            # O0 reloads the already-checked transmit byte from its fixed stack
+            # slot after the before-fence and immediately before materializing
+            # the UART base.
+            before_index -= 1
+        after_index = access_index + 1
+        if (
+            mnemonic == "lbu"
+            and after_index < len(instructions)
+            and instructions[after_index]["mnemonic"] == "sd"
+            and re.fullmatch(
+                rf"{re.escape(value_register)},\s*"
+                r"(?:0x[0-9a-fA-F]+|[0-9]+)\(sp\)",
+                str(instructions[after_index]["operands"]),
+            )
+            is not None
+        ):
+            # At O0 the direct checked-result lowering spills the freshly read
+            # byte to its fixed stack slot before making the after-fence call.
+            # No computation or second memory-mapped access is permitted here.
+            after_index += 1
+        if (
+            _device_machine_call_target(instructions, before_index) != fence_address
+            or _device_machine_call_target(instructions, after_index) != fence_address
+        ):
+            raise Core0Error(
+                f"machine UART access {operation} is not bracketed by exact "
+                "core0_io_fence calls"
+            )
+        records.append(
+            {
+                "operation": operation,
+                "function": str(access["function"]),
+                "instruction": mnemonic,
+                "address": f"0x{address:08x}",
+                "fence_before": True,
+                "fence_after": True,
+            }
+        )
+        approved_access_indices.add(access_index)
+
+    # This is intentionally a bounded straight-line inference pass over the
+    # pinned emitted instruction forms, not a general RV64 dataflow proof.
+    # Track constant registers and UART-derived aliases within each function;
+    # require every inferred UART dereference to be one of the approved sites.
+    # The exact audited fence body has no register clobbers.  Other calls may
+    # clobber caller-saved registers.  Unknown transformations of a known UART
+    # value reject instead of silently discarding its provenance.
+    known: dict[str, tuple[int, bool]] = {}
+    current_function: str | None = None
+    inferred_accesses: set[int] = set()
+    caller_saved = {"ra", *(f"a{i}" for i in range(8)), *(f"t{i}" for i in range(7))}
+    memory_mnemonics = {
+        "lb", "lbu", "lh", "lhu", "lw", "lwu", "ld",
+        "sb", "sh", "sw", "sd",
+    }
+    nonwriting_mnemonics = {
+        "beq", "bne", "blt", "bge", "bltu", "bgeu",
+        "beqz", "bnez", "blez", "bgez", "bltz", "bgtz",
+        "j", "jr", "ret", "fence", "nop", "unimp", "ebreak", "ecall",
+    }
+    mask64 = (1 << 64) - 1
+
+    def record_constant(register: str, value: int, uart_derived: bool = False) -> None:
+        if register == "zero":
+            return
+        value &= mask64
+        known[register] = (
+            value,
+            uart_derived or 0x10000000 <= value < 0x10000100,
+        )
+
+    def register_value(register: str) -> tuple[int, bool] | None:
+        return (0, False) if register == "zero" else known.get(register)
+
+    for index, instruction in enumerate(instructions):
+        if instruction["function"] != current_function:
+            current_function = str(instruction["function"])
+            known.clear()
+        mnemonic = str(instruction["mnemonic"])
+        operands = str(instruction["operands"])
+        parts = [part.strip() for part in operands.split(",")]
+        if mnemonic in memory_mnemonics:
+            match = memory_operand.fullmatch(operands)
+            if match is None:
+                raise Core0Error("machine memory instruction has an unsupported operand shape")
+            value_register, offset_text, base_register = match.groups()
+            base = register_value(base_register)
+            if base is not None:
+                offset = _device_machine_integer(offset_text, "device inferred memory offset")
+                address = (base[0] + offset) & mask64
+                if base[1] or 0x10000000 <= address < 0x10000100:
+                    if index not in approved_access_indices:
+                        raise Core0Error(
+                            "machine code contains an additional, wide, or aliased UART access "
+                            f"at 0x{int(instruction['address']):x}"
+                        )
+                    inferred_accesses.add(index)
+            if mnemonic.startswith("l"):
+                known.pop(value_register, None)
+            continue
+        if mnemonic in {"jalr", "jal", "call", "tail"}:
+            target = _device_machine_call_target(instructions, index - 1)
+            if target != fence_address:
+                for register in caller_saved:
+                    known.pop(register, None)
+            continue
+        if mnemonic in nonwriting_mnemonics:
+            continue
+        if mnemonic in {"lui", "li"} and len(parts) == 2:
+            immediate = _device_machine_integer(parts[1], "device inferred immediate")
+            if mnemonic == "lui":
+                immediate = (immediate & ((1 << 20) - 1)) << 12
+                if immediate & (1 << 31):
+                    immediate -= 1 << 32
+            record_constant(parts[0], immediate)
+            continue
+        if mnemonic == "mv" and len(parts) == 2:
+            source = register_value(parts[1])
+            if source is None:
+                known.pop(parts[0], None)
+            else:
+                record_constant(parts[0], *source)
+            continue
+        if mnemonic == "addi" and len(parts) == 3:
+            source = register_value(parts[1])
+            if source is None:
+                known.pop(parts[0], None)
+            else:
+                immediate = _device_machine_integer(parts[2], "device inferred ADDI")
+                record_constant(parts[0], source[0] + immediate, source[1])
+            continue
+        if mnemonic in {"add", "sub"} and len(parts) == 3:
+            left, right = register_value(parts[1]), register_value(parts[2])
+            if left is not None and right is not None:
+                result = left[0] + right[0] if mnemonic == "add" else left[0] - right[0]
+                record_constant(parts[0], result, left[1] or right[1])
+                continue
+        if any(known.get(part, (0, False))[1] for part in parts[1:]):
+            raise Core0Error(
+                f"machine UART pointer has unsupported transformation `{mnemonic}`"
+            )
+        if parts:
+            known.pop(parts[0], None)
+
+    if inferred_accesses != approved_access_indices:
+        raise Core0Error("machine UART register-use inference does not cover every approved site")
+
+    observed = tuple(
+        (
+            str(record["operation"]),
+            str(record["function"]),
+            str(record["instruction"]),
+            int(str(record["address"]), 16),
+        )
+        for record in records
+    )
+    if observed != DEVICE_MACHINE_ACCESS_SEQUENCE:
+        raise Core0Error(
+            "machine UART access sequence differs from the exact six-site closure: "
+            f"{observed!r}"
+        )
+    return {
+        "access_count": len(records),
+        "byte_accesses_only": True,
+        "ordered_fence_calls": 2 * len(records),
+        "denied_region_metadata_materializations": sum(denied_metadata.values()),
+        "register_use_audit": {
+            "inferred_uart_accesses": len(inferred_accesses),
+            "all_inferred_accesses_are_approved": True,
+            "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof",
+        },
+        "fence_implementation": "fence iorw,iorw; ret",
+        "accesses": records,
+    }
+
+
 def hex_field(mapping: object, section: str, field: str) -> int:
     if not isinstance(mapping, dict) or not isinstance(mapping.get(section), dict):
         raise Core0Error(f"layout.json lacks a {section!r} region")
@@ -3478,6 +4461,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_DEVICE_SUITE_POLICY:
+        required_artifacts = DEVICE_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy == TEST_MEMORY_SUITE_POLICY:
         required_artifacts = MEMORY_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -3520,7 +4509,24 @@ def audit(
 
     scalar_test_abi: dict[str, object] | None = None
     memory_ir_audit: dict[str, object] | None = None
-    if policy == TEST_MEMORY_SUITE_POLICY:
+    if policy == TEST_DEVICE_SUITE_POLICY:
+        manifest = validate_device_suite_manifest(
+            load_json(paths["device-suite-manifest.json"])
+        )
+        validate_device_test_abi(
+            load_json(paths["device-test-abi.json"]), manifest
+        )
+        device_contract = load_json(paths["device-contract.json"])
+        if device_contract != manifest["device_contract"]:
+            raise Core0Error(
+                "device-contract.json does not match the checked device manifest"
+            )
+        validate_device_manifest_companions(
+            manifest,
+            paths["device-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy == TEST_MEMORY_SUITE_POLICY:
         manifest = audit_memory.validate_memory_suite_manifest(
             load_json(paths["memory-suite-manifest.json"])
         )
@@ -3644,12 +4650,17 @@ def audit(
         raise Core0Error("provenance lacks a full Git source commit")
     scalar_export_configuration: dict[str, object] | None = None
     memory_export_configuration: dict[str, object] | None = None
+    device_export_configuration: dict[str, object] | None = None
     if policy in SCALAR_SUITE_POLICIES:
         scalar_export_configuration = validate_scalar_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
     elif policy == TEST_MEMORY_SUITE_POLICY:
         memory_export_configuration = validate_memory_export_configuration(
+            provenance_obj.get("export_configuration"), manifest, root
+        )
+    elif policy == TEST_DEVICE_SUITE_POLICY:
+        device_export_configuration = validate_device_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
     elif "export_configuration" in provenance_obj:
@@ -3825,6 +4836,17 @@ def audit(
                 "observation, and freestanding source/model/RV64 comparison"
             ),
         },
+        TEST_DEVICE_SUITE_POLICY: {
+            "kind": "test-device-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.5 Action suite through "
+                "validated ordered-MMIO lowering and the status-only device harness"
+            ),
+            "purpose": (
+                "test-only compiled UART polling, framing, multi-request dispatch, "
+                "bounded timeout behavior, and freestanding QEMU interaction"
+            ),
+        },
     }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
@@ -3891,6 +4913,10 @@ def audit(
         validate_scalar_export_command_log(
             memory_export_configuration, command_argv
         )
+    if device_export_configuration is not None:
+        validate_scalar_export_command_log(
+            device_export_configuration, command_argv
+        )
     for expected_command in expected_elaboration_commands:
         if expected_command not in command_argv:
             raise Core0Error(
@@ -3925,11 +4951,11 @@ def audit(
             pre_ir,
             clean_ir_path.read_text(encoding="utf-8"),
         )
-    if policy == TEST_MEMORY_SUITE_POLICY:
+    if policy in {TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}:
         scalar_functions = manifest.get("scalar_functions")
         action_functions = manifest.get("action_functions")
         if not isinstance(scalar_functions, list) or not isinstance(action_functions, list):
-            raise Core0Error("memory target manifest function arrays are malformed")
+            raise Core0Error(f"{policy} target manifest function arrays are malformed")
         manifest_functions = [*scalar_functions, *action_functions]
     else:
         manifest_functions = manifest["functions"]
@@ -3940,9 +4966,17 @@ def audit(
         for function in manifest_functions
         if isinstance(function, dict)
     }
-    expected_pre_definitions = manifest_user_symbols | MACHINE_IR_FUNCTIONS
+    machine_ir_functions = (
+        DEVICE_MACHINE_IR_FUNCTIONS
+        if policy == TEST_DEVICE_SUITE_POLICY
+        else MACHINE_IR_FUNCTIONS
+    )
+    expected_pre_definitions = manifest_user_symbols | machine_ir_functions
     scalar_abi_ir: dict[str, object] | None = None
-    if policy == TEST_MEMORY_SUITE_POLICY:
+    if policy == TEST_DEVICE_SUITE_POLICY:
+        source_identity = "Lemma Gate 6 compiled UART device session"
+        root_llvm = None
+    elif policy == TEST_MEMORY_SUITE_POLICY:
         memory_ir_audit = audit_memory.validate_memory_pre_ir(manifest, pre_ir)
         source_identity = "Lemma Gate 5 checked fixed-memory suite"
         root_llvm = None
@@ -3986,7 +5020,7 @@ def audit(
         if (
             label == "post_optimization"
             and "inbounds" in inferred_flags
-            and policy != TEST_MEMORY_SUITE_POLICY
+            and policy not in {TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}
         ):
             raise Core0Error("optimized IR unexpectedly contains an inbounds promise")
         definitions, declarations, calls = parse_definitions_and_calls(ir)
@@ -4029,7 +5063,10 @@ def audit(
                 f"machine allowlist: {sorted(definitions)!r}"
             )
         if label == "post_optimization":
-            if policy in SCALAR_SUITE_POLICIES or policy == TEST_MEMORY_SUITE_POLICY:
+            if policy in SCALAR_SUITE_POLICIES or policy in {
+                TEST_MEMORY_SUITE_POLICY,
+                TEST_DEVICE_SUITE_POLICY,
+            }:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
                 if root_llvm is None:
@@ -4057,6 +5094,20 @@ def audit(
                 ir_findings[label]["optimizer_flags"] = validate_memory_optimizer_flags(
                     ir, optimization
                 )
+            elif policy == TEST_DEVICE_SUITE_POLICY:
+                flag_counts = {
+                    flag: len(re.findall(rf"\b{flag}\b", ir))
+                    for flag in ("nsw", "nuw", "inbounds", "disjoint")
+                }
+                if optimization == "O0" and any(flag_counts.values()):
+                    raise Core0Error(
+                        "O0 device IR unexpectedly contains optimizer flags: "
+                        f"{flag_counts!r}"
+                    )
+                ir_findings[label]["optimizer_flag_inventory"] = {
+                    "optimization": optimization,
+                    "counts": flag_counts,
+                }
             else:
                 ir_findings[label]["optimizer_disjoint"] = validate_optimizer_disjoint(
                     ir,
@@ -4141,7 +5192,10 @@ def audit(
         if "W" in flags and "E" in flags:
             raise Core0Error(f"PT_LOAD is writable and executable: {segment}")
     alloc_sections = alloc_section_names(sections)
-    if not {".text", ".rodata", ".bss"} <= alloc_sections:
+    required_alloc_sections = {".text", ".bss"}
+    if policy != TEST_DEVICE_SUITE_POLICY:
+        required_alloc_sections.add(".rodata")
+    if not required_alloc_sections <= alloc_sections:
         raise Core0Error(f"ELF is missing required allocated sections: {sorted(alloc_sections)!r}")
     unexpected_alloc_sections = alloc_sections - FINAL_ALLOC_SECTIONS
     if unexpected_alloc_sections:
@@ -4234,6 +5288,11 @@ def audit(
     fence_body = fence_body_parts[1].split("\n\n", 1)[0]
     if re.search(r"\bfence\b", fence_body) is None or re.search(r"\bret\b", fence_body) is None:
         raise Core0Error("core0_io_fence does not lower to a fence followed by return")
+    device_machine_audit: dict[str, object] | None = None
+    if policy == TEST_DEVICE_SUITE_POLICY:
+        device_machine_audit = validate_device_machine_disassembly(
+            disassembly, symbol_addresses
+        )
     scalar_abi_machine: dict[str, object] | None = None
     if policy == TEST_FRONTEND_SUITE_POLICY:
         scalar_abi_machine = validate_scalar_abi_disassembly(
@@ -4278,7 +5337,7 @@ def audit(
     stack_sizes: dict[str, int] | None = None
     stack_and_call_graph: dict[str, object] | None = None
     has_stack_sizes = ".stack_sizes" in object_inventories["program.o"]
-    if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}:
+    if policy in STACK_SIZE_POLICIES:
         if not has_stack_sizes:
             raise Core0Error(f"{policy} program.o lacks LLVM stack-size sections")
         if ".stack_sizes" not in sections:
@@ -4347,10 +5406,10 @@ def audit(
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
         if name == "program.o" and (
-            policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+            policy in STACK_SIZE_POLICIES
             or (policy in DISPATCH_SUITE_POLICIES and optimization == "O2")
         ):
-            # Gate 4 stack metadata and O2 scalar root dispatch both use
+            # Stack metadata and O2 scalar root dispatch both use
             # narrowly audited local absolute-address relocations.
             allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
         expected_jump_table_relocations = 0
@@ -4363,6 +5422,12 @@ def audit(
             if not isinstance(manifest_roots, list):
                 raise Core0Error("scalar manifest root array is malformed")
             expected_jump_table_relocations = len(manifest_roots)
+        elif (
+            policy == TEST_DEVICE_SUITE_POLICY
+            and name == "program.o"
+            and optimization == "O2"
+        ):
+            expected_jump_table_relocations = DEVICE_O2_JUMP_TABLE_RELOCATIONS
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
@@ -4380,7 +5445,7 @@ def audit(
                     current_section = section_match.group(1)
                 if SCALAR_O2_JUMP_TABLE_RELOCATION in line:
                     if (
-                        policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+                        policy in STACK_SIZE_POLICIES
                         and current_section == ".rela.stack_sizes"
                         and re.search(
                         r"\bR_RISCV_64\b.*\s\.L0\s+\+ 0\s*$", line
@@ -4388,7 +5453,10 @@ def audit(
                     ):
                         stack_size_rows.append(line)
                     elif (
-                        policy in DISPATCH_SUITE_POLICIES
+                        (
+                            policy in DISPATCH_SUITE_POLICIES
+                            or policy == TEST_DEVICE_SUITE_POLICY
+                        )
                         and optimization == "O2"
                         and current_section == ".rela.rodata"
                         and re.search(
@@ -4399,11 +5467,11 @@ def audit(
                     else:
                         raise Core0Error(
                             "program.o R_RISCV_64 relocation is neither exact stack-size "
-                            "metadata nor an allowed O2 root-dispatch jump-table entry"
+                            "metadata nor an allowed O2 local jump-table entry"
                         )
             expected_stack_rows = (
                 len(object_function_symbols["program.o"])
-                if policy in {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY}
+                if policy in STACK_SIZE_POLICIES
                 else 0
             )
             if len(stack_size_rows) != expected_stack_rows:
@@ -4414,8 +5482,8 @@ def audit(
                 )
             if len(jump_table_rows) != expected_jump_table_relocations:
                 raise Core0Error(
-                    "scalar suite root-dispatch jump-table relocation count differs from "
-                    f"the exact root closure: {len(jump_table_rows)} != "
+                    "suite O2 jump-table relocation count differs from the exact "
+                    f"closed inventory: {len(jump_table_rows)} != "
                     f"{expected_jump_table_relocations}"
                 )
         object_relocations[name] = {
@@ -4499,6 +5567,8 @@ def audit(
         }
     if memory_ir_audit is not None:
         report["memory_ir_audit"] = memory_ir_audit
+    if device_machine_audit is not None:
+        report["device_machine_audit"] = device_machine_audit
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")

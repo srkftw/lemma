@@ -213,7 +213,8 @@ mutual
         pure (.scalar { ty := targetTy, value := Scalar.normalize targetTy source.value })
     | .boundedFoldU32 budget callback count initial =>
         unless program.contractVersion == Profile.v0_3.contractVersion ||
-            program.contractVersion == Profile.v0_4.contractVersion do
+            program.contractVersion == Profile.v0_4.contractVersion ||
+            program.contractVersion == Profile.v0_5.contractVersion do
           evalFail stack .invalidCheckedIR
             s!"bounded iteration is not available in {program.contractVersion}"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do

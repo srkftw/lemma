@@ -93,6 +93,31 @@ structure ABIArgument where
 def ABIArgument.render (argument : ABIArgument) : String :=
   argument.ty.render ++ renderExtensionSuffix argument.extension ++ " " ++ argument.value.render
 
+/-!
+Gate 6 keeps UART MMIO deliberately narrower than the ordinary pointer/load/store
+language.  The register choice is closed and direction-specific, so a checked
+device node cannot smuggle an arbitrary address or access width into the backend.
+The corresponding instruction renderers below bracket exactly one volatile byte
+access with the generated `core0_io_fence` primitive.
+-/
+
+inductive UARTReadRegister where
+  | rbr
+  | lsr
+  deriving Repr, BEq
+
+namespace UARTReadRegister
+
+def address : UARTReadRegister → Nat
+  | .rbr => 0x10000000
+  | .lsr => 0x10000005
+
+def stableId : UARTReadRegister → String
+  | .rbr => "uart.rbr.read8"
+  | .lsr => "uart.lsr.read8"
+
+end UARTReadRegister
+
 inductive Instruction where
   | bin (result : String) (op : BinOp) (ty : Ty) (lhs rhs : Operand)
   | icmp (result : String) (predicate : Predicate) (ty : Ty) (lhs rhs : Operand)
@@ -104,6 +129,14 @@ inductive Instruction where
   | intToPtr (result : String) (value : Operand)
   | load (result : String) (ty : Ty) (address : Operand) (alignment : Nat) (volatile : Bool)
   | store (ty : Ty) (value address : Operand) (alignment : Nat) (volatile : Bool)
+  /-- One ordered 16550 receive/status register read.  `site` is a canonical,
+  module-global audit identifier; address, width, volatility, alignment and
+  fence placement are intentionally not caller-selectable. -/
+  | uartRead8 (result : String) (site : Nat) (register : UARTReadRegister)
+  /-- One ordered 16550 THR byte write at `0x10000000`. -/
+  | uartWrite8 (site : Nat) (value : Operand)
+  /-- Enable and reset both 16550 FIFOs by writing the fixed byte `0x07` to FCR. -/
+  | uartEnableAndResetFifo (site : Nat)
   /-- Construct word zero of the Gate 5 checked result.  `status` is already
   zero-extended to `i64`; keeping the aggregate operation closed prevents an
   arbitrary aggregate language from entering the backend. -/
@@ -149,6 +182,23 @@ def Instruction.render : Instruction → String
   | .store ty value address alignment volatile =>
       "store " ++ (if volatile then "volatile " else "") ++
         s!"{ty.render} {value.render}, ptr {address.render}, align {alignment}"
+  | .uartRead8 result site register =>
+      s!"; lemma.uart-site={site};op={register.stableId}\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  " ++ assignment result ++ "load volatile i8, ptr inttoptr (i64 " ++
+          toString register.address ++ " to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .uartWrite8 site value =>
+      s!"; lemma.uart-site={site};op=uart.thr.write8\n" ++
+        "  call void @core0_io_fence()\n" ++
+        s!"  store volatile i8 {value.render}, ptr inttoptr " ++
+          "(i64 268435456 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .uartEnableAndResetFifo site =>
+      s!"; lemma.uart-site={site};op=uart.fcr.enable-reset\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  store volatile i8 7, ptr inttoptr (i64 268435458 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
   | .insertResultStatus result status =>
       assignment result ++
         s!"insertvalue {Ty.checkedResult.render} poison, i64 {status.render}, 0"

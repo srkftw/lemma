@@ -71,6 +71,7 @@ structure Evaluation where
 inductive DiagnosticCode where
   | fuelExhausted
   | malformedState
+  | deviceActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure Diagnostic where
@@ -231,6 +232,22 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
                     evaluate fuel result.state
                       (next result.outcome.status result.outcome.value)
             go count.toNat 0 initial state
+      | .uartReadStatus _ => .error {
+          code := .deviceActionUnsupported
+          message := "the core0-v0.4 finite RAM model does not interpret UART actions"
+        }
+      | .uartReadByte _ => .error {
+          code := .deviceActionUnsupported
+          message := "the core0-v0.4 finite RAM model does not interpret UART actions"
+        }
+      | .uartWriteByte _ _ => .error {
+          code := .deviceActionUnsupported
+          message := "the core0-v0.4 finite RAM model does not interpret UART actions"
+        }
+      | .uartEnableAndResetFifo _ => .error {
+          code := .deviceActionUnsupported
+          message := "the core0-v0.4 finite RAM model does not interpret UART actions"
+        }
 
 def evaluateDefault (state : State) (action : Action) : Except Diagnostic Evaluation :=
   evaluate 65536 state action

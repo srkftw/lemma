@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.5",
+  "legacy_profile": "core0-v0.4",
+  "cases": [
+    {
+      "name": "v04-device",
+      "path": "examples/foundation/gate6-reject/V04Device.lean",
+      "diagnostic_code": "unsupported-primitive",
+      "required_fragments": [
+        "device operation `uart.read-status` requires `core0-v0.5`; `core0-v0.4` does not admit MMIO",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "over-device-budget",
+      "path": "examples/foundation/gate6-reject/OverDeviceBudget.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action-fold budget 1000001 exceeds maximum 1000000 for `core0-v0.5`",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "stored-device-continuation",
+      "path": "examples/foundation/gate6-reject/StoredDeviceContinuation.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "hidden-extern-device",
+      "path": "examples/foundation/gate6-reject/HiddenExternDevice.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+        "dependency path: root -> forbidden"
+      ]
+    },
+    {
+      "name": "pure-device-result",
+      "path": "examples/foundation/gate6-reject/PureDeviceResult.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+        "dependency path: root"
+      ]
+    }
+  ]
+}

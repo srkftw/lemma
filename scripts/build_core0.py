@@ -94,6 +94,18 @@ MEMORY_SUITE_GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+DEVICE_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "device-suite-manifest.json",
+    "device-suite-normalized.txt",
+    "device-test-abi.json",
+    "symbols.txt",
+)
+
 ARTIFACT_CATEGORIES = (
     "release",
     "test-compiler-control",
@@ -102,6 +114,7 @@ ARTIFACT_CATEGORIES = (
     "test-cfg-suite",
     "test-loop-suite",
     "test-memory-suite",
+    "test-device-suite",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -361,8 +374,7 @@ def _program_object_provenance(
             "test-only runtime-counted bounded iteration, stack measurement, and "
             "freestanding source/model/RV64 comparison"
         )
-    else:
-        assert artifact_category == "test-memory-suite"
+    elif artifact_category == "test-memory-suite":
         kind = "test-memory-suite-llvm"
         source = (
             "program.ll generated from the checked Core0 v0.4 Action suite through "
@@ -371,6 +383,17 @@ def _program_object_provenance(
         purpose = (
             "test-only checked ordinary-RAM access, explicit effects, canary "
             "observation, and freestanding source/model/RV64 comparison"
+        )
+    else:
+        assert artifact_category == "test-device-suite"
+        kind = "test-device-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.5 Action suite through "
+            "validated ordered-MMIO lowering and the status-only device harness"
+        )
+        purpose = (
+            "test-only compiled UART polling, framing, multi-request dispatch, "
+            "bounded timeout behavior, and freestanding QEMU interaction"
         )
     return {
         "path": "program.o",
@@ -586,9 +609,16 @@ def build(
                 "LEMMA_MEMORY_RUNTIME_SEED",
             }
             exporter_kind = "memory"
+        elif artifact_category == "test-device-suite":
+            expected_export_keys = {
+                "LEMMA_DEVICE_SUITE_ID",
+                "LEMMA_DEVICE_SOURCE_SEED",
+                "LEMMA_DEVICE_RUNTIME_SEED",
+            }
+            exporter_kind = "device"
         else:
             raise Core0Error(
-                "only closed scalar/memory-suite test builds accept exporter configuration"
+                "only closed scalar/memory/device-suite test builds accept exporter configuration"
             )
         observed_export_keys = set(export_environment)
         if observed_export_keys != expected_export_keys:
@@ -617,7 +647,9 @@ def build(
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    if artifact_category == "test-memory-suite":
+    if artifact_category == "test-device-suite":
+        generated_by_lean = list(DEVICE_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-memory-suite":
         generated_by_lean = list(MEMORY_SUITE_GENERATED_BY_LEAN)
     elif artifact_category == "test-loop-suite":
         generated_by_lean = list(BOUNDED_SUITE_GENERATED_BY_LEAN)
@@ -662,7 +694,11 @@ def build(
         *LLC_ARGUMENTS,
         *(
             ["-stack-size-section"]
-            if artifact_category in {"test-loop-suite", "test-memory-suite"}
+            if artifact_category in {
+                "test-loop-suite",
+                "test-memory-suite",
+                "test-device-suite",
+            }
             else []
         ),
         f"-{opt_level}",

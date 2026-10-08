@@ -4,8 +4,9 @@ Status: Task 001 implements and tests the bounded `core0-v0.1` scalar membership
 checker. Task 002 Gate 3 adds the explicitly separate `core0-v0.2` scalar/CFG
 profile. Task 002 Gate 4 adds the narrowly bounded `core0-v0.3` iteration profile
 described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
-checked-memory/Action profile. Device effects and the broader Core0 contract remain
-future work.
+checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
+`core0-v0.5` polling-device profile. Traps, timers, and the broader Core0 contract
+remain future work.
 
 ## Purpose
 
@@ -144,15 +145,54 @@ the compiler preserves it.
 The v0.4 region API is checked access inside one trusted M-mode image. It is not a
 hardware protection boundary against arbitrary privileged code, an allocator, an
 address-space system, or a device API. MMIO remains excluded from ordinary RAM and
-requires a later, separately versioned effect and ordering contract.
+requires the separately versioned effect and ordering contract below.
+
+## Implemented compiled-device profile
+
+`core0-v0.5` is additive and must be selected explicitly. It retains the complete
+v0.4 scalar, Action, and checked-RAM contract and admits exactly four device Actions:
+`uartReadStatus`, `uartReadByte`, `uartWriteByte`, and
+`uartEnableAndResetFifo`. They denote the pinned ns16550a LSR read, RBR read, THR
+write, and fixed FCR `0x07` write respectively. Source code cannot supply an MMIO
+base, register offset, width, alignment, volatility flag, or fence policy.
+
+Each admitted device Action lowers to exactly one volatile `i8` access with alignment
+one at its fixed address, immediately preceded and followed by the generated
+`core0_io_fence` (`fence iorw, iorw`) primitive. Device effects are recorded separately
+as `mmioRead`, `mmioWrite`, and `ioOrder`; the checker unions them transitively through
+conditionals, direct helper calls, and bounded-fold callbacks. Ordinary RAM access to
+the UART region remains status 3 and never becomes a generic MMIO escape hatch.
+
+The v0.5 `boundedFoldU64` maximum is 1,000,000 iterations, while the v0.4 maximum
+remains 256. Status 10 is an internal early-stop result consumed by polling helpers and
+must not escape the public protocol. The added public terminal statuses are 11
+(transmit timeout), 12 (receive timeout), 13 (line error), 14 (malformed frame),
+15 (truncated frame), 16 (invalid length), and 17 (unsupported command). Unknown
+operations and stale device/effect metadata fail closed.
+
+The fixed Gate 6 root initializes the UART FIFO, transmits
+`LEMMA_DEVICE/1\nREADY\n`, and handles exactly two runtime requests received after
+boot. Requests use the 16-byte `LMQ6` little-endian header and at most 16 payload
+bytes; responses are fixed 24-byte `LMS6` frames. ADD64, XOR64, a distinguishing
+RAM-versus-UART branch, and bounded TX stress are admitted. An unsupported command
+gets status 17 and preserves framing for the next request; malformed, truncated,
+invalid-length, and bounded polling failures terminate with their declared Action
+status.
+
+The finite UART and packet models describe register side effects, ordered access
+events, polling outcomes, parsing, dispatch, and encoding. Their local lemmas and
+executable comparisons do not prove that the frontend or LLVM lowering preserves
+those models. This profile is specific to the pinned QEMU machine; it is not a
+general driver framework, physical-board port, interrupt implementation, hosted IO,
+or managed runtime.
 
 ## Future profile work
 
 - `UInt8`, `UInt32`, `UInt64`, explicitly represented Boolean values, and literal data.
 - First-order monomorphic scalar functions, direct calls, let bindings, conditionals,
   unsigned comparisons, bit operations and wrapping integer addition/subtraction/multiplication.
-- A separately named primitive boundary for ordered MMIO and bounded polling, with
-  explicit device effects distinct from the implemented v0.4 RAM effects.
+- Trap entry, timer interrupts, and interrupt-safe synchronization remain later,
+  separately reviewed machine profiles; v0.5 UART operation is polling-only.
 - No floating point, vectors, atomics, dynamic allocation or concurrency in this first profile.
 - General recursion and dynamic loops may be rejected initially. Any admitted bounded loop
   needs an explicit representation and lowering; the compiler must not ignore its body.

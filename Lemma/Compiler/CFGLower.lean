@@ -5,12 +5,13 @@ import Lemma.Core0.Bounded
 import Lemma.Core0.ScalarLemmas
 
 /-!
-Structured `core0-v0.2` and `core0-v0.3` lowering.
+Structured `core0-v0.2` through `core0-v0.5` lowering.
 
 This module is intentionally parallel to the historical single-block lowering in
 `Lower.lean`.  Task 001 and the Gate 2 `core0-v0.1` suite retain their byte-stable
 eager-select path.  The additive structured profiles use explicit branches and phi
-merge values; v0.3 additionally lowers checked bounded folds to real CFG backedges.
+merge values; v0.3 additionally lowers checked bounded folds to real CFG backedges,
+v0.4 adds checked fixed-region Actions, and v0.5 adds closed ordered UART sites.
 -/
 
 namespace Lemma.Compiler
@@ -19,6 +20,7 @@ private structure CFGState where
   nextValue : Nat := 0
   nextBlock : Nat := 0
   nextMemorySite : Nat := 0
+  nextDeviceSite : Nat := 0
   currentLabel : String := "entry"
   currentInstructions : Array LLVM.Instruction := #[]
   blocks : Array LLVM.Block := #[]
@@ -40,6 +42,11 @@ private def freshMemorySite : CFGM Nat := do
   let state ← get
   set { state with nextMemorySite := state.nextMemorySite + 1 }
   pure state.nextMemorySite
+
+private def freshDeviceSite : CFGM Nat := do
+  let state ← get
+  set { state with nextDeviceSite := state.nextDeviceSite + 1 }
+  pure state.nextDeviceSite
 
 private def emit (instruction : LLVM.Instruction) : CFGM Unit :=
   modify fun state => {
@@ -218,7 +225,7 @@ private def lowerExprCFG (profile : Lemma.Core0.Profile)
           (rv64LP64Extension resultTy) symbol lowered)
         pure (.local result)
     | .boundedFoldU32 budget callback count initial => do
-        unless profile == .v0_3 || profile == .v0_4 do
+        unless profile == .v0_3 || profile == .v0_4 || profile == .v0_5 do
           throw s!"bounded iteration requires `{Lemma.Core0.Profile.v0_3.contractVersion}` or later"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
           throw s!"bounded iteration budget {budget} is outside 0..{Lemma.Core0.Bounded.maximumBudget}"
@@ -407,12 +414,12 @@ def lowerSuiteV03 (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite :=
   lowerStructuredSuiteForProfile .v0_3 suite options
 
-/-! ## Checked fixed-region Actions (`core0-v0.4`)
+/-! ## Checked fixed-region and device Actions (`core0-v0.4` / `core0-v0.5`)
 
 The Action path deliberately has a fixed two-word result and accepts only scalar
 parameters.  It shares the structured scalar expression lowerer above, but keeps
-effectful control flow in a separate entry point so no historical scalar profile
-can acquire memory effects by accident. -/
+effectful control flow in separate entry points so no historical scalar profile
+can acquire memory or device effects by accident. -/
 
 structure LoweredActionRoot where
   id : Nat
@@ -472,6 +479,88 @@ private def statusOperand (status : UInt8) : LLVM.Operand :=
 
 private def boolOperand (value : Bool) : LLVM.Operand :=
   .int .i1 (if value then 1 else 0)
+
+private def expectedDeviceSpec (op : Lemma.Core0.Device.Op) :
+    Lemma.Core0.Device.OpSpec :=
+  match op with
+  | .uartReadStatus => {
+      op
+      base := Lemma.Core0.Device.UART.base
+      offset := Lemma.Core0.Device.UART.lsrOffset
+      widthBytes := 1
+      access := .read
+      fixedWriteValue? := none
+      fenceBefore := true
+      fenceAfter := true
+      sideEffect := .observeLineStatus
+    }
+  | .uartReadByte => {
+      op
+      base := Lemma.Core0.Device.UART.base
+      offset := Lemma.Core0.Device.UART.rbrThrOffset
+      widthBytes := 1
+      access := .read
+      fixedWriteValue? := none
+      fenceBefore := true
+      fenceAfter := true
+      sideEffect := .consumeReceiveByte
+    }
+  | .uartWriteByte => {
+      op
+      base := Lemma.Core0.Device.UART.base
+      offset := Lemma.Core0.Device.UART.rbrThrOffset
+      widthBytes := 1
+      access := .write
+      fixedWriteValue? := none
+      fenceBefore := true
+      fenceAfter := true
+      sideEffect := .transmitByte
+    }
+  | .uartEnableAndResetFifo => {
+      op
+      base := Lemma.Core0.Device.UART.base
+      offset := Lemma.Core0.Device.UART.fcrOffset
+      widthBytes := 1
+      access := .write
+      fixedWriteValue? := some Lemma.Core0.Device.UART.fcrEnableAndReset
+      fenceBefore := true
+      fenceAfter := true
+      sideEffect := .enableAndResetFifos
+    }
+
+private def deviceCatalogMatchesBackend : Bool :=
+  Lemma.Core0.Device.opCatalog == #[
+    expectedDeviceSpec .uartReadStatus,
+    expectedDeviceSpec .uartReadByte,
+    expectedDeviceSpec .uartWriteByte,
+    expectedDeviceSpec .uartEnableAndResetFifo
+  ]
+
+private def pushDeviceOp (operations : Array Lemma.Core0.Device.Op)
+    (operation : Lemma.Core0.Device.Op) : Array Lemma.Core0.Device.Op :=
+  if operations.contains operation then operations else operations.push operation
+
+private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
+    Lemma.Core0.ActionExpr → Array Lemma.Core0.Device.Op
+  | .done .. | .call .. => operations
+  | .bind first _ _ next =>
+      collectDeviceOps (collectDeviceOps operations first) next
+  | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
+      .checkRange _ _ _ _ _ next =>
+      collectDeviceOps operations next
+  | .ite _ thenBranch elseBranch =>
+      collectDeviceOps (collectDeviceOps operations thenBranch) elseBranch
+  | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
+      collectDeviceOps operations next
+  | .uartReadStatus _ _ next =>
+      collectDeviceOps (pushDeviceOp operations .uartReadStatus) next
+  | .uartReadByte _ _ next =>
+      collectDeviceOps (pushDeviceOp operations .uartReadByte) next
+  | .uartWriteByte _ _ next =>
+      collectDeviceOps (pushDeviceOp operations .uartWriteByte) next
+  | .uartEnableAndResetFifo _ next =>
+      collectDeviceOps (pushDeviceOp operations .uartEnableAndResetFifo) next
+termination_by action => sizeOf action
 
 private def lookupActionFunction (functions : Array Lemma.Core0.ActionFunction)
     (name : Lean.Name) : Except String Lemma.Core0.ActionFunction :=
@@ -681,32 +770,33 @@ private def lowerCheckedMemory (request : CheckedMemoryRequest)
   emit (.phi valueName .i64 valueIncoming)
   pure { status := .local statusName, value := .local valueName }
 
-private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
+private def lowerActionExpr (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite)
     (symbols : Array Symbol) : Lemma.Core0.ActionExpr → CFGM ActionOutcome
   | .done status value => do
       unless status.type == .u8 && value.type == .u64 do
         throw "checked Action.done must contain (u8,u64)"
       pure {
-        status := ← lowerExprCFG .v0_4 suite.scalarFunctions symbols status
-        value := ← lowerExprCFG .v0_4 suite.scalarFunctions symbols value
+        status := ← lowerExprCFG profile suite.scalarFunctions symbols status
+        value := ← lowerExprCFG profile suite.scalarFunctions symbols value
       }
   | .bind first status value next => do
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked Action.bind must bind (u8,u64)"
-      let outcome ← lowerActionExpr suite symbols first
+      let outcome ← lowerActionExpr profile suite symbols first
       withLocal status.id outcome.status do
         withLocal value.id outcome.value do
-          lowerActionExpr suite symbols next
+          lowerActionExpr profile suite symbols next
   | .load width region offset status value next => do
       unless region.type == .u8 && offset.type == .u64 &&
           status.ty == .u8 && value.ty == .u64 do
         throw "checked Action load has an inconsistent type"
-      let region ← lowerExprCFG .v0_4 suite.scalarFunctions symbols region
-      let offset ← lowerExprCFG .v0_4 suite.scalarFunctions symbols offset
+      let region ← lowerExprCFG profile suite.scalarFunctions symbols region
+      let offset ← lowerExprCFG profile suite.scalarFunctions symbols offset
       let outcome ← lowerCheckedMemory (.load width) region offset
       withLocal status.id outcome.status do
         withLocal value.id outcome.value do
-          lowerActionExpr suite symbols next
+          lowerActionExpr profile suite symbols next
   | .store width region offset value status next => do
       let expected := match width with
         | .w8 => Lemma.Core0.Ty.u8
@@ -715,37 +805,37 @@ private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
       unless region.type == .u8 && offset.type == .u64 && value.type == expected &&
           status.ty == .u8 do
         throw "checked Action store has an inconsistent type"
-      let region ← lowerExprCFG .v0_4 suite.scalarFunctions symbols region
-      let offset ← lowerExprCFG .v0_4 suite.scalarFunctions symbols offset
-      let value ← lowerExprCFG .v0_4 suite.scalarFunctions symbols value
+      let region ← lowerExprCFG profile suite.scalarFunctions symbols region
+      let offset ← lowerExprCFG profile suite.scalarFunctions symbols offset
+      let value ← lowerExprCFG profile suite.scalarFunctions symbols value
       let outcome ← lowerCheckedMemory (.store width value) region offset
       withLocal status.id outcome.status do
-        lowerActionExpr suite symbols next
+        lowerActionExpr profile suite symbols next
   | .checkRange access region offset length status next => do
       unless region.type == .u8 && offset.type == .u64 && length.type == .u64 &&
           status.ty == .u8 do
         throw "checked Action range preflight has an inconsistent type"
-      let region ← lowerExprCFG .v0_4 suite.scalarFunctions symbols region
-      let offset ← lowerExprCFG .v0_4 suite.scalarFunctions symbols offset
-      let length ← lowerExprCFG .v0_4 suite.scalarFunctions symbols length
+      let region ← lowerExprCFG profile suite.scalarFunctions symbols region
+      let offset ← lowerExprCFG profile suite.scalarFunctions symbols offset
+      let length ← lowerExprCFG profile suite.scalarFunctions symbols length
       let outcome ← lowerCheckedMemory (.range access length) region offset
       withLocal status.id outcome.status do
-        lowerActionExpr suite symbols next
+        lowerActionExpr profile suite symbols next
   | .ite condition thenBranch elseBranch => do
       unless condition.type == .bool do
         throw "checked Action conditional requires a Bool condition"
-      let condition ← lowerExprCFG .v0_4 suite.scalarFunctions symbols condition
+      let condition ← lowerExprCFG profile suite.scalarFunctions symbols condition
       let thenLabel ← freshBlock "action.if.then"
       let elseLabel ← freshBlock "action.if.else"
       let mergeLabel ← freshBlock "action.if.merge"
       let _ ← finishBlock (.branch condition thenLabel elseLabel)
 
       startBlock thenLabel
-      let thenOutcome ← lowerActionExpr suite symbols thenBranch
+      let thenOutcome ← lowerActionExpr profile suite symbols thenBranch
       let thenExit ← finishBlock (.jump mergeLabel)
 
       startBlock elseLabel
-      let elseOutcome ← lowerActionExpr suite symbols elseBranch
+      let elseOutcome ← lowerActionExpr profile suite symbols elseBranch
       let elseExit ← finishBlock (.jump mergeLabel)
 
       startBlock mergeLabel
@@ -773,7 +863,7 @@ private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
           throw s!"checked Action call argument #{index} for `{callee}` has the wrong type"
         arguments := arguments.push {
           ty := llvmTy expected
-          value := ← lowerExprCFG .v0_4 suite.scalarFunctions symbols argument
+          value := ← lowerExprCFG profile suite.scalarFunctions symbols argument
           extension := rv64LP64Extension expected
         }
         index := index + 1
@@ -787,8 +877,12 @@ private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next => do
-      unless budget ≤ Lemma.Core0.Memory.maximumBudget do
-        throw s!"checked Action fold budget {budget} exceeds {Lemma.Core0.Memory.maximumBudget}"
+      let maximumBudget := if profile == .v0_5 then
+        Lemma.Core0.Memory.maximumBudgetV05
+      else
+        Lemma.Core0.Memory.maximumBudgetV04
+      unless budget ≤ maximumBudget do
+        throw s!"checked Action fold budget {budget} exceeds {maximumBudget}"
       unless count.type == .u32 && initial.type == .u64 && ctx0.type == .u64 &&
           ctx1.type == .u64 && ctx2.type == .u64 && ctx3.type == .u64 &&
           status.ty == .u8 && value.ty == .u64 do
@@ -804,12 +898,12 @@ private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
         | .ok symbol => pure symbol
         | .error message => throw message
 
-      let count ← lowerExprCFG .v0_4 suite.scalarFunctions symbols count
-      let initial ← lowerExprCFG .v0_4 suite.scalarFunctions symbols initial
-      let ctx0 ← lowerExprCFG .v0_4 suite.scalarFunctions symbols ctx0
-      let ctx1 ← lowerExprCFG .v0_4 suite.scalarFunctions symbols ctx1
-      let ctx2 ← lowerExprCFG .v0_4 suite.scalarFunctions symbols ctx2
-      let ctx3 ← lowerExprCFG .v0_4 suite.scalarFunctions symbols ctx3
+      let count ← lowerExprCFG profile suite.scalarFunctions symbols count
+      let initial ← lowerExprCFG profile suite.scalarFunctions symbols initial
+      let ctx0 ← lowerExprCFG profile suite.scalarFunctions symbols ctx0
+      let ctx1 ← lowerExprCFG profile suite.scalarFunctions symbols ctx1
+      let ctx2 ← lowerExprCFG profile suite.scalarFunctions symbols ctx2
+      let ctx3 ← lowerExprCFG profile suite.scalarFunctions symbols ctx3
 
       let withinBudget ← freshValue "action.fold.within-budget"
       let indexName ← freshValue "action.fold.index"
@@ -893,10 +987,56 @@ private def lowerActionExpr (suite : Lemma.Core0.CheckedActionSuite)
       ])
       withLocal status.id (.local resultStatus) do
         withLocal value.id (.local resultValue) do
-          lowerActionExpr suite symbols next
+          lowerActionExpr profile suite symbols next
+  | .uartReadStatus status value next => do
+      unless profile == .v0_5 do
+        throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
+      unless status.ty == .u8 && value.ty == .u64 do
+        throw "checked UART status read has an inconsistent continuation type"
+      let site ← freshDeviceSite
+      let byte ← freshValue "uart.lsr.byte."
+      let word ← freshValue "uart.lsr.word."
+      emit (.uartRead8 byte site .lsr)
+      emit (.zext word .i8 (.local byte) .i64)
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        withLocal value.id (.local word) do
+          lowerActionExpr profile suite symbols next
+  | .uartReadByte status value next => do
+      unless profile == .v0_5 do
+        throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
+      unless status.ty == .u8 && value.ty == .u64 do
+        throw "checked UART byte read has an inconsistent continuation type"
+      let site ← freshDeviceSite
+      let byte ← freshValue "uart.rbr.byte."
+      let word ← freshValue "uart.rbr.word."
+      emit (.uartRead8 byte site .rbr)
+      emit (.zext word .i8 (.local byte) .i64)
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        withLocal value.id (.local word) do
+          lowerActionExpr profile suite symbols next
+  | .uartWriteByte value status next => do
+      unless profile == .v0_5 do
+        throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
+      unless value.type == .u8 && status.ty == .u8 do
+        throw "checked UART byte write has an inconsistent type"
+      let value ← lowerExprCFG profile suite.scalarFunctions symbols value
+      let site ← freshDeviceSite
+      emit (.uartWrite8 site value)
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        lowerActionExpr profile suite symbols next
+  | .uartEnableAndResetFifo status next => do
+      unless profile == .v0_5 do
+        throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
+      unless status.ty == .u8 do
+        throw "checked UART FIFO control has an inconsistent continuation type"
+      let site ← freshDeviceSite
+      emit (.uartEnableAndResetFifo site)
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        lowerActionExpr profile suite symbols next
 termination_by action => sizeOf action
 
-private def lowerScalarFunctionV04 (suite : Lemma.Core0.CheckedActionSuite)
+private def lowerScalarActionFunction (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite)
     (symbols : Array Symbol) (options : SuiteLowerOptions)
     (function : Lemma.Core0.Function) : Except String LLVM.Function := do
   let parameters := function.params.mapIdx fun index param =>
@@ -906,7 +1046,7 @@ private def lowerScalarFunctionV04 (suite : Lemma.Core0.CheckedActionSuite)
     (param.id, LLVM.Operand.local s!"arg{index}")) |>.toList
   let initial : CFGState := { locals }
   let (result, state) ←
-    lowerExprCFG .v0_4 suite.scalarFunctions symbols function.body |>.run initial
+    lowerExprCFG profile suite.scalarFunctions symbols function.body |>.run initial
   let finalState ← match
       finishBlock (.ret (llvmTy function.signature.result) result) |>.run state with
     | .ok (_, state) => pure state
@@ -928,16 +1068,19 @@ private def lowerScalarFunctionV04 (suite : Lemma.Core0.CheckedActionSuite)
   LLVM.validateFunction lowered
   pure lowered
 
-private def lowerActionFunctionV04 (suite : Lemma.Core0.CheckedActionSuite)
+private def lowerActionFunction (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite)
     (symbols : Array Symbol) (options : SuiteLowerOptions)
-    (function : Lemma.Core0.ActionFunction) : Except String LLVM.Function := do
+    (firstDeviceSite : Nat) (function : Lemma.Core0.ActionFunction) :
+    Except String (LLVM.Function × Nat) := do
   let parameters := function.params.mapIdx fun index param =>
     ({ ty := llvmTy param.ty, name := s!"arg{index}" } : LLVM.Parameter)
   let parameterExtensions := function.params.map fun param => rv64LP64Extension param.ty
   let locals := function.params.mapIdx (fun index param =>
     (param.id, LLVM.Operand.local s!"arg{index}")) |>.toList
-  let initial : CFGState := { locals }
-  let (outcome, state) ← lowerActionExpr suite symbols function.body |>.run initial
+  let initial : CFGState := { locals, nextDeviceSite := firstDeviceSite }
+  let (outcome, state) ←
+    lowerActionExpr profile suite symbols function.body |>.run initial
   -- Run the final sequence as one stateful action so fresh-name state is retained.
   let finalize : CFGM Unit := do
     let statusWord ← freshValue "action.result.status-word"
@@ -965,16 +1108,47 @@ private def lowerActionFunctionV04 (suite : Lemma.Core0.CheckedActionSuite)
     blocks := finalState.blocks
   }
   LLVM.validateFunction lowered
-  pure lowered
+  pure (lowered, finalState.nextDeviceSite)
 
-/-- Lower a complete checked `core0-v0.4` Action suite.  This is the only public
-lowering that admits the fixed-region effect IR. -/
-def lowerActionSuiteV04 (suite : Lemma.Core0.CheckedActionSuite)
+private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
-  unless suite.contractVersion == Lemma.Core0.Profile.v0_4.contractVersion do
-    throw s!"Action lowering requires `{Lemma.Core0.Profile.v0_4.contractVersion}`, got `{suite.contractVersion}`"
+  unless profile == .v0_4 || profile == .v0_5 do
+    throw "Action lowering requires profile core0-v0.4 or core0-v0.5"
+  unless suite.contractVersion == profile.contractVersion do
+    throw s!"Action lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
   unless Lemma.Core0.Memory.tableValid do
-    throw "the compiled core0-v0.4 fixed-region table is internally invalid"
+    throw "the compiled fixed-region table is internally invalid"
+  let mut actualDeviceOps : Array Lemma.Core0.Device.Op := #[]
+  for function in suite.actionFunctions do
+    actualDeviceOps := collectDeviceOps actualDeviceOps function.body
+  let mut seenDeviceMetadata : Array Lemma.Core0.Device.Op := #[]
+  for operation in suite.usedDeviceOps do
+    if seenDeviceMetadata.contains operation then
+      throw s!"checked Action suite repeats device metadata `{operation.stableId}`"
+    seenDeviceMetadata := seenDeviceMetadata.push operation
+    let some spec := Lemma.Core0.Device.findSpec? operation
+      | throw s!"checked Action suite names uncatalogued device operation `{operation.stableId}`"
+    unless spec == expectedDeviceSpec operation do
+      throw s!"device operation `{operation.stableId}` disagrees with the closed backend contract"
+  unless actualDeviceOps.size == suite.usedDeviceOps.size &&
+      actualDeviceOps.all suite.usedDeviceOps.contains &&
+      suite.usedDeviceOps.all actualDeviceOps.contains do
+    throw "checked Action suite has stale device-operation metadata"
+  if profile == .v0_4 && !actualDeviceOps.isEmpty then
+    throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
+  if profile == .v0_5 then
+    unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
+        Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
+        Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
+          LLVM.UARTReadRegister.lsr.address &&
+        Lemma.Core0.Device.UART.base.toNat == 0x10000000 &&
+        Lemma.Core0.Device.UART.rbrThrOffset.toNat == 0 &&
+        Lemma.Core0.Device.UART.fcrOffset.toNat == 2 &&
+        Lemma.Core0.Device.UART.lsrOffset.toNat == 5 &&
+        Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
+        Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
+      throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
   unless !suite.roots.isEmpty do throw "checked Action suite has no roots"
   unless !suite.actionFunctions.isEmpty do throw "checked Action suite has no functions"
 
@@ -1003,6 +1177,17 @@ def lowerActionSuiteV04 (suite : Lemma.Core0.CheckedActionSuite)
     for dependency in function.scalarDependencies do
       unless seenScalar.contains dependency do
         throw s!"Action function `{function.name}` names missing scalar dependency `{dependency}`"
+    let directDeviceOps := collectDeviceOps #[] function.body
+    let hasDirectDeviceRead :=
+      directDeviceOps.contains .uartReadStatus || directDeviceOps.contains .uartReadByte
+    let hasDirectDeviceWrite :=
+      directDeviceOps.contains .uartWriteByte ||
+        directDeviceOps.contains .uartEnableAndResetFifo
+    unless function.directEffects.mmioRead == hasDirectDeviceRead &&
+        function.directEffects.mmioWrite == hasDirectDeviceWrite &&
+        function.directEffects.ioOrder ==
+          (hasDirectDeviceRead || hasDirectDeviceWrite) do
+      throw s!"checked Action function `{function.name}` has stale direct device effects"
     let missing := function.actionDependencies.filter fun dependency =>
       !seenActions.contains dependency
     unless missing.isEmpty do
@@ -1042,9 +1227,14 @@ def lowerActionSuiteV04 (suite : Lemma.Core0.CheckedActionSuite)
   let symbols := scalarSymbols ++ actionSymbols
   let mut functions : Array LLVM.Function := #[]
   for function in suite.scalarFunctions do
-    functions := functions.push (← lowerScalarFunctionV04 suite symbols options function)
+    functions := functions.push
+      (← lowerScalarActionFunction profile suite symbols options function)
+  let mut nextDeviceSite := 0
   for function in suite.actionFunctions do
-    functions := functions.push (← lowerActionFunctionV04 suite symbols options function)
+    let (loweredFunction, followingDeviceSite) ←
+      lowerActionFunction profile suite symbols options nextDeviceSite function
+    functions := functions.push loweredFunction
+    nextDeviceSite := followingDeviceSite
   let mut roots : Array LoweredActionRoot := #[]
   for root in suite.roots do
     roots := roots.push {
@@ -1054,5 +1244,17 @@ def lowerActionSuiteV04 (suite : Lemma.Core0.CheckedActionSuite)
       signature := root.signature
     }
   pure { functions, symbols, roots }
+
+/-- Lower a complete checked `core0-v0.4` fixed-region Action suite.  Device
+constructors remain rejected by both the v0.4 checker and this backend entry. -/
+def lowerActionSuiteV04 (suite : Lemma.Core0.CheckedActionSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
+  lowerActionSuiteForProfile .v0_4 suite options
+
+/-- Lower a checked `core0-v0.5` Action suite with the four closed ordered UART
+operations in addition to the unchanged v0.4 fixed-region path. -/
+def lowerActionSuiteV05 (suite : Lemma.Core0.CheckedActionSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
+  lowerActionSuiteForProfile .v0_5 suite options
 
 end Lemma.Compiler

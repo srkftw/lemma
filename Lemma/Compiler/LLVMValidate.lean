@@ -74,6 +74,7 @@ private def resultDefinition? : Instruction → Option (String × Ty)
   | .ptrFromInt result _ => some (result, .ptr)
   | .intToPtr result _ => some (result, .ptr)
   | .load result ty _ _ _ => some (result, ty)
+  | .uartRead8 result _ _ => some (result, .i8)
   | .insertResultStatus result _ => some (result, .checkedResult)
   | .insertResultValue result _ _ => some (result, .checkedResult)
   | .extractResultStatus result _ => some (result, .i64)
@@ -308,6 +309,10 @@ private def validateInstruction (fn : Function) (block : Block) (instructionInde
       operand value ty (context ++ " value")
       operand address .ptr (context ++ " address")
       validateAlignment fn block.label context alignment
+  | .uartRead8 _ _ _ => pure ()
+  | .uartWrite8 _ value =>
+      operand value .i8 (context ++ " UART THR byte")
+  | .uartEnableAndResetFifo _ => pure ()
   | .insertResultStatus _ status =>
       operand status .i64 (context ++ " checked-result status")
   | .insertResultValue _ aggregate value =>
@@ -444,6 +449,25 @@ private def validatePhis (fn : Function) (definitions : Array Definition)
                 s!"incoming={repr incomingLabels}, actual={repr predecessors}")
       | _ => sawNonPhi := true
 
+private def uartSite? : Instruction → Option Nat
+  | .uartRead8 _ site _ | .uartWrite8 site _ | .uartEnableAndResetFifo site =>
+      some site
+  | _ => none
+
+/-- UART sites are consecutive in deterministic structured-emission order within
+a function.  The module validator below additionally requires the first site in
+the first function to be zero and the complete cross-function sequence to be dense. -/
+private def validateUARTSites (fn : Function) : Except String Unit := do
+  let mut previous? : Option Nat := none
+  for block in fn.blocks do
+    for h : index in [:block.instructions.size] do
+      if let some site := uartSite? block.instructions[index] then
+        if let some previous := previous? then
+          unless site == previous + 1 do
+            failIn fn block.label
+              s!"instruction #{index} has UART site {site}, expected consecutive site {previous + 1}"
+        previous? := some site
+
 /--
 Validate one structured function's block graph, phi/predecessor relation, SSA
 definitions, dominance, operand types, ABI annotations, and returns.
@@ -460,6 +484,7 @@ def validateFunction (fn : Function) : Except String Unit := do
       unless extensionAllowed fn.parameters[index].ty fn.parameterExtensions[index]! do
         failAt fn s!"parameter #{index} has an invalid ABI extension"
   validateBlockStructure fn
+  validateUARTSites fn
   let definitions ← collectDefinitions fn
   let dominators ← computeDominators fn
   validatePhis fn definitions dominators
@@ -561,6 +586,24 @@ def validateModule (llvmModule : Module) : Except String Unit := do
     if (lookupCallable? callables fn.name).isSome then
       throw s!"LLVM validation: duplicate declaration/definition `@{fn.name}`"
     callables := callables.push (functionCallable fn)
+  let usesUART := llvmModule.functions.any fun fn =>
+    fn.blocks.any fun block => block.instructions.any fun instruction =>
+      (uartSite? instruction).isSome
+  if usesUART then
+    let mut expectedSite := 0
+    for fn in llvmModule.functions do
+      for block in fn.blocks do
+        for instruction in block.instructions do
+          if let some site := uartSite? instruction then
+            unless site == expectedSite do
+              throw s!"LLVM validation: UART site {site} in `@{fn.name}` is not global canonical site {expectedSite}"
+            expectedSite := expectedSite + 1
+    let some fence := llvmModule.declarations.find? fun declaration =>
+        declaration.name == "core0_io_fence"
+      | throw "LLVM validation: ordered UART access requires declaration `@core0_io_fence`"
+    unless fence.returnType == .void && fence.parameters.isEmpty &&
+        fence.attributes == #["nounwind"] do
+      throw "LLVM validation: `@core0_io_fence` must be declared exactly `void () nounwind`"
   for fn in llvmModule.functions do
     for block in fn.blocks do
       for h : index in [:block.instructions.size] do

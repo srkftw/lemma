@@ -4,6 +4,7 @@ import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.InitAttr
 import Lemma.Core0.ActionIR
 import Lemma.Core0.Bounded
+import Lemma.Core0.Device
 import Lemma.Core0.IR
 import Lemma.Core0.Memory
 
@@ -211,6 +212,10 @@ def primitiveAllowlistV03 : Array PrimitiveSpec := primitiveAllowlistV02
 subexpressions retain the complete v0.3 primitive closure. -/
 def primitiveAllowlistV04 : Array PrimitiveSpec := primitiveAllowlistV03
 
+/-- `core0-v0.5` retains the scalar closure unchanged; its additions are closed
+Action-level device operations recorded separately from scalar primitives. -/
+def primitiveAllowlistV05 : Array PrimitiveSpec := primitiveAllowlistV04
+
 /-- Exact compiler-recognized contract for the v0.3 bounded fold. -/
 def boundedFoldU32Spec : IterationSpec := {
   stableId := boundedFoldU32StableId
@@ -225,14 +230,15 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_2 => primitiveAllowlistV02
   | .v0_3 => primitiveAllowlistV03
   | .v0_4 => primitiveAllowlistV04
+  | .v0_5 => primitiveAllowlistV05
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
-  | .v0_2 | .v0_3 | .v0_4 => true
+  | .v0_2 | .v0_3 | .v0_4 | .v0_5 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
-  | .v0_3 | .v0_4 => true
+  | .v0_3 | .v0_4 | .v0_5 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -276,6 +282,7 @@ private structure LowerState where
   usedIterations : Array IterationUse := #[]
   usedMemoryOps : Array MemoryOpUse := #[]
   usedActionIterations : Array ActionIterationUse := #[]
+  usedDeviceOps : Array Device.Op := #[]
   directEffects : EffectSet := .empty
 
 private abbrev LowerM := StateT LowerState (Except Diagnostic)
@@ -324,6 +331,16 @@ private def markActionIteration (site : ActionIterationUse) : LowerM Unit := do
   let state ← get
   unless state.usedActionIterations.contains site do
     set { state with usedActionIterations := state.usedActionIterations.push site }
+
+private def markDeviceOp (op : Device.Op) (effects : EffectSet) : LowerM Unit := do
+  let state ← get
+  let uses := if state.usedDeviceOps.contains op then state.usedDeviceOps
+    else state.usedDeviceOps.push op
+  set {
+    state with
+    usedDeviceOps := uses
+    directEffects := state.directEffects ∪ effects
+  }
 
 private def markIteration (site : IterationUse) : LowerM Unit := do
   let state ← get
@@ -1126,7 +1143,7 @@ def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
     Except Diagnostic CheckedSuite :=
   checkAndLowerSuiteForProfile env .v0_1 declaredRoots
 
-/-! ## Explicit Action frontend (`core0-v0.4`) -/
+/-! ## Explicit Action frontend (`core0-v0.4` and `core0-v0.5`) -/
 
 private def isActionType (type : Lean.Expr) : Bool :=
   constName? type == some ``Lemma.Core0.Memory.Action
@@ -1185,6 +1202,17 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else if name == ``Lemma.Core0.Memory.Action.store64 then some .w64
   else none
 
+private def actionMaximumBudget : Profile → Nat
+  | .v0_5 => Memory.maximumBudgetV05
+  | _ => Memory.maximumBudgetV04
+
+private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
+  unless ctx.profile == .v0_5 do
+    fail ctx .unsupportedPrimitive
+      (s!"device operation `{op.stableId}` requires " ++
+        s!"`{Profile.v0_5.contractVersion}`; `{ctx.profile.contractVersion}` " ++
+        "does not admit MMIO")
+
 private def substituteScalar (id : Nat) (replacement : Expr) : Expr → Expr
   | .var candidate ty => if candidate == id then replacement else .var candidate ty
   | .lit ty value => .lit ty value
@@ -1238,6 +1266,15 @@ private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr 
         (substituteScalar id replacement ctx0) (substituteScalar id replacement ctx1)
         (substituteScalar id replacement ctx2) (substituteScalar id replacement ctx3)
         status value (substituteActionScalar id replacement next)
+  | .uartReadStatus status value next =>
+      .uartReadStatus status value (substituteActionScalar id replacement next)
+  | .uartReadByte status value next =>
+      .uartReadByte status value (substituteActionScalar id replacement next)
+  | .uartWriteByte byte status next =>
+      .uartWriteByte (substituteScalar id replacement byte) status
+        (substituteActionScalar id replacement next)
+  | .uartEnableAndResetFifo status next =>
+      .uartEnableAndResetFifo status (substituteActionScalar id replacement next)
 
 mutual
 
@@ -1310,13 +1347,53 @@ mutual
       markMemoryOp { access, width? := none, range := true } .check
       pure (.checkRange access region offset length status next)
 
+    else if name == ``Lemma.Core0.Memory.Action.uartReadStatus then
+      let op := Device.Op.uartReadStatus
+      requireDeviceProfile ctx op
+      unless args.size == 1 do
+        fail ctx .arityMismatch "malformed Action.uartReadStatus application"
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[0]!
+      markDeviceOp op .deviceRead
+      pure (.uartReadStatus status value next)
+
+    else if name == ``Lemma.Core0.Memory.Action.uartReadByte then
+      let op := Device.Op.uartReadByte
+      requireDeviceProfile ctx op
+      unless args.size == 1 do
+        fail ctx .arityMismatch "malformed Action.uartReadByte application"
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[0]!
+      markDeviceOp op .deviceRead
+      pure (.uartReadByte status value next)
+
+    else if name == ``Lemma.Core0.Memory.Action.uartWriteByte then
+      let op := Device.Op.uartWriteByte
+      requireDeviceProfile ctx op
+      unless args.size == 2 do
+        fail ctx .arityMismatch "malformed Action.uartWriteByte application"
+      let value ← lowerExpr fuel ctx args[0]!
+      ensureType ctx .u8 value
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[1]!
+      markDeviceOp op .deviceWrite
+      pure (.uartWriteByte value status next)
+
+    else if name == ``Lemma.Core0.Memory.Action.uartEnableAndResetFifo then
+      let op := Device.Op.uartEnableAndResetFifo
+      requireDeviceProfile ctx op
+      unless args.size == 1 do
+        fail ctx .arityMismatch "malformed Action.uartEnableAndResetFifo application"
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[0]!
+      markDeviceOp op .deviceWrite
+      pure (.uartEnableAndResetFifo status next)
+
     else if name == ``Lemma.Core0.Memory.Action.boundedFoldU64 then
       unless args.size == 9 do
         fail ctx .arityMismatch "malformed Action.boundedFoldU64 application"
       let budget ← canonicalNatLiteral ctx args[0]!
-      unless budget ≤ Memory.maximumBudget do
+      let maximumBudget := actionMaximumBudget ctx.profile
+      unless budget ≤ maximumBudget do
         fail ctx .unsupportedExpression
-          s!"Action-fold budget {budget} exceeds maximum {Memory.maximumBudget}"
+          (s!"Action-fold budget {budget} exceeds maximum {maximumBudget} " ++
+            s!"for `{ctx.profile.contractVersion}`")
       let callback ← match stripMData args[1]! with
         | .const callback levels =>
             unless levels.isEmpty do
@@ -1427,10 +1504,10 @@ mutual
 
 end
 
-private def lowerActionFunction (env : Environment) (root name : Name)
+private def lowerActionFunction (env : Environment) (profile : Profile) (root name : Name)
     (path : List Name) : Except Diagnostic ActionFunction := do
   let baseCtx : LowerContext := {
-    env, profile := .v0_4, root, declaration := name, path, locals := #[]
+    env, profile, root, declaration := name, path, locals := #[]
   }
   let some info := env.find? name
     | throw <| mkDiagnostic baseCtx .unknownDeclaration
@@ -1499,6 +1576,7 @@ private structure ActionClosure where
   usedIterations : Array IterationUse := #[]
   usedMemoryOps : Array MemoryOpUse := #[]
   usedActionIterations : Array ActionIterationUse := #[]
+  usedDeviceOps : Array Device.Op := #[]
 
 private def pushUnique [BEq α] (values : Array α) (value : α) : Array α :=
   if values.contains value then values else values.push value
@@ -1528,9 +1606,18 @@ private def mergeScalarProgram (closure : ActionClosure) (program : Program) :
   pure closure
 
 /-- Check genuine elaborated Action roots and their complete scalar/Action closure
-under the explicit `core0-v0.4` contract. -/
-def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name) :
+under one of the two explicit Action profiles. -/
+def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
+    (declaredRoots : Array Name) :
     Except Diagnostic CheckedActionSuite := do
+  unless profile == .v0_4 || profile == .v0_5 do
+    throw {
+      code := .invalidSuite
+      root := declaredRoots[0]?.getD .anonymous
+      declaration := declaredRoots[0]?.getD .anonymous
+      path := declaredRoots[0]?.toList
+      message := s!"`{profile.contractVersion}` is a scalar-only profile; Action suites require `core0-v0.4` or `core0-v0.5`"
+    }
   unless !declaredRoots.isEmpty do
     throw {
       code := .invalidSuite
@@ -1565,16 +1652,16 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
             if done.contains name then pure ()
             else if visiting.contains name then
               let ctx : LowerContext := {
-                env, profile := .v0_4, root, declaration := name, path, locals := #[]
+                env, profile, root, declaration := name, path, locals := #[]
               }
               throw <| mkDiagnostic ctx .recursiveDependency
                 s!"recursive/cyclic Action dependency reaches `{name}`" path
             else
-              let function ← lowerActionFunction env root name path
+              let function ← lowerActionFunction env profile root name path
               visiting := name :: visiting
               -- Re-run once to obtain the complete use metadata retained in LowerState.
               let baseCtx : LowerContext := {
-                env, profile := .v0_4, root, declaration := name, path,
+                env, profile, root, declaration := name, path,
                 locals := function.params
               }
               let some info := env.find? name
@@ -1590,7 +1677,7 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
               let initialState : LowerState := { nextVar := function.params.size }
               let (_, state) ← lowerAction 65536 baseCtx body |>.run initialState
               for dependency in function.scalarDependencies do
-                let program ← checkAndLowerForProfile env .v0_4 dependency
+                let program ← checkAndLowerForProfile env profile dependency
                 closure ← mergeScalarProgram closure program
               for primitive in state.usedPrimitives do
                 closure := { closure with
@@ -1604,6 +1691,9 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
               for iteration in state.usedActionIterations do
                 closure := { closure with
                   usedActionIterations := pushUnique closure.usedActionIterations iteration }
+              for operation in state.usedDeviceOps do
+                closure := { closure with
+                  usedDeviceOps := pushUnique closure.usedDeviceOps operation }
               let entries := function.actionDependencies.toList.map fun dependency =>
                 ActionVisitTask.enter dependency (path ++ [dependency])
               stack := entries ++ [.exit function] ++ stack
@@ -1615,7 +1705,7 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
                 let some callee := closure.actionFunctions.find?
                     (fun candidate => candidate.name == dependency)
                   | let ctx : LowerContext := {
-                      env, profile := .v0_4, root,
+                      env, profile, root,
                       declaration := function.name,
                       path := [root, function.name, dependency], locals := #[]
                     }
@@ -1641,7 +1731,7 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
       signature := rootFunction.signature
     }
   pure {
-    contractVersion := Profile.v0_4.contractVersion
+    contractVersion := profile.contractVersion
     roots
     scalarFunctions := closure.scalarFunctions
     actionFunctions := closure.actionFunctions
@@ -1649,6 +1739,17 @@ def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name)
     usedIterations := closure.usedIterations
     usedMemoryOps := closure.usedMemoryOps
     usedActionIterations := closure.usedActionIterations
+    usedDeviceOps := closure.usedDeviceOps
   }
+
+/-- Historical checked-memory Action entry point.  Device constructors are rejected. -/
+def checkAndLowerActionSuiteV04 (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedActionSuite :=
+  checkAndLowerActionSuiteForProfile env .v0_4 declaredRoots
+
+/-- Checked-memory plus closed UART device operations under `core0-v0.5`. -/
+def checkAndLowerActionSuiteV05 (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedActionSuite :=
+  checkAndLowerActionSuiteForProfile env .v0_5 declaredRoots
 
 end Lemma.Core0

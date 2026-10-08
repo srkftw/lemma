@@ -1,11 +1,11 @@
 /-!
-Closed source syntax and fixed-region contract for `core0-v0.4`.
+Closed source syntax and fixed-region contract for `core0-v0.4` and `core0-v0.5`.
 
 `Action` is syntax inspected by the Core0 frontend, not a target representation.
 The only higher-order fields are immediate continuations and one statically resolved
-bounded-fold callback.  The v0.4 lowering erases every constructor and continuation
-to scalar SSA/control flow; no `Action`, closure, allocator, or managed state monad
-exists in the freestanding image.
+bounded-fold callback.  The selected Action lowering erases every constructor and
+continuation to scalar SSA/control flow; no `Action`, closure, allocator, or managed
+state monad exists in the freestanding image.
 -/
 
 namespace Lemma.Core0.Memory
@@ -88,12 +88,38 @@ def outOfBounds : UInt8 := 7
 def misaligned : UInt8 := 8
 def budgetExceeded : UInt8 := 9
 
-def isKnown (status : UInt8) : Bool := status ≤ budgetExceeded
+/-- Internal fold-control status.  A callback may use it to terminate the v0.5
+fold successfully; it is never emitted as a public protocol result. -/
+def iterationStop : UInt8 := 10
+def txTimeout : UInt8 := 11
+def rxTimeout : UInt8 := 12
+def lineError : UInt8 := 13
+def malformedFrame : UInt8 := 14
+def truncatedFrame : UInt8 := 15
+def invalidLength : UInt8 := 16
+def unsupportedCommand : UInt8 := 17
+
+def isKnownV04 (status : UInt8) : Bool := status ≤ budgetExceeded
+
+def isKnownV05 (status : UInt8) : Bool := status ≤ unsupportedCommand
+
+/-- Public v0.5 outcomes exclude the internal fold stop sentinel. -/
+def isPublicV05 (status : UInt8) : Bool :=
+  status == ok || (txTimeout ≤ status && status ≤ unsupportedCommand)
+
+/-- Historical v0.4 predicate retained with its original meaning. -/
+def isKnown (status : UInt8) : Bool := isKnownV04 status
 
 end Status
 
 /-- Largest Action-fold budget accepted by the v0.4 checker. -/
-def maximumBudget : Nat := 256
+def maximumBudgetV04 : Nat := 256
+
+/-- Larger but still static and finite Action-fold budget admitted only by v0.5. -/
+def maximumBudgetV05 : Nat := 1000000
+
+/-- Historical name retained for the v0.4 contract and existing manifests. -/
+def maximumBudget : Nat := maximumBudgetV04
 
 /-- Static region contract used by the model, exporter, and lowering.  Device
 entries are descriptive only and can never reach the ordinary-RAM address path. -/
@@ -229,5 +255,14 @@ inductive Action where
       (step : UInt32 → UInt32 → UInt64 → UInt64 → UInt64 → UInt64 → UInt64 → Action)
       (count : UInt32) (initial ctx0 ctx1 ctx2 ctx3 : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- Read the fixed UART line-status register.  The byte is zero-extended into
+  the standard Action value word. -/
+  | uartReadStatus (next : UInt8 → UInt64 → Action)
+  /-- Read and consume one byte from the fixed UART receive-buffer register. -/
+  | uartReadByte (next : UInt8 → UInt64 → Action)
+  /-- Write one byte to the fixed UART transmit-holding register. -/
+  | uartWriteByte (value : UInt8) (next : UInt8 → Action)
+  /-- Write `0x07` to the fixed UART FIFO-control register. -/
+  | uartEnableAndResetFifo (next : UInt8 → Action)
 
 end Lemma.Core0.Memory

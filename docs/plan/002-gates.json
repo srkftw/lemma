@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T05:02:34-07:00",
+  "updated_at": "2026-10-08T05:28:02-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -542,7 +542,7 @@
         "This gate adds no device driver, trap, interrupt, scheduler, managed runtime, physical-board, G1-completion, or G2-completion claim."
       ]
     },
-    {"gate": 6, "name": "compiled Lean device routines", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 6, "name": "compiled Lean device routines", "status": "in-progress", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 7, "name": "synchronous traps", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 8, "name": "timer interrupts", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 9, "name": "diagnostic monitor", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},

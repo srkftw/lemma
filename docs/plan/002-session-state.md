@@ -4,13 +4,14 @@
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
 - Highest passing gate: Gate 5.
-- Current gate: Gate 6, not started.
-- Current failure: none.
+- Current gate: Gate 6, in progress.
+- Current failure: none; the compiled-device implementation and focused audit/check
+  drivers are being integrated and have not yet been accepted from a clean commit.
 - Latest clean passing implementation: `ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98`
   (tree `c1172034c1dedc0a91375b2eb21dd6fe5fd9b187`).
-- Next executable action: begin Gate 6 with an additive `core0-v0.5` profile and
-  closed, ordered UART operations; keep polling, timeouts, packet handling, and
-  multi-request session logic in compiled Lean while preserving the old harness.
+- Next executable action: finish the independent device/central audits, run the
+  focused Gate 6 checker over clean O0/O2 builds and all 28 required QEMU sessions,
+  then commit and repeat the cumulative and legacy checks from clean source.
 
 ## Gate 0 historical checkpoint
 
