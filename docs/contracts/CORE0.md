@@ -1,6 +1,7 @@
 # Core0 contract — v0.1 proposal
 
-Status: proposed scope for task 001. No membership checker exists at scaffold creation.
+Status: Task 001 implements and tests the bounded v0.1 scalar membership checker;
+the broader Core0 contract remains proposed.
 
 ## Purpose
 

@@ -1,6 +1,7 @@
 # LemmaVM — boot-slice contract proposal
 
-Status: initial contract to be executed and pinned by task 001, not a tested command line.
+Status: Task 001 executes and pins the bounded QEMU scalar-boot profile; the later
+roadmap in this contract remains unimplemented.
 
 The reference backend is QEMU system emulation, RISC-V `virt`, one RV64 hart,
 128 MiB RAM, no network or disk for the first smoke test, a UART for target output,

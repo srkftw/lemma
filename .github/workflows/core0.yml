@@ -51,7 +51,7 @@ jobs:
           name: core0-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             build/core0/
-            docs/evidence/001-core0.md
+            docs/evidence/001-core0*
           if-no-files-found: warn
           retention-days: 14
           compression-level: 6

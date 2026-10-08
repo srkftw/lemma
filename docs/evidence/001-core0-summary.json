@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "task": "001-core0-freestanding-slice",
+  "recorded_at": "2026-10-07T23:25:49-07:00",
+  "clean_acceptance_completed_at": "2026-10-07T23:11:29-07:00",
+  "status": "passed_for_stated_scalar_slice",
+  "claim": "genuine Lean elaboration -> checked Core0 -> LLVM -> freestanding RV64 ELF -> QEMU UART result",
+  "all_g1_complete": false,
+  "ci": {
+    "status_at_record_time": "not_run",
+    "workflow": ".github/workflows/core0.yml"
+  },
+  "source": {
+    "repository": "srkftw/lemma",
+    "branch": "task/001-core0-freestanding-slice",
+    "base_commit": "f384f13d9f4981023b88008f87f1aa7685372d5a",
+    "tested_commit": "800d35963cb63c754584f5b8b0d53244c29c7018",
+    "tested_tree": "17f6fbdc8e1d81d4e0f4d91620bf6da5b6e59b9e",
+    "clean_worktree": true,
+    "dirty_paths": [],
+    "task_changed_file_count": 58,
+    "direct_image_source_input_count": 23,
+    "direct_image_source_inputs_canonical_sha256": "98d663d6e1688a0af284ff7071265687b69b7ad2acd8768083922a6a0a8bfe9e",
+    "inventory": "docs/evidence/001-core0-sha256s.txt"
+  },
+  "local_commands": [
+    {
+      "command": "python3 scripts/check_scaffold.py",
+      "status": "pass",
+      "scope": "metadata_only"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "status": "pass",
+      "tests": 18,
+      "scope": "metadata_and_publication_helpers"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "status": "pass",
+      "tests": 21,
+      "scope": "fail_closed_host_harness"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean",
+      "status": "pass",
+      "scope": "complete_task_001_acceptance"
+    }
+  ],
+  "acceptance": {
+    "check_results_sha256": "9c57398a77d240f3217a0e64f15d8f8c8d60b46b819754ce3837fe762f80d34b",
+    "root": "Lemma.Examples.Core0.Positive.entry",
+    "case_manifest_sha256": "2b2236b35d76fb3edc3e02724b24c34223519398a6ffd87d67b7796e02789cc4",
+    "rejection_manifest_sha256": "a8054ddd4384eb2c0d23988633265fc7f7c330618c7a0217fc1071bafe8f8ca0",
+    "differential_cases": 10,
+    "optimization_profiles": [
+      "O0",
+      "O2"
+    ],
+    "differential_boots": 20,
+    "mutation_and_rename_boots": 3,
+    "fresh_qemu_boots": 23,
+    "expected_rejections": 13,
+    "repeat_artifacts_per_profile": 14,
+    "repeat_artifacts_byte_identical": true,
+    "target_output_directories_clean": true,
+    "lake_dependency_cache_reused": true,
+    "source_mutation_status": "pass",
+    "rename_independence_status": "pass",
+    "foreign_object_audit_regression_status": "pass"
+  },
+  "runtime": {
+    "corpus_tag": "0x4c454d4d41303031",
+    "corpus_tag_is_prng_seed": false,
+    "qemu_seed": 1,
+    "input_address": "0x81000000",
+    "input_size_bytes": 40,
+    "representative_case": {
+      "case_id": "0x0000000000000002",
+      "args": [
+        "0x0000000000000002",
+        "0x0000000000000003",
+        "0x0000000000000013"
+      ],
+      "result": "0x000000000000009d",
+      "fixture_sha256": "b5de1f08a0af7b3c9041bc06045db8bd4592188efc7171a22e9b024b843fc354",
+      "uart": "LEMMA_CORE0/1\nRESULT:0000000000000002:000000000000009d\n",
+      "uart_sha256": "5629e055e1a6e70b1a0fffba0464d34bec88a628be05f91ce960ef6f8d46f701",
+      "qemu_returncode": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "toolchain": {
+    "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
+    "lean": {
+      "version": "4.34.1",
+      "revision": "5045d0056413266e57c625dcd7c365b10e377c52"
+    },
+    "llvm_lld_clang": {
+      "version": "20.1.8",
+      "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261"
+    },
+    "qemu": {
+      "version": "11.1.1",
+      "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943"
+    },
+    "dtc_version": "1.8.1",
+    "python_version_in_nix_shell": "3.14.7",
+    "lock": "tooling/toolchain-lock.json"
+  },
+  "target": {
+    "machine": "QEMU virt",
+    "mode": "M",
+    "harts": 1,
+    "ram_bytes": 134217728,
+    "firmware_option": "-bios none",
+    "triple": "riscv64-unknown-elf",
+    "abi": "lp64",
+    "elf_flags": "0x0",
+    "riscv_arch": "rv64i2p1_m2p0_zicsr2p0_zifencei2p0_zmmul1p0",
+    "entry": "0x80000000",
+    "allocated_sections": [
+      ".text",
+      ".rodata",
+      ".bss"
+    ],
+    "linked_objects": [
+      "startup.o",
+      "program.o"
+    ],
+    "final_undefined_symbols": [],
+    "final_relocations": [],
+    "dynamic_dependencies": []
+  },
+  "artifacts": {
+    "shared": {
+      "core0-manifest.json": "50985254ac530d9c021748fef8d0680064dbf8dc1de9ee2f19c77a40968c2c0d",
+      "core0-normalized.txt": "9d9c7b4875dccf619967f2d45caedaafb3c44a08396016bab4925883e0ee2d74",
+      "layout.json": "81f5ab1ff4f765b928656d7f572c7c8afd2dca1409600b9d4544597d039f95ff",
+      "link.ld": "ecc3802ff26174e8939c11637da8d098f61b9aefa84f3107a9e2c41aa7bafe68",
+      "platform.dtb": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
+      "platform.dts": "dbc65ed2346dd8aa6ab8f3218639cbe39636f2649201d88f516a7343396b3ec8",
+      "program.ll": "879bb50473d1e49072554638b0230ba29fc42e089f30d0fc361c6339f44705f8",
+      "startup.S": "1cd535e3f5dad9cc910316d26960942b06668fa4769eb7acf721b56a67a4b36c",
+      "startup.o": "83e13345e1a9e89cf8baaa167f9a7611d5858b9f3ba39372be924d79cefcdc0c",
+      "symbols.txt": "16185fd2a3b658cbad41d9af6c085581ebbee92d9998558b36417412cbcb0bdb"
+    },
+    "O0": {
+      "audit.json": "7fce28f12270e87004322d74bc2d745553e976292b4e4d61aef2032a6904d1f0",
+      "build.json": "55c8768d3320e2848b1a31a72fa1b9f7f64df1fecdcb08e90ea6423de5ae72a2",
+      "image.elf": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
+      "image.map": "08f9111350bd0ddf4f0d0add2e18e80876b9edb5dc3bd0759e6ecde6c19b65c4",
+      "program.o": "44b226c562663aaef00de00c9196d8b25a3d9c26564e1429ff5ba8f9b959f3b1",
+      "program.opt.ll": "62b55da43074df9c03a43980f0d9d0cd3bcf49ed86c0f09dc8c234828b792c3c",
+      "provenance.json": "7f543ed911eb4f8b0409c5bd96cfc7249615d93ede1b5e36655d5f877333f12b",
+      "sha256sums.txt": "8fa08ccecffef0292783a17f7efdd8c8a33f2e154e875b832a2d22a2869c6b54"
+    },
+    "O2": {
+      "audit.json": "2417a9d58fd601a912b604d10a1f93a1e33712f2dea25f116ff4db40ce1abeec",
+      "build.json": "1ce0afdec19a199b76692c578d3dd33cf1f236b7e62ac23b2e54940eff93eb0c",
+      "image.elf": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
+      "image.map": "993e7c6f110d95996b4bf3b7b3caedc11a8e63d45ff4338892eef5a7b9337ce9",
+      "program.o": "31e3e6fd1b78e3380ffd2367cda0b3d5906549a3f21deff9ed9413258a220607",
+      "program.opt.ll": "9160b7b0fae0346a0ba1978d04d8ca25e2761cf4975c69513ee1ec404c2714b2",
+      "provenance.json": "235e7bae5ba0f3ee24896dc31638ff6e59a55dad7c77a7daaf7243023341f66e",
+      "sha256sums.txt": "dd3d1cd07e47acd846d354457ecf2019c4ca3d60c9f6a89f8b7abefd67df91b0"
+    }
+  },
+  "mutation": {
+    "baseline_result": "0x0000000000000006",
+    "changed_result": "0x000000000000000a",
+    "renamed_result": "0x0000000000000006",
+    "changed_source_changes_llvm_elf_and_guest_result": true,
+    "rename_preserves_behavior": true
+  },
+  "audit_regression": {
+    "fixture_sha256": "499e190134343c1da7402267df0f3869f3c13c9c9b50791c2f82f7357f34e264",
+    "foreign_object_sha256": "6770c4c5ba6821a623f9f7747c99375335840a565ea5a69105c36c885a5b7a31",
+    "final_undefined_symbols": [],
+    "retained_forbidden_symbols": [
+      "lean_alloc_object",
+      "lemma_forbidden_foreign_runtime"
+    ],
+    "audit_rejected_extra_object": true
+  },
+  "emulator_artifacts": {
+    "automated_pre_reset_dtb_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
+    "separate_reset_probe": {
+      "counted_in_acceptance_boots": false,
+      "local_ignored_bundle": "build/core0/evidence-800d359/reset-probe",
+      "probe_script_sha256": "1d5761d7ae7b3098464354a7de957e29102c1b89bce70bda7963ffe4a1c44ec8",
+      "console_sha256": "10098142378b0ca41ad52581df85d6512ed2e0c4192ac3bd46183d86ace0052e",
+      "hmp_commands_sha256": "65969d3798ff42b64ff79ab8c3638dd40eccd6574b957645acab09e00f082352",
+      "hmp_transcript_sha256": "ba964a2131e6771df597b7200ecc2e3c527e6f30837aa9913af9d9ad8b036fda",
+      "mrom_sha256": "d0fd275d8b65aecfaeeabbfdca02152793356dfc852fa1304fc790c33a1fd75b",
+      "runtime_dtb_sha256": "6190e60bba396a340b526ac10219a43184e3927fa76c8a096bc5700ade41c5df",
+      "observed_a0": "0x0000000000000000",
+      "observed_a1": "0x0000000087e00000",
+      "observed_a2": "0x0000000000001028",
+      "a2_policy": "intentionally_ignored"
+    }
+  },
+  "limitations": [
+    "Finite differential execution is not a compiler-correctness proof.",
+    "The admitted source language is a pure first-order scalar subset, not arbitrary Lean.",
+    "The target has no managed runtime, heap, traps, scheduler, filesystem, UI, networking or physical-board qualification.",
+    "Repeat builds use fresh target output directories but reuse the pinned Lake dependency cache.",
+    "The broader Unit 1.8 deliberately-defective-lowering test remains open.",
+    "All Stage I units and G1 remain partial."
+  ],
+  "next_smallest_task": "Inject a deliberate defect into one supported lowering and show that the independent differential oracle detects it."
+}
