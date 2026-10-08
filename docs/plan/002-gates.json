@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task": "002-machine-foundation",
+  "updated_at": "2026-10-08T00:34:14-07:00",
+  "repository": "srkftw/lemma",
+  "base": {
+    "relationship": "stacked_on_unmerged_task_001",
+    "commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+    "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
+  },
+  "branch": "task/002-machine-foundation",
+  "highest_passing_gate": 0,
+  "gates": [
+    {
+      "gate": 0,
+      "name": "tested baseline",
+      "status": "passed",
+      "source": {
+        "commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+        "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75",
+        "clean": true
+      },
+      "commands": [
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass"},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23}
+      ],
+      "artifacts": [
+        {"path": "build/core0/check/check-results.json", "sha256": "3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c"}
+      ],
+      "notes": [
+        "Corrected only the historical documentation's distinction between input wire magic and corpus tag.",
+        "Recorded historical, report-bearing, push-CI, and synthetic-merge identities separately."
+      ]
+    },
+    {"gate": 1, "name": "incorrect-compiler detection", "status": "in-progress", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 2, "name": "multi-root frontend conformance", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 3, "name": "structured control flow and scalar operations", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 4, "name": "bounded iteration", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 6, "name": "compiled Lean device routines", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 7, "name": "synchronous traps", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 8, "name": "timer interrupts", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 9, "name": "diagnostic monitor", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 10, "name": "integrated qualification", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {"gate": 11, "name": "publication and continuation", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}}
+  ]
+}

@@ -74,8 +74,9 @@ structured generators provide:
 - aligned volatile reads from the reserved host-injected input region; and
 - fenced 32-bit writes to the SiFive test finisher for success or nonzero failure.
 
-The input record is five little-endian `UInt64` words: magic `LEMMA001`, case ID, and
-three root arguments.  The target root ABI is exactly
+The input record is five little-endian `UInt64` words: the first eight bytes are ASCII
+`LEMMA001` and load as `0x313030414d4d454c`, followed by the case ID and three root
+arguments. This wire word is distinct from the case corpus tag. The target root ABI is exactly
 `UInt64 -> UInt64 -> UInt64 -> UInt64`.  The result frame is
 `LEMMA_CORE0/1\nRESULT:<16-hex-case>:<16-hex-result>\n`.
 

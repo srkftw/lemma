@@ -42,6 +42,18 @@ permission to implement the scheduler, allocator, managed runtime, UI, verifier,
 recognizer, network stack, or tutor. Stay on the task's provided branch; do not
 change repository visibility, licensing, branch protection, or credentials.
 
+## Second task's scope
+
+Task 002 is defined by `codex/prompts/002-machine-foundation.md`. It deliberately
+extends the Task 001-only boundary with versioned scalar profiles, bounded loops,
+checked fixed-region memory and effects, compiled device routines, M-mode traps,
+timer interrupts, and a bounded diagnostic monitor. Preserve `core0-v0.1` as a
+regression profile and advance through the recorded gates in dependency order.
+Task 002 still excludes a managed heap/runtime, scheduler, page-table isolation,
+filesystem, proof checker, notebook, networking, tutor, and physical-board claims.
+Resume from `docs/plan/002-session-state.md` and `docs/plan/002-gates.json`; do not
+infer that a later gate passed from the existence of code or a cached earlier run.
+
 ## Evidence discipline
 
 - Generate evidence from real commands, record versions and source revisions, and
