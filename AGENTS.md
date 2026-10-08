@@ -4,7 +4,7 @@
 
 Read `README.md`, `docs/ARCHITECTURE.md`, the four files in `docs/contracts/`,
 `docs/plan/BUILD_ORDER.md`, and the assigned task under `codex/prompts/`.
-This is a construction scaffold, not a working OS. Do not invent successful builds.
+This is a tested, bounded freestanding foundation, not a complete OS. Do not invent successful builds.
 
 ## Non-negotiable boundaries
 
@@ -101,13 +101,15 @@ mutation, and an audit-regression link.  Missing tools or evidence fail; there i
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
 
-Task 002 has a separate host suite and incremental target checker. Gates 0–7
-have recorded clean-source acceptance; Gate 8 is under construction:
+Task 002 has a separate host suite and incremental target checker. Gates 0–8
+have recorded clean-source acceptance; Gate 9 is under construction:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
-  --work-dir build/foundation/gate7-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 8 \
+  --work-dir build/foundation/gate8-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-8-check --clean --timeout 300 --qemu-timeout 20
 ```
 
 These interfaces have actually run. Later phases and `--all` must be judged by

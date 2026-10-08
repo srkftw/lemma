@@ -7,7 +7,8 @@ described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
 checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
 `core0-v0.5` polling-device profile. Task 002 Gate 7 adds the separately selected
 `core0-v0.6` synchronous-trap profile below, with recorded clean target acceptance.
-The timer profile below is under construction; the broader Core0 contract remains future work.
+Gate 8's `core0-v0.7` timer profile has clean finite target acceptance at
+`42674c1`; the broader Core0 contract remains future work.
 
 ## Purpose
 
@@ -217,9 +218,9 @@ permitted trap values; only explicit site/continuation pairs may resume. The
 machine entry/return and resource premises are in
 [`traps-core0-v06.md`](../audits/traps-core0-v06.md). This contract describes the
 tested implementation, not a compiler-correctness proof. Gate 7 acceptance is
-recorded at clean `6c1b6a8...`; timer work remains separate and unqualified.
+recorded at clean `6c1b6a8...`; timer evidence belongs to the separate v0.7 profile.
 
-## Timer profile under construction
+## Implemented timer profile
 
 `core0-v0.7` is additive and explicit. It admits exactly `Action.timerReadTime`,
 `timerSetCompare`, `timerReadPending`, `irqSaveDisable`, `irqRestore`,
@@ -239,8 +240,14 @@ Status 21 means required hardware event missing; 22 means invalid deadline domai
 The fixed-hart timer, constant-work deadline policy, bounded ring, synchronization,
 full-register probe, and two quarantined mutations are specified in
 [`timers-core0-v07.md`](../audits/timers-core0-v07.md). Local policy/model probes
-are not target acceptance. Gate 8 remains unqualified until fresh audited O0/O2
-execution and both behavioral failure controls pass.
+are not target acceptance. Fresh audited O0/O2 execution and both behavioral
+failure controls passed at clean `42674c1`, with 1,474 positive-corpus hardware
+entries. The integrated monitor reuses v0.7 and remains separately unqualified.
+
+The Gate 9 monitor under construction is an ordinary v0.7 program, not a new
+language profile. Its parsing, scalar selection, checked byte fill/sum, trap
+commands, timer lifecycle and bounded request loop must pass the same genuine
+elaboration/checked-IR route. See [its protocol contract](../audits/monitor-core0-v07.md).
 
 ## Future profile work
 

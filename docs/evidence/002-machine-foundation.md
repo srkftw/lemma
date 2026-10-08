@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 7 have passed. Gate 8 is in progress; Gates 9--11 remain open. This record does not
+through 8 have passed. Gate 9 is in progress; Gates 10--11 remain open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -28,9 +28,13 @@ Task 002 machine foundation.
 - Gate 6 implementation and historical cumulative clean verification source:
   `179ef541e7cfa53235322610222a01ccdf9364cd`, tree
   `9ff742607b5b1d73924928bf147dabada037f406`.
-- Gate 7 implementation and current cumulative clean verification source:
+- Gate 7 implementation and historical cumulative clean verification source:
   `6c1b6a8ded1e94a822cff9977578b7c292075f75`, tree
   `5c53acabde200edd2ef7061ba65830c7c00b5b5b`.
+- Gate 7 report-bearing revision: `530fb1ec80687569e5f5def5ac870153b3256227`.
+- Gate 8 implementation and current cumulative clean verification source:
+  `42674c1ba773454c36c277620e2acd289539e5a2`, tree
+  `f7bea0b4f126275773bbc84e8fb534849ac6bb35`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
 - Report-bearing revision: a later evidence checkpoint, not yet assigned here; the
   tested implementation identity above is intentionally separate.
@@ -49,13 +53,20 @@ earlier per-gate identities remain historical checkpoints rather than being
 overwritten. These are clean committed-source runs in the existing checkout, not
 the separate detached-worktree qualification still required by Gate 10.
 
-The current cumulative clean run repeated Gates 1--7 at `6c1b6a8...`, with all
+The previous cumulative clean run repeated Gates 1--7 at `6c1b6a8...`, with all
 33 build provenance records naming that exact commit and `dirty_tree: false`.
 The focused Gate 7 run's four build records and the legacy regression's eight
 build records likewise name clean `6c1b6a8...`. Later report/guidance updates and
 Gate 8 work are not retroactively covered by those source identities. The source
-snapshot in the hash inventory uses `git show 6c1b6a8...:<path>`, not the later
+snapshot in that historical hash inventory uses `git show 6c1b6a8...:<path>`, not the later
 worktree; its report-bearing files are explicitly hashed separately.
+
+The current clean cumulative Gates 1--8 run names exact `42674c1...` source in
+all 39 build provenance records, each with `dirty_tree: false`; all eight legacy
+regression provenance records do likewise. Gate 8 acceptance is the complete
+checker executed as the cumulative child, not a separate clean focused run.
+The current inventory's tested-source block hashes `git show 42674c1...:<path>`;
+later report/guidance/monitor edits are outside that snapshot.
 
 Generated build output remains ignored. The durable identities of the cumulative
 clean records are:
@@ -102,7 +113,10 @@ clean records are:
 | `build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json` | `4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1` |
 | `build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json` | `c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0` |
 | `build/foundation/gates1-7-clean-6c1b6a8/gate7/gate7-results.json` | `0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b` |
-| `build/core0/task002-gate7-clean/check-results.json` (current same-source legacy regression) | `f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2` |
+| `build/core0/task002-gate7-clean/check-results.json` (historical same-source regression) | `f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2` |
+| `build/foundation/gates1-8-clean-42674c1/all-results.json` (current clean cumulative acceptance) | `393a2a649e3f804ea7fc332b53d9c88cdd2d789dc34c7ac7357fbdb1d4aca8de` |
+| `build/foundation/gates1-8-clean-42674c1/gate8/gate8-results.json` (authoritative clean Gate 8 child) | `09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9` |
+| `build/core0/task002-gate8-clean/check-results.json` (current clean legacy regression) | `7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82` |
 
 ## Commands executed for the historical Gate 6 implementation checkpoint
 
@@ -809,8 +823,8 @@ map, layout, startup, and pre-optimization IR. The pre-IR SHA-256 is
 `06993acef2e38439afc6e49ce682f4f32d2e3d4785a2eaca7a6e7a1057d4504c`.
 The full identities are in the machine-readable summary and SHA-256 inventory.
 Gate 6 itself adds no traps, interrupts, scheduler, managed runtime, or physical-board
-claim. Gate 7's later synchronous-trap acceptance is recorded below; Gates 8--11,
-separate-worktree qualification, and publication remain open.
+claim. Later Gate 7 synchronous traps and Gate 8 timer acceptance are recorded
+below; Gates 9--11, separate-worktree qualification, and publication remain open.
 
 ## Gate 7: synchronous M-mode traps, dispatch, and return
 
@@ -963,13 +977,172 @@ decoded: id=0x7104 status=0 register/canary mismatch mask=0
 QEMU exit: 0; raw UART SHA-256 b4a634d16835a3e42ad7f615962f858020383f66906bedeb9e57e56c991c5c19
 ```
 
-Gate 7 establishes only synchronous, non-nested M-mode trap behavior under the
-declared pinned-machine premises. Gate 8 hardware timer work is now in progress;
-no actual timer interrupts, integrated monitor, detached-worktree qualification,
+Gate 7 itself establishes only synchronous, non-nested M-mode trap behavior under
+the declared pinned-machine premises. Gate 8's later actual timer acceptance is
+recorded below; no integrated monitor, detached-worktree qualification,
 new actual CI result, or Task 002 publication has passed. Publication has not yet
 been attempted; it is not labeled externally blocked. No scheduler, managed runtime,
 privilege transition, hardware isolation, physical-board result, or G1/G2 completion
 is claimed.
+
+## Gate 8: actual machine-timer interrupts and useful foreground work
+
+The additive `core0-v0.7` profile, `lemma-timer-test-v1` ABI, and
+`test-timer-suite` category compile two elaborated roots with 40 Action and 40
+scalar functions. Seven exact Actions admit time/compare/pending observation,
+global-MIE save/disable/restore, MTIE control, and an asynchronous full-register
+probe. Bool arguments are canonically widened at the closed machine boundary;
+no source-selected MMIO address, CSR, handler, arbitrary extern, allocation,
+threading runtime, atomics extension, or SBI call is introduced. Transitive
+timer/interrupt/machine-state and ordered-IO effects are checked explicitly.
+
+The pinned QEMU source and DTB establish hart-0 MTIMECMP `0x02004000`, MTIME
+`0x0200bff8`, 10,000,000-Hz timebase, and cause `0x8000000000000007`.
+The [timer audit](../audits/timers-core0-v07.md) records immutable source hashes,
+ISA sections, naturally aligned RV64 64-bit access, eventual MTIP update,
+possible delayed/spurious observations, and the unchanged no-NMI/non-nesting
+entry-tail premises. This is the QEMU CLINT compatibility node backed by ACLINT
+MTIMER, not another board's timer or a PLIC/SBI path.
+
+### Executed clean qualification
+
+Final precommit host suites passed: scaffold 18/18, Core0 32/32, foundation
+339/339, and scaffold metadata valid. The actual Gate 8 Lean build passed 52 jobs
+and 52 CFG checks. After committing `42674c1...`, these commands exited zero:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate8-clean --clean
+```
+
+All eight cumulative children passed: `24+136+88+14+104+28+32+30 = 456` fresh
+boots. Gate 8 itself ran 30 boots: six positives, five input rejections, and
+two extra clean controls plus two mutants per optimization profile. Its positive
+corpus observed 737 real timer entries/profile, 1,474 total; extra control/mutant
+entries are not folded into that count. Legacy acceptance passed 10 cases/profile,
+13 intended rejections, and 23 boots with its reproducibility/source-mutation/
+foreign-object checks. The 39 cumulative and eight legacy provenance records all
+identify exact clean `42674c1...`.
+
+There was no separate clean focused Gate 8 run. The earlier dirty development
+focused report at `build/foundation/gate8-integration-final/gate8-results.json`
+passed 30 boots/1,474 entries, SHA-256
+`715fd9346126151aa81f700dc3b0a645edfe84d8e5bc649ab9418e2156852e53`;
+it is historical development evidence, not clean acceptance. The first strict
+attempt at `build/foundation/gate8-integration/` failed closed when
+`audit_core0.py` changed midrun and O0 mutation2 source binding rejected. Its
+partial artifacts/check-failure record remain retained; that failure received
+no behavioral-mutant detection credit.
+
+### Actual delivery, accounting, and distinguishing failures
+
+| Positive case | O0/O2 real entries | O0/O2 work quanta | O0/O2 overflow | O0/O2 skipped periods |
+|---|---:|---:|---:|---:|
+| overflow-zero | 256 / 256 | 9,992 / 14,844 | 240 / 240 | 1 / 1 |
+| overflow-wrap-seed | 256 / 256 | 10,323 / 16,414 | 240 / 240 | 2 / 0 |
+| masked-pending | 1 / 1 | 0 / 0 | 0 / 0 | 0 / 0 |
+| forced-catch-up | 32 / 32 | 862 / 1,117 | 16 / 16 | 8 / 5 |
+| shutdown | 64 / 64 | 4,639 / 6,831 | 48 / 48 | 0 / 0 |
+| interleaved-wrap | 128 / 128 | 4,778 / 4,921 | 0 / 0 | 1 / 1 |
+
+Each work quantum executes 128 wrapping mix steps. The guest recomputes the
+foreground result with interrupts disabled, and the independent host oracle
+checks it using the observed quantum count. O0/O2 work counts and checksums need
+not be identical: QEMU virtual-time delivery is not an instruction-count or
+wall-clock oracle. Every stress case performed useful foreground computation;
+the one-event masked/pending fixture deliberately needs none. All context/guard
+masks were zero. The asynchronous sentinel probe checks all 31 integer registers
+within its bounded enable window; checksum/ring checks cover the wider event
+stream, not a claim of complete sentinel instrumentation on every entry.
+
+Compiled Lean owns the non-allocating ISR, phase-reset rearming, sixteen-record
+ring, drop-on-full accounting, critical sections, validation, and deferred UART
+encoding. Masked delivery first observed real MTIP while the entry count stayed
+zero, then unmasked inside the sentinel probe. Catch-up performs constant work:
+`next = now + period`, recording `(now - oldDeadline) / period` separately from
+hardware entries. Periods are 1..1,000,000 and `now <= 0x7fffffffffffffff-period`;
+wrap is not silently admitted. Interleaved consumption advanced head/tail to
+128 with zero overflow, exercising physical ring wrap. Full-buffer cases visibly
+dropped events; final accounting requires `hardware = head + overflow` and a
+drained ring. The host checks every retained physical record's sequence/time,
+cause, and actual ELF executable PC; the guest validates every consumed record.
+The last sixteen records are not a complete interrupt trace.
+
+Shutdown masks global MIE, clears MTIE, parks compare at all ones, marks the
+source state inactive, and re-enables global MIE during bounded foreground work.
+Before/after hardware counts remained equal, including 512 shutdown quanta in
+the dedicated scenario. All ones is far future only within the stated domain,
+not a timeless disable mechanism across wrap. Pending state is observed without
+assuming immediate architectural deassertion. No host sleep, injected software
+tick, or manual ISR call counted as hardware delivery.
+
+Both wrong-S3-slot mutants built, audited, booted, and emitted ID `0x81ff`,
+status/exit 20, value `0x40000`. Both disabled-arming mutants changed only the
+compare store from `sd a0,0(t0)` to `sd t1,0(t0)`, parking the far-future value;
+they emitted the same ID with status/exit 21, value zero. Each had an unchanged
+successful clean control. All four were exact behavioral detections, not timeout,
+compile/audit rejection, malformed output, or missing-file outcomes. Invalid
+zero/excess goal, zero/excess period, and malformed scenario terminated with
+16, 16, 22, 22, and 14 respectively in both profiles. Four exact frontend
+fixtures rejected; 26 policy predicates, six finite-model examples, and the
+actual frontend/effect/lowering probe passed.
+
+Six local Nat-model lemmas establish future/nonwrapping deadlines, one hardware
+count per modeled enqueue, separate skipped accounting, capacity preservation,
+and exact drop overflow. `valid_nextDeadline_greater` has no axioms; the other
+five depend only on `propext`. They do not model hardware delivery, prove the
+UInt64 source-to-model correspondence, or prove compiler/hardware correctness.
+
+### Artifact/resource audit and retained transcript
+
+The two-object image closure remains exact. The audit checks seven timer machine
+bodies, exact CSR roles and register slots, 64-bit MTIMER/fence sequences, complete
+integer preservation, executable PCs, final body hashes, unknown/system instruction
+rejection, manifests/effects/provenance, and ordered shared-memory calls. It finds
+three fixed MTIMER accesses (startup park, clock load, compare store), no compiled
+program MMIO escape, fourteen timer fences, and zero privileged instructions in
+80 compiled functions. Named CSR roles include twelve vector operations and sum
+to 28 over the complete startup/primitive map. The historical raw report retains
+an inherited `machine_csr_operations=11` aggregate; it is stale trap-only metadata,
+not the total or an omitted-instruction allowance. The exact named map and all
+per-function sequences were checked. Gate 9 development corrects that aggregate
+to 28; it does not rewrite the retained clean Gate 8 report. O2's
+single `llvm.umin.i64` is restricted to the exact retained-record bound of sixteen;
+its sole merged compare call is bound to the mutually exclusive deadline branches.
+These optimizer accommodations are explicit checks, not arbitrary intrinsic or
+call allowances. The byte/alias inference remains bounded, not a full machine CFG
+proof. Foreground stack chains are O0 3,088/O2 512 bytes against 65,520 usable;
+dispatcher chains 976/272 against 16,048, separately accounting for the 288-byte
+frame and 16-byte outgoing slot.
+
+| Profile | Audit SHA-256 | Image SHA-256 |
+|---|---|---|
+| O0 | `4b541f578e0ea596683acc4a1dcacfe80b38b9bdfe2a1551f20c3302b8ac95fa` | `86b3df55da352176d9246bc70b8956e3e029b8feed58243084c1140c8804b7f8` |
+| O2 | `f67687f2742c23f67c13ab63c2d97f0fa56dbda014f649d72df793868585166e` | `e7a4700e2bee1ef5ba1b5857642aad68b170ddca8f5a91400267640edaa7ea33` |
+
+The actual clean O2 interleaved-wrap transcript (PID 280439) decodes in part as:
+
+```text
+runtime fixture: seed=0xa55aa55a5aa55aa5 goal=128 period=10000 scenario=4
+guest READY: LEMMA_DEVICE/1\nREADY\n
+id=0x8101 status=0 checksum=0xa5727edaab989825
+id=0x8102 status=0 foreground quanta=4921
+id=0x8103 status=0 hardware IRQs=128
+head=tail=128 overflow=0 skipped=1 context_mask=guard_mask=0
+shutdown count before=after=128; last record sequence=128 cause=0x8000000000000007
+QEMU exit=0
+```
+
+Raw frames/fixture/run record are at
+`build/foundation/gates1-8-clean-42674c1/gate8/runs/O2/interleaved-wrap/`;
+UART SHA-256 is
+`31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb`.
+This uses post-build loader data, not the integrated interactive monitor.
+Gate 9 monitor work is now in progress; detached-worktree qualification, actual
+CI, and Task 002 publication remain unrun. No Stage II unit, G1, G2, scheduler,
+managed runtime, isolation, physical board, or hard-real-time claim is completed.
 
 ## Shared assumptions, stage mapping, and limits
 
@@ -1002,13 +1175,14 @@ comparison. It gives Unit 1.6 only regression coverage because its physical memo
 observer and existing UART/finisher remain test glue rather than a new compiled
 device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
 1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
-construction unit remains `partial`; timer, monitor, and
+construction unit remains `partial`; monitor and
 qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
-incomplete, and Task 002 is not complete. Gate 7 synchronous traps are the highest
-passing gate; hardware timer Gate 8 is in progress with no acceptance claimed.
+incomplete, and Task 002 is not complete. Gate 7 synchronous traps remain a historical passing checkpoint;
+Gate 8 hardware timers are now the highest passing gate and
+Gate 9 integrated monitor work is in progress with no acceptance claimed.
 Gate 6 directly advances partial Units 1.1,
 1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
 finite semantics, ordered lowering, machine audit, source-bound image, branch RAM
@@ -1025,3 +1199,8 @@ Unit 2.1 (M-mode entry and bounded stacks, not supervisor entry) and Unit 2.2
 return, not timer interrupts). Those two units still have `planned` status in the
 construction backlog; this evidence does not mark them or any Stage II unit passed.
 Backlog reconciliation and broader qualification remain later obligations.
+
+Gate 8 directly advances the same partial Stage I units as Gate 7 and adds
+narrow early Stage II Unit 2.2 evidence for actual timer delivery, pending/masking,
+context, bounded overflow/catch-up and shutdown. Unit 2.1 still lacks supervisor
+entry; both Stage II backlog entries remain planned and no Stage II unit passes.

@@ -2,16 +2,16 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 7,
+  "highest_passing_gate": 8,
   "next_gate": {
-    "gate": 8,
+    "gate": 9,
     "status": "in-progress",
-    "name": "hardware timer interrupts",
+    "name": "integrated UART diagnostic monitor",
     "acceptance_checks_run": false
   },
   "source": {
-    "commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
-    "tree": "5c53acabde200edd2ef7061ba65830c7c00b5b5b",
+    "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+    "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
@@ -19,17 +19,13 @@
     {
       "command": "nix develop --no-write-lock-file --command lake build",
       "exit_code": 0,
-      "lean_build_jobs": 48,
-      "compile_time_cfg_validator_checks": 52
+      "lean_build_jobs": 52,
+      "compile_time_cfg_validator_checks": 52,
+      "scope": "actual Gate8 build before final acceptance, not a claimed second rebuild"
     },
     {
       "command": "python3 scripts/check_scaffold.py",
-      "exit_code": 0,
-      "metadata": {
-        "gates": 7,
-        "software_units": 56,
-        "physical_units": 6
-      }
+      "exit_code": 0
     },
     {
       "command": "python3 -m unittest discover -s tests/scaffold -v",
@@ -44,49 +40,29 @@
     {
       "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
       "exit_code": 0,
-      "tests": 281
+      "tests": 339
     },
     {
-      "command": "git status --short --branch",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20",
       "exit_code": 0,
-      "clean_status_output": "## task/002-machine-foundation"
+      "qemu_boots": 456,
+      "boots_by_gate": [
+        24,
+        136,
+        88,
+        14,
+        104,
+        28,
+        32,
+        30
+      ]
     },
     {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 --work-dir build/foundation/gate7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20",
-      "exit_code": 0,
-      "behavioral_restore_mutants_detected": 2,
-      "conditional_policy_lemmas": 2,
-      "direct_policy_probes": 20,
-      "frontend_probe_commands": 1,
-      "frontend_rejections": 4,
-      "negative_cases_per_profile": 6,
-      "positive_cases_per_profile": 8,
-      "profiles": 2,
-      "qemu_boots_total": 32,
-      "resumable_traps_per_profile": 288,
-      "software_denials_per_positive_case": 14
-    },
-    {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/task002-gate7-clean --clean",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/task002-gate8-clean --clean",
       "exit_code": 0,
       "cases_per_profile": 10,
       "rejections": 13,
       "qemu_boots": 23
-    },
-    {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20",
-      "exit_code": 0,
-      "highest_gate": 7,
-      "qemu_boots": 426,
-      "boots_by_gate": {
-        "1": 24,
-        "2": 136,
-        "3": 88,
-        "4": 14,
-        "5": 104,
-        "6": 28,
-        "7": 32
-      }
     }
   ],
   "gate_0": {
@@ -114,9 +90,9 @@
       "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
     },
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate1/gate1-results.json",
-      "sha256": "59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      "path": "build/foundation/gates1-8-clean-42674c1/gate1/gate1-results.json",
+      "sha256": "792acaec7f8e0ce43fcd74bd2de86fee1aaa2098b802a3ad2df2d0866e4b7afd",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
     },
     "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
@@ -128,6 +104,11 @@
         "path": "build/foundation/gates1-6-clean-readback/gate1/gate1-results.json",
         "sha256": "f5d58aff59e38c7a8f29b86bc87742164c9f5531080d064e17dcd51140c08706",
         "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+      },
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate1/gate1-results.json",
+        "sha256": "59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
       }
     ]
   },
@@ -177,9 +158,9 @@
       "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
     },
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate2/gate2-results.json",
-      "sha256": "d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      "path": "build/foundation/gates1-8-clean-42674c1/gate2/gate2-results.json",
+      "sha256": "be5452f1a5624c47e89b26b164618706d6462bc5dc997ee83c42e45855b12775",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
     },
     "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
@@ -191,6 +172,11 @@
         "path": "build/foundation/gates1-6-clean-readback/gate2/gate2-results.json",
         "sha256": "d757326af681a420137f14157fb9609aa1972b9852bb232eee55f874c6528eb0",
         "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+      },
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate2/gate2-results.json",
+        "sha256": "d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
       }
     ]
   },
@@ -468,10 +454,17 @@
       "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"
     },
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate3/gate3-results.json",
-      "sha256": "2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
-    }
+      "path": "build/foundation/gates1-8-clean-42674c1/gate3/gate3-results.json",
+      "sha256": "ca688d7610795e6e4c02f834482b4acc22315b3a6e00414742f7681430f3988d",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate3/gate3-results.json",
+        "sha256": "2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      }
+    ]
   },
   "gate_4": {
     "contract_version": "core0-v0.3",
@@ -673,34 +666,43 @@
       "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
     },
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate4/gate4-results.json",
-      "sha256": "a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
-    }
+      "path": "build/foundation/gates1-8-clean-42674c1/gate4/gate4-results.json",
+      "sha256": "aa3b4d3b5a42020ed8ea6073f1737d34fd500b74cbbcd537b19ab80c967af8e4",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate4/gate4-results.json",
+        "sha256": "a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      }
+    ]
   },
   "cumulative_foundation": {
-    "path": "build/foundation/gates1-7-clean-6c1b6a8/all-results.json",
-    "sha256": "12837b1bf0d38df75ad9744a120da5702c3651b1bfff22234092721e3d182339",
-    "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
-    "clean_provenance_records": 33,
-    "fresh_qemu_boots": 426,
+    "path": "build/foundation/gates1-8-clean-42674c1/all-results.json",
+    "sha256": "393a2a649e3f804ea7fc332b53d9c88cdd2d789dc34c7ac7357fbdb1d4aca8de",
+    "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+    "clean_provenance_records": 39,
+    "fresh_qemu_boots": 456,
     "children": {
-      "gate_1_sha256": "59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66",
-      "gate_2_sha256": "d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f",
-      "gate_3_sha256": "2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2",
-      "gate_4_sha256": "a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27",
-      "gate_5_sha256": "4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1",
-      "gate_6_sha256": "c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0",
-      "gate_7_sha256": "0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b"
+      "gate_1_sha256": "792acaec7f8e0ce43fcd74bd2de86fee1aaa2098b802a3ad2df2d0866e4b7afd",
+      "gate_2_sha256": "be5452f1a5624c47e89b26b164618706d6462bc5dc997ee83c42e45855b12775",
+      "gate_3_sha256": "ca688d7610795e6e4c02f834482b4acc22315b3a6e00414742f7681430f3988d",
+      "gate_4_sha256": "aa3b4d3b5a42020ed8ea6073f1737d34fd500b74cbbcd537b19ab80c967af8e4",
+      "gate_5_sha256": "f8ebd9db67ea26a2da2fddd2cd30b263bf4e6c6a831c6bed1608a7d28d6fa5c0",
+      "gate_6_sha256": "c47b37052c6c5c9e062bcbf7be8e992383b60fd6921e97dc6e7d978322d83706",
+      "gate_7_sha256": "42ea563433b71eae08297124ef3596f0d0c200b7134160be3ab02482f411beb6",
+      "gate_8_sha256": "09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9"
     }
   },
   "legacy_core0_regression": {
-    "path": "build/core0/task002-gate7-clean/check-results.json",
-    "sha256": "f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2",
-    "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
+    "path": "build/core0/task002-gate8-clean/check-results.json",
+    "sha256": "7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82",
+    "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2",
     "cases_per_profile": 10,
     "expected_rejections": 13,
     "fresh_qemu_boots": 23,
+    "clean_provenance_records": 8,
     "profiles": {
       "O0": {
         "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
@@ -853,7 +855,23 @@
       "2.1": "M-mode entry and bounded stacks only; supervisor entry remains unimplemented. Backlog status remains planned.",
       "2.2": "Synchronous trap identification, full integer context, diagnostics, and approved return only; timer interrupts remain unimplemented. Backlog status remains planned."
     },
-    "stage_2_units_passed": []
+    "stage_2_units_passed": [],
+    "gate_8_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.6",
+      "1.7",
+      "1.8"
+    ],
+    "gate_8_regression_only": [
+      "1.2"
+    ],
+    "gate_8_stage_2_partial_contributions": {
+      "2.1": "M-mode machine services/stacks only; no supervisor entry. Backlog remains planned.",
+      "2.2": "Real timer IRQs, masking/pending, bounded ring/loss/catch-up/shutdown and context tests; broader qualification remains open. Backlog remains planned."
+    }
   },
   "claims": {
     "gate_3_passed": true,
@@ -871,9 +889,11 @@
     "separate_clean_detached_worktree_verification_complete": false,
     "publication_complete": false,
     "gate_8_started": true,
-    "gate_8_acceptance_passed": false,
+    "gate_8_acceptance_passed": true,
     "actual_ci_complete": false,
-    "publication_attempted": false
+    "publication_attempted": false,
+    "gate_9_started": true,
+    "gate_9_acceptance_passed": false
   },
   "report_bearing_revision": {
     "commit": null,
@@ -935,7 +955,7 @@
       "gate_4_qemu_boots": 14
     }
   ],
-  "command_source_scope": "Build/unit checks ran on the final implementation tree immediately before commit; focused Gate 7, cumulative Gates 1\u20137, and legacy artifact checks ran afterward from exact clean committed source 6c1b6a8. This is not separate detached-worktree verification.",
+  "command_source_scope": "Final host suites ran before commit; cumulative1\u20138 and legacy acceptance ran afterward from exact clean42674c1. No separate clean focused Gate8 run. Later Gate9/report work is outside tested source; detached-worktree qualification and actual CI remain open.",
   "gate_5": {
     "source": {
       "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
@@ -1124,10 +1144,17 @@
       "This result does not complete G1 or G2."
     ],
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json",
-      "sha256": "4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
-    }
+      "path": "build/foundation/gates1-8-clean-42674c1/gate5/gate5-results.json",
+      "sha256": "f8ebd9db67ea26a2da2fddd2cd30b263bf4e6c6a831c6bed1608a7d28d6fa5c0",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate5/gate5-results.json",
+        "sha256": "4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      }
+    ]
   },
   "gate_6": {
     "source": {
@@ -1637,10 +1664,17 @@
       "This result does not complete G1 or G2."
     ],
     "current_cumulative_aggregate": {
-      "path": "build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json",
-      "sha256": "c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0",
-      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
-    }
+      "path": "build/foundation/gates1-8-clean-42674c1/gate6/gate6-results.json",
+      "sha256": "c47b37052c6c5c9e062bcbf7be8e992383b60fd6921e97dc6e7d978322d83706",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    },
+    "historical_cumulative_aggregates": [
+      {
+        "path": "build/foundation/gates1-7-clean-6c1b6a8/gate6/gate6-results.json",
+        "sha256": "c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0",
+        "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75"
+      }
+    ]
   },
   "historical_cumulative_foundation": [
     {
@@ -1670,6 +1704,22 @@
         "gate_4_sha256": "b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a",
         "gate_5_sha256": "dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1",
         "gate_6_sha256": "bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2"
+      }
+    },
+    {
+      "path": "build/foundation/gates1-7-clean-6c1b6a8/all-results.json",
+      "sha256": "12837b1bf0d38df75ad9744a120da5702c3651b1bfff22234092721e3d182339",
+      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
+      "clean_provenance_records": 33,
+      "fresh_qemu_boots": 426,
+      "children": {
+        "gate_1_sha256": "59c9bc9230f7408a1f0d46cd965f9bb3c292c0014f847e1511d7cec5fe074a66",
+        "gate_2_sha256": "d909000e9b529a7b3e6afa035aaf86ccde3040dd009b778690fd72c01e0aed1f",
+        "gate_3_sha256": "2352a9daae79853ca4105d186cddaf717fd56bf00c19120777c5a24de2435ea2",
+        "gate_4_sha256": "a79d624c2259df47681f296ed38990ceb93c795431298ca49ea35df64dec6c27",
+        "gate_5_sha256": "4ba92dc8eb13ec3a12edd8357b2e11ec9b583e336e6f7864f301debd9521e0f1",
+        "gate_6_sha256": "c239b3f9343bf2e34f0efd3c2386c3deedf5b5a00f2abf63ec4d732f5e0468e0",
+        "gate_7_sha256": "0f2ab68547526cd8c2d370d98d58495b0388b8b75c55f91f895622b26500667b"
       }
     }
   ],
@@ -1712,12 +1762,36 @@
           "dirty_tree": false
         }
       }
+    },
+    {
+      "path": "build/core0/task002-gate7-clean/check-results.json",
+      "sha256": "f118ffe7ed2646657bf614dcf1081b7e156d6b602e99f5427ecd472637e78bf2",
+      "source_commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
+      "cases_per_profile": 10,
+      "expected_rejections": 13,
+      "fresh_qemu_boots": 23,
+      "profiles": {
+        "O0": {
+          "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
+          "dirty_tree": false
+        },
+        "O2": {
+          "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
+          "dirty_tree": false
+        }
+      }
     }
   ],
   "historical_passing_sources": [
     {
       "commit": "179ef541e7cfa53235322610222a01ccdf9364cd",
       "tree": "9ff742607b5b1d73924928bf147dabada037f406",
+      "clean": true,
+      "branch": "task/002-machine-foundation"
+    },
+    {
+      "commit": "6c1b6a8ded1e94a822cff9977578b7c292075f75",
+      "tree": "5c53acabde200edd2ef7061ba65830c7c00b5b5b",
       "clean": true,
       "branch": "task/002-machine-foundation"
     }
@@ -2379,7 +2453,1441 @@
       "Compiled M-mode code remains trusted; checked RAM denials are not protection against arbitrary privileged code.",
       "Finite source probes and local policy lemmas are not a compiler/hardware correctness proof.",
       "Pinned QEMU observations do not claim physical-board validation or completion of G1/G2."
-    ]
+    ],
+    "current_cumulative_aggregate": {
+      "path": "build/foundation/gates1-8-clean-42674c1/gate7/gate7-results.json",
+      "sha256": "42ea563433b71eae08297124ef3596f0d0c200b7134160be3ab02482f411beb6",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    }
   },
-  "publication_status": "not-attempted; task branch is local, no Gate 11 remote publication or actual CI result claimed"
+  "publication_status": "not-attempted; task branch is local, no Gate 11 remote publication or actual CI result claimed",
+  "historical_commands_gate_7": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build",
+      "exit_code": 0,
+      "lean_build_jobs": 48,
+      "compile_time_cfg_validator_checks": 52
+    },
+    {
+      "command": "python3 scripts/check_scaffold.py",
+      "exit_code": 0,
+      "metadata": {
+        "gates": 7,
+        "software_units": 56,
+        "physical_units": 6
+      }
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "exit_code": 0,
+      "tests": 18
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "exit_code": 0,
+      "tests": 32
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
+      "exit_code": 0,
+      "tests": 281
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "clean_status_output": "## task/002-machine-foundation"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 --work-dir build/foundation/gate7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20",
+      "exit_code": 0,
+      "behavioral_restore_mutants_detected": 2,
+      "conditional_policy_lemmas": 2,
+      "direct_policy_probes": 20,
+      "frontend_probe_commands": 1,
+      "frontend_rejections": 4,
+      "negative_cases_per_profile": 6,
+      "positive_cases_per_profile": 8,
+      "profiles": 2,
+      "qemu_boots_total": 32,
+      "resumable_traps_per_profile": 288,
+      "software_denials_per_positive_case": 14
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --work-dir build/core0/task002-gate7-clean --clean",
+      "exit_code": 0,
+      "cases_per_profile": 10,
+      "rejections": 13,
+      "qemu_boots": 23
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-7-clean-6c1b6a8 --clean --timeout 300 --qemu-timeout 20",
+      "exit_code": 0,
+      "highest_gate": 7,
+      "qemu_boots": 426,
+      "boots_by_gate": {
+        "1": 24,
+        "2": 136,
+        "3": 88,
+        "4": 14,
+        "5": 104,
+        "6": 28,
+        "7": 32
+      }
+    }
+  ],
+  "gate_8": {
+    "source": {
+      "commit": "42674c1ba773454c36c277620e2acd289539e5a2",
+      "tree": "f7bea0b4f126275773bbc84e8fb534849ac6bb35",
+      "clean": true
+    },
+    "contract_version": "core0-v0.7",
+    "test_abi": "lemma-timer-test-v1",
+    "artifact_category": "test-timer-suite",
+    "suite_id": "0x7d18a8491d0038c1",
+    "source_seed": "0x4c454d4d41383038",
+    "runtime_seed": "0x52554e54494d4538",
+    "roots": [
+      {
+        "llvm": "core0_action_33",
+        "root_id": 1,
+        "signature": {
+          "args": []
+        },
+        "source": "Lemma.Examples.Foundation.Timer.foreground"
+      },
+      {
+        "llvm": "core0_action_39",
+        "root_id": 2,
+        "signature": {
+          "args": [
+            "u64",
+            "u64",
+            "u64",
+            "u64",
+            "u64",
+            "u64",
+            "u64",
+            "u64",
+            "u64"
+          ]
+        },
+        "source": "Lemma.Examples.Foundation.Timer.dispatch"
+      }
+    ],
+    "action_functions": 40,
+    "scalar_functions": 40,
+    "counts": {
+      "behavioral_restore_mutants_detected": 2,
+      "conditional_model_lemmas": 6,
+      "direct_policy_probes": 26,
+      "disabled_arming_mutants_detected": 2,
+      "finite_model_probes": 6,
+      "frontend_probe_commands": 1,
+      "frontend_rejections": 4,
+      "negative_cases_per_profile": 5,
+      "observed_hardware_irqs_positive_cases": 1474,
+      "positive_cases_per_profile": 6,
+      "profiles": 2,
+      "qemu_boots_total": 30
+    },
+    "clean_qualification": "Complete Gate8 checker passed as clean cumulative1\u20138 child; no separate clean focused Gate8 run occurred.",
+    "cumulative_aggregate": {
+      "path": "build/foundation/gates1-8-clean-42674c1/gate8/gate8-results.json",
+      "sha256": "09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9",
+      "source_commit": "42674c1ba773454c36c277620e2acd289539e5a2"
+    },
+    "development_focused_aggregate": {
+      "path": "build/foundation/gate8-integration-final/gate8-results.json",
+      "sha256": "715fd9346126151aa81f700dc3b0a645edfe84d8e5bc649ab9418e2156852e53",
+      "dirty_tree": true,
+      "acceptance_authority": false
+    },
+    "source_equivalence": {
+      "same_checked_source": true,
+      "runtime_fixture_not_a_build_input": true,
+      "checked_source_artifacts": {
+        "device-contract.json": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
+        "layout.json": "57e81cd28d66b5c26c120376f087ef38f608d3d778253d3820e0fd2f6e8f6095",
+        "link.ld": "b1b3d50b6acfa43042d8cc632ad53af094b9ab0f5ec09f8422f49556ba3d212c",
+        "program.ll": "021e05a33e8b80d8e067b51600a05d1e070a73b16b7ee15af97cd7e77c43f470",
+        "startup.S": "61db17c78701bbe4f08494e2e9a73a59e9ce1b7a6b79995ab2c080c5685096b3",
+        "symbols.txt": "952d8d0237c748d4701259257932420d301e3b76fa9b2a8f5f0a4bbc2b526674",
+        "timer-suite-manifest.json": "b20fbf161be1eb199478753eb1cd240414bb2f2b3e77d5c379bbf700ce664256",
+        "timer-suite-normalized.txt": "24dc38f92d77d6a1a33cfc83b97e56f4fcd948d69403adc63a3548089625dc88",
+        "timer-test-abi.json": "fdeb90b708ed0c60caf3e72b047d4beefecf61364be3966906ef33bbb3d8b560"
+      }
+    },
+    "timer_contract": {
+      "deadline_domain": "0..0x7fffffffffffffff with checked nonwrapping addition",
+      "event_ring": {
+        "capacity": 16,
+        "fields": [
+          "sequence",
+          "time",
+          "pc",
+          "cause"
+        ],
+        "overflow": "counted-drop",
+        "record_bytes": 32,
+        "region": "events"
+      },
+      "hart_count": 1,
+      "interrupt": {
+        "cause": 7,
+        "class": "machine-timer",
+        "controller": "CPU-local ACLINT MTIMER presented by the QEMU virt CLINT node; not PLIC",
+        "global_mstatus_bit": 3,
+        "mie_bit": 7,
+        "mip_bit": 7
+      },
+      "maximum_goal": 512,
+      "maximum_period": 1000000,
+      "mtime": {
+        "access": "read",
+        "address": "0x000000000200bff8",
+        "alignment": 8,
+        "width_bits": 64
+      },
+      "mtimecmp": {
+        "access": "write",
+        "address": "0x0000000002004000",
+        "alignment": 8,
+        "boot_value": "0xffffffffffffffff",
+        "width_bits": 64
+      },
+      "profile": "qemu-virt-machine-timer-v1",
+      "qemu_revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+      "qemu_source_archive_sha256": "079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482",
+      "qemu_sources": [
+        {
+          "lines": "85-90,600-602,623-633,1384-1392",
+          "path": "hw/riscv/virt.c",
+          "sha256": "ab1ef03005e1a94c25f6a8c7e1ddb7c44393802a7db13410c5c97603a1ea4920"
+        },
+        {
+          "lines": "74-80",
+          "path": "include/hw/intc/riscv_aclint.h",
+          "sha256": "6bd7dac8694d4d8012f1036c00d6b1e9e746d3d7635fc0380d100026e01f7d39"
+        },
+        {
+          "lines": "51-60,63-119,125-130,138-167,192-202,266-277,323-336,374-419",
+          "path": "hw/intc/riscv_aclint.c",
+          "sha256": "0b2ba0e01c110141df685e16b1ce98383646f95ec426c92b23ab3313a6cb1b89"
+        },
+        {
+          "lines": "351-372,553-590,2310-2347",
+          "path": "target/riscv/tcg/cpu_helper.c",
+          "sha256": "172bd47c98c1ea9da48e95e3add0f3b3ac923a4e8a743ab3b785b098f90e4416"
+        },
+        {
+          "lines": "1814-1819,2292-2308,3776-3813",
+          "path": "target/riscv/tcg/csr.c",
+          "sha256": "631294ef82387021c1a40d2125b636b4097a9350a2bc50d299ff38d5aa856360"
+        }
+      ],
+      "qemu_version": "11.1.1",
+      "schema_version": 1,
+      "synchronization": "single-hart global-MIE save/disable/restore critical sections with checked volatile RAM and full fences",
+      "timebase_frequency_hz": 10000000
+    },
+    "machine_audit": {
+      "approved_resume_pairs": 2,
+      "compiled_functions": 80,
+      "compiled_gp_tp_free": true,
+      "compiled_privileged_instructions": 0,
+      "direct_mtvec_target": "0x800001b4",
+      "fatal_stackless_self_loops": 2,
+      "layout": {
+        "canaries": 6,
+        "frame_bytes": 288,
+        "regions": {
+          "trap_probe_context": [
+            2155958272,
+            4096
+          ],
+          "trap_probe_stack": [
+            2155970560,
+            4096
+          ],
+          "trap_stack": [
+            2155937792,
+            16384
+          ]
+        }
+      },
+      "machine_csr_by_function": {
+        "_start": 5,
+        "core0_irq_restore": 2,
+        "core0_irq_save_disable": 1,
+        "core0_timer_probe": 2,
+        "core0_timer_read_pending": 1,
+        "core0_timer_set_interrupt": 2,
+        "core0_trap_breakpoint": 1,
+        "core0_trap_ecall": 1,
+        "core0_trap_unexpected_ecall": 1,
+        "core0_trap_vector": 12
+      },
+      "machine_slot_sequences": {
+        "_start": 16,
+        "core0_io_fence": 0,
+        "core0_irq_restore": 0,
+        "core0_irq_save_disable": 0,
+        "core0_timer_probe": 106,
+        "core0_timer_read_pending": 0,
+        "core0_timer_read_time": 1,
+        "core0_timer_set_compare": 1,
+        "core0_timer_set_interrupt": 0,
+        "core0_trap_breakpoint": 106,
+        "core0_trap_double_fault": 0,
+        "core0_trap_ecall": 106,
+        "core0_trap_fatal_dispatch": 0,
+        "core0_trap_illegal_instruction": 0,
+        "core0_trap_unexpected_ecall": 0,
+        "core0_trap_vector": 75
+      },
+      "mutation": "none",
+      "startup": {
+        "csr_roles": [
+          "mstatus.MIE",
+          "mie.MTIE",
+          "mip.MTIP"
+        ],
+        "mutation": "none",
+        "probe_registers": 31,
+        "startup_compare_parked": true,
+        "synchronous_trap_substrate": "exact core0-v0.6 structured sequence",
+        "timer_functions": 7,
+        "timer_mmio_width_bits": 64,
+        "timer_probe_iterations": 65536
+      },
+      "startup_functions": 16,
+      "timer_fence_operations": 14,
+      "timer_functions": 7,
+      "timer_machine_body_sha256": {
+        "core0_irq_restore": "0d0c3e199cf7209c315be260164d60f2adad9fd292af48c34963f3327f5f9076",
+        "core0_irq_save_disable": "81cd1fa8037c20efdc2cef7fd36a766ab69f7545f43fd7c1cc263a0692104c45",
+        "core0_timer_probe": "407fc011546a4ddcced3cf3e0c9fd26c4b192e92b2af7f226653268da9703ebd",
+        "core0_timer_read_pending": "93c428991f4d9b1013d72ec835989801b2620191d796b7d364faaece4f341bc2",
+        "core0_timer_read_time": "e103c9cb31268a2fe7a1170b1f72dfb2efb062716d320aeac8416adcd7cdc382",
+        "core0_timer_set_compare": "56104ada535d927c3c48e5c5994e8f1e36b6b96fdd6c9f9a08215ce14ccac12f",
+        "core0_timer_set_interrupt": "828d70fc99140850c90fe9444a9a9770c73b09e081d651e8e612c64395d02e0f"
+      },
+      "timer_mmio_accesses": 3,
+      "timer_mmio_machine": {
+        "access_count": 3,
+        "accesses": [
+          {
+            "address": "0x02004000",
+            "function": "_start",
+            "instruction": "sd",
+            "machine_address": "0x80000194",
+            "width_bits": 64
+          },
+          {
+            "address": "0x0200bff8",
+            "function": "core0_timer_read_time",
+            "instruction": "ld",
+            "machine_address": "0x800017bc",
+            "width_bits": 64
+          },
+          {
+            "address": "0x02004000",
+            "function": "core0_timer_set_compare",
+            "instruction": "sd",
+            "machine_address": "0x800017d4",
+            "width_bits": 64
+          }
+        ],
+        "all_inferred_accesses_are_approved": true,
+        "compiled_program_accesses": 0,
+        "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof",
+        "width_bits": 64
+      },
+      "timer_mmio_width_bits": 64,
+      "timer_probe": {
+        "caller_saves": 16,
+        "iterations": 65536,
+        "memory_slots": 106,
+        "mie_window": "after sentinels, bounded counter only, before snapshots",
+        "snapshot_registers": 31
+      },
+      "timer_start_machine_body_sha256": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
+      "named_csr_operation_count": 28
+    },
+    "source_probes": {
+      "frontend": {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/TimerFrontendProbes.lean"
+        ],
+        "log": "build/foundation/gates1-8-clean-42674c1/gate8/probes/timer-frontend.txt",
+        "log_sha256": "42cd08cd26e67d114e57a5e1e9b129c61ef9d88c68151d5c91a7d323ee79fed0",
+        "returncode": 0,
+        "scope": "source/frontend/finite-model observations, not hardware or compiler correctness proof",
+        "source": "examples/foundation/TimerFrontendProbes.lean",
+        "source_sha256": "1316efe826de9cbb0218e89eb7ad4bbec8050df3c46b571af174c8f4c94b5512"
+      },
+      "policy": {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/TimerPolicyProbes.lean"
+        ],
+        "conditional_lemmas": [
+          {
+            "axioms": [],
+            "theorem": "valid_nextDeadline_greater"
+          },
+          {
+            "axioms": [
+              "propext"
+            ],
+            "theorem": "valid_nextDeadline_noWrap"
+          },
+          {
+            "axioms": [
+              "propext"
+            ],
+            "theorem": "enqueue_counts_one_hardware_interrupt"
+          },
+          {
+            "axioms": [
+              "propext"
+            ],
+            "theorem": "enqueue_keeps_skipped_separate"
+          },
+          {
+            "axioms": [
+              "propext"
+            ],
+            "theorem": "enqueue_preserves_capacity"
+          },
+          {
+            "axioms": [
+              "propext"
+            ],
+            "theorem": "enqueue_overflow_accounting"
+          }
+        ],
+        "log": "build/foundation/gates1-8-clean-42674c1/gate8/probes/timer-policy.txt",
+        "log_sha256": "3869dc1ed171305e48d14496faad9f9c2e78805aa8527338998ba2f89767efb2",
+        "model_probes": 6,
+        "policy_probes": 26,
+        "returncode": 0,
+        "scope": "source/frontend/finite-model observations, not hardware or compiler correctness proof",
+        "source": "examples/foundation/TimerPolicyProbes.lean",
+        "source_sha256": "57ccaff8e1d06e53fc62984501534fa9556f0baef3169c000678a695142e515e"
+      }
+    },
+    "frontend_rejections": {
+      "core0-v0.7": [
+        {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/gate8-reject/V06Timer.lean"
+          ],
+          "diagnostic_code": "unsupported-primitive",
+          "diagnostic_log": "build/foundation/gates1-8-clean-42674c1/gate8/rejections/v06-timer.txt",
+          "diagnostic_sha256": "d318a5fa9cb9c5394a64825737b8f5f889f8cbb2f5114690a0f90dbc559e3e78",
+          "name": "v06-timer",
+          "path": "examples/foundation/gate8-reject/V06Timer.lean",
+          "required_fragments": [
+            "timer operation `timer.read-time` requires `core0-v0.7`; `core0-v0.6` does not admit timer/interrupt operations",
+            "dependency path: root"
+          ],
+          "returncode": 1,
+          "source_sha256": "bfbf6157462d79a0d1a3408cdf651666a465b01ed4e9124a1cf53a21221e166c"
+        },
+        {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/gate8-reject/StoredTimerContinuation.lean"
+          ],
+          "diagnostic_code": "unsupported-expression",
+          "diagnostic_log": "build/foundation/gates1-8-clean-42674c1/gate8/rejections/stored-timer-continuation.txt",
+          "diagnostic_sha256": "ef6c779a90c9e1fbcf223bb90857d42ccf33b9f9b08ff6550f586cf96ae64221",
+          "name": "stored-timer-continuation",
+          "path": "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
+          "required_fragments": [
+            "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+            "dependency path: root"
+          ],
+          "returncode": 1,
+          "source_sha256": "80f16e23e1b6d152e684c14dba1ef057738a22c9755beb88c063725a2814a2ca"
+        },
+        {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/gate8-reject/HiddenExternTimer.lean"
+          ],
+          "diagnostic_code": "unsupported-declaration",
+          "diagnostic_log": "build/foundation/gates1-8-clean-42674c1/gate8/rejections/hidden-extern-timer.txt",
+          "diagnostic_sha256": "92000e1a3f2ade2fe2a6eae62f2ce9213935631f498ea89fc638af09654f9cfb",
+          "name": "hidden-extern-timer",
+          "path": "examples/foundation/gate8-reject/HiddenExternTimer.lean",
+          "required_fragments": [
+            "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+            "dependency path: root -> forbidden"
+          ],
+          "returncode": 1,
+          "source_sha256": "00508a47ce7884fcf64e80a1b4b0885dbfc44bbbd70d09913d7529c5b153cb4d"
+        },
+        {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/gate8-reject/PureTimerResult.lean"
+          ],
+          "diagnostic_code": "unsupported-type",
+          "diagnostic_log": "build/foundation/gates1-8-clean-42674c1/gate8/rejections/pure-timer-result.txt",
+          "diagnostic_sha256": "6c481187a2a3a5d1dc9ed5ec1676c43754d25e6e257c8b8948c7a53bd9a5c26d",
+          "name": "pure-timer-result",
+          "path": "examples/foundation/gate8-reject/PureTimerResult.lean",
+          "required_fragments": [
+            "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+            "dependency path: root"
+          ],
+          "returncode": 1,
+          "source_sha256": "6253d8730e70ef0ef4ee88bbc6fe110e06807f47d9876357c0ac40233e4b1925"
+        }
+      ]
+    },
+    "profiles": {
+      "O0": {
+        "audit_sha256": "4b541f578e0ea596683acc4a1dcacfe80b38b9bdfe2a1551f20c3302b8ac95fa",
+        "build_sha256": "23dd6a41af74db7aa5d3303af66922509f5ccbf02952612f7f07871a7efa3bff",
+        "provenance_sha256": "ac4c3faa8818cf3f6afbe86e2532e11c28c24369eb30212ddcbe69b864c08de6",
+        "image_sha256": "86b3df55da352176d9246bc70b8956e3e029b8feed58243084c1140c8804b7f8",
+        "optimized_ir_sha256": "7233da9f88cc3422b44dd98d50dd5d755eb52c578b0d204de7c811e21d38f9f1",
+        "dirty_tree": false,
+        "foreground_stack": {
+          "bytes": 3088,
+          "capacity_bytes": 65520,
+          "chain": [
+            "core0_main",
+            "core0_action_33",
+            "core0_action_32",
+            "core0_action_31",
+            "core0_action_30",
+            "core0_action_28",
+            "core0_action_23",
+            "core0_action_19",
+            "core0_action_18",
+            "core0_action_17",
+            "core0_action_8",
+            "core0_action_7",
+            "core0_scalar_15"
+          ],
+          "checked_root": "core0_action_33",
+          "low_canary_bytes": 16,
+          "machine_entry": "core0_main",
+          "stack_region_bytes": 65536
+        },
+        "trap_dispatch_stack": {
+          "bytes": 976,
+          "capacity_bytes": 16048,
+          "chain": [
+            "core0_action_39",
+            "core0_action_38",
+            "core0_action_15",
+            "core0_action_14",
+            "core0_action_1",
+            "core0_action_0",
+            "core0_scalar_3"
+          ],
+          "checked_root": "core0_action_39",
+          "outgoing_argument_bytes": 16,
+          "trap_frame_bytes": 288,
+          "usable_trap_stack_bytes": 16352
+        },
+        "optimizer_intrinsics": {
+          "function": null,
+          "llvm.umin.i64": 0,
+          "upper_bound": null
+        },
+        "post_optimization_tail_merge": null,
+        "target_cases": [
+          {
+            "case": "overflow-zero",
+            "runtime_input": {
+              "goal": 256,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 256,
+              "before": 256,
+              "checksum": 10327144460457828352,
+              "context_mask": 0,
+              "deadline": 2755676,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 256,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 252632,
+              "last_isr_time": 2745676,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147495452,
+              "last_ring_sequence": 16,
+              "last_ring_time": 252632,
+              "maximum_catch_up": 1,
+              "outer_quanta": 9992,
+              "overflow": 240,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 5269744,
+              "skipped": 1,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "23d66b85fd91e1806e7e0941456ed8f7aa1e34f40bdb63d77e5abb3e52bb293c"
+            }
+          },
+          {
+            "case": "overflow-wrap-seed",
+            "runtime_input": {
+              "goal": 256,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 18446744073709551615
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 256,
+              "before": 256,
+              "checksum": 15881404392456903935,
+              "context_mask": 0,
+              "deadline": 2745074,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 256,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 214950,
+              "last_isr_time": 2735074,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147507296,
+              "last_ring_sequence": 16,
+              "last_ring_time": 214950,
+              "maximum_catch_up": 1,
+              "outer_quanta": 10323,
+              "overflow": 240,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 4289510,
+              "skipped": 2,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "56d1705600192e16142f7cf9c5b542196f4ad26e7213b5277efa2a89f2ee4245"
+            }
+          },
+          {
+            "case": "masked-pending",
+            "runtime_input": {
+              "goal": 1,
+              "period": 100000,
+              "scenario": 1,
+              "seed": 81985529216486895
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 1,
+              "before": 1,
+              "checksum": 81985529216486895,
+              "context_mask": 0,
+              "deadline": 192998,
+              "guard_mask": 0,
+              "head": 1,
+              "irq_count": 1,
+              "last_consumed_sequence": 1,
+              "last_consumed_time": 92998,
+              "last_isr_time": 92998,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147490556,
+              "last_ring_sequence": 1,
+              "last_ring_time": 92998,
+              "maximum_catch_up": 1,
+              "outer_quanta": 0,
+              "overflow": 0,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 173245,
+              "skipped": 0,
+              "spurious": 0,
+              "tail": 1
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "b7cfaa746a26f5e2ec6b229ea8abc6bfc0ffae10afbdaebfaf2565a16336e343"
+            }
+          },
+          {
+            "case": "forced-catch-up",
+            "runtime_input": {
+              "goal": 32,
+              "period": 10000,
+              "scenario": 2,
+              "seed": 18364758544493064720
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 32,
+              "before": 32,
+              "checksum": 957107718592686608,
+              "context_mask": 0,
+              "deadline": 431965,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 32,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 255583,
+              "last_isr_time": 421965,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147507268,
+              "last_ring_sequence": 16,
+              "last_ring_time": 255583,
+              "maximum_catch_up": 1,
+              "outer_quanta": 862,
+              "overflow": 16,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 701559,
+              "skipped": 8,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "bad761c5745066ce8c2bffd47770bfede3d53bc9a63307297bf9fd4c1ec689c6"
+            }
+          },
+          {
+            "case": "shutdown",
+            "runtime_input": {
+              "goal": 64,
+              "period": 20000,
+              "scenario": 3,
+              "seed": 1311768467463790320
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 64,
+              "before": 64,
+              "checksum": 18235256864373328112,
+              "context_mask": 0,
+              "deadline": 1376567,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 64,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 367280,
+              "last_isr_time": 1356567,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147507416,
+              "last_ring_sequence": 16,
+              "last_ring_time": 367280,
+              "maximum_catch_up": 1,
+              "outer_quanta": 4639,
+              "overflow": 48,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 2708920,
+              "skipped": 0,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "ca0853e247bb11de894c281b26e74f5382b2f1edce6c0dfa5551fa202dcc53c2"
+            }
+          },
+          {
+            "case": "interleaved-wrap",
+            "runtime_input": {
+              "goal": 128,
+              "period": 10000,
+              "scenario": 4,
+              "seed": 11915017571648494245
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 128,
+              "before": 128,
+              "checksum": 425934910025593253,
+              "context_mask": 0,
+              "deadline": 1433177,
+              "guard_mask": 0,
+              "head": 128,
+              "irq_count": 128,
+              "last_consumed_sequence": 128,
+              "last_consumed_time": 1423177,
+              "last_isr_time": 1423177,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147507268,
+              "last_ring_sequence": 128,
+              "last_ring_time": 1423177,
+              "maximum_catch_up": 1,
+              "outer_quanta": 4778,
+              "overflow": 0,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 2701554,
+              "skipped": 1,
+              "spurious": 0,
+              "tail": 128
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "d77905666c47654a7b0abd0fcb478e0ac3e1c4dedf286bed104105c21f97d946"
+            }
+          },
+          {
+            "case": "zero-goal",
+            "runtime_input": {
+              "goal": 0,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 16,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "excess-goal",
+            "runtime_input": {
+              "goal": 513,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 16,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "zero-period",
+            "runtime_input": {
+              "goal": 1,
+              "period": 0,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 22,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "excess-period",
+            "runtime_input": {
+              "goal": 1,
+              "period": 1000001,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 22,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "malformed-scenario",
+            "runtime_input": {
+              "goal": 1,
+              "period": 10000,
+              "scenario": 5,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 14,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          }
+        ],
+        "mutations": {
+          "1": {
+            "delta": {
+              "checked_source_and_compiled_program_identical": true,
+              "expected_delta": {
+                "after": "ld s3, 152(sp)",
+                "before": "ld s3, 144(sp)",
+                "function": "core0_trap_vector"
+              },
+              "identity": "restore-s3-from-s4",
+              "match_count": 1,
+              "production_selectable": false,
+              "transform_stage": "structured-machine-restore"
+            },
+            "outcome": "verified-behavioral-context-mismatch",
+            "returncode": 20,
+            "frames": [
+              {
+                "id": 33279,
+                "status": 20,
+                "value": 262144
+              }
+            ],
+            "image_sha256": "7422fef9b2bff1902ba783746f5d85709bc934eb18e83d2c444efbc281c86e9e"
+          },
+          "2": {
+            "delta": {
+              "checked_source_and_compiled_program_identical": true,
+              "expected_delta": {
+                "after": "sd t1, 0(t0)",
+                "before": "sd a0, 0(t0)",
+                "function": "core0_timer_set_compare"
+              },
+              "identity": "disable-timer-arming",
+              "match_count": 1,
+              "production_selectable": false,
+              "transform_stage": "structured-machine-timer-arming"
+            },
+            "outcome": "verified-missing-hardware-interrupt",
+            "returncode": 21,
+            "frames": [
+              {
+                "id": 33279,
+                "status": 21,
+                "value": 0
+              }
+            ],
+            "image_sha256": "94911676a49cd145a37752e3caf8319ea885db261c68a3590e7bfc5f7f45ee9d"
+          }
+        }
+      },
+      "O2": {
+        "audit_sha256": "f67687f2742c23f67c13ab63c2d97f0fa56dbda014f649d72df793868585166e",
+        "build_sha256": "0c7505bb9a863668b2fac5014416d47d5135277ae0e28ea75da49384625441eb",
+        "provenance_sha256": "4c581af7882711d0c2034691c7cec3b74ffe3bf513542e535bc025a4287cb7cf",
+        "image_sha256": "e7a4700e2bee1ef5ba1b5857642aad68b170ddca8f5a91400267640edaa7ea33",
+        "optimized_ir_sha256": "2014de7cf32adae8e1a31e75dbaa91525151db4dcf48b79018d0ec7dd373bda3",
+        "dirty_tree": false,
+        "foreground_stack": {
+          "bytes": 512,
+          "capacity_bytes": 65520,
+          "chain": [
+            "core0_main",
+            "core0_action_33",
+            "core0_action_32",
+            "core0_action_31",
+            "core0_action_30",
+            "core0_action_28",
+            "core0_action_23",
+            "core0_action_19",
+            "core0_action_18",
+            "core0_action_15",
+            "core0_action_14",
+            "core0_action_1",
+            "core0_action_0"
+          ],
+          "checked_root": "core0_action_33",
+          "low_canary_bytes": 16,
+          "machine_entry": "core0_main",
+          "stack_region_bytes": 65536
+        },
+        "trap_dispatch_stack": {
+          "bytes": 272,
+          "capacity_bytes": 16048,
+          "chain": [
+            "core0_action_39",
+            "core0_action_38",
+            "core0_action_15",
+            "core0_action_14",
+            "core0_action_1",
+            "core0_action_0"
+          ],
+          "checked_root": "core0_action_39",
+          "outgoing_argument_bytes": 16,
+          "trap_frame_bytes": 288,
+          "usable_trap_stack_bytes": 16352
+        },
+        "optimizer_intrinsics": {
+          "function": "core0_scalar_27",
+          "llvm.umin.i64": 1,
+          "upper_bound": 16
+        },
+        "post_optimization_tail_merge": {
+          "function": "core0_action_36",
+          "machine_calls": 1,
+          "selector": "two-input phi from the mutually exclusive deadline branches",
+          "source_sites": 2
+        },
+        "target_cases": [
+          {
+            "case": "overflow-zero",
+            "runtime_input": {
+              "goal": 256,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 256,
+              "before": 256,
+              "checksum": 34336254559907840,
+              "context_mask": 0,
+              "deadline": 2735965,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 256,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 209306,
+              "last_isr_time": 2725965,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147496748,
+              "last_ring_sequence": 16,
+              "last_ring_time": 209306,
+              "maximum_catch_up": 1,
+              "outer_quanta": 14844,
+              "overflow": 240,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 5477784,
+              "skipped": 1,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "22e0e28de07f73ddfc1b76850b2bf97036b8f40369dcb4ea5c329ba6d9671ac7"
+            }
+          },
+          {
+            "case": "overflow-wrap-seed",
+            "runtime_input": {
+              "goal": 256,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 18446744073709551615
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 256,
+              "before": 256,
+              "checksum": 2951379159615436799,
+              "context_mask": 0,
+              "deadline": 2686302,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 256,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 189922,
+              "last_isr_time": 2676302,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147496748,
+              "last_ring_sequence": 16,
+              "last_ring_time": 189922,
+              "maximum_catch_up": 1,
+              "outer_quanta": 16414,
+              "overflow": 240,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 4674735,
+              "skipped": 0,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "fb97dc3fe92117b68d235f92c350e56df18f96f522d3c5e1041cd21efecdc6c1"
+            }
+          },
+          {
+            "case": "masked-pending",
+            "runtime_input": {
+              "goal": 1,
+              "period": 100000,
+              "scenario": 1,
+              "seed": 81985529216486895
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 1,
+              "before": 1,
+              "checksum": 81985529216486895,
+              "context_mask": 0,
+              "deadline": 148746,
+              "guard_mask": 0,
+              "head": 1,
+              "irq_count": 1,
+              "last_consumed_sequence": 1,
+              "last_consumed_time": 48746,
+              "last_isr_time": 48746,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147490556,
+              "last_ring_sequence": 1,
+              "last_ring_time": 48746,
+              "maximum_catch_up": 1,
+              "outer_quanta": 0,
+              "overflow": 0,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 107891,
+              "skipped": 0,
+              "spurious": 0,
+              "tail": 1
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "eb1aef9ddddb870c2988c5a41c81c889e968c46674982d6b0747dcde5f2820d7"
+            }
+          },
+          {
+            "case": "forced-catch-up",
+            "runtime_input": {
+              "goal": 32,
+              "period": 10000,
+              "scenario": 2,
+              "seed": 18364758544493064720
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 32,
+              "before": 32,
+              "checksum": 11989876231210677264,
+              "context_mask": 0,
+              "deadline": 391487,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 32,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 213613,
+              "last_isr_time": 381487,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147496748,
+              "last_ring_sequence": 16,
+              "last_ring_time": 213613,
+              "maximum_catch_up": 1,
+              "outer_quanta": 1117,
+              "overflow": 16,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 654702,
+              "skipped": 5,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "485e0db8c51cda22e6a0e2515779e691b940fe8fb1208b66e73916ad26243863"
+            }
+          },
+          {
+            "case": "shutdown",
+            "runtime_input": {
+              "goal": 64,
+              "period": 20000,
+              "scenario": 3,
+              "seed": 1311768467463790320
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 64,
+              "before": 64,
+              "checksum": 12425848191800682736,
+              "context_mask": 0,
+              "deadline": 1359949,
+              "guard_mask": 0,
+              "head": 16,
+              "irq_count": 64,
+              "last_consumed_sequence": 16,
+              "last_consumed_time": 346790,
+              "last_isr_time": 1339949,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147496852,
+              "last_ring_sequence": 16,
+              "last_ring_time": 346790,
+              "maximum_catch_up": 1,
+              "outer_quanta": 6831,
+              "overflow": 48,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 2630423,
+              "skipped": 0,
+              "spurious": 0,
+              "tail": 16
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "5c32505121f0d7d15f275655c47f2ad8a1dfaa46eed8681f1c08dc99f8384b4d"
+            }
+          },
+          {
+            "case": "interleaved-wrap",
+            "runtime_input": {
+              "goal": 128,
+              "period": 10000,
+              "scenario": 4,
+              "seed": 11915017571648494245
+            },
+            "outcome": "verified-positive",
+            "returncode": 0,
+            "stats": {
+              "after": 128,
+              "before": 128,
+              "checksum": 11921730641249998885,
+              "context_mask": 0,
+              "deadline": 1411410,
+              "guard_mask": 0,
+              "head": 128,
+              "irq_count": 128,
+              "last_consumed_sequence": 128,
+              "last_consumed_time": 1401410,
+              "last_isr_time": 1401410,
+              "last_ring_cause": 9223372036854775815,
+              "last_ring_pc": 2147496748,
+              "last_ring_sequence": 128,
+              "last_ring_time": 1401410,
+              "maximum_catch_up": 1,
+              "outer_quanta": 4921,
+              "overflow": 0,
+              "pending_witness": 1,
+              "real_pending": 0,
+              "real_time": 2346909,
+              "skipped": 1,
+              "spurious": 0,
+              "tail": 128
+            },
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb"
+            }
+          },
+          {
+            "case": "zero-goal",
+            "runtime_input": {
+              "goal": 0,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 16,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "excess-goal",
+            "runtime_input": {
+              "goal": 513,
+              "period": 10000,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 16,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "zero-period",
+            "runtime_input": {
+              "goal": 1,
+              "period": 0,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 22,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "excess-period",
+            "runtime_input": {
+              "goal": 1,
+              "period": 1000001,
+              "scenario": 0,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 22,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          },
+          {
+            "case": "malformed-scenario",
+            "runtime_input": {
+              "goal": 1,
+              "period": 10000,
+              "scenario": 5,
+              "seed": 0
+            },
+            "outcome": "verified-semantic-rejection",
+            "returncode": 14,
+            "stats": null,
+            "raw_artifacts": {
+              "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "uart.bin": "a2653b7b3aaa2db22ac3a7557380a392654d097941028f902b6616a2191c6980"
+            }
+          }
+        ],
+        "mutations": {
+          "1": {
+            "delta": {
+              "checked_source_and_compiled_program_identical": true,
+              "expected_delta": {
+                "after": "ld s3, 152(sp)",
+                "before": "ld s3, 144(sp)",
+                "function": "core0_trap_vector"
+              },
+              "identity": "restore-s3-from-s4",
+              "match_count": 1,
+              "production_selectable": false,
+              "transform_stage": "structured-machine-restore"
+            },
+            "outcome": "verified-behavioral-context-mismatch",
+            "returncode": 20,
+            "frames": [
+              {
+                "id": 33279,
+                "status": 20,
+                "value": 262144
+              }
+            ],
+            "image_sha256": "768f1bd954c2af4928b3ae74dc500e58beb2c1394d3f80faff58397307f8b7c5"
+          },
+          "2": {
+            "delta": {
+              "checked_source_and_compiled_program_identical": true,
+              "expected_delta": {
+                "after": "sd t1, 0(t0)",
+                "before": "sd a0, 0(t0)",
+                "function": "core0_timer_set_compare"
+              },
+              "identity": "disable-timer-arming",
+              "match_count": 1,
+              "production_selectable": false,
+              "transform_stage": "structured-machine-timer-arming"
+            },
+            "outcome": "verified-missing-hardware-interrupt",
+            "returncode": 21,
+            "frames": [
+              {
+                "id": 33279,
+                "status": 21,
+                "value": 0
+              }
+            ],
+            "image_sha256": "60407b9c658d40c9f4d3d95cd9b203983d488e9afeba9315d463609fb8750035"
+          }
+        }
+      }
+    },
+    "representative_transcript": {
+      "case": "interleaved-wrap",
+      "pid": 280439,
+      "image_sha256": "e7a4700e2bee1ef5ba1b5857642aad68b170ddca8f5a91400267640edaa7ea33",
+      "runtime_input": {
+        "goal": 128,
+        "period": 10000,
+        "scenario": 4,
+        "seed": 11915017571648494245
+      },
+      "stats": {
+        "after": 128,
+        "before": 128,
+        "checksum": 11921730641249998885,
+        "context_mask": 0,
+        "deadline": 1411410,
+        "guard_mask": 0,
+        "head": 128,
+        "irq_count": 128,
+        "last_consumed_sequence": 128,
+        "last_consumed_time": 1401410,
+        "last_isr_time": 1401410,
+        "last_ring_cause": 9223372036854775815,
+        "last_ring_pc": 2147496748,
+        "last_ring_sequence": 128,
+        "last_ring_time": 1401410,
+        "maximum_catch_up": 1,
+        "outer_quanta": 4921,
+        "overflow": 0,
+        "pending_witness": 1,
+        "real_pending": 0,
+        "real_time": 2346909,
+        "skipped": 1,
+        "spurious": 0,
+        "tail": 128
+      },
+      "raw_artifacts": {
+        "stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uart.bin": "31487da4d1f8bf8bedc0fced343ec92ba36d4b8aab3670cc55138fe91612e6cb"
+      },
+      "returncode": 0,
+      "run_record": "/home/sreekumaar/Downloads/lemma/build/foundation/gates1-8-clean-42674c1/gate8/runs/O2/interleaved-wrap/run.json"
+    },
+    "limitations": [
+      "Pinned QEMU single-hart M-mode timer tests; no physical-board or hard-real-time claim.",
+      "Fixed aligned RAM and non-nested no-NMI entry/return premises remain explicit.",
+      "ISR formatting is deferred; ring overflow drops events and records losses separately from hardware entries.",
+      "Checked M-mode accesses are not page-table isolation or protection against arbitrary privileged code.",
+      "Local models/lemmas and finite target tests do not prove compiler/hardware correctness or complete G1/G2."
+    ],
+    "failed_development_attempt": {
+      "directory": "build/foundation/gate8-integration",
+      "result": "failed closed when audit_core0.py changed midrun; O0 mutation2 source binding rejected",
+      "behavioral_mutant_detection_credit": false
+    }
+  },
+  "gate_7_report_bearing_revision": "530fb1ec80687569e5f5def5ac870153b3256227"
 }

@@ -4,7 +4,8 @@ Status: Task 001 executes and pins the bounded QEMU scalar-boot profile. Task 00
 Gate 5 retains that boot contract and adds the fixed ordinary-memory test layout;
 Gate 6 adds the polling-only compiled UART contract below. Gate 7's separately
 versioned synchronous-trap profile has passed clean O0/O2 target acceptance.
-Timers, privilege transitions, and the remaining roadmap remain unqualified.
+Gate 8's separate timer profile has clean target acceptance at `42674c1`.
+The integrated monitor, privilege transitions, and remaining roadmap remain unqualified.
 
 The reference backend is QEMU system emulation, RISC-V `virt`, one RV64 hart,
 128 MiB RAM, no network or disk for the first smoke test, a UART for target output,
@@ -99,7 +100,7 @@ these limitations are in [`traps-core0-v06.md`](../audits/traps-core0-v06.md).
 The retained clean Gate 7 reports establish its finite target acceptance matrix,
 not asynchronous interrupts or the broader machine roadmap.
 
-## Gate 8 machine-timer profile under construction
+## Gate 8 machine-timer profile
 
 The pinned DTB/source establish hart 0 MTIME at `0x0200bff8`, MTIMECMP at
 `0x02004000`, a 10 MHz timebase, and CPU-local machine cause 7. Aligned 64-bit
@@ -110,8 +111,19 @@ clears MTIE and marks the source state inactive. No host sleep, injected count,
 SBI, or manually invoked ISR qualifies as a real event.
 
 See [`timers-core0-v07.md`](../audits/timers-core0-v07.md) for immutable references,
-range/ordering/resource premises and limitations. Gate 8 target execution remains
-pending; these addresses do not establish physical-board compatibility.
+range/ordering/resource premises and limitations. Gate 8 target execution passed
+its finite O0/O2 matrix at clean `42674c1`; these addresses do not establish
+physical-board compatibility.
+
+## Gate 9 monitor under construction
+
+The coherent monitor image reuses the same UART, timer, trap stacks, finisher,
+one-hart M-mode launch and integer-only ISA. Its host must wait for compiled
+READY, send fresh bounded requests over the running UART and reuse the same
+ELF for different mixed streams. Ordinary successful termination requires a
+validated EXIT command; a banner, nonempty output or process timeout cannot
+substitute for guest computations. The protocol and buffer layout are in
+[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md). Acceptance is pending.
 
 ## Roadmap, not current guarantees
 

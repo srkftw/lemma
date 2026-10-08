@@ -1,7 +1,7 @@
 # Trust and dependency manifest
 
 Status: required audit structure. Task 001 implements executable scalar-image audit
-and provenance; Task 002 Gates 1--7 extend it with fault manifests, versioned suites,
+and provenance; Task 002 Gates 1--8 extend it with fault manifests, versioned suites,
 control-flow/loop checks, checked-memory effects, a closed compiled-device path,
 and synchronous-trap audits. Timer/runtime categories remain open.
 
@@ -67,7 +67,7 @@ single-hart non-nesting limitations remain explicit; see
 [`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 clean target acceptance
 has passed; timer/concurrency/runtime categories are not thereby qualified.
 
-## Gate 8 timer trust boundary under construction
+## Gate 8 timer trust boundary
 
 The additive timer primitives have exact source identities, signatures, effect
 catalogs, typed instruction implementations, fixed aligned 64-bit MMIO addresses,
@@ -82,7 +82,22 @@ mutations. A missing-event test must observe its guest diagnostic, not credit a
 timeout or compilation/audit failure. Finite deadline/ring lemmas do not model
 hardware delivery or prove compiled correctness. See
 [`timers-core0-v07.md`](../audits/timers-core0-v07.md). Gate 8 target acceptance
-is still pending.
+passed at clean `42674c1`; the monitor, detached qualification and actual CI are
+separate obligations. This is not a proof of frontend/backend correctness:
+backend direct effects are independently recomputed, while dependency metadata
+still originates in the trusted frontend; the closed artifact audit additionally
+checks actual call/role closure.
+
+## Gate 9 monitor category under construction
+
+`test-monitor-image`/`lemma-monitor-v1` is a separate closed category, not an
+arbitrary-root relaxation of the accepted timer suite. Its own source-function,
+operation, optimized-IR, UART and final-machine inventories must be checked.
+The existing sixteen startup functions and exactly `program.o` plus `startup.o`
+remain named inputs. Full-register/CSR/CLINT closure, forbidden runtime and ISA
+checks, stack bounds, source provenance, and actual ISR call-role separation
+remain mandatory. Fresh post-boot request streams and raw frames are additional
+evidence obligations; this category is not yet accepted.
 
 ## Prohibited shortcuts
 

@@ -4,13 +4,14 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested compiler/device/trap foundation, with timers under construction.**
+**Current state: tested freestanding compiler/device/trap/timer foundation.**
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–7 extend it with compiler-fault
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–8 extend it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
 checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
-traps with checked context preservation. Gate 8's timer implementation is in
-progress; timers and the integrated monitor have not yet passed. This is not a managed runtime, complete OS, hardware milestone,
+traps with checked context preservation, and actual timer interrupts during
+foreground computation. The integrated monitor is under construction and has
+not yet passed. This is not a managed runtime, complete OS, hardware milestone,
 or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
 [Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
 [continuation checkpoint](docs/plan/002-session-state.md).
@@ -81,14 +82,17 @@ The recorded Task 002 passing prefix also has real host/target checks:
 
 ```sh
 nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
-nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
-  --work-dir build/foundation/gate7-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 8 \
+  --work-dir build/foundation/gate8-check --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-8-check --clean --timeout 300 --qemu-timeout 20
 ```
 
-Phase 7 builds and audits O0/O2 images and runs 32 fresh QEMU boots, including
-repeated ECALL/EBREAK, fatal and nested traps, and live restore-mutant detection.
-The clean cumulative Gates 1–7 run passed 426 boots. These are not timer or
-interrupt tests. The evidence records exact tested revisions; current uncommitted
+Phase 8 builds and audits O0/O2 images and runs 30 fresh QEMU boots, including
+1,474 positive-corpus hardware entries, ring overflow/wrap, shutdown, and both
+context-restore and disabled-arming mutants. The clean cumulative Gates 1–8 run
+passed 456 boots at `42674c1`; legacy acceptance separately passed 23 boots.
+The evidence records exact tested revisions; current uncommitted
 work must not inherit a clean-source pass automatically.
 
 ## GitHub and Codex

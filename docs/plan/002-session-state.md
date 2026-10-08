@@ -3,36 +3,74 @@
 - Base: Task 001 report-bearing commit `b8e9c59365ae8e9925e0bf6fbca6a963d990ec85`
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
-- Highest passing gate: Gate 7.
-- Current gate: Gate 8, actual pinned-machine hardware timer implementation in progress;
-  no Gate 8 acceptance exists.
-- Current acceptance work: Gate 8's frozen development matrix passed; commit
-  this implementation and rerun from exact clean committed source. Clean
-  focused Gate 7 passed 32 boots and both live restore mutants; cumulative
-  Gates 1--7 passed 426 boots, legacy passed 23 boots.
-- Latest clean passing implementation: `6c1b6a8ded1e94a822cff9977578b7c292075f75`
-  (tree `5c53acabde200edd2ef7061ba65830c7c00b5b5b`).
-- Gate 7 report-bearing revision: `530fb1ec80687569e5f5def5ac870153b3256227`;
-  do not confuse it with tested implementation source.
-- Next executable action: commit the frozen Gate 8 implementation, then run
-  `./scripts/check-foundation.sh --all --work-dir
-  build/foundation/gates1-8-clean --clean --timeout 300 --qemu-timeout 20`
-  and the legacy checker inside the pinned Nix environment. The focused phase
-  has passed on the uncommitted source, not yet from a clean implementation commit.
-  Continue through Gates 9--11 after Gate 8 acceptance; do not restart its existing
-  implementation or credit the development runs below as clean acceptance.
+- Highest passing gate: Gate 8.
+- Current gate: Gate 9, integrated compiled monitor implementation in progress;
+  no Gate 9 acceptance exists.
+- Latest clean passing implementation: `42674c1ba773454c36c277620e2acd289539e5a2`
+  (tree `f7bea0b4f126275773bbc84e8fb534849ac6bb35`).
+- Current acceptance: cumulative Gates 1--8 passed 456 fresh boots, including
+  Gate 8's complete 30-boot matrix and 1,474 positive-corpus hardware timer entries;
+  same-source legacy passed 23 boots. All 39 cumulative and eight legacy provenance
+  records bind exact clean committed source. No separate clean focused Gate 8 run
+  was performed; its clean cumulative child is the Gate 8 acceptance.
+- Historical Gate 7 report-bearing revision:
+  `530fb1ec80687569e5f5def5ac870153b3256227`; tested Gate 7 implementation was
+  `6c1b6a8ded1e94a822cff9977578b7c292075f75`. Do not confuse report-bearing
+  revisions with tested implementation source.
+- Next executable action: implement and qualify Gate 9's integrated monitor,
+  preserving the accepted scalar/Action/trap/timer pipeline and closed audits.
+  Gate 10 detached-worktree/cumulative qualification and actual CI, and Gate 11
+  publication/reconciliation remain unrun. No Stage II unit, G1, G2, or Task 002
+  completion is claimed.
 - Publication: Task 002 has not been pushed or submitted as a PR; no publication
-  attempt or new actual CI result is claimed. PR #1 remains open/draft/unmerged.
+  attempt or new actual CI result is claimed. Read-only GitHub metadata confirms
+  PR #1 remains open/draft/unmerged, with Task 001 head `b8e9c593...` and main
+  base `f384f13d9f4981023b88008f87f1aa7685372d5a`.
 
-## Gate 8 work in progress (not accepted)
+## Gate 8 clean checkpoint
 
-Uncommitted additive `core0-v0.7` work now includes the seven closed timer/MIE
+Executed against exact clean `42674c1...` source:
+
+```text
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-8-clean-42674c1 --clean --timeout 300 --qemu-timeout 20
+  exit 0; Gates 1--8 PASS; 24+136+88+14+104+28+32+30 = 456 boots
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/task002-gate8-clean --clean
+  exit 0; 10 cases/profile, 13 rejections, 23 boots
+```
+
+Gate 8 passed six positive cases and five input rejections/profile, two valid-image
+restore mutants and two disabled-arming mutants, four frontend rejections,
+26 direct policy probes, six finite model probes, and six conditional lemmas.
+Positive cases observed 737 hardware entries/profile (1,474 total); extra controls
+and mutants are separate. Context/guard masks were zero, overflow and ring wrap
+were observed, and masked pending, catch-up, and shutdown cases passed. Lean
+models are conditional finite/Nat policy results, not hardware or compiler proofs.
+
+Fresh precommit host tests passed: foundation 339, Core0 32, scaffold 18; metadata
+passed. The actual implementation Lean build passed 52 jobs and 52 CFG checks;
+this does not claim a second final precommit rebuild.
+
+- Cumulative aggregate SHA-256:
+  `393a2a649e3f804ea7fc332b53d9c88cdd2d789dc34c7ac7357fbdb1d4aca8de`.
+- Gate 8 clean cumulative child SHA-256:
+  `09190b5a7ad03d5b3a208aa9514c6aa48dfd64bd2a95890dc7a755c2866bb8e9`.
+- Same-source legacy aggregate SHA-256:
+  `7ba1294f53702fb4b86ef3a8ad65173b4100a9efc0256e11b90a4a72dda89f82`.
+
+The full inventory hashes tested tracked source with `git show 42674c1:<path>`,
+not later Gate 9 worktree changes. Report-bearing files are hashed separately.
+
+## Gate 8 development history (not clean acceptance)
+
+At the development checkpoint, uncommitted additive `core0-v0.7` work included the seven closed timer/MIE
 Actions, checked effects/IR/lowering, structured MTIMER/CSR/probe primitives,
 compiled timer policy and event-ring source, exporter, strict host runner,
 checker, source rejections/probes, and machine audit. The tree remains on the
 same Task 002 branch; there has been no Task 002 push or PR.
 
-Actual development results, separately from the accepted Gate 7 evidence:
+Historical development results, separate from the clean acceptance above:
 
 - The final frozen focused command `./scripts/check-foundation.sh --phase 8
   --work-dir build/foundation/gate8-integration-final --clean --timeout 300
@@ -80,10 +118,9 @@ Actual development results, separately from the accepted Gate 7 evidence:
   intermediate records do not qualify the later source or replace the full
   fresh O0/O2 acceptance matrix.
 
-Next acceptance must preserve genuine hardware entry, bounded masked/pending,
-overflow/catch-up/shutdown and both valid-image mutant outcomes. Gate 9's
-interactive monitor, Gate 10 detached-worktree/cumulative qualification and CI,
-and Gate 11 publication remain unrun for this revision.
+The later clean acceptance above preserved genuine hardware entry, bounded
+masked/pending, overflow/catch-up/shutdown and both valid-image mutant outcomes.
+Gate 9 is now in progress without acceptance; Gates 10 and 11 remain unrun.
 
 ## Gate 0 historical checkpoint
 
@@ -490,8 +527,9 @@ physical hardware, detached-worktree qualification, actual CI, or G1/G2 completi
   the three comparison routes as absolutely independent proof systems.
 - Schema-2 provenance binds exact source and `.olean` inputs. O0/O2 Gate 2 profiles
   share byte-identical checked suite/ABI/source artifacts. The historical cumulative
-  Gate 6 run names clean `179ef54...` source; the current Gates 1--7 run names
-  clean `6c1b6a8...`; the earlier Gate 2 checkpoint remains
+  Gate 6 run names clean `179ef54...` source; historical Gates 1--7 names
+  clean `6c1b6a8...` and current Gates 1--8 names clean `42674c1...`;
+  the earlier Gate 2 checkpoint remains
   historically bound to `687ee7e...`.
 - Gate 3 pins Lean 4.34.1 revision `5045d0056413266e57c625dcd7c365b10e377c52`
   and the inspected `Init/Data/UInt/Basic.lean` SHA-256
@@ -535,10 +573,10 @@ physical hardware, detached-worktree qualification, actual CI, or G1/G2 completi
   Unit 2.1 or 2.2 passed, and neither G1 nor G2 is complete.
 - Gate 7 adds partial early Stage II 2.1/2.2 evidence only: no supervisor entry
   or timer interrupts. Their construction-backlog statuses remain planned.
-- Preserve `core0-v0.6` as synchronous and non-nested. Gate 8 needs a separately
-  versioned timer/interrupt and single-hart synchronization contract; do not
-  retroactively attribute timer behavior or later source changes to Gate 7.
-- Inventoried tested-source paths are hashes from `git show 6c1b6a8...:<path>`;
+- Preserve `core0-v0.6` as synchronous and non-nested. Accepted Gate 8 uses the
+  separately versioned `core0-v0.7` timer/interrupt and single-hart synchronization
+  contract; do not retroactively attribute timer behavior or later changes to Gate 7.
+- Inventoried tested-source paths are hashes from `git show 42674c1...:<path>`;
   later guidance/evidence files are report-bearing changes, not clean-source
   requalification. Gate 10's separate detached worktree and Gate 11 publication
   and actual CI inspection remain open.

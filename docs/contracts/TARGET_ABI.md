@@ -75,7 +75,7 @@ no relaxation is permitted. MRET architectural changes to mstatus are not
 mistaken for arbitrary context corruption. Clean O0/O2 target acceptance is
 recorded in Task 002 evidence; asynchronous timer handling is not implied.
 
-## Gate 8 timer ABI under construction
+## Gate 8 timer ABI
 
 `core0-v0.7` preserves the two-word Action result, full integer trap frame, and
 nine-word dispatcher convention. Its seven closed `core0_timer_*`/`core0_irq_*`
@@ -83,8 +83,20 @@ machine functions each return one i64. Compare receives one i64 deadline;
 restore and interrupt-enable receive canonical i64 0/1 converted from source
 Bool. Asynchronous dispatch returns the captured interrupted PC unchanged,
 not PC+4. Source timer/critical-section policy remains compiled Lean, not an ABI
-stub. See [`timers-core0-v07.md`](../audits/timers-core0-v07.md); this construction
-contract is not yet a Gate 8 target-acceptance claim.
+stub. See [`timers-core0-v07.md`](../audits/timers-core0-v07.md); its finite
+O0/O2 target matrix passed at clean `42674c1`. This does not qualify arbitrary
+interrupt handlers, nested execution, or a scheduler.
+
+## Gate 9 monitor wire ABI under construction
+
+`lemma-monitor-v1` preserves the v0.7 machine calling convention. Its versioned
+UART requests have a 16-byte header and at most 32 payload bytes; responses have
+a 16-byte header and four UInt64 words (48 bytes total), all little-endian.
+These are compiled encodings in fixed RAM, not heap-backed target objects.
+Only the monitor foreground and existing nine-word timer dispatcher are roots.
+The exact framing and failure rules are in
+[`monitor-core0-v07.md`](../audits/monitor-core0-v07.md); no target acceptance
+is yet claimed for this image.
 
 ## Entry and layout
 

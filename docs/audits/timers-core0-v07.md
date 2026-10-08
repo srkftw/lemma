@@ -1,8 +1,12 @@
 # Gate 8 machine-timer construction audit
 
-Status: implementation under construction. This document records the interface
-and review premises; its existence is not target acceptance. Gate 7 remains the
-highest accepted gate until the timer matrix and distinguishing failures pass.
+Status: finite O0/O2 target acceptance passed at clean implementation
+`42674c1ba773454c36c277620e2acd289539e5a2`, tree
+`f7bea0b4f126275773bbc84e8fb534849ac6bb35`. The clean cumulative Gates 1--8
+run passed 456 boots, including Gate 8's 30 boots and 1,474 positive-corpus real
+timer entries; legacy separately passed 23 boots. See Task 002 evidence for
+report hashes. This report-bearing edit is not the tested implementation source.
+The integrated monitor and detached final qualification remain separate work.
 
 ## Immutable hardware references
 
