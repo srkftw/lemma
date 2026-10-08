@@ -2,37 +2,80 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 4,
-  "next_gate": {"gate": 5, "status": "not-started", "name": "checked fixed-region memory"},
+  "highest_passing_gate": 6,
+  "next_gate": {
+    "gate": 7,
+    "status": "in-progress",
+    "name": "synchronous traps",
+    "acceptance_checks_run": false
+  },
   "source": {
-    "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
-    "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
+    "commit": "179ef541e7cfa53235322610222a01ccdf9364cd",
+    "tree": "9ff742607b5b1d73924928bf147dabada037f406",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
   "commands": [
-    {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "lean_build_jobs": 29, "compile_time_cfg_validator_checks": 36},
-    {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
-    {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "tests": 18},
-    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "tests": 21},
-    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "tests": 142},
-    {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "cases_per_profile": 10, "rejections": 13, "qemu_boots": 23},
     {
-      "command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10",
+      "command": "nix develop --no-write-lock-file --command lake build",
       "exit_code": 0,
-      "clean_status_output": "## task/002-machine-foundation",
-      "roots": 7,
-      "cases_per_profile": 112,
-      "qemu_boots": 14
+      "lean_build_jobs": 44,
+      "compile_time_cfg_validator_checks": 52
     },
     {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10",
+      "command": "python3 scripts/check_scaffold.py",
       "exit_code": 0,
-      "highest_gate": 4,
+      "metadata": {
+        "gates": 7,
+        "software_units": 56,
+        "physical_units": 6
+      }
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "exit_code": 0,
+      "tests": 18
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "exit_code": 0,
+      "tests": 32
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
+      "exit_code": 0,
+      "tests": 239
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean",
+      "exit_code": 0,
+      "cases_per_profile": 10,
+      "rejections": 13,
+      "qemu_boots": 23
+    },
+    {
+      "command": "git status --short --branch",
+      "exit_code": 0,
+      "clean_status_output": "## task/002-machine-foundation"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 --work-dir build/foundation/gate6-clean-readback --clean --timeout 300 --qemu-timeout 20",
+      "exit_code": 0,
+      "scenarios_per_profile": 14,
+      "qemu_boots": 28,
+      "runtime_requests": 16
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-6-clean-readback --clean --timeout 300 --qemu-timeout 20",
+      "exit_code": 0,
+      "highest_gate": 6,
+      "qemu_boots": 394,
       "gate_1_qemu_boots": 24,
       "gate_2_qemu_boots": 136,
       "gate_3_qemu_boots": 88,
-      "gate_4_qemu_boots": 14
+      "gate_4_qemu_boots": 14,
+      "gate_5_qemu_boots": 104,
+      "gate_6_qemu_boots": 28
     }
   ],
   "gate_0": {
@@ -43,7 +86,10 @@
   "gate_1": {
     "first_passing_implementation": "8878d2c65a6d76bc94ef0e8a9e036404bc76582c",
     "closed_faults": 6,
-    "optimization_profiles": ["O0", "O2"],
+    "optimization_profiles": [
+      "O0",
+      "O2"
+    ],
     "control_builds": 2,
     "mutant_builds": 12,
     "clean_control_qemu_boots": 12,
@@ -57,6 +103,11 @@
       "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
     },
     "current_cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate1/gate1-results.json",
+      "sha256": "f5d58aff59e38c7a8f29b86bc87742164c9f5531080d064e17dcd51140c08706",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
       "path": "build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json",
       "sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e"
@@ -89,10 +140,16 @@
       "caller": "core0_user_31",
       "callee": "core0_user_30",
       "arguments": 10,
-      "narrow_stack_arguments": ["u8", "u32"],
+      "narrow_stack_arguments": [
+        "u8",
+        "u32"
+      ],
       "caller_frame_bytes": 32,
       "caller_frame_alignment": 16,
-      "outgoing_stack_offsets": [0, 8],
+      "outgoing_stack_offsets": [
+        0,
+        8
+      ],
       "real_call_retained_o0": true,
       "real_call_retained_o2": true
     },
@@ -102,6 +159,11 @@
       "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
     },
     "current_cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate2/gate2-results.json",
+      "sha256": "d757326af681a420137f14157fb9609aa1972b9852bb232eee55f874c6528eb0",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "historical_current_cumulative_aggregate": {
       "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
       "path": "build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json",
       "sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4"
@@ -132,12 +194,30 @@
     "scalar_lemmas_checked": 8,
     "cfg_mutants_detected": 6,
     "profile_mutants_detected": 1,
-    "corpus": {"path": "build/foundation/gate3-clean-9519adc/corpus/gate3-cases.json", "sha256": "54b81d6a0b2279a15743bde72cce92b43b63cbffbaceec031f8b544ff9bba85a"},
+    "corpus": {
+      "path": "build/foundation/gate3-clean-9519adc/corpus/gate3-cases.json",
+      "sha256": "54b81d6a0b2279a15743bde72cce92b43b63cbffbaceec031f8b544ff9bba85a"
+    },
     "pinned_source_semantics": {
       "probe_names": [
-        "u32-complement", "u32-div-zero", "u32-rem-zero", "u32-shl-width", "u32-shl-width-plus-one", "u32-shr-max-count",
-        "u64-complement", "u64-div-zero", "u64-rem-zero", "u64-shl-width", "u64-shl-width-plus-one", "u64-shr-max-count",
-        "u8-complement", "u8-div-zero", "u8-rem-zero", "u8-shl-width", "u8-shl-width-plus-one", "u8-shr-max-count"
+        "u32-complement",
+        "u32-div-zero",
+        "u32-rem-zero",
+        "u32-shl-width",
+        "u32-shl-width-plus-one",
+        "u32-shr-max-count",
+        "u64-complement",
+        "u64-div-zero",
+        "u64-rem-zero",
+        "u64-shl-width",
+        "u64-shl-width-plus-one",
+        "u64-shr-max-count",
+        "u8-complement",
+        "u8-div-zero",
+        "u8-rem-zero",
+        "u8-shl-width",
+        "u8-shl-width-plus-one",
+        "u8-shr-max-count"
       ],
       "division_by_zero": "zero",
       "remainder_by_zero": "dividend",
@@ -152,9 +232,20 @@
       "core0-v0.1": 13,
       "core0-v0.2": {
         "count": 8,
-        "names": ["custom-division-instance", "custom-remainder-instance", "custom-left-shift-instance", "custom-right-shift-instance", "custom-complement-instance", "signed-division", "unsupported-uint16-width", "branch-hidden-arbitrary-extern"]
+        "names": [
+          "custom-division-instance",
+          "custom-remainder-instance",
+          "custom-left-shift-instance",
+          "custom-right-shift-instance",
+          "custom-complement-instance",
+          "signed-division",
+          "unsupported-uint16-width",
+          "branch-hidden-arbitrary-extern"
+        ]
       },
-      "unsupported-profile-probes": ["unsupported-profile-parser-and-model"]
+      "unsupported-profile-probes": [
+        "unsupported-profile-parser-and-model"
+      ]
     },
     "cfg_audit": {
       "validator": "Lemma.Compiler.LLVM.validateModule",
@@ -166,24 +257,88 @@
       "masked_shift_sites": 18,
       "source_branch_functions": 8,
       "source_selects": 0,
-      "emitter_poison_sensitive_flags": {"inbounds": 0, "nsw": 0, "nuw": 0},
+      "emitter_poison_sensitive_flags": {
+        "inbounds": 0,
+        "nsw": 0,
+        "nuw": 0
+      },
       "post_optimization_flags": {
-        "O0": {"inbounds": 0, "nsw": 0, "nuw": 0},
-        "O2": {"inbounds": 0, "nsw": 518, "nuw": 622}
+        "O0": {
+          "inbounds": 0,
+          "nsw": 0,
+          "nuw": 0
+        },
+        "O2": {
+          "inbounds": 0,
+          "nsw": 518,
+          "nuw": 622
+        }
       },
       "native_integer_instruction_counts": {
-        "O0": {"left_shift": 90, "logical_right_shift": 67, "unsigned_divide": 9, "unsigned_remainder": 9},
-        "O2": {"left_shift": 44, "logical_right_shift": 53, "unsigned_divide": 9, "unsigned_remainder": 9}
+        "O0": {
+          "left_shift": 90,
+          "logical_right_shift": 67,
+          "unsigned_divide": 9,
+          "unsigned_remainder": 9
+        },
+        "O2": {
+          "left_shift": 44,
+          "logical_right_shift": 53,
+          "unsigned_divide": 9,
+          "unsigned_remainder": 9
+        }
       }
     },
     "audit_mutations": [
-      {"name": "wrong-divisor-guard-operand", "kind": "wrong-guard", "mutant_ir_sha256": "f842cdeec0f3d67bd9dda9781717372e03e6d71b967c14cdf4d6eed7313c9058", "required_diagnostic": "not the unique false successor", "status": "detected"},
-      {"name": "inverted-divisor-guard-edges", "kind": "wrong-guard", "mutant_ir_sha256": "7cfa67adca6f0072bee9e6efa7cc809e7eb3c9a40e608b91f50390c5ecd4dfa9", "required_diagnostic": "not the unique false successor", "status": "detected"},
-      {"name": "zero-edge-reaches-dangerous-block", "kind": "wrong-guard", "mutant_ir_sha256": "f7d14d3032903698fba215517c458b7dfbbc1c61a7c6fd3f66f83b66c6895773", "required_diagnostic": "reachable from the divisor-zero successor", "status": "detected"},
-      {"name": "unguarded-dangerous-block-predecessor", "kind": "wrong-guard", "mutant_ir_sha256": "86b81cb40b018fcca5e58df810ea0385b2d06b153b3970a3f5e0659a28b6039b", "required_diagnostic": "unguarded predecessor set", "status": "detected"},
-      {"name": "wrong-shift-count-mask", "kind": "wrong-count-handling", "mutant_ir_sha256": "839e6f54ba4b23aaeeacf48a08d615e1dacc933ee5fee632e478745e427e6daf", "required_diagnostic": "same-block source-count", "status": "detected"},
-      {"name": "wrong-shift-count-source", "kind": "wrong-count-handling", "mutant_ir_sha256": "e5f182911f2c9764b74d393c0da96d25a2a845fb3f321c7b4cc842616d8dd71c", "required_diagnostic": "same-block source-count", "status": "detected"},
-      {"name": "unsupported-contract-version", "kind": "profile-version", "mutant_ir_sha256": null, "required_diagnostic": "unsupported Core0 contract", "status": "detected"}
+      {
+        "name": "wrong-divisor-guard-operand",
+        "kind": "wrong-guard",
+        "mutant_ir_sha256": "f842cdeec0f3d67bd9dda9781717372e03e6d71b967c14cdf4d6eed7313c9058",
+        "required_diagnostic": "not the unique false successor",
+        "status": "detected"
+      },
+      {
+        "name": "inverted-divisor-guard-edges",
+        "kind": "wrong-guard",
+        "mutant_ir_sha256": "7cfa67adca6f0072bee9e6efa7cc809e7eb3c9a40e608b91f50390c5ecd4dfa9",
+        "required_diagnostic": "not the unique false successor",
+        "status": "detected"
+      },
+      {
+        "name": "zero-edge-reaches-dangerous-block",
+        "kind": "wrong-guard",
+        "mutant_ir_sha256": "f7d14d3032903698fba215517c458b7dfbbc1c61a7c6fd3f66f83b66c6895773",
+        "required_diagnostic": "reachable from the divisor-zero successor",
+        "status": "detected"
+      },
+      {
+        "name": "unguarded-dangerous-block-predecessor",
+        "kind": "wrong-guard",
+        "mutant_ir_sha256": "86b81cb40b018fcca5e58df810ea0385b2d06b153b3970a3f5e0659a28b6039b",
+        "required_diagnostic": "unguarded predecessor set",
+        "status": "detected"
+      },
+      {
+        "name": "wrong-shift-count-mask",
+        "kind": "wrong-count-handling",
+        "mutant_ir_sha256": "839e6f54ba4b23aaeeacf48a08d615e1dacc933ee5fee632e478745e427e6daf",
+        "required_diagnostic": "same-block source-count",
+        "status": "detected"
+      },
+      {
+        "name": "wrong-shift-count-source",
+        "kind": "wrong-count-handling",
+        "mutant_ir_sha256": "e5f182911f2c9764b74d393c0da96d25a2a845fb3f321c7b4cc842616d8dd71c",
+        "required_diagnostic": "same-block source-count",
+        "status": "detected"
+      },
+      {
+        "name": "unsupported-contract-version",
+        "kind": "profile-version",
+        "mutant_ir_sha256": null,
+        "required_diagnostic": "unsupported Core0 contract",
+        "status": "detected"
+      }
     ],
     "scalar_lemmas": {
       "source": "Lemma/Core0/ScalarLemmas.lean",
@@ -192,14 +347,54 @@
       "dependency_probe_stdout_sha256": "f7b2ebfe4a7eeafdb60b823a29fffc05da67b9f3b2780932b9107e37e10adfd8",
       "scope": "local scalar invariants; not a proof of compiler correctness",
       "theorems": [
-        {"name": "fixedWidthNormalize_lt", "axioms": []},
-        {"name": "fixedWidthNormalize_idempotent", "axioms": ["propext"]},
-        {"name": "maskedShiftCount_lt", "axioms": []},
-        {"name": "shiftCountMask_eq_mod", "axioms": ["propext", "Classical.choice", "Quot.sound"]},
-        {"name": "shiftCountMask_lt", "axioms": ["propext", "Classical.choice", "Quot.sound"]},
-        {"name": "u8ToU32ToU8", "axioms": ["propext"]},
-        {"name": "u8ToU64ToU8", "axioms": ["propext"]},
-        {"name": "u32ToU64ToU32", "axioms": ["propext"]}
+        {
+          "name": "fixedWidthNormalize_lt",
+          "axioms": []
+        },
+        {
+          "name": "fixedWidthNormalize_idempotent",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "maskedShiftCount_lt",
+          "axioms": []
+        },
+        {
+          "name": "shiftCountMask_eq_mod",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "name": "shiftCountMask_lt",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "name": "u8ToU32ToU8",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "u8ToU64ToU8",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "u32ToU64ToU32",
+          "axioms": [
+            "propext"
+          ]
+        }
       ]
     },
     "source_equivalence": {
@@ -234,12 +429,26 @@
         "inventory_sha256": "356de353298f1e9c85973872a4ed210c07461eb27761d34ccb3312272045e3c8"
       }
     },
-    "focused_aggregate": {"path": "build/foundation/gate3-clean-9519adc/gate3-results.json", "sha256": "82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c"},
-    "cumulative_aggregate": {"path": "build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json", "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"}
+    "focused_aggregate": {
+      "path": "build/foundation/gate3-clean-9519adc/gate3-results.json",
+      "sha256": "82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c"
+    },
+    "cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate3/gate3-results.json",
+      "sha256": "fedd4428a9831744f51bede8d1ef44ce18c228859ccbd2e5e64a4d463cee3c71",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "historical_cumulative_aggregate": {
+      "path": "build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json",
+      "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"
+    }
   },
   "gate_4": {
     "contract_version": "core0-v0.3",
-    "legacy_contract_versions": ["core0-v0.1", "core0-v0.2"],
+    "legacy_contract_versions": [
+      "core0-v0.1",
+      "core0-v0.2"
+    ],
     "recognized_construct": "Lemma.Core0.Bounded.boundedFoldU32",
     "source_signature": "boundedFoldU32 (budget : Nat) (step : UInt32 -> UInt32 -> UInt32) (count initial : UInt32) : UInt64",
     "test_abi": "lemma-scalar-test-v1",
@@ -257,7 +466,10 @@
     "source_model_python_matches": 112,
     "source_model_target_matches": 224,
     "result_sha256": "38ad1a02fc9dd60f482b533ea5492b465643cda5231a0ad26883d4026d392f62",
-    "corpus": {"path": "build/foundation/gate4-clean-16e7461/corpus/gate4-cases.json", "sha256": "c977e1e369305657c1bf059650788e3904ce8832b9400c4d401b75eba07282a9"},
+    "corpus": {
+      "path": "build/foundation/gate4-clean-16e7461/corpus/gate4-cases.json",
+      "sha256": "c977e1e369305657c1bf059650788e3904ce8832b9400c4d401b75eba07282a9"
+    },
     "bounded_semantics": {
       "budget": "canonical standard Nat literal in 0..256",
       "callback": "direct safe total monomorphic top-level UInt32 -> UInt32 -> UInt32 declaration",
@@ -265,22 +477,45 @@
       "accumulator": "runtime UInt32",
       "success": "final accumulator zero-extended to UInt64",
       "exhaustion": "zero callbacks; bit 63 OR unchanged initial.toUInt64; bits 62..32 zero",
-      "semantic_exhaustion_distinct_from": ["model traversal fuel", "host timeout", "QEMU timeout"],
-      "excluded": ["runtime Nat", "closures", "function pointers", "recursive iteration", "heap", "managed Lean runtime"]
+      "semantic_exhaustion_distinct_from": [
+        "model traversal fuel",
+        "host timeout",
+        "QEMU timeout"
+      ],
+      "excluded": [
+        "runtime Nat",
+        "closures",
+        "function pointers",
+        "recursive iteration",
+        "heap",
+        "managed Lean runtime"
+      ]
     },
     "changed_body_witness": {
       "identical_inputs": 16,
       "distinct_success_results": 6,
-      "first": {"count": 1, "initial": "0xffffffff", "sumFold": "0x00000000ffffffff", "sumFoldChanged": "0x0000000000000000"}
+      "first": {
+        "count": 1,
+        "initial": "0xffffffff",
+        "sumFold": "0x00000000ffffffff",
+        "sumFoldChanged": "0x0000000000000000"
+      }
     },
     "negative_profiles": {
       "frontend_rejections": 11,
       "older_profile_loop_rejections": 2,
       "names": [
-        "capturing-callback", "direct-extern-callback", "dynamic-callback",
-        "hidden-forbidden-callback", "lookalike-combinator", "nonliteral-budget",
-        "over-budget", "polymorphic-callback", "recursive-callback",
-        "v01-bounded-loop", "v02-bounded-loop"
+        "capturing-callback",
+        "direct-extern-callback",
+        "dynamic-callback",
+        "hidden-forbidden-callback",
+        "lookalike-combinator",
+        "nonliteral-budget",
+        "over-budget",
+        "polymorphic-callback",
+        "recursive-callback",
+        "v01-bounded-loop",
+        "v02-bounded-loop"
       ]
     },
     "audit_mutations": {
@@ -288,12 +523,20 @@
       "manifest_detected": 4,
       "profile_detected": 1,
       "names": [
-        "wrong-static-budget", "wrong-budget-predicate", "index-starts-at-one",
-        "stale-accumulator-phi", "swapped-callback-arguments",
-        "wrong-index-increment", "missing-backedge", "missing-exhaustion-tag",
-        "exhaustion-reaches-callback", "tampered-iteration-budget",
-        "tampered-iteration-callback", "incomplete-iteration-catalog",
-        "incomplete-function-closure", "unsupported-contract-version"
+        "wrong-static-budget",
+        "wrong-budget-predicate",
+        "index-starts-at-one",
+        "stale-accumulator-phi",
+        "swapped-callback-arguments",
+        "wrong-index-increment",
+        "missing-backedge",
+        "missing-exhaustion-tag",
+        "exhaustion-reaches-callback",
+        "tampered-iteration-budget",
+        "tampered-iteration-callback",
+        "incomplete-iteration-catalog",
+        "incomplete-function-closure",
+        "unsupported-contract-version"
       ]
     },
     "bounded_lemmas": {
@@ -303,9 +546,26 @@
       "dependency_probe_stdout_sha256": "4065ac14230bcb6912555b00483ed23fd8cf39055fc0d9fa4239de213339961f",
       "scope": "local source-semantics facts; not a proof of compiler correctness",
       "theorems": [
-        {"name": "executedIterations_le_budget", "axioms": ["propext"]},
-        {"name": "boundedFoldU32_exhausted", "axioms": ["propext", "Quot.sound"]},
-        {"name": "boundedFoldU32_zero", "axioms": ["propext", "Quot.sound"]}
+        {
+          "name": "executedIterations_le_budget",
+          "axioms": [
+            "propext"
+          ]
+        },
+        {
+          "name": "boundedFoldU32_exhausted",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ]
+        },
+        {
+          "name": "boundedFoldU32_zero",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ]
+        }
       ]
     },
     "loop_and_stack_audit": {
@@ -313,15 +573,30 @@
       "pre_optimization_loop_count": 8,
       "exact_direct_callback_calls_per_positive_loop": 1,
       "machine_backedge_per_positive_loop": true,
-      "dynamic_stack_adjustments": {"O0": 0, "O2": 0},
-      "optimized_llvm_direct_call_graph_acyclic": {"O0": true, "O2": true},
-      "maximum_frame_chain_bytes": {"O0": 1856, "O2": 176},
+      "dynamic_stack_adjustments": {
+        "O0": 0,
+        "O2": 0
+      },
+      "optimized_llvm_direct_call_graph_acyclic": {
+        "O0": true,
+        "O2": true
+      },
+      "maximum_frame_chain_bytes": {
+        "O0": 1856,
+        "O2": 176
+      },
       "stack_limit_bytes": 65536,
       "scope": "optimized LLVM direct-call graph weighted by object .stack_sizes; machine callback/backedge audit is separate"
     },
     "optimizer_disjoint": {
-      "pre_optimization": {"O0": 0, "O2": 0},
-      "post_optimization": {"O0": 0, "O2": 23},
+      "pre_optimization": {
+        "O0": 0,
+        "O2": 0
+      },
+      "post_optimization": {
+        "O0": 0,
+        "O2": 23
+      },
       "O2_exhaustion_tags": 7,
       "O2_low_nibble_ascii": 16,
       "all_operands_proven_disjoint": true
@@ -354,28 +629,50 @@
         "stack_sizes_sha256": "99ea1b90d7118ac624d57e052fa03de3aa1e30342d4e2f6dd34892210c5d41b1"
       }
     },
-    "focused_aggregate": {"path": "build/foundation/gate4-clean-16e7461/gate4-results.json", "sha256": "a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a"},
-    "cumulative_aggregate": {"path": "build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json", "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"}
+    "focused_aggregate": {
+      "path": "build/foundation/gate4-clean-16e7461/gate4-results.json",
+      "sha256": "a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a"
+    },
+    "cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate4/gate4-results.json",
+      "sha256": "b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "historical_cumulative_aggregate": {
+      "path": "build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json",
+      "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
+    }
   },
   "cumulative_foundation": {
-    "path": "build/foundation/gates1-4-clean-16e7461/all-results.json",
-    "sha256": "19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e",
+    "path": "build/foundation/gates1-6-clean-readback/all-results.json",
+    "sha256": "b82597eced2cd1e23bc9c589142c353e36d6f3414746194cdbb47be00ce3c2de",
+    "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd",
+    "clean_provenance_records": 29,
     "children": {
-      "gate_1_sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e",
-      "gate_2_sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4",
-      "gate_3_sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059",
-      "gate_4_sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
+      "gate_1_sha256": "f5d58aff59e38c7a8f29b86bc87742164c9f5531080d064e17dcd51140c08706",
+      "gate_2_sha256": "d757326af681a420137f14157fb9609aa1972b9852bb232eee55f874c6528eb0",
+      "gate_3_sha256": "fedd4428a9831744f51bede8d1ef44ce18c228859ccbd2e5e64a4d463cee3c71",
+      "gate_4_sha256": "b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a",
+      "gate_5_sha256": "dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1",
+      "gate_6_sha256": "bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2"
     }
   },
   "legacy_core0_regression": {
+    "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd",
     "cases_per_profile": 10,
     "expected_rejections": 13,
     "fresh_qemu_boots": 23,
     "path": "build/core0/check/check-results.json",
-    "sha256": "36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404",
+    "sha256": "1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09",
     "profiles": {
-      "O0": {"image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b"},
-      "O2": {"image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b"}
+      "O0": {
+        "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b",
+        "dirty_tree": false
+      },
+      "O2": {
+        "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b",
+        "dirty_tree": false
+      }
     }
   },
   "toolchain": {
@@ -384,14 +681,39 @@
     "lean_toolchain_sha256": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b",
     "flake_lock_sha256": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
     "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
-    "lean": {"version": "4.34.1", "lake_version": "5.0.0-src", "source_ref": "v4.34.1", "revision": "5045d0056413266e57c625dcd7c365b10e377c52", "binary_githash_available": false},
-    "llvm_clang_lld": {"version": "20.1.8", "source_ref": "llvmorg-20.1.8", "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261", "tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8"},
-    "qemu": {"version": "11.1.1", "source_ref": "v11.1.1", "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943", "tag_object": "5e35f26695645b20931e10d8567c7e0169e62c07"},
+    "lean": {
+      "version": "4.34.1",
+      "lake_version": "5.0.0-src",
+      "source_ref": "v4.34.1",
+      "revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+      "binary_githash_available": false
+    },
+    "llvm_clang_lld": {
+      "version": "20.1.8",
+      "source_ref": "llvmorg-20.1.8",
+      "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+      "tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8"
+    },
+    "qemu": {
+      "version": "11.1.1",
+      "source_ref": "v11.1.1",
+      "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+      "tag_object": "5e35f26695645b20931e10d8567c7e0169e62c07"
+    },
     "dtc_version": "1.8.1",
     "python_version": "3.14.7",
     "jq_version": "1.8.2",
     "nix_version": "2.31.2",
-    "target": {"triple": "riscv64-unknown-elf", "llvm_triple": "riscv64-unknown-unknown-elf", "abi": "lp64", "machine": "virt", "isa": "rv64im_zicsr_zifencei", "harts": 1, "memory": "128M", "firmware": "none"}
+    "target": {
+      "triple": "riscv64-unknown-elf",
+      "llvm_triple": "riscv64-unknown-unknown-elf",
+      "abi": "lp64",
+      "machine": "virt",
+      "isa": "rv64im_zicsr_zifencei",
+      "harts": 1,
+      "memory": "128M",
+      "firmware": "none"
+    }
   },
   "shared_assumptions": [
     "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker; the direct route does not import or call the Core0 checker/evaluator.",
@@ -399,28 +721,890 @@
     "Finite differential tests and local lemmas are not a compiler-correctness proof.",
     "Gates 3 and 4 add scalar/CFG and bounded-loop profiles, not a managed Lean runtime.",
     "The Gate 4 stack bound is an optimized LLVM direct-call graph weighted by object .stack_sizes, not a complete reconstructed machine call graph.",
-    "The exact Gate 2 ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature."
+    "The exact Gate 2 ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature.",
+    "Gate 5 model events are not instrumented on target; complete region post-state is target-observed.",
+    "Gate 6 scripts finite UART availability and separately tests source encoders; its model is not a timing-accurate FIFO model.",
+    "Gate 6 directly observes branch marker readbacks; source/CFG audits are not a whole-compiler proof.",
+    "Gate 6 machine register tracking is bounded per-function straight-line constant/alias inference, not a general CFG proof.",
+    "Clean committed-source checks ran in the existing checkout; separate detached-worktree qualification, later gates, publication and CI remain open."
   ],
   "unit_mapping": {
     "stage": 1,
-    "gate_1_directly_advanced": ["1.8"],
-    "gate_2_directly_advanced": ["1.8"],
-    "gate_2_additional_evidence": ["1.1", "1.3", "1.4", "1.5", "1.7"],
-    "gate_3_directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
-    "gate_3_regression_only": ["1.2", "1.6"],
-    "gate_4_directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
-    "gate_4_regression_only": ["1.2", "1.6"],
+    "gate_1_directly_advanced": [
+      "1.8"
+    ],
+    "gate_2_directly_advanced": [
+      "1.8"
+    ],
+    "gate_2_additional_evidence": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.7"
+    ],
+    "gate_3_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.7",
+      "1.8"
+    ],
+    "gate_3_regression_only": [
+      "1.2",
+      "1.6"
+    ],
+    "gate_4_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.7",
+      "1.8"
+    ],
+    "gate_4_regression_only": [
+      "1.2",
+      "1.6"
+    ],
     "statuses_remain": "partial",
-    "stage_2_units_advanced": []
+    "stage_2_units_advanced": [],
+    "gate_5_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.7",
+      "1.8"
+    ],
+    "gate_5_regression_only": [
+      "1.2",
+      "1.6"
+    ],
+    "gate_6_directly_advanced": [
+      "1.1",
+      "1.3",
+      "1.4",
+      "1.5",
+      "1.6",
+      "1.7",
+      "1.8"
+    ],
+    "gate_6_regression_only": [
+      "1.2"
+    ]
   },
   "claims": {
     "gate_3_passed": true,
     "gate_4_passed": true,
-    "gate_5_started": false,
+    "gate_5_started": true,
     "g1_complete": false,
     "g2_complete": false,
     "task_002_complete": false,
     "compiler_correctness_proved": false,
-    "managed_lean_runtime_present": false
-  }
+    "managed_lean_runtime_present": false,
+    "gate_5_passed": true,
+    "gate_6_passed": true,
+    "gate_7_started": true,
+    "gate_7_acceptance_passed": false,
+    "separate_clean_detached_worktree_verification_complete": false,
+    "publication_complete": false
+  },
+  "report_bearing_revision": {
+    "commit": null,
+    "meaning": "later evidence checkpoint; separate from tested implementation"
+  },
+  "historical_commands_gate_4": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build",
+      "exit_code": 0,
+      "lean_build_jobs": 29,
+      "compile_time_cfg_validator_checks": 36
+    },
+    {
+      "command": "python3 scripts/check_scaffold.py",
+      "exit_code": 0,
+      "metadata": {
+        "gates": 7,
+        "software_units": 56,
+        "physical_units": 6
+      }
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/scaffold -v",
+      "exit_code": 0,
+      "tests": 18
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v",
+      "exit_code": 0,
+      "tests": 21
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v",
+      "exit_code": 0,
+      "tests": 142
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean",
+      "exit_code": 0,
+      "cases_per_profile": 10,
+      "rejections": 13,
+      "qemu_boots": 23
+    },
+    {
+      "command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10",
+      "exit_code": 0,
+      "clean_status_output": "## task/002-machine-foundation",
+      "roots": 7,
+      "cases_per_profile": 112,
+      "qemu_boots": 14
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10",
+      "exit_code": 0,
+      "highest_gate": 4,
+      "gate_1_qemu_boots": 24,
+      "gate_2_qemu_boots": 136,
+      "gate_3_qemu_boots": 88,
+      "gate_4_qemu_boots": 14
+    }
+  ],
+  "command_source_scope": "Build/unit checks ran on final implementation tree immediately before commit; focused, cumulative, and legacy artifact checks ran after commit from clean source.",
+  "gate_5": {
+    "source": {
+      "commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
+      "tree": "c1172034c1dedc0a91375b2eb21dd6fe5fd9b187",
+      "clean": true,
+      "meaning": "first passing implementation"
+    },
+    "contract_version": "core0-v0.4",
+    "legacy_contract_versions": [
+      "core0-v0.1",
+      "core0-v0.2",
+      "core0-v0.3"
+    ],
+    "test_abi": "lemma-memory-test-v1",
+    "checked_result": {
+      "llvm": "{ i64, i64 }",
+      "logical_status": "u8",
+      "logical_value": "u64",
+      "rv64": "a0=status-zero-extended,a1=value",
+      "status_high_bits_zero": true
+    },
+    "suite_id": "0xa20c6fd4108dbf27",
+    "seeds": {
+      "algorithm": "closed Gate 5 catalog with deterministic SHA-256 fixture streams keyed by suite, case, runtime seed, and region/canary label",
+      "runtime_inputs": "0x52554e54494d4535",
+      "source_generation": "0x4c454d4d41353035"
+    },
+    "counts": {
+      "audited_pre_ir_accesses_per_profile": 37,
+      "audited_pre_ir_range_checks_per_profile": 8,
+      "canaries_per_boot": 10,
+      "canary_observations": 1040,
+      "cases_per_profile": 52,
+      "complete_post_state_target_matches": 104,
+      "fresh_qemu_boots_per_profile": 52,
+      "frontend_rejections": 14,
+      "independent_model_target_matches": 104,
+      "ir_mutants_detected": 32,
+      "legacy_profile_rejections": 3,
+      "manifest_mutants_detected": 19,
+      "memory_lemmas_checked": 5,
+      "ordinary_region_bytes_observed": 1703936,
+      "ordinary_region_bytes_per_boot": 16384,
+      "pinned_memory_probes": 18,
+      "qemu_boots_total": 104,
+      "roots": 26
+    },
+    "independent_model": {
+      "cases": 52,
+      "event_observations": 275,
+      "implementation": "scripts/gate5_corpus.py::FiniteMemory/evaluate",
+      "post_state_result_sha256": "4b508bee3b64f17c8548a7db1dc6cbb11b6afc1514e440a8ce214db8eb06d544",
+      "result_sha256": "66aef0a96804cba0e71f1c17d5e2cab272a3cc448b7abdf7a5caa752d2c71d19",
+      "shared_assumption": "the Python oracle independently implements the documented finite-memory contract; the pinned Lean model evaluates the original elaborated Action syntax"
+    },
+    "memory_lemmas": {
+      "dependency_probe": {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/MemoryLemmas.lean"
+        ],
+        "elapsed_seconds": 0.643099,
+        "returncode": 0,
+        "source": "examples/foundation/MemoryLemmas.lean",
+        "source_sha256": "31b076ee6403dd4ce25fe2d3d75f0df59e45098013a6cbaf99c0a1dcb24ca3d0",
+        "stderr": "build/foundation/gate5-clean-ff8ef0f/memory-lemmas-axioms.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "build/foundation/gate5-clean-ff8ef0f/memory-lemmas-axioms.stdout",
+        "stdout_sha256": "5208a0aa50a8223af02f94d36d1832f197bc6f4aececfda969046ef84e8a4688"
+      },
+      "model_source": "Lemma/Core0/MemoryModel.lean",
+      "model_source_sha256": "c9432ea730e5e0aadfcff22f8704d450c90d8f8c3050c3cbd82e0d5b0c58e956",
+      "scope": "local finite-model catalog, interval, and rejection-preservation facts; not a compiler-correctness proof",
+      "source": "Lemma/Core0/MemoryLemmas.lean",
+      "source_sha256": "5973966eb7c6d00f233a981c5bb6d0d6e532898b5f8e86773ffcdb7f7340cc27",
+      "theorems": [
+        {
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "statement": "theorem regionTable_valid : tableValid = true",
+          "theorem": "Lemma.Core0.Memory.regionTable_valid"
+        },
+        {
+          "axioms": [
+            "propext"
+          ],
+          "statement": "theorem orderedBounds_intervalContained {length width offset : Nat} (h : OrderedBounds length width offset) : offset + width \u2264 length",
+          "theorem": "Lemma.Core0.Memory.orderedBounds_intervalContained"
+        },
+        {
+          "axioms": [
+            "propext"
+          ],
+          "statement": "theorem orderedBounds_physicalInterval {base length width offset : Nat} (hRegion : base + length \u2264 2 ^ 64) (hAccess : OrderedBounds length width offset) : base + (offset + width) \u2264 2 ^ 64",
+          "theorem": "Lemma.Core0.Memory.orderedBounds_physicalInterval"
+        },
+        {
+          "axioms": [
+            "propext"
+          ],
+          "statement": "theorem rejectedStore_preservesMemory (state : Model.State) (width : Width) (region : UInt8) (offset value : UInt64) (hRejected : (Model.accessStatus .write width region offset == Status.ok) = false) (result : Model.Outcome \u00d7 Model.State) (hResult : Model.store state width region offset value = .ok result) : result.2.regions = state.regions",
+          "theorem": "Lemma.Core0.Memory.rejectedStore_preservesMemory"
+        },
+        {
+          "axioms": [
+            "propext"
+          ],
+          "statement": "theorem rejectedStore_preservesEvents (state : Model.State) (width : Width) (region : UInt8) (offset value : UInt64) (hRejected : (Model.accessStatus .write width region offset == Status.ok) = false) (result : Model.Outcome \u00d7 Model.State) (hResult : Model.store state width region offset value = .ok result) : result.2.events = state.events",
+          "theorem": "Lemma.Core0.Memory.rejectedStore_preservesEvents"
+        }
+      ]
+    },
+    "source_equivalence": {
+      "dirty_paths": [],
+      "dirty_tree": false,
+      "identical_checked_source_artifacts": {
+        "layout.json": "81f5ab1ff4f765b928656d7f572c7c8afd2dca1409600b9d4544597d039f95ff",
+        "link.ld": "ecc3802ff26174e8939c11637da8d098f61b9aefa84f3107a9e2c41aa7bafe68",
+        "memory-fixtures.json": "132571ff5646b2c939c373c3cbeadfea5923f3e6f772105077dd24d075788f23",
+        "memory-suite-manifest.json": "3e88850ba609f598d1e8ae52668880bb99e06367bf6dde4b0810e5558400292d",
+        "memory-suite-normalized.txt": "d254f79b53d115488f5536dc7840072f1e28282edc35f5791307b7242028d7d2",
+        "memory-test-abi.json": "cb261785b0bf5de2e51c41eb78ad4a511ae9d407cc3b518697230a1516d19ab2",
+        "program.ll": "58cf81fd9781be78de568fbb8a20488dda7d7e39bb4bfd1f6241131fa77ed8e3",
+        "startup.S": "1cd535e3f5dad9cc910316d26960942b06668fa4769eb7acf721b56a67a4b36c",
+        "symbols.txt": "d630fd5c2a9f86650218cdc1e80a88c25a72fa8755d0f1f1c86c98eed25081d0"
+      },
+      "identical_provenance_fields": [
+        "artifact_category",
+        "source_commit",
+        "dirty_tree",
+        "dirty_paths",
+        "compiler_route",
+        "target",
+        "source_inputs",
+        "elaborated_inputs",
+        "export_configuration"
+      ],
+      "profiles": [
+        "O0",
+        "O2"
+      ],
+      "source_commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98"
+    },
+    "maximum_frame_chain_bytes": {
+      "O0": 1568,
+      "O2": 240
+    },
+    "stack_limit_bytes": 65536,
+    "profiles": {
+      "O0": {
+        "audit_sha256": "dc5552bf57556d512aca363c58eafdbada6836d2690e22d9ba6771cc42ceafda",
+        "image_sha256": "976cceb9dd09346b518067b56a73f98ec93b54dfe597ada7cf5fe1df10e7bfce",
+        "optimized_ir_sha256": "6d4b9a7b684f8e47633c15b62e679ef2292eb756ed96d6c2707043842ea0a100",
+        "stack_sizes_sha256": "98fd3b38a21d3acd3a9757aee979478422b42c5d5b0d93c6974f9b5d19c90494"
+      },
+      "O2": {
+        "audit_sha256": "b3f4a02ff6df0ac0c9973dfe1775d47d332a6687b25cc431b3b62610c10bfd90",
+        "image_sha256": "400e909ae118746a361053e59aad102779a11397907cbfbb061e8ffb56bb4018",
+        "optimized_ir_sha256": "fea3cb038478e58c16983a421634fac7c8e6b8a0257698f17d8ec746b06caa7f",
+        "stack_sizes_sha256": "dd0e9652e263356c9fdf7d5fd0dd72f8827cd74622cf749d300ede780941d5bf"
+      }
+    },
+    "focused_aggregate": {
+      "path": "build/foundation/gate5-clean-ff8ef0f/gate5-results.json",
+      "sha256": "fa670e195ce2b4f8988850f8b1e2f10c3dc9eda7cb993b5f0dcf09f20cbe25d7"
+    },
+    "historical_cumulative_aggregate": {
+      "path": "build/foundation/gates1-5-clean-ff8ef0f/gate5/gate5-results.json",
+      "sha256": "c331d3f4210d3bdaef88def71c892606d0dc4caa85cee8e07f092092b55de8f6"
+    },
+    "cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate5/gate5-results.json",
+      "sha256": "dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "security_interpretation": "checked ordinary-RAM access inside one trusted M-mode image; this is not hardware isolation against arbitrary privileged machine code",
+    "limitations": [
+      "Finite differential tests and local model lemmas are not a compiler-correctness proof.",
+      "The region API enforces checked access in compiled Core0 code, not an M-mode protection boundary.",
+      "Gate 5 does not add compiled device drivers, traps, interrupts, a scheduler, or a managed runtime.",
+      "This result does not complete G1 or G2."
+    ]
+  },
+  "gate_6": {
+    "source": {
+      "commit": "179ef541e7cfa53235322610222a01ccdf9364cd",
+      "tree": "9ff742607b5b1d73924928bf147dabada037f406",
+      "clean": true,
+      "branch": "task/002-machine-foundation"
+    },
+    "contract_version": "core0-v0.5",
+    "test_abi": "lemma-device-session-v1",
+    "artifact_category": "test-device-suite",
+    "suite_id": "0x4c454d4d41363036",
+    "seeds": {
+      "algorithm": "closed deterministic Gate 6 UART scenario catalog",
+      "runtime_inputs": "0x52554e54494d4536",
+      "source_generation": "0x534f555243453036"
+    },
+    "counts": {
+      "action_functions": 22,
+      "audit_mutants_detected": 36,
+      "branch_marker_target_readbacks": 4,
+      "device_lemmas_checked": 4,
+      "device_operations": 4,
+      "frontend_rejections": 5,
+      "interactive_sessions_per_profile": 4,
+      "legacy_profile_rejections": 1,
+      "optimized_uart_accesses_per_profile": 6,
+      "ordered_uart_sites_per_profile": 6,
+      "packet_model_probes": 13,
+      "pinned_device_probes": 12,
+      "qemu_boots_total": 28,
+      "roots": 1,
+      "runtime_requests_per_profile": 8,
+      "scalar_functions": 19,
+      "scenarios_per_profile": 14,
+      "single_pid_two_request_sessions": 8,
+      "terminal_sessions_per_profile": 10
+    },
+    "corpus": {
+      "interactive_sessions_per_profile": 4,
+      "maximum_payload_bytes": 16,
+      "path": "build/foundation/gate6-clean-readback/corpus/gate6-scenarios.json",
+      "ready_hex": "4c454d4d415f4445564943452f310a52454144590a",
+      "request_header_bytes": 16,
+      "response_bytes": 24,
+      "runtime_requests_per_profile": 8,
+      "scenarios_per_profile": 14,
+      "sha256": "dab17f6d43e29ca55787ccbe63862a3d1af35a9bd62126d09f089c200de844df",
+      "terminal_sessions_per_profile": 10
+    },
+    "source_equivalence": {
+      "dirty_paths": [],
+      "dirty_tree": false,
+      "identical_checked_source_artifacts": {
+        "device-contract.json": "1fb727b3a1f07806e8abc371526a8715a6b0a4596e0b0798363f248ecb70562a",
+        "device-suite-manifest.json": "555216bbc95fcbad04b7e621f41d014ea8479cb0c95ab6cf1e74f9ed3013a8f7",
+        "device-suite-normalized.txt": "2569f29e95c716c50b1e8ae53030c4e87ad45cc952fc09cf4955afd0835fa24a",
+        "device-test-abi.json": "7d4e3c4bc2f42c811fca6eb75084585a57f01f18bff64f82c8e1f726a696ec1d",
+        "layout.json": "81f5ab1ff4f765b928656d7f572c7c8afd2dca1409600b9d4544597d039f95ff",
+        "link.ld": "ecc3802ff26174e8939c11637da8d098f61b9aefa84f3107a9e2c41aa7bafe68",
+        "program.ll": "06993acef2e38439afc6e49ce682f4f32d2e3d4785a2eaca7a6e7a1057d4504c",
+        "startup.S": "1cd535e3f5dad9cc910316d26960942b06668fa4769eb7acf721b56a67a4b36c",
+        "symbols.txt": "f1bb773a242362db7a8ce219a041629a458347c53bb25d9df7bf45c687b424d9"
+      },
+      "identical_provenance_fields": [
+        "artifact_category",
+        "source_commit",
+        "dirty_tree",
+        "dirty_paths",
+        "compiler_route",
+        "target",
+        "source_inputs",
+        "elaborated_inputs",
+        "export_configuration"
+      ],
+      "profiles": [
+        "O0",
+        "O2"
+      ],
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "device_contract": {
+      "qemu_revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+      "qemu_version": "11.1.1",
+      "source_archive_sha256": "079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482",
+      "dtb_sha256": "c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f",
+      "dtb_node": "/soc/serial@10000000",
+      "uart_base": "0x10000000",
+      "access_width_bits": 8,
+      "source_alignment": 1,
+      "ordering": "full fence iorw,iorw before and after each volatile access",
+      "interrupts_enabled": false,
+      "documentation": "docs/audits/uart-core0-v05.md"
+    },
+    "device_lemmas": {
+      "dependency_probe": {
+        "argv": [
+          "lake",
+          "env",
+          "lean",
+          "examples/foundation/DeviceLemmas.lean"
+        ],
+        "elapsed_seconds": 0.340833,
+        "returncode": 0,
+        "source": "examples/foundation/DeviceLemmas.lean",
+        "source_sha256": "ef4de44685762d20f0115dbe115ecce53fdcc9c612ccca6ae5797e4a7fd64716",
+        "stderr": "build/foundation/gate6-clean-readback/proofs/device-lemmas-axioms.stderr",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "build/foundation/gate6-clean-readback/proofs/device-lemmas-axioms.stdout",
+        "stdout_sha256": "2012417b18da6d2bf2aed4c3e255d28d8075f8d087e53c54eaf3a06220217686"
+      },
+      "model_source": "Lemma/Core0/DeviceModel.lean",
+      "model_source_sha256": "b46bad694944f5f1355d612661d8ad6fa3da9c0b982fc2222b5f74fd6928b637",
+      "scope": "local finite-UART ordering, reset, and response-size facts; not a compiler-correctness or hardware-correctness proof",
+      "source": "Lemma/Core0/DeviceLemmas.lean",
+      "source_sha256": "b45d31627ffa0f1f4de2380790512543e7a5f6ff78cfdbed87911458485ecf41",
+      "theorems": [
+        {
+          "axioms": [],
+          "statement": "theorem empty_write_has_ordered_events (byte : UInt8) : (uartWriteByte (default : State) byte).state.events = #[.fence, .write UART.rbrThrOffset byte, .fence]",
+          "theorem": "Lemma.Core0.Device.Model.empty_write_has_ordered_events"
+        },
+        {
+          "axioms": [],
+          "statement": "theorem fifo_reset_discards_pending_rx (state : State) : (uartEnableAndResetFifo state).state.rxCursor = state.rxBytes.size",
+          "theorem": "Lemma.Core0.Device.Model.fifo_reset_discards_pending_rx"
+        },
+        {
+          "axioms": [],
+          "statement": "theorem fifo_reset_is_ordered (state : State) : (uartEnableAndResetFifo state).state.events = ((state.events.push .fence).push (.write UART.fcrOffset UART.fcrEnableAndReset)).push .fence",
+          "theorem": "Lemma.Core0.Device.Model.fifo_reset_is_ordered"
+        },
+        {
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "statement": "theorem response_size (status : UInt8) (requestId value : UInt64) : (encodeResponse status requestId value).size = 24",
+          "theorem": "Lemma.Core0.Device.Model.response_size"
+        }
+      ]
+    },
+    "device_probes": {
+      "device_model_source": "Lemma/Core0/DeviceModel.lean",
+      "device_model_source_sha256": "b46bad694944f5f1355d612661d8ad6fa3da9c0b982fc2222b5f74fd6928b637",
+      "interpretation": "the finite UART model and packet model execute separately from QEMU; the packet probes also compare the original elaborated source encoders",
+      "packet_and_source_model": {
+        "command": {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/DeviceModelProbes.lean"
+          ],
+          "elapsed_seconds": 0.579461,
+          "returncode": 0,
+          "source": "examples/foundation/DeviceModelProbes.lean",
+          "source_sha256": "2c566d7154427e047b1063d0bd19ffbd75e5da75f35127a022ceb4f154022f30",
+          "stderr": "build/foundation/gate6-clean-readback/probes/device-model-probes.stderr",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "build/foundation/gate6-clean-readback/probes/device-model-probes.stdout",
+          "stdout_sha256": "054386c3be02c4ad521aaa33e02bea18b9386d389980a35a7ff3a89db681c84e"
+        },
+        "probe_count": 13,
+        "probes": [
+          "add64-wrap",
+          "unsupported-recovers",
+          "false-branch-only-ram",
+          "true-branch-only-uart",
+          "invalid-bool-terminal",
+          "bounded-stress",
+          "empty-timeout",
+          "truncated-header",
+          "invalid-length",
+          "malformed-magic",
+          "compiled-ready-bytes",
+          "source-model-response-encoding",
+          "response-size"
+        ],
+        "source": "examples/foundation/DeviceModelProbes.lean",
+        "source_sha256": "2c566d7154427e047b1063d0bd19ffbd75e5da75f35127a022ceb4f154022f30"
+      },
+      "pinned_uart_semantics": {
+        "command": {
+          "argv": [
+            "lake",
+            "env",
+            "lean",
+            "examples/foundation/DevicePinnedSemantics.lean"
+          ],
+          "elapsed_seconds": 0.480117,
+          "returncode": 0,
+          "source": "examples/foundation/DevicePinnedSemantics.lean",
+          "source_sha256": "9146f3571bc604541004fd2647bcdf293c889a7b3c9372c2ee6ea19199592eb7",
+          "stderr": "build/foundation/gate6-clean-readback/probes/device-pinned-semantics.stderr",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "build/foundation/gate6-clean-readback/probes/device-pinned-semantics.stdout",
+          "stdout_sha256": "3c1c3bb071075e44cf740b83194a871d9aaee5cb0b48aaacd7076a42ed5c86d0"
+        },
+        "probe_count": 12,
+        "probes": [
+          "catalog",
+          "fifo-reset-status",
+          "fifo-reset-discards-rx",
+          "fifo-reset-ordered",
+          "rx-consumes",
+          "rx-scripted-delay",
+          "rx-timeout",
+          "line-error-cleared-by-lsr",
+          "lsr-clears-only-break-overrun",
+          "tx-scripted-ready",
+          "tx-timeout",
+          "drain-requires-temt"
+        ],
+        "source": "examples/foundation/DevicePinnedSemantics.lean",
+        "source_sha256": "9146f3571bc604541004fd2647bcdf293c889a7b3c9372c2ee6ea19199592eb7"
+      },
+      "source_routines": "examples/foundation/DeviceConformance.lean",
+      "source_routines_sha256": "95461cea1736c9ec97eeb41400c55aeadea4904a187af3e2293ca9d90b849ef6"
+    },
+    "audit_mutations": {
+      "distinct_per_profile": 18,
+      "profiles": [
+        "O0",
+        "O2"
+      ],
+      "total_detected": 36,
+      "names": [
+        "duplicate-device-op",
+        "stale-transitive-effects",
+        "wrong-manifest-device-address",
+        "misplaced-branch-effects",
+        "wrong-device-address",
+        "wrong-device-width",
+        "nonvolatile-device-access",
+        "missing-before-fence",
+        "reordered-before-fence",
+        "duplicate-site-id",
+        "duplicate-physical-device-operation",
+        "misplaced-pre-branch-effects",
+        "optimized-wrong-device-address",
+        "optimized-nonvolatile-device-access",
+        "optimized-missing-before-fence",
+        "optimized-invalid-device-alignment",
+        "optimized-duplicate-physical-device-operation",
+        "misplaced-post-branch-effects"
+      ]
+    },
+    "branch_effect_evidence": {
+      "evidence_boundary": "QEMU directly observes both selected UART behavior and the scratch+64 byte read back by compiled Lean: false returns 0x5a00 after writing 0x5a, while true emits 0xa5 and returns 0x3c01 with the initialized 0x3c sentinel preserved; source/model and exclusive pre/post-LLVM CFG audits bind those observations to the selected branches",
+      "source_model": {
+        "false_branch_probe": "false-branch-only-ram",
+        "probe_source": "examples/foundation/DeviceModelProbes.lean",
+        "true_branch_probe": "true-branch-only-uart"
+      },
+      "target_runtime": {
+        "O0": {
+          "direct_target_observation": "the false request emits no raw UART marker and returns 0x5a00 after its scratch write/readback; the true request emits raw byte 0xa5 and returns 0x3c01 after reading back the preserved sentinel",
+          "initial_scratch_marker": 60,
+          "observations": [
+            {
+              "branch_value": 0,
+              "decoded_branch": 0,
+              "decoded_scratch_marker": 90,
+              "response": {
+                "request_id": 8193,
+                "status": 0,
+                "value": 23040
+              },
+              "response_value_hex": "0x5a00",
+              "selected_effect": "scratch+64 overwritten with 0x5a",
+              "uart_prefix_hex": ""
+            },
+            {
+              "branch_value": 1,
+              "decoded_branch": 1,
+              "decoded_scratch_marker": 60,
+              "response": {
+                "request_id": 8194,
+                "status": 0,
+                "value": 15361
+              },
+              "response_value_hex": "0x3c01",
+              "selected_effect": "raw UART 0xa5 emitted; scratch+64 preserved at sentinel 0x3c",
+              "uart_prefix_hex": "a5"
+            }
+          ],
+          "ram_marker_directly_read_back": true,
+          "response_encoding": "(scratch+64 readback << 8) | branch",
+          "scenario": "branch-effects",
+          "single_elf_sha256": "5feef4cb1b5989d5421f07db8df703f5a34352c8ea824b2c2f2e8d53dc40ec80",
+          "single_qemu_pid": 226386
+        },
+        "O2": {
+          "direct_target_observation": "the false request emits no raw UART marker and returns 0x5a00 after its scratch write/readback; the true request emits raw byte 0xa5 and returns 0x3c01 after reading back the preserved sentinel",
+          "initial_scratch_marker": 60,
+          "observations": [
+            {
+              "branch_value": 0,
+              "decoded_branch": 0,
+              "decoded_scratch_marker": 90,
+              "response": {
+                "request_id": 8193,
+                "status": 0,
+                "value": 23040
+              },
+              "response_value_hex": "0x5a00",
+              "selected_effect": "scratch+64 overwritten with 0x5a",
+              "uart_prefix_hex": ""
+            },
+            {
+              "branch_value": 1,
+              "decoded_branch": 1,
+              "decoded_scratch_marker": 60,
+              "response": {
+                "request_id": 8194,
+                "status": 0,
+                "value": 15361
+              },
+              "response_value_hex": "0x3c01",
+              "selected_effect": "raw UART 0xa5 emitted; scratch+64 preserved at sentinel 0x3c",
+              "uart_prefix_hex": "a5"
+            }
+          ],
+          "ram_marker_directly_read_back": true,
+          "response_encoding": "(scratch+64 readback << 8) | branch",
+          "scenario": "branch-effects",
+          "single_elf_sha256": "34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910",
+          "single_qemu_pid": 226639
+        }
+      },
+      "compiled_structure": {
+        "O0": {
+          "llvm_symbol": "core0_action_13",
+          "pre_ir": {
+            "branch_local_readbacks": true,
+            "dispatch": "conditional-branches",
+            "exclusive_reachability": true,
+            "llvm_symbol": "core0_action_13",
+            "marker_store_block": "mem.2.access.103",
+            "readbacks_encoded": true,
+            "selector_0_readback_block": "mem.3.access.138",
+            "selector_0_successor": "action.if.then.70",
+            "selector_1_readback_block": "mem.4.access.179",
+            "selector_1_successor": "action.if.then.143",
+            "send_byte_block": "action.if.then.143",
+            "sentinel_dominance_kind": "checked-success",
+            "sentinel_dominates_selection": true,
+            "sentinel_store_block": "mem.1.access.65",
+            "separate_successors": true,
+            "source_function": "Lemma.Examples.Foundation.Device.dispatchBranch"
+          },
+          "post_ir": {
+            "branch_local_readbacks": true,
+            "dispatch": "conditional-branches",
+            "exclusive_reachability": true,
+            "llvm_symbol": "core0_action_13",
+            "marker_store_block": "mem.2.access.103",
+            "readbacks_encoded": true,
+            "selector_0_readback_block": "mem.3.access.138",
+            "selector_0_successor": "action.if.then.70",
+            "selector_1_readback_block": "mem.4.access.179",
+            "selector_1_successor": "action.if.then.143",
+            "send_byte_block": "action.if.then.143",
+            "sentinel_dominance_kind": "checked-success",
+            "sentinel_dominates_selection": true,
+            "sentinel_store_block": "mem.1.access.65",
+            "separate_successors": true,
+            "source_function": "Lemma.Examples.Foundation.Device.dispatchBranch"
+          }
+        },
+        "O2": {
+          "llvm_symbol": "core0_action_13",
+          "pre_ir": {
+            "branch_local_readbacks": true,
+            "dispatch": "conditional-branches",
+            "exclusive_reachability": true,
+            "llvm_symbol": "core0_action_13",
+            "marker_store_block": "mem.2.access.103",
+            "readbacks_encoded": true,
+            "selector_0_readback_block": "mem.3.access.138",
+            "selector_0_successor": "action.if.then.70",
+            "selector_1_readback_block": "mem.4.access.179",
+            "selector_1_successor": "action.if.then.143",
+            "send_byte_block": "action.if.then.143",
+            "sentinel_dominance_kind": "checked-success",
+            "sentinel_dominates_selection": true,
+            "sentinel_store_block": "mem.1.access.65",
+            "separate_successors": true,
+            "source_function": "Lemma.Examples.Foundation.Device.dispatchBranch"
+          },
+          "post_ir": {
+            "branch_local_readbacks": true,
+            "dispatch": "switch",
+            "exclusive_reachability": true,
+            "llvm_symbol": "core0_action_13",
+            "marker_store_block": "action.if.then.70",
+            "readbacks_encoded": true,
+            "selector_0_readback_block": "action.if.then.70",
+            "selector_0_successor": "action.if.then.70",
+            "selector_1_readback_block": "action.if.then.146",
+            "selector_1_successor": "action.if.then.143",
+            "send_byte_block": "action.if.then.143",
+            "sentinel_dominance_kind": "direct",
+            "sentinel_dominates_selection": true,
+            "sentinel_store_block": "entry",
+            "separate_successors": true,
+            "source_function": "Lemma.Examples.Foundation.Device.dispatchBranch"
+          }
+        }
+      }
+    },
+    "maximum_frame_chain_bytes": {
+      "O0": 2736,
+      "O2": 288
+    },
+    "stack_limit_bytes": 65536,
+    "profiles": {
+      "O0": {
+        "audit_sha256": "cf5735bd8e7b58de2c9b504430a017a1eb9f1a55cc9c09aef345bb2da5252b4a",
+        "image_sha256": "5feef4cb1b5989d5421f07db8df703f5a34352c8ea824b2c2f2e8d53dc40ec80",
+        "optimized_ir_sha256": "4bb9b7476f25f15d1e0657bf46e801ddfd3be88f6e4767ca7358d78bbf374259",
+        "stack_sizes_sha256": "dfcbe37e194348668d2a2b441fe4cfa36a856c79dfa2a5edb485493165a16ce6",
+        "exit_status_histogram": {
+          "0": 4,
+          "11": 1,
+          "12": 1,
+          "14": 4,
+          "15": 2,
+          "16": 2
+        },
+        "machine_audit": {
+          "access_count": 6,
+          "byte_accesses_only": true,
+          "denied_region_metadata_materializations": 18,
+          "fence_implementation": "fence iorw,iorw; ret",
+          "ordered_fence_calls": 12,
+          "register_use_audit": {
+            "all_inferred_accesses_are_approved": true,
+            "inferred_uart_accesses": 6,
+            "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof"
+          }
+        }
+      },
+      "O2": {
+        "audit_sha256": "71cf14a9ea62080c9f9fb46ec51b6e96fb827b2313fdb5ae0d94c8784412b565",
+        "image_sha256": "34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910",
+        "optimized_ir_sha256": "76f76f44ed39897a923c1db0ec6b0d10b68bf55be08acc8f534d4c6966e57ab0",
+        "stack_sizes_sha256": "2c5840e24ffeba12eea0337c57b1d388ade780ed4027d9a61deb8652a13a3852",
+        "exit_status_histogram": {
+          "0": 4,
+          "11": 1,
+          "12": 1,
+          "14": 4,
+          "15": 2,
+          "16": 2
+        },
+        "machine_audit": {
+          "access_count": 6,
+          "byte_accesses_only": true,
+          "denied_region_metadata_materializations": 0,
+          "fence_implementation": "fence iorw,iorw; ret",
+          "ordered_fence_calls": 12,
+          "register_use_audit": {
+            "all_inferred_accesses_are_approved": true,
+            "inferred_uart_accesses": 6,
+            "scope": "bounded per-function straight-line constant/alias inference; not a CFG proof"
+          }
+        }
+      }
+    },
+    "representative_session": {
+      "path": "build/foundation/gate6-clean-readback/O2/runs/branch-effects/run-branch-effects.json",
+      "sha256": "ec166acb5c7db4baaf9c68c3b2f804a7f70c56cb07b171dea6f425a9808d5403",
+      "sent": {
+        "path": "build/foundation/gate6-clean-readback/O2/runs/branch-effects/sent-branch-effects.bin",
+        "sha256": "93fa4965f503ebd6ab0cb4333cfcf7904170c37c8da651c5bbe1c080cb16724a"
+      },
+      "received": {
+        "path": "build/foundation/gate6-clean-readback/O2/runs/branch-effects/received-branch-effects.bin",
+        "sha256": "eea3270c2a00445ad00c0f138bb86106cda67f73167243feb49ab6adb3e1b5e8"
+      },
+      "qemu_pid": 226639,
+      "single_pid": true,
+      "single_elf": true,
+      "qemu_exit_status": 0,
+      "decoded_values": [
+        "0x5a00",
+        "0x3c01"
+      ]
+    },
+    "focused_aggregate": {
+      "path": "build/foundation/gate6-clean-readback/gate6-results.json",
+      "sha256": "da4726d0c7f312c72295b70651a94cd4eeb69f5e99072dd6ba3f07676acd73a1"
+    },
+    "cumulative_aggregate": {
+      "path": "build/foundation/gates1-6-clean-readback/gate6/gate6-results.json",
+      "sha256": "bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2",
+      "source_commit": "179ef541e7cfa53235322610222a01ccdf9364cd"
+    },
+    "security_interpretation": "compiled checked Core0 code performs declared ordered MMIO and checked ordinary-RAM access inside one trusted M-mode image; this is not isolation against arbitrary privileged machine code",
+    "limitations": [
+      "Finite model/source probes and local device lemmas are not a compiler-correctness or hardware-correctness proof.",
+      "The machine result is specific to the pinned QEMU virt ns16550a model; it is not a physical-board claim.",
+      "Transmit backpressure is exercised through QEMU's stdio serial backend and is not a UART latency measurement.",
+      "Gate 6 remains polling-only and adds no trap substrate, interrupts, scheduler, or managed runtime.",
+      "This result does not complete G1 or G2."
+    ]
+  },
+  "historical_cumulative_foundation": [
+    {
+      "path": "build/foundation/gates1-4-clean-16e7461/all-results.json",
+      "sha256": "19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e",
+      "children": {
+        "gate_1_sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e",
+        "gate_2_sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4",
+        "gate_3_sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059",
+        "gate_4_sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
+      }
+    },
+    {
+      "path": "build/foundation/gates1-5-clean-ff8ef0f/all-results.json",
+      "sha256": "635c1ca0c7d3a4647297a978b109ce5b42d015a6ab46de676d8791b66261b863",
+      "source_commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98"
+    }
+  ],
+  "historical_legacy_core0_regression": [
+    {
+      "cases_per_profile": 10,
+      "expected_rejections": 13,
+      "fresh_qemu_boots": 23,
+      "path": "build/core0/check/check-results.json",
+      "sha256": "36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404",
+      "profiles": {
+        "O0": {
+          "image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b"
+        },
+        "O2": {
+          "image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b"
+        }
+      }
+    },
+    {
+      "source_commit": "ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98",
+      "path": "build/core0/check/check-results.json",
+      "sha256": "ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f",
+      "path_subsequently_reused": true
+    }
+  ]
 }

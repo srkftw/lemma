@@ -3,15 +3,17 @@
 - Base: Task 001 report-bearing commit `b8e9c59365ae8e9925e0bf6fbca6a963d990ec85`
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
-- Highest passing gate: Gate 5.
-- Current gate: Gate 6, in progress.
-- Current failure: none; the compiled-device implementation and focused audit/check
-  drivers are being integrated and have not yet been accepted from a clean commit.
-- Latest clean passing implementation: `ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98`
-  (tree `c1172034c1dedc0a91375b2eb21dd6fe5fd9b187`).
-- Next executable action: finish the independent device/central audits, run the
-  focused Gate 6 checker over clean O0/O2 builds and all 28 required QEMU sessions,
-  then commit and repeat the cumulative and legacy checks from clean source.
+- Highest passing gate: Gate 6.
+- Current gate: Gate 7, in progress; no Gate 7 acceptance checks have run.
+- Current failure: none; synchronous-trap implementation is starting after clean
+  Gate 6 focused, cumulative, and legacy acceptance.
+- Latest clean passing implementation: `179ef541e7cfa53235322610222a01ccdf9364cd`
+  (tree `9ff742607b5b1d73924928bf147dabada037f406`).
+- Report-bearing revision: later/unassigned; do not confuse it with tested source.
+- Next executable action: implement the separately versioned structured trap entry,
+  full integer context preservation, compiled dispatch, authorized ECALL/EBREAK
+  return, fatal/double-fault paths, and target register/canary/denied-RAM tests for
+  Gate 7. Continue through Gates 8--11 after each prerequisite passes.
 
 ## Gate 0 historical checkpoint
 
@@ -273,6 +275,48 @@ Evidence identities:
   `build/core0/check/check-results.json`, SHA-256
   `ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f`.
 
+## Gate 6 clean checkpoint
+
+Verified implementation `179ef54...` on 2026-10-08. The final build/unit checks ran
+on its tree immediately before commit: Lean build 44 jobs and 52 compile-time CFG
+checks; metadata 7 gates/56 software/6 physical; scaffold 18/18, Core0 32/32, and
+foundation 239/239 tests passed. The following commands then ran against the clean
+implementation commit, all exit 0:
+
+```text
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 \
+  --work-dir build/foundation/gate6-clean-readback --clean --timeout 300 --qemu-timeout 20
+  Gate 6 PASS: 14 scenarios/profile, 28 fresh boots, 16 runtime requests
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-6-clean-readback --clean --timeout 300 --qemu-timeout 20
+  Gates 1--6 PASS: 24+136+88+14+104+28 = 394 fresh boots
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean
+  legacy PASS: 10 cases/profile, 13 intended rejections, 23 fresh boots
+```
+
+All 29 cumulative provenance records name exact clean `179ef54...` source. The
+focused report SHA-256 is
+`da4726d0c7f312c72295b70651a94cd4eeb69f5e99072dd6ba3f07676acd73a1`;
+the cumulative aggregate is
+`b82597eced2cd1e23bc9c589142c353e36d6f3414746194cdbb47be00ce3c2de`;
+the current legacy aggregate is
+`1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09`.
+Earlier legacy hashes above are historical because that output path was reused.
+
+Gate 6's `core0-v0.5` compiles four closed ordered UART operations through one
+elaborated root, 22 Action and 19 scalar functions. Both profiles exchange two
+runtime requests in each of four interactive sessions; ten further sessions test
+defined bounded terminal failures. All 36 audit mutants, five exact frontend
+fixtures (including one legacy-profile rejection), twelve pinned-UART probes,
+thirteen packet/source-model probes, and four local lemmas passed their checks.
+Branch RAM evidence is direct: four target readbacks return `0x5a00` and `0x3c01`,
+with the true branch's raw `0xa5` UART marker and preserved `0x3c` RAM sentinel.
+Maximum acyclic frame chains are O0 2,736 bytes and O2 288 against a 65,536-byte stack.
+
+This is polling-only pinned-QEMU evidence, not traps, interrupts, physical hardware,
+compiler correctness, isolation, or G1/G2 completion. Separate detached-worktree
+qualification, publication, and actual CI remain Gate 10/11 obligations.
+
 ## Decisions that must survive a resume
 
 - Preserve `core0-v0.1` and its rejection corpus. Gate 3 added the explicitly
@@ -294,7 +338,7 @@ Evidence identities:
   the three comparison routes as absolutely independent proof systems.
 - Schema-2 provenance binds exact source and `.olean` inputs. O0/O2 Gate 2 profiles
   share byte-identical checked suite/ABI/source artifacts. The current cumulative
-  run names clean `ff8ef0f...` source; the earlier Gate 2 checkpoint remains
+  run names clean `179ef54...` source; the earlier Gate 2 checkpoint remains
   historically bound to `687ee7e...`.
 - Gate 3 pins Lean 4.34.1 revision `5045d0056413266e57c625dcd7c365b10e377c52`
   and the inspected `Init/Data/UInt/Basic.lean` SHA-256
@@ -325,7 +369,16 @@ Evidence identities:
 - Gate 5's direct source-binding audit covers directly auditable normalized operands;
   computed expressions and Action-bound variables remain subject to generic guard/CFG
   audit and target comparisons, not a general semantic proof.
-- Gates 0-5 advance Stage I only. Later M-mode work cannot by itself mark Stage II
+- Gate 6's additive `core0-v0.5` admits only the four closed UART operations and
+  separate `mmioRead`, `mmioWrite`, `ioOrder` effects. Preserve byte access widths,
+  per-access full fences, compiled packet/polling logic, bounded terminal statuses,
+  transitive checking, and device exclusion from generic RAM. The v0.4 fold budget
+  stays 256; only v0.5 admits up to 1,000,000 for bounded device polling.
+- Gate 6 target branch readback is now complete; do not repeat the development-only
+  RAM-observation gap. Its UART model is finite/scripted, not timing-accurate; local
+  proofs and bounded straight-line machine register inference are not full compiler
+  or CFG proofs.
+- Gates 0--6 advance Stage I only. Later M-mode work cannot by itself mark Stage II
   Unit 2.1 or 2.2 passed, and neither G1 nor G2 is complete.
 
 Machine-readable status is in `docs/plan/002-gates.json`.

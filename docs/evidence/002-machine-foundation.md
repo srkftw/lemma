@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 5 have passed. Gate 6 and every later gate remain open. This record does not
+through 6 have passed. Gate 7 is in progress; Gates 8--11 remain open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -22,10 +22,15 @@ Task 002 machine foundation.
 - Gate 4 implementation checkpoint:
   `16e7461e009e09390c0e9682d5800cae9fdd90d3`, tree
   `ee8840a642aa3acc03a8759242cc477a7b8c2eb2`.
-- Gate 5 implementation and current cumulative clean verification source:
+- Gate 5 implementation checkpoint:
   `ff8ef0f871a0c1a3bfdadf95d49d52a828df1e98`, tree
   `c1172034c1dedc0a91375b2eb21dd6fe5fd9b187`.
+- Gate 6 implementation and current cumulative clean verification source:
+  `179ef541e7cfa53235322610222a01ccdf9364cd`, tree
+  `9ff742607b5b1d73924928bf147dabada037f406`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
+- Report-bearing revision: a later evidence checkpoint, not yet assigned here; the
+  tested implementation identity above is intentionally separate.
 
 The historical Gate 0 clean aggregate was `build/core0/check/check-results.json`,
 SHA-256 `3a3cb9244b4a84b1a93ff869843aa3619622719ef6f431067e5502cbefc58a7c`.
@@ -34,10 +39,12 @@ Gates 1-2 command at `687ee7e...`. All 14 Gate 1 control/mutant provenance recor
 both Gate 2 profiles, and the Task 001 O0/O2 release records in that historical
 checkpoint name the full `687ee7e...` commit and record `dirty_tree: false`.
 
-The current cumulative clean run repeated Gates 1-5 at `ff8ef0f...`. Its Gate 1
-records and all Gate 2, Gate 3, Gate 4, and Gate 5 profiles name that full commit and record
-`dirty_tree: false`; the earlier per-gate identities remain historical checkpoints
-rather than being overwritten.
+The current cumulative clean run repeated Gates 1--6 at `179ef54...`. All 29
+cumulative build provenance records name that full commit and record
+`dirty_tree: false`; the focused Gate 6 and legacy O0/O2 audits do likewise. The
+earlier per-gate identities remain historical checkpoints rather than being
+overwritten. These are clean committed-source runs in the existing checkout, not
+the separate detached-worktree qualification still required by Gate 10.
 
 Generated build output remains ignored. The durable identities of the cumulative
 clean records are:
@@ -65,28 +72,37 @@ clean records are:
 | `build/foundation/gates1-5-clean-ff8ef0f/gate3/gate3-results.json` | `dd742d894dabd5714dad387212421fc12e376e23e86acb763d4cfd2a5eb1dbcf` |
 | `build/foundation/gates1-5-clean-ff8ef0f/gate4/gate4-results.json` | `60e29f2c73934c0dc2ad761c6df3ab0ab0a10310295b63901bbb9948efde1a4a` |
 | `build/foundation/gates1-5-clean-ff8ef0f/gate5/gate5-results.json` | `c331d3f4210d3bdaef88def71c892606d0dc4caa85cee8e07f092092b55de8f6` |
-| `build/core0/check/check-results.json` (same-source legacy regression) | `ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f` |
+| `build/core0/check/check-results.json` (historical Gate 5 legacy regression; path subsequently reused) | `ab160eebccc519922a537c181c83900c2838f690bd15c7ca49ba8906283b1c8f` |
+| `build/foundation/gate6-clean-readback/gate6-results.json` (authoritative focused Gate 6 report) | `da4726d0c7f312c72295b70651a94cd4eeb69f5e99072dd6ba3f07676acd73a1` |
+| `build/foundation/gates1-6-clean-readback/all-results.json` | `b82597eced2cd1e23bc9c589142c353e36d6f3414746194cdbb47be00ce3c2de` |
+| `build/foundation/gates1-6-clean-readback/gate1/gate1-results.json` | `f5d58aff59e38c7a8f29b86bc87742164c9f5531080d064e17dcd51140c08706` |
+| `build/foundation/gates1-6-clean-readback/gate2/gate2-results.json` | `d757326af681a420137f14157fb9609aa1972b9852bb232eee55f874c6528eb0` |
+| `build/foundation/gates1-6-clean-readback/gate3/gate3-results.json` | `fedd4428a9831744f51bede8d1ef44ce18c228859ccbd2e5e64a4d463cee3c71` |
+| `build/foundation/gates1-6-clean-readback/gate4/gate4-results.json` | `b91564ae709820dbe58e1c58ca8a76bbec90a72c16ecec081c8d28d838cf898a` |
+| `build/foundation/gates1-6-clean-readback/gate5/gate5-results.json` | `dcd9e7b34efee45570860f33e9b04e0a7654ed7e14daca8c7641447dbe1ff3e1` |
+| `build/foundation/gates1-6-clean-readback/gate6/gate6-results.json` | `bb61dc1c32a2d00440ff71a78ffc040f8efd8a2ec10b0441d529ba820c38e9f2` |
+| `build/core0/check/check-results.json` (current same-source legacy regression) | `1a0e514c0ff086f6ca25679882c97e992c02f9e9eb6cbfe049e3552c5eaa0e09` |
 
 ## Commands executed for the current implementation checkpoint
 
 | Command | Exit | Actual result |
 |---|---:|---|
-| `nix develop --no-write-lock-file --command lake build` | 0 | 37 jobs; complete Lean library build; 40 compile-time CFG validator checks |
+| `nix develop --no-write-lock-file --command lake build` | 0 | 44 jobs; complete Lean library build; 52 compile-time CFG validator checks |
 | `python3 scripts/check_scaffold.py` | 0 | metadata valid: 7 gates, 56 software units, 6 physical units |
 | `python3 -m unittest discover -s tests/scaffold -v` | 0 | 18/18 passed |
-| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v` | 0 | 21/21 passed |
-| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 196/196 passed |
+| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v` | 0 | 32/32 passed |
+| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 239/239 passed |
 | `nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean` | 0 | 10 cases/profile, 13 intended rejections, 23 fresh QEMU boots |
 | `git status --short --branch` | 0 | Before authoritative runs: clean status `## task/002-machine-foundation` |
-| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 5 --work-dir build/foundation/gate5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15` | 0 | Gate 5 passed: 26 roots, 52 cases/profile, 104 fresh QEMU boots |
-| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-5-clean-ff8ef0f --clean --timeout 300 --qemu-timeout 15` | 0 | Gates 1-5 passed: Gate 1 used 24 boots, Gate 2 used 136, Gate 3 used 88, Gate 4 used 14, Gate 5 used 104 |
+| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 --work-dir build/foundation/gate6-clean-readback --clean --timeout 300 --qemu-timeout 20` | 0 | Gate 6 passed: 14 scenarios/profile, 28 fresh QEMU boots, 16 runtime requests |
+| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-6-clean-readback --clean --timeout 300 --qemu-timeout 20` | 0 | Gates 1--6 passed: boot counts 24, 136, 88, 14, 104, 28 respectively; 394 total |
 
 The build and unit suites ran against the final implementation tree immediately
-before its checkpoint commit. The focused Gate 5, cumulative Gates 1-5, and legacy
+before its checkpoint commit. The focused Gate 6, cumulative Gates 1--6, and legacy
 Core0 commands then ran after the implementation was committed, from clean source
-`ff8ef0f...`. Those reports are the source-attributable authorities: the focused
-report details Gate 5, the cumulative report proves Gates 1-5 still pass together,
-and the legacy Core0 report binds both O0/O2 audits to `ff8ef0f...` with
+`179ef54...`. Those reports are the source-attributable authorities: the focused
+report details Gate 6, the cumulative report proves Gates 1--6 still pass together,
+and the legacy Core0 report binds both O0/O2 audits to `179ef54...` with
 `dirty_tree: false`.
 
 ## Gate 1: incorrect-compiler detection
@@ -636,6 +652,144 @@ does not establish protection against arbitrary privileged machine code, MMIO
 ordering, a device driver, traps, interrupts, address-space isolation, allocation,
 or a managed runtime.
 
+## Gate 6: compiled Lean polling UART and runtime sessions
+
+Gate 6 adds explicitly selected `core0-v0.5`, test ABI
+`lemma-device-session-v1`, and artifact category `test-device-suite`. The genuine
+elaborated root `Lemma.Examples.Foundation.Device.deviceSession` has a checked
+closure of 22 Action and 19 scalar functions. Its four closed device operations are
+`uartReadStatus`, `uartReadByte`, `uartWriteByte`, and `uartEnableAndResetFifo`.
+Their `mmioRead`, `mmioWrite`, and `ioOrder` effects remain separate from ordinary
+RAM effects and propagate through helper calls, selected branches, and bounded
+Action folds. Generic RAM access to device regions remains denied. The older
+`core0-v0.4` budget stays 256; the new profile permits a literal Action-fold budget
+up to 1,000,000 for bounded polling, without adding dynamic closures or recursion.
+
+The compiled source performs UART FIFO initialization, transmit/status/receive
+polling, bounded timeouts, packet validation, dispatch, arithmetic, encoding, and
+final drain. `DeviceHarness.lean` only invokes the no-argument Action root and
+writes the status-coded SiFive-test finisher; its audit finds zero UART accesses.
+The legacy Task 001 harness remains separately tested.
+
+### Pinned machine, ordering, and audit scope
+
+The one-hart integer-only machine remains QEMU `virt`, `-bios none`, 128 MiB RAM,
+RV64IM with Zicsr/Zifencei, and LP64. QEMU 11.1.1 revision
+`c3d48b7d1e89604920e5b81b91140c2ad39a1943` has source archive SHA-256
+`079ffbff8a7111bbc89022107cbabf3bbfd614d5fc9d7cc675991196aca12482`.
+The captured DTB SHA-256 is
+`c9c27a1a5c9a652c5c9daa8109c5109d651dacf502b2b7c6081d63d99849d73f`.
+Its `/soc/serial@10000000` node identifies ns16550a, span `0x100`, clock
+3,686,400 Hz, and IRQ 10; this polling gate does not enable that IRQ or use the
+clock as a timing oracle. The exact source inspection and model limits are in
+[the UART audit](../audits/uart-core0-v05.md).
+
+The selected register-shift-zero interface uses bytes only: RBR/THR at
+`0x10000000`, fixed FCR `0x07` at `0x10000002`, and LSR at `0x10000005`.
+RBR reads consume receive data; LSR reads clear BI/OE, not every error bit; THR/FCR
+writes have the documented transmitter/FIFO side effects. Every source device
+operation emits a volatile `i8` access, alignment one, immediately bracketed by
+calls to the structured `fence iorw,iorw` primitive. Six physical source sites and
+twelve fence calls survive both profiles. The optimized alignment audit admits
+only alignment one or the exact constant address's justified low-bit alignment.
+It does not attribute LLVM-inferred alignment to the source emitter.
+
+The central audit checks the named two-object closure, ELF/ISA/layout, direct-call
+closure, stack metadata, fences, and all inferred UART memory uses. Its register
+constant/alias tracking is bounded per-function straight-line inference, not a
+general machine CFG proof. O0 has 18 explicitly classified UART-base constants
+used only in denied-region metadata; O2 has none. The acyclic optimized-LLVM call
+graph weighted by object `.stack_sizes` has maximum chains of 2,736 bytes at O0
+and 288 at O2, below the fixed 65,536-byte stack; this is not a complete machine
+call-graph proof.
+
+### Actual runtime and failure matrix
+
+Suite ID is `0x4c454d4d41363036`, source seed `0x534f555243453036`, and runtime
+seed `0x52554e54494d4536`. The closed corpus SHA-256 is
+`dab17f6d43e29ca55787ccbe63862a3d1af35a9bd62126d09f089c200de844df`.
+The compiled READY bytes are `LEMMA_DEVICE/1\nREADY\n`. A request has a 16-byte
+`LMQ6` header, version 1, command, payload length at most 16, zero flags, and a
+little-endian UInt64 ID. A response is exactly 24 bytes: `LMS6`, version, status,
+payload length 8, zero flags, echoed ID, and little-endian UInt64 result.
+
+Each profile ran four interactive and ten terminal scenarios: 14 fresh boots,
+eight runtime requests, and four single-PID/two-request sessions. Across O0/O2 that
+is 28 boots, 16 runtime requests, and eight two-request sessions. ADD64/XOR64
+answers, selected branch effects, unsupported-command recovery, and bounded TX
+stress all matched the independent host oracle using inputs sent after READY.
+An unsupported command returned status 17 and the next valid request succeeded
+without restarting or rebuilding the image.
+
+Malformed magic/version/flags and noncanonical branch input terminated with status
+14; partial header/payload with 15; invalid lengths with 16; no receive input with
+12; and actual serial-backend backpressure with bounded transmit status 11. Each
+profile's exit-status histogram is `{0:4, 11:1, 12:1, 14:4, 15:2, 16:2}`. A line-error
+outcome is covered by the finite UART probes, not a claimed injected target line
+error. Backpressure evidence is specific to QEMU's stdio backend, not a UART latency
+measurement. Retained raw bytes, PID/ELF binding, argv, timestamps, status, and
+cleanup are checked rather than accepting a banner alone.
+
+The branch command first initializes scratch+64 to `0x3c`. False alone writes
+`0x5a`; true alone emits raw UART `0xa5`. Both paths read the byte through checked
+RAM and encode `(readback << 8) | selector`. Both profiles returned exactly
+`0x5a00` and `0x3c01`, respectively, giving four actual target marker readbacks.
+Source bindings and exclusive pre/post-LLVM CFG placement additionally check the
+sentinel, selected effect, branch-local load, and encoded result. The earlier
+development-only observation gap is closed in this clean checkpoint.
+
+All 18 manifest/effect/branch/pre-IR/post-IR audit mutants per profile rejected
+(36 total). They exercise stale/duplicate catalogs, wrong address/width/volatility,
+missing/reordered fences, duplicated physical operations, invalid optimized
+alignment, and misplaced branch effects. These are audit mutations, not six new
+behavioral compiler faults; the Gate 1 behavioral fault matrix remains separate.
+All five exact frontend fixtures rejected, including one older-profile rejection
+(the latter is a subset, not a sixth fixture). They also cover excessive budget,
+stored continuation, hidden arbitrary extern, and a pure result concealing effects.
+
+### Retained transcript, models, and proofs
+
+The focused acceptance command in the command table produced this actual O2
+`branch-effects` session, PID 226639, image SHA-256
+`34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910`.
+The run record and binary streams are under
+`build/foundation/gate6-clean-readback/O2/runs/branch-effects/`.
+
+```text
+guest READY: LEMMA_DEVICE/1\nREADY\n
+host request 0x2001: 4c4d513601030100012000000000000000
+guest frame:        4c4d5336010008000120000000000000005a000000000000
+decoded: id=0x2001 status=0 marker=0x5a selector=0 value=0x5a00
+host request 0x2002: 4c4d513601030100022000000000000001
+guest prefix:       a5
+guest frame:        4c4d5336010008000220000000000000013c000000000000
+decoded: id=0x2002 status=0 marker=0x3c selector=1 value=0x3c01
+QEMU exit: 0; both requests used the same PID and ELF
+```
+
+Twelve pinned-UART semantics probes and thirteen packet/source-model probes passed.
+The finite model scripts receive/transmit availability; it is not a timing-accurate
+model of the asynchronous FIFO. Packet probes separately compare original
+elaborated source encoders. Four local lemmas were checked:
+`empty_write_has_ordered_events`, `fifo_reset_discards_pending_rx`, and
+`fifo_reset_is_ordered` have no axiom dependencies; `response_size` depends only on
+`propext` and `Quot.sound`. Their exact statements and dependency output are retained
+in the focused JSON and `proofs/device-lemmas-axioms.stdout`. They establish model
+ordering/reset/frame-size facts, not frontend/lowering refinement, compiler
+correctness, or physical UART correctness.
+
+| Profile | Audit SHA-256 | Optimized IR SHA-256 | Image SHA-256 |
+|---|---|---|---|
+| O0 | `cf5735bd8e7b58de2c9b504430a017a1eb9f1a55cc9c09aef345bb2da5252b4a` | `4bb9b7476f25f15d1e0657bf46e801ddfd3be88f6e4767ca7358d78bbf374259` | `5feef4cb1b5989d5421f07db8df703f5a34352c8ea824b2c2f2e8d53dc40ec80` |
+| O2 | `71cf14a9ea62080c9f9fb46ec51b6e96fb827b2313fdb5ae0d94c8784412b565` | `76f76f44ed39897a923c1db0ec6b0d10b68bf55be08acc8f534d4c6966e57ab0` | `34195270cb43289f64754b10b63508ae08fff07974c6c60875c06710c6cd6910` |
+
+O0/O2 have byte-identical checked manifest, normalized source, wire ABI, symbol
+map, layout, startup, and pre-optimization IR. The pre-IR SHA-256 is
+`06993acef2e38439afc6e49ce682f4f32d2e3d4785a2eaca7a6e7a1057d4504c`.
+The full identities are in the machine-readable summary and SHA-256 inventory.
+Gate 6 adds no traps, interrupts, scheduler, managed runtime, or physical-board
+claim. Gates 7--11, separate-worktree qualification, and publication remain open.
+
 ## Shared assumptions, stage mapping, and limits
 
 The direct and checked-model routes are deliberately separate computations, but both
@@ -667,11 +821,15 @@ comparison. It gives Unit 1.6 only regression coverage because its physical memo
 observer and existing UART/finisher remain test glue rather than a new compiled
 device primitive. The explicit profiles and trust manifests plus source-bound images account for the added
 1.1 and 1.7 evidence. Unit 1.2 receives regression coverage only. Every listed
-construction unit remains `partial`; compiled device, trap, timer, monitor, and
+construction unit remains `partial`; trap, timer, monitor, and
 qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
-incomplete, and Task 002 is not complete. Gate 5 checked fixed-region memory is the
-highest passing gate. Gate 6 compiled Lean device routines are the next executable
-gate.
+incomplete, and Task 002 is not complete. Gate 6 compiled Lean device routines are
+the highest passing gate. Gate 7 synchronous traps are now in progress, with no
+Gate 7 acceptance result claimed. Gate 6 directly advances partial Units 1.1,
+1.3, 1.4, 1.5, 1.6, 1.7, and 1.8 through its versioned effectful device interface,
+finite semantics, ordered lowering, machine audit, source-bound image, branch RAM
+readbacks, and real runtime UART exchanges. Unit 1.2 retains regression coverage
+only; all Stage I statuses remain partial and no Stage II unit is marked passed.

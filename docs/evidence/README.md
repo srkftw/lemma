@@ -13,8 +13,11 @@ not toolchains or target binaries.
 Task 002's current passing prefix is recorded in
 [002-machine-foundation.md](002-machine-foundation.md), with a
 [machine-readable summary](002-machine-foundation-summary.json) and
-[hash inventory](002-machine-foundation-sha256s.txt). It currently covers only Gates
-0 and 1 and explicitly leaves G1, G2, and later Task 002 gates open.
+[hash inventory](002-machine-foundation-sha256s.txt). It currently covers passing
+Gates 0--6, including checked memory and compiled polling UART sessions. Gate 7 is
+in progress; G1, G2, the remaining Task 002 gates, separate-worktree qualification,
+and publication remain open. Tested implementation and later report-bearing
+identities are kept separate.
 
 Use `templates/EVIDENCE_REPORT.md` as a reporting structure. Never rename scaffold
 metadata tests to imply that the freestanding image booted.
