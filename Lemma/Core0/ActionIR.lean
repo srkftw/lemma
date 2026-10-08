@@ -2,9 +2,10 @@ import Lemma.Core0.IR
 import Lemma.Core0.Device
 import Lemma.Core0.Memory
 import Lemma.Core0.Trap
+import Lemma.Core0.Timer
 
 /-!
-Backend-neutral checked effect syntax for `core0-v0.4` through `core0-v0.6`.
+Backend-neutral checked effect syntax for `core0-v0.4` through `core0-v0.7`.
 
 This is separate from scalar `Expr`: an Action is never assigned a scalar target
 type.  Continuation binders are scalar locals and the compiler erases the enclosing
@@ -37,6 +38,8 @@ structure EffectSet where
   ioOrder : Bool := false
   syncTrap : Bool := false
   machineState : Bool := false
+  timerState : Bool := false
+  interruptState : Bool := false
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace EffectSet
@@ -48,6 +51,18 @@ def write : EffectSet := { checkedAccess := true, ramWrite := true }
 def deviceRead : EffectSet := { mmioRead := true, ioOrder := true }
 def deviceWrite : EffectSet := { mmioWrite := true, ioOrder := true }
 def trap : EffectSet := { syncTrap := true, machineState := true }
+def timerRead : EffectSet := {
+  mmioRead := true, ioOrder := true, machineState := true, timerState := true
+}
+def timerWrite : EffectSet := {
+  mmioWrite := true, ioOrder := true, machineState := true, timerState := true
+}
+def interrupt : EffectSet := {
+  ioOrder := true, machineState := true, interruptState := true
+}
+def timerInterrupt : EffectSet := {
+  ioOrder := true, machineState := true, timerState := true, interruptState := true
+}
 
 def union (left right : EffectSet) : EffectSet := {
   checkedAccess := left.checkedAccess || right.checkedAccess
@@ -58,6 +73,8 @@ def union (left right : EffectSet) : EffectSet := {
   ioOrder := left.ioOrder || right.ioOrder
   syncTrap := left.syncTrap || right.syncTrap
   machineState := left.machineState || right.machineState
+  timerState := left.timerState || right.timerState
+  interruptState := left.interruptState || right.interruptState
 }
 
 instance : Union EffectSet := ⟨union⟩
@@ -70,7 +87,9 @@ def subset (left right : EffectSet) : Bool :=
     (!left.mmioWrite || right.mmioWrite) &&
     (!left.ioOrder || right.ioOrder) &&
     (!left.syncTrap || right.syncTrap) &&
-    (!left.machineState || right.machineState)
+    (!left.machineState || right.machineState) &&
+    (!left.timerState || right.timerState) &&
+    (!left.interruptState || right.interruptState)
 
 def render (effects : EffectSet) : String :=
   let names :=
@@ -81,7 +100,9 @@ def render (effects : EffectSet) : String :=
     (if effects.mmioWrite then ["mmio-write"] else []) ++
     (if effects.ioOrder then ["io-order"] else []) ++
     (if effects.syncTrap then ["sync-trap"] else []) ++
-    (if effects.machineState then ["machine-state"] else [])
+    (if effects.machineState then ["machine-state"] else []) ++
+    (if effects.timerState then ["timer-state"] else []) ++
+    (if effects.interruptState then ["interrupt-state"] else [])
   "[" ++ String.intercalate "," names ++ "]"
 
 end EffectSet
@@ -134,6 +155,8 @@ inductive ActionExpr where
   | uartWriteByte (value : Expr) (status : Param) (next : ActionExpr)
   | uartEnableAndResetFifo (status : Param) (next : ActionExpr)
   | trap (operation : Trap.Op) (status value : Param) (next : ActionExpr)
+  | timer (operation : Timer.Op) (argument? : Option Expr)
+      (status value : Param) (next : ActionExpr)
   deriving BEq, Inhabited, Repr
 
 def ActionExpr.renderNormalized : ActionExpr → String
@@ -178,6 +201,10 @@ def ActionExpr.renderNormalized : ActionExpr → String
   | .trap operation status value next =>
       s!"(action.trap {operation.stableId} (status %{status.id}) " ++
         s!"(value %{value.id}) {next.renderNormalized})"
+  | .timer operation argument? status value next =>
+      let argument := argument?.map Expr.renderNormalized |>.getD "none"
+      s!"(action.timer {operation.stableId} (argument {argument}) " ++
+        s!"(status %{status.id}) (value %{value.id}) {next.renderNormalized})"
 
 structure ActionFunction where
   name : Lean.Name
@@ -214,6 +241,8 @@ structure CheckedActionSuite where
   usedDeviceOps : Array Device.Op := #[]
   /-- Exact closed v0.6 synchronous-trap identities, in first-use order. -/
   usedTrapOps : Array Trap.Op := #[]
+  /-- Exact closed v0.7 timer/interrupt identities, in first-use order. -/
+  usedTimerOps : Array Timer.Op := #[]
   deriving BEq, Inhabited, Repr
 
 def CheckedActionSuite.findActionFunction? (suite : CheckedActionSuite)

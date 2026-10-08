@@ -99,9 +99,23 @@ these limitations are in [`traps-core0-v06.md`](../audits/traps-core0-v06.md).
 The retained clean Gate 7 reports establish its finite target acceptance matrix,
 not asynchronous interrupts or the broader machine roadmap.
 
+## Gate 8 machine-timer profile under construction
+
+The pinned DTB/source establish hart 0 MTIME at `0x0200bff8`, MTIMECMP at
+`0x02004000`, a 10 MHz timebase, and CPU-local machine cause 7. Aligned 64-bit
+fenced accesses and exact MTIE/global-MIE control use the existing non-nested
+trap path. The bounded deadline domain admits eventual pending updates and
+spurious/delayed observations. Startup parks compare masked; shutdown additionally
+clears MTIE and marks the source state inactive. No host sleep, injected count,
+SBI, or manually invoked ISR qualifies as a real event.
+
+See [`timers-core0-v07.md`](../audits/timers-core0-v07.md) for immutable references,
+range/ordering/resource premises and limitations. Gate 8 target execution remains
+pending; these addresses do not establish physical-board compatibility.
+
 ## Roadmap, not current guarantees
 
-Later profiles add timers/interrupt controllers, M->S->U transitions, Sv39, VirtIO block,
+Later profiles add further interrupt controllers, M->S->U transitions, Sv39, VirtIO block,
 input/display abstractions, networking and physical-board conformance. The first image
 need not implement them and may not claim isolation, scheduling, durability or pen latency.
 

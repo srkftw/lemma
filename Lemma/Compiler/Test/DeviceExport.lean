@@ -37,7 +37,9 @@ private def effectNames (effects : Lemma.Core0.EffectSet) : List String :=
   (if effects.mmioWrite then ["mmio-write"] else []) ++
   (if effects.ioOrder then ["io-order"] else []) ++
   (if effects.syncTrap then ["sync-trap"] else []) ++
-  (if effects.machineState then ["machine-state"] else [])
+  (if effects.machineState then ["machine-state"] else []) ++
+  (if effects.timerState then ["timer-state"] else []) ++
+  (if effects.interruptState then ["interrupt-state"] else [])
 
 def renderEffects (effects : Lemma.Core0.EffectSet) : String :=
   jsonArray (effectNames effects |>.map quoted)

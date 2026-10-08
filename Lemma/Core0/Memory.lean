@@ -1,7 +1,8 @@
 import Lemma.Core0.Trap
+import Lemma.Core0.Timer
 
 /-!
-Closed source syntax for the `core0-v0.4` through `core0-v0.6` Action profiles.
+Closed source syntax for the `core0-v0.4` through `core0-v0.7` Action profiles.
 
 `Action` is syntax inspected by the Core0 frontend, not a target representation.
 The only higher-order fields are immediate continuations and one statically resolved
@@ -103,12 +104,16 @@ def unsupportedCommand : UInt8 := 17
 def unexpectedTrap : UInt8 := 18
 def doubleTrap : UInt8 := 19
 def contextMismatch : UInt8 := 20
+def missingTimerEvent : UInt8 := 21
+def invalidDeadline : UInt8 := 22
 
 def isKnownV04 (status : UInt8) : Bool := status ≤ budgetExceeded
 
 def isKnownV05 (status : UInt8) : Bool := status ≤ unsupportedCommand
 
 def isKnownV06 (status : UInt8) : Bool := status ≤ contextMismatch
+
+def isKnownV07 (status : UInt8) : Bool := status ≤ invalidDeadline
 
 /-- Public v0.5 outcomes exclude the internal fold stop sentinel. -/
 def isPublicV05 (status : UInt8) : Bool :=
@@ -118,6 +123,10 @@ def isPublicV05 (status : UInt8) : Bool :=
 continuing to exclude the internal fold stop sentinel. -/
 def isPublicV06 (status : UInt8) : Bool :=
   isPublicV05 status || (unexpectedTrap ≤ status && status ≤ contextMismatch)
+
+/-- Public v0.7 outcomes add bounded timer-observation and source deadline errors. -/
+def isPublicV07 (status : UInt8) : Bool :=
+  isPublicV06 status || status == missingTimerEvent || status == invalidDeadline
 
 /-- Historical v0.4 predicate retained with its original meaning. -/
 def isKnown (status : UInt8) : Bool := isKnownV04 status
@@ -285,5 +294,19 @@ inductive Action where
   | trapUnexpectedEcall (next : UInt8 → UInt64 → Action)
   /-- Enter the controlled illegal-instruction fatal fixture. -/
   | trapIllegalInstruction (next : UInt8 → UInt64 → Action)
+  /-- Read the pinned QEMU machine timer. -/
+  | timerReadTime (next : UInt8 → UInt64 → Action)
+  /-- Set the pinned hart-zero machine-timer comparator deadline. -/
+  | timerSetCompare (deadline : UInt64) (next : UInt8 → UInt64 → Action)
+  /-- Read the actual `mip.MTIP` pending bit. -/
+  | timerReadPending (next : UInt8 → UInt64 → Action)
+  /-- Atomically observe and clear only global `mstatus.MIE`. -/
+  | irqSaveDisable (next : UInt8 → UInt64 → Action)
+  /-- Restore only global `mstatus.MIE` from a canonical Boolean. -/
+  | irqRestore (enabled : Bool) (next : UInt8 → UInt64 → Action)
+  /-- Set or clear only `mie.MTIE` from a canonical Boolean. -/
+  | timerSetInterrupt (enabled : Bool) (next : UInt8 → UInt64 → Action)
+  /-- Enter the quarantined timer/context probe.  Its caller must have MIE clear. -/
+  | timerProbe (next : UInt8 → UInt64 → Action)
 
 end Lemma.Core0.Memory

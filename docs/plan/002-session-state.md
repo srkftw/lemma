@@ -6,17 +6,84 @@
 - Highest passing gate: Gate 7.
 - Current gate: Gate 8, actual pinned-machine hardware timer implementation in progress;
   no Gate 8 acceptance exists.
-- Current failure: none. Clean focused Gate 7 passed 32 boots and both live restore
-  mutants; cumulative Gates 1--7 passed 426 boots, legacy passed 23 boots.
+- Current acceptance work: Gate 8's frozen development matrix passed; commit
+  this implementation and rerun from exact clean committed source. Clean
+  focused Gate 7 passed 32 boots and both live restore mutants; cumulative
+  Gates 1--7 passed 426 boots, legacy passed 23 boots.
 - Latest clean passing implementation: `6c1b6a8ded1e94a822cff9977578b7c292075f75`
   (tree `5c53acabde200edd2ef7061ba65830c7c00b5b5b`).
-- Report-bearing revision: later/unassigned; do not confuse it with tested source.
-- Next executable action: implement Gate 8 real timer arming/rearming and compiled
-  Lean ISR/event-ring logic using the accepted trap substrate; execute actual MTIP
-  delivery, masked/pending, overflow/catch-up/shutdown, context-corruption, and
-  disabled-arming checks. Continue through Gates 9--11 after those checks pass.
+- Gate 7 report-bearing revision: `530fb1ec80687569e5f5def5ac870153b3256227`;
+  do not confuse it with tested implementation source.
+- Next executable action: commit the frozen Gate 8 implementation, then run
+  `./scripts/check-foundation.sh --all --work-dir
+  build/foundation/gates1-8-clean --clean --timeout 300 --qemu-timeout 20`
+  and the legacy checker inside the pinned Nix environment. The focused phase
+  has passed on the uncommitted source, not yet from a clean implementation commit.
+  Continue through Gates 9--11 after Gate 8 acceptance; do not restart its existing
+  implementation or credit the development runs below as clean acceptance.
 - Publication: Task 002 has not been pushed or submitted as a PR; no publication
   attempt or new actual CI result is claimed. PR #1 remains open/draft/unmerged.
+
+## Gate 8 work in progress (not accepted)
+
+Uncommitted additive `core0-v0.7` work now includes the seven closed timer/MIE
+Actions, checked effects/IR/lowering, structured MTIMER/CSR/probe primitives,
+compiled timer policy and event-ring source, exporter, strict host runner,
+checker, source rejections/probes, and machine audit. The tree remains on the
+same Task 002 branch; there has been no Task 002 push or PR.
+
+Actual development results, separately from the accepted Gate 7 evidence:
+
+- The final frozen focused command `./scripts/check-foundation.sh --phase 8
+  --work-dir build/foundation/gate8-integration-final --clean --timeout 300
+  --qemu-timeout 20` passed: 30 fresh QEMU boots, six positives and five semantic
+  rejections per profile, 1,474 actual positive-corpus hardware entries, two
+  restored-register mutants and two disabled-arming mutants detected, four
+  frontend rejections, 26 direct policy probes, six finite model probes and six
+  conditional lemmas. All 339 foundation host tests, 32 legacy host tests,
+  18 scaffold tests and metadata checks passed. This is dirty-source development
+  evidence until a clean committed rerun completes.
+- The earlier `build/foundation/gate8-integration` attempt failed closed on a
+  changed `scripts/audit_core0.py` source hash during concurrent audit development.
+  Its failure report is retained; no behavioral mutant credit is attributed to
+  that source-binding failure. Source was frozen for the later passing matrix.
+- Full Lean build passed 52 jobs, including 52 CFG validator checks. Genuine
+  combined timer frontend/lowering passed with 40 Action functions, 40 scalar
+  functions and all seven timer operations. Gate 8 source rejection fixtures
+  passed 4/4 intended diagnostics; Gate 7 frontend/regression fixtures passed.
+- Root scaffold metadata and 18 scaffold tests passed; legacy Core0 host tests
+  passed 32/32. The first combined foundation-host run passed 312 tests before
+  subsequent audit/binding regressions were added. Later final counts must come
+  from a fresh complete run, not this historical count.
+- `TimerPolicyProbes.lean` passed 26 direct policy predicates, six finite model
+  examples, and six conditional lemma axiom reports. One lemma has no axioms;
+  the other five use only `propext`. These do not simulate hardware delivery or
+  prove the compiler/UInt64 implementation.
+- Genuine O0 image `86b3df55da352176d9246bc70b8956e3e029b8feed58243084c1140c8804b7f8`
+  and O2 image `e7a4700e2bee1ef5ba1b5857642aad68b170ddca8f5a91400267640edaa7ea33`
+  each completed six manual QEMU positive cases with 737 actual timer entries,
+  visible overflow and interleaved ring wrap, zero reported context/guard masks,
+  and nonzero useful foreground work in the stress cases. The independent host
+  oracle revalidated all twelve raw transcripts. These were explicitly
+  non-acceptance diagnostics with incomplete/stale audit provenance, retained at
+  `build/foundation/gate8-manual-diagnostic/`.
+- Both O0 development mutants booted and produced their exact guest failures:
+  wrong S3 restore returned status 20/mask `0x40000`; disabled arming returned
+  status 21/value zero. Raw artifacts are at
+  `build/foundation/gate8-manual-mutants/`. No timeout or compile/audit failure
+  counted as behavioral detection.
+- An intermediate full central O0 audit passed at
+  `build/foundation/gate8-audit-final-dev/O0`; a strict bound runner then passed
+  one 256-entry overflow case at `build/foundation/gate8-strict-binding-smoke/O0`.
+  Review subsequently strengthened provenance, final-body hashes, unknown/system
+  instruction checks, local-label/body boundaries and call-graph roles. These
+  intermediate records do not qualify the later source or replace the full
+  fresh O0/O2 acceptance matrix.
+
+Next acceptance must preserve genuine hardware entry, bounded masked/pending,
+overflow/catch-up/shutdown and both valid-image mutant outcomes. Gate 9's
+interactive monitor, Gate 10 detached-worktree/cumulative qualification and CI,
+and Gate 11 publication remain unrun for this revision.
 
 ## Gate 0 historical checkpoint
 

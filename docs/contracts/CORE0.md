@@ -7,7 +7,7 @@ described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
 checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
 `core0-v0.5` polling-device profile. Task 002 Gate 7 adds the separately selected
 `core0-v0.6` synchronous-trap profile below, with recorded clean target acceptance.
-Timers and the broader Core0 contract remain future work.
+The timer profile below is under construction; the broader Core0 contract remains future work.
 
 ## Purpose
 
@@ -219,14 +219,36 @@ machine entry/return and resource premises are in
 tested implementation, not a compiler-correctness proof. Gate 7 acceptance is
 recorded at clean `6c1b6a8...`; timer work remains separate and unqualified.
 
+## Timer profile under construction
+
+`core0-v0.7` is additive and explicit. It admits exactly `Action.timerReadTime`,
+`timerSetCompare`, `timerReadPending`, `irqSaveDisable`, `irqRestore`,
+`timerSetInterrupt`, and `timerProbe`. Each has an immediate checked
+`UInt8 -> UInt64 -> Action` continuation. Compare takes UInt64; restore and
+interrupt-enable take Bool, widened canonically only at their closed i64 ABI
+boundaries. No raw address, CSR, handler registration, or general foreign call
+is admitted. Previous profiles reject these operations and retain their behavior.
+
+The seven closed machine calls return i64 and checked status zero, with actual
+time, pending bit, previous global enable, probe mismatch mask, or setter zero.
+Transitive `timer-state` and `interrupt-state` effects supplement ordered I/O and
+machine-state effects. Timer MMIO reads/writes retain their direction effects.
+Finite RAM/UART models reject timer Actions rather than synthesize interrupts.
+Status 21 means required hardware event missing; 22 means invalid deadline domain.
+
+The fixed-hart timer, constant-work deadline policy, bounded ring, synchronization,
+full-register probe, and two quarantined mutations are specified in
+[`timers-core0-v07.md`](../audits/timers-core0-v07.md). Local policy/model probes
+are not target acceptance. Gate 8 remains unqualified until fresh audited O0/O2
+execution and both behavioral failure controls pass.
+
 ## Future profile work
 
 - `UInt8`, `UInt32`, `UInt64`, explicitly represented Boolean values, and literal data.
 - First-order monomorphic scalar functions, direct calls, let bindings, conditionals,
   unsigned comparisons, bit operations and wrapping integer addition/subtraction/multiplication.
-- Timer interrupts and interrupt-safe synchronization remain later separately
-  reviewed machine profiles; v0.5 UART operation is polling-only and v0.6 is
-  synchronous, non-nested M-mode trap handling only.
+- v0.5 UART operation remains polling-only and v0.6 remains synchronous,
+  non-nested M-mode trap handling only; v0.7 does not silently alter either.
 - No floating point, vectors, atomics, dynamic allocation or concurrency in this first profile.
 - General recursion and dynamic loops may be rejected initially. Any admitted bounded loop
   needs an explicit representation and lowering; the compiler must not ignore its body.

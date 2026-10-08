@@ -75,6 +75,17 @@ no relaxation is permitted. MRET architectural changes to mstatus are not
 mistaken for arbitrary context corruption. Clean O0/O2 target acceptance is
 recorded in Task 002 evidence; asynchronous timer handling is not implied.
 
+## Gate 8 timer ABI under construction
+
+`core0-v0.7` preserves the two-word Action result, full integer trap frame, and
+nine-word dispatcher convention. Its seven closed `core0_timer_*`/`core0_irq_*`
+machine functions each return one i64. Compare receives one i64 deadline;
+restore and interrupt-enable receive canonical i64 0/1 converted from source
+Bool. Asynchronous dispatch returns the captured interrupted PC unchanged,
+not PC+4. Source timer/critical-section policy remains compiled Lean, not an ABI
+stub. See [`timers-core0-v07.md`](../audits/timers-core0-v07.md); this construction
+contract is not yet a Gate 8 target-acceptance claim.
+
 ## Entry and layout
 
 Generate the minimal entry sequence from reviewed Lean-authored primitive definitions.

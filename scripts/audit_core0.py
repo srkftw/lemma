@@ -12,6 +12,7 @@ from pathlib import Path
 
 import audit_device
 import audit_memory
+import audit_timer
 import audit_trap
 from build_core0 import LINK_ARGUMENTS, LLC_ARGUMENTS, STARTUP_ARGUMENTS
 from core0_common import Core0Error, checked, load_json, repo_root, require_tools, sha256, write_json
@@ -123,6 +124,26 @@ TRAP_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+TIMER_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "device-contract.json",
+    "timer-suite-manifest.json",
+    "timer-suite-normalized.txt",
+    "timer-test-abi.json",
+    "symbols.txt",
+    "platform.dtb",
+    "platform.dts",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
@@ -132,6 +153,7 @@ TEST_LOOP_SUITE_POLICY = "test-loop-suite"
 TEST_MEMORY_SUITE_POLICY = "test-memory-suite"
 TEST_DEVICE_SUITE_POLICY = "test-device-suite"
 TEST_TRAP_SUITE_POLICY = "test-trap-suite"
+TEST_TIMER_SUITE_POLICY = "test-timer-suite"
 SCALAR_SUITE_POLICIES = frozenset(
     {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
 )
@@ -144,6 +166,7 @@ STACK_SIZE_POLICIES = frozenset(
         TEST_MEMORY_SUITE_POLICY,
         TEST_DEVICE_SUITE_POLICY,
         TEST_TRAP_SUITE_POLICY,
+        TEST_TIMER_SUITE_POLICY,
     }
 )
 AUDIT_POLICIES = (
@@ -156,6 +179,7 @@ AUDIT_POLICIES = (
     TEST_MEMORY_SUITE_POLICY,
     TEST_DEVICE_SUITE_POLICY,
     TEST_TRAP_SUITE_POLICY,
+    TEST_TIMER_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -193,6 +217,7 @@ ALLOWED_RELOCATIONS = {
 SCALAR_O2_JUMP_TABLE_RELOCATION = "R_RISCV_64"
 DEVICE_O2_JUMP_TABLE_RELOCATIONS = 23
 TRAP_O2_JUMP_TABLE_RELOCATIONS = 23
+TIMER_O2_JUMP_TABLE_RELOCATIONS = 43
 EXPECTED_LINK_COMMAND = ["ld.lld", *LINK_ARGUMENTS, "-o", "image.elf", "startup.o", "program.o"]
 EXPECTED_STARTUP_COMMAND = ["clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"]
 EXPECTED_MACHINE_PRIMITIVES = [
@@ -311,6 +336,18 @@ TRAP_MACHINE_DENIED_METADATA = Counter({
     "core0_action_15": 1,
     "core0_action_17": 3,
     "core0_action_20": 2,
+})
+TIMER_MACHINE_ACCESS_SEQUENCE = (
+    ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
+    ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
+    ("uart.lsr.read8", "core0_action_12", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_33", "sb", 0x10000002),
+)
+TIMER_MACHINE_DENIED_METADATA = Counter({
+    "core0_action_4": 1,
+    "core0_action_7": 1,
+    "core0_action_14": 1,
+    "core0_action_33": 4,
 })
 FINAL_ALLOC_SECTIONS = {".text", ".rodata", ".data", ".bss"}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")
@@ -4543,6 +4580,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_TIMER_SUITE_POLICY:
+        required_artifacts = TIMER_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy == TEST_TRAP_SUITE_POLICY:
         required_artifacts = TRAP_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -4599,7 +4642,26 @@ def audit(
     memory_ir_audit: dict[str, object] | None = None
     trap_test_abi: dict[str, object] | None = None
     trap_ir_audit: dict[str, object] | None = None
-    if policy == TEST_TRAP_SUITE_POLICY:
+    timer_test_abi: dict[str, object] | None = None
+    timer_ir_audit: dict[str, object] | None = None
+    if policy == TEST_TIMER_SUITE_POLICY:
+        manifest = audit_timer.validate_timer_suite_manifest(
+            load_json(paths["timer-suite-manifest.json"])
+        )
+        timer_test_abi = audit_timer.validate_timer_test_abi(
+            load_json(paths["timer-test-abi.json"]), manifest
+        )
+        device_contract = load_json(paths["device-contract.json"])
+        if device_contract != manifest["device_contract"]:
+            raise Core0Error(
+                "device-contract.json does not match the checked timer manifest"
+            )
+        audit_timer.validate_timer_manifest_companions(
+            manifest,
+            paths["timer-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy == TEST_TRAP_SUITE_POLICY:
         manifest = audit_trap.validate_trap_suite_manifest(
             load_json(paths["trap-suite-manifest.json"])
         )
@@ -4759,6 +4821,7 @@ def audit(
     memory_export_configuration: dict[str, object] | None = None
     device_export_configuration: dict[str, object] | None = None
     trap_export_configuration: dict[str, object] | None = None
+    timer_export_configuration: dict[str, object] | None = None
     if policy in SCALAR_SUITE_POLICIES:
         scalar_export_configuration = validate_scalar_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
@@ -4775,11 +4838,15 @@ def audit(
         trap_export_configuration = audit_trap.validate_trap_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
+    elif policy == TEST_TIMER_SUITE_POLICY:
+        timer_export_configuration = audit_timer.validate_timer_export_configuration(
+            provenance_obj.get("export_configuration"), manifest, root
+        )
     elif "export_configuration" in provenance_obj:
         raise Core0Error(
             f"{policy} provenance rejects exporter configuration"
         )
-    if policy == TEST_TRAP_SUITE_POLICY:
+    if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
         qemu_dtb_command = [
             "qemu-system-riscv64",
             "-machine", "virt,acpi=off,dumpdtb=platform.dtb",
@@ -4814,7 +4881,7 @@ def audit(
             },
         ]
         if provenance_obj.get("emulator_artifacts") != expected_emulator_artifacts:
-            raise Core0Error("trap provenance emulator artifact/hash/command closure differs")
+            raise Core0Error(f"{policy} provenance emulator artifact/hash/command closure differs")
         audit_device.validate_platform_evidence(
             sha256(paths["platform.dtb"]),
             paths["platform.dts"].read_text(encoding="utf-8"),
@@ -4829,7 +4896,7 @@ def audit(
             or not isinstance(qemu_tool.get("version"), str)
             or "QEMU emulator version 11.1.1" not in qemu_tool["version"]
         ):
-            raise Core0Error("trap provenance does not identify pinned QEMU 11.1.1")
+            raise Core0Error(f"{policy} provenance does not identify pinned QEMU 11.1.1")
     optimization = provenance_obj.get("optimization")
     if optimization not in {"O0", "O2"}:
         raise Core0Error("provenance optimization profile is missing or unsupported")
@@ -4901,6 +4968,46 @@ def audit(
                 "trap provenance omits required source/checker inputs: "
                 + repr(sorted(missing_trap_sources))
             )
+    elif policy == TEST_TIMER_SUITE_POLICY:
+        required_timer_sources = {
+            "examples/foundation/TimerBuild.lean",
+            "examples/foundation/TimerConformance.lean",
+            "examples/foundation/DeviceConformanceSupport.lean",
+            "examples/foundation/TrapConformance.lean",
+            "examples/foundation/TimerFrontendProbes.lean",
+            "examples/foundation/TimerPolicyProbes.lean",
+            "examples/foundation/gate8-reject/HiddenExternTimer.lean",
+            "examples/foundation/gate8-reject/PureTimerResult.lean",
+            "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
+            "examples/foundation/gate8-reject/V06Timer.lean",
+            "examples/foundation/gate8-reject/rejections.json",
+            "Lemma/Compiler/Test/TimerExport.lean",
+            "Lemma/Core0/Timer.lean",
+            "Lemma/Core0/TimerModel.lean",
+            "Lemma/Machine/TimerPrimitives.lean",
+            "Lemma/Machine/TrapPrimitives.lean",
+            "Lemma/Machine/TrapLayout.lean",
+            "scripts/build_core0.py",
+            "scripts/core0_common.py",
+            "scripts/build_timer_suite.py",
+            "scripts/audit_core0.py",
+            "scripts/audit_device.py",
+            "scripts/audit_memory.py",
+            "scripts/audit_timer.py",
+            "scripts/audit_trap.py",
+            "scripts/check_foundation.py",
+            "scripts/gate8_corpus.py",
+            "scripts/run_timer_case.py",
+            "scripts/run_trap_case.py",
+            "scripts/check_foundation_gate8.py",
+            "docs/audits/timers-core0-v07.md",
+        }
+        missing_timer_sources = required_timer_sources - observed_sources
+        if missing_timer_sources:
+            raise Core0Error(
+                "timer provenance omits required source/checker inputs: "
+                + repr(sorted(missing_timer_sources))
+            )
     expected_elaboration_commands: list[list[str]] = []
     if provenance_schema == 2:
         elaborated_inputs = provenance_obj.get("elaborated_inputs")
@@ -4968,6 +5075,17 @@ def audit(
         ]:
             raise Core0Error(
                 "trap provenance elaboration sequence differs from the exact checked inputs"
+            )
+        if policy == TEST_TIMER_SUITE_POLICY and [
+            item.get("source") for item in elaborated_inputs
+        ] != [
+            "examples/core0/Positive.lean",
+            "examples/foundation/DeviceConformanceSupport.lean",
+            "examples/foundation/TrapConformance.lean",
+            "examples/foundation/TimerConformance.lean",
+        ]:
+            raise Core0Error(
+                "timer provenance elaboration sequence differs from the exact checked inputs"
             )
     linked = provenance_obj.get("linked_inputs")
     if not isinstance(linked, list) or len(linked) != 2:
@@ -5059,9 +5177,31 @@ def audit(
                 "fatal containment, and freestanding QEMU interaction"
             ),
         },
+        TEST_TIMER_SUITE_POLICY: {
+            "kind": "test-timer-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.7 Action suite through "
+                "validated machine-timer and asynchronous-interrupt lowering"
+            ),
+            "purpose": (
+                "test-only machine-timer policy, asynchronous M-mode interrupt dispatch, "
+                "bounded event-ring behavior, and freestanding QEMU interaction"
+            ),
+        },
     }[policy]
-    startup_input_details = (
-        {
+    if policy == TEST_TIMER_SUITE_POLICY:
+        startup_input_details = {
+            "kind": "lean-structured-timer-startup",
+            "generation_command": EXPECTED_STARTUP_COMMAND,
+            "source": "startup.S generated by Lemma.Machine.TimerPrimitives",
+            "purpose": (
+                "M-mode entry, machine-timer initialization and fenced MMIO/CSR leaves, "
+                "full asynchronous/synchronous trap context handling, timer probe, "
+                "fatal containment, and I/O fence"
+            ),
+        }
+    elif policy == TEST_TRAP_SUITE_POLICY:
+        startup_input_details = {
             "kind": "lean-structured-trap-startup",
             "generation_command": EXPECTED_STARTUP_COMMAND,
             "source": "startup.S generated by Lemma.Machine.TrapPrimitives",
@@ -5070,14 +5210,13 @@ def audit(
                 "trap probes/fatal finishers, and I/O fence"
             ),
         }
-        if policy == TEST_TRAP_SUITE_POLICY
-        else {
+    else:
+        startup_input_details = {
             "kind": "lean-structured-startup",
             "generation_command": EXPECTED_STARTUP_COMMAND,
             "source": "startup.S generated by Lemma.Machine.Primitives",
             "purpose": "M-mode entry, BSS clearing, a0/a1 boot-input preservation, and I/O fence",
         }
-    )
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": startup_input_details,
         "program.o": {
@@ -5146,6 +5285,11 @@ def audit(
         validate_scalar_export_command_log(
             trap_export_configuration, command_argv
         )
+    if timer_export_configuration is not None:
+        validate_scalar_export_command_log(
+            timer_export_configuration, command_argv
+        )
+    if trap_export_configuration is not None or timer_export_configuration is not None:
         for platform_command in (
             qemu_dtb_command,
             [
@@ -5155,7 +5299,7 @@ def audit(
         ):
             if platform_command not in command_argv:
                 raise Core0Error(
-                    "trap provenance command log omits a pinned platform command"
+                    f"{policy} provenance command log omits a pinned platform command"
                 )
     for expected_command in expected_elaboration_commands:
         if expected_command not in command_argv:
@@ -5195,6 +5339,7 @@ def audit(
         TEST_MEMORY_SUITE_POLICY,
         TEST_DEVICE_SUITE_POLICY,
         TEST_TRAP_SUITE_POLICY,
+        TEST_TIMER_SUITE_POLICY,
     }:
         scalar_functions = manifest.get("scalar_functions")
         action_functions = manifest.get("action_functions")
@@ -5212,12 +5357,18 @@ def audit(
     }
     machine_ir_functions = (
         DEVICE_MACHINE_IR_FUNCTIONS
-        if policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}
+        if policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
         else MACHINE_IR_FUNCTIONS
     )
     expected_pre_definitions = manifest_user_symbols | machine_ir_functions
     scalar_abi_ir: dict[str, object] | None = None
-    if policy == TEST_TRAP_SUITE_POLICY:
+    if policy == TEST_TIMER_SUITE_POLICY:
+        timer_ir_audit = audit_timer.validate_timer_ir(
+            manifest, pre_ir, post_ir, optimization
+        )
+        source_identity = audit_timer.SOURCE_IDENTITY
+        root_llvm = None
+    elif policy == TEST_TRAP_SUITE_POLICY:
         trap_ir_audit = audit_trap.validate_trap_ir(
             manifest, pre_ir, post_ir, optimization
         )
@@ -5274,6 +5425,7 @@ def audit(
                 TEST_MEMORY_SUITE_POLICY,
                 TEST_DEVICE_SUITE_POLICY,
                 TEST_TRAP_SUITE_POLICY,
+                TEST_TIMER_SUITE_POLICY,
             }
         ):
             raise Core0Error("optimized IR unexpectedly contains an inbounds promise")
@@ -5293,6 +5445,13 @@ def audit(
         expected_externals = set(ALLOWED_EXTERNALS)
         if policy == TEST_TRAP_SUITE_POLICY:
             expected_externals.update(audit_trap.TRAP_EXTERNALS)
+        elif policy == TEST_TIMER_SUITE_POLICY:
+            expected_externals.update(audit_timer.TIMER_EXTERNALS)
+            expected_externals.update(
+                str(item["llvm_symbol"])
+                for item in manifest["used_trap_ops"]
+                if isinstance(item, dict)
+            )
         if (
             policy in {
                 TEST_FRONTEND_SUITE_POLICY,
@@ -5302,6 +5461,12 @@ def audit(
             and optimization == "O2"
         ):
             expected_externals.add("llvm.umax.i64")
+        if (
+            policy == TEST_TIMER_SUITE_POLICY
+            and label == "post_optimization"
+            and optimization == "O2"
+        ):
+            expected_externals.add("llvm.umin.i64")
         if declarations != expected_externals:
             raise Core0Error(
                 f"{label} IR external declarations differ from the exact machine-primitive "
@@ -5323,6 +5488,7 @@ def audit(
                 TEST_MEMORY_SUITE_POLICY,
                 TEST_DEVICE_SUITE_POLICY,
                 TEST_TRAP_SUITE_POLICY,
+                TEST_TIMER_SUITE_POLICY,
             }:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
@@ -5351,7 +5517,11 @@ def audit(
                 ir_findings[label]["optimizer_flags"] = validate_memory_optimizer_flags(
                     ir, optimization
                 )
-            elif policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}:
+            elif policy in {
+                TEST_DEVICE_SUITE_POLICY,
+                TEST_TRAP_SUITE_POLICY,
+                TEST_TIMER_SUITE_POLICY,
+            }:
                 flag_counts = {
                     flag: len(re.findall(rf"\b{flag}\b", ir))
                     for flag in ("nsw", "nuw", "inbounds", "disjoint")
@@ -5450,7 +5620,11 @@ def audit(
             raise Core0Error(f"PT_LOAD is writable and executable: {segment}")
     alloc_sections = alloc_section_names(sections)
     required_alloc_sections = {".text", ".bss"}
-    if policy not in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}:
+    if policy not in {
+        TEST_DEVICE_SUITE_POLICY,
+        TEST_TRAP_SUITE_POLICY,
+        TEST_TIMER_SUITE_POLICY,
+    }:
         required_alloc_sections.add(".rodata")
     if not required_alloc_sections <= alloc_sections:
         raise Core0Error(f"ELF is missing required allocated sections: {sorted(alloc_sections)!r}")
@@ -5491,7 +5665,14 @@ def audit(
             )
     trap_layout_audit: dict[str, object] | None = None
     trap_startup_audit: dict[str, object] | None = None
-    if policy == TEST_TRAP_SUITE_POLICY:
+    timer_layout_audit: dict[str, object] | None = None
+    timer_startup_audit: dict[str, object] | None = None
+    if policy == TEST_TIMER_SUITE_POLICY:
+        timer_layout_audit = audit_trap.validate_trap_layout(layout, symbol_addresses)
+        timer_startup_audit = audit_timer.validate_timer_startup_assembly(
+            paths["startup.S"].read_text(encoding="utf-8"), manifest, layout
+        )
+    elif policy == TEST_TRAP_SUITE_POLICY:
         trap_layout_audit = audit_trap.validate_trap_layout(layout, symbol_addresses)
         trap_startup_audit = audit_trap.validate_trap_startup_assembly(
             paths["startup.S"].read_text(encoding="utf-8"), manifest, layout
@@ -5526,7 +5707,7 @@ def audit(
     if re.search(r"(?:^|_)[afdcv](?:\d|_|$)", arch):
         raise Core0Error(f"ELF advertises a forbidden non-integer extension: {arch}")
     if (
-        policy != TEST_TRAP_SUITE_POLICY
+        policy not in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
         and re.search(r"\b(?:gp|f[0-9]+|v[0-9]+)\b", disassembly)
     ):
         raise Core0Error("disassembly uses gp, floating-point, or vector registers")
@@ -5552,7 +5733,7 @@ def audit(
             r"<core0_main>",
             r"\bwfi\b",
         )
-        if policy == TEST_TRAP_SUITE_POLICY
+        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}
         else (
             r"\bauipc\s+sp,",
             r"\bmv\s+sp,\s*sp",
@@ -5575,6 +5756,7 @@ def audit(
         raise Core0Error("core0_io_fence does not lower to a fence followed by return")
     device_machine_audit: dict[str, object] | None = None
     trap_machine_audit: dict[str, object] | None = None
+    timer_machine_audit: dict[str, object] | None = None
     if policy == TEST_DEVICE_SUITE_POLICY:
         device_machine_audit = validate_device_machine_disassembly(
             disassembly, symbol_addresses, optimization=optimization
@@ -5601,6 +5783,32 @@ def audit(
             raise Core0Error("trap layout/startup audit evidence is missing")
         trap_machine_audit["layout"] = trap_layout_audit
         trap_machine_audit["startup"] = trap_startup_audit
+    elif policy == TEST_TIMER_SUITE_POLICY:
+        timer_program_symbols = set(ir_findings["post_optimization"]["definitions"])
+        timer_program_start = min(
+            symbol_addresses[name] for name in timer_program_symbols
+        )
+        device_machine_audit = validate_device_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            expected_access_sequence=TIMER_MACHINE_ACCESS_SEQUENCE,
+            expected_denied_metadata=TIMER_MACHINE_DENIED_METADATA,
+            optimization=optimization,
+            ignored_functions=frozenset(audit_timer.TIMER_STARTUP_FUNCTIONS),
+            ignored_address_ranges=((symbol_addresses["_start"], timer_program_start),),
+        )
+        timer_machine_audit = audit_timer.validate_timer_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            timer_program_symbols,
+            paths["startup.S"].read_text(encoding="utf-8"),
+            manifest,
+            optimization,
+        )
+        if timer_layout_audit is None or timer_startup_audit is None:
+            raise Core0Error("timer layout/startup audit evidence is missing")
+        timer_machine_audit["layout"] = timer_layout_audit
+        timer_machine_audit["startup"] = timer_startup_audit
     scalar_abi_machine: dict[str, object] | None = None
     if policy == TEST_FRONTEND_SUITE_POLICY:
         scalar_abi_machine = validate_scalar_abi_disassembly(
@@ -5636,11 +5844,12 @@ def audit(
             "program.o defined-function closure differs from optimized LLVM: "
             + repr(sorted(object_function_symbols["program.o"]))
         )
-    expected_startup_functions = (
-        audit_trap.TRAP_STARTUP_FUNCTIONS
-        if policy == TEST_TRAP_SUITE_POLICY
-        else {"_start", "core0_io_fence"}
-    )
+    if policy == TEST_TIMER_SUITE_POLICY:
+        expected_startup_functions = audit_timer.TIMER_STARTUP_FUNCTIONS
+    elif policy == TEST_TRAP_SUITE_POLICY:
+        expected_startup_functions = audit_trap.TRAP_STARTUP_FUNCTIONS
+    else:
+        expected_startup_functions = {"_start", "core0_io_fence"}
     if object_function_symbols["startup.o"] != expected_startup_functions:
         raise Core0Error(
             "startup.o defined-function closure differs from the exact primitive allowlist: "
@@ -5673,15 +5882,25 @@ def audit(
                 + repr(oversized_frames)
             )
         stack_and_call_graph = validate_loop_stack_call_graph(post_ir, stack_sizes)
-        if policy == TEST_TRAP_SUITE_POLICY:
+        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
             frame_chains = stack_and_call_graph.get("frame_chains")
             foreground_chain = (
                 frame_chains.get("core0_main")
                 if isinstance(frame_chains, dict)
                 else None
             )
+            dispatcher_symbol = (
+                audit_trap.DISPATCH_SYMBOL
+                if policy == TEST_TRAP_SUITE_POLICY
+                else str(manifest["roots"][1]["llvm"])
+            )
+            foreground_symbol = (
+                audit_trap.FOREGROUND_SYMBOL
+                if policy == TEST_TRAP_SUITE_POLICY
+                else str(manifest["roots"][0]["llvm"])
+            )
             dispatcher_chain = (
-                frame_chains.get(audit_trap.DISPATCH_SYMBOL)
+                frame_chains.get(dispatcher_symbol)
                 if isinstance(frame_chains, dict)
                 else None
             )
@@ -5692,7 +5911,7 @@ def audit(
                 or foreground_chain["bytes"] > 65520
             ):
                 raise Core0Error(
-                    "trap foreground compiled call chain exceeds its 65,520-byte capacity"
+                    f"{policy} foreground compiled call chain exceeds its 65,520-byte capacity"
                 )
             if (
                 not isinstance(dispatcher_chain, dict)
@@ -5701,18 +5920,19 @@ def audit(
                 or dispatcher_chain["bytes"] > 16048
             ):
                 raise Core0Error(
-                    "trap dispatcher compiled call chain exceeds its 16,048-byte capacity"
+                    f"{policy} dispatcher compiled call chain exceeds its 16,048-byte capacity"
                 )
             stack_and_call_graph["foreground"] = {
                 **foreground_chain,
                 "machine_entry": "core0_main",
-                "checked_root": audit_trap.FOREGROUND_SYMBOL,
+                "checked_root": foreground_symbol,
                 "capacity_bytes": 65520,
                 "stack_region_bytes": 65536,
                 "low_canary_bytes": 16,
             }
             stack_and_call_graph["trap_dispatcher"] = {
                 **dispatcher_chain,
+                "checked_root": dispatcher_symbol,
                 "capacity_bytes": 16048,
                 "trap_frame_bytes": 288,
                 "outgoing_argument_bytes": 16,
@@ -5736,10 +5956,15 @@ def audit(
         name: tool_text("llvm-nm", ["--undefined-only", str(directory / name)], root).splitlines()
         for name in expected_inputs
     }
-    startup_allowed = (
-        {
+    if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY}:
+        dispatcher_symbol = (
+            audit_trap.DISPATCH_SYMBOL
+            if policy == TEST_TRAP_SUITE_POLICY
+            else str(manifest["roots"][1]["llvm"])
+        )
+        startup_allowed = {
             "core0_main",
-            audit_trap.DISPATCH_SYMBOL,
+            dispatcher_symbol,
             "__boot_hartid",
             "__bss_start",
             "__bss_end",
@@ -5747,9 +5972,10 @@ def audit(
             "__trap_stack_top",
             "__trap_probe_context",
         }
-        if policy == TEST_TRAP_SUITE_POLICY
-        else {"core0_main", "__boot_hartid", "__bss_start", "__bss_end", "__stack_top"}
-    )
+    else:
+        startup_allowed = {
+            "core0_main", "__boot_hartid", "__bss_start", "__bss_end", "__stack_top"
+        }
     startup_names = {
         line.split()[-1]
         for line in object_undefined["startup.o"]
@@ -5768,6 +5994,13 @@ def audit(
     expected_program_names = set(ALLOWED_EXTERNALS)
     if policy == TEST_TRAP_SUITE_POLICY:
         expected_program_names.update(audit_trap.TRAP_EXTERNALS)
+    elif policy == TEST_TIMER_SUITE_POLICY:
+        expected_program_names.update(audit_timer.TIMER_EXTERNALS)
+        expected_program_names.update(
+            str(item["llvm_symbol"])
+            for item in manifest["used_trap_ops"]
+            if isinstance(item, dict)
+        )
     if program_names != expected_program_names:
         raise Core0Error(
             "LLVM program object undefined-symbol closure differs from the exact allowlist: "
@@ -5779,7 +6012,7 @@ def audit(
         relocation_text = tool_text("llvm-readelf", ["-r", str(directory / name)], root)
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
-        if policy == TEST_TRAP_SUITE_POLICY and name == "startup.o":
+        if policy in {TEST_TRAP_SUITE_POLICY, TEST_TIMER_SUITE_POLICY} and name == "startup.o":
             allowed_relocations.add("R_RISCV_JAL")
         if name == "program.o" and (
             policy in STACK_SIZE_POLICIES
@@ -5810,6 +6043,12 @@ def audit(
             and optimization == "O2"
         ):
             expected_jump_table_relocations = TRAP_O2_JUMP_TABLE_RELOCATIONS
+        elif (
+            policy == TEST_TIMER_SUITE_POLICY
+            and name == "program.o"
+            and optimization == "O2"
+        ):
+            expected_jump_table_relocations = TIMER_O2_JUMP_TABLE_RELOCATIONS
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
@@ -5840,6 +6079,7 @@ def audit(
                             or policy in {
                                 TEST_DEVICE_SUITE_POLICY,
                                 TEST_TRAP_SUITE_POLICY,
+                                TEST_TIMER_SUITE_POLICY,
                             }
                         )
                         and optimization == "O2"
@@ -5960,6 +6200,12 @@ def audit(
         report["trap_ir_audit"] = trap_ir_audit
     if trap_machine_audit is not None:
         report["trap_machine_audit"] = trap_machine_audit
+    if timer_test_abi is not None:
+        report["timer_test_abi"] = timer_test_abi
+    if timer_ir_audit is not None:
+        report["timer_ir_audit"] = timer_ir_audit
+    if timer_machine_audit is not None:
+        report["timer_machine_audit"] = timer_machine_audit
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")

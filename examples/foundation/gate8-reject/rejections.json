@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.7",
+  "legacy_profile": "core0-v0.6",
+  "cases": [
+    {
+      "name": "v06-timer",
+      "path": "examples/foundation/gate8-reject/V06Timer.lean",
+      "diagnostic_code": "unsupported-primitive",
+      "required_fragments": [
+        "timer operation `timer.read-time` requires `core0-v0.7`; `core0-v0.6` does not admit timer/interrupt operations",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "stored-timer-continuation",
+      "path": "examples/foundation/gate8-reject/StoredTimerContinuation.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "hidden-extern-timer",
+      "path": "examples/foundation/gate8-reject/HiddenExternTimer.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+        "dependency path: root -> forbidden"
+      ]
+    },
+    {
+      "name": "pure-timer-result",
+      "path": "examples/foundation/gate8-reject/PureTimerResult.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+        "dependency path: root"
+      ]
+    }
+  ]
+}

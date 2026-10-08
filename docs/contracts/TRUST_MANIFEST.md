@@ -67,6 +67,23 @@ single-hart non-nesting limitations remain explicit; see
 [`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 clean target acceptance
 has passed; timer/concurrency/runtime categories are not thereby qualified.
 
+## Gate 8 timer trust boundary under construction
+
+The additive timer primitives have exact source identities, signatures, effect
+catalogs, typed instruction implementations, fixed aligned 64-bit MMIO addresses,
+and finite CSR operations. Compiled Lean owns ISR policy, ring/overflow/skipped
+accounting, foreground computation, validation, and deferred UART encoding.
+Single-hart masking, volatile shared RAM, and ordered primitive boundaries are
+explicit premises; no atomics extension or threading runtime is added.
+
+Audits must bind actual MTIMER accesses/fences, CSR masking, complete integer
+preservation, executable PCs, object closure, and both declared sole-instruction
+mutations. A missing-event test must observe its guest diagnostic, not credit a
+timeout or compilation/audit failure. Finite deadline/ring lemmas do not model
+hardware delivery or prove compiled correctness. See
+[`timers-core0-v07.md`](../audits/timers-core0-v07.md). Gate 8 target acceptance
+is still pending.
+
 ## Prohibited shortcuts
 
 Do not hide an upstream runtime by static linkage, rename banned symbols, copy object

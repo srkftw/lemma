@@ -4,16 +4,18 @@ import Lemma.Core0.ActionIR
 import Lemma.Core0.Bounded
 import Lemma.Core0.ScalarLemmas
 import Lemma.Core0.Trap
+import Lemma.Core0.Timer
 
 /-!
-Structured `core0-v0.2` through `core0-v0.6` lowering.
+Structured `core0-v0.2` through `core0-v0.7` lowering.
 
 This module is intentionally parallel to the historical single-block lowering in
 `Lower.lean`.  Task 001 and the Gate 2 `core0-v0.1` suite retain their byte-stable
 eager-select path.  The additive structured profiles use explicit branches and phi
 merge values; v0.3 additionally lowers checked bounded folds to real CFG backedges,
 v0.4 adds checked fixed-region Actions, v0.5 adds closed ordered UART sites,
-and v0.6 adds closed synchronous-trap primitive calls.
+v0.6 adds closed synchronous-trap primitive calls, and v0.7 adds the seven
+closed timer/interrupt machine calls.
 -/
 
 namespace Lemma.Compiler
@@ -228,7 +230,7 @@ private def lowerExprCFG (profile : Lemma.Core0.Profile)
         pure (.local result)
     | .boundedFoldU32 budget callback count initial => do
         unless profile == .v0_3 || profile == .v0_4 || profile == .v0_5 ||
-            profile == .v0_6 do
+            profile == .v0_6 || profile == .v0_7 do
           throw s!"bounded iteration requires `{Lemma.Core0.Profile.v0_3.contractVersion}` or later"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
           throw s!"bounded iteration budget {budget} is outside 0..{Lemma.Core0.Bounded.maximumBudget}"
@@ -417,7 +419,7 @@ def lowerSuiteV03 (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite :=
   lowerStructuredSuiteForProfile .v0_3 suite options
 
-/-! ## Checked fixed-region, device, and trap Actions (`core0-v0.4`--`core0-v0.6`)
+/-! ## Checked fixed-region, device, trap, and timer Actions (`core0-v0.4`--`core0-v0.7`)
 
 The Action path deliberately has a fixed two-word result and accepts only scalar
 parameters.  It shares the structured scalar expression lowerer above, but keeps
@@ -558,6 +560,79 @@ private def trapCatalogMatchesBackend : Bool :=
     expectedTrapSpec .illegalInstruction
   ]
 
+private def expectedTimerSpec (op : Lemma.Core0.Timer.Op) :
+    Lemma.Core0.Timer.OpSpec :=
+  let base : Lemma.Core0.Timer.OpSpec := {
+    op
+    sourceIdentity := op.sourceIdentity
+    llvmSymbol := op.llvmSymbol
+    sourceArguments := #[]
+    machineArguments := #[]
+    result := .u64
+    resultMeaning := .zero
+    stateOperation := .readMachineTime
+  }
+  match op with
+  | .readTime => { base with
+      resultMeaning := .time
+      stateOperation := .readMachineTime
+      mmio? := some {
+        address := Lemma.Core0.Timer.MachineTimer.timeAddress
+        widthBytes := 8
+        access := .read
+        fenceBefore := true
+        fenceAfter := true
+      }
+    }
+  | .setCompare => { base with
+      sourceArguments := #[.u64]
+      machineArguments := #[.u64]
+      stateOperation := .writeMachineCompare
+      mmio? := some {
+        address := Lemma.Core0.Timer.MachineTimer.compareAddress
+        widthBytes := 8
+        access := .write
+        fenceBefore := true
+        fenceAfter := true
+      }
+    }
+  | .readPending => { base with
+      resultMeaning := .pendingBit
+      stateOperation := .readMIPMTIP
+    }
+  | .irqSaveDisable => { base with
+      resultMeaning := .previousGlobalMIE
+      stateOperation := .saveDisableMstatusMIE
+    }
+  | .irqRestore => { base with
+      sourceArguments := #[.bool]
+      machineArguments := #[.u64]
+      canonicalBoolArgument := true
+      stateOperation := .restoreMstatusMIE
+    }
+  | .setInterrupt => { base with
+      sourceArguments := #[.bool]
+      machineArguments := #[.u64]
+      canonicalBoolArgument := true
+      stateOperation := .setMieMTIE
+    }
+  | .probe => { base with
+      resultMeaning := .probeMask
+      requiresGlobalMIEDisabled := true
+      stateOperation := .quarantinedProbe
+    }
+
+private def timerCatalogMatchesBackend : Bool :=
+  Lemma.Core0.Timer.opCatalog == #[
+    expectedTimerSpec .readTime,
+    expectedTimerSpec .setCompare,
+    expectedTimerSpec .readPending,
+    expectedTimerSpec .irqSaveDisable,
+    expectedTimerSpec .irqRestore,
+    expectedTimerSpec .setInterrupt,
+    expectedTimerSpec .probe
+  ]
+
 private def pushDeviceOp (operations : Array Lemma.Core0.Device.Op)
     (operation : Lemma.Core0.Device.Op) : Array Lemma.Core0.Device.Op :=
   if operations.contains operation then operations else operations.push operation
@@ -584,6 +659,8 @@ private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
       collectDeviceOps (pushDeviceOp operations .uartEnableAndResetFifo) next
   | .trap _ _ _ next =>
       collectDeviceOps operations next
+  | .timer _ _ _ _ next =>
+      collectDeviceOps operations next
 termination_by action => sizeOf action
 
 private def pushTrapOp (operations : Array Lemma.Core0.Trap.Op)
@@ -607,6 +684,66 @@ private def collectTrapOps (operations : Array Lemma.Core0.Trap.Op) :
       collectTrapOps operations next
   | .trap operation _ _ next =>
       collectTrapOps (pushTrapOp operations operation) next
+  | .timer _ _ _ _ next =>
+      collectTrapOps operations next
+termination_by action => sizeOf action
+
+private def pushTimerOp (operations : Array Lemma.Core0.Timer.Op)
+    (operation : Lemma.Core0.Timer.Op) : Array Lemma.Core0.Timer.Op :=
+  if operations.contains operation then operations else operations.push operation
+
+private def collectTimerOps (operations : Array Lemma.Core0.Timer.Op) :
+    Lemma.Core0.ActionExpr → Array Lemma.Core0.Timer.Op
+  | .done .. | .call .. => operations
+  | .bind first _ _ next =>
+      collectTimerOps (collectTimerOps operations first) next
+  | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
+      .checkRange _ _ _ _ _ next =>
+      collectTimerOps operations next
+  | .ite _ thenBranch elseBranch =>
+      collectTimerOps (collectTimerOps operations thenBranch) elseBranch
+  | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
+      collectTimerOps operations next
+  | .uartReadStatus _ _ next | .uartReadByte _ _ next |
+      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .trap _ _ _ next =>
+      collectTimerOps operations next
+  | .timer operation _ _ _ next =>
+      collectTimerOps (pushTimerOp operations operation) next
+termination_by action => sizeOf action
+
+private def timerEffects : Lemma.Core0.Timer.Op → Lemma.Core0.EffectSet
+  | .readTime => .timerRead
+  | .setCompare => .timerWrite
+  | .readPending => .timerInterrupt
+  | .irqSaveDisable | .irqRestore => .interrupt
+  | .setInterrupt | .probe => .timerInterrupt
+
+/-- Recompute the complete set of effects performed directly by an Action body.
+Calls and bounded-fold callbacks contribute through `actionDependencies`; their
+continuations remain direct syntax in the caller. -/
+private def directActionEffects : Lemma.Core0.ActionExpr → Lemma.Core0.EffectSet
+  | .done .. | .call .. => .empty
+  | .bind first _ _ next =>
+      directActionEffects first ∪ directActionEffects next
+  | .load _ _ _ _ _ next =>
+      Lemma.Core0.EffectSet.read ∪ directActionEffects next
+  | .store _ _ _ _ _ next =>
+      Lemma.Core0.EffectSet.write ∪ directActionEffects next
+  | .checkRange _ _ _ _ _ next =>
+      Lemma.Core0.EffectSet.check ∪ directActionEffects next
+  | .ite _ thenBranch elseBranch =>
+      directActionEffects thenBranch ∪ directActionEffects elseBranch
+  | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
+      directActionEffects next
+  | .uartReadStatus _ _ next | .uartReadByte _ _ next =>
+      Lemma.Core0.EffectSet.deviceRead ∪ directActionEffects next
+  | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next =>
+      Lemma.Core0.EffectSet.deviceWrite ∪ directActionEffects next
+  | .trap _ _ _ next =>
+      Lemma.Core0.EffectSet.trap ∪ directActionEffects next
+  | .timer operation _ _ _ next =>
+      timerEffects operation ∪ directActionEffects next
 termination_by action => sizeOf action
 
 private def lookupActionFunction (functions : Array Lemma.Core0.ActionFunction)
@@ -924,7 +1061,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next => do
-      let maximumBudget := if profile == .v0_5 || profile == .v0_6 then
+      let maximumBudget := if profile == .v0_5 || profile == .v0_6 ||
+          profile == .v0_7 then
         Lemma.Core0.Memory.maximumBudgetV05
       else
         Lemma.Core0.Memory.maximumBudgetV04
@@ -1036,7 +1174,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local resultValue) do
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
-      unless profile == .v0_5 || profile == .v0_6 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1049,7 +1187,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
-      unless profile == .v0_5 || profile == .v0_6 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1062,7 +1200,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
-      unless profile == .v0_5 || profile == .v0_6 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1072,7 +1210,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
-      unless profile == .v0_5 || profile == .v0_6 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
@@ -1081,7 +1219,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .trap operation status value next => do
-      unless profile == .v0_6 do
+      unless profile == .v0_6 || profile == .v0_7 do
         throw s!"synchronous trap operations require `{Lemma.Core0.Profile.v0_6.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked synchronous trap has an inconsistent continuation type"
@@ -1089,6 +1227,47 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.abiCall (some mask) .i64 none operation.llvmSymbol #[])
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         withLocal value.id (.local mask) do
+          lowerActionExpr profile suite symbols next
+  | .timer operation argument? status value next => do
+      unless profile == .v0_7 do
+        throw s!"timer/interrupt operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
+      unless status.ty == .u8 && value.ty == .u64 do
+        throw "checked timer operation has an inconsistent continuation type"
+      let some spec := Lemma.Core0.Timer.findSpec? operation
+        | throw s!"checked timer operation `{operation.stableId}` is absent from its catalog"
+      let mut arguments : Array LLVM.ABIArgument := #[]
+      match spec.sourceArguments, spec.machineArguments, argument? with
+      | sourceArgs, machineArgs, none =>
+          unless sourceArgs.isEmpty && machineArgs.isEmpty do
+            throw s!"checked timer operation `{operation.stableId}` omitted its argument"
+      | sourceArgs, machineArgs, some argument =>
+          let some sourceTy := sourceArgs[0]?
+            | throw s!"checked timer operation `{operation.stableId}` has a spurious argument"
+          let some machineTy := machineArgs[0]?
+            | throw s!"timer ABI for `{operation.stableId}` omitted its machine argument"
+          unless sourceArgs.size == 1 && machineArgs.size == 1 &&
+              argument.type == sourceTy do
+            throw s!"checked timer operation `{operation.stableId}` has an inconsistent argument"
+          let lowered ← lowerExprCFG profile suite.scalarFunctions symbols argument
+          let abiValue ← if sourceTy == .bool && machineTy == .u64 &&
+              spec.canonicalBoolArgument then do
+            let canonical ← freshValue "timer.bool-u64."
+            emit (.zext canonical .i1 lowered .i64)
+            pure (.local canonical)
+          else if sourceTy == .u64 && machineTy == .u64 &&
+              !spec.canonicalBoolArgument then
+            pure lowered
+          else
+            throw s!"timer ABI for `{operation.stableId}` is outside the closed lowering"
+          arguments := arguments.push { ty := .i64, value := abiValue, extension := none }
+      let primitiveResult ← freshValue "timer.result."
+      emit (.abiCall (some primitiveResult) .i64 none operation.llvmSymbol arguments)
+      let logicalValue := if spec.resultMeaning == .zero then
+        LLVM.Operand.int .i64 0
+      else
+        .local primitiveResult
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        withLocal value.id logicalValue do
           lowerActionExpr profile suite symbols next
 termination_by action => sizeOf action
 
@@ -1170,8 +1349,9 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
 private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
-  unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 do
-    throw "Action lowering requires profile core0-v0.4, core0-v0.5, or core0-v0.6"
+  unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
+      profile == .v0_7 do
+    throw "Action lowering requires profile core0-v0.4, core0-v0.5, core0-v0.6, or core0-v0.7"
   unless suite.contractVersion == profile.contractVersion do
     throw s!"Action lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
   unless Lemma.Core0.Memory.tableValid do
@@ -1208,11 +1388,29 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
       actualTrapOps.all suite.usedTrapOps.contains &&
       suite.usedTrapOps.all actualTrapOps.contains do
     throw "checked Action suite has stale trap-operation metadata"
+  let mut actualTimerOps : Array Lemma.Core0.Timer.Op := #[]
+  for function in suite.actionFunctions do
+    actualTimerOps := collectTimerOps actualTimerOps function.body
+  let mut seenTimerMetadata : Array Lemma.Core0.Timer.Op := #[]
+  for operation in suite.usedTimerOps do
+    if seenTimerMetadata.contains operation then
+      throw s!"checked Action suite repeats timer metadata `{operation.stableId}`"
+    seenTimerMetadata := seenTimerMetadata.push operation
+    let some spec := Lemma.Core0.Timer.findSpec? operation
+      | throw s!"checked Action suite names uncatalogued timer operation `{operation.stableId}`"
+    unless spec == expectedTimerSpec operation do
+      throw s!"timer operation `{operation.stableId}` disagrees with the closed backend contract"
+  unless actualTimerOps.size == suite.usedTimerOps.size &&
+      actualTimerOps.all suite.usedTimerOps.contains &&
+      suite.usedTimerOps.all actualTimerOps.contains do
+    throw "checked Action suite has stale timer-operation metadata"
   if profile == .v0_4 && !actualDeviceOps.isEmpty then
     throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
   if (profile == .v0_4 || profile == .v0_5) && !actualTrapOps.isEmpty then
     throw s!"trap operations require `{Lemma.Core0.Profile.v0_6.contractVersion}`"
-  if profile == .v0_5 || profile == .v0_6 then
+  if profile != .v0_7 && !actualTimerOps.isEmpty then
+    throw s!"timer operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
+  if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
@@ -1224,9 +1422,15 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
-  if profile == .v0_6 then
+  if profile == .v0_6 || profile == .v0_7 then
     unless Lemma.Core0.Trap.catalogValid && trapCatalogMatchesBackend do
       throw "the compiled core0-v0.6 trap catalog disagrees with the closed LLVM lowering"
+  if profile == .v0_7 then
+    unless Lemma.Core0.Timer.catalogValid && timerCatalogMatchesBackend &&
+        Lemma.Core0.Timer.MachineTimer.timeAddress.toNat == 0x0200bff8 &&
+        Lemma.Core0.Timer.MachineTimer.compareAddress.toNat == 0x02004000 &&
+        Lemma.Core0.Timer.MachineTimer.registerWidthBytes == 8 do
+      throw "the compiled core0-v0.7 timer catalog disagrees with the closed machine ABI"
   unless !suite.roots.isEmpty do throw "checked Action suite has no roots"
   unless !suite.actionFunctions.isEmpty do throw "checked Action suite has no functions"
 
@@ -1255,21 +1459,24 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     for dependency in function.scalarDependencies do
       unless seenScalar.contains dependency do
         throw s!"Action function `{function.name}` names missing scalar dependency `{dependency}`"
-    let directDeviceOps := collectDeviceOps #[] function.body
-    let hasDirectDeviceRead :=
-      directDeviceOps.contains .uartReadStatus || directDeviceOps.contains .uartReadByte
-    let hasDirectDeviceWrite :=
-      directDeviceOps.contains .uartWriteByte ||
-        directDeviceOps.contains .uartEnableAndResetFifo
-    unless function.directEffects.mmioRead == hasDirectDeviceRead &&
-        function.directEffects.mmioWrite == hasDirectDeviceWrite &&
-        function.directEffects.ioOrder ==
-          (hasDirectDeviceRead || hasDirectDeviceWrite) do
+    let actualDirectEffects := directActionEffects function.body
+    unless function.directEffects.checkedAccess == actualDirectEffects.checkedAccess &&
+        function.directEffects.ramRead == actualDirectEffects.ramRead &&
+        function.directEffects.ramWrite == actualDirectEffects.ramWrite do
+      throw s!"checked Action function `{function.name}` has stale direct memory effects"
+    unless function.directEffects.mmioRead ==
+          actualDirectEffects.mmioRead &&
+        function.directEffects.mmioWrite == actualDirectEffects.mmioWrite &&
+        function.directEffects.ioOrder == actualDirectEffects.ioOrder do
       throw s!"checked Action function `{function.name}` has stale direct device effects"
-    let hasDirectTrap := !(collectTrapOps #[] function.body).isEmpty
-    unless function.directEffects.syncTrap == hasDirectTrap &&
-        function.directEffects.machineState == hasDirectTrap do
+    unless function.directEffects.syncTrap == actualDirectEffects.syncTrap &&
+        function.directEffects.machineState == actualDirectEffects.machineState do
       throw s!"checked Action function `{function.name}` has stale direct trap effects"
+    unless function.directEffects.timerState == actualDirectEffects.timerState &&
+        function.directEffects.interruptState == actualDirectEffects.interruptState do
+      throw s!"checked Action function `{function.name}` has stale direct timer effects"
+    unless function.directEffects == actualDirectEffects do
+      throw s!"checked Action function `{function.name}` has stale direct effects"
     let missing := function.actionDependencies.filter fun dependency =>
       !seenActions.contains dependency
     unless missing.isEmpty do
@@ -1344,5 +1551,11 @@ and the four closed synchronous-trap primitive calls. -/
 def lowerActionSuiteV06 (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
   lowerActionSuiteForProfile .v0_6 suite options
+
+/-- Lower a checked `core0-v0.7` Action suite with the unchanged UART/trap paths
+and the seven closed timer/interrupt primitive calls. -/
+def lowerActionSuiteV07 (suite : Lemma.Core0.CheckedActionSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
+  lowerActionSuiteForProfile .v0_7 suite options
 
 end Lemma.Compiler

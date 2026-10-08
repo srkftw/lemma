@@ -8,6 +8,7 @@ import Lemma.Core0.Device
 import Lemma.Core0.IR
 import Lemma.Core0.Memory
 import Lemma.Core0.Trap
+import Lemma.Core0.Timer
 
 /-!
 Genuine Lean-environment frontend for the versioned Core0 profiles.
@@ -221,6 +222,10 @@ def primitiveAllowlistV05 : Array PrimitiveSpec := primitiveAllowlistV04
 closed Action operations and never scalar primitives. -/
 def primitiveAllowlistV06 : Array PrimitiveSpec := primitiveAllowlistV05
 
+/-- `core0-v0.7` retains the scalar closure unchanged; timer and interrupt
+operations remain closed Actions rather than scalar primitives. -/
+def primitiveAllowlistV07 : Array PrimitiveSpec := primitiveAllowlistV06
+
 /-- Exact compiler-recognized contract for the v0.3 bounded fold. -/
 def boundedFoldU32Spec : IterationSpec := {
   stableId := boundedFoldU32StableId
@@ -237,14 +242,15 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
+  | .v0_7 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
-  | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 => true
+  | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
-  | .v0_3 | .v0_4 | .v0_5 | .v0_6 => true
+  | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -290,6 +296,7 @@ private structure LowerState where
   usedActionIterations : Array ActionIterationUse := #[]
   usedDeviceOps : Array Device.Op := #[]
   usedTrapOps : Array Trap.Op := #[]
+  usedTimerOps : Array Timer.Op := #[]
   directEffects : EffectSet := .empty
 
 private abbrev LowerM := StateT LowerState (Except Diagnostic)
@@ -357,6 +364,23 @@ private def markTrapOp (op : Trap.Op) : LowerM Unit := do
     state with
     usedTrapOps := uses
     directEffects := state.directEffects ∪ .trap
+  }
+
+private def timerEffects : Timer.Op → EffectSet
+  | .readTime => .timerRead
+  | .setCompare => .timerWrite
+  | .readPending => .timerInterrupt
+  | .irqSaveDisable | .irqRestore => .interrupt
+  | .setInterrupt | .probe => .timerInterrupt
+
+private def markTimerOp (op : Timer.Op) : LowerM Unit := do
+  let state ← get
+  let uses := if state.usedTimerOps.contains op then state.usedTimerOps
+    else state.usedTimerOps.push op
+  set {
+    state with
+    usedTimerOps := uses
+    directEffects := state.directEffects ∪ timerEffects op
   }
 
 private def markIteration (site : IterationUse) : LowerM Unit := do
@@ -1160,7 +1184,7 @@ def checkAndLowerSuite (env : Environment) (declaredRoots : Array Name) :
     Except Diagnostic CheckedSuite :=
   checkAndLowerSuiteForProfile env .v0_1 declaredRoots
 
-/-! ## Explicit Action frontend (`core0-v0.4` through `core0-v0.6`) -/
+/-! ## Explicit Action frontend (`core0-v0.4` through `core0-v0.7`) -/
 
 private def isActionType (type : Lean.Expr) : Bool :=
   constName? type == some ``Lemma.Core0.Memory.Action
@@ -1220,18 +1244,18 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 => Memory.maximumBudgetV05
+  | .v0_5 | .v0_6 | .v0_7 => Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  unless ctx.profile == .v0_5 || ctx.profile == .v0_6 do
+  unless ctx.profile == .v0_5 || ctx.profile == .v0_6 || ctx.profile == .v0_7 do
     fail ctx .unsupportedPrimitive
       (s!"device operation `{op.stableId}` requires " ++
         s!"`{Profile.v0_5.contractVersion}`; `{ctx.profile.contractVersion}` " ++
         "does not admit MMIO")
 
 private def requireTrapProfile (ctx : LowerContext) (op : Trap.Op) : LowerM Unit := do
-  unless ctx.profile == .v0_6 do
+  unless ctx.profile == .v0_6 || ctx.profile == .v0_7 do
     fail ctx .unsupportedPrimitive
       (s!"trap operation `{op.stableId}` requires " ++
         s!"`{Profile.v0_6.contractVersion}`; `{ctx.profile.contractVersion}` " ++
@@ -1243,6 +1267,23 @@ private def trapConstructor? (name : Name) : Option Trap.Op :=
   else if name == ``Lemma.Core0.Memory.Action.trapUnexpectedEcall then some .unexpectedEcall
   else if name == ``Lemma.Core0.Memory.Action.trapIllegalInstruction then some .illegalInstruction
   else none
+
+private def timerConstructor? (name : Name) : Option Timer.Op :=
+  if name == ``Lemma.Core0.Memory.Action.timerReadTime then some .readTime
+  else if name == ``Lemma.Core0.Memory.Action.timerSetCompare then some .setCompare
+  else if name == ``Lemma.Core0.Memory.Action.timerReadPending then some .readPending
+  else if name == ``Lemma.Core0.Memory.Action.irqSaveDisable then some .irqSaveDisable
+  else if name == ``Lemma.Core0.Memory.Action.irqRestore then some .irqRestore
+  else if name == ``Lemma.Core0.Memory.Action.timerSetInterrupt then some .setInterrupt
+  else if name == ``Lemma.Core0.Memory.Action.timerProbe then some .probe
+  else none
+
+private def requireTimerProfile (ctx : LowerContext) (op : Timer.Op) : LowerM Unit := do
+  unless ctx.profile == .v0_7 do
+    fail ctx .unsupportedPrimitive
+      (s!"timer operation `{op.stableId}` requires " ++
+        s!"`{Profile.v0_7.contractVersion}`; `{ctx.profile.contractVersion}` " ++
+        "does not admit timer/interrupt operations")
 
 private def substituteScalar (id : Nat) (replacement : Expr) : Expr → Expr
   | .var candidate ty => if candidate == id then replacement else .var candidate ty
@@ -1308,6 +1349,9 @@ private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr 
       .uartEnableAndResetFifo status (substituteActionScalar id replacement next)
   | .trap operation status value next =>
       .trap operation status value (substituteActionScalar id replacement next)
+  | .timer operation argument? status value next =>
+      .timer operation (argument?.map (substituteScalar id replacement)) status value
+        (substituteActionScalar id replacement next)
 
 mutual
 
@@ -1425,6 +1469,22 @@ mutual
       let (status, value, next) ← lowerActionContinuation2 fuel ctx args[0]!
       markTrapOp op
       pure (.trap op status value next)
+
+    else if let some op := timerConstructor? name then
+      requireTimerProfile ctx op
+      let some spec := Timer.findSpec? op
+        | fail ctx .internal s!"timer operation `{op.stableId}` is absent from its closed catalog"
+      unless args.size == spec.sourceArguments.size + 1 do
+        fail ctx .arityMismatch s!"malformed `{name}` application"
+      let mut argument? : Option Expr := none
+      if let some expected := spec.sourceArguments[0]? then
+        let argument ← lowerExpr fuel ctx args[0]!
+        ensureType ctx expected argument
+        argument? := some argument
+      let continuation := args[spec.sourceArguments.size]!
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx continuation
+      markTimerOp op
+      pure (.timer op argument? status value next)
 
     else if name == ``Lemma.Core0.Memory.Action.boundedFoldU64 then
       unless args.size == 9 do
@@ -1619,6 +1679,7 @@ private structure ActionClosure where
   usedActionIterations : Array ActionIterationUse := #[]
   usedDeviceOps : Array Device.Op := #[]
   usedTrapOps : Array Trap.Op := #[]
+  usedTimerOps : Array Timer.Op := #[]
 
 private def pushUnique [BEq α] (values : Array α) (value : α) : Array α :=
   if values.contains value then values else values.push value
@@ -1652,13 +1713,14 @@ under one of the explicit Action profiles. -/
 def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
     (declaredRoots : Array Name) :
     Except Diagnostic CheckedActionSuite := do
-  unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 do
+  unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
+      profile == .v0_7 do
     throw {
       code := .invalidSuite
       root := declaredRoots[0]?.getD .anonymous
       declaration := declaredRoots[0]?.getD .anonymous
       path := declaredRoots[0]?.toList
-      message := s!"`{profile.contractVersion}` is a scalar-only profile; Action suites require `core0-v0.4`, `core0-v0.5`, or `core0-v0.6`"
+      message := s!"`{profile.contractVersion}` is a scalar-only profile; Action suites require `core0-v0.4`, `core0-v0.5`, `core0-v0.6`, or `core0-v0.7`"
     }
   unless !declaredRoots.isEmpty do
     throw {
@@ -1739,6 +1801,9 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
               for operation in state.usedTrapOps do
                 closure := { closure with
                   usedTrapOps := pushUnique closure.usedTrapOps operation }
+              for operation in state.usedTimerOps do
+                closure := { closure with
+                  usedTimerOps := pushUnique closure.usedTimerOps operation }
               let entries := function.actionDependencies.toList.map fun dependency =>
                 ActionVisitTask.enter dependency (path ++ [dependency])
               stack := entries ++ [.exit function] ++ stack
@@ -1786,6 +1851,7 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
     usedActionIterations := closure.usedActionIterations
     usedDeviceOps := closure.usedDeviceOps
     usedTrapOps := closure.usedTrapOps
+    usedTimerOps := closure.usedTimerOps
   }
 
 /-- Historical checked-memory Action entry point.  Device constructors are rejected. -/
@@ -1803,5 +1869,11 @@ operations under `core0-v0.6`. -/
 def checkAndLowerActionSuiteV06 (env : Environment) (declaredRoots : Array Name) :
     Except Diagnostic CheckedActionSuite :=
   checkAndLowerActionSuiteForProfile env .v0_6 declaredRoots
+
+/-- Checked-memory, UART, synchronous traps, and the seven closed timer/interrupt
+operations under `core0-v0.7`. -/
+def checkAndLowerActionSuiteV07 (env : Environment) (declaredRoots : Array Name) :
+    Except Diagnostic CheckedActionSuite :=
+  checkAndLowerActionSuiteForProfile env .v0_7 declaredRoots
 
 end Lemma.Core0

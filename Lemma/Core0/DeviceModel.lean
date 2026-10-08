@@ -118,6 +118,7 @@ It deliberately does not pretend to simulate the Gate 7 machine trap substrate. 
 inductive ActionStepDiagnosticCode where
   | nonDeviceActionUnsupported
   | trapActionUnsupported
+  | timerActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure ActionStepDiagnostic where
@@ -148,6 +149,13 @@ def stepDeviceAction (state : State) (action : Action) :
       .error {
         code := .trapActionUnsupported
         message := "the finite UART model does not simulate synchronous trap actions"
+      }
+  | .timerReadTime _ | .timerSetCompare _ _ | .timerReadPending _ |
+      .irqSaveDisable _ | .irqRestore _ _ | .timerSetInterrupt _ _ |
+      .timerProbe _ =>
+      .error {
+        code := .timerActionUnsupported
+        message := "the finite UART model does not simulate timer/interrupt actions"
       }
   | _ =>
       .error {

@@ -54,9 +54,9 @@ def Register.all : Array Register := #[
 def Register.number (register : Register) : Nat :=
   (Register.all.toList.idxOf register)
 
-/-- The synchronous M-mode substrate cannot name arbitrary CSRs. -/
+/-- The M-mode substrates cannot name arbitrary CSRs. -/
 inductive CSR where
-  | mstatus | mie | mtvec | mscratch | mepc | mcause | mtval
+  | mstatus | mie | mtvec | mscratch | mepc | mcause | mtval | mip
   deriving Repr, BEq, DecidableEq
 
 def CSR.render : CSR → String
@@ -67,6 +67,7 @@ def CSR.render : CSR → String
   | .mepc => "mepc"
   | .mcause => "mcause"
   | .mtval => "mtval"
+  | .mip => "mip"
 
 inductive Instruction where
   | loadAddress (dst : Register) (symbol : String)
@@ -76,6 +77,8 @@ inductive Instruction where
   | loadDouble (dst base : Register) (offset : Int)
   | loadImmediate (dst : Register) (value : Nat)
   | addImmediate (dst src : Register) (value : Int)
+  | andImmediate (dst src : Register) (value : Nat)
+  | shiftRightImmediate (dst src : Register) (bits : Nat)
   | orRegisters (dst lhs rhs : Register)
   | branchEq (lhs rhs : Register) (target : String)
   | branchNe (lhs rhs : Register) (target : String)
@@ -84,6 +87,11 @@ inductive Instruction where
   | csrRead (dst : Register) (csr : CSR)
   | csrWrite (csr : CSR) (src : Register)
   | csrReadWrite (dst : Register) (csr : CSR) (src : Register)
+  | csrSet (csr : CSR) (src : Register)
+  | csrClear (csr : CSR) (src : Register)
+  | csrSetImmediate (csr : CSR) (mask : Nat)
+  | csrClearImmediate (csr : CSR) (mask : Nat)
+  | csrReadClearImmediate (dst : Register) (csr : CSR) (mask : Nat)
   | maskMachineInterruptEnable
   | environmentCall
   | breakpoint
@@ -105,6 +113,8 @@ def Instruction.render : Instruction → String
   | .loadDouble dst base offset => s!"ld {dst.render}, {offset}({base.render})"
   | .loadImmediate dst value => s!"li {dst.render}, {value}"
   | .addImmediate dst src value => s!"addi {dst.render}, {src.render}, {value}"
+  | .andImmediate dst src value => s!"andi {dst.render}, {src.render}, {value}"
+  | .shiftRightImmediate dst src bits => s!"srli {dst.render}, {src.render}, {bits}"
   | .orRegisters dst lhs rhs => s!"or {dst.render}, {lhs.render}, {rhs.render}"
   | .branchEq lhs rhs target => s!"beq {lhs.render}, {rhs.render}, {target}"
   | .branchNe lhs rhs target => s!"bne {lhs.render}, {rhs.render}, {target}"
@@ -113,6 +123,11 @@ def Instruction.render : Instruction → String
   | .csrRead dst csr => s!"csrr {dst.render}, {csr.render}"
   | .csrWrite csr src => s!"csrw {csr.render}, {src.render}"
   | .csrReadWrite dst csr src => s!"csrrw {dst.render}, {csr.render}, {src.render}"
+  | .csrSet csr src => s!"csrs {csr.render}, {src.render}"
+  | .csrClear csr src => s!"csrc {csr.render}, {src.render}"
+  | .csrSetImmediate csr mask => s!"csrsi {csr.render}, {mask}"
+  | .csrClearImmediate csr mask => s!"csrci {csr.render}, {mask}"
+  | .csrReadClearImmediate dst csr mask => s!"csrrci {dst.render}, {csr.render}, {mask}"
   | .maskMachineInterruptEnable => "csrci mstatus, 8"
   | .environmentCall => "ecall"
   | .breakpoint => "ebreak"

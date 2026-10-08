@@ -22,6 +22,7 @@ inductive Profile where
   | v0_4
   | v0_5
   | v0_6
+  | v0_7
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Profile
@@ -33,6 +34,7 @@ def contractVersion : Profile → String
   | .v0_4 => "core0-v0.4"
   | .v0_5 => "core0-v0.5"
   | .v0_6 => "core0-v0.6"
+  | .v0_7 => "core0-v0.7"
 
 def ofContractVersion? : String → Option Profile
   | "core0-v0.1" => some .v0_1
@@ -41,6 +43,7 @@ def ofContractVersion? : String → Option Profile
   | "core0-v0.4" => some .v0_4
   | "core0-v0.5" => some .v0_5
   | "core0-v0.6" => some .v0_6
+  | "core0-v0.7" => some .v0_7
   | _ => none
 
 end Profile

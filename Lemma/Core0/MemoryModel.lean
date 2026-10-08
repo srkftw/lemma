@@ -73,6 +73,7 @@ inductive DiagnosticCode where
   | malformedState
   | deviceActionUnsupported
   | trapActionUnsupported
+  | timerActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure Diagnostic where
@@ -264,6 +265,12 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
       | .trapIllegalInstruction _ => .error {
           code := .trapActionUnsupported
           message := "the finite RAM model does not simulate synchronous trap actions"
+        }
+      | .timerReadTime _ | .timerSetCompare _ _ | .timerReadPending _ |
+          .irqSaveDisable _ | .irqRestore _ _ | .timerSetInterrupt _ _ |
+          .timerProbe _ => .error {
+          code := .timerActionUnsupported
+          message := "the finite RAM model does not simulate timer/interrupt actions"
         }
 
 def evaluateDefault (state : State) (action : Action) : Except Diagnostic Evaluation :=
