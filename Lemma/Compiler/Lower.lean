@@ -195,6 +195,8 @@ private def lowerExpr (abi : LoweringABI) (functions : Array Lemma.Core0.Functio
           emit (.abiCall (some result) (llvmTy resultTy)
             (rv64LP64Extension resultTy) symbol lowered)
           pure (.local result)
+  | .boundedFoldU32 .. =>
+      throw s!"bounded iteration requires structured {Lemma.Core0.Profile.v0_3.contractVersion} lowering"
   | .cast op sourceTy targetTy value => do
       let value ← lowerExpr abi functions symbols value
       let result ← fresh "cast"

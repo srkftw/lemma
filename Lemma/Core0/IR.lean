@@ -1,7 +1,7 @@
 import Lean
 
 /-!
-The checked, backend-neutral representation for the first Core0 profile.
+The checked, backend-neutral representation for the versioned Core0 profiles.
 
 `Expr` deliberately has no generic application, closure, allocation, projection, or
 foreign-call node.  The frontend is the only module which translates kernel-checked
@@ -18,6 +18,7 @@ available by silently changing the meaning of an older contract string. -/
 inductive Profile where
   | v0_1
   | v0_2
+  | v0_3
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Profile
@@ -25,15 +26,17 @@ namespace Profile
 def contractVersion : Profile → String
   | .v0_1 => "core0-v0.1"
   | .v0_2 => "core0-v0.2"
+  | .v0_3 => "core0-v0.3"
 
 def ofContractVersion? : String → Option Profile
   | "core0-v0.1" => some .v0_1
   | "core0-v0.2" => some .v0_2
+  | "core0-v0.3" => some .v0_3
   | _ => none
 
 end Profile
 
-/-- Runtime scalar types admitted by Core0 v0.1. -/
+/-- Runtime scalar types shared by the implemented Core0 profiles. -/
 inductive Ty where
   | bool
   | u8
@@ -142,6 +145,10 @@ inductive Expr where
   | ite (resultTy : Ty) (cond thenBranch elseBranch : Expr)
   | call (callee : Name) (resultTy : Ty) (args : List Expr)
   | cast (op : CastOp) (sourceTy targetTy : Ty) (value : Expr)
+  /-- A profile-v0.3 bounded fold.  The callback is a statically resolved,
+  checked function with signature `(u32, u32) -> u32`; it is not a runtime
+  closure.  `budget` is a checked source literal and `count` is runtime data. -/
+  | boundedFoldU32 (budget : Nat) (callback : Name) (count initial : Expr)
   deriving BEq, Inhabited, Repr
 
 def Expr.type : Expr → Ty
@@ -155,6 +162,7 @@ def Expr.type : Expr → Ty
   | .ite ty _ _ _ => ty
   | .call _ ty _ => ty
   | .cast _ _ targetTy _ => targetTy
+  | .boundedFoldU32 .. => .u64
 
 /-- A deterministic, typed representation of the checked expression consumed by
 the backend.  This is deliberately independent of Lean's derived `Repr` format so
@@ -179,6 +187,9 @@ def Expr.renderNormalized : Expr → String
       s!"(call {callee} {resultTy.render} [{renderedArgs}])"
   | .cast op sourceTy targetTy value =>
       s!"(cast {op.render} {sourceTy.render} {targetTy.render} {value.renderNormalized})"
+  | .boundedFoldU32 budget callback count initial =>
+      s!"(bounded-fold-u32 budget={budget} callback={callback} " ++
+        s!"count={count.renderNormalized} initial={initial.renderNormalized})"
 
 structure Param where
   id : Nat
@@ -216,6 +227,29 @@ structure PrimitiveSpec where
   effect : Effect := .pure
   deriving BEq, Inhabited, Repr
 
+/-- Metadata for a compiler-recognized iteration form.  This is intentionally
+separate from `PrimitiveSpec`: the static budget and statically resolved callback
+are not ordinary runtime scalar arguments. -/
+structure IterationSpec where
+  stableId : String
+  leanDecl : Name
+  runtimeSignature : Signature
+  callbackSignature : Signature
+  maximumBudget : Nat
+  effect : Effect := .pure
+  deriving BEq, Inhabited, Repr
+
+/-- Stable manifest identity for the only v0.3 iteration form. -/
+def boundedFoldU32StableId : String := "u32.bounded-fold"
+
+/-- One checked use of an iteration form, retained in manifests so a build cannot
+hide the concrete source budget or callback behind an ordinary primitive ID. -/
+structure IterationUse where
+  stableId : String
+  budget : Nat
+  callback : Name
+  deriving BEq, Inhabited, Repr
+
 structure Program where
   contractVersion : String := "core0-v0.1"
   root : Name
@@ -223,6 +257,8 @@ structure Program where
   functions : Array Function
   /-- Stable IDs from `primitiveAllowlist`, in first-use order. -/
   usedPrimitives : Array String
+  /-- Checked compiler-recognized iteration sites, in first-use order. -/
+  usedIterations : Array IterationUse := #[]
   deriving Inhabited, Repr
 
 /-- One externally callable root in an additive, multi-root checked corpus.  IDs are
@@ -233,8 +269,7 @@ structure CheckedRoot where
   signature : Signature
   deriving BEq, Inhabited, Repr
 
-/-- A deduplicated union of ordinary Core0 v0.1 programs.  This changes the test
-packaging, not the accepted source language or its contract version. -/
+/-- A deduplicated union of programs checked under one explicit Core0 profile. -/
 structure CheckedSuite where
   contractVersion : String := "core0-v0.1"
   roots : Array CheckedRoot
@@ -242,6 +277,8 @@ structure CheckedSuite where
   functions : Array Function
   /-- Stable primitive IDs in first-use order across the declared roots. -/
   usedPrimitives : Array String
+  /-- Deduplicated checked iteration sites across the declared roots. -/
+  usedIterations : Array IterationUse := #[]
   deriving BEq, Inhabited, Repr
 
 def Program.findFunction? (program : Program) (name : Name) : Option Function :=
@@ -270,6 +307,8 @@ def Program.renderManifest (program : Program) : String :=
     s!"function={f.name};signature={renderSignature f.signature};" ++
       s!"deps=[{joinNames f.dependencies}];body={f.body.renderNormalized}\n"
   let primitives := program.usedPrimitives.toList.map fun p => s!"primitive={p}\n"
-  header ++ String.join functions ++ String.join primitives
+  let iterations := program.usedIterations.toList.map fun site =>
+    s!"iteration={site.stableId};budget={site.budget};callback={site.callback}\n"
+  header ++ String.join functions ++ String.join primitives ++ String.join iterations
 
 end Lemma.Core0

@@ -1,13 +1,15 @@
 import Lemma.Compiler.Lower
 import Lemma.Compiler.LLVMValidate
+import Lemma.Core0.Bounded
 import Lemma.Core0.ScalarLemmas
 
 /-!
-Structured `core0-v0.2` lowering.
+Structured `core0-v0.2` and `core0-v0.3` lowering.
 
 This module is intentionally parallel to the historical single-block lowering in
 `Lower.lean`.  Task 001 and the Gate 2 `core0-v0.1` suite retain their byte-stable
-eager-select path; the new profile uses explicit branches and phi merge values.
+eager-select path.  The additive structured profiles use explicit branches and phi
+merge values; v0.3 additionally lowers checked bounded folds to real CFG backedges.
 -/
 
 namespace Lemma.Compiler
@@ -97,18 +99,19 @@ private def normalizeLiteral (ty : Lemma.Core0.Ty) (value : Nat) : Nat :=
 private def widthMask (ty : Lemma.Core0.Ty) : Nat :=
   2 ^ ty.width - 1
 
-private def lowerExprCFG (functions : Array Lemma.Core0.Function)
+private def lowerExprCFG (profile : Lemma.Core0.Profile)
+      (functions : Array Lemma.Core0.Function)
       (symbols : Array Symbol) : Lemma.Core0.Expr → CFGM LLVM.Operand
     | .var id _ => lookupLocal id
     | .lit ty value => pure (.int (llvmTy ty) (normalizeLiteral ty value))
     | .boolLit value => pure (.int .i1 (if value then 1 else 0))
     | .letE id _ _ value body => do
-        let value ← lowerExprCFG functions symbols value
-        withLocal id value (lowerExprCFG functions symbols body)
+        let value ← lowerExprCFG profile functions symbols value
+        withLocal id value (lowerExprCFG profile functions symbols body)
     | .bin op ty lhs rhs => do
         if op == .udiv || op == .urem then
-          let lhs ← lowerExprCFG functions symbols lhs
-          let rhs ← lowerExprCFG functions symbols rhs
+          let lhs ← lowerExprCFG profile functions symbols lhs
+          let rhs ← lowerExprCFG profile functions symbols rhs
           let isZero ← freshValue "divisor.zero"
           emit (.icmp isZero .eq (llvmTy ty) rhs (.int (llvmTy ty) 0))
           let zeroLabel ← freshBlock "div.zero"
@@ -132,8 +135,8 @@ private def lowerExprCFG (functions : Array Lemma.Core0.Function)
             #[(zeroValue, zeroExit), (.local result, nonzeroExit)])
           pure (.local merged)
         else if op == .shl || op == .lshr then
-          let lhs ← lowerExprCFG functions symbols lhs
-          let rhs ← lowerExprCFG functions symbols rhs
+          let lhs ← lowerExprCFG profile functions symbols lhs
+          let rhs ← lowerExprCFG profile functions symbols rhs
           let count ← freshValue "shift.count"
           emit (.bin count .and (llvmTy ty) rhs
             (.int (llvmTy ty) (Lemma.Core0.ScalarLemmas.shiftCountMask ty)))
@@ -144,35 +147,35 @@ private def lowerExprCFG (functions : Array Lemma.Core0.Function)
         else
           let some llvmOp := ordinaryBinOp op
             | throw s!"unsupported checked binary operation `{op.render}`"
-          let lhs ← lowerExprCFG functions symbols lhs
-          let rhs ← lowerExprCFG functions symbols rhs
+          let lhs ← lowerExprCFG profile functions symbols lhs
+          let rhs ← lowerExprCFG profile functions symbols rhs
           let result ← freshValue "bin"
           emit (.bin result llvmOp (llvmTy ty) lhs rhs)
           pure (.local result)
     | .unary .complement ty value => do
-        let value ← lowerExprCFG functions symbols value
+        let value ← lowerExprCFG profile functions symbols value
         let result ← freshValue "complement"
         emit (.bin result .xor (llvmTy ty) value (.int (llvmTy ty) (widthMask ty)))
         pure (.local result)
     | .cmp op operandTy lhs rhs => do
-        let lhs ← lowerExprCFG functions symbols lhs
-        let rhs ← lowerExprCFG functions symbols rhs
+        let lhs ← lowerExprCFG profile functions symbols lhs
+        let rhs ← lowerExprCFG profile functions symbols rhs
         let result ← freshValue "cmp"
         emit (.icmp result (llvmCmpOp op) (llvmTy operandTy) lhs rhs)
         pure (.local result)
     | .ite resultTy condition thenBranch elseBranch => do
-        let condition ← lowerExprCFG functions symbols condition
+        let condition ← lowerExprCFG profile functions symbols condition
         let thenLabel ← freshBlock "if.then"
         let elseLabel ← freshBlock "if.else"
         let mergeLabel ← freshBlock "if.merge"
         let _ ← finishBlock (.branch condition thenLabel elseLabel)
 
         startBlock thenLabel
-        let thenValue ← lowerExprCFG functions symbols thenBranch
+        let thenValue ← lowerExprCFG profile functions symbols thenBranch
         let thenExit ← finishBlock (.jump mergeLabel)
 
         startBlock elseLabel
-        let elseValue ← lowerExprCFG functions symbols elseBranch
+        let elseValue ← lowerExprCFG profile functions symbols elseBranch
         let elseExit ← finishBlock (.jump mergeLabel)
 
         startBlock mergeLabel
@@ -199,7 +202,7 @@ private def lowerExprCFG (functions : Array Lemma.Core0.Function)
             throw s!"checked call argument #{index} for `{callee}` disagrees with its function signature"
           lowered := lowered.push {
             ty := llvmTy expected
-            value := ← lowerExprCFG functions symbols argument
+            value := ← lowerExprCFG profile functions symbols argument
             extension := rv64LP64Extension expected
           }
           index := index + 1
@@ -207,15 +210,95 @@ private def lowerExprCFG (functions : Array Lemma.Core0.Function)
         emit (.abiCall (some result) (llvmTy resultTy)
           (rv64LP64Extension resultTy) symbol lowered)
         pure (.local result)
+    | .boundedFoldU32 budget callback count initial => do
+        unless profile == .v0_3 do
+          throw s!"bounded iteration requires `{Lemma.Core0.Profile.v0_3.contractVersion}`"
+        unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
+          throw s!"bounded iteration budget {budget} is outside 0..{Lemma.Core0.Bounded.maximumBudget}"
+        unless count.type == .u32 && initial.type == .u32 do
+          throw "bounded iteration runtime count and initial accumulator must both have type u32"
+        let callbackFunction ← match lookupFunction functions callback with
+          | .ok function => pure function
+          | .error message => throw message
+        let callbackSignature : Lemma.Core0.Signature := {
+          args := #[.u32, .u32]
+          result := .u32
+        }
+        unless callbackFunction.signature == callbackSignature do
+          throw s!"bounded iteration callback `{callback}` must have signature (u32,u32)->u32"
+        let callbackSymbol ← match lookupSymbol symbols callback with
+          | .ok symbol => pure symbol
+          | .error message => throw message
+
+        let count ← lowerExprCFG profile functions symbols count
+        let initial ← lowerExprCFG profile functions symbols initial
+        let withinBudget ← freshValue "loop.within-budget"
+        let exhaustedInitial ← freshValue "loop.exhausted-initial"
+        let exhaustedTag ← freshValue "loop.exhausted-tag"
+        let index ← freshValue "loop.index"
+        let accumulator ← freshValue "loop.accumulator"
+        let continueLoop ← freshValue "loop.continue"
+        let nextAccumulator ← freshValue "loop.next-accumulator"
+        let nextIndex ← freshValue "loop.next-index"
+        let loopValue ← freshValue "loop.value"
+        let result ← freshValue "loop.result"
+
+        let preheaderLabel ← freshBlock "loop.preheader"
+        let exhaustedLabel ← freshBlock "loop.exhausted"
+        let headerLabel ← freshBlock "loop.header"
+        let bodyLabel ← freshBlock "loop.body"
+        let doneLabel ← freshBlock "loop.done"
+        let outcomeLabel ← freshBlock "loop.outcome"
+
+        emit (.icmp withinBudget .ule .i32 count (.int .i32 budget))
+        let _ ← finishBlock (.branch (.local withinBudget) preheaderLabel exhaustedLabel)
+
+        startBlock preheaderLabel
+        let preheaderExit ← finishBlock (.jump headerLabel)
+
+        startBlock exhaustedLabel
+        emit (.zext exhaustedInitial .i32 initial .i64)
+        emit (.bin exhaustedTag .or .i64 (.local exhaustedInitial)
+          (.int .i64 (2 ^ 63)))
+        let exhaustedExit ← finishBlock (.jump outcomeLabel)
+
+        startBlock headerLabel
+        emit (.phi index .i32
+          #[(.int .i32 0, preheaderExit), (.local nextIndex, bodyLabel)])
+        emit (.phi accumulator .i32
+          #[(initial, preheaderExit), (.local nextAccumulator, bodyLabel)])
+        emit (.icmp continueLoop .ult .i32 (.local index) count)
+        let _ ← finishBlock (.branch (.local continueLoop) bodyLabel doneLabel)
+
+        startBlock bodyLabel
+        emit (.abiCall (some nextAccumulator) .i32 (rv64LP64Extension .u32)
+          callbackSymbol #[
+            { ty := .i32, value := .local index, extension := rv64LP64Extension .u32 },
+            { ty := .i32, value := .local accumulator, extension := rv64LP64Extension .u32 }
+          ])
+        emit (.bin nextIndex .add .i32 (.local index) (.int .i32 1))
+        let bodyExit ← finishBlock (.jump headerLabel)
+        unless bodyExit == bodyLabel do
+          throw "internal bounded-iteration latch label mismatch"
+
+        startBlock doneLabel
+        emit (.zext loopValue .i32 (.local accumulator) .i64)
+        let doneExit ← finishBlock (.jump outcomeLabel)
+
+        startBlock outcomeLabel
+        emit (.phi result .i64
+          #[(.local loopValue, doneExit), (.local exhaustedTag, exhaustedExit)])
+        pure (.local result)
     | .cast op sourceTy targetTy value => do
-        let value ← lowerExprCFG functions symbols value
+        let value ← lowerExprCFG profile functions symbols value
         let result ← freshValue "cast"
         match op with
         | .zext => emit (.zext result (llvmTy sourceTy) value (llvmTy targetTy))
         | .trunc => emit (.trunc result (llvmTy sourceTy) value (llvmTy targetTy))
         pure (.local result)
 
-private def lowerFunctionV02 (suite : Lemma.Core0.CheckedSuite)
+private def lowerFunctionStructured (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedSuite)
     (symbols : Array Symbol) (options : SuiteLowerOptions)
     (function : Lemma.Core0.Function) : Except String LLVM.Function := do
   let parameters := function.params.mapIdx fun index param =>
@@ -224,7 +307,8 @@ private def lowerFunctionV02 (suite : Lemma.Core0.CheckedSuite)
   let locals := function.params.mapIdx (fun index param =>
     (param.id, LLVM.Operand.local s!"arg{index}")) |>.toList
   let initial : CFGState := { locals }
-  let (result, state) ← lowerExprCFG suite.functions symbols function.body |>.run initial
+  let (result, state) ←
+    lowerExprCFG profile suite.functions symbols function.body |>.run initial
   let finalState ← match finishBlock (.ret (llvmTy function.signature.result) result) |>.run state with
     | .ok (_, state) => pure state
     | .error message => throw message
@@ -248,11 +332,13 @@ private def lowerFunctionV02 (suite : Lemma.Core0.CheckedSuite)
   LLVM.validateFunction lowered
   pure lowered
 
-/-- Lower a checked `core0-v0.2` suite through explicit, validated CFGs. -/
-def lowerSuiteV02 (suite : Lemma.Core0.CheckedSuite)
+private def lowerStructuredSuiteForProfile (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite := do
-  unless suite.contractVersion == Lemma.Core0.Profile.v0_2.contractVersion do
-    throw s!"structured lowering requires `{Lemma.Core0.Profile.v0_2.contractVersion}`, got `{suite.contractVersion}`"
+  unless suite.contractVersion == profile.contractVersion do
+    throw s!"structured lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
+  if profile != .v0_3 && !suite.usedIterations.isEmpty then
+    throw s!"bounded-iteration metadata requires `{Lemma.Core0.Profile.v0_3.contractVersion}`"
   unless !suite.roots.isEmpty do throw "checked Core0 suite has no declared roots"
   unless !suite.functions.isEmpty do throw "checked Core0 suite has an empty function corpus"
   let mut seenFunctions : Array Lean.Name := #[]
@@ -292,7 +378,8 @@ def lowerSuiteV02 (suite : Lemma.Core0.CheckedSuite)
     ({ source := function.name, llvm := s!"core0_user_{index}" } : Symbol)
   let mut functions := #[]
   for function in suite.functions do
-    functions := functions.push (← lowerFunctionV02 suite symbols options function)
+    functions := functions.push
+      (← lowerFunctionStructured profile suite symbols options function)
   let mut roots := #[]
   for root in suite.roots do
     roots := roots.push {
@@ -302,5 +389,15 @@ def lowerSuiteV02 (suite : Lemma.Core0.CheckedSuite)
       signature := root.signature
     }
   pure { functions, symbols, roots }
+
+/-- Lower a checked `core0-v0.2` suite through explicit, validated CFGs. -/
+def lowerSuiteV02 (suite : Lemma.Core0.CheckedSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredSuite :=
+  lowerStructuredSuiteForProfile .v0_2 suite options
+
+/-- Lower a checked `core0-v0.3` suite, including bounded folds as genuine loops. -/
+def lowerSuiteV03 (suite : Lemma.Core0.CheckedSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredSuite :=
+  lowerStructuredSuiteForProfile .v0_3 suite options
 
 end Lemma.Compiler

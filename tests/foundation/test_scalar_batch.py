@@ -653,6 +653,49 @@ class RunBatchTests(unittest.TestCase):
         with self.assertRaisesRegex(core0_common.Core0Error, "profile disagrees"):
             run_scalar_batch.validate_image_binding(self.image, self.descriptor)
 
+    def test_loop_profile_selects_exactly_the_bounded_manifest(self) -> None:
+        scalar_path = self.artifacts / "scalar-suite-manifest.json"
+        bounded_path = self.artifacts / "bounded-suite-manifest.json"
+        abi_path = self.artifacts / "scalar-test-abi.json"
+        provenance_path = self.artifacts / "provenance.json"
+        build_path = self.artifacts / "build.json"
+        manifest = json.loads(scalar_path.read_text(encoding="utf-8"))
+        abi = json.loads(abi_path.read_text(encoding="utf-8"))
+        manifest.update(
+            artifact_category="test-loop-suite", contract_version="core0-v0.3"
+        )
+        abi["contract_version"] = "core0-v0.3"
+        bounded_path.write_text(json.dumps(manifest), encoding="utf-8")
+        scalar_path.unlink()
+        abi_path.write_text(json.dumps(abi), encoding="utf-8")
+        provenance_path.write_text(
+            json.dumps({"artifact_category": "test-loop-suite"}), encoding="utf-8"
+        )
+        build_path.write_text(
+            json.dumps(
+                {
+                    "artifact_category": "test-loop-suite",
+                    "artifacts": {
+                        name: core0_common.sha256(self.artifacts / name)
+                        for name in (
+                            "image.elf",
+                            "bounded-suite-manifest.json",
+                            "scalar-test-abi.json",
+                        )
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        run_scalar_batch.validate_image_binding(self.image, self.descriptor)
+
+        scalar_path.write_text(bounded_path.read_text(encoding="utf-8"), encoding="utf-8")
+        with self.assertRaisesRegex(core0_common.Core0Error, "exactly one"):
+            run_scalar_batch.validate_image_binding(self.image, self.descriptor)
+        bounded_path.unlink()
+        with self.assertRaisesRegex(core0_common.Core0Error, "filename disagrees"):
+            run_scalar_batch.validate_image_binding(self.image, self.descriptor)
+
     def test_legacy_scalar_abi_requires_its_exact_profile(self) -> None:
         abi_path = self.artifacts / "scalar-test-abi.json"
         abi = json.loads(abi_path.read_text(encoding="utf-8"))

@@ -46,18 +46,39 @@ SCALAR_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+BOUNDED_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "bounded-suite-manifest.json",
+    "bounded-suite-normalized.txt",
+    "scalar-test-abi.json",
+    "symbols.txt",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
 TEST_FRONTEND_SUITE_POLICY = "test-frontend-suite"
 TEST_CFG_SUITE_POLICY = "test-cfg-suite"
-SCALAR_SUITE_POLICIES = frozenset({TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY})
+TEST_LOOP_SUITE_POLICY = "test-loop-suite"
+SCALAR_SUITE_POLICIES = frozenset(
+    {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
+)
 AUDIT_POLICIES = (
     RELEASE_POLICY,
     TEST_COMPILER_CONTROL_POLICY,
     TEST_COMPILER_MUTANT_POLICY,
     TEST_FRONTEND_SUITE_POLICY,
     TEST_CFG_SUITE_POLICY,
+    TEST_LOOP_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -85,7 +106,7 @@ FORBIDDEN_SYMBOL = re.compile(
     r"pthread|uv_|__div|__mod|__muldi3|__udiv|__umod|__atomic|__stack_chk)",
     re.IGNORECASE,
 )
-FORBIDDEN_IR_FLAGS = re.compile(r"\b(?:nsw|nuw|inbounds)\b")
+FORBIDDEN_IR_FLAGS = re.compile(r"\b(?:nsw|nuw|inbounds|disjoint)\b")
 ALLOWED_EXTERNALS = {"core0_io_fence"}
 ALLOWED_RELOCATIONS = {
     "R_RISCV_CALL_PLT",
@@ -164,6 +185,7 @@ LLVM_IDENTIFIER = re.compile(r"[A-Za-z_.$][A-Za-z0-9_.$-]*")
 SCALAR_TEST_ABI = "lemma-scalar-test-v1"
 SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarBuild.lean"
 CFG_SCALAR_EXPORT_DRIVER = "examples/foundation/ScalarV2Build.lean"
+LOOP_SCALAR_EXPORT_DRIVER = "examples/foundation/BoundedBuild.lean"
 SCALAR_BASE = "Lemma.Examples.Foundation.Conformance"
 SCALAR_SUPPORT = f"{SCALAR_BASE}.Support"
 SCALAR_ABI_ROOT = f"{SCALAR_BASE}.abiNoInlineRoot"
@@ -405,10 +427,13 @@ CFG_USED_PRIMITIVES = frozenset(
 )
 
 
-def expected_program_command(optimization: str) -> list[str]:
+def expected_program_command(
+    optimization: str, policy: str = RELEASE_POLICY
+) -> list[str]:
     return [
         "llc",
         *LLC_ARGUMENTS,
+        *(["-stack-size-section"] if policy == TEST_LOOP_SUITE_POLICY else []),
         f"-{optimization}",
         "program.opt.ll",
         "-o",
@@ -510,6 +535,151 @@ def _primitive_contracts_v02() -> dict[str, dict[str, object]]:
 
 
 PRIMITIVE_CONTRACTS_V02 = _primitive_contracts_v02()
+
+
+LOOP_BASE = "Lemma.Examples.Foundation.Bounded"
+LOOP_SUPPORT = f"{LOOP_BASE}.Support"
+LOOP_FUNCTION_CONTRACTS: dict[
+    str, tuple[tuple[str, ...], str, tuple[str, ...]]
+] = {
+    f"{LOOP_BASE}.sumStep": (("u32", "u32"), "u32", ()),
+    f"{LOOP_BASE}.sumFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.sumStep",),
+    ),
+    f"{LOOP_BASE}.sumChangedStep": (("u32", "u32"), "u32", ()),
+    f"{LOOP_BASE}.sumFoldChanged": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.sumChangedStep",),
+    ),
+    f"{LOOP_BASE}.bitMixStep": (("u32", "u32"), "u32", ()),
+    f"{LOOP_BASE}.bitMixFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.bitMixStep",),
+    ),
+    f"{LOOP_SUPPORT}.nestedInnerStep": (("u32", "u32"), "u32", ()),
+    f"{LOOP_BASE}.nestedOuterStep": (
+        ("u32", "u32"), "u32", (f"{LOOP_SUPPORT}.nestedInnerStep",),
+    ),
+    f"{LOOP_BASE}.nestedFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.nestedOuterStep",),
+    ),
+    f"{LOOP_SUPPORT}.helperMix": (("u32", "u32"), "u32", ()),
+    f"{LOOP_BASE}.helperStep": (
+        ("u32", "u32"), "u32", (f"{LOOP_SUPPORT}.helperMix",),
+    ),
+    f"{LOOP_BASE}.helperFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.helperStep",),
+    ),
+    f"{LOOP_BASE}.zeroBudgetFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.sumStep",),
+    ),
+    f"{LOOP_BASE}.maxBudgetFold": (
+        ("u32", "u32"), "u64", (f"{LOOP_BASE}.sumStep",),
+    ),
+}
+LOOP_FUNCTION_BODIES = {
+    f"{LOOP_BASE}.sumStep": "(bin add u32 (var 1 u32) (var 0 u32))",
+    f"{LOOP_BASE}.sumFold": (
+        f"(bounded-fold-u32 budget=16 callback={LOOP_BASE}.sumStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_BASE}.sumChangedStep": (
+        "(bin add u32 (bin add u32 (var 1 u32) (var 0 u32)) (lit u32 1))"
+    ),
+    f"{LOOP_BASE}.sumFoldChanged": (
+        f"(bounded-fold-u32 budget=16 callback={LOOP_BASE}.sumChangedStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_BASE}.bitMixStep": (
+        "(let 2 count u32 (bin and u32 (bin add u32 (var 0 u32) (lit u32 5)) "
+        "(lit u32 31)) (bin add u32 (bin shl u32 (bin xor u32 (var 1 u32) "
+        "(var 0 u32)) (var 2 u32)) (lit u32 1831565813)))"
+    ),
+    f"{LOOP_BASE}.bitMixFold": (
+        f"(bounded-fold-u32 budget=64 callback={LOOP_BASE}.bitMixStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_SUPPORT}.nestedInnerStep": (
+        "(bin add u32 (bin add u32 (var 1 u32) (var 0 u32)) (lit u32 3))"
+    ),
+    f"{LOOP_BASE}.nestedOuterStep": (
+        f"(cast trunc u64 u32 (bounded-fold-u32 budget=16 callback="
+        f"{LOOP_SUPPORT}.nestedInnerStep count=(var 0 u32) initial=(var 1 u32)))"
+    ),
+    f"{LOOP_BASE}.nestedFold": (
+        f"(bounded-fold-u32 budget=16 callback={LOOP_BASE}.nestedOuterStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_SUPPORT}.helperMix": (
+        "(let 2 multiplied u32 (bin mul u32 (var 0 u32) (lit u32 2654435769)) "
+        "(bin add u32 (bin xor u32 (var 1 u32) (var 2 u32)) (lit u32 2135587861)))"
+    ),
+    f"{LOOP_BASE}.helperStep": (
+        f"(call {LOOP_SUPPORT}.helperMix u32 [(var 0 u32) (var 1 u32)])"
+    ),
+    f"{LOOP_BASE}.helperFold": (
+        f"(bounded-fold-u32 budget=64 callback={LOOP_BASE}.helperStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_BASE}.zeroBudgetFold": (
+        f"(bounded-fold-u32 budget=0 callback={LOOP_BASE}.sumStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+    f"{LOOP_BASE}.maxBudgetFold": (
+        f"(bounded-fold-u32 budget=256 callback={LOOP_BASE}.sumStep "
+        "count=(var 0 u32) initial=(var 1 u32))"
+    ),
+}
+LOOP_ROOT_SOURCES = (
+    f"{LOOP_BASE}.sumFold",
+    f"{LOOP_BASE}.sumFoldChanged",
+    f"{LOOP_BASE}.bitMixFold",
+    f"{LOOP_BASE}.nestedFold",
+    f"{LOOP_BASE}.helperFold",
+    f"{LOOP_BASE}.zeroBudgetFold",
+    f"{LOOP_BASE}.maxBudgetFold",
+)
+LOOP_USED_PRIMITIVES = frozenset(
+    {
+        "u32.add",
+        "u32.mul",
+        "u32.and",
+        "u32.xor",
+        "u32.shl",
+        "u64.to-u32.trunc",
+    }
+)
+LOOP_ITERATION_ORDER = (
+    (16, f"{LOOP_BASE}.sumStep"),
+    (16, f"{LOOP_BASE}.sumChangedStep"),
+    (64, f"{LOOP_BASE}.bitMixStep"),
+    (16, f"{LOOP_BASE}.nestedOuterStep"),
+    (16, f"{LOOP_SUPPORT}.nestedInnerStep"),
+    (64, f"{LOOP_BASE}.helperStep"),
+    (0, f"{LOOP_BASE}.sumStep"),
+    (256, f"{LOOP_BASE}.sumStep"),
+)
+LOOP_ITERATION_SITES = frozenset(LOOP_ITERATION_ORDER)
+
+LOOP_OUTCOME_CONTRACT = {
+    "type": "u64",
+    "success": "zero-extended-u32",
+    "exhaustion_tag": "0x8000000000000000",
+    "exhaustion_payload": "initial-u32",
+    "exhaustion_reserved_bits": "bits32-through62-zero",
+    "callbacks_on_exhaustion": 0,
+}
+LOOP_CONTRACT = {
+    "source_identity": "Lemma.Core0.Bounded.boundedFoldU32",
+    "stable_id": "u32.bounded-fold",
+    "validator": "Lemma.Compiler.LLVM.validateModule",
+    "static_budget_type": "Nat",
+    "static_budget_form": "canonical-standard-Nat-literal",
+    "runtime_count": "u32",
+    "counter": {"type": "u32", "order": "ascending-zero-based"},
+    "accumulator": "u32",
+    "maximum_budget": 256,
+    "outcome": LOOP_OUTCOME_CONTRACT,
+    "effect": "pure",
+}
 
 
 def _validate_audit_policy(policy: str) -> str:
@@ -882,11 +1052,13 @@ def validate_scalar_export_configuration(
         {"driver", "generation_command", "environment"},
         "scalar exporter configuration",
     )
-    expected_driver = (
-        CFG_SCALAR_EXPORT_DRIVER
-        if manifest.get("contract_version") == "core0-v0.2"
-        else SCALAR_EXPORT_DRIVER
-    )
+    expected_driver = {
+        "core0-v0.1": SCALAR_EXPORT_DRIVER,
+        "core0-v0.2": CFG_SCALAR_EXPORT_DRIVER,
+        "core0-v0.3": LOOP_SCALAR_EXPORT_DRIVER,
+    }.get(str(manifest.get("contract_version")))
+    if expected_driver is None:
+        raise Core0Error("scalar exporter configuration has an unsupported Core0 contract")
     expected_command = [
         "lake",
         "env",
@@ -1245,13 +1417,210 @@ def validate_cfg_suite_manifest(value: object) -> dict[str, object]:
     return value
 
 
+def _expected_loop_iteration(budget: int, callback: str) -> dict[str, object]:
+    return {
+        "stable_id": "u32.bounded-fold",
+        "source_identity": "Lemma.Core0.Bounded.boundedFoldU32",
+        "static_budget": budget,
+        "static_budget_type": "Nat",
+        "static_budget_form": "canonical-standard-Nat-literal",
+        "callback": callback,
+        "runtime_signature": {"args": ["u32", "u32"], "result": "u64"},
+        "callback_signature": {"args": ["u32", "u32"], "result": "u32"},
+        "maximum_budget": 256,
+        "counter": {"type": "u32", "order": "ascending-zero-based"},
+        "accumulator": "u32",
+        "outcome": LOOP_OUTCOME_CONTRACT,
+        "effect": "pure",
+    }
+
+
+def validate_loop_suite_manifest(value: object) -> dict[str, object]:
+    """Validate the closed seven-root/14-function Core0 v0.3 loop suite."""
+    if not isinstance(value, dict):
+        raise Core0Error("bounded-suite-manifest.json is not an object")
+    _exact_keys(
+        value,
+        {
+            "schema_version",
+            "artifact_category",
+            "contract_version",
+            "test_abi",
+            "suite_id",
+            "source_seed",
+            "runtime_seed",
+            "loop_contract",
+            "roots",
+            "functions",
+            "used_primitives",
+            "iterations",
+            "machine_primitives",
+        },
+        "bounded suite manifest",
+    )
+    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
+        raise Core0Error("bounded suite manifest has an unsupported schema")
+    if value.get("artifact_category") != TEST_LOOP_SUITE_POLICY:
+        raise Core0Error("bounded suite manifest has the wrong artifact category")
+    if value.get("contract_version") != "core0-v0.3":
+        raise Core0Error("bounded suite manifest has an unsupported Core0 contract")
+    if value.get("test_abi") != SCALAR_TEST_ABI:
+        raise Core0Error("bounded suite manifest has an unsupported typed test ABI")
+    for field in ("suite_id", "source_seed", "runtime_seed"):
+        _validate_scalar_u64_hex(value.get(field), f"bounded suite manifest {field}")
+    if value.get("loop_contract") != LOOP_CONTRACT:
+        raise Core0Error("bounded suite loop contract differs from the exact v0.3 contract")
+
+    functions = value.get("functions")
+    expected_order = tuple(LOOP_FUNCTION_CONTRACTS)
+    if not isinstance(functions, list) or len(functions) != len(expected_order):
+        raise Core0Error("bounded suite lacks its exact 14-function closure")
+    source_symbols: dict[str, str] = {}
+    for index, (function, source) in enumerate(zip(functions, expected_order, strict=True)):
+        if not isinstance(function, dict):
+            raise Core0Error(f"bounded suite function #{index} is not an object")
+        _exact_keys(
+            function,
+            {
+                "source", "llvm", "signature", "dependencies", "body",
+                "return_extension", "parameter_extensions", "noinline",
+            },
+            f"bounded suite function #{index}",
+        )
+        args, result, dependencies = LOOP_FUNCTION_CONTRACTS[source]
+        symbol = function.get("llvm")
+        if (
+            function.get("source") != source
+            or symbol != f"core0_user_{index}"
+            or not isinstance(symbol, str)
+        ):
+            raise Core0Error(f"bounded suite function #{index} has wrong source/symbol")
+        if _validate_signature(
+            function.get("signature"), f"bounded suite function {source}"
+        ) != _scalar_signature(args, result):
+            raise Core0Error(f"bounded suite function {source} has the wrong signature")
+        if function.get("dependencies") != list(dependencies):
+            raise Core0Error(f"bounded suite function {source} has the wrong dependencies")
+        if function.get("body") != LOOP_FUNCTION_BODIES[source]:
+            raise Core0Error(f"bounded suite function {source} has the wrong normalized body")
+        if function.get("return_extension") != _scalar_abi_extension(result):
+            raise Core0Error(f"bounded suite function {source} has the wrong return extension")
+        if function.get("parameter_extensions") != [
+            _scalar_abi_extension(arg) for arg in args
+        ]:
+            raise Core0Error(f"bounded suite function {source} has wrong parameter extensions")
+        if function.get("noinline") is not True:
+            raise Core0Error(f"bounded suite function {source} is not pinned noinline")
+        source_symbols[source] = symbol
+
+    roots = value.get("roots")
+    if not isinstance(roots, list) or len(roots) != len(LOOP_ROOT_SOURCES):
+        raise Core0Error("bounded suite lacks its exact seven-root catalog")
+    for index, (root, source) in enumerate(zip(roots, LOOP_ROOT_SOURCES, strict=True)):
+        if not isinstance(root, dict):
+            raise Core0Error(f"bounded suite root #{index} is not an object")
+        _exact_keys(
+            root,
+            {
+                "root_id", "source", "llvm", "signature", "return_extension",
+                "parameter_extensions",
+            },
+            f"bounded suite root #{index}",
+        )
+        if (
+            type(root.get("root_id")) is not int
+            or root.get("root_id") != index + 1
+            or root.get("source") != source
+            or root.get("llvm") != source_symbols[source]
+            or root.get("signature") != {"args": ["u32", "u32"], "result": "u64"}
+            or root.get("return_extension") != "none"
+            or root.get("parameter_extensions") != ["signext", "signext"]
+        ):
+            raise Core0Error(f"bounded suite root #{index} differs from its exact contract")
+
+    primitives = value.get("used_primitives")
+    if not isinstance(primitives, list) or len(primitives) != len(LOOP_USED_PRIMITIVES):
+        raise Core0Error("bounded suite primitive manifest has the wrong size")
+    seen_primitives: set[str] = set()
+    for index, primitive in enumerate(primitives):
+        if not isinstance(primitive, dict):
+            raise Core0Error(f"bounded suite primitive #{index} is not an object")
+        stable_id = primitive.get("stable_id")
+        if not isinstance(stable_id, str) or stable_id in seen_primitives:
+            raise Core0Error(f"bounded suite primitive #{index} has invalid identity")
+        if (
+            stable_id not in LOOP_USED_PRIMITIVES
+            or primitive != PRIMITIVE_CONTRACTS_V02.get(stable_id)
+        ):
+            raise Core0Error(f"bounded suite primitive is unknown/malformed: {stable_id!r}")
+        seen_primitives.add(stable_id)
+    if seen_primitives != LOOP_USED_PRIMITIVES:
+        raise Core0Error("bounded suite does not cover its exact primitive set")
+
+    iterations = value.get("iterations")
+    expected_iterations = [
+        _expected_loop_iteration(budget, callback)
+        for budget, callback in LOOP_ITERATION_ORDER
+    ]
+    if iterations != expected_iterations:
+        raise Core0Error("bounded suite iteration sites differ from the exact source catalog")
+    if value.get("machine_primitives") != EXPECTED_SCALAR_MACHINE_PRIMITIVES:
+        raise Core0Error("bounded suite machine primitives differ from the exact allowlist")
+    return value
+
+
+def validate_bounded_manifest_companions(
+    manifest: dict[str, object], normalized_text: str, symbols_text: str
+) -> None:
+    roots = manifest["roots"]
+    functions = manifest["functions"]
+    primitives = manifest["used_primitives"]
+    iterations = manifest["iterations"]
+    if not all(isinstance(value, list) for value in (roots, functions, primitives, iterations)):
+        raise Core0Error("bounded manifest companion inputs are malformed")
+    normalized_lines = [f"contract={manifest['contract_version']}"]
+    for index, root in enumerate(roots):
+        if not isinstance(root, dict) or not isinstance(root.get("signature"), dict):
+            raise Core0Error(f"bounded manifest root #{index} is malformed")
+        signature = json.dumps(root["signature"], separators=(",", ":"))
+        normalized_lines.append(
+            f"root={root['root_id']};source={root['source']};signature={signature}"
+        )
+    symbol_lines: list[str] = []
+    for index, function in enumerate(functions):
+        if not isinstance(function, dict) or not isinstance(function.get("signature"), dict):
+            raise Core0Error(f"bounded manifest function #{index} is malformed")
+        signature = json.dumps(function["signature"], separators=(",", ":"))
+        normalized_lines.append(
+            f"function={function['source']};signature={signature};body={function['body']}"
+        )
+        symbol_lines.append(f"source={function['source']};llvm={function['llvm']}")
+    for index, primitive in enumerate(primitives):
+        if not isinstance(primitive, dict):
+            raise Core0Error(f"bounded manifest primitive #{index} is malformed")
+        normalized_lines.append(f"primitive={primitive['stable_id']}")
+    for index, iteration in enumerate(iterations):
+        if not isinstance(iteration, dict):
+            raise Core0Error(f"bounded manifest iteration #{index} is malformed")
+        normalized_lines.append(
+            f"iteration={iteration['stable_id']};budget={iteration['static_budget']};"
+            f"callback={iteration['callback']}"
+        )
+    if normalized_text != "\n".join(normalized_lines) + "\n":
+        raise Core0Error(
+            "bounded-suite-normalized.txt does not match the parsed bounded manifest"
+        )
+    if symbols_text != "\n".join(symbol_lines) + "\n":
+        raise Core0Error("symbols.txt does not match the bounded source-to-LLVM mapping")
+
+
 def validate_scalar_test_abi(
     value: object, manifest: dict[str, object]
 ) -> dict[str, object]:
     if not isinstance(value, dict):
         raise Core0Error("scalar-test-abi.json is not an object")
     contract_version = manifest.get("contract_version")
-    if contract_version not in {"core0-v0.1", "core0-v0.2"}:
+    if contract_version not in {"core0-v0.1", "core0-v0.2", "core0-v0.3"}:
         raise Core0Error("scalar test ABI suite manifest has an unsupported Core0 contract")
     expected_fields = {
         "contract_version",
@@ -1404,21 +1773,25 @@ def validate_scalar_pre_abi(
     """Bind every source definition and direct call to the reviewed LP64 attributes."""
     functions = manifest["functions"]
     roots = manifest["roots"]
-    assert isinstance(functions, list) and isinstance(roots, list)
+    if not isinstance(functions, list) or not isinstance(roots, list):
+        raise Core0Error("scalar manifest function/root arrays are malformed")
     root_symbols = {
         str(root["llvm"]) for root in roots if isinstance(root, dict)
     }
     by_symbol: dict[str, dict[str, object]] = {}
     source_to_symbol: dict[str, str] = {}
-    for function in functions:
-        assert isinstance(function, dict)
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(f"scalar manifest function #{function_index} is malformed")
         symbol = str(function["llvm"])
         source = str(function["source"])
         signature = function["signature"]
-        assert isinstance(signature, dict)
+        if not isinstance(signature, dict):
+            raise Core0Error(f"scalar manifest function {source} signature is malformed")
         args = signature["args"]
         result = signature["result"]
-        assert isinstance(args, list) and isinstance(result, str)
+        if not isinstance(args, list) or not isinstance(result, str):
+            raise Core0Error(f"scalar manifest function {source} signature is malformed")
         return_text = _llvm_scalar_return(result)
         parameters = ", ".join(
             f"{_llvm_scalar_parameter(arg)} %arg{index}"
@@ -1459,10 +1832,12 @@ def validate_scalar_pre_abi(
         callee = match.group("callee")
         function = by_symbol[callee]
         signature = function["signature"]
-        assert isinstance(signature, dict)
+        if not isinstance(signature, dict):
+            raise Core0Error(f"scalar manifest callee {callee} signature is malformed")
         expected_args = signature["args"]
         expected_result = signature["result"]
-        assert isinstance(expected_args, list) and isinstance(expected_result, str)
+        if not isinstance(expected_args, list) or not isinstance(expected_result, str):
+            raise Core0Error(f"scalar manifest callee {callee} signature is malformed")
         if match.group("return") != _llvm_scalar_return(expected_result):
             raise Core0Error(
                 f"pre_optimization call to {callee} has the wrong LP64 return attribute"
@@ -1483,11 +1858,13 @@ def validate_scalar_pre_abi(
                 )
         call_counts[callee] += 1
 
-    for function in functions:
-        assert isinstance(function, dict)
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(f"scalar manifest function #{function_index} is malformed")
         symbol = str(function["llvm"])
         dependencies = function["dependencies"]
-        assert isinstance(dependencies, list)
+        if not isinstance(dependencies, list):
+            raise Core0Error(f"scalar manifest function {symbol} dependencies are malformed")
         expected_callees = {source_to_symbol[str(dependency)] for dependency in dependencies}
         body = _ir_definition_body(pre_ir, symbol)
         _definitions, _declarations, observed_callees = parse_definitions_and_calls(body)
@@ -1522,15 +1899,17 @@ def validate_scalar_post_noinline(
     manifest: dict[str, object], post_ir: str
 ) -> None:
     functions = manifest["functions"]
-    assert isinstance(functions, list)
+    if not isinstance(functions, list):
+        raise Core0Error("scalar manifest function array is malformed")
     attribute_groups = {
         int(identifier): body
         for identifier, body in re.findall(
             r"^attributes #(\d+) = \{([^\n]*)\}$", post_ir, re.MULTILINE
         )
     }
-    for function in functions:
-        assert isinstance(function, dict)
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(f"scalar manifest function #{function_index} is malformed")
         symbol = str(function["llvm"])
         header = re.search(
             rf"^define\s+[^\n]*@{re.escape(symbol)}\([^\n]*\)(?P<suffix>[^\n]*)\{{$",
@@ -1826,6 +2205,472 @@ def validate_cfg_pre_semantics(
     }
 
 
+def _only_matching_line(
+    lines: list[str], pattern: str, context: str
+) -> re.Match[str]:
+    matches = [match for line in lines if (match := re.fullmatch(pattern, line))]
+    if len(matches) != 1:
+        raise Core0Error(f"{context} expected exactly one `{pattern}` instruction")
+    return matches[0]
+
+
+def validate_loop_pre_semantics(
+    manifest: dict[str, object], pre_ir: str
+) -> dict[str, object]:
+    """Audit each v0.3 source iteration against the exact structured loop CFG."""
+    functions = manifest.get("functions")
+    if not isinstance(functions, list):
+        raise Core0Error("bounded suite function manifest is malformed")
+    source_to_symbol = {
+        str(function["source"]): str(function["llvm"])
+        for function in functions
+        if isinstance(function, dict)
+    }
+    site_pattern = re.compile(
+        r"\(bounded-fold-u32 budget=([0-9]+) "
+        r"callback=([A-Za-z_][A-Za-z0-9_.]*) "
+        r"count=\(var 0 u32\) initial=\(var 1 u32\)\)"
+    )
+    records: list[dict[str, object]] = []
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(
+                f"bounded suite function #{function_index} is malformed during loop audit"
+            )
+        source = str(function["source"])
+        symbol = str(function["llvm"])
+        normalized = str(function["body"])
+        sites = site_pattern.findall(normalized)
+        if "(bounded-fold-u32 " in normalized and len(sites) != 1:
+            raise Core0Error(
+                f"bounded source function {source} has a non-canonical count/initial site"
+            )
+        if not sites:
+            continue
+        if len(sites) != 1:
+            raise Core0Error(f"bounded source function {source} has multiple loop sites")
+        budget_text, callback = sites[0]
+        budget = int(budget_text, 10)
+        if not 0 <= budget <= 256:
+            raise Core0Error(f"bounded source function {source} budget is outside 0..256")
+        callback_symbol = source_to_symbol.get(callback)
+        if callback_symbol is None:
+            raise Core0Error(
+                f"bounded source function {source} callback {callback} is outside the closure"
+            )
+        body = _ir_definition_body(pre_ir, symbol)
+        if re.search(r"\bselect\b", body):
+            raise Core0Error(f"bounded source function {source} contains eager LLVM select")
+        blocks = _structured_ir_blocks(body)
+        successors = _structured_successors(blocks)
+        predecessors = _structured_predecessors(successors)
+
+        guards: list[tuple[str, re.Match[str]]] = []
+        for label, lines in blocks.items():
+            for line in lines:
+                match = re.fullmatch(
+                    r"%(loop\.within-budget[0-9]+) = icmp ule i32 (%arg0), ([0-9]+)",
+                    line,
+                )
+                if match is not None:
+                    guards.append((label, match))
+        if len(guards) != 1:
+            raise Core0Error(f"bounded source function {source} lacks one exact budget guard")
+        guard_label, guard = guards[0]
+        if int(guard.group(3), 10) != budget:
+            raise Core0Error(
+                f"bounded source function {source} LLVM budget differs from source literal"
+            )
+        guard_lines = blocks[guard_label]
+        branch = _only_matching_line(
+            guard_lines,
+            rf"br i1 %{re.escape(guard.group(1))}, label %"
+            r"(loop\.preheader\.[0-9]+), label %(loop\.exhausted\.[0-9]+)",
+            f"bounded source function {source} budget guard",
+        )
+        preheader, exhausted = branch.group(1), branch.group(2)
+        if successors[guard_label] != (preheader, exhausted):
+            raise Core0Error(f"bounded source function {source} inverts its budget edges")
+        if predecessors.get(guard_label) != set():
+            raise Core0Error(
+                f"bounded source function {source} budget guard is not the entry block"
+            )
+
+        preheader_lines = blocks.get(preheader)
+        exhausted_lines = blocks.get(exhausted)
+        if preheader_lines is None or exhausted_lines is None:
+            raise Core0Error(f"bounded source function {source} lacks budget successor blocks")
+        if predecessors.get(preheader) != {guard_label} or predecessors.get(exhausted) != {
+            guard_label
+        }:
+            raise Core0Error(
+                f"bounded source function {source} budget successors have bypass predecessors"
+            )
+        header_jump = _only_matching_line(
+            preheader_lines,
+            r"br label %(loop\.header\.[0-9]+)",
+            f"bounded source function {source} preheader",
+        )
+        header = header_jump.group(1)
+        exhausted_initial = _only_matching_line(
+            exhausted_lines,
+            r"%(loop\.exhausted-initial[0-9]+) = zext i32 %arg1 to i64",
+            f"bounded source function {source} exhaustion payload",
+        ).group(1)
+        exhausted_tag = _only_matching_line(
+            exhausted_lines,
+            rf"%(loop\.exhausted-tag[0-9]+) = or i64 "
+            rf"%{re.escape(exhausted_initial)}, (?:9223372036854775808|-9223372036854775808)",
+            f"bounded source function {source} exhaustion tag",
+        ).group(1)
+        outcome_jump = _only_matching_line(
+            exhausted_lines,
+            r"br label %([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+            f"bounded source function {source} exhausted edge",
+        )
+        outcome = outcome_jump.group(1)
+
+        header_lines = blocks.get(header)
+        if header_lines is None:
+            raise Core0Error(f"bounded source function {source} lacks a loop header")
+        index_phi = _only_matching_line(
+            header_lines,
+            rf"%(loop\.index[0-9]+) = phi i32 \[ 0, %{re.escape(preheader)} \], "
+            r"\[ %(loop\.next-index[0-9]+), %(loop\.body\.[0-9]+) \]",
+            f"bounded source function {source} index phi",
+        )
+        index, next_index, body_label = index_phi.groups()
+        accumulator_phi = _only_matching_line(
+            header_lines,
+            rf"%(loop\.accumulator[0-9]+) = phi i32 \[ %arg1, %{re.escape(preheader)} \], "
+            rf"\[ %(loop\.next-accumulator[0-9]+), %{re.escape(body_label)} \]",
+            f"bounded source function {source} accumulator phi",
+        )
+        accumulator, next_accumulator = accumulator_phi.groups()
+        continue_name = _only_matching_line(
+            header_lines,
+            rf"%(loop\.continue[0-9]+) = icmp ult i32 %{re.escape(index)}, %arg0",
+            f"bounded source function {source} runtime-count comparison",
+        ).group(1)
+        continue_branch = _only_matching_line(
+            header_lines,
+            rf"br i1 %{re.escape(continue_name)}, label %{re.escape(body_label)}, "
+            r"label %(loop\.done\.[0-9]+)",
+            f"bounded source function {source} loop branch",
+        )
+        done = continue_branch.group(1)
+
+        body_lines = blocks.get(body_label)
+        if body_lines is None:
+            raise Core0Error(f"bounded source function {source} lacks a loop body")
+        if _structured_reachable(successors, exhausted, body_label):
+            raise Core0Error(
+                f"bounded source function {source} exhaustion path reaches its callback"
+            )
+        if re.fullmatch(r"loop\.outcome\.[0-9]+", outcome) is None:
+            raise Core0Error(
+                f"bounded source function {source} exhausted edge does not target its outcome"
+            )
+        _only_matching_line(
+            body_lines,
+            rf"%{re.escape(next_accumulator)} = call signext i32 "
+            rf"@{re.escape(callback_symbol)}\(i32 signext %{re.escape(index)}, "
+            rf"i32 signext %{re.escape(accumulator)}\)",
+            f"bounded source function {source} callback call",
+        )
+        _only_matching_line(
+            body_lines,
+            rf"%{re.escape(next_index)} = add i32 %{re.escape(index)}, 1",
+            f"bounded source function {source} index increment",
+        )
+        _only_matching_line(
+            body_lines,
+            rf"br label %{re.escape(header)}",
+            f"bounded source function {source} backedge",
+        )
+        callback_calls = re.findall(
+            rf"\bcall signext i32 @{re.escape(callback_symbol)}\(", body
+        )
+        if len(callback_calls) != 1:
+            raise Core0Error(
+                f"bounded source function {source} must contain exactly one direct callback call"
+            )
+
+        done_lines = blocks.get(done)
+        if done_lines is None:
+            raise Core0Error(f"bounded source function {source} lacks a done block")
+        loop_value = _only_matching_line(
+            done_lines,
+            rf"%(loop\.value[0-9]+) = zext i32 %{re.escape(accumulator)} to i64",
+            f"bounded source function {source} successful outcome",
+        ).group(1)
+        _only_matching_line(
+            done_lines,
+            rf"br label %{re.escape(outcome)}",
+            f"bounded source function {source} done edge",
+        )
+        outcome_lines = blocks.get(outcome)
+        if outcome_lines is None:
+            raise Core0Error(f"bounded source function {source} lacks an outcome block")
+        _only_matching_line(
+            outcome_lines,
+            rf"%(loop\.result[0-9]+) = phi i64 "
+            rf"\[ %{re.escape(loop_value)}, %{re.escape(done)} \], "
+            rf"\[ %{re.escape(exhausted_tag)}, %{re.escape(exhausted)} \]",
+            f"bounded source function {source} outcome phi",
+        )
+
+        if predecessors.get(header) != {preheader, body_label}:
+            raise Core0Error(
+                f"bounded source function {source} loop header has the wrong predecessor set"
+            )
+        if predecessors.get(body_label) != {header} or predecessors.get(done) != {header}:
+            raise Core0Error(
+                f"bounded source function {source} loop body/done has a bypass predecessor"
+            )
+        backedge_sources = {
+            block for block, targets in successors.items() if header in targets and block != preheader
+        }
+        if backedge_sources != {body_label}:
+            raise Core0Error(
+                f"bounded source function {source} does not have exactly one body backedge"
+            )
+        if predecessors.get(outcome) != {done, exhausted}:
+            raise Core0Error(
+                f"bounded source function {source} outcome has the wrong predecessor set"
+            )
+        records.append(
+            {
+                "source": source,
+                "llvm": symbol,
+                "budget": budget,
+                "callback": callback,
+                "callback_llvm": callback_symbol,
+                "guard_block": guard_label,
+                "header_block": header,
+                "body_block": body_label,
+                "outcome_block": outcome,
+                "counter": "u32-ascending-zero-based",
+                "accumulator": "u32",
+                "exhaustion_callback_reachable": False,
+            }
+        )
+    if len(records) != len(LOOP_ITERATION_SITES):
+        raise Core0Error(
+            "bounded suite emitted the wrong number of source loop CFGs: "
+            f"{len(records)} != {len(LOOP_ITERATION_SITES)}"
+        )
+    if {(int(row["budget"]), str(row["callback"])) for row in records} != LOOP_ITERATION_SITES:
+        raise Core0Error("bounded LLVM loop sites differ from the closed source site catalog")
+    return {"loop_count": len(records), "loops": records}
+
+
+def validate_v03_scalar_domains(
+    manifest: dict[str, object], pre_ir: str
+) -> dict[str, object]:
+    """Retain v0.2 shift/division premises inside every v0.3 callback/helper."""
+    functions = manifest.get("functions")
+    if not isinstance(functions, list):
+        raise Core0Error("bounded suite function manifest is malformed")
+    shifts: list[dict[str, object]] = []
+    divisions: list[dict[str, object]] = []
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(
+                f"bounded suite function #{function_index} is malformed during domain audit"
+            )
+        source = str(function["source"])
+        body = _ir_definition_body(pre_ir, str(function["llvm"]))
+        blocks = _structured_ir_blocks(body)
+        successors = _structured_successors(blocks)
+        predecessors = _structured_predecessors(successors)
+        masks: dict[str, tuple[str, int, str, str]] = {}
+        guards: list[tuple[str, str, str, str, str]] = []
+        for block, lines in blocks.items():
+            for index, line in enumerate(lines):
+                mask = re.fullmatch(
+                    r"%([A-Za-z_.$][A-Za-z0-9_.$-]*) = and "
+                    r"(i(?:8|32|64)) ([^,]+), (7|31|63)",
+                    line,
+                )
+                if mask is not None:
+                    masks[mask.group(1)] = (
+                        block, index, mask.group(2), mask.group(4)
+                    )
+                zero = re.fullmatch(
+                    r"%([A-Za-z_.$][A-Za-z0-9_.$-]*) = icmp eq "
+                    r"(i(?:8|32|64)) ([^,]+), 0",
+                    line,
+                )
+                if zero is not None and index + 1 < len(lines):
+                    branch = re.fullmatch(
+                        rf"br i1 %{re.escape(zero.group(1))}, label %"
+                        r"([A-Za-z_.$][A-Za-z0-9_.$-]*), label %"
+                        r"([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+                        lines[index + 1],
+                    )
+                    if branch is not None:
+                        guards.append(
+                            (block, zero.group(2), zero.group(3), branch.group(1), branch.group(2))
+                        )
+        for block, lines in blocks.items():
+            for index, line in enumerate(lines):
+                shift = re.fullmatch(
+                    r"%[A-Za-z_.$][A-Za-z0-9_.$-]* = (shl|lshr) "
+                    r"(i(?:8|32|64)) [^,]+, %([A-Za-z_.$][A-Za-z0-9_.$-]*)",
+                    line,
+                )
+                if shift is not None:
+                    operation, ty, count_name = shift.groups()
+                    definition = masks.get(count_name)
+                    expected_mask = {"i8": "7", "i32": "31", "i64": "63"}[ty]
+                    if (
+                        definition is None
+                        or definition[0] != block
+                        or definition[1] >= index
+                        or definition[2] != ty
+                        or definition[3] != expected_mask
+                    ):
+                        raise Core0Error(
+                            f"{source} {operation} count is not produced by an exact "
+                            f"same-block `{ty} and {expected_mask}` mask"
+                        )
+                    shifts.append(
+                        {
+                            "source": source,
+                            "operation": operation,
+                            "type": ty,
+                            "block": block,
+                            "mask": int(expected_mask),
+                        }
+                    )
+                dangerous = re.fullmatch(
+                    r"%[A-Za-z_.$][A-Za-z0-9_.$-]* = (udiv|urem) "
+                    r"(i(?:8|32|64)) [^,]+, (.+)",
+                    line,
+                )
+                if dangerous is not None:
+                    operation, ty, divisor = dangerous.groups()
+                    matching = [
+                        guard for guard in guards
+                        if guard[1] == ty and guard[2] == divisor and guard[4] == block
+                    ]
+                    if len(matching) != 1:
+                        raise Core0Error(
+                            f"{source} {operation} is not the false successor of its exact zero guard"
+                        )
+                    guard = matching[0]
+                    if _structured_reachable(successors, guard[3], block):
+                        raise Core0Error(
+                            f"{source} {operation} is reachable from its divisor-zero edge"
+                        )
+                    if predecessors[block] != {guard[0]}:
+                        raise Core0Error(
+                            f"{source} {operation} block has an unguarded predecessor"
+                        )
+                    divisions.append(
+                        {
+                            "source": source,
+                            "operation": operation,
+                            "type": ty,
+                            "guard_block": guard[0],
+                            "nonzero_block": block,
+                        }
+                    )
+    if not shifts:
+        raise Core0Error("bounded suite lacks its required masked shift callback")
+    return {"masked_shifts": shifts, "guarded_division_remainder": divisions}
+
+
+def validate_optimizer_disjoint(
+    post_ir: str, *, expected_exhaustion_tags: int
+) -> dict[str, object]:
+    """Inventory every optimizer-inferred ``or disjoint`` and prove its premise.
+
+    LLVM's ``disjoint`` spelling is poison-producing if the operands overlap.  The
+    pinned optimizer currently infers it for hexadecimal digit construction and,
+    for Gate 4, for the exhaustion tag.  Keep both in a closed set and record the
+    local range fact that proves each inference sound.
+    """
+    definitions, _declarations, _calls = parse_definitions_and_calls(post_ir)
+    records: list[dict[str, object]] = []
+    exhaustion_tags = 0
+    token_count = len(re.findall(r"\bdisjoint\b", post_ir))
+    instruction = re.compile(
+        r"^\s*%([A-Za-z_.$][A-Za-z0-9_.$-]*) = or disjoint i64 "
+        r"%([A-Za-z_.$][A-Za-z0-9_.$-]*), "
+        r"(48|9223372036854775808|-9223372036854775808)\s*$"
+    )
+    for symbol in sorted(definitions):
+        body = _ir_definition_body(post_ir, symbol)
+        for line in body.splitlines():
+            if re.search(r"\bdisjoint\b", line) is None:
+                continue
+            match = instruction.fullmatch(line)
+            if match is None:
+                raise Core0Error(
+                    f"optimized IR contains an unaudited disjoint instruction: {line.strip()}"
+                )
+            result, operand, constant = match.groups()
+            if constant in {"9223372036854775808", "-9223372036854775808"}:
+                producer = re.search(
+                    rf"^\s*%{re.escape(operand)} = zext i32 "
+                    r"[^\n]+ to i64\s*$",
+                    body,
+                    re.MULTILINE,
+                )
+                if producer is None:
+                    raise Core0Error(
+                        "optimized exhaustion-tag disjoint operand is not proven by "
+                        "an exact i32-to-i64 zero extension"
+                    )
+                exhaustion_tags += 1
+                records.append(
+                    {
+                        "function": symbol,
+                        "result": result,
+                        "kind": "exhaustion-tag",
+                        "premise": "zext-u32-clears-bits-32-through-63; tag-uses-bit-63",
+                        "constant": "0x8000000000000000",
+                    }
+                )
+                continue
+            low_nibble = re.search(
+                rf"^\s*%{re.escape(operand)} = (?:and i64 [^\n]+, 15|"
+                r"lshr i64 [^\n]+, 60)\s*$",
+                body,
+                re.MULTILINE,
+            )
+            if low_nibble is None:
+                raise Core0Error(
+                    "optimized hexadecimal disjoint operand is not proven to be a low nibble"
+                )
+            records.append(
+                {
+                    "function": symbol,
+                    "result": result,
+                    "kind": "hexadecimal-digit",
+                    "premise": "low-nibble-bits-0-through-3; ascii-0x30-bits-4-and-5",
+                    "constant": "0x30",
+                }
+            )
+    if len(records) != token_count:
+        raise Core0Error(
+            "optimized IR disjoint inventory does not cover every poison-sensitive token"
+        )
+    if exhaustion_tags != expected_exhaustion_tags:
+        raise Core0Error(
+            "optimized IR exhaustion-tag disjoint count differs from the exact root "
+            f"catalog: {exhaustion_tags} != {expected_exhaustion_tags}"
+        )
+    return {
+        "instruction_count": len(records),
+        "exhaustion_tag_count": exhaustion_tags,
+        "all_operands_proven_disjoint": True,
+        "instructions": records,
+    }
+
+
 def _disassembly_function(disassembly: str, symbol: str) -> str:
     marker = f"<{symbol}>:"
     parts = disassembly.split(marker, 1)
@@ -1955,6 +2800,159 @@ def validate_cfg_machine_disassembly(disassembly: str) -> dict[str, object]:
     return {"native_integer_instruction_counts": counts}
 
 
+def _machine_backward_branches(body: str) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    pattern = re.compile(
+        r"^\s*([0-9a-f]+):\s+([a-z][a-z0-9.]*)\s+.*?"
+        r"(?:0x)?([0-9a-f]+)\s+<[^>]+>\s*$",
+        re.MULTILINE,
+    )
+    for address, mnemonic, target in pattern.findall(body):
+        if not (mnemonic == "j" or mnemonic.startswith("b")):
+            continue
+        source_value, target_value = int(address, 16), int(target, 16)
+        if target_value < source_value:
+            records.append(
+                {
+                    "instruction": mnemonic,
+                    "source": f"0x{source_value:x}",
+                    "target": f"0x{target_value:x}",
+                }
+            )
+    return records
+
+
+def validate_loop_machine_disassembly(
+    manifest: dict[str, object], disassembly: str, optimization: str
+) -> dict[str, object]:
+    """Require retained native loops and direct callback calls for positive budgets."""
+    functions = manifest.get("functions")
+    if not isinstance(functions, list):
+        raise Core0Error("bounded suite function manifest is malformed in machine audit")
+    source_to_symbol = {
+        str(function["source"]): str(function["llvm"])
+        for function in functions
+        if isinstance(function, dict)
+    }
+    loop_functions: dict[str, tuple[int, str]] = {}
+    pattern = re.compile(
+        r"\(bounded-fold-u32 budget=([0-9]+) callback=([A-Za-z_][A-Za-z0-9_.]*) "
+    )
+    for function_index, function in enumerate(functions):
+        if not isinstance(function, dict):
+            raise Core0Error(
+                f"bounded suite function #{function_index} is malformed in machine audit"
+            )
+        matches = pattern.findall(str(function["body"]))
+        if matches:
+            if len(matches) != 1:
+                raise Core0Error("bounded machine audit found multiple sites in one function")
+            loop_functions[str(function["source"])] = (
+                int(matches[0][0], 10), matches[0][1]
+            )
+    records: list[dict[str, object]] = []
+    for source, (budget, callback) in loop_functions.items():
+        symbol = source_to_symbol[source]
+        callback_symbol = source_to_symbol[callback]
+        body = _disassembly_function(disassembly, symbol)
+        call_rows = re.findall(
+            rf"\b(?:jal|jalr)\b[^\n]*<{re.escape(callback_symbol)}>", body
+        )
+        backedges = _machine_backward_branches(body)
+        if budget > 0:
+            if len(call_rows) != 1:
+                raise Core0Error(
+                    f"{optimization} machine loop {source} lacks exactly one direct "
+                    f"callback call to {callback_symbol}"
+                )
+            if len(backedges) != 1:
+                raise Core0Error(
+                    f"{optimization} machine loop {source} does not retain exactly one "
+                    f"backward branch"
+                )
+        records.append(
+            {
+                "source": source,
+                "llvm": symbol,
+                "budget": budget,
+                "callback": callback,
+                "callback_llvm": callback_symbol,
+                "direct_callback_calls": len(call_rows),
+                "backward_branches": backedges,
+                "requires_runtime_backedge": budget > 0,
+            }
+        )
+    if len(records) != len(LOOP_ITERATION_SITES):
+        raise Core0Error("machine loop inventory differs from the source loop closure")
+    dynamic_stack = re.findall(
+        r"\b(?:add|sub|and)\s+sp,\s*sp,\s*(?!-?(?:0x[0-9a-f]+|[0-9]+)\b)[^\n]+",
+        disassembly,
+    )
+    if dynamic_stack:
+        raise Core0Error(
+            f"{optimization} machine code contains dynamic stack adjustment: {dynamic_stack!r}"
+        )
+    return {
+        "optimization": optimization,
+        "loop_functions": records,
+        "positive_budget_loops_with_backedges": sum(
+            bool(record["requires_runtime_backedge"]) and bool(record["backward_branches"])
+            for record in records
+        ),
+        "dynamic_stack_adjustments": [],
+    }
+
+
+def validate_loop_stack_call_graph(
+    post_ir: str, stack_sizes: dict[str, int]
+) -> dict[str, object]:
+    """Prove the emitted direct-call graph acyclic and bound its frame-chain sum."""
+    definitions, _declarations, _calls = parse_definitions_and_calls(post_ir)
+    if set(stack_sizes) != definitions:
+        raise Core0Error("stack-size closure differs from optimized LLVM definitions")
+    if re.search(r"\balloca\b", post_ir):
+        raise Core0Error("bounded-loop optimized LLVM contains stack allocation")
+    graph: dict[str, set[str]] = {}
+    for symbol in definitions:
+        body = _ir_definition_body(post_ir, symbol)
+        _defs, _decls, calls = parse_definitions_and_calls(body)
+        graph[symbol] = calls & definitions
+
+    visiting: set[str] = set()
+    memo: dict[str, tuple[int, tuple[str, ...]]] = {}
+
+    def longest(symbol: str) -> tuple[int, tuple[str, ...]]:
+        existing = memo.get(symbol)
+        if existing is not None:
+            return existing
+        if symbol in visiting:
+            raise Core0Error(f"bounded-loop machine direct-call graph contains cycle at {symbol}")
+        visiting.add(symbol)
+        children = [longest(child) for child in sorted(graph[symbol])]
+        visiting.remove(symbol)
+        child_size, child_path = max(children, default=(0, ()), key=lambda row: row[0])
+        result = (stack_sizes[symbol] + child_size, (symbol, *child_path))
+        memo[symbol] = result
+        return result
+
+    paths = {symbol: longest(symbol) for symbol in sorted(definitions)}
+    maximum, chain = max(paths.values(), key=lambda row: row[0])
+    if maximum >= 0x10000:
+        raise Core0Error(
+            f"bounded-loop maximum direct-call frame chain is not under 64 KiB: {maximum}"
+        )
+    return {
+        "acyclic": True,
+        "dynamic_alloca": False,
+        "node_count": len(graph),
+        "edge_count": sum(len(children) for children in graph.values()),
+        "maximum_frame_chain_bytes": maximum,
+        "maximum_frame_chain": list(chain),
+        "stack_limit_bytes": 0x10000,
+        "edges": {symbol: sorted(children) for symbol, children in sorted(graph.items())},
+    }
+
+
 def validate_manifest_companions(
     manifest: dict[str, object], normalized_text: str, symbols_text: str
 ) -> None:
@@ -2049,6 +3047,27 @@ def relocation_types(text: str) -> set[str]:
     return set(re.findall(r"\bR_RISCV_[A-Z0-9_]+\b", text))
 
 
+def parse_stack_sizes(text: str) -> dict[str, int]:
+    """Parse ``llvm-readelf --stack-sizes`` using its closed two-column form."""
+    result: dict[str, int] = {}
+    for line in text.splitlines():
+        match = re.fullmatch(
+            r"\s*([0-9]+)\s+([A-Za-z_.$][A-Za-z0-9_.$-]*)\s*", line
+        )
+        if match is None:
+            continue
+        symbol = match.group(2)
+        if symbol in result:
+            raise Core0Error(f"stack-size metadata repeats function {symbol}")
+        size = int(match.group(1), 10)
+        if size < 0 or size >= 1 << 32:
+            raise Core0Error(f"stack-size metadata for {symbol} is out of range")
+        result[symbol] = size
+    if not result:
+        raise Core0Error("program.o has no parseable LLVM stack-size metadata")
+    return result
+
+
 def hex_field(mapping: object, section: str, field: str) -> int:
     if not isinstance(mapping, dict) or not isinstance(mapping.get(section), dict):
         raise Core0Error(f"layout.json lacks a {section!r} region")
@@ -2110,6 +3129,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_LOOP_SUITE_POLICY:
+        required_artifacts = BOUNDED_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy in SCALAR_SUITE_POLICIES:
         required_artifacts = SCALAR_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -2139,7 +3164,19 @@ def audit(
         )
 
     scalar_test_abi: dict[str, object] | None = None
-    if policy in SCALAR_SUITE_POLICIES:
+    if policy == TEST_LOOP_SUITE_POLICY:
+        manifest = validate_loop_suite_manifest(
+            load_json(paths["bounded-suite-manifest.json"])
+        )
+        scalar_test_abi = validate_scalar_test_abi(
+            load_json(paths["scalar-test-abi.json"]), manifest
+        )
+        validate_bounded_manifest_companions(
+            manifest,
+            paths["bounded-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy in SCALAR_SUITE_POLICIES:
         raw_scalar_manifest = load_json(paths["scalar-suite-manifest.json"])
         manifest = (
             validate_scalar_suite_manifest(raw_scalar_manifest)
@@ -2350,7 +3387,8 @@ def audit(
     linked = provenance_obj.get("linked_inputs")
     if not isinstance(linked, list) or len(linked) != 2:
         raise Core0Error("provenance must name exactly the two linked objects")
-    assert isinstance(optimization, str)
+    if not isinstance(optimization, str):
+        raise Core0Error("provenance optimization identity is malformed")
     program_input_details = {
         RELEASE_POLICY: {
             "kind": "core0-llvm",
@@ -2392,6 +3430,17 @@ def audit(
                 "freestanding source/model/RV64 comparison"
             ),
         },
+        TEST_LOOP_SUITE_POLICY: {
+            "kind": "test-loop-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.3 bounded-iteration "
+                "suite through validated structured loop lowering and the typed scalar harness"
+            ),
+            "purpose": (
+                "test-only runtime-counted bounded iteration, stack measurement, and "
+                "freestanding source/model/RV64 comparison"
+            ),
+        },
     }[policy]
     expected_input_details: dict[str, dict[str, object]] = {
         "startup.o": {
@@ -2402,7 +3451,7 @@ def audit(
         },
         "program.o": {
             "kind": program_input_details["kind"],
-            "generation_command": expected_program_command(optimization),
+            "generation_command": expected_program_command(optimization, policy),
             "source": program_input_details["source"],
             "purpose": program_input_details["purpose"],
         },
@@ -2460,7 +3509,7 @@ def audit(
                 f"provenance command log omits Lean elaboration command: {expected_command!r}"
             )
     for expected_command in (
-        expected_program_command(optimization),
+        expected_program_command(optimization, policy),
         EXPECTED_STARTUP_COMMAND,
         EXPECTED_LINK_COMMAND,
     ):
@@ -2471,7 +3520,8 @@ def audit(
     post_ir = paths["program.opt.ll"].read_text(encoding="utf-8")
     if mutation_manifest is not None:
         validate_compiler_mutation_ir(mutation_manifest, pre_ir)
-        assert clean_control_directory is not None
+        if clean_control_directory is None:
+            raise Core0Error("compiler mutant lacks its resolved clean-control directory")
         for name in MUTANT_CONTROL_IDENTICAL_ARTIFACTS:
             mutant_digest = sha256(directory / name)
             control_digest = sha256(clean_control_directory / name)
@@ -2488,7 +3538,8 @@ def audit(
             clean_ir_path.read_text(encoding="utf-8"),
         )
     manifest_functions = manifest["functions"]
-    assert isinstance(manifest_functions, list)
+    if not isinstance(manifest_functions, list):
+        raise Core0Error("target manifest function array is malformed")
     manifest_user_symbols = {
         str(function["llvm"])
         for function in manifest_functions
@@ -2504,6 +3555,14 @@ def audit(
                 manifest, pre_ir
             )
             source_identity = "Lemma Gate 3 structured scalar suite"
+        elif policy == TEST_LOOP_SUITE_POLICY:
+            scalar_abi_ir["bounded_iteration"] = validate_loop_pre_semantics(
+                manifest, pre_ir
+            )
+            scalar_abi_ir["scalar_domains"] = validate_v03_scalar_domains(
+                manifest, pre_ir
+            )
+            source_identity = "Lemma Gate 4 bounded iteration suite"
         else:
             source_identity = "Lemma Gate 2 typed scalar suite"
         root_llvm: str | None = None
@@ -2537,7 +3596,7 @@ def audit(
                 raise Core0Error(f"{label} IR contains an indirect or unparseable call: {line.strip()}")
         expected_externals = set(ALLOWED_EXTERNALS)
         if (
-            policy in SCALAR_SUITE_POLICIES
+            policy in {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY}
             and label == "post_optimization"
             and optimization == "O2"
         ):
@@ -2562,7 +3621,8 @@ def audit(
             if policy in SCALAR_SUITE_POLICIES:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
-                assert root_llvm is not None
+                if root_llvm is None:
+                    raise Core0Error("non-suite manifest lacks its LLVM root identity")
                 required_post_definitions = {root_llvm, "core0_main"}
             if (
                 not definitions <= expected_pre_definitions
@@ -2578,9 +3638,18 @@ def audit(
             "external_declarations": sorted(declarations),
             "poison_sensitive_flags": {
                 flag: len(re.findall(rf"\b{flag}\b", ir))
-                for flag in ("nsw", "nuw", "inbounds")
+                for flag in ("nsw", "nuw", "inbounds", "disjoint")
             },
         }
+        if label == "post_optimization":
+            ir_findings[label]["optimizer_disjoint"] = validate_optimizer_disjoint(
+                ir,
+                expected_exhaustion_tags=(
+                    len(LOOP_ROOT_SOURCES)
+                    if policy == TEST_LOOP_SUITE_POLICY and optimization == "O2"
+                    else 0
+                ),
+            )
 
     elf = paths["image.elf"]
     header = tool_text("llvm-readelf", ["-h", str(elf)], root)
@@ -2751,12 +3820,15 @@ def audit(
         raise Core0Error("core0_io_fence does not lower to a fence followed by return")
     scalar_abi_machine: dict[str, object] | None = None
     if policy == TEST_FRONTEND_SUITE_POLICY:
-        assert isinstance(optimization, str)
         scalar_abi_machine = validate_scalar_abi_disassembly(
             manifest, disassembly, optimization
         )
     elif policy == TEST_CFG_SUITE_POLICY:
         scalar_abi_machine = validate_cfg_machine_disassembly(disassembly)
+    elif policy == TEST_LOOP_SUITE_POLICY:
+        scalar_abi_machine = validate_loop_machine_disassembly(
+            manifest, disassembly, optimization
+        )
 
     map_text = paths["image.map"].read_text(encoding="utf-8", errors="strict")
     for name in expected_inputs:
@@ -2786,6 +3858,38 @@ def audit(
             "startup.o defined-function closure differs from the exact primitive allowlist: "
             + repr(sorted(object_function_symbols["startup.o"]))
         )
+    stack_sizes_text: str | None = None
+    stack_sizes: dict[str, int] | None = None
+    has_stack_sizes = ".stack_sizes" in object_inventories["program.o"]
+    if policy == TEST_LOOP_SUITE_POLICY:
+        if not has_stack_sizes:
+            raise Core0Error("bounded-loop program.o lacks LLVM stack-size sections")
+        if ".stack_sizes" not in sections:
+            raise Core0Error("bounded-loop final ELF lacks its linked stack-size section")
+        stack_sizes_text = tool_text(
+            "llvm-readelf", ["--stack-sizes", str(directory / "program.o")], root
+        )
+        stack_sizes = parse_stack_sizes(stack_sizes_text)
+        if set(stack_sizes) != object_function_symbols["program.o"]:
+            raise Core0Error(
+                "program.o stack-size function set differs from its defined-function closure: "
+                + repr(sorted(set(stack_sizes) ^ object_function_symbols["program.o"]))
+            )
+        oversized_frames = {
+            symbol: size for symbol, size in stack_sizes.items() if size > 0x10000
+        }
+        if oversized_frames:
+            raise Core0Error(
+                "program.o declares a stack frame larger than the 64-KiB stack: "
+                + repr(oversized_frames)
+            )
+        if not isinstance(scalar_abi_machine, dict):
+            raise Core0Error("bounded-loop machine audit record is missing")
+        scalar_abi_machine["stack_and_call_graph"] = validate_loop_stack_call_graph(
+            post_ir, stack_sizes
+        )
+    elif has_stack_sizes or ".stack_sizes" in sections:
+        raise Core0Error(f"{policy} program.o unexpectedly contains Gate-4 stack metadata")
     final_function_symbols = defined_function_symbols(sections)
     expected_final_functions = post_definitions | {"_start", "core0_io_fence"}
     if final_function_symbols != expected_final_functions:
@@ -2825,15 +3929,22 @@ def audit(
         relocation_text = tool_text("llvm-readelf", ["-r", str(directory / name)], root)
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
+        if name == "program.o" and (
+            policy == TEST_LOOP_SUITE_POLICY
+            or (policy in SCALAR_SUITE_POLICIES and optimization == "O2")
+        ):
+            # Gate 4 stack metadata and O2 scalar root dispatch both use
+            # narrowly audited local absolute-address relocations.
+            allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
         expected_jump_table_relocations = 0
         if (
             policy in SCALAR_SUITE_POLICIES
             and name == "program.o"
             and optimization == "O2"
         ):
-            allowed_relocations.add(SCALAR_O2_JUMP_TABLE_RELOCATION)
             manifest_roots = manifest["roots"]
-            assert isinstance(manifest_roots, list)
+            if not isinstance(manifest_roots, list):
+                raise Core0Error("scalar manifest root array is malformed")
             expected_jump_table_relocations = len(manifest_roots)
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
@@ -2842,21 +3953,48 @@ def audit(
             )
         if "R_RISCV_RELAX" in relocation_text:
             raise Core0Error(f"{name} contains relaxation relocations despite the no-relax policy")
-        if policy in SCALAR_SUITE_POLICIES and name == "program.o":
+        if name == "program.o" and SCALAR_O2_JUMP_TABLE_RELOCATION in observed:
             current_section: str | None = None
             jump_table_rows: list[str] = []
+            stack_size_rows: list[str] = []
             for line in relocation_text.splitlines():
                 section_match = re.match(r"Relocation section '([^']+)'", line)
                 if section_match is not None:
                     current_section = section_match.group(1)
                 if SCALAR_O2_JUMP_TABLE_RELOCATION in line:
-                    if current_section != ".rela.rodata" or re.search(
+                    if (
+                        policy == TEST_LOOP_SUITE_POLICY
+                        and current_section == ".rela.stack_sizes"
+                        and re.search(
                         r"\bR_RISCV_64\b.*\s\.L0\s+\+ 0\s*$", line
-                    ) is None:
+                        ) is not None
+                    ):
+                        stack_size_rows.append(line)
+                    elif (
+                        policy in SCALAR_SUITE_POLICIES
+                        and optimization == "O2"
+                        and current_section == ".rela.rodata"
+                        and re.search(
+                            r"\bR_RISCV_64\b.*\s\.L0\s+\+ 0\s*$", line
+                        ) is not None
+                    ):
+                        jump_table_rows.append(line)
+                    else:
                         raise Core0Error(
-                            "scalar suite R_RISCV_64 relocation is not a local O2 root-dispatch jump-table entry"
+                            "program.o R_RISCV_64 relocation is neither exact stack-size "
+                            "metadata nor an allowed O2 root-dispatch jump-table entry"
                         )
-                    jump_table_rows.append(line)
+            expected_stack_rows = (
+                len(object_function_symbols["program.o"])
+                if policy == TEST_LOOP_SUITE_POLICY
+                else 0
+            )
+            if len(stack_size_rows) != expected_stack_rows:
+                raise Core0Error(
+                    "program.o stack-size relocation count differs from its exact "
+                    f"function closure: {len(stack_size_rows)} != "
+                    f"{expected_stack_rows}"
+                )
             if len(jump_table_rows) != expected_jump_table_relocations:
                 raise Core0Error(
                     "scalar suite root-dispatch jump-table relocation count differs from "
@@ -2916,9 +4054,16 @@ def audit(
             name: findings["types"] for name, findings in object_relocations.items()
         },
     }
+    if stack_sizes is not None:
+        report["stack_sizes"] = {
+            "section": ".stack_sizes",
+            "function_bytes": dict(sorted(stack_sizes.items())),
+            "maximum_frame_bytes": max(stack_sizes.values()),
+        }
     if mutation_manifest is not None:
         report["compiler_mutation"] = mutation_manifest
-        assert clean_control_directory is not None and clean_control_report is not None
+        if clean_control_directory is None or clean_control_report is None:
+            raise Core0Error("compiler mutant clean-control audit record is missing")
         report["clean_control"] = {
             "directory": str(clean_control_directory.relative_to(root)),
             "program_ll_sha256": sha256(clean_control_directory / "program.ll"),
@@ -2926,7 +4071,8 @@ def audit(
             "artifact_category": clean_control_report.get("artifact_category"),
         }
     if scalar_test_abi is not None:
-        assert scalar_abi_ir is not None and scalar_abi_machine is not None
+        if scalar_abi_ir is None or scalar_abi_machine is None:
+            raise Core0Error("scalar ABI audit evidence is incomplete")
         report["scalar_test_abi"] = scalar_test_abi
         report["scalar_abi_audit"] = {
             "pre_optimization": scalar_abi_ir,
@@ -2946,6 +4092,10 @@ def audit(
         ("disassembly.txt", disassembly),
     ):
         (directory / name).write_text(content, encoding="utf-8")
+    if stack_sizes_text is not None:
+        (directory / "program.o.stack-sizes.txt").write_text(
+            stack_sizes_text, encoding="utf-8"
+        )
     for name, findings in object_relocations.items():
         (directory / f"{name}.relocations.txt").write_text(
             str(findings["text"]), encoding="utf-8"

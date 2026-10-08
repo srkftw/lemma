@@ -71,12 +71,24 @@ SCALAR_SUITE_GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+BOUNDED_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "bounded-suite-manifest.json",
+    "bounded-suite-normalized.txt",
+    "scalar-test-abi.json",
+    "symbols.txt",
+)
+
 ARTIFACT_CATEGORIES = (
     "release",
     "test-compiler-control",
     "test-compiler-mutant",
     "test-frontend-suite",
     "test-cfg-suite",
+    "test-loop-suite",
 )
 
 COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
@@ -316,8 +328,7 @@ def _program_object_provenance(
             "test-only multi-root frontend conformance, RV64 LP64 ABI, and "
             "freestanding batch execution"
         )
-    else:
-        assert artifact_category == "test-cfg-suite"
+    elif artifact_category == "test-cfg-suite":
         kind = "test-cfg-suite-llvm"
         source = (
             "program.ll generated from the checked Core0 v0.2 suite through "
@@ -325,6 +336,17 @@ def _program_object_provenance(
         )
         purpose = (
             "test-only structured CFG, total scalar-operation semantics, and "
+            "freestanding source/model/RV64 comparison"
+        )
+    else:
+        assert artifact_category == "test-loop-suite"
+        kind = "test-loop-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.3 bounded-iteration "
+            "suite through validated structured loop lowering and the typed scalar harness"
+        )
+        purpose = (
+            "test-only runtime-counted bounded iteration, stack measurement, and "
             "freestanding source/model/RV64 comparison"
         )
     return {
@@ -523,7 +545,11 @@ def build(
     export_env = os.environ.copy()
     export_env["LEMMA_CORE0_OUT"] = str(output_dir.resolve())
     if export_environment is not None:
-        if artifact_category not in {"test-frontend-suite", "test-cfg-suite"}:
+        if artifact_category not in {
+            "test-frontend-suite",
+            "test-cfg-suite",
+            "test-loop-suite",
+        }:
             raise Core0Error(
                 "only closed scalar-suite test builds accept exporter configuration"
             )
@@ -555,11 +581,12 @@ def build(
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    generated_by_lean = list(
-        SCALAR_SUITE_GENERATED_BY_LEAN
-        if artifact_category in {"test-frontend-suite", "test-cfg-suite"}
-        else GENERATED_BY_LEAN
-    )
+    if artifact_category == "test-loop-suite":
+        generated_by_lean = list(BOUNDED_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category in {"test-frontend-suite", "test-cfg-suite"}:
+        generated_by_lean = list(SCALAR_SUITE_GENERATED_BY_LEAN)
+    else:
+        generated_by_lean = list(GENERATED_BY_LEAN)
     if compiler_fault_manifest is not None:
         generated_by_lean.append(compiler_fault_manifest)
     missing = [name for name in generated_by_lean if not (output_dir / name).is_file()]
@@ -595,6 +622,7 @@ def build(
     llc_argv = [
         "llc",
         *LLC_ARGUMENTS,
+        *(["-stack-size-section"] if artifact_category == "test-loop-suite" else []),
         f"-{opt_level}",
         "program.opt.ll",
         "-o",

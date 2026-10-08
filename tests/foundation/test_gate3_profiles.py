@@ -181,13 +181,16 @@ class Gate3ProfileManifestTests(unittest.TestCase):
 
     def test_unsupported_profile_is_rejected_by_parser_and_model(self) -> None:
         probe = self.manifest["probes"][0]
+        fragments = _required_fragments(
+            probe["required_fragments"], context=probe["name"]
+        )
+        self.assertTrue(any("core0-v9.9" in fragment for fragment in fragments))
+        self.assertFalse(any("core0-v0.3" in fragment for fragment in fragments))
         source = _relative_lean_path(probe["path"], parent=GATE3_REJECT_ROOT)
         returncode, output = _run_lean(source)
         self.assertEqual(returncode, 0, output)
         self.assertNotIn("error:", output)
-        for fragment in _required_fragments(
-            probe["required_fragments"], context=probe["name"]
-        ):
+        for fragment in fragments:
             self.assertIn(fragment, output)
 
     def test_v01_division_shift_and_complement_rejections_remain_separate(self) -> None:

@@ -2,7 +2,8 @@
 
 Status: Task 001 implements and tests the bounded `core0-v0.1` scalar membership
 checker. Task 002 Gate 3 adds the explicitly separate `core0-v0.2` scalar/CFG
-profile described below. The broader effectful Core0 contract remains proposed.
+profile. Task 002 Gate 4 adds the narrowly bounded `core0-v0.3` iteration profile
+described below. The broader effectful Core0 contract remains proposed.
 
 ## Purpose
 
@@ -43,6 +44,40 @@ edge availability, returns, and direct-call signatures. The independent artifact
 audit additionally checks the source-count masks and that a divisor-zero edge
 cannot reach its dangerous operation. These checks and finite differential tests
 are not a proof of compiler correctness.
+
+`core0-v0.3` is additive and must also be selected explicitly. It retains every
+v0.2 scalar operation and admits exactly one higher-order-looking source construct:
+
+```lean
+Lemma.Core0.Bounded.boundedFoldU32
+  (budget : Nat)
+  (step : UInt32 -> UInt32 -> UInt32)
+  (count initial : UInt32) : UInt64
+```
+
+This is a compiler-recognized bounded-fold form, not general closure support. The
+budget must be a canonical standard `Nat` literal in `0..256`, and `step` must be a
+direct reference to a safe, total, monomorphic top-level declaration of exactly the
+displayed callback type. The callback and its ordinary helper dependencies pass
+through the same transitive Core0 checker. Lambdas, captured environments, runtime
+function values, arbitrary higher-order dispatch, partial definitions, and recursive
+callback/helper cycles remain rejected.
+
+`count` and `initial` are runtime `UInt32` values. When `count.toNat <= budget`, the
+fold invokes `step index accumulator` in ascending index order from zero through
+`count - 1`, beginning with `initial`, and returns the final accumulator zero-extended
+to `UInt64`. When `count.toNat > budget`, it invokes the callback zero times and
+returns `0x8000000000000000 ||| initial.toUInt64`. Bit 63 therefore distinguishes
+semantic budget exhaustion from every successful result; bits 62 through 32 remain
+zero, and the low 32 bits preserve the unchanged initial value. This tagged outcome
+is distinct from the checked model's expression/call traversal-fuel diagnostic and
+from a host or QEMU timeout.
+
+The erased budget and callback identity never become a target `Nat`, closure, or
+function pointer. Lowering emits a runtime count guard, scalar `i32` index and
+accumulator phis, one direct callback call on the body edge, and an actual backedge.
+It uses fixed call frames rather than recursive iteration. The profile adds no heap,
+arrays, boxed tuples, allocator, exception machinery, or managed Lean runtime.
 
 ## Broader proposed profile
 

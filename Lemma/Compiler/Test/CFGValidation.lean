@@ -43,6 +43,169 @@ private def validDiamond : LLVM.Function := {
   ]
 }
 
+/-!
+The canonical bounded-fold shape is also kept here independently of the Core0
+lowerer.  This makes loop-sensitive validator regressions fail while elaborating
+the library, before an exporter can render malformed SSA.
+-/
+private def validLoopCallback : LLVM.Function := {
+  name := "validation_loop_callback"
+  returnType := .i32
+  returnExtension := some .signext
+  parameters := #[
+    { ty := .i32, name := "index" },
+    { ty := .i32, name := "accumulator" }
+  ]
+  parameterExtensions := #[some .signext, some .signext]
+  blocks := #[{
+    label := "entry"
+    instructions := #[
+      .bin "next" .add .i32 (ssa "index") (ssa "accumulator"),
+      .ret .i32 (ssa "next")
+    ]
+  }]
+}
+
+private def validLoop : LLVM.Function := {
+  name := "validation_bounded_loop"
+  returnType := .i64
+  parameters := #[
+    { ty := .i32, name := "count" },
+    { ty := .i32, name := "initial" }
+  ]
+  parameterExtensions := #[some .signext, some .signext]
+  blocks := #[
+    {
+      label := "entry"
+      instructions := #[
+        .icmp "within_budget" .ule .i32 (ssa "count") (i32 8),
+        .branch (ssa "within_budget") "loop.preheader" "loop.exhausted"
+      ]
+    },
+    { label := "loop.preheader", instructions := #[.jump "loop.header"] },
+    {
+      label := "loop.exhausted"
+      instructions := #[
+        .zext "exhausted.initial" .i32 (ssa "initial") .i64,
+        .bin "exhausted.tag" .or .i64 (ssa "exhausted.initial")
+          (i64 9223372036854775808),
+        .jump "loop.outcome"
+      ]
+    },
+    {
+      label := "loop.header"
+      instructions := #[
+        .phi "loop.index" .i32
+          #[(i32 0, "loop.preheader"), (ssa "loop.next-index", "loop.body")],
+        .phi "loop.accumulator" .i32
+          #[(ssa "initial", "loop.preheader"), (ssa "loop.next-accumulator", "loop.body")],
+        .icmp "loop.continue" .ult .i32 (ssa "loop.index") (ssa "count"),
+        .branch (ssa "loop.continue") "loop.body" "loop.done"
+      ]
+    },
+    {
+      label := "loop.body"
+      instructions := #[
+        .abiCall (some "loop.next-accumulator") .i32 (some .signext)
+          validLoopCallback.name #[
+            { ty := .i32, value := ssa "loop.index", extension := some .signext },
+            { ty := .i32, value := ssa "loop.accumulator", extension := some .signext }
+          ],
+        .bin "loop.next-index" .add .i32 (ssa "loop.index") (i32 1),
+        .jump "loop.header"
+      ]
+    },
+    {
+      label := "loop.done"
+      instructions := #[
+        .zext "loop.value" .i32 (ssa "loop.accumulator") .i64,
+        .jump "loop.outcome"
+      ]
+    },
+    {
+      label := "loop.outcome"
+      instructions := #[
+        .phi "result" .i64 #[(ssa "loop.value", "loop.done"),
+          (ssa "exhausted.tag", "loop.exhausted")],
+        .ret .i64 (ssa "result")
+      ]
+    }
+  ]
+}
+
+private def validLoopModule : LLVM.Module := {
+  sourceName := "CFG validator bounded loop test"
+  functions := #[validLoopCallback, validLoop]
+}
+
+private def loopMissingBackedgeInput : LLVM.Function := {
+  validLoop with
+  name := "loop_missing_backedge_input"
+  blocks := validLoop.blocks.modify 3 fun block => {
+    block with instructions := block.instructions.modify 0 (fun _ =>
+      .phi "loop.index" .i32 #[(i32 0, "loop.preheader")])
+  }
+}
+
+private def loopDuplicateBackedgeInput : LLVM.Function := {
+  validLoop with
+  name := "loop_duplicate_backedge_input"
+  blocks := validLoop.blocks.modify 3 fun block => {
+    block with instructions := block.instructions.modify 0 (fun _ =>
+      .phi "loop.index" .i32 #[(i32 0, "loop.preheader"),
+        (ssa "loop.next-index", "loop.body"), (i32 1, "loop.body")])
+  }
+}
+
+private def loopNonDominatingLatchValue : LLVM.Function := {
+  validLoop with
+  name := "loop_non_dominating_latch_value"
+  blocks := (validLoop.blocks.modify 2 fun block => {
+    block with instructions := #[
+      .bin "wrong.latch" .add .i32 (ssa "initial") (i32 1)
+    ] ++ block.instructions
+  }).modify 3 fun block => {
+    block with instructions := block.instructions.modify 0 (fun _ =>
+      .phi "loop.index" .i32 #[(i32 0, "loop.preheader"),
+        (ssa "wrong.latch", "loop.body")])
+  }
+}
+
+private def loopIncorrectPhiType : LLVM.Function := {
+  validLoop with
+  name := "loop_incorrect_phi_type"
+  blocks := validLoop.blocks.modify 3 fun block => {
+    block with instructions := block.instructions.modify 0 (fun _ =>
+      .phi "loop.index" .i64 #[(i64 0, "loop.preheader"),
+        (ssa "loop.next-index", "loop.body")])
+  }
+}
+
+private def loopBackedgeToEntry : LLVM.Function := {
+  validLoop with
+  name := "loop_backedge_to_entry"
+  blocks := validLoop.blocks.modify 4 fun block => {
+    block with instructions := block.instructions.modify 2 fun _ => .jump "entry"
+  }
+}
+
+private def loopCallbackArityMismatch : LLVM.Function := {
+  validLoop with
+  name := "loop_callback_arity_mismatch"
+  blocks := validLoop.blocks.modify 4 fun block => {
+    block with instructions := block.instructions.modify 0 (fun _ =>
+      .abiCall (some "loop.next-accumulator") .i32 (some .signext)
+        validLoopCallback.name #[
+          { ty := .i32, value := ssa "loop.index", extension := some .signext }
+        ])
+  }
+}
+
+private def loopCallbackMismatchModule : LLVM.Module := {
+  sourceName := "CFG validator loop callback mismatch"
+  functions := #[validLoopCallback, loopCallbackArityMismatch]
+}
+
 private def scalarRoot : LoweredRoot := {
   id := 1
   source := .mkSimple "validationScalarRoot"
@@ -421,6 +584,7 @@ run_cmd do
     (Lemma.Machine.ScalarHarness.main core0Layout scalarConfiguration #[scalarRoot]))
   checks ← pass checks "legacy-harness-module" (LLVM.validateModule legacyHarnessModule)
   checks ← pass checks "scalar-harness-module" (LLVM.validateModule scalarHarnessModule)
+  checks ← pass checks "bounded-loop-module" (LLVM.validateModule validLoopModule)
 
   checks ← reject checks "missing-terminator" "final instruction is not a terminator"
     (LLVM.validateFunction missingTerminator)
@@ -460,9 +624,22 @@ run_cmd do
     (LLVM.validateModule resultMismatchModule)
   checks ← reject checks "call-extensions" "omits required ABI extensions"
     (LLVM.validateModule extensionMismatchModule)
+  checks ← reject checks "loop-missing-backedge-input" "predecessor set differs"
+    (LLVM.validateFunction loopMissingBackedgeInput)
+  checks ← reject checks "loop-duplicate-backedge-input" "repeats predecessor `%loop.body`"
+    (LLVM.validateFunction loopDuplicateBackedgeInput)
+  checks ← reject checks "loop-non-dominating-latch-value"
+    "does not dominate predecessor `%loop.body`"
+    (LLVM.validateFunction loopNonDominatingLatchValue)
+  checks ← reject checks "loop-incorrect-phi-type" "expects `i64`, but `%loop.next-index` has `i32`"
+    (LLVM.validateFunction loopIncorrectPhiType)
+  checks ← reject checks "loop-backedge-to-entry" "entry block has predecessors"
+    (LLVM.validateFunction loopBackedgeToEntry)
+  checks ← reject checks "loop-callback-arity" "ABI call arity disagrees"
+    (LLVM.validateModule loopCallbackMismatchModule)
 
-  unless checks == 29 do
-    throwError m!"CFG validator suite count changed: {checks} != 29"
+  unless checks == 36 do
+    throwError m!"CFG validator suite count changed: {checks} != 36"
   logInfo m!"CFG validator: {checks} compile-time checks passed"
 
 end Lemma.Compiler.Test.CFGValidation

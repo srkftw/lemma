@@ -56,6 +56,7 @@ U64_MAX = TYPE_MAX["u64"]
 IMAGE_ARTIFACT_PROFILES = {
     "test-frontend-suite": "core0-v0.1",
     "test-cfg-suite": "core0-v0.2",
+    "test-loop-suite": "core0-v0.3",
 }
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\Z")
 HEX16 = rb"([0-9a-f]{16})"
@@ -531,7 +532,15 @@ def validate_image_binding(image: Path, descriptor: ScalarBatchDescriptor) -> No
     """Bind a descriptor to the exact typed-suite metadata next to its image."""
     validate_descriptor(descriptor)
     directory = image.parent
-    manifest = load_json(directory / "scalar-suite-manifest.json")
+    manifest_names = ("scalar-suite-manifest.json", "bounded-suite-manifest.json")
+    present_manifests = [name for name in manifest_names if (directory / name).is_file()]
+    if len(present_manifests) != 1:
+        raise Core0Error(
+            "image must contain exactly one scalar or bounded suite manifest; "
+            f"found {present_manifests!r}"
+        )
+    manifest_name = present_manifests[0]
+    manifest = load_json(directory / manifest_name)
     abi = load_json(directory / "scalar-test-abi.json")
     provenance = load_json(directory / "provenance.json")
     build_record = load_json(directory / "build.json")
@@ -543,6 +552,15 @@ def validate_image_binding(image: Path, descriptor: ScalarBatchDescriptor) -> No
         raise Core0Error("image scalar-suite manifest has the wrong artifact category")
     if manifest.get("contract_version") != expected_profile:
         raise Core0Error("image scalar-suite manifest profile disagrees with its artifact category")
+    expected_manifest_name = (
+        "bounded-suite-manifest.json"
+        if artifact_category == "test-loop-suite"
+        else "scalar-suite-manifest.json"
+    )
+    if manifest_name != expected_manifest_name:
+        raise Core0Error(
+            "image suite-manifest filename disagrees with its artifact category"
+        )
     if not isinstance(abi, dict) or abi.get("name") != "lemma-scalar-test-v1":
         raise Core0Error("image scalar test ABI manifest is missing or unsupported")
     if abi.get("contract_version") != expected_profile:
@@ -586,7 +604,7 @@ def validate_image_binding(image: Path, descriptor: ScalarBatchDescriptor) -> No
     artifacts = build_record.get("artifacts")
     if not isinstance(artifacts, dict):
         raise Core0Error("image build record has no artifact hashes")
-    for name in ("image.elf", "scalar-suite-manifest.json", "scalar-test-abi.json"):
+    for name in ("image.elf", manifest_name, "scalar-test-abi.json"):
         expected_digest = artifacts.get(name)
         path = directory / name
         if not isinstance(expected_digest, str) or expected_digest != sha256(path):

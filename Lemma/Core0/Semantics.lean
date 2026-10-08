@@ -1,3 +1,4 @@
+import Lemma.Core0.Bounded
 import Lemma.Core0.IR
 
 /-!
@@ -210,6 +211,51 @@ mutual
             (op == .trunc && targetTy.width < sourceTy.width) do
           evalFail stack .invalidCheckedIR "conversion direction disagrees with its type widths"
         pure (.scalar { ty := targetTy, value := Scalar.normalize targetTy source.value })
+    | .boundedFoldU32 budget callback count initial =>
+        unless program.contractVersion == Profile.v0_3.contractVersion do
+          evalFail stack .invalidCheckedIR
+            s!"bounded iteration is not available in {program.contractVersion}"
+        unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold budget {budget} exceeds maximum {Lemma.Core0.Bounded.maximumBudget}"
+        let site : IterationUse := {
+          stableId := boundedFoldU32StableId
+          budget
+          callback
+        }
+        unless program.usedIterations.contains site do
+          evalFail stack .invalidCheckedIR
+            "bounded-fold expression is missing its checked iteration metadata"
+        let some ownerName := stack.head?
+          | evalFail stack .invalidCheckedIR
+              "bounded-fold expression has no owning checked function"
+        let some ownerFunction := program.findFunction? ownerName
+          | evalFail stack .invalidCheckedIR
+              s!"bounded-fold owner `{ownerName}` is absent"
+        unless ownerFunction.dependencies.contains callback do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold callback `{callback}` is missing from its owner's dependency closure"
+        let countRaw ← evalExpr fuel program stack locals count
+        let countValue ← expectScalar stack .u32 countRaw
+        let initialRaw ← evalExpr fuel program stack locals initial
+        let initialValue ← expectScalar stack .u32 initialRaw
+        let some callbackFunction := program.findFunction? callback
+          | evalFail stack .unknownFunction
+              s!"checked bounded-fold callback `{callback}` is absent"
+        let expectedCallback : Signature := { args := #[.u32, .u32], result := .u32 }
+        unless callbackFunction.signature == expectedCallback do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold callback `{callback}` does not have signature (u32,u32)->u32"
+        if countValue.value ≤ budget then
+          let mut accumulator := initialValue
+          for index in [:countValue.value] do
+            let result ← evalFunction fuel program stack callback
+              #[.scalar (.u32 index), .scalar accumulator]
+            accumulator ← expectScalar stack .u32 result
+          pure (.scalar (.u64 accumulator.value))
+        else
+          let tagged := Nat.lor Lemma.Core0.Bounded.exhaustionTag.toNat initialValue.value
+          pure (.scalar (.u64 tagged))
 
   private def evalFunction (fuel : Nat) (program : Program) (stack : List Name)
       (name : Name) (args : Array Value) : Except EvalDiagnostic Value := do

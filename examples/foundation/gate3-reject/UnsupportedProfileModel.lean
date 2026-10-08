@@ -4,10 +4,10 @@ namespace Lemma.Examples.Foundation.Gate3Reject.UnsupportedProfileModel
 
 open Lemma.Core0
 
-#guard Profile.ofContractVersion? "core0-v0.3" == none
+#guard Profile.ofContractVersion? "core0-v9.9" == none
 
 def rejectedProgram : Program := {
-  contractVersion := "core0-v0.3"
+  contractVersion := "core0-v9.9"
   root := .mkSimple "unsupportedProfileRoot"
   functions := #[]
   usedPrimitives := #[]

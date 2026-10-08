@@ -2,10 +2,11 @@ import Lean
 import Lean.Compiler.ExternAttr
 import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.InitAttr
+import Lemma.Core0.Bounded
 import Lemma.Core0.IR
 
 /-!
-Genuine Lean-environment frontend for Core0 v0.1.
+Genuine Lean-environment frontend for the versioned Core0 profiles.
 
 The checker reads `ConstantInfo` types and bodies installed by Lean's elaborator.  It
 does not accept a surface-syntax AST or a separately constructed demonstration tree.
@@ -199,9 +200,28 @@ def primitiveAllowlistV02 : Array PrimitiveSpec := Id.run do
     }
   return specs
 
+/-- `core0-v0.3` retains the complete v0.2 scalar primitive set.  Iteration is
+recorded separately because its static budget and callback are not scalar runtime
+arguments. -/
+def primitiveAllowlistV03 : Array PrimitiveSpec := primitiveAllowlistV02
+
+/-- Exact compiler-recognized contract for the v0.3 bounded fold. -/
+def boundedFoldU32Spec : IterationSpec := {
+  stableId := boundedFoldU32StableId
+  leanDecl := ``Lemma.Core0.Bounded.boundedFoldU32
+  runtimeSignature := { args := #[.u32, .u32], result := .u64 }
+  callbackSignature := { args := #[.u32, .u32], result := .u32 }
+  maximumBudget := Lemma.Core0.Bounded.maximumBudget
+}
+
 def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_1 => primitiveAllowlist
   | .v0_2 => primitiveAllowlistV02
+  | .v0_3 => primitiveAllowlistV03
+
+private def profileHasV02Scalars : Profile → Bool
+  | .v0_1 => false
+  | .v0_2 | .v0_3 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -241,6 +261,7 @@ private structure LowerState where
   nextVar : Nat
   dependencies : Array Name := #[]
   usedPrimitives : Array String := #[]
+  usedIterations : Array IterationUse := #[]
 
 private abbrev LowerM := StateT LowerState (Except Diagnostic)
 
@@ -268,6 +289,11 @@ private def addDependency (name : Name) : LowerM Unit := do
   let state ← get
   unless state.dependencies.contains name do
     set { state with dependencies := state.dependencies.push name }
+
+private def markIteration (site : IterationUse) : LowerM Unit := do
+  let state ← get
+  unless state.usedIterations.contains site do
+    set { state with usedIterations := state.usedIterations.push site }
 
 private def localForBVar? (locals : Array Param) (index : Nat) : Option Param :=
   if index < locals.size then
@@ -454,6 +480,85 @@ private def declarationSignature (ctx : LowerContext) (name : Name) :
   let (sig, _) ← parseSignatureCore { ctx with declaration := name } info.type
   pure sig
 
+private def canonicalNatLiteral (ctx : LowerContext) (source : Lean.Expr) : LowerM Nat := do
+  let some (name, args) := appView? source
+    | fail ctx .unsupportedExpression
+        "bounded-fold budget must be a canonical standard Nat literal"
+  unless name == ``OfNat.ofNat && args.size == 3 && constName? args[0]! == some ``Nat do
+    fail ctx .unsupportedExpression
+      "bounded-fold budget must be a canonical standard Nat literal"
+  let value ← match stripMData args[1]! with
+    | .lit (.natVal value) => pure value
+    | _ => fail ctx .unsupportedExpression "bounded-fold budget must contain a kernel Nat literal"
+  let some (instanceName, instanceArgs) := appView? args[2]!
+    | fail ctx .invalidPrimitiveInstance
+        "bounded-fold budget did not use the standard Nat OfNat instance"
+  unless instanceName == ``instOfNatNat && instanceArgs.size == 1 &&
+      sameExpr instanceArgs[0]! args[1]! do
+    fail ctx .invalidPrimitiveInstance
+      "bounded-fold budget used a non-standard Nat OfNat instance"
+  pure value
+
+private def isBoundedFoldCallbackType : Lean.Expr → Bool
+  | .mdata _ type => isBoundedFoldCallbackType type
+  | .forallE _ first rest firstBinder =>
+      firstBinder == .default && typeExpr? first == some .u32 &&
+        match stripMData rest with
+        | .forallE _ second result secondBinder =>
+            secondBinder == .default && typeExpr? second == some .u32 &&
+              typeExpr? result == some .u32
+        | _ => false
+  | _ => false
+
+private def isBoundedFoldType : Lean.Expr → Bool
+  | .mdata _ type => isBoundedFoldType type
+  | .forallE _ budget afterBudget budgetBinder =>
+      budgetBinder == .default && constName? budget == some ``Nat &&
+        match stripMData afterBudget with
+        | .forallE _ callback afterCallback callbackBinder =>
+            callbackBinder == .default && isBoundedFoldCallbackType callback &&
+              match stripMData afterCallback with
+              | .forallE _ count afterCount countBinder =>
+                  countBinder == .default && typeExpr? count == some .u32 &&
+                    match stripMData afterCount with
+                    | .forallE _ initial result initialBinder =>
+                        initialBinder == .default && typeExpr? initial == some .u32 &&
+                          typeExpr? result == some .u64
+                    | _ => false
+              | _ => false
+        | _ => false
+  | _ => false
+
+private def validateBoundedFoldDeclaration (ctx : LowerContext) : LowerM Unit := do
+  let name := boundedFoldU32Spec.leanDecl
+  let declarationCtx := { ctx with declaration := name, path := ctx.path ++ [name] }
+  let some info := ctx.env.find? name
+    | fail declarationCtx .unknownDeclaration
+        s!"compiler-recognized iteration declaration `{name}` is absent"
+  if (getExternAttrData? ctx.env name).isSome then
+    fail declarationCtx .unsupportedDeclaration
+      s!"compiler-recognized iteration declaration `{name}` has an arbitrary @[extern] implementation"
+  if hasInitAttr ctx.env name || isIOUnitInitFn ctx.env name then
+    fail declarationCtx .unsupportedDeclaration
+      s!"compiler-recognized iteration declaration `{name}` has a runtime initialization effect"
+  if let some replacement := Compiler.getImplementedBy? ctx.env name then
+    fail declarationCtx .unsupportedDeclaration
+      s!"compiler-recognized iteration declaration `{name}` has unchecked compiler replacement `{replacement}`"
+  match info with
+  | .defnInfo definition =>
+      unless definition.levelParams.isEmpty do
+        fail declarationCtx .polymorphicDeclaration
+          s!"compiler-recognized iteration declaration `{name}` is not monomorphic"
+      unless definition.safety == .safe do
+        fail declarationCtx .unsafeDeclaration
+          s!"compiler-recognized iteration declaration `{name}` is not safe"
+      unless isBoundedFoldType definition.type do
+        fail declarationCtx .typeMismatch
+          s!"compiler-recognized iteration declaration `{name}` has the wrong exact type"
+  | _ =>
+      fail declarationCtx .unsupportedDeclaration
+        s!"compiler-recognized iteration declaration `{name}` is not an inspectable definition"
+
 mutual
 
   private def lowerExpr (fuel : Nat) (ctx : LowerContext) (source : Lean.Expr) : LowerM Expr := do
@@ -567,7 +672,51 @@ mutual
       | fail ctx .unsupportedExpression
           "dynamic/higher-order application is outside Core0 (possible capturing closure)"
 
-    if name == ``ite then
+    if name == boundedFoldU32Spec.leanDecl then
+      unless ctx.profile == .v0_3 do
+        fail ctx .unsupportedPrimitive
+          s!"`{boundedFoldU32Spec.leanDecl}` requires {Profile.v0_3.contractVersion}"
+          (ctx.path ++ [name])
+      validateBoundedFoldDeclaration ctx
+      unless args.size == 4 do
+        fail ctx .arityMismatch "malformed boundedFoldU32 application"
+      let budget ← canonicalNatLiteral ctx args[0]!
+      unless budget ≤ boundedFoldU32Spec.maximumBudget do
+        fail ctx .unsupportedExpression
+          s!"bounded-fold budget {budget} exceeds maximum {boundedFoldU32Spec.maximumBudget}"
+      let callback ← match stripMData args[1]! with
+        | .const callback levels =>
+            unless levels.isEmpty do
+              fail ctx .polymorphicDeclaration
+                "bounded-fold callback must be a monomorphic top-level constant"
+            pure callback
+        | .lam .. =>
+            fail ctx .unsupportedExpression
+              "bounded-fold callback must be a closed top-level constant; runtime/capturing closures are rejected"
+        | _ =>
+            fail ctx .unsupportedExpression
+              "bounded-fold callback must be a direct top-level constant"
+      let callbackCtx := { ctx with path := ctx.path ++ [callback] }
+      let callbackSignature ← match declarationSignature callbackCtx callback with
+        | .ok signature => pure signature
+        | .error diagnostic => throw diagnostic
+      unless callbackSignature == boundedFoldU32Spec.callbackSignature do
+        fail ctx .typeMismatch
+          (s!"bounded-fold callback `{callback}` must have signature " ++
+            "(u32,u32)->u32") callbackCtx.path
+      let count ← lowerExpr fuel ctx args[2]!
+      let initial ← lowerExpr fuel ctx args[3]!
+      ensureType ctx .u32 count
+      ensureType ctx .u32 initial
+      addDependency callback
+      markIteration {
+        stableId := boundedFoldU32Spec.stableId
+        budget
+        callback
+      }
+      pure (.boundedFoldU32 budget callback count initial)
+
+    else if name == ``ite then
       unless args.size == 5 do fail ctx .arityMismatch "malformed ite application"
       let some resultTy := typeExpr? args[0]!
         | fail ctx .unsupportedType "ite result is not a Core0 scalar"
@@ -622,7 +771,7 @@ mutual
       markPrimitive s!"{ty.render}.{op.render}"
       pure (.bin op ty lhs rhs)
 
-    else if ctx.profile == .v0_2 && (wrapperV02BinOp? name).isSome then
+    else if profileHasV02Scalars ctx.profile && (wrapperV02BinOp? name).isSome then
       let some op := wrapperV02BinOp? name
         | fail ctx .internal "v0.2 binary wrapper match disappeared"
       unless args.size == 6 do fail ctx .arityMismatch s!"malformed `{name}` application"
@@ -638,7 +787,7 @@ mutual
       markPrimitive s!"{ty.render}.{op.render}"
       pure (.bin op ty lhs rhs)
 
-    else if ctx.profile == .v0_2 && (directV02BinOp? name).isSome then
+    else if profileHasV02Scalars ctx.profile && (directV02BinOp? name).isSome then
       let some (ty, op) := directV02BinOp? name
         | fail ctx .internal "v0.2 direct binary match disappeared"
       unless args.size == 2 do fail ctx .arityMismatch s!"malformed `{name}` application"
@@ -649,7 +798,7 @@ mutual
       markPrimitive s!"{ty.render}.{op.render}"
       pure (.bin op ty lhs rhs)
 
-    else if ctx.profile == .v0_2 && name == ``Complement.complement then
+    else if profileHasV02Scalars ctx.profile && name == ``Complement.complement then
       unless args.size == 3 do fail ctx .arityMismatch "malformed complement application"
       let some ty := typeExpr? args[0]!
         | fail ctx .unsupportedType "complement operand is not a Core0 integer"
@@ -661,7 +810,7 @@ mutual
       markPrimitive s!"{ty.render}.complement"
       pure (.unary .complement ty value)
 
-    else if ctx.profile == .v0_2 &&
+    else if profileHasV02Scalars ctx.profile &&
         (#[Ty.u8, Ty.u32, Ty.u64].any fun ty => name == directComplementName ty) then
       let some ty := #[Ty.u8, Ty.u32, Ty.u64].find? fun ty => name == directComplementName ty
         | fail ctx .internal "v0.2 direct complement match disappeared"
@@ -721,7 +870,7 @@ mutual
 end
 
 private def lowerFunction (env : Environment) (profile : Profile) (root : Name) (name : Name)
-    (path : List Name) : Except Diagnostic (Function × Array String) := do
+    (path : List Name) : Except Diagnostic (Function × Array String × Array IterationUse) := do
   let baseCtx : LowerContext := { env, profile, root, declaration := name, path, locals := #[] }
   let some info := env.find? name
     | throw <| mkDiagnostic baseCtx .unknownDeclaration s!"declaration `{name}` is not in the Lean environment"
@@ -786,7 +935,7 @@ private def lowerFunction (env : Environment) (profile : Profile) (root : Name) 
     throw <| mkDiagnostic baseCtx .typeMismatch
       s!"body of `{name}` lowered to {loweredBody.type.render}, expected {signature.result.render}"
   pure ({ name, signature, params, body := loweredBody, dependencies := state.dependencies },
-    state.usedPrimitives)
+    state.usedPrimitives, state.usedIterations)
 
 private inductive VisitTask where
   | enter (name : Name) (path : List Name)
@@ -803,6 +952,7 @@ def checkAndLowerForProfile (env : Environment) (profile : Profile) (root : Name
   let mut done : List Name := []
   let mut functions : Array Function := #[]
   let mut usedPrimitives : Array String := #[]
+  let mut usedIterations : Array IterationUse := #[]
   while !stack.isEmpty do
     match stack with
     | [] => pure ()
@@ -819,11 +969,14 @@ def checkAndLowerForProfile (env : Environment) (profile : Profile) (root : Name
             throw <| mkDiagnostic ctx .recursiveDependency
               s!"recursive/cyclic dependency reaches `{name}`" path
           else
-            let (function, used) ← lowerFunction env profile root name path
+            let (function, used, iterations) ← lowerFunction env profile root name path
             visiting := name :: visiting
             for primitive in used do
               unless usedPrimitives.contains primitive do
                 usedPrimitives := usedPrimitives.push primitive
+            for iteration in iterations do
+              unless usedIterations.contains iteration do
+                usedIterations := usedIterations.push iteration
             let exits := [.exit function]
             let entries := function.dependencies.toList.map fun dep =>
               .enter dep (path ++ [dep])
@@ -833,7 +986,13 @@ def checkAndLowerForProfile (env : Environment) (profile : Profile) (root : Name
           unless done.contains function.name do
             done := function.name :: done
             functions := functions.push function
-  pure { contractVersion := profile.contractVersion, root, functions, usedPrimitives }
+  pure {
+    contractVersion := profile.contractVersion
+    root := root
+    functions := functions
+    usedPrimitives := usedPrimitives
+    usedIterations := usedIterations
+  }
 
 /-- Historical Task 001/Core0 v0.1 entry point. -/
 def checkAndLower (env : Environment) (root : Name) : Except Diagnostic Program :=
@@ -857,6 +1016,7 @@ def checkAndLowerSuiteForProfile (env : Environment) (profile : Profile)
   let mut roots : Array CheckedRoot := #[]
   let mut functions : Array Function := #[]
   let mut usedPrimitives : Array String := #[]
+  let mut usedIterations : Array IterationUse := #[]
   for root in declaredRoots do
     if seenRoots.contains root then
       throw {
@@ -915,11 +1075,15 @@ def checkAndLowerSuiteForProfile (env : Environment) (profile : Profile)
     for primitive in program.usedPrimitives do
       unless usedPrimitives.contains primitive do
         usedPrimitives := usedPrimitives.push primitive
+    for iteration in program.usedIterations do
+      unless usedIterations.contains iteration do
+        usedIterations := usedIterations.push iteration
   pure {
     contractVersion := profile.contractVersion
-    roots
-    functions
-    usedPrimitives
+    roots := roots
+    functions := functions
+    usedPrimitives := usedPrimitives
+    usedIterations := usedIterations
   }
 
 /-- Historical Gate 2/Core0 v0.1 suite entry point. -/

@@ -90,7 +90,7 @@
       "path": "examples/foundation/gate3-reject/UnsupportedProfileModel.lean",
       "required_fragments": [
         "Core0 reference[invalid-checked-ir]",
-        "unsupported Core0 contract `core0-v0.3`",
+        "unsupported Core0 contract `core0-v9.9`",
         "call stack: unsupportedProfileRoot"
       ]
     }
