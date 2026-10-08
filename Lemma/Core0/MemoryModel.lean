@@ -72,6 +72,7 @@ inductive DiagnosticCode where
   | fuelExhausted
   | malformedState
   | deviceActionUnsupported
+  | trapActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure Diagnostic where
@@ -247,6 +248,22 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
       | .uartEnableAndResetFifo _ => .error {
           code := .deviceActionUnsupported
           message := "the core0-v0.4 finite RAM model does not interpret UART actions"
+        }
+      | .trapEcall _ => .error {
+          code := .trapActionUnsupported
+          message := "the finite RAM model does not simulate synchronous trap actions"
+        }
+      | .trapBreakpoint _ => .error {
+          code := .trapActionUnsupported
+          message := "the finite RAM model does not simulate synchronous trap actions"
+        }
+      | .trapUnexpectedEcall _ => .error {
+          code := .trapActionUnsupported
+          message := "the finite RAM model does not simulate synchronous trap actions"
+        }
+      | .trapIllegalInstruction _ => .error {
+          code := .trapActionUnsupported
+          message := "the finite RAM model does not simulate synchronous trap actions"
         }
 
 def evaluateDefault (state : State) (action : Action) : Except Diagnostic Evaluation :=

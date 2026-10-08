@@ -1,4 +1,5 @@
 import Lemma.Core0.IR
+import Lemma.Core0.Trap
 import Lemma.Core0.Bounded
 import Lemma.Core0.Memory
 import Lemma.Core0.Device

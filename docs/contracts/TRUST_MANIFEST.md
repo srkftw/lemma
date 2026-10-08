@@ -49,6 +49,24 @@ logic appearing in the harness. QEMU and its emulated UART remain host/emulator 
 not guest code and not a physical-device result. The finite model and four local
 theorems are mathematical evidence with narrower claims than the target executions.
 
+## Gate 7 trap trust boundary under qualification
+
+`core0-v0.6` adds only four exact synchronous-trap source identities and a
+closed typed Lean machine sequence for masking, vector entry, complete integer
+context preservation, CSR snapshots, explicit return, and bounded finishers.
+Compiled Lean owns dispatch policy, observations, diagnostics, arithmetic, and
+software-denial checks. Private frame/probe storage is not ordinary RAM authority.
+The audit must name every symbol, CSR operation, object and generated instruction
+role, check the nine-argument call and complete save/restore sequence, and bind
+source/effect metadata to LLVM and machine code. Test-only wrong-slot restore
+must be a declared valid-image mutation, not an unexplained audit bypass.
+
+Local policy lemmas, source probes, resource/disassembly audits, and actual trap
+executions are distinct evidence. The fixed-RAM/no-NMI entry-tail premises and
+single-hart non-nesting limitations remain explicit; see
+[`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 target acceptance is
+pending, and timer/concurrency/runtime categories are not thereby qualified.
+
 ## Prohibited shortcuts
 
 Do not hide an upstream runtime by static linkage, rename banned symbols, copy object

@@ -1,5 +1,7 @@
+import Lemma.Core0.Trap
+
 /-!
-Closed source syntax and fixed-region contract for `core0-v0.4` and `core0-v0.5`.
+Closed source syntax for the `core0-v0.4` through `core0-v0.6` Action profiles.
 
 `Action` is syntax inspected by the Core0 frontend, not a target representation.
 The only higher-order fields are immediate continuations and one statically resolved
@@ -98,14 +100,24 @@ def malformedFrame : UInt8 := 14
 def truncatedFrame : UInt8 := 15
 def invalidLength : UInt8 := 16
 def unsupportedCommand : UInt8 := 17
+def unexpectedTrap : UInt8 := 18
+def doubleTrap : UInt8 := 19
+def contextMismatch : UInt8 := 20
 
 def isKnownV04 (status : UInt8) : Bool := status ≤ budgetExceeded
 
 def isKnownV05 (status : UInt8) : Bool := status ≤ unsupportedCommand
 
+def isKnownV06 (status : UInt8) : Bool := status ≤ contextMismatch
+
 /-- Public v0.5 outcomes exclude the internal fold stop sentinel. -/
 def isPublicV05 (status : UInt8) : Bool :=
   status == ok || (txTimeout ≤ status && status ≤ unsupportedCommand)
+
+/-- Public v0.6 outcomes add the three synchronous-trap terminal statuses while
+continuing to exclude the internal fold stop sentinel. -/
+def isPublicV06 (status : UInt8) : Bool :=
+  isPublicV05 status || (unexpectedTrap ≤ status && status ≤ contextMismatch)
 
 /-- Historical v0.4 predicate retained with its original meaning. -/
 def isKnown (status : UInt8) : Bool := isKnownV04 status
@@ -264,5 +276,14 @@ inductive Action where
   | uartWriteByte (value : UInt8) (next : UInt8 → Action)
   /-- Write `0x07` to the fixed UART FIFO-control register. -/
   | uartEnableAndResetFifo (next : UInt8 → Action)
+  /-- Execute the authorized machine-mode environment-call fixture.  A returning
+  primitive supplies `(0, contextCheckMask)` to the continuation. -/
+  | trapEcall (next : UInt8 → UInt64 → Action)
+  /-- Execute the authorized machine-mode breakpoint fixture. -/
+  | trapBreakpoint (next : UInt8 → UInt64 → Action)
+  /-- Enter the controlled unexpected-ecall fatal fixture. -/
+  | trapUnexpectedEcall (next : UInt8 → UInt64 → Action)
+  /-- Enter the controlled illegal-instruction fatal fixture. -/
+  | trapIllegalInstruction (next : UInt8 → UInt64 → Action)
 
 end Lemma.Core0.Memory

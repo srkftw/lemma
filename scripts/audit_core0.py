@@ -10,7 +10,9 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+import audit_device
 import audit_memory
+import audit_trap
 from build_core0 import LINK_ARGUMENTS, LLC_ARGUMENTS, STARTUP_ARGUMENTS
 from core0_common import Core0Error, checked, load_json, repo_root, require_tools, sha256, write_json
 
@@ -101,6 +103,26 @@ DEVICE_SUITE_REQUIRED_ARTIFACTS = (
     "provenance.json",
 )
 
+TRAP_SUITE_REQUIRED_ARTIFACTS = (
+    "program.ll",
+    "program.opt.ll",
+    "program.o",
+    "startup.S",
+    "startup.o",
+    "link.ld",
+    "image.elf",
+    "image.map",
+    "layout.json",
+    "device-contract.json",
+    "trap-suite-manifest.json",
+    "trap-suite-normalized.txt",
+    "trap-test-abi.json",
+    "symbols.txt",
+    "platform.dtb",
+    "platform.dts",
+    "provenance.json",
+)
+
 RELEASE_POLICY = "release"
 TEST_COMPILER_CONTROL_POLICY = "test-compiler-control"
 TEST_COMPILER_MUTANT_POLICY = "test-compiler-mutant"
@@ -109,6 +131,7 @@ TEST_CFG_SUITE_POLICY = "test-cfg-suite"
 TEST_LOOP_SUITE_POLICY = "test-loop-suite"
 TEST_MEMORY_SUITE_POLICY = "test-memory-suite"
 TEST_DEVICE_SUITE_POLICY = "test-device-suite"
+TEST_TRAP_SUITE_POLICY = "test-trap-suite"
 SCALAR_SUITE_POLICIES = frozenset(
     {TEST_FRONTEND_SUITE_POLICY, TEST_CFG_SUITE_POLICY, TEST_LOOP_SUITE_POLICY}
 )
@@ -116,7 +139,12 @@ DISPATCH_SUITE_POLICIES = frozenset(
     {*SCALAR_SUITE_POLICIES, TEST_MEMORY_SUITE_POLICY}
 )
 STACK_SIZE_POLICIES = frozenset(
-    {TEST_LOOP_SUITE_POLICY, TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}
+    {
+        TEST_LOOP_SUITE_POLICY,
+        TEST_MEMORY_SUITE_POLICY,
+        TEST_DEVICE_SUITE_POLICY,
+        TEST_TRAP_SUITE_POLICY,
+    }
 )
 AUDIT_POLICIES = (
     RELEASE_POLICY,
@@ -127,6 +155,7 @@ AUDIT_POLICIES = (
     TEST_LOOP_SUITE_POLICY,
     TEST_MEMORY_SUITE_POLICY,
     TEST_DEVICE_SUITE_POLICY,
+    TEST_TRAP_SUITE_POLICY,
 )
 COMPILER_MUTATION_ARTIFACT = "compiler-mutation.json"
 COMPILER_MUTATION_STAGE = "structured-llvm-pre-optimization"
@@ -163,6 +192,7 @@ ALLOWED_RELOCATIONS = {
 }
 SCALAR_O2_JUMP_TABLE_RELOCATION = "R_RISCV_64"
 DEVICE_O2_JUMP_TABLE_RELOCATIONS = 23
+TRAP_O2_JUMP_TABLE_RELOCATIONS = 23
 EXPECTED_LINK_COMMAND = ["ld.lld", *LINK_ARGUMENTS, "-o", "image.elf", "startup.o", "program.o"]
 EXPECTED_STARTUP_COMMAND = ["clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"]
 EXPECTED_MACHINE_PRIMITIVES = [
@@ -258,6 +288,30 @@ DEVICE_MACHINE_ACCESS_SEQUENCE = (
     ("uart.lsr.read8", "core0_action_19", "lbu", 0x10000005),
     ("uart.fcr.enable-reset", "core0_action_21", "sb", 0x10000002),
 )
+DEVICE_MACHINE_DENIED_METADATA = Counter({
+    "core0_action_6": 1,
+    "core0_action_9": 1,
+    "core0_action_11": 2,
+    "core0_action_12": 2,
+    "core0_action_13": 5,
+    "core0_action_16": 1,
+    "core0_action_18": 6,
+})
+TRAP_MACHINE_ACCESS_SEQUENCE = (
+    ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
+    ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
+    ("uart.lsr.read8", "core0_action_11", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_17", "sb", 0x10000002),
+)
+TRAP_MACHINE_DENIED_METADATA = Counter({
+    "core0_action_4": 1,
+    "core0_action_6": 12,
+    "core0_action_8": 4,
+    "core0_action_9": 1,
+    "core0_action_15": 1,
+    "core0_action_17": 3,
+    "core0_action_20": 2,
+})
 FINAL_ALLOC_SECTIONS = {".text", ".rodata", ".data", ".bss"}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")
 LLVM_IDENTIFIER = re.compile(r"[A-Za-z_.$][A-Za-z0-9_.$-]*")
@@ -3845,6 +3899,10 @@ def validate_loop_stack_call_graph(
         "maximum_frame_chain_bytes": maximum,
         "maximum_frame_chain": list(chain),
         "stack_limit_bytes": 0x10000,
+        "frame_chains": {
+            symbol: {"bytes": size, "chain": list(path)}
+            for symbol, (size, path) in sorted(paths.items())
+        },
         "edges": {symbol: sorted(children) for symbol, children in sorted(graph.items())},
     }
 
@@ -4042,13 +4100,31 @@ def _device_machine_call_target(
 
 
 def validate_device_machine_disassembly(
-    disassembly: str, symbol_addresses: dict[str, int]
+    disassembly: str,
+    symbol_addresses: dict[str, int],
+    *,
+    expected_access_sequence: tuple[tuple[str, str, str, int], ...] =
+        DEVICE_MACHINE_ACCESS_SEQUENCE,
+    expected_denied_metadata: Counter[str] = DEVICE_MACHINE_DENIED_METADATA,
+    optimization: str | None = None,
+    ignored_functions: frozenset[str] = frozenset(),
+    ignored_address_ranges: tuple[tuple[int, int], ...] = (),
 ) -> dict[str, object]:
-    """Close the six compiled UART sites at the final RV64 instruction level."""
+    """Close a profile's compiled UART sites at the final RV64 instruction level."""
+    if optimization not in {None, "O0", "O2"}:
+        raise Core0Error(f"unsupported machine UART optimization profile: {optimization!r}")
     fence_address = symbol_addresses.get("core0_io_fence")
     if fence_address is None:
         raise Core0Error("device ELF lacks the core0_io_fence machine primitive")
     instructions = _device_machine_instructions(disassembly)
+
+    def is_ignored(instruction: dict[str, object]) -> bool:
+        address = int(instruction["address"])
+        return (
+            instruction["function"] in ignored_functions
+            or any(start <= address < stop for start, stop in ignored_address_ranges)
+        )
+
     fence_instructions = [
         instruction
         for instruction in instructions
@@ -4116,6 +4192,8 @@ def validate_device_machine_disassembly(
         )
 
     for index, instruction in enumerate(instructions):
+        if is_ignored(instruction):
+            continue
         if instruction["mnemonic"] != "lui":
             continue
         match = re.fullmatch(
@@ -4133,17 +4211,19 @@ def validate_device_machine_disassembly(
             else:
                 uart_base_materializations.append(index)
 
-    expected_denied_metadata = Counter({
-        "core0_action_6": 1,
-        "core0_action_9": 1,
-        "core0_action_11": 2,
-        "core0_action_12": 2,
-        "core0_action_13": 5,
-        "core0_action_16": 1,
-        "core0_action_18": 6,
-    })
-    if denied_metadata and denied_metadata != expected_denied_metadata:
-        raise Core0Error("machine UART denied-region metadata differs from the exact O0 closure")
+    expected_metadata = Counter(expected_denied_metadata) if optimization != "O2" else Counter()
+    if (
+        (optimization is not None and denied_metadata != expected_metadata)
+        or (
+            optimization is None
+            and denied_metadata
+            and denied_metadata != Counter(expected_denied_metadata)
+        )
+    ):
+        raise Core0Error(
+            "machine UART denied-region metadata differs from the exact optimization closure: "
+            f"{dict(denied_metadata)!r} != {dict(expected_metadata)!r}"
+        )
 
     records: list[dict[str, object]] = []
     approved_access_indices: set[int] = set()
@@ -4302,6 +4382,8 @@ def validate_device_machine_disassembly(
         if instruction["function"] != current_function:
             current_function = str(instruction["function"])
             known.clear()
+        if is_ignored(instruction):
+            continue
         mnemonic = str(instruction["mnemonic"])
         operands = str(instruction["operands"])
         parts = [part.strip() for part in operands.split(",")]
@@ -4380,10 +4462,10 @@ def validate_device_machine_disassembly(
         )
         for record in records
     )
-    if observed != DEVICE_MACHINE_ACCESS_SEQUENCE:
+    if observed != expected_access_sequence:
         raise Core0Error(
-            "machine UART access sequence differs from the exact six-site closure: "
-            f"{observed!r}"
+            "machine UART access sequence differs from the exact profile closure: "
+            f"{observed!r} != {expected_access_sequence!r}"
         )
     return {
         "access_count": len(records),
@@ -4461,6 +4543,12 @@ def audit(
     mutation_path = directory / COMPILER_MUTATION_ARTIFACT
     if policy == TEST_COMPILER_MUTANT_POLICY:
         required_artifacts = (*REQUIRED_ARTIFACTS, COMPILER_MUTATION_ARTIFACT)
+    elif policy == TEST_TRAP_SUITE_POLICY:
+        required_artifacts = TRAP_SUITE_REQUIRED_ARTIFACTS
+        if mutation_path.exists():
+            raise Core0Error(
+                f"{policy} audit rejects the test-only {COMPILER_MUTATION_ARTIFACT}"
+            )
     elif policy == TEST_DEVICE_SUITE_POLICY:
         required_artifacts = DEVICE_SUITE_REQUIRED_ARTIFACTS
         if mutation_path.exists():
@@ -4509,7 +4597,26 @@ def audit(
 
     scalar_test_abi: dict[str, object] | None = None
     memory_ir_audit: dict[str, object] | None = None
-    if policy == TEST_DEVICE_SUITE_POLICY:
+    trap_test_abi: dict[str, object] | None = None
+    trap_ir_audit: dict[str, object] | None = None
+    if policy == TEST_TRAP_SUITE_POLICY:
+        manifest = audit_trap.validate_trap_suite_manifest(
+            load_json(paths["trap-suite-manifest.json"])
+        )
+        trap_test_abi = audit_trap.validate_trap_test_abi(
+            load_json(paths["trap-test-abi.json"]), manifest
+        )
+        device_contract = load_json(paths["device-contract.json"])
+        if device_contract != manifest["device_contract"]:
+            raise Core0Error(
+                "device-contract.json does not match the checked trap manifest"
+            )
+        audit_trap.validate_trap_manifest_companions(
+            manifest,
+            paths["trap-suite-normalized.txt"].read_text(encoding="utf-8"),
+            paths["symbols.txt"].read_text(encoding="utf-8"),
+        )
+    elif policy == TEST_DEVICE_SUITE_POLICY:
         manifest = validate_device_suite_manifest(
             load_json(paths["device-suite-manifest.json"])
         )
@@ -4651,6 +4758,7 @@ def audit(
     scalar_export_configuration: dict[str, object] | None = None
     memory_export_configuration: dict[str, object] | None = None
     device_export_configuration: dict[str, object] | None = None
+    trap_export_configuration: dict[str, object] | None = None
     if policy in SCALAR_SUITE_POLICIES:
         scalar_export_configuration = validate_scalar_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
@@ -4663,10 +4771,65 @@ def audit(
         device_export_configuration = validate_device_export_configuration(
             provenance_obj.get("export_configuration"), manifest, root
         )
+    elif policy == TEST_TRAP_SUITE_POLICY:
+        trap_export_configuration = audit_trap.validate_trap_export_configuration(
+            provenance_obj.get("export_configuration"), manifest, root
+        )
     elif "export_configuration" in provenance_obj:
         raise Core0Error(
             f"{policy} provenance rejects exporter configuration"
         )
+    if policy == TEST_TRAP_SUITE_POLICY:
+        qemu_dtb_command = [
+            "qemu-system-riscv64",
+            "-machine", "virt,acpi=off,dumpdtb=platform.dtb",
+            "-accel", "tcg",
+            "-cpu", "rv64",
+            "-smp", "1",
+            "-m", "128M",
+            "-bios", "none",
+            "-nodefaults",
+            "-nic", "none",
+            "-display", "none",
+            "-serial", "none",
+            "-monitor", "none",
+            "-no-reboot",
+            "-seed", "1",
+        ]
+        expected_emulator_artifacts = [
+            {
+                "path": "platform.dtb",
+                "sha256": sha256(paths["platform.dtb"]),
+                "source": "pinned QEMU virt machine dumpdtb",
+                "generation_command": qemu_dtb_command,
+            },
+            {
+                "path": "platform.dts",
+                "sha256": sha256(paths["platform.dts"]),
+                "source": "dtc decompilation of platform.dtb",
+                "generation_command": [
+                    "dtc", "-I", "dtb", "-O", "dts", "-o",
+                    "platform.dts", "platform.dtb",
+                ],
+            },
+        ]
+        if provenance_obj.get("emulator_artifacts") != expected_emulator_artifacts:
+            raise Core0Error("trap provenance emulator artifact/hash/command closure differs")
+        audit_device.validate_platform_evidence(
+            sha256(paths["platform.dtb"]),
+            paths["platform.dts"].read_text(encoding="utf-8"),
+        )
+        audit_device.validate_toolchain_lock(
+            load_json(root / "tooling/toolchain-lock.json")
+        )
+        tools = provenance_obj.get("tools")
+        qemu_tool = tools.get("qemu-system-riscv64") if isinstance(tools, dict) else None
+        if (
+            not isinstance(qemu_tool, dict)
+            or not isinstance(qemu_tool.get("version"), str)
+            or "QEMU emulator version 11.1.1" not in qemu_tool["version"]
+        ):
+            raise Core0Error("trap provenance does not identify pinned QEMU 11.1.1")
     optimization = provenance_obj.get("optimization")
     if optimization not in {"O0", "O2"}:
         raise Core0Error("provenance optimization profile is missing or unsupported")
@@ -4710,6 +4873,34 @@ def audit(
                 f"{source_digest} != {actual_source_digest}"
             )
         observed_sources.add(source_path)
+    if policy == TEST_TRAP_SUITE_POLICY:
+        required_trap_sources = {
+            "examples/foundation/TrapBuild.lean",
+            "examples/foundation/TrapConformance.lean",
+            "Lemma/Compiler/Test/TrapExport.lean",
+            "Lemma/Machine/TrapPrimitives.lean",
+            "Lemma/Machine/TrapLayout.lean",
+            "scripts/build_trap_suite.py",
+            "scripts/audit_core0.py",
+            "scripts/audit_trap.py",
+            "scripts/check_foundation.py",
+            "scripts/gate7_corpus.py",
+            "scripts/run_trap_case.py",
+            "scripts/check_foundation_gate7.py",
+            "examples/foundation/TrapFrontendProbes.lean",
+            "examples/foundation/TrapPolicyProbes.lean",
+            "examples/foundation/gate7-reject/HiddenExternTrap.lean",
+            "examples/foundation/gate7-reject/PureTrapResult.lean",
+            "examples/foundation/gate7-reject/StoredTrapContinuation.lean",
+            "examples/foundation/gate7-reject/V05Trap.lean",
+            "examples/foundation/gate7-reject/rejections.json",
+        }
+        missing_trap_sources = required_trap_sources - observed_sources
+        if missing_trap_sources:
+            raise Core0Error(
+                "trap provenance omits required source/checker inputs: "
+                + repr(sorted(missing_trap_sources))
+            )
     expected_elaboration_commands: list[list[str]] = []
     if provenance_schema == 2:
         elaborated_inputs = provenance_obj.get("elaborated_inputs")
@@ -4768,6 +4959,16 @@ def audit(
             seen_elaboration_sources.add(source_name)
             seen_oleans.add(olean_name)
             expected_elaboration_commands.append(expected_command)
+        if policy == TEST_TRAP_SUITE_POLICY and [
+            item.get("source") for item in elaborated_inputs
+        ] != [
+            "examples/core0/Positive.lean",
+            "examples/foundation/DeviceConformanceSupport.lean",
+            "examples/foundation/TrapConformance.lean",
+        ]:
+            raise Core0Error(
+                "trap provenance elaboration sequence differs from the exact checked inputs"
+            )
     linked = provenance_obj.get("linked_inputs")
     if not isinstance(linked, list) or len(linked) != 2:
         raise Core0Error("provenance must name exactly the two linked objects")
@@ -4847,14 +5048,38 @@ def audit(
                 "bounded timeout behavior, and freestanding QEMU interaction"
             ),
         },
+        TEST_TRAP_SUITE_POLICY: {
+            "kind": "test-trap-suite-llvm",
+            "source": (
+                "program.ll generated from the checked Core0 v0.6 Action suite through "
+                "validated synchronous-trap lowering and the trap test harness"
+            ),
+            "purpose": (
+                "test-only M-mode synchronous-trap dispatch, full-context preservation, "
+                "fatal containment, and freestanding QEMU interaction"
+            ),
+        },
     }[policy]
-    expected_input_details: dict[str, dict[str, object]] = {
-        "startup.o": {
+    startup_input_details = (
+        {
+            "kind": "lean-structured-trap-startup",
+            "generation_command": EXPECTED_STARTUP_COMMAND,
+            "source": "startup.S generated by Lemma.Machine.TrapPrimitives",
+            "purpose": (
+                "M-mode entry, full synchronous-trap context save/restore, "
+                "trap probes/fatal finishers, and I/O fence"
+            ),
+        }
+        if policy == TEST_TRAP_SUITE_POLICY
+        else {
             "kind": "lean-structured-startup",
             "generation_command": EXPECTED_STARTUP_COMMAND,
             "source": "startup.S generated by Lemma.Machine.Primitives",
             "purpose": "M-mode entry, BSS clearing, a0/a1 boot-input preservation, and I/O fence",
-        },
+        }
+    )
+    expected_input_details: dict[str, dict[str, object]] = {
+        "startup.o": startup_input_details,
         "program.o": {
             "kind": program_input_details["kind"],
             "generation_command": expected_program_command(optimization, policy),
@@ -4917,6 +5142,21 @@ def audit(
         validate_scalar_export_command_log(
             device_export_configuration, command_argv
         )
+    if trap_export_configuration is not None:
+        validate_scalar_export_command_log(
+            trap_export_configuration, command_argv
+        )
+        for platform_command in (
+            qemu_dtb_command,
+            [
+                "dtc", "-I", "dtb", "-O", "dts", "-o",
+                "platform.dts", "platform.dtb",
+            ],
+        ):
+            if platform_command not in command_argv:
+                raise Core0Error(
+                    "trap provenance command log omits a pinned platform command"
+                )
     for expected_command in expected_elaboration_commands:
         if expected_command not in command_argv:
             raise Core0Error(
@@ -4951,7 +5191,11 @@ def audit(
             pre_ir,
             clean_ir_path.read_text(encoding="utf-8"),
         )
-    if policy in {TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}:
+    if policy in {
+        TEST_MEMORY_SUITE_POLICY,
+        TEST_DEVICE_SUITE_POLICY,
+        TEST_TRAP_SUITE_POLICY,
+    }:
         scalar_functions = manifest.get("scalar_functions")
         action_functions = manifest.get("action_functions")
         if not isinstance(scalar_functions, list) or not isinstance(action_functions, list):
@@ -4968,12 +5212,18 @@ def audit(
     }
     machine_ir_functions = (
         DEVICE_MACHINE_IR_FUNCTIONS
-        if policy == TEST_DEVICE_SUITE_POLICY
+        if policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}
         else MACHINE_IR_FUNCTIONS
     )
     expected_pre_definitions = manifest_user_symbols | machine_ir_functions
     scalar_abi_ir: dict[str, object] | None = None
-    if policy == TEST_DEVICE_SUITE_POLICY:
+    if policy == TEST_TRAP_SUITE_POLICY:
+        trap_ir_audit = audit_trap.validate_trap_ir(
+            manifest, pre_ir, post_ir, optimization
+        )
+        source_identity = audit_trap.SOURCE_IDENTITY
+        root_llvm = None
+    elif policy == TEST_DEVICE_SUITE_POLICY:
         source_identity = "Lemma Gate 6 compiled UART device session"
         root_llvm = None
     elif policy == TEST_MEMORY_SUITE_POLICY:
@@ -5020,7 +5270,11 @@ def audit(
         if (
             label == "post_optimization"
             and "inbounds" in inferred_flags
-            and policy not in {TEST_MEMORY_SUITE_POLICY, TEST_DEVICE_SUITE_POLICY}
+            and policy not in {
+                TEST_MEMORY_SUITE_POLICY,
+                TEST_DEVICE_SUITE_POLICY,
+                TEST_TRAP_SUITE_POLICY,
+            }
         ):
             raise Core0Error("optimized IR unexpectedly contains an inbounds promise")
         definitions, declarations, calls = parse_definitions_and_calls(ir)
@@ -5037,6 +5291,8 @@ def audit(
             ) is None:
                 raise Core0Error(f"{label} IR contains an indirect or unparseable call: {stripped}")
         expected_externals = set(ALLOWED_EXTERNALS)
+        if policy == TEST_TRAP_SUITE_POLICY:
+            expected_externals.update(audit_trap.TRAP_EXTERNALS)
         if (
             policy in {
                 TEST_FRONTEND_SUITE_POLICY,
@@ -5066,6 +5322,7 @@ def audit(
             if policy in SCALAR_SUITE_POLICIES or policy in {
                 TEST_MEMORY_SUITE_POLICY,
                 TEST_DEVICE_SUITE_POLICY,
+                TEST_TRAP_SUITE_POLICY,
             }:
                 required_post_definitions = manifest_user_symbols | {"core0_main"}
             else:
@@ -5094,7 +5351,7 @@ def audit(
                 ir_findings[label]["optimizer_flags"] = validate_memory_optimizer_flags(
                     ir, optimization
                 )
-            elif policy == TEST_DEVICE_SUITE_POLICY:
+            elif policy in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}:
                 flag_counts = {
                     flag: len(re.findall(rf"\b{flag}\b", ir))
                     for flag in ("nsw", "nuw", "inbounds", "disjoint")
@@ -5193,7 +5450,7 @@ def audit(
             raise Core0Error(f"PT_LOAD is writable and executable: {segment}")
     alloc_sections = alloc_section_names(sections)
     required_alloc_sections = {".text", ".bss"}
-    if policy != TEST_DEVICE_SUITE_POLICY:
+    if policy not in {TEST_DEVICE_SUITE_POLICY, TEST_TRAP_SUITE_POLICY}:
         required_alloc_sections.add(".rodata")
     if not required_alloc_sections <= alloc_sections:
         raise Core0Error(f"ELF is missing required allocated sections: {sorted(alloc_sections)!r}")
@@ -5232,6 +5489,13 @@ def audit(
                 f"ELF symbol {name} does not match layout.json: "
                 f"{symbol_addresses.get(name)!r} != 0x{expected_address:x}"
             )
+    trap_layout_audit: dict[str, object] | None = None
+    trap_startup_audit: dict[str, object] | None = None
+    if policy == TEST_TRAP_SUITE_POLICY:
+        trap_layout_audit = audit_trap.validate_trap_layout(layout, symbol_addresses)
+        trap_startup_audit = audit_trap.validate_trap_startup_assembly(
+            paths["startup.S"].read_text(encoding="utf-8"), manifest, layout
+        )
     bss_start = symbol_addresses.get("__bss_start")
     bss_end = symbol_addresses.get("__bss_end")
     if (
@@ -5261,7 +5525,10 @@ def audit(
     arch = arch_match.group(1)
     if re.search(r"(?:^|_)[afdcv](?:\d|_|$)", arch):
         raise Core0Error(f"ELF advertises a forbidden non-integer extension: {arch}")
-    if re.search(r"\b(?:gp|f[0-9]+|v[0-9]+)\b", disassembly):
+    if (
+        policy != TEST_TRAP_SUITE_POLICY
+        and re.search(r"\b(?:gp|f[0-9]+|v[0-9]+)\b", disassembly)
+    ):
         raise Core0Error("disassembly uses gp, floating-point, or vector registers")
     if FORBIDDEN_SYMBOL.search(sections + disassembly):
         raise Core0Error("ELF symbol/disassembly inventory contains a forbidden runtime symbol")
@@ -5270,15 +5537,33 @@ def audit(
         raise Core0Error("disassembly lacks the generated _start body")
     start_body = start_disassembly[1].split("<core0_io_fence>:", 1)[0]
     startup_patterns = (
-        r"\bauipc\s+sp,",
-        r"\bmv\s+sp,\s*sp",
-        r"\bmv\s+s0,\s*a0",
-        r"\bmv\s+s1,\s*a1",
-        r"\bsd\s+zero,",
-        r"\bsd\s+s0,",
-        r"\bsd\s+s1,",
-        r"<core0_main>",
-        r"\bwfi\b",
+        (
+            r"\bcsrw\s+mie,\s*zero",
+            r"\bcsrci\s+mstatus,\s*0x8",
+            r"\bauipc\s+sp,",
+            r"\baddi\s+sp,\s*sp,",
+            r"\bmv\s+s0,\s*a0",
+            r"\bmv\s+s1,\s*a1",
+            r"\bsd\s+zero,",
+            r"\bsd\s+s0,",
+            r"\bsd\s+s1,",
+            r"\bcsrw\s+mtvec,",
+            r"\bcsrw\s+mscratch,",
+            r"<core0_main>",
+            r"\bwfi\b",
+        )
+        if policy == TEST_TRAP_SUITE_POLICY
+        else (
+            r"\bauipc\s+sp,",
+            r"\bmv\s+sp,\s*sp",
+            r"\bmv\s+s0,\s*a0",
+            r"\bmv\s+s1,\s*a1",
+            r"\bsd\s+zero,",
+            r"\bsd\s+s0,",
+            r"\bsd\s+s1,",
+            r"<core0_main>",
+            r"\bwfi\b",
+        )
     )
     if any(re.search(pattern, start_body) is None for pattern in startup_patterns):
         raise Core0Error("generated startup disassembly lacks a required entry/BSS/boot invariant")
@@ -5289,10 +5574,33 @@ def audit(
     if re.search(r"\bfence\b", fence_body) is None or re.search(r"\bret\b", fence_body) is None:
         raise Core0Error("core0_io_fence does not lower to a fence followed by return")
     device_machine_audit: dict[str, object] | None = None
+    trap_machine_audit: dict[str, object] | None = None
     if policy == TEST_DEVICE_SUITE_POLICY:
         device_machine_audit = validate_device_machine_disassembly(
-            disassembly, symbol_addresses
+            disassembly, symbol_addresses, optimization=optimization
         )
+    elif policy == TEST_TRAP_SUITE_POLICY:
+        trap_program_symbols = set(ir_findings["post_optimization"]["definitions"])
+        trap_program_start = min(symbol_addresses[name] for name in trap_program_symbols)
+        device_machine_audit = validate_device_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            expected_access_sequence=TRAP_MACHINE_ACCESS_SEQUENCE,
+            expected_denied_metadata=TRAP_MACHINE_DENIED_METADATA,
+            optimization=optimization,
+            ignored_functions=frozenset(audit_trap.TRAP_STARTUP_FUNCTIONS),
+            ignored_address_ranges=((symbol_addresses["_start"], trap_program_start),),
+        )
+        trap_machine_audit = audit_trap.validate_trap_machine_disassembly(
+            disassembly,
+            symbol_addresses,
+            trap_program_symbols,
+            paths["startup.S"].read_text(encoding="utf-8"),
+        )
+        if trap_layout_audit is None or trap_startup_audit is None:
+            raise Core0Error("trap layout/startup audit evidence is missing")
+        trap_machine_audit["layout"] = trap_layout_audit
+        trap_machine_audit["startup"] = trap_startup_audit
     scalar_abi_machine: dict[str, object] | None = None
     if policy == TEST_FRONTEND_SUITE_POLICY:
         scalar_abi_machine = validate_scalar_abi_disassembly(
@@ -5328,7 +5636,12 @@ def audit(
             "program.o defined-function closure differs from optimized LLVM: "
             + repr(sorted(object_function_symbols["program.o"]))
         )
-    if object_function_symbols["startup.o"] != {"_start", "core0_io_fence"}:
+    expected_startup_functions = (
+        audit_trap.TRAP_STARTUP_FUNCTIONS
+        if policy == TEST_TRAP_SUITE_POLICY
+        else {"_start", "core0_io_fence"}
+    )
+    if object_function_symbols["startup.o"] != expected_startup_functions:
         raise Core0Error(
             "startup.o defined-function closure differs from the exact primitive allowlist: "
             + repr(sorted(object_function_symbols["startup.o"]))
@@ -5360,6 +5673,51 @@ def audit(
                 + repr(oversized_frames)
             )
         stack_and_call_graph = validate_loop_stack_call_graph(post_ir, stack_sizes)
+        if policy == TEST_TRAP_SUITE_POLICY:
+            frame_chains = stack_and_call_graph.get("frame_chains")
+            foreground_chain = (
+                frame_chains.get("core0_main")
+                if isinstance(frame_chains, dict)
+                else None
+            )
+            dispatcher_chain = (
+                frame_chains.get(audit_trap.DISPATCH_SYMBOL)
+                if isinstance(frame_chains, dict)
+                else None
+            )
+            if (
+                not isinstance(foreground_chain, dict)
+                or isinstance(foreground_chain.get("bytes"), bool)
+                or not isinstance(foreground_chain.get("bytes"), int)
+                or foreground_chain["bytes"] > 65520
+            ):
+                raise Core0Error(
+                    "trap foreground compiled call chain exceeds its 65,520-byte capacity"
+                )
+            if (
+                not isinstance(dispatcher_chain, dict)
+                or isinstance(dispatcher_chain.get("bytes"), bool)
+                or not isinstance(dispatcher_chain.get("bytes"), int)
+                or dispatcher_chain["bytes"] > 16048
+            ):
+                raise Core0Error(
+                    "trap dispatcher compiled call chain exceeds its 16,048-byte capacity"
+                )
+            stack_and_call_graph["foreground"] = {
+                **foreground_chain,
+                "machine_entry": "core0_main",
+                "checked_root": audit_trap.FOREGROUND_SYMBOL,
+                "capacity_bytes": 65520,
+                "stack_region_bytes": 65536,
+                "low_canary_bytes": 16,
+            }
+            stack_and_call_graph["trap_dispatcher"] = {
+                **dispatcher_chain,
+                "capacity_bytes": 16048,
+                "trap_frame_bytes": 288,
+                "outgoing_argument_bytes": 16,
+                "usable_trap_stack_bytes": 16352,
+            }
         if policy == TEST_LOOP_SUITE_POLICY:
             if not isinstance(scalar_abi_machine, dict):
                 raise Core0Error("bounded-loop machine audit record is missing")
@@ -5367,7 +5725,7 @@ def audit(
     elif has_stack_sizes or ".stack_sizes" in sections:
         raise Core0Error(f"{policy} program.o unexpectedly contains Gate-4 stack metadata")
     final_function_symbols = defined_function_symbols(sections)
-    expected_final_functions = post_definitions | {"_start", "core0_io_fence"}
+    expected_final_functions = post_definitions | expected_startup_functions
     if final_function_symbols != expected_final_functions:
         raise Core0Error(
             "final ELF defined-function closure differs from its two input objects: "
@@ -5378,7 +5736,20 @@ def audit(
         name: tool_text("llvm-nm", ["--undefined-only", str(directory / name)], root).splitlines()
         for name in expected_inputs
     }
-    startup_allowed = {"core0_main", "__boot_hartid", "__bss_start", "__bss_end", "__stack_top"}
+    startup_allowed = (
+        {
+            "core0_main",
+            audit_trap.DISPATCH_SYMBOL,
+            "__boot_hartid",
+            "__bss_start",
+            "__bss_end",
+            "__stack_top",
+            "__trap_stack_top",
+            "__trap_probe_context",
+        }
+        if policy == TEST_TRAP_SUITE_POLICY
+        else {"core0_main", "__boot_hartid", "__bss_start", "__bss_end", "__stack_top"}
+    )
     startup_names = {
         line.split()[-1]
         for line in object_undefined["startup.o"]
@@ -5394,7 +5765,10 @@ def audit(
         for line in object_undefined["program.o"]
         if line.strip()
     }
-    if program_names != ALLOWED_EXTERNALS:
+    expected_program_names = set(ALLOWED_EXTERNALS)
+    if policy == TEST_TRAP_SUITE_POLICY:
+        expected_program_names.update(audit_trap.TRAP_EXTERNALS)
+    if program_names != expected_program_names:
         raise Core0Error(
             "LLVM program object undefined-symbol closure differs from the exact allowlist: "
             + repr(sorted(program_names))
@@ -5405,6 +5779,8 @@ def audit(
         relocation_text = tool_text("llvm-readelf", ["-r", str(directory / name)], root)
         observed = relocation_types(relocation_text)
         allowed_relocations = set(ALLOWED_RELOCATIONS)
+        if policy == TEST_TRAP_SUITE_POLICY and name == "startup.o":
+            allowed_relocations.add("R_RISCV_JAL")
         if name == "program.o" and (
             policy in STACK_SIZE_POLICIES
             or (policy in DISPATCH_SUITE_POLICIES and optimization == "O2")
@@ -5428,6 +5804,12 @@ def audit(
             and optimization == "O2"
         ):
             expected_jump_table_relocations = DEVICE_O2_JUMP_TABLE_RELOCATIONS
+        elif (
+            policy == TEST_TRAP_SUITE_POLICY
+            and name == "program.o"
+            and optimization == "O2"
+        ):
+            expected_jump_table_relocations = TRAP_O2_JUMP_TABLE_RELOCATIONS
         forbidden_relocations = observed - allowed_relocations
         if forbidden_relocations:
             raise Core0Error(
@@ -5455,7 +5837,10 @@ def audit(
                     elif (
                         (
                             policy in DISPATCH_SUITE_POLICIES
-                            or policy == TEST_DEVICE_SUITE_POLICY
+                            or policy in {
+                                TEST_DEVICE_SUITE_POLICY,
+                                TEST_TRAP_SUITE_POLICY,
+                            }
                         )
                         and optimization == "O2"
                         and current_section == ".rela.rodata"
@@ -5569,6 +5954,12 @@ def audit(
         report["memory_ir_audit"] = memory_ir_audit
     if device_machine_audit is not None:
         report["device_machine_audit"] = device_machine_audit
+    if trap_test_abi is not None:
+        report["trap_test_abi"] = trap_test_abi
+    if trap_ir_audit is not None:
+        report["trap_ir_audit"] = trap_ir_audit
+    if trap_machine_audit is not None:
+        report["trap_machine_audit"] = trap_machine_audit
     write_json(directory / "audit.json", report)
     inventory = "".join(f"{digest}  {name}\n" for name, digest in sorted(hashes.items()))
     (directory / "sha256sums.txt").write_text(inventory, encoding="ascii")

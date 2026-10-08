@@ -35,9 +35,11 @@ private def effectNames (effects : Lemma.Core0.EffectSet) : List String :=
   (if effects.ramWrite then ["fixed-ram-write"] else []) ++
   (if effects.mmioRead then ["mmio-read"] else []) ++
   (if effects.mmioWrite then ["mmio-write"] else []) ++
-  (if effects.ioOrder then ["io-order"] else [])
+  (if effects.ioOrder then ["io-order"] else []) ++
+  (if effects.syncTrap then ["sync-trap"] else []) ++
+  (if effects.machineState then ["machine-state"] else [])
 
-private def renderEffects (effects : Lemma.Core0.EffectSet) : String :=
+def renderEffects (effects : Lemma.Core0.EffectSet) : String :=
   jsonArray (effectNames effects |>.map quoted)
 
 private def renderPrimitive (stableId : String) : String :=
@@ -118,7 +120,7 @@ private def renderActionIteration (site : Lemma.Core0.ActionIterationUse) : Stri
     "\"outcome\":\"checked-result-v1\"," ++
     "\"exhaustion\":{\"status\":9,\"value\":\"initial\",\"callbacks\":0}}"
 
-private def renderManifest (suite : Lemma.Core0.CheckedActionSuite)
+def renderManifest (suite : Lemma.Core0.CheckedActionSuite)
     (lowered : LoweredActionSuite) (layout : Lemma.Machine.DeviceLayout)
     (config : Configuration) : Except String String := do
   let memoryContract ← layout.memory.memoryContractJson
@@ -193,7 +195,7 @@ private def renderManifest (suite : Lemma.Core0.CheckedActionSuite)
     "}", ""
   ]
 
-private def renderNormalized (suite : Lemma.Core0.CheckedActionSuite) : String :=
+def renderNormalized (suite : Lemma.Core0.CheckedActionSuite) : String :=
   let roots := suite.roots.toList.map fun root =>
     s!"root={root.id};source={root.source};signature={renderActionSignature root.signature}\n"
   let scalars := suite.scalarFunctions.toList.map fun function =>

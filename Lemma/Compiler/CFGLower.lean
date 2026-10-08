@@ -3,15 +3,17 @@ import Lemma.Compiler.LLVMValidate
 import Lemma.Core0.ActionIR
 import Lemma.Core0.Bounded
 import Lemma.Core0.ScalarLemmas
+import Lemma.Core0.Trap
 
 /-!
-Structured `core0-v0.2` through `core0-v0.5` lowering.
+Structured `core0-v0.2` through `core0-v0.6` lowering.
 
 This module is intentionally parallel to the historical single-block lowering in
 `Lower.lean`.  Task 001 and the Gate 2 `core0-v0.1` suite retain their byte-stable
 eager-select path.  The additive structured profiles use explicit branches and phi
 merge values; v0.3 additionally lowers checked bounded folds to real CFG backedges,
-v0.4 adds checked fixed-region Actions, and v0.5 adds closed ordered UART sites.
+v0.4 adds checked fixed-region Actions, v0.5 adds closed ordered UART sites,
+and v0.6 adds closed synchronous-trap primitive calls.
 -/
 
 namespace Lemma.Compiler
@@ -225,7 +227,8 @@ private def lowerExprCFG (profile : Lemma.Core0.Profile)
           (rv64LP64Extension resultTy) symbol lowered)
         pure (.local result)
     | .boundedFoldU32 budget callback count initial => do
-        unless profile == .v0_3 || profile == .v0_4 || profile == .v0_5 do
+        unless profile == .v0_3 || profile == .v0_4 || profile == .v0_5 ||
+            profile == .v0_6 do
           throw s!"bounded iteration requires `{Lemma.Core0.Profile.v0_3.contractVersion}` or later"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
           throw s!"bounded iteration budget {budget} is outside 0..{Lemma.Core0.Bounded.maximumBudget}"
@@ -414,7 +417,7 @@ def lowerSuiteV03 (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite :=
   lowerStructuredSuiteForProfile .v0_3 suite options
 
-/-! ## Checked fixed-region and device Actions (`core0-v0.4` / `core0-v0.5`)
+/-! ## Checked fixed-region, device, and trap Actions (`core0-v0.4`--`core0-v0.6`)
 
 The Action path deliberately has a fixed two-word result and accepts only scalar
 parameters.  It shares the structured scalar expression lowerer above, but keeps
@@ -536,6 +539,25 @@ private def deviceCatalogMatchesBackend : Bool :=
     expectedDeviceSpec .uartEnableAndResetFifo
   ]
 
+private def expectedTrapSpec (op : Lemma.Core0.Trap.Op) :
+    Lemma.Core0.Trap.OpSpec := {
+  op
+  llvmSymbol := op.llvmSymbol
+  arguments := #[]
+  result := .u64
+  disposition := match op with
+    | .ecall | .breakpoint => .resume
+    | .unexpectedEcall | .illegalInstruction => .fatal
+}
+
+private def trapCatalogMatchesBackend : Bool :=
+  Lemma.Core0.Trap.opCatalog == #[
+    expectedTrapSpec .ecall,
+    expectedTrapSpec .breakpoint,
+    expectedTrapSpec .unexpectedEcall,
+    expectedTrapSpec .illegalInstruction
+  ]
+
 private def pushDeviceOp (operations : Array Lemma.Core0.Device.Op)
     (operation : Lemma.Core0.Device.Op) : Array Lemma.Core0.Device.Op :=
   if operations.contains operation then operations else operations.push operation
@@ -560,6 +582,31 @@ private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
       collectDeviceOps (pushDeviceOp operations .uartWriteByte) next
   | .uartEnableAndResetFifo _ next =>
       collectDeviceOps (pushDeviceOp operations .uartEnableAndResetFifo) next
+  | .trap _ _ _ next =>
+      collectDeviceOps operations next
+termination_by action => sizeOf action
+
+private def pushTrapOp (operations : Array Lemma.Core0.Trap.Op)
+    (operation : Lemma.Core0.Trap.Op) : Array Lemma.Core0.Trap.Op :=
+  if operations.contains operation then operations else operations.push operation
+
+private def collectTrapOps (operations : Array Lemma.Core0.Trap.Op) :
+    Lemma.Core0.ActionExpr → Array Lemma.Core0.Trap.Op
+  | .done .. | .call .. => operations
+  | .bind first _ _ next =>
+      collectTrapOps (collectTrapOps operations first) next
+  | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
+      .checkRange _ _ _ _ _ next =>
+      collectTrapOps operations next
+  | .ite _ thenBranch elseBranch =>
+      collectTrapOps (collectTrapOps operations thenBranch) elseBranch
+  | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
+      collectTrapOps operations next
+  | .uartReadStatus _ _ next | .uartReadByte _ _ next |
+      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next =>
+      collectTrapOps operations next
+  | .trap operation _ _ next =>
+      collectTrapOps (pushTrapOp operations operation) next
 termination_by action => sizeOf action
 
 private def lookupActionFunction (functions : Array Lemma.Core0.ActionFunction)
@@ -877,7 +924,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next => do
-      let maximumBudget := if profile == .v0_5 then
+      let maximumBudget := if profile == .v0_5 || profile == .v0_6 then
         Lemma.Core0.Memory.maximumBudgetV05
       else
         Lemma.Core0.Memory.maximumBudgetV04
@@ -989,7 +1036,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local resultValue) do
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
-      unless profile == .v0_5 do
+      unless profile == .v0_5 || profile == .v0_6 do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1002,7 +1049,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
-      unless profile == .v0_5 do
+      unless profile == .v0_5 || profile == .v0_6 do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1015,7 +1062,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
-      unless profile == .v0_5 do
+      unless profile == .v0_5 || profile == .v0_6 do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1025,7 +1072,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
-      unless profile == .v0_5 do
+      unless profile == .v0_5 || profile == .v0_6 do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
@@ -1033,6 +1080,16 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.uartEnableAndResetFifo site)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
+  | .trap operation status value next => do
+      unless profile == .v0_6 do
+        throw s!"synchronous trap operations require `{Lemma.Core0.Profile.v0_6.contractVersion}`"
+      unless status.ty == .u8 && value.ty == .u64 do
+        throw "checked synchronous trap has an inconsistent continuation type"
+      let mask ← freshValue "trap.context-mask."
+      emit (.abiCall (some mask) .i64 none operation.llvmSymbol #[])
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        withLocal value.id (.local mask) do
+          lowerActionExpr profile suite symbols next
 termination_by action => sizeOf action
 
 private def lowerScalarActionFunction (profile : Lemma.Core0.Profile)
@@ -1113,8 +1170,8 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
 private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
-  unless profile == .v0_4 || profile == .v0_5 do
-    throw "Action lowering requires profile core0-v0.4 or core0-v0.5"
+  unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 do
+    throw "Action lowering requires profile core0-v0.4, core0-v0.5, or core0-v0.6"
   unless suite.contractVersion == profile.contractVersion do
     throw s!"Action lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
   unless Lemma.Core0.Memory.tableValid do
@@ -1135,9 +1192,27 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
       actualDeviceOps.all suite.usedDeviceOps.contains &&
       suite.usedDeviceOps.all actualDeviceOps.contains do
     throw "checked Action suite has stale device-operation metadata"
+  let mut actualTrapOps : Array Lemma.Core0.Trap.Op := #[]
+  for function in suite.actionFunctions do
+    actualTrapOps := collectTrapOps actualTrapOps function.body
+  let mut seenTrapMetadata : Array Lemma.Core0.Trap.Op := #[]
+  for operation in suite.usedTrapOps do
+    if seenTrapMetadata.contains operation then
+      throw s!"checked Action suite repeats trap metadata `{operation.stableId}`"
+    seenTrapMetadata := seenTrapMetadata.push operation
+    let some spec := Lemma.Core0.Trap.findSpec? operation
+      | throw s!"checked Action suite names uncatalogued trap operation `{operation.stableId}`"
+    unless spec == expectedTrapSpec operation do
+      throw s!"trap operation `{operation.stableId}` disagrees with the closed backend contract"
+  unless actualTrapOps.size == suite.usedTrapOps.size &&
+      actualTrapOps.all suite.usedTrapOps.contains &&
+      suite.usedTrapOps.all actualTrapOps.contains do
+    throw "checked Action suite has stale trap-operation metadata"
   if profile == .v0_4 && !actualDeviceOps.isEmpty then
     throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
-  if profile == .v0_5 then
+  if (profile == .v0_4 || profile == .v0_5) && !actualTrapOps.isEmpty then
+    throw s!"trap operations require `{Lemma.Core0.Profile.v0_6.contractVersion}`"
+  if profile == .v0_5 || profile == .v0_6 then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
@@ -1149,6 +1224,9 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
+  if profile == .v0_6 then
+    unless Lemma.Core0.Trap.catalogValid && trapCatalogMatchesBackend do
+      throw "the compiled core0-v0.6 trap catalog disagrees with the closed LLVM lowering"
   unless !suite.roots.isEmpty do throw "checked Action suite has no roots"
   unless !suite.actionFunctions.isEmpty do throw "checked Action suite has no functions"
 
@@ -1188,6 +1266,10 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         function.directEffects.ioOrder ==
           (hasDirectDeviceRead || hasDirectDeviceWrite) do
       throw s!"checked Action function `{function.name}` has stale direct device effects"
+    let hasDirectTrap := !(collectTrapOps #[] function.body).isEmpty
+    unless function.directEffects.syncTrap == hasDirectTrap &&
+        function.directEffects.machineState == hasDirectTrap do
+      throw s!"checked Action function `{function.name}` has stale direct trap effects"
     let missing := function.actionDependencies.filter fun dependency =>
       !seenActions.contains dependency
     unless missing.isEmpty do
@@ -1256,5 +1338,11 @@ operations in addition to the unchanged v0.4 fixed-region path. -/
 def lowerActionSuiteV05 (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
   lowerActionSuiteForProfile .v0_5 suite options
+
+/-- Lower a checked `core0-v0.6` Action suite with the unchanged v0.5 UART path
+and the four closed synchronous-trap primitive calls. -/
+def lowerActionSuiteV06 (suite : Lemma.Core0.CheckedActionSuite)
+    (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
+  lowerActionSuiteForProfile .v0_6 suite options
 
 end Lemma.Compiler

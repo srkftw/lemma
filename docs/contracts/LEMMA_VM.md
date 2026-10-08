@@ -3,7 +3,9 @@
 Status: Task 001 executes and pins the bounded QEMU scalar-boot profile. Task 002
 Gate 5 retains that boot contract and adds the fixed ordinary-memory test layout;
 Gate 6 adds the polling-only compiled UART contract below. Traps, timers, privilege
-transitions, and the remaining roadmap are still unimplemented at this checkpoint.
+transitions, and the remaining roadmap are still unqualified at this checkpoint.
+Gate 7's separate synchronous-trap implementation is under construction below;
+its target acceptance has not yet passed.
 
 The reference backend is QEMU system emulation, RISC-V `virt`, one RV64 hart,
 128 MiB RAM, no network or disk for the first smoke test, a UART for target output,
@@ -78,6 +80,24 @@ hash, exact argv, transmitted/received bytes, exit status, timestamps, and timeo
 cleanup. The machine harness itself performs only the zero-argument Action call and a
 status-coded SiFive-test write; it contains no UART parser, polling loop, formatter, or
 drain routine.
+
+## Gate 7 synchronous-trap machine profile under construction
+
+The existing one-hart, 128 MiB, integer-only `virt` launch with `-bios none`
+is retained. Direct `mtvec`, masked interrupts, a private bounded 16 KiB trap
+stack, a 288-byte full-integer-register/CSR frame, and a nine-word compiled Lean
+dispatcher form `m-mode-sync-trap-v1`. Private probe storage and stack canaries
+are disjoint from ordinary checked-RAM regions and do not grant source authority.
+
+Only the fixed ECALL-M and EBREAK sites may resume. Their continuations are
+explicit labels, not a generic PC increment. Unapproved causes/PCs terminate
+with bounded source diagnostics and status 18. A zero `mscratch` latch during
+dispatch detects nested entry and takes the stackless status-19 path. Entry and
+return-tail accesses presume fixed mapped/aligned RAM, approved machine state,
+and no NMI; masking interrupts alone is not claimed to prevent synchronous
+double faults. Exact immutable ISA/QEMU references, layout, frame offsets, and
+these limitations are in [`traps-core0-v06.md`](../audits/traps-core0-v06.md).
+No target Gate 7 pass is implied by the existence of this implementation.
 
 ## Roadmap, not current guarantees
 

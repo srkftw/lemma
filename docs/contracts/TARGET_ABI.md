@@ -58,6 +58,22 @@ pinned LemmaVM/test-image contract, not arbitrary pointers supplied through the 
 Runtime request metadata is loaded from the declared input fixture at `0x81000000`;
 it is data, not executable code or a second boot image.
 
+## Gate 7 synchronous-trap ABI under qualification
+
+`core0-v0.6` retains the Action `{i64,i64}` return and integer LP64 convention.
+Its dispatcher has nine `UInt64` arguments; the machine caller places the ninth
+at zero of a 16-byte outgoing frame. The returned a0 is status and a1 is the
+explicit authorized resume PC. Four closed no-argument machine primitives
+return a 64-bit context-check mask to the checked Action continuation.
+
+The trap frame saves x1–x31, including interrupted SP, and five critical CSR
+snapshots before dispatch. Its aligned size is 288 bytes. Dedicated private
+storage and exact offsets are specified in
+[`traps-core0-v06.md`](../audits/traps-core0-v06.md). Saved GP/TP are temporarily
+zeroed for compiled dispatch, whose object code must use neither register;
+no relaxation is permitted. MRET architectural changes to mstatus are not
+mistaken for arbitrary context corruption. Target acceptance is still pending.
+
 ## Entry and layout
 
 Generate the minimal entry sequence from reviewed Lean-authored primitive definitions.

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.6",
+  "legacy_profile": "core0-v0.5",
+  "cases": [
+    {
+      "name": "v05-trap",
+      "path": "examples/foundation/gate7-reject/V05Trap.lean",
+      "diagnostic_code": "unsupported-primitive",
+      "required_fragments": [
+        "trap operation `trap.ecall` requires `core0-v0.6`; `core0-v0.5` does not admit synchronous traps",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "stored-trap-continuation",
+      "path": "examples/foundation/gate7-reject/StoredTrapContinuation.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "Action result continuation must be an immediate lambda; stored/dynamic continuations are rejected",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "hidden-extern-trap",
+      "path": "examples/foundation/gate7-reject/HiddenExternTrap.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "Action declaration `forbidden` has an arbitrary @[extern] implementation",
+        "dependency path: root -> forbidden"
+      ]
+    },
+    {
+      "name": "pure-trap-result",
+      "path": "examples/foundation/gate7-reject/PureTrapResult.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "effectful declaration result is not the exact Lemma.Core0.Memory.Action type",
+        "dependency path: root"
+      ]
+    }
+  ]
+}

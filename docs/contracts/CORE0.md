@@ -5,8 +5,9 @@ checker. Task 002 Gate 3 adds the explicitly separate `core0-v0.2` scalar/CFG
 profile. Task 002 Gate 4 adds the narrowly bounded `core0-v0.3` iteration profile
 described below. Task 002 Gate 5 adds the separately selected `core0-v0.4`
 checked-memory/Action profile. Task 002 Gate 6 adds the separately selected
-`core0-v0.5` polling-device profile. Traps, timers, and the broader Core0 contract
-remain future work.
+`core0-v0.5` polling-device profile. Gate 7 is implementing the separate
+`core0-v0.6` synchronous-trap profile below; its target acceptance is pending.
+Timers and the broader Core0 contract remain future work.
 
 ## Purpose
 
@@ -192,13 +193,40 @@ those models. This profile is specific to the pinned QEMU machine; it is not a
 general driver framework, physical-board port, interrupt implementation, hosted IO,
 or managed runtime.
 
+## Synchronous-trap profile under construction
+
+`core0-v0.6` must be selected explicitly. It preserves v0.5 and adds exactly
+`Action.trapEcall`, `trapBreakpoint`, `trapUnexpectedEcall`, and
+`trapIllegalInstruction`. Each takes an immediate checked `UInt8 -> UInt64 ->
+Action` continuation and no caller-selected machine address, instruction, CSR,
+cause, or frame pointer. The first two execute fixed authorized traps and return
+status zero with a target register/canary mismatch mask. The latter two are
+controlled fatal fixtures, not recoverable arbitrary-fault primitives.
+
+The new transitive effects are `sync-trap` and `machine-state`. Scalar wrappers
+cannot hide these effects; old Action profiles reject them. Source signatures,
+normalized checked nodes, operation catalogs, declared effects, and exact closed
+`core0_trap_*` machine declarations must agree. The finite ordinary-memory and
+UART models explicitly reject trap Actions rather than pretending to execute
+hardware. The v0.5 fold budget and fixed-memory/UART contracts are unchanged.
+
+Added terminal statuses are 18 (unexpected trap), 19 (double fault), and 20
+(context mismatch). Status 10 remains internal. The nine-word compiled trap
+dispatcher checks cause, exact PC, relevant mstatus bits, mie, and specification-
+permitted trap values; only explicit site/continuation pairs may resume. The
+machine entry/return and resource premises are in
+[`traps-core0-v06.md`](../audits/traps-core0-v06.md). This contract describes the
+implementation being qualified, not a compiler-correctness proof or a completed
+Gate 7 acceptance run.
+
 ## Future profile work
 
 - `UInt8`, `UInt32`, `UInt64`, explicitly represented Boolean values, and literal data.
 - First-order monomorphic scalar functions, direct calls, let bindings, conditionals,
   unsigned comparisons, bit operations and wrapping integer addition/subtraction/multiplication.
-- Trap entry, timer interrupts, and interrupt-safe synchronization remain later,
-  separately reviewed machine profiles; v0.5 UART operation is polling-only.
+- Timer interrupts and interrupt-safe synchronization remain later separately
+  reviewed machine profiles; v0.5 UART operation is polling-only and v0.6 is
+  synchronous, non-nested M-mode trap handling only.
 - No floating point, vectors, atomics, dynamic allocation or concurrency in this first profile.
 - General recursion and dynamic loops may be rejected initially. Any admitted bounded loop
   needs an explicit representation and lowering; the compiler must not ignore its body.

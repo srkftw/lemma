@@ -100,3 +100,18 @@ independent-reference comparisons, clean-directory reproducibility builds, a sou
 mutation, and an audit-regression link.  Missing tools or evidence fail; there is no
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
+
+Task 002 has a separate host suite and incremental target checker. Gates 0–6
+have recorded clean-source acceptance; Gate 7 is under qualification:
+
+```sh
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 \
+  --work-dir build/foundation/gate6-check --clean --timeout 300 --qemu-timeout 20
+```
+
+These interfaces have actually run. Later phases and `--all` must be judged by
+their fresh reports and source identities, not assumed green from an older
+prefix. Follow the task ledger/checkpoint when resuming. Full detached-worktree
+qualification, integrated monitor acceptance, publication, and actual CI remain
+separate Task 002 obligations.

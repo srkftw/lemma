@@ -9,6 +9,7 @@ import Lemma.Compiler.Test.BoundedEval
 import Lemma.Compiler.Test.BoundedExport
 import Lemma.Compiler.Test.MemoryExport
 import Lemma.Compiler.Test.DeviceExport
+import Lemma.Compiler.Test.TrapExport
 import Lemma.Core0.ScalarLemmas
 import Lemma.Core0.MemoryLemmas
 import Lemma.Core0.DeviceLemmas

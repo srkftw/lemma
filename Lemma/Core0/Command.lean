@@ -12,6 +12,7 @@ syntax (name := core0CheckV02) "#core0_check_v0_2 " ident : command
 syntax (name := core0CheckV03) "#core0_check_v0_3 " ident : command
 syntax (name := core0CheckV04) "#core0_check_v0_4 " ident : command
 syntax (name := core0CheckV05) "#core0_check_v0_5 " ident : command
+syntax (name := core0CheckActionV06) "#core0_check_action_v06 " ident : command
 
 elab_rules : command
   | `(#core0_check $decl:ident) => do
@@ -59,6 +60,19 @@ elab_rules : command
             s!"(roots={suite.roots.size}, action-functions={suite.actionFunctions.size}, " ++
             s!"scalar-functions={suite.scalarFunctions.size}, " ++
             s!"device-ops={suite.usedDeviceOps.size})"
+          logInfoAt decl summary
+
+  | `(#core0_check_action_v06 $decl:ident) => do
+      let name ← resolveGlobalConstNoOverload decl
+      let env ← getEnv
+      match checkAndLowerActionSuiteV06 env #[name] with
+      | .error diag => throwErrorAt decl diag.render
+      | .ok suite =>
+          let summary := s!"Core0 v0.6 Action accepted `{name}` " ++
+            s!"(roots={suite.roots.size}, action-functions={suite.actionFunctions.size}, " ++
+            s!"scalar-functions={suite.scalarFunctions.size}, " ++
+            s!"device-ops={suite.usedDeviceOps.size}, " ++
+            s!"trap-ops={suite.usedTrapOps.size})"
           logInfoAt decl summary
 
 end Lemma.Core0

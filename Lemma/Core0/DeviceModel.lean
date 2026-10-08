@@ -112,6 +112,49 @@ def uartEnableAndResetFifo (state : State) : Result :=
   { status := Status.ok, value := 0,
     state := orderedWrite state UART.fcrOffset UART.fcrEnableAndReset }
 
+/-! The finite UART model can step only the four closed v0.5 device primitives.
+It deliberately does not pretend to simulate the Gate 7 machine trap substrate. -/
+
+inductive ActionStepDiagnosticCode where
+  | nonDeviceActionUnsupported
+  | trapActionUnsupported
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+structure ActionStepDiagnostic where
+  code : ActionStepDiagnosticCode
+  message : String
+  deriving Inhabited, Repr
+
+/-- Execute exactly one top-level UART Action and expose its instantiated
+continuation.  RAM, control-flow, call, fold, and trap Actions belong to their
+own models; traps fail explicitly instead of receiving fabricated hardware state. -/
+def stepDeviceAction (state : State) (action : Action) :
+    Except ActionStepDiagnostic (Result × Action) :=
+  match action with
+  | .uartReadStatus next =>
+      let result := uartReadStatus state
+      .ok (result, next result.status result.value)
+  | .uartReadByte next =>
+      let result := uartReadByte state
+      .ok (result, next result.status result.value)
+  | .uartWriteByte value next =>
+      let result := uartWriteByte state value
+      .ok (result, next result.status)
+  | .uartEnableAndResetFifo next =>
+      let result := uartEnableAndResetFifo state
+      .ok (result, next result.status)
+  | .trapEcall _ | .trapBreakpoint _ | .trapUnexpectedEcall _ |
+      .trapIllegalInstruction _ =>
+      .error {
+        code := .trapActionUnsupported
+        message := "the finite UART model does not simulate synchronous trap actions"
+      }
+  | _ =>
+      .error {
+        code := .nonDeviceActionUnsupported
+        message := "the finite UART primitive model received a non-device Action"
+      }
+
 /-- Finite source-level receive polling over the primitive model. -/
 def receiveByte : Nat → State → Result
   | 0, state => { status := Status.rxTimeout, value := 0, state }

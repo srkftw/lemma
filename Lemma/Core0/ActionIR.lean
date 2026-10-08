@@ -1,9 +1,10 @@
 import Lemma.Core0.IR
 import Lemma.Core0.Device
 import Lemma.Core0.Memory
+import Lemma.Core0.Trap
 
 /-!
-Backend-neutral checked effect syntax for `core0-v0.4` and `core0-v0.5`.
+Backend-neutral checked effect syntax for `core0-v0.4` through `core0-v0.6`.
 
 This is separate from scalar `Expr`: an Action is never assigned a scalar target
 type.  Continuation binders are scalar locals and the compiler erases the enclosing
@@ -34,6 +35,8 @@ structure EffectSet where
   mmioRead : Bool := false
   mmioWrite : Bool := false
   ioOrder : Bool := false
+  syncTrap : Bool := false
+  machineState : Bool := false
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace EffectSet
@@ -44,6 +47,7 @@ def read : EffectSet := { checkedAccess := true, ramRead := true }
 def write : EffectSet := { checkedAccess := true, ramWrite := true }
 def deviceRead : EffectSet := { mmioRead := true, ioOrder := true }
 def deviceWrite : EffectSet := { mmioWrite := true, ioOrder := true }
+def trap : EffectSet := { syncTrap := true, machineState := true }
 
 def union (left right : EffectSet) : EffectSet := {
   checkedAccess := left.checkedAccess || right.checkedAccess
@@ -52,6 +56,8 @@ def union (left right : EffectSet) : EffectSet := {
   mmioRead := left.mmioRead || right.mmioRead
   mmioWrite := left.mmioWrite || right.mmioWrite
   ioOrder := left.ioOrder || right.ioOrder
+  syncTrap := left.syncTrap || right.syncTrap
+  machineState := left.machineState || right.machineState
 }
 
 instance : Union EffectSet := ⟨union⟩
@@ -62,7 +68,9 @@ def subset (left right : EffectSet) : Bool :=
     (!left.ramWrite || right.ramWrite) &&
     (!left.mmioRead || right.mmioRead) &&
     (!left.mmioWrite || right.mmioWrite) &&
-    (!left.ioOrder || right.ioOrder)
+    (!left.ioOrder || right.ioOrder) &&
+    (!left.syncTrap || right.syncTrap) &&
+    (!left.machineState || right.machineState)
 
 def render (effects : EffectSet) : String :=
   let names :=
@@ -71,7 +79,9 @@ def render (effects : EffectSet) : String :=
     (if effects.ramWrite then ["fixed-ram-write"] else []) ++
     (if effects.mmioRead then ["mmio-read"] else []) ++
     (if effects.mmioWrite then ["mmio-write"] else []) ++
-    (if effects.ioOrder then ["io-order"] else [])
+    (if effects.ioOrder then ["io-order"] else []) ++
+    (if effects.syncTrap then ["sync-trap"] else []) ++
+    (if effects.machineState then ["machine-state"] else [])
   "[" ++ String.intercalate "," names ++ "]"
 
 end EffectSet
@@ -123,6 +133,7 @@ inductive ActionExpr where
   | uartReadByte (status value : Param) (next : ActionExpr)
   | uartWriteByte (value : Expr) (status : Param) (next : ActionExpr)
   | uartEnableAndResetFifo (status : Param) (next : ActionExpr)
+  | trap (operation : Trap.Op) (status value : Param) (next : ActionExpr)
   deriving BEq, Inhabited, Repr
 
 def ActionExpr.renderNormalized : ActionExpr → String
@@ -164,6 +175,9 @@ def ActionExpr.renderNormalized : ActionExpr → String
         s!"{next.renderNormalized})"
   | .uartEnableAndResetFifo status next =>
       s!"(action.uart-enable-reset-fifo (status %{status.id}) {next.renderNormalized})"
+  | .trap operation status value next =>
+      s!"(action.trap {operation.stableId} (status %{status.id}) " ++
+        s!"(value %{value.id}) {next.renderNormalized})"
 
 structure ActionFunction where
   name : Lean.Name
@@ -198,6 +212,8 @@ structure CheckedActionSuite where
   usedActionIterations : Array ActionIterationUse := #[]
   /-- Exact closed v0.5 device identities, in first-use order. -/
   usedDeviceOps : Array Device.Op := #[]
+  /-- Exact closed v0.6 synchronous-trap identities, in first-use order. -/
+  usedTrapOps : Array Trap.Op := #[]
   deriving BEq, Inhabited, Repr
 
 def CheckedActionSuite.findActionFunction? (suite : CheckedActionSuite)

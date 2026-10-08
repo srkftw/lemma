@@ -4,12 +4,16 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: first scalar vertical slice.** Task 001 implements a narrow checked
-Core0 profile and a reproducible Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path.  It is evidence for a bounded part of Stage I, not the
-managed Lean runtime, an operating system, a hardware milestone, or completion of G1.
-See [the Task 001 evidence](docs/evidence/001-core0.md) and the explicit limitations
-there.
+**Current state: tested compiler/device foundation, with traps under construction.**
+Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–6 extend it with compiler-fault
+detection, multi-root conformance, validated control flow, bounded iteration,
+checked fixed-region RAM, and compiled Lean UART interaction. Gate 7's synchronous
+trap implementation is being qualified; timers and the integrated monitor have
+not yet passed. This is not a managed runtime, complete OS, hardware milestone,
+or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
+[Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
+[continuation checkpoint](docs/plan/002-session-state.md).
 
 ## Invariants
 
@@ -72,6 +76,19 @@ nonempty O0/O2 differential corpus on fresh RV64 boots, tests expected rejection
 checks repeat-build hashes, mutates accepted source, and proves the audit rejects a
 statically resolved foreign object.  A finite green corpus is not a compiler proof and
 does not qualify all of G1.
+
+The recorded Task 002 passing prefix also has real host/target checks:
+
+```sh
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 6 \
+  --work-dir build/foundation/gate6-check --clean --timeout 300 --qemu-timeout 20
+```
+
+Phase 6 builds and audits O0/O2 images and runs 28 fresh QEMU UART sessions,
+including live two-request sessions and bounded failures. It is not a trap or
+interrupt test. The evidence records exact tested revisions; current uncommitted
+work must not inherit a clean-source pass automatically.
 
 ## GitHub and Codex
 

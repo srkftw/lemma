@@ -1513,11 +1513,30 @@
       "name": "synchronous traps",
       "status": "in-progress",
       "source": null,
-      "commands": [],
-      "artifacts": [],
-      "tests": {},
+      "commands": [
+        {
+          "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 --work-dir build/foundation/gate7-integration-matrix --clean --timeout 300 --qemu-timeout 20",
+          "exit_code": 0,
+          "result": "development-pass",
+          "dirty_tree": true
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "build/foundation/gate7-integration-matrix/gate7-results.json",
+          "sha256": "3b0351c889ae22d4e7570c30b9b7ce1b76a5813f3628fbdf13f2451d6141d602",
+          "development_only": true
+        }
+      ],
+      "tests": {
+        "development_fresh_qemu_boots": 32,
+        "resumable_traps_per_profile": 288,
+        "behavioral_restore_mutants_detected": 2,
+        "foundation_host_tests": 281
+      },
       "notes": [
-        "Implementation starts after Gate 6 clean acceptance; no Gate 7 acceptance checks have run."
+        "Development O0/O2 matrix passed; source is deliberately unassigned until clean committed-source focused/cumulative/legacy verification.",
+        "No timer, monitor, physical-board, compiler-correctness, or G1/G2 completion claim."
       ]
     },
     {

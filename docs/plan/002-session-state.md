@@ -4,16 +4,16 @@
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
 - Highest passing gate: Gate 6.
-- Current gate: Gate 7, in progress; no Gate 7 acceptance checks have run.
-- Current failure: none; synchronous-trap implementation is starting after clean
-  Gate 6 focused, cumulative, and legacy acceptance.
+- Current gate: Gate 7, development matrix passed; clean-source acceptance pending.
+- Current failure: none. The fresh O0/O2 Gate 7 matrix passed 32 boots, including
+  both live restore mutants, fatal diagnostics, and nested traps. Host suites pass.
 - Latest clean passing implementation: `179ef541e7cfa53235322610222a01ccdf9364cd`
   (tree `9ff742607b5b1d73924928bf147dabada037f406`).
 - Report-bearing revision: later/unassigned; do not confuse it with tested source.
-- Next executable action: implement the separately versioned structured trap entry,
-  full integer context preservation, compiled dispatch, authorized ECALL/EBREAK
-  return, fatal/double-fault paths, and target register/canary/denied-RAM tests for
-  Gate 7. Continue through Gates 8--11 after each prerequisite passes.
+- Next executable action: commit the passing Gate 7 implementation, then repeat
+  `check-foundation.sh --phase 7`, `--all`, and legacy `check-core0.sh` against
+  clean source in fresh build directories. Record exact source/report identities,
+  then continue through Gates 8--11 without waiting for another user message.
 
 ## Gate 0 historical checkpoint
 
@@ -316,6 +316,40 @@ Maximum acyclic frame chains are O0 2,736 bytes and O2 288 against a 65,536-byte
 This is polling-only pinned-QEMU evidence, not traps, interrupts, physical hardware,
 compiler correctness, isolation, or G1/G2 completion. Separate detached-worktree
 qualification, publication, and actual CI remain Gate 10/11 obligations.
+
+## Gate 7 development checkpoint
+
+The uncommitted implementation based on `2797373` passed the following real
+commands on 2026-10-08; these are development results, not clean-source evidence:
+
+```text
+nix develop --no-write-lock-file --command lake build
+  exit 0; 48 jobs; 52 compile-time CFG checks
+python3 scripts/check_scaffold.py
+  exit 0; metadata 7 gates/56 software/6 physical
+python3 -m unittest discover -s tests/scaffold -v
+  exit 0; 18/18 PASS
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v
+  exit 0; 32/32 PASS
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+  exit 0; 281/281 PASS
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 7 \
+  --work-dir build/foundation/gate7-integration-matrix --clean --timeout 300 --qemu-timeout 20
+  exit 0; 32 fresh boots; 8 positive/6 negative cases per profile;
+  288 resumable traps/profile; 14 checked denials/positive case;
+  2 live restore mutants detected; 4 frontend rejections;
+  20 direct policy probes; 2 local conditional policy lemmas
+```
+
+Development aggregate SHA-256:
+`3b0351c889ae22d4e7570c30b9b7ce1b76a5813f3628fbdf13f2451d6141d602`.
+The final machine audit closes four UART sites/eight fence calls, full vector/probe
+register slots, eleven vector CSR operations, and zero compiled privileged
+instructions. O0's full foreground chain is 3,536/65,520 bytes and compiled
+dispatcher chain 1,312/16,048 bytes. Early integration failures (export typing and
+a missing audit import) were fixed before this matrix; they did not count as
+mutant detection. Formal acceptance must rebuild rather than reuse these dirty
+development artifacts.
 
 ## Decisions that must survive a resume
 
