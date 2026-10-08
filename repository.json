@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "name": "lemma",
+  "intended_owner": "srkftw",
+  "intended_visibility": "private",
+  "default_branch": "main",
+  "remote_created": true,
+  "license": null,
+  "description": "A freestanding Lean 4 mathematics computer on RISC-V: LemmaVM, LemmaOS, ink, exact checking and permissioned learning.",
+  "scaffold_date": "2026-10-07",
+  "first_task": "codex/prompts/001-core0-freestanding-slice.md",
+  "repository_url": "https://github.com/srkftw/lemma",
+  "publication_method": "owner-created repository; connected GitHub file/tree/commit operations"
+}

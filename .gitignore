@@ -1,0 +1,21 @@
+# Host/build outputs
+.lake/
+build/
+dist/
+result
+result-*
+.direnv/
+__pycache__/
+*.pyc
+.DS_Store
+# Credentials and supplier/private materials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+private/
+vendor-private/
+supplier-private/
+secrets/
+# Generated artifacts belong in build/, not the source tree.

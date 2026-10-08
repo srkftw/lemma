@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "status": "unresolved",
+  "note": "Task 001 must verify a working immutable toolchain. This is not a usable lock yet.",
+  "tools": {
+    "lean": {
+      "revision": null,
+      "artifact_sha256": null,
+      "verified": false
+    },
+    "llvm": {
+      "revision": null,
+      "artifact_sha256": null,
+      "verified": false
+    },
+    "lld": {
+      "revision": null,
+      "artifact_sha256": null,
+      "verified": false
+    },
+    "qemu": {
+      "revision": null,
+      "artifact_sha256": null,
+      "verified": false
+    },
+    "host_environment": {
+      "revision": null,
+      "artifact_sha256": null,
+      "verified": false
+    }
+  },
+  "target": {
+    "isa": "RV64GC-capable machine; integer-only G1 code",
+    "abi_proposal": "lp64",
+    "triple_proposal": "riscv64-unknown-elf"
+  }
+}
