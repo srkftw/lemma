@@ -676,15 +676,34 @@ def _pinned_lean_provenance(
     source_expression = (
         "let flake = builtins.getFlake (toString ./.); "
         "pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; "
-        "in pkgs.lean4.src.outPath"
+        "in pkgs.lean4.src"
     )
     source_command = (
-        "nix", "eval", "--raw", "--impure", "--expr", source_expression
+        "nix",
+        "build",
+        "--no-link",
+        "--print-out-paths",
+        "--impure",
+        "--expr",
+        source_expression,
     )
     source_result = checked(source_command, cwd=root, timeout_seconds=timeout_seconds)
-    source_root = Path(
-        source_result.stdout.decode("utf-8", errors="strict").strip()
-    ).resolve()
+    source_outputs = [
+        line.strip()
+        for line in source_result.stdout.decode("utf-8", errors="strict").splitlines()
+        if line.strip()
+    ]
+    if len(source_outputs) != 1:
+        raise Core0Error(
+            "pinned Lean source realization must return exactly one output path; "
+            f"observed {len(source_outputs)}"
+        )
+    source_path = Path(source_outputs[0])
+    if not source_path.is_absolute():
+        raise Core0Error(
+            f"pinned Lean source realization returned a non-absolute path: {source_path}"
+        )
+    source_root = source_path.resolve()
     uint_source = source_root / "src/Init/Data/UInt/Basic.lean"
     if not uint_source.is_file():
         raise Core0Error(f"pinned UInt source is missing: {uint_source}")
