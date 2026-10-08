@@ -1,7 +1,7 @@
 # Task 002 machine-foundation evidence
 
 This is a living evidence record for the highest passing prefix of Task 002. Gates 0
-through 3 have passed. Gate 4 and every later gate remain open. This record does not
+through 4 have passed. Gate 5 and every later gate remain open. This record does not
 claim completion of G1, G2, the full compiler-conformance construction unit, or the
 Task 002 machine foundation.
 
@@ -16,9 +16,12 @@ Task 002 machine foundation.
 - Gate 2 implementation and cumulative clean verification source:
   `687ee7e292b7a049f8fd35fcf17097c80c3d5665`, tree
   `9b3a8e06a0ce683b887a75ee9c615eb856965a1c`.
-- Gate 3 implementation and current cumulative clean verification source:
+- Gate 3 implementation checkpoint:
   `9519adcc1f72fbf06a5f888e387e561df9f1604a`, tree
   `ef80a9cdf95e150606344ee84551128231092937`.
+- Gate 4 implementation and current cumulative clean verification source:
+  `16e7461e009e09390c0e9682d5800cae9fdd90d3`, tree
+  `ee8840a642aa3acc03a8759242cc477a7b8c2eb2`.
 - Branch: `task/002-machine-foundation`, stacked on Task 001.
 
 The historical Gate 0 clean aggregate was `build/core0/check/check-results.json`,
@@ -28,10 +31,10 @@ Gates 1-2 command at `687ee7e...`. All 14 current Gate 1 control/mutant provenan
 records, both Gate 2 profiles, and the current Task 001 O0/O2 release records name the
 full `687ee7e...` commit and record `dirty_tree: false`.
 
-The current cumulative clean run repeated Gates 1-3 at `9519adc...`. Its Gate 1
-records, both Gate 2 profiles, and both Gate 3 profiles name that full commit and
-record `dirty_tree: false`; the earlier Gate 1 and Gate 2 identities remain historical
-checkpoints rather than being overwritten.
+The current cumulative clean run repeated Gates 1-4 at `16e7461...`. Its Gate 1
+records and all Gate 2, Gate 3, and Gate 4 profiles name that full commit and record
+`dirty_tree: false`; the earlier per-gate identities remain historical checkpoints
+rather than being overwritten.
 
 Generated build output remains ignored. The durable identities of the cumulative
 clean records are:
@@ -46,25 +49,31 @@ clean records are:
 | `build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json` | `d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46` |
 | `build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json` | `b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf` |
 | `build/foundation/gates1-3-clean-9519adc/gate3/gate3-results.json` | `707315b5875d12f2a0c1dd33276ff35f143d0aafae0ad20ce44b8a8e315df4a6` |
-| `build/core0/check/check-results.json` (same-source legacy regression) | `a8812a1ea1b2b1c2794d088d25a1fb5f8e878bfd022bd93a71159f04f46e0daa` |
+| `build/foundation/gate4-clean-16e7461/gate4-results.json` (authoritative focused Gate 4 report) | `a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a` |
+| `build/foundation/gates1-4-clean-16e7461/all-results.json` | `19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e` |
+| `build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json` | `455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e` |
+| `build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json` | `13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4` |
+| `build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json` | `ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059` |
+| `build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json` | `6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7` |
+| `build/core0/check/check-results.json` (same-source legacy regression) | `36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404` |
 
 ## Commands actually executed at the current clean source
 
 | Command | Exit | Actual result |
 |---|---:|---|
-| `nix develop --no-write-lock-file --command lake build` | 0 | 26 jobs; complete Lean library build; 29 compile-time CFG validator checks |
+| `nix develop --no-write-lock-file --command lake build` | 0 | 29 jobs; complete Lean library build; 36 compile-time CFG validator checks |
 | `python3 scripts/check_scaffold.py` | 0 | metadata valid: 7 gates, 56 software units, 6 physical units |
 | `python3 -m unittest discover -s tests/scaffold -v` | 0 | 18/18 passed |
 | `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v` | 0 | 21/21 passed |
-| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 125/125 passed |
+| `nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v` | 0 | 142/142 passed |
 | `nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean` | 0 | 10 cases/profile, 13 intended rejections, 23 fresh QEMU boots |
-| `git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 3 --work-dir build/foundation/gate3-clean-9519adc --clean --timeout 180 --qemu-timeout 5` | 0 | Clean status `## task/002-machine-foundation`; Gate 3 passed: 44 roots, 708 cases/profile, 88 fresh QEMU boots |
-| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10` | 0 | Gates 1-3 passed: Gate 1 used 24 boots, Gate 2 used 136, Gate 3 used 88 |
+| `git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10` | 0 | Clean status `## task/002-machine-foundation`; Gate 4 passed: 7 roots, 112 cases/profile, 14 fresh QEMU boots |
+| `nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10` | 0 | Gates 1-4 passed: Gate 1 used 24 boots, Gate 2 used 136, Gate 3 used 88, Gate 4 used 14 |
 
 All commands in this table ran after the implementation was committed, from clean
-source `9519adc...`. The focused Gate 3 report is the detailed authority for Gate 3;
-the cumulative report separately proves that Gates 1-3 still pass together. The
-legacy Core0 report also binds both O0/O2 audits to `9519adc...` with
+source `16e7461...`. The focused Gate 4 report is the detailed authority for Gate 4;
+the cumulative report separately proves that Gates 1-4 still pass together. The
+legacy Core0 report also binds both O0/O2 audits to `16e7461...` with
 `dirty_tree: false`.
 
 ## Gate 1: incorrect-compiler detection
@@ -349,17 +358,163 @@ The target remains `riscv64-unknown-elf`, integer/soft-float LP64,
 `rv64im_zicsr_zifencei`, QEMU `virt`, one hart, 128 MiB RAM, no firmware, and no
 compressed instructions. Gate 3 did not add a managed Lean runtime.
 
+## Gate 4: bounded iteration
+
+Gate 4 introduces the explicitly selected, additive `core0-v0.3` profile while
+preserving the `core0-v0.1` and `core0-v0.2` contracts and rejection behavior. It
+admits exactly one higher-order-looking compiler-recognized source identity:
+
+```lean
+Lemma.Core0.Bounded.boundedFoldU32
+  (budget : Nat)
+  (step : UInt32 -> UInt32 -> UInt32)
+  (count initial : UInt32) : UInt64
+```
+
+The budget must be a canonical standard `Nat` literal in `0..256`. The callback must
+be a direct safe, total, monomorphic top-level declaration with exactly the displayed
+type; its ordinary helpers are checked as transitive Core0 dependencies. The budget
+and callback identity are compile-time data. They do not become a guest `Nat`,
+closure, environment, function pointer, or higher-order dispatch mechanism.
+
+`count` and `initial` are runtime `UInt32` values. If `count.toNat <= budget`, the
+callback receives `(index, accumulator)` for ascending zero-based indices through
+`count - 1`, and the final accumulator is zero-extended to `UInt64`. If
+`count.toNat > budget`, no callback executes and the result is
+`0x8000000000000000 ||| initial.toUInt64`. Bit 63 identifies exhaustion, bits 62
+through 32 are zero, and the low 32 bits retain the unchanged initial value. This
+semantic budget exhaustion is distinct from a checked-model expression/call
+traversal-fuel diagnostic and from host or QEMU timeout enforcement.
+
+### Genuine checked loop lowering and target execution
+
+The seven genuine elaborated roots are `sumFold`, `sumFoldChanged`, `bitMixFold`,
+`nestedFold`, `helperFold`, `zeroBudgetFold`, and `maxBudgetFold`. Their transitive
+closure contains 14 checked functions and eight bounded-fold sites; the nested root
+accounts for two sites. Checked structured lowering emits an unsigned runtime budget
+guard, scalar `i32` index and accumulator phi nodes, one direct callback call on the
+body edge, a plain wrapping index increment, an actual backedge, a zero-extension on
+success, and a tagged `i64` exhaustion edge. Iteration uses fixed call frames rather
+than recursive calls, and the exhaustion path cannot reach the callback.
+
+The retained pre-optimization audit binds all eight sites to the exact source budget
+and callback catalog and checks their guard, preheader/header/body/latch/exit shape,
+phi inputs, callback argument order, increment, success value, and exhaustion edge.
+It also preserves the v0.2 audit premises for scalar operations. The machine audit
+finds exactly one direct callback call and a backward branch for each of the seven
+positive-budget loop functions under both O0 and O2. The zero-budget site remains in
+the checked IR catalog but does not require a runtime backedge; O2 removes its dead
+callback and loop. Thus the QEMU results come from runtime-counted RV64 loops, not
+compiler-side unrolling or a host simulation.
+
+No audited loop function uses a dynamic stack adjustment. The stack report combines
+the optimized LLVM direct-call graph with the object's `.stack_sizes` metadata,
+requires that graph to be acyclic, and sums the maximum frame chain against the
+64 KiB stack limit. The observed maximum is 1,856 bytes at O0 and 176 bytes at O2.
+This bound is specifically an optimized-LLVM direct-call graph weighted by object
+metadata, not a claim that every possible machine call edge was reconstructed.
+Machine disassembly separately establishes the retained direct callback calls and
+backedges.
+
+The source emitter asserted no `disjoint`, `nuw`, `nsw`, or `inbounds` premise. O2
+inferred 23 `or disjoint` instructions. The fail-closed post-optimization inventory
+accepted exactly seven exhaustion-tag ORs whose payloads are zero-extended `UInt32`
+values and 16 hexadecimal-formatting ORs combining low nibbles with ASCII `0x30`.
+All 23 operands were locally proven disjoint; no other inferred form was accepted.
+O0 retained zero `disjoint` instructions.
+
+### Four comparison routes and adversarial evidence
+
+The deterministic corpus uses suite ID `0xb1e51d2902bca153`, source seed
+`0x4c454d4d41343034`, runtime seed `0x52554e54494d4534`, and `SplitMix64-v1` with an
+exact bounded-count boundary pool. It contains 112 distinct cases over all seven
+roots and is split into seven batches/profile. Direct evaluation of the original
+Lean declarations, the checked Core0 model, and an independent Python model agreed
+on all 112 results, with result SHA-256
+`38ad1a02fc9dd60f482b533ea5492b465643cda5231a0ad26883d4026d392f62`.
+The Python model shares the documented arithmetic contract, but not the Lean
+evaluator implementation. O0 and O2 each executed all 112 cases in seven fresh QEMU
+boots and matched the same digest, giving 224 source/model/target profile matches and
+14 boots total.
+
+The `sumFold` and `sumFoldChanged` roots use identical inputs but distinct source
+callback bodies. Six of the 16 successful comparison inputs produced distinct
+results. The first recorded witness has count 1 and initial `0xffffffff`: the
+unchanged callback body returns `0x00000000ffffffff`, while the changed body returns
+`0x0000000000000000`. This binds target behavior to the source callback body rather
+than only to its declaration name.
+
+The audit detected nine structured-LLVM loop mutations: wrong static budget, wrong
+budget predicate, index starting at one, stale accumulator phi, swapped callback
+arguments, wrong index increment, missing backedge, missing exhaustion tag, and an
+exhaustion path reaching the callback. It also detected four manifest mutations for
+tampered budget/callback and incomplete site/function closure, plus one unsupported
+profile-version mutation. These are audit fixtures, never production compiler inputs.
+
+All 11 exact frontend fixtures rejected: capturing, dynamic, and polymorphic
+callbacks; a direct arbitrary extern callback; a forbidden extern hidden behind a
+callback helper; a lookalike combinator; a nonliteral budget; budget 257; a recursive
+callback; and attempts to use the bounded construct under `core0-v0.1` or
+`core0-v0.2`. The last two preserve the older profiles rather than silently widening
+them.
+
+Three local source-semantics lemmas were checked with their exact dependency output:
+
+| Theorem | Recorded axioms |
+|---|---|
+| `executedIterations_le_budget` | `propext` |
+| `boundedFoldU32_exhausted` | `propext`, `Quot.sound` |
+| `boundedFoldU32_zero` | `propext`, `Quot.sound` |
+
+`Lemma/Core0/Bounded.lean` has SHA-256
+`19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305`.
+The dependency-probe source and stdout SHA-256 values are respectively
+`eb2ab935ac6d37273a5741261224c8648e635d1f55fed9725656a84c44935197`
+and `4065ac14230bcb6912555b00483ed23fd8cf39055fc0d9fa4239de213339961f`.
+These facts constrain the source combinator; they do not prove frontend, lowering,
+LLVM, machine-code, or whole-compiler correctness.
+
+### Retained Gate 4 artifacts
+
+The O0 and O2 builds carry the same clean source commit and byte-identical checked
+manifest, normalized suite, typed ABI, symbol map, and pre-optimization LLVM:
+
+| Shared checked artifact | SHA-256 |
+|---|---|
+| `bounded-suite-manifest.json` | `7ce0f74cde332acdb60e14de8edf96fe4ab292654bd3cb3fc61866653c728300` |
+| `bounded-suite-normalized.txt` | `7b7a2601b3256df1e976e7702cb7680e93d23cd90ecc205751c30885181b3e10` |
+| `scalar-test-abi.json` | `1ef34a43553748f75c897c669d19c0dc7235d28af502a4201df39e96037cd5d7` |
+| `symbols.txt` | `fbdf607644c1f0da61e032f70d07724406da0cbfde35f9d1d28117084ca86bea` |
+| `program.ll` | `88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe` |
+
+Their profile-specific retained artifacts are:
+
+| Profile | Audit SHA-256 | Optimized IR SHA-256 | Stack-size report SHA-256 | Image SHA-256 |
+|---|---|---|---|---|
+| O0 | `74d5fcbe006afde2badeb0e3468cdea511e3384e934ef985ff50db164c9fb259` | `cf400e19dbf948f411186d9a1380e550b8524b5d73421ccf9d4eacbc1f048d06` | `a5930212727612e1edeaf14cc980e33168f988dba0944e82484eb71337a4b90f` | `68a2624214b03d5b05d170fd08e6537cc2284bd2fe1114225e3d9f74b8e42464` |
+| O2 | `461492bb14cb911a764ccc8e4e6837ca86e68ffc26c4498cfbe0865b0c35be5f` | `e7840296cdb0a92d3c923b4eb2983ffc90e5033524fab9cf104c454cad0a34a9` | `99ea1b90d7118ac624d57e052fa03de3aa1e30342d4e2f6dd34892210c5d41b1` | `1bb445b821725b8cccf4d5c58d984cceaf7c9f6f8303c7a6209707b80f0d7b6d` |
+
+The focused report records seven pinned source probes, three lemmas, 11 frontend
+rejections, nine IR mutants, four manifest mutants, and one profile mutant in
+addition to the full comparison matrix. Its SHA-256 is
+`a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a`.
+The separate cumulative Gates 1-4 report and all four child identities are listed in
+the source-identity table above.
+
 ## Shared assumptions, stage mapping, and limits
 
 The direct and checked-model routes are deliberately separate computations, but both
-share the pinned Lean 4 host elaborator and type checker. They are not three
-absolutely independent proof systems; the third route also consumes the same checked
-source before LLVM lowering. The exhaustive UInt8 comparison, 1,024-case wider-type
-matrix, Gate 3's 708-case matrix, and metamorphic checks are strong finite evidence,
-not a compiler-correctness or semantic-preservation proof. Gate 3 adds eight local
-mathematical lemmas with recorded axiom dependencies, but no whole-compiler proof or
-separate kernel-reduction comparison. The exact ABI audit covers one deliberate
-ten-argument shape, not every possible RISC-V ABI signature.
+share the pinned Lean 4 host elaborator and type checker. They are not absolutely
+independent proof systems; the target route also consumes the same checked source
+before LLVM lowering. Gate 4 adds an independent Python computation that shares only
+the documented bounded arithmetic contract, but this fourth route is still finite
+testing rather than a proof. The exhaustive UInt8 comparison, 1,024-case wider-type
+matrix, Gate 3's 708-case matrix, Gate 4's 112-case matrix, and metamorphic/body-change
+checks are strong finite evidence, not a compiler-correctness or semantic-preservation
+proof. Gates 3 and 4 add local mathematical lemmas with recorded axiom dependencies,
+but no whole-compiler proof or separate kernel-reduction comparison. The exact ABI
+audit covers one deliberate ten-argument shape, not every possible RISC-V ABI
+signature.
 
 Gates 1 and 2 directly advance Unit 1.8. Gate 2 also adds evidence for Units 1.1,
 1.3, 1.4, 1.5, and 1.7 through its versioned ABI, multi-root membership checks,
@@ -367,13 +522,16 @@ executable model comparison, exact lowering/ABI audit, and source-bound freestan
 images. Gate 3 directly advances Units 1.1, 1.3, 1.4, 1.5, 1.7, and 1.8 through
 versioned membership rejection, executable scalar semantics, validated structured
 lowering, dangerous-operation audit mutations, and differential target execution.
-Its explicit profile and trust manifests plus source-bound images account for the
-added 1.1 and 1.7 evidence. Units 1.2 and 1.6 receive regression coverage only; Gate
-3 adds no new LemmaVM or machine-primitive capability. Every listed construction
-unit remains `partial`; all loop, memory, device, trap, timer, monitor, and
-qualification gates remain open.
+Gate 4 advances the same partial Stage I units with a versioned bounded construct,
+transitive callback checks, validated loop lowering, machine backedge/callback
+evidence, stack bounds, mutations, and source/model/Python/target comparison. The
+explicit profiles and trust manifests plus source-bound images account for the added
+1.1 and 1.7 evidence. Units 1.2 and 1.6 receive regression coverage only; neither
+Gate 3 nor Gate 4 adds a new LemmaVM or machine-primitive capability. Every listed
+construction unit remains `partial`; checked fixed-region memory, device, trap,
+timer, monitor, and qualification gates remain open.
 
 No Stage II unit is marked passed. In particular, later Task 002 M-mode work will not
 by itself satisfy Unit 2.1's supervisor-entry requirement. G1 and G2 remain
-incomplete, and Task 002 is not complete. Gate 4 bounded iteration is the next
-executable gate.
+incomplete, and Task 002 is not complete. Gate 5 checked fixed-region memory is the
+next executable gate.

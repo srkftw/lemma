@@ -3,14 +3,14 @@
 - Base: Task 001 report-bearing commit `b8e9c59365ae8e9925e0bf6fbca6a963d990ec85`
   (tree `88d2c23aafbd2b3a40a195755c01494de9ffad75`), stacked because PR #1 is unmerged.
 - Working branch: `task/002-machine-foundation`.
-- Highest passing gate: Gate 3.
-- Current gate: Gate 4, not started.
+- Highest passing gate: Gate 4.
+- Current gate: Gate 5, not started.
 - Current failure: none.
-- Latest clean passing implementation: `9519adcc1f72fbf06a5f888e387e561df9f1604a`
-  (tree `ef80a9cdf95e150606344ee84551128231092937`).
-- Next executable action: begin Gate 4 by specifying one bounded-iteration source
-  construct, its counter width/order/budget/exhaustion contract, and its scalar
-  loop-carried representation before implementing real target loops.
+- Latest clean passing implementation: `16e7461e009e09390c0e9682d5800cae9fdd90d3`
+  (tree `ee8840a642aa3acc03a8759242cc477a7b8c2eb2`).
+- Next executable action: begin Gate 5 by specifying the checked fixed-region memory
+  interface, overflow-safe range/alignment checks, explicit effects, finite memory/event
+  model, and 8/32/64-bit target operations before implementing buffer algorithms.
 
 ## Gate 0 historical checkpoint
 
@@ -130,6 +130,81 @@ its Gate 1, Gate 2, and Gate 3 child hashes are respectively
 The same-source legacy report is `build/core0/check/check-results.json`, SHA-256
 `a8812a1ea1b2b1c2794d088d25a1fb5f8e878bfd022bd93a71159f04f46e0daa`.
 
+## Gate 4 commands and observed results
+
+Executed against clean committed source `16e7461e...` on 2026-10-08:
+
+```text
+nix develop --no-write-lock-file --command lake build
+  exit 0; 29 jobs; 36 compile-time CFG validator checks
+python3 scripts/check_scaffold.py
+  exit 0; metadata PASS (7 gates, 56 software units, 6 physical units)
+python3 -m unittest discover -s tests/scaffold -v
+  exit 0; 18/18 PASS
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v
+  exit 0; 21/21 PASS
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+  exit 0; 142/142 PASS
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean
+  exit 0; 10 cases/profile, 13 rejections, 23 fresh QEMU boots
+git status --short --branch && nix develop --no-write-lock-file --command \
+  ./scripts/check-foundation.sh --phase 4 \
+  --work-dir build/foundation/gate4-clean-16e7461 \
+  --clean --timeout 180 --qemu-timeout 10
+  exit 0; clean status `## task/002-machine-foundation`; Gate 4 PASS;
+  7 roots, 112 cases/profile, 14 fresh QEMU boots
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all \
+  --work-dir build/foundation/gates1-4-clean-16e7461 \
+  --clean --timeout 300 --qemu-timeout 10
+  exit 0; GATES 1-4 PASS; Gate 1: 24 boots; Gate 2: 136 boots;
+  Gate 3: 88 boots; Gate 4: 14 boots
+```
+
+Gate 4 added the explicitly selected `core0-v0.3` profile and only the recognized
+`Lemma.Core0.Bounded.boundedFoldU32` construct. Its canonical literal budget is in
+`0..256`; its callback is a direct safe, total, monomorphic top-level
+`UInt32 -> UInt32 -> UInt32` declaration; and its runtime count and accumulator are
+`UInt32`. In-budget execution visits zero-based indices in ascending order and
+returns the final accumulator zero-extended to `UInt64`. Exhaustion executes no
+callback and returns bit 63 OR the unchanged initial accumulator, with bits 62..32
+zero. Semantic exhaustion remains distinct from model traversal fuel and host/QEMU
+timeouts.
+
+The seven roots have a 14-function checked closure and eight pre-optimization LLVM
+loop sites. In both O0 and O2, all seven positive-budget loop functions retain
+exactly one direct callback call and a machine backedge. The zero-budget site remains
+part of the checked IR catalog but does not require a runtime backedge. The audit
+found no dynamic stack adjustment and measured acyclic optimized-LLVM direct-call
+graphs using object `.stack_sizes`: worst summed chains are 1,856 bytes at O0 and
+176 bytes at O2, both below 64 KiB. This is not a reconstruction of every possible
+machine call edge; the disassembly audit separately establishes the direct callback
+calls and backedges.
+
+Direct Lean evaluation, the checked Core0 model, and the independent Python model
+agreed on all 112 cases. Each target profile matched all 112 results, giving 224
+source/model/target profile matches. A changed callback-body witness produced six
+distinct successful result pairs across 16 identical inputs. The negative matrix
+detected nine LLVM loop mutations, four manifest mutations, one profile-version
+mutation, and all 11 frontend rejections. Three local bounded-semantics lemmas were
+checked; their only recorded dependencies are standard `propext` and `Quot.sound`.
+O2's 23 inferred `or disjoint` instructions were all inventoried and justified: 7
+exhaustion-tag sites and 16 low-nibble/ASCII-`0x30` formatting sites; pre-optimization
+IR contains none.
+
+Focused Gate 4 report:
+`build/foundation/gate4-clean-16e7461/gate4-results.json`, SHA-256
+`a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a`.
+The clean cumulative Gates 1-4 aggregate is
+`build/foundation/gates1-4-clean-16e7461/all-results.json`, SHA-256
+`19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e`;
+its Gate 1, Gate 2, Gate 3, and Gate 4 child hashes are respectively
+`455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e`,
+`13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4`,
+`ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059`, and
+`6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7`.
+The same-source legacy report is `build/core0/check/check-results.json`, SHA-256
+`36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404`.
+
 ## Decisions that must survive a resume
 
 - Preserve `core0-v0.1` and its rejection corpus. Gate 3 added the explicitly
@@ -165,7 +240,16 @@ The same-source legacy report is `build/core0/check/check-results.json`, SHA-256
   shift masks, and zero-guarded division/remainder with no dangerous alternate
   predecessor. Its six IR mutations and one profile mutation are audit tests, not
   production inputs.
-- Gates 0-3 advance Stage I only. Later M-mode work cannot by itself mark Stage II
+- Gate 4's additive `core0-v0.3` recognizes only `boundedFoldU32`; it does not add
+  closures, function pointers, recursive iteration, allocation, or a managed runtime.
+  Preserve the semantic-exhaustion tag and its zero-callback behavior independently
+  of evaluator fuel and process timeouts.
+- Gate 4's stack bound is an optimized LLVM direct-call graph weighted by object
+  `.stack_sizes`, while retained machine backedges and callback calls are separate
+  disassembly evidence. Do not describe it as a fully reconstructed machine call graph.
+- O2 optimizer-inferred `or disjoint` is accepted only for the retained closed
+  inventory with local range proofs; the source emitter asserts no such premise.
+- Gates 0-4 advance Stage I only. Later M-mode work cannot by itself mark Stage II
   Unit 2.1 or 2.2 passed, and neither G1 nor G2 is complete.
 
 Machine-readable status is in `docs/plan/002-gates.json`.

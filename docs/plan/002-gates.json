@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task": "002-machine-foundation",
-  "updated_at": "2026-10-08T03:08:52-07:00",
+  "updated_at": "2026-10-08T03:51:19-07:00",
   "repository": "srkftw/lemma",
   "base": {
     "relationship": "stacked_on_unmerged_task_001",
@@ -9,10 +9,10 @@
     "tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75"
   },
   "branch": "task/002-machine-foundation",
-  "highest_passing_gate": 3,
+  "highest_passing_gate": 4,
   "latest_clean_passing_source": {
-    "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-    "tree": "ef80a9cdf95e150606344ee84551128231092937",
+    "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+    "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
     "clean": true
   },
   "gates": [
@@ -77,15 +77,15 @@
       },
       "latest_cumulative_verification": {
         "source": {
-          "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-          "tree": "ef80a9cdf95e150606344ee84551128231092937",
+          "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+          "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json",
-          "sha256": "d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46"
+          "path": "build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json",
+          "sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e"
         }
       },
       "tests": {
@@ -164,15 +164,15 @@
       },
       "latest_cumulative_verification": {
         "source": {
-          "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-          "tree": "ef80a9cdf95e150606344ee84551128231092937",
+          "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+          "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
           "clean": true
         },
-        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+        "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10",
         "exit_code": 0,
         "artifact": {
-          "path": "build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json",
-          "sha256": "b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf"
+          "path": "build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json",
+          "sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4"
         }
       },
       "notes": [
@@ -313,7 +313,147 @@
         "This advances only partial Stage I units and does not complete G1 or G2."
       ]
     },
-    {"gate": 4, "name": "bounded iteration", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
+    {
+      "gate": 4,
+      "name": "bounded iteration",
+      "status": "passed",
+      "source": {
+        "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+        "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
+        "clean": true
+      },
+      "commands": [
+        {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "result": "pass", "jobs": 29, "compile_time_cfg_checks": 36},
+        {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "result": "pass", "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
+        {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "result": "pass", "tests": 18},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "result": "pass", "tests": 21},
+        {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "result": "pass", "tests": 142},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "result": "pass", "differential_cases_per_profile": 10, "expected_rejections": 13, "fresh_qemu_boots": 23},
+        {"command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10", "exit_code": 0, "result": "pass", "clean_status_output": "## task/002-machine-foundation", "roots": 7, "cases_per_profile": 112, "fresh_qemu_boots": 14},
+        {"command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10", "exit_code": 0, "result": "pass", "gate_1_fresh_qemu_boots": 24, "gate_2_fresh_qemu_boots": 136, "gate_3_fresh_qemu_boots": 88, "gate_4_fresh_qemu_boots": 14}
+      ],
+      "artifacts": [
+        {"path": "build/foundation/gate4-clean-16e7461/gate4-results.json", "sha256": "a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a", "role": "authoritative_focused_report"},
+        {"path": "build/foundation/gate4-clean-16e7461/corpus/gate4-cases.json", "sha256": "c977e1e369305657c1bf059650788e3904ce8832b9400c4d401b75eba07282a9"},
+        {"path": "build/foundation/gate4-clean-16e7461/O0/audit.json", "sha256": "74d5fcbe006afde2badeb0e3468cdea511e3384e934ef985ff50db164c9fb259"},
+        {"path": "build/foundation/gate4-clean-16e7461/O0/image.elf", "sha256": "68a2624214b03d5b05d170fd08e6537cc2284bd2fe1114225e3d9f74b8e42464"},
+        {"path": "build/foundation/gate4-clean-16e7461/O0/program.ll", "sha256": "88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe"},
+        {"path": "build/foundation/gate4-clean-16e7461/O0/program.opt.ll", "sha256": "cf400e19dbf948f411186d9a1380e550b8524b5d73421ccf9d4eacbc1f048d06"},
+        {"path": "build/foundation/gate4-clean-16e7461/O0/program.o.stack-sizes.txt", "sha256": "a5930212727612e1edeaf14cc980e33168f988dba0944e82484eb71337a4b90f"},
+        {"path": "build/foundation/gate4-clean-16e7461/O2/audit.json", "sha256": "461492bb14cb911a764ccc8e4e6837ca86e68ffc26c4498cfbe0865b0c35be5f"},
+        {"path": "build/foundation/gate4-clean-16e7461/O2/image.elf", "sha256": "1bb445b821725b8cccf4d5c58d984cceaf7c9f6f8303c7a6209707b80f0d7b6d"},
+        {"path": "build/foundation/gate4-clean-16e7461/O2/program.ll", "sha256": "88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe"},
+        {"path": "build/foundation/gate4-clean-16e7461/O2/program.opt.ll", "sha256": "e7840296cdb0a92d3c923b4eb2983ffc90e5033524fab9cf104c454cad0a34a9"},
+        {"path": "build/foundation/gate4-clean-16e7461/O2/program.o.stack-sizes.txt", "sha256": "99ea1b90d7118ac624d57e052fa03de3aa1e30342d4e2f6dd34892210c5d41b1"},
+        {"path": "build/foundation/gates1-4-clean-16e7461/all-results.json", "sha256": "19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e", "role": "cumulative_gates_1_4"},
+        {"path": "build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json", "sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e"},
+        {"path": "build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json", "sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4"},
+        {"path": "build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json", "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"},
+        {"path": "build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json", "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"},
+        {"path": "build/core0/check/check-results.json", "sha256": "36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404", "role": "legacy_core0_regression"}
+      ],
+      "tests": {
+        "contract_version": "core0-v0.3",
+        "legacy_contract_versions": ["core0-v0.1", "core0-v0.2"],
+        "recognized_construct": "Lemma.Core0.Bounded.boundedFoldU32",
+        "test_abi": "lemma-scalar-test-v1",
+        "suite_id": "0xb1e51d2902bca153",
+        "source_seed": "0x4c454d4d41343034",
+        "runtime_seed": "0x52554e54494d4534",
+        "optimization_profiles": ["O0", "O2"],
+        "roots": 7,
+        "functions": 14,
+        "pre_optimization_loop_sites": 8,
+        "positive_budget_machine_loops_with_backedges_per_profile": 7,
+        "distinct_cases_per_profile": 112,
+        "batches_per_profile": 7,
+        "qemu_boots_per_profile": 7,
+        "total_fresh_qemu_boots": 14,
+        "source_model_python_matches": 112,
+        "source_model_target_matches": 224,
+        "result_sha256": "38ad1a02fc9dd60f482b533ea5492b465643cda5231a0ad26883d4026d392f62",
+        "changed_body_witness": {"identical_inputs": 16, "distinct_success_results": 6, "first_count": 1, "first_initial": "0xffffffff", "unchanged_body_result": "0x00000000ffffffff", "changed_body_result": "0x0000000000000000"},
+        "pinned_source_probes": 7,
+        "frontend_rejections": 11,
+        "older_profile_loop_rejections": 2,
+        "bounded_lemmas_checked": 3,
+        "loop_ir_mutants_detected": 9,
+        "manifest_mutants_detected": 4,
+        "profile_mutants_detected": 1,
+        "legacy_core0": {"cases_per_profile": 10, "rejections": 13, "fresh_qemu_boots": 23}
+      },
+      "bounded_semantics": {
+        "source_signature": "boundedFoldU32 (budget : Nat) (step : UInt32 -> UInt32 -> UInt32) (count initial : UInt32) : UInt64",
+        "budget": "canonical standard Nat literal in 0..256",
+        "callback": "direct safe total monomorphic top-level UInt32 -> UInt32 -> UInt32 declaration",
+        "counter": "runtime UInt32, ascending zero-based",
+        "accumulator": "runtime UInt32",
+        "success": "final UInt32 accumulator zero-extended to UInt64",
+        "exhaustion": "zero callbacks; 0x8000000000000000 OR unchanged initial.toUInt64; bits 62..32 zero",
+        "semantic_exhaustion_distinct_from": ["checked-model traversal fuel", "host timeout", "QEMU timeout"],
+        "target_representation": "i32 index and accumulator phis, direct callback, actual backedge, fixed call frames",
+        "excluded": ["runtime Nat", "closure", "function pointer", "recursive iteration", "heap", "managed Lean runtime"]
+      },
+      "loop_and_stack_audit": {
+        "pre_optimization_function_count": 14,
+        "pre_optimization_loop_count": 8,
+        "positive_budget_loop_count": 7,
+        "exact_direct_callback_calls_per_positive_loop": 1,
+        "machine_backedge_per_positive_loop": true,
+        "dynamic_stack_adjustments": {"O0": 0, "O2": 0},
+        "optimized_llvm_direct_call_graph_acyclic": {"O0": true, "O2": true},
+        "object_stack_sizes_present": {"O0": true, "O2": true},
+        "maximum_frame_chain_bytes": {"O0": 1856, "O2": 176},
+        "stack_limit_bytes": 65536,
+        "scope": "optimized LLVM direct-call graph weighted by object .stack_sizes; machine backedges and direct callback calls audited separately"
+      },
+      "optimizer_disjoint_audit": {
+        "pre_optimization_count": {"O0": 0, "O2": 0},
+        "post_optimization_count": {"O0": 0, "O2": 23},
+        "O2_exhaustion_tag_sites": 7,
+        "O2_low_nibble_ascii_sites": 16,
+        "all_operands_proven_disjoint": true
+      },
+      "source_equivalence": {
+        "profiles": ["O0", "O2"],
+        "same_clean_source_commit": true,
+        "same_checked_manifest": true,
+        "same_normalized_suite": true,
+        "same_typed_abi": true,
+        "same_symbol_map": true,
+        "same_pre_optimization_ir": true,
+        "checked_manifest_sha256": "7ce0f74cde332acdb60e14de8edf96fe4ab292654bd3cb3fc61866653c728300",
+        "normalized_suite_sha256": "7b7a2601b3256df1e976e7702cb7680e93d23cd90ecc205751c30885181b3e10",
+        "typed_abi_sha256": "1ef34a43553748f75c897c669d19c0dc7235d28af502a4201df39e96037cd5d7",
+        "symbol_map_sha256": "fbdf607644c1f0da61e032f70d07724406da0cbfde35f9d1d28117084ca86bea",
+        "pre_optimization_ir_sha256": "88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe"
+      },
+      "bounded_lemmas": {
+        "source": "Lemma/Core0/Bounded.lean",
+        "source_sha256": "19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305",
+        "dependency_probe_source_sha256": "eb2ab935ac6d37273a5741261224c8648e635d1f55fed9725656a84c44935197",
+        "dependency_probe_stdout_sha256": "4065ac14230bcb6912555b00483ed23fd8cf39055fc0d9fa4239de213339961f",
+        "scope": "local source-semantics facts; not a proof of compiler correctness",
+        "theorems": [
+          {"name": "executedIterations_le_budget", "axioms": ["propext"]},
+          {"name": "boundedFoldU32_exhausted", "axioms": ["propext", "Quot.sound"]},
+          {"name": "boundedFoldU32_zero", "axioms": ["propext", "Quot.sound"]}
+        ]
+      },
+      "unit_mapping": {
+        "stage": 1,
+        "directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
+        "regression_only": ["1.2", "1.6"],
+        "statuses_remain": "partial"
+      },
+      "notes": [
+        "The v0.3 profile is additive and does not silently expand v0.1 or v0.2.",
+        "The stack bound uses an optimized LLVM direct-call graph weighted by object .stack_sizes; it is not claimed as a complete reconstructed machine call graph.",
+        "The independent Python model shares the documented arithmetic contract but not the Lean evaluator implementation.",
+        "The local lemmas, finite corpus, and audit checks do not prove compiler correctness or full semantic preservation.",
+        "This profile adds no memory API, interrupt, trap, scheduler, managed-runtime, physical-board, G1-completion, or G2-completion claim."
+      ]
+    },
     {"gate": 5, "name": "checked fixed-region memory", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 6, "name": "compiled Lean device routines", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},
     {"gate": 7, "name": "synchronous traps", "status": "not-started", "source": null, "commands": [], "artifacts": [], "tests": {}},

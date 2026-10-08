@@ -2,36 +2,37 @@
   "schema_version": 1,
   "task": "002-machine-foundation",
   "status": "passing-prefix",
-  "highest_passing_gate": 3,
-  "next_gate": {"gate": 4, "status": "not-started", "name": "bounded iteration"},
+  "highest_passing_gate": 4,
+  "next_gate": {"gate": 5, "status": "not-started", "name": "checked fixed-region memory"},
   "source": {
-    "commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-    "tree": "ef80a9cdf95e150606344ee84551128231092937",
+    "commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+    "tree": "ee8840a642aa3acc03a8759242cc477a7b8c2eb2",
     "clean": true,
     "branch": "task/002-machine-foundation"
   },
   "commands": [
-    {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "lean_build_jobs": 26, "compile_time_cfg_validator_checks": 29},
+    {"command": "nix develop --no-write-lock-file --command lake build", "exit_code": 0, "lean_build_jobs": 29, "compile_time_cfg_validator_checks": 36},
     {"command": "python3 scripts/check_scaffold.py", "exit_code": 0, "metadata": {"gates": 7, "software_units": 56, "physical_units": 6}},
     {"command": "python3 -m unittest discover -s tests/scaffold -v", "exit_code": 0, "tests": 18},
     {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/core0 -v", "exit_code": 0, "tests": 21},
-    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "tests": 125},
+    {"command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v", "exit_code": 0, "tests": 142},
     {"command": "nix develop --no-write-lock-file --command ./scripts/check-core0.sh --clean", "exit_code": 0, "cases_per_profile": 10, "rejections": 13, "qemu_boots": 23},
     {
-      "command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 3 --work-dir build/foundation/gate3-clean-9519adc --clean --timeout 180 --qemu-timeout 5",
+      "command": "git status --short --branch && nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 4 --work-dir build/foundation/gate4-clean-16e7461 --clean --timeout 180 --qemu-timeout 10",
       "exit_code": 0,
       "clean_status_output": "## task/002-machine-foundation",
-      "roots": 44,
-      "cases_per_profile": 708,
-      "qemu_boots": 88
+      "roots": 7,
+      "cases_per_profile": 112,
+      "qemu_boots": 14
     },
     {
-      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-3-clean-9519adc --clean --timeout 300 --qemu-timeout 10",
+      "command": "nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --work-dir build/foundation/gates1-4-clean-16e7461 --clean --timeout 300 --qemu-timeout 10",
       "exit_code": 0,
-      "highest_gate": 3,
+      "highest_gate": 4,
       "gate_1_qemu_boots": 24,
       "gate_2_qemu_boots": 136,
-      "gate_3_qemu_boots": 88
+      "gate_3_qemu_boots": 88,
+      "gate_4_qemu_boots": 14
     }
   ],
   "gate_0": {
@@ -56,9 +57,9 @@
       "sha256": "b09cfaa81a8e1d567f3afe492570bd04112c86cec9378cb9cfab987e64a9bffe"
     },
     "current_cumulative_aggregate": {
-      "source_commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-      "path": "build/foundation/gates1-3-clean-9519adc/gate1/gate1-results.json",
-      "sha256": "d9535b416a3a7889fd3bb3262d0e4d3b1c3d1170ffcddd0b9a473d4982777b46"
+      "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+      "path": "build/foundation/gates1-4-clean-16e7461/gate1/gate1-results.json",
+      "sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e"
     }
   },
   "gate_2": {
@@ -101,9 +102,9 @@
       "sha256": "6b3e775f3f7ffeb17ed5b9d781d8ae38815afea07944d3e7fc45de21beb3b5cc"
     },
     "current_cumulative_aggregate": {
-      "source_commit": "9519adcc1f72fbf06a5f888e387e561df9f1604a",
-      "path": "build/foundation/gates1-3-clean-9519adc/gate2/gate2-results.json",
-      "sha256": "b8ee9c7f1e6f1bfe69481885e0adc31000acb388a51c76d3e6192a3f145b91bf"
+      "source_commit": "16e7461e009e09390c0e9682d5800cae9fdd90d3",
+      "path": "build/foundation/gates1-4-clean-16e7461/gate2/gate2-results.json",
+      "sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4"
     }
   },
   "gate_3": {
@@ -234,18 +235,144 @@
       }
     },
     "focused_aggregate": {"path": "build/foundation/gate3-clean-9519adc/gate3-results.json", "sha256": "82bc01be3efd4f4da1f88eb20e61f36035c4499a2c100ec08bfbed2d7ae2fb6c"},
-    "cumulative_aggregate": {"path": "build/foundation/gates1-3-clean-9519adc/gate3/gate3-results.json", "sha256": "707315b5875d12f2a0c1dd33276ff35f143d0aafae0ad20ce44b8a8e315df4a6"}
+    "cumulative_aggregate": {"path": "build/foundation/gates1-4-clean-16e7461/gate3/gate3-results.json", "sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059"}
+  },
+  "gate_4": {
+    "contract_version": "core0-v0.3",
+    "legacy_contract_versions": ["core0-v0.1", "core0-v0.2"],
+    "recognized_construct": "Lemma.Core0.Bounded.boundedFoldU32",
+    "source_signature": "boundedFoldU32 (budget : Nat) (step : UInt32 -> UInt32 -> UInt32) (count initial : UInt32) : UInt64",
+    "test_abi": "lemma-scalar-test-v1",
+    "suite_id": "0xb1e51d2902bca153",
+    "source_seed": "0x4c454d4d41343034",
+    "runtime_seed": "0x52554e54494d4534",
+    "roots": 7,
+    "functions": 14,
+    "pre_optimization_loop_sites": 8,
+    "positive_budget_machine_loops_with_backedges_per_profile": 7,
+    "cases_per_profile": 112,
+    "batches_per_profile": 7,
+    "qemu_boots_per_profile": 7,
+    "qemu_boots_total": 14,
+    "source_model_python_matches": 112,
+    "source_model_target_matches": 224,
+    "result_sha256": "38ad1a02fc9dd60f482b533ea5492b465643cda5231a0ad26883d4026d392f62",
+    "corpus": {"path": "build/foundation/gate4-clean-16e7461/corpus/gate4-cases.json", "sha256": "c977e1e369305657c1bf059650788e3904ce8832b9400c4d401b75eba07282a9"},
+    "bounded_semantics": {
+      "budget": "canonical standard Nat literal in 0..256",
+      "callback": "direct safe total monomorphic top-level UInt32 -> UInt32 -> UInt32 declaration",
+      "counter": "runtime UInt32, ascending zero-based",
+      "accumulator": "runtime UInt32",
+      "success": "final accumulator zero-extended to UInt64",
+      "exhaustion": "zero callbacks; bit 63 OR unchanged initial.toUInt64; bits 62..32 zero",
+      "semantic_exhaustion_distinct_from": ["model traversal fuel", "host timeout", "QEMU timeout"],
+      "excluded": ["runtime Nat", "closures", "function pointers", "recursive iteration", "heap", "managed Lean runtime"]
+    },
+    "changed_body_witness": {
+      "identical_inputs": 16,
+      "distinct_success_results": 6,
+      "first": {"count": 1, "initial": "0xffffffff", "sumFold": "0x00000000ffffffff", "sumFoldChanged": "0x0000000000000000"}
+    },
+    "negative_profiles": {
+      "frontend_rejections": 11,
+      "older_profile_loop_rejections": 2,
+      "names": [
+        "capturing-callback", "direct-extern-callback", "dynamic-callback",
+        "hidden-forbidden-callback", "lookalike-combinator", "nonliteral-budget",
+        "over-budget", "polymorphic-callback", "recursive-callback",
+        "v01-bounded-loop", "v02-bounded-loop"
+      ]
+    },
+    "audit_mutations": {
+      "loop_ir_detected": 9,
+      "manifest_detected": 4,
+      "profile_detected": 1,
+      "names": [
+        "wrong-static-budget", "wrong-budget-predicate", "index-starts-at-one",
+        "stale-accumulator-phi", "swapped-callback-arguments",
+        "wrong-index-increment", "missing-backedge", "missing-exhaustion-tag",
+        "exhaustion-reaches-callback", "tampered-iteration-budget",
+        "tampered-iteration-callback", "incomplete-iteration-catalog",
+        "incomplete-function-closure", "unsupported-contract-version"
+      ]
+    },
+    "bounded_lemmas": {
+      "source": "Lemma/Core0/Bounded.lean",
+      "source_sha256": "19600082ec9b26ee297e001deca524cebe896e96b03c29f607df5f693b344305",
+      "dependency_probe_source_sha256": "eb2ab935ac6d37273a5741261224c8648e635d1f55fed9725656a84c44935197",
+      "dependency_probe_stdout_sha256": "4065ac14230bcb6912555b00483ed23fd8cf39055fc0d9fa4239de213339961f",
+      "scope": "local source-semantics facts; not a proof of compiler correctness",
+      "theorems": [
+        {"name": "executedIterations_le_budget", "axioms": ["propext"]},
+        {"name": "boundedFoldU32_exhausted", "axioms": ["propext", "Quot.sound"]},
+        {"name": "boundedFoldU32_zero", "axioms": ["propext", "Quot.sound"]}
+      ]
+    },
+    "loop_and_stack_audit": {
+      "pre_optimization_function_count": 14,
+      "pre_optimization_loop_count": 8,
+      "exact_direct_callback_calls_per_positive_loop": 1,
+      "machine_backedge_per_positive_loop": true,
+      "dynamic_stack_adjustments": {"O0": 0, "O2": 0},
+      "optimized_llvm_direct_call_graph_acyclic": {"O0": true, "O2": true},
+      "maximum_frame_chain_bytes": {"O0": 1856, "O2": 176},
+      "stack_limit_bytes": 65536,
+      "scope": "optimized LLVM direct-call graph weighted by object .stack_sizes; machine callback/backedge audit is separate"
+    },
+    "optimizer_disjoint": {
+      "pre_optimization": {"O0": 0, "O2": 0},
+      "post_optimization": {"O0": 0, "O2": 23},
+      "O2_exhaustion_tags": 7,
+      "O2_low_nibble_ascii": 16,
+      "all_operands_proven_disjoint": true
+    },
+    "source_equivalence": {
+      "clean": true,
+      "same_source_commit": true,
+      "same_checked_manifest": true,
+      "same_normalized_suite": true,
+      "same_typed_abi": true,
+      "same_symbol_map": true,
+      "same_pre_optimization_ir": true,
+      "checked_manifest_sha256": "7ce0f74cde332acdb60e14de8edf96fe4ab292654bd3cb3fc61866653c728300",
+      "normalized_suite_sha256": "7b7a2601b3256df1e976e7702cb7680e93d23cd90ecc205751c30885181b3e10",
+      "typed_abi_sha256": "1ef34a43553748f75c897c669d19c0dc7235d28af502a4201df39e96037cd5d7",
+      "symbol_map_sha256": "fbdf607644c1f0da61e032f70d07724406da0cbfde35f9d1d28117084ca86bea",
+      "program_ll_sha256": "88c9da324e8dcf1629416690a7309173c417c8c2675a6b0488f61ef64a9891fe"
+    },
+    "profiles": {
+      "O0": {
+        "audit_sha256": "74d5fcbe006afde2badeb0e3468cdea511e3384e934ef985ff50db164c9fb259",
+        "image_sha256": "68a2624214b03d5b05d170fd08e6537cc2284bd2fe1114225e3d9f74b8e42464",
+        "optimized_ir_sha256": "cf400e19dbf948f411186d9a1380e550b8524b5d73421ccf9d4eacbc1f048d06",
+        "stack_sizes_sha256": "a5930212727612e1edeaf14cc980e33168f988dba0944e82484eb71337a4b90f"
+      },
+      "O2": {
+        "audit_sha256": "461492bb14cb911a764ccc8e4e6837ca86e68ffc26c4498cfbe0865b0c35be5f",
+        "image_sha256": "1bb445b821725b8cccf4d5c58d984cceaf7c9f6f8303c7a6209707b80f0d7b6d",
+        "optimized_ir_sha256": "e7840296cdb0a92d3c923b4eb2983ffc90e5033524fab9cf104c454cad0a34a9",
+        "stack_sizes_sha256": "99ea1b90d7118ac624d57e052fa03de3aa1e30342d4e2f6dd34892210c5d41b1"
+      }
+    },
+    "focused_aggregate": {"path": "build/foundation/gate4-clean-16e7461/gate4-results.json", "sha256": "a88ad21498f64b3bc69305ca70603c2c14057c36d48ba812e3a772cc284f611a"},
+    "cumulative_aggregate": {"path": "build/foundation/gates1-4-clean-16e7461/gate4/gate4-results.json", "sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"}
   },
   "cumulative_foundation": {
-    "path": "build/foundation/gates1-3-clean-9519adc/all-results.json",
-    "sha256": "023ed2f602194dbf376de335fc8a507a0b496727b85498dde2ce0049915dea34"
+    "path": "build/foundation/gates1-4-clean-16e7461/all-results.json",
+    "sha256": "19f507b7317afcf318a4e4c1c3297f5dec421fc92c2aa2062ce61108bad1055e",
+    "children": {
+      "gate_1_sha256": "455c3604a118d7498a94fce557dfd9cef831eb688dddd20059cf4fd3ff72d52e",
+      "gate_2_sha256": "13e765d2d25d35b2b3e699d9fe76c840ac098a32e60007600d06a4086f4c7de4",
+      "gate_3_sha256": "ed73878b77a820d8953e72fe9172f14778727c1bd76d5d8526de7b4a7a632059",
+      "gate_4_sha256": "6883d1089ae7167192320785ed1a060659178edbc515ef035dc73a4eb71ffbf7"
+    }
   },
   "legacy_core0_regression": {
     "cases_per_profile": 10,
     "expected_rejections": 13,
     "fresh_qemu_boots": 23,
     "path": "build/core0/check/check-results.json",
-    "sha256": "a8812a1ea1b2b1c2794d088d25a1fb5f8e878bfd022bd93a71159f04f46e0daa",
+    "sha256": "36ca3fd1b5e04c243322bda4fc8597fc2d29378493cf6fcbe05048d7c5606404",
     "profiles": {
       "O0": {"image_sha256": "26ddca372a3fd86903a0ecdac2fe271d99d30c9c3c3f76654ad39eca19f8eb5b"},
       "O2": {"image_sha256": "a50ffbd077a61b8efc7a63bc56493ad369dc4149554eafe5d69cac81e0b4314b"}
@@ -268,8 +395,10 @@
   },
   "shared_assumptions": [
     "Direct-source and checked-model routes share the pinned Lean host elaborator and type checker; the direct route does not import or call the Core0 checker/evaluator.",
+    "Gate 4's independent Python model shares the documented bounded arithmetic contract but not the Lean evaluator implementation.",
     "Finite differential tests and local lemmas are not a compiler-correctness proof.",
-    "Gate 3 adds a scalar/CFG profile, not a managed Lean runtime.",
+    "Gates 3 and 4 add scalar/CFG and bounded-loop profiles, not a managed Lean runtime.",
+    "The Gate 4 stack bound is an optimized LLVM direct-call graph weighted by object .stack_sizes, not a complete reconstructed machine call graph.",
     "The exact Gate 2 ABI audit covers one deliberate ten-argument call shape, not every RISC-V ABI signature."
   ],
   "unit_mapping": {
@@ -279,12 +408,15 @@
     "gate_2_additional_evidence": ["1.1", "1.3", "1.4", "1.5", "1.7"],
     "gate_3_directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
     "gate_3_regression_only": ["1.2", "1.6"],
+    "gate_4_directly_advanced": ["1.1", "1.3", "1.4", "1.5", "1.7", "1.8"],
+    "gate_4_regression_only": ["1.2", "1.6"],
     "statuses_remain": "partial",
     "stage_2_units_advanced": []
   },
   "claims": {
     "gate_3_passed": true,
-    "gate_4_started": false,
+    "gate_4_passed": true,
+    "gate_5_started": false,
     "g1_complete": false,
     "g2_complete": false,
     "task_002_complete": false,
