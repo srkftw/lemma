@@ -230,7 +230,7 @@ private def lowerExprCFG (profile : Lemma.Core0.Profile)
         pure (.local result)
     | .boundedFoldU32 budget callback count initial => do
         unless profile == .v0_3 || profile == .v0_4 || profile == .v0_5 ||
-            profile == .v0_6 || profile == .v0_7 do
+            profile == .v0_6 || profile == .v0_7 || profile.isExecution do
           throw s!"bounded iteration requires `{Lemma.Core0.Profile.v0_3.contractVersion}` or later"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
           throw s!"bounded iteration budget {budget} is outside 0..{Lemma.Core0.Bounded.maximumBudget}"
@@ -354,6 +354,7 @@ private def lowerFunctionStructured (profile : Lemma.Core0.Profile)
 private def lowerStructuredSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite := do
+  validateSymbolPrefix options.symbolPrefix
   unless suite.contractVersion == profile.contractVersion do
     throw s!"structured lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
   if profile != .v0_3 && !suite.usedIterations.isEmpty then
@@ -394,7 +395,7 @@ private def lowerStructuredSuiteForProfile (profile : Lemma.Core0.Profile)
     seenPreserved := seenPreserved.push name
     let _ ← lookupFunction suite.functions name
   let symbols := suite.functions.mapIdx fun index function =>
-    ({ source := function.name, llvm := s!"core0_user_{index}" } : Symbol)
+    ({ source := function.name, llvm := s!"{options.symbolPrefix}core0_user_{index}" } : Symbol)
   let mut functions := #[]
   for function in suite.functions do
     functions := functions.push
@@ -639,7 +640,7 @@ private def pushDeviceOp (operations : Array Lemma.Core0.Device.Op)
 
 private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
     Lemma.Core0.ActionExpr → Array Lemma.Core0.Device.Op
-  | .done .. | .call .. => operations
+  | .done .. | .call .. | .loop .. => operations
   | .bind first _ _ next =>
       collectDeviceOps (collectDeviceOps operations first) next
   | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
@@ -661,6 +662,8 @@ private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
       collectDeviceOps operations next
   | .timer _ _ _ _ next =>
       collectDeviceOps operations next
+  | .platform _ _ _ _ next =>
+      collectDeviceOps operations next
 termination_by action => sizeOf action
 
 private def pushTrapOp (operations : Array Lemma.Core0.Trap.Op)
@@ -669,7 +672,7 @@ private def pushTrapOp (operations : Array Lemma.Core0.Trap.Op)
 
 private def collectTrapOps (operations : Array Lemma.Core0.Trap.Op) :
     Lemma.Core0.ActionExpr → Array Lemma.Core0.Trap.Op
-  | .done .. | .call .. => operations
+  | .done .. | .call .. | .loop .. => operations
   | .bind first _ _ next =>
       collectTrapOps (collectTrapOps operations first) next
   | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
@@ -686,6 +689,8 @@ private def collectTrapOps (operations : Array Lemma.Core0.Trap.Op) :
       collectTrapOps (pushTrapOp operations operation) next
   | .timer _ _ _ _ next =>
       collectTrapOps operations next
+  | .platform _ _ _ _ next =>
+      collectTrapOps operations next
 termination_by action => sizeOf action
 
 private def pushTimerOp (operations : Array Lemma.Core0.Timer.Op)
@@ -694,7 +699,7 @@ private def pushTimerOp (operations : Array Lemma.Core0.Timer.Op)
 
 private def collectTimerOps (operations : Array Lemma.Core0.Timer.Op) :
     Lemma.Core0.ActionExpr → Array Lemma.Core0.Timer.Op
-  | .done .. | .call .. => operations
+  | .done .. | .call .. | .loop .. => operations
   | .bind first _ _ next =>
       collectTimerOps (collectTimerOps operations first) next
   | .load _ _ _ _ _ next | .store _ _ _ _ _ next |
@@ -710,6 +715,37 @@ private def collectTimerOps (operations : Array Lemma.Core0.Timer.Op) :
       collectTimerOps operations next
   | .timer operation _ _ _ next =>
       collectTimerOps (pushTimerOp operations operation) next
+  | .platform _ _ _ _ next =>
+      collectTimerOps operations next
+termination_by action => sizeOf action
+
+private def collectExecutionOps (operations : Array Lemma.Core0.Execution.OpSpec) :
+    Lemma.Core0.ActionExpr → Array Lemma.Core0.Execution.OpSpec
+  | .done .. | .call .. | .loop .. => operations
+  | .bind first _ _ next => collectExecutionOps (collectExecutionOps operations first) next
+  | .ite _ left right => collectExecutionOps (collectExecutionOps operations left) right
+  | .load _ _ _ _ _ next | .store _ _ _ _ _ next | .checkRange _ _ _ _ _ next |
+      .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next | .uartReadStatus _ _ next |
+      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .trap _ _ _ next | .timer _ _ _ _ next => collectExecutionOps operations next
+  | .platform operation _ _ _ next =>
+      let spec := Lemma.Core0.Execution.specification operation
+      collectExecutionOps (if operations.contains spec then operations else operations.push spec) next
+termination_by action => sizeOf action
+
+private def collectActionLoops (uses : Array Lemma.Core0.ActionLoopUse) :
+    Lemma.Core0.ActionExpr → Array Lemma.Core0.ActionLoopUse
+  | .done .. | .call .. => uses
+  | .loop callback =>
+      let use : Lemma.Core0.ActionLoopUse := { callback }
+      if uses.contains use then uses else uses.push use
+  | .bind first _ _ next => collectActionLoops (collectActionLoops uses first) next
+  | .ite _ left right => collectActionLoops (collectActionLoops uses left) right
+  | .load _ _ _ _ _ next | .store _ _ _ _ _ next | .checkRange _ _ _ _ _ next |
+      .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next | .uartReadStatus _ _ next |
+      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .trap _ _ _ next | .timer _ _ _ _ next | .platform _ _ _ _ next =>
+      collectActionLoops uses next
 termination_by action => sizeOf action
 
 private def timerEffects : Lemma.Core0.Timer.Op → Lemma.Core0.EffectSet
@@ -724,6 +760,7 @@ Calls and bounded-fold callbacks contribute through `actionDependencies`; their
 continuations remain direct syntax in the caller. -/
 private def directActionEffects : Lemma.Core0.ActionExpr → Lemma.Core0.EffectSet
   | .done .. | .call .. => .empty
+  | .loop _ => { mayDiverge := true }
   | .bind first _ _ next =>
       directActionEffects first ∪ directActionEffects next
   | .load _ _ _ _ _ next =>
@@ -744,6 +781,8 @@ private def directActionEffects : Lemma.Core0.ActionExpr → Lemma.Core0.EffectS
       Lemma.Core0.EffectSet.trap ∪ directActionEffects next
   | .timer operation _ _ _ next =>
       timerEffects operation ∪ directActionEffects next
+  | .platform operation _ _ _ next =>
+      Lemma.Core0.executionEffects operation ∪ directActionEffects next
 termination_by action => sizeOf action
 
 private def lookupActionFunction (functions : Array Lemma.Core0.ActionFunction)
@@ -954,6 +993,118 @@ private def lowerCheckedMemory (request : CheckedMemoryRequest)
   emit (.phi valueName .i64 valueIncoming)
   pure { status := .local statusName, value := .local valueName }
 
+/-- Checked execution RAM access. The success block is the sole pointer
+construction/access path. Half-open interval limits are subtraction checked;
+no speculative wrapped address addition is used. -/
+private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
+    (operation : Lemma.Core0.Execution.Op) (arguments : Array LLVM.Operand) :
+    CFGM ActionOutcome := do
+  let some width := operation.widthBytes?
+    | throw "execution memory operation omitted its width"
+  unless width == 1 || width == 8 do throw "unsupported execution RAM width"
+  let some address := arguments[0]?
+    | throw "execution memory operation omitted its address"
+  let writeValue := arguments[1]?.getD (.int .i64 0)
+  let site ← freshMemorySite
+  let stem := s!"execution.mem.{site}."
+  let outcomeLabel ← freshBlock (stem ++ "outcome")
+  let lookupLabel ← freshBlock (stem ++ "lookup")
+  let misalignedLabel ← freshBlock (stem ++ "misaligned")
+  let alignmentMask ← freshValue (stem ++ "alignment-mask.")
+  let aligned ← freshValue (stem ++ "aligned.")
+  emit (.bin alignmentMask .and .i64 address (.int .i64 (width - 1)))
+  emit (.icmp aligned .eq .i64 (.local alignmentMask) (.int .i64 0))
+  let _ ← finishBlock (.branch (.local aligned) lookupLabel misalignedLabel)
+  startBlock misalignedLabel
+  let misalignedExit ← finishBlock (.jump outcomeLabel)
+  let mut statuses : Array (LLVM.Operand × String) := #[
+    (statusOperand Lemma.Core0.Memory.Status.misaligned, misalignedExit)]
+  let mut values : Array (LLVM.Operand × String) := #[(.int .i64 0, misalignedExit)]
+  startBlock lookupLabel
+  if operation.isWrite && width == 1 then
+    let byteOk ← freshValue (stem ++ "byte-valid.")
+    let byteValidLabel ← freshBlock (stem ++ "byte-valid")
+    let invalidByteLabel ← freshBlock (stem ++ "invalid-byte")
+    emit (.icmp byteOk .ule .i64 writeValue (.int .i64 255))
+    let _ ← finishBlock (.branch (.local byteOk) byteValidLabel invalidByteLabel)
+    startBlock invalidByteLabel
+    let invalidByteExit ← finishBlock (.jump outcomeLabel)
+    statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.invalidLength, invalidByteExit)
+    values := values.push (.int .i64 0, invalidByteExit)
+    startBlock byteValidLabel
+  for region in Lemma.Core0.Execution.memoryRegions profile do
+    unless region.start < region.stop && width ≤ region.stop - region.start do
+      throw "execution memory authority interval is shorter than the access width"
+    let checkUpperLabel ← freshBlock (stem ++ "upper")
+    let accessLabel ← freshBlock (stem ++ "access")
+    let nextLabel ← freshBlock (stem ++ "next")
+    let aboveStart ← freshValue (stem ++ "above-start.")
+    emit (.icmp aboveStart .uge .i64 address (.int .i64 region.start))
+    let _ ← finishBlock (.branch (.local aboveStart) checkUpperLabel nextLabel)
+    startBlock checkUpperLabel
+    let belowLimit ← freshValue (stem ++ "below-limit.")
+    emit (.icmp belowLimit .ule .i64 address (.int .i64 (region.stop - width)))
+    let _ ← finishBlock (.branch (.local belowLimit) accessLabel nextLabel)
+    startBlock accessLabel
+    if operation.isWrite && !region.writable then
+      let deniedExit ← finishBlock (.jump outcomeLabel)
+      statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.writeDenied, deniedExit)
+      values := values.push (.int .i64 0, deniedExit)
+    else
+      let pointer ← freshValue (stem ++ "pointer.")
+      emit (.intToPtr pointer address)
+      let llvmType := if width == 1 then LLVM.Ty.i8 else .i64
+      let value ← if operation.isWrite then do
+        let stored ← if width == 1 then do
+          let byte ← freshValue (stem ++ "stored-byte.")
+          emit (.trunc byte .i64 writeValue .i8)
+          pure (LLVM.Operand.local byte)
+        else pure writeValue
+        emit (.store llvmType stored (.local pointer) width true)
+        pure (LLVM.Operand.int .i64 0)
+      else do
+        let loaded ← freshValue (stem ++ "loaded.")
+        emit (.load loaded llvmType (.local pointer) width true)
+        if width == 1 then do
+          let word ← freshValue (stem ++ "loaded-word.")
+          emit (.zext word .i8 (.local loaded) .i64)
+          pure (LLVM.Operand.local word)
+        else pure (.local loaded)
+      let accessExit ← finishBlock (.jump outcomeLabel)
+      statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.ok, accessExit)
+      values := values.push (value, accessExit)
+    startBlock nextLabel
+  let deniedExit ← finishBlock (.jump outcomeLabel)
+  statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.outOfBounds, deniedExit)
+  values := values.push (.int .i64 0, deniedExit)
+  startBlock outcomeLabel
+  let status ← freshValue (stem ++ "status.")
+  let value ← freshValue (stem ++ "value.")
+  emit (.phi status .i8 statuses)
+  emit (.phi value .i64 values)
+  pure { status := .local status, value := .local value }
+
+private def lowerExecutionCall (operation : Lemma.Core0.Execution.Op)
+    (arguments : Array LLVM.Operand) : CFGM ActionOutcome := do
+  let spec := Lemma.Core0.Execution.specification operation
+  let some symbol := spec.primitiveSymbol?
+    | throw "execution machine call has no closed primitive symbol"
+  let machineArguments := (arguments.extract 0 spec.meaningfulArguments).map fun value =>
+    ({ ty := LLVM.Ty.i64, value } : LLVM.ABIArgument)
+  let result ← freshValue "execution.result."
+  if spec.resultKind == .checked then
+    emit (.abiCall (some result) .checkedResult none symbol machineArguments)
+    let statusWord ← freshValue "execution.status-word."
+    let status ← freshValue "execution.status."
+    let value ← freshValue "execution.value."
+    emit (.extractResultStatus statusWord (.local result))
+    emit (.trunc status .i64 (.local statusWord) .i8)
+    emit (.extractResultValue value (.local result))
+    pure { status := .local status, value := .local value }
+  else
+    emit (.abiCall (some result) .i64 none symbol machineArguments)
+    pure { status := statusOperand Lemma.Core0.Memory.Status.ok, value := .local result }
+
 private def lowerActionExpr (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (symbols : Array Symbol) : Lemma.Core0.ActionExpr → CFGM ActionOutcome
@@ -972,6 +1123,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id outcome.value do
           lowerActionExpr profile suite symbols next
   | .load width region offset status value next => do
+      if profile.isExecution then
+        throw "production profiles reject diagnostic fixed-region RAM constructors"
       unless region.type == .u8 && offset.type == .u64 &&
           status.ty == .u8 && value.ty == .u64 do
         throw "checked Action load has an inconsistent type"
@@ -982,6 +1135,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id outcome.value do
           lowerActionExpr profile suite symbols next
   | .store width region offset value status next => do
+      if profile.isExecution then
+        throw "production profiles reject diagnostic fixed-region RAM constructors"
       let expected := match width with
         | .w8 => Lemma.Core0.Ty.u8
         | .w32 => Lemma.Core0.Ty.u32
@@ -996,6 +1151,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id outcome.status do
         lowerActionExpr profile suite symbols next
   | .checkRange access region offset length status next => do
+      if profile.isExecution then
+        throw "production profiles reject diagnostic fixed-region RAM constructors"
       unless region.type == .u8 && offset.type == .u64 && length.type == .u64 &&
           status.ty == .u8 do
         throw "checked Action range preflight has an inconsistent type"
@@ -1060,9 +1217,37 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.trunc status .i64 (.local statusWord) .i8)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
+  | .loop callback => do
+      unless profile == .kernel_v0_1 || profile == .user_v0_1 do
+        throw "checked Action.loop requires a kernel/user execution profile"
+      let function ← match lookupActionFunction suite.actionFunctions callback with
+        | .ok function => pure function
+        | .error message => throw message
+      unless function.signature.args.isEmpty do
+        throw s!"checked Action.loop callback `{callback}` has the wrong signature"
+      let symbol ← match lookupSymbol symbols callback with
+        | .ok symbol => pure symbol
+        | .error message => throw message
+      let repeatLabel ← freshBlock "action.loop.repeat"
+      let failureLabel ← freshBlock "action.loop.failure"
+      let _ ← finishBlock (.jump repeatLabel)
+      startBlock repeatLabel
+      let aggregate ← freshValue "action.loop.result"
+      emit (.abiCall (some aggregate) .checkedResult none symbol #[])
+      let statusWord ← freshValue "action.loop.status-word"
+      let status ← freshValue "action.loop.status"
+      let value ← freshValue "action.loop.value"
+      emit (.extractResultStatus statusWord (.local aggregate))
+      emit (.trunc status .i64 (.local statusWord) .i8)
+      emit (.extractResultValue value (.local aggregate))
+      let succeeded ← freshValue "action.loop.succeeded"
+      emit (.icmp succeeded .eq .i8 (.local status) (.int .i8 0))
+      let _ ← finishBlock (.branch (.local succeeded) repeatLabel failureLabel)
+      startBlock failureLabel
+      pure { status := .local status, value := .local value }
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next => do
       let maximumBudget := if profile == .v0_5 || profile == .v0_6 ||
-          profile == .v0_7 then
+          profile == .v0_7 || profile.isExecution then
         Lemma.Core0.Memory.maximumBudgetV05
       else
         Lemma.Core0.Memory.maximumBudgetV04
@@ -1174,7 +1359,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local resultValue) do
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
-      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1187,7 +1373,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
-      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1200,7 +1387,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         withLocal value.id (.local word) do
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
-      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1210,7 +1398,8 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
-      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 do
+      unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
@@ -1268,6 +1457,47 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         .local primitiveResult
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         withLocal value.id logicalValue do
+          lowerActionExpr profile suite symbols next
+  | .platform operation arguments status value next => do
+      unless operation.admits profile do
+        throw s!"execution operation `{operation.stableId}` is denied by `{profile.contractVersion}`"
+      unless arguments.size == 6 && status.ty == .u8 && value.ty == .u64 do
+        throw "checked execution operation has an inconsistent signature"
+      let mut loweredArguments : Array LLVM.Operand := #[]
+      for index in [:arguments.size] do
+        let argument := arguments[index]!
+        unless argument.type == .u64 do throw "execution argument must have type u64"
+        if index ≥ operation.argumentCount then
+          unless argument == .lit .u64 0 do
+            throw "unused execution operand must be literal zero"
+        loweredArguments := loweredArguments.push
+          (← lowerExprCFG profile suite.scalarFunctions symbols argument)
+      let outcome ← if operation.widthBytes?.isSome then
+        lowerExecutionMemory profile operation loweredArguments
+      else if operation == .forwardSupervisor then do
+        let some enabled := loweredArguments[0]?
+          | throw "supervisor forwarding omitted its canonical Boolean"
+        let valid ← freshValue "execution.forward.canonical."
+        let callLabel ← freshBlock "execution.forward.call"
+        let deniedLabel ← freshBlock "execution.forward.denied"
+        let mergeLabel ← freshBlock "execution.forward.outcome"
+        emit (.icmp valid .ule .i64 enabled (.int .i64 1))
+        let _ ← finishBlock (.branch (.local valid) callLabel deniedLabel)
+        startBlock deniedLabel
+        let deniedExit ← finishBlock (.jump mergeLabel)
+        startBlock callLabel
+        let called ← lowerExecutionCall operation loweredArguments
+        let calledExit ← finishBlock (.jump mergeLabel)
+        startBlock mergeLabel
+        let status ← freshValue "execution.forward.status."
+        let value ← freshValue "execution.forward.value."
+        emit (.phi status .i8 #[(statusOperand Lemma.Core0.Memory.Status.invalidLength, deniedExit),
+          (called.status, calledExit)])
+        emit (.phi value .i64 #[(.int .i64 0, deniedExit), (called.value, calledExit)])
+        pure { status := .local status, value := .local value }
+      else lowerExecutionCall operation loweredArguments
+      withLocal status.id outcome.status do
+        withLocal value.id outcome.value do
           lowerActionExpr profile suite symbols next
 termination_by action => sizeOf action
 
@@ -1349,8 +1579,9 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
 private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
+  validateSymbolPrefix options.symbolPrefix
   unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
-      profile == .v0_7 do
+      profile == .v0_7 || profile.isExecution do
     throw "Action lowering requires profile core0-v0.4, core0-v0.5, core0-v0.6, or core0-v0.7"
   unless suite.contractVersion == profile.contractVersion do
     throw s!"Action lowering requires `{profile.contractVersion}`, got `{suite.contractVersion}`"
@@ -1404,13 +1635,53 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
       actualTimerOps.all suite.usedTimerOps.contains &&
       suite.usedTimerOps.all actualTimerOps.contains do
     throw "checked Action suite has stale timer-operation metadata"
+  let mut actualExecutionOps : Array Lemma.Core0.Execution.OpSpec := #[]
+  for function in suite.actionFunctions do
+    actualExecutionOps := collectExecutionOps actualExecutionOps function.body
+  let mut seenExecutionOps : Array Lemma.Core0.Execution.OpSpec := #[]
+  for spec in suite.usedExecutionOps do
+    if seenExecutionOps.contains spec then throw "checked Action suite repeats execution metadata"
+    seenExecutionOps := seenExecutionOps.push spec
+    unless spec == Lemma.Core0.Execution.specification spec.operation do
+      throw "checked execution primitive signature disagrees with the closed catalog"
+    unless spec.operation.admits profile do
+      throw s!"execution operation `{spec.stableId}` is denied by `{profile.contractVersion}`"
+  unless actualExecutionOps.size == suite.usedExecutionOps.size &&
+      actualExecutionOps.all suite.usedExecutionOps.contains &&
+      suite.usedExecutionOps.all actualExecutionOps.contains do
+    throw "checked Action suite has stale execution-operation metadata"
+  let mut actualLoops : Array Lemma.Core0.ActionLoopUse := #[]
+  for function in suite.actionFunctions do
+    let localLoops := collectActionLoops #[] function.body
+    for use in localLoops do
+      unless function.actionDependencies.contains use.callback do
+        throw s!"checked Action.loop callback `{use.callback}` is absent from its dependency metadata"
+    actualLoops := collectActionLoops actualLoops function.body
+  let mut seenLoops : Array Lemma.Core0.ActionLoopUse := #[]
+  for use in suite.usedLoops do
+    if seenLoops.contains use then throw "checked Action suite repeats loop metadata"
+    seenLoops := seenLoops.push use
+    unless use.stableId == "action.loop" do throw "checked Action suite has unknown loop identity"
+  unless actualLoops.size == suite.usedLoops.size && actualLoops.all suite.usedLoops.contains &&
+      suite.usedLoops.all actualLoops.contains do
+    throw "checked Action suite has stale loop metadata"
+  unless actualLoops.isEmpty || profile == .kernel_v0_1 || profile == .user_v0_1 do
+    throw "checked Action.loop is denied outside kernel/user execution profiles"
+  if profile.isExecution then
+    unless Lemma.Core0.Execution.catalogValid && Lemma.Core0.Execution.memoryRegionsValid profile do
+      throw "production execution catalog or authority intervals are invalid"
+    unless suite.usedMemoryOps.isEmpty && suite.usedTrapOps.isEmpty && suite.usedTimerOps.isEmpty do
+      throw "production profiles reject diagnostic memory/trap/timer metadata"
+  if profile == .user_v0_1 && !actualDeviceOps.isEmpty then
+    throw "user profile rejects direct MMIO operations"
   if profile == .v0_4 && !actualDeviceOps.isEmpty then
     throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
   if (profile == .v0_4 || profile == .v0_5) && !actualTrapOps.isEmpty then
     throw s!"trap operations require `{Lemma.Core0.Profile.v0_6.contractVersion}`"
   if profile != .v0_7 && !actualTimerOps.isEmpty then
     throw s!"timer operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
-  if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 then
+  if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+      profile == .firmware_v0_1 || profile == .kernel_v0_1 then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
@@ -1510,9 +1781,9 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     seenPreserved := seenPreserved.push name
 
   let scalarSymbols := suite.scalarFunctions.mapIdx fun index function =>
-    ({ source := function.name, llvm := s!"core0_scalar_{index}" } : Symbol)
+    ({ source := function.name, llvm := s!"{options.symbolPrefix}core0_scalar_{index}" } : Symbol)
   let actionSymbols := suite.actionFunctions.mapIdx fun index function =>
-    ({ source := function.name, llvm := s!"core0_action_{index}" } : Symbol)
+    ({ source := function.name, llvm := s!"{options.symbolPrefix}core0_action_{index}" } : Symbol)
   let symbols := scalarSymbols ++ actionSymbols
   let mut functions : Array LLVM.Function := #[]
   for function in suite.scalarFunctions do
@@ -1557,5 +1828,18 @@ and the seven closed timer/interrupt primitive calls. -/
 def lowerActionSuiteV07 (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite :=
   lowerActionSuiteForProfile .v0_7 suite options
+
+/-- Privilege-specific production Action lowering; diagnostic profiles cannot
+enter through this interface. -/
+def lowerActionSuiteExecution (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite) (options : SuiteLowerOptions := {}) :
+    Except String LoweredActionSuite := do
+  unless profile.isExecution do throw "production lowering requires a production execution profile"
+  lowerActionSuiteForProfile profile suite options
+
+def lowerActionSuiteForExecution (profile : Lemma.Core0.Profile)
+    (suite : Lemma.Core0.CheckedActionSuite) (options : SuiteLowerOptions := {}) :
+    Except String LoweredActionSuite :=
+  lowerActionSuiteExecution profile suite options
 
 end Lemma.Compiler

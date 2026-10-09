@@ -57,6 +57,9 @@ def Register.number (register : Register) : Nat :=
 /-- The M-mode substrates cannot name arbitrary CSRs. -/
 inductive CSR where
   | mstatus | mie | mtvec | mscratch | mepc | mcause | mtval | mip
+  | medeleg | mideleg | pmpcfg0 | pmpaddr0 | pmpaddr1 | pmpaddr2 | pmpaddr3 | pmpaddr4
+  | mcounteren | scounteren
+  | sstatus | sie | stvec | sscratch | sepc | scause | stval | sip | satp
   deriving Repr, BEq, DecidableEq
 
 def CSR.render : CSR → String
@@ -68,6 +71,25 @@ def CSR.render : CSR → String
   | .mcause => "mcause"
   | .mtval => "mtval"
   | .mip => "mip"
+  | .medeleg => "medeleg"
+  | .mideleg => "mideleg"
+  | .pmpcfg0 => "pmpcfg0"
+  | .pmpaddr0 => "pmpaddr0"
+  | .pmpaddr1 => "pmpaddr1"
+  | .pmpaddr2 => "pmpaddr2"
+  | .pmpaddr3 => "pmpaddr3"
+  | .pmpaddr4 => "pmpaddr4"
+  | .mcounteren => "mcounteren"
+  | .scounteren => "scounteren"
+  | .sstatus => "sstatus"
+  | .sie => "sie"
+  | .stvec => "stvec"
+  | .sscratch => "sscratch"
+  | .sepc => "sepc"
+  | .scause => "scause"
+  | .stval => "stval"
+  | .sip => "sip"
+  | .satp => "satp"
 
 inductive Instruction where
   | loadAddress (dst : Register) (symbol : String)
@@ -97,10 +119,13 @@ inductive Instruction where
   | breakpoint
   | illegalInstruction
   | machineReturn
+  | supervisorReturn
   | move (dst src : Register)
   | jump (target : String)
   | call (symbol : String)
   | fenceIO
+  | translationFenceAll
+  | instructionFence
   | return
   | waitForInterrupt
   deriving Repr, BEq
@@ -133,10 +158,13 @@ def Instruction.render : Instruction → String
   | .breakpoint => "ebreak"
   | .illegalInstruction => ".word 0x0000000b"
   | .machineReturn => "mret"
+  | .supervisorReturn => "sret"
   | .move dst src => s!"mv {dst.render}, {src.render}"
   | .jump target => s!"j {target}"
   | .call symbol => s!"call {symbol}"
   | .fenceIO => "fence iorw, iorw"
+  | .translationFenceAll => "sfence.vma zero, zero"
+  | .instructionFence => "fence.i"
   | .return => "ret"
   | .waitForInterrupt => "wfi"
 

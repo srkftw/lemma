@@ -1,5 +1,6 @@
 import Lemma.Core0.Trap
 import Lemma.Core0.Timer
+import Lemma.Core0.Execution
 
 /-!
 Closed source syntax for the `core0-v0.4` through `core0-v0.7` Action profiles.
@@ -276,6 +277,10 @@ inductive Action where
       (step : UInt32 → UInt32 → UInt64 → UInt64 → UInt64 → UInt64 → UInt64 → Action)
       (count : UInt32) (initial ctx0 ctx1 ctx2 ctx3 : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- Production-only repeated closed zero-argument Action. The frontend requires
+  a direct top-level step constant. Status zero repeats; nonzero returns its
+  exact status/value to the enclosing caller. No finite host model executes it. -/
+  | loop (step : Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)
@@ -308,5 +313,10 @@ inductive Action where
   | timerSetInterrupt (enabled : Bool) (next : UInt8 → UInt64 → Action)
   /-- Enter the quarantined timer/context probe.  Its caller must have MIE clear. -/
   | timerProbe (next : UInt8 → UInt64 → Action)
+  /-- Closed production execution operation. Unused words must be literal zero;
+  authority comes from the selected compiler profile and runtime mappings. -/
+  | platform (operation : Execution.Op)
+      (arg0 arg1 arg2 arg3 arg4 arg5 : UInt64)
+      (next : UInt8 → UInt64 → Action)
 
 end Lemma.Core0.Memory

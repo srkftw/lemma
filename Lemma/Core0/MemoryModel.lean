@@ -74,6 +74,8 @@ inductive DiagnosticCode where
   | deviceActionUnsupported
   | trapActionUnsupported
   | timerActionUnsupported
+  | executionActionUnsupported
+  | loopActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure Diagnostic where
@@ -272,6 +274,15 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
           code := .timerActionUnsupported
           message := "the finite RAM model does not simulate timer/interrupt actions"
         }
+      | .loop _ => .error {
+          code := .loopActionUnsupported
+          message := "the finite RAM model does not execute unbounded production loops"
+        }
+      | .platform .. => .error {
+          code := .executionActionUnsupported
+          message := "the finite RAM model does not simulate production privilege/memory actions"
+        }
+
 
 def evaluateDefault (state : State) (action : Action) : Except Diagnostic Evaluation :=
   evaluate 65536 state action

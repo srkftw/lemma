@@ -98,9 +98,9 @@ def device_disassembly() -> str:
     ]
     functions = (
         ("core0_action_0", (("lbu", 5), ("sb", 0))),
-        ("core0_action_4", (("lbu", 5), ("lbu", 0))),
-        ("core0_action_19", (("lbu", 5),)),
-        ("core0_action_21", (("sb", 2),)),
+        ("core0_action_5", (("lbu", 5), ("lbu", 0))),
+        ("core0_action_21", (("lbu", 5),)),
+        ("core0_action_24", (("sb", 2),)),
     )
     address = 0x80000200
     for function, sites in functions:
@@ -127,7 +127,7 @@ def device_disassembly() -> str:
 def denied_uart_metadata() -> str:
     lines: list[str] = []
     address = 0x80000400
-    for action, count in ((6, 1), (9, 1), (11, 2), (12, 2), (13, 5), (16, 1), (18, 6)):
+    for action, count in ((8, 1), (11, 1), (13, 2), (14, 2), (15, 5), (18, 1), (20, 6)):
         lines.append(f"{address:x} <core0_action_{action}>:")
         for _ in range(count):
             for instruction in (
@@ -286,7 +286,7 @@ class DeviceAuditPolicyTests(unittest.TestCase):
             ("ordinary-class", control.replace("li a1, 2", "li a1, 0", 1)),
             ("allowed-permission", control.replace("li a0, 0", "li a0, 1", 1)),
             ("wrong-stack-slot", control.replace("sd a2, 144(sp)", "sd a2, 152(sp)", 1)),
-            ("wrong-function", control.replace("<core0_action_6>:", "<core0_action_7>:", 1)),
+            ("wrong-function", control.replace("<core0_action_8>:", "<core0_action_9>:", 1)),
         ):
             with self.subTest(name=name):
                 with self.assertRaises(core0_common.Core0Error):

@@ -19,9 +19,9 @@ ARTIFACT_CATEGORY = "test-trap-suite"
 TEST_ABI = "lemma-sync-trap-test-v1"
 SOURCE_IDENTITY = "Lemma Gate 7 synchronous trap conformance"
 FOREGROUND_SOURCE = "Lemma.Examples.Foundation.Trap.foreground"
-FOREGROUND_SYMBOL = "core0_action_17"
+FOREGROUND_SYMBOL = "core0_action_19"
 DISPATCH_SOURCE = "Lemma.Examples.Foundation.Trap.dispatch"
-DISPATCH_SYMBOL = "core0_action_20"
+DISPATCH_SYMBOL = "core0_action_22"
 RESTORE_ENVIRONMENT = "LEMMA_TRAP_RESTORE_MUTATION"
 
 TRAP_EXTERNALS = {
@@ -139,7 +139,7 @@ SCALAR_FUNCTIONS = (
     ("Lemma.Examples.Foundation.Device.Support.readyLength", (), "u32"),
     ("Lemma.Examples.Foundation.Device.Support.readyByte", ("u32",), "u8"),
     ("Lemma.Core0.Memory.Status.ok", (), "u8"),
-    ("Lemma.Examples.Foundation.Device.Support.pollBudget", (), "u32"),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.pollBudget", (), "u32"),
     ("Lemma.Core0.Memory.Status.iterationStop", (), "u8"),
     ("Lemma.Core0.Memory.Status.txTimeout", (), "u8"),
     ("Lemma.Core0.Device.UART.lsrErrorMask", (), "u8"),
@@ -184,8 +184,9 @@ PRIMITIVE_CONTRACTS = (
 )
 
 ACTION_FUNCTIONS = (
-    ("Lemma.Examples.Foundation.Device.Support.transmitPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (), ("mmio-read", "mmio-write", "io-order"), ("mmio-read", "mmio-write", "io-order")),
-    ("Lemma.Examples.Foundation.Device.Support.sendByte", ("u8",), ("Lemma.Examples.Foundation.Device.Support.transmitPollStep",), (), ("mmio-read", "mmio-write", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (), ("mmio-read", "mmio-write", "io-order"), ("mmio-read", "mmio-write", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.sendByte", ("u8",), ("Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep",), (), ("mmio-read", "mmio-write", "io-order")),
+    ("Lemma.Examples.Foundation.Device.Support.sendByte", ("u8",), ("Lemma.Platform.LemmaVM.ConsoleDevice.sendByte",), (), ("mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.readyStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), ("Lemma.Examples.Foundation.Device.Support.sendByte",), (), ("mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.sendReady", (), ("Lemma.Examples.Foundation.Device.Support.readyStep",), (), ("mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Trap.writeEvent", ("u64", "u64"), (), ("checked-access", "fixed-ram-write"), ("checked-access", "fixed-ram-write")),
@@ -195,8 +196,9 @@ ACTION_FUNCTIONS = (
     ("Lemma.Examples.Foundation.Trap.denialBattery", (), ("Lemma.Examples.Foundation.Trap.denialStep",), ("checked-access", "fixed-ram-read", "fixed-ram-write"), ("checked-access", "fixed-ram-read", "fixed-ram-write")),
     ("Lemma.Examples.Foundation.Device.Support.responseStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), ("Lemma.Examples.Foundation.Device.Support.sendByte",), ("checked-access", "fixed-ram-write"), ("checked-access", "fixed-ram-write", "mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.sendResponse", ("u8", "u64", "u64"), ("Lemma.Examples.Foundation.Device.Support.responseStep",), (), ("checked-access", "fixed-ram-write", "mmio-read", "mmio-write", "io-order")),
-    ("Lemma.Examples.Foundation.Device.Support.drainPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (), ("mmio-read", "io-order"), ("mmio-read", "io-order")),
-    ("Lemma.Examples.Foundation.Device.Support.drain", (), ("Lemma.Examples.Foundation.Device.Support.drainPollStep",), (), ("mmio-read", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (), ("mmio-read", "io-order"), ("mmio-read", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drain", (), ("Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep",), (), ("mmio-read", "io-order")),
+    ("Lemma.Examples.Foundation.Device.Support.drain", (), ("Lemma.Platform.LemmaVM.ConsoleDevice.drain",), (), ("mmio-read", "io-order")),
     ("Lemma.Examples.Foundation.Trap.resultFrames", ("u64", "u64", "u64", "u64"), ("Lemma.Examples.Foundation.Device.Support.sendResponse", "Lemma.Examples.Foundation.Device.Support.drain"), (), ("checked-access", "fixed-ram-write", "mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Trap.interruptedStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (), ("sync-trap", "machine-state"), ("sync-trap", "machine-state")),
     ("Lemma.Examples.Foundation.Trap.runFolds", ("u64", "u32"), ("Lemma.Examples.Foundation.Trap.denialBattery", "Lemma.Examples.Foundation.Trap.resultFrames", "Lemma.Examples.Foundation.Device.Support.sendResponse", "Lemma.Examples.Foundation.Device.Support.drain", "Lemma.Examples.Foundation.Trap.interruptedStep", "Lemma.Examples.Foundation.Trap.controlStep"), ("checked-access", "fixed-ram-read"), ("checked-access", "fixed-ram-read", "fixed-ram-write", "mmio-read", "mmio-write", "io-order", "sync-trap", "machine-state")),
@@ -214,13 +216,13 @@ EFFECT_ORDER = (
 
 ITERATIONS = (
     (21, "Lemma.Examples.Foundation.Device.Support.readyStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.transmitPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep"),
     (64, "Lemma.Examples.Foundation.Trap.interruptedStep"),
     (64, "Lemma.Examples.Foundation.Trap.controlStep"),
     (14, "Lemma.Examples.Foundation.Trap.denialStep"),
     (0, "Lemma.Examples.Foundation.Trap.controlStep"),
     (24, "Lemma.Examples.Foundation.Device.Support.responseStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.drainPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep"),
 )
 
 

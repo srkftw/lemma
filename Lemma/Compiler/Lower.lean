@@ -30,7 +30,18 @@ private inductive LoweringABI where
 boundaries inspectable after optimization without changing ordinary lowering. -/
 structure SuiteLowerOptions where
   preserveCalls : Array Lean.Name := #[]
+  /-- Independent production objects may use a distinct checked symbol namespace.
+  Empty preserves every historical symbol identity. -/
+  symbolPrefix : String := ""
   deriving Inhabited, Repr
+
+def validateSymbolPrefix (symbolPrefix : String) : Except String Unit := do
+  unless symbolPrefix.toList.all
+      (fun character => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_".toList.contains character) do
+    throw "symbol prefix must contain only ASCII letters, digits, or underscores"
+  if let some first := symbolPrefix.toList.head? then
+    unless "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".toList.contains first do
+      throw "symbol prefix must begin with an ASCII letter or underscore"
 
 structure LoweredRoot where
   id : Nat
@@ -280,6 +291,7 @@ private def lowerSuiteFunction (suite : Lemma.Core0.CheckedSuite)
 attributes.  This is additive; `lowerApplication` remains the legacy artifact path. -/
 def lowerSuite (suite : Lemma.Core0.CheckedSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredSuite := do
+  validateSymbolPrefix options.symbolPrefix
   unless suite.contractVersion == "core0-v0.1" do
     throw s!"unsupported checked suite contract `{suite.contractVersion}`"
   unless !suite.roots.isEmpty do
@@ -320,7 +332,7 @@ def lowerSuite (suite : Lemma.Core0.CheckedSuite)
     seenPreserved := seenPreserved.push name
     let _ ← lookupFunction suite.functions name
   let symbols := suite.functions.mapIdx fun index function =>
-    ({ source := function.name, llvm := s!"core0_user_{index}" } : Symbol)
+    ({ source := function.name, llvm := s!"{options.symbolPrefix}core0_user_{index}" } : Symbol)
   let mut functions := #[]
   for function in suite.functions do
     functions := functions.push (← lowerSuiteFunction suite symbols options function)

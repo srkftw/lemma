@@ -332,46 +332,46 @@ DEVICE_MACHINE_IR_FUNCTIONS = {"core0_main"}
 DEVICE_MACHINE_ACCESS_SEQUENCE = (
     ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
     ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
-    ("uart.lsr.read8", "core0_action_4", "lbu", 0x10000005),
-    ("uart.rbr.read8", "core0_action_4", "lbu", 0x10000000),
-    ("uart.lsr.read8", "core0_action_19", "lbu", 0x10000005),
-    ("uart.fcr.enable-reset", "core0_action_21", "sb", 0x10000002),
+    ("uart.lsr.read8", "core0_action_5", "lbu", 0x10000005),
+    ("uart.rbr.read8", "core0_action_5", "lbu", 0x10000000),
+    ("uart.lsr.read8", "core0_action_21", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_24", "sb", 0x10000002),
 )
 DEVICE_MACHINE_DENIED_METADATA = Counter({
-    "core0_action_6": 1,
-    "core0_action_9": 1,
-    "core0_action_11": 2,
-    "core0_action_12": 2,
-    "core0_action_13": 5,
-    "core0_action_16": 1,
-    "core0_action_18": 6,
+    "core0_action_8": 1,
+    "core0_action_11": 1,
+    "core0_action_13": 2,
+    "core0_action_14": 2,
+    "core0_action_15": 5,
+    "core0_action_18": 1,
+    "core0_action_20": 6,
 })
 TRAP_MACHINE_ACCESS_SEQUENCE = (
     ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
     ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
-    ("uart.lsr.read8", "core0_action_11", "lbu", 0x10000005),
-    ("uart.fcr.enable-reset", "core0_action_17", "sb", 0x10000002),
+    ("uart.lsr.read8", "core0_action_12", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_19", "sb", 0x10000002),
 )
 TRAP_MACHINE_DENIED_METADATA = Counter({
-    "core0_action_4": 1,
-    "core0_action_6": 12,
-    "core0_action_8": 4,
-    "core0_action_9": 1,
-    "core0_action_15": 1,
-    "core0_action_17": 3,
-    "core0_action_20": 2,
+    "core0_action_5": 1,
+    "core0_action_7": 12,
+    "core0_action_9": 4,
+    "core0_action_10": 1,
+    "core0_action_17": 1,
+    "core0_action_19": 3,
+    "core0_action_22": 2,
 })
 TIMER_MACHINE_ACCESS_SEQUENCE = (
     ("uart.lsr.read8", "core0_action_0", "lbu", 0x10000005),
     ("uart.thr.write8", "core0_action_0", "sb", 0x10000000),
-    ("uart.lsr.read8", "core0_action_12", "lbu", 0x10000005),
-    ("uart.fcr.enable-reset", "core0_action_33", "sb", 0x10000002),
+    ("uart.lsr.read8", "core0_action_13", "lbu", 0x10000005),
+    ("uart.fcr.enable-reset", "core0_action_35", "sb", 0x10000002),
 )
 TIMER_MACHINE_DENIED_METADATA = Counter({
-    "core0_action_4": 1,
-    "core0_action_7": 1,
-    "core0_action_14": 1,
-    "core0_action_33": 4,
+    "core0_action_5": 1,
+    "core0_action_8": 1,
+    "core0_action_16": 1,
+    "core0_action_35": 4,
 })
 FINAL_ALLOC_SECTIONS = {".text", ".rodata", ".data", ".bss"}
 LEAN_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*")

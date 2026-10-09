@@ -258,7 +258,7 @@ class MonitorMachineWrapperTests(unittest.TestCase):
     def _clean_machine_report() -> dict[str, object]:
         return {
             "mutation": "none",
-            "compiled_functions": 139,
+            "compiled_functions": 142,
             "compiled_privileged_instructions": 0,
             "startup_functions": 16,
             "machine_csr_operations": 28,

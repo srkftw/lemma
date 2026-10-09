@@ -136,7 +136,7 @@ def _validate_timer_audit(audit: dict[str, object], manifest: dict[str, object],
         "pre_optimization": lowered_counts, "post_optimization": post_counts},
         "source/pre/post timer operation closure")
     _same_evidence(ir.get("post_optimization_tail_merge"), {
-        "function": "core0_action_36", "source_sites": 2, "machine_calls": 1,
+        "function": "core0_action_38", "source_sites": 2, "machine_calls": 1,
         "selector": "two-input phi from the mutually exclusive deadline branches",
     } if optimization == "O2" else None, "exact optimizer compare tail merge")
     _same_evidence(ir.get("optimizer_intrinsics"), {

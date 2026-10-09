@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "task": "003-kernel-isolated-services",
+  "branch": "task/003-kernel-isolated-services",
+  "base": "ff4045a79a6fda45f9cd8198587357846530a806",
+  "highest_complete_gate": "B",
+  "gates": [
+    {
+      "gate": "A",
+      "name": "base and build separation",
+      "status": "passed",
+      "baseline": "passed",
+      "evidence": "build/kernel/gateAB/prefix-result.json",
+      "actual_failures": [
+        "build/kernel/bootstrapA-failed-attempt1: legitimate private helper rejected by export provenance; repaired using canonical private source identity",
+        "build/kernel/bootstrapA-failed-attempt2: malformed generated user linker BSS closing brace; generator repaired",
+        "build/kernel/bootstrapA-smoke: first actual guest boot returned K1(0xe0,61,0,0,0), DTB invalidStructure; QEMU killed/reaped"
+      ],
+      "artifact_subportion": "passed normal and development O2 build/audit; fresh normal boot and reserved-DTB guest denial passed"
+    },
+    {
+      "gate": "B",
+      "name": "page ownership and kernel storage",
+      "status": "passed",
+      "evidence": "build/kernel/gateAB/prefix-result.json",
+      "observed": "actual zero-on-reuse, quota/global exhaustion, generation reuse, quota batch rollback passed; mapping installation deferred to D",
+      "installed_mapping_reclamation": "deferred until actual mappings in D"
+    },
+    {
+      "gate": "C",
+      "name": "supervisor and machine services",
+      "status": "not_run"
+    },
+    {
+      "gate": "D",
+      "name": "Sv39 and user process",
+      "status": "not_run"
+    },
+    {
+      "gate": "E",
+      "name": "user ABI and syscall boundary",
+      "status": "not_run"
+    },
+    {
+      "gate": "F",
+      "name": "preemptive tasks",
+      "status": "not_run"
+    },
+    {
+      "gate": "G",
+      "name": "lifecycle and fault containment",
+      "status": "not_run"
+    },
+    {
+      "gate": "H",
+      "name": "capability tables",
+      "status": "not_run"
+    },
+    {
+      "gate": "I",
+      "name": "blocking IPC",
+      "status": "not_run"
+    },
+    {
+      "gate": "J",
+      "name": "buffer service and client",
+      "status": "not_run"
+    },
+    {
+      "gate": "K",
+      "name": "clean qualification and publication",
+      "status": "not_run"
+    }
+  ]
+}

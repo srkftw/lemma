@@ -127,17 +127,42 @@ successful `e0e1f21` run is historical, not rebound. See the report for exact so
 and later publication identities. CI separately runs metadata/host,
 legacy RV64, and cumulative foundation/qualification jobs with retained artifacts.
 
+## Kernel foundation development
+
+The accepted A/B prefix has an independent boot package and frame API. These
+commands run inside the pinned environment; `bootstrap-m` does not claim S/U
+execution. Keep source stable between build and observation: stale bindings fail.
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration normal --stage bootstrap-m --opt-level O2 \
+  --output-dir build/kernel/normal --clean
+nix develop --no-write-lock-file --command python3 scripts/run_kernel.py \
+  --image build/kernel/normal/image.elf --output-dir build/kernel/normal-run --clean
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration frames-development --stage bootstrap-m --opt-level O2 \
+  --output-dir build/kernel/frames --clean
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_frames.py \
+  --image build/kernel/frames/image.elf --output-dir build/kernel/frames-run --clean
+```
+
+The development transport remains live for fresh requests after boot. It is absent
+from normal roots. The independent user ELF is in the build's `user/` directory;
+loading/executing it is a later gate. Each finite runner stops/reaps QEMU after
+actual observations and records that explicit host cleanup.
+
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
-Task 001 is [draft PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
-[draft PR #2](https://github.com/srkftw/lemma/pull/2), stacked against
-`task/001-core0-freestanding-slice` because Task 001 remains unmerged. Neither PR
-is merged automatically; `main` still contains the starter rather than this
-implementation.
+Task 001 [PR #1](https://github.com/srkftw/lemma/pull/1) and Task 002
+[PR #2](https://github.com/srkftw/lemma/pull/2) were merged by explicit owner
+authorization. Main `ff4045a79a6fda45f9cd8198587357846530a806` contains the reviewed
+Task002 tree. Both task branches remain available.
 
-For the current work, select `task/002-machine-foundation` and read
-`codex/prompts/002-machine-foundation.md`, the gate ledger and resume checkpoint.
+For current kernel work, select `task/003-kernel-isolated-services` and read
+its assignment, gate ledger and resume checkpoint. The current accepted prefix
+is A/B; S/U execution and services remain outstanding. See
+[Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.
 

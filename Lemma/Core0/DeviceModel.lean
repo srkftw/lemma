@@ -119,6 +119,8 @@ inductive ActionStepDiagnosticCode where
   | nonDeviceActionUnsupported
   | trapActionUnsupported
   | timerActionUnsupported
+  | executionActionUnsupported
+  | loopActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure ActionStepDiagnostic where
@@ -156,6 +158,15 @@ def stepDeviceAction (state : State) (action : Action) :
       .error {
         code := .timerActionUnsupported
         message := "the finite UART model does not simulate timer/interrupt actions"
+      }
+  | .loop _ => .error {
+      code := .loopActionUnsupported
+      message := "the finite UART model does not execute unbounded production loops"
+    }
+  | .platform .. =>
+      .error {
+        code := .executionActionUnsupported
+        message := "the finite UART model does not simulate production privilege/memory actions"
       }
   | _ =>
       .error {

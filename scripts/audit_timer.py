@@ -54,8 +54,8 @@ DISABLE_ARMING_MACHINE_BODY_SHA256 = (
 )
 TIMER_START_MACHINE_BODY_SHA256 = {
     # Pinned O0 and O2 differ only in resolved program/BSS PC-relative values.
-    "O0": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
-    "O2": "c28069c5eb66e5c6bfaad03ecbbf3f740d447d345ad671cdc08751b2c36a9407",
+    "O0": "1d57c4b2fb78146d7acf3aacc0a91c53d363d17bc6dba495aaf6443abf62f071",
+    "O2": "29e19ddeb78734da1067ec6bded4f9eb06d70e17a20870503afbce0d6525c0d7",
 }
 
 
@@ -335,7 +335,7 @@ SCALAR_FUNCTIONS = (
     ("Lemma.Examples.Foundation.Device.Support.readyLength", (), "u32"),
     ("Lemma.Examples.Foundation.Device.Support.readyByte", ("u32",), "u8"),
     ("Lemma.Core0.Memory.Status.ok", (), "u8"),
-    ("Lemma.Examples.Foundation.Device.Support.pollBudget", (), "u32"),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.pollBudget", (), "u32"),
     ("Lemma.Core0.Memory.Status.iterationStop", (), "u8"),
     ("Lemma.Core0.Memory.Status.txTimeout", (), "u8"),
     ("Lemma.Core0.Device.UART.lsrErrorMask", (), "u8"),
@@ -374,7 +374,8 @@ SCALAR_FUNCTIONS = (
 )
 
 ACTION_FUNCTIONS = (
-    ("Lemma.Examples.Foundation.Device.Support.transmitPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.sendByte", ("u8",)),
     ("Lemma.Examples.Foundation.Device.Support.sendByte", ("u8",)),
     ("Lemma.Examples.Foundation.Device.Support.readyStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
     ("Lemma.Examples.Foundation.Device.Support.sendReady", ()),
@@ -386,7 +387,8 @@ ACTION_FUNCTIONS = (
     ("Lemma.Examples.Foundation.Timer.consumeOne", ()),
     ("Lemma.Examples.Foundation.Timer.drainStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
     ("Lemma.Examples.Foundation.Timer.validateRing", ()),
-    ("Lemma.Examples.Foundation.Device.Support.drainPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drain", ()),
     ("Lemma.Examples.Foundation.Device.Support.drain", ()),
     ("Lemma.Examples.Foundation.Device.Support.responseStep", ("u32", "u32", "u64", "u64", "u64", "u64", "u64")),
     ("Lemma.Examples.Foundation.Device.Support.sendResponse", ("u8", "u64", "u64")),
@@ -445,7 +447,7 @@ PRIMITIVE_CONTRACTS = (
 
 ITERATIONS = (
     (21, "Lemma.Examples.Foundation.Device.Support.readyStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.transmitPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep"),
     (16, "Lemma.Examples.Foundation.Timer.clearStep"),
     (1024, "Lemma.Examples.Foundation.Timer.pendingStep"),
     (1000000, "Lemma.Examples.Foundation.Timer.workStep"),
@@ -454,7 +456,7 @@ ITERATIONS = (
     (16, "Lemma.Examples.Foundation.Timer.drainStep"),
     (64, "Lemma.Examples.Foundation.Timer.dumpStep"),
     (24, "Lemma.Examples.Foundation.Timer.statStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.drainPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep"),
     (24, "Lemma.Examples.Foundation.Device.Support.responseStep"),
     (128, "Lemma.Examples.Foundation.Timer.mixStep"),
 )
@@ -979,7 +981,7 @@ def validate_timer_ir(
                 1
                 if (
                     optimization == "O2"
-                    and llvm == "core0_action_36"
+                    and llvm == "core0_action_38"
                     and stable_id == "timer.set-compare"
                     and source_count == 2
                 )
@@ -997,7 +999,7 @@ def validate_timer_ir(
         raise Core0Error(f"timer source operation site closure differs: {dict(source_counts)!r}")
     post_merge: dict[str, object] | None = None
     if optimization == "O2":
-        rearm_post = parsed_post["core0_action_36"].body
+        rearm_post = parsed_post["core0_action_38"].body
         merge = re.findall(
             r"(%[A-Za-z0-9_.]+) = phi i64 "
             r"\[ (%[A-Za-z0-9_.]+), %action\.if\.then\.18 \], "
@@ -1010,7 +1012,7 @@ def validate_timer_ir(
                 "optimized timer rearm does not retain the exact two-input set-compare tail merge"
             )
         post_merge = {
-            "function": "core0_action_36",
+            "function": "core0_action_38",
             "source_sites": 2,
             "machine_calls": 1,
             "selector": "two-input phi from the mutually exclusive deadline branches",
@@ -1668,8 +1670,8 @@ def validate_timer_machine_disassembly(
     )
     # Validate original names and bodies before the compatibility projection
     # used by the Gate 7 common trap checker.  In particular, Timer.failure is
-    # core0_action_20 while the Timer dispatcher is core0_action_39, so blindly
-    # renaming the latter to Gate 7's action_20 would otherwise hide one body.
+    # core0_action_22 while the Timer dispatcher is core0_action_41, so blindly
+    # renaming the latter to Gate 7's action_22 would otherwise hide one body.
     common_assembly = _common_trap_assembly(startup_assembly, dispatcher)
     collision_alias = "core0_timer_gate7_original_action_20"
     if (

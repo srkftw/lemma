@@ -2,7 +2,7 @@
 
 ## Read before changing code
 
-Read `README.md`, `docs/ARCHITECTURE.md`, the four files in `docs/contracts/`,
+Read `README.md`, `docs/ARCHITECTURE.md`, the files in `docs/contracts/`,
 `docs/plan/BUILD_ORDER.md`, and the assigned task under `codex/prompts/`.
 This is a tested, bounded freestanding foundation, not a complete OS. Do not invent successful builds.
 
@@ -54,7 +54,21 @@ filesystem, proof checker, notebook, networking, tutor, and physical-board claim
 Resume from `docs/plan/002-session-state.md` and `docs/plan/002-gates.json`; do not
 infer that a later gate passed from the existence of code or a cached earlier run.
 
-## Evidence discipline
+## Third task's scope
+
+Task 003 is authorized by `codex/prompts/003-kernel-isolated-services.md`.
+It extends the earlier task boundaries with a real supervisor kernel, owned
+physical pages, Sv39 user address spaces, syscalls, preemptive tasks, capabilities,
+blocking IPC and a separately linked volatile buffer service. Preserve every
+legacy Core0 profile and check. Keep target policy and algorithms in compiled
+Lean; structured machine primitives implement only the declared hardware boundary.
+Resume from `docs/plan/003-session-state.md` and `docs/plan/003-gates.json`.
+Gates A–K require their own observed results; code existence does not pass a gate.
+The managed Lean heap/runtime, filesystem/persistence, networking, graphical
+notebook, tutor and physical-board claims remain out of scope. Publish a draft PR
+against main; do not merge it or change repository settings. Leave USGCE untouched.
+
+## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and
   mark blocked/not-run work accurately. Never print fabricated expected logs as results.
