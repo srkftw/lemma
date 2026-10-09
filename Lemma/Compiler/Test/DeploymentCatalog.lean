@@ -76,6 +76,33 @@ run_cmd do
   match validateSelection "tasks-fault-development" "compute" #[fault.root] with
   | .ok _ => throwError "fault source crossed the ordinary compute image selection"
   | .error _ => pure ()
-  logInfo "PASS: genuine source selection, exact closed F/G registries and per-image startup authority fail closed"
+  unless managedPolicyFor "capabilities-development" == some "lemma-capabilities-v1" &&
+      managedPolicyFor "tasks-development" == none && managedPolicyFor "tasks-fault-development" == none &&
+      capabilityImages.size == 4 && capabilityImages.all (fun image => image.startupCase == .none && image.bootRole?.isSome) do
+    throwError "managed policy/boot roles escaped the exact H deployment"
+  let managedFirst := capabilityImages[0]!
+  for key in #["capabilities", "peer", "busy", "tamper"] do
+    let image ← match imageFor "capabilities-development" key with
+      | .ok image => pure image
+      | .error error => throwError error
+    unless image.bootRole?.map ManagedBootRole.stableId == some key do
+      throwError "managed boot role differs from its source-selected image"
+    match validateSelection "capabilities-development" key #[image.root] with
+    | .ok _ => pure ()
+    | .error error => throwError error
+  for images in #[taskFaultImages, capabilityImages.reverse,
+      capabilityImages.set! 0 { managedFirst with bootRole? := none },
+      capabilityImages.set! 0 { managedFirst with bootRole? := some .peer },
+      capabilityImages.set! 0 { managedFirst with startupCase := .supervisorCsr },
+      capabilityImages.set! 0 { managedFirst with root := ``ordinary },
+      capabilityImages.set! 0 { managedFirst with moduleName := `Lemma.User.Development.CapabilitiesPeer }] do
+    match validateImages "capabilities-development" images with
+    | .ok _ => throwError "a forged H managed role/startup/module/root/order was admitted"
+    | .error _ => pure ()
+  for configuration in #["tasks-development", "tasks-fault-development"] do
+    match imageFor configuration "capabilities" with
+    | .ok _ => throwError "H managed source escaped to an earlier deployment"
+    | .error _ => pure ()
+  logInfo "PASS: genuine source selection, exact closed F/G/H registries and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

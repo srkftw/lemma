@@ -88,6 +88,7 @@ def arithmetic_ranges(unit: dict, functions: dict, disassembly: str) -> list[dic
 class Trace:
     keys = IMAGE_KEYS
     configuration = "tasks-development"
+    arithmetic_required = True
 
     def __init__(self, session: Session):
         self.session = session
@@ -129,12 +130,17 @@ class Trace:
         self.busy_unit = {"path": str(unit_path), "sha256": sha256(unit_path),
                           "execution_requirements": execution,
                           "action_declarations": actions, "genuine_loops": loops}
-        compute_dir = session.image.parent / "users" / "compute"
-        compute_unit = json.loads((compute_dir / "unit.json").read_text())
-        self.arithmetic = arithmetic_ranges(compute_unit, self.users["compute"]["function_ranges"],
-                                             (compute_dir / "audit-user-disassembly.txt").read_text())
-        self.arithmetic_binding = {name: sha256(compute_dir / name)
-                                   for name in ("unit.json", "audit-user-disassembly.txt")}
+        self.arithmetic, self.arithmetic_binding = [], {}
+        if self.arithmetic_required:
+            compute_dir = session.image.parent / "users" / "compute"
+            compute_unit = json.loads((compute_dir / "unit.json").read_text())
+            self.arithmetic = arithmetic_ranges(compute_unit, self.users["compute"]["function_ranges"],
+                                                 (compute_dir / "audit-user-disassembly.txt").read_text())
+            self.arithmetic_binding = {name: sha256(compute_dir / name)
+                                       for name in ("unit.json", "audit-user-disassembly.txt")}
+
+    def exit_pcs(self, user):
+        return {user["exit_ecall_pc"]}
 
     def expect_create(self, image: int, nonce: int):
         self.creation_queue.append((image, nonce))
@@ -184,8 +190,8 @@ class Trace:
             if (self.current != a or b not in {1, 2, 3, 4} or c < self.irq or b == 1 and c <= self.irq
                     or not in_ranges(d, user["function_ranges"])):
                 raise Core0Error("return lacks actual current U context, valid cause/PC or monotonic M IRQ count")
-            expected_ecall = user["exit_ecall_pc"] if b == 4 else user["syscall_bridge"]["ecall_pc"]
-            if b in {2, 3, 4} and d != expected_ecall:
+            if (b == 4 and d not in self.exit_pcs(user)
+                    or b in {2, 3} and d != user["syscall_bridge"]["ecall_pc"]):
                 raise Core0Error("yield/sleep/exit did not originate at the audited ordinary ECALL")
             if task["image"] == 2 and b != 1:
                 raise Core0Error("noncooperative Busy returned without a real SSIP preemption")

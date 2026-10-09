@@ -66,6 +66,8 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.TasksEntry.boot", "Lemma.Kernel.Development.TasksEntry.dispatch"]
     else if configuration == "tasks-fault-development" then
       #["Lemma.Kernel.Development.FaultEntry.boot", "Lemma.Kernel.Development.FaultEntry.dispatch"]
+    else if configuration == "capabilities-development" then
+      #["Lemma.Kernel.Development.CapsEntry.boot", "Lemma.Kernel.Development.CapsEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
@@ -87,6 +89,9 @@ private def developmentModules (configuration role : String) (image? : Option Us
   else if configuration == "tasks-fault-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FaultEntry", "Lemma.Kernel.Development.TasksEntry",
       "Lemma.Kernel.Development.Pressure"]
+  else if configuration == "capabilities-development" && role == "kernel" then
+    #["Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias",
+      "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
   else if configuration == "user-isolation-development" && role == "kernel" then
@@ -133,6 +138,17 @@ private def productionName (name : Name) : Bool :=
   source.startsWith "Lemma." && (lower.splitOn ".examples.").length == 1 &&
     !lower.startsWith "examples." && (lower.splitOn ".compiler.test.").length == 1 &&
     (lower.splitOn "mutation").length == 1 && (lower.splitOn "mutant").length == 1
+
+private def managedPolicyFields (configuration : String) : List (String × Json) :=
+  ((managedPolicyFor configuration).map fun policy => [("managed_policy", Json.str policy)]).getD []
+
+private def imageBootRoleFields (image? : Option UserImageSpec) : List (String × Json) :=
+  ((image?.bind (·.bootRole?)).map fun role => [("boot_role", Json.str role.stableId)]).getD []
+
+private def managedUserSource (configuration role : String) (name : Name) : Bool :=
+  if configuration != "capabilities-development" || role != "user" then true else
+    let source := (Lean.privateToUserName? name).getD name |>.toString
+    !source.startsWith "Lemma.Kernel." && !source.startsWith "Lemma.Compiler."
 
 private def rootSymbol (lowered : LoweredActionSuite) (name : Name) : Except String String := do
   let some symbol := lowered.symbols.find? (fun symbol => symbol.source == name)
@@ -206,14 +222,14 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
   let imageFields := match image? with
     | none => []
     | some image => [("image_key", Json.str image.key), ("image_id", toJson image.id)] ++
-      (if configuration == "tasks-fault-development" then
-        [("startup_case", Json.str image.startupCase.stableId)] else [])
+      (if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
+        [("startup_case", Json.str image.startupCase.stableId)] else []) ++ imageBootRoleFields image?
   pure <| Json.mkObj ([("schema_version", toJson (if image?.isSome then (2 : Nat) else 1)), ("artifact_category", .str (unitCategory configuration role)),
     ("configuration", .str configuration),
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields)
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration)
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
@@ -221,8 +237,11 @@ private def loopJson (use : ActionLoopUse) : Json :=
 private def normalized (configuration role : String) (suite : CheckedActionSuite)
     (image? : Option UserImageSpec := none) : String :=
   s!"configuration={configuration}\nrole={role}\ncontract={suite.contractVersion}\n" ++
+    (((managedPolicyFor configuration).map fun policy => s!"managed_policy={policy}\n").getD "") ++
     ((image?.map (fun image => s!"image_key={image.key}\nimage_id={image.id}\n" ++
-      (if configuration == "tasks-fault-development" then s!"startup_case={image.startupCase.stableId}\n" else ""))).getD "") ++
+      (if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
+        s!"startup_case={image.startupCase.stableId}\n" else "") ++
+      ((image.bootRole?.map fun role => s!"boot_role={role.stableId}\n").getD ""))).getD "") ++
     String.join (suite.scalarFunctions.toList.map fun function =>
       s!"scalar={function.name};args={repr function.signature.args};result={function.signature.result.render}\n" ++
         function.body.renderNormalized ++ "\n") ++
@@ -244,7 +263,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let profile ← IO.ofExcept (roleProfile role)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
-    if configuration == "tasks-fault-development" &&
+    if (configuration == "tasks-fault-development" || configuration == "capabilities-development") &&
         (imported.toString == "Lemma.Compiler.Test" || imported.toString.startsWith "Lemma.Compiler.Test.") then
       throw <| IO.userError s!"{configuration} {role} imports forbidden compiler test module `{imported}`"
     if developmentName imported then
@@ -255,10 +274,12 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     | .error diagnostic => throw <| IO.userError diagnostic.render
   IO.ofExcept (validateRoots configuration role suite image?)
   for function in suite.scalarFunctions do
-    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
+        managedUserSource configuration role function.name do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   for function in suite.actionFunctions do
-    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
+        managedUserSource configuration role function.name do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
@@ -284,7 +305,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     IO.FS.writeFile (directory / filename) contents
 
 private def layoutJson (configuration : String)
-    (image? : Option UserImageSpec := none) : Json := Json.mkObj [
+    (image? : Option UserImageSpec := none) : Json := Json.mkObj ([
   ("configuration", .str configuration),
   ("startup_case", .str (startupCase configuration).stableId),
   ("user_startup_case", .str (image?.map (·.startupCase) |>.getD (userStartupCase configuration)).stableId),
@@ -306,7 +327,8 @@ private def layoutJson (configuration : String)
     ("purpose", .str interval.purpose)])),
   ("user", Json.mkObj [("text_base", toJson Layout.userTextBase), ("text_limit", toJson Layout.userTextLimit),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),
-    ("stack_base", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages)])]
+    ("stack_base", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages)])] ++
+    managedPolicyFields configuration ++ imageBootRoleFields image?)
 
 private def bootLinker : String := String.intercalate "\n" [
   "OUTPUT_ARCH(riscv)", "ENTRY(_start)", "PHDRS { firmware PT_LOAD FLAGS(5); supervisor PT_LOAD FLAGS(5); storage PT_LOAD FLAGS(6); package PT_LOAD FLAGS(4); }",
@@ -377,14 +399,20 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
       contract == profile.contractVersion && version == (if image?.isSome then 2 else 1) &&
       category == unitCategory configuration role do
     throw <| IO.userError "boot export rejected inconsistent unit configuration/identity"
+  if let some policy := managedPolicyFor configuration then
+    unless jsonFieldEquals manifest "managed_policy" (.str policy) do
+      throw <| IO.userError "boot export rejected a crossing managed policy"
   if let some image := image? then
     IO.ofExcept <| validateSelectedRoots configuration role #[image.root] image?
     unless jsonFieldEquals manifest "image_key" (.str image.key) &&
         jsonFieldEquals manifest "image_id" (toJson image.id) do
       throw <| IO.userError "boot export rejected a crossing user image identity"
-    if configuration == "tasks-fault-development" then
+    if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
       unless jsonFieldEquals manifest "startup_case" (.str image.startupCase.stableId) do
         throw <| IO.userError "boot export rejected a crossing user startup authority"
+    if let some role := image.bootRole? then
+      unless jsonFieldEquals manifest "boot_role" (.str role.stableId) do
+        throw <| IO.userError "boot export rejected a crossing managed boot role"
   let roots ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "roots").getArr?
   let functions ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "functions").getArr?
   let expectedSources := image?.map (fun image => #[image.root.toString]) |>.getD (rootIdentities configuration role)
@@ -417,10 +445,11 @@ private def userSymbolsJson (image : UserImageSpec) : Json := .arr
   ((Lemma.Platform.RiscV.ExecutionPrimitives.userPrimitiveCatalog image.startupCase).map fun (symbol, privilege, effect) =>
     Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])
 
-private def userImageCatalog (configuration : String) (image : UserImageSpec) : Json := Json.mkObj [
+private def userImageCatalog (configuration : String) (image : UserImageSpec) : Json := Json.mkObj ([
   ("schema_version", 1), ("contract_version", .str "lemma-user-execution-v1"),
   ("configuration", .str configuration), ("image_key", .str image.key), ("image_id", toJson image.id),
-  ("startup_case", .str image.startupCase.stableId), ("symbols", userSymbolsJson image)]
+  ("startup_case", .str image.startupCase.stableId), ("symbols", userSymbolsJson image)] ++
+  managedPolicyFields configuration ++ imageBootRoleFields (some image))
 
 private def exportUserFiles (directory : System.FilePath) (configuration : String)
     (image : UserImageSpec) : IO Unit := do
@@ -433,15 +462,16 @@ private def exportUserFiles (directory : System.FilePath) (configuration : Strin
     IO.FS.writeFile (target / filename) contents
 
 private def multiPackageContract (configuration : String) (images : Array UserImageSpec) : Json :=
-  Json.mkObj [("schema_version", 2), ("contract_version", .str "lemma-boot-package-v1"),
+  Json.mkObj ([("schema_version", 2), ("contract_version", .str "lemma-boot-package-v1"),
     ("configuration", .str configuration), ("startup_case", .str "normal"), ("user_startup_case", .str "none"),
     ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", toJson images.size),
     ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
-    ("images", .arr (images.map fun image => Json.mkObj [
+    ("images", .arr (images.map fun image => Json.mkObj ([
       ("key", .str image.key), ("id", toJson image.id), ("entry", toJson Layout.userTextBase),
       ("text_va", toJson Layout.userTextBase), ("text_capacity", toJson (Layout.userTextLimit - Layout.userTextBase)),
       ("data_va", toJson Layout.userDataBase), ("data_mem_bytes", toJson Layout.userDataBytes),
-      ("stack_va", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages), ("flags", 0)]))]
+      ("stack_va", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages), ("flags", 0)] ++
+      imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
 
 /-- Data-only package construction. Sizes/offsets are assembler label
 differences over the actual separately linked bytes, never predicted values. -/
@@ -482,14 +512,15 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
     let images ← IO.ofExcept <| imagesFor configuration
     IO.ofExcept <| validateImages configuration images
     for image in images do exportUserFiles directory configuration image
-    let catalog := Json.mkObj [("schema_version", 2), ("contract_version", .str "lemma-execution-v1"),
+    let catalog := Json.mkObj ([("schema_version", 2), ("contract_version", .str "lemma-execution-v1"),
       ("configuration", .str configuration), ("stage", .str stage.stableId),
       ("startup_case", .str config.startupCase.stableId), ("user_startup_case", .str config.userStartupCase.stableId),
       ("symbols", .arr ((Lemma.Platform.RiscV.ExecutionPrimitives.primitiveCatalog config).map fun (symbol, privilege, effect) =>
         Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])),
-      ("user_images", .arr (images.map fun image => Json.mkObj [
+      ("user_images", .arr (images.map fun image => Json.mkObj ([
         ("key", .str image.key), ("id", toJson image.id),
-        ("startup_case", .str image.startupCase.stableId), ("symbols", userSymbolsJson image)]))]
+        ("startup_case", .str image.startupCase.stableId), ("symbols", userSymbolsJson image)] ++
+        imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
     for (filename, contents) in #[("startup.S", startup), ("link.ld", bootLinker),
         ("layout.json", (layoutJson configuration).pretty ++ "\n"), ("primitive-catalog.json", catalog.pretty ++ "\n"),
         ("boot-package.S", multiPackageData images), ("package-contract.json", (multiPackageContract configuration images).pretty ++ "\n"),

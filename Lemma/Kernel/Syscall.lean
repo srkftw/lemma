@@ -1,6 +1,7 @@
 import Lemma.Kernel.Memory.UserCopy
 import Lemma.Kernel.MachineServices
 import Lemma.User.ABI
+import Lemma.Kernel.Capability
 
 /-! ABI v1 scalar dispatcher. Caller identity is the validated owned descriptor,
 never a register supplied by U. Every operation is bounded; this gate's sleep
@@ -114,7 +115,7 @@ def sleep (ticks : UInt64) : Action :=
 
 /-- Exit is selected by trap policy; all other unknown numbers return17.
 Unused argument registers do not convey additional authority. -/
-def dispatch (descriptor number a b c d e : UInt64) : Action :=
+def dispatchLegacy (descriptor number a b c d e : UInt64) : Action :=
   if d ||| e = 0 then
   if number = Lemma.User.ABI.identity then
     if a ||| b ||| c = 0 then
@@ -136,5 +137,51 @@ def dispatch (descriptor number a b c d e : UInt64) : Action :=
     if c = 0 then release descriptor a b else .done 16 0
   else .done 17 0
   else .done 16 0
+
+/-- A managed task cannot reach the permission-free legacy UART path. The
+caller-local Console capability is checked before either range copy or MMIO. -/
+def capConsole (descriptor handle operation pointer length : UInt64) : Action :=
+  if operation = 0 then
+    .bind (Capability.lookup descriptor handle Lemma.User.CapabilityABI.consoleType
+      Lemma.User.CapabilityABI.consoleWrite) fun s _ =>
+    if s = 0 then consoleWrite descriptor pointer length else .done s 0
+  else if operation = 1 then
+    .bind (Capability.lookup descriptor handle Lemma.User.CapabilityABI.consoleType
+      Lemma.User.CapabilityABI.consoleRead) fun s _ =>
+    if s = 0 then consoleRead descriptor pointer length else .done s 0
+  else .done 17 0
+
+def dispatchManaged (descriptor number a b c d e : UInt64) : Action :=
+  if number = Lemma.User.ABI.console then .done 72 0 else
+  if number = Lemma.User.CapabilityABI.bootGrant then
+    if b ||| c ||| d ||| e = 0 then Capability.bootGrant descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.info then
+    if b ||| c ||| d ||| e = 0 then Capability.info descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.check then
+    if d ||| e = 0 then Capability.check descriptor a b c else .done 16 0
+  else if number = Lemma.User.CapabilityABI.duplicate then
+    if c ||| d ||| e = 0 then Capability.duplicate descriptor a b else .done 16 0
+  else if number = Lemma.User.CapabilityABI.close then
+    if b ||| c ||| d ||| e = 0 then Capability.close descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.revoke then
+    if b ||| c ||| d ||| e = 0 then Capability.revoke descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.console then
+    if e = 0 then capConsole descriptor a b c d else .done 16 0
+  else if number = Lemma.User.CapabilityABI.createEndpoint then
+    if b ||| c ||| d ||| e = 0 then Capability.createEndpoint descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.transfer then
+    if e = 0 then Capability.transfer descriptor a b c d else .done 16 0
+  else if number = Lemma.User.CapabilityABI.scopedTarget then
+    if c ||| d ||| e = 0 then Capability.scopedTarget descriptor a b else .done 16 0
+  else if number = Lemma.User.CapabilityABI.inspect then
+    if d ||| e = 0 then Capability.inspect descriptor a b c else .done 16 0
+  else dispatchLegacy descriptor number a b c d e
+
+def dispatch (descriptor number a b c d e : UInt64) : Action :=
+  .bind (Capability.managed descriptor) fun s managed =>
+  if s = 0 then
+    if managed = 1 then dispatchManaged descriptor number a b c d e
+    else if managed = 0 then dispatchLegacy descriptor number a b c d e else fatal
+  else fatal
 
 end Lemma.Kernel.Syscall

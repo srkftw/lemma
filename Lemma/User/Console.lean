@@ -25,7 +25,7 @@ private def word (address value : UInt64) : Action :=
     else .done s 0
   else .done s 0
 
-def record (tag a b c d : UInt64) : Action :=
+def prepareRecord (tag a b c d : UInt64) : Action :=
   .bind (Memory.write8 packetAddress 75) fun s _ => if s = 0 then
   .bind (Memory.write8 (packetAddress + 1) 49) fun s _ => if s = 0 then
   .bind (word (packetAddress + 2) tag) fun s _ => if s = 0 then
@@ -34,10 +34,16 @@ def record (tag a b c d : UInt64) : Action :=
   .bind (word (packetAddress + 53) c) fun s _ => if s = 0 then
   .bind (word (packetAddress + 70) d) fun s _ => if s = 0 then
   .bind (Memory.write8 (packetAddress + 87) 10) fun s _ => if s = 0 then
-  .bind (Syscall.consoleWrite packetAddress 88) fun s count =>
-  if s = 0 then if count = 88 then .done 0 0 else .done failure count
+  .done 0 88
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+def record (tag a b c d : UInt64) : Action :=
+  .bind (prepareRecord tag a b c d) fun s length =>
+  if s = 0 then
+    .bind (Syscall.consoleWrite packetAddress length) fun s count =>
+    if s = 0 then if count = 88 then .done 0 0 else .done failure count
+    else .done s 0
   else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 end Lemma.User.Console

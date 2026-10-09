@@ -6,10 +6,13 @@
     "B",
     "C",
     "D",
-    "E"
+    "E",
+    "F",
+    "G",
+    "H"
   ],
-  "higher_gates": "F-K not_run",
-  "proof_scope": "indexed ownership model only; no emitted-code/whole-kernel correctness theorem",
+  "higher_gates": "I-K not run; clean committed H cumulative checkpoint pending",
+  "proof_scope": "Indexed ownership and capability rights-attenuation model lemmas only; no emitted-code/whole-kernel correctness theorem",
   "gateC": {
     "schema_version": 1,
     "status": "PASS",
@@ -266,5 +269,175 @@
     "core0": 32,
     "foundation": 440,
     "scope": "kernel58 in fresh clean acceptance; remaining suites on same implementation before commit"
+  },
+  "gateF_checkpoint": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
+      "tree": "ec56befa5ccd3c67cd61c69b296c530e9e638e94"
+    },
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/result.json",
+    "sha256": "aceb527b7eadd874691766dc9e77811e5017becdaf6162c5c57f1c17eb0b18b2",
+    "images": 22,
+    "checker_reports": 26,
+    "qemu_sessions": 30,
+    "observations": [
+      {
+        "instances": 12,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O0-run/result.json",
+        "record_count": 1189,
+        "sha256": "4695d23b9a5a273e18a44a03b1e0b7f1478cf7f40b3aee4e52d5db92a2a05202",
+        "status": "PASS"
+      },
+      {
+        "instances": 12,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O2-run/result.json",
+        "record_count": 1500,
+        "sha256": "6323467f410430a8482e90966ebcbe9d2f0c0114ca6a5651470fdfb0e02dc4fb",
+        "status": "PASS"
+      }
+    ],
+    "independent_review": {
+      "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/independent-platform-review.json",
+      "sha256": "2eec95f118a82960be8d421478f95a117573dd1f55092452df52defdef958318"
+    }
+  },
+  "gateG_checkpoint": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+      "tree": "a746481cd5dc9d270c0687de1ebf44f41333bb1b"
+    },
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/result.json",
+    "sha256": "d1d8005299b052a503a0b38da782a9fef2eca792d25db629c18ee1ee2d863f17",
+    "images": 24,
+    "checker_reports": 28,
+    "qemu_sessions": 32,
+    "elapsed_seconds": 562.3520683630195,
+    "observations": [
+      {
+        "gate": "F",
+        "instances": 12,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O0-run/result.json",
+        "record_count": 1291,
+        "sha256": "dc56ee75363bcacaee04229d92b84d5bdd9db103bcbf2ebe9ef7ea885389cb30",
+        "status": "PASS"
+      },
+      {
+        "gate": "F",
+        "instances": 12,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O2-run/result.json",
+        "record_count": 1453,
+        "sha256": "54b46e3af456e7f9d6040d7411cd7d06e4ff6625715e02c7540e9dd9b50d1bb0",
+        "status": "PASS"
+      },
+      {
+        "gate": "G",
+        "instances": 18,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O0-run/result.json",
+        "record_count": 2339,
+        "sha256": "52a7dcc014847c6f33dc271b19081532b4e5f99bd8db31283f1e50f2b60aad8e",
+        "status": "PASS"
+      },
+      {
+        "gate": "G",
+        "instances": 18,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O2-run/result.json",
+        "record_count": 2703,
+        "sha256": "d1413bed5ad5551e089d3fa9d1c0d84542ef4f9d45ab6e496a3a3a7e6445705b",
+        "status": "PASS"
+      }
+    ],
+    "independent_review": {
+      "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/independent-summary.json",
+      "sha256": "7bb914cc1e43125dc06e078cccc3fbe700060c7d208673974d8e369421af17a3",
+      "images": 24,
+      "checker_reports": 28,
+      "qemu_sessions": 32,
+      "object_stack_graphs": 82,
+      "all_pids_absent": true,
+      "all_stderr_empty": true
+    }
+  },
+  "latest_host_probes": {
+    "kernel": 121,
+    "scaffold": 18,
+    "scope": "held H focused host/export/object probes; full H artifacts and actual U acceptance pending"
+  },
+  "gateH_checkpoint": {
+    "status": "passed",
+    "guest_execution": "Expanded source-bound O0/O2 actual U capability/lifecycle corpus and independent raw/object/stack review passed; cold committed checkpoint remains separately required.",
+    "source": {
+      "parent_commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+      "focused_artifacts_precommit": true,
+      "clean": false,
+      "exact_compiled_source_bindings": 124
+    },
+    "focused_evidence": [
+      {
+        "path": "build/kernel/gateH/capabilities-O0-attempt2/result.json",
+        "sha256": "980c01b603cede408a25dbdfd8aa9f9a172ae4f18f6ba39d432f4c887192397d",
+        "status": "PASS",
+        "clean": false,
+        "records": 803,
+        "instances": 5,
+        "tester_replies": 76,
+        "peer_replies": 20,
+        "publication_serials": 44,
+        "hardware_cap_header_store_faults": 2,
+        "actual_machine_interrupts": 318,
+        "owner_death_queue_cleanup": [
+          246,
+          526,
+          437,
+          460,
+          0
+        ],
+        "final_frames": 498,
+        "elapsed_seconds": 31.901705
+      },
+      {
+        "path": "build/kernel/gateH/capabilities-O2-attempt2/result.json",
+        "sha256": "297e24d3fec5480665dfa5623c190aef085a0798ff473b42f9c9ddc75bf8dd49",
+        "status": "PASS",
+        "clean": false,
+        "records": 633,
+        "instances": 5,
+        "tester_replies": 76,
+        "peer_replies": 20,
+        "publication_serials": 44,
+        "hardware_cap_header_store_faults": 2,
+        "actual_machine_interrupts": 213,
+        "owner_death_queue_cleanup": [
+          246,
+          526,
+          441,
+          462,
+          0
+        ],
+        "final_frames": 498,
+        "elapsed_seconds": 18.588865
+      }
+    ],
+    "independent_users": {
+      "build/user/gateH/independent-attempt2/result.json": "c392fea402879c3e9acb55c56e1ab3718884ce3e47cba115f4199bd97f97b71f",
+      "build/user/gateH/independent-attempt2/comparison.json": "4d413ba2e0e55b48135f13896b2c6bece4dffb18942fedb45c2ff4791186010a",
+      "standalone_images": 8,
+      "exact_artifact_comparisons": 112
+    },
+    "independent_review": {
+      "path": "build/kernel/gateH/independent-platform-review.json",
+      "sha256": "20437edea941cebe88f6f7a216d29732c726f4092c4031798e5f7d4b555d32d3",
+      "scope": "focused parent+dirty; actual raw/source/artifact/stack/cleanup review, not clean qualification"
+    },
+    "cold_prefix": "pending committed clean source snapshot; focused reports retain parent+dirty identities"
   }
 }

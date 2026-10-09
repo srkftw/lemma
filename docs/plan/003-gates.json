@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "G",
+  "highest_complete_gate": "H",
   "gates": [
     {
       "gate": "A",
@@ -239,7 +239,7 @@
       "gate": "G",
       "name": "lifecycle and fault containment",
       "status": "passed",
-      "guest_execution": "Focused source-bound O0/O2 complete lifecycle observations passed; clean cumulative G checkpoint remains separately required.",
+      "guest_execution": "Focused source-bound O0/O2 lifecycle and fresh clean A-E+F+G cumulative checkpoint passed with independent raw/artifact/stack/math review.",
       "observed": "18 instances/profile,13actualUCSRfaults,10samephysicaldata/stackreusepairswithfreshzeros,separateBusyprogress,4realpartialloaderquota38rollbacks,andcomplete499framebaseline.",
       "source": {
         "parent_commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
@@ -247,7 +247,7 @@
         "clean": false
       },
       "host_tests": 99,
-      "next_command": "Run cold committed A-E+F+G checkpoint independently; implement H capability enforcement next.",
+      "next_command": "Finish held H artifact audits, then run actual check_kernel_capabilities.py for fresh O0/O2 packages.",
       "focused_evidence": [
         {
           "path": "build/kernel/gateG/lifecycle-O0-attempt2/result.json",
@@ -293,7 +293,68 @@
           "status": "FAIL"
         }
       ],
-      "cold_prefix": "pending committed clean source snapshot; focused reports remain parent+dirty evidence",
+      "cold_prefix": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+          "tree": "a746481cd5dc9d270c0687de1ebf44f41333bb1b"
+        },
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/result.json",
+        "sha256": "d1d8005299b052a503a0b38da782a9fef2eca792d25db629c18ee1ee2d863f17",
+        "images": 24,
+        "checker_reports": 28,
+        "qemu_sessions": 32,
+        "elapsed_seconds": 562.3520683630195,
+        "observations": [
+          {
+            "gate": "F",
+            "instances": 12,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O0-run/result.json",
+            "record_count": 1291,
+            "sha256": "dc56ee75363bcacaee04229d92b84d5bdd9db103bcbf2ebe9ef7ea885389cb30",
+            "status": "PASS"
+          },
+          {
+            "gate": "F",
+            "instances": 12,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O2-run/result.json",
+            "record_count": 1453,
+            "sha256": "54b46e3af456e7f9d6040d7411cd7d06e4ff6625715e02c7540e9dd9b50d1bb0",
+            "status": "PASS"
+          },
+          {
+            "gate": "G",
+            "instances": 18,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O0-run/result.json",
+            "record_count": 2339,
+            "sha256": "52a7dcc014847c6f33dc271b19081532b4e5f99bd8db31283f1e50f2b60aad8e",
+            "status": "PASS"
+          },
+          {
+            "gate": "G",
+            "instances": 18,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O2-run/result.json",
+            "record_count": 2703,
+            "sha256": "d1413bed5ad5551e089d3fa9d1c0d84542ef4f9d45ab6e496a3a3a7e6445705b",
+            "status": "PASS"
+          }
+        ],
+        "independent_review": {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/independent-summary.json",
+          "sha256": "7bb914cc1e43125dc06e078cccc3fbe700060c7d208673974d8e369421af17a3",
+          "images": 24,
+          "checker_reports": 28,
+          "qemu_sessions": 32,
+          "object_stack_graphs": 82,
+          "all_pids_absent": true,
+          "all_stderr_empty": true
+        }
+      },
       "independent_review": {
         "path": "build/kernel/gateG/independent-platform-review.json",
         "sha256": "d05be08819f2a99997f08eb42c2406533bb47508f0db607cd85d7186f9e2bac2",
@@ -303,7 +364,86 @@
     {
       "gate": "H",
       "name": "capability tables",
-      "status": "not_run"
+      "status": "passed",
+      "guest_execution": "Expanded source-bound O0/O2 actual U capability/lifecycle corpus and independent raw/object/stack review passed; cold committed checkpoint remains separately required.",
+      "observed": "16-entry caller-local generation tables; scoped boot/transfer grants, typed rights/attenuation, close versus revoke, four-endpoint budget, exact44 successful serials, full-table/object/peer-transfer/serial rollback, two real protected-header store faults and owner-death remote-alias/queue cleanup. Five instances/profile restore498 frames.",
+      "next_command": "Commit coherent H after independent raw review, then cold A-E+F+G+H acceptance in fresh managed worktree; implement I against checked capability/descriptor boundary.",
+      "targeted_probes": {
+        "path": "build/compiler-gateH/kernel-probe-attempt5/result.json",
+        "sha256": "babf11bd883035745b9cd8e242e4d6ef59fb8d6016e0fa36eb6e89f317253cf0",
+        "status": "PASS",
+        "scope": "genuine kernel LLVM/object/stack, not guest execution",
+        "trap_stack_bytes": {
+          "O0": 4528,
+          "O2": 1248
+        },
+        "actual_trap_stack_capacity": 8192
+      },
+      "host_tests": 127,
+      "focused_evidence": [
+        {
+          "path": "build/kernel/gateH/capabilities-O0-attempt2/result.json",
+          "sha256": "980c01b603cede408a25dbdfd8aa9f9a172ae4f18f6ba39d432f4c887192397d",
+          "status": "PASS",
+          "clean": false,
+          "records": 803,
+          "instances": 5,
+          "tester_replies": 76,
+          "peer_replies": 20,
+          "publication_serials": 44,
+          "hardware_cap_header_store_faults": 2,
+          "actual_machine_interrupts": 318,
+          "owner_death_queue_cleanup": [
+            246,
+            526,
+            437,
+            460,
+            0
+          ],
+          "final_frames": 498,
+          "elapsed_seconds": 31.901705
+        },
+        {
+          "path": "build/kernel/gateH/capabilities-O2-attempt2/result.json",
+          "sha256": "297e24d3fec5480665dfa5623c190aef085a0798ff473b42f9c9ddc75bf8dd49",
+          "status": "PASS",
+          "clean": false,
+          "records": 633,
+          "instances": 5,
+          "tester_replies": 76,
+          "peer_replies": 20,
+          "publication_serials": 44,
+          "hardware_cap_header_store_faults": 2,
+          "actual_machine_interrupts": 213,
+          "owner_death_queue_cleanup": [
+            246,
+            526,
+            441,
+            462,
+            0
+          ],
+          "final_frames": 498,
+          "elapsed_seconds": 18.588865
+        }
+      ],
+      "source": {
+        "parent_commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+        "focused_artifacts_precommit": true,
+        "clean": false,
+        "exact_compiled_source_bindings": 124
+      },
+      "independent_users": {
+        "build/user/gateH/independent-attempt2/result.json": "c392fea402879c3e9acb55c56e1ab3718884ce3e47cba115f4199bd97f97b71f",
+        "build/user/gateH/independent-attempt2/comparison.json": "4d413ba2e0e55b48135f13896b2c6bece4dffb18942fedb45c2ff4791186010a",
+        "standalone_images": 8,
+        "exact_artifact_comparisons": 112
+      },
+      "cold_prefix": "pending committed clean source snapshot; focused reports retain parent+dirty identities",
+      "independent_review": {
+        "path": "build/kernel/gateH/independent-platform-review.json",
+        "sha256": "20437edea941cebe88f6f7a216d29732c726f4092c4031798e5f7d4b555d32d3",
+        "scope": "focused parent+dirty; actual raw/source/artifact/stack/cleanup review, not clean qualification"
+      }
     },
     {
       "gate": "I",
@@ -321,5 +461,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9"
+  "verified_prefix_commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a"
 }

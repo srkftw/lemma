@@ -16,7 +16,7 @@ import sys
 
 from audit_core0 import (alloc_section_names, defined_function_symbols, numeric_symbols, parse_definitions_and_calls,
                          parse_load_segments, relocation_types, parse_stack_sizes,
-                         validate_loop_stack_call_graph, _ir_definition_body)
+                         validate_loop_stack_call_graph, _ir_definition_body, _structured_ir_blocks, _structured_successors, _structured_reachable)
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate_output_file
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
@@ -109,7 +109,40 @@ TASK_FAULT_USER_IMAGES = (*TASK_USER_IMAGES, {
     "key": "fault", "id": 4, "module": "Lemma.User.Development.Tasks.Fault",
     "source": "Lemma.User.Development.Tasks.Fault.main", "args": ["u64"],
     "symbol_prefix": "lemma_user_fault_", "startup_case": "supervisor-csr", "directory": "users/fault"})
-MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES}
+MANAGED_POLICY = "lemma-capabilities-v1"
+CAPABILITY_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "source": module + ".main", "args": ["u64"],
+                               "symbol_prefix": "lemma_user_" + key + "_", "startup_case": "none", "directory": "users/" + key,
+                               "boot_role": key}
+                              for index, (key, module) in enumerate((("capabilities", "Lemma.User.Development.Capabilities"),
+                                  ("peer", "Lemma.User.Development.CapabilitiesPeer"), ("busy", "Lemma.User.Development.Tasks.Busy"),
+                                  ("tamper", "Lemma.User.Development.CapabilitiesTamper")), 1))
+MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
+                             "capabilities-development": CAPABILITY_USER_IMAGES}
+
+
+def managed_fields(configuration: str, image: dict | None = None) -> dict:
+    if configuration != "capabilities-development":
+        return {}
+    return {"managed_policy": MANAGED_POLICY, **({"boot_role": image["boot_role"]} if image is not None else {})}
+
+
+def validate_managed_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
+    if configuration == "capabilities-development":
+        expected = {"managed_policy": MANAGED_POLICY, "boot_roles": {row["key"]: row["boot_role"] for row in CAPABILITY_USER_IMAGES}}
+        if (images != list(CAPABILITY_USER_IMAGES) or any("boot_role" in record for record in (build, provenance))
+                or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):
+            raise Core0Error("managed policy/boot roles differ from the closed source-selected deployment")
+    elif any(key in record for record in (build, provenance) for key in ("managed_policy", "boot_roles", "boot_role")):
+        raise Core0Error("managed authority metadata appears outside its closed deployment")
+
+
+def validate_standalone_managed_provenance(build: dict, provenance: dict, *, configuration: str, image: dict) -> None:
+    expected=managed_fields(configuration,image)
+    if configuration == "capabilities-development":
+        if any("boot_roles" in record or any(record.get(key)!=value for key,value in expected.items()) for record in (build,provenance)):
+            raise Core0Error("independent managed policy/boot role differs from its selected source")
+    elif any(key in record for record in (build,provenance) for key in ("managed_policy","boot_role","boot_roles")):
+        raise Core0Error("independent managed authority metadata appears outside its selected deployment")
 
 
 def image_specs(configuration: str) -> tuple[dict, ...]:
@@ -128,6 +161,9 @@ def image_spec(configuration: str, image_key: str) -> dict:
 def development_modules(configuration: str, role: str) -> tuple[str, ...]:
     expected = (("Lemma.Kernel.Development.FaultEntry", "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.Pressure")
                 if (configuration, role) == ("tasks-fault-development", "kernel") else
+                ("Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias", "Lemma.Kernel.Development.TasksEntry",
+                 "Lemma.Kernel.Development.CapabilityGeneration")
+                if (configuration, role) == ("capabilities-development", "kernel") else
                 (configuration_modules(configuration)[role],) if development_role(configuration, role) else ())
     if configuration_development_modules(configuration, role) != expected:
         raise Core0Error("selected role Development authority differs from its exact audited module catalog")
@@ -151,7 +187,7 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
     images = image_specs(selected)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
-                "images": list(images)}
+                "images": list(images), **managed_fields(selected)}
     # Exact equality also closes paths, IDs, per-image prefixes and source roots.
     if (type(catalog.get("schema_version")) is not int or type(catalog.get("image_count")) is not int
             or catalog != expected or any(type(row.get("id")) is not int for row in catalog.get("images", []))):
@@ -297,7 +333,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                 "Lemma.Kernel.Process.validateFrame", "Lemma.Kernel.Process.validateStack",
                 "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset"}
     task_dispatch = {"tasks-development": "Lemma.Kernel.Development.TasksEntry.dispatch",
-                     "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry.dispatch"}
+                     "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry.dispatch",
+                     "capabilities-development": "Lemma.Kernel.Development.CapsEntry.dispatch"}
     dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
                        "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
                        "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
@@ -331,6 +368,381 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             "source_functions": {source: by_source[source] for source in sorted(required)}}
 
 
+def validate_call_precedes(body: str, before: str, after: str) -> dict:
+    """Every reachable protected call must follow a particular emitted call.
+
+    This checks the genuine pre-optimization CFG, including alternate paths and
+    same-block instruction order. It does not infer successful return status.
+    """
+    blocks = _structured_ir_blocks(body)
+    successors = _structured_successors(blocks)
+    if "entry" not in blocks:
+        raise Core0Error("ordered source call audit lacks the exact entry block")
+    before_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(before) + r"\(")
+    after_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(after) + r"\(")
+    pending, seen, protected = [("entry", False)], set(), set()
+    while pending:
+        block, observed = pending.pop()
+        if (block, observed) in seen:
+            continue
+        seen.add((block, observed))
+        for index, line in enumerate(blocks[block]):
+            if after_pattern.search(line):
+                if not observed:
+                    raise Core0Error("protected source call has a path before required checked lifecycle call")
+                protected.add((block, index))
+            if before_pattern.search(line):
+                observed = True
+        pending.extend((target, observed) for target in successors[block])
+    if not protected:
+        raise Core0Error("ordered source call audit found no reachable protected call")
+    return {"before": before, "after": after, "protected_sites": [list(site) for site in sorted(protected)]}
+
+
+def validate_checked_call_gate(body: str, checked: str, protected: str, *, component: str = "status", value: int = 0) -> dict:
+    """Require an exact checked-result comparison before every protected call.
+
+    The failed comparison branch must not reach the protected operation, and
+    removing the successful edge must make every protected site unreachable.
+    Only the structured aggregate ABI and literal equality are admitted.
+    """
+    if component not in {"status", "value"} or type(value) is not int:
+        raise Core0Error("unknown checked source gate component/value")
+    blocks = _structured_ir_blocks(body)
+    successors = _structured_successors(blocks)
+    checked_calls = re.findall(r"(%[A-Za-z0-9_.$-]+) = call \{ i64, i64 \} @" + re.escape(checked) + r"\([^\n]*\)", body)
+    protected_blocks = {block for block, lines in blocks.items()
+                        if any(re.search(r"\bcall\s+[^@\n]*@" + re.escape(protected) + r"\(", line) for line in lines)}
+    if not checked_calls or not protected_blocks or "entry" not in blocks:
+        raise Core0Error("checked source gate lacks genuine calls/entry")
+    gates=[]
+    for result in checked_calls:
+        extracted = re.findall(r"(%[A-Za-z0-9_.$-]+) = extractvalue \{ i64, i64 \} " + re.escape(result)
+                               + r", " + ("0" if component == "status" else "1") + r"$", body, re.M)
+        if len(extracted) != 1:
+            raise Core0Error("checked source gate lacks its exact aggregate extraction")
+        operand=extracted[0];width="i64"
+        if component == "status":
+            narrowed=re.findall(r"(%[A-Za-z0-9_.$-]+) = trunc i64 " + re.escape(operand) + r" to i8$",body,re.M)
+            if len(narrowed)!=1:
+                raise Core0Error("checked source gate lacks its exact status narrowing")
+            operand=narrowed[0];width="i8"
+        comparisons=re.findall(r"(%[A-Za-z0-9_.$-]+) = icmp eq " + width + " " + re.escape(operand) + ", " + str(value) + r"$",body,re.M)
+        for comparison in comparisons:
+            for block, lines in blocks.items():
+                if re.fullmatch(r"br i1 " + re.escape(comparison) + r", label %[A-Za-z0-9_.$-]+, label %[A-Za-z0-9_.$-]+",lines[-1]):
+                    success,failure=successors[block]
+                    reachable={site for site in protected_blocks if _structured_reachable(successors,success,site)}
+                    if any(_structured_reachable(successors,failure,site) for site in protected_blocks):
+                        raise Core0Error("failed checked source gate can reach protected operation")
+                    removed={label:tuple(target for target in targets if (label,target)!=(block,success)) for label,targets in successors.items()}
+                    dominated={site for site in reachable if not _structured_reachable(removed,"entry",site)}
+                    gates.append({"block":block,"success":success,"failure":failure,"protected_blocks":sorted(dominated)})
+    if not protected_blocks <= {site for gate in gates for site in gate["protected_blocks"]}:
+        raise Core0Error("protected operation lacks an exact successful checked-result gate")
+    validate_call_precedes(body,checked,protected)
+    return {"checked":checked,"protected":protected,"component":component,"equals":value,"gates":gates}
+
+
+
+def validate_boolean_gate(body: str, comparison: str, protected: str, *, success_when_true: bool = True) -> dict:
+    """Require the true edge of one emitted predicate before protected calls."""
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    if "entry" not in blocks:
+        raise Core0Error("boolean source gate lacks its exact entry block")
+    branches=[block for block,lines in blocks.items() if re.fullmatch(
+        r"br i1 "+re.escape(comparison)+r", label %[A-Za-z0-9_.$-]+, label %[A-Za-z0-9_.$-]+",lines[-1])]
+    sites={block for block,lines in blocks.items() if any(re.search(
+        r"\bcall\s+[^@\n]*@"+re.escape(protected)+r"\(",line) for line in lines)}
+    if len(branches)!=1 or not sites:
+        raise Core0Error("boolean source gate lacks one branch/protected operation")
+    block=branches[0];success,failure=successors[block]
+    if not success_when_true:
+        success,failure=failure,success
+    removed={label:tuple(target for target in targets if (label,target)!=(block,success))
+             for label,targets in successors.items()}
+    if any(_structured_reachable(successors,failure,site) or
+           _structured_reachable(removed,"entry",site) or
+           not _structured_reachable(successors,success,site) for site in sites):
+        raise Core0Error("protected operation bypasses the exact successful boolean gate")
+    return {"comparison":comparison,"success_when_true":success_when_true,"block":block,"success":success,"failure":failure,"protected_blocks":sorted(sites)}
+
+
+
+def validate_h_endpoint_budget(body: str, by_source: dict[str,str]) -> dict:
+    """Bind the compiled bounded count/limit to preallocation CFG guards."""
+    objects="Lemma.Kernel.Objects.";var=r"%[A-Za-z0-9_.$-]+";label=r"[A-Za-z0-9_.$-]+"
+    callback=by_source[objects+"endpointCountStep"]
+    folds=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(callback)+
+        r"\(i32 signext ("+var+r"), i32 signext 16, i64 ("+var+r"), i64 ("+var+r"), i64 0, i64 0, i64 0\)",body)
+    if len(folds)!=1:
+        raise Core0Error("endpoint budget lacks one exact 16-row count callback")
+    result,index,accumulator,base=folds[0]
+    values=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(result)+r", 1$",body,re.M)
+    statuses=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(result)+r", 0$",body,re.M)
+    if len(values)!=1 or len(statuses)!=1:
+        raise Core0Error("endpoint count callback lacks checked status/value extraction")
+    narrowed=re.findall(r"("+var+r") = trunc i64 "+re.escape(statuses[0])+r" to i8$",body,re.M)
+    if len(narrowed)!=1:
+        raise Core0Error("endpoint count callback lacks UInt8 status")
+    headers=re.findall(re.escape(index)+r" = phi i32 \[ 0, %("+label+r") \], \[ ("+var+r"), %("+label+r") \]",body)
+    if len(headers)!=1:
+        raise Core0Error("endpoint count index lacks exact zero-based bounded loop")
+    preheader,next_index,latch=headers[0]
+    if (re.search(re.escape(accumulator)+r" = phi i64 \[ 0, %"+re.escape(preheader)+r" \], \[ "+re.escape(values[0])+r", %"+re.escape(latch)+r" \]",body) is None
+        or re.search(re.escape(next_index)+r" = add i32 "+re.escape(index)+r", 1$",body,re.M) is None
+        or re.search(r"icmp ult i32 "+re.escape(index)+r", 16$",body,re.M) is None):
+        raise Core0Error("endpoint count accumulator/increment/bound differs")
+    outcomes=re.findall(r"("+var+r") = phi i64 \[ 0, %("+label+r") \], \[ "+re.escape(values[0])+r", %("+label+r") \], \[ "+re.escape(accumulator)+r", %("+label+r") \]",body)
+    if len(outcomes)!=1:
+        raise Core0Error("endpoint count lacks exact checked fold outcome")
+    value,exhausted,stopped,done=outcomes[0]
+    outcome_status=re.findall(r"("+var+r") = phi i8 \[ 9, %"+re.escape(exhausted)+r" \], \[ "+re.escape(narrowed[0])+r", %"+re.escape(stopped)+r" \], \[ 0, %"+re.escape(done)+r" \]",body)
+    limits=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[objects+"endpointCapacity"])+r"\(\)",body)
+    comparisons=[]
+    for limit in limits:
+        comparisons.extend(re.findall(r"("+var+r") = icmp ult i64 "+re.escape(value)+r", "+re.escape(limit)+r"$",body,re.M))
+    if len(outcome_status)!=1 or len(comparisons)!=1:
+        raise Core0Error("endpoint preallocation guard differs from count < exact capacity")
+    failed=re.findall(r"("+var+r") = call zeroext i1 @"+re.escape(by_source[objects+"failed"])+r"\(i8 zeroext "+re.escape(outcome_status[0])+r"\)",body)
+    status_comparisons=[]
+    for status in failed:
+        status_comparisons.extend(re.findall(r"("+var+r") = icmp eq i1 "+re.escape(status)+r", 1$",body,re.M))
+    if len(status_comparisons)!=1:
+        raise Core0Error("endpoint budget lacks the exact checked fold-status guard")
+    gates=[]
+    for protected in [objects+"freeObjectStep","Lemma.Kernel.Memory.Frames.allocate"]:
+        gates.append({"protected_source":protected,"limit":validate_boolean_gate(body,comparisons[0],by_source[protected]),
+                      "status":validate_boolean_gate(body,status_comparisons[0],by_source[protected],success_when_true=False)})
+    return {"capacity":4,"counted_rows":16,"counter_source":objects+"endpointCountStep","base_operand":base,
+            "count_result":value,"checked_outcome_status":outcome_status[0],"preallocation_gates":gates}
+
+
+def validate_h_alias(unit: dict, pre_ir: str, by_source: dict[str,str]) -> dict:
+    prefix="Lemma.Kernel.Development.CapAlias."
+    address="Lemma.Kernel.Memory.AddressSpace."
+    access="Lemma.Kernel.Memory.Access."
+    body=_ir_definition_body(pre_ir,by_source[prefix+"install"])
+    var=r"%[A-Za-z0-9_.$-]+"
+    base_calls=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(by_source[address+"base"])+r"\(i64 %arg0\)",body)
+    if len(base_calls)!=1:
+        raise Core0Error("H descriptor alias lacks one checked descriptor-derived base")
+    base_values=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(base_calls[0])+r", 1$",body,re.M)
+    if len(base_values)!=1:
+        raise Core0Error("H descriptor alias lacks exact base result extraction")
+    base=base_values[0]
+    table_calls=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(by_source[prefix+"checkedTable"])+r"\(i64 "+re.escape(base)+r", i64 ("+var+r"), i64 ([0-9]+)\)",body)
+    if [int(row[2]) for row in table_calls]!=[0,7,8] or len({row[1] for row in table_calls})!=1:
+        raise Core0Error("H alias table geometry/checked ownership differs")
+    low_values=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(table_calls[-1][0])+r", 1$",body,re.M)
+    alias_values=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[prefix+"aliasPage"])+r"\(\)",body)
+    slots=[]
+    for low in low_values:
+        for page in alias_values:
+            slots.extend(re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[address+"tableSlot"])+r"\(i64 "+re.escape(low)+r", i64 "+re.escape(page)+r"\)",body))
+    writes=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(by_source[access+"write64"])+r"\(i64 ("+var+r"), i64 ("+var+r")\)",body)
+    if len(writes)!=1 or writes[0][1] not in slots:
+        raise Core0Error("H descriptor alias does not publish one exact owned low-table slot")
+    ptes=[]
+    for count,right in re.findall(r"("+var+r") = and i64 12, 63\n\s*("+var+r") = lshr i64 "+re.escape(base)+r", \1",body):
+        for shift,left in re.findall(r"("+var+r") = and i64 10, 63\n\s*("+var+r") = shl i64 "+re.escape(right)+r", \1",body):
+            ptes.extend(re.findall(r"("+var+r") = or i64 "+re.escape(left)+r", 199$",body,re.M))
+    if writes[0][2] not in ptes or len(ptes)!=2:
+        raise Core0Error("H descriptor alias PTE is not descriptorPPN plus exact S RW/NX/U0 flags")
+    readbacks=[]
+    for slot in slots:
+        readbacks.extend(re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(by_source[access+"read64"])+r"\(i64 "+re.escape(slot)+r"\)",body))
+    verified=[]
+    for result in readbacks:
+        for loaded in re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(result)+r", 1$",body,re.M):
+            for pte in ptes:
+                verified.extend(re.findall(r"("+var+r") = icmp eq i64 "+re.escape(loaded)+r", "+re.escape(pte)+r"$",body,re.M))
+    if len(verified)!=1:
+        raise Core0Error("H descriptor alias lacks one exact PTE readback comparison")
+    readback_gate=validate_boolean_gate(body,verified[0],by_source[address+"flushCurrent"])
+    for before in ("Lemma.Kernel.Task.prepared",address+"base",prefix+"checkedHeader",prefix+"checkedTable"):
+        validate_call_precedes(body,by_source[before],by_source[access+"write64"])
+    validate_call_precedes(body,by_source[access+"write64"],by_source[address+"flushCurrent"])
+    return {"source":prefix+"install","symbol":by_source[prefix+"install"],"virtual_page":0x31000,"attack_va":0x31a00,
+            "descriptor_header_offset":2560,"table_indices":[0,7,8],"pte_flags":199,"user_access":False,
+            "writes":1,"descriptor_base_extraction":base,"pte_value":writes[0][2],"readback_comparisons":verified,"readback_gate":readback_gate}
+
+
+def validate_h_legacy_console_denial(body: str, by_source: dict[str,str]) -> dict:
+    console=by_source["Lemma.User.ABI.console"];legacy=by_source["Lemma.Kernel.Syscall.dispatchLegacy"]
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    values=re.findall(r"(%[A-Za-z0-9_.$-]+) = call i64 @"+re.escape(console)+r"\(\)",body)
+    if len(values)!=1:
+        raise Core0Error("managed dispatch lacks its exact legacy console selector")
+    comparisons=re.findall(r"(%[A-Za-z0-9_.$-]+) = icmp eq i64 %arg1, "+re.escape(values[0])+r"$",body,re.M)
+    if len(comparisons)!=1:
+        raise Core0Error("managed legacy-console guard differs")
+    branches=[block for block,lines in blocks.items() if re.fullmatch(r"br i1 "+re.escape(comparisons[0])+r", label %[A-Za-z0-9_.$-]+, label %[A-Za-z0-9_.$-]+",lines[-1])]
+    if len(branches)!=1:
+        raise Core0Error("managed legacy-console guard lacks exact successors")
+    denied,ordinary=successors[branches[0]]
+    protected={block for block,lines in blocks.items() if any("@"+legacy+"(" in line for line in lines)}
+    if any(_structured_reachable(successors,denied,block) for block in protected) or len(blocks[denied])!=1 or len(successors[denied])!=1:
+        raise Core0Error("managed console number2 can bypass capability lookup through legacy dispatch")
+    merge=blocks[successors[denied][0]]
+    if not any(re.search(r"phi i8 .*\[ 72, %"+re.escape(denied)+r" \]",line) for line in merge):
+        raise Core0Error("managed legacy console does not return exact permission denial72")
+    return {"legacy_console_number":2,"denied_status":72,"guard_block":branches[0],"denied_block":denied,"ordinary_block":ordinary}
+
+
+def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
+    """Bind H labels to actual compiled enrollment, gates and teardown paths.
+
+    These are artifact/source constraints, not a proof of capability semantics.
+    Target execution and the independent state model supply separate evidence.
+    """
+    if unit.get("configuration") != "capabilities-development" or unit.get("role") != "kernel":
+        raise Core0Error("managed lifecycle audit requires the exact H kernel unit")
+    by_source={}
+    for row in unit["functions"]:
+        source=re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"])
+        if source in by_source:
+            raise Core0Error("managed lifecycle source identity is ambiguous after private authorization")
+        by_source[source]=row["symbol"]
+    caps="Lemma.Kernel.Capability."
+    objects="Lemma.Kernel.Objects."
+    task="Lemma.Kernel.Task."
+    syscalls="Lemma.Kernel.Syscall."
+    entry="Lemma.Kernel.Development.CapsEntry."
+    alias="Lemma.Kernel.Development.CapAlias."
+    generation="Lemma.Kernel.Development.CapabilityGeneration."
+    address="Lemma.Kernel.Memory.AddressSpace."
+    frames="Lemma.Kernel.Memory.Frames."
+    userabi="Lemma.User.CapabilityABI."
+    edges={
+        entry+"boot":[objects+"init",task+"init",entry+"launch"],
+        entry+"launch":[task+"prepareManaged",entry+"configure"],
+        entry+"configure":[objects+"configureManagement",entry+"seedEndpoint",objects+"createEndpoint",entry+"initialGrants",task+"activateManaged"],
+        entry+"seedEndpoint":[generation+"seedOneFree",generation+"seedResult"],
+        entry+"initialGrants":[entry+"grant"],
+        entry+"grant":[caps+"grantBoot"],
+        entry+"createTamper":[task+"prepareManaged",entry+"grant",alias+"install",task+"activateManaged"],
+        entry+"command":[entry+"createTamper",generation+"advance","Lemma.Kernel.Development.TasksEntry.command"],
+        task+"prepareManaged":[task+"prepare",caps+"attach",task+"abort",task+"prepared"],
+        task+"activateManaged":[task+"prepared",caps+"activate",task+"activate"],
+        task+"activate":[task+"prepared",task+"checkedActivation"],
+        task+"checkedActivation":[caps+"managed",caps+"requireActive"],
+        task+"abort":[task+"inactiveDescriptor",task+"detachManaged","Lemma.Kernel.Loader.teardown"],
+        task+"reapOne":[task+"detachManaged","Lemma.Kernel.Loader.teardown"],
+        task+"detachManaged":[caps+"detach"],
+        caps+"attach":[address+"base",objects+"register"],
+        caps+"header":[address+"base",objects+"registryDescriptor"],
+        caps+"managed":[address+"base",caps+"header",caps+"zeroHeaderStep"],
+        caps+"requireActive":[caps+"header"],
+        caps+"lookupEntry":[caps+"requireActive",objects+"resolve"],
+        caps+"lookup":[caps+"lookupEntry",objects+"resolve",userabi+"rightsSubset"],
+        caps+"grantBoot":[caps+"header",caps+"grant"],
+        caps+"grant":[objects+"resolve",userabi+"rightsValid",caps+"freeSlot",objects+"nextSerial",caps+"publish"],
+        caps+"freeSlot":[caps+"header",caps+"entryCount"],
+        caps+"publish":[caps+"header",objects+"reference",objects+"publishSerial"],
+        caps+"duplicate":[caps+"lookupEntry",userabi+"rightsSubset",caps+"grant"],
+        caps+"transfer":[caps+"management",caps+"requireActive",caps+"lookupEntry",userabi+"rightsSubset",caps+"grant"],
+        caps+"management":[caps+"lookup",objects+"resolve"],
+        caps+"createEndpoint":[caps+"management",caps+"freeSlot",objects+"nextSerial",objects+"createEndpoint",caps+"publish"],
+        caps+"close":[caps+"lookupEntry",caps+"requireActive",caps+"drop"],
+        caps+"drop":[caps+"clearEntryStep",objects+"dereference"],
+        caps+"revoke":[caps+"lookup",caps+"revokeKey"],
+        caps+"revokeKey":[objects+"beginRevoke",caps+"revokeTaskStep",objects+"destroy"],
+        caps+"revokeTaskStep":[objects+"registryDescriptor",caps+"header",caps+"revokeEntryStep"],
+        caps+"revokeEntryStep":[caps+"drop"],
+        caps+"detach":[address+"base",caps+"header",objects+"table",caps+"ownedObjectStep",caps+"detachEntryStep",objects+"clearManagement",objects+"unregister",caps+"clearHeaderStep"],
+        caps+"ownedObjectStep":[caps+"revokeKey"],
+        caps+"detachEntryStep":[caps+"drop"],
+        objects+"init":[frames+"allocate",frames+"resolvePurpose",objects+"initStep"],
+        objects+"table":[frames+"resolvePurpose",frames+"mappingCount"],
+        objects+"resolve":[objects+"resolveState"],
+        objects+"resolveState":[objects+"table",objects+"keyValid"],
+        objects+"reference":[objects+"resolve"],
+        objects+"dereference":[objects+"resolveRevoking",objects+"destroy"],
+        objects+"destroy":[objects+"resolveRevoking",frames+"resolvePurpose",frames+"mappingCount",frames+"release"],
+        objects+"createEndpoint":[address+"base",objects+"endpointCountStep",objects+"endpointCapacity",objects+"freeObjectStep",objects+"failed",frames+"allocate"],
+        objects+"endpointCountStep":[objects+"get",objects+"live",objects+"revoking",userabi+"typeValid",userabi+"endpointType"],
+        syscalls+"dispatch":[caps+"managed",syscalls+"dispatchManaged",syscalls+"dispatchLegacy"],
+        syscalls+"dispatchManaged":[caps+"bootGrant",caps+"info",caps+"check",caps+"duplicate",caps+"close",caps+"revoke",syscalls+"capConsole",caps+"createEndpoint",caps+"transfer",caps+"scopedTarget",caps+"inspect",syscalls+"dispatchLegacy"],
+        syscalls+"capConsole":[caps+"lookup",syscalls+"consoleRead",syscalls+"consoleWrite"],
+        "Lemma.Kernel.Scheduler.dispatch":["Lemma.Kernel.Task.capture","Lemma.Kernel.Scheduler.call"],
+        "Lemma.Kernel.Scheduler.call":[syscalls+"dispatch"],
+        alias+"install":[task+"prepared",address+"base",alias+"checkedHeader",frames+"mappingCount",address+"owner",address+"root",alias+"checkedTable",address+"flushCurrent"],
+        alias+"checkedTable":[frames+"resolvePurpose",frames+"mappingCount"],
+        generation+"seedOneFree":[objects+"table",generation+"freeStep",objects+"maxGeneration"],
+        generation+"advance":[objects+"nextSerial",objects+"table",objects+"maxSerial"],
+    }
+    constants={caps+"magic":0x31504143414d454c,caps+"headerOffset":2560,caps+"entriesOffset":2624,
+               caps+"capacity":16,caps+"stride":64,caps+"active":1,caps+"constructing":2,
+               objects+"magic":0x314a424f414d454c,objects+"capacity":16,objects+"endpointCapacity":4,objects+"registryCapacity":8,
+               objects+"rows":256,objects+"stride":128,objects+"maxGeneration":0x0fffffffffffffff,
+               objects+"maxSerial":0x0fffffffffffffff,objects+"consoleKey":16,objects+"managementKey":17,
+               objects+"live":1,objects+"revoking":2,userabi+"endpointType":2,
+               task+"managedOffset":120,alias+"aliasPage":0x31000,alias+"attackAddress":0x31a00,
+               "Lemma.Platform.LemmaVM.Layout.capabilityControlValue":0x80400620,"Lemma.User.ABI.console":2}
+    required=set(constants)|set(edges)|{callee for callees in edges.values() for callee in callees}
+    if not required<=set(by_source):
+        raise Core0Error("managed kernel lacks its genuine source lifecycle closure: "+str(sorted(required-set(by_source))))
+    observed_edges=[]
+    for caller,callees in edges.items():
+        calls=parse_definitions_and_calls(_ir_definition_body(pre_ir,by_source[caller]))[2]
+        for callee in callees:
+            if by_source[callee] not in calls:
+                raise Core0Error("managed source call edge is absent: "+caller+" -> "+callee)
+            observed_edges.append([caller,callee])
+    for source,value in constants.items():
+        body=_ir_definition_body(pre_ir,by_source[source])
+        if re.fullmatch(r"\s*entry:\s*ret i64 "+str(value)+r"\s*",body) is None:
+            raise Core0Error("managed storage/generation source constant differs: "+source)
+    ordered=[]
+    for caller,before,after in [
+        (task+"prepareManaged",task+"prepare",caps+"attach"),
+        (task+"activateManaged",caps+"activate",task+"activate"),
+        (task+"abort",task+"detachManaged","Lemma.Kernel.Loader.teardown"),
+        (task+"reapOne",task+"detachManaged","Lemma.Kernel.Loader.teardown"),
+        (entry+"configure",entry+"initialGrants",task+"activateManaged"),
+        (entry+"configure",entry+"seedEndpoint",objects+"createEndpoint"),
+        (entry+"createTamper",entry+"grant",alias+"install"),
+        (entry+"createTamper",alias+"install",task+"activateManaged"),
+        (caps+"header",address+"base",objects+"get"),
+        (caps+"lookupEntry",caps+"requireActive",objects+"resolve"),
+        (caps+"publish",objects+"reference",objects+"publishSerial"),
+        (caps+"revokeKey",objects+"beginRevoke",objects+"destroy"),
+    ]:
+        ordered.append({"source":caller,**validate_call_precedes(_ir_definition_body(pre_ir,by_source[caller]),by_source[before],by_source[after])})
+    gates=[]
+    for protected in (syscalls+"dispatchManaged",syscalls+"dispatchLegacy"):
+        gates.append({"source":syscalls+"dispatch",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"dispatch"]),by_source[caps+"managed"],by_source[protected])})
+    gates.append({"source":syscalls+"dispatch",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"dispatch"]),by_source[caps+"managed"],by_source[syscalls+"dispatchManaged"],component="value",value=1)})
+    for protected in (syscalls+"consoleRead",syscalls+"consoleWrite"):
+        gates.append({"source":syscalls+"capConsole",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"capConsole"]),by_source[caps+"lookup"],by_source[protected])})
+    # Only the capability wrapper may call the actual UART/copy routines from
+    # the managed dispatcher; its legacy fallthrough rejects console number2.
+    managed_body=_ir_definition_body(pre_ir,by_source[syscalls+"dispatchManaged"])
+    if {by_source[syscalls+"consoleRead"],by_source[syscalls+"consoleWrite"]} & parse_definitions_and_calls(managed_body)[2]:
+        raise Core0Error("managed dispatch directly bypasses capability-checked console wrapper")
+    for row in re.findall(r"(?m)^.*\bcall[^@\n]*@([^ (]+)\(([^\n]*)\)$",managed_body):
+        if row[0] in {by_source[source] for source in edges[syscalls+"dispatchManaged"] if source.startswith(caps)} and not row[1].startswith("i64 %arg0,"):
+            raise Core0Error("managed syscall changed caller-local descriptor to a user-selected identity")
+    endpoint_report=validate_h_endpoint_budget(_ir_definition_body(pre_ir,by_source[objects+"createEndpoint"]),by_source)
+    # Bind the helper's status inversion; a count callback failure must never
+    # be accepted as a successful preallocation result.
+    failed_body=_ir_definition_body(pre_ir,by_source[objects+"failed"])
+    if re.fullmatch(r"\s*entry:\s*%cmp0 = icmp eq i8 %arg0, 0\s*br i1 %cmp0, label %if.then.0, label %if.else.1\s*if.then.0:\s*br label %if.merge.2\s*if.else.1:\s*br label %if.merge.2\s*if.merge.2:\s*%if.result1 = phi i1 \[ 0, %if.then.0 \], \[ 1, %if.else.1 \]\s*ret i1 %if.result1\s*",failed_body) is None:
+        raise Core0Error("endpoint count status helper differs from exact nonzero failure")
+    alias_report=validate_h_alias(unit,pre_ir,by_source)
+    denial_report=validate_h_legacy_console_denial(managed_body,by_source)
+    launch_body=_ir_definition_body(pre_ir,by_source[entry+"launch"])
+    tamper_body=_ir_definition_body(pre_ir,by_source[entry+"createTamper"])
+    pattern=r"call \{ i64, i64 \} @"+re.escape(by_source[task+"prepareManaged"])+r"\(i64 ([0-9]+),"
+    if re.findall(pattern,launch_body)!=["0","1","2"] or re.findall(pattern,tamper_body)!=["3"]:
+        raise Core0Error("managed image preparation differs from exact source-selected boot roles")
+    return {"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
+            "source_constants":{source:{"symbol":by_source[source],"value":value} for source,value in sorted(constants.items())},
+            "source_call_edges":observed_edges,"ordered_cfg_calls":ordered,"checked_cfg_gates":gates,
+            "limitations":["Compiled call/CFG/storage binding, not a proof of authority semantics or guest execution."]}
+
+
 def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
                            assembly: str, *, object_file: str) -> dict:
     """Account for the sole declarative initializer emitted by Lean startup.
@@ -339,7 +751,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     section of the startup object and its exact linked payload, not arbitrary
     writable data or additional target object symbols.
     """
-    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault)/(startup\.o|image\.elf)", object_file)
+    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper)/(startup\.o|image\.elf)", object_file)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
@@ -406,8 +818,11 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
             "used_execution_ops", "used_device_ops", "used_loops"}
-    case_field = {"startup_case"} if multi_user and configuration == "tasks-fault-development" else set()
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field, "unit")
+    case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", "capabilities-development"} else set()
+    expected_managed = managed_fields(configuration, image)
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed), "unit")
+    if any(unit.get(key) != value for key, value in expected_managed.items()):
+        raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration == "normal" else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
@@ -438,6 +853,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             source.startswith("Lemma.") or re.fullmatch(r"_private\.(Lemma(?:\.[A-Za-z0-9_]+)+)\.[0-9]+\.\1\.[A-Za-z0-9_.$]+", source) is not None)
         if not production_identity or any(token in source.lower() for token in (".test.", "examples", "mutation")):
             raise Core0Error("function lacks a production Lean source identity")
+        if configuration == "capabilities-development" and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
+            raise Core0Error("managed user source reaches privileged/compiler code")
         if ".Development." in source:
             allowed = (image["module"],) if multi_user else development_modules(configuration, role)
             if not any(re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source) for module in allowed):
@@ -527,8 +944,12 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
 
 def validate_layout(value: object, *, configuration: str = "normal", image_key: str | None = None) -> dict:
     layout = _object(value, "layout")
+    image = image_spec(configuration, image_key) if image_key is not None else None
+    expected_managed = managed_fields(configuration, image)
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
-                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"}, "layout")
+                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"} | set(expected_managed), "layout")
+    if any(layout.get(key) != value for key, value in expected_managed.items()):
+        raise Core0Error("layout managed policy/boot role differs")
     selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
@@ -565,7 +986,9 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
     catalog = _object(value, "primitive catalog")
     multi = configuration in MULTI_USER_CONFIGURATIONS
     _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "user_startup_case", "symbols",
-                    "user_images" if multi else "user_symbols"}, "primitive catalog")
+                    "user_images" if multi else "user_symbols"} | set(managed_fields(configuration)), "primitive catalog")
+    if any(catalog.get(key) != value for key, value in managed_fields(configuration).items()):
+        raise Core0Error("primitive catalog managed policy differs")
     expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
     if startup_case(configuration) == "machine-origin-probe":
         expected_machine |= {"lemma_machine_vector"}
@@ -579,7 +1002,8 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
         _keys(row, {"symbol", "privilege", "effect"}, "machine symbol")
         if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
             raise Core0Error("machine primitive privilege/effect differs")
-    expected_users = [{"key": row["key"], "id": row["id"], "startup_case": row["startup_case"], "symbols": user_primitive_rows(row["startup_case"])}
+    expected_users = [{"key": row["key"], "id": row["id"], "startup_case": row["startup_case"], "symbols": user_primitive_rows(row["startup_case"]),
+                       **({"boot_role": row["boot_role"]} if configuration == "capabilities-development" else {})}
                       for row in image_specs(configuration)] if multi else user_primitive_rows(user_startup_case(configuration))
     if (catalog.get("user_images" if multi else "user_symbols") != expected_users
             or multi and any(type(row.get("id")) is not int for row in catalog.get("user_images", []))):
@@ -592,7 +1016,7 @@ def validate_user_primitive_catalog(value: object, image: dict, *, configuration
         raise Core0Error("per-image primitive authority differs from the closed selected image")
     expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": configuration,
                 "image_key": image["key"], "image_id": image["id"], "startup_case": image["startup_case"],
-                "symbols": user_primitive_rows(image["startup_case"])}
+                "symbols": user_primitive_rows(image["startup_case"]), **managed_fields(configuration, image)}
     catalog = _object(value, "per-image primitive catalog")
     if catalog != expected or type(catalog.get("schema_version")) is not int or type(catalog.get("image_id")) is not int:
         raise Core0Error("closed per-image user primitive catalog differs")
@@ -605,12 +1029,14 @@ def validate_package_contract(value: object, *, configuration: str, catalog: dic
     multi = configuration in MULTI_USER_CONFIGURATIONS
     if multi:
         selected = validate_user_image_catalog(catalog, configuration=configuration)["images"]
-        images = [{**image, "key": row["key"], "id": row["id"]} for row in selected]
+        images = [{**image, "key": row["key"], "id": row["id"],
+                   **({"boot_role": row["boot_role"]} if configuration == "capabilities-development" else {})} for row in selected]
     expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
                 "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
                 "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
                 "version": 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
-                "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image})}
+                "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image}),
+                **managed_fields(configuration)}
     contract = _object(value, "boot package contract")
     if (contract != expected or any(type(contract.get(key)) is not int for key in ("schema_version", "magic", "version", "image_count", "header_bytes", "descriptor_bytes"))
             or any(type(row.get(key)) is not int for row in (contract.get("images", []) if multi else [contract.get("image", {})])
@@ -808,7 +1234,7 @@ def validate_image_attack_object(section_text: str, symbol_text: str, raw: bytes
             "raw_sha256": hashlib.sha256(raw).hexdigest(), "privileged_instruction_exceptions": [0]}
 
 
-def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
+def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
     """Admit only LLVM's observed immutable lookup for the fixed PMP policy.
 
     The closed three-block body proves the table index is below four before
@@ -852,6 +1278,62 @@ def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tup
                          "guarded_loads": 1, "readonly": True}]
 
 
+def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
+    """Preserve PMP admission; add only two observed immutable H lookups."""
+    if unit.get("configuration") != "capabilities-development" or unit.get("role") != "kernel" or not optimized:
+        return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
+    lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
+    if not globals_:
+        return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
+    by_source={re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"]):row for row in unit["functions"]}
+    specs=[("Lemma.User.CapabilityABI.typeMask",[35,124,928,1056],["u64"],[]),
+           ("Lemma.Kernel.Objects.initStep",[1,3,4],["u32","u32","u64","u64","u64","u64","u64"],["checked-access","physical-write"])]
+    accepted_globals=[];sites=set();observed=[];owners=_line_functions(lines)
+    from audit_memory import parse_ir_functions,_parse_blocks
+    functions=parse_ir_functions(ir)
+    for source,values,args,effects in specs:
+        row=by_source.get(source)
+        if row is None or row["args"]!=args or row["effects"]!=effects:
+            raise Core0Error("H readonly lookup lacks its exact source/signature/effects")
+        symbol=row["symbol"];table="switch.table."+symbol;count=len(values)
+        expected=f"@{table} = private unnamed_addr constant [{count} x i64] ["+", ".join(f"i64 {value}" for value in values)+"], align 8"
+        if globals_.count(expected)!=1 or len(re.findall(r"@"+re.escape(table)+r"(?![A-Za-z0-9_.$-])",ir))!=2:
+            raise Core0Error("H readonly lookup exact global/content/use inventory differs")
+        function=functions.get(symbol)
+        types={"u32":"i32","u64":"i64"}
+        if function is None or re.findall(r"\b(i1|i8|i32|i64)\b",re.search(r"@"+re.escape(symbol)+r"\(([^\n]*)\)",function.header).group(1))!=[types[t] for t in args]:
+            raise Core0Error("H readonly lookup LLVM argument signature differs")
+        body="\n".join(line.split(";",1)[0].rstrip() for line in function.body.splitlines())
+        blocks=_parse_blocks(body,symbol);load="%switch.load = load i64, ptr %switch.gep, align 8"
+        if source=="Lemma.User.CapabilityABI.typeMask":
+            expected_blocks={"entry":["%switch.tableidx = add i64 %arg0, -1","%0 = icmp ult i64 %switch.tableidx, 4","br i1 %0, label %switch.lookup, label %if.merge.2"],
+                             "switch.lookup":[f"%switch.gep = getelementptr inbounds nuw [4 x i64], ptr @{table}, i64 0, i64 %switch.tableidx",load,"br label %if.merge.2"],
+                             "if.merge.2":["%if.result15 = phi i64 [ %switch.load, %switch.lookup ], [ 0, %entry ]","ret i64 %if.result15"]}
+            if blocks!=expected_blocks or not re.search(r"\bi64 @"+re.escape(symbol)+r"\(i64 %arg0\)",function.header):
+                raise Core0Error("H type-mask lookup lacks exact subtraction/bound guard/default/body")
+        else:
+            put=by_source.get("Lemma.Kernel.Objects.put",{}).get("symbol")
+            if put is None or not re.search(r"define \{ i64, i64 \} @"+re.escape(symbol),function.header):
+                raise Core0Error("H pinned-kind lookup lacks checked initialization source")
+            if blocks.get("action.if.else.1")!=["%bin15 = add i64 %call1, 16","%0 = icmp ult i32 %arg0, 3","br i1 %0, label %switch.lookup, label %if.merge.5"] or blocks.get("switch.lookup")!=["%1 = zext nneg i32 %arg0 to i64",f"%switch.gep = getelementptr inbounds nuw [3 x i64], ptr @{table}, i64 0, i64 %1",load,"br label %if.merge.5"]:
+                raise Core0Error("H pinned-kind lookup lacks exact bounded index/load block")
+            merge=blocks.get("if.merge.5",[])
+            if len(merge)<2 or merge[:2]!=["%if.result27 = phi i64 [ 0, %action.if.else.1 ], [ %switch.load, %switch.lookup ]",f"%action.call.result28 = call {{ i64, i64 }} @{put}(i64 %bin15, i64 %if.result27)"] or len(re.findall(r"%if\.result27(?![A-Za-z0-9_.$-])",body))!=2:
+                raise Core0Error("H pinned-kind result escapes its sole object-kind publication")
+            successors=_structured_successors(_structured_ir_blocks(body))
+            without_guard={block:tuple(target for target in targets if (block,target)!=("action.if.else.1","switch.lookup")) for block,targets in successors.items()}
+            if _structured_reachable(without_guard,"entry","switch.lookup") or _structured_reachable(successors,"if.merge.5","switch.lookup"):
+                raise Core0Error("H pinned-kind lookup has a bound-guard bypass")
+        located={i for i,line in enumerate(lines) if line.strip()==load and owners[i]==symbol}
+        if len(located)!=1 or len(re.findall(r"%switch\.gep(?![A-Za-z0-9_.$-])",body))!=2 or len(re.findall(r"%switch\.load(?![A-Za-z0-9_.$-])",body))!=2:
+            raise Core0Error("H readonly pointer/load use inventory differs")
+        sites|=located;accepted_globals.append(expected)
+        observed.append({"source":row["source"],"function":symbol,"global":table,"values":values,"element_bits":64,"alignment_bytes":8,"index_bound":count,"default":0,"guarded_loads":1,"readonly":True})
+    filtered="\n".join("" if line.strip() in accepted_globals else line for line in lines)
+    pmp_sites,pmp=_validate_readonly_pmp_lookup(filtered,unit,optimized=True)
+    return sites|pmp_sites,[*pmp,*observed]
+
+
 def validate_pmp_constant_section(section_text: str, raw: bytes, *, object_file: str, tables: list[dict]) -> dict:
     values = [0x20001fff, 0x20041fff, 0x20ffffff, 0x0400001f]
     if (object_file != "kernel/program.o" or len(tables) != 1
@@ -864,6 +1346,47 @@ def validate_pmp_constant_section(section_text: str, raw: bytes, *, object_file:
         raise Core0Error("PMP constant section size/flags/alignment/little-endian bytes differ")
     return {"object": object_file, "section": ".rodata.cst32", "bytes": 32, "flags": "AM", "alignment": 8,
             "source": tables[0]["source"], "values": values}
+
+
+def validate_h_readonly_sections(section_text: str, symbol_text: str, relocation_text: str,
+                                 constants: bytes, rodata: bytes, *, object_file: str, tables: list[dict]) -> dict:
+    """Exact H object bytes and local symbols for the two admitted IR lookups."""
+    if object_file!="kernel/program.o" or len(tables)!=3:
+        raise Core0Error("H immutable tables lack their exact kernel object inventory")
+    pmp=[0x20001fff,0x20041fff,0x20ffffff,0x0400001f];masks=[35,124,928,1056];kinds=[1,3,4]
+    sources=["Lemma.Kernel.MachineServices.expectedPmp","Lemma.User.CapabilityABI.typeMask","Lemma.Kernel.Objects.initStep"]
+    if any(re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source",""))!=source or row.get("values")!=values or row.get("readonly") is not True for row,source,values in zip(tables,sources,[pmp,masks,kinds])):
+        raise Core0Error("H object immutable-table source/content provenance differs")
+    def section(name,size,entry_size,flags):
+        rows=re.findall(r"(?m)^\s*\[\s*(\d+)\]\s+"+re.escape(name)+r"\s+PROGBITS\s+0+\s+[0-9a-f]+\s+([0-9a-f]+)\s+"+entry_size+r"\s+"+flags+r"\s+0\s+0\s+8\s*$",section_text)
+        if len(rows)!=1 or int(rows[0][1],16)!=size:
+            raise Core0Error("H immutable-table section size/flags/alignment differs")
+        return rows[0][0]
+    cst_section=section(".rodata.cst32",64,"20","AM")
+    ro_section=section(".rodata",len(rodata),"00","A")
+    if constants!=struct.pack("<8Q",*pmp,*masks):
+        raise Core0Error("H combined PMP/type-mask immutable bytes differ")
+    rows=[line.split() for line in symbol_text.splitlines() if len(line.split())==8 and line.split()[3]=="OBJECT" and line.split()[6]!="UND"]
+    expected_names={".L"+row["global"] for row in tables}
+    if {row[-1] for row in rows}!=expected_names or len(rows)!=3:
+        raise Core0Error("H immutable object-symbol inventory differs")
+    observed=[]
+    for index,(table,values) in enumerate(zip(tables,[pmp,masks,kinds])):
+        row=next(row for row in rows if row[-1]==".L"+table["global"])
+        offset,size=int(row[1],16),int(row[2]);section_id=cst_section if index<2 else ro_section
+        raw=constants if index<2 else rodata
+        if row[4:7]!=["LOCAL","DEFAULT",section_id] or size!=len(values)*8 or offset%8 or offset+size>len(raw) or raw[offset:offset+size]!=struct.pack("<"+str(len(values))+"Q",*values) or index<2 and offset!=index*32:
+            raise Core0Error("H immutable table symbol extent/ownership/bytes differs")
+        current=None
+        for line in relocation_text.splitlines():
+            header=re.search(r"Relocation section '([^']+)'",line)
+            if header:current=header[1]
+            relocation=re.match(r"\s*([0-9a-f]+)\s+[0-9a-f]+\s+(R_RISCV_[A-Z0-9_]+)\s",line)
+            if relocation and current==(".rela.rodata.cst32" if index<2 else ".rela.rodata") and int(relocation[1],16)<offset+size and offset<int(relocation[1],16)+(8 if relocation[2].endswith("64") else 4):
+                raise Core0Error("H immutable table literal bytes contain a link relocation")
+        observed.append({"source":table["source"],"symbol":row[-1],"section":".rodata.cst32" if index<2 else ".rodata","offset":offset,"bytes":size,"values":values,"sha256":hashlib.sha256(raw[offset:offset+size]).hexdigest(),"relocations":[]})
+    return {"object":object_file,"configuration":"capabilities-development","readonly_tables":observed,
+            "constant_section_bytes":64,"constant_section_sha256":hashlib.sha256(constants).hexdigest()}
 
 
 def _kernel_access_op(line: str, unit: dict, *, optimized: bool = False) -> str | None:
@@ -1226,7 +1749,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     if initializer is None or initialized["sha256"] != initializer["sha256"]:
         raise Core0Error("per-image linked initializer differs from its declared startup object")
     elf["initialized_data"] = initialized
-    return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph,
+    return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph, **managed_fields(configuration,image),
             "image_sha256": sha256(output_dir / "image.elf"), "text_sha256": sha256(output_dir / "text.bin"),
             "data_sha256": sha256(output_dir / "data.bin"), "commands": logs,
             **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" else {})}
@@ -1315,8 +1838,10 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         image = selected_user_image(catalog, provenance.get("image_key"))
         configuration = catalog["configuration"]
         key, directory = image["key"], image["directory"]
+        validate_standalone_managed_provenance(build, provenance, configuration=configuration, image=image)
         identity = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": configuration,
-                    "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": image["startup_case"]}
+                    "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": image["startup_case"],
+                    **managed_fields(configuration, image)}
         if (any(build.get(field) != value or provenance.get(field) != value for field, value in identity.items())
                 or type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
                 or type(build.get("image_id")) is not int or type(provenance.get("image_id")) is not int
@@ -1328,7 +1853,10 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         source_snapshot = source_inputs(root)
         if provenance.get("source_inputs") != source_snapshot:
             raise Core0Error("independent user complete source inventory is missing/stale")
-        closure = module_closure(root, image["module"], allow_development=True)
+        closure = module_closure(root, image["module"], allow_development=True,
+                                 forbid_user_privileged_imports=configuration == "capabilities-development")
+        if configuration == "capabilities-development" and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
+            raise Core0Error("managed user target dependency closure contains privileged/compiler code")
         if (any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean" for path in closure)
                 or provenance.get("target_module_closures") != {"users": {key: closure}}):
             raise Core0Error("independent user selected source dependency closure differs")
@@ -1383,8 +1911,12 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         write_json(output_dir / "audit-failure.json", {"schema_version": 1, "status": "FAIL", "error": "audit timeout must be finite and positive", "commands": []})
         raise Core0Error("audit timeout must be finite and positive")
-    tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy"))
     logs = []
+    try:
+        tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy"))
+    except Core0Error as error:
+        write_json(output_dir / "audit-failure.json", {"schema_version": 1, "status": "FAIL", "error": str(error), "commands": logs})
+        raise
 
     def inspect(name: str, args: list[str], label: str) -> str:
         # require_tools resolves Nix's llvm-readelf symlink to llvm-readobj.
@@ -1432,6 +1964,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         validate_configuration_stage(configuration, stage)
         case, user_case = startup_case(configuration), user_startup_case(configuration)
         validate_image_case_provenance(build, provenance, configuration=configuration, images=images)
+        validate_managed_provenance(build, provenance, configuration=configuration, images=images)
         if build.get("startup_case") != case or provenance.get("startup_case") != case or build.get("user_startup_case") != user_case or provenance.get("user_startup_case") != user_case:
             raise Core0Error("build/provenance generated startup case differs")
         generated = (["startup.S", "link.ld", "layout.json", "primitive-catalog.json", "boot-package.S", "package-contract.json", "user-image-catalog.json"]
@@ -1475,7 +2008,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
         if multi:
-            expected_users = {image["key"]: module_closure(root, image["module"], allow_development=True) for image in images}
+            expected_users = {image["key"]: module_closure(root, image["module"], allow_development=True,
+                              forbid_user_privileged_imports=configuration == "capabilities-development") for image in images}
+            if configuration == "capabilities-development" and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
+                raise Core0Error("managed user target dependency closure contains privileged/compiler code")
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
                 raise Core0Error("per-image dependency imports another development module")
@@ -1536,6 +2072,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
+        managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
+                                if configuration == "capabilities-development" else None)
         object_functions = {
             "startup.o": expected_machine, "boot-package.o": set(),
             **({} if multi else {"user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}}),
@@ -1573,10 +2111,18 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error("kernel PMP IR table/object constant section presence differs")
             if ".rodata.cst32" in sections:
                 inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata.cst32", object_file, "audit-kernel-pmp-table.bin"], "pmp-table-extract")
-                table_report = validate_pmp_constant_section(
-                    (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
-                    (output_dir / "audit-kernel-pmp-table.bin").read_bytes(), object_file=object_file, tables=tables)
-                table_report["sha256"] = sha256(output_dir / "audit-kernel-pmp-table.bin")
+                if configuration == "capabilities-development":
+                    inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata", object_file, "audit-kernel-h-rodata.bin"], "h-rodata-extract")
+                    table_report = validate_h_readonly_sections(
+                        (output_dir / ("audit-" + label + "-sections.txt")).read_text(), object_symbols,
+                        (output_dir / ("audit-" + label + "-relocations.txt")).read_text(),
+                        (output_dir / "audit-kernel-pmp-table.bin").read_bytes(),
+                        (output_dir / "audit-kernel-h-rodata.bin").read_bytes(), object_file=object_file, tables=tables)
+                else:
+                    table_report = validate_pmp_constant_section(
+                        (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
+                        (output_dir / "audit-kernel-pmp-table.bin").read_bytes(), object_file=object_file, tables=tables)
+                    table_report["sha256"] = sha256(output_dir / "audit-kernel-pmp-table.bin")
                 readonly_objects.append(table_report)
                 allowed_sections.add(".rodata.cst32")
             if ".rodata.cst8" in sections:
@@ -1693,6 +2239,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                     **{key: user_audits[image["key"]][key] for key in ("image_sha256", "text_sha256", "data_sha256", "stack_bounds")},
                                     "text_bytes": (output_dir / image["directory"] / "text.bin").stat().st_size,
                                     "data_bytes": (output_dir / image["directory"] / "data.bin").stat().st_size,
+                                    **managed_fields(configuration,image),
                                     **({"startup_case": image["startup_case"], "object_quarantined_startup": user_audits[image["key"]]["object_quarantined_startup"]}
                                        if configuration == "tasks-fault-development" else {})} for image in images}
             record["unit_ir"]["users"] = {key: value["unit_ir"] for key, value in user_audits.items()}
@@ -1701,6 +2248,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             record["user_image_catalog_sha256"] = sha256(output_dir / "user-image-catalog.json")
             if configuration == "tasks-fault-development":
                 record["user_startup_cases"] = {image["key"]: image["startup_case"] for image in images}
+            if configuration == "capabilities-development":
+                record.update(managed_policy=MANAGED_POLICY, boot_roles={image["key"]: image["boot_role"] for image in images}, managed_capabilities=managed_capabilities)
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
         if source_inputs(root) != source_hashes:

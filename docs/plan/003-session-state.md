@@ -8,14 +8,12 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest clean cumulative Task003 checkpoint: F at committed
-  `bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9`, tree
-  `ec56befa5ccd3c67cd61c69b296c530e9e638e94`. Strong O0/O2 context/preemption
-  observations, two isolated timer-disabled negatives and six independently
-  built user audits passed. Fresh cold A-E+F regression passed at that exact clean source;
-  22 images, 26 checker reports and 30 sessions were independently reviewed.
-  G focused O0/O2 lifecycle observations also passed; H-K have not run.
-  The latest checkpoint at the end of this file is authoritative.
+- Highest clean cumulative Task003 checkpoint: G at committed
+  `e61766a8e06bcca34a5f2365dae436c4d2cf6c4a`, tree
+  `a746481cd5dc9d270c0687de1ebf44f41333bb1b`. Fresh cold A-E+F+G passed:
+  24 images,28 checker reports,32 guest sessions. Independent raw/artifact/stack/math
+  review also passed. H focused actual O0/O2 capability/lifecycle guests and independent review also
+  passed; committed clean H cumulative checkpoint and I-K remain unverified. The latest checkpoint at the end is authoritative.
 - The user explicitly extended the original time window until the full milestone
   is verified and authorized merging afterward. Do not merge a partial prefix.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
@@ -493,3 +491,72 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   object-wide revoke. Managed creation publishes after reviewed boot grants;
   managed legacy console must deny before device effects. H is not yet built.
   User authorization remains full A-K verification and then confirmed merge.
+
+## Cold Gate G complete; H artifact freeze
+
+- Fresh managed G acceptance worktree at exact e61766a/treea746, with no copied
+  outputs, completed its controller in562.352068s:24images,28checker reports,
+  32actual QEMU sessions. Report SHA256
+  d1d8005299b052a503a0b38da782a9fef2eca792d25db629c18ee1ee2d863f17.
+  Clean F O0/O2 observed1291/1453records; G2339/2703records. Independent raw,
+  object-stack and cleanup reread remains a separately hashed review.
+- H lower policy now owns16caller-local entries,16global objects and a separate
+  four-endpoint bound. Managed construction grants before publication; cleanup
+  withdraws capabilities before address-space teardown. Genuine Lean builds
+  pass. Root User capability corpus and25observer rejection tests pass at host.
+  No H guest has run, and no I-K implementation is claimed.
+- Strict O2 probe rejected two compiler-produced immutable UInt64 lookup tables
+  beyond the earlier PMP table. This failure is retained. The H-only auditor
+  now checks exact source identities, CFG guards, values, sole use, local object
+  symbols, readonly bytes and absence of relocations; broader admission remains
+  rejected. Fresh focused probes and full artifact captures are pending.
+- Source is uncommitted H work on e61766a. All maintained target sources are held
+  while the final focused probe/full O0/O2 package builds run. Next actual guest
+  command: `nix develop --no-write-lock-file --command python3
+  scripts/check_kernel_capabilities.py --image
+  build/kernel/gateH/artifacts/capabilities-development-O0/image.elf
+  --output-dir build/kernel/gateH/capabilities-O0-attempt1 --timeout120 --clean`.
+  Require both actual profiles and independent review before advancing to IPC.
+
+- Cold G independent summary subsequently passed: SHA256
+  7bb914cc1e43125dc06e078cccc3fbe700060c7d208673974d8e369421af17a3;
+  32uniquePIDs,30livekill/reap(-9),2naturalM-origin48,empty stderr and
+  82independently recomputed object stack graphs. No H result is inherited.
+- Held H focused genuine export/O0/O2/object probe passed, report SHA256
+  babf11bd883035745b9cd8e242e4d6ef59fb8d6016e0fa36eb6e89f317253cf0;
+  O0/O2 trap4528/1248 within actual8192. Kernelhost121/scaffold18/metadata
+  passed. Full H packages and eight standalone User audits are running.
+
+## Expanded Gate H focused runtime complete
+
+- Both fresh attempt2 capability packages built and passed strict full artifact
+  audits. Eight standalone user images match all112artifact bytes/hash bindings
+  and124compiled-source bindings. Comparison SHA256
+  4d413ba2e0e55b48135f13896b2c6bece4dffb18942fedb45c2ff4791186010a.
+- Actual O0/O2 maintained guest checkers passed31.901705s/18.588865s:
+  803/633rawpackets,318/213actualMIRQs,5instances each,76Tester/20Peer
+  syscall replies and44distinct successful publication serials. All failed
+  table/object/transfer/serial publications preserve accounting. Protected
+  descriptor-header stores cause realU page faults15 in two fresh Tamper tasks.
+- Tester leaves one owned endpoint with a surviving Peer alias, then exits after
+  genuineMAXserial publication and91exhaustion. Ordinary detach reclaims the
+  queue plus all task pages; Peer observes80stale denial before exiting.
+  The same non-yielding Busy continues throughout. Final physical baseline498.
+  Both actualVMs were live until explicit host kill/reap(-9), with emptystderr.
+- Earlier attempt1 O0/O2 passes are retained as the earlier corpus; they do not
+  establish owner-death cleanup. Expanded observers handle valid timer ordering
+  of cross-task logs and enforce exact source/object/reference/serial effects.
+  Kernelhost127, targetedLake54jobs and12H evidence negatives passed.
+- Focused provenance honestly remains e61766a+dirty. Independent raw/stack
+  review is pending; commit coherent H only after that review, then run a cold
+  exact-source A-E+F+G+H checkpoint while implementing IPC against this boundary.
+  No I-K guest pass, Task003push, PR, actualCI or merge has occurred.
+
+- Independent expanded H review also passed: summary SHA256
+  20437edea941cebe88f6f7a216d29732c726f4092c4031798e5f7d4b555d32d3.
+  Source124/artifact93/runner8/raw3 bindings perimage,13actualcommandACKs,
+  real storeinstructions/faults and independent call-graph stack bounds match.
+  AllPIDs absent; ownerF6 exactly22+1pagesO0/20+1O2; Peer stale denial follows.
+  Highest focused gateH; highest committed clean cumulative gateG. Commit the
+  coherent H source now, then cold H controller `/tmp/lemma-gateH-clean-run.py`.
+  IPC may advance from the observed H prefix; its gates still require real runs.

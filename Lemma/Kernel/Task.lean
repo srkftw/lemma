@@ -1,4 +1,5 @@
 import Lemma.Kernel.Process
+import Lemma.Kernel.Capability
 
 /-! Owned fixed-capacity task storage. IDs are the checked generation-tagged
 address-space descriptor handles. The registry and persistent user contexts
@@ -27,6 +28,7 @@ def argumentOffset : UInt64 := 88
 def imageOffset : UInt64 := 96
 def wakeTimeOffset : UInt64 := 104
 def waitKindOffset : UInt64 := 112
+def managedOffset : UInt64 := 120
 def free : UInt64 := 0
 def building : UInt64 := 1
 def runnable : UInt64 := 2
@@ -107,19 +109,20 @@ private def abandon (record : UInt64) (status : UInt8) : Action :=
   .bind (Access.write64 (record + stateOffset) free) fun s _ =>
   if failed s = true then fatal else .done status 0
 
-private def publish (record descriptor image argument : UInt64) : Action :=
+private def retainPrepared (record descriptor image argument : UInt64) : Action :=
   .bind (Access.write64 record descriptor) fun s _ =>
   if failed s = true then fatal else
   .bind (Access.write64 (record + argumentOffset) argument) fun s _ =>
   if failed s = true then fatal else
   .bind (Access.write64 (record + imageOffset) image) fun s _ =>
   if failed s = true then fatal else
-  .bind (Access.write64 (record + stateOffset) runnable) fun s _ =>
+  .bind (Access.write64 (record + managedOffset) 0) fun s _ =>
   if failed s = true then fatal else .done 0 descriptor
 
-/-- Reserve before construction, publish only after the reusable loader succeeds.
+/-- Reserve and load an unpublished instance. A building row is excluded from
+lookup and selection until activation, so trusted policy may finish grants.
 The monotonic private owner allocator never accepts a user-supplied owner. -/
-def create (image argument : UInt64) : Action :=
+def prepare (image argument : UInt64) : Action :=
   .bind table fun s address =>
   if failed s = true then fatal else
   .boundedFoldU64 8 freeStep 8 8 address 0 0 0 fun s index =>
@@ -131,15 +134,136 @@ def create (image argument : UInt64) : Action :=
     if failed s = true then abandon record s else
     .bind (Loader.load image owner argument) fun s descriptor =>
     if failed s = true then abandon record s else
-    .bind (publish record descriptor image argument) fun s id =>
+    .bind (retainPrepared record descriptor image argument) fun s id =>
     if failed s = true then
       .bind (Loader.teardown descriptor) fun _ _ => fatal
-    else
-      .bind (AddressSpace.root id) fun s root =>
-      if failed s = true then fatal else
-      .bind (Lemma.Kernel.Console.record 0xf1 id image argument root) fun s _ =>
-      if failed s = true then fatal else .done 0 id
+    else .done 0 id
   else if s = 0 then .done 38 0 else fatal
+
+private def preparedStep (i _ : UInt32) (acc address descriptor _ _ : UInt64) : Action :=
+  let record := address + i.toUInt64 * stride
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if dying < state then fatal else
+  if state = building then
+    .bind (Access.read64 record) fun s id =>
+    if failed s = true then fatal else
+    if id = descriptor then .done Status.iterationStop i.toUInt64 else .done 0 acc
+  else .done 0 acc
+
+/-- Trusted construction lookup; public live lookup does not admit these rows.
+The descriptor must still resolve to its exact live generation and owned root. -/
+def prepared (descriptor : UInt64) : Action :=
+  if descriptor = 0 then .done 74 0 else
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 preparedStep 8 8 address descriptor 0 0 fun s index =>
+  if s = Status.iterationStop then
+    .bind (AddressSpace.base descriptor) fun s _ =>
+    if failed s = true then fatal else .done 0 (address + index * stride)
+  else if s = 0 then .done 74 0 else fatal
+
+private def detachManaged (record descriptor : UInt64) : Action :=
+  .bind (Access.read64 (record + managedOffset)) fun s managed =>
+  if failed s = true then fatal else
+  if managed = 0 then .done 0 0 else
+  if managed = 1 then
+    .bind (Capability.detach descriptor) fun s _ =>
+    if failed s = true then fatal else .done 0 0
+  else fatal
+
+private def clearPreparedStep (i _ : UInt32) (acc record _ _ _ : UInt64) : Action :=
+  if i = 1 then .done 0 acc else
+  .bind (Access.write64 (record + i.toUInt64 * 8) 0) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + 1)
+
+private def inactiveDescriptor (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.root descriptor) fun s root =>
+  if failed s = true then fatal else
+  .bind (Access.read64 AddressSpace.activeRoot) fun s active =>
+  if failed s = true then fatal else
+  if root = active then fatal else .done 0 0
+
+/-- Abort only a checked unpublished instance. Detach provisional authority
+before releasing its inactive address space, then make the empty slot free. -/
+def abort (descriptor : UInt64) : Action :=
+  .bind (prepared descriptor) fun s record =>
+  if failed s = true then .done s 0 else
+  .bind (inactiveDescriptor descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (detachManaged record descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Loader.teardown descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .boundedFoldU64 64 clearPreparedStep 64 0 record 0 0 0 fun s cleared =>
+  if failed s = true then fatal else
+  if cleared = 63 then
+    .bind (Access.write64 (record + stateOffset) free) fun s _ =>
+    if failed s = true then fatal else .done 0 0
+  else fatal
+
+private def checkedActivation (record descriptor : UInt64) : Action :=
+  .bind (Access.read64 (record + managedOffset)) fun s managed =>
+  if failed s = true then fatal else
+  if managed = 0 then
+    .bind (Capability.managed descriptor) fun s active =>
+    if failed s = true then fatal else
+    if active = 0 then .done 0 0 else fatal
+  else if managed = 1 then
+    .bind (Capability.requireActive descriptor) fun s _ =>
+    if failed s = true then fatal else .done 0 0
+  else fatal
+
+/-- Publish last, after the loader and any managed boot policy have completed.
+The generic scheduler is independent of image names and capability grants. -/
+def activate (descriptor : UInt64) : Action :=
+  .bind (prepared descriptor) fun s record =>
+  if failed s = true then .done s 0 else
+  .bind (checkedActivation record descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + argumentOffset)) fun s argument =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + imageOffset)) fun s image =>
+  if failed s = true then fatal else
+  .bind (AddressSpace.root descriptor) fun s root =>
+  if failed s = true then fatal else
+  .bind (Access.write64 (record + stateOffset) runnable) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Lemma.Kernel.Console.record 0xf1 descriptor image argument root) fun s _ =>
+  if failed s = true then fatal else .done 0 descriptor
+
+/-- The legacy path keeps its empty authority table and original publication
+record. Ordinary loader failure still returns its exact status without a task. -/
+def create (image argument : UInt64) : Action :=
+  .bind (prepare image argument) fun s descriptor =>
+  if failed s = true then .done s 0 else activate descriptor
+
+/-- Prepare a managed instance, but do not make it runnable. The trusted boot
+policy grants authority before calling activateManaged. Attach failures are
+preflight-only; a successful attachment is recorded for rollback and reaping. -/
+def prepareManaged (image argument : UInt64) : Action :=
+  .bind (prepare image argument) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (Capability.attach descriptor) fun status _ =>
+  if status = 255 then fatal else
+  if failed status = true then
+    .bind (abort descriptor) fun s _ =>
+    if failed s = true then fatal else .done status 0
+  else
+    .bind (prepared descriptor) fun s record =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + managedOffset) 1) fun s _ =>
+    if failed s = true then fatal else .done 0 descriptor
+
+def activateManaged (descriptor : UInt64) : Action :=
+  .bind (prepared descriptor) fun s record =>
+  if failed s = true then .done s 0 else
+  .bind (Access.read64 (record + managedOffset)) fun s managed =>
+  if failed s = true then fatal else
+  if managed = 1 then
+    .bind (Capability.activate descriptor) fun s _ =>
+    if failed s = true then fatal else activate descriptor
+  else fatal
 
 def increment (record offset : UInt64) : Action :=
   .bind (Access.read64 (record + offset)) fun s value =>
@@ -336,6 +460,8 @@ private def reapOne (record : UInt64) : Action :=
   .bind (Lemma.Kernel.Console.record 0xf5 descriptor preemptions yields dispatches) fun s _ =>
   if failed s = true then fatal else
   .bind Frames.remaining fun s before =>
+  if failed s = true then fatal else
+  .bind (detachManaged record descriptor) fun s _ =>
   if failed s = true then fatal else
   .bind (Loader.teardown descriptor) fun s _ =>
   if failed s = true then fatal else

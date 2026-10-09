@@ -28,10 +28,11 @@ ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Ke
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
-                  "tasks-development", "tasks-fault-development")
-MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development")
+                  "tasks-development", "tasks-fault-development", "capabilities-development")
+MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development")
 INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
-                          "tasks-fault-development": {"compute", "sleeper", "busy", "fault"}}
+                          "tasks-fault-development": {"compute", "sleeper", "busy", "fault"},
+                          "capabilities-development": {"capabilities", "peer", "busy", "tamper"}}
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
@@ -74,7 +75,8 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in MULTI_CONFIGURATIONS:
-        module = "Lemma.Kernel.Development." + ("TasksEntry" if configuration == "tasks-development" else "FaultEntry")
+        module = "Lemma.Kernel.Development." + {"tasks-development": "TasksEntry",
+                  "tasks-fault-development": "FaultEntry", "capabilities-development": "CapsEntry"}[configuration]
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": ((module + ".boot", ()),
                    (module + ".dispatch", ("u64", "u64", "u64")))}
     if configuration == "frames-development":
@@ -93,7 +95,8 @@ def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": "Lemma.Kernel.Development." +
-                ("TasksEntry" if configuration == "tasks-development" else "FaultEntry")}
+                {"tasks-development": "TasksEntry", "tasks-fault-development": "FaultEntry",
+                 "capabilities-development": "CapsEntry"}[configuration]}
     if configuration == "frames-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":
@@ -116,7 +119,15 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
     if configuration == "tasks-fault-development" and role == "kernel":
         return ("Lemma.Kernel.Development.FaultEntry", "Lemma.Kernel.Development.TasksEntry",
                 "Lemma.Kernel.Development.Pressure")
+    if configuration == "capabilities-development" and role == "kernel":
+        return ("Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias",
+                "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration")
     return (modules[role],) if development_role(configuration, role) else ()
+
+
+def managed_policy(configuration: str) -> str | None:
+    configuration_roots(configuration)
+    return "lemma-capabilities-v1" if configuration == "capabilities-development" else None
 
 
 def startup_case(configuration: str) -> str:
@@ -160,7 +171,8 @@ def source_inputs(root: Path) -> dict[str, str]:
 
 def module_closure(root: Path, module: str, seen: set[str] | None = None, *, allow_development: bool = False,
                    development_module: str | None = None,
-                   development_modules: tuple[str, ...] | None = None) -> dict[str, str]:
+                   development_modules: tuple[str, ...] | None = None,
+                   forbid_user_privileged_imports: bool = False) -> dict[str, str]:
     import re
     if development_modules is None:
         development_modules = ((development_module or module,) if allow_development else ())
@@ -168,6 +180,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     if module in seen or not module.startswith("Lemma."):
         return {}
     seen.add(module)
+    if forbid_user_privileged_imports and module.startswith(("Lemma.Kernel.", "Lemma.Compiler.")):
+        raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")
     if ".Development." in module and not allow_development:
@@ -184,7 +198,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
             if dependency.startswith(("examples.", "tests.")) or ".Test." in dependency:
                 raise Core0Error(f"production dependency imports test source: {dependency}")
             result.update(module_closure(root, dependency, seen, allow_development=allow_development,
-                                         development_modules=development_modules))
+                                         development_modules=development_modules,
+                                         forbid_user_privileged_imports=forbid_user_privileged_imports))
     return result
 
 
@@ -344,7 +359,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
             catalog = export_user_catalog(root, output_dir, configuration, invoke)
             images = catalog["images"]
-            dependencies["users"] = {image["key"]: module_closure(root, image["module"], allow_development=True)
+            dependencies["users"] = {image["key"]: module_closure(root, image["module"], allow_development=True,
+                                     forbid_user_privileged_imports=configuration == "capabilities-development")
                                      for image in images}
         invoke(("lake", "build", *modules.values(), *(image["module"] for image in images), "Lemma.Compiler.KernelExport"), root)
         from audit_kernel import validate_unit
@@ -408,8 +424,11 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             unit_contracts["users"] = {key: value["contract_version"] for key, value in units["users"].items()}
         image_startup_fields = ({"user_startup_cases": {image["key"]: image["startup_case"] for image in images}}
                                 if configuration == "tasks-fault-development" else {})
+        managed_fields = ({"managed_policy": managed_policy(configuration),
+                           "boot_roles": {image["key"]: image["boot_role"] for image in images}}
+                          if configuration == "capabilities-development" else {})
         provenance = {"schema_version": 2 if images else 1, "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
-                      **image_startup_fields,
+                      **image_startup_fields, **managed_fields,
                       "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
                       "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
@@ -417,7 +436,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                       "linked_inputs": linked_inputs, "artifacts": artifacts, "unit_contracts": unit_contracts}
         write_json(output_dir / "provenance.json", provenance)
         record = {"schema_version": 2 if images else 1, "status": "BUILT", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
-                  **image_startup_fields,
+                  **image_startup_fields, **managed_fields,
                   "lean_source_realization": source_realization,
                   "stage": stage, "optimization": opt_level, "artifacts": artifacts,
                   "provenance_sha256": sha256(output_dir / "provenance.json"),

@@ -10,7 +10,7 @@ import sys
 from build_core0 import OPT_PASSES, prepare_output_directory
 from build_kernel import (INDEPENDENT_IMAGE_KEYS, MULTI_CONFIGURATIONS, USER_IMAGE_FILES, command_invoker, export_user_catalog,
                           export_user_files, export_user_image, link_user_image,
-                          module_closure, realize_toolchain, source_inputs)
+                          managed_policy, module_closure, realize_toolchain, source_inputs)
 from core0_common import Core0Error, repo_root, require_tools, sha256, write_json
 
 
@@ -41,7 +41,8 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
         if len(selected) != 1:
             raise Core0Error("closed registry omitted/duplicated the selected user image")
         image = selected[0]
-        dependencies = module_closure(root, image["module"], allow_development=True)
+        dependencies = module_closure(root, image["module"], allow_development=True,
+                                      forbid_user_privileged_imports=configuration == "capabilities-development")
         invoke(("lake", "build", image["module"], "Lemma.Compiler.KernelExport"), root)
         unit = export_user_image(root, output_dir, configuration, image, opt_level, invoke)
         export_user_files(root, output_dir, configuration, image, invoke)
@@ -56,6 +57,8 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
                   "image_key": image_key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal",
                   "user_startup_case": image["startup_case"], "optimization": opt_level, "lean_source_realization": realization,
                   "artifacts": artifacts}
+        if configuration == "capabilities-development":
+            common.update(managed_policy=managed_policy(configuration), boot_role=image["boot_role"])
         provenance = {**common, "source_commit": commit, "dirty_paths": dirty, "source_inputs": before,
                       "target_module_closures": {"users": {image_key: dependencies}}, "tools": versions, "commands": commands,
                       "generated_by_lean": ["user-image-catalog.json", *(f'{image["directory"]}/{name}' for name in USER_IMAGE_FILES)],
@@ -74,7 +77,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--configuration", choices=MULTI_CONFIGURATIONS, default="tasks-development")
-    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault"), required=True)
+    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper"), required=True)
     parser.add_argument("--opt-level", choices=("O0", "O2"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--clean", action="store_true")

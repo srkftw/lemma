@@ -15,6 +15,9 @@ def supervisorLimit : Nat := 0x80300000
 def metadataValue : UInt64 := 0x80400000
 def metadataBase : Nat := metadataValue.toNat
 def metadataLimit : Nat := 0x80500000
+/-- Checked owner1/purpose1 object-table handle. Zero retains legacy profiles;
+managed entries initialize this control cell before constructing any task. -/
+def capabilityControlValue : UInt64 := 0x80400620
 def supervisorStackBase : Nat := 0x80500000
 def supervisorStackTop : Nat := 0x80510000
 /-- The first stack page is fixed supervisor context storage; live call stacks

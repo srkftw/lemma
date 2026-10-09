@@ -86,6 +86,25 @@ class UserBuilderFailures(unittest.TestCase):
                 module_closure(root, selected, allow_development=True,
                                development_modules=configuration_development_modules("tasks-fault-development", "kernel"))
 
+    def test_managed_configuration_rejects_machine_stage_and_privileged_user_import(self):
+        with self.assertRaisesRegex(Core0Error, "require supervisor"):
+            validate_configuration_stage("capabilities-development", "bootstrap-m")
+        for module in ["Lemma.Kernel.Capability", "Lemma.Compiler.Frontend"]:
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);selected=root/"Lemma/User/Development/Capabilities.lean"
+                selected.parent.mkdir(parents=True);selected.write_text("import "+module+"\n")
+                imported=root/(module.replace(".","/")+".lean");imported.parent.mkdir(parents=True,exist_ok=True);imported.write_text("-- forbidden target dependency\n")
+                with self.assertRaisesRegex(Core0Error,"privileged/compiler"):
+                    module_closure(root,"Lemma.User.Development.Capabilities",allow_development=True,forbid_user_privileged_imports=True)
+        self.assertEqual(INDEPENDENT_IMAGE_KEYS["capabilities-development"],{"capabilities","peer","busy","tamper"})
+
+    def test_managed_kernel_helpers_are_exact_without_widening_prior_scopes(self):
+        self.assertEqual(configuration_development_modules("capabilities-development","kernel"),
+                         ("Lemma.Kernel.Development.CapsEntry","Lemma.Kernel.Development.CapAlias",
+                          "Lemma.Kernel.Development.TasksEntry","Lemma.Kernel.Development.CapabilityGeneration"))
+        self.assertNotIn("Lemma.Kernel.Development.CapAlias",configuration_development_modules("tasks-fault-development","kernel"))
+        self.assertNotIn("Lemma.Kernel.Development.CapabilityGeneration",configuration_development_modules("tasks-development","kernel"))
+
     def test_independent_unknown_or_path_key_fails_before_any_tool(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
