@@ -51,3 +51,20 @@ negative-protocol exit is distinct from normal guest cleanup. The initial host
 transport/trace formatting failures are retained, never relabelled. The readonly
 PMP table introduced by LLVM is admitted only by its exact source identity,
 values, guarded load, section flags/size and bytes; unknown globals still reject.
+
+Gate D's ordinary execution and address-space API subportion passed at O0 and
+O2. The normal image executed three fresh user arguments per VM under Sv39,
+observed actual U-origin ECALL cause8 at auditedPC10024 with status200000020,
+read each actual private-data result, restored the stable S root, and reclaimed
+all17 process frames (483→500). No delegated U interrupt occurred in these
+short runs; they establish no scheduling behavior. Separate development runs
+exercised the installed table API, complete walks, wrong-owner/purpose/permission
+rejections, aliases, stale handles, four corrupt-PTE walk rejections and actual
+create/lazy-table quota rollback, restoring512 frames. Those corrupt-PTE tests
+are software-walk rejection tests, not architectural U faults.
+
+Full Gate D remains in progress: actual forbidden loads/stores/fetches and CSR
+attempts are next. All four VMs remained live until explicit finite host cleanup
+and were killed/reaped; raw captures, complete artifact audits and hash inventory
+are retained in build/kernel/gateD. This snapshot is dirty on the C commit and
+has not received clean-worktree qualification.

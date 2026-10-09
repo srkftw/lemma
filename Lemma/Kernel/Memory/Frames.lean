@@ -15,6 +15,11 @@ def records : UInt64 := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000
 def accounting : UInt64 := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x100
 def taskQuota : UInt64 := 32
 def kernelOwner : UInt64 := 1
+def kernelPurpose : UInt64 := 1
+def tablePurpose : UInt64 := 2
+def textPurpose : UInt64 := 3
+def dataPurpose : UInt64 := 4
+def stackPurpose : UInt64 := 5
 def maxGeneration : UInt64 := 0x007fffffffffffff
 def retiredOwner : UInt64 := 0xffffffffffffffff
 
@@ -26,6 +31,7 @@ def invalidFrame : UInt8 := 36
 def generationExhausted : UInt8 := 37
 def quotaExceeded : UInt8 := 38
 def invariantFailure : UInt8 := 39
+def purposeDenied : UInt8 := 40
 
 def record (index : UInt64) : UInt64 := records + index * 32
 def address (index : UInt64) : UInt64 := pool + index * bytes
@@ -134,8 +140,43 @@ def resolve (owner handle : UInt64) : Action :=
   if (if generation = handleGeneration handle then false else true) = true then .done notOwned 0 else
   .done 0 (address index)
 
-/-- Release requires the live owner and zero installed mappings. Callers must
-invalidate translations before removing the last mapping pin (Gate D). -/
+/-- Purpose and generation are revalidated before exposing kernel storage. -/
+def purpose (owner handle : UInt64) : Action :=
+  .bind (resolve owner handle) fun s _ =>
+  if failed s = true then .done s 0 else
+  Access.read64 (record (handleIndex handle) + 8)
+
+def resolvePurpose (owner handle expected : UInt64) : Action :=
+  .bind (resolve owner handle) fun s frame =>
+  if failed s = true then .done s 0 else
+  .bind (purpose owner handle) fun s actual =>
+  if failed s = true then .done s 0 else
+  if actual = expected then .done 0 frame else .done purposeDenied 0
+
+/-- Pins count revocable owner references (user leaves and owned page-table
+trees), not the trusted S management alias of the physical pool. -/
+def mappingCount (owner handle : UInt64) : Action :=
+  .bind (resolve owner handle) fun s _ =>
+  if failed s = true then .done s 0 else
+  Access.read64 (record (handleIndex handle) + 16)
+
+def pin (owner handle : UInt64) : Action :=
+  .bind (mappingCount owner handle) fun s mappings =>
+  if failed s = true then .done s 0 else
+  if mappings = 0xffffffffffffffff then .done invariantFailure 0 else
+  .bind (Access.write64 (record (handleIndex handle) + 16) (mappings + 1)) fun s _ =>
+  .done s (mappings + 1)
+
+def unpin (owner handle : UInt64) : Action :=
+  .bind (mappingCount owner handle) fun s mappings =>
+  if failed s = true then .done s 0 else
+  if mappings = 0 then .done invariantFailure 0 else
+  .bind (Access.write64 (record (handleIndex handle) + 16) (mappings - 1)) fun s _ =>
+  .done s (mappings - 1)
+
+/-- Release requires the live owner and zero revocable mapping/tree references.
+Callers invalidate translations before removing the last pin. The permanent
+trusted S management alias neither grants U authority nor pins a live owner. -/
 def release (owner handle : UInt64) : Action :=
   if ownerValid owner = false then .done badOwner 0 else
   if handleValid handle = false then .done invalidFrame 0 else

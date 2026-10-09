@@ -17,6 +17,11 @@ def metadataBase : Nat := metadataValue.toNat
 def metadataLimit : Nat := 0x80500000
 def supervisorStackBase : Nat := 0x80500000
 def supervisorStackTop : Nat := 0x80510000
+/-- The first stack page is fixed supervisor context storage; live call stacks
+start above it. This context is reserved, never a task-owned allocator frame. -/
+def kernelResumeContext : Nat := 0x80500000
+def contextBytes : Nat := 288
+def bootStackFloor : Nat := 0x80501000
 def packageBase : Nat := 0x80600000
 def packageLimit : Nat := 0x80700000
 def poolValue : UInt64 := 0x82000000
@@ -49,7 +54,7 @@ def intervals : Array Interval := #[
   ⟨"firmware-private", privateBase, privateLimit, "M stack and trap storage"⟩,
   ⟨"supervisor", supervisorBase, supervisorLimit, "S code and immutable data"⟩,
   ⟨"metadata", metadataBase, metadataLimit, "kernel-owned fixed-capacity objects"⟩,
-  ⟨"supervisor-stack", supervisorStackBase, supervisorStackTop, "boot/reaper stack"⟩,
+  ⟨"supervisor-stack", supervisorStackBase, supervisorStackTop, "reserved resume context and boot/reaper stack"⟩,
   ⟨"boot-package", packageBase, packageLimit, "immutable separately compiled user images"⟩,
   ⟨"frame-pool", poolBase, poolLimit, "runtime allocator's sole frame supply"⟩,
   ⟨"dtb-reserve", dtbReserveBase, dtbReserveLimit, "pinned QEMU boot DTB envelope"⟩
@@ -57,6 +62,10 @@ def intervals : Array Interval := #[
 
 def valid : Bool :=
   poolLimit - poolBase == frameCount * frameBytes &&
+  supervisorStackBase ≤ kernelResumeContext && kernelResumeContext % 16 == 0 &&
+  contextBytes == 288 && contextBytes % 16 == 0 &&
+  kernelResumeContext + contextBytes ≤ bootStackFloor &&
+  bootStackFloor % frameBytes == 0 && bootStackFloor < supervisorStackTop &&
   intervals.all (fun i => ramBase ≤ i.base && i.base < i.limit && i.limit ≤ ramLimit &&
     i.base % frameBytes == 0 && i.limit % frameBytes == 0) &&
   intervals.all (fun a => intervals.all (fun b =>

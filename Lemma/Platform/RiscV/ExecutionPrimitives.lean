@@ -44,7 +44,7 @@ structure Configuration where
   bootStateAddress : Nat := Layout.metadataBase
   deriving Repr, BEq
 
-def contextBytes : Nat := 288
+def contextBytes : Nat := Layout.contextBytes
 def registerOffset (register : Register) : Nat := register.number * 8
 def savedPcOffset : Nat := 256
 def savedStatusOffset : Nat := 264
@@ -267,10 +267,29 @@ def fenceInstruction : Array Line := #[
   ins (.loadImmediate .a0 0), ins .return
 ]
 
-/-- The compiled kernel validates and sanitizes this owned context before
-calling. No supplied field is interpreted as allocator/scheduling policy here. -/
+/-- Suspend the S caller in fixed reserved storage before installing the U
+context's address space. A trusted dispatcher may later select that exact
+S frame, returning to the ordinary compiled caller with its original stack.
+
+The caller holds SIE clear, validates the owned U frame and excludes overlap
+with this storage. Only one caller may be suspended. Return status/value and
+resource teardown remain compiled policy; the scalar primitive is returnable.
+The temporary spill preserves t0/t1 before either is used as an address. -/
 def enterUser : Array Line := #[
-  label "lemma_exec_enter_user", ins (.move .sp .a0)
+  label "lemma_exec_enter_user", ins (.addImmediate .sp .sp (-16)),
+  ins (.storeDouble .t0 .sp 0), ins (.storeDouble .t1 .sp 8),
+  ins (.loadImmediate .t0 Layout.kernelResumeContext),
+  ins (.storeDouble .zero .t0 0)
+] ++ (registers.filter fun r => r != .sp && r != .t0 && r != .t1).map
+  (fun r => ins (.storeDouble r .t0 (offset (registerOffset r)))) ++ #[
+  ins (.addImmediate .t1 .sp 16), ins (.storeDouble .t1 .t0 16),
+  ins (.loadDouble .t1 .sp 0), ins (.storeDouble .t1 .t0 40),
+  ins (.loadDouble .t1 .sp 8), ins (.storeDouble .t1 .t0 48),
+  ins (.storeDouble .ra .t0 256),
+  ins (.loadImmediate .t1 0x200000100), ins (.storeDouble .t1 .t0 264),
+  ins (.csrRead .t1 .satp), ins (.storeDouble .t1 .t0 272),
+  ins (.storeDouble .zero .t0 280),
+  ins (.addImmediate .sp .sp 16), ins (.move .sp .a0)
 ] ++ supervisorRestore
 
 def waitInterrupt : Array Line := #[

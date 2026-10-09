@@ -21,7 +21,7 @@ from core0_common import Core0Error, load_json, repo_root, require_tools, run_bo
 ROLE_ROOTS = {
     "firmware": (("Lemma.Platform.RiscV.Firmware.dispatch", ("u64", "u64", "u64")),),
     "kernel": (("Lemma.Kernel.Entry.boot", ()), ("Lemma.Kernel.Entry.dispatch", ("u64", "u64", "u64"))),
-    "user": (("Lemma.User.Entry.main", ()),),
+    "user": (("Lemma.User.Entry.main", ("u64",)),),
 }
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development")

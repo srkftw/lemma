@@ -6,7 +6,7 @@
     "B",
     "C"
   ],
-  "higher_gates": "not_run",
+  "higher_gates": "D in progress; E-K not_run",
   "tested_git_base": "ff4045a79a6fda45f9cd8198587357846530a806",
   "tested_source_dirty": true,
   "observations": {
@@ -123,5 +123,78 @@
       "negative host transport keyword mismatch",
       "negative parser plain-vs-0x formatting mismatch"
     ]
+  },
+  "gate_D_positive_prefix": {
+    "path": "build/kernel/gateD/positive-prefix-result.json",
+    "sha256": "653f5b2e6095139e958d8b2adf9de73a1082b87bab125444b4162189983c9131",
+    "schema_version": 1,
+    "phase": "Gate D ordinary user and address-space API",
+    "status": "PASS",
+    "full_gate_D": "in_progress: hardware denials not_run",
+    "source_base_commit": "0aeb8f07940c404357ca95e091f13e843af1ca2f",
+    "source_dirty": true,
+    "observations": {
+      "normal-O0-run": {
+        "path": "build/kernel/gateD/normal-O0-run/result.json",
+        "sha256": "d324b7dd7fa75fa3fd926fcfb8e8a92bc10bd024afe605c0ecbbb83eebd13e92",
+        "protocol": "user-D-positive-v1",
+        "records": 14,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "fresh_runs": 3,
+        "baseline_frames": 500,
+        "task_frames": 17,
+        "actual_user_supervisor_notifications": 0
+      },
+      "normal-O2-run": {
+        "path": "build/kernel/gateD/normal-O2-run/result.json",
+        "sha256": "e2f3863accff87bc7e9422c02ea1206cb31a6fee3cb95240cc4e4cba2f4f2401",
+        "protocol": "user-D-positive-v1",
+        "records": 14,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "fresh_runs": 3,
+        "baseline_frames": 500,
+        "task_frames": 17,
+        "actual_user_supervisor_notifications": 0
+      },
+      "address-space-O0-run": {
+        "path": "build/kernel/gateD/address-space-O0-run/result.json",
+        "sha256": "09f36d295fcda01c0e851955b52f19032cdb7ccf329e7ef07b9050cd47f455f5",
+        "protocol": "address-space-D-api-v1",
+        "records": 203,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "final_remaining": 512,
+        "rollback": [
+          "actual create quota failure",
+          "actual lazy-L0 quota failure"
+        ]
+      },
+      "address-space-O2-run": {
+        "path": "build/kernel/gateD/address-space-O2-run/result.json",
+        "sha256": "faa8ad8e87c9a424799fac9336ddb0d0a83d68c3cbbd255b3610c84633e7a5ef",
+        "protocol": "address-space-D-api-v1",
+        "records": 203,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "final_remaining": 512,
+        "rollback": [
+          "actual create quota failure",
+          "actual lazy-L0 quota failure"
+        ]
+      }
+    },
+    "hash_inventory": {
+      "path": "build/kernel/gateD/positive-hash-inventory.json",
+      "sha256": "5c7f65ab562ff78a68a8cdff2accdfd29c25306c17945c25f30fda41bfecdd4e",
+      "file_count": 350
+    },
+    "scheduling": "not_run",
+    "later_gates": "not_run"
   }
 }

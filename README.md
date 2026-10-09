@@ -146,10 +146,22 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_frames.p
   --image build/kernel/frames/image.elf --output-dir build/kernel/frames-run --clean
 ```
 
-The development transport remains live for fresh requests after boot. It is absent
-from normal roots. The independent user ELF is in the build's `user/` directory;
-loading/executing it is a later gate. Each finite runner stops/reaps QEMU after
-actual observations and records that explicit host cleanup.
+The development transport remains live for fresh requests after boot. The
+independent user ELF is in the build's `user/` directory. A supervisor build now
+loads it into owned Sv39 mappings and accepts continuous run requests. The
+ordinary U-mode and address-space API checks passed at O0/O2; full Gate D still
+requires architectural denial tests. Run the current positive check with:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration normal --stage supervisor --opt-level O2 \
+  --output-dir build/kernel/user --clean
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_user.py \
+  --image build/kernel/user/image.elf --output-dir build/kernel/user-run --clean
+```
+
+Each finite runner stops/reaps QEMU after actual observations and records that
+explicit host cleanup. It does not treat a timeout or host stop as normal exit.
 
 ## GitHub and Codex
 
@@ -161,8 +173,8 @@ Task002 tree. Both task branches remain available.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
 its assignment, gate ledger and resume checkpoint. The current accepted prefix
-is A–C; S-mode execution and timer forwarding work, while U-mode and services
-remain outstanding. See
+is A–C, with ordinary U-mode execution and the address-space API verified as a
+Gate D subportion. Architectural denial tests and services remain outstanding. See
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

@@ -37,7 +37,8 @@
     {
       "gate": "D",
       "name": "Sv39 and user process",
-      "status": "not_run"
+      "status": "in_progress",
+      "guest_execution": "not_run"
     },
     {
       "gate": "E",
@@ -75,5 +76,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "141f309804be9d526199b516ca4515beaf87a5e6"
+  "verified_prefix_commit": "0aeb8f07940c404357ca95e091f13e843af1ca2f"
 }

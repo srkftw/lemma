@@ -7,11 +7,14 @@ from core0_common import Core0Error, repo_root, sha256
 from run_kernel import Session
 
 
-def check(session: Session) -> dict[str, object]:
+def frame_boot(session: Session):
     boot = session.record()
     if boot[0] != 0xa or boot[2:] != (0, 512, 0x82000000):
         raise Core0Error(f"frame development boot differs: {boot}")
-    calls = []
+    return boot
+
+
+def command_reader(session: Session, calls: list):
     def command(number, a=0, b=0, c=0, d=0, status=0, value=None):
         record = session.command(number, a, b, c, d)
         if record[:3] != (0xb0, number, status):
@@ -20,6 +23,13 @@ def check(session: Session) -> dict[str, object]:
             raise Core0Error(f"frame result value differs: expected{value}, got{record}")
         calls.append({"request": [number,a,b,c,d], "response": list(record)})
         return record[3], record[4]
+    return command
+
+
+def check(session: Session) -> dict[str, object]:
+    boot = frame_boot(session)
+    calls = []
+    command = command_reader(session, calls)
     command(0, value=512)
     for address in (0x80000000, 0x80100000, 0x80300000, 0x10000000, 0x00100000,
                     0x81fff000, 0x82200000, 0xfffffffffffffff8):
@@ -148,19 +158,152 @@ def check(session: Session) -> dict[str, object]:
             "reserved_physical_probe": "19 actual denied compiler-authority accesses"}
 
 
+def check_address_space(session: Session) -> dict[str, object]:
+    """Real guest construction/walk/ownership; U-mode faults run separately."""
+    boot = frame_boot(session)
+    calls = []
+    command = command_reader(session, calls)
+    command(0, value=512)
+    command(11, 0, status=32, value=0)
+    command(11, 0xffffffffffffffff, status=32, value=0)
+    descriptor, remaining = command(11, 2)
+    if remaining != 500:
+        raise Core0Error("address-space construction did not acquire exactly descriptor plus 11 tables")
+    command(6, 2, value=11)
+    command(6, 1, value=1)
+    root, _ = command(16, descriptor)
+    if not 0x82000000 <= root < 0x82200000 or root % 4096:
+        raise Core0Error("address-space root is outside the owned aligned frame pool")
+    command(17, descriptor, value=0x8000000000000000 | (root >> 12))
+    descriptor_pa, _ = command(5, 1, descriptor)
+    command(8, descriptor_pa + 40, value=11)
+    data, _ = command(1, 2, 4)
+    physical, _ = command(5, 2, data)
+    command(4, 2, data, 0, 0x0123456789abcdef, value=0)
+    command(12, descriptor, 0x20000, data, 3, value=data)
+    command(13, descriptor, 0x20000, 1, value=physical)
+    command(13, descriptor, 0x20000, 2, value=physical)
+    command(13, descriptor, 0x20007, 1, value=physical + 7)
+    command(8, physical, value=0x0123456789abcdef)
+    # Quarantined corruption fixtures exercise the guest walk, not CPU faults.
+    middle_handle, _ = command(8, descriptor_pa + 128 + 7 * 8)
+    middle, _ = command(5, 2, middle_handle)
+    low_handle, _ = command(8, descriptor_pa + 128 + 8 * 8)
+    low, _ = command(5, 2, low_handle)
+    for pte_address, mask in ((root, 0x40), (middle, 0x8000000000000000),
+                              (low + 32 * 8, 0x8), (low + 32 * 8, 0x4000000000000000)):
+        original_pte, _ = command(8, pte_address)
+        command(9, pte_address, original_pte | mask, value=0)
+        command(13, descriptor, 0x20000, 1, status=75, value=0)
+        command(9, pte_address, original_pte, value=0)
+        command(13, descriptor, 0x20000, 1, value=physical)
+    command(13, descriptor, 0x20000, 4, status=72, value=0)
+    command(13, descriptor, 0x20000, 3, status=72, value=0)
+    command(2, 2, data, status=35, value=0)
+    command(12, descriptor, 0x20000, data, 3, status=73, value=0)
+    command(12, descriptor, 0x40000, data, 7, status=72, value=0)
+    command(12, descriptor, 0x40000, data, 5, status=72, value=0)
+    for va in (0xffff, 0x20001, 0x40000000, 0xffffff8000000000,
+               0x10000000, 0x10000fff, 0x00100000):
+        command(12, descriptor, va, data, 3, status=71, value=0)
+    command(12, descriptor, 0x30000, data, 3, status=75, value=0)
+    command(13, descriptor, 0x30000, 1, status=74, value=0)
+    foreign, _ = command(1, 3, 4)
+    command(12, descriptor, 0x40000, foreign, 3, status=34, value=0)
+    command(2, 3, foreign, value=0)
+    kernel, _ = command(1, 2, 1)
+    command(12, descriptor, 0x40000, kernel, 3, status=72, value=0)
+    command(2, 2, kernel, value=0)
+    text, _ = command(1, 2, 3)
+    text_physical, _ = command(5, 2, text)
+    command(12, descriptor, 0x10000, text, 3, status=72, value=0)
+    command(12, descriptor, 0x10000, text, 5, value=text)
+    command(13, descriptor, 0x10000, 1, value=text_physical)
+    command(13, descriptor, 0x10000, 4, value=text_physical)
+    command(13, descriptor, 0x10000, 2, status=72, value=0)
+    readonly, _ = command(1, 2, 4)
+    readonly_physical, _ = command(5, 2, readonly)
+    command(12, descriptor, 0x50000, readonly, 1, value=readonly)
+    command(13, descriptor, 0x50000, 1, value=readonly_physical)
+    command(13, descriptor, 0x50000, 2, status=72, value=0)
+    command(14, descriptor, 0x50000, value=readonly)
+    command(2, 2, readonly, value=0)
+    command(14, descriptor, 0x20000, value=data)
+    command(13, descriptor, 0x20000, 1, status=74, value=0)
+    command(14, descriptor, 0x20000, status=74, value=0)
+    command(2, 2, data, value=0)
+    command(12, descriptor, 0x20000, data, 3, status=34, value=0)
+    # Generic low-user mappings allocate one additional owned L0 lazily.
+    lazy, _ = command(1, 2, 4)
+    lazy_physical, _ = command(5, 2, lazy)
+    command(12, descriptor, 0x00400000, lazy, 3, value=lazy)
+    command(8, descriptor_pa + 40, value=12)
+    command(13, descriptor, 0x00400000, 2, value=lazy_physical)
+    # Destruction removes aliases before releasing their last owner reference.
+    command(12, descriptor, 0x00401000, lazy, 3, value=lazy)
+    # Explicit trusted-shadow fixture; this is not an installed SATP witness.
+    command(9, 0x80400600, root, value=0)
+    command(15, descriptor, status=77, value=0)
+    command(9, 0x80400600, 0, value=0)
+    command(15, descriptor, value=0)
+    command(16, descriptor, status=34, value=0)
+    command(5, 2, text, status=34, value=0)
+    command(5, 2, lazy, status=34, value=0)
+    command(0, value=512)
+    # The reusable standard supervisor root cannot acquire U mappings.
+    kernel_descriptor, _ = command(11, 1)
+    kernel_data, _ = command(1, 1, 4)
+    command(12, kernel_descriptor, 0x20000, kernel_data, 3, status=72, value=0)
+    command(2, 1, kernel_data, value=0)
+    command(15, kernel_descriptor, value=0)
+    command(0, value=512)
+    # A genuine mid-batch quota failure must unwind its descriptor and tables.
+    held = [command(1, 2, 4)[0] for _ in range(22)]
+    command(11, 2, status=38, value=0)
+    command(6, 2, value=22)
+    command(6, 1, value=0)
+    command(8, 0x80400500, value=0)
+    command(0, value=490)
+    for handle in held:
+        command(2, 2, handle, value=0)
+    command(0, value=512)
+    # A failed lazy table allocation leaves the supplied leaf owned/unmapped.
+    full_descriptor, _ = command(11, 2)
+    full_pa, _ = command(5, 1, full_descriptor)
+    held = [command(1, 2, 4)[0] for _ in range(21)]
+    command(6, 2, value=32)
+    command(12, full_descriptor, 0x00400000, held[0], 3, status=38, value=0)
+    command(8, full_pa + 40, value=11)
+    command(13, full_descriptor, 0x00400000, 1, status=74, value=0)
+    for handle in held:
+        command(2, 2, handle, value=0)
+    command(15, full_descriptor, value=0)
+    command(0, value=512)
+    return {"protocol": "address-space-D-api-v1", "boot": list(boot), "calls": calls,
+            "base_table_frames": 11, "final_remaining": 512,
+            "rollback": ["actual create quota failure", "actual lazy-L0 quota failure"],
+            "coverage": "guest table construction, complete owned walk, pinning, aliases, teardown and generations",
+            "active_root_fixture": "trusted bookkeeping rejection only",
+            "pte_corruption_fixtures": "four guest-walk rejections; not architectural U-mode faults",
+            "architecture_user_execution": "not covered; separate Gate D U-mode boots required"}
+
+
 def main():
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--image", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--timeout", type=float, default=90)
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--address-space", action="store_true",
+                        help="run bounded Gate D address-space API cases instead of Gate B retirement cases")
     args = parser.parse_args()
     try:
         with Session(root=repo_root(), image=args.image, output_dir=args.output_dir,
                      timeout=args.timeout, clean=args.clean) as session:
             session.report["acceptance_checker_sha256"] = sha256(Path(__file__))
-            session.finish(check(session))
-        print("PASS: actual frame ownership, zero-reuse, quota, global exhaustion and recovery")
+            session.finish(check_address_space(session) if args.address_space else check(session))
+        print("PASS: actual address-space construction, walks, ownership and rollback" if args.address_space else
+              "PASS: actual frame ownership, zero-reuse, quota, global exhaustion and recovery")
         return 0
     except (Core0Error, OSError, ValueError, TypeError) as error:
         print(f"FAIL: {error}")

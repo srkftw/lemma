@@ -1,5 +1,6 @@
 import Lemma.Kernel.Entry
 import Lemma.Kernel.Memory.Batch
+import Lemma.Kernel.Memory.AddressSpace
 
 /-! Explicit development image. This privileged frame diagnostic transport is
 not imported by the normal kernel. It has no finite session-command budget;
@@ -38,6 +39,13 @@ def operation (command a b c d : UInt64) : Action :=
   else if command = 8 then Access.read64 a
   else if command = 9 then Access.write64 a b
   else if command = 10 then Batch.allocate a b c
+  else if command = 11 then AddressSpace.create a
+  else if command = 12 then AddressSpace.mapUser a b c d
+  else if command = 13 then AddressSpace.lookup a b c
+  else if command = 14 then AddressSpace.unmap a b
+  else if command = 15 then AddressSpace.destroy a
+  else if command = 16 then AddressSpace.root a
+  else if command = 17 then AddressSpace.satp a
   else .done 17 0
 
 def reply (command a b c d : UInt64) : Action :=
@@ -73,8 +81,11 @@ def step : Action :=
   else .done s 0
 
 def boot : Action :=
-  .bind Lemma.Kernel.Entry.boot fun s _ =>
-  if s = 0 then .loop step else .done s 0
+  .bind Lemma.Kernel.Entry.bootServices fun s _ =>
+  if s = 0 then
+    .bind (AddressSpace.noteActive 0) fun s _ =>
+    if s = 0 then .loop step else .done s 0
+  else .done s 0
 def dispatch (frame cause value : UInt64) : Action :=
   Lemma.Kernel.Entry.dispatch frame cause value
 

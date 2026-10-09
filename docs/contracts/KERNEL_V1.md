@@ -62,3 +62,36 @@ status and SATP. Machine-origin-development is bootstrap-only and adds exactly
 one typed M ECALL rejection boundary; normal roots cannot select it implicitly.
 LLVM's immutable PMP comparison table is audited by exact source, contents,
 guarded load and32-byte readonly object-section provenance.
+
+AddressSpace creates an independent owned 4KiB Sv39 tree with ASID zero. Its
+descriptor is a generation-tagged owner1 frame; tables belong to the instance's
+owner. User leaves carry exact live handles and logical R1/RW3/RX5 permissions.
+Text-purpose frames admit RX, data R/RW and stacks RW. Intermediate leaves,
+reserved PTE bits, unknown frames, stale handles and unsupported permissions
+reject. Lookup checks the actual three-level walk against tracked ownership and
+the exact PTE. Removal clears the PTE, flushes translations, then drops its pin.
+Destroy requires an inactive root and releases leaves, tables and descriptor.
+
+Stable supervisor mappings cover the image, metadata/boot stack, immutable
+package/DTB, pool management alias, UART and finisher, with U clear. VA30000 is
+an additional S-only RW/NX alias of the metadata page. User addresses are in
+10000..40000000, excluding device holes. The loader reserves its text/data/stack
+layout and leaves surrounding user stack guards unmapped. The S management
+alias remains RW/NX even for executable user frames: the claim is user-PTE W^X,
+not strict global W^X. No user mapping grants physical or device authority.
+
+The guest loader validates every descriptor in a package of1..8 images before
+allocation, including selection, unique IDs, payload bounds/overlap, entry
+alignment/containment, fixed virtual layout and flags. It copies bytes into real
+owned frames, obtains zeroed BSS/stacks from Frames, fences instruction fetch,
+and publishes a sanitized U context only on success. A partial construction
+unwinds on the stable S root. The separately compiled user root takes one u64
+argument and returns the two-word Action result through the ordinary LP64 ABI.
+
+The first process boundary suspends one S caller in reserved context80500000,
+below the live boot stack floor80501000. Its owned U trap stack and frame are
+validated before dereference. Hardware-saved SPP, SATP and PC establish origin;
+unknown ECALLs return17 and advance only a validated ordinary ECALL site.
+The dispatcher chooses the exact fixed S context for exit/fault return; typed
+restoration installs/flushed its SATP before the caller reclaims user storage.
+This single-process boundary is not yet a scheduler or capability system.

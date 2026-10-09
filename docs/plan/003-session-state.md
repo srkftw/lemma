@@ -9,7 +9,7 @@
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
 - Highest complete Task 003 gate: C. A/B committed141f309; C passed actual O0/O2
-  acceptance below. D–K are not run.
+  acceptance below, committed0aeb8f07940c404357ca95e091f13e843af1ca2f. D is in progress; E–K are not run.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
   Core0 host 32 and foundation host 438 tests all passed. Focused Task 002 monitor
   passed 18 O0/O2 boots, 1,598 requests, 1,415 actual IRQs, 20 synchronous
@@ -221,3 +221,46 @@
 - Freeze clears only after C commit. Next dependent work: reusable owned Sv39
   AddressSpace module, typed suspendedS continuation, generic descriptor loader
   and first separately linked U program. Then actualhardwaredenial/teardown.
+
+## Gate D integration checkpoint (08:29 UTC)
+
+- Highest accepted prefix remains C at0aeb8f07940c404357ca95e091f13e843af1ca2f;
+  current D sources are unaccepted, local and unpushed. No Task003 PR exists.
+- Maintained AddressSpace uses owned11-table4KiB Sv39 trees, exact live-PTE
+  lookup, purpose/permission checks, leaf pins/full invalidation, inactive-only
+  teardown and a supervisor-only metadata alias atVA30000. Kernel AS owner1
+  has no U leaves. User-PTE W^X only; S pool management remains RW/NX.
+- Loader validates the complete bounded package before allocation, creates
+  real text/data/stack frames, copies initializedbytes, zeroes BSS through the
+  allocator, fences instructions and publishes an owned sanitized context.
+- Process/Operator/Entry genuine module build passed21 jobs after fixing an
+  omitted ABI import and the reserved Lean keyword initialize (now bootServices).
+  Process selects exact owned Kstack frame and actual saved U origin/SATP.
+  Exit restores fixed S continuation before freeing user resources; the normal
+  serial loop accepts fresh40-byte run requests without a session lifetime cap.
+- Platform typed continuation genuine Lean/RV64 assembly/decoded ABI probe
+  passed; Loader and AS LLVM probes passed. These are host/compiler observations,
+  not U execution evidence. Guest D observation is still not run.
+- Next: freeze sources, build normal supervisorO2 in build/kernel/gateD, run
+  check_kernel_user.py against fresh audited image, inspect actual U result and
+  baseline reclamation. Then O0 and quarantined real architectural denials.
+- Execution window has6h11–7h11 remaining until14:40–15:40 UTC. Preserve the
+  final portion for cumulative legacy/foundation checks, clean qualification,
+  commit/push/draftPR and actualCI. No dependent E/F work yet.
+
+## Actual Gate D positive prefix (08:35 UTC)
+
+- Normal supervisor O0/O2 each passed3 fresh U runs (0,7,u64max), actual exit
+  cause8/PC10024/status200000020/SATP800000000008200d, stored mix result,
+  frames483→500 each time. No DF occurred, so U timer delivery/scheduling is
+  not claimed. Both independent ELF/text artifacts passed complete fresh audit.
+- Address-space development O0/O2 passed real construction/map/walk/pinning,
+  aliases and teardown, permission/purpose/generation and corrupt-PTE software
+  walk rejection, actual create/lazy-L0 quota rollback and final512 capacity.
+  Active-root fixture is bookkeeping only, not CPU activation evidence.
+- All4 QEMU PIDs are absent, explicit finite host kill/reap(-9), stderr empty.
+  Positive subportion result/inventory at build/kernel/gateD/positive-prefix-result.json
+  and positive-hash-inventory.json; compact report binds those hashes.
+- Full D still in progress. Next source increment adds quarantined User attack
+  roots/typed CSR and NX startup cases, paused private peer setup, actual fault
+  capture and containment/reclamation tests at O0/O2. No E–K implementation yet.

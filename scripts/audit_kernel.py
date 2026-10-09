@@ -7,6 +7,7 @@ It is neither a compiler-correctness proof nor evidence of S/U execution.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import math
 from pathlib import Path
 import re
@@ -80,6 +81,13 @@ PRIMITIVE_EFFECTS = {
     "lemma_supervisor_start": "boot-supervisor-entry",
     "lemma_exec_supervisor_pending": "supervisor-notification-read",
 }
+CONTEXT_LAYOUT = {"bytes": 288, "kernel_resume_base": 0x80500000, "boot_stack_floor": 0x80501000,
+                  "pc_offset": 256, "status_offset": 264, "translation_offset": 272, "scratch_offset": 280}
+# Actual relocation-free RV64 body, independently inspected and decoded against
+# complete caller/U states. These fingerprints certify artifact identity only.
+ENTER_USER_SHA256 = "e5e9881a4880bb062e631ba2a400af5bdea00526dbfc298a263de563e61250ca"
+SUPERVISOR_RESTORE_SHA256 = "c6a293d9390c5d362c93068d083a5f4419eb56b650cf13753f4fcd7c76ac1792"
+GPR_NAMES = "zero ra sp gp tp t0 t1 t2 s0 s1 a0 a1 a2 a3 a4 a5 a6 a7 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 t3 t4 t5 t6".split()
 
 
 def _object(value: object, context: str) -> dict:
@@ -211,11 +219,13 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
 def validate_layout(value: object, *, configuration: str = "normal") -> dict:
     layout = _object(value, "layout")
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "ram_base", "ram_limit",
-                   "frame_bytes", "frame_count", "intervals", "user"}, "layout")
+                   "frame_bytes", "frame_count", "context", "intervals", "user"}, "layout")
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration):
         raise Core0Error("unknown kernel layout version")
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
         raise Core0Error("pinned RAM/frame contract differs")
+    if layout.get("context") != CONTEXT_LAYOUT:
+        raise Core0Error("fixed supervisor context/stack contract differs")
     expected = {"firmware": (0x80000000, 0x80010000), "firmware-private": (0x80100000, 0x80110000),
                 "supervisor": (0x80200000, 0x80300000), "metadata": (0x80400000, 0x80500000),
                 "supervisor-stack": (0x80500000, 0x80510000), "boot-package": (0x80600000, 0x80700000),
@@ -269,6 +279,71 @@ def validate_startup_case(text: str, ranges: dict[str, tuple[int, int]], case: s
     if len(pcs) != (1 if case == "machine-origin-probe" else 0):
         raise Core0Error("startup ECALL inventory differs from the exact generated case")
     return {"case": case, "start_ecall_pcs": pcs}
+
+
+def _assembly_function(text: str, symbol: str) -> list[str]:
+    bodies = re.findall(r"(?ms)^" + re.escape(symbol) + r":\n(.*?)^\.size " + re.escape(symbol) + r",[^\n]*$", text)
+    if len(bodies) != 1:
+        raise Core0Error(f"generated boundary @{symbol} is missing/duplicated")
+    return [line.strip() for line in bodies[0].splitlines() if line.strip() and not line.strip().startswith("#")]
+
+
+def _raw_function(text: str, ranges: dict[str, tuple[int, int]], symbol: str) -> bytes:
+    if symbol not in ranges:
+        raise Core0Error(f"machine boundary @{symbol} is missing")
+    begin, size = ranges[symbol]
+    words = {}
+    for line in text.splitlines():
+        match = re.match(r"\s*([0-9a-f]+):\s+([0-9a-f]{8})\s+\S+", line)
+        if match and begin <= (address := int(match[1], 16)) < begin + size:
+            if address in words:
+                raise Core0Error("machine boundary contains duplicate instruction bytes")
+            words[address] = int(match[2], 16)
+    if set(words) != set(range(begin, begin + size, 4)):
+        raise Core0Error("machine boundary raw instruction byte coverage differs")
+    return b"".join(struct.pack("<I", words[address]) for address in sorted(words))
+
+
+def validate_enter_user_machine(raw: bytes) -> dict:
+    if len(raw) != 91 * 4 or hashlib.sha256(raw).hexdigest() != ENTER_USER_SHA256:
+        raise Core0Error("actual caller context save/U restore machine bytes differ")
+    words = struct.unpack("<91I", raw)
+    stores = sum(word & 0x7f == 0x23 for word in words)
+    loads = sum(word & 0x7f == 0x03 for word in words)
+    if stores != 38 or loads != 37 or words[-1] != 0x10200073:
+        raise Core0Error("actual context load/store/return inventory differs")
+    return {"instructions": 91, "stores": stores, "loads": loads, "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tuple[int, int]],
+                         user_assembly: str, user_root: str) -> dict:
+    restore = ["ld t0, 272(sp)", "csrw satp, t0", "sfence.vma zero, zero", "ld t0, 256(sp)",
+               "csrw sepc, t0", "ld t0, 264(sp)", "csrw sstatus, t0"]
+    restore += [f"ld {register}, {index * 8}(sp)" for index, register in enumerate(GPR_NAMES) if index and register not in {"sp", "t0"}]
+    restore += ["ld t0, 280(sp)", "csrw sscratch, t0", "ld t0, 40(sp)", "ld sp, 16(sp)", "sret"]
+    expected = ["addi sp, sp, -16", "sd t0, 0(sp)", "sd t1, 8(sp)", "li t0, 2152726528", "sd zero, 0(t0)"]
+    expected += [f"sd {register}, {index * 8}(t0)" for index, register in enumerate(GPR_NAMES) if index and register not in {"sp", "t0", "t1"}]
+    expected += ["addi t1, sp, 16", "sd t1, 16(t0)", "ld t1, 0(sp)", "sd t1, 40(t0)", "ld t1, 8(sp)",
+                 "sd t1, 48(t0)", "sd ra, 256(t0)", "li t1, 8589934848", "sd t1, 264(t0)",
+                 "csrr t1, satp", "sd t1, 272(t0)", "sd zero, 280(t0)", "addi sp, sp, 16", "mv sp, a0", *restore]
+    if _assembly_function(assembly, "lemma_exec_enter_user") != expected:
+        raise Core0Error("generated caller context save/U restore differs from the closed ABI")
+    raw = _raw_function(raw_machine, ranges, "lemma_exec_enter_user")
+    validate_enter_user_machine(raw)
+    if "lemma_supervisor_vector" in ranges:
+        vector = _assembly_function(assembly, "lemma_supervisor_vector")
+        if vector[-len(restore):] != restore or hashlib.sha256(_raw_function(raw_machine, ranges, "lemma_supervisor_vector")[-41 * 4:]).hexdigest() != SUPERVISOR_RESTORE_SHA256:
+            raise Core0Error("supervisor vector does not share the complete trusted restore ABI")
+    user_start = [f"call {user_root}", *(f"li a{register}, 0" for register in range(1, 7)), "li a7, 6",
+                  "ecall", ".Luser_exit_returned:", "j .Luser_exit_returned"]
+    if _assembly_function(user_assembly, "_user_start") != user_start:
+        raise Core0Error("user startup does not forward its initial word to the exact Action root")
+    return {"layout": CONTEXT_LAYOUT, "kernel_resume_status": 0x200000100, "saved_gpr_slots": 32,
+            "fixed_frame_stores": 36, "temporary_spill_stores": 2, "shared_restore_loads": 35,
+            "total_enter_loads": 37, "enter_machine_instructions": 91, "shared_restore_machine_instructions": 41,
+            "enter_machine_sha256": hashlib.sha256(raw).hexdigest(), "restore_machine_sha256": SUPERVISOR_RESTORE_SHA256,
+            "original_sp_and_t0_t1_preserved": True, "caller_satp_readback_saved": True,
+            "kernel_resume_sie": 0, "kernel_resume_scratch": 0, "initial_user_argument": "a0:u64"}
 
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
@@ -671,6 +746,17 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                  "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
             if not user:
                 inspections[name]["startup"] = validate_startup_case(machine, ranges, case)
+                raw_machine = inspect("llvm-objdump", ["-d", image], "boot-raw-disassembly")
+                inspections[name]["context_abi"] = validate_context_abi(
+                    (output_dir / "startup.S").read_text(), raw_machine, ranges,
+                    (output_dir / "user-startup.S").read_text(), units["user"]["roots"][0]["symbol"])
+            else:
+                begin, size = ranges["_user_start"]
+                exit_pcs = [int(match[1], 16) for line in machine.splitlines()
+                            if (match := re.match(r"\s*([0-9a-f]+):\s+ecall\s*$", line)) and begin <= int(match[1], 16) < begin + size]
+                if len(exit_pcs) != 1:
+                    raise Core0Error("user startup lacks its exact single exit ECALL")
+                inspections[name]["exit_ecall_pc"] = exit_pcs[0]
         package_contract = _object(load_json(output_dir / "package-contract.json"), "package contract")
         if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
                                 "version": 1, "image_count": 1, "header_bytes": 32, "descriptor_bytes": 96,

@@ -51,7 +51,7 @@ private def rootArguments (role : String) : Array (Array Ty) :=
   match role with
   | "firmware" => #[#[.u64, .u64, .u64]]
   | "kernel" => #[#[], #[.u64, .u64, .u64]]
-  | "user" => #[#[]]
+  | "user" => #[#[.u64]]
   | _ => #[]
 
 private def allowsDevelopment (configuration role : String) : Bool :=
@@ -223,6 +223,14 @@ private def layoutJson (configuration : String) : Json := Json.mkObj [
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
   ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson Layout.frameCount),
+  ("context", Json.mkObj [
+    ("bytes", toJson Lemma.Platform.RiscV.ExecutionPrimitives.contextBytes),
+    ("kernel_resume_base", toJson Layout.kernelResumeContext),
+    ("boot_stack_floor", toJson Layout.bootStackFloor),
+    ("pc_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedPcOffset),
+    ("status_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedStatusOffset),
+    ("translation_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedTranslationOrEnableOffset),
+    ("scratch_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedKernelStackOffset)]),
   ("intervals", .arr (Layout.intervals.map fun interval => Json.mkObj [
     ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson interval.limit),
     ("purpose", .str interval.purpose)])),

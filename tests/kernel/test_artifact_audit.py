@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from audit_kernel import audit, validate_unit, validate_ir, validate_machine, _primitive_declaration_matches, function_ranges, validate_catalog, validate_startup_case, validate_pmp_constant_section, MACHINE_SYMBOLS, M_SYMBOLS, PRIMITIVE_EFFECTS
+from audit_kernel import audit, validate_unit, validate_ir, validate_machine, _primitive_declaration_matches, function_ranges, validate_catalog, validate_startup_case, validate_pmp_constant_section, validate_enter_user_machine, MACHINE_SYMBOLS, M_SYMBOLS, PRIMITIVE_EFFECTS
 from build_kernel import CONTRACTS, ROLE_ROOTS, configuration_roots, module_closure, validate_configuration_stage
 from core0_common import Core0Error
 
@@ -97,12 +97,13 @@ if.merge.2: ; preds = %entry, %switch.lookup
                                       (section,raw,'firmware/program.o',tables),(section,raw,'kernel/program.o',[])]:
             with self.assertRaises(Core0Error):validate_pmp_constant_section(text,data,object_file=obj,tables=metadata)
     def test_loop_role_signature_and_effect_catalog_rejected_when_stale(self):
-        fixture=unit(); source=fixture['functions'][0]['source']
+        fixture=unit(); source='Lemma.User.Entry.loopStep'
+        fixture['functions'].append({'source':source,'symbol':'lemma_user_loop_step','args':[],'effects':[]})
         fixture['used_loops']=[{'stable_id':'action.loop','callback':source}]
         self.reject(fixture)
-        fixture['functions'][0]['effects']=['may-diverge']; validate_unit(fixture,'user')
+        fixture['functions'][-1]['effects']=['may-diverge']; validate_unit(fixture,'user')
         fixture['used_loops'][0]['callback']='Lemma.User.Entry.unknown'; self.reject(fixture)
-        fixture['used_loops'][0]['callback']=source; fixture['functions'][0]['args']=['u64']; self.reject(fixture)
+        fixture['used_loops'][0]['callback']=source; fixture['functions'][-1]['args']=['u64']; self.reject(fixture)
         firmware=unit('firmware'); firmware['used_loops']=[{'stable_id':'action.loop','callback':firmware['functions'][0]['source']}]
         self.reject(firmware,'firmware')
     def test_pending_primitive_is_kernel_only(self):
@@ -120,8 +121,22 @@ if.merge.2: ; preds = %entry, %switch.lookup
         fixture=unit(); fixture['functions'][0]['source']='Lemma.Compiler.Test.Hidden.main'; self.reject(fixture)
     def test_root_and_declared_function_must_match(self):
         fixture=unit(); fixture['roots'][0]['symbol']='lemma_user_different'; self.reject(fixture)
+    def test_user_entry_requires_its_one_word_argument(self):
+        fixture=unit();validate_unit(fixture,'user')
+        fixture['roots'][0]['args']=[];fixture['functions'][0]['args']=[]
+        self.reject(fixture)
+    def test_observed_context_machine_fixture_rejects_spill_status_and_restore_mutations(self):
+        import struct
+        fixture=json.loads((ROOT/'tests/kernel/fixtures/enter-user-instructions.json').read_text())
+        words=[int(word,16) for word in fixture['words']]
+        report=validate_enter_user_machine(struct.pack('<91I',*words))
+        self.assertEqual((report['stores'],report['loads']),(38,37))
+        for index,word in [(0,words[0] ^ 0x1000000),(2,0x00000013),
+                           (words.index(0x1062b423),0x1062b023),(90,0x00008067)]:
+            changed=words.copy();changed[index]=word
+            with self.assertRaises(Core0Error):validate_enter_user_machine(struct.pack('<91I',*changed))
     def test_indirect_or_unknown_runtime_call_rejected(self):
-        fixture=unit(); valid='target triple = "riscv64-unknown-unknown-elf"\ndefine { i64, i64 } @lemma_user_root_0() {\n ret { i64, i64 } zeroinitializer\n}\n'
+        fixture=unit(); valid='target triple = "riscv64-unknown-unknown-elf"\ndefine { i64, i64 } @lemma_user_root_0(i64 %arg0) {\n ret { i64, i64 } zeroinitializer\n}\n'
         validate_ir(valid,fixture,optimized=False)
         for call in [' call void @malloc()',' call void %unknown()']:
             bad=valid.replace(' ret ',call+'\n ret ')
@@ -135,7 +150,7 @@ if.merge.2: ; preds = %entry, %switch.lookup
         self.assertFalse(_primitive_declaration_matches("declare i32 @lemma_exec_read_time() nounwind\n",expected))
     def test_ssa_call_named_values_do_not_create_indirect_calls(self):
         fixture=unit()
-        ir='target triple = "riscv64-unknown-unknown-elf"\ndefine { i64, i64 } @lemma_user_root_0() {\n entry.call:\n %r.call.value = add i64 1, 2\n ret { i64, i64 } zeroinitializer\n}\n'
+        ir='target triple = "riscv64-unknown-unknown-elf"\ndefine { i64, i64 } @lemma_user_root_0(i64 %arg0) {\n entry.call:\n %r.call.value = add i64 1, 2\n ret { i64, i64 } zeroinitializer\n}\n'
         validate_ir(ir,fixture,optimized=False)
     def test_actual_user_csr_and_unknown_machine_opcode_rejected(self):
         for machine in [' 10000: csrr a0, mstatus',' 10000: vadd.vv v0, v1, v2']:
