@@ -95,3 +95,11 @@ unknown ECALLs return17 and advance only a validated ordinary ECALL site.
 The dispatcher chooses the exact fixed S context for exit/fault return; typed
 restoration installs/flushed its SATP before the caller reclaims user storage.
 This single-process boundary is not yet a scheduler or capability system.
+
+A verified U trap's saved PC is diagnostic data for architectural faults,
+including forbidden kernel fetches and illegal halfword targets. Origin comes
+from owned trap storage, saved privilege and the task's exact translation.
+Only ordinary ECALL continuation requires aligned mapped executable code.
+The independently linked image contains a declared16-byte initial data header
+[0,ABI.version]; actual U code checks the copied version and separately zeroed
+BSS before computing its result. Both object and packaged bytes are audited.

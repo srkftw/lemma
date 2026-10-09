@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "C",
+  "highest_complete_gate": "D",
   "gates": [
     {
       "gate": "A",
@@ -37,9 +37,36 @@
     {
       "gate": "D",
       "name": "Sv39 and user process",
-      "status": "in_progress",
-      "guest_execution": "ordinary U execution, architectural denials and loader/API probes observed; fresh complete clean acceptance pending",
-      "actual_failure": "kernel-fetch-policy-counterexample-O2-run: verified U forbidden PC incorrectly caused kernel fatal50; fixed O0/O2 cases pass, retained counterexample"
+      "status": "passed",
+      "guest_execution": "passed clean O0/O2 ordinary user, hardware denials, API and loader rollback",
+      "actual_failure": "kernel-fetch-policy-counterexample-O2-run: verified U forbidden PC incorrectly caused kernel fatal50; fixed O0/O2 cases pass, retained counterexample",
+      "evidence": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "fb524b945f66241ee36a434abe39b3d854c2d9d2",
+          "tree": "e9d21676f615560d05340d1fdf26695968a0282c"
+        },
+        "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-d-acceptance/lemma/build/kernel/D-clean/result.json",
+        "report_sha256": "c077b8b57a134c17101a634875e64a23f4aa7ec7a8e076eda3671a3683d7d0e2",
+        "images": 18,
+        "checker_reports": 22,
+        "qemu_sessions": 26,
+        "host_tests": 45,
+        "elapsed_seconds": 280.31879886800016,
+        "hash_inventory": {
+          "path": "build/kernel/gateD/D-clean-hash-inventory.json",
+          "sha256": "c6dbb1c4711d2b860397e8e5799291140752df4d5886f3b3daf4a6746c828400",
+          "file_count": 1720
+        },
+        "scope": "Clean Gates A-D checkpoint; E-K not run",
+        "cleanup": {
+          "live_kill_reap": 24,
+          "natural_machine_origin_fatal48": 2,
+          "all_stderr_empty": true,
+          "all_pids_absent": true
+        }
+      }
     },
     {
       "gate": "E",
@@ -77,5 +104,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "0aeb8f07940c404357ca95e091f13e843af1ca2f"
+  "verified_prefix_commit": "fb524b945f66241ee36a434abe39b3d854c2d9d2"
 }

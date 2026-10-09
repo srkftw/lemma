@@ -298,3 +298,21 @@
   its locked NAR hash/size and UInt source hash, and records actual Nix commands
   in build/provenance/audit evidence. Each CI job therefore obtains its own audit
   source input. Full clean D remains pending at this coherent candidate commit.
+
+## Clean Gate D checkpoint
+
+- Exact source fb524b945f66241ee36a434abe39b3d854c2d9d2, tree e9d21676f615560d05340d1fdf26695968a0282c,
+  fresh managed worktree, no copied project outputs, clean before/after.
+- check_kernel.py --work-dir build/kernel/D-clean --clean --timeout300
+  --qemu-timeout90 --deadline2400 actually exited0 in280.32s:
+  45host tests,18fresh images,22checker reports and26QEMU sessions.
+- O0/O2 normal three-run data/BSS/exit/reclaim, allocator/AS APIs,23 malformed
+  package cases and late-quota rollback passed. CSR/NX/kernel-fetch/illegal
+  halfword each ran3fresh instances; paired peer isolation ran4faults with
+  normal continuations. All raw hashes/stderr/source identities independently
+  checked, all PIDs absent;24live host-kill/reap and2natural fatal48 negatives.
+- Report SHA256 c077b8b57a134c17101a634875e64a23f4aa7ec7a8e076eda3671a3683d7d0e2;
+  full1720file inventory build/kernel/gateD/D-clean-hash-inventory.json, SHA256 c6dbb1c4711d2b860397e8e5799291140752df4d5886f3b3daf4a6746c828400.
+- Highest complete gate D. E–K not run; full milestone and merge remain pending.
+- Next: User.Syscall/Memory, owned-buffer UserCopy, compiled syscall dispatcher,
+  genuine U ABI boundary tests and precise O0/O2 trap-stack budgets.

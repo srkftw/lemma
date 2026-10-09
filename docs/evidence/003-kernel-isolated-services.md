@@ -68,3 +68,13 @@ attempts are next. All four VMs remained live until explicit finite host cleanup
 and were killed/reaped; raw captures, complete artifact audits and hash inventory
 are retained in build/kernel/gateD. This snapshot is dirty on the C commit and
 has not received clean-worktree qualification.
+
+### Clean Gate D checkpoint
+
+The committed source `fb524b945f66241ee36a434abe39b3d854c2d9d2` passed fresh
+A–D acceptance in a clean managed worktree:45host tests,18O0/O2 images,22reports
+and26QEMU sessions. User faults were actual hardware traps with recovery, not
+software-only denials. Initialized ABI data and zero BSS were read by U code.
+The compact JSON and ignored full hash inventory bind the actual reports.
+Highest complete gate is D; syscalls, scheduling, capabilities, IPC, buffer
+service and full qualification remain unfinished at this checkpoint.
