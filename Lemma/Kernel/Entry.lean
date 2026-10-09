@@ -23,21 +23,24 @@ def bootFailure (status : UInt8) : Action :=
 /-- Maintained kernel root, initially exercised in the explicit bootstrap-M
 build stage. Its owned storage implementation is shared by later S-mode policy. -/
 def bootServices : Action :=
-  .bind Lemma.Kernel.BootInfo.validate fun s dtb =>
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ =>
   if s = 0 then
-    .bind Lemma.Kernel.Memory.Frames.init fun s frames =>
+    .bind Lemma.Kernel.BootInfo.validate fun s dtb =>
     if s = 0 then
-      .bind (Lemma.Kernel.Memory.Access.read64 0x80400010) fun s stage =>
+      .bind Lemma.Kernel.Memory.Frames.init fun s frames =>
       if s = 0 then
-        .bind (Lemma.Kernel.Console.record 0x0a dtb stage frames 0x82000000) fun s _ =>
+        .bind (Lemma.Kernel.Memory.Access.read64 0x80400010) fun s stage =>
         if s = 0 then
-          if stage = 1 then Lemma.Kernel.MachineServices.init
-          else if stage = 0 then .done 0 0 else .done 51 0
+          .bind (Lemma.Kernel.Console.record 0x0a dtb stage frames 0x82000000) fun s _ =>
+          if s = 0 then
+            if stage = 1 then Lemma.Kernel.MachineServices.init
+            else if stage = 0 then .done 0 0 else .done 51 0
+          else .done s 0
         else .done s 0
       else .done s 0
-    else .done s 0
-  else
-    bootFailure s
+    else
+      bootFailure s
+  else .done s 0
 
 /-- Until user loading is implemented, every supervisor trap is a distinct
 kernel-fatal outcome; there is no permissive resume stub. -/

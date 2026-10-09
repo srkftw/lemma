@@ -1,5 +1,6 @@
 import Lemma.Kernel.Loader
 import Lemma.Kernel.MachineServices
+import Lemma.Kernel.Syscall
 import Lemma.User.ABI
 
 /-! The first process boundary: independently loaded U code, an owned trap
@@ -125,6 +126,16 @@ def finish (descriptor cause code pc status translation : UInt64) : Action :=
     if failed s = true then fatal else .done 0 resume
   else fatal
 
+def syscallReply (frame pc : UInt64) (result : UInt8) (output : UInt64) : Action :=
+  .bind (Access.write64 (frame + 80) result.toUInt64) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Access.write64 (frame + 88) output) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Access.write64 (frame + 256) (pc + 4)) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Access.write64 (frame + 264) 0x200000020) fun s _ =>
+  if failed s = true then fatal else .done 0 frame
+
 def userTrap (descriptor frame cause value pc status translation : UInt64) : Action :=
   if cause = 0x8000000000000001 then
     -- An interrupt may precede a precise fetch fault at a user-selected PC.
@@ -138,23 +149,31 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
     if failed s = true then fatal else .done 0 frame
   else if cause = 8 then
     if pc % 4 = 0 then
-    .bind (AddressSpace.lookup descriptor pc 4) fun s _ =>
-    if failed s = true then fatal else
-    .bind (Access.read64 (frame + 136)) fun s number =>
-    if failed s = true then fatal else
-    if number = Lemma.User.ABI.exit then
-      .bind (Access.read64 (frame + 80)) fun s code =>
-      if failed s = true then fatal else finish descriptor cause code pc status translation
-    else
-      .bind (Access.write64 (frame + 80) 17) fun s _ =>
+      .bind (AddressSpace.lookup descriptor pc 4) fun s _ =>
       if failed s = true then fatal else
-      .bind (Access.write64 (frame + 88) 0) fun s _ =>
+      .bind (Access.read64 (frame + 136)) fun s number =>
       if failed s = true then fatal else
-      .bind (Access.write64 (frame + 256) (pc + 4)) fun s _ =>
+      .bind (Access.read64 (frame + 80)) fun s a =>
       if failed s = true then fatal else
-      .bind (Access.write64 (frame + 264) 0x200000020) fun s _ =>
-      if failed s = true then fatal else .done 0 frame
-    else fatal
+      .bind (Access.read64 (frame + 88)) fun s b =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (frame + 96)) fun s c =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (frame + 104)) fun s d =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (frame + 112)) fun s e =>
+      if failed s = true then fatal else
+      if number = Lemma.User.ABI.exit then
+        if b ||| c ||| d ||| e = 0 then finish descriptor cause a pc status translation
+        else syscallReply frame pc 16 0
+      else
+        .bind (Lemma.Kernel.Syscall.dispatch descriptor number a b c d e) fun result output =>
+        if result = 255 then fatal else
+        syscallReply frame pc result output
+    -- The owned U origin is already established. A hardware ECALL at a
+    -- halfword site is outside this generated ABI, but its user-selected PC
+    -- cannot establish a kernel integrity failure. Terminate that instance.
+    else finish descriptor cause 44 pc status translation
   else if (if cause ≤ 7 then true else if cause = 12 then true else
     if cause = 13 then true else if cause = 15 then true else false) = true then
     .bind (Lemma.Kernel.Console.record 0xd4 cause pc value status) fun s _ =>
@@ -176,9 +195,20 @@ def dispatch (frame cause value : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (Frames.resolvePurpose owner stackHandle 1) fun s stackBase =>
   if failed s = true then fatal else
+  .bind (Frames.mappingCount owner stackHandle) fun s pins =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (base + 2480)) fun s secondHandle =>
+  if failed s = true then fatal else
+  .bind (Frames.resolvePurpose owner secondHandle 1) fun s secondBase =>
+  if failed s = true then fatal else
+  .bind (Frames.mappingCount owner secondHandle) fun s secondPins =>
+  if failed s = true then fatal else
   .bind (Access.read64 (base + 2408)) fun s top =>
   if failed s = true then fatal else
-  if (if top = stackBase + 4096 then if frame = top - 288 then true else false else false) = true then
+  if (if pins ||| secondPins = 0 then if secondBase = stackBase + Frames.bytes then
+    if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then
+      if frame = top - 288 then true else false
+    else false else false else false) = true then
     .bind (Access.read64 (frame + 264)) fun s status =>
     if failed s = true then fatal else
     if status &&& 0xc6742 = 0 then

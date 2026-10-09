@@ -2,6 +2,15 @@
 
 This additive contract preserves all historical Core0 profiles. New checked
 profiles are `core0-firmware-v0.1`, `core0-kernel-v0.1` and `core0-user-v0.1`.
+Gate E adds `core0-kernel-v0.2` for one closed UART FIFO operation; v0.1 remains
+a regression profile. The new operation enables/resets the pinned 16550 FIFO
+with fixedFCR0xc7 (receive trigger14), with no user-supplied register or value.
+Legacy FIFO initialization remains fixed0x07 and unchanged. Earlier profiles
+reject the new operation. The kernel initializes the UART once before exposing
+its input protocol; reset is not repeated during a live session.
+Legacy host device/memory models reject this new hardware operation explicitly;
+their older properties do not certify its trigger behavior. The pinned source,
+exact generated MMIO store and real VM observations supply distinct evidence.
 Their exact scalar/effect/operation catalogs are maintained in Core0.Execution
 and the production unit manifests. Genuine elaborated declarations remain the
 source; arbitrary externs, indirect callbacks and unknown helpers are rejected.
@@ -40,6 +49,17 @@ every partial grant on failure, and publishes the count only on complete success
 Its returned handle array is ephemeral until the next batch; trusted callers
 copy it before another transaction. No user pointer controls that storage.
 
+Frames.allocateContiguous2 acquires exactly two adjacent pages with independently
+checked generations. It requires two free slots and quota/global room for both,
+zeros both before publishing either grant, and returns two handles in fixed
+kernel scratch storage80400580/+8. Ordinary rejection acquires no frames. The
+loader copies both handles into its descriptor at2400/2480 before another pair
+transaction, with top at2408. Layout declares two pages and8192 bytes for the
+owned kernel trap stack. Both purpose1 handles, owner, zero mapping pins and
+physical contiguity are revalidated before reading an incoming trap frame.
+Inactive teardown clears each handle immediately after its release; a suspended
+or active task stack cannot be reclaimed from that stack.
+
 Normal roots exclude development imports. The separate frames-development
 configuration exposes raw privileged probes and metadata fixtures for acceptance.
 Its mapping-count fixture tests bookkeeping only; actual installed mapping,
@@ -55,6 +75,9 @@ M timer IRQ count. Unknown calls return17, invalid deadlines22. M handlers use
 only their fixed private stack/frame, park the timer and latch SSIP. S execution
 is initially nonpreemptible; pending notification is distinct from delivered
 S interrupts and scheduler decisions. No SBI compatibility is claimed.
+Call5 accepts a relative1000..10000000-tick interval, computes and overflow-checks
+its deadline in M, acknowledges SSIP and arms that hardware deadline. It returns
+the actual deadline; call1 retains the existing absolute-deadline contract.
 
 Startup reads back five PMP NAPOT intervals, exception delegation0xb1ff,
 interrupt delegation0x1446 (desiredSSIP2 plus pinned QEMU H read-only0x1444),
@@ -103,3 +126,53 @@ Only ordinary ECALL continuation requires aligned mapped executable code.
 The independently linked image contains a declared16-byte initial data header
 [0,ABI.version]; actual U code checks the copied version and separately zeroed
 BSS before computing its result. Both object and packaged bytes are audited.
+
+## User syscall ABI v1 under Gate E construction
+
+An ordinary U ECALL supplies number in a7 and five payload words in a0..a4;
+the two-word result is UInt8 status in a0 and UInt64 value in a1. a5/a6 do not
+convey ABI arguments. Unused payload words must be zero and otherwise return16.
+The trap preserves the interrupted integer register set except those two result
+registers and the advanced PC. The library transport is an ordinary LP64 function
+call: its argument shuffling modifies caller-saved registers, while callee-saved
+registers and stack are preserved. No floating-point/vector state is admitted.
+The dispatcher advances only a validated four-byte executable ECALL site and
+sanitizes restored status. Internal integrity status255 terminates the kernel;
+it is never exposed as a normal user result.
+An ECALL from a verified U context at a halfword site lies outside this generated
+ABI and terminates only that instance with code44; it cannot confer kernel
+authority. Its direct architectural witness remains a separate pending fixture.
+
+Numbers are1 identity,2 console,3 yield,4 sleep,5 time,6 exit,7 allocate page,
+8 release page. Unknown numbers return17. Identity is the current validated
+address-space generation handle. Exit consumes one code and selects trusted
+teardown; yield currently returns0/0. Gate E yield and hardware sleep are not
+task scheduling or blocking-task evidence; those transitions require Gate F.
+Sleep accepts one relative interval and returns the armed absolute deadline
+only after an actual pending timer notification, then rearms the quantum.
+
+Console payload is(operation,pointer,length), where0 writes and1 reads. Length
+is at most256. Nonempty complete ranges are checked before device effects,
+including both pages of a boundary crossing and write permission for a read
+destination. Zero length touches neither pointer, scratch storage nor UART.
+Reads poll without blocking: empty returns12/0; available input returns a short
+actual count. A device error after progress reports the actual prefix count;
+the console cannot roll back transmitted or consumed bytes.
+The pinned QEMU backend's receive advertisement depends on FIFO trigger level;
+even with a larger FIFO, a nonblocking call may return fewer bytes than requested.
+Clients must account for actual counts. An accumulated client payload is distinct
+from one successful syscall; a crossing-copy witness requires that actual call
+to deliver bytes on both pages.
+
+Page operations accept(alignedVA,count=1) within40000..100000, leaving loader
+code/data/stacks and devices outside this arena. Ownership derives from the
+validated caller descriptor. Mapping failure releases the provisional grant;
+release invalidates the mapping before dropping its pin and releasing the exact
+generation. Results expose virtual addresses, never physical handles. Range71,
+permission72, duplicate73, missing/stale mapping74 and quota38 are ordinary
+errors. The synchronous single-hart copy routines retain no borrowed user
+pointer or physical alias beyond the bounded syscall critical section.
+
+This describes the current construction interface. Gate E remains incomplete
+until its complete O0/O2 artifact audits and actual guest corpus pass. Historical
+Gate D evidence binds its earlier one-page-stack implementation separately.

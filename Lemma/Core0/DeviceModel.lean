@@ -146,6 +146,10 @@ def stepDeviceAction (state : State) (action : Action) :
   | .uartEnableAndResetFifo next =>
       let result := uartEnableAndResetFifo state
       .ok (result, next result.status)
+  | .uartEnableAndResetFifo14 _ => .error {
+      code := .executionActionUnsupported
+      message := "the finite UART model does not simulate kernel-v0.2 FIFO configuration"
+    }
   | .trapEcall _ | .trapBreakpoint _ | .trapUnexpectedEcall _ |
       .trapIllegalInstruction _ =>
       .error {

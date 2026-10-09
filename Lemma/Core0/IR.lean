@@ -25,6 +25,7 @@ inductive Profile where
   | v0_7
   | firmware_v0_1
   | kernel_v0_1
+  | kernel_v0_2
   | user_v0_1
   deriving BEq, DecidableEq, Inhabited, Repr
 
@@ -40,6 +41,7 @@ def contractVersion : Profile → String
   | .v0_7 => "core0-v0.7"
   | .firmware_v0_1 => "core0-firmware-v0.1"
   | .kernel_v0_1 => "core0-kernel-v0.1"
+  | .kernel_v0_2 => "core0-kernel-v0.2"
   | .user_v0_1 => "core0-user-v0.1"
 
 def ofContractVersion? : String → Option Profile
@@ -52,12 +54,17 @@ def ofContractVersion? : String → Option Profile
   | "core0-v0.7" => some .v0_7
   | "core0-firmware-v0.1" => some .firmware_v0_1
   | "core0-kernel-v0.1" => some .kernel_v0_1
+  | "core0-kernel-v0.2" => some .kernel_v0_2
   | "core0-user-v0.1" => some .user_v0_1
   | _ => none
 
 /-- Production execution profiles have separate authority from the diagnostic profiles. -/
 def isExecution : Profile → Bool
-  | .firmware_v0_1 | .kernel_v0_1 | .user_v0_1 => true
+  | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => true
+  | _ => false
+
+def isKernel : Profile → Bool
+  | .kernel_v0_1 | .kernel_v0_2 => true
   | _ => false
 
 end Profile

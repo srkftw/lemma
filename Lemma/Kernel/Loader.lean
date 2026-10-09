@@ -19,6 +19,7 @@ def invalidBounds : UInt8 := 83
 def invariantFailure : UInt8 := 84
 def kernelStackHandleOffset : UInt64 := 2400
 def kernelStackTopOffset : UInt64 := 2408
+def kernelStackSecondHandleOffset : UInt64 := 2480
 def entryOffset : UInt64 := 2416
 def textBytesOffset : UInt64 := 2424
 def exitCodeOffset : UInt64 := 2432
@@ -204,6 +205,9 @@ private def initializeState (address record imageIndex argument : UInt64) : Acti
   .bind (get record 0) fun s id => if failed s = true then .done s 0 else
   .bind (get record 8) fun s entry => if failed s = true then .done s 0 else
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
+  .bind (put address kernelStackHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind (put address kernelStackSecondHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind (put address kernelStackTopOffset 0) fun s _ => if failed s = true then .done s 0 else
   .bind (put address entryOffset entry) fun s _ => if failed s = true then .done s 0 else
   .bind (put address textBytesOffset textBytes) fun s _ => if failed s = true then .done s 0 else
   .bind (put address exitCodeOffset 0) fun s _ => if failed s = true then .done s 0 else
@@ -213,27 +217,116 @@ private def initializeState (address record imageIndex argument : UInt64) : Acti
   .bind (put address imageIndexOffset imageIndex) fun s _ => if failed s = true then .done s 0 else
   put address readyOffset 0
 
+private def stackFrame (owner handle : UInt64) : Action :=
+  .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
+  if s = 0 then
+    .bind (Frames.mappingCount owner handle) fun s pins =>
+    if s = 0 then
+      if pins = 0 then .done 0 physical else .done invariantFailure 0
+    else .done invariantFailure 0
+  else .done invariantFailure 0
+
+private def stackPair (owner first second : UInt64) : Action :=
+  .bind (stackFrame owner first) fun s physical =>
+  if s = 0 then
+    .bind (stackFrame owner second) fun s next =>
+    if s = 0 then
+      if next = physical + 4096 then .done 0 physical else .done invariantFailure 0
+    else .done invariantFailure 0
+  else .done invariantFailure 0
+
+/-- A failed constructor can hold no stack, one published handle, or both.
+A cleared handle is never resolved again. A surviving handle must still name
+its owned, unmapped purpose-1 frame. Both live handles must be contiguous before
+either is released; top zero denotes an unpublished partial constructor. -/
+private def storedStack (owner first second top : UInt64) : Action :=
+  if first = 0 then
+    if second = 0 then
+      if top = 0 then .done 0 0 else .done invariantFailure 0
+    else
+      .bind (stackFrame owner second) fun s physical =>
+      if s = 0 then
+        if top = 0 then .done 0 0 else
+        if top = physical + 4096 then .done 0 0 else .done invariantFailure 0
+      else .done invariantFailure 0
+  else if second = 0 then
+    .bind (stackFrame owner first) fun s physical =>
+    if s = 0 then
+      if top = 0 then .done 0 0 else
+      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      else .done invariantFailure 0
+    else .done invariantFailure 0
+  else
+    .bind (stackPair owner first second) fun s physical =>
+    if s = 0 then
+      if top = 0 then .done 0 0 else
+      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      else .done invariantFailure 0
+    else .done invariantFailure 0
+
+private def releaseStackHandle (address owner slot handle : UInt64) : Action :=
+  if handle = 0 then .done 0 0 else
+  .bind (Frames.release owner handle) fun s _ =>
+  if s = 0 then
+    .bind (put address slot 0) fun s _ =>
+    if s = 0 then .done 0 0 else .done invariantFailure 0
+  else .done invariantFailure 0
+
+private def releaseUnpublishedPair (owner first second : UInt64) (original : UInt8) : Action :=
+  .bind (Frames.release owner first) fun firstStatus _ =>
+  .bind (Frames.release owner second) fun secondStatus _ =>
+  if firstStatus = 0 then
+    if secondStatus = 0 then .done original 0 else .done invariantFailure 0
+  else .done invariantFailure 0
+
+private def installStackPair (address owner first second : UInt64) : Action :=
+  .bind (stackPair owner first second) fun s physical =>
+  if s = 0 then
+    .bind (put address kernelStackHandleOffset first) fun s _ =>
+    if s = 0 then
+      .bind (put address kernelStackSecondHandleOffset second) fun s _ =>
+      if s = 0 then
+        .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue)) fun s _ =>
+        if s = 0 then .done 0 0 else .done invariantFailure 0
+      else
+        .bind (put address kernelStackHandleOffset 0) fun cleared _ =>
+        .bind (releaseUnpublishedPair owner first second invariantFailure) fun result _ =>
+        if cleared = 0 then .done result 0 else .done invariantFailure 0
+    else releaseUnpublishedPair owner first second invariantFailure
+  else releaseUnpublishedPair owner first second s
+
+private def allocateStack (address owner : UInt64) : Action :=
+  .bind (Frames.allocateContiguous2 owner 1) fun s result =>
+  if s = 0 then
+    if result = Frames.pairResult then
+      .bind (Access.read64 Frames.pairResult) fun s first =>
+      if s = 0 then
+        .bind (Access.read64 (Frames.pairResult + 8)) fun s second =>
+        if s = 0 then installStackPair address owner first second else .done invariantFailure 0
+      else .done invariantFailure 0
+    else .done invariantFailure 0
+  else .done s 0
+
 /-- Inactive-only teardown runs on the restored supervisor boot/reaper stack.
-The stack handle is cleared immediately after release to prevent a retry from
-double-freeing it. AS then invalidates and releases all owned leaves and tables. -/
+Both live stack handles are validated before release. Each is cleared immediately
+after its release so partial teardown cannot double-free it. AS then invalidates
+and releases all owned leaves and tables. -/
 def teardown (descriptor : UInt64) : Action :=
   .bind (AddressSpace.base descriptor) fun s address => if failed s = true then .done s 0 else
   .bind (AddressSpace.owner descriptor) fun s owner => if failed s = true then .done s 0 else
   .bind (AddressSpace.root descriptor) fun s root => if failed s = true then .done s 0 else
   .bind (Access.read64 AddressSpace.activeRoot) fun s active => if failed s = true then .done s 0 else
   if root = active then .done AddressSpace.activeAddressSpace 0 else
-  .bind (get address kernelStackHandleOffset) fun s handle => if failed s = true then .done s 0 else
-  .bind (if handle = 0 then .done 0 0 else
-    .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
-    if failed s = true then .done invariantFailure 0 else
-    .bind (get address kernelStackTopOffset) fun s top =>
-    if failed s = true then .done invariantFailure 0 else
-    if (if top = physical + 4096 then false else true) = true then .done invariantFailure 0 else
-    .bind (Frames.release owner handle) fun s _ =>
-    if failed s = true then .done invariantFailure 0 else
-    .bind (put address kernelStackHandleOffset 0) fun s _ =>
-    if failed s = true then .done invariantFailure 0 else
-    put address kernelStackTopOffset 0) fun s _ =>
+  .bind (get address kernelStackHandleOffset) fun s first => if failed s = true then .done s 0 else
+  .bind (get address kernelStackSecondHandleOffset) fun s second => if failed s = true then .done s 0 else
+  .bind (get address kernelStackTopOffset) fun s top => if failed s = true then .done s 0 else
+  .bind (storedStack owner first second top) fun s _ => if failed s = true then .done s 0 else
+  -- Inactive and fully validated: withdraw the stack top before the first
+  -- release, so retries contain only zero or separately owned live handles.
+  .bind (put address kernelStackTopOffset 0) fun s _ => if failed s = true then .done invariantFailure 0 else
+  .bind (releaseStackHandle address owner kernelStackHandleOffset first) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (releaseStackHandle address owner kernelStackSecondHandleOffset second) fun s _ =>
   if failed s = true then .done s 0 else
   AddressSpace.destroy descriptor
 
@@ -244,12 +337,7 @@ private def abortLoad (descriptor : UInt64) (original : UInt8) : Action :=
 private def build (descriptor address record owner imageIndex argument : UInt64) : Action :=
   .bind (initializeState address record imageIndex argument) fun s _ =>
   if failed s = true then .done s 0 else
-  .bind (Frames.allocate owner 1) fun s stackHandle => if failed s = true then .done s 0 else
-  .bind (Frames.resolvePurpose owner stackHandle 1) fun s physical =>
-  if failed s = true then releaseUnmapped owner stackHandle s else
-  .bind (put address kernelStackHandleOffset stackHandle) fun s _ =>
-  if failed s = true then releaseUnmapped owner stackHandle s else
-  .bind (put address kernelStackTopOffset (physical + 4096)) fun s _ => if failed s = true then .done s 0 else
+  .bind (allocateStack address owner) fun s _ => if failed s = true then .done s 0 else
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
   let pages := (textBytes + 4095) / 4096
   .boundedFoldU64 15 textStep pages.toUInt32 0 descriptor owner record 0 fun s copiedPages =>

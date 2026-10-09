@@ -18,7 +18,7 @@ open Lemma.Platform.LemmaVM
 private def roleProfile (role : String) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok .kernel_v0_1
+  | "kernel" => .ok .kernel_v0_2
   | "user" => .ok .user_v0_1
   | _ => .error "production role must be firmware, kernel, or user"
 
@@ -28,7 +28,8 @@ private def readConfiguration : IO String := do
   unless configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
-      configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" do
+      configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" ||
+      configuration == "user-syscall-development" do
     throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
   pure configuration
 
@@ -46,7 +47,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
 private def requiresSupervisor (configuration : String) : Bool :=
   configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
-    configuration == "user-misaligned-development"
+    configuration == "user-misaligned-development" || configuration == "user-syscall-development"
 
 private def unitCategory (configuration role : String) : String :=
   (if configuration == "normal" then "production-" else "development-") ++ role ++ "-unit"
@@ -60,7 +61,9 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.IsolationEntry.boot", "Lemma.Kernel.Development.IsolationEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
-      #["Lemma.User.Development.Isolation.main"] else #["Lemma.User.Entry.main"]
+      #["Lemma.User.Development.Isolation.main"]
+    else if configuration == "user-syscall-development" then
+      #["Lemma.User.Development.Syscall.main"] else #["Lemma.User.Entry.main"]
   | _ => #[]
 
 private def rootArguments (role : String) : Array (Array Ty) :=
@@ -77,6 +80,8 @@ private def developmentModule (configuration role : String) : Option String :=
     some "Lemma.Kernel.Development.IsolationEntry"
   else if configuration == "user-isolation-development" && role == "user" then
     some "Lemma.User.Development.Isolation"
+  else if configuration == "user-syscall-development" && role == "user" then
+    some "Lemma.User.Development.Syscall"
   else none
 
 private def developmentName (name : Name) : Bool :=
@@ -119,12 +124,14 @@ private def deviceSourceIdentity : Device.Op → String
   | .uartReadByte => "Lemma.Core0.Memory.Action.uartReadByte"
   | .uartWriteByte => "Lemma.Core0.Memory.Action.uartWriteByte"
   | .uartEnableAndResetFifo => "Lemma.Core0.Memory.Action.uartEnableAndResetFifo"
+  | .uartEnableAndResetFifo14 => "Lemma.Core0.Memory.Action.uartEnableAndResetFifo14"
 
 private def deviceLoweringId : Device.Op → String
   | .uartReadStatus => "uart.lsr.read8"
   | .uartReadByte => "uart.rbr.read8"
   | .uartWriteByte => "uart.thr.write8"
   | .uartEnableAndResetFifo => "uart.fcr.enable-reset"
+  | .uartEnableAndResetFifo14 => "uart.fcr.enable-reset-trigger14"
 
 private def deviceSites (lowered : LoweredActionSuite) (operation : Device.Op) : Array Json := Id.run do
   let mut sites := #[]
@@ -136,6 +143,7 @@ private def deviceSites (lowered : LoweredActionSuite) (operation : Device.Op) :
           | .uartRead8 _ site .rbr, .uartReadByte => some site
           | .uartWrite8 site _, .uartWriteByte => some site
           | .uartEnableAndResetFifo site, .uartEnableAndResetFifo => some site
+          | .uartEnableAndResetFifo14 site, .uartEnableAndResetFifo14 => some site
           | _, _ => none
         if let some site := site? then
           sites := sites.push <| Json.mkObj [("site", toJson site), ("symbol", .str function.name)]
@@ -250,6 +258,8 @@ private def layoutJson (configuration : String) : Json := Json.mkObj [
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
   ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson Layout.frameCount),
+  ("task_kernel_stack_pages", toJson Layout.taskKernelStackPages),
+  ("task_kernel_stack_bytes", toJson Layout.taskKernelStackBytes),
   ("context", Json.mkObj [
     ("bytes", toJson Lemma.Platform.RiscV.ExecutionPrimitives.contextBytes),
     ("kernel_resume_base", toJson Layout.kernelResumeContext),

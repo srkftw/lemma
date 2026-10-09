@@ -32,6 +32,9 @@ def generationExhausted : UInt8 := 37
 def quotaExceeded : UInt8 := 38
 def invariantFailure : UInt8 := 39
 def purposeDenied : UInt8 := 40
+/-- Closed kernel-only two-handle transaction result. Copy both handles before
+beginning another pair allocation; no user receives this metadata address. -/
+def pairResult : UInt64 := 0x80400580
 
 def record (index : UInt64) : UInt64 := records + index * 32
 def address (index : UInt64) : UInt64 := pool + index * bytes
@@ -197,5 +200,131 @@ def release (owner handle : UInt64) : Action :=
   .bind (Access.write64 accounting (if retired = true then remaining else remaining + 1)) fun s _ => .done s 0
 
 def remaining : Action := Access.read64 accounting
+
+private def pairStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  if acc = 0 then
+    let index := i.toUInt64
+    .bind (Access.read64 (record index)) fun s firstOwner =>
+    if s = 0 then
+      if firstOwner = 0 then
+        .bind (Access.read64 (record (index + 1))) fun s secondOwner =>
+        if s = 0 then .done 0 (if secondOwner = 0 then index + 1 else 0)
+        else .done s 0
+      else .done 0 0
+    else .done s 0
+  else .done 0 acc
+
+private def freeGeneration (index : UInt64) : Action :=
+  .bind (Access.read64 (record index)) fun s owner =>
+  if s = 0 then
+    if owner = 0 then
+      .bind (Access.read64 (record index + 8)) fun s purpose =>
+      if s = 0 then
+        if purpose = 0 then
+          .bind (Access.read64 (record index + 16)) fun s pins =>
+          if s = 0 then
+            if pins = 0 then Access.read64 (record index + 24)
+            else .done invariantFailure 0
+          else .done s 0
+        else .done invariantFailure 0
+      else .done s 0
+    else .done invariantFailure 0
+  else .done s 0
+
+private def preparePairRecord (index purpose generation : UInt64) : Action :=
+  .bind (Access.write64 (record index + 8) purpose) fun s _ =>
+  if s = 0 then
+    .bind (Access.write64 (record index + 16) 0) fun s _ =>
+    if s = 0 then Access.write64 (record index + 24) (generation + 1)
+    else .done s 0
+  else .done s 0
+
+private def restoreFreeRecord (index generation : UInt64) : Action :=
+  .bind (Access.write64 (record index) 0) fun s _ =>
+  if s = 0 then
+    .bind (Access.write64 (record index + 8) 0) fun s _ =>
+    if s = 0 then
+      .bind (Access.write64 (record index + 16) 0) fun s _ =>
+      if s = 0 then Access.write64 (record index + 24) generation
+      else .done s 0
+    else .done s 0
+  else .done s 0
+
+/-- Only an unpublished transaction may restore its old generations. Neither
+handle has been returned with success, so no live reference can observe them.
+A failed metadata write is an invariant failure even when cleanup succeeds. -/
+private def rollbackPair (index available firstGeneration secondGeneration : UInt64) : Action :=
+  .bind (restoreFreeRecord index firstGeneration) fun _ _ =>
+  .bind (restoreFreeRecord (index + 1) secondGeneration) fun _ _ =>
+  .bind (Access.write64 accounting available) fun _ _ =>
+  .bind (Access.write64 pairResult 0) fun _ _ =>
+  .bind (Access.write64 (pairResult + 8) 0) fun _ _ =>
+  .done invariantFailure 0
+
+private def publishPair (owner purpose index available firstGeneration secondGeneration : UInt64) : Action :=
+  .bind (preparePairRecord index purpose firstGeneration) fun s _ =>
+  if s = 0 then
+    .bind (preparePairRecord (index + 1) purpose secondGeneration) fun s _ =>
+    if s = 0 then
+      .bind (Access.write64 accounting (available - 2)) fun s _ =>
+      if s = 0 then
+        .bind (Access.write64 (record index) owner) fun s _ =>
+        if s = 0 then
+          .bind (Access.write64 (record (index + 1)) owner) fun s _ =>
+          if s = 0 then
+            .bind (Access.write64 pairResult ((firstGeneration + 1) * count + index)) fun s _ =>
+            if s = 0 then
+              .bind (Access.write64 (pairResult + 8) ((secondGeneration + 1) * count + index + 1)) fun s _ =>
+              if s = 0 then .done 0 pairResult
+              else rollbackPair index available firstGeneration secondGeneration
+            else rollbackPair index available firstGeneration secondGeneration
+          else rollbackPair index available firstGeneration secondGeneration
+        else rollbackPair index available firstGeneration secondGeneration
+      else rollbackPair index available firstGeneration secondGeneration
+    else rollbackPair index available firstGeneration secondGeneration
+  else rollbackPair index available firstGeneration secondGeneration
+
+/-- Two physically adjacent independently versioned frames. Quota, free-pair,
+global accounting and both generations are checked before zeroing or ownership
+changes. Both pages are zeroed before any grant is published. This single-hart
+construction transaction returns only the closed pair-result metadata address.
+No page-table mapping is installed and ordinary rejection acquires no frames. -/
+def allocateContiguous2 (owner purpose : UInt64) : Action :=
+  if grantValid owner purpose = false then .done badOwner 0 else
+  .bind (Access.write64 pairResult 0) fun s _ =>
+  if s = 0 then
+    .bind (Access.write64 (pairResult + 8) 0) fun s _ =>
+    if s = 0 then
+      .bind (ownedCount owner) fun s owned =>
+      if s = 0 then
+        if (if owner = kernelOwner then true else if owned ≤ taskQuota - 2 then true else false) = true then
+          .bind (Access.read64 accounting) fun s available =>
+          if s = 0 then
+            if count < available then .done invariantFailure 0 else
+            if available < 2 then .done exhausted 0 else
+            .boundedFoldU64 511 pairStep 511 0 0 0 0 0 fun s found =>
+            if s = 0 then
+              if found = 0 then .done exhausted 0 else
+              let index := found - 1
+              .bind (freeGeneration index) fun s firstGeneration =>
+              if s = 0 then
+                .bind (freeGeneration (index + 1)) fun s secondGeneration =>
+                if s = 0 then
+                  if maxGeneration ≤ firstGeneration then .done generationExhausted 0 else
+                  if maxGeneration ≤ secondGeneration then .done generationExhausted 0 else
+                  .bind (zero (address index)) fun s _ =>
+                  if s = 0 then
+                    .bind (zero (address (index + 1))) fun s _ =>
+                    if s = 0 then publishPair owner purpose index available firstGeneration secondGeneration
+                    else .done invariantFailure 0
+                  else .done invariantFailure 0
+                else .done invariantFailure 0
+              else .done invariantFailure 0
+            else .done invariantFailure 0
+          else .done invariantFailure 0
+        else .done quotaExceeded 0
+      else .done invariantFailure 0
+    else .done invariantFailure 0
+  else .done invariantFailure 0
 
 end Lemma.Kernel.Memory.Frames

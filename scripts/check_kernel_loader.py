@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 from check_kernel_frames import command_reader, frame_boot
+from check_kernel_user import task_frame_overhead
 from core0_common import Core0Error, repo_root, sha256
 from run_kernel import Session
 
@@ -92,7 +93,8 @@ def check(session: Session) -> dict:
     # actual image's resource cost; this does not infer a user execution pass.
     descriptor, during = command(19, 0, 2, 7)
     owner_pages, _ = command(6, 2)
-    if owner_pages < 15 or during != 512-owner_pages-1:
+    text_pages = ((session.image.parent / "user-text.bin").stat().st_size + 4095) // 4096
+    if owner_pages != task_frame_overhead(session) + text_pages - 1 or during != 512-owner_pages-1:
         raise Core0Error("real loader did not allocate its charged pages plus kernel descriptor")
     command(20, descriptor, value=0)
     command(6, 2, value=0); command(6, 1, value=0); command(0, value=512)

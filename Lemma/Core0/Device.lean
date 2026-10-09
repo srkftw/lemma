@@ -31,6 +31,7 @@ inductive Op where
   | uartReadByte
   | uartWriteByte
   | uartEnableAndResetFifo
+  | uartEnableAndResetFifo14
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Op
@@ -42,11 +43,20 @@ def all : Array Op := #[
   .uartEnableAndResetFifo
 ]
 
+/-- Kernel-v0.2 adds one closed operation; the v0.5 catalog above is unchanged. -/
+def kernelAll : Array Op := all.push .uartEnableAndResetFifo14
+
 def stableId : Op → String
   | .uartReadStatus => "uart.read-status"
   | .uartReadByte => "uart.read-byte"
   | .uartWriteByte => "uart.write-byte"
   | .uartEnableAndResetFifo => "uart.enable-reset-fifo"
+  | .uartEnableAndResetFifo14 => "uart.enable-reset-fifo-trigger14"
+
+def admits (profile : Profile) (op : Op) : Bool :=
+  if op == .uartEnableAndResetFifo14 then profile == .kernel_v0_2 else
+  profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
+    profile == .firmware_v0_1 || profile == .kernel_v0_1 || profile == .kernel_v0_2
 
 def render : Op → String := stableId
 
@@ -77,6 +87,9 @@ def lsrOffset : UInt64 := 5
 /-- Enable both FIFOs and reset their current contents. -/
 def fcrEnableAndReset : UInt8 := 0x07
 def fcrEnableAndClear : UInt8 := fcrEnableAndReset
+
+/-- Fixed production kernel receive trigger; no caller selects an FCR byte. -/
+def fcrEnableAndReset14 : UInt8 := 0xc7
 
 def lsrDataReady : UInt8 := 0x01
 def lsrErrorMask : UInt8 := 0x1e
@@ -147,8 +160,20 @@ def opCatalog : Array OpSpec := #[
   }
 ]
 
+def kernelOpCatalog : Array OpSpec := opCatalog.push {
+  op := .uartEnableAndResetFifo14
+  base := UART.base
+  offset := UART.fcrOffset
+  widthBytes := UART.registerWidthBytes
+  access := .write
+  fixedWriteValue? := some UART.fcrEnableAndReset14
+  fenceBefore := true
+  fenceAfter := true
+  sideEffect := .enableAndResetFifos
+}
+
 def findSpec? (op : Op) : Option OpSpec :=
-  opCatalog.find? (fun spec => spec.op == op)
+  kernelOpCatalog.find? (fun spec => spec.op == op)
 
 /-- Closed-catalog sanity used by manifests and focused probes. -/
 def catalogValid : Bool :=
@@ -157,5 +182,10 @@ def catalogValid : Bool :=
     opCatalog.all fun spec =>
       spec.base == UART.base && spec.widthBytes == 1 &&
         spec.offset.toNat < UART.span && spec.fenceBefore && spec.fenceAfter
+
+def kernelCatalogValid : Bool :=
+  catalogValid && kernelOpCatalog.size == 5 &&
+    kernelOpCatalog.map (fun spec => spec.op) == Op.kernelAll &&
+    UART.fcrEnableAndReset14 == 0xc7
 
 end Lemma.Core0.Device

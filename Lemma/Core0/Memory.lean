@@ -290,6 +290,8 @@ inductive Action where
   | uartWriteByte (value : UInt8) (next : UInt8 → Action)
   /-- Write `0x07` to the fixed UART FIFO-control register. -/
   | uartEnableAndResetFifo (next : UInt8 → Action)
+  /-- Kernel-v0.2 only: fixed `0xc7` FIFO enable/reset with RX trigger14. -/
+  | uartEnableAndResetFifo14 (next : UInt8 → Action)
   /-- Execute the authorized machine-mode environment-call fixture.  A returning
   primitive supplies `(0, contextCheckMask)` to the continuation. -/
   | trapEcall (next : UInt8 → UInt64 → Action)

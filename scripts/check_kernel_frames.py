@@ -26,6 +26,103 @@ def command_reader(session: Session, calls: list):
     return command
 
 
+PAIR_RESULT = 0x80400580
+
+
+def read_contiguous_pair(command, owner: int) -> tuple[tuple[int, int], tuple[int, int]]:
+    first = command(8, PAIR_RESULT)[0]
+    second = command(8, PAIR_RESULT + 8)[0]
+    if (first // 512 == 0 or second // 512 == 0 or first % 512 >= 511 or second % 512 != first % 512 + 1):
+        raise Core0Error("pair publication lacks two independently versioned adjacent live slots")
+    physical = (command(5, owner, first)[0], command(5, owner, second)[0])
+    if physical != (0x82000000 + first % 512 * 4096, 0x82000000 + second % 512 * 4096):
+        raise Core0Error("contiguous pair handles do not resolve to their exact two owned pages")
+    return (first, second), physical
+
+
+def check_contiguous_pairs(command) -> dict:
+    command(0, value=512)
+    for owner, purpose in ((0, 1), (2, 0), (2, 6)):
+        command(21, owner, purpose, status=32, value=0)
+    command(21, 2, 1, value=PAIR_RESULT)
+    original, physical = read_contiguous_pair(command, 2)
+    if original[0] // 512 == original[1] // 512:
+        raise Core0Error("pair fixture did not exercise the existing unequal slot generations")
+    command(6, 2, value=2); command(0, value=510)
+    for index, handle in enumerate(original):
+        for offset in (0, 4088):
+            command(3, 2, handle, offset, value=0)
+            command(4, 2, handle, offset, 0xdeadbeef00000000 + index * 4096 + offset, value=0)
+        command(2, 2, handle, value=0)
+    command(21, 3, 1, value=PAIR_RESULT)
+    reused, _ = read_contiguous_pair(command, 3)
+    for before, after in zip(original, reused):
+        if after % 512 != before % 512 or after // 512 != before // 512 + 1:
+            raise Core0Error("pair reuse did not independently advance both generations")
+        command(5, 2, before, status=34, value=0)
+        for offset in (0, 4088): command(3, 3, after, offset, value=0)
+        command(2, 3, after, value=0)
+    command(0, value=512)
+    held = [command(1, 2, 3)[0] for _ in range(30)]
+    command(21, 2, 1, value=PAIR_RESULT)
+    quota_pair, _ = read_contiguous_pair(command, 2)
+    command(6, 2, value=32); command(0, value=480)
+    for handle in quota_pair: command(2, 2, handle, value=0)
+    held.append(command(1, 2, 3)[0])
+    command(21, 2, 1, status=38, value=0)
+    for address in (PAIR_RESULT, PAIR_RESULT + 8): command(8, address, value=0)
+    command(6, 2, value=31); command(0, value=481)
+    for handle in held: command(2, 2, handle, value=0)
+    command(0, value=512)
+    # Deliberately corrupt only free-slot metadata and restore each exact word.
+    # These are prevalidation rejections, not injected publication-write faults.
+    injected = []
+    for offset, value, status in ((8, 1, 39), (16, 1, 39), (24, 0x007fffffffffffff, 37)):
+        address = 0x80401000 + offset
+        prior, _ = command(8, address)
+        command(9, address, value, value=0)
+        command(21, 2, 1, status=status, value=0)
+        command(8, PAIR_RESULT, value=0); command(8, PAIR_RESULT + 8, value=0)
+        command(6, 2, value=0); command(0, value=512)
+        command(8, 0x80401000, value=0); command(8, 0x80401020, value=0)
+        command(9, address, prior, value=0)
+        command(8, address, value=prior)
+        injected.append({"offset": offset, "injected": value, "status": status, "restored": prior})
+    full = {}
+    for _ in range(512):
+        handle, _ = command(1, 1, 2)
+        if handle % 512 in full: raise Core0Error("full-pool pair fixture contains duplicate live slots")
+        full[handle % 512] = handle
+    if set(full) != set(range(512)):
+        raise Core0Error("pair fragmentation fixture did not own the entire actual pool")
+    for index in range(0, 512, 2): command(2, 1, full[index], value=0)
+    command(21, 1, 1, status=33, value=0)
+    command(8, PAIR_RESULT, value=0); command(8, PAIR_RESULT + 8, value=0)
+    command(6, 1, value=256); command(0, value=256)
+    for _ in range(256):
+        handle, _ = command(1, 1, 2)
+        if handle % 512 % 2: raise Core0Error("fragmented-pool refill unexpectedly replaced a still-owned odd slot")
+        full[handle % 512] = handle
+    command(0, value=0)
+    command(2, 1, full.pop(511), value=0)
+    command(21, 1, 1, status=33, value=0)
+    command(8, PAIR_RESULT, value=0); command(8, PAIR_RESULT + 8, value=0)
+    command(0, value=1)
+    command(2, 1, full.pop(510), value=0)
+    command(21, 1, 1, value=PAIR_RESULT)
+    last, last_physical = read_contiguous_pair(command, 1)
+    if (last[0] % 512, last[1] % 512) != (510, 511) or last_physical != (0x821fe000, 0x821ff000):
+        raise Core0Error("pair allocation crossed or missed the last valid pool boundary")
+    for handle in last: command(2, 1, handle, value=0)
+    for handle in full.values(): command(2, 1, handle, value=0)
+    command(6, 1, value=0); command(0, value=512)
+    return {"initial_handles": list(original), "reused_handles": list(reused), "physical_pages": list(physical),
+            "zero_reuse_words": 4, "quota_success_owned": 32, "quota_rejected_owned": 31,
+            "fragmented_available_pages": 256, "last_pair_slots": [510, 511], "injected_free_metadata": injected,
+            "publication_write_rollback": "not injected; checked kernel metadata writes cannot ordinarily fail",
+            "final_remaining": 512}
+
+
 def check(session: Session) -> dict[str, object]:
     boot = frame_boot(session)
     calls = []
@@ -136,6 +233,7 @@ def check(session: Session) -> dict[str, object]:
     command(9, pin_address, 0, value=0)
     command(2, 2, pinned, value=0)
     command(0, value=512)
+    pairs = check_contiguous_pairs(command)
     # Retirement runs last: the legitimate capacity is 511 after this fixture.
     max_generation = 0x007fffffffffffff
     command(9, 0x80401000 + 24, max_generation - 1, value=0)
@@ -153,6 +251,7 @@ def check(session: Session) -> dict[str, object]:
             "global_exhaustion_slots": len(slots), "zero_reuse_words": 512,
             "quota": 32, "restored_capacity_before_retirement": 512, "final_remaining": 511,
             "partial_batch_rollback": ["actual quota failure", "actual global exhaustion"],
+            "contiguous_pair_observations": pairs,
             "generation_retirement": "one slot permanently retired at maximum generation",
             "mapping_release_test": "development bookkeeping guard only; installed mappings require Gate D",
             "reserved_physical_probe": "19 actual denied compiler-authority accesses"}
@@ -171,6 +270,12 @@ def check_address_space(session: Session) -> dict[str, object]:
         raise Core0Error("address-space construction did not acquire exactly descriptor plus 11 tables")
     command(6, 2, value=11)
     command(6, 1, value=1)
+    command(21, 2, 1, value=PAIR_RESULT)
+    private_pair, _ = read_contiguous_pair(command, 2)
+    for handle in private_pair:
+        command(12, descriptor, 0x40000, handle, 3, status=72, value=0)
+        command(2, 2, handle, value=0)
+    command(6, 2, value=11)
     root, _ = command(16, descriptor)
     if not 0x82000000 <= root < 0x82200000 or root % 4096:
         raise Core0Error("address-space root is outside the owned aligned frame pool")

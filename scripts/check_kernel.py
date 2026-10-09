@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded clean-source acceptance of the implemented Task 003 A-D prefix.
+"""Bounded clean-source acceptance of the implemented Task 003 A-E prefix.
 
 Existing builders, artifact audits and guest checkers supply every result.
 This orchestrator neither implements target policy nor qualifies later gates.
@@ -76,7 +76,8 @@ def matrix() -> tuple[tuple[str, str, str], ...]:
                  for configuration, stage in (("normal", "bootstrap-m"), ("normal", "supervisor"),
                                                ("frames-development", "bootstrap-m"),
                                                ("machine-origin-development", "bootstrap-m"),
-                                               *((case, "supervisor") for case in QUARANTINE)))
+                                               *((case, "supervisor") for case in QUARANTINE),
+                                               ("user-syscall-development", "supervisor")))
 
 
 def source_identity(root: Path) -> dict:
@@ -135,6 +136,13 @@ def validate_session(path: Path, image: Path, *, machine_origin: bool = False) -
         if received or (path.parent / "sent.bin").read_bytes() or "qemu-interrupt-trace.txt" not in raw:
             raise Core0Error("machine-origin raw UART/trace evidence differs")
         validate_machine_origin_trace(trace.read_text(), expected_pc=value["audited_ecall_pc"])
+    elif value.get("wire_format") == "kernel-mixed-uart-v1":
+        if provenance.get("configuration") != "user-syscall-development" or value.get("observed", {}).get("protocol") != "user-E-syscalls-v1":
+            raise Core0Error("mixed UART grammar is scoped to the exact E syscall observation")
+        from check_kernel_syscall import validate_wire_segments
+        validate_wire_segments(received, value["records"], value.get("wire_segments"))
+    elif value.get("wire_format") is not None:
+        raise Core0Error("unknown guest UART evidence format")
     elif (len(received) != RECORD_BYTES * len(value["records"])
           or [list(parse_record(received[index:index+RECORD_BYTES])) for index in range(0, len(received), RECORD_BYTES)] != value["records"]):
         raise Core0Error("raw guest packet bytes differ from recorded observations")
@@ -152,9 +160,9 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
         raise Core0Error("timeouts must be finite/positive and cumulative deadline at most40minutes")
     prepare_output_directory(work_dir, root, clean=clean)
     started = time.monotonic(); finish_by = started + deadline
-    report = {"schema_version": 1, "status": "FAIL", "artifact_category": "kernel-A-D-clean-acceptance",
-              "started_at": datetime.now(timezone.utc).isoformat(), "required_gate_prefix": "A-D", "highest_exercised_gate": "not_run",
-              "later_gates": {gate: "not_run" for gate in "EFGHIJK"}, "deadline_seconds": deadline,
+    report = {"schema_version": 1, "status": "FAIL", "artifact_category": "kernel-A-E-clean-acceptance",
+              "started_at": datetime.now(timezone.utc).isoformat(), "required_gate_prefix": "A-E", "highest_exercised_gate": "not_run",
+              "later_gates": {gate: "not_run" for gate in "FGHIJK"}, "deadline_seconds": deadline,
               "invocations": [], "images": [], "observations": []}
     logs = work_dir / "logs"; logs.mkdir()
 
@@ -202,7 +210,7 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
                     raise Core0Error("kernel host corpus is missing or empty")
                 report["host_tests"] = int(count[1])
         plan = matrix()
-        if len(plan) != 18 or len(set(plan)) != 18:
+        if len(plan) != 20 or len(set(plan)) != 20:
             raise Core0Error("required Task003 configuration matrix is incomplete")
         for configuration, stage, optimization in plan:
             label = f"{configuration}-{stage}-{optimization}"
@@ -225,6 +233,8 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
                             ("check_kernel_loader", [], "loader", 1))
             elif configuration == "machine-origin-development":
                 checkers = (("check_kernel_supervisor", ["--case", "machine-origin"], "machine-origin", 1),)
+            elif configuration == "user-syscall-development":
+                checkers = (("check_kernel_syscall", [], "syscall", 1),)
             else:
                 checkers = (("check_kernel_isolation", [], "isolation", 1),)
             for module, extra, role, count in checkers:
@@ -242,22 +252,33 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
                         validate_session(child, image)
                 else:
                     validate_session(output / "result.json", image, machine_origin=role == "machine-origin")
+                if role == "syscall":
+                    from check_kernel_syscall import DEFAULT_SEEDS
+                    observed = value.get("observed", {})
+                    if (observed.get("protocol") != "user-E-syscalls-v1" or observed.get("fresh_user_runs") != 3
+                            or [case.get("runtime_seed") for case in observed.get("cases", [])] != list(DEFAULT_SEEDS)):
+                        raise Core0Error("E runtime seed/instance corpus is incomplete")
                 report["observations"].append({"configuration": configuration, "stage": stage, "optimization": optimization,
                                                "role": role, "result": str((output / "result.json").relative_to(root)),
-                                               "sha256": sha256(output / "result.json"), "status": "PASS"})
+                                               "sha256": sha256(output / "result.json"), "status": "PASS", "qemu_sessions": count,
+                                               "syscall_user_instances": value.get("observed", {}).get("fresh_user_runs", 0) if role == "syscall" else 0})
             artifact_audit = load_json(directory / "audit.json")
             if artifact_audit.get("status") != "PASS" or artifact_audit.get("source_commit") != identity["commit"] or artifact_audit.get("image_sha256") != sha256(image):
                 raise Core0Error("mandatory full artifact audit is missing or stale")
             report["images"].append({"configuration": configuration, "stage": stage, "optimization": optimization,
                                      "image": str(image.relative_to(root)), "sha256": sha256(image),
                                      "audit_sha256": sha256(directory / "audit.json"), "provenance_sha256": sha256(directory / "provenance.json")})
-        if len(report["images"]) != 18 or len(report["observations"]) != 22:
+        if len(report["images"]) != 20 or len(report["observations"]) != 24:
             raise Core0Error("Task003 image/observation matrix did not complete")
+        sessions = sum(row["qemu_sessions"] for row in report["observations"])
+        syscall_instances = sum(row["syscall_user_instances"] for row in report["observations"])
+        if sessions != 28 or syscall_instances != 6:
+            raise Core0Error("Task003 observed process/user-instance matrix is incomplete")
         if source_identity(root) != identity or source_inputs(root) != sources or acceptance_inputs(root) != consumers:
             raise Core0Error("acceptance source/consumer changed during qualification")
-        remaining(); report.update(status="PASS", highest_exercised_gate="D")
-        report["limitations"] = ["Fresh clean acceptance of the implemented A-D prefix; not completion of Task003.",
-                                  "Gates E-J and full-milestone GateK remain unfinished.",
+        remaining(); report.update(status="PASS", highest_exercised_gate="E", qemu_sessions=sessions, syscall_user_instances=syscall_instances)
+        report["limitations"] = ["Fresh clean acceptance of the implemented A-E prefix; not completion of Task003.",
+                                  "Gates F-J and full-milestone GateK remain unfinished.",
                                   "Legacy and Task002 cumulative acceptance are separate mandatory workflow jobs."]
     except Exception as error:
         report["error"] = str(error)
@@ -296,7 +317,7 @@ def main() -> int:
         root = repo_root()
         value = check(root=root, work_dir=(root / args.work_dir).resolve(), clean=args.clean,
                       timeout=args.timeout, qemu_timeout=args.qemu_timeout, deadline=args.deadline)
-        print(f"PASS: clean Task003 A-D prefix, {len(value['images'])} images, {len(value['observations'])} checker reports")
+        print(f"PASS: clean Task003 A-E prefix, {len(value['images'])} images, {len(value['observations'])} checker reports")
         return 0
     except (Core0Error, OSError, ValueError, TypeError, KeyError) as error:
         print(f"FAIL: {error}")

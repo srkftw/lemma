@@ -27,8 +27,9 @@ ROLE_ROOTS = {
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
-                  "user-kernel-fetch-development", "user-misaligned-development")
+                  "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development")
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
+CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
               "primitive-catalog.json", "boot-package.S", "package-contract.json")
 UNIT_FILES = ("program.ll", "unit.json", "normalized.txt", "symbols.txt")
@@ -72,6 +73,8 @@ def configuration_roots(configuration: str) -> dict:
         return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.IsolationEntry.boot", ()),
                                         ("Lemma.Kernel.Development.IsolationEntry.dispatch", ("u64", "u64", "u64"))),
                 "user": (("Lemma.User.Development.Isolation.main", ("u64",)),)}
+    if configuration == "user-syscall-development":
+        return {**ROLE_ROOTS, "user": (("Lemma.User.Development.Syscall.main", ("u64",)),)}
     return ROLE_ROOTS
 
 
@@ -81,13 +84,16 @@ def configuration_modules(configuration: str) -> dict:
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.IsolationEntry", "user": "Lemma.User.Development.Isolation"}
+    if configuration == "user-syscall-development":
+        return {**ROLE_MODULES, "user": "Lemma.User.Development.Syscall"}
     return ROLE_MODULES
 
 
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
     return (configuration == "frames-development" and role == "kernel"
-            or configuration == "user-isolation-development" and role in {"kernel", "user"})
+            or configuration == "user-isolation-development" and role in {"kernel", "user"}
+            or configuration == "user-syscall-development" and role == "user")
 
 
 def startup_case(configuration: str) -> str:
@@ -108,7 +114,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
     if configuration in {"user-isolation-development", "user-csr-development", "user-nx-development",
-                         "user-kernel-fetch-development", "user-misaligned-development"} and stage != "supervisor":
+                         "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development"} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
 
 

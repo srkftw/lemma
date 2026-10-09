@@ -248,7 +248,7 @@ def evaluate : Nat → State → Action → Except Diagnostic Evaluation
           code := .deviceActionUnsupported
           message := "the core0-v0.4 finite RAM model does not interpret UART actions"
         }
-      | .uartEnableAndResetFifo _ => .error {
+      | .uartEnableAndResetFifo _ | .uartEnableAndResetFifo14 _ => .error {
           code := .deviceActionUnsupported
           message := "the core0-v0.4 finite RAM model does not interpret UART actions"
         }

@@ -8,8 +8,11 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest complete Task 003 gate: C. A/B committed141f309; C passed actual O0/O2
-  acceptance below, committed0aeb8f07940c404357ca95e091f13e843af1ca2f. D is in progress; E–K are not run.
+- Highest complete Task 003 gate: D at clean fb524b945f66241ee36a434abe39b3d854c2d9d2.
+  Gate E focused O0/O2 target checks passed; its fresh clean A–E acceptance is next.
+  F–K remain not run. The latest checkpoint at the end of this file is authoritative.
+- The user explicitly extended the original time window until the full milestone
+  is verified and authorized merging afterward. Do not merge a partial prefix.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
   Core0 host 32 and foundation host 438 tests all passed. Focused Task 002 monitor
   passed 18 O0/O2 boots, 1,598 requests, 1,415 actual IRQs, 20 synchronous
@@ -316,3 +319,81 @@
 - Highest complete gate D. E–K not run; full milestone and merge remain pending.
 - Next: User.Syscall/Memory, owned-buffer UserCopy, compiled syscall dispatcher,
   genuine U ABI boundary tests and precise O0/O2 trap-stack budgets.
+
+## Gate E syscall construction and actual stack rejection
+
+- User.Syscall/Memory, full-range UserCopy and the ordinary syscall dispatcher
+  passed genuine Lean elaboration and production LLVM/RV64 probes. These are
+  compiler/audit observations, not Gate E guest acceptance.
+- The first complete O0 syscall development artifact built, then audit exited1:
+  Entry.dispatch requires4144 bytes against actually owned4096 bytes. The
+  rejection occurred before QEMU launch. Exact retained report:
+  build/kernel/gateE/first-syscall-O0/audit-failure.json, SHA256
+  a90a1ba2a600c68b0090dd5cd7d300650cefef7dfeabb09df9e1df732ea4ada7.
+- Remediation allocates two physically contiguous, independently versioned
+  purpose1 frames, zeros both before publication, records both handles in the
+  descriptor and revalidates their owner/purpose/pins/contiguity before reading
+  a trap frame. Teardown happens only on the restored S reaper stack.
+- An independent audit review also found unsanctioned destination-SP writes
+  could evade primitive frame accounting. The auditor is being tightened to
+  allow only exact per-symbol machine-boundary switches and fixed self-SP
+  adjustments; narrow negative regressions retain the counterexamples.
+- Highest verified gate remains D at its exact clean checkpoint. E remains in
+  progress with no guest pass yet; F–K are not run. Next: freeze the stack
+  repair, build and audit fresh O0/O2 artifacts, run actual pair-allocation and
+  syscall boundary guest checks, then repeat affected D regressions.
+
+## Actual repaired-stack Gate E O0 run and UART prerequisite
+
+- The repaired complete O0 artifact passed audit with4256/8192-byte trap chain,
+  4768/61440-byte S boot chain,1088/65536-byte M chain and1328/8192-byte U chain.
+  Owned-pair source/IR bindings were checked; this did not pass Gate E by itself.
+- The actual U corpus reached identity/time/sleep, allocation, binary output,
+  invalid crossing input with unchanged sentinel, and pageB reallocation.
+  Its first successful request32 then returned one byte. The user expected16
+  and ended before echo/recovery; the checker failed correctly. QEMU remained
+  live and was explicitly killed/reaped(-9); stderr was empty.
+- Retained actual failure: build/kernel/gateE/stack-repaired-candidate/
+  user-syscall-development-O0-run/result.json. The failed candidate report and
+  raw bytes remain intact. No O2 or other candidate image pass is inferred.
+- Pinned QEMU source archive matches the locked flat SHA256. serial.c shows
+  disabled FIFO and legacyFCR0x07/trigger1 both advertise one byte; receiving
+  the full host payload into its pipe does not mean16 bytes are in the UART.
+  Source investigation report: build/kernel/gateE/host/uart-short-read-investigation.json.
+- Repair introduces only a closed kernel-only fixedFCR0xc7 trigger14 operation
+  in versioned core0-kernel-v0.2, preserving old profiles and0x07 semantics.
+  It initializes once before the input protocol. The crossing test will require
+  one actual read to deliver9..16 bytes, then record any completion reads
+  separately before checking the full16-byte independently chosen echo.
+- A verified U halfword ECALL now terminates its instance44 rather than making
+  its user-selected PC a kernel-fatal condition. No such ECALL pattern appeared
+  in the inspected D/E payloads; that is not a general proof. A narrow typed
+  quarantine fixture using overlapping00730013/00000000 words is planned for
+  direct cause8/halfword-PC containment evidence before full qualification.
+- Highest complete gate remains D; E is in progress, F–K not run. Next is fresh
+  complete O0/O2 pair/syscall evidence after this versioned UART correction.
+
+## Gate E versioned UART focused candidate passed
+
+- Fresh dirty-candidate builds/audits and actual guests passed for E syscall and
+  frame development at both O0/O2. Source and acceptance inventories remained
+  equal before/after the166.20s run. Report: build/kernel/gateE/fifo14-candidate/result.json,
+  SHA2567c41215665530322d956c285b3650ec7cafef7a2ca463cf4e7dff372962f1557.
+- Each E guest ran three fresh U corpora with binary output/input, one actual
+  successful9..16-byte two-page read, separate completion counts when needed,
+  and exact reclamation. All four guests were explicitly killed/reaped; stderr
+  was empty and all PIDs absent. This focused candidate is not clean acceptance.
+- The compiler FIFO14 fixture/export/LLVM probe passed on its second external
+  driver attempt; first syntax failure remains intact. The complete held kernel
+  and user LLVM probes also passed, report SHA256
+  1b1889cb59d7a0e04e95ec2c232a307f166091b61ede2bce967eb20e9b0b14b4.
+- Host checks: Lake55jobs, kernel58, Core032, repaired foundation440, scaffold18
+  and scaffold metadata passed. The earlier foundation439 suite failed four
+  static CI assumptions after adding the kernel job; retained failure logs were
+  not relabeled. Tests now scope the original foundation job separately and
+  require the exact bounded kernel lane. A host sleeping-process fixture now
+  waits for bounded actual readiness before testing interruption ownership.
+- Highest verified gate remains D pending fresh committed-source A–E acceptance.
+  Next: commit this coherent E candidate; create a fresh worktree at that commit;
+  run check_kernel.py --work-dir build/kernel/E-clean --clean --timeout300
+  --qemu-timeout90 --deadline2400 and independently inspect all raw evidence.

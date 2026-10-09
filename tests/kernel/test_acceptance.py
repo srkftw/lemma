@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -22,12 +23,22 @@ class AcceptanceFailures(unittest.TestCase):
             for name in ('audit.json','provenance.json'): (p/name).write_text('{}')
             # This is a sleeping host fixture, not a QEMU/target observation.
             executable=p/'qemu-system-riscv64'
-            executable.write_text(f'#!{sys.executable}\nimport time\ntime.sleep(60)\n');executable.chmod(0o700)
+            ready=p/'fixture-ready'
+            executable.write_text(f'#!{sys.executable}\nimport os, time\nfrom pathlib import Path\n'
+                                  f'Path({str(ready)!r}).write_text(str(os.getpid()))\ntime.sleep(60)\n');executable.chmod(0o700)
             output=p/'interrupted-host-fixture'
             with patch('run_kernel.audit',return_value={'status':'PASS'}), patch('run_kernel.source_inputs',return_value={'fixture':'hash'}), \
                  patch('run_kernel.require_tools',return_value={'qemu-system-riscv64':str(executable)}), patch('run_kernel.qemu_argv',return_value=(str(executable),)):
                 with self.assertRaises(Core0Error):
                     with Session(root=ROOT,image=image,output_dir=output) as session:
+                        deadline=time.monotonic()+5
+                        while not ready.exists() and time.monotonic()<deadline:
+                            if session.process.poll() is not None:
+                                self.fail('sleeping host fixture exited before readiness')
+                            time.sleep(0.01)
+                        self.assertTrue(ready.exists(), 'sleeping host fixture did not start')
+                        self.assertEqual(ready.read_text(), str(session.process.pid))
+                        self.assertIn(str(executable).encode(), Path('/proc', str(session.process.pid), 'cmdline').read_bytes())
                         rows=stop_controller_children(defer_qemu=True)
                         self.assertIn({'pid':session.process.pid,'deferred_to_guest_runner':True},rows)
                         self.assertIsNone(session.process.poll())
@@ -56,12 +67,13 @@ class AcceptanceFailures(unittest.TestCase):
 
     def test_required_matrix_has_all_profiles_and_no_later_gate_configuration(self):
         rows = matrix()
-        self.assertEqual((len(rows), len(set(rows))), (18, 18))
+        self.assertEqual((len(rows), len(set(rows))), (20, 20))
         for optimization in ('O0', 'O2'):
             self.assertIn(('normal', 'bootstrap-m', optimization), rows)
             self.assertIn(('normal', 'supervisor', optimization), rows)
             self.assertIn(('frames-development', 'bootstrap-m', optimization), rows)
             self.assertIn(('machine-origin-development', 'bootstrap-m', optimization), rows)
+            self.assertIn(('user-syscall-development', 'supervisor', optimization), rows)
 
     def test_missing_raw_source_and_packet_evidence_cannot_pass(self):
         with tempfile.TemporaryDirectory(dir=ROOT/'build/kernel') as temporary:

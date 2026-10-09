@@ -15,7 +15,8 @@ import struct
 import sys
 
 from audit_core0 import (alloc_section_names, defined_function_symbols, numeric_symbols, parse_definitions_and_calls,
-                         parse_load_segments, relocation_types)
+                         parse_load_segments, relocation_types, parse_stack_sizes,
+                         validate_loop_stack_call_graph, _ir_definition_body)
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate_output_file
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
@@ -23,7 +24,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
-from audit_device import (_access_op, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
+from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
 
 MACHINE_SYMBOLS = {
@@ -96,6 +97,160 @@ USER_ATTACKS = {
     "execute-misaligned": ("lemma_user_attack_misaligned", "adversarial-illegal-halfword-fetch", (0x000102b7, 0x0022829b, 0x00028067)),
 }
 USER_ABI_INITIAL_DATA = struct.pack("<2Q", 0, 1)
+USER_SYSCALL_WORDS = (0x00050893, 0x00058513, 0x00060593, 0x00068613,
+                      0x00070693, 0x00078713, 0x00000073, 0x00008067)
+
+
+def machine_frame(source: str, symbol: str) -> int:
+    """Account the fixed local storage of an already audited typed primitive."""
+    match = re.search(rf"^{re.escape(symbol)}:\n(.*?)^\.size {re.escape(symbol)},", source, re.M | re.S)
+    if match is None:
+        raise Core0Error(f"missing generated machine primitive body: {symbol}")
+    body, writes = match[1], []
+    for line in body.splitlines():
+        instruction = re.match(r"\s*([a-z][a-z0-9.]*)\s+(.*)$", line)
+        if instruction is None:
+            continue
+        operation, operands = instruction.groups()
+        fields = [part.strip() for part in operands.split(",")]
+        if fields[0] != "sp" or operation in {"sd", "sw", "sh", "sb", "beq", "bne", "blt", "bge", "bltu", "bgeu", "beqz", "bnez"}:
+            continue
+        writes.append(line.strip())
+    sanctioned = {
+        "lemma_exec_enter_user": ["addi sp, sp, -16", "addi sp, sp, 16", "mv sp, a0", "ld sp, 16(sp)"],
+        "lemma_machine_vector": ["csrrw sp, mscratch, sp", "addi sp, sp, -288", "mv sp, a1", "ld sp, 16(sp)"],
+        "lemma_supervisor_vector": ["csrrw sp, sscratch, sp", "addi sp, sp, -288", "mv sp, a1", "ld sp, 16(sp)"],
+    }
+    if symbol in sanctioned:
+        if writes != sanctioned[symbol]:
+            raise Core0Error(f"typed context stack switches differ from the closed symbol inventory: {symbol}")
+    elif any(re.fullmatch(r"addi sp, sp, -?[0-9]+", line) is None for line in writes):
+        raise Core0Error(f"unaccounted generated stack-pointer write: {symbol}")
+    amounts = [int(value) for line in writes if (match := re.fullmatch(r"addi sp, sp, (-?[0-9]+)", line))
+               for value in (match[1],)]
+    if any(amount % 16 for amount in amounts):
+        raise Core0Error("typed primitive stack allocation violates 16-byte alignment")
+    return sum(-amount for amount in amounts if amount < 0)
+
+
+def validate_compiled_stack(machine: str, frames: dict[str, int]) -> None:
+    """Reject SP writes which cannot be reconciled with LLVM's fixed frames."""
+    current = None
+    allocations = {symbol: 0 for symbol in frames}
+    for line in machine.splitlines():
+        label = re.fullmatch(r"([0-9a-fA-F]+) <([A-Za-z_.$][A-Za-z0-9_.$-]*)>:", line.strip())
+        if label:
+            # LLVM retains local PC-relative labels inside a function. They
+            # are not a new executable function or a new stack allocation.
+            if label[2] in frames:
+                current = label[2]
+            elif not label[2].startswith(".L"):
+                current = None
+            continue
+        instruction = re.match(r"\s*[0-9a-fA-F]+:\s+([a-z][a-z0-9.]*)\s+(.*)$", line)
+        if instruction is None:
+            continue
+        operation, operands = instruction.groups()
+        words = [word.strip() for word in operands.split(",")]
+        if not words or words[0] != "sp" or operation in {"sd", "sw", "sh", "sb"}:
+            continue
+        if (current not in frames or operation != "addi" or len(words) != 3 or words[1] != "sp"
+                or not re.fullmatch(r"-?(?:0x[0-9a-f]+|[0-9]+)", words[2])):
+            raise Core0Error(f"unaccounted compiled stack-pointer write: {line.strip()}")
+        amount = int(words[2], 16 if "0x" in words[2] else 10)
+        if amount % 16:
+            raise Core0Error("compiled stack adjustment violates 16-byte alignment")
+        if amount < 0:
+            allocations[current] += -amount
+    if allocations != frames:
+        raise Core0Error("compiled fixed stack allocation differs from LLVM frame metadata")
+
+
+def weighted_stack_graph(ir: str, frames: dict[str, int], primitive_frames: dict[str, int]) -> dict:
+    """Reuse the legacy closure/cycle audit and add closed external frame costs."""
+    base = validate_loop_stack_call_graph(ir, frames)
+    if any(type(size) is not int or size < 0 or size % 16 for size in frames.values()):
+        raise Core0Error("LLVM stack frames must be nonnegative aligned byte counts")
+    if re.search(r"\b(?:alloca|llvm\.stacksave|llvm\.stackrestore|invoke|callbr)\b", ir):
+        raise Core0Error("dynamic/explicit stack allocation or unsupported call boundary")
+    calls = {}
+    for symbol in frames:
+        body = _ir_definition_body(ir, symbol)
+        for line in body.splitlines():
+            instruction = re.match(r"^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:(?:tail|musttail|notail)\s+)?call\b", line)
+            if instruction and not re.search(r"@[A-Za-z0-9_.$-]+\(", line):
+                raise Core0Error("indirect stack call is not statically bounded")
+        _defined, _declared, called = parse_definitions_and_calls(body)
+        unknown = called - set(frames) - set(primitive_frames)
+        if unknown:
+            raise Core0Error(f"unaccounted external frame below {symbol}: {sorted(unknown)}")
+        calls[symbol] = sorted(called)
+    memo = {}
+    def longest(symbol):
+        if symbol in primitive_frames:
+            return primitive_frames[symbol], [symbol]
+        if symbol not in memo:
+            size, path = max((longest(child) for child in calls[symbol]), default=(0, []), key=lambda row: row[0])
+            memo[symbol] = frames[symbol] + size, [symbol, *path]
+        return memo[symbol]
+    for symbol in sorted(frames):
+        longest(symbol)
+    return {"compiled_graph": base, "primitive_frames": dict(sorted(primitive_frames.items())),
+            "weighted_frame_chains": {name: {"bytes": size, "chain": path} for name, (size, path) in sorted(memo.items())}}
+
+
+def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int], vector_bytes: int) -> list[dict]:
+    entries = []
+    for index, root in enumerate(unit["roots"]):
+        role = unit["role"]
+        domain, extra = (("machine", vector_bytes) if role == "firmware" else
+                         ("user", 0) if role == "user" else ("boot", 0) if index == 0 else ("kernel-trap", vector_bytes))
+        chain = graph["weighted_frame_chains"].get(root["symbol"])
+        if not isinstance(chain, dict):
+            raise Core0Error("source root lacks emitted stack chain")
+        total, capacity = chain["bytes"] + extra, capacities[domain]
+        if total >= capacity:
+            raise Core0Error(f"{root['source']} requires {total} bytes against strict {capacity}-byte {domain} stack")
+        entries.append({"source": root["source"], "symbol": root["symbol"], "domain": domain,
+                        "compiled_and_primitive_chain_bytes": chain["bytes"], "vector_bytes": extra,
+                        "total_bytes": total, "capacity_bytes": capacity, "margin_bytes": capacity - total,
+                        "chain": chain["chain"]})
+    return entries
+
+
+def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
+    """Bind the capacity to genuine reachable construction and cleanup code."""
+    by_source = {}
+    for row in unit["functions"]:
+        source = re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"])
+        by_source[source] = row["symbol"]
+    required = {"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
+                "Lemma.Kernel.Memory.Frames.allocateContiguous2", "Lemma.Kernel.Loader.allocateStack",
+                "Lemma.Kernel.Loader.installStackPair", "Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.stackPair",
+                "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown", "Lemma.Kernel.Process.dispatch",
+                "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset"}
+    if not required <= set(by_source):
+        raise Core0Error("8-KiB stack lacks its genuine pair construction/validation/teardown source closure")
+    for source, value in (("Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue", layout["task_kernel_stack_bytes"]),
+                          ("Lemma.Kernel.Loader.kernelStackHandleOffset", 2400),
+                          ("Lemma.Kernel.Loader.kernelStackSecondHandleOffset", 2480)):
+        body = _ir_definition_body(pre_ir, by_source[source])
+        if re.fullmatch(r"\s*entry:\s*ret i64 " + str(value) + r"\s*", body) is None:
+            raise Core0Error("task-stack source constant differs from its exact emitted UInt64 value")
+    for caller, callees in {
+        "Lemma.Kernel.Loader.allocateStack": ["Lemma.Kernel.Memory.Frames.allocateContiguous2"],
+        "Lemma.Kernel.Loader.installStackPair": ["Lemma.Kernel.Loader.stackPair"],
+        "Lemma.Kernel.Loader.teardown": ["Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.releaseStackHandle"],
+        "Lemma.Kernel.Loader.storedStack": ["Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue"],
+        "Lemma.Kernel.Process.dispatch": ["Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue"],
+    }.items():
+        calls = parse_definitions_and_calls(_ir_definition_body(pre_ir, by_source[caller]))[2]
+        if not {by_source[callee] for callee in callees} <= calls:
+            raise Core0Error("owned task-stack source call chain omits pair construction or validation")
+    return {"pages": layout["task_kernel_stack_pages"], "bytes": layout["task_kernel_stack_bytes"],
+            "construction": "owned-physically-contiguous-pair", "first_handle_offset": 2400, "second_handle_offset": 2480,
+            "base_owned_task_frames": 15 + layout["task_kernel_stack_pages"],
+            "source_functions": {source: by_source[source] for source in sorted(required)}}
 
 
 def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
@@ -243,6 +398,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
+    if role == "kernel" and unit["contract_version"] == "core0-kernel-v0.2":
+        expected_devices["uart.enable-reset-fifo-trigger14"] = (
+            "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
         row = _object(raw, "device operation")
         _keys(row, {"stable_id", "source_identity", "lowering_id", "base", "offset", "width_bytes", "access", "fixed_value",
@@ -251,17 +409,25 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
         if stable not in expected_devices or stable in device_ids:
             raise Core0Error("unknown/duplicate production device operation")
         constructor, lowering, offset, access, value = expected_devices[stable]
-        if any(row.get(key) != expected for key, expected in {
+        if (any(type(row.get(key)) is not int for key in ("base", "offset", "width_bytes"))
+                or value is not None and type(row.get("fixed_value")) is not int
+                or any(row.get(key) is not True for key in ("volatile", "fence_before", "fence_after"))
+                or any(row.get(key) != expected for key, expected in {
             "source_identity": "Lemma.Core0.Memory.Action." + constructor,
             "lowering_id": lowering, "base": 0x10000000, "offset": offset,
             "width_bytes": 1, "access": access, "fixed_value": value,
-            "volatile": True, "fence_before": True, "fence_after": True}.items()):
+            "volatile": True, "fence_before": True, "fence_after": True}.items())):
             raise Core0Error("compiled device operation differs from pinned UART contract")
         sites = _array(row.get("sites"), "device sites")
         if not sites or any(not isinstance(site, dict) or type(site.get("site")) is not int or site["site"] < 0 or site.get("symbol") not in symbols for site in sites):
             raise Core0Error("device site/source-function binding missing")
         for site in sites:
             _keys(site, {"site", "symbol"}, "device site")
+        if stable == "uart.enable-reset-fifo-trigger14" and (
+                len(sites) != 1 or not any(function["source"] == "Lemma.Platform.LemmaVM.ConsoleDevice.initialize14"
+                                         and function["symbol"] == sites[0]["symbol"] and function["args"] == []
+                                         for function in functions)):
+            raise Core0Error("trigger14 FIFO site lacks its sole closed production initializer")
         device_ids.add(stable)
     return unit
 
@@ -269,11 +435,14 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
 def validate_layout(value: object, *, configuration: str = "normal") -> dict:
     layout = _object(value, "layout")
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
-                   "frame_bytes", "frame_count", "context", "intervals", "user"}, "layout")
+                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"}, "layout")
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != user_startup_case(configuration):
         raise Core0Error("unknown kernel layout version")
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
         raise Core0Error("pinned RAM/frame contract differs")
+    if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
+            or layout["task_kernel_stack_pages"] != 2 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
+        raise Core0Error("owned two-page kernel stack construction contract differs")
     if layout.get("context") != CONTEXT_LAYOUT:
         raise Core0Error("fixed supervisor context/stack contract differs")
     expected = {"firmware": (0x80000000, 0x80010000), "firmware-private": (0x80100000, 0x80110000),
@@ -399,6 +568,18 @@ def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tupl
             "kernel_resume_sie": 0, "kernel_resume_scratch": 0, "initial_user_argument": "a0:u64"}
 
 
+def validate_user_syscall_bridge(assembly: str, raw_machine: str, ranges: dict[str, tuple[int, int]]) -> dict:
+    symbol = "lemma_exec_syscall"
+    expected = ["mv a7, a0", "mv a0, a1", "mv a1, a2", "mv a2, a3", "mv a3, a4", "mv a4, a5", "ecall", "ret"]
+    packed = struct.pack("<8I", *USER_SYSCALL_WORDS)
+    if _assembly_function(assembly, symbol) != expected or _raw_function(raw_machine, ranges, symbol) != packed:
+        raise Core0Error("user syscall register transport/ECALL/return differs from the declared ABI")
+    base, size = ranges[symbol]
+    return {"symbol": symbol, "base": base, "bytes": size, "ecall_pc": base + 24,
+            "number_register": "a7", "argument_registers": ["a0", "a1", "a2", "a3", "a4"],
+            "result_registers": ["a0:status", "a1:value"], "raw_sha256": hashlib.sha256(packed).hexdigest()}
+
+
 def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, int]],
                                  assembly: str, case: str) -> dict:
     attacks = {symbol for symbol in ranges if symbol.startswith("lemma_user_attack_")}
@@ -489,6 +670,41 @@ def validate_pmp_constant_section(section_text: str, raw: bytes, *, object_file:
             "source": tables[0]["source"], "values": values}
 
 
+def _kernel_access_op(line: str, unit: dict, *, optimized: bool = False) -> str | None:
+    """Keep the new closed FCR byte outside every legacy device recognizer."""
+    ordinary = _access_op(line, optimized=optimized)
+    if ordinary is not None:
+        return ordinary
+    if unit.get("role") != "kernel" or unit.get("contract_version") != "core0-kernel-v0.2":
+        return None
+    value = r"(?:199|-57)" if optimized else "199"
+    store = re.fullmatch(r"store volatile i8 " + value +
+                         r", ptr inttoptr \(i64 268435458 to ptr\), align ([0-9]+)", line.strip())
+    if store and _valid_access_alignment(0x10000002, int(store[1]), optimized=optimized):
+        return "uart.fcr.enable-reset-trigger14"
+    return None
+
+
+def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> None:
+    """Bind the closed FIFO site to the first boot service and one direct call."""
+    operations = [row for row in unit["used_device_ops"] if row["stable_id"] == "uart.enable-reset-fifo-trigger14"]
+    if not operations:
+        return
+    by_source = {row["source"]: row["symbol"] for row in unit["functions"]}
+    initialize = by_source.get("Lemma.Platform.LemmaVM.ConsoleDevice.initialize14")
+    boot = by_source.get("Lemma.Kernel.Entry.bootServices")
+    if initialize is None or boot is None:
+        raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
+    if not optimized:
+        body = _ir_definition_body(ir, boot)
+        calls = re.findall(r"(?m)^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:tail )?call\s+[^\n]*?@([-A-Za-z0-9_.$]+)\(", body)
+        if not calls or calls[0] != initialize or calls.count(initialize) != 1:
+            raise Core0Error("boot services do not initialize the FIFO once before their first effect")
+        total = len(re.findall(r"(?m)^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:tail )?call\s+[^\n]*?@" + re.escape(initialize) + r"\(", ir))
+        if total != 1:
+            raise Core0Error("compiled boot closure contains an additional FIFO reset")
+
+
 def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
@@ -529,6 +745,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
             raise Core0Error("LLVM execution primitive calling convention differs")
     if "core0_io_fence" in declarations and not _primitive_declaration_matches(ir, "declare void @core0_io_fence()"):
         raise Core0Error("LLVM IO fence calling convention differs")
+    validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit, optimized=optimized)
     line_functions = _line_functions(lines)
@@ -544,14 +761,14 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
         if marker and not optimized:
             if index + 3 >= len(lines) or FENCE_CALL.fullmatch(lines[index+1]) is None or FENCE_CALL.fullmatch(lines[index+3]) is None:
                 raise Core0Error("compiled UART site lacks its contiguous IO fence pair")
-            operation = _access_op(lines[index+2])
+            operation = _kernel_access_op(lines[index+2], unit)
             site = (int(marker[1]), line_functions[index], marker[2])
             if operation != marker[2] or site in observed_sites:
                 raise Core0Error("compiled UART site is duplicated or its access differs")
             observed_sites.add(site)
         address = DIRECT_ADDRESS.search(line)
         if address and 0x10000000 <= int(address[1]) < 0x10000100 and ("load " in line or line.lstrip().startswith("store ")):
-            operation = _access_op(line, optimized=optimized)
+            operation = _kernel_access_op(line, unit, optimized=optimized)
             if (operation is None or index == 0 or index + 1 >= len(lines) or
                     FENCE_CALL.fullmatch(lines[index-1]) is None or FENCE_CALL.fullmatch(lines[index+1]) is None):
                 raise Core0Error("UART IR access width/address/volatility/fences differ")
@@ -760,6 +977,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
+        task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         object_functions = {
             "startup.o": expected_machine, "user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}, "boot-package.o": set(),
             **{role + "/program.o": set(ir[role]["optimized"]["definitions"]) for role in ROLE_ROOTS},
@@ -817,6 +1035,42 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 sections.remove(".text")
             if not sections <= allowed_sections or object_file == "boot-package.o" and sections != {".boot_package"}:
                 raise Core0Error(f"unaccounted allocated object section in {object_file}: {sorted(sections)}")
+        intervals = {row["name"]: row for row in layout["intervals"]}
+        capacities = {"machine": intervals["firmware-private"]["limit"] - intervals["firmware-private"]["base"],
+                      "boot": intervals["supervisor-stack"]["limit"] - layout["context"]["boot_stack_floor"],
+                      "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
+        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 8192, "user": 8192}:
+            raise Core0Error("authoritative stack capacities differ")
+        startup, user_startup = (output_dir / "startup.S").read_text(), (output_dir / "user-startup.S").read_text()
+        for vector in ("lemma_machine_vector", "lemma_supervisor_vector"):
+            if vector in expected_machine and machine_frame(startup, vector) != layout["context"]["bytes"]:
+                raise Core0Error("typed vector stack allocation differs from the context layout")
+        if machine_frame(user_startup, "_user_start") or machine_frame(user_startup, "lemma_exec_syscall"):
+            raise Core0Error("user entry/syscall bridge consumes undeclared stack")
+        stacks = {}
+        for role, unit in units.items():
+            object_file = role + "/program.o"
+            frames = parse_stack_sizes(inspect("llvm-readelf", ["--stack-sizes", object_file], role + "-stack-sizes"))
+            if set(frames) != object_functions[object_file]:
+                raise Core0Error("stack metadata differs from the actual executable object closure")
+            validate_compiled_stack(inspect("llvm-objdump", ["-d", "--no-show-raw-insn", object_file], role + "-stack-disassembly"), frames)
+            primitive_source = user_startup if role == "user" else startup
+            primitives = {row["primitive_symbol"]: machine_frame(primitive_source, row["primitive_symbol"])
+                          for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
+            if unit["used_device_ops"]:
+                primitives["core0_io_fence"] = machine_frame(primitive_source, "core0_io_fence")
+            undefined = {line.split()[-1] for line in inspect("llvm-nm", ["--undefined-only", object_file], role + "-stack-undefined").splitlines() if line.split()}
+            if not undefined <= set(primitives):
+                raise Core0Error(f"object has an unaccounted external stack/runtime symbol: {sorted(undefined - set(primitives))}")
+            post_ir = (output_dir / role / "program.opt.ll").read_text()
+            _definitions, _declarations, called = parse_definitions_and_calls(post_ir)
+            for intrinsic in called & OPTIMIZER_INTRINSICS:
+                primitives[intrinsic] = 0
+            graph = weighted_stack_graph(post_ir, frames, primitives)
+            graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
+                         function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined),
+                         maximum_compiled_frame_bytes=max(frames.values()))
+            stacks[role] = graph
         inspections = {}
         for name, image, expected, user in (("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False),
                                            ("user", "user/image.elf", {row["symbol"] for row in user_primitive_rows(user_case)} | {row["symbol"] for row in units["user"]["functions"]}, True)):
@@ -885,6 +1139,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 if len(exit_pcs) != 1:
                     raise Core0Error("user startup lacks its exact single exit ECALL")
                 inspections[name]["exit_ecall_pc"] = exit_pcs[0]
+                inspections[name]["syscall_bridge"] = validate_user_syscall_bridge(
+                    (output_dir / "user-startup.S").read_text(), raw_user_machine, ranges)
                 inspections[name]["quarantined_startup"] = attack
         package_contract = _object(load_json(output_dir / "package-contract.json"), "package contract")
         if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "user_startup_case": user_case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
@@ -913,6 +1169,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "lean_source_realization": realization,
                   "user_image_sha256": sha256(output_dir / "user/image.elf"), "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "elf": inspections, "commands": logs,
+                  "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
+                  "task_kernel_stack": task_stack,
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."
                                     if stage == "bootstrap-m" else "Supervisor artifact audit does not establish a running isolated user task.")]}

@@ -242,17 +242,17 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
-  | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .user_v0_1 => primitiveAllowlistV07
+  | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
   | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .kernel_v0_1 | .user_v0_1 => true
+      .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
   | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .kernel_v0_1 | .user_v0_1 => true
+      .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -1263,13 +1263,14 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .user_v0_1 =>
+  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 =>
       Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  unless ctx.profile == .v0_5 || ctx.profile == .v0_6 || ctx.profile == .v0_7 ||
-      ctx.profile == .firmware_v0_1 || ctx.profile == .kernel_v0_1 do
+  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 then
+    fail ctx .unsupportedPrimitive "closed UART trigger14 requires core0-kernel-v0.2"
+  unless op.admits ctx.profile do
     fail ctx .unsupportedPrimitive
       (s!"device operation `{op.stableId}` requires " ++
         s!"`{Profile.v0_5.contractVersion}`; `{ctx.profile.contractVersion}` " ++
@@ -1369,6 +1370,8 @@ private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr 
         (substituteActionScalar id replacement next)
   | .uartEnableAndResetFifo status next =>
       .uartEnableAndResetFifo status (substituteActionScalar id replacement next)
+  | .uartEnableAndResetFifo14 status next =>
+      .uartEnableAndResetFifo14 status (substituteActionScalar id replacement next)
   | .trap operation status value next =>
       .trap operation status value (substituteActionScalar id replacement next)
   | .timer operation argument? status value next =>
@@ -1493,6 +1496,15 @@ mutual
       markDeviceOp op .deviceWrite
       pure (.uartEnableAndResetFifo status next)
 
+    else if name == ``Lemma.Core0.Memory.Action.uartEnableAndResetFifo14 then
+      let op := Device.Op.uartEnableAndResetFifo14
+      requireDeviceProfile ctx op
+      unless args.size == 1 do
+        fail ctx .arityMismatch "malformed Action.uartEnableAndResetFifo14 application"
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[0]!
+      markDeviceOp op .deviceWrite
+      pure (.uartEnableAndResetFifo14 status next)
+
     else if let some op := trapConstructor? name then
       requireTrapProfile ctx op
       unless args.size == 1 do
@@ -1542,7 +1554,7 @@ mutual
       pure (.platform operation arguments status value next)
 
     else if name == ``Lemma.Core0.Memory.Action.loop then
-      unless ctx.profile == .kernel_v0_1 || ctx.profile == .user_v0_1 do
+      unless ctx.profile.isKernel || ctx.profile == .user_v0_1 do
         fail ctx .unsupportedPrimitive "Action.loop requires an explicit kernel/user execution profile"
       unless args.size == 1 do fail ctx .arityMismatch "malformed Action.loop application"
       let callback ← match stripMData args[0]! with

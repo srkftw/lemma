@@ -533,6 +533,17 @@ private def expectedDeviceSpec (op : Lemma.Core0.Device.Op) :
       fenceAfter := true
       sideEffect := .enableAndResetFifos
     }
+  | .uartEnableAndResetFifo14 => {
+      op
+      base := Lemma.Core0.Device.UART.base
+      offset := Lemma.Core0.Device.UART.fcrOffset
+      widthBytes := 1
+      access := .write
+      fixedWriteValue? := some 0xc7
+      fenceBefore := true
+      fenceAfter := true
+      sideEffect := .enableAndResetFifos
+    }
 
 private def deviceCatalogMatchesBackend : Bool :=
   Lemma.Core0.Device.opCatalog == #[
@@ -541,6 +552,10 @@ private def deviceCatalogMatchesBackend : Bool :=
     expectedDeviceSpec .uartWriteByte,
     expectedDeviceSpec .uartEnableAndResetFifo
   ]
+
+private def kernelDeviceCatalogMatchesBackend : Bool :=
+  Lemma.Core0.Device.kernelOpCatalog == Lemma.Core0.Device.opCatalog.push
+    (expectedDeviceSpec .uartEnableAndResetFifo14)
 
 private def expectedTrapSpec (op : Lemma.Core0.Trap.Op) :
     Lemma.Core0.Trap.OpSpec := {
@@ -658,6 +673,8 @@ private def collectDeviceOps (operations : Array Lemma.Core0.Device.Op) :
       collectDeviceOps (pushDeviceOp operations .uartWriteByte) next
   | .uartEnableAndResetFifo _ next =>
       collectDeviceOps (pushDeviceOp operations .uartEnableAndResetFifo) next
+  | .uartEnableAndResetFifo14 _ next =>
+      collectDeviceOps (pushDeviceOp operations .uartEnableAndResetFifo14) next
   | .trap _ _ _ next =>
       collectDeviceOps operations next
   | .timer _ _ _ _ next =>
@@ -683,7 +700,7 @@ private def collectTrapOps (operations : Array Lemma.Core0.Trap.Op) :
   | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
       collectTrapOps operations next
   | .uartReadStatus _ _ next | .uartReadByte _ _ next |
-      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next =>
+      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next | .uartEnableAndResetFifo14 _ next =>
       collectTrapOps operations next
   | .trap operation _ _ next =>
       collectTrapOps (pushTrapOp operations operation) next
@@ -710,7 +727,7 @@ private def collectTimerOps (operations : Array Lemma.Core0.Timer.Op) :
   | .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next =>
       collectTimerOps operations next
   | .uartReadStatus _ _ next | .uartReadByte _ _ next |
-      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next | .uartEnableAndResetFifo14 _ next |
       .trap _ _ _ next =>
       collectTimerOps operations next
   | .timer operation _ _ _ next =>
@@ -726,7 +743,7 @@ private def collectExecutionOps (operations : Array Lemma.Core0.Execution.OpSpec
   | .ite _ left right => collectExecutionOps (collectExecutionOps operations left) right
   | .load _ _ _ _ _ next | .store _ _ _ _ _ next | .checkRange _ _ _ _ _ next |
       .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next | .uartReadStatus _ _ next |
-      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next | .uartEnableAndResetFifo14 _ next |
       .trap _ _ _ next | .timer _ _ _ _ next => collectExecutionOps operations next
   | .platform operation _ _ _ next =>
       let spec := Lemma.Core0.Execution.specification operation
@@ -743,7 +760,7 @@ private def collectActionLoops (uses : Array Lemma.Core0.ActionLoopUse) :
   | .ite _ left right => collectActionLoops (collectActionLoops uses left) right
   | .load _ _ _ _ _ next | .store _ _ _ _ _ next | .checkRange _ _ _ _ _ next |
       .boundedFoldU64 _ _ _ _ _ _ _ _ _ _ next | .uartReadStatus _ _ next |
-      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next |
+      .uartReadByte _ _ next | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next | .uartEnableAndResetFifo14 _ next |
       .trap _ _ _ next | .timer _ _ _ _ next | .platform _ _ _ _ next =>
       collectActionLoops uses next
 termination_by action => sizeOf action
@@ -775,7 +792,7 @@ private def directActionEffects : Lemma.Core0.ActionExpr → Lemma.Core0.EffectS
       directActionEffects next
   | .uartReadStatus _ _ next | .uartReadByte _ _ next =>
       Lemma.Core0.EffectSet.deviceRead ∪ directActionEffects next
-  | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next =>
+  | .uartWriteByte _ _ next | .uartEnableAndResetFifo _ next | .uartEnableAndResetFifo14 _ next =>
       Lemma.Core0.EffectSet.deviceWrite ∪ directActionEffects next
   | .trap _ _ _ next =>
       Lemma.Core0.EffectSet.trap ∪ directActionEffects next
@@ -1218,7 +1235,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .loop callback => do
-      unless profile == .kernel_v0_1 || profile == .user_v0_1 do
+      unless profile.isKernel || profile == .user_v0_1 do
         throw "checked Action.loop requires a kernel/user execution profile"
       let function ← match lookupActionFunction suite.actionFunctions callback with
         | .ok function => pure function
@@ -1360,7 +1377,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
+          profile == .firmware_v0_1 || profile.isKernel do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1374,7 +1391,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
+          profile == .firmware_v0_1 || profile.isKernel do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1388,7 +1405,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
+          profile == .firmware_v0_1 || profile.isKernel do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1399,12 +1416,21 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile == .kernel_v0_1 do
+          profile == .firmware_v0_1 || profile.isKernel do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
       let site ← freshDeviceSite
       emit (.uartEnableAndResetFifo site)
+      withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
+        lowerActionExpr profile suite symbols next
+  | .uartEnableAndResetFifo14 status next => do
+      unless profile == .kernel_v0_2 do
+        throw "UART FIFO trigger14 requires core0-kernel-v0.2"
+      unless status.ty == .u8 do
+        throw "checked kernel FIFO control has an inconsistent continuation type"
+      let site ← freshDeviceSite
+      emit (.uartEnableAndResetFifo14 site)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .trap operation status value next => do
@@ -1592,6 +1618,8 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     actualDeviceOps := collectDeviceOps actualDeviceOps function.body
   let mut seenDeviceMetadata : Array Lemma.Core0.Device.Op := #[]
   for operation in suite.usedDeviceOps do
+    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 then
+      throw s!"device operation `{operation.stableId}` is denied by `{profile.contractVersion}`"
     if seenDeviceMetadata.contains operation then
       throw s!"checked Action suite repeats device metadata `{operation.stableId}`"
     seenDeviceMetadata := seenDeviceMetadata.push operation
@@ -1665,7 +1693,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   unless actualLoops.size == suite.usedLoops.size && actualLoops.all suite.usedLoops.contains &&
       suite.usedLoops.all actualLoops.contains do
     throw "checked Action suite has stale loop metadata"
-  unless actualLoops.isEmpty || profile == .kernel_v0_1 || profile == .user_v0_1 do
+  unless actualLoops.isEmpty || profile.isKernel || profile == .user_v0_1 do
     throw "checked Action.loop is denied outside kernel/user execution profiles"
   if profile.isExecution then
     unless Lemma.Core0.Execution.catalogValid && Lemma.Core0.Execution.memoryRegionsValid profile do
@@ -1681,7 +1709,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   if profile != .v0_7 && !actualTimerOps.isEmpty then
     throw s!"timer operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
   if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-      profile == .firmware_v0_1 || profile == .kernel_v0_1 then
+      profile == .firmware_v0_1 || profile.isKernel then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==
@@ -1693,6 +1721,10 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
+  if profile == .kernel_v0_2 then
+    unless Lemma.Core0.Device.kernelCatalogValid && kernelDeviceCatalogMatchesBackend &&
+        Lemma.Core0.Device.UART.fcrEnableAndReset14.toNat == 0xc7 do
+      throw "the compiled kernel-v0.2 UART catalog disagrees with the closed LLVM lowering"
   if profile == .v0_6 || profile == .v0_7 then
     unless Lemma.Core0.Trap.catalogValid && trapCatalogMatchesBackend do
       throw "the compiled core0-v0.6 trap catalog disagrees with the closed LLVM lowering"

@@ -13,4 +13,19 @@ def exit : UInt64 := 6
 def exitNumber : Nat := exit.toNat
 def allocatePages : UInt64 := 7
 def releasePages : UInt64 := 8
+
+/- Public syscall results. Status 255 is reserved for a kernel invariant
+failure and must never describe an ordinary invalid user request. -/
+def success : UInt8 := 0
+def noByte : UInt8 := 12
+def invalidArgument : UInt8 := 16
+def unsupported : UInt8 := 17
+def invalidDeadline : UInt8 := 22
+def invalidMemory : UInt8 := 33
+def quotaExceeded : UInt8 := 38
+def invalidRange : UInt8 := 71
+def permissionDenied : UInt8 := 72
+def duplicateMapping : UInt8 := 73
+def missingMapping : UInt8 := 74
+def kernelFatal : UInt8 := 255
 end Lemma.User.ABI

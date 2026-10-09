@@ -42,26 +42,40 @@ def reply (pc : UInt64) (status : UInt8) (value : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .bind (write (frameAddress + 256) (pc + 4)) fun s _ => .done s frameAddress
 
+def arm (pc deadline : UInt64) : Action :=
+  .bind (notify 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (compare deadline) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (write lastDeadlineAddress deadline) fun s _ =>
+  if failed s = true then .done s 0 else reply pc 0 deadline
+
 /-- 1: acknowledge/rearm a bounded future deadline. 2: machine time.
 3: origin witness (saved MPP=S and cause=S ECALL). 4: actual hardware IRQs.
+5: acknowledge and arm a bounded relative interval using the M clock. Computing
+the deadline here avoids racing the minimum interval against an S-to-M call.
 Unsupported numbers are recoverable errors, never permissive success. -/
 def call (pc number payload : UInt64) : Action :=
   if number = 1 then
     .bind time fun s now =>
     if failed s = true then .done s 0 else
     if validDeadline now payload = false then reply pc 22 0 else
-    .bind (notify 0) fun s _ =>
-    if failed s = true then .done s 0 else
-    .bind (compare payload) fun s _ =>
-    if failed s = true then .done s 0 else
-    .bind (write lastDeadlineAddress payload) fun s _ =>
-    if failed s = true then .done s 0 else reply pc 0 payload
+    arm pc payload
   else if number = 2 then
     .bind time fun s now => if s = 0 then reply pc 0 now else .done s 0
   else if number = 3 then reply pc 0 0x534543414c4c0001
   else if number = 4 then
     .bind (read irqCountAddress) fun s count =>
     if s = 0 then reply pc 0 count else .done s 0
+  else if number = 5 then
+    if quantumMin ≤ payload then
+      if payload ≤ quantumMax then
+        .bind time fun s now =>
+        if failed s = true then .done s 0 else
+        if now ≤ 0xffffffffffffffff - payload then arm pc (now + payload)
+        else reply pc 22 0
+      else reply pc 22 0
+    else reply pc 22 0
   else reply pc 17 0
 
 def timerInterrupt : Action :=

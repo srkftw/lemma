@@ -82,13 +82,13 @@ def isPhysical : Op → Bool
 def admits (profile : Profile) (operation : Op) : Bool :=
   match operation with
   | .physicalRead8 | .physicalRead64 | .physicalWrite8 | .physicalWrite64 =>
-      profile == .firmware_v0_1 || profile == .kernel_v0_1
+      profile == .firmware_v0_1 || profile == .kernel_v0_1 || profile == .kernel_v0_2
   | .virtualRead8 | .virtualRead64 | .virtualWrite8 | .virtualWrite64 | .syscall =>
       profile == .user_v0_1
   | .readTime | .setMachineCompare | .forwardSupervisor => profile == .firmware_v0_1
   | .firmwareCall | .installSatp | .fenceInstruction | .enterUser | .waitInterrupt |
       .readSupervisorPending =>
-      profile == .kernel_v0_1
+      profile == .kernel_v0_1 || profile == .kernel_v0_2
 
 /-- Number of meaningful source operands; the remaining six-word slots must be
 literal zero. Firmware/syscall operands are number followed by five payloads. -/
@@ -173,7 +173,7 @@ structure MemoryRegion where
 def memoryRegions : Profile → Array MemoryRegion
   | .firmware_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
-  | .kernel_v0_1 => #[
+  | .kernel_v0_1 | .kernel_v0_2 => #[
       ⟨"kernel-image", Lemma.Platform.LemmaVM.Layout.supervisorBase,
         Lemma.Platform.LemmaVM.Layout.supervisorLimit, false⟩,
       ⟨"kernel-metadata", Lemma.Platform.LemmaVM.Layout.metadataBase,

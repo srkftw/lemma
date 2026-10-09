@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static regressions for the bounded, pinned Task 002 CI lanes."""
+"""Static regressions for the bounded, pinned foundation and kernel CI lanes."""
 
 from pathlib import Path
 import re
@@ -23,13 +23,15 @@ class CiWorkflowTests(unittest.TestCase):
         cls.source = WORKFLOW.read_text()
         cls.metadata = job_block(cls.source, "metadata", "legacy-rv64")
         cls.legacy = job_block(cls.source, "legacy-rv64", "foundation-rv64")
-        cls.foundation = job_block(cls.source, "foundation-rv64")
+        cls.foundation = job_block(cls.source, "foundation-rv64", "kernel-rv64")
+        cls.kernel = job_block(cls.source, "kernel-rv64")
+        cls.task002 = cls.metadata + cls.legacy + cls.foundation
 
-    def test_three_separate_jobs_keep_host_metadata_away_from_qemu(self):
+    def test_separate_jobs_keep_host_metadata_away_from_qemu(self):
         jobs = re.findall(
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
-        self.assertEqual(jobs, ["metadata", "legacy-rv64", "foundation-rv64"])
+        self.assertEqual(jobs, ["metadata", "legacy-rv64", "foundation-rv64", "kernel-rv64"])
         for suite in ("tests/scaffold", "tests/core0", "tests/foundation"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
@@ -68,20 +70,48 @@ class CiWorkflowTests(unittest.TestCase):
         timeouts = [
             int(value)
             for value in re.findall(
-                r"^\s+timeout-minutes:\s+(\d+)$", self.source, re.MULTILINE
+                r"^\s+timeout-minutes:\s+(\d+)$", self.task002, re.MULTILINE
             )
         ]
         self.assertEqual(timeouts, [45, 45, 60])
 
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
         pipeline_blocks = re.findall(
-            r"run: \|\n((?: {10}.*(?:\n|$))+)", self.source
+            r"run: \|\n((?: {10}.*(?:\n|$))+)", self.task002
         )
         logged = [block for block in pipeline_blocks if "| tee " in block]
         self.assertEqual(len(logged), 8)
         for block in logged:
             commands = [line.strip() for line in block.splitlines() if line.strip()]
             self.assertEqual(commands[0], "set -euo pipefail")
+
+    def test_kernel_lane_requires_bounded_clean_source_and_complete_evidence(self):
+        self.assertIn("timeout-minutes: 45", self.kernel)
+        self.assertIn("timeout --foreground --signal=TERM --kill-after=30s 40m", self.kernel)
+        for required in ("nix develop --no-write-lock-file --command", "python3 scripts/check_kernel.py",
+                         "--work-dir build/kernel/ci-prefix", "--clean", "--timeout 300", "--qemu-timeout 90", "--deadline 2400"):
+            self.assertIn(required, self.kernel)
+        pipeline_blocks = re.findall(r"run: \|\n((?: {10}.*(?:\n|$))+)", self.kernel)
+        logged = [block for block in pipeline_blocks if "| tee " in block]
+        self.assertEqual(len(logged), 1)
+        self.assertEqual(next(line.strip() for line in logged[0].splitlines() if line.strip()), "set -euo pipefail")
+        for required in ('value["status"] == "PASS" and value["source"]["clean"] is True',
+                         'value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E"',
+                         'len(value["images"]) == 20 and len(value["observations"]) == 24',
+                         'value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6',
+                         'recorded["source_commit"] == value["source"]["commit"]',
+                         'recorded["lean_source_realization"]',
+                         'realized["source_path"] == lean["source_path"] and realized["revision"] == lean["revision"]',
+                         'realized["narHash"] == lean["source_sha256"] and realized["narSize"] == lean["source_nar_size"]',
+                         'digest(audit) == row["audit_sha256"] and digest(provenance) == row["provenance_sha256"]',
+                         'digest(observed) == row["sha256"] and json.loads(observed.read_text())["status"] == "PASS"'):
+            self.assertIn(required, self.kernel)
+        self.assertIn("if: ${{ always() }}", self.kernel)
+        self.assertIn("actions/upload-artifact@", self.kernel)
+        self.assertIn("if-no-files-found: error", self.kernel)
+        self.assertIn("build/kernel/ci-prefix/", self.kernel)
+        self.assertIn("build/ci/kernel-rv64.log", self.kernel)
+        self.assertIn("retention-days: 14", self.kernel)
 
     def test_each_lane_retains_bounded_artifacts_even_on_failure(self):
         for block in (self.metadata, self.legacy, self.foundation):

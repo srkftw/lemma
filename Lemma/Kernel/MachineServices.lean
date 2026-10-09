@@ -31,6 +31,10 @@ def rearm (ticks : UInt64) : Action :=
     else .done 22 0
   else .done 22 0
 
+/-- Deadline calculation takes place in the private M service, so the smallest
+admitted relative interval does not shrink while S executes its call boundary. -/
+def rearmRelative (ticks : UInt64) : Action := call 5 ticks
+
 def expectedPmp (index : UInt64) : UInt64 :=
   if index = 0 then 0x20001fff
   else if index = 1 then 0x20041fff

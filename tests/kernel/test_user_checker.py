@@ -18,6 +18,7 @@ class UserCheckerFailures(unittest.TestCase):
         session.image=directory/'image.elf'
         (directory/'user-text.bin').write_bytes(bytes(128))
         session.binding={'configuration':'normal','stage':'supervisor','startup_case':'normal',
+                         'task_kernel_stack':{'pages':2,'bytes':8192,'construction':'owned-physically-contiguous-pair','base_owned_task_frames':17},
                          'elf':{'user':{'exit_ecall_pc':0x10020,'function_ranges':{'_user_start':{'base':0x10000,'bytes':128}}}}}
         kernel_root=0x82000000;root=0x8200d000
         records=[(0xa,0x87e00000,1,512,0x82000000),
@@ -25,7 +26,7 @@ class UserCheckerFailures(unittest.TestCase):
                  (0xc1,2,3,1,0),(0xc2,17,22,22,123456),(0xd3,kernel_root,satp(kernel_root),500,0)]
         for argument in arguments:
             records.extend([(0xdf,0x8000000000000001,0x10004,USER_STATUS,satp(root)),
-                            (0xd1,8,0x10020,USER_STATUS,satp(root)),(0xd2,0,mix(argument),483,500)])
+                            (0xd1,8,0x10020,USER_STATUS,satp(root)),(0xd2,0,mix(argument),482,500)])
         if changes is not None:changes(records)
         session.record.side_effect=records
         session.command.side_effect=[(0xd0,524+index*512,root,0x10000,128) for index in range(len(arguments))]

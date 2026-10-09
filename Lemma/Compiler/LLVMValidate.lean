@@ -313,6 +313,7 @@ private def validateInstruction (fn : Function) (block : Block) (instructionInde
   | .uartWrite8 _ value =>
       operand value .i8 (context ++ " UART THR byte")
   | .uartEnableAndResetFifo _ => pure ()
+  | .uartEnableAndResetFifo14 _ => pure ()
   | .insertResultStatus _ status =>
       operand status .i64 (context ++ " checked-result status")
   | .insertResultValue _ aggregate value =>
@@ -450,7 +451,8 @@ private def validatePhis (fn : Function) (definitions : Array Definition)
       | _ => sawNonPhi := true
 
 private def uartSite? : Instruction → Option Nat
-  | .uartRead8 _ site _ | .uartWrite8 site _ | .uartEnableAndResetFifo site =>
+  | .uartRead8 _ site _ | .uartWrite8 site _ | .uartEnableAndResetFifo site |
+      .uartEnableAndResetFifo14 site =>
       some site
   | _ => none
 

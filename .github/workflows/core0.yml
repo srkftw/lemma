@@ -195,7 +195,7 @@ jobs:
           compression-level: 6
 
   kernel-rv64:
-    name: Task 003 implemented Gates A-D RV64 acceptance
+    name: Task 003 implemented Gates A-E RV64 acceptance
     runs-on: ubuntu-24.04
     timeout-minutes: 45
 
@@ -242,7 +242,9 @@ jobs:
           value = json.loads(result.read_text())
           lean = json.loads(Path("tooling/toolchain-lock.json").read_text())["tools"]["lean"]
           require(value["status"] == "PASS" and value["source"]["clean"] is True)
-          require(len(value["images"]) == 18 and len(value["observations"]) == 22)
+          require(value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E")
+          require(len(value["images"]) == 20 and len(value["observations"]) == 24)
+          require(value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6)
           for row in value["images"]:
               image = Path(row["image"])
               require(image.is_file() and image.stat().st_size > 0 and digest(image) == row["sha256"])
@@ -263,7 +265,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: kernel-A-D-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          name: kernel-A-E-rv64-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             build/kernel/ci-prefix/
             build/ci/kernel-rv64.log

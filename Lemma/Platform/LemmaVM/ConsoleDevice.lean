@@ -6,6 +6,12 @@ open Lemma.Core0.Device
 open Lemma.Core0.Memory
 def pollBudget : UInt32 := 1000000
 
+/-- Kernel profile v0.2's closed boot initializer: enable/reset the FIFO and
+select its fixed 14-byte receive trigger. The dispatcher calls this once before
+any record or input; reinitializing between reads would discard live input. -/
+def initialize14 : Action :=
+  Action.uartEnableAndResetFifo14 fun status => Action.done status 0
+
 /-- One transmit poll.  Read errors are terminal; a ready transmitter performs
 exactly one byte write and asks the enclosing fold to stop. -/
 def transmitPollStep (_index _count : UInt32) (accumulator byteWord

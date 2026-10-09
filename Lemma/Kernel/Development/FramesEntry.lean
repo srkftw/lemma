@@ -49,6 +49,7 @@ def operation (command a b c d : UInt64) : Action :=
   else if command = 18 then Lemma.Kernel.Loader.validateFrame a b
   else if command = 19 then Lemma.Kernel.Loader.load a b c
   else if command = 20 then Lemma.Kernel.Loader.teardown a
+  else if command = 21 then Frames.allocateContiguous2 a b
   else .done 17 0
 
 def reply (command a b c d : UInt64) : Action :=

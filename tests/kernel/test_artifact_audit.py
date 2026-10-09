@@ -18,6 +18,61 @@ def unit(role='user',configuration='normal'):
             'used_execution_ops':[],'used_device_ops':[],'used_loops':[]}
 
 class KernelAuditFailures(unittest.TestCase):
+    def test_trigger14_fifo_is_exact_kernel_v02_authority_and_preserves_legacy(self):
+        from audit_kernel import _kernel_access_op
+        from audit_device import _access_op
+        operation={'stable_id':'uart.enable-reset-fifo-trigger14',
+                   'source_identity':'Lemma.Core0.Memory.Action.uartEnableAndResetFifo14',
+                   'lowering_id':'uart.fcr.enable-reset-trigger14','base':0x10000000,'offset':2,
+                   'width_bytes':1,'access':'write','fixed_value':199,'volatile':True,
+                   'fence_before':True,'fence_after':True,'sites':[{'site':0,'symbol':'lemma_kernel_initialize14'}]}
+        fixture=unit('kernel');fixture['used_device_ops']=[operation]
+        fixture['functions'] += [
+            {'source':'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','symbol':'lemma_kernel_initialize14','args':[], 'effects':['mmio-write','io-order']},
+            {'source':'Lemma.Kernel.Entry.bootServices','symbol':'lemma_kernel_boot_services','args':[], 'effects':['mmio-write','io-order']}]
+        validate_unit(fixture,'kernel')
+        for field,value in [('fixed_value',7),('fixed_value',199.0),('source_identity','Lemma.Core0.Memory.Action.uartEnableAndResetFifo'),
+                            ('lowering_id','uart.fcr.enable-reset'),('offset',0),('width_bytes',8),('fence_after',False)]:
+            bad=copy.deepcopy(fixture);bad['used_device_ops'][0][field]=value
+            with self.assertRaises(Core0Error):validate_unit(bad,'kernel')
+        old=copy.deepcopy(fixture);old['contract_version']='core0-kernel-v0.1'
+        with self.assertRaises(Core0Error):validate_unit(old,'kernel')
+        for role in ['firmware','user']:
+            bad=unit(role);bad['used_device_ops']=[operation]
+            with self.assertRaises(Core0Error):validate_unit(bad,role)
+        source='store volatile i8 199, ptr inttoptr (i64 268435458 to ptr), align 1'
+        self.assertEqual(_kernel_access_op(source,fixture),'uart.fcr.enable-reset-trigger14')
+        self.assertEqual(_kernel_access_op(source.replace('199','-57'),fixture,optimized=True),'uart.fcr.enable-reset-trigger14')
+        for text,metadata in [(source,old),(source,unit('firmware')),(source,unit('user')),
+                              (source.replace('199','7'),fixture),(source.replace('199','198'),fixture),
+                              (source.replace('268435458','268435457'),fixture),(source.replace('volatile ',''),fixture),
+                              (source.replace('align 1','align 8'),fixture),(source.replace('199','-57'),fixture)]:
+            self.assertNotEqual(_kernel_access_op(text,metadata),'uart.fcr.enable-reset-trigger14')
+        for text in [source,source.replace('199','-57')]:
+            self.assertIsNone(_access_op(text,optimized=True))
+        self.assertEqual(_access_op(source.replace('199','7')),'uart.fcr.enable-reset')
+        ir='target triple = "riscv64-unknown-unknown-elf"\n' \
+           'declare void @core0_io_fence() nounwind\n' \
+           'define { i64, i64 } @lemma_kernel_root_0() {\n' \
+           ' %boot = call { i64, i64 } @lemma_kernel_boot_services()\n' \
+           ' ret { i64, i64 } %boot\n}\n' \
+           'define { i64, i64 } @lemma_kernel_boot_services() {\n' \
+           ' %init = call { i64, i64 } @lemma_kernel_initialize14()\n' \
+           ' ret { i64, i64 } %init\n}\n' \
+           'define { i64, i64 } @lemma_kernel_initialize14() {\n' \
+           ' ; lemma.uart-site=0;op=uart.fcr.enable-reset-trigger14\n' \
+           ' call void @core0_io_fence()\n '+source+'\n' \
+           ' call void @core0_io_fence()\n ret { i64, i64 } zeroinitializer\n}\n' \
+           'define { i64, i64 } @lemma_kernel_root_1(i64 %arg0, i64 %arg1, i64 %arg2) {\n' \
+           ' ret { i64, i64 } zeroinitializer\n}\n'
+        self.assertEqual(validate_ir(ir,fixture,optimized=False)['device_operations'],['uart.fcr.enable-reset-trigger14'])
+        self.assertEqual(validate_ir(ir.replace('i8 199','i8 -57'),fixture,optimized=True)['device_operations'],['uart.fcr.enable-reset-trigger14'])
+        for text,metadata in [(ir,old),(ir.replace('i8 199','i8 7'),fixture),
+                              (ir.replace(' call void @core0_io_fence()\n '+source, ' '+source),fixture),
+                              (ir.replace(' %init =', ' call void @core0_io_fence()\n %init ='),fixture),
+                              (ir.replace(' %boot =', ' %extra = call { i64, i64 } @lemma_kernel_initialize14()\n %boot ='),fixture)]:
+            with self.assertRaises(Core0Error):validate_ir(text,metadata,optimized=False)
+
     def test_lean_source_realization_rejects_missing_foreign_or_stale_nar_input(self):
         locked={'source_path':'/nix/store/fixture-source','revision':'immutable-fixture',
                 'source_sha256':'sha256-fixture','source_nar_size':100,'source_hash_kind':'nix-recursive-nar-sha256'}
@@ -87,7 +142,7 @@ class KernelAuditFailures(unittest.TestCase):
         with self.assertRaises(Core0Error):validate_startup_case(text.replace(' 80000004: ecall',' 80000004: ret'),ranges,'machine-origin-probe')
     def test_user_quarantine_configs_have_exact_roots_and_stages(self):
         for configuration in ['user-isolation-development','user-csr-development','user-nx-development',
-                              'user-kernel-fetch-development','user-misaligned-development']:
+                              'user-kernel-fetch-development','user-misaligned-development','user-syscall-development']:
             validate_configuration_stage(configuration,'supervisor')
             with self.assertRaises(Core0Error):validate_configuration_stage(configuration,'bootstrap-m')
             for role in ['firmware','kernel','user']:validate_unit(unit(role,configuration),role,configuration=configuration)

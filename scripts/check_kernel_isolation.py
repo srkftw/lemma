@@ -11,7 +11,7 @@ from pathlib import Path
 
 from build_kernel import user_startup_case
 from check_kernel_supervisor import validate_positive_records
-from check_kernel_user import MASK, USER_STATUS, _word_record, mix, satp
+from check_kernel_user import MASK, USER_STATUS, _word_record, mix, satp, task_frame_overhead
 from core0_common import Core0Error, load_json, repo_root, sha256
 from run_kernel import Session
 
@@ -47,7 +47,9 @@ def check(session: Session, *, arguments: tuple[int, ...] | None = None) -> dict
     kernel = session.record(); _word_record(kernel)
     if kernel[0] != 0xd3 or kernel[2:] != (satp(kernel[1]), 500, 0):
         raise Core0Error(f"installed kernel address-space facts differ: {kernel}")
-    baseline, victim, peer = (482 if isolation else 500), None, None
+    overhead = task_frame_overhead(session)
+    initial_text_pages = ((session.image.parent / "user-text.bin").stat().st_size + 4095) // 4096
+    baseline, victim, peer = (500 - overhead - initial_text_pages - 1 if isolation else 500), None, None
     if isolation:
         victim = session.record(); _word_record(victim)
         if (victim[0] != 0xd5 or victim[1] < 512 or victim[2] == kernel[1] or victim[3] != 0x40000
@@ -83,7 +85,7 @@ def check(session: Session, *, arguments: tuple[int, ...] | None = None) -> dict
         raise Core0Error("typed probe lacks exact audited attack PC/case")
     cases, descriptors = [], {victim[1]} if victim else set()
     pages = (text_bytes + 4095) // 4096
-    remaining_before = baseline - (16 + pages)
+    remaining_before = baseline - (overhead + pages)
     for argument in arguments:
         loaded = session.command(1, argument, 0, 0, 0); _word_record(loaded)
         forbidden_roots = {kernel[1]} | ({victim[2], victim[4]} if victim else set())

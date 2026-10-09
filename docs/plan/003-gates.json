@@ -71,7 +71,33 @@
     {
       "gate": "E",
       "name": "user ABI and syscall boundary",
-      "status": "not_run"
+      "status": "in_progress",
+      "guest_execution": "focused dirty-candidate O0/O2 syscall and frame checks passed; clean A-E pending",
+      "actual_failure": {
+        "path": "build/kernel/gateE/first-syscall-O0/audit-failure.json",
+        "sha256": "a90a1ba2a600c68b0090dd5cd7d300650cefef7dfeabb09df9e1df732ea4ada7",
+        "observed": "O0 production syscall dispatch call chain4144 bytes exceeds actually owned4096-byte kernel trap stack; artifact audit rejected before QEMU launch"
+      },
+      "remediation": "Owned 8KiB trap stack plus closed kernel-v0.2 FCR0xc7. Actual focused O0/O2 crossing reads and frame checks passed; fresh clean A-E remains prerequisite.",
+      "actual_failures": [
+        {
+          "path": "build/kernel/gateE/first-syscall-O0/audit-failure.json",
+          "sha256": "a90a1ba2a600c68b0090dd5cd7d300650cefef7dfeabb09df9e1df732ea4ada7",
+          "observed": "O0 production syscall dispatch call chain4144 bytes exceeds actually owned4096-byte kernel trap stack; artifact audit rejected before QEMU launch"
+        },
+        {
+          "path": "build/kernel/gateE/stack-repaired-candidate/user-syscall-development-O0-run/result.json",
+          "sha256": "b17cd999c8ef3db5a2db67fbd9d2e25639d435317fb6d245207a1b7651d78250",
+          "observed": "8KiB O0 artifact audit PASS; actual U request32 returned one valid byte, failed the required positive crossing witness and user corpus ended before echo/recovery"
+        }
+      ],
+      "focused_evidence": {
+        "path": "build/kernel/gateE/fifo14-candidate/result.json",
+        "sha256": "7c41215665530322d956c285b3650ec7cafef7a2ca463cf4e7dff372962f1557",
+        "images": 4,
+        "status": "PASS",
+        "clean": false
+      }
     },
     {
       "gate": "F",

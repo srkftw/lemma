@@ -31,6 +31,10 @@ def frameBytesValue : UInt64 := 4096
 def frameCountValue : UInt64 := 512
 def frameBytes : Nat := frameBytesValue.toNat
 def frameCount : Nat := frameCountValue.toNat
+def taskKernelStackPagesValue : UInt64 := 2
+def taskKernelStackBytesValue : UInt64 := 8192
+def taskKernelStackPages : Nat := taskKernelStackPagesValue.toNat
+def taskKernelStackBytes : Nat := taskKernelStackBytesValue.toNat
 def userTextBase : Nat := 0x10000
 def userTextLimit : Nat := 0x1f000
 def userDataBase : Nat := 0x20000
@@ -62,6 +66,8 @@ def intervals : Array Interval := #[
 
 def valid : Bool :=
   poolLimit - poolBase == frameCount * frameBytes &&
+  taskKernelStackPages == 2 && taskKernelStackBytes == taskKernelStackPages * frameBytes &&
+  contextBytes < taskKernelStackBytes &&
   supervisorStackBase ≤ kernelResumeContext && kernelResumeContext % 16 == 0 &&
   contextBytes == 288 && contextBytes % 16 == 0 &&
   kernelResumeContext + contextBytes ≤ bootStackFloor &&

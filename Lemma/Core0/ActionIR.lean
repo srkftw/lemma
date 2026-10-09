@@ -220,6 +220,7 @@ inductive ActionExpr where
   | uartReadByte (status value : Param) (next : ActionExpr)
   | uartWriteByte (value : Expr) (status : Param) (next : ActionExpr)
   | uartEnableAndResetFifo (status : Param) (next : ActionExpr)
+  | uartEnableAndResetFifo14 (status : Param) (next : ActionExpr)
   | trap (operation : Trap.Op) (status value : Param) (next : ActionExpr)
   | timer (operation : Timer.Op) (argument? : Option Expr)
       (status value : Param) (next : ActionExpr)
@@ -267,6 +268,8 @@ def ActionExpr.renderNormalized : ActionExpr → String
         s!"{next.renderNormalized})"
   | .uartEnableAndResetFifo status next =>
       s!"(action.uart-enable-reset-fifo (status %{status.id}) {next.renderNormalized})"
+  | .uartEnableAndResetFifo14 status next =>
+      s!"(action.uart-enable-reset-fifo-trigger14 (status %{status.id}) {next.renderNormalized})"
   | .trap operation status value next =>
       s!"(action.trap {operation.stableId} (status %{status.id}) " ++
         s!"(value %{value.id}) {next.renderNormalized})"
