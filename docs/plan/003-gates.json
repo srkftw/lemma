@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "D",
+  "highest_complete_gate": "E",
   "gates": [
     {
       "gate": "A",
@@ -71,8 +71,8 @@
     {
       "gate": "E",
       "name": "user ABI and syscall boundary",
-      "status": "in_progress",
-      "guest_execution": "focused dirty-candidate O0/O2 syscall and frame checks passed; clean A-E pending",
+      "status": "passed",
+      "guest_execution": "passed clean O0/O2 ordinary syscalls, binary copies, pointer denials, frame pairs and complete A-D regressions",
       "actual_failure": {
         "path": "build/kernel/gateE/first-syscall-O0/audit-failure.json",
         "sha256": "a90a1ba2a600c68b0090dd5cd7d300650cefef7dfeabb09df9e1df732ea4ada7",
@@ -97,6 +97,34 @@
         "images": 4,
         "status": "PASS",
         "clean": false
+      },
+      "evidence": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0",
+          "tree": "85874c8a207af2103a717febfdbccde50147ec5f"
+        },
+        "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-e-acceptance/lemma/build/kernel/E-clean/result.json",
+        "report_sha256": "83ead347364c6fc940cf69778d860f1c388a73346f088386c6d62f5876406962",
+        "images": 20,
+        "checker_reports": 24,
+        "qemu_sessions": 28,
+        "syscall_user_instances": 6,
+        "host_tests": 58,
+        "elapsed_seconds": 437.6366691860021,
+        "hash_inventory": {
+          "path": "build/kernel/gateE/E-clean-hash-inventory.json",
+          "sha256": "d5322413053166ee1a585d4ea060b1f73bd35185ba930df54e04eed1709fd628",
+          "file_count": 2083
+        },
+        "cleanup": {
+          "live_kill_reap": 26,
+          "natural_machine_origin_fatal48": 2,
+          "all_stderr_empty": true,
+          "all_pids_absent": true
+        },
+        "scope": "Clean Gates A-E checkpoint; F-K not run"
       }
     },
     {
@@ -130,5 +158,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "fb524b945f66241ee36a434abe39b3d854c2d9d2"
+  "verified_prefix_commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0"
 }

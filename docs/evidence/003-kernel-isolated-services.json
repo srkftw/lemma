@@ -5,65 +5,10 @@
     "A",
     "B",
     "C",
-    "D"
+    "D",
+    "E"
   ],
-  "higher_gates": "E-K not_run",
-  "tested_git_base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "tested_source_dirty": true,
-  "observations": {
-    "build/kernel/gateAB/accepted-frames-development-O0-run/result.json": {
-      "sha256": "fd408eabe424e6f97f0ca1b7d197a520f91df9634045232c59f2c8db29f24221",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/accepted-frames-development-O2-run/result.json": {
-      "sha256": "c09751d3b15884f0807892d59e48093373e85babe395f7626dc2388fdc4fb1f5",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/accepted-normal-O0-bootinfo-check/result.json": {
-      "sha256": "47fb2e0dd0c23c77f18a59df6f85a8e34d0c5655f317207b048060401109fb9f",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/accepted-normal-O0-run/result.json": {
-      "sha256": "b7c026e2d5734b92fb15333e1f5566b2fae3077a6d0f9110a514957f25b1785c",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/accepted-normal-O2-bootinfo-check/result.json": {
-      "sha256": "cd8e0b2a1718fe5805850bb3c00f149ad04cf9236ff8ccaecca0f859426a28d2",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/accepted-normal-O2-run/result.json": {
-      "sha256": "a7ae1d4478cc9a88a6568c3502be9caba96a44b3cd141b170243ac72a076b36f",
-      "status": "PASS"
-    },
-    "build/kernel/gateAB/final-legacy-monitor/gate9-results.json": {
-      "sha256": "822a223cb841198e8e88fd79b44ae432575277f48d53e78865a3abdff71eb6d0",
-      "status": "PASS"
-    }
-  },
-  "legacy_monitor": {
-    "boots": 18,
-    "requests": 1598,
-    "hardware_irqs": 1411,
-    "synchronous_recoveries": 20,
-    "ring_records": 192,
-    "all_processes_reaped": true
-  },
-  "frame_checker": {
-    "records_per_profile": 2214,
-    "capacity_before_retirement": 512,
-    "capacity_after_one_retirement": 511,
-    "installed_mapping_test": "deferred to D"
-  },
-  "host_tests": {
-    "scaffold": 18,
-    "core0": 32,
-    "foundation": 439,
-    "kernel_audit": 13
-  },
-  "hash_inventory": {
-    "path": "build/kernel/gateAB/hash-inventory.json",
-    "sha256": "cef5cb629f603c9730754f06a9b7e9b5313a1f0ffe5a08f948d647f96b6d9967"
-  },
+  "higher_gates": "F-K not_run",
   "proof_scope": "indexed ownership model only; no emitted-code/whole-kernel correctness theorem",
   "gateC": {
     "schema_version": 1,
@@ -224,5 +169,102 @@
       "all_stderr_empty": true,
       "all_pids_absent": true
     }
+  },
+  "current_tested_source": {
+    "clean": true,
+    "commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0",
+    "tree": "85874c8a207af2103a717febfdbccde50147ec5f"
+  },
+  "historical_AB_tested_source_dirty": true,
+  "gate_E_clean": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0",
+      "tree": "85874c8a207af2103a717febfdbccde50147ec5f"
+    },
+    "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-e-acceptance/lemma/build/kernel/E-clean/result.json",
+    "report_sha256": "83ead347364c6fc940cf69778d860f1c388a73346f088386c6d62f5876406962",
+    "images": 20,
+    "checker_reports": 24,
+    "qemu_sessions": 28,
+    "syscall_user_instances": 6,
+    "host_tests": 58,
+    "elapsed_seconds": 437.6366691860021,
+    "hash_inventory": {
+      "path": "build/kernel/gateE/E-clean-hash-inventory.json",
+      "sha256": "d5322413053166ee1a585d4ea060b1f73bd35185ba930df54e04eed1709fd628",
+      "file_count": 2083
+    },
+    "cleanup": {
+      "live_kill_reap": 26,
+      "natural_machine_origin_fatal48": 2,
+      "all_stderr_empty": true,
+      "all_pids_absent": true
+    },
+    "scope": "Clean Gates A-E checkpoint; F-K not run"
+  },
+  "historical_AB_observations": {
+    "build/kernel/gateAB/accepted-frames-development-O0-run/result.json": {
+      "sha256": "fd408eabe424e6f97f0ca1b7d197a520f91df9634045232c59f2c8db29f24221",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-frames-development-O2-run/result.json": {
+      "sha256": "c09751d3b15884f0807892d59e48093373e85babe395f7626dc2388fdc4fb1f5",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O0-bootinfo-check/result.json": {
+      "sha256": "47fb2e0dd0c23c77f18a59df6f85a8e34d0c5655f317207b048060401109fb9f",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O0-run/result.json": {
+      "sha256": "b7c026e2d5734b92fb15333e1f5566b2fae3077a6d0f9110a514957f25b1785c",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O2-bootinfo-check/result.json": {
+      "sha256": "cd8e0b2a1718fe5805850bb3c00f149ad04cf9236ff8ccaecca0f859426a28d2",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O2-run/result.json": {
+      "sha256": "a7ae1d4478cc9a88a6568c3502be9caba96a44b3cd141b170243ac72a076b36f",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/final-legacy-monitor/gate9-results.json": {
+      "sha256": "822a223cb841198e8e88fd79b44ae432575277f48d53e78865a3abdff71eb6d0",
+      "status": "PASS"
+    }
+  },
+  "historical_AB_legacy_monitor": {
+    "boots": 18,
+    "requests": 1598,
+    "hardware_irqs": 1411,
+    "synchronous_recoveries": 20,
+    "ring_records": 192,
+    "all_processes_reaped": true
+  },
+  "historical_AB_frame_checker": {
+    "records_per_profile": 2214,
+    "capacity_before_retirement": 512,
+    "capacity_after_one_retirement": 511,
+    "installed_mapping_test": "deferred to D"
+  },
+  "historical_AB_host_tests": {
+    "scaffold": 18,
+    "core0": 32,
+    "foundation": 439,
+    "kernel_audit": 13
+  },
+  "historical_AB_hash_inventory": {
+    "path": "build/kernel/gateAB/hash-inventory.json",
+    "sha256": "cef5cb629f603c9730754f06a9b7e9b5313a1f0ffe5a08f948d647f96b6d9967"
+  },
+  "historical_AB_tested_git_base": "ff4045a79a6fda45f9cd8198587357846530a806",
+  "tested_source_dirty": false,
+  "host_tests": {
+    "kernel": 58,
+    "scaffold": 18,
+    "core0": 32,
+    "foundation": 440,
+    "scope": "kernel58 in fresh clean acceptance; remaining suites on same implementation before commit"
   }
 }

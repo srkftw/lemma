@@ -8,8 +8,8 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest complete Task 003 gate: D at clean fb524b945f66241ee36a434abe39b3d854c2d9d2.
-  Gate E focused O0/O2 target checks passed; its fresh clean A–E acceptance is next.
+- Highest complete Task 003 gate: E at clean0f34b21c5b1f6482f507b131bd28851b9b26fed0,
+  tree85874c8a207af2103a717febfdbccde50147ec5f. Fresh clean A–E acceptance passed.
   F–K remain not run. The latest checkpoint at the end of this file is authoritative.
 - The user explicitly extended the original time window until the full milestone
   is verified and authorized merging afterward. Do not merge a partial prefix.
@@ -397,3 +397,24 @@
   Next: commit this coherent E candidate; create a fresh worktree at that commit;
   run check_kernel.py --work-dir build/kernel/E-clean --clean --timeout300
   --qemu-timeout90 --deadline2400 and independently inspect all raw evidence.
+
+## Clean Gate E checkpoint
+
+- Exact implementation0f34b21c5b1f6482f507b131bd28851b9b26fed0, tree
+  85874c8a207af2103a717febfdbccde50147ec5f, fresh managed worktree
+  /home/sreekumaar/.codex/worktrees/lemma-kernel-e-acceptance/lemma.
+- Actual check_kernel.py E-clean exit0,437.64s:58host tests,20fresh O0/O2
+  images,24checker reports,28QEMU sessions and6fresh syscall U instances.
+  Complete A-D regressions also passed, including actual architectural faults,
+  loader rollback and frame pairs with independent generation histories.
+- Independently reread source identity/inventories, hashes and raw captures:
+  equal to the clean tested commit,26live host kill/reap(-9),2natural M-origin
+  fatal48, all PIDs absent and all stderr empty. Aggregate SHA256
+  83ead347364c6fc940cf69778d860f1c388a73346f088386c6d62f5876406962.
+- Full hash inventory: build/kernel/gateE/E-clean-hash-inventory.json. This
+  is an A-E acceptance checkpoint, not full milestone qualification or CI.
+- Highest complete gate E. Next: owned8-slot Task table, copied U contexts,
+  timer-driven round-robin Scheduler and independently linked compute/sleeper/
+  noncooperative tasks. F-G lifecycle APIs must restore the stable S root and
+  reaper stack before reclaiming an instance. F-K remain not run; no Task003 PR,
+  remote push, actual CI or merge has occurred.

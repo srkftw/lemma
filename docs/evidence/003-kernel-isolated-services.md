@@ -1,5 +1,47 @@
 # Task 003 kernel and isolated services
 
+Current accepted prefix: Gates A–E at clean implementation
+`0f34b21c5b1f6482f507b131bd28851b9b26fed0`, tree
+`85874c8a207af2103a717febfdbccde50147ec5f`. F–K remain not run; the full
+scheduler, capabilities, IPC and buffer-service milestone is unfinished.
+No Task003 push, PR, actual CI or merge has occurred.
+
+Fresh clean A–E acceptance passed at O0 and O2:58host tests,20images,24checker
+reports,28QEMU sessions and6fresh syscall corpora, in437.64s. All images were
+rebuilt from the committed source without copied project outputs. Raw captures,
+image/audit/provenance hashes and unchanged clean source were independently
+checked.26live guests were explicitly killed and reaped; the2machine-origin
+negatives naturally exited with fatal48. All PIDs were absent and stderr empty.
+
+The actual system enters S through its own M substrate, constructs owned Sv39
+address spaces, runs separately linked U code, contains architectural user
+faults, and implements ABI-v1 identity, console, yield, hardware sleep/time,
+exit and bounded page allocation/release. Complete user ranges are validated
+before copies or UART input effects; binary data and real two-page input were
+observed. Gate E yield/sleep do not establish scheduling or blocked-task behavior.
+
+The syscall audit first rejected a4144-byte chain on a4096-byte owned trap stack.
+The repair owns two contiguous frames with independent generations and validates
+both before frame access; it is not an audit-limit-only change. A second actual
+guest failed because its valid first short UART read was1byte. Kernel-v0.2 adds
+one closed fixedFCR0xc7 initialization, while preserving all earlier profiles
+and FCR0x07. Fresh actual crossing reads and binary echo then passed. All earlier
+failed reports remain retained separately.
+
+See [compact result](003-kernel-isolated-services.json) and
+[gate ledger](../plan/003-gates.json). The complete ignored inventory is
+`build/kernel/gateE/E-clean-hash-inventory.json`; the aggregate report is retained
+in the managed E acceptance worktree under `build/kernel/E-clean/result.json`.
+The indexed ownership lemmas certify only their mathematical model, separately
+from tests and audits. No whole-kernel/compiler correctness or physical-device
+claim is made.
+
+## Historical checkpoints
+
+The following sections describe their original snapshots, not the current
+implementation or full milestone. Their source-specific evidence is preserved
+in the compact JSON.
+
 Current accepted prefix: Gates A, B and C. Higher gates are not run. This is a
 freestanding foundation increment, not a completed operating system.
 
