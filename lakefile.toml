@@ -1,0 +1,6 @@
+name = "lemma"
+version = "0.1.0"
+defaultTargets = ["Lemma"]
+
+[[lean_lib]]
+name = "Lemma"

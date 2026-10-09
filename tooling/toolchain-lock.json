@@ -1,37 +1,204 @@
 {
   "schema_version": 1,
-  "status": "unresolved",
-  "note": "Task 001 must verify a working immutable toolchain. This is not a usable lock yet.",
+  "status": "pinned",
+  "note": "Pinned host tools for Task 001. Tool availability and identities are verified here; guest execution evidence is recorded separately.",
+  "lock_basis": {
+    "flake": "flake.nix",
+    "flake_lock": "flake.lock",
+    "system": "x86_64-linux",
+    "nixpkgs_url": "github:NixOS/nixpkgs/7dd199b0e2993e37b4775ed66b1c291699608c9f",
+    "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
+    "nixpkgs_source_path": "/nix/store/ia7jffzy37hx46nm77rh05r5272170jh-source",
+    "nixpkgs_artifact_sha256": "sha256-o9ZUW4SlEAvFPIyJWnqChhOT/VHpHg8TAvEgmqK1fSI=",
+    "nixpkgs_artifact_hash_kind": "nix-nar-sha256",
+    "nixpkgs_nar_size": 209524712
+  },
+  "hash_conventions": {
+    "artifact_sha256": "SRI SHA-256 of the Nix archive serialization (NAR) for the named realized store output unless artifact_hash_kind says otherwise.",
+    "source_sha256": "The fixed-output source hash used by nixpkgs; source_hash_kind distinguishes recursive NAR hashes from flat archive-content hashes.",
+    "revision": "The immutable upstream source commit, except host_environment where it is the observed immutable NixOS system identity."
+  },
   "tools": {
     "lean": {
-      "revision": null,
-      "artifact_sha256": null,
-      "verified": false
+      "version": "4.34.1",
+      "lake_version": "5.0.0-src",
+      "revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+      "source_ref": "v4.34.1",
+      "source_path": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source",
+      "source_derivation": "/nix/store/rm0hmfczzvylwgap6ljk9ffgqc7sww6q-source.drv",
+      "source_sha256": "sha256-JO1pCqWeotC4zjiIQZccEPXfVHnuDQC0DugyuJvIMRs=",
+      "source_hash_kind": "nix-recursive-nar-sha256",
+      "source_nar_size": 674782584,
+      "store_path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1",
+      "derivation": "/nix/store/0jrw1hl5wxkg46s1jjx8y9zlrfxnh428-lean4-4.34.1.drv",
+      "executable": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "artifact_sha256": "sha256-CPrzJ6Fq5wxwravpLoJQIkp9WGW+3Lv8GjJG9nefwqo=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 2945809536,
+      "features": [],
+      "upstream_llvm_backend_built": false,
+      "verified": true,
+      "verification_commands": [
+        "nix develop --no-write-lock-file --command lean --version",
+        "nix develop --no-write-lock-file --command lean --features",
+        "nix path-info --json /nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1 /nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source",
+        "git ls-remote https://github.com/leanprover/lean4.git refs/tags/v4.34.1"
+      ]
     },
     "llvm": {
-      "revision": null,
-      "artifact_sha256": null,
-      "verified": false
+      "version": "20.1.8",
+      "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+      "source_ref": "llvmorg-20.1.8",
+      "source_tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8",
+      "source_sha256": "sha256-ysyB/EYxi2qE9fD5x/F2zI4vjn8UDoo1Z9ukiIrjFGw=",
+      "source_hash_kind": "nix-recursive-fixed-output-sha256",
+      "store_path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8",
+      "derivation": "/nix/store/c8wg6pw5v7r8lpndi3r594pcmdwiixhy-llvm-20.1.8.drv",
+      "executable": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "artifact_sha256": "sha256-N/rgDsq17lRAEQm9vf6YruWnIHN/DZhWM5Et1YCulJk=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 129904400,
+      "outputs": {
+        "development": {
+          "store_path": "/nix/store/f7ignbzpa28d9js41mflrgka6x668r4y-llvm-20.1.8-dev",
+          "artifact_sha256": "sha256-d74IdyX68ugLQiT5rPn7zyIi2iuml3bNurZnwHCtQh4=",
+          "artifact_hash_kind": "nix-nar-sha256",
+          "artifact_nar_size": 32179168,
+          "llvm_config": "/nix/store/f7ignbzpa28d9js41mflrgka6x668r4y-llvm-20.1.8-dev/bin/llvm-config"
+        },
+        "clang_unwrapped": {
+          "selection_reason": "The Nix cc-wrapper adds host hardening flags, including -fzero-call-used-regs=used-gpr, that Clang rejects for riscv64-unknown-elf. The pinned upstream Clang binary is used directly for cross-target compilation.",
+          "store_path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8",
+          "derivation": "/nix/store/c6rsi78qpfb7ygqcksj7vrp31s3by5m1-clang-20.1.8.drv",
+          "artifact_sha256": "sha256-zy5fyFT/JnjPfCFKtAFKIMyFwqshmBorDoxRt7zyIVo=",
+          "artifact_hash_kind": "nix-nar-sha256",
+          "artifact_nar_size": 52983728,
+          "executable": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang"
+        }
+      },
+      "registered_riscv_targets": [
+        "riscv32",
+        "riscv64"
+      ],
+      "verified": true,
+      "verification_commands": [
+        "nix develop --no-write-lock-file --command llvm-config --version",
+        "nix develop --no-write-lock-file --command llc --version",
+        "nix develop --no-write-lock-file --command bash -lc 'command -v clang; clang --version; clang --print-targets'",
+        "nix path-info --json /nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8 /nix/store/f7ignbzpa28d9js41mflrgka6x668r4y-llvm-20.1.8-dev /nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8",
+        "git ls-remote https://github.com/llvm/llvm-project.git refs/tags/llvmorg-20.1.8 refs/tags/llvmorg-20.1.8^{}"
+      ]
     },
     "lld": {
-      "revision": null,
-      "artifact_sha256": null,
-      "verified": false
+      "version": "20.1.8",
+      "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+      "source_ref": "llvmorg-20.1.8",
+      "source_tag_object": "023ec9011c9a92cfa8922030eb266d66a10f78f8",
+      "source_sha256": "sha256-ysyB/EYxi2qE9fD5x/F2zI4vjn8UDoo1Z9ukiIrjFGw=",
+      "source_hash_kind": "nix-recursive-fixed-output-sha256",
+      "store_path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8",
+      "derivation": "/nix/store/i16flfp64brnl1d8idg0x54051d4w3x6-lld-20.1.8.drv",
+      "executable": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+      "artifact_sha256": "sha256-VfnUCqZmurMkXKzYy4hchZKNu6bVMKByWoNTCe0geZE=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 42771664,
+      "verified": true,
+      "verification_commands": [
+        "nix develop --no-write-lock-file --command ld.lld --version",
+        "nix path-info --json /nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8",
+        "git ls-remote https://github.com/llvm/llvm-project.git refs/tags/llvmorg-20.1.8 refs/tags/llvmorg-20.1.8^{}"
+      ]
     },
     "qemu": {
-      "revision": null,
-      "artifact_sha256": null,
-      "verified": false
+      "version": "11.1.1",
+      "revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+      "source_ref": "v11.1.1",
+      "source_tag_object": "5e35f26695645b20931e10d8567c7e0169e62c07",
+      "source_path": "/nix/store/5fncyn7ha91mjhrxsl6id2wdi6zlgbnb-qemu-11.1.1.tar.xz",
+      "source_sha256": "sha256-B5/7/4pxEbvIkCIQfLq/O7/WFNX8nXzGdZkRlqyhJII=",
+      "source_hash_kind": "flat-file-sha256",
+      "source_nar_sha256": "sha256-X6rE+OzN854s6cBPR+VsVQntbZ1xdg6EVSF9h3OvHC0=",
+      "source_nar_size": 141888832,
+      "store_path": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1",
+      "derivation": "/nix/store/517yiziyasnwiqknga1plr4isn21gwax-qemu-11.1.1.drv",
+      "executable": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64",
+      "artifact_sha256": "sha256-ZgXwd0SM3CJt8UkZ38IfhH2LMY7QaC99MQJLbLypRVQ=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 1040964728,
+      "verified_machine": "virt",
+      "verified": true,
+      "verification_commands": [
+        "nix develop --no-write-lock-file --command qemu-system-riscv64 --version",
+        "nix develop --no-write-lock-file --command qemu-system-riscv64 -machine help",
+        "nix develop --no-write-lock-file --command qemu-system-riscv64 -cpu help",
+        "nix path-info --json /nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1 /nix/store/5fncyn7ha91mjhrxsl6id2wdi6zlgbnb-qemu-11.1.1.tar.xz",
+        "git ls-remote https://gitlab.com/qemu-project/qemu.git refs/tags/v11.1.1 refs/tags/v11.1.1^{}"
+      ]
     },
     "host_environment": {
-      "revision": null,
-      "artifact_sha256": null,
-      "verified": false
+      "revision": "nixos-system-nixos-25.11.3064.64049ca74d63",
+      "distribution": "NixOS 25.11 (Xantusia)",
+      "build_id": "25.11.3064.64049ca74d63",
+      "architecture": "x86_64-linux",
+      "kernel": "Linux 6.12.63 #1-NixOS SMP PREEMPT_DYNAMIC Thu Dec 18 12:55:23 UTC 2025 x86_64 GNU/Linux",
+      "store_path": "/nix/store/mb5xv6j6q2rchb2kniq604yr17kd8sh2-nixos-system-nixos-25.11.3064.64049ca74d63",
+      "derivation": "/nix/store/gsmsbk057dhg56byxa62an5n1qrhnysy-nixos-system-nixos-25.11.3064.64049ca74d63.drv",
+      "artifact_sha256": "sha256-e34ctKnwlaJc74utD+m9Lg0oW0gcIFvtI0vzjF1Ravs=",
+      "artifact_hash_kind": "nix-nar-sha256-of-top-level-system-path",
+      "artifact_nar_size": 18960,
+      "nix": {
+        "version": "2.31.2",
+        "store_path": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2",
+        "executable": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+        "artifact_sha256": "sha256-zan+5d1pp/14W1qR/6qF/DWfgmZUOBb6g3KuMCP+ODo=",
+        "artifact_hash_kind": "nix-nar-sha256",
+        "artifact_nar_size": 3502560
+      },
+      "observed_not_flake_input": true,
+      "verified": true,
+      "verification_commands": [
+        "sed -n '1,12p' /etc/os-release",
+        "uname -srvmo",
+        "readlink -f /run/current-system",
+        "readlink -f /run/booted-system",
+        "nix --version",
+        "nix path-info --json /nix/store/mb5xv6j6q2rchb2kniq604yr17kd8sh2-nixos-system-nixos-25.11.3064.64049ca74d63 /nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2"
+      ]
+    }
+  },
+  "auxiliary_tools": {
+    "dtc": {
+      "version": "1.8.1",
+      "store_path": "/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1",
+      "artifact_sha256": "sha256-xfFb10AV/TTaSUKchw2eN2tgFGfstpKvg0QL34+HQ1s=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 581400,
+      "verified": true
+    },
+    "python": {
+      "version": "3.14.7",
+      "store_path": "/nix/store/lb41b0anx1f98y9y5s9mdv97gjgsq740-python3-3.14.7",
+      "artifact_sha256": "sha256-G7+E0T4FPbBU3fDd7ypzt5uDoKXRz+80fsI+WBUMsB0=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 143188008,
+      "verified": true
+    },
+    "jq": {
+      "version": "1.8.2",
+      "store_path": "/nix/store/m3y7hqmy20nd1ps6qy8410a326255bf0-jq-1.8.2-bin",
+      "artifact_sha256": "sha256-pqqaGdJ6OxreKzMR3PuZmeMBv8jkCgca+2DOV9UKAuU=",
+      "artifact_hash_kind": "nix-nar-sha256",
+      "artifact_nar_size": 35680,
+      "verified": true
     }
   },
   "target": {
     "isa": "RV64GC-capable machine; integer-only G1 code",
-    "abi_proposal": "lp64",
-    "triple_proposal": "riscv64-unknown-elf"
+    "abi": "lp64",
+    "triple": "riscv64-unknown-elf",
+    "qemu_machine": "virt",
+    "tool_support_verified": true,
+    "execution_verified_here": true,
+    "execution_evidence": "docs/evidence/001-core0.md"
   }
 }

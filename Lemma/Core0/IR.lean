@@ -1,0 +1,204 @@
+import Lean
+
+/-!
+The checked, backend-neutral representation for the first Core0 profile.
+
+`Expr` deliberately has no generic application, closure, allocation, projection, or
+foreign-call node.  The frontend is the only module which translates kernel-checked
+Lean expressions into this type.  Thus an LLVM backend can be total over the small
+set of constructors below without silently accepting another Lean feature.
+-/
+
+namespace Lemma.Core0
+
+open Lean
+
+/-- Runtime scalar types admitted by Core0 v0.1. -/
+inductive Ty where
+  | bool
+  | u8
+  | u32
+  | u64
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace Ty
+
+def width : Ty → Nat
+  | .bool => 1
+  | .u8 => 8
+  | .u32 => 32
+  | .u64 => 64
+
+def isInteger : Ty → Bool
+  | .bool => false
+  | _ => true
+
+def render : Ty → String
+  | .bool => "bool"
+  | .u8 => "u8"
+  | .u32 => "u32"
+  | .u64 => "u64"
+
+end Ty
+
+inductive BinOp where
+  | add
+  | sub
+  | mul
+  | band
+  | bor
+  | bxor
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace BinOp
+
+def render : BinOp → String
+  | .add => "add"
+  | .sub => "sub"
+  | .mul => "mul"
+  | .band => "and"
+  | .bor => "or"
+  | .bxor => "xor"
+
+end BinOp
+
+inductive CmpOp where
+  | eq
+  | ult
+  | ule
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace CmpOp
+
+def render : CmpOp → String
+  | .eq => "eq"
+  | .ult => "ult"
+  | .ule => "ule"
+
+end CmpOp
+
+/-- Conversions are unsigned zero-extension or low-bit truncation. -/
+inductive CastOp where
+  | zext
+  | trunc
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+namespace CastOp
+
+def render : CastOp → String
+  | .zext => "zext"
+  | .trunc => "trunc"
+
+end CastOp
+
+/-- Every node carries enough type information for lowering to check its inputs. -/
+inductive Expr where
+  | var (id : Nat) (ty : Ty)
+  | lit (ty : Ty) (value : Nat)
+  | boolLit (value : Bool)
+  | letE (id : Nat) (name : Name) (ty : Ty) (value body : Expr)
+  | bin (op : BinOp) (ty : Ty) (lhs rhs : Expr)
+  | cmp (op : CmpOp) (operandTy : Ty) (lhs rhs : Expr)
+  | ite (resultTy : Ty) (cond thenBranch elseBranch : Expr)
+  | call (callee : Name) (resultTy : Ty) (args : List Expr)
+  | cast (op : CastOp) (sourceTy targetTy : Ty) (value : Expr)
+  deriving Inhabited, Repr
+
+def Expr.type : Expr → Ty
+  | .var _ ty => ty
+  | .lit ty _ => ty
+  | .boolLit _ => .bool
+  | .letE _ _ _ _ body => body.type
+  | .bin _ ty _ _ => ty
+  | .cmp .. => .bool
+  | .ite ty _ _ _ => ty
+  | .call _ ty _ => ty
+  | .cast _ _ targetTy _ => targetTy
+
+/-- A deterministic, typed representation of the checked expression consumed by
+the backend.  This is deliberately independent of Lean's derived `Repr` format so
+the evidence artifact changes only when the Core0 program changes deliberately. -/
+def Expr.renderNormalized : Expr → String
+  | .var id ty => s!"(var {id} {ty.render})"
+  | .lit ty value => s!"(lit {ty.render} {value})"
+  | .boolLit value => if value then "(bool true)" else "(bool false)"
+  | .letE id name ty value body =>
+      s!"(let {id} {name} {ty.render} {value.renderNormalized} {body.renderNormalized})"
+  | .bin op ty lhs rhs =>
+      s!"(bin {op.render} {ty.render} {lhs.renderNormalized} {rhs.renderNormalized})"
+  | .cmp op operandTy lhs rhs =>
+      s!"(cmp {op.render} {operandTy.render} {lhs.renderNormalized} {rhs.renderNormalized})"
+  | .ite resultTy cond thenBranch elseBranch =>
+      s!"(ite {resultTy.render} {cond.renderNormalized} " ++
+        s!"{thenBranch.renderNormalized} {elseBranch.renderNormalized})"
+  | .call callee resultTy args =>
+      let renderedArgs := String.intercalate " " (args.map Expr.renderNormalized)
+      s!"(call {callee} {resultTy.render} [{renderedArgs}])"
+  | .cast op sourceTy targetTy value =>
+      s!"(cast {op.render} {sourceTy.render} {targetTy.render} {value.renderNormalized})"
+
+structure Param where
+  id : Nat
+  name : Name
+  ty : Ty
+  deriving BEq, Inhabited, Repr
+
+structure Signature where
+  args : Array Ty
+  result : Ty
+  deriving BEq, Inhabited, Repr
+
+structure Function where
+  name : Name
+  signature : Signature
+  params : Array Param
+  body : Expr
+  /-- Direct user-declaration dependencies, in first-occurrence order. -/
+  dependencies : Array Name
+  deriving Inhabited, Repr
+
+inductive Effect where
+  | pure
+  deriving BEq, DecidableEq, Inhabited, Repr
+
+/--
+An exact primitive contract.  `leanDecl` is the canonical implementation identity;
+notation wrappers are accepted only after their type and instance arguments have
+been checked to select this exact declaration.
+-/
+structure PrimitiveSpec where
+  stableId : String
+  leanDecl : Name
+  signature : Signature
+  effect : Effect := .pure
+  deriving BEq, Inhabited, Repr
+
+structure Program where
+  contractVersion : String := "core0-v0.1"
+  root : Name
+  /-- Dependency-first topological order; the root is last. -/
+  functions : Array Function
+  /-- Stable IDs from `primitiveAllowlist`, in first-use order. -/
+  usedPrimitives : Array String
+  deriving Inhabited, Repr
+
+def Program.findFunction? (program : Program) (name : Name) : Option Function :=
+  program.functions.find? (fun f => f.name == name)
+
+private def joinNames (names : Array Name) : String :=
+  String.intercalate "," (names.toList.map Name.toString)
+
+private def renderSignature (sig : Signature) : String :=
+  let args := String.intercalate "," (sig.args.toList.map Ty.render)
+  s!"({args})->{sig.result.render}"
+
+/-- Deterministic, line-oriented manifest suitable for evidence and hash comparison. -/
+def Program.renderManifest (program : Program) : String :=
+  let header := s!"contract={program.contractVersion}\nroot={program.root}\n"
+  let functions := program.functions.toList.map fun f =>
+    s!"function={f.name};signature={renderSignature f.signature};" ++
+      s!"deps=[{joinNames f.dependencies}];body={f.body.renderNormalized}\n"
+  let primitives := program.usedPrimitives.toList.map fun p => s!"primitive={p}\n"
+  header ++ String.join functions ++ String.join primitives
+
+end Lemma.Core0

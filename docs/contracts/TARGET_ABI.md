@@ -1,6 +1,7 @@
 # Target ABI — G1 proposal
 
-Status: proposed bootstrap profile. Validate against the pinned compiler and emitted ELF.
+Status: Task 001 validates the scalar RV64/LP64 bootstrap profile against the pinned
+compiler and emitted ELF; the managed Lean ABI remains future work.
 
 | Field | Proposal |
 | --- | --- |
