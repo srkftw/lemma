@@ -112,8 +112,11 @@ class Session:
         if exc is not None:
             self.report.update(error=str(exc), failure_category="observation-failure")
         if self.process is not None:
+            was_live = self.process.poll() is None
             transport._kill_and_reap(self.process, self.capture)
-            self.report.update(cleanup={"explicit_host_stop": True, "process_group_killed": True,
+            self.report.update(cleanup={"explicit_host_stop": was_live,
+                                        "process_group_killed": was_live and self.capture.returncode == -9,
+                                        "target_exited_before_cleanup": not was_live,
                                         "process_reaped": self.process.poll() is not None})
             transport._close_process_streams(self.process)
         if self.success and exc is None:

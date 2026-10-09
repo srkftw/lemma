@@ -8,6 +8,7 @@ not allocate target frames, create mappings, schedule tasks, or handle guest IPC
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
 from pathlib import Path
@@ -24,32 +25,80 @@ ROLE_ROOTS = {
     "user": (("Lemma.User.Entry.main", ("u64",)),),
 }
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
-CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development")
+CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
+                  "user-isolation-development", "user-csr-development", "user-nx-development",
+                  "user-kernel-fetch-development", "user-misaligned-development")
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
               "primitive-catalog.json", "boot-package.S", "package-contract.json")
 UNIT_FILES = ("program.ll", "unit.json", "normalized.txt", "symbols.txt")
 BOOT_OBJECTS = ("startup.o", "firmware/program.o", "kernel/program.o", "boot-package.o")
 USER_OBJECTS = ("user/startup.o", "user/program.o")
+# Same immutable realization expression and UInt audit hash used by Task002
+# Gate3. Each independent CI job must realize this input itself; a tool binary
+# in the development shell does not retain the compiler's upstream sources.
+LEAN_SOURCE_EXPRESSION = ("let flake = builtins.getFlake (toString ./.); "
+                          "pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; "
+                          "in pkgs.lean4.src")
+LEAN_UINT_SOURCE_SHA256 = "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94"
+
+
+def validate_lean_source_realization(lean_lock: dict, output: str, info: object) -> dict:
+    paths = [line.strip() for line in output.splitlines() if line.strip()]
+    expected = lean_lock.get("source_path")
+    if len(paths) != 1 or not isinstance(expected, str) or not expected.startswith("/nix/store/") or paths[0] != expected:
+        raise Core0Error("Lean source realization must return exactly its immutable locked store path")
+    if isinstance(info, dict) and set(info) == {expected}:
+        row = info[expected]
+    elif isinstance(info, list) and len(info) == 1 and isinstance(info[0], dict) and info[0].get("path") == expected:
+        row = info[0]
+    else:
+        raise Core0Error("Lean source NAR evidence lacks its exact single locked output")
+    if (not isinstance(row, dict) or row.get("narHash") != lean_lock.get("source_sha256")
+            or type(row.get("narSize")) is not int or row["narSize"] != lean_lock.get("source_nar_size")
+            or lean_lock.get("source_hash_kind") != "nix-recursive-nar-sha256"):
+        raise Core0Error("realized Lean source NAR differs from the immutable audited input")
+    return {"source_path": expected, "revision": lean_lock["revision"],
+            "narHash": row["narHash"], "narSize": row["narSize"]}
 
 
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
-    if configuration != "frames-development":
-        return ROLE_ROOTS
-    return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.FramesEntry.boot", ()),
-                                    ("Lemma.Kernel.Development.FramesEntry.dispatch", ("u64", "u64", "u64")))}
+    if configuration == "frames-development":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.FramesEntry.boot", ()),
+                                        ("Lemma.Kernel.Development.FramesEntry.dispatch", ("u64", "u64", "u64")))}
+    if configuration == "user-isolation-development":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.IsolationEntry.boot", ()),
+                                        ("Lemma.Kernel.Development.IsolationEntry.dispatch", ("u64", "u64", "u64"))),
+                "user": (("Lemma.User.Development.Isolation.main", ("u64",)),)}
+    return ROLE_ROOTS
 
 
 def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
-    return ROLE_MODULES if configuration != "frames-development" else {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
+    if configuration == "frames-development":
+        return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
+    if configuration == "user-isolation-development":
+        return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.IsolationEntry", "user": "Lemma.User.Development.Isolation"}
+    return ROLE_MODULES
+
+
+def development_role(configuration: str, role: str) -> bool:
+    configuration_roots(configuration)
+    return (configuration == "frames-development" and role == "kernel"
+            or configuration == "user-isolation-development" and role in {"kernel", "user"})
 
 
 def startup_case(configuration: str) -> str:
     configuration_roots(configuration)
     return "machine-origin-probe" if configuration == "machine-origin-development" else "normal"
+
+
+def user_startup_case(configuration: str) -> str:
+    configuration_roots(configuration)
+    return {"user-csr-development": "supervisor-csr", "user-nx-development": "execute-data",
+            "user-kernel-fetch-development": "execute-kernel", "user-misaligned-development": "execute-misaligned"}.get(configuration, "none")
 
 
 def validate_configuration_stage(configuration: str, stage: str) -> None:
@@ -58,6 +107,9 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("unknown execution stage")
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
+    if configuration in {"user-isolation-development", "user-csr-development", "user-nx-development",
+                         "user-kernel-fetch-development", "user-misaligned-development"} and stage != "supervisor":
+        raise Core0Error("user isolation configurations require supervisor")
 
 
 def artifact_category(configuration: str) -> str:
@@ -118,11 +170,11 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         raise Core0Error("unknown optimization or execution stage")
     roots, modules = configuration_roots(configuration), configuration_modules(configuration)
     validate_configuration_stage(configuration, stage)
-    case = startup_case(configuration)
+    case, user_case = startup_case(configuration), user_startup_case(configuration)
     category = artifact_category(configuration)
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         raise Core0Error("build timeout must be finite and positive")
-    tools = require_tools(("git", "lake", "lean", "opt", "llc", "clang", "ld.lld", "llvm-objcopy",
+    tools = require_tools(("git", "nix", "lake", "lean", "opt", "llc", "clang", "ld.lld", "llvm-objcopy",
                            "llvm-readelf", "llvm-nm", "llvm-objdump", "qemu-system-riscv64", "dtc"))
     prepare_output_directory(output_dir, root, clean=clean)
     commands: list[dict[str, object]] = []
@@ -146,7 +198,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         return result.stdout
 
     try:
-        dependencies = {role: module_closure(root, module, allow_development=configuration == "frames-development" and role == "kernel")
+        dependencies = {role: module_closure(root, module, allow_development=development_role(configuration, role))
                         for role, module in modules.items()}
         source_before = source_inputs(root)
         versions = {}
@@ -160,6 +212,14 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         pin = load_json(root / "tooling/toolchain-lock.json")
         if not isinstance(pin, dict) or pin.get("status") != "pinned":
             raise Core0Error("toolchain lock is not pinned")
+        source_output = invoke(("nix", "build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION), root).decode(errors="strict")
+        lean_pin = pin["tools"]["lean"]
+        source_info = json.loads(invoke(("nix", "path-info", "--json", lean_pin["source_path"]), root))
+        source_realization = validate_lean_source_realization(lean_pin, source_output, source_info)
+        uint_source = Path(source_realization["source_path"]) / "src/Init/Data/UInt/Basic.lean"
+        if not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256:
+            raise Core0Error("realized Lean UInt source differs from the audited Task002 input")
+        source_realization.update(uint_source=str(uint_source), uint_source_sha256=sha256(uint_source))
         for name, key in (("lean", "lean"), ("llc", "llvm"), ("opt", "llvm"), ("llvm-objcopy", "llvm"),
                           ("llvm-readelf", "llvm"), ("llvm-nm", "llvm"), ("llvm-objdump", "llvm"),
                           ("ld.lld", "lld"), ("qemu-system-riscv64", "qemu")):
@@ -213,14 +273,16 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         dirty = invoke(("git", "status", "--porcelain=v1", "--untracked-files=all"), root).decode().splitlines()
         artifacts = {str(path.relative_to(output_dir)): sha256(path) for path in sorted(output_dir.rglob("*"))
                      if path.is_file() and path.name not in {"commands.json", "build.json", "provenance.json"}}
-        provenance = {"schema_version": 1, "artifact_category": category, "configuration": configuration, "startup_case": case,
+        provenance = {"schema_version": 1, "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
+                      "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
                       "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
                       "commands": commands, "generated_by_lean": list(BOOT_FILES),
                       "linked_inputs": {"boot": list(BOOT_OBJECTS), "user": list(USER_OBJECTS)}, "artifacts": artifacts,
                       "unit_contracts": {role: value["contract_version"] for role, value in units.items()}}
         write_json(output_dir / "provenance.json", provenance)
-        record = {"schema_version": 1, "status": "BUILT", "artifact_category": category, "configuration": configuration, "startup_case": case,
+        record = {"schema_version": 1, "status": "BUILT", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
+                  "lean_source_realization": source_realization,
                   "stage": stage, "optimization": opt_level, "artifacts": artifacts,
                   "provenance_sha256": sha256(output_dir / "provenance.json"),
                   "kernel_execution_privilege": "M" if stage == "bootstrap-m" else "S",

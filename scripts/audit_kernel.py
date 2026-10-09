@@ -19,8 +19,9 @@ from audit_core0 import (alloc_section_names, defined_function_symbols, numeric_
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate_output_file
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
-                          configuration_roots, module_closure, source_inputs, startup_case,
-                          validate_configuration_stage)
+                          configuration_roots, development_role, module_closure, source_inputs, startup_case, user_startup_case,
+                          validate_configuration_stage, validate_lean_source_realization,
+                          LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -88,6 +89,53 @@ CONTEXT_LAYOUT = {"bytes": 288, "kernel_resume_base": 0x80500000, "boot_stack_fl
 ENTER_USER_SHA256 = "e5e9881a4880bb062e631ba2a400af5bdea00526dbfc298a263de563e61250ca"
 SUPERVISOR_RESTORE_SHA256 = "c6a293d9390c5d362c93068d083a5f4419eb56b650cf13753f4fcd7c76ac1792"
 GPR_NAMES = "zero ra sp gp tp t0 t1 t2 s0 s1 a0 a1 a2 a3 a4 a5 a6 a7 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 t3 t4 t5 t6".split()
+USER_ATTACKS = {
+    "supervisor-csr": ("lemma_user_attack_supervisor_csr", "adversarial-supervisor-csr-read", (0x10002573, 0x00008067)),
+    "execute-data": ("lemma_user_attack_execute_data", "adversarial-nx-fetch", (0x000202b7, 0x00028067)),
+    "execute-kernel": ("lemma_user_attack_kernel_fetch", "adversarial-kernel-fetch", (0x40100293, 0x01529293, 0x00028067)),
+    "execute-misaligned": ("lemma_user_attack_misaligned", "adversarial-illegal-halfword-fetch", (0x000102b7, 0x0022829b, 0x00028067)),
+}
+USER_ABI_INITIAL_DATA = struct.pack("<2Q", 0, 1)
+
+
+def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
+                           assembly: str, *, object_file: str) -> dict:
+    """Account for the sole declarative initializer emitted by Lean startup.
+
+    Compiled unit globals remain forbidden. This admits only the named input
+    section of the startup object and its exact linked payload, not arbitrary
+    writable data or additional target object symbols.
+    """
+    if object_file not in {"user/startup.o", "user/image.elf"}:
+        raise Core0Error("user ABI data lacks its exact startup-object ownership")
+    linked = object_file == "user/image.elf"
+    section, address, alignment = (".data", 0x20000, 4096) if linked else (".data.user_abi", 0, 8)
+    rows = re.findall(r"(?m)^\s*\[\s*(\d+)\]\s+" + re.escape(section)
+                      + r"\s+PROGBITS\s+([0-9a-f]+)\s+[0-9a-f]+\s+([0-9a-f]+)\s+00\s+([A-Z]*)\s+0\s+0\s+(\d+)\s*$", section_text)
+    if (len(rows) != 1 or int(rows[0][1], 16) != address or int(rows[0][2], 16) != 16
+            or set(rows[0][3]) != {"W", "A"} or len(rows[0][3]) != 2 or int(rows[0][4]) != alignment
+            or data != USER_ABI_INITIAL_DATA):
+        raise Core0Error("user ABI initializer section/bytes/permissions/alignment differ")
+    objects = [line for line in symbol_text.splitlines() if len(line.split()) >= 8
+               and line.split()[0].endswith(":") and line.split()[3] == "OBJECT" and line.split()[6] != "UND"]
+    expected = '.section .data.user_abi, "aw", @progbits\n.balign 8\n.quad 0\n.quad 1\n.option pop\n'
+    if objects or assembly.count(expected) != 1 or len(re.findall(r"(?m)^\.section \.data", assembly)) != 1:
+        raise Core0Error("user ABI initializer generated source or object-symbol closure differs")
+    return {"source": "Lemma.User.ABI.version", "owned_input": "user/startup.o(.data.user_abi)",
+            "section": section, "virtual_address": address, "bytes": 16, "alignment": alignment,
+            "words": [0, 1], "writable": True, "executable": False,
+            "sha256": hashlib.sha256(data).hexdigest()}
+
+
+def user_primitive_rows(case: str) -> list[dict]:
+    if case not in {"none", *USER_ATTACKS}:
+        raise Core0Error("unknown user startup case")
+    rows = [{"symbol": "_user_start", "privilege": "U", "effect": "user-entry/exit"},
+            {"symbol": "lemma_exec_syscall", "privilege": "U", "effect": "user-syscall"}]
+    if case in USER_ATTACKS:
+        symbol, effect, _ = USER_ATTACKS[case]
+        rows.append({"symbol": symbol, "privilege": "U", "effect": effect})
+    return rows
 
 
 def _object(value: object, context: str) -> dict:
@@ -143,8 +191,10 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
             source.startswith("Lemma.") or re.fullmatch(r"_private\.(Lemma(?:\.[A-Za-z0-9_]+)+)\.[0-9]+\.\1\.[A-Za-z0-9_.$]+", source) is not None)
         if not production_identity or any(token in source.lower() for token in (".test.", "examples", "mutation")):
             raise Core0Error("function lacks a production Lean source identity")
-        if ".Development." in source and (configuration != "frames-development" or role != "kernel"):
-            raise Core0Error("development source escapes its exact development kernel configuration")
+        if ".Development." in source:
+            module = configuration_modules(configuration)[role]
+            if not development_role(configuration, role) or not re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source):
+                raise Core0Error("development source escapes its exact selected module namespace")
         if not isinstance(symbol, str) or not re.fullmatch("lemma_" + role + r"_[A-Za-z0-9_.$]+", symbol):
             raise Core0Error(f"function symbol lacks role prefix: {symbol}")
         if symbol in symbols or source in sources:
@@ -218,9 +268,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
 
 def validate_layout(value: object, *, configuration: str = "normal") -> dict:
     layout = _object(value, "layout")
-    _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "ram_base", "ram_limit",
+    _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
                    "frame_bytes", "frame_count", "context", "intervals", "user"}, "layout")
-    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration):
+    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != user_startup_case(configuration):
         raise Core0Error("unknown kernel layout version")
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
         raise Core0Error("pinned RAM/frame contract differs")
@@ -250,22 +300,21 @@ def validate_layout(value: object, *, configuration: str = "normal") -> dict:
 def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
     validate_configuration_stage(configuration, stage)
     catalog = _object(value, "primitive catalog")
-    _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "symbols", "user_symbols"}, "primitive catalog")
+    _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "user_startup_case", "symbols", "user_symbols"}, "primitive catalog")
     expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
     if startup_case(configuration) == "machine-origin-probe":
         expected_machine |= {"lemma_machine_vector"}
     rows = [_object(row, "machine symbol") for row in _array(catalog.get("symbols"), "machine symbols")]
     if (type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != 1
             or catalog.get("contract_version") != "lemma-execution-v1" or catalog.get("stage") != stage
-            or catalog.get("configuration") != configuration or catalog.get("startup_case") != startup_case(configuration)
+            or catalog.get("configuration") != configuration or catalog.get("startup_case") != startup_case(configuration) or catalog.get("user_startup_case") != user_startup_case(configuration)
             or {row.get("symbol") for row in rows} != expected_machine or len(rows) != len(expected_machine)):
         raise Core0Error("closed platform primitive catalog differs")
     for row in rows:
         _keys(row, {"symbol", "privilege", "effect"}, "machine symbol")
         if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
             raise Core0Error("machine primitive privilege/effect differs")
-    if catalog.get("user_symbols") != [{"symbol": "_user_start", "privilege": "U", "effect": "user-entry/exit"},
-                                        {"symbol": "lemma_exec_syscall", "privilege": "U", "effect": "user-syscall"}]:
+    if catalog.get("user_symbols") != user_primitive_rows(user_startup_case(configuration)):
         raise Core0Error("closed user primitive privilege/effect catalog differs")
     return expected_machine
 
@@ -316,7 +365,7 @@ def validate_enter_user_machine(raw: bytes) -> dict:
 
 
 def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tuple[int, int]],
-                         user_assembly: str, user_root: str) -> dict:
+                         user_assembly: str, user_root: str, user_case: str = "none") -> dict:
     restore = ["ld t0, 272(sp)", "csrw satp, t0", "sfence.vma zero, zero", "ld t0, 256(sp)",
                "csrw sepc, t0", "ld t0, 264(sp)", "csrw sstatus, t0"]
     restore += [f"ld {register}, {index * 8}(sp)" for index, register in enumerate(GPR_NAMES) if index and register not in {"sp", "t0"}]
@@ -334,7 +383,11 @@ def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tupl
         vector = _assembly_function(assembly, "lemma_supervisor_vector")
         if vector[-len(restore):] != restore or hashlib.sha256(_raw_function(raw_machine, ranges, "lemma_supervisor_vector")[-41 * 4:]).hexdigest() != SUPERVISOR_RESTORE_SHA256:
             raise Core0Error("supervisor vector does not share the complete trusted restore ABI")
-    user_start = [f"call {user_root}", *(f"li a{register}, 0" for register in range(1, 7)), "li a7, 6",
+    if user_case not in {"none", *USER_ATTACKS}:
+        raise Core0Error("unknown user startup ABI case")
+    user_prefix = [f"call {user_root}"] if user_case == "none" else ["mv gp, zero", "mv tp, zero", f"call {user_root}",
+                   "bnez a0, .Luser_exit", f"call {USER_ATTACKS[user_case][0]}", ".Luser_exit:"]
+    user_start = [*user_prefix, *(f"li a{register}, 0" for register in range(1, 7)), "li a7, 6",
                   "ecall", ".Luser_exit_returned:", "j .Luser_exit_returned"]
     if _assembly_function(user_assembly, "_user_start") != user_start:
         raise Core0Error("user startup does not forward its initial word to the exact Action root")
@@ -344,6 +397,38 @@ def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tupl
             "enter_machine_sha256": hashlib.sha256(raw).hexdigest(), "restore_machine_sha256": SUPERVISOR_RESTORE_SHA256,
             "original_sp_and_t0_t1_preserved": True, "caller_satp_readback_saved": True,
             "kernel_resume_sie": 0, "kernel_resume_scratch": 0, "initial_user_argument": "a0:u64"}
+
+
+def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, int]],
+                                 assembly: str, case: str) -> dict:
+    attacks = {symbol for symbol in ranges if symbol.startswith("lemma_user_attack_")}
+    if case == "none":
+        if attacks or ".text.user_adversarial" in assembly:
+            raise Core0Error("ordinary user artifact contains quarantined attack code")
+        return {"case": "none", "privileged_instruction_exceptions": []}
+    if case not in USER_ATTACKS:
+        raise Core0Error("unknown quarantined user attack")
+    symbol, effect, words = USER_ATTACKS[case]
+    packed = struct.pack(f"<{len(words)}I", *words)
+    if attacks != {symbol} or _raw_function(raw_machine, ranges, symbol) != packed:
+        raise Core0Error("quarantined user attack symbol/opcode/size inventory differs")
+    expected = {"supervisor-csr": ["csrr a0, sstatus", "ret"], "execute-data": ["li t0, 131072", "jalr zero, 0(t0)"],
+                "execute-kernel": ["li t0, 2149580800", "jalr zero, 0(t0)"],
+                "execute-misaligned": ["li t0, 65538", "jalr zero, 0(t0)"]}[case]
+    if _assembly_function(assembly, symbol) != expected or len(re.findall(r'(?m)^\.section \.text\.user_adversarial,\s*"ax",\s*@progbits$', assembly)) != 1:
+        raise Core0Error("quarantined user attack generated source/section differs")
+    base, size = ranges[symbol]
+    if case == "execute-misaligned":
+        # The pinned CPU supports compressed instructions. 0x10002 is aligned
+        # for that hardware, but selects the illegal zero upper halfword of
+        # the audited first, uncompressed `mv gp, zero` startup instruction.
+        if ranges.get("_user_start", (None, None))[0] != 0x10000 or _raw_function(raw_machine, ranges, "_user_start")[:4] != struct.pack("<I", 0x00000193):
+            raise Core0Error("illegal-halfword fixture lacks its exact audited startup word/target")
+    return {"case": case, "symbol": symbol, "effect": effect, "base": base, "bytes": size,
+            "raw_sha256": hashlib.sha256(packed).hexdigest(),
+            "fault_pc": {"supervisor-csr": base, "execute-data": 0x20000,
+                         "execute-kernel": 0x80200000, "execute-misaligned": 0x10002}[case],
+            "privileged_instruction_exceptions": [base] if case == "supervisor-csr" else []}
 
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
@@ -527,7 +612,9 @@ def function_ranges(symbol_text: str) -> dict[str, tuple[int, int]]:
 
 
 def validate_machine(text: str, *, user: bool = False,
-                     ranges: dict[str, tuple[int, int]] | None = None) -> None:
+                     ranges: dict[str, tuple[int, int]] | None = None, user_csr_pc: int | None = None) -> None:
+    if user_csr_pc is not None and (not user or type(user_csr_pc) is not int):
+        raise Core0Error("CSR exception lacks exact user instruction address")
     found = 0
     expected = None if ranges is None else {address for begin, size in ranges.values() for address in range(begin, begin+size, 4)}
     observed = set()
@@ -545,7 +632,8 @@ def validate_machine(text: str, *, user: bool = False,
         found += 1
         if instruction not in INTEGER_INSTRUCTIONS:
             raise Core0Error(f"unknown/noninteger/compressed machine instruction: {instruction}")
-        if user and (instruction.startswith("csr") or instruction in {"mret", "sret", "wfi", "sfence.vma"}):
+        allowed_csr = address == user_csr_pc and instruction == "csrr" and operands.replace(" ", "") == "a0,sstatus"
+        if user and (instruction.startswith("csr") and not allowed_csr or instruction in {"mret", "sret", "wfi", "sfence.vma"}):
             raise Core0Error("ordinary user image contains privileged machine instructions")
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
@@ -593,14 +681,24 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         llvm_store = pin.get("tools", {}).get("llvm", {}).get("store_path")
         if pin.get("status") != "pinned" or not isinstance(llvm_store, str) or any(not path.startswith(llvm_store + "/") for path in tools.values()):
             raise Core0Error("artifact inspection tools differ from the immutable LLVM store output")
+        realization = _object(provenance.get("lean_source_realization"), "Lean source realization")
+        lean_pin = _object(pin.get("tools", {}).get("lean"), "locked Lean input")
+        expected_realization = validate_lean_source_realization(
+            lean_pin, str(realization.get("source_path")) + "\n",
+            {str(realization.get("source_path")): {"narHash": realization.get("narHash"), "narSize": realization.get("narSize")}})
+        uint_source = Path(expected_realization["source_path"]) / "src/Init/Data/UInt/Basic.lean"
+        expected_realization.update(uint_source=str(uint_source), uint_source_sha256=LEAN_UINT_SOURCE_SHA256)
+        if (realization != expected_realization or build.get("lean_source_realization") != realization
+                or not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256):
+            raise Core0Error("realized Lean audit input is missing, stale or differs from its immutable source")
         if build.get("status") != "BUILT" or build.get("artifact_category") != category or build.get("configuration") != configuration or provenance.get("artifact_category") != category or build.get("provenance_sha256") != sha256(output_dir / "provenance.json"):
             raise Core0Error("build/provenance identity missing or stale")
         stage, optimization = provenance.get("stage"), provenance.get("optimization")
         if stage not in {"bootstrap-m", "supervisor"} or optimization not in OPT_PASSES or build.get("stage") != stage or build.get("optimization") != optimization:
             raise Core0Error("build execution stage/profile differs")
         validate_configuration_stage(configuration, stage)
-        case = startup_case(configuration)
-        if build.get("startup_case") != case or provenance.get("startup_case") != case:
+        case, user_case = startup_case(configuration), user_startup_case(configuration)
+        if build.get("startup_case") != case or provenance.get("startup_case") != case or build.get("user_startup_case") != user_case or provenance.get("user_startup_case") != user_case:
             raise Core0Error("build/provenance generated startup case differs")
         if provenance.get("generated_by_lean") != list(BOOT_FILES) or provenance.get("linked_inputs") != {"boot": list(BOOT_OBJECTS), "user": list(USER_OBJECTS)}:
             raise Core0Error("unexpected code-generation or linked-object closure")
@@ -623,11 +721,19 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"current source differs from built input: {name}")
         for role, module in configuration_modules(configuration).items():
-            if module_closure(root, module, allow_development=configuration == "frames-development" and role == "kernel") != provenance.get("target_module_closures", {}).get(role):
+            closure = module_closure(root, module, allow_development=development_role(configuration, role))
+            if any("/Development/" in path and path != module.replace(".", "/") + ".lean" for path in closure):
+                raise Core0Error("dependency imports another configuration's development module")
+            if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
             raise Core0Error("build command corpus empty, malformed or failed")
+        nix_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
+                        and row["argv"] and Path(row["argv"][0]).name == "nix"]
+        if nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION],
+                            ["path-info", "--json", lean_pin["source_path"]]]:
+            raise Core0Error("Lean source realization command evidence is missing or differs")
         compile_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
                             and row["argv"] and Path(row["argv"][0]).name in {"llc", "opt", "ld.lld", "clang", "clang-20", "llvm-objcopy"}
                             and row["argv"][1:] != ["--version"]]
@@ -655,12 +761,13 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         object_functions = {
-            "startup.o": expected_machine, "user/startup.o": {"_user_start", "lemma_exec_syscall"}, "boot-package.o": set(),
+            "startup.o": expected_machine, "user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}, "boot-package.o": set(),
             **{role + "/program.o": set(ir[role]["optimized"]["definitions"]) for role in ROLE_ROOTS},
         }
         allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                                "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
         readonly_objects = []
+        user_abi_object = None
         for object_file, expected_functions in object_functions.items():
             label = object_file.replace("/", "-")
             object_symbols = inspect("llvm-readelf", ["-s", "--wide", object_file], label + "-symbols")
@@ -670,10 +777,20 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if not relocs <= allowed_relocations:
                 raise Core0Error(f"unknown/relaxed relocation in {object_file}: {sorted(relocs-allowed_relocations)}")
             sections = alloc_section_names(inspect("llvm-readelf", ["-S", "--wide", object_file], label + "-sections"))
+            if object_file == "user/startup.o" and (".text.user_adversarial" in sections) != (user_case != "none"):
+                raise Core0Error("user attack case/object section presence differs")
             allowed_sections = ({".boot_package"} if object_file == "boot-package.o" else
                                 {".text", ".text.firmware", ".text.platform"} if object_file == "startup.o" else
-                                {".text", ".text.user_start", ".text.user_boundary"} if object_file == "user/startup.o" else
+                                {".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"} | ({".text.user_adversarial"} if user_case != "none" else set()) if object_file == "user/startup.o" else
                                 {".text", ".rodata", ".rodata.cst8", ".data", ".bss"})
+            if object_file == "user/startup.o":
+                if ".data.user_abi" not in sections:
+                    raise Core0Error("user startup lacks its sole declared initialized-data section")
+                inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", object_file, "audit-user-abi-object.bin"], "user-abi-object-extract")
+                user_abi_object = validate_user_abi_data(
+                    (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
+                    (output_dir / "audit-user-abi-object.bin").read_bytes(), object_symbols,
+                    (output_dir / "user-startup.S").read_text(), object_file=object_file)
             tables = ir["kernel"]["optimized"]["readonly_optimizer_tables"] if object_file == "kernel/program.o" else []
             if object_file == "kernel/program.o" and bool(tables) != (".rodata.cst32" in sections):
                 raise Core0Error("kernel PMP IR table/object constant section presence differs")
@@ -702,7 +819,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error(f"unaccounted allocated object section in {object_file}: {sorted(sections)}")
         inspections = {}
         for name, image, expected, user in (("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False),
-                                           ("user", "user/image.elf", {"_user_start", "lemma_exec_syscall"} | {row["symbol"] for row in units["user"]["functions"]}, True)):
+                                           ("user", "user/image.elf", {row["symbol"] for row in user_primitive_rows(user_case)} | {row["symbol"] for row in units["user"]["functions"]}, True)):
             header = inspect("llvm-readelf", ["-h", image], name + "-header")
             if not all(token in header for token in ("ELF64", "little endian", "RISC-V")) or not re.search(r"Flags:\s+0x0(?:\s|$)", header):
                 raise Core0Error("ELF ISA/class/endianness/float/compressed flags differ")
@@ -741,7 +858,11 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                     raise Core0Error(f"{symbol} lies outside its source privilege range")
             machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
             ranges = function_ranges(symbol_text)
-            validate_machine(machine, user=user, ranges=ranges)
+            attack = None
+            if user:
+                raw_user_machine = inspect("llvm-objdump", ["-d", image], "user-raw-disassembly")
+                attack = validate_user_attack_machine(raw_user_machine, ranges, (output_dir / "user-startup.S").read_text(), user_case)
+            validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None)
             inspections[name] = {"entry": required_entry, "segments": segments, "function_symbols": sorted(symbols),
                                  "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
             if not user:
@@ -749,16 +870,24 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raw_machine = inspect("llvm-objdump", ["-d", image], "boot-raw-disassembly")
                 inspections[name]["context_abi"] = validate_context_abi(
                     (output_dir / "startup.S").read_text(), raw_machine, ranges,
-                    (output_dir / "user-startup.S").read_text(), units["user"]["roots"][0]["symbol"])
+                    (output_dir / "user-startup.S").read_text(), units["user"]["roots"][0]["symbol"], user_case)
             else:
+                initialized_data = validate_user_abi_data(
+                    inspect("llvm-readelf", ["-S", "--wide", image], "user-sections"),
+                    (output_dir / "user-data.bin").read_bytes(), symbol_text,
+                    (output_dir / "user-startup.S").read_text(), object_file=image)
+                if user_abi_object is None or initialized_data["sha256"] != user_abi_object["sha256"]:
+                    raise Core0Error("linked user initializer differs from its accounted startup object")
+                inspections[name]["initialized_data"] = initialized_data
                 begin, size = ranges["_user_start"]
                 exit_pcs = [int(match[1], 16) for line in machine.splitlines()
                             if (match := re.match(r"\s*([0-9a-f]+):\s+ecall\s*$", line)) and begin <= int(match[1], 16) < begin + size]
                 if len(exit_pcs) != 1:
                     raise Core0Error("user startup lacks its exact single exit ECALL")
                 inspections[name]["exit_ecall_pc"] = exit_pcs[0]
+                inspections[name]["quarantined_startup"] = attack
         package_contract = _object(load_json(output_dir / "package-contract.json"), "package contract")
-        if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
+        if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "user_startup_case": user_case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
                                 "version": 1, "image_count": 1, "header_bytes": 32, "descriptor_bytes": 96,
                                 "image": {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
                                           "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0},
@@ -778,9 +907,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 or data_offset + data_bytes > len(package) or package[text_offset:text_offset+text_bytes] != text
                 or package[data_offset:data_offset+data_bytes] != data):
             raise Core0Error("package descriptor/raw user image binding differs")
-        record = {"schema_version": 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case,
+        record = {"schema_version": 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
+                  "lean_source_realization": realization,
                   "user_image_sha256": sha256(output_dir / "user/image.elf"), "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "elf": inspections, "commands": logs,
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",

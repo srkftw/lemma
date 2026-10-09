@@ -122,6 +122,7 @@ inductive Instruction where
   | supervisorReturn
   | move (dst src : Register)
   | jump (target : String)
+  | jumpRegisterZero (base : Register)
   | call (symbol : String)
   | fenceIO
   | translationFenceAll
@@ -161,6 +162,7 @@ def Instruction.render : Instruction → String
   | .supervisorReturn => "sret"
   | .move dst src => s!"mv {dst.render}, {src.render}"
   | .jump target => s!"j {target}"
+  | .jumpRegisterZero base => s!"jalr zero, 0({base.render})"
   | .call symbol => s!"call {symbol}"
   | .fenceIO => "fence iorw, iorw"
   | .translationFenceAll => "sfence.vma zero, zero"

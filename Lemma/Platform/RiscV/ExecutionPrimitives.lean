@@ -35,9 +35,27 @@ def StartupCase.stableId : StartupCase → String
   | .normal => "normal"
   | .machineOriginProbe => "machine-origin-probe"
 
+/-- Quarantined architectural user probes are independent of the M-origin
+startup case. Ordinary user images select `none` and contain neither probe. -/
+inductive UserStartupCase where
+  | none
+  | supervisorCsr
+  | executeData
+  | executeKernel
+  | executeMisaligned
+  deriving Repr, BEq
+
+def UserStartupCase.stableId : UserStartupCase → String
+  | .none => "none"
+  | .supervisorCsr => "supervisor-csr"
+  | .executeData => "execute-data"
+  | .executeKernel => "execute-kernel"
+  | .executeMisaligned => "execute-misaligned"
+
 structure Configuration where
   stage : Stage
   startupCase : StartupCase := .normal
+  userStartupCase : UserStartupCase := .none
   kernelMain : String
   firmwareDispatcher : String := ""
   supervisorDispatcher : String := ""
@@ -334,6 +352,9 @@ private def validSymbol (symbol : String) : Bool :=
 def Configuration.validate (config : Configuration) : Except String Unit := do
   unless Layout.valid do throw "authoritative machine layout is invalid"
   unless validSymbol config.kernelMain do throw "invalid compiled kernel entry symbol"
+  if config.userStartupCase != .none then
+    unless config.stage == .supervisor && config.startupCase == .normal do
+      throw "architectural user probes require normal supervisor startup"
   if config.startupCase == .machineOriginProbe then
     unless config.stage == .bootstrapM do
       throw "machine-origin probe requires bootstrap-M stage"
@@ -402,13 +423,43 @@ def renderUserSyscall : String := String.intercalate "\n" <|
   renderFunction "lemma_exec_syscall" syscall ++
   [".option pop", ".section .note.GNU-stack, \"\", @progbits", ""]
 
-/-- The independently linked Action root begins on its own sanitized user
-stack. Its actual status becomes the exit payload. Exit must not return; a
-misbehaving kernel leaves this task in a local, preemptible unprivileged loop. -/
-def renderUserStartup (root : String) : Except String String := do
-  unless validSymbol root do throw "invalid compiled user entry symbol"
-  let entry : Array Line := #[
-    label "_user_start", ins (.call root),
+/-- Exact architectural probe bodies, emitted only for their selected user
+configuration. No Core0 source operation can request a privileged CSR. -/
+def userAttackFunction : UserStartupCase → Option (String × Array Line)
+  | .none => none
+  | .supervisorCsr => some ("lemma_user_attack_supervisor_csr", #[
+      label "lemma_user_attack_supervisor_csr",
+      ins (.csrRead .a0 .sstatus), ins .return
+    ])
+  | .executeData => some ("lemma_user_attack_execute_data", #[
+      label "lemma_user_attack_execute_data",
+      ins (.loadImmediate .t0 0x20000), ins (.jumpRegisterZero .t0)
+    ])
+  | .executeKernel => some ("lemma_user_attack_kernel_fetch", #[
+      label "lemma_user_attack_kernel_fetch",
+      ins (.loadImmediate .t0 0x80200000), ins (.jumpRegisterZero .t0)
+    ])
+  | .executeMisaligned => some ("lemma_user_attack_misaligned", #[
+      label "lemma_user_attack_misaligned",
+      ins (.loadImmediate .t0 0x10002), ins (.jumpRegisterZero .t0)
+    ])
+
+def userPrimitiveCatalog (userCase : UserStartupCase := .none) :
+    Array (String × String × String) := #[
+  ("_user_start", "U", "user-entry/exit"),
+  ("lemma_exec_syscall", "U", "user-syscall")
+] ++ (match userCase with
+  | .none => #[]
+  | .supervisorCsr => #[
+      ("lemma_user_attack_supervisor_csr", "U", "adversarial-supervisor-csr-read")]
+  | .executeData => #[
+      ("lemma_user_attack_execute_data", "U", "adversarial-nx-fetch")]
+  | .executeKernel => #[
+      ("lemma_user_attack_kernel_fetch", "U", "adversarial-kernel-fetch")]
+  | .executeMisaligned => #[
+      ("lemma_user_attack_misaligned", "U", "adversarial-illegal-halfword-fetch")])
+
+private def userExit : Array Line := #[
     ins (.loadImmediate .a1 0), ins (.loadImmediate .a2 0),
     ins (.loadImmediate .a3 0), ins (.loadImmediate .a4 0),
     ins (.loadImmediate .a5 0), ins (.loadImmediate .a6 0),
@@ -416,12 +467,38 @@ def renderUserStartup (root : String) : Except String String := do
     ins .environmentCall,
     label ".Luser_exit_returned", ins (.jump ".Luser_exit_returned")
   ]
+
+/-- The independently linked Action root receives its scalar argument on a
+sanitized user stack. Ordinary startup is byte-identical to the initial user
+boundary. A selected probe first requires that genuine compiled root to return
+status zero; failed preconditions exit normally and cannot count as a probe.
+Exit must not return; a returning kernel leaves a local preemptible user loop. -/
+def renderUserStartup (root : String) (userCase : UserStartupCase := .none) :
+    Except String String := do
+  unless validSymbol root do throw "invalid compiled user entry symbol"
+  let entry : Array Line := (match userAttackFunction userCase with
+    | none => #[label "_user_start", ins (.call root)]
+    | some (attack, _) => #[
+        label "_user_start", ins (.move .gp .zero), ins (.move .tp .zero),
+        ins (.call root), ins (.branchNeZero .a0 ".Luser_exit"),
+        ins (.call attack), label ".Luser_exit"
+      ]) ++ userExit
+  let attackSection := match userAttackFunction userCase with
+    | none => []
+    | some (name, lines) =>
+      [".section .text.user_adversarial, \"ax\", @progbits"] ++
+      renderFunction name lines
   pure <| String.intercalate "\n" <|
     [".option push", ".option norelax", ".option norvc",
       ".section .text.user_start, \"ax\", @progbits"] ++
     renderFunction "_user_start" entry ++
     [".section .text.user_boundary, \"ax\", @progbits"] ++
-    renderFunction "lemma_exec_syscall" syscall ++
+    renderFunction "lemma_exec_syscall" syscall ++ attackSection ++
+    -- Declarative initial data shared by every independently linked image.
+    -- The linker places this 16-byte section at the declared data VA 0x20000;
+    -- the loader must copy the nonzero ABI word and zero the remaining BSS.
+    [".section .data.user_abi, \"aw\", @progbits", ".balign 8",
+      ".quad 0", s!".quad {Lemma.User.ABI.version}"] ++
     [".option pop", ".section .note.GNU-stack, \"\", @progbits", ""]
 
 end Lemma.Platform.RiscV.ExecutionPrimitives

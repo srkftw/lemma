@@ -264,3 +264,37 @@
 - Full D still in progress. Next source increment adds quarantined User attack
   roots/typed CSR and NX startup cases, paused private peer setup, actual fault
   capture and containment/reclamation tests at O0/O2. No E–K implementation yet.
+
+## Extended milestone authority and Gate D containment repair
+
+- The user explicitly extended the original time window: “Continue until the full
+  milestone is verified.” The later “finish and then merge” authorizes merging
+  Task 003 only after full A–K verification and actual GitHub checks. Earlier
+  draft-only and time-window handoff restrictions are superseded by this request.
+- Gates E–K remain not run. Work stays on the existing branch, without discarding
+  local work, changing repository settings, deleting task branches or touching USGCE.
+- Actual current-policy counterexample: forbidden U instruction fetch at kernel
+  VA 0x80200000 naturally stopped QEMU with kernel-fatal status50. Retained under
+  build/kernel/gateD/kernel-fetch-policy-counterexample-O2-run/result.json;
+  no host-kill claim applies to that naturally reaped failure.
+- Process now validates owned trap stack, U origin and exact SATP before treating
+  saved PC as diagnostic data. Hardware U faults terminate44; ordinary ECALL
+  returns retain aligned mapped executable-site validation. An SSIP at an invalid
+  target may resume the verified U context so hardware reports the precise fault.
+- Fixed kernel-fetch and illegal-halfword-fetch cases passed separately at O0/O2,
+  actual44 and frames483→500, live host-stop/reap. The pinned CPU supports C/Zca:
+  the 0x10002 case is illegal instruction2/stval0, not an IALIGN32 misalignment.
+- Review found initialized-data-copy lacked a nonempty witness. A declared16-byte
+  image-data header and actual U checks of ABI word/BSS are being added before
+  committed clean A–D acceptance. Full D remains in progress until that run passes.
+- Next: finish precise data/corpus audit changes, commit coherent D increment,
+  run fresh committed check_kernel.py A–D acceptance, then advance to Gate E.
+
+- The declared initial-data normalO2 witness passed3 fresh actual U runs; the
+  linked16B[0,1] data object/package is audited, U reads ABI1 and zero BSS at
+  0x20010, and all process frames return to500. Evidence:
+  build/kernel/gateD/data-witness-normal-O2-run/result.json.
+- Kernel builder now explicitly realizes the immutable Lean source, verifies
+  its locked NAR hash/size and UInt source hash, and records actual Nix commands
+  in build/provenance/audit evidence. Each CI job therefore obtains its own audit
+  source input. Full clean D remains pending at this coherent candidate commit.

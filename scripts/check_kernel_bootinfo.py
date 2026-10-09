@@ -97,8 +97,13 @@ def observe(*, root: Path, image: Path, output_dir: Path, kind: str,
                                      "records": result.get("records"), "cleanup": result.get("cleanup"),
                                      "returncode": result.get("returncode")})
     result = load_json(case_dir / "result.json")
-    if result.get("status") != "PASS" or result.get("cleanup") != {
-            "explicit_host_stop": True, "process_group_killed": True, "process_reaped": True}:
+    cleanup = result.get("cleanup")
+    expected_cleanup = {"explicit_host_stop": True, "process_group_killed": True,
+                        "target_exited_before_cleanup": False, "process_reaped": True}
+    if (result.get("status") != "PASS" or result.get("guest_live_before_cleanup") is not True
+            or result.get("returncode") != -9 or not isinstance(cleanup, dict)
+            or set(cleanup) != set(expected_cleanup)
+            or any(cleanup.get(key) is not value for key, value in expected_cleanup.items())):
         raise Core0Error(f"{kind} lacks passing observation and confirmed QEMU cleanup")
 
 

@@ -38,7 +38,8 @@
       "gate": "D",
       "name": "Sv39 and user process",
       "status": "in_progress",
-      "guest_execution": "not_run"
+      "guest_execution": "ordinary U execution, architectural denials and loader/API probes observed; fresh complete clean acceptance pending",
+      "actual_failure": "kernel-fetch-policy-counterexample-O2-run: verified U forbidden PC incorrectly caused kernel fatal50; fixed O0/O2 cases pass, retained counterexample"
     },
     {
       "gate": "E",

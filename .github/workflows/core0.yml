@@ -193,3 +193,81 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
           compression-level: 6
+
+  kernel-rv64:
+    name: Task 003 implemented Gates A-D RV64 acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare Task 003 log directory
+        run: mkdir -p build/ci
+
+      - name: Build, audit and execute the clean implemented kernel prefix
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel.py \
+                --work-dir build/kernel/ci-prefix \
+                --clean \
+                --timeout 300 \
+                --qemu-timeout 90 \
+                --deadline 2400 \
+            2>&1 | tee build/ci/kernel-rv64.log
+
+      - name: Require complete Task 003 acceptance evidence
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          def require(condition):
+              if not condition:
+                  raise RuntimeError("Missing or changed mandatory Task 003 evidence")
+          def digest(path):
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          result = Path("build/kernel/ci-prefix/result.json")
+          value = json.loads(result.read_text())
+          lean = json.loads(Path("tooling/toolchain-lock.json").read_text())["tools"]["lean"]
+          require(value["status"] == "PASS" and value["source"]["clean"] is True)
+          require(len(value["images"]) == 18 and len(value["observations"]) == 22)
+          for row in value["images"]:
+              image = Path(row["image"])
+              require(image.is_file() and image.stat().st_size > 0 and digest(image) == row["sha256"])
+              audit, provenance = image.parent / "audit.json", image.parent / "provenance.json"
+              require(digest(audit) == row["audit_sha256"] and digest(provenance) == row["provenance_sha256"])
+              require(json.loads(audit.read_text())["status"] == "PASS")
+              recorded = json.loads(provenance.read_text())
+              require(recorded["source_commit"] == value["source"]["commit"])
+              realized = recorded["lean_source_realization"]
+              require(realized["source_path"] == lean["source_path"] and realized["revision"] == lean["revision"])
+              require(realized["narHash"] == lean["source_sha256"] and realized["narSize"] == lean["source_nar_size"])
+          for row in value["observations"]:
+              observed = Path(row["result"])
+              require(digest(observed) == row["sha256"] and json.loads(observed.read_text())["status"] == "PASS")
+          PY
+
+      - name: Retain Task 003 prefix evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-A-D-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/kernel/ci-prefix/
+            build/ci/kernel-rv64.log
+            docs/evidence/003-*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6

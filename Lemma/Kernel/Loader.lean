@@ -82,8 +82,8 @@ private def validateDescriptor (record header total : UInt64) : Action :=
 
 /-- All descriptors are already range-validated when compared. Version 1 does
 not permit payload sharing between image descriptors or duplicate image IDs. -/
-private def priorStep (i _ : UInt32) (acc record _ _ _ : UInt64) : Action :=
-  let previous := packageBase + 32 + i.toUInt64 * 96
+private def priorStep (i _ : UInt32) (acc record storageBase _ _ : UInt64) : Action :=
+  let previous := storageBase + 32 + i.toUInt64 * 96
   .bind (get record 0) fun s id => if failed s = true then .done s 0 else
   .bind (get previous 0) fun s oldId => if failed s = true then .done s 0 else
   if id = oldId then .done duplicateImage 0 else
@@ -101,32 +101,49 @@ private def priorStep (i _ : UInt32) (acc record _ _ _ : UInt64) : Action :=
   if disjoint data dataBytes oldData oldDataBytes = false then .done invalidBounds 0 else
   .done 0 acc
 
-private def descriptorStep (i _ : UInt32) (acc header total _ _ : UInt64) : Action :=
-  let record := packageBase + 32 + i.toUInt64 * 96
+private def descriptorStep (i _ : UInt32) (acc header total storageBase _ : UInt64) : Action :=
+  let record := storageBase + 32 + i.toUInt64 * 96
   .bind (validateDescriptor record header total) fun s _ =>
   if failed s = true then .done s 0 else
-  .boundedFoldU64 8 priorStep i 0 record 0 0 0 fun s _ =>
+  .boundedFoldU64 8 priorStep i 0 record storageBase 0 0 fun s _ =>
   if failed s = true then .done s 0 else .done 0 (acc + 1)
+
+/-- The only callers select either the fixed immutable boot-package region or
+one revalidated owner-1 purpose-1 frame. No public raw-pointer parser is exposed.
+Header extent and address overflow are checked before the first memory read. -/
+private def validateView (storageBase storageBytes imageIndex : UInt64) : Action :=
+  if storageBytes < 32 then .done invalidBounds 0 else
+  if packageBytes < storageBytes then .done invalidBounds 0 else
+  if 0xffffffffffffffff - storageBytes < storageBase then .done invalidBounds 0 else
+  .bind (get storageBase 0) fun s magic => if failed s = true then .done s 0 else
+  if (if magic = packageMagic then false else true) = true then .done invalidPackage 0 else
+  .bind (get storageBase 8) fun s version => if failed s = true then .done s 0 else
+  if (if version = 1 then false else true) = true then .done invalidPackage 0 else
+  .bind (get storageBase 16) fun s count => if failed s = true then .done s 0 else
+  if count = 0 then .done invalidPackage 0 else
+  if 8 < count then .done invalidPackage 0 else
+  if count ≤ imageIndex then .done invalidImage 0 else
+  .bind (get storageBase 24) fun s total => if failed s = true then .done s 0 else
+  let header := 32 + count * 96
+  if total < header then .done invalidBounds 0 else
+  if storageBytes < total then .done invalidBounds 0 else
+  .boundedFoldU64 8 descriptorStep count.toUInt32 0 header total storageBase 0 fun s checked =>
+  if failed s = true then .done s 0 else
+  if checked = count then .done 0 (storageBase + 32 + imageIndex * 96)
+  else .done invariantFailure 0
 
 /-- Success returns the selected immutable descriptor address. No frame is
 allocated until the complete bounded package corpus and selection are valid. -/
 def validate (imageIndex : UInt64) : Action :=
-  .bind (get packageBase 0) fun s magic => if failed s = true then .done s 0 else
-  if (if magic = packageMagic then false else true) = true then .done invalidPackage 0 else
-  .bind (get packageBase 8) fun s version => if failed s = true then .done s 0 else
-  if (if version = 1 then false else true) = true then .done invalidPackage 0 else
-  .bind (get packageBase 16) fun s count => if failed s = true then .done s 0 else
-  if count = 0 then .done invalidPackage 0 else
-  if 8 < count then .done invalidPackage 0 else
-  if count ≤ imageIndex then .done invalidImage 0 else
-  .bind (get packageBase 24) fun s total => if failed s = true then .done s 0 else
-  let header := 32 + count * 96
-  if total < header then .done invalidBounds 0 else
-  if packageBytes < total then .done invalidBounds 0 else
-  .boundedFoldU64 8 descriptorStep count.toUInt32 0 header total 0 0 fun s checked =>
+  validateView packageBase packageBytes imageIndex
+
+/-- Validate the same package grammar inside an existing kernel-owned frame.
+The handle is revalidated for owner, generation and purpose before reading.
+This read-only API neither allocates nor executes the fixture's payload. -/
+def validateFrame (kernelFrameHandle imageIndex : UInt64) : Action :=
+  .bind (Frames.resolvePurpose 1 kernelFrameHandle 1) fun s storageBase =>
   if failed s = true then .done s 0 else
-  if checked = count then .done 0 (packageBase + 32 + imageIndex * 96)
-  else .done invariantFailure 0
+  validateView storageBase 4096 imageIndex
 
 private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (Access.read8 (source + i.toUInt64)) fun s byte =>

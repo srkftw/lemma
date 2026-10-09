@@ -46,6 +46,9 @@ def operation (command a b c d : UInt64) : Action :=
   else if command = 15 then AddressSpace.destroy a
   else if command = 16 then AddressSpace.root a
   else if command = 17 then AddressSpace.satp a
+  else if command = 18 then Lemma.Kernel.Loader.validateFrame a b
+  else if command = 19 then Lemma.Kernel.Loader.load a b c
+  else if command = 20 then Lemma.Kernel.Loader.teardown a
   else .done 17 0
 
 def reply (command a b c d : UInt64) : Action :=

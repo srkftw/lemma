@@ -24,16 +24,29 @@ private def roleProfile (role : String) : Except String Profile :=
 
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
-    | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal, frames-development, or machine-origin-development"
+    | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
   unless configuration == "normal" || configuration == "frames-development" ||
-      configuration == "machine-origin-development" do
-    throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal, frames-development, or machine-origin-development"
+      configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
+      configuration == "user-csr-development" || configuration == "user-nx-development" ||
+      configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" do
+    throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
   pure configuration
 
 /-- The startup probe is selected only by its exact quarantined configuration,
 not by an independent environment switch or by a supplied instruction list. -/
 private def startupCase (configuration : String) : Lemma.Platform.RiscV.ExecutionPrimitives.StartupCase :=
   if configuration == "machine-origin-development" then .machineOriginProbe else .normal
+
+private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.ExecutionPrimitives.UserStartupCase :=
+  if configuration == "user-csr-development" then .supervisorCsr
+  else if configuration == "user-nx-development" then .executeData
+  else if configuration == "user-kernel-fetch-development" then .executeKernel
+  else if configuration == "user-misaligned-development" then .executeMisaligned else .none
+
+private def requiresSupervisor (configuration : String) : Bool :=
+  configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+    configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
+    configuration == "user-misaligned-development"
 
 private def unitCategory (configuration role : String) : String :=
   (if configuration == "normal" then "production-" else "development-") ++ role ++ "-unit"
@@ -43,8 +56,11 @@ private def rootIdentities (configuration role : String) : Array String :=
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
   | "kernel" => if configuration == "frames-development" then
       #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
+    else if configuration == "user-isolation-development" then
+      #["Lemma.Kernel.Development.IsolationEntry.boot", "Lemma.Kernel.Development.IsolationEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
-  | "user" => #["Lemma.User.Entry.main"]
+  | "user" => if configuration == "user-isolation-development" then
+      #["Lemma.User.Development.Isolation.main"] else #["Lemma.User.Entry.main"]
   | _ => #[]
 
 private def rootArguments (role : String) : Array (Array Ty) :=
@@ -54,12 +70,24 @@ private def rootArguments (role : String) : Array (Array Ty) :=
   | "user" => #[#[.u64]]
   | _ => #[]
 
-private def allowsDevelopment (configuration role : String) : Bool :=
-  configuration == "frames-development" && role == "kernel"
+private def developmentModule (configuration role : String) : Option String :=
+  if configuration == "frames-development" && role == "kernel" then
+    some "Lemma.Kernel.Development.FramesEntry"
+  else if configuration == "user-isolation-development" && role == "kernel" then
+    some "Lemma.Kernel.Development.IsolationEntry"
+  else if configuration == "user-isolation-development" && role == "user" then
+    some "Lemma.User.Development.Isolation"
+  else none
 
 private def developmentName (name : Name) : Bool :=
   let source := (Lean.privateToUserName? name).getD name |>.toString
-  source.startsWith "Lemma.Kernel.Development."
+  source.startsWith "Lemma.Kernel.Development." || source.startsWith "Lemma.User.Development."
+
+private def allowedDevelopmentSource (configuration role : String) (name : Name) : Bool :=
+  if !developmentName name then true else
+    match developmentModule configuration role with
+    | some scope => ((Lean.privateToUserName? name).getD name |>.toString).startsWith (scope ++ ".")
+    | none => false
 
 private def validateSelectedRoots (configuration role : String) (names : Array Name) : Except String Unit := do
   unless names.map Name.toString == rootIdentities configuration role do
@@ -178,21 +206,19 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     (directory : System.FilePath) : IO Unit := do
   let profile ← IO.ofExcept (roleProfile role)
   IO.ofExcept <| validateSelectedRoots configuration role names
-  unless allowsDevelopment configuration role do
-    for imported in env.header.moduleNames do
-      if developmentName imported then
+  for imported in env.header.moduleNames do
+    if developmentName imported then
+      unless developmentModule configuration role == some imported.toString do
         throw <| IO.userError s!"{configuration} {role} imports forbidden development module `{imported}`"
   let suite ← match checkAndLowerActionSuiteForProfile env profile names with
     | .ok suite => pure suite
     | .error diagnostic => throw <| IO.userError diagnostic.render
   IO.ofExcept (validateRoots configuration role suite)
   for function in suite.scalarFunctions do
-    unless productionName function.name &&
-        (allowsDevelopment configuration role || !developmentName function.name) do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   for function in suite.actionFunctions do
-    unless productionName function.name &&
-        (allowsDevelopment configuration role || !developmentName function.name) do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
@@ -220,6 +246,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
 private def layoutJson (configuration : String) : Json := Json.mkObj [
   ("configuration", .str configuration),
   ("startup_case", .str (startupCase configuration).stableId),
+  ("user_startup_case", .str (userStartupCase configuration).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
   ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson Layout.frameCount),
@@ -266,6 +293,7 @@ private def userLinker : String := String.intercalate "\n" [
 private def packageContract (configuration : String) : Json := Json.mkObj [
   ("configuration", .str configuration),
   ("startup_case", .str (startupCase configuration).stableId),
+  ("user_startup_case", .str (userStartupCase configuration).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-boot-package-v1"),
   ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", 1),
   ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
@@ -336,23 +364,27 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
     (stage : Lemma.Platform.RiscV.ExecutionPrimitives.Stage) : IO Unit := do
   if configuration == "machine-origin-development" && stage != .bootstrapM then
     throw <| IO.userError "machine-origin-development requires bootstrap-m stage"
+  if requiresSupervisor configuration && stage != .supervisor then
+    throw <| IO.userError s!"{configuration} requires supervisor stage"
   unless Layout.valid do throw <| IO.userError "authoritative boot layout is invalid"
   let firmware ← readRootSymbol directory configuration "firmware" 0
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let user ← readRootSymbol directory configuration "user" 0
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, startupCase := startupCase configuration,
+    stage, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
-  let userStartup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user
+  let userStartup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user config.userStartupCase
   let catalog := Json.mkObj [("schema_version", 1), ("contract_version", .str "lemma-execution-v1"),
     ("configuration", .str configuration), ("stage", .str stage.stableId),
-    ("startup_case", .str config.startupCase.stableId), ("symbols", .arr
+    ("startup_case", .str config.startupCase.stableId),
+    ("user_startup_case", .str config.userStartupCase.stableId), ("symbols", .arr
       ((Lemma.Platform.RiscV.ExecutionPrimitives.primitiveCatalog config).map fun (symbol, privilege, effect) =>
         Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])),
-    ("user_symbols", .arr #[Json.mkObj [("symbol", .str "_user_start"), ("privilege", .str "U"), ("effect", .str "user-entry/exit")],
-      Json.mkObj [("symbol", .str "lemma_exec_syscall"), ("privilege", .str "U"), ("effect", .str "user-syscall")]])]
+    ("user_symbols", .arr
+      ((Lemma.Platform.RiscV.ExecutionPrimitives.userPrimitiveCatalog config.userStartupCase).map fun (symbol, privilege, effect) =>
+        Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)]))]
   for (filename, contents) in #[("startup.S", startup), ("user-startup.S", userStartup),
       ("link.ld", bootLinker), ("user-link.ld", userLinker), ("layout.json", (layoutJson configuration).pretty ++ "\n"),
       ("primitive-catalog.json", catalog.pretty ++ "\n"), ("boot-package.S", packageData),
