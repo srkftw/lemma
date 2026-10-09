@@ -4,12 +4,24 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: first scalar vertical slice.** Task 001 implements a narrow checked
-Core0 profile and a reproducible Lean elaboration -> checked Core0 -> LLVM -> static
-RV64 ELF -> QEMU `virt` path.  It is evidence for a bounded part of Stage I, not the
-managed Lean runtime, an operating system, a hardware milestone, or completion of G1.
-See [the Task 001 evidence](docs/evidence/001-core0.md) and the explicit limitations
-there.
+**Current state: tested freestanding diagnostic monitor and machine foundation.**
+Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
+RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–10 extend and qualify it with compiler-fault
+detection, multi-root conformance, validated control flow, bounded iteration,
+checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
+traps with checked context preservation, and actual timer interrupts during
+foreground computation. The integrated ten-command monitor and full cumulative/
+legacy suite passed clean detached O0/O2 qualification at `09c47ba`.
+Task 002 is published as [draft stacked PR #2](https://github.com/srkftw/lemma/pull/2);
+the initial actual CI failed at Gate 3's pinned-source materialization. Its repair
+passed full fresh local qualification and all three jobs in both actual
+[push](https://github.com/srkftw/lemma/actions/runs/37825241614) and
+[PR CI](https://github.com/srkftw/lemma/actions/runs/37825247231) runs. Tested
+implementation and later report-bearing commits remain distinct.
+This is not a managed runtime, complete OS, hardware milestone,
+or completion of G1/G2. See [Task 001 evidence](docs/evidence/001-core0.md),
+[Task 002 evidence](docs/evidence/002-machine-foundation.md), and the
+[continuation checkpoint](docs/plan/002-session-state.md).
 
 ## Invariants
 
@@ -73,17 +85,61 @@ checks repeat-build hashes, mutates accepted source, and proves the audit reject
 statically resolved foreign object.  A finite green corpus is not a compiler proof and
 does not qualify all of G1.
 
+The recorded Task 002 passing prefix also has real host/target checks:
+
+```sh
+nix develop --no-write-lock-file --command lake build
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --phase 9 \
+  --work-dir build/foundation/gate9-recheck --clean --timeout 300 --qemu-timeout 20
+```
+
+Phase 9 builds and audits O0/O2 images and runs 18 fresh QEMU boots. Historical
+focused acceptance at `8fd45d8` handled 1,598 requests, observed 1,461 hardware interrupts and 20
+synchronous recoveries, and checked 192 ring records, with malformed-request
+recovery, bounds checks, timer restart/shutdown and both session-budget edges.
+The earlier clean cumulative Gates 1–8 run passed 456 boots at `42674c1`;
+legacy acceptance separately passed 23 boots. The current extended cumulative
+and detached-worktree qualification have separate fresh evidence below; they
+do not inherit these historical passes.
+
+The cumulative/stress and final qualification interfaces are:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+```
+
+Qualification requires committed, clean source. It independently replays retained
+monitor evidence, repeats same-profile builds, and exercises stale-PASS and missing/
+tampered-evidence failures. Clean `09c47ba` passed 438 foundation, 32 Core0 and
+18 scaffold host tests, a cold 53-job Lean build, 482 cumulative and 23 legacy
+QEMU boots, 26 raw-session replays, 16 reproducible artifacts/profile and five
+failure experiments. The monitor handled 2,742 requests with 4,229 observed
+hardware IRQs, 60 synchronous recoveries and 576 retained records. A catalog-
+construction defect in the first qualification attempt was caught, fixed and
+retested; its failed evidence remains retained. A later fresh-CI pinned-source
+materialization defect was repaired and the full clean suite repeated; the earlier
+successful `e0e1f21` run is historical, not rebound. See the report for exact source
+and later publication identities. CI separately runs metadata/host,
+legacy RV64, and cumulative foundation/qualification jobs with retained artifacts.
+
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
-The owner created the empty GitHub repository; the prepared starter is published
-through the connected GitHub file/tree/commit operations. No Codex task is launched
-by publication.
+Task 001 is [draft PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
+[draft PR #2](https://github.com/srkftw/lemma/pull/2), stacked against
+`task/001-core0-freestanding-slice` because Task 001 remains unmerged. Neither PR
+is merged automatically; `main` still contains the starter rather than this
+implementation.
 
-Select this repository and `main` in Codex, then assign
-`codex/prompts/001-core0-freestanding-slice.md`. Have Codex work on a task branch and
-return a reviewable change. The first task audits/pins the toolchain and builds the
-first real scalar Core0 -> LLVM -> bare-metal RV64 execution path.
+For the current work, select `task/002-machine-foundation` and read
+`codex/prompts/002-machine-foundation.md`, the gate ledger and resume checkpoint.
+Task 001's original assignment remains preserved at
+`codex/prompts/001-core0-freestanding-slice.md`.
 
 `scripts/publish-github.sh` is retained as a tested bootstrap helper for the original
 empty-remote workflow. **Do not run it on this already-published repository.** It

@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "profile": "core0-v0.1",
   "cases": [
     {
       "name": "reachable-allocation",

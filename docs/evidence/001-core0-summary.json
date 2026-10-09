@@ -10,6 +10,28 @@
     "status_at_record_time": "not_run",
     "workflow": ".github/workflows/core0.yml"
   },
+  "post_record_verification": {
+    "report_bearing_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+    "report_bearing_tree": "88d2c23aafbd2b3a40a195755c01494de9ffad75",
+    "clean_local_check_results_sha256": "a9a43ece72b9c48987a5d22720bfe3b15e97f7add69f83aeaa07dd04c865319b",
+    "direct_image_source_inputs_canonical_sha256": "ff8bad8c2b2b11e782bcdc16877f82f877476f21abea28811edc36816e741834",
+    "push_ci": {
+      "run_id": 37738473183,
+      "source_commit": "b8e9c59365ae8e9925e0bf6fbca6a963d990ec85",
+      "status": "success",
+      "artifact_id": 11532842069,
+      "artifact_digest": "sha256:1dc8dedd414822ad645030864242482dd769b55056f833810fcaf87718c9087c"
+    },
+    "pull_request_ci": {
+      "run_id": 37738500851,
+      "checkout_kind": "synthetic_merge",
+      "source_commit": "7e56613a23d86cad6e21a98546da6983660d9806",
+      "source_tree_matches_report_bearing_tree": true,
+      "status": "success",
+      "artifact_id": 11532718091,
+      "artifact_digest": "sha256:f37a3097c9c18d1f3311f5f0b118cafc638a14ed161e870cef08743104660be1"
+    }
+  },
   "source": {
     "repository": "srkftw/lemma",
     "branch": "task/001-core0-freestanding-slice",
@@ -70,6 +92,9 @@
     "foreign_object_audit_regression_status": "pass"
   },
   "runtime": {
+    "input_magic_ascii": "LEMMA001",
+    "input_magic_bytes_hex": "4c454d4d41303031",
+    "input_magic_little_endian_u64": "0x313030414d4d454c",
     "corpus_tag": "0x4c454d4d41303031",
     "corpus_tag_is_prng_seed": false,
     "qemu_seed": 1,

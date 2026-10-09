@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "profile": "core0-v0.3",
+  "legacy_profiles": [
+    "core0-v0.1",
+    "core0-v0.2"
+  ],
+  "cases": [
+    {
+      "name": "capturing-callback",
+      "path": "examples/foundation/gate4-reject/CapturingCallback.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "bounded-fold callback must be a closed top-level constant",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "direct-extern-callback",
+      "path": "examples/foundation/gate4-reject/DirectExternCallback.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "declaration `callback` has an arbitrary @[extern] implementation",
+        "dependency path: root -> callback"
+      ]
+    },
+    {
+      "name": "dynamic-callback",
+      "path": "examples/foundation/gate4-reject/DynamicCallback.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "parameter `step` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "hidden-forbidden-callback",
+      "path": "examples/foundation/gate4-reject/HiddenForbiddenCallback.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "declaration `forbiddenHelper` has an arbitrary @[extern] implementation",
+        "dependency path: root -> callback -> forbiddenHelper"
+      ]
+    },
+    {
+      "name": "lookalike-combinator",
+      "path": "examples/foundation/gate4-reject/LookalikeCombinator.lean",
+      "diagnostic_code": "unsupported-type",
+      "required_fragments": [
+        "parameter `budget` is not Bool/UInt8/UInt32/UInt64",
+        "dependency path: root -> lookalike"
+      ]
+    },
+    {
+      "name": "nonliteral-budget",
+      "path": "examples/foundation/gate4-reject/NonliteralBudget.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "bounded-fold budget must be a canonical standard Nat literal",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "over-budget",
+      "path": "examples/foundation/gate4-reject/OverBudget.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "bounded-fold budget 257 exceeds maximum 256",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "polymorphic-callback",
+      "path": "examples/foundation/gate4-reject/PolymorphicCallback.lean",
+      "diagnostic_code": "unsupported-expression",
+      "required_fragments": [
+        "bounded-fold callback must be a direct top-level constant",
+        "dependency path: root"
+      ]
+    },
+    {
+      "name": "recursive-callback",
+      "path": "examples/foundation/gate4-reject/RecursiveCallback.lean",
+      "diagnostic_code": "unsupported-declaration",
+      "required_fragments": [
+        "partial definitions are rejected",
+        "dependency path: root -> recursiveStep"
+      ]
+    },
+    {
+      "name": "v01-bounded-loop",
+      "path": "examples/foundation/gate4-reject/V01BoundedLoop.lean",
+      "diagnostic_code": "unsupported-primitive",
+      "required_fragments": [
+        "`Lemma.Core0.Bounded.boundedFoldU32` requires core0-v0.3",
+        "dependency path: root -> Lemma.Core0.Bounded.boundedFoldU32"
+      ]
+    },
+    {
+      "name": "v02-bounded-loop",
+      "path": "examples/foundation/gate4-reject/V02BoundedLoop.lean",
+      "diagnostic_code": "unsupported-primitive",
+      "required_fragments": [
+        "`Lemma.Core0.Bounded.boundedFoldU32` requires core0-v0.3",
+        "dependency path: root -> Lemma.Core0.Bounded.boundedFoldU32"
+      ]
+    }
+  ]
+}

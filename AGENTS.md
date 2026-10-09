@@ -4,7 +4,7 @@
 
 Read `README.md`, `docs/ARCHITECTURE.md`, the four files in `docs/contracts/`,
 `docs/plan/BUILD_ORDER.md`, and the assigned task under `codex/prompts/`.
-This is a construction scaffold, not a working OS. Do not invent successful builds.
+This is a tested, bounded freestanding foundation, not a complete OS. Do not invent successful builds.
 
 ## Non-negotiable boundaries
 
@@ -41,6 +41,18 @@ Task 001 builds a small scalar Core0 vertical slice through LLVM to QEMU. It is 
 permission to implement the scheduler, allocator, managed runtime, UI, verifier,
 recognizer, network stack, or tutor. Stay on the task's provided branch; do not
 change repository visibility, licensing, branch protection, or credentials.
+
+## Second task's scope
+
+Task 002 is defined by `codex/prompts/002-machine-foundation.md`. It deliberately
+extends the Task 001-only boundary with versioned scalar profiles, bounded loops,
+checked fixed-region memory and effects, compiled device routines, M-mode traps,
+timer interrupts, and a bounded diagnostic monitor. Preserve `core0-v0.1` as a
+regression profile and advance through the recorded gates in dependency order.
+Task 002 still excludes a managed heap/runtime, scheduler, page-table isolation,
+filesystem, proof checker, notebook, networking, tutor, and physical-board claims.
+Resume from `docs/plan/002-session-state.md` and `docs/plan/002-gates.json`; do not
+infer that a later gate passed from the existence of code or a cached earlier run.
 
 ## Evidence discipline
 
@@ -88,3 +100,41 @@ independent-reference comparisons, clean-directory reproducibility builds, a sou
 mutation, and an audit-regression link.  Missing tools or evidence fail; there is no
 skip-to-success mode.  Run both scaffold checks after changes as well.  The Python
 programs are host-only orchestration; compiler and target logic remain Lean.
+
+Task 002 has a separate host suite and incremental target checker. Gates 0–10
+have recorded clean-source acceptance at `09c47ba` (full identity in the ledger):
+
+```sh
+nix develop --no-write-lock-file --command lake build
+nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/foundation -v
+nix develop --no-write-lock-file --command ./scripts/check-core0.sh \
+  --work-dir build/core0/qualification-legacy --clean
+```
+
+The focused monitor interface passed historically at clean `8fd45d8`. The current
+`--all --stress`, legacy and qualifier passed separately in a cold detached
+worktree at `09c47ba`: 482 cumulative/23 legacy boots and 26 raw-session replays.
+These do not inherit earlier passes. Follow the task ledger/checkpoint when
+resuming. The branch is pushed with an upstream and published as draft stacked
+PR #2 against Task 001. Its first actual CI run failed at Gate 3 because the pinned
+Lean source was evaluated but not realized in the fresh Nix store. The explicit
+realization repair passed all fresh detached acceptance at `09c47ba` and all
+three jobs in actual push/PR runs `37825241614`/`37825247231`. Push checks exact
+`09c47ba`; PR checks synthetic merge `e292d435...` with the same tree. Later
+report-only commits are separate. Preserve historical failure evidence.
+
+The cumulative/stress and qualification commands (the latter requires committed,
+clean source) are:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-foundation.sh --all --stress \
+  --work-dir build/foundation/gates1-9-clean --clean --timeout 300 --qemu-timeout 20
+nix develop --no-write-lock-file --command python3 scripts/qualify_foundation.py \
+  --gate9-dir build/foundation/gates1-9-clean/gate9 \
+  --work-dir build/foundation/qualification --clean --timeout 300 --qemu-timeout 20
+```
+
+The first detached qualification failed closed on duplicate evidence-role labels;
+its valid cumulative/legacy results and failed report remain retained. The fixed
+candidate's complete detached rerun passed. Do not relabel earlier artifacts as
+outputs of the fix, or infer CI success from the workflow file.

@@ -1,3 +1,4 @@
+import Lemma.Core0.Bounded
 import Lemma.Core0.IR
 
 /-!
@@ -117,7 +118,24 @@ private def evalBin (stack : List Name) (op : BinOp) (ty : Ty)
     | .band => Nat.land lhs.value rhs.value
     | .bor => Nat.lor lhs.value rhs.value
     | .bxor => Nat.xor lhs.value rhs.value
+    | .shl => lhs.value * 2 ^ (rhs.value % ty.width)
+    | .lshr => lhs.value / 2 ^ (rhs.value % ty.width)
+    | .udiv => if rhs.value == 0 then 0 else lhs.value / rhs.value
+    | .urem => if rhs.value == 0 then lhs.value else lhs.value % rhs.value
   pure (.scalar { ty, value := result % modulus })
+
+private def evalUnary (stack : List Name) (op : UnaryOp) (ty : Ty)
+    (value : Value) : Except EvalDiagnostic Value := do
+  unless ty.isInteger do
+    evalFail stack .invalidCheckedIR s!"{op.render} cannot operate on Bool"
+  let value ← expectScalar stack ty value
+  let result := match op with
+    | .complement => Nat.xor value.value (Scalar.modulus ty - 1)
+  pure (.scalar { ty, value := Scalar.normalize ty result })
+
+private def isV02OnlyBin : BinOp → Bool
+  | .shl | .lshr | .udiv | .urem => true
+  | _ => false
 
 private def evalCmp (stack : List Name) (op : CmpOp) (ty : Ty)
     (lhs rhs : Value) : Except EvalDiagnostic Value := do
@@ -153,9 +171,18 @@ mutual
         expectType stack ty value
         evalExpr fuel program stack ((id, value) :: locals) body
     | .bin op ty lhs rhs =>
+        if program.contractVersion == Profile.v0_1.contractVersion && isV02OnlyBin op then
+          evalFail stack .invalidCheckedIR
+            s!"{op.render} is not available in {Profile.v0_1.contractVersion}"
         let lhs ← evalExpr fuel program stack locals lhs
         let rhs ← evalExpr fuel program stack locals rhs
         evalBin stack op ty lhs rhs
+    | .unary op ty value =>
+        if program.contractVersion == Profile.v0_1.contractVersion then
+          evalFail stack .invalidCheckedIR
+            s!"{op.render} is not available in {Profile.v0_1.contractVersion}"
+        let value ← evalExpr fuel program stack locals value
+        evalUnary stack op ty value
     | .cmp op ty lhs rhs =>
         let lhs ← evalExpr fuel program stack locals lhs
         let rhs ← evalExpr fuel program stack locals rhs
@@ -184,6 +211,55 @@ mutual
             (op == .trunc && targetTy.width < sourceTy.width) do
           evalFail stack .invalidCheckedIR "conversion direction disagrees with its type widths"
         pure (.scalar { ty := targetTy, value := Scalar.normalize targetTy source.value })
+    | .boundedFoldU32 budget callback count initial =>
+        unless program.contractVersion == Profile.v0_3.contractVersion ||
+            program.contractVersion == Profile.v0_4.contractVersion ||
+            program.contractVersion == Profile.v0_5.contractVersion ||
+            program.contractVersion == Profile.v0_6.contractVersion ||
+            program.contractVersion == Profile.v0_7.contractVersion do
+          evalFail stack .invalidCheckedIR
+            s!"bounded iteration is not available in {program.contractVersion}"
+        unless budget ≤ Lemma.Core0.Bounded.maximumBudget do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold budget {budget} exceeds maximum {Lemma.Core0.Bounded.maximumBudget}"
+        let site : IterationUse := {
+          stableId := boundedFoldU32StableId
+          budget
+          callback
+        }
+        unless program.usedIterations.contains site do
+          evalFail stack .invalidCheckedIR
+            "bounded-fold expression is missing its checked iteration metadata"
+        let some ownerName := stack.head?
+          | evalFail stack .invalidCheckedIR
+              "bounded-fold expression has no owning checked function"
+        let some ownerFunction := program.findFunction? ownerName
+          | evalFail stack .invalidCheckedIR
+              s!"bounded-fold owner `{ownerName}` is absent"
+        unless ownerFunction.dependencies.contains callback do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold callback `{callback}` is missing from its owner's dependency closure"
+        let countRaw ← evalExpr fuel program stack locals count
+        let countValue ← expectScalar stack .u32 countRaw
+        let initialRaw ← evalExpr fuel program stack locals initial
+        let initialValue ← expectScalar stack .u32 initialRaw
+        let some callbackFunction := program.findFunction? callback
+          | evalFail stack .unknownFunction
+              s!"checked bounded-fold callback `{callback}` is absent"
+        let expectedCallback : Signature := { args := #[.u32, .u32], result := .u32 }
+        unless callbackFunction.signature == expectedCallback do
+          evalFail stack .invalidCheckedIR
+            s!"bounded-fold callback `{callback}` does not have signature (u32,u32)->u32"
+        if countValue.value ≤ budget then
+          let mut accumulator := initialValue
+          for index in [:countValue.value] do
+            let result ← evalFunction fuel program stack callback
+              #[.scalar (.u32 index), .scalar accumulator]
+            accumulator ← expectScalar stack .u32 result
+          pure (.scalar (.u64 accumulator.value))
+        else
+          let tagged := Nat.lor Lemma.Core0.Bounded.exhaustionTag.toNat initialValue.value
+          pure (.scalar (.u64 tagged))
 
   private def evalFunction (fuel : Nat) (program : Program) (stack : List Name)
       (name : Name) (args : Array Value) : Except EvalDiagnostic Value := do
@@ -212,7 +288,13 @@ end
 
 /-- Evaluate a checked root with Bool/integer values. -/
 def evalProgram (program : Program) (args : Array Value) : Except EvalDiagnostic Value :=
-  evalFunction 65536 program [] program.root args
+  match Profile.ofContractVersion? program.contractVersion with
+  | none => .error {
+      code := .invalidCheckedIR
+      message := s!"unsupported Core0 contract `{program.contractVersion}`"
+      callStack := [program.root]
+    }
+  | some _ => evalFunction 65536 program [] program.root args
 
 /-- Scalar-only convenience entry point used by the differential target harness. -/
 def evalProgramScalars (program : Program) (args : Array Scalar) :

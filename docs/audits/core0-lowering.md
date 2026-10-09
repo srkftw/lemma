@@ -1,4 +1,4 @@
-# Core0 v0.1 semantics and lowering
+# Core0 versioned semantics and lowering
 
 This document freezes the deliberately small profile implemented for Task 001.  It
 describes executable behavior, not a proof that the compiler preserves that behavior.
@@ -62,6 +62,99 @@ digits); the post-optimization audit inventories those inferred flags and still 
 and generic memory access have no Core0 IR constructor and are rejected.  This avoids
 importing accidental LLVM poison or a compiler helper whose behavior was not specified.
 
+## Additive Core0 v0.2 scalar and control-flow profile
+
+Task 002 adds `core0-v0.2`; it does not change the `core0-v0.1` rules above.  The
+profile is selected explicitly, recorded in the checked-suite and typed-ABI
+manifests, and rejected when unknown.  The frontend still accepts only the closed,
+exact primitive identities and signatures recorded by the checker.  In addition to
+all v0.1 scalar operations, v0.2 admits fixed-width complement, left shift, logical
+right shift, unsigned division, and unsigned remainder for `UInt8`, `UInt32`, and
+`UInt64`.  Signed arithmetic remains unsupported.
+
+For a width `w`, v0.2 gives the new operations these total source semantics:
+
+| Core0 operation | Source/model result | Pre-optimization LLVM rule |
+| --- | --- | --- |
+| complement | low `w` bits of bitwise complement | `xor` with the all-ones `i<w>` value |
+| left shift | `(value << (count % w)) mod 2^w` | mask the actual count operand with `w - 1`, then `shl` |
+| logical right shift | `value >> (count % w)` | mask the actual count operand with `w - 1`, then `lshr` |
+| unsigned division | `0` when divisor is zero; otherwise unsigned quotient | branch on divisor; execute `udiv` only in the nonzero block; merge with zero using `phi` |
+| unsigned remainder | dividend when divisor is zero; otherwise unsigned remainder | branch on divisor; execute `urem` only in the nonzero block; merge with the dividend using `phi` |
+
+The count mask is exact for the supported power-of-two widths.  The compiler does
+not rely on a later `select` to hide an invalid LLVM shift or division.  Its structured
+lowerer emits basic blocks with one terminator each, explicit predecessor edges, and
+merge `phi` nodes.  The validator checks labels, terminators, branch targets,
+predecessor sets, phi incoming labels and types, SSA uniqueness, use-before-definition,
+dominance, call signatures, and return types before LLVM text is exported.  Every
+source conditional also uses branch-and-merge lowering in this profile, so only the
+chosen branch executes.  LLVM may later fold a safe pure branch back to a `select`;
+the audit instead requires that every remaining `udiv`, `urem`, `shl`, and `lshr`
+stays within LLVM's operand domain.
+
+The pre-optimization audit rejects source-emitted `nsw`, `nuw`, `inbounds`, exact
+division, and other unproved promises.  It additionally verifies that each division
+or remainder is dominated by its nonzero-divisor edge, that the zero edge cannot
+reach the dangerous instruction, and that each shift consumes a mask of the same
+normalized source count operand.  The v0.2 corpus exercises the retained v0.1
+operations through this new lowerer as well as the five new operations.  These
+checks and finite executions are not a proof of whole-compiler correctness.
+
+## Additive Core0 v0.3 bounded-fold profile
+
+`core0-v0.3` retains the complete v0.2 scalar/CFG contract and adds one exact
+compiler-recognized source identity,
+`Lemma.Core0.Bounded.boundedFoldU32`. Its compile-time arguments are a canonical
+standard `Nat` literal budget in `0..256` and a direct top-level callback of type
+`UInt32 -> UInt32 -> UInt32`. The callback is not a runtime closure: its declaration
+identity is recorded in checked IR, erased from the runtime arguments, and included
+as an ordinary transitive checker dependency. Callback helpers therefore receive the
+same rejection checks, dependency paths, and recursion-cycle checks as other Core0
+calls.
+
+The two runtime arguments are a `UInt32` iteration count and initial accumulator.
+For a count within the declared budget, iteration visits indices in ascending order
+starting at zero and replaces the accumulator with `callback index accumulator`.
+Success is the final `UInt32` value zero-extended to `UInt64`. A count above the
+budget executes no callback and returns the explicit tagged outcome
+`0x8000000000000000 ||| initial.toUInt64`. Since successful values occupy only the
+low 32 bits, the tag is unambiguous and bits 62 through 32 are reserved as zero.
+This semantic outcome is not the model's traversal-fuel error and is not a host/QEMU
+timeout.
+
+The pre-optimization lowering evaluates the runtime count and initial value once,
+guards the loop with unsigned `count <= budget`, and branches either to exhaustion
+or a preheader. The loop header has `i32` index and accumulator phis. Its body makes
+one direct, ABI-checked callback call with `(index, accumulator)`, increments the
+index with plain wrapping `add`, and takes one backedge. The exit zero-extends the
+accumulator; an outcome block merges success and exhaustion as `i64`. The static
+maximum ensures every executed increment is far below `UInt32` wraparound, but no
+`nuw`/`nsw` flag is asserted. Nested bounded folds reuse the same representation and
+still introduce no aggregate, array, allocator, function pointer, or recursive
+iteration call.
+
+The checked model interprets that IR independently and validates the callback
+signature, budget, and checked dependency before iterating. The artifact audit binds
+each normalized loop site to its direct callback and budget; checks the guard,
+preheader/header/body/latch/exit relationships, phi inputs, callback argument order,
+index increment, success value, and tagged exhaustion edge; and rejects mutation
+fixtures that alter those facts. The audit combines the optimized LLVM direct-call
+graph with object `.stack_sizes` metadata, requires that graph to be acyclic with no
+self-call, and establishes a worst-case summed frame chain below the declared 64 KiB
+stack. Separately, retained machine backedges and direct callback calls show that
+runtime counts drive target loops rather than compiler-side repetition. These checks
+and bounded differential executions are still not a proof of whole-compiler
+correctness.
+
+The Lean renderer emits no poison-sensitive `disjoint`, `nuw`, or `nsw` premise.
+The pinned O2 optimizer may infer `or disjoint`; the audit inventories every such
+instruction and accepts only a closed set with a local range proof. In particular,
+an exhaustion payload must come from an `i32`-to-`i64` zero extension, which cannot
+overlap the bit-63 tag, and hexadecimal formatting operands must be proven low
+nibbles, which cannot overlap ASCII `0x30`. Any other inferred `disjoint` form fails
+closed and the resulting inventory is retained in `audit.json`.
+
 ## Machine boundary
 
 Machine effects do not masquerade as source primitives.  Separate Lean-authored
@@ -74,8 +167,9 @@ structured generators provide:
 - aligned volatile reads from the reserved host-injected input region; and
 - fenced 32-bit writes to the SiFive test finisher for success or nonzero failure.
 
-The input record is five little-endian `UInt64` words: magic `LEMMA001`, case ID, and
-three root arguments.  The target root ABI is exactly
+The input record is five little-endian `UInt64` words: the first eight bytes are ASCII
+`LEMMA001` and load as `0x313030414d4d454c`, followed by the case ID and three root
+arguments. This wire word is distinct from the case corpus tag. The target root ABI is exactly
 `UInt64 -> UInt64 -> UInt64 -> UInt64`.  The result frame is
 `LEMMA_CORE0/1\nRESULT:<16-hex-case>:<16-hex-result>\n`.
 

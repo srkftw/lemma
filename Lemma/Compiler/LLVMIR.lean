@@ -2,6 +2,9 @@ namespace Lemma.Compiler.LLVM
 
 inductive Ty where
   | void | i1 | i8 | i32 | i64 | ptr
+  /-- Gate 5's non-allocating checked-result ABI.  Word zero carries a
+  zero-extended status byte and word one carries the complete `UInt64` payload. -/
+  | checkedResult
   deriving Repr, BEq
 
 def Ty.render : Ty → String
@@ -11,12 +14,15 @@ def Ty.render : Ty → String
   | .i32 => "i32"
   | .i64 => "i64"
   | .ptr => "ptr"
+  | .checkedResult => "{ i64, i64 }"
 
 inductive Operand where
   | local (name : String)
   | global (name : String)
   | int (ty : Ty) (value : Nat)
   | null
+  /-- Used only as the initial aggregate operand for `insertResultStatus`. -/
+  | poison
   deriving Repr, BEq
 
 def Operand.render : Operand → String
@@ -24,12 +30,13 @@ def Operand.render : Operand → String
   | .global name => "@" ++ name
   | .int _ value => toString value
   | .null => "null"
+  | .poison => "poison"
 
 def Operand.typed (op : Operand) (ty : Ty) : String :=
   ty.render ++ " " ++ op.render
 
 inductive BinOp where
-  | add | sub | mul | and | or | xor | lshr
+  | add | sub | mul | and | or | xor | shl | lshr | udiv | urem
   deriving Repr, BEq
 
 def BinOp.render : BinOp → String
@@ -39,10 +46,13 @@ def BinOp.render : BinOp → String
   | .and => "and"
   | .or => "or"
   | .xor => "xor"
+  | .shl => "shl"
   | .lshr => "lshr"
+  | .udiv => "udiv"
+  | .urem => "urem"
 
 inductive Predicate where
-  | eq | ne | ult | ule | ugt | uge
+  | eq | ne | ult | ule | ugt | uge | slt
   deriving Repr, BEq
 
 def Predicate.render : Predicate → String
@@ -52,18 +62,93 @@ def Predicate.render : Predicate → String
   | .ule => "ule"
   | .ugt => "ugt"
   | .uge => "uge"
+  | .slt => "slt"
+
+/-- Integer extension attributes that participate in a platform calling convention.
+This is deliberately closed instead of accepting arbitrary textual LLVM attributes. -/
+inductive ABIExtension where
+  | zeroext
+  | signext
+  deriving Repr, BEq, DecidableEq
+
+def ABIExtension.render : ABIExtension → String
+  | .zeroext => "zeroext"
+  | .signext => "signext"
+
+private def renderExtensionPrefix : Option ABIExtension → String
+  | some extension => extension.render ++ " "
+  | none => ""
+
+private def renderExtensionSuffix : Option ABIExtension → String
+  | some extension => " " ++ extension.render
+  | none => ""
+
+/-- A call operand together with the exact ABI extension attached at that call site. -/
+structure ABIArgument where
+  ty : Ty
+  value : Operand
+  extension : Option ABIExtension := none
+  deriving Repr, BEq
+
+def ABIArgument.render (argument : ABIArgument) : String :=
+  argument.ty.render ++ renderExtensionSuffix argument.extension ++ " " ++ argument.value.render
+
+/-!
+Gate 6 keeps UART MMIO deliberately narrower than the ordinary pointer/load/store
+language.  The register choice is closed and direction-specific, so a checked
+device node cannot smuggle an arbitrary address or access width into the backend.
+The corresponding instruction renderers below bracket exactly one volatile byte
+access with the generated `core0_io_fence` primitive.
+-/
+
+inductive UARTReadRegister where
+  | rbr
+  | lsr
+  deriving Repr, BEq
+
+namespace UARTReadRegister
+
+def address : UARTReadRegister → Nat
+  | .rbr => 0x10000000
+  | .lsr => 0x10000005
+
+def stableId : UARTReadRegister → String
+  | .rbr => "uart.rbr.read8"
+  | .lsr => "uart.lsr.read8"
+
+end UARTReadRegister
 
 inductive Instruction where
   | bin (result : String) (op : BinOp) (ty : Ty) (lhs rhs : Operand)
   | icmp (result : String) (predicate : Predicate) (ty : Ty) (lhs rhs : Operand)
   | zext (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
+  | sext (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
   | trunc (result : String) (sourceTy : Ty) (value : Operand) (targetTy : Ty)
   | select (result : String) (condition : Operand) (ty : Ty) (onTrue onFalse : Operand)
   | ptrFromInt (result : String) (value : Nat)
+  | intToPtr (result : String) (value : Operand)
   | load (result : String) (ty : Ty) (address : Operand) (alignment : Nat) (volatile : Bool)
   | store (ty : Ty) (value address : Operand) (alignment : Nat) (volatile : Bool)
+  /-- One ordered 16550 receive/status register read.  `site` is a canonical,
+  module-global audit identifier; address, width, volatility, alignment and
+  fence placement are intentionally not caller-selectable. -/
+  | uartRead8 (result : String) (site : Nat) (register : UARTReadRegister)
+  /-- One ordered 16550 THR byte write at `0x10000000`. -/
+  | uartWrite8 (site : Nat) (value : Operand)
+  /-- Enable and reset both 16550 FIFOs by writing the fixed byte `0x07` to FCR. -/
+  | uartEnableAndResetFifo (site : Nat)
+  /-- Construct word zero of the Gate 5 checked result.  `status` is already
+  zero-extended to `i64`; keeping the aggregate operation closed prevents an
+  arbitrary aggregate language from entering the backend. -/
+  | insertResultStatus (result : String) (status : Operand)
+  /-- Complete word one of a checked result. -/
+  | insertResultValue (result : String) (aggregate value : Operand)
+  | extractResultStatus (result : String) (aggregate : Operand)
+  | extractResultValue (result : String) (aggregate : Operand)
   | call (result : Option String) (returnType : Ty) (callee : String)
       (args : Array (Ty × Operand))
+  | abiCall (result : Option String) (returnType : Ty)
+      (returnExtension : Option ABIExtension) (callee : String) (args : Array ABIArgument)
   | phi (result : String) (ty : Ty) (incoming : Array (Operand × String))
   | branch (condition : Operand) (onTrue onFalse : String)
   | jump (target : String)
@@ -81,22 +166,58 @@ def Instruction.render : Instruction → String
       assignment result ++ s!"icmp {predicate.render} {ty.render} {lhs.render}, {rhs.render}"
   | .zext result sourceTy value targetTy =>
       assignment result ++ s!"zext {sourceTy.render} {value.render} to {targetTy.render}"
+  | .sext result sourceTy value targetTy =>
+      assignment result ++ s!"sext {sourceTy.render} {value.render} to {targetTy.render}"
   | .trunc result sourceTy value targetTy =>
       assignment result ++ s!"trunc {sourceTy.render} {value.render} to {targetTy.render}"
   | .select result condition ty onTrue onFalse =>
       assignment result ++ s!"select i1 {condition.render}, {ty.render} {onTrue.render}, {ty.render} {onFalse.render}"
   | .ptrFromInt result value =>
       assignment result ++ s!"inttoptr i64 {value} to ptr"
+  | .intToPtr result value =>
+      assignment result ++ s!"inttoptr i64 {value.render} to ptr"
   | .load result ty address alignment volatile =>
       assignment result ++ "load " ++ (if volatile then "volatile " else "") ++
         s!"{ty.render}, ptr {address.render}, align {alignment}"
   | .store ty value address alignment volatile =>
       "store " ++ (if volatile then "volatile " else "") ++
         s!"{ty.render} {value.render}, ptr {address.render}, align {alignment}"
+  | .uartRead8 result site register =>
+      s!"; lemma.uart-site={site};op={register.stableId}\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  " ++ assignment result ++ "load volatile i8, ptr inttoptr (i64 " ++
+          toString register.address ++ " to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .uartWrite8 site value =>
+      s!"; lemma.uart-site={site};op=uart.thr.write8\n" ++
+        "  call void @core0_io_fence()\n" ++
+        s!"  store volatile i8 {value.render}, ptr inttoptr " ++
+          "(i64 268435456 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .uartEnableAndResetFifo site =>
+      s!"; lemma.uart-site={site};op=uart.fcr.enable-reset\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  store volatile i8 7, ptr inttoptr (i64 268435458 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .insertResultStatus result status =>
+      assignment result ++
+        s!"insertvalue {Ty.checkedResult.render} poison, i64 {status.render}, 0"
+  | .insertResultValue result aggregate value =>
+      assignment result ++
+        s!"insertvalue {Ty.checkedResult.render} {aggregate.render}, i64 {value.render}, 1"
+  | .extractResultStatus result aggregate =>
+      assignment result ++ s!"extractvalue {Ty.checkedResult.render} {aggregate.render}, 0"
+  | .extractResultValue result aggregate =>
+      assignment result ++ s!"extractvalue {Ty.checkedResult.render} {aggregate.render}, 1"
   | .call result returnType callee args =>
       let pre := result.map (fun name => assignment name) |>.getD ""
       let renderedArgs := args.toList.map (fun (ty, value) => value.typed ty)
       pre ++ s!"call {returnType.render} @{callee}(" ++ String.intercalate ", " renderedArgs ++ ")"
+  | .abiCall result returnType returnExtension callee args =>
+      let pre := result.map (fun name => assignment name) |>.getD ""
+      let renderedArgs := args.toList.map ABIArgument.render
+      pre ++ "call " ++ renderExtensionPrefix returnExtension ++
+        s!"{returnType.render} @{callee}(" ++ String.intercalate ", " renderedArgs ++ ")"
   | .phi result ty incoming =>
       let rendered := incoming.toList.map fun (value, label) => s!"[ {value.render}, %{label} ]"
       assignment result ++ s!"phi {ty.render} " ++ String.intercalate ", " rendered
@@ -123,7 +244,11 @@ structure Parameter where
 structure Function where
   name : String
   returnType : Ty
+  returnExtension : Option ABIExtension := none
   parameters : Array Parameter
+  /-- Empty means no ABI extensions (the legacy representation).  Typed ABI
+  producers provide one entry per parameter. -/
+  parameterExtensions : Array (Option ABIExtension) := #[]
   linkage : Option String := none
   attributes : Array String := #["nounwind"]
   blocks : Array Block
@@ -131,9 +256,12 @@ structure Function where
 
 def Function.render (fn : Function) : String :=
   let linkage := fn.linkage.map (· ++ " ") |>.getD ""
-  let params := fn.parameters.toList.map fun p => p.ty.render ++ " %" ++ p.name
+  let params := fn.parameters.mapIdx (fun index p =>
+    let extension := (fn.parameterExtensions[index]?).getD none
+    p.ty.render ++ renderExtensionSuffix extension ++ " %" ++ p.name) |>.toList
   let attrs := if fn.attributes.isEmpty then "" else " " ++ String.intercalate " " fn.attributes.toList
-  let header := s!"define {linkage}{fn.returnType.render} @{fn.name}(" ++ String.intercalate ", " params ++ ")" ++ attrs ++ " {"
+  let header := "define " ++ linkage ++ renderExtensionPrefix fn.returnExtension ++
+    s!"{fn.returnType.render} @{fn.name}(" ++ String.intercalate ", " params ++ ")" ++ attrs ++ " {"
   header ++ "\n" ++ String.intercalate "\n" (fn.blocks.toList.map Block.render) ++ "\n}"
 
 structure Declaration where

@@ -60,6 +60,104 @@ GENERATED_BY_LEAN = (
     "symbols.txt",
 )
 
+SCALAR_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "scalar-suite-manifest.json",
+    "scalar-suite-normalized.txt",
+    "scalar-test-abi.json",
+    "symbols.txt",
+)
+
+BOUNDED_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "bounded-suite-manifest.json",
+    "bounded-suite-normalized.txt",
+    "scalar-test-abi.json",
+    "symbols.txt",
+)
+
+MEMORY_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "memory-fixtures.json",
+    "memory-suite-manifest.json",
+    "memory-suite-normalized.txt",
+    "memory-test-abi.json",
+    "symbols.txt",
+)
+
+DEVICE_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "device-suite-manifest.json",
+    "device-suite-normalized.txt",
+    "device-test-abi.json",
+    "symbols.txt",
+)
+
+TRAP_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "trap-suite-manifest.json",
+    "trap-suite-normalized.txt",
+    "trap-test-abi.json",
+    "symbols.txt",
+)
+
+TIMER_SUITE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "timer-suite-manifest.json",
+    "timer-suite-normalized.txt",
+    "timer-test-abi.json",
+    "symbols.txt",
+)
+
+MONITOR_IMAGE_GENERATED_BY_LEAN = (
+    "program.ll",
+    "startup.S",
+    "link.ld",
+    "layout.json",
+    "device-contract.json",
+    "monitor-manifest.json",
+    "monitor-normalized.txt",
+    "monitor-abi.json",
+    "symbols.txt",
+)
+
+ARTIFACT_CATEGORIES = (
+    "release",
+    "test-compiler-control",
+    "test-compiler-mutant",
+    "test-frontend-suite",
+    "test-cfg-suite",
+    "test-loop-suite",
+    "test-memory-suite",
+    "test-device-suite",
+    "test-trap-suite",
+    "test-timer-suite",
+    "test-monitor-image",
+)
+
+COMPILER_FAULT_MANIFEST = "compiler-mutation.json"
+
 SOURCE_INPUTS = (
     "lean-toolchain",
     "lakefile.toml",
@@ -102,6 +200,25 @@ def prepare_output_directory(path: Path, root: Path, *, clean: bool) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def invalidate_output_file(path: Path, root: Path) -> None:
+    """Remove one generated result only when its parent is a safe build subtree."""
+    if not path.exists() and not path.is_symlink():
+        return
+    build_root = (root / "build").resolve()
+    parent = path.parent.resolve()
+    try:
+        relative_parent = parent.relative_to(build_root)
+    except ValueError as error:
+        raise Core0Error(
+            f"refusing to invalidate an output outside {build_root}: {path}"
+        ) from error
+    if not relative_parent.parts:
+        raise Core0Error(f"refusing to invalidate an output at the build root: {path}")
+    if path.is_dir() and not path.is_symlink():
+        raise Core0Error(f"refusing to invalidate a directory as a result file: {path}")
+    path.unlink()
+
+
 def _invoke(
     command_log: list[dict[str, object]],
     argv: Sequence[str],
@@ -142,13 +259,20 @@ def _version(tool: str, root: Path) -> str:
     return text
 
 
-def _source_hashes(root: Path, export_source: Path) -> list[dict[str, str]]:
+def _source_hashes(
+    root: Path,
+    export_source: Path,
+    additional_source_inputs: Sequence[Path] = (),
+) -> list[dict[str, str]]:
     paths: list[Path] = []
     paths.extend(root / value for value in SOURCE_INPUTS)
     paths.extend(sorted((root / "Lemma").rglob("*.lean")))
     paths.append(root / "Lemma.lean")
     paths.append(root / "examples/core0/Positive.lean")
     paths.append(export_source)
+    for value in additional_source_inputs:
+        path = Path(value)
+        paths.append(path if path.is_absolute() else root / path)
     unique: dict[Path, None] = {}
     for path in paths:
         unique[path.resolve()] = None
@@ -159,6 +283,195 @@ def _source_hashes(root: Path, export_source: Path) -> list[dict[str, str]]:
         {"path": _display(path, root), "sha256": sha256(path)}
         for path in sorted(unique, key=lambda item: _display(item, root))
     ]
+
+
+def _elaboration_paths(root: Path, source: Path) -> tuple[Path, Path]:
+    resolved = (root / source).resolve() if not source.is_absolute() else source.resolve()
+    try:
+        relative = resolved.relative_to(root.resolve())
+    except ValueError as error:
+        raise Core0Error(f"Lean elaboration source escapes the repository: {source}") from error
+    if relative.suffix != ".lean" or not resolved.is_file():
+        raise Core0Error(f"Lean elaboration source is missing or has the wrong suffix: {source}")
+    output = root / ".lake/build/lib/lean" / relative.with_suffix(".olean")
+    return resolved, output
+
+
+def _validate_artifact_request(
+    artifact_category: str,
+    compiler_fault_manifest: str | None,
+) -> None:
+    if artifact_category not in ARTIFACT_CATEGORIES:
+        raise Core0Error(
+            f"unsupported artifact category {artifact_category!r}; expected one of "
+            + ", ".join(ARTIFACT_CATEGORIES)
+        )
+    if artifact_category == "test-compiler-mutant":
+        if compiler_fault_manifest != COMPILER_FAULT_MANIFEST:
+            raise Core0Error(
+                "test-compiler-mutant builds require the generated "
+                f"{COMPILER_FAULT_MANIFEST} manifest"
+            )
+    elif compiler_fault_manifest is not None:
+        raise Core0Error(
+            f"{artifact_category} builds forbid a compiler-fault manifest"
+        )
+
+
+def _compiler_fault_provenance(output_dir: Path, manifest_name: str) -> dict[str, str]:
+    manifest_path = output_dir / manifest_name
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise Core0Error(f"invalid generated compiler-fault manifest: {error}") from error
+    expected = {
+        "schema_version": 1,
+        "artifact_category": "test-compiler-mutant",
+        "transform_stage": "structured-llvm-pre-optimization",
+        "production_selectable": False,
+        "match_count": 1,
+    }
+    if not isinstance(manifest, dict):
+        raise Core0Error("generated compiler-fault manifest is not an object")
+    mismatches = {
+        field: (manifest.get(field), value)
+        for field, value in expected.items()
+        if manifest.get(field) != value
+    }
+    if mismatches:
+        raise Core0Error(
+            "generated compiler-fault manifest has invalid quarantine fields: "
+            + repr(mismatches)
+        )
+    for field in (
+        "source_root",
+        "fault",
+        "target_source",
+        "target_llvm",
+        "before",
+        "after",
+    ):
+        if not isinstance(manifest.get(field), str) or not manifest[field]:
+            raise Core0Error(
+                f"generated compiler-fault manifest has an invalid {field!r} field"
+            )
+    return {
+        "manifest_path": manifest_name,
+        "manifest_sha256": sha256(manifest_path),
+        "program_ll_sha256": sha256(output_dir / "program.ll"),
+    }
+
+
+def _program_object_provenance(
+    artifact_category: str,
+    *,
+    digest: str,
+    generation_command: Sequence[str],
+) -> dict[str, object]:
+    if artifact_category == "release":
+        kind = "core0-llvm"
+        source = "program.ll generated from the checked elaborated Core0 program"
+        purpose = "compiled Core0 application and freestanding machine harness"
+    elif artifact_category == "test-compiler-control":
+        kind = "test-compiler-control-llvm"
+        source = "program.ll generated by the unmodified checked Core0 lowering"
+        purpose = "test-only clean compiler control and freestanding machine harness"
+    elif artifact_category == "test-compiler-mutant":
+        kind = "test-compiler-mutant-llvm"
+        source = (
+            "program.ll generated by the quarantined Lean compiler-fault transform "
+            f"recorded in {COMPILER_FAULT_MANIFEST}"
+        )
+        purpose = "test-only compiler mutant and freestanding machine harness"
+    elif artifact_category == "test-frontend-suite":
+        kind = "test-frontend-suite-llvm"
+        source = (
+            "program.ll generated from the deduplicated checked Core0 root suite "
+            "and typed scalar batch harness"
+        )
+        purpose = (
+            "test-only multi-root frontend conformance, RV64 LP64 ABI, and "
+            "freestanding batch execution"
+        )
+    elif artifact_category == "test-cfg-suite":
+        kind = "test-cfg-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.2 suite through "
+            "validated structured control-flow lowering and the typed scalar harness"
+        )
+        purpose = (
+            "test-only structured CFG, total scalar-operation semantics, and "
+            "freestanding source/model/RV64 comparison"
+        )
+    elif artifact_category == "test-loop-suite":
+        kind = "test-loop-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.3 bounded-iteration "
+            "suite through validated structured loop lowering and the typed scalar harness"
+        )
+        purpose = (
+            "test-only runtime-counted bounded iteration, stack measurement, and "
+            "freestanding source/model/RV64 comparison"
+        )
+    elif artifact_category == "test-memory-suite":
+        kind = "test-memory-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.4 Action suite through "
+            "validated fixed-region memory lowering and the bounded memory harness"
+        )
+        purpose = (
+            "test-only checked ordinary-RAM access, explicit effects, canary "
+            "observation, and freestanding source/model/RV64 comparison"
+        )
+    elif artifact_category == "test-device-suite":
+        kind = "test-device-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.5 Action suite through "
+            "validated ordered-MMIO lowering and the status-only device harness"
+        )
+        purpose = (
+            "test-only compiled UART polling, framing, multi-request dispatch, "
+            "bounded timeout behavior, and freestanding QEMU interaction"
+        )
+    elif artifact_category == "test-trap-suite":
+        kind = "test-trap-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.6 Action suite through "
+            "validated synchronous-trap lowering and the trap test harness"
+        )
+        purpose = (
+            "test-only M-mode synchronous-trap dispatch, full-context preservation, "
+            "fatal containment, and freestanding QEMU interaction"
+        )
+    elif artifact_category == "test-timer-suite":
+        kind = "test-timer-suite-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.7 Action suite through "
+            "validated machine-timer and asynchronous-interrupt lowering"
+        )
+        purpose = (
+            "test-only machine-timer policy, asynchronous M-mode interrupt dispatch, "
+            "bounded event-ring behavior, and freestanding QEMU interaction"
+        )
+    else:
+        assert artifact_category == "test-monitor-image"
+        kind = "test-monitor-image-llvm"
+        source = (
+            "program.ll generated from the checked Core0 v0.7 monitor Action suite "
+            "through validated device, trap, and machine-timer lowering"
+        )
+        purpose = (
+            "test-only bounded binary monitor protocol, compiled command policies, "
+            "asynchronous timer dispatch, and freestanding QEMU interaction"
+        )
+    return {
+        "path": "program.o",
+        "kind": kind,
+        "sha256": digest,
+        "generation_command": list(generation_command),
+        "source": source,
+        "purpose": purpose,
+    }
 
 
 def _git_metadata(root: Path) -> tuple[str, list[str]]:
@@ -245,7 +558,13 @@ def build(
     clean: bool = False,
     build_lean: bool = True,
     timeout_seconds: float = 180.0,
+    artifact_category: str = "release",
+    compiler_fault_manifest: str | None = None,
+    additional_source_inputs: Sequence[Path] = (),
+    elaboration_sources: Sequence[Path] = (),
+    export_environment: Mapping[str, str] | None = None,
 ) -> dict[str, object]:
+    _validate_artifact_request(artifact_category, compiler_fault_manifest)
     if opt_level not in OPT_PASSES:
         raise Core0Error(f"unsupported optimization profile: {opt_level}")
     tools = require_tools(
@@ -280,34 +599,168 @@ def build(
     # through Lean elaboration so the export driver imports the exact checked source.
     positive_olean = root / ".lake/build/lib/lean/examples/core0/Positive.olean"
     positive_olean.parent.mkdir(parents=True, exist_ok=True)
+    positive_command = (
+        "lake",
+        "env",
+        "lean",
+        "-o",
+        str(positive_olean.relative_to(root)),
+        "examples/core0/Positive.lean",
+    )
     _invoke(
         commands,
-        (
-            "lake",
-            "env",
-            "lean",
-            "-o",
-            str(positive_olean.relative_to(root)),
-            "examples/core0/Positive.lean",
-        ),
+        positive_command,
         cwd=root,
         root=root,
         timeout_seconds=timeout_seconds,
     )
+    elaborated_inputs: list[dict[str, object]] = [
+        {
+            "source": "examples/core0/Positive.lean",
+            "source_sha256": sha256(root / "examples/core0/Positive.lean"),
+            "olean": str(positive_olean.relative_to(root)),
+            "olean_sha256": sha256(positive_olean),
+            "generation_command": list(positive_command),
+        }
+    ]
+    elaborated_hash_inputs: list[Path] = [positive_olean]
+    for requested_source in elaboration_sources:
+        source, olean = _elaboration_paths(root, Path(requested_source))
+        olean.parent.mkdir(parents=True, exist_ok=True)
+        source_relative = source.relative_to(root.resolve())
+        olean_relative = olean.relative_to(root.resolve())
+        command = (
+            "lake",
+            "env",
+            "lean",
+            "-o",
+            str(olean_relative),
+            str(source_relative),
+        )
+        _invoke(
+            commands,
+            command,
+            cwd=root,
+            root=root,
+            timeout_seconds=timeout_seconds,
+        )
+        if not olean.is_file() or olean.stat().st_size == 0:
+            raise Core0Error(f"Lean elaboration did not produce a nonempty olean: {olean_relative}")
+        elaborated_inputs.append(
+            {
+                "source": str(source_relative),
+                "source_sha256": sha256(source),
+                "olean": str(olean_relative),
+                "olean_sha256": sha256(olean),
+                "generation_command": list(command),
+            }
+        )
+        elaborated_hash_inputs.extend((source, olean))
 
     export_env = os.environ.copy()
     export_env["LEMMA_CORE0_OUT"] = str(output_dir.resolve())
+    if export_environment is not None:
+        if artifact_category in {
+            "test-frontend-suite",
+            "test-cfg-suite",
+            "test-loop-suite",
+        }:
+            expected_export_keys = {
+                "LEMMA_SCALAR_SUITE_ID",
+                "LEMMA_SCALAR_SOURCE_SEED",
+                "LEMMA_SCALAR_RUNTIME_SEED",
+            }
+            exporter_kind = "scalar"
+        elif artifact_category == "test-memory-suite":
+            expected_export_keys = {
+                "LEMMA_MEMORY_SUITE_ID",
+                "LEMMA_MEMORY_SOURCE_SEED",
+                "LEMMA_MEMORY_RUNTIME_SEED",
+            }
+            exporter_kind = "memory"
+        elif artifact_category == "test-device-suite":
+            expected_export_keys = {
+                "LEMMA_DEVICE_SUITE_ID",
+                "LEMMA_DEVICE_SOURCE_SEED",
+                "LEMMA_DEVICE_RUNTIME_SEED",
+            }
+            exporter_kind = "device"
+        elif artifact_category == "test-trap-suite":
+            expected_export_keys = {"LEMMA_TRAP_RESTORE_MUTATION"}
+            exporter_kind = "trap"
+        elif artifact_category == "test-timer-suite":
+            expected_export_keys = {"LEMMA_TIMER_MUTATION"}
+            exporter_kind = "timer"
+        else:
+            raise Core0Error(
+                "only closed scalar/memory/device-suite test builds accept exporter configuration"
+            )
+        observed_export_keys = set(export_environment)
+        if observed_export_keys != expected_export_keys:
+            raise Core0Error(
+                f"{exporter_kind} exporter configuration fields differ from the closed schema: "
+                f"missing={sorted(expected_export_keys - observed_export_keys)!r}, "
+                f"unexpected={sorted(observed_export_keys - expected_export_keys)!r}"
+            )
+        for key, value in export_environment.items():
+            if not isinstance(value, str) or not value or not value.isdecimal():
+                raise Core0Error(
+                    f"{exporter_kind} exporter setting {key} is not a decimal natural"
+                )
+            parsed = int(value, 10)
+            if parsed < 0 or parsed > 0xFFFFFFFFFFFFFFFF:
+                raise Core0Error(
+                    f"{exporter_kind} exporter setting {key} exceeds UInt64"
+                )
+            if artifact_category == "test-trap-suite" and parsed not in {0, 1}:
+                raise Core0Error(
+                    "trap exporter restore mutation must be decimal 0 or 1"
+                )
+            if artifact_category == "test-timer-suite" and parsed not in {0, 1, 2}:
+                raise Core0Error(
+                    "timer exporter mutation must be decimal 0, 1, or 2"
+                )
+            export_env[key] = value
+    export_argv = ("lake", "env", "lean", str(export_source))
     _invoke(
         commands,
-        ("lake", "env", "lean", str(export_source)),
+        export_argv,
         cwd=root,
         root=root,
         timeout_seconds=timeout_seconds,
         env=export_env,
     )
-    missing = [name for name in GENERATED_BY_LEAN if not (output_dir / name).is_file()]
+    if artifact_category == "test-monitor-image":
+        generated_by_lean = list(MONITOR_IMAGE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-timer-suite":
+        generated_by_lean = list(TIMER_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-trap-suite":
+        generated_by_lean = list(TRAP_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-device-suite":
+        generated_by_lean = list(DEVICE_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-memory-suite":
+        generated_by_lean = list(MEMORY_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category == "test-loop-suite":
+        generated_by_lean = list(BOUNDED_SUITE_GENERATED_BY_LEAN)
+    elif artifact_category in {"test-frontend-suite", "test-cfg-suite"}:
+        generated_by_lean = list(SCALAR_SUITE_GENERATED_BY_LEAN)
+    else:
+        generated_by_lean = list(GENERATED_BY_LEAN)
+    if compiler_fault_manifest is not None:
+        generated_by_lean.append(compiler_fault_manifest)
+    missing = [name for name in generated_by_lean if not (output_dir / name).is_file()]
     if missing:
         raise Core0Error("Lean exporter omitted artifacts: " + ", ".join(missing))
+    unexpected_fault_manifest = output_dir / COMPILER_FAULT_MANIFEST
+    if compiler_fault_manifest is None and unexpected_fault_manifest.exists():
+        raise Core0Error(
+            f"{artifact_category} exporter produced forbidden {COMPILER_FAULT_MANIFEST}"
+        )
+    compiler_fault = (
+        _compiler_fault_provenance(output_dir, compiler_fault_manifest)
+        if compiler_fault_manifest is not None
+        else None
+    )
 
     opt_argv = [
         "opt",
@@ -328,6 +781,18 @@ def build(
     llc_argv = [
         "llc",
         *LLC_ARGUMENTS,
+        *(
+            ["-stack-size-section"]
+            if artifact_category in {
+                "test-loop-suite",
+                "test-memory-suite",
+                "test-device-suite",
+                "test-trap-suite",
+                "test-timer-suite",
+                "test-monitor-image",
+            }
+            else []
+        ),
         f"-{opt_level}",
         "program.opt.ll",
         "-o",
@@ -373,7 +838,7 @@ def build(
     )
 
     required_outputs = (
-        *GENERATED_BY_LEAN,
+        *generated_by_lean,
         "program.opt.ll",
         "program.o",
         "startup.o",
@@ -407,26 +872,51 @@ def build(
             "dtc",
         )
     }
-    linked_inputs = [
-        {
+    if artifact_category in {"test-timer-suite", "test-monitor-image"}:
+        startup_provenance = {
+            "path": "startup.o",
+            "kind": "lean-structured-timer-startup",
+            "sha256": sha256(output_dir / "startup.o"),
+            "generation_command": startup_argv,
+            "source": "startup.S generated by Lemma.Machine.TimerPrimitives",
+            "purpose": (
+                "M-mode entry, machine-timer initialization and fenced MMIO/CSR leaves, "
+                "full asynchronous/synchronous trap context handling, timer probe, "
+                "fatal containment, and I/O fence"
+            ),
+        }
+    elif artifact_category == "test-trap-suite":
+        startup_provenance = {
+            "path": "startup.o",
+            "kind": "lean-structured-trap-startup",
+            "sha256": sha256(output_dir / "startup.o"),
+            "generation_command": startup_argv,
+            "source": "startup.S generated by Lemma.Machine.TrapPrimitives",
+            "purpose": (
+                "M-mode entry, full synchronous-trap context save/restore, "
+                "trap probes/fatal finishers, and I/O fence"
+            ),
+        }
+    else:
+        startup_provenance = {
             "path": "startup.o",
             "kind": "lean-structured-startup",
             "sha256": sha256(output_dir / "startup.o"),
             "generation_command": startup_argv,
             "source": "startup.S generated by Lemma.Machine.Primitives",
             "purpose": "M-mode entry, BSS clearing, a0/a1 boot-input preservation, and I/O fence",
-        },
-        {
-            "path": "program.o",
-            "kind": "core0-llvm",
-            "sha256": sha256(output_dir / "program.o"),
-            "generation_command": llc_argv,
-            "source": "program.ll generated from the checked elaborated Core0 program",
-            "purpose": "compiled Core0 application and freestanding machine harness",
-        },
+        }
+    linked_inputs = [
+        startup_provenance,
+        _program_object_provenance(
+            artifact_category,
+            digest=sha256(output_dir / "program.o"),
+            generation_command=llc_argv,
+        ),
     ]
     provenance: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "artifact_category": artifact_category,
         "source_commit": commit,
         "dirty_tree": bool(dirty_paths),
         "dirty_paths": dirty_paths,
@@ -439,7 +929,12 @@ def build(
             "isa": "rv64im_zicsr_zifencei",
             "linker": "ld.lld direct (no driver defaults or target libraries)",
         },
-        "source_inputs": _source_hashes(root, export_source),
+        "source_inputs": _source_hashes(
+            root,
+            export_source,
+            (*additional_source_inputs, *elaborated_hash_inputs),
+        ),
+        "elaborated_inputs": elaborated_inputs,
         "linked_inputs": linked_inputs,
         "link_command": link_argv,
         "tools": versions,
@@ -468,6 +963,17 @@ def build(
         ],
         "commands": commands,
     }
+    if export_environment is not None:
+        provenance["export_configuration"] = {
+            "driver": _display(export_source, root),
+            "generation_command": list(export_argv),
+            "environment": {
+                key: export_environment[key]
+                for key in sorted(export_environment)
+            },
+        }
+    if compiler_fault is not None:
+        provenance["compiler_fault"] = compiler_fault
     write_json(output_dir / "provenance.json", provenance)
     artifact_hashes = {
         name: sha256(output_dir / name)
@@ -476,6 +982,7 @@ def build(
     record: dict[str, object] = {
         "schema_version": 1,
         "status": "pass",
+        "artifact_category": artifact_category,
         "optimization": opt_level,
         "output_directory": _display(output_dir, root),
         "artifacts": artifact_hashes,

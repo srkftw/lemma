@@ -1,6 +1,9 @@
 # Trust and dependency manifest
 
-Status: required audit structure; executable audit and target manifest generation begin in task 001.
+Status: required audit structure. Task 001 implements executable scalar-image audit
+and provenance; Task 002 Gates 1--8 extend it with fault manifests, versioned suites,
+control-flow/loop checks, checked-memory effects, a closed compiled-device path,
+and synchronous-trap audits. Timer/runtime categories remain open.
 
 ## Categories
 
@@ -29,6 +32,74 @@ Status: required audit structure; executable audit and target manifest generatio
 
 An empty test corpus, missing manifest, missing dependency, unknown linked object,
 skipped QEMU run or unrecognized runtime call is not success. Exit nonzero on acceptance failure.
+
+## Gate 6 device trust boundary
+
+The trusted guest machine primitives remain the structured startup, the IO-fence
+primitive, and the status-coded SiFive-test operation in the minimal device harness.
+UART policy and algorithms are compiled from elaborated Lean source. The device catalog
+admits only four exact source identities and records their fixed address, direction,
+byte width, volatility, alignment, ordering, and modeled register side effect.
+
+The audit must bind the manifest to normalized source and symbols, reject stale or
+duplicated operation/effect metadata, and inspect both O0/O2 IR and machine code. It
+checks wrong addresses, widths, volatility, alignment, missing/reordered fences,
+duplicate physical operations, forbidden generic MMIO, hosted dependencies, and UART
+logic appearing in the harness. QEMU and its emulated UART remain host/emulator trust,
+not guest code and not a physical-device result. The finite model and four local
+theorems are mathematical evidence with narrower claims than the target executions.
+
+## Gate 7 trap trust boundary
+
+`core0-v0.6` adds only four exact synchronous-trap source identities and a
+closed typed Lean machine sequence for masking, vector entry, complete integer
+context preservation, CSR snapshots, explicit return, and bounded finishers.
+Compiled Lean owns dispatch policy, observations, diagnostics, arithmetic, and
+software-denial checks. Private frame/probe storage is not ordinary RAM authority.
+The audit must name every symbol, CSR operation, object and generated instruction
+role, check the nine-argument call and complete save/restore sequence, and bind
+source/effect metadata to LLVM and machine code. Test-only wrong-slot restore
+must be a declared valid-image mutation, not an unexplained audit bypass.
+
+Local policy lemmas, source probes, resource/disassembly audits, and actual trap
+executions are distinct evidence. The fixed-RAM/no-NMI entry-tail premises and
+single-hart non-nesting limitations remain explicit; see
+[`traps-core0-v06.md`](../audits/traps-core0-v06.md). Gate 7 clean target acceptance
+has passed; timer/concurrency/runtime categories are not thereby qualified.
+
+## Gate 8 timer trust boundary
+
+The additive timer primitives have exact source identities, signatures, effect
+catalogs, typed instruction implementations, fixed aligned 64-bit MMIO addresses,
+and finite CSR operations. Compiled Lean owns ISR policy, ring/overflow/skipped
+accounting, foreground computation, validation, and deferred UART encoding.
+Single-hart masking, volatile shared RAM, and ordered primitive boundaries are
+explicit premises; no atomics extension or threading runtime is added.
+
+Audits must bind actual MTIMER accesses/fences, CSR masking, complete integer
+preservation, executable PCs, object closure, and both declared sole-instruction
+mutations. A missing-event test must observe its guest diagnostic, not credit a
+timeout or compilation/audit failure. Finite deadline/ring lemmas do not model
+hardware delivery or prove compiled correctness. See
+[`timers-core0-v07.md`](../audits/timers-core0-v07.md). Gate 8 target acceptance
+passed at clean `42674c1`; the monitor, detached qualification and actual CI are
+separate obligations. This is not a proof of frontend/backend correctness:
+backend direct effects are independently recomputed, while dependency metadata
+still originates in the trusted frontend; the closed artifact audit additionally
+checks actual call/role closure.
+
+## Gate 9 monitor category
+
+`test-monitor-image`/`lemma-monitor-v1` is a separate closed category, not an
+arbitrary-root relaxation of the accepted timer suite. Its own source-function,
+operation, optimized-IR, UART and final-machine inventories must be checked.
+The existing sixteen startup functions and exactly `program.o` plus `startup.o`
+remain named inputs. Full-register/CSR/CLINT closure, forbidden runtime and ISA
+checks, stack bounds, source provenance, and actual ISR call-role separation
+remain mandatory. Fresh post-boot request streams and raw frames are additional
+evidence obligations. Clean `8fd45d8` acceptance passed all 18 sessions, with
+independent raw replay and complete 101-source bindings. Final cumulative,
+stress, detached-worktree and CI qualification remain distinct.
 
 ## Prohibited shortcuts
 

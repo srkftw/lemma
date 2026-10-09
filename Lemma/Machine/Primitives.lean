@@ -3,25 +3,100 @@ namespace Lemma.Machine.Primitives
 /-- Registers used by the generated entry stub.  Keeping them structured makes
 the startup primitive reviewable without maintaining a target `.S` source. -/
 inductive Register where
-  | zero | ra | sp | t0 | t1 | a0 | a1 | s0 | s1
-  deriving Repr, BEq
+  | zero | ra | sp | gp | tp | t0 | t1 | t2 | s0 | s1
+  | a0 | a1 | a2 | a3 | a4 | a5 | a6 | a7
+  | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11
+  | t3 | t4 | t5 | t6
+  deriving Repr, BEq, DecidableEq, Inhabited
 
 def Register.render : Register → String
   | .zero => "zero"
   | .ra => "ra"
   | .sp => "sp"
+  | .gp => "gp"
+  | .tp => "tp"
   | .t0 => "t0"
   | .t1 => "t1"
+  | .t2 => "t2"
   | .a0 => "a0"
   | .a1 => "a1"
+  | .a2 => "a2"
+  | .a3 => "a3"
+  | .a4 => "a4"
+  | .a5 => "a5"
+  | .a6 => "a6"
+  | .a7 => "a7"
   | .s0 => "s0"
   | .s1 => "s1"
+  | .s2 => "s2"
+  | .s3 => "s3"
+  | .s4 => "s4"
+  | .s5 => "s5"
+  | .s6 => "s6"
+  | .s7 => "s7"
+  | .s8 => "s8"
+  | .s9 => "s9"
+  | .s10 => "s10"
+  | .s11 => "s11"
+  | .t3 => "t3"
+  | .t4 => "t4"
+  | .t5 => "t5"
+  | .t6 => "t6"
+
+/-- Complete architectural x0..x31 order, independent of the ABI spelling. -/
+def Register.all : Array Register := #[
+  .zero, .ra, .sp, .gp, .tp, .t0, .t1, .t2, .s0, .s1,
+  .a0, .a1, .a2, .a3, .a4, .a5, .a6, .a7,
+  .s2, .s3, .s4, .s5, .s6, .s7, .s8, .s9, .s10, .s11,
+  .t3, .t4, .t5, .t6
+]
+
+def Register.number (register : Register) : Nat :=
+  (Register.all.toList.idxOf register)
+
+/-- The M-mode substrates cannot name arbitrary CSRs. -/
+inductive CSR where
+  | mstatus | mie | mtvec | mscratch | mepc | mcause | mtval | mip
+  deriving Repr, BEq, DecidableEq
+
+def CSR.render : CSR → String
+  | .mstatus => "mstatus"
+  | .mie => "mie"
+  | .mtvec => "mtvec"
+  | .mscratch => "mscratch"
+  | .mepc => "mepc"
+  | .mcause => "mcause"
+  | .mtval => "mtval"
+  | .mip => "mip"
 
 inductive Instruction where
   | loadAddress (dst : Register) (symbol : String)
   | branchGeUnsigned (lhs rhs : Register) (target : String)
   | storeDouble (src base : Register) (offset : Int)
+  | storeWord (src base : Register) (offset : Int)
+  | loadDouble (dst base : Register) (offset : Int)
+  | loadImmediate (dst : Register) (value : Nat)
   | addImmediate (dst src : Register) (value : Int)
+  | andImmediate (dst src : Register) (value : Nat)
+  | shiftRightImmediate (dst src : Register) (bits : Nat)
+  | orRegisters (dst lhs rhs : Register)
+  | branchEq (lhs rhs : Register) (target : String)
+  | branchNe (lhs rhs : Register) (target : String)
+  | branchEqZero (src : Register) (target : String)
+  | branchNeZero (src : Register) (target : String)
+  | csrRead (dst : Register) (csr : CSR)
+  | csrWrite (csr : CSR) (src : Register)
+  | csrReadWrite (dst : Register) (csr : CSR) (src : Register)
+  | csrSet (csr : CSR) (src : Register)
+  | csrClear (csr : CSR) (src : Register)
+  | csrSetImmediate (csr : CSR) (mask : Nat)
+  | csrClearImmediate (csr : CSR) (mask : Nat)
+  | csrReadClearImmediate (dst : Register) (csr : CSR) (mask : Nat)
+  | maskMachineInterruptEnable
+  | environmentCall
+  | breakpoint
+  | illegalInstruction
+  | machineReturn
   | move (dst src : Register)
   | jump (target : String)
   | call (symbol : String)
@@ -34,7 +109,30 @@ def Instruction.render : Instruction → String
   | .loadAddress dst symbol => s!"la {dst.render}, {symbol}"
   | .branchGeUnsigned lhs rhs target => s!"bgeu {lhs.render}, {rhs.render}, {target}"
   | .storeDouble src base offset => s!"sd {src.render}, {offset}({base.render})"
+  | .storeWord src base offset => s!"sw {src.render}, {offset}({base.render})"
+  | .loadDouble dst base offset => s!"ld {dst.render}, {offset}({base.render})"
+  | .loadImmediate dst value => s!"li {dst.render}, {value}"
   | .addImmediate dst src value => s!"addi {dst.render}, {src.render}, {value}"
+  | .andImmediate dst src value => s!"andi {dst.render}, {src.render}, {value}"
+  | .shiftRightImmediate dst src bits => s!"srli {dst.render}, {src.render}, {bits}"
+  | .orRegisters dst lhs rhs => s!"or {dst.render}, {lhs.render}, {rhs.render}"
+  | .branchEq lhs rhs target => s!"beq {lhs.render}, {rhs.render}, {target}"
+  | .branchNe lhs rhs target => s!"bne {lhs.render}, {rhs.render}, {target}"
+  | .branchEqZero src target => s!"beqz {src.render}, {target}"
+  | .branchNeZero src target => s!"bnez {src.render}, {target}"
+  | .csrRead dst csr => s!"csrr {dst.render}, {csr.render}"
+  | .csrWrite csr src => s!"csrw {csr.render}, {src.render}"
+  | .csrReadWrite dst csr src => s!"csrrw {dst.render}, {csr.render}, {src.render}"
+  | .csrSet csr src => s!"csrs {csr.render}, {src.render}"
+  | .csrClear csr src => s!"csrc {csr.render}, {src.render}"
+  | .csrSetImmediate csr mask => s!"csrsi {csr.render}, {mask}"
+  | .csrClearImmediate csr mask => s!"csrci {csr.render}, {mask}"
+  | .csrReadClearImmediate dst csr mask => s!"csrrci {dst.render}, {csr.render}, {mask}"
+  | .maskMachineInterruptEnable => "csrci mstatus, 8"
+  | .environmentCall => "ecall"
+  | .breakpoint => "ebreak"
+  | .illegalInstruction => ".word 0x0000000b"
+  | .machineReturn => "mret"
   | .move dst src => s!"mv {dst.render}, {src.render}"
   | .jump target => s!"j {target}"
   | .call symbol => s!"call {symbol}"
