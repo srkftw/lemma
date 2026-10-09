@@ -130,7 +130,50 @@
     {
       "gate": "F",
       "name": "preemptive tasks",
-      "status": "not_run"
+      "status": "in_progress",
+      "guest_execution": "focused O0/O2 strong preemption/context/sleep/lifecycle observations PASS; mandatory isolated timer-disabled negative pending",
+      "observed": "Compiled eight-slot owned task policy and three independently linked user images; runnable quantum1ms/idle maximum100ms, nonce arithmetic interrupted inside source-bound actual machine loop, all12instances/profile reclaimed to499. Gate F not complete until timer-disabled progress denial is actually observed.",
+      "next_command": "Commit coherent F candidate, create isolated source worktree at that exact commit, apply canonical call5-only timer mutation, build/audit and run scripts/check_kernel_timer_negative.py with exact positive-control report.",
+      "focused_evidence": [
+        {
+          "path": "build/kernel/gateF/tasks-O0-attempt3/result.json",
+          "sha256": "85079345adc585168f81c0fa01b4727d569c85ec9be44417827a3999fa198519",
+          "status": "PASS",
+          "clean": false,
+          "records": 1283,
+          "instances": 12,
+          "actual_machine_interrupts": 570,
+          "arithmetic_preemptions": 47,
+          "final_frames": 499,
+          "elapsed_seconds": 14.560739
+        },
+        {
+          "path": "build/kernel/gateF/tasks-O2-attempt3/result.json",
+          "sha256": "4895abd543a83bb8a77b82637c300a8baaed4a36a2ad671014f086c8c10805c2",
+          "status": "PASS",
+          "clean": false,
+          "records": 1491,
+          "instances": 12,
+          "actual_machine_interrupts": 679,
+          "arithmetic_preemptions": 35,
+          "final_frames": 499,
+          "elapsed_seconds": 10.761901
+        }
+      ],
+      "actual_failures": [
+        {
+          "path": "build/kernel/gateF/tasks-O0-attempt2/result.json",
+          "sha256": "f409ac7b7f0a5c3d04e1d1939a620ef9f69121f47c46282b629024420a4f01f0",
+          "observed": "Compute completed without an actual interruption inside its compiled arithmetic loop",
+          "status": "FAIL"
+        },
+        {
+          "path": "build/kernel/gateF/tasks-O2-attempt2/result.json",
+          "sha256": "e0dfd5e6e50912997998ab3f03e4395efa7784c598682ccdbc6e6a9deb0bce3e",
+          "observed": "Compute completed without an actual interruption inside its compiled arithmetic loop",
+          "status": "FAIL"
+        }
+      ]
     },
     {
       "gate": "G",

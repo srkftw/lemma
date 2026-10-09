@@ -65,11 +65,15 @@ class StackAuditTests(unittest.TestCase):
                  'Lemma.Kernel.Memory.Frames.allocateContiguous2','Lemma.Kernel.Loader.allocateStack',
                  'Lemma.Kernel.Loader.installStackPair','Lemma.Kernel.Loader.storedStack','Lemma.Kernel.Loader.stackPair',
                  'Lemma.Kernel.Loader.releaseStackHandle','Lemma.Kernel.Loader.teardown','Lemma.Kernel.Process.dispatch',
-                 'Lemma.Kernel.Loader.kernelStackHandleOffset','Lemma.Kernel.Loader.kernelStackSecondHandleOffset']
+                 'Lemma.Kernel.Loader.kernelStackHandleOffset','Lemma.Kernel.Loader.kernelStackSecondHandleOffset',
+                 'Lemma.Kernel.Process.validateFrame','Lemma.Kernel.Process.validateStack',
+                 'Lemma.Kernel.Development.TasksEntry.dispatch','Lemma.Kernel.Scheduler.dispatch',
+                 'Lemma.Kernel.Task.capture','Lemma.Kernel.Task.context']
         symbols = {source:'f'+str(index) for index,source in enumerate(names)}
         constants = {names[0]:8192,names[9]:2400,names[10]:2480}
         edges = {names[2]:[names[1]],names[3]:[names[5]],names[7]:[names[4],names[6]],
-                 names[4]:[names[0]],names[8]:[names[0]]}
+                 names[4]:[names[0]],names[8]:[names[11]],names[11]:[names[12]],names[12]:[names[0]],
+                 names[13]:[names[14]],names[14]:[names[15]],names[15]:[names[11]],names[16]:[names[12]]}
         ir=''
         for source,symbol in symbols.items():
             calls=''.join(f'  %v{index} = call i64 @{symbols[callee]}()\n' for index,callee in enumerate(edges.get(source,[])))
@@ -77,6 +81,11 @@ class StackAuditTests(unittest.TestCase):
         unit={'functions':[{'source':source,'symbol':symbol} for source,symbol in symbols.items()]}
         layout={'task_kernel_stack_pages':2,'task_kernel_stack_bytes':8192}
         self.assertEqual(validate_owned_task_stack(layout,unit,ir)['base_owned_task_frames'],17)
+        multi={**unit,'configuration':'tasks-development'}
+        self.assertEqual(validate_owned_task_stack(layout,multi,ir)['bytes'],8192)
+        for caller,callee in [(names[14],names[15]),(names[15],names[11]),(names[16],names[12])]:
+            altered=ir.replace(f'call i64 @{symbols[callee]}()',f'call i64 @{symbols[names[5]]}()')
+            with self.assertRaises(Core0Error):validate_owned_task_stack(layout,multi,altered)
         for changed in [ir.replace('ret i64 8192','ret i64 4096'),ir.replace('ret i64 2480','ret i64 2400'),
                         ir.replace('call i64 @f1()','call i64 @f5()')]:
             with self.assertRaises(Core0Error):validate_owned_task_stack(layout,unit,changed)

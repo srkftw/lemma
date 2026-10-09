@@ -181,12 +181,8 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
   else
     .bind (Lemma.Kernel.Console.record 0xdd cause value pc status) fun _ _ => fatal
 
-/-- Validate the owned frame address before its first dereference. Origin is
-read from the hardware-saved SPP and SATP, not supplied by the UART client. -/
-def dispatch (frame cause value : UInt64) : Action :=
-  .bind (Access.read64 control) fun s descriptor =>
-  if failed s = true then fatal else
-  if descriptor = 0 then fatal else
+/-- The owned stack pair is checked independently of any supplied frame. -/
+def validateStack (descriptor : UInt64) : Action :=
   .bind (AddressSpace.base descriptor) fun s base =>
   if failed s = true then fatal else
   .bind (AddressSpace.owner descriptor) fun s owner =>
@@ -206,9 +202,19 @@ def dispatch (frame cause value : UInt64) : Action :=
   .bind (Access.read64 (base + 2408)) fun s top =>
   if failed s = true then fatal else
   if (if pins ||| secondPins = 0 then if secondBase = stackBase + Frames.bytes then
-    if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then
-      if frame = top - 288 then true else false
-    else false else false else false) = true then
+    if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then true
+    else false else false else false) = true then .done 0 top else fatal
+
+/-- Validate the owned frame address before its first dereference. Origin is
+read from the hardware-saved SPP and SATP, not supplied by the UART client.
+The scheduler uses this same boundary; legacy single-process policy is separate. -/
+def validateFrame (frame : UInt64) : Action :=
+  .bind (Access.read64 control) fun s descriptor =>
+  if failed s = true then fatal else
+  if descriptor = 0 then fatal else
+  .bind (validateStack descriptor) fun s top =>
+  if failed s = true then fatal else
+  if frame = top - 288 then
     .bind (Access.read64 (frame + 264)) fun s status =>
     if failed s = true then fatal else
     if status &&& 0xc6742 = 0 then
@@ -217,15 +223,21 @@ def dispatch (frame cause value : UInt64) : Action :=
         if failed s = true then fatal else
         .bind (AddressSpace.satp descriptor) fun s expected =>
         if failed s = true then fatal else
-        if translation = expected then
-          .bind (Access.read64 (frame + 256)) fun s pc =>
-          if failed s = true then fatal else
-          -- A faulting U instruction can target a forbidden VA or a halfword.
-          -- Such a PC is diagnostic data, never authority to resume as S.
-          userTrap descriptor frame cause value pc status translation
+        if translation = expected then .done 0 descriptor
         else fatal
       else fatal
     else fatal
   else fatal
+
+def dispatch (frame cause value : UInt64) : Action :=
+  .bind (validateFrame frame) fun s descriptor =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (frame + 264)) fun s status =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (frame + 272)) fun s translation =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (frame + 256)) fun s pc =>
+  if failed s = true then fatal else
+  userTrap descriptor frame cause value pc status translation
 
 end Lemma.Kernel.Process

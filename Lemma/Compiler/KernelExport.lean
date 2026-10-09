@@ -1,6 +1,7 @@
 import Lean
 import Lemma.Compiler.CFGLower
 import Lemma.Compiler.Format
+import Lemma.Compiler.DeploymentCatalog
 import Lemma.Platform.RiscV.ExecutionPrimitives
 
 /-! Production export commands. Each unit comes from genuine elaborated Lean
@@ -14,6 +15,7 @@ open Lean Elab Command
 open Lemma.Core0
 open Lemma.Compiler
 open Lemma.Platform.LemmaVM
+open DeploymentCatalog
 
 private def roleProfile (role : String) : Except String Profile :=
   match role with
@@ -29,7 +31,7 @@ private def readConfiguration : IO String := do
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
       configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" ||
-      configuration == "user-syscall-development" do
+      configuration == "user-syscall-development" || configuration == "tasks-development" do
     throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
   pure configuration
 
@@ -47,7 +49,8 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
 private def requiresSupervisor (configuration : String) : Bool :=
   configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
-    configuration == "user-misaligned-development" || configuration == "user-syscall-development"
+    configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
+    configuration == "tasks-development"
 
 private def unitCategory (configuration role : String) : String :=
   (if configuration == "normal" then "production-" else "development-") ++ role ++ "-unit"
@@ -59,6 +62,8 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
     else if configuration == "user-isolation-development" then
       #["Lemma.Kernel.Development.IsolationEntry.boot", "Lemma.Kernel.Development.IsolationEntry.dispatch"]
+    else if configuration == "tasks-development" then
+      #["Lemma.Kernel.Development.TasksEntry.boot", "Lemma.Kernel.Development.TasksEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
@@ -73,8 +78,11 @@ private def rootArguments (role : String) : Array (Array Ty) :=
   | "user" => #[#[.u64]]
   | _ => #[]
 
-private def developmentModule (configuration role : String) : Option String :=
-  if configuration == "frames-development" && role == "kernel" then
+private def developmentModule (configuration role : String) (image? : Option UserImageSpec := none) : Option String :=
+  if let some image := image? then some image.moduleName.toString
+  else if configuration == "tasks-development" && role == "kernel" then
+    some "Lemma.Kernel.Development.TasksEntry"
+  else if configuration == "frames-development" && role == "kernel" then
     some "Lemma.Kernel.Development.FramesEntry"
   else if configuration == "user-isolation-development" && role == "kernel" then
     some "Lemma.Kernel.Development.IsolationEntry"
@@ -88,14 +96,22 @@ private def developmentName (name : Name) : Bool :=
   let source := (Lean.privateToUserName? name).getD name |>.toString
   source.startsWith "Lemma.Kernel.Development." || source.startsWith "Lemma.User.Development."
 
-private def allowedDevelopmentSource (configuration role : String) (name : Name) : Bool :=
+private def allowedDevelopmentSource (configuration role : String) (name : Name)
+    (image? : Option UserImageSpec := none) : Bool :=
   if !developmentName name then true else
-    match developmentModule configuration role with
+    match developmentModule configuration role image? with
     | some scope => ((Lean.privateToUserName? name).getD name |>.toString).startsWith (scope ++ ".")
     | none => false
 
-private def validateSelectedRoots (configuration role : String) (names : Array Name) : Except String Unit := do
-  unless names.map Name.toString == rootIdentities configuration role do
+private def validateSelectedRoots (configuration role : String) (names : Array Name)
+    (image? : Option UserImageSpec := none) : Except String Unit := do
+  if let some image := image? then
+    unless role == "user" && (← imageFor configuration image.key) == image do
+      throw "user image identity differs from the closed selected deployment"
+    let _ ← validateSelection configuration image.key names
+  else if configuration == "tasks-development" && role == "user" then
+    throw "tasks-development users require the closed per-image export command"
+  else unless names.map Name.toString == rootIdentities configuration role do
     throw s!"{configuration} {role} roots differ from the fixed selected entry identities"
 
 private def argumentsJson (arguments : Array Ty) : Json :=
@@ -167,7 +183,7 @@ private def deviceJson (lowered : LoweredActionSuite) (operation : Device.Op) : 
     ("fence_after", .bool spec.fenceAfter), ("sites", .arr (deviceSites lowered operation))]
 
 private def unitManifest (configuration role : String) (suite : CheckedActionSuite)
-    (lowered : LoweredActionSuite) : Except String Json := do
+    (lowered : LoweredActionSuite) (image? : Option UserImageSpec := none) : Except String Json := do
   let mut roots := #[]
   for root in suite.roots do
     roots := roots.push <| Json.mkObj [("id", toJson root.id), ("source", .str root.source.toString),
@@ -183,18 +199,23 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
       ("args", argumentsJson function.signature.args), ("effects", effectsJson function.effects)]
   let mut devices := #[]
   for operation in suite.usedDeviceOps do devices := devices.push (← deviceJson lowered operation)
-  pure <| Json.mkObj [("schema_version", 1), ("artifact_category", .str (unitCategory configuration role)),
+  let imageFields := match image? with
+    | none => []
+    | some image => [("image_key", Json.str image.key), ("image_id", toJson image.id)]
+  pure <| Json.mkObj ([("schema_version", toJson (if image?.isSome then (2 : Nat) else 1)), ("artifact_category", .str (unitCategory configuration role)),
     ("configuration", .str configuration),
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))]
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields)
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
 
-private def normalized (configuration role : String) (suite : CheckedActionSuite) : String :=
+private def normalized (configuration role : String) (suite : CheckedActionSuite)
+    (image? : Option UserImageSpec := none) : String :=
   s!"configuration={configuration}\nrole={role}\ncontract={suite.contractVersion}\n" ++
+    ((image?.map (fun image => s!"image_key={image.key}\nimage_id={image.id}\n")).getD "") ++
     String.join (suite.scalarFunctions.toList.map fun function =>
       s!"scalar={function.name};args={repr function.signature.args};result={function.signature.result.render}\n" ++
         function.body.renderNormalized ++ "\n") ++
@@ -205,32 +226,33 @@ private def normalized (configuration role : String) (suite : CheckedActionSuite
     String.join (suite.usedDeviceOps.toList.map fun operation => s!"device={operation.stableId}\n") ++
     String.join (suite.usedLoops.toList.map fun use => "loop=" ++ (loopJson use).compress ++ "\n")
 
-private def validateRoots (configuration role : String) (suite : CheckedActionSuite) : Except String Unit := do
-  validateSelectedRoots configuration role (suite.roots.map (·.source))
+private def validateRoots (configuration role : String) (suite : CheckedActionSuite)
+    (image? : Option UserImageSpec := none) : Except String Unit := do
+  validateSelectedRoots configuration role (suite.roots.map (·.source)) image?
   unless suite.roots.map (·.signature.args) == rootArguments role do
     throw s!"{configuration} {role} signatures differ from the admitted entry/dispatch ABI"
 
 private def exportUnit (env : Environment) (configuration role : String) (names : Array Name)
-    (directory : System.FilePath) : IO Unit := do
+    (directory : System.FilePath) (image? : Option UserImageSpec := none) : IO Unit := do
   let profile ← IO.ofExcept (roleProfile role)
-  IO.ofExcept <| validateSelectedRoots configuration role names
+  IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
     if developmentName imported then
-      unless developmentModule configuration role == some imported.toString do
+      unless developmentModule configuration role image? == some imported.toString do
         throw <| IO.userError s!"{configuration} {role} imports forbidden development module `{imported}`"
   let suite ← match checkAndLowerActionSuiteForProfile env profile names with
     | .ok suite => pure suite
     | .error diagnostic => throw <| IO.userError diagnostic.render
-  IO.ofExcept (validateRoots configuration role suite)
+  IO.ofExcept (validateRoots configuration role suite image?)
   for function in suite.scalarFunctions do
-    unless productionName function.name && allowedDevelopmentSource configuration role function.name do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   for function in suite.actionFunctions do
-    unless productionName function.name && allowedDevelopmentSource configuration role function.name do
+    unless productionName function.name && allowedDevelopmentSource configuration role function.name image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
-    preserveCalls := preserved, symbolPrefix := "lemma_" ++ role ++ "_" }
+    preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_") }
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then
@@ -245,10 +267,10 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     declarations
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
-  let manifest ← IO.ofExcept <| unitManifest configuration role suite lowered
+  let manifest ← IO.ofExcept <| unitManifest configuration role suite lowered image?
   IO.FS.createDirAll directory
   for (filename, contents) in #[("program.ll", module.render), ("unit.json", manifest.pretty ++ "\n"),
-      ("normalized.txt", normalized configuration role suite), ("symbols.txt", lowered.renderSymbolManifest)] do
+      ("normalized.txt", normalized configuration role suite image?), ("symbols.txt", lowered.renderSymbolManifest)] do
     IO.FS.writeFile (directory / filename) contents
 
 private def layoutJson (configuration : String) : Json := Json.mkObj [
@@ -290,9 +312,9 @@ private def bootLinker : String := String.intercalate "\n" [
   s!"  ASSERT(. <= {Layout.packageLimit}, \"boot package envelope exceeded\")",
   "  /DISCARD/ : { *(.eh_frame .eh_frame.*) }", "}", ""]
 
-private def userLinker : String := String.intercalate "\n" [
+private def userLinker (directory : String := "user") : String := String.intercalate "\n" [
   "OUTPUT_ARCH(riscv)", "ENTRY(_user_start)", "PHDRS { text PT_LOAD FLAGS(5); data PT_LOAD FLAGS(6); }", "SECTIONS {",
-  s!"  . = {Layout.userTextBase};", "  .text : ALIGN(4096) { user/startup.o(.text.user_start) *(.text .text.* .rodata .rodata.*) } :text",
+  s!"  . = {Layout.userTextBase};", "  .text : ALIGN(4096) { " ++ directory ++ "/startup.o(.text.user_start) *(.text .text.* .rodata .rodata.*) } :text",
   s!"  ASSERT(. <= {Layout.userTextLimit}, \"user text envelope exceeded\")",
   s!"  . = {Layout.userDataBase};", "  .data : ALIGN(4096) { *(.data .data.* .sdata .sdata.*) } :data",
   "  __user_data_file_end = .;", "  .bss (NOLOAD) : ALIGN(8) { *(.bss .bss.* .sbss .sbss.*) *(COMMON)",
@@ -330,8 +352,9 @@ private def jsonFieldEquals (object : Json) (field : String) (expected : Json) :
   | .error _ => false
 
 private def readRootSymbol (directory : System.FilePath) (configuration role : String)
-    (index : Nat) : IO String := do
-  let contents ← IO.FS.readFile (directory / role / "unit.json")
+    (index : Nat) (image? : Option UserImageSpec := none) : IO String := do
+  let unitDirectory := directory / (image?.map (·.directory) |>.getD role)
+  let contents ← IO.FS.readFile (unitDirectory / "unit.json")
   let manifest ← IO.ofExcept <| Json.parse contents
   let actualRole ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "role").getStr?
   let actualConfiguration ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "configuration").getStr?
@@ -340,11 +363,17 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
   let version ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "schema_version").getNat?
   let profile ← IO.ofExcept <| roleProfile role
   unless actualRole == role && actualConfiguration == configuration &&
-      contract == profile.contractVersion && version == 1 && category == unitCategory configuration role do
+      contract == profile.contractVersion && version == (if image?.isSome then 2 else 1) &&
+      category == unitCategory configuration role do
     throw <| IO.userError "boot export rejected inconsistent unit configuration/identity"
+  if let some image := image? then
+    IO.ofExcept <| validateSelectedRoots configuration role #[image.root] image?
+    unless jsonFieldEquals manifest "image_key" (.str image.key) &&
+        jsonFieldEquals manifest "image_id" (toJson image.id) do
+      throw <| IO.userError "boot export rejected a crossing user image identity"
   let roots ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "roots").getArr?
   let functions ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "functions").getArr?
-  let expectedSources := rootIdentities configuration role
+  let expectedSources := image?.map (fun image => #[image.root.toString]) |>.getD (rootIdentities configuration role)
   let expectedArguments := rootArguments role
   unless roots.size == expectedSources.size do
     throw <| IO.userError "boot export rejected unexpected root count"
@@ -364,11 +393,62 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
         jsonFieldEquals function "args" arguments) do
       throw <| IO.userError "boot export rejected a root/function symbol or signature mismatch"
     IO.ofExcept <| validateSymbolPrefix symbol
-    unless symbol.startsWith ("lemma_" ++ role ++ "_") && !symbols.contains symbol do
+    unless symbol.startsWith (image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_")) && !symbols.contains symbol do
       throw <| IO.userError "boot export rejected a role-crossing or duplicate entry symbol"
     symbols := symbols.push symbol
   let some symbol := symbols[index]? | throw <| IO.userError s!"boot export omitted {role} entry {index}"
   pure symbol
+
+private def userSymbolsJson : Json := .arr
+  ((Lemma.Platform.RiscV.ExecutionPrimitives.userPrimitiveCatalog .none).map fun (symbol, privilege, effect) =>
+    Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])
+
+private def userImageCatalog (configuration : String) (image : UserImageSpec) : Json := Json.mkObj [
+  ("schema_version", 1), ("contract_version", .str "lemma-user-execution-v1"),
+  ("configuration", .str configuration), ("image_key", .str image.key), ("image_id", toJson image.id),
+  ("startup_case", .str "none"), ("symbols", userSymbolsJson)]
+
+private def exportUserFiles (directory : System.FilePath) (configuration : String)
+    (image : UserImageSpec) : IO Unit := do
+  let user ← readRootSymbol directory configuration "user" 0 (some image)
+  let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user .none
+  let target := directory / image.directory
+  for (filename, contents) in #[("startup.S", startup), ("link.ld", userLinker image.directory),
+      ("layout.json", (layoutJson configuration).pretty ++ "\n"),
+      ("primitive-catalog.json", (userImageCatalog configuration image).pretty ++ "\n")] do
+    IO.FS.writeFile (target / filename) contents
+
+private def multiPackageContract (configuration : String) (images : Array UserImageSpec) : Json :=
+  Json.mkObj [("schema_version", 2), ("contract_version", .str "lemma-boot-package-v1"),
+    ("configuration", .str configuration), ("startup_case", .str "normal"), ("user_startup_case", .str "none"),
+    ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", toJson images.size),
+    ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
+    ("images", .arr (images.map fun image => Json.mkObj [
+      ("key", .str image.key), ("id", toJson image.id), ("entry", toJson Layout.userTextBase),
+      ("text_va", toJson Layout.userTextBase), ("text_capacity", toJson (Layout.userTextLimit - Layout.userTextBase)),
+      ("data_va", toJson Layout.userDataBase), ("data_mem_bytes", toJson Layout.userDataBytes),
+      ("stack_va", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages), ("flags", 0)]))]
+
+/-- Data-only package construction. Sizes/offsets are assembler label
+differences over the actual separately linked bytes, never predicted values. -/
+private def multiPackageData (images : Array UserImageSpec) : String := Id.run do
+  let mut lines := #[".section .boot_package, \"a\", @progbits", ".balign 8", ".globl lemma_boot_package",
+    "lemma_boot_package:", "  .quad 0x31474b50414d454c", "  .quad 1", s!"  .quad {images.size}",
+    "  .quad .Llemma_package_end - lemma_boot_package"]
+  for image in images do
+    let label := ".Llemma_package_" ++ image.key
+    lines := lines ++ #[s!"  .quad {image.id}", s!"  .quad {Layout.userTextBase}", s!"  .quad {Layout.userTextBase}",
+      s!"  .quad {label}_text - lemma_boot_package", s!"  .quad {label}_text_end - {label}_text",
+      s!"  .quad {Layout.userDataBase}", s!"  .quad {label}_data - lemma_boot_package",
+      s!"  .quad {label}_data_end - {label}_data", s!"  .quad {Layout.userDataBytes}",
+      s!"  .quad {Layout.userStackBase}", s!"  .quad {Layout.userStackPages}", "  .quad 0"]
+  for image in images do
+    let label := ".Llemma_package_" ++ image.key
+    lines := lines ++ #[".balign 8", label ++ "_text:", s!"  .incbin \"{image.directory}/text.bin\"",
+      label ++ "_text_end:", ".balign 8", label ++ "_data:", s!"  .incbin \"{image.directory}/data.bin\"",
+      label ++ "_data_end:"]
+  lines := lines ++ #[".Llemma_package_end:", ".section .note.GNU-stack, \"\", @progbits", ""]
+  return String.intercalate "\n" lines.toList
 
 private def exportBootFiles (directory : System.FilePath) (configuration : String)
     (stage : Lemma.Platform.RiscV.ExecutionPrimitives.Stage) : IO Unit := do
@@ -380,11 +460,28 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let firmware ← readRootSymbol directory configuration "firmware" 0
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
-  let user ← readRootSymbol directory configuration "user" 0
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
     stage, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
+  if configuration == "tasks-development" then
+    let images ← IO.ofExcept <| imagesFor configuration
+    IO.ofExcept <| validateImages configuration images
+    for image in images do exportUserFiles directory configuration image
+    let catalog := Json.mkObj [("schema_version", 2), ("contract_version", .str "lemma-execution-v1"),
+      ("configuration", .str configuration), ("stage", .str stage.stableId),
+      ("startup_case", .str config.startupCase.stableId), ("user_startup_case", .str config.userStartupCase.stableId),
+      ("symbols", .arr ((Lemma.Platform.RiscV.ExecutionPrimitives.primitiveCatalog config).map fun (symbol, privilege, effect) =>
+        Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])),
+      ("user_images", .arr (images.map fun image => Json.mkObj [
+        ("key", .str image.key), ("id", toJson image.id), ("startup_case", .str "none"), ("symbols", userSymbolsJson)]))]
+    for (filename, contents) in #[("startup.S", startup), ("link.ld", bootLinker),
+        ("layout.json", (layoutJson configuration).pretty ++ "\n"), ("primitive-catalog.json", catalog.pretty ++ "\n"),
+        ("boot-package.S", multiPackageData images), ("package-contract.json", (multiPackageContract configuration images).pretty ++ "\n"),
+        ("user-image-catalog.json", (← IO.ofExcept <| catalogJson configuration).pretty ++ "\n")] do
+      IO.FS.writeFile (directory / filename) contents
+    return
+  let user ← readRootSymbol directory configuration "user" 0
   let userStartup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user config.userStartupCase
   let catalog := Json.mkObj [("schema_version", 1), ("contract_version", .str "lemma-execution-v1"),
     ("configuration", .str configuration), ("stage", .str stage.stableId),
@@ -413,6 +510,51 @@ elab_rules : command
       let configuration ← liftIO readConfiguration
       liftIO <| exportUnit (← getEnv) configuration role names (System.FilePath.mk output)
       logInfo m!"Lemma exported {configuration} {role} unit to {output}"
+
+syntax (name := lemmaExportUserCatalog) "#lemma_export_user_catalog" : command
+
+elab_rules : command
+  | `(#lemma_export_user_catalog) => do
+      let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
+        | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
+      let configuration ← liftIO readConfiguration
+      let catalog ← match catalogJson configuration with
+        | .ok catalog => pure catalog
+        | .error error => throwError error
+      liftIO do
+        IO.FS.createDirAll output
+        IO.FS.writeFile (System.FilePath.mk output / "user-image-catalog.json") (catalog.pretty ++ "\n")
+      logInfo m!"Lemma exported the closed {configuration} user image catalog"
+
+syntax (name := lemmaExportUserImage) "#lemma_export_user_image " str "[" ident,* "]" : command
+
+elab_rules : command
+  | `(#lemma_export_user_image $key:str [$decls:ident,*]) => do
+      let some key := key.raw.isStrLit? | throwError "user image key must be a literal string"
+      let mut names := #[]
+      for declaration in decls.getElems do names := names.push (← resolveGlobalConstNoOverload declaration)
+      let configuration ← liftIO readConfiguration
+      let image ← match validateSelection configuration key names with
+        | .ok image => pure image
+        | .error error => throwError error
+      let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
+        | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
+      liftIO <| exportUnit (← getEnv) configuration "user" names (System.FilePath.mk output / image.directory) (some image)
+      logInfo m!"Lemma exported the genuine {configuration} user image {key}"
+
+syntax (name := lemmaExportUserFiles) "#lemma_export_user_files " str : command
+
+elab_rules : command
+  | `(#lemma_export_user_files $key:str) => do
+      let some key := key.raw.isStrLit? | throwError "user image key must be a literal string"
+      let configuration ← liftIO readConfiguration
+      let image ← match imageFor configuration key with
+        | .ok image => pure image
+        | .error error => throwError error
+      let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
+        | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
+      liftIO <| exportUserFiles (System.FilePath.mk output) configuration image
+      logInfo m!"Lemma exported independent user startup/layout files for {key}"
 
 syntax (name := lemmaExportBootFiles) "#lemma_export_boot_files" : command
 

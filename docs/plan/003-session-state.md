@@ -10,7 +10,8 @@
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
 - Highest complete Task 003 gate: E at clean0f34b21c5b1f6482f507b131bd28851b9b26fed0,
   tree85874c8a207af2103a717febfdbccde50147ec5f. Fresh clean A–E acceptance passed.
-  F–K remain not run. The latest checkpoint at the end of this file is authoritative.
+  F has focused runtime observations and a pending mandatory timer-disabled negative;
+  G–K remain not run. The latest checkpoint at the end of this file is authoritative.
 - The user explicitly extended the original time window until the full milestone
   is verified and authorized merging afterward. Do not merge a partial prefix.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
@@ -28,9 +29,9 @@
   profiles, lowering and production exporter; platform worker typed M/S/U glue
   and boot DTB validation; integration worker host builder/auditor. No production
   module may import `Compiler.Test`, examples or mutation modules.
-- Next executable checkpoint: build genuinely elaborated production kernel and
-  separately compiled user module with the new exporter; audit the privilege/object
-  separation, then boot and test the real frame allocator before supervisor entry.
+- Next executable checkpoint: commit the coherent F candidate, then run the
+  exact call5-only timer-disabled negative in an isolated source worktree.
+  Do not begin G until the required F timer-removal observation passes.
 - Do not relabel baseline or earlier Task 002 artifacts as Task 003 passes. Do not
   infer completion of a gate from its modules. Preserve legacy profiles and checks.
 
@@ -418,3 +419,19 @@
   noncooperative tasks. F-G lifecycle APIs must restore the stable S root and
   reaper stack before reclaiming an instance. F-K remain not run; no Task003 PR,
   remote push, actual CI or merge has occurred.
+
+## Gate F construction checkpoint (not acceptance)
+
+Source is on `465aeb5a38198da972f6989c5cc2e9afc9127380` with uncommitted Gate F work. The highest verified gate remains E. The held new Task/Scheduler and preserved legacy Entry source closures passed genuine elaboration and O0/O2 strict object stack probes (`build/kernel/tasks-F-final-probe/probe-report-complete.json`, SHA256 `66c58e3d3d982d63c635d4dcb12c7761272104a6b420ef5be161125037bbec1d`). Six independent user build/audits and two full tasks-development package builds/audits are running; no F guest has run yet. The new host observation checker is `scripts/check_kernel_tasks.py`; its malformed-observation rejection tests passed separately. Continue with actual O0/O2 guests, then a narrowly isolated timer-disabled negative. Do not infer scheduler acceptance from object builds.
+
+The E independent review also completed: `build/kernel/E-clean/independent-summary.json` in the E acceptance worktree has SHA256 `3fdb8a90d955f2f739d3443b78c6d5c264b19face43ff59c1082846f1aba6807`; source/820 generated and 86 raw artifacts/60 object stack rereads matched. This later summary is separately hashed and was created after the earlier E inventory.
+
+## Gate F strong runtime checkpoint; mandatory negative pending
+
+The compiled scheduler uses a1ms runnable quantum and100ms idle maximum (earlier sleeping deadlines still shorten it). Compute now executes8 rounds of32×4096 scalar churn steps within the already accepted bounded-loop profile. Initial100ms O0/O2 sessions passed the earlier protocol but did not interrupt Compute arithmetic; stronger1ms sessions were correctly rejected because their SSIP PCs were only syscall returns. Those failed `tasks-{O0,O2}-attempt2` reports remain retained.
+
+Fresh `artifacts-attempt4` O0/O2 builds/audits passed. Actual strong `tasks-O0-attempt3` and `tasks-O2-attempt3` sessions passed:12 instances each,1283/1491 records,570/679 actual M IRQs,47/35 interruptions inside audited Compute arithmetic, independently checked results/canaries, all-sleeping WFI,8-slot exhaustion, stale IDs and complete reclamation to499. Both live guests were explicitly killed/reaped(-9), PIDs absent, stderr empty; exact raw coverage was rechecked after cleanup. Report hashes are in the ledger.
+
+Latest checks: Lake55 jobs, kernel host85, Core0 host32, foundation host440, scaffold18 and metadata all passed. These are current-source development observations, not clean final qualification. Six standalone artifacts at `build/user/gateF-attempt2` are historical before the quantum/workload changes; do not relabel them. Fresh recaptures are deferred until the stronger protocol is accepted.
+
+The host-only `check_kernel_timer_negative.py` and4 negative-evidence rejection tests are ready. Commit all coherent F source/checker work, create an isolated worktree at that exact commit, replace ONLY the validated successful Firmware.call5 arm path using `timer_disabled_source(original)` (ACK SSIP, compareMAX, write actual deadline, normal reply), and build/audit both profiles. Run the negative CLI with its matching strong positive report and exact candidate commit. It must retain the inner positive checker FAIL and establish missing preemption after genuine Compute yield/Sleeper sleep/final Busy dispatch; no arbitrary startup failure or timeout is acceptable. Highest complete gate remains E until that observation is real. User authorization remains full A–K verification followed by merge; no partial merge.

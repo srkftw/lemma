@@ -99,6 +99,32 @@ USER_ATTACKS = {
 USER_ABI_INITIAL_DATA = struct.pack("<2Q", 0, 1)
 USER_SYSCALL_WORDS = (0x00050893, 0x00058513, 0x00060593, 0x00068613,
                       0x00070693, 0x00078713, 0x00000073, 0x00008067)
+TASK_USER_IMAGES = tuple({"key": key, "id": index, "module": "Lemma.User.Development.Tasks." + module,
+                          "source": "Lemma.User.Development.Tasks." + module + ".main", "args": ["u64"],
+                          "symbol_prefix": "lemma_user_" + key + "_", "startup_case": "none",
+                          "directory": "users/" + key}
+                         for index, (key, module) in enumerate((("compute", "Compute"), ("sleeper", "Sleeper"), ("busy", "Busy")), 1))
+
+
+def validate_user_image_catalog(value: object) -> dict:
+    """Admit only the ordered Lean deployment catalog for the selected gate."""
+    catalog = _object(value, "user image catalog")
+    expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
+                "configuration": "tasks-development", "stage": "supervisor", "image_count": 3,
+                "images": list(TASK_USER_IMAGES)}
+    # Exact equality also closes paths, IDs, per-image prefixes and source roots.
+    if (type(catalog.get("schema_version")) is not int or type(catalog.get("image_count")) is not int
+            or catalog != expected or any(type(row.get("id")) is not int for row in catalog.get("images", []))):
+        raise Core0Error("closed user image registry/source/path catalog differs")
+    return catalog
+
+
+def selected_user_image(catalog: object, image_key: str) -> dict:
+    catalog = validate_user_image_catalog(catalog)
+    matches = [row for row in catalog["images"] if row["key"] == image_key]
+    if len(matches) != 1:
+        raise Core0Error("unknown selected user image")
+    return matches[0]
 
 
 def machine_frame(source: str, symbol: str) -> int:
@@ -227,8 +253,16 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
     required = {"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
                 "Lemma.Kernel.Memory.Frames.allocateContiguous2", "Lemma.Kernel.Loader.allocateStack",
                 "Lemma.Kernel.Loader.installStackPair", "Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.stackPair",
-                "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown", "Lemma.Kernel.Process.dispatch",
+                "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown",
+                "Lemma.Kernel.Process.validateFrame", "Lemma.Kernel.Process.validateStack",
                 "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset"}
+    dispatch_edges = ({"Lemma.Kernel.Development.TasksEntry.dispatch": ["Lemma.Kernel.Scheduler.dispatch"],
+                       "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
+                       "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
+                       "Lemma.Kernel.Task.context": ["Lemma.Kernel.Process.validateStack"]}
+                      if unit.get("configuration") == "tasks-development" else
+                      {"Lemma.Kernel.Process.dispatch": ["Lemma.Kernel.Process.validateFrame"]})
+    required.update(dispatch_edges)
     if not required <= set(by_source):
         raise Core0Error("8-KiB stack lacks its genuine pair construction/validation/teardown source closure")
     for source, value in (("Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue", layout["task_kernel_stack_bytes"]),
@@ -242,7 +276,9 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
         "Lemma.Kernel.Loader.installStackPair": ["Lemma.Kernel.Loader.stackPair"],
         "Lemma.Kernel.Loader.teardown": ["Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.releaseStackHandle"],
         "Lemma.Kernel.Loader.storedStack": ["Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue"],
-        "Lemma.Kernel.Process.dispatch": ["Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue"],
+        "Lemma.Kernel.Process.validateFrame": ["Lemma.Kernel.Process.validateStack"],
+        "Lemma.Kernel.Process.validateStack": ["Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue"],
+        **dispatch_edges,
     }.items():
         calls = parse_definitions_and_calls(_ir_definition_body(pre_ir, by_source[caller]))[2]
         if not {by_source[callee] for callee in callees} <= calls:
@@ -261,9 +297,10 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     section of the startup object and its exact linked payload, not arbitrary
     writable data or additional target object symbols.
     """
-    if object_file not in {"user/startup.o", "user/image.elf"}:
+    multi_file = re.fullmatch(r"users/(compute|sleeper|busy)/(startup\.o|image\.elf)", object_file)
+    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
-    linked = object_file == "user/image.elf"
+    linked = object_file.endswith("/image.elf")
     section, address, alignment = (".data", 0x20000, 4096) if linked else (".data.user_abi", 0, 8)
     rows = re.findall(r"(?m)^\s*\[\s*(\d+)\]\s+" + re.escape(section)
                       + r"\s+PROGBITS\s+([0-9a-f]+)\s+[0-9a-f]+\s+([0-9a-f]+)\s+00\s+([A-Z]*)\s+0\s+0\s+(\d+)\s*$", section_text)
@@ -276,7 +313,8 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     expected = '.section .data.user_abi, "aw", @progbits\n.balign 8\n.quad 0\n.quad 1\n.option pop\n'
     if objects or assembly.count(expected) != 1 or len(re.findall(r"(?m)^\.section \.data", assembly)) != 1:
         raise Core0Error("user ABI initializer generated source or object-symbol closure differs")
-    return {"source": "Lemma.User.ABI.version", "owned_input": "user/startup.o(.data.user_abi)",
+    owner = object_file.rsplit("/", 1)[0] + "/startup.o(.data.user_abi)"
+    return {"source": "Lemma.User.ABI.version", "owned_input": owner,
             "section": section, "virtual_address": address, "bytes": 16, "alignment": alignment,
             "words": [0, 1], "writable": True, "executable": False,
             "sha256": hashlib.sha256(data).hexdigest()}
@@ -316,17 +354,26 @@ def _keys(value: dict, expected: set[str], context: str) -> None:
         raise Core0Error(f"{context} fields differ from the closed schema")
 
 
-def validate_unit(value: object, role: str, *, configuration: str = "normal") -> dict:
+def validate_unit(value: object, role: str, *, configuration: str = "normal", image_key: str | None = None) -> dict:
     unit = _object(value, f"{role} unit")
-    _keys(unit, {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
-                 "used_execution_ops", "used_device_ops", "used_loops"}, "unit")
+    multi_user = configuration == "tasks-development" and role == "user"
+    if (image_key is not None) != multi_user:
+        raise Core0Error("per-image unit selection differs from its configuration/role")
+    image = next((row for row in TASK_USER_IMAGES if row["key"] == image_key), None) if multi_user else None
+    if multi_user and image is None:
+        raise Core0Error("unknown per-image user unit selection")
+    keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
+            "used_execution_ops", "used_device_ops", "used_loops"}
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()), "unit")
     category = ("production" if configuration == "normal" else "development") + f"-{role}-unit"
-    if (unit.get("schema_version") != 1 or type(unit.get("schema_version")) is not int
+    if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") != CONTRACTS[role]):
         raise Core0Error(f"{role} unit identity/version differs")
+    if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
+        raise Core0Error("per-image user unit key/ID differs")
     roots = _array(unit.get("roots"), f"{role} roots")
-    expected = [(source, list(args)) for source, args in configuration_roots(configuration)[role]]
+    expected = [(image["source"], image["args"])] if multi_user else [(source, list(args)) for source, args in configuration_roots(configuration)[role]]
     if [(row.get("source"), row.get("args")) for row in roots if isinstance(row, dict)] != expected or len(roots) != len(expected):
         raise Core0Error(f"{role} exact production roots/signatures differ")
     for index, raw in enumerate(roots, 1):
@@ -347,10 +394,11 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
         if not production_identity or any(token in source.lower() for token in (".test.", "examples", "mutation")):
             raise Core0Error("function lacks a production Lean source identity")
         if ".Development." in source:
-            module = configuration_modules(configuration)[role]
-            if not development_role(configuration, role) or not re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source):
+            module = image["module"] if multi_user else configuration_modules(configuration)[role]
+            if (not multi_user and not development_role(configuration, role)) or not re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source):
                 raise Core0Error("development source escapes its exact selected module namespace")
-        if not isinstance(symbol, str) or not re.fullmatch("lemma_" + role + r"_[A-Za-z0-9_.$]+", symbol):
+        prefix = image["symbol_prefix"] if multi_user else "lemma_" + role + "_"
+        if not isinstance(symbol, str) or not re.fullmatch(re.escape(prefix) + r"[A-Za-z0-9_.$]+", symbol):
             raise Core0Error(f"function symbol lacks role prefix: {symbol}")
         if symbol in symbols or source in sources:
             raise Core0Error("duplicate function source/symbol")
@@ -469,12 +517,14 @@ def validate_layout(value: object, *, configuration: str = "normal") -> dict:
 def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
     validate_configuration_stage(configuration, stage)
     catalog = _object(value, "primitive catalog")
-    _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "user_startup_case", "symbols", "user_symbols"}, "primitive catalog")
+    multi = configuration == "tasks-development"
+    _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "user_startup_case", "symbols",
+                    "user_images" if multi else "user_symbols"}, "primitive catalog")
     expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
     if startup_case(configuration) == "machine-origin-probe":
         expected_machine |= {"lemma_machine_vector"}
     rows = [_object(row, "machine symbol") for row in _array(catalog.get("symbols"), "machine symbols")]
-    if (type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != 1
+    if (type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != (2 if multi else 1)
             or catalog.get("contract_version") != "lemma-execution-v1" or catalog.get("stage") != stage
             or catalog.get("configuration") != configuration or catalog.get("startup_case") != startup_case(configuration) or catalog.get("user_startup_case") != user_startup_case(configuration)
             or {row.get("symbol") for row in rows} != expected_machine or len(rows) != len(expected_machine)):
@@ -483,9 +533,76 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
         _keys(row, {"symbol", "privilege", "effect"}, "machine symbol")
         if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
             raise Core0Error("machine primitive privilege/effect differs")
-    if catalog.get("user_symbols") != user_primitive_rows(user_startup_case(configuration)):
+    expected_users = [{"key": row["key"], "id": row["id"], "startup_case": "none", "symbols": user_primitive_rows("none")}
+                      for row in TASK_USER_IMAGES] if multi else user_primitive_rows(user_startup_case(configuration))
+    if (catalog.get("user_images" if multi else "user_symbols") != expected_users
+            or multi and any(type(row.get("id")) is not int for row in catalog.get("user_images", []))):
         raise Core0Error("closed user primitive privilege/effect catalog differs")
     return expected_machine
+
+
+def validate_user_primitive_catalog(value: object, image: dict) -> dict:
+    expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": "tasks-development",
+                "image_key": image["key"], "image_id": image["id"], "startup_case": "none", "symbols": user_primitive_rows("none")}
+    catalog = _object(value, "per-image primitive catalog")
+    if catalog != expected or type(catalog.get("schema_version")) is not int or type(catalog.get("image_id")) is not int:
+        raise Core0Error("closed per-image user primitive catalog differs")
+    return catalog
+
+
+def validate_package_contract(value: object, *, configuration: str, catalog: dict | None = None) -> dict:
+    image = {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
+             "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0}
+    multi = configuration == "tasks-development"
+    if multi:
+        selected = validate_user_image_catalog(catalog)["images"]
+        images = [{**image, "key": row["key"], "id": row["id"]} for row in selected]
+    expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
+                "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
+                "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
+                "version": 1, "image_count": 3 if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
+                "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image})}
+    contract = _object(value, "boot package contract")
+    if (contract != expected or any(type(contract.get(key)) is not int for key in ("schema_version", "magic", "version", "image_count", "header_bytes", "descriptor_bytes"))
+            or any(type(row.get(key)) is not int for row in (contract.get("images", []) if multi else [contract.get("image", {})])
+                   for key in image)):
+        raise Core0Error("unknown/malformed boot package descriptor contract")
+    return contract
+
+
+def validate_package_payloads(package: bytes, contract: dict, payloads: list[tuple[bytes, bytes]]) -> list[dict]:
+    """Bind every v1 descriptor to a separately audited image, in registry order."""
+    count = contract["image_count"]
+    minimum = 32 + count * 96
+    if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], 1, count, len(package)):
+        raise Core0Error("boot package header/count/extent differs")
+    images = contract.get("images", [contract.get("image")])
+    occupied, last, reports = bytearray(len(package)), minimum, []
+    occupied[:minimum] = b"\1" * minimum
+    for index, (image, (text, data)) in enumerate(zip(images, payloads)):
+        words = struct.unpack_from("<12Q", package, 32 + index * 96)
+        ident, entry, text_va, text_offset, text_bytes, data_va, data_offset, data_bytes, memory, stack_va, pages, flags = words
+        if ((ident, entry, text_va, data_va, memory, stack_va, pages, flags) !=
+                (image["id"], image["entry"], image["text_va"], image["data_va"], image["data_mem_bytes"], image["stack_va"], image["stack_pages"], image["flags"])
+                or not 0 < len(text) <= image["text_capacity"] or len(data) > memory
+                or text_bytes != len(text) or data_bytes != len(data)
+                or text_offset < last or text_offset % 8 or data_offset < text_offset + text_bytes or data_offset % 8
+                or data_offset + data_bytes > len(package)):
+            raise Core0Error("boot package descriptor/source image extents differ")
+        for begin, raw in ((text_offset, text), (data_offset, data)):
+            end = begin + len(raw)
+            if end > len(package) or any(occupied[begin:end]) or package[begin:end] != raw:
+                raise Core0Error("boot package image payload is overlapping, missing or changed")
+            occupied[begin:end] = b"\1" * len(raw)
+        last = data_offset + data_bytes
+        reports.append({"id": ident, "key": image.get("key"), "text_offset": text_offset, "text_bytes": text_bytes,
+                        "data_offset": data_offset, "data_bytes": data_bytes,
+                        "text_sha256": hashlib.sha256(text).hexdigest(), "data_sha256": hashlib.sha256(data).hexdigest()})
+    if any(byte for byte, used in zip(package, occupied) if not used):
+        raise Core0Error("unaccounted nonzero boot package bytes outside audited payloads")
+    if len(package) != last:
+        raise Core0Error("boot package has an unexpected trailing extent")
+    return reports
 
 
 def validate_startup_case(text: str, ranges: dict[str, tuple[int, int]], case: str) -> dict:
@@ -552,20 +669,24 @@ def validate_context_abi(assembly: str, raw_machine: str, ranges: dict[str, tupl
         vector = _assembly_function(assembly, "lemma_supervisor_vector")
         if vector[-len(restore):] != restore or hashlib.sha256(_raw_function(raw_machine, ranges, "lemma_supervisor_vector")[-41 * 4:]).hexdigest() != SUPERVISOR_RESTORE_SHA256:
             raise Core0Error("supervisor vector does not share the complete trusted restore ABI")
-    if user_case not in {"none", *USER_ATTACKS}:
-        raise Core0Error("unknown user startup ABI case")
-    user_prefix = [f"call {user_root}"] if user_case == "none" else ["mv gp, zero", "mv tp, zero", f"call {user_root}",
-                   "bnez a0, .Luser_exit", f"call {USER_ATTACKS[user_case][0]}", ".Luser_exit:"]
-    user_start = [*user_prefix, *(f"li a{register}, 0" for register in range(1, 7)), "li a7, 6",
-                  "ecall", ".Luser_exit_returned:", "j .Luser_exit_returned"]
-    if _assembly_function(user_assembly, "_user_start") != user_start:
-        raise Core0Error("user startup does not forward its initial word to the exact Action root")
+    validate_user_entry_source(user_assembly, user_root, user_case)
     return {"layout": CONTEXT_LAYOUT, "kernel_resume_status": 0x200000100, "saved_gpr_slots": 32,
             "fixed_frame_stores": 36, "temporary_spill_stores": 2, "shared_restore_loads": 35,
             "total_enter_loads": 37, "enter_machine_instructions": 91, "shared_restore_machine_instructions": 41,
             "enter_machine_sha256": hashlib.sha256(raw).hexdigest(), "restore_machine_sha256": SUPERVISOR_RESTORE_SHA256,
             "original_sp_and_t0_t1_preserved": True, "caller_satp_readback_saved": True,
             "kernel_resume_sie": 0, "kernel_resume_scratch": 0, "initial_user_argument": "a0:u64"}
+
+
+def validate_user_entry_source(assembly: str, root: str, case: str) -> None:
+    if case not in {"none", *USER_ATTACKS}:
+        raise Core0Error("unknown user startup ABI case")
+    prefix = [f"call {root}"] if case == "none" else ["mv gp, zero", "mv tp, zero", f"call {root}",
+              "bnez a0, .Luser_exit", f"call {USER_ATTACKS[case][0]}", ".Luser_exit:"]
+    expected = [*prefix, *(f"li a{register}, 0" for register in range(1, 7)), "li a7, 6",
+                "ecall", ".Luser_exit_returned:", "j .Luser_exit_returned"]
+    if _assembly_function(assembly, "_user_start") != expected:
+        raise Core0Error("user startup does not forward its initial word to the exact Action root")
 
 
 def validate_user_syscall_bridge(assembly: str, raw_machine: str, ranges: dict[str, tuple[int, int]]) -> dict:
@@ -862,6 +983,309 @@ def validate_machine(text: str, *, user: bool = False,
         raise Core0Error("disassembly does not cover every four-byte function instruction")
 
 
+
+def _artifact_inspector(root: Path, directory: Path, timeout: float, logs: list[dict]):
+    if isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0:
+        raise Core0Error("artifact inspection timeout must be finite and positive")
+    tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy"))
+    pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+    store = pin.get("tools", {}).get("llvm", {}).get("store_path")
+    if pin.get("status") != "pinned" or not isinstance(store, str) or any(not path.startswith(store + "/") for path in tools.values()):
+        raise Core0Error("artifact inspection tools differ from the immutable LLVM output")
+    def inspect(name: str, args: list[str], label: str) -> str:
+        actual = [tools[name], *(["--elf-output-style=GNU"] if name == "llvm-readelf" else []), *args]
+        result = run_bounded(actual, cwd=directory, timeout_seconds=timeout)
+        logs.append({"argv": actual, "cwd": str(directory), "returncode": result.returncode})
+        text = (result.stdout + result.stderr).decode(errors="strict")
+        (directory / ("audit-" + label + ".txt")).write_text(text)
+        if result.returncode:
+            raise Core0Error(f"artifact inspection failed: {label}: {text}")
+        return text
+    return inspect
+
+
+def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], layout: dict,
+                       user: bool, assembly: str, user_case: str = "none") -> tuple[dict, str, str, dict]:
+    """One linked-code scanner shared by each boot and separately linked user ELF."""
+    header = inspect("llvm-readelf", ["-h", image], name + "-header")
+    if not all(token in header for token in ("ELF64", "little endian", "RISC-V")) or not re.search(r"Flags:\s+0x0(?:\s|$)", header):
+        raise Core0Error("ELF ISA/class/endianness/float/compressed flags differ")
+    attributes = inspect("llvm-readelf", ["-A", image], name + "-attributes")
+    arch = re.search(r"rv64i[0-9p]+(?:_[a-z0-9p]+)+", attributes)
+    if not arch or arch[0] != "rv64i2p1_m2p0_zicsr2p0_zifencei2p0_zmmul1p0":
+        raise Core0Error("ELF architecture attribute differs from integer-only profile")
+    if inspect("llvm-nm", ["--undefined-only", image], name + "undefined").strip():
+        raise Core0Error("final ELF contains undefined symbols")
+    if relocation_types(inspect("llvm-readelf", ["-r", image], name + "-relocations")):
+        raise Core0Error("final ELF contains runtime relocations")
+    symbol_text = inspect("llvm-readelf", ["-s", "--wide", image], name + "-symbols")
+    symbols = defined_function_symbols(symbol_text)
+    if symbols != expected:
+        raise Core0Error(f"{name} executable symbol provenance differs: missing {sorted(expected-symbols)}; unexpected {sorted(symbols-expected)}")
+    addresses = numeric_symbols(inspect("llvm-nm", ["--defined-only", image], name + "-addresses"))
+    segments = parse_load_segments(inspect("llvm-readelf", ["-l", "--wide", image], name + "-segments"))
+    intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(0x10000, 0x1f000), (0x20000, 0x21000)]
+    if not segments:
+        raise Core0Error("ELF load segment corpus is empty")
+    if user and (len(segments) != 2 or segments[0]["virtual_address"] != 0x10000 or segments[0]["flags"] != "RE"
+                 or segments[0]["memory_size"] != segments[0]["file_size"]
+                 or segments[1]["virtual_address"] != 0x20000 or segments[1]["flags"] != "RW"
+                 or segments[1]["file_size"] != 16 or segments[1]["memory_size"] != 4096):
+        raise Core0Error("user ELF text RX/data RW initialized/BSS segment contract differs")
+    for segment in segments:
+        begin, size = segment["virtual_address"], segment["memory_size"]
+        if (size == 0 or segment["file_size"] > size or "W" in segment["flags"] and "E" in segment["flags"]
+                or not any(lo <= begin and begin + size <= hi for lo, hi in intervals) or segment["physical_address"] != begin):
+            raise Core0Error("ELF PT_LOAD permissions or declared range differs")
+    entry = re.search(r"Entry point address:\s*(0x[0-9a-fA-F]+)", header)
+    required = 0x10000 if user else 0x80000000
+    if not entry or int(entry[1], 16) != required:
+        raise Core0Error("ELF entry point differs")
+    for symbol in symbols:
+        privilege = "U" if user else ("M" if symbol.startswith("lemma_firmware_") or symbol in M_SYMBOLS else "S")
+        low, high = ((0x10000, 0x1f000) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
+        if symbol not in addresses or not low <= addresses[symbol] < high:
+            raise Core0Error(f"{symbol} lies outside its source privilege range")
+    machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
+    ranges = function_ranges(symbol_text)
+    raw_machine = inspect("llvm-objdump", ["-d", image], name + "-raw-disassembly")
+    attack = validate_user_attack_machine(raw_machine, ranges, assembly, user_case) if user else None
+    validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None)
+    record = {"entry": required, "segments": segments, "function_symbols": sorted(symbols),
+              "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
+    if user:
+        begin, size = ranges["_user_start"]
+        pcs = [int(match[1], 16) for line in machine.splitlines()
+               if (match := re.match(r"\s*([0-9a-f]+):\s+ecall\s*$", line)) and begin <= int(match[1], 16) < begin + size]
+        if len(pcs) != 1:
+            raise Core0Error("user startup lacks its exact single exit ECALL")
+        record.update(exit_ecall_pc=pcs[0], syscall_bridge=validate_user_syscall_bridge(assembly, raw_machine, ranges),
+                      quarantined_startup=attack)
+    return record, symbol_text, raw_machine, ranges
+
+
+def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: str,
+                     optimization: str, timeout_seconds: float = 60) -> dict:
+    """Reusable actual unit/object/ELF/stack audit for full and standalone images.
+
+    The caller binds the registry, source snapshot and construction commands.
+    This scanner independently checks every selected image's actual bytes.
+    """
+    image = selected_user_image(catalog, image_key)
+    if optimization not in OPT_PASSES or output_dir.name != image_key or output_dir.parent.name != "users":
+        raise Core0Error("per-image audit path/optimization differs")
+    logs = []
+    inspect = _artifact_inspector(root, output_dir, timeout_seconds, logs)
+    layout = validate_layout(load_json(output_dir / "layout.json"), configuration="tasks-development")
+    validate_user_primitive_catalog(load_json(output_dir / "primitive-catalog.json"), image)
+    unit = validate_unit(load_json(output_dir / "unit.json"), "user", configuration="tasks-development", image_key=image_key)
+    ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized")
+          for kind, file in (("pre", "program.ll"), ("optimized", "program.opt.ll"))}
+    assembly = (output_dir / "startup.S").read_text()
+    validate_user_entry_source(assembly, unit["roots"][0]["symbol"], "none")
+    primitive_symbols = {row["symbol"] for row in user_primitive_rows("none")}
+    object_functions = {"startup.o": primitive_symbols, "program.o": set(ir["optimized"]["definitions"])}
+    allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
+                           "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
+    initializer = None
+    for obj, expected in object_functions.items():
+        symbols = inspect("llvm-readelf", ["-s", "--wide", obj], obj + "-symbols")
+        if defined_function_symbols(symbols) != expected or not relocation_types(inspect("llvm-readelf", ["-r", obj], obj + "-relocations")) <= allowed_relocations:
+            raise Core0Error("user object executable source/relocation closure differs")
+        section_text = inspect("llvm-readelf", ["-S", "--wide", obj], obj + "-sections")
+        sections = alloc_section_names(section_text)
+        allowed = {".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"} if obj == "startup.o" else {".text", ".rodata", ".rodata.cst8", ".data", ".bss"}
+        if not sections <= allowed:
+            raise Core0Error("unaccounted allocated per-image user object section")
+        if ".rodata.cst8" in sections:
+            constant = re.search(r"(?m)^\s*\[\s*\d+\]\s+\.rodata\.cst8\s+PROGBITS\s+[0-9a-f]+\s+[0-9a-f]+\s+([0-9a-f]+)\s+08\s+AM\s+0\s+0\s+8\s*$", section_text)
+            if not constant or int(constant[1], 16) == 0 or int(constant[1], 16) % 8:
+                raise Core0Error("user constant pool flags/entry size/alignment differ")
+        if obj == "startup.o":
+            inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", obj, "audit-abi-object.bin"], "abi-object-extract")
+            initializer = validate_user_abi_data(section_text, (output_dir / "audit-abi-object.bin").read_bytes(), symbols, assembly,
+                                                object_file=image["directory"] + "/startup.o")
+    expected_objects = {image["directory"] + "/" + obj for obj in ("startup.o", "program.o")}
+    linked_objects = set(re.findall(r"([^\s()]+\.o)(?=[:(\s])", (output_dir / "image.map").read_text()))
+    if linked_objects != expected_objects:
+        raise Core0Error("per-image actual link map escapes its two declared objects")
+    for symbol in primitive_symbols:
+        if machine_frame(assembly, symbol):
+            raise Core0Error("user entry/syscall consumes undeclared stack")
+    frames = parse_stack_sizes(inspect("llvm-readelf", ["--stack-sizes", "program.o"], "stack-sizes"))
+    if set(frames) != object_functions["program.o"]:
+        raise Core0Error("per-image stack metadata differs from object code closure")
+    validate_compiled_stack(inspect("llvm-objdump", ["-d", "--no-show-raw-insn", "program.o"], "stack-disassembly"), frames)
+    primitives = {row["primitive_symbol"]: machine_frame(assembly, row["primitive_symbol"])
+                  for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
+    undefined = {line.split()[-1] for line in inspect("llvm-nm", ["--undefined-only", "program.o"], "stack-undefined").splitlines() if line.split()}
+    if not undefined <= set(primitives):
+        raise Core0Error("per-image object contains an unaccounted stack/runtime symbol")
+    post = (output_dir / "program.opt.ll").read_text()
+    _defs, _decls, calls = parse_definitions_and_calls(post)
+    primitives.update({symbol: 0 for symbol in calls & OPTIMIZER_INTRINSICS})
+    graph = weighted_stack_graph(post, frames, primitives)
+    capacities = {"machine": 65536, "boot": 61440, "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
+    graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
+                 function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined), maximum_compiled_frame_bytes=max(frames.values()))
+    elf, symbols, raw, ranges = inspect_linked_elf(inspect, name="user", image="image.elf", expected=primitive_symbols | set(ir["optimized"]["definitions"]),
+                                                 layout=layout, user=True, assembly=assembly)
+    for section, target in ((".text", "text.bin"), (".data", "data.bin")):
+        actual = "audit-extracted-" + target
+        inspect("llvm-objcopy", ["-O", "binary", "--only-section=" + section, "image.elf", actual], target + "-extract")
+        if (output_dir / actual).read_bytes() != (output_dir / target).read_bytes():
+            raise Core0Error("per-image packaged payload differs from its independently extracted ELF section")
+    text, data = (output_dir / "text.bin").read_bytes(), (output_dir / "data.bin").read_bytes()
+    if not 0 < len(text) <= 0xf000 or len(data) != 16:
+        raise Core0Error("per-image user text/initialized-data extent differs")
+    initialized = validate_user_abi_data(inspect("llvm-readelf", ["-S", "--wide", "image.elf"], "user-sections"), data, symbols, assembly,
+                                       object_file=image["directory"] + "/image.elf")
+    if initializer is None or initialized["sha256"] != initializer["sha256"]:
+        raise Core0Error("per-image linked initializer differs from its declared startup object")
+    elf["initialized_data"] = initialized
+    return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph,
+            "image_sha256": sha256(output_dir / "image.elf"), "text_sha256": sha256(output_dir / "text.bin"),
+            "data_sha256": sha256(output_dir / "data.bin"), "commands": logs}
+
+
+def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
+                            optimization: str, roles: dict, standalone: bool) -> None:
+    rows = _array(rows, "multi-image construction commands")
+    if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
+                       or not isinstance(row.get("argv"), list) or not row["argv"]
+                       or any(not isinstance(arg, str) for arg in row["argv"]) or not isinstance(row.get("cwd"), str)
+                       for row in rows):
+        raise Core0Error("multi-image command corpus is empty, malformed or failed")
+    base = str(output_dir.relative_to(root))
+    def compile_unit(directory):
+        return [("opt", ["-S", f"-passes={OPT_PASSES[optimization]}", "program.ll", "-o", "program.opt.ll"], base + "/" + directory),
+                ("llc", [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"], base + "/" + directory)]
+    expected = [item for role in roles for item in compile_unit(role)]
+    expected += [item for image in images for item in compile_unit(image["directory"])]
+    for image in images:
+        d = image["directory"]
+        expected += [("clang", [*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"], base),
+                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
+                     ("llvm-objcopy", ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"], base),
+                     ("llvm-objcopy", ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"], base)]
+    if not standalone:
+        expected += [("clang", [*STARTUP_ARGUMENTS, "boot-package.S", "-o", "boot-package.o"], base),
+                     ("clang", [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"], base),
+                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"], base)]
+    def tool_name(path):
+        name = Path(path).name
+        return "clang" if name == "clang-20" else name
+    actual = [(tool_name(row["argv"][0]), row["argv"][1:], row["cwd"]) for row in rows
+              if tool_name(row["argv"][0]) in {"opt", "llc", "clang", "ld.lld", "llvm-objcopy"} and row["argv"][1:] != ["--version"]]
+    if actual != expected:
+        raise Core0Error("multi-image actual tool/arguments/working-directory closure differs")
+    pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+    stores = {name: pin["tools"]["llvm"]["store_path"] for name in ("opt", "llc", "llvm-objcopy")}
+    stores.update({"clang": pin["tools"]["llvm"]["outputs"]["clang_unwrapped"]["store_path"], "ld.lld": pin["tools"]["lld"]["store_path"],
+                   "lean": pin["tools"]["lean"]["store_path"], "lake": pin["tools"]["lean"]["store_path"]})
+    for row in rows:
+        name = tool_name(row["argv"][0])
+        if name in stores and not row["argv"][0].startswith(stores[name] + "/"):
+            raise Core0Error("multi-image compiler executable differs from its pinned store")
+    source_path = pin["tools"]["lean"]["source_path"]
+    nix = [row["argv"][1:] for row in rows if Path(row["argv"][0]).name == "nix"]
+    if nix != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION], ["path-info", "--json", source_path]]:
+        raise Core0Error("multi-image immutable Lean source realization commands differ")
+    consumers = {"CatalogExport.lean": "import Lemma.Compiler.KernelExport\n\n#lemma_export_user_catalog\n"}
+    for image in images:
+        consumers[image["directory"] + "/Export.lean"] = (f'import {image["module"]}\nimport Lemma.Compiler.KernelExport\n\n'
+                                                          f'#lemma_export_user_image "{image["key"]}" [{image["source"]}]\n')
+    if standalone:
+        consumers["UserFilesExport.lean"] = f'import Lemma.Compiler.KernelExport\n\n#lemma_export_user_files "{images[0]["key"]}"\n'
+    else:
+        consumers["BootExport.lean"] = "import Lemma.Compiler.KernelExport\n\n#lemma_export_boot_files\n"
+        for role, module in configuration_modules("tasks-development").items():
+            consumers[role + "/Export.lean"] = (f'import {module}\nimport Lemma.Compiler.KernelExport\n\n#lemma_export_unit "{role}" ['
+                                                + ", ".join(source for source, _ in roles[role]) + "]\n")
+    for path, contents in consumers.items():
+        if (output_dir / path).read_text() != contents:
+            raise Core0Error("genuine Lean export consumer differs from its exact selected roots")
+    exports = [row for row in rows if Path(row["argv"][0]).name == "lake" and row["argv"][1:3] == ["env", "lean"]]
+    expected_exports = [base + "/CatalogExport.lean", *(base + "/" + role + "/Export.lean" for role in roles),
+                        *(base + "/" + image["directory"] + "/Export.lean" for image in images),
+                        base + ("/UserFilesExport.lean" if standalone else "/BootExport.lean")]
+    if [row["argv"][3:] for row in exports] != [[path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
+        raise Core0Error("genuine Lean elaboration invocation/working-directory evidence differs")
+
+
+def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
+    try:
+        relative = output_dir.resolve().relative_to((root / "build/user").resolve())
+    except ValueError as error:
+        raise Core0Error("independent user audit must stay inside build/user") from error
+    if not relative.parts:
+        raise Core0Error("refusing to audit the whole build/user evidence root")
+    result_path = output_dir / "audit.json"
+    invalidate_output_file(result_path, root)
+    invalidate_output_file(output_dir / "audit-failure.json", root)
+    logs = []
+    try:
+        build = _object(load_json(output_dir / "user-build.json"), "independent user build")
+        provenance = _object(load_json(output_dir / "user-provenance.json"), "independent user provenance")
+        catalog = validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json"))
+        image = selected_user_image(catalog, provenance.get("image_key"))
+        key, directory = image["key"], image["directory"]
+        identity = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": "tasks-development",
+                    "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": "none"}
+        if (any(build.get(field) != value or provenance.get(field) != value for field, value in identity.items())
+                or type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
+                or type(build.get("image_id")) is not int or type(provenance.get("image_id")) is not int
+                or build.get("status") != "BUILT" or build.get("provenance_sha256") != sha256(output_dir / "user-provenance.json")):
+            raise Core0Error("independent user build/provenance identity differs")
+        optimization = provenance.get("optimization")
+        if optimization not in OPT_PASSES or build.get("optimization") != optimization:
+            raise Core0Error("independent user optimization differs")
+        source_snapshot = source_inputs(root)
+        if provenance.get("source_inputs") != source_snapshot:
+            raise Core0Error("independent user complete source inventory is missing/stale")
+        closure = module_closure(root, image["module"], allow_development=True)
+        if (any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean" for path in closure)
+                or provenance.get("target_module_closures") != {"users": {key: closure}}):
+            raise Core0Error("independent user selected source dependency closure differs")
+        generated = ["user-image-catalog.json", *(directory + "/" + name for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json"))]
+        if (provenance.get("generated_by_lean") != generated
+                or provenance.get("linked_inputs") != {"users": {key: [directory + "/startup.o", directory + "/program.o"]}}
+                or provenance.get("unit_contracts") != {"users": {key: CONTRACTS["user"]}}):
+            raise Core0Error("independent user selected generated/linked/contract inventory differs")
+        artifacts = _object(provenance.get("artifacts"), "independent user artifacts")
+        mandatory = set(generated) | {"CatalogExport.lean", "UserFilesExport.lean"} | {directory + "/" + name for name in
+                    (*UNIT_FILES, "Export.lean", "program.opt.ll", "program.o", "startup.o", "image.elf", "image.map", "text.bin", "data.bin")}
+        if build.get("artifacts") != artifacts or not mandatory <= set(artifacts):
+            raise Core0Error("independent user mandatory artifact inventory differs")
+        for name, digest in artifacts.items():
+            path = output_dir / name
+            if (not path.resolve().is_relative_to(output_dir.resolve()) or not path.is_file() or sha256(path) != digest
+                    or name.endswith((".o", ".elf")) and name not in {directory + "/startup.o", directory + "/program.o", directory + "/image.elf"}):
+                raise Core0Error("independent user artifact is stale, foreign or escapes selected output")
+        pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+        realization = _object(provenance.get("lean_source_realization"), "independent Lean source realization")
+        expected = validate_lean_source_realization(pin["tools"]["lean"], str(realization.get("source_path")) + "\n",
+                    {str(realization.get("source_path")): {"narHash": realization.get("narHash"), "narSize": realization.get("narSize")}})
+        uint_source = Path(expected["source_path"]) / "src/Init/Data/UInt/Basic.lean"
+        expected.update(uint_source=str(uint_source), uint_source_sha256=LEAN_UINT_SOURCE_SHA256)
+        if realization != expected or build.get("lean_source_realization") != expected or not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256:
+            raise Core0Error("independent user immutable Lean source evidence differs")
+        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True)
+        observed = audit_user_image(root=root, output_dir=output_dir / directory, catalog=catalog, image_key=key,
+                                    optimization=optimization, timeout_seconds=timeout_seconds)
+        logs.extend(observed["commands"])
+        if source_inputs(root) != source_snapshot:
+            raise Core0Error("independent user source changed during audit")
+        record = {**identity, "status": "PASS", "optimization": optimization, "source_commit": provenance["source_commit"],
+                  "dirty_paths": provenance["dirty_paths"], "source_inputs": source_snapshot, "lean_source_realization": realization,
+                  "user_image_catalog_sha256": sha256(output_dir / "user-image-catalog.json"), "provenance_sha256": sha256(output_dir / "user-provenance.json"),
+                  **observed, "limitations": ["Independent user artifact/source audit; no kernel was built and no target execution is established."]}
+        write_json(result_path, record)
+        return record
+    except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
+        write_json(output_dir / "audit-failure.json", {"schema_version": 2, "status": "FAIL", "error": str(error), "commands": logs})
+        raise
+
 def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
@@ -893,7 +1317,14 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         build = _object(load_json(output_dir / "build.json"), "build report")
         provenance = _object(load_json(output_dir / "provenance.json"), "provenance")
         configuration = provenance.get("configuration")
+        multi = configuration == "tasks-development"
+        catalog = validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json")) if multi else None
+        images = catalog["images"] if multi else []
+        roles = configuration_roots(configuration)
         category = artifact_category(configuration)
+        if (type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
+                or build.get("schema_version") != (2 if multi else 1) or provenance.get("schema_version") != (2 if multi else 1)):
+            raise Core0Error("build/provenance schema differs from selected configuration")
         pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
         llvm_store = pin.get("tools", {}).get("llvm", {}).get("store_path")
         if pin.get("status") != "pinned" or not isinstance(llvm_store, str) or any(not path.startswith(llvm_store + "/") for path in tools.values()):
@@ -917,7 +1348,15 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         case, user_case = startup_case(configuration), user_startup_case(configuration)
         if build.get("startup_case") != case or provenance.get("startup_case") != case or build.get("user_startup_case") != user_case or provenance.get("user_startup_case") != user_case:
             raise Core0Error("build/provenance generated startup case differs")
-        if provenance.get("generated_by_lean") != list(BOOT_FILES) or provenance.get("linked_inputs") != {"boot": list(BOOT_OBJECTS), "user": list(USER_OBJECTS)}:
+        generated = (["startup.S", "link.ld", "layout.json", "primitive-catalog.json", "boot-package.S", "package-contract.json", "user-image-catalog.json"]
+                     + [image["directory"] + "/" + name for image in images for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json")]) if multi else list(BOOT_FILES)
+        linked = {"boot": list(BOOT_OBJECTS), **({"users": {image["key"]: [image["directory"] + "/startup.o", image["directory"] + "/program.o"] for image in images}} if multi else {"user": list(USER_OBJECTS)})}
+        contracts = {role: CONTRACTS[role] for role in roles}
+        if multi:
+            contracts["users"] = {image["key"]: CONTRACTS["user"] for image in images}
+        if provenance.get("unit_contracts") != contracts:
+            raise Core0Error("exact selected per-unit contract inventory differs")
+        if provenance.get("generated_by_lean") != generated or provenance.get("linked_inputs") != linked:
             raise Core0Error("unexpected code-generation or linked-object closure")
         artifacts = _object(provenance.get("artifacts"), "artifact hashes")
         for name, digest in artifacts.items():
@@ -926,8 +1365,13 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error("artifact path escapes output")
             if not isinstance(digest, str) or not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"missing/stale artifact: {name}")
-        mandatory = set(BOOT_FILES) | set(BOOT_OBJECTS) | set(USER_OBJECTS) | {"image.elf", "user/image.elf", "image.map", "user/image.map", "user-text.bin", "user-data.bin", "platform.dtb", "platform.dts"}
-        mandatory |= {role + "/" + name for role in ROLE_ROOTS for name in (*UNIT_FILES, "program.opt.ll")}
+        mandatory = set(generated) | set(BOOT_OBJECTS) | {"image.elf", "image.map", "platform.dtb", "platform.dts"}
+        mandatory |= {role + "/" + name for role in roles for name in (*UNIT_FILES, "program.opt.ll")}
+        if multi:
+            mandatory |= {image["directory"] + "/" + name for image in images for name in
+                          (*UNIT_FILES, "Export.lean", "program.opt.ll", "program.o", "startup.o", "image.elf", "image.map", "text.bin", "data.bin")}
+        else:
+            mandatory |= set(USER_OBJECTS) | {"user/image.elf", "user/image.map", "user-text.bin", "user-data.bin"}
         if not mandatory <= set(artifacts):
             raise Core0Error("mandatory artifact hash inventory is incomplete")
         source_hashes = _object(provenance.get("source_inputs"), "source input hashes")
@@ -943,9 +1387,20 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error("dependency imports another configuration's development module")
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
+        if multi:
+            expected_users = {image["key"]: module_closure(root, image["module"], allow_development=True) for image in images}
+            if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
+                   for image in images for path in expected_users[image["key"]]):
+                raise Core0Error("per-image dependency imports another development module")
+            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role)) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
+                raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
             raise Core0Error("build command corpus empty, malformed or failed")
+        lake_commands = [row["argv"][0] for row in command_rows if isinstance(row.get("argv"), list)
+                         and row["argv"] and Path(row["argv"][0]).name == "lake"]
+        if not lake_commands or any(not path.startswith(lean_pin["store_path"] + "/") for path in lake_commands):
+            raise Core0Error("genuine Lean elaboration must use the immutable pinned Lake executable")
         nix_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
                         and row["argv"] and Path(row["argv"][0]).name == "nix"]
         if nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION],
@@ -955,23 +1410,39 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                             and row["argv"] and Path(row["argv"][0]).name in {"llc", "opt", "ld.lld", "clang", "clang-20", "llvm-objcopy"}
                             and row["argv"][1:] != ["--version"]]
         expected_commands = []
-        for _role in ROLE_ROOTS:
+        for _role in roles:
             expected_commands += [["-S", f"-passes={OPT_PASSES[optimization]}", "program.ll", "-o", "program.opt.ll"],
                                   [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"]]
-        expected_commands += [[*STARTUP_ARGUMENTS, "user-startup.S", "-o", "user/startup.o"],
+        if multi:
+            for image in images:
+                expected_commands += [["-S", f"-passes={OPT_PASSES[optimization]}", "program.ll", "-o", "program.opt.ll"],
+                                      [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"]]
+            for image in images:
+                d = image["directory"]
+                expected_commands += [[*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"],
+                                      ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"],
+                                      ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"],
+                                      ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"]]
+            expected_commands += [[*STARTUP_ARGUMENTS, "boot-package.S", "-o", "boot-package.o"],
+                                  [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
+                                  ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
+        else:
+            expected_commands += [[*STARTUP_ARGUMENTS, "user-startup.S", "-o", "user/startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "user-link.ld", "-Map=user/image.map", *USER_OBJECTS, "-o", "user/image.elf"],
                               ["-O", "binary", "--only-section=.text", "user/image.elf", "user-text.bin"],
                               ["-O", "binary", "--only-section=.data", "user/image.elf", "user-data.bin"],
                               [*STARTUP_ARGUMENTS, "boot-package.S", "-o", "boot-package.o"],
                               [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
+        if multi:
+            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False)
         if compile_commands != expected_commands:
             raise Core0Error("actual compiler/link command closure differs")
-        for map_file, allowed in (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS)):
+        for map_file, allowed in ((("image.map", BOOT_OBJECTS),) if multi else (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS))):
             objects = set(re.findall(r"([^\s()]+\.o)(?=[:(\s])", (output_dir / map_file).read_text()))
             if objects != set(allowed):
                 raise Core0Error(f"actual linked input map differs: {map_file}: {sorted(objects)}")
-        units = {role: validate_unit(load_json(output_dir / role / "unit.json"), role, configuration=configuration) for role in ROLE_ROOTS}
+        units = {role: validate_unit(load_json(output_dir / role / "unit.json"), role, configuration=configuration) for role in roles}
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
@@ -979,8 +1450,9 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         object_functions = {
-            "startup.o": expected_machine, "user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}, "boot-package.o": set(),
-            **{role + "/program.o": set(ir[role]["optimized"]["definitions"]) for role in ROLE_ROOTS},
+            "startup.o": expected_machine, "boot-package.o": set(),
+            **({} if multi else {"user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}}),
+            **{role + "/program.o": set(ir[role]["optimized"]["definitions"]) for role in roles},
         }
         allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                                "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
@@ -1041,7 +1513,14 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                       "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
         if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 8192, "user": 8192}:
             raise Core0Error("authoritative stack capacities differ")
-        startup, user_startup = (output_dir / "startup.S").read_text(), (output_dir / "user-startup.S").read_text()
+        startup = (output_dir / "startup.S").read_text()
+        user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
+        user_startup = user_source.read_text()
+        user_audits = {image["key"]: audit_user_image(root=root, output_dir=output_dir / image["directory"], catalog=catalog,
+                                                   image_key=image["key"], optimization=optimization, timeout_seconds=timeout_seconds)
+                       for image in images}
+        for value in user_audits.values():
+            logs.extend(value["commands"])
         for vector in ("lemma_machine_vector", "lemma_supervisor_vector"):
             if vector in expected_machine and machine_frame(startup, vector) != layout["context"]["bytes"]:
                 raise Core0Error("typed vector stack allocation differs from the context layout")
@@ -1072,108 +1551,69 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                          maximum_compiled_frame_bytes=max(frames.values()))
             stacks[role] = graph
         inspections = {}
-        for name, image, expected, user in (("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False),
-                                           ("user", "user/image.elf", {row["symbol"] for row in user_primitive_rows(user_case)} | {row["symbol"] for row in units["user"]["functions"]}, True)):
-            header = inspect("llvm-readelf", ["-h", image], name + "-header")
-            if not all(token in header for token in ("ELF64", "little endian", "RISC-V")) or not re.search(r"Flags:\s+0x0(?:\s|$)", header):
-                raise Core0Error("ELF ISA/class/endianness/float/compressed flags differ")
-            attributes = inspect("llvm-readelf", ["-A", image], name + "-attributes")
-            arch = re.search(r"rv64i[0-9p]+(?:_[a-z0-9p]+)+", attributes)
-            # LLVM 20 records Zmmul explicitly as the multiplication subset
-            # already implied by M. It adds no instruction beyond RV64IM.
-            if not arch or arch[0] != "rv64i2p1_m2p0_zicsr2p0_zifencei2p0_zmmul1p0":
-                raise Core0Error("ELF architecture attribute differs from integer-only profile")
-            if inspect("llvm-nm", ["--undefined-only", image], name + "undefined").strip():
-                raise Core0Error("final ELF contains undefined symbols")
-            relocations = inspect("llvm-readelf", ["-r", image], name + "-relocations")
-            if relocation_types(relocations):
-                raise Core0Error("final ELF contains runtime relocations")
-            symbol_text = inspect("llvm-readelf", ["-s", "--wide", image], name + "-symbols")
-            symbols = defined_function_symbols(symbol_text)
-            if symbols != expected:
-                raise Core0Error(f"{name} executable symbol provenance differs: missing {sorted(expected-symbols)}; unexpected {sorted(symbols-expected)}")
-            addresses = numeric_symbols(inspect("llvm-nm", ["--defined-only", image], name + "-addresses"))
-            segments = parse_load_segments(inspect("llvm-readelf", ["-l", "--wide", image], name + "-segments"))
-            intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(0x10000, 0x1f000), (0x20000, 0x21000)]
-            for segment in segments:
-                begin, size = segment["virtual_address"], segment["memory_size"]
-                if size == 0 or segment["file_size"] > size or "W" in segment["flags"] and "E" in segment["flags"] or not any(lo <= begin and begin + size <= hi for lo, hi in intervals):
-                    raise Core0Error("ELF PT_LOAD permissions or declared range differs")
-                if segment["physical_address"] != begin:
-                    raise Core0Error("unexpected load address alias")
-            entry_match = re.search(r"Entry point address:\s*(0x[0-9a-fA-F]+)", header)
-            required_entry = 0x10000 if user else 0x80000000
-            if not entry_match or int(entry_match[1], 16) != required_entry:
-                raise Core0Error("ELF entry point differs")
-            for symbol in symbols:
-                privilege = "U" if user else ("M" if symbol.startswith("lemma_firmware_") or symbol in M_SYMBOLS else "S")
-                low, high = ((0x10000, 0x1f000) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
-                if symbol not in addresses or not low <= addresses[symbol] < high:
-                    raise Core0Error(f"{symbol} lies outside its source privilege range")
-            machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
-            ranges = function_ranges(symbol_text)
-            attack = None
-            if user:
-                raw_user_machine = inspect("llvm-objdump", ["-d", image], "user-raw-disassembly")
-                attack = validate_user_attack_machine(raw_user_machine, ranges, (output_dir / "user-startup.S").read_text(), user_case)
-            validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None)
-            inspections[name] = {"entry": required_entry, "segments": segments, "function_symbols": sorted(symbols),
-                                 "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
+        specs = [("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False)]
+        if not multi:
+            specs.append(("user", "user/image.elf", {row["symbol"] for row in user_primitive_rows(user_case)} | set(ir["user"]["optimized"]["definitions"]), True))
+        for name, image_file, expected, user in specs:
+            info, symbol_text, raw_machine, ranges = inspect_linked_elf(inspect, name=name, image=image_file, expected=expected,
+                                                                      layout=layout, user=user, assembly=user_startup, user_case=user_case)
+            inspections[name] = info
             if not user:
-                inspections[name]["startup"] = validate_startup_case(machine, ranges, case)
-                raw_machine = inspect("llvm-objdump", ["-d", image], "boot-raw-disassembly")
-                inspections[name]["context_abi"] = validate_context_abi(
-                    (output_dir / "startup.S").read_text(), raw_machine, ranges,
-                    (output_dir / "user-startup.S").read_text(), units["user"]["roots"][0]["symbol"], user_case)
+                machine = (output_dir / "audit-boot-disassembly.txt").read_text()
+                info["startup"] = validate_startup_case(machine, ranges, case)
+                root_symbol = (load_json(output_dir / images[0]["directory"] / "unit.json")["roots"][0]["symbol"] if multi else units["user"]["roots"][0]["symbol"])
+                info["context_abi"] = validate_context_abi(startup, raw_machine, ranges, user_startup, root_symbol, user_case)
             else:
-                initialized_data = validate_user_abi_data(
-                    inspect("llvm-readelf", ["-S", "--wide", image], "user-sections"),
-                    (output_dir / "user-data.bin").read_bytes(), symbol_text,
-                    (output_dir / "user-startup.S").read_text(), object_file=image)
-                if user_abi_object is None or initialized_data["sha256"] != user_abi_object["sha256"]:
+                initialized = validate_user_abi_data(inspect("llvm-readelf", ["-S", "--wide", image_file], "user-sections"),
+                                                     (output_dir / "user-data.bin").read_bytes(), symbol_text, user_startup, object_file=image_file)
+                if user_abi_object is None or initialized["sha256"] != user_abi_object["sha256"]:
                     raise Core0Error("linked user initializer differs from its accounted startup object")
-                inspections[name]["initialized_data"] = initialized_data
-                begin, size = ranges["_user_start"]
-                exit_pcs = [int(match[1], 16) for line in machine.splitlines()
-                            if (match := re.match(r"\s*([0-9a-f]+):\s+ecall\s*$", line)) and begin <= int(match[1], 16) < begin + size]
-                if len(exit_pcs) != 1:
-                    raise Core0Error("user startup lacks its exact single exit ECALL")
-                inspections[name]["exit_ecall_pc"] = exit_pcs[0]
-                inspections[name]["syscall_bridge"] = validate_user_syscall_bridge(
-                    (output_dir / "user-startup.S").read_text(), raw_user_machine, ranges)
-                inspections[name]["quarantined_startup"] = attack
-        package_contract = _object(load_json(output_dir / "package-contract.json"), "package contract")
-        if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "user_startup_case": user_case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
-                                "version": 1, "image_count": 1, "header_bytes": 32, "descriptor_bytes": 96,
-                                "image": {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
-                                          "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0},
-                                "offset_encoding": "generated-label-differences"}:
-            raise Core0Error("unknown/malformed boot package descriptor contract")
+                info["initialized_data"] = initialized
+        if multi:
+            inspections["users"] = {key: value["elf"] for key, value in user_audits.items()}
+        package_contract = validate_package_contract(load_json(output_dir / "package-contract.json"), configuration=configuration, catalog=catalog)
         inspect("llvm-objcopy", ["-O", "binary", "--only-section=.boot_package", "image.elf", "audit-package.bin"], "package-extract")
-        package = (output_dir / "audit-package.bin").read_bytes()
-        if len(package) < 128:
-            raise Core0Error("boot package is missing header/descriptor")
-        header = struct.unpack_from("<4Q", package)
-        descriptor = struct.unpack_from("<12Q", package, 32)
-        text, data = (output_dir / "user-text.bin").read_bytes(), (output_dir / "user-data.bin").read_bytes()
-        image_id, entry, text_va, text_offset, text_bytes, data_va, data_offset, data_bytes, data_memory, stack_va, stack_pages, flags = descriptor
-        if (header != (0x31474b50414d454c, 1, 1, len(package)) or image_id != 1 or entry != 0x10000 or text_va != 0x10000
-                or data_va != 0x20000 or data_memory != 4096 or stack_va != 0x3fffc000 or stack_pages != 2 or flags != 0
-                or text_offset < 128 or text_bytes != len(text) or data_bytes != len(data) or data_offset < text_offset + text_bytes
-                or data_offset + data_bytes > len(package) or package[text_offset:text_offset+text_bytes] != text
-                or package[data_offset:data_offset+data_bytes] != data):
-            raise Core0Error("package descriptor/raw user image binding differs")
-        record = {"schema_version": 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
+        if multi:
+            payloads = [((output_dir / image["directory"] / "text.bin").read_bytes(), (output_dir / image["directory"] / "data.bin").read_bytes()) for image in images]
+            package_images = validate_package_payloads((output_dir / "audit-package.bin").read_bytes(), package_contract, payloads)
+        else:
+            package = (output_dir / "audit-package.bin").read_bytes()
+            if len(package) < 128:
+                raise Core0Error("boot package is missing header/descriptor")
+            header = struct.unpack_from("<4Q", package)
+            descriptor = struct.unpack_from("<12Q", package, 32)
+            text, data = (output_dir / "user-text.bin").read_bytes(), (output_dir / "user-data.bin").read_bytes()
+            image_id, entry, text_va, text_offset, text_bytes, data_va, data_offset, data_bytes, data_memory, stack_va, stack_pages, flags = descriptor
+            if (header != (0x31474b50414d454c, 1, 1, len(package)) or image_id != 1 or entry != 0x10000 or text_va != 0x10000
+                    or data_va != 0x20000 or data_memory != 4096 or stack_va != 0x3fffc000 or stack_pages != 2 or flags != 0
+                    or text_offset < 128 or text_bytes != len(text) or data_bytes != len(data) or data_offset < text_offset + text_bytes
+                    or data_offset + data_bytes > len(package) or package[text_offset:text_offset+text_bytes] != text
+                    or package[data_offset:data_offset+data_bytes] != data):
+                raise Core0Error("package descriptor/raw user image binding differs")
+        record = {"schema_version": 2 if multi else 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
                   "lean_source_realization": realization,
-                  "user_image_sha256": sha256(output_dir / "user/image.elf"), "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
+                  "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."
                                     if stage == "bootstrap-m" else "Supervisor artifact audit does not establish a running isolated user task.")]}
+        if multi:
+            record["user_images"] = {image["key"]: {"id": image["id"], "module": image["module"], "source": image["source"],
+                                    **{key: user_audits[image["key"]][key] for key in ("image_sha256", "text_sha256", "data_sha256", "stack_bounds")},
+                                    "text_bytes": (output_dir / image["directory"] / "text.bin").stat().st_size,
+                                    "data_bytes": (output_dir / image["directory"] / "data.bin").stat().st_size} for image in images}
+            record["unit_ir"]["users"] = {key: value["unit_ir"] for key, value in user_audits.items()}
+            record["stack_bounds"]["roles"]["users"] = {key: value["stack_bounds"] for key, value in user_audits.items()}
+            record["package_images"] = package_images
+            record["user_image_catalog_sha256"] = sha256(output_dir / "user-image-catalog.json")
+        else:
+            record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
+        if source_inputs(root) != source_hashes:
+            raise Core0Error("compiler/production source changed during artifact audit")
         write_json(result_path, record)
         return record
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
@@ -1188,7 +1628,13 @@ def main() -> int:
     ns = parser.parse_args()
     root = repo_root()
     try:
-        record = audit(root=root, output_dir=(root / ns.output_dir).resolve(), timeout_seconds=ns.timeout)
+        directory = (root / ns.output_dir).resolve()
+        if (directory / "user-build.json").exists():
+            if (directory / "build.json").exists():
+                raise Core0Error("ambiguous boot/independent-user build category")
+            record = audit_standalone_user(root=root, output_dir=directory, timeout_seconds=ns.timeout)
+        else:
+            record = audit(root=root, output_dir=directory, timeout_seconds=ns.timeout)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL AUDIT FAIL: {error}", file=sys.stderr)
         return 1
