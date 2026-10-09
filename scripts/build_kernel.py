@@ -24,7 +24,7 @@ ROLE_ROOTS = {
     "user": (("Lemma.User.Entry.main", ()),),
 }
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
-CONFIGURATIONS = ("normal", "frames-development")
+CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development")
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
               "primitive-catalog.json", "boot-package.S", "package-contract.json")
@@ -36,7 +36,7 @@ USER_OBJECTS = ("user/startup.o", "user/program.o")
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
-    if configuration == "normal":
+    if configuration != "frames-development":
         return ROLE_ROOTS
     return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.FramesEntry.boot", ()),
                                     ("Lemma.Kernel.Development.FramesEntry.dispatch", ("u64", "u64", "u64")))}
@@ -44,7 +44,20 @@ def configuration_roots(configuration: str) -> dict:
 
 def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
-    return ROLE_MODULES if configuration == "normal" else {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
+    return ROLE_MODULES if configuration != "frames-development" else {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
+
+
+def startup_case(configuration: str) -> str:
+    configuration_roots(configuration)
+    return "machine-origin-probe" if configuration == "machine-origin-development" else "normal"
+
+
+def validate_configuration_stage(configuration: str, stage: str) -> None:
+    configuration_roots(configuration)
+    if stage not in {"bootstrap-m", "supervisor"}:
+        raise Core0Error("unknown execution stage")
+    if configuration == "machine-origin-development" and stage != "bootstrap-m":
+        raise Core0Error("machine-origin-development requires bootstrap-m")
 
 
 def artifact_category(configuration: str) -> str:
@@ -104,6 +117,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
     if opt_level not in OPT_PASSES or stage not in {"bootstrap-m", "supervisor"}:
         raise Core0Error("unknown optimization or execution stage")
     roots, modules = configuration_roots(configuration), configuration_modules(configuration)
+    validate_configuration_stage(configuration, stage)
+    case = startup_case(configuration)
     category = artifact_category(configuration)
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         raise Core0Error("build timeout must be finite and positive")
@@ -198,14 +213,14 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         dirty = invoke(("git", "status", "--porcelain=v1", "--untracked-files=all"), root).decode().splitlines()
         artifacts = {str(path.relative_to(output_dir)): sha256(path) for path in sorted(output_dir.rglob("*"))
                      if path.is_file() and path.name not in {"commands.json", "build.json", "provenance.json"}}
-        provenance = {"schema_version": 1, "artifact_category": category, "configuration": configuration,
+        provenance = {"schema_version": 1, "artifact_category": category, "configuration": configuration, "startup_case": case,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
                       "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
                       "commands": commands, "generated_by_lean": list(BOOT_FILES),
                       "linked_inputs": {"boot": list(BOOT_OBJECTS), "user": list(USER_OBJECTS)}, "artifacts": artifacts,
                       "unit_contracts": {role: value["contract_version"] for role, value in units.items()}}
         write_json(output_dir / "provenance.json", provenance)
-        record = {"schema_version": 1, "status": "BUILT", "artifact_category": category, "configuration": configuration,
+        record = {"schema_version": 1, "status": "BUILT", "artifact_category": category, "configuration": configuration, "startup_case": case,
                   "stage": stage, "optimization": opt_level, "artifacts": artifacts,
                   "provenance_sha256": sha256(output_dir / "provenance.json"),
                   "kernel_execution_privilege": "M" if stage == "bootstrap-m" else "S",

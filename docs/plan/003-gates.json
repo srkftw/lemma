@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "B",
+  "highest_complete_gate": "C",
   "gates": [
     {
       "gate": "A",
@@ -29,7 +29,10 @@
     {
       "gate": "C",
       "name": "supervisor and machine services",
-      "status": "not_run"
+      "status": "passed",
+      "actual_failure": "build/kernel/gateC/supervisor-O2-run/result.json: artifact audit rejected exact LLVM readonly PMP table before QEMU launch",
+      "guest_execution": "passed actual O0/O2 supervisor and M-origin rejection",
+      "evidence": "build/kernel/gateC/prefix-result.json"
     },
     {
       "gate": "D",
@@ -71,5 +74,6 @@
       "name": "clean qualification and publication",
       "status": "not_run"
     }
-  ]
+  ],
+  "verified_prefix_commit": "141f309804be9d526199b516ca4515beaf87a5e6"
 }

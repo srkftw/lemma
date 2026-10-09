@@ -161,7 +161,8 @@ Task002 tree. Both task branches remain available.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
 its assignment, gate ledger and resume checkpoint. The current accepted prefix
-is A/B; S/U execution and services remain outstanding. See
+is A–C; S-mode execution and timer forwarding work, while U-mode and services
+remain outstanding. See
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

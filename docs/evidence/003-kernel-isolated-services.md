@@ -1,6 +1,6 @@
 # Task 003 kernel and isolated services
 
-Current accepted prefix: Gates A and B. Higher gates are not run. This is a
+Current accepted prefix: Gates A, B and C. Higher gates are not run. This is a
 freestanding foundation increment, not a completed operating system.
 
 The distinct boot package links genuinely elaborated Lean firmware and kernel
@@ -36,3 +36,18 @@ session checkpoint. The full source and artifact hash inventory is retained in
 ignored `build/kernel/gateAB/hash-inventory.json`, bound by the compact result.
 Acceptance currently used dirty source on merged main `ff4045a79a6fda45f9cd8198587357846530a806`;
 clean-worktree qualification and Task003 publication remain outstanding.
+
+
+Gate C passed fresh normal supervisor O0/O2: the private M dispatcher checked
+savedMPP=S and actualcause9, returning its origin witness; actual MTIP count
+advanced0->1 and the S pending bit changed1->0 after acknowledgement. S kernel
+execution remained nonpreemptible, so this records a latched notification, not a
+synthetic or delivered S interrupt or scheduling decision. Unknown calls and
+invalid deadlines returned17/22 while the bridge remained usable.
+
+Separate machine-origin development O0/O2 images produced actualcause11 at the
+audited startup ECALL PC and terminated with rejection48. Their natural finite
+negative-protocol exit is distinct from normal guest cleanup. The initial host
+transport/trace formatting failures are retained, never relabelled. The readonly
+PMP table introduced by LLVM is admitted only by its exact source identity,
+values, guarded load, section flags/size and bytes; unknown globals still reject.

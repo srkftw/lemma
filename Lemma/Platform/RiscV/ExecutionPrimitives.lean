@@ -24,8 +24,20 @@ def Stage.stableId : Stage → String
   | .bootstrapM => "bootstrap-m"
   | .supervisor => "supervisor"
 
+/-- Closed diagnostic startup selection. The origin probe remains in M-mode
+and cannot be confused with an ordinary supervisor transfer. -/
+inductive StartupCase where
+  | normal
+  | machineOriginProbe
+  deriving Repr, BEq
+
+def StartupCase.stableId : StartupCase → String
+  | .normal => "normal"
+  | .machineOriginProbe => "machine-origin-probe"
+
 structure Configuration where
   stage : Stage
+  startupCase : StartupCase := .normal
   kernelMain : String
   firmwareDispatcher : String := ""
   supervisorDispatcher : String := ""
@@ -113,7 +125,10 @@ def startup (config : Configuration) : Array Line := #[
 ] ++ initializePmp ++ #[
   ins (.loadImmediate .t0 exceptionDelegation), ins (.csrWrite .medeleg .t0),
   ins (.loadImmediate .t0 interruptDelegation), ins (.csrWrite .mideleg .t0)
-] ++ (if config.stage == .supervisor then #[
+] ++ (if config.startupCase == .machineOriginProbe then #[
+  ins (.loadAddress .t0 "lemma_machine_vector"), ins (.csrWrite .mtvec .t0),
+  ins (.loadImmediate .t0 Layout.firmwareStackTop), ins (.csrWrite .mscratch .t0)
+] else if config.stage == .supervisor then #[
   ins (.loadAddress .t0 "lemma_machine_vector"), ins (.csrWrite .mtvec .t0),
   ins (.loadImmediate .t0 Layout.firmwareStackTop), ins (.csrWrite .mscratch .t0),
   ins (.loadAddress .t0 "lemma_supervisor_vector"), ins (.csrWrite .stvec .t0),
@@ -122,7 +137,21 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadImmediate .t0 0x1baa), ins (.csrClear .mstatus .t0),
   ins (.loadImmediate .t0 0x800), ins (.csrSet .mstatus .t0)
 ] else #[]) ++ recordBootState config ++
-  (if config.stage == .supervisor then #[
+  (if config.startupCase == .machineOriginProbe then #[
+    ins (.loadImmediate .a0 0), ins (.loadImmediate .a1 0),
+    ins (.loadImmediate .a2 0), ins (.loadImmediate .a3 0),
+    ins (.loadImmediate .a4 0), ins (.loadImmediate .a5 0),
+    ins (.loadImmediate .a6 0), ins (.loadImmediate .a7 3),
+    ins .environmentCall,
+    -- A returning call is a different failure from the compiled dispatcher's
+    -- rejection, which enters lemma_machine_fatal and finisher status 48.
+    label ".Llemma_machine_origin_returned",
+    ins (.loadImmediate .t0 Layout.finisherBase),
+    ins (.loadImmediate .t1 (52 * 65536 + 0x3333)),
+    ins .fenceIO, ins (.storeWord .t1 .t0 0), ins .fenceIO,
+    label ".Llemma_machine_origin_halt",
+    ins (.jump ".Llemma_machine_origin_halt")
+  ] else if config.stage == .supervisor then #[
     ins (.loadAddress .t0 "lemma_supervisor_start"), ins (.csrWrite .mepc .t0),
     ins .machineReturn
   ] else #[ins (.call config.kernelMain)]) ++ #[
@@ -272,7 +301,9 @@ def functions (config : Configuration) : Array (String × Array Line) := #[
   ("lemma_machine_double_fault", fatal "lemma_machine_double_fault" ".Llemma_m_double_halt" 49),
   ("lemma_supervisor_fatal", fatal "lemma_supervisor_fatal" ".Llemma_s_fatal_halt" 50),
   ("lemma_supervisor_double_fault", fatal "lemma_supervisor_double_fault" ".Llemma_s_double_halt" 51)
-] ++ (if config.stage == .supervisor then #[
+] ++ (if config.startupCase == .machineOriginProbe then #[
+  ("lemma_machine_vector", machineVector config)
+] else if config.stage == .supervisor then #[
   ("lemma_supervisor_start", supervisorStart config),
   ("lemma_machine_vector", machineVector config),
   ("lemma_supervisor_vector", supervisorVector config)
@@ -284,6 +315,11 @@ private def validSymbol (symbol : String) : Bool :=
 def Configuration.validate (config : Configuration) : Except String Unit := do
   unless Layout.valid do throw "authoritative machine layout is invalid"
   unless validSymbol config.kernelMain do throw "invalid compiled kernel entry symbol"
+  if config.startupCase == .machineOriginProbe then
+    unless config.stage == .bootstrapM do
+      throw "machine-origin probe requires bootstrap-M stage"
+    unless validSymbol config.firmwareDispatcher do
+      throw "machine-origin probe requires a compiled firmware dispatcher symbol"
   if config.stage == .supervisor then
     unless validSymbol config.firmwareDispatcher && validSymbol config.supervisorDispatcher do
       throw "supervisor stage requires both compiled dispatcher symbols"

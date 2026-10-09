@@ -47,3 +47,18 @@ invalidation and U-mode containment require Gate D evidence.
 
 The ownership model's non-overlap, free-not-live and pool-envelope lemmas are
 separate mathematical properties, not compiler or emitted allocator proofs.
+
+The private firmware ABI accepts S-origin ECALLs from the supervisor envelope:
+1 acknowledges SSIP and arms a future deadline1000..10000000 ticks away;
+2 reads machine time;3 returns a saved-privilege origin witness;4 returns actual
+M timer IRQ count. Unknown calls return17, invalid deadlines22. M handlers use
+only their fixed private stack/frame, park the timer and latch SSIP. S execution
+is initially nonpreemptible; pending notification is distinct from delivered
+S interrupts and scheduler decisions. No SBI compatibility is claimed.
+
+Startup reads back five PMP NAPOT intervals, exception delegation0xb1ff,
+interrupt delegation0x1446 (desiredSSIP2 plus pinned QEMU H read-only0x1444),
+status and SATP. Machine-origin-development is bootstrap-only and adds exactly
+one typed M ECALL rejection boundary; normal roots cannot select it implicitly.
+LLVM's immutable PMP comparison table is audited by exact source, contents,
+guarded load and32-byte readonly object-section provenance.

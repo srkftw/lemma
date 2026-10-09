@@ -18,7 +18,8 @@ from audit_core0 import (alloc_section_names, defined_function_symbols, numeric_
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate_output_file
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
-                          configuration_roots, module_closure, source_inputs)
+                          configuration_roots, module_closure, source_inputs, startup_case,
+                          validate_configuration_stage)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -209,7 +210,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal") ->
 
 def validate_layout(value: object, *, configuration: str = "normal") -> dict:
     layout = _object(value, "layout")
-    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration:
+    _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "ram_base", "ram_limit",
+                   "frame_bytes", "frame_count", "intervals", "user"}, "layout")
+    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration):
         raise Core0Error("unknown kernel layout version")
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
         raise Core0Error("pinned RAM/frame contract differs")
@@ -232,6 +235,98 @@ def validate_layout(value: object, *, configuration: str = "normal") -> dict:
                 "stack_base": 0x3fffc000, "stack_pages": 2}:
         raise Core0Error("user virtual layout differs")
     return layout
+
+
+def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
+    validate_configuration_stage(configuration, stage)
+    catalog = _object(value, "primitive catalog")
+    _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "symbols", "user_symbols"}, "primitive catalog")
+    expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
+    if startup_case(configuration) == "machine-origin-probe":
+        expected_machine |= {"lemma_machine_vector"}
+    rows = [_object(row, "machine symbol") for row in _array(catalog.get("symbols"), "machine symbols")]
+    if (type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != 1
+            or catalog.get("contract_version") != "lemma-execution-v1" or catalog.get("stage") != stage
+            or catalog.get("configuration") != configuration or catalog.get("startup_case") != startup_case(configuration)
+            or {row.get("symbol") for row in rows} != expected_machine or len(rows) != len(expected_machine)):
+        raise Core0Error("closed platform primitive catalog differs")
+    for row in rows:
+        _keys(row, {"symbol", "privilege", "effect"}, "machine symbol")
+        if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
+            raise Core0Error("machine primitive privilege/effect differs")
+    if catalog.get("user_symbols") != [{"symbol": "_user_start", "privilege": "U", "effect": "user-entry/exit"},
+                                        {"symbol": "lemma_exec_syscall", "privilege": "U", "effect": "user-syscall"}]:
+        raise Core0Error("closed user primitive privilege/effect catalog differs")
+    return expected_machine
+
+
+def validate_startup_case(text: str, ranges: dict[str, tuple[int, int]], case: str) -> dict:
+    if case not in {"normal", "machine-origin-probe"} or "_start" not in ranges:
+        raise Core0Error("unknown/missing startup case function")
+    begin, size = ranges["_start"]
+    pcs = [int(match[1], 16) for line in text.splitlines()
+           if (match := re.match(r"\s*([0-9a-f]+):\s+ecall\s*$", line)) and begin <= int(match[1], 16) < begin + size]
+    if len(pcs) != (1 if case == "machine-origin-probe" else 0):
+        raise Core0Error("startup ECALL inventory differs from the exact generated case")
+    return {"case": case, "start_ecall_pcs": pcs}
+
+
+def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
+    """Admit only LLVM's observed immutable lookup for the fixed PMP policy.
+
+    The closed three-block body proves the table index is below four before
+    its sole load. No other global, pointer derivation, use, or load is admitted.
+    """
+    lines = ir.splitlines()
+    globals_ = [line.strip() for line in lines if re.match(r"^\s*@", line)]
+    if not globals_:
+        return set(), []
+    source = "Lemma.Kernel.MachineServices.expectedPmp"
+    rows = [row for row in unit["functions"] if row["source"] == source]
+    if not optimized or unit["role"] != "kernel" or len(rows) != 1 or rows[0]["args"] != ["u64"] or rows[0]["effects"]:
+        raise Core0Error("IR global lacks the exact pure kernel PMP source authority")
+    symbol = rows[0]["symbol"]
+    table = "switch.table." + symbol
+    values = [0x20001fff, 0x20041fff, 0x20ffffff, 0x0400001f]
+    expected_global = f"@{table} = private unnamed_addr constant [4 x i64] [" + ", ".join(f"i64 {value}" for value in values) + "], align 8"
+    if globals_ != [expected_global] or len(re.findall(r"@" + re.escape(table) + r"(?![A-Za-z0-9_.$-])", ir)) != 2:
+        raise Core0Error("readonly PMP table global/content/use inventory differs")
+    from audit_memory import parse_ir_functions, _parse_blocks
+    functions = parse_ir_functions(ir)
+    function = functions.get(symbol)
+    if function is None or not re.search(r"\bi64 @" + re.escape(symbol) + r"\(i64 %arg0\)", function.header):
+        raise Core0Error("readonly PMP lookup LLVM signature differs")
+    load = "%switch.load = load i64, ptr %switch.gep, align 8"
+    expected_blocks = {
+        "entry": ["%0 = icmp ult i64 %arg0, 4", "br i1 %0, label %switch.lookup, label %if.merge.2"],
+        "switch.lookup": [f"%switch.gep = getelementptr inbounds nuw [4 x i64], ptr @{table}, i64 0, i64 %arg0",
+                          load, "br label %if.merge.2"],
+        "if.merge.2": ["%if.result7 = phi i64 [ %switch.load, %switch.lookup ], [ 262655, %entry ]", "ret i64 %if.result7"],
+    }
+    blocks = _parse_blocks("\n".join(line.split(";", 1)[0] for line in function.body.splitlines()), symbol)
+    if blocks != expected_blocks:
+        raise Core0Error("readonly PMP lookup lacks its exact dominating bound guard/body")
+    owners = _line_functions(lines)
+    load_sites = {index for index, line in enumerate(lines) if line.strip() == load and owners[index] == symbol}
+    if len(load_sites) != 1:
+        raise Core0Error("readonly PMP lookup load inventory differs")
+    return load_sites, [{"source": source, "function": symbol, "global": table, "values": values,
+                         "element_bits": 64, "alignment_bytes": 8, "index_bound": 4, "default": 262655,
+                         "guarded_loads": 1, "readonly": True}]
+
+
+def validate_pmp_constant_section(section_text: str, raw: bytes, *, object_file: str, tables: list[dict]) -> dict:
+    values = [0x20001fff, 0x20041fff, 0x20ffffff, 0x0400001f]
+    if (object_file != "kernel/program.o" or len(tables) != 1
+            or tables[0].get("source") != "Lemma.Kernel.MachineServices.expectedPmp"
+            or tables[0].get("values") != values or tables[0].get("readonly") is not True):
+        raise Core0Error("32-byte constant section lacks its exact kernel PMP IR provenance")
+    section_rows = re.findall(r"(?m)^.*\.rodata\.cst32\s+.*$", section_text)
+    expected = r"\s*\[\s*\d+\]\s+\.rodata\.cst32\s+PROGBITS\s+[0-9a-f]+\s+[0-9a-f]+\s+000020\s+20\s+AM\s+0\s+0\s+8\s*"
+    if len(section_rows) != 1 or not re.fullmatch(expected, section_rows[0]) or raw != struct.pack("<4Q", *values):
+        raise Core0Error("PMP constant section size/flags/alignment/little-endian bytes differ")
+    return {"object": object_file, "section": ".rodata.cst32", "bytes": 32, "flags": "AM", "alignment": 8,
+            "source": tables[0]["source"], "values": values}
 
 
 def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
@@ -275,6 +370,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
     if "core0_io_fence" in declarations and not _primitive_declaration_matches(ir, "declare void @core0_io_fence()"):
         raise Core0Error("LLVM IO fence calling convention differs")
     lines = ir.splitlines()
+    readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit, optimized=optimized)
     line_functions = _line_functions(lines)
     expected_sites = {(site["site"], site["symbol"], operation["lowering_id"])
                       for operation in unit["used_device_ops"] for site in operation["sites"]}
@@ -303,6 +399,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
                 raise Core0Error("U-mode unit has physical MMIO")
             actual_device_operations.append(operation)
         elif re.match(r"^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:load|store)\b", line):
+            if index in readonly_load_sites:
+                continue
             match = re.search(r"\b(load|store) volatile i(8|64)\b", line)
             if not match:
                 raise Core0Error("unknown/nonvolatile target RAM access type")
@@ -318,7 +416,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
         raise Core0Error("LLVM removed/duplicated/unaccounted compiled UART operation")
     return {"definitions": sorted(definitions), "calls": sorted(calls), "declarations": sorted(declarations),
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
-            "memory_access_counts": memory_access_counts}
+            "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables}
 
 
 def _primitive_declaration_matches(ir: str, expected: str) -> bool:
@@ -425,6 +523,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         stage, optimization = provenance.get("stage"), provenance.get("optimization")
         if stage not in {"bootstrap-m", "supervisor"} or optimization not in OPT_PASSES or build.get("stage") != stage or build.get("optimization") != optimization:
             raise Core0Error("build execution stage/profile differs")
+        validate_configuration_stage(configuration, stage)
+        case = startup_case(configuration)
+        if build.get("startup_case") != case or provenance.get("startup_case") != case:
+            raise Core0Error("build/provenance generated startup case differs")
         if provenance.get("generated_by_lean") != list(BOOT_FILES) or provenance.get("linked_inputs") != {"boot": list(BOOT_OBJECTS), "user": list(USER_OBJECTS)}:
             raise Core0Error("unexpected code-generation or linked-object closure")
         artifacts = _object(provenance.get("artifacts"), "artifact hashes")
@@ -473,17 +575,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error(f"actual linked input map differs: {map_file}: {sorted(objects)}")
         units = {role: validate_unit(load_json(output_dir / role / "unit.json"), role, configuration=configuration) for role in ROLE_ROOTS}
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
-        catalog = _object(load_json(output_dir / "primitive-catalog.json"), "primitive catalog")
-        expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
-        rows = [_object(row, "machine symbol") for row in _array(catalog.get("symbols"), "machine symbols")]
-        if type(catalog.get("schema_version")) is not int or catalog.get("schema_version") != 1 or catalog.get("contract_version") != "lemma-execution-v1" or catalog.get("stage") != stage or catalog.get("configuration") != configuration or {row.get("symbol") for row in rows} != expected_machine or len(rows) != len(expected_machine):
-            raise Core0Error("closed platform primitive catalog differs")
-        for row in rows:
-            if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
-                raise Core0Error("machine primitive privilege/effect differs")
-        if catalog.get("user_symbols") != [{"symbol": "_user_start", "privilege": "U", "effect": "user-entry/exit"},
-                                            {"symbol": "lemma_exec_syscall", "privilege": "U", "effect": "user-syscall"}]:
-            raise Core0Error("closed user primitive privilege/effect catalog differs")
+        expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
@@ -493,6 +585,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         }
         allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                                "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
+        readonly_objects = []
         for object_file, expected_functions in object_functions.items():
             label = object_file.replace("/", "-")
             object_symbols = inspect("llvm-readelf", ["-s", "--wide", object_file], label + "-symbols")
@@ -506,6 +599,17 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                 {".text", ".text.firmware", ".text.platform"} if object_file == "startup.o" else
                                 {".text", ".text.user_start", ".text.user_boundary"} if object_file == "user/startup.o" else
                                 {".text", ".rodata", ".rodata.cst8", ".data", ".bss"})
+            tables = ir["kernel"]["optimized"]["readonly_optimizer_tables"] if object_file == "kernel/program.o" else []
+            if object_file == "kernel/program.o" and bool(tables) != (".rodata.cst32" in sections):
+                raise Core0Error("kernel PMP IR table/object constant section presence differs")
+            if ".rodata.cst32" in sections:
+                inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata.cst32", object_file, "audit-kernel-pmp-table.bin"], "pmp-table-extract")
+                table_report = validate_pmp_constant_section(
+                    (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
+                    (output_dir / "audit-kernel-pmp-table.bin").read_bytes(), object_file=object_file, tables=tables)
+                table_report["sha256"] = sha256(output_dir / "audit-kernel-pmp-table.bin")
+                readonly_objects.append(table_report)
+                allowed_sections.add(".rodata.cst32")
             if ".rodata.cst8" in sections:
                 section_text = (output_dir / ("audit-" + label + "-sections.txt")).read_text()
                 constant = re.search(r"(?m)^\s*\[\s*\d+\]\s+\.rodata\.cst8\s+PROGBITS\s+[0-9a-f]+\s+[0-9a-f]+\s+([0-9a-f]+)\s+08\s+AM\s+0\s+0\s+8\s*$", section_text)
@@ -565,8 +669,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             validate_machine(machine, user=user, ranges=ranges)
             inspections[name] = {"entry": required_entry, "segments": segments, "function_symbols": sorted(symbols),
                                  "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
+            if not user:
+                inspections[name]["startup"] = validate_startup_case(machine, ranges, case)
         package_contract = _object(load_json(output_dir / "package-contract.json"), "package contract")
-        if package_contract != {"schema_version": 1, "configuration": configuration, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
+        if package_contract != {"schema_version": 1, "configuration": configuration, "startup_case": case, "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
                                 "version": 1, "image_count": 1, "header_bytes": 32, "descriptor_bytes": 96,
                                 "image": {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
                                           "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0},
@@ -586,11 +692,11 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 or data_offset + data_bytes > len(package) or package[text_offset:text_offset+text_bytes] != text
                 or package[data_offset:data_offset+data_bytes] != data):
             raise Core0Error("package descriptor/raw user image binding differs")
-        record = {"schema_version": 1, "status": "PASS", "artifact_category": category, "configuration": configuration,
+        record = {"schema_version": 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case,
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
                   "user_image_sha256": sha256(output_dir / "user/image.elf"), "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
-                  "unit_ir": ir, "elf": inspections, "commands": logs,
+                  "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "elf": inspections, "commands": logs,
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."
                                     if stage == "bootstrap-m" else "Supervisor artifact audit does not establish a running isolated user task.")]}

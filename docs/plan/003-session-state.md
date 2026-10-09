@@ -8,8 +8,8 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest complete Task 003 gate: B. Gates A and B passed the current dirty-source
-  acceptance below. C–K are not run.
+- Highest complete Task 003 gate: C. A/B committed141f309; C passed actual O0/O2
+  acceptance below. D–K are not run.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
   Core0 host 32 and foundation host 438 tests all passed. Focused Task 002 monitor
   passed 18 O0/O2 boots, 1,598 requests, 1,415 actual IRQs, 20 synchronous
@@ -169,3 +169,55 @@
 - Next: commit passing A/B increment, clear freeze, add real S firmware bridge
   witness/readback checks and bounded actual MTIP->SSIP acknowledgement acceptance.
   User execution, installed mapping invalidation, scheduling, IPC and services remain not-run.
+
+## Gate C implementation/audit checkpoint (07:43 UTC)
+
+- A/B coherent implementation committed as141f309804be9d526199b516ca4515beaf87a5e6.
+  Branch remains local/unpushed; no Task003 PR exists yet. This commit preserves
+  the highest passing prefix. Current C changes are not accepted evidence.
+- Root MachineServices bridge reads/verifies actual PMP/delegation/status/SATP
+  startup fields and uses genuine S ECALL origin witness, hardware timer count,
+  WFI/pending SSIP, bounded deadline validation and acknowledge/rearm. Normal
+  Entry stage1 emits A,C0,C1,C2; stage0 retains bootstrap behavior.
+- Typed startup_case machine-origin-probe is separate development config using
+  normal exact roots but forbidding Development imports, bootstrap-m only.
+  It installs M vector/mscratch, ECALLs in M(a7=3), expects rejection/fatal48;
+  unexpected-return fatal52 is distinct. Default startup renderings unchanged.
+- Genuine exporter12exports/11rejections PASS; hostchecker/audit20 tests PASS;
+  platformLeanrender+RV64 assembly/disassembly PASS. No C guest pass yet.
+- Actual first supervisorO2 attempt failed BEFORE QEMU launch: artifact audit
+  rejected optimizer-generated readonly switch.table for pure expectedPmp.
+  Raw failed observation retained; pid=null/records=[], no guest was spawned.
+  Integration worker implements narrow known4entry table/guard/load admission;
+  arbitrary mutable/foreign tables/nonvolatile RAM accesses remain rejected.
+- Current target/compiler sources frozen except exact auditor/test repair.
+  Rebuild after repair due bound host inventory; next command builds fresh
+  normal supervisorO2 then check_kernel_supervisor.py --case supervisor, and
+  machine-origin-development/bootstrap-m then --case machine-origin; repeatO0.
+- D is planned only. Opaque owned-AS descriptors, independent4KiB kernel maps,
+  user-PTE W^X (explicit trusted S RW management alias), lazyL0s, pagepins/full
+  flush and inactive-root teardown agreed. Platform proposes saving suspended S
+  caller at reserved boot-context80500000 and restoring it before reclamation.
+  No D implementation/guest acceptance yet; prerequisites remain enforced.
+
+## Actual Gate C passing prefix (08:01 UTC)
+
+- Qualified normal supervisor O0/O2 each passed four genuine records: stage1,
+  S-origin witness534543414c4c0001, validatedPMP1b1b1f1818/medelegb1ff/mideleg1446,
+  actualMhardwarecount0->1, SIPpending1->0, recoverable17/22/22 and validrearm.
+  Explicitlive-hoststop/reap(-9); this is not a deliveredS trap or scheduler test.
+- M-origin development O0/O2 each passed actual synchronousMECALLcause11 at
+  auditedPC800001a4 and realQEMUexit48, emptyUART/stderr, processreaped naturally.
+  Hosttransport unexpectedkeyword and pinnedQEMU0x-prefixedPC parser errors were
+  repaired after actual failures; failed outputs remain separate. Expectedexit48
+  is specific to the negative protocol, not a normalimage shutdown shortcut.
+- Complete artifacts audited, including exact compiler-produced4entry PMP
+  readonly table/guardedload and32byteAM/align8 object section, bound byte/hash
+  extraction. All other globals/nonvolatileRAM/writable/foreign sections reject.
+  Current kernel host22PASS; actual table/content/unguarded/writable negatives included.
+- C result/fullinventory at build/kernel/gateC/prefix-result.json andhash-inventory.json;
+  compact checked-in report updated. Source remainsdirty on A/Bcommit141f309 until
+  coherent C commit. No Task003push/PR, no clean qualification, D–Knot-run.
+- Freeze clears only after C commit. Next dependent work: reusable owned Sv39
+  AddressSpace module, typed suspendedS continuation, generic descriptor loader
+  and first separately linked U program. Then actualhardwaredenial/teardown.

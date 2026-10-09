@@ -1,6 +1,7 @@
 import Lemma.Kernel.Memory.Frames
 import Lemma.Kernel.BootInfo
 import Lemma.Kernel.Console
+import Lemma.Kernel.MachineServices
 
 namespace Lemma.Kernel.Entry
 open Lemma.Core0.Memory
@@ -26,7 +27,12 @@ def boot : Action :=
     .bind Lemma.Kernel.Memory.Frames.init fun s frames =>
     if s = 0 then
       .bind (Lemma.Kernel.Memory.Access.read64 0x80400010) fun s stage =>
-      if s = 0 then Lemma.Kernel.Console.record 0x0a dtb stage frames 0x82000000
+      if s = 0 then
+        .bind (Lemma.Kernel.Console.record 0x0a dtb stage frames 0x82000000) fun s _ =>
+        if s = 0 then
+          if stage = 1 then Lemma.Kernel.MachineServices.init
+          else if stage = 0 then .done 0 0 else .done 51 0
+        else .done s 0
       else .done s 0
     else .done s 0
   else

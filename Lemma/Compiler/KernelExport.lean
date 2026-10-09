@@ -24,10 +24,16 @@ private def roleProfile (role : String) : Except String Profile :=
 
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
-    | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal or frames-development"
-  unless configuration == "normal" || configuration == "frames-development" do
-    throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal or frames-development"
+    | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal, frames-development, or machine-origin-development"
+  unless configuration == "normal" || configuration == "frames-development" ||
+      configuration == "machine-origin-development" do
+    throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must be normal, frames-development, or machine-origin-development"
   pure configuration
+
+/-- The startup probe is selected only by its exact quarantined configuration,
+not by an independent environment switch or by a supplied instruction list. -/
+private def startupCase (configuration : String) : Lemma.Platform.RiscV.ExecutionPrimitives.StartupCase :=
+  if configuration == "machine-origin-development" then .machineOriginProbe else .normal
 
 private def unitCategory (configuration role : String) : String :=
   (if configuration == "normal" then "production-" else "development-") ++ role ++ "-unit"
@@ -35,9 +41,9 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "normal" then
-      #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
-    else #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
+  | "kernel" => if configuration == "frames-development" then
+      #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
+    else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => #["Lemma.User.Entry.main"]
   | _ => #[]
 
@@ -213,6 +219,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
 
 private def layoutJson (configuration : String) : Json := Json.mkObj [
   ("configuration", .str configuration),
+  ("startup_case", .str (startupCase configuration).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
   ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson Layout.frameCount),
@@ -250,6 +257,7 @@ private def userLinker : String := String.intercalate "\n" [
 
 private def packageContract (configuration : String) : Json := Json.mkObj [
   ("configuration", .str configuration),
+  ("startup_case", .str (startupCase configuration).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-boot-package-v1"),
   ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", 1),
   ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
@@ -318,17 +326,21 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
 
 private def exportBootFiles (directory : System.FilePath) (configuration : String)
     (stage : Lemma.Platform.RiscV.ExecutionPrimitives.Stage) : IO Unit := do
+  if configuration == "machine-origin-development" && stage != .bootstrapM then
+    throw <| IO.userError "machine-origin-development requires bootstrap-m stage"
   unless Layout.valid do throw <| IO.userError "authoritative boot layout is invalid"
   let firmware ← readRootSymbol directory configuration "firmware" 0
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let user ← readRootSymbol directory configuration "user" 0
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
+    stage, startupCase := startupCase configuration,
+    kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   let userStartup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user
   let catalog := Json.mkObj [("schema_version", 1), ("contract_version", .str "lemma-execution-v1"),
-    ("configuration", .str configuration), ("stage", .str stage.stableId), ("symbols", .arr
+    ("configuration", .str configuration), ("stage", .str stage.stableId),
+    ("startup_case", .str config.startupCase.stableId), ("symbols", .arr
       ((Lemma.Platform.RiscV.ExecutionPrimitives.primitiveCatalog config).map fun (symbol, privilege, effect) =>
         Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)])),
     ("user_symbols", .arr #[Json.mkObj [("symbol", .str "_user_start"), ("privilege", .str "U"), ("effect", .str "user-entry/exit")],

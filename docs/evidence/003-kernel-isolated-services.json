@@ -3,7 +3,8 @@
   "task": "003-kernel-isolated-services",
   "accepted_gates": [
     "A",
-    "B"
+    "B",
+    "C"
   ],
   "higher_gates": "not_run",
   "tested_git_base": "ff4045a79a6fda45f9cd8198587357846530a806",
@@ -62,5 +63,65 @@
     "path": "build/kernel/gateAB/hash-inventory.json",
     "sha256": "cef5cb629f603c9730754f06a9b7e9b5313a1f0ffe5a08f948d647f96b6d9967"
   },
-  "proof_scope": "indexed ownership model only; no emitted-code/whole-kernel correctness theorem"
+  "proof_scope": "indexed ownership model only; no emitted-code/whole-kernel correctness theorem",
+  "gateC": {
+    "schema_version": 1,
+    "status": "PASS",
+    "accepted_gate": "C",
+    "observations": {
+      "build/kernel/gateC/qualified-supervisor-O0-run/result.json": {
+        "sha256": "0725837b96560d02179ec844ac00a0fcfa5eb9b1e6d218029bc978d35eeffb66",
+        "returncode": -9,
+        "cleanup": {
+          "explicit_host_stop": true,
+          "process_group_killed": true,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-supervisor-O2-run/result.json": {
+        "sha256": "a1d8067a9bf2d0abf41a218b29b4e8bb0fa327e3b28007bc1a4e9de99999953c",
+        "returncode": -9,
+        "cleanup": {
+          "explicit_host_stop": true,
+          "process_group_killed": true,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-machine-origin-O0-run-after-trace-fix/result.json": {
+        "sha256": "b7c2722a186fc00625d608a72e085abff2fe89ea493bfb9ad334cb790d6697c1",
+        "returncode": 48,
+        "cleanup": {
+          "explicit_host_stop": false,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-machine-origin-O2-run/result.json": {
+        "sha256": "e26136c3608d5c8084f048e6c9b2655cdbb698e2d594e412a94af810d92a9bee",
+        "returncode": 48,
+        "cleanup": {
+          "explicit_host_stop": false,
+          "process_reaped": true
+        }
+      }
+    },
+    "hash_inventory": {
+      "path": "build/kernel/gateC/hash-inventory.json",
+      "sha256": "2e51c8ee0e1d613ded7ee66b5f75e6874855bdf20950a12e213e04ade37ccaa1"
+    },
+    "scope": {
+      "supervisor_execution": "actualsavedMPP1/cause9 origin witness",
+      "machine_timer": "actualirqdelta1",
+      "notification": "actualSIP.SSIP1 then0",
+      "delivered_supervisor_interrupts": 0,
+      "user_execution": "not_run",
+      "scheduling": "not_run"
+    },
+    "kernel_host_tests": 22,
+    "failure_history": [
+      "initial artifact audit nonvolatile LLVM readonly table",
+      "next allocated .rodata.cst32 rejection",
+      "negative host transport keyword mismatch",
+      "negative parser plain-vs-0x formatting mismatch"
+    ]
+  }
 }
