@@ -9,46 +9,50 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from audit_kernel import (TASK_USER_IMAGES, validate_user_image_catalog, validate_unit,
+from audit_kernel import (TASK_USER_IMAGES, TASK_FAULT_USER_IMAGES, image_specs, validate_user_image_catalog, validate_unit,
                           validate_user_primitive_catalog, validate_package_contract,
-                          validate_package_payloads, validate_multi_commands, user_primitive_rows, audit_standalone_user)
+                          validate_package_payloads, validate_multi_commands, user_primitive_rows, audit_standalone_user,
+                          validate_image_case_provenance, validate_image_attack_object, validate_user_attack_machine,
+                          validate_machine, development_modules)
 from build_kernel import CONTRACTS, LEAN_SOURCE_EXPRESSION
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS
 from core0_common import Core0Error
 
 
-def catalog():
+def catalog(configuration='tasks-development'):
     return {'schema_version':1, 'contract_version':'lemma-user-image-catalog-v1',
-            'configuration':'tasks-development','stage':'supervisor','image_count':3,
-            'images':copy.deepcopy(list(TASK_USER_IMAGES))}
+            'configuration':configuration,'stage':'supervisor','image_count':len(image_specs(configuration)),
+            'images':copy.deepcopy(list(image_specs(configuration)))}
 
 
-def unit(key='compute'):
-    image=next(row for row in TASK_USER_IMAGES if row['key']==key)
+def unit(key='compute',configuration='tasks-development'):
+    image=next(row for row in image_specs(configuration) if row['key']==key)
     root={'id':1,'source':image['source'],'symbol':image['symbol_prefix']+'root','args':['u64']}
     return {'schema_version':2,'artifact_category':'development-user-unit','contract_version':CONTRACTS['user'],
-            'configuration':'tasks-development','role':'user','image_key':key,'image_id':image['id'],
+            'configuration':configuration,'role':'user','image_key':key,'image_id':image['id'],
             'roots':[root],'functions':[{**{k:v for k,v in root.items() if k!='id'},'effects':[]}],
-            'used_execution_ops':[],'used_device_ops':[],'used_loops':[]}
+            'used_execution_ops':[],'used_device_ops':[],'used_loops':[],
+            **({'startup_case':image['startup_case']} if configuration=='tasks-fault-development' else {})}
 
 
-def contract():
+def contract(configuration='tasks-development'):
     image={'entry':0x10000,'text_va':0x10000,'text_capacity':0xf000,'data_va':0x20000,
            'data_mem_bytes':4096,'stack_va':0x3fffc000,'stack_pages':2,'flags':0}
-    return {'schema_version':2,'configuration':'tasks-development','startup_case':'normal','user_startup_case':'none',
-            'contract_version':'lemma-boot-package-v1','magic':0x31474b50414d454c,'version':1,'image_count':3,
+    return {'schema_version':2,'configuration':configuration,'startup_case':'normal','user_startup_case':'none',
+            'contract_version':'lemma-boot-package-v1','magic':0x31474b50414d454c,'version':1,'image_count':len(image_specs(configuration)),
             'header_bytes':32,'descriptor_bytes':96,'offset_encoding':'generated-label-differences',
-            'images':[{**image,'key':row['key'],'id':row['id']} for row in TASK_USER_IMAGES]}
+            'images':[{**image,'key':row['key'],'id':row['id']} for row in image_specs(configuration)]}
 
 
-def packed_fixture():
-    payloads=[(struct.pack('<II',i,i+10),struct.pack('<QQ',0,1)) for i in range(1,4)]
-    data=bytearray(32+3*96)
+def packed_fixture(configuration='tasks-development'):
+    count=len(image_specs(configuration))
+    payloads=[(struct.pack('<II',i,i+10),struct.pack('<QQ',0,1)) for i in range(1,count+1)]
+    data=bytearray(32+count*96)
     for index,(text,initialized) in enumerate(payloads):
         text_offset=len(data);data.extend(text);data_offset=len(data);data.extend(initialized)
         struct.pack_into('<12Q',data,32+index*96,index+1,0x10000,0x10000,text_offset,len(text),0x20000,
                          data_offset,len(initialized),4096,0x3fffc000,2,0)
-    struct.pack_into('<4Q',data,0,0x31474b50414d454c,1,3,len(data))
+    struct.pack_into('<4Q',data,0,0x31474b50414d454c,1,count,len(data))
     return bytes(data),payloads
 
 
@@ -146,5 +150,79 @@ class MultiImageAuditFailures(unittest.TestCase):
                 with self.assertRaises(Core0Error):validate_multi_commands(bad,**args)
             (out/d/'Export.lean').write_text('import Lemma.User.Development.Tasks.Busy\n')
             with self.assertRaises(Core0Error):validate_multi_commands(rows,**args)
+
+
+class FaultImageAuditFailures(unittest.TestCase):
+    configuration='tasks-fault-development'
+
+    def test_fourth_image_does_not_widen_f_registry_or_any_other_startup(self):
+        value=catalog(self.configuration)
+        validate_user_image_catalog(value,configuration=self.configuration)
+        with self.assertRaises(Core0Error):validate_user_image_catalog(value,configuration='tasks-development')
+        for mutate in [lambda rows:rows.pop(),lambda rows:rows.append(copy.deepcopy(rows[-1])),
+                       lambda rows:rows[0].update(startup_case='supervisor-csr'),
+                       lambda rows:rows[3].update(directory='users/compute'),
+                       lambda rows:rows[3].update(id=3),lambda rows:rows[3].update(source=rows[0]['source'])]:
+            bad=catalog(self.configuration);mutate(bad['images'])
+            with self.assertRaises(Core0Error):validate_user_image_catalog(bad)
+
+    def test_unit_case_and_source_are_bound_to_only_the_selected_image(self):
+        for key in ['compute','sleeper','busy','fault']:
+            good=unit(key,self.configuration)
+            validate_unit(good,'user',configuration=self.configuration,image_key=key)
+            for mutate in [lambda row:row.pop('startup_case'),
+                           lambda row:row.update(startup_case='none' if key=='fault' else 'supervisor-csr'),
+                           lambda row:row['functions'].append({'source':'Lemma.User.Development.Tasks.'+('Compute' if key=='fault' else 'Fault')+'.main',
+                                                            'symbol':row['functions'][0]['symbol']+'_peer','args':['u64'],'effects':[]})]:
+                bad=unit(key,self.configuration);mutate(bad)
+                with self.assertRaises(Core0Error):validate_unit(bad,'user',configuration=self.configuration,image_key=key)
+        with self.assertRaises(Core0Error):validate_unit(unit('fault',self.configuration),'user',configuration='tasks-development',image_key='fault')
+        self.assertEqual(development_modules(self.configuration,'kernel'),('Lemma.Kernel.Development.FaultEntry','Lemma.Kernel.Development.TasksEntry','Lemma.Kernel.Development.Pressure'))
+        self.assertEqual(development_modules('tasks-development','kernel'),('Lemma.Kernel.Development.TasksEntry',))
+
+    def test_case_maps_catalogs_and_package_count_cannot_be_substituted(self):
+        images=catalog(self.configuration)['images'];mapping={row['key']:row['startup_case'] for row in images}
+        record={'user_startup_cases':mapping}
+        validate_image_case_provenance(record,record,configuration=self.configuration,images=images)
+        for bad in [{},{'user_startup_cases':{**mapping,'compute':'supervisor-csr'}},{'user_startup_cases':{**mapping,'fault':'none'}}]:
+            with self.assertRaises(Core0Error):validate_image_case_provenance(record,bad,configuration=self.configuration,images=images)
+        with self.assertRaises(Core0Error):validate_image_case_provenance(record,record,configuration='tasks-development',images=list(TASK_USER_IMAGES))
+        image=TASK_FAULT_USER_IMAGES[-1]
+        good={'schema_version':1,'contract_version':'lemma-user-execution-v1','configuration':self.configuration,
+              'image_key':'fault','image_id':4,'startup_case':'supervisor-csr','symbols':user_primitive_rows('supervisor-csr')}
+        validate_user_primitive_catalog(good,image,configuration=self.configuration)
+        for key in ['compute','sleeper','busy']:
+            selected=next(row for row in images if row['key']==key)
+            bad={**good,'image_key':key,'image_id':selected['id']}
+            with self.assertRaises(Core0Error):validate_user_primitive_catalog(bad,selected,configuration=self.configuration)
+        package=contract(self.configuration)
+        validate_package_contract(package,configuration=self.configuration,catalog=catalog(self.configuration))
+        raw,payloads=packed_fixture(self.configuration)
+        self.assertEqual([row['id'] for row in validate_package_payloads(raw,package,payloads)],[1,2,3,4])
+        with self.assertRaises(Core0Error):validate_package_payloads(raw,package,payloads[:3])
+        with self.assertRaises(Core0Error):validate_package_contract(package,configuration='tasks-development',catalog=catalog(self.configuration))
+
+    def test_only_exact_fault_startup_object_and_csr_instruction_can_pass(self):
+        symbol='lemma_user_attack_supervisor_csr'
+        section='  [ 6] .text.user_adversarial PROGBITS 0000000000000000 0000a0 000008 00 AX 0 0 4\n'
+        symbols=' 7: 0000000000000000 8 FUNC GLOBAL DEFAULT 6 '+symbol+'\n'
+        assembly='.section .text.user_adversarial, "ax", @progbits\n'+symbol+':\n  csrr a0, sstatus\n  ret\n.size '+symbol+', . - '+symbol+'\n'
+        raw=struct.pack('<2I',0x10002573,0x00008067)
+        args=dict(configuration=self.configuration,image_key='fault')
+        validate_image_attack_object(section,symbols,raw,assembly,**args)
+        for key in ['compute','sleeper','busy']:
+            with self.assertRaises(Core0Error):validate_image_attack_object(section,symbols,raw,assembly,configuration=self.configuration,image_key=key)
+        with self.assertRaises(Core0Error):validate_image_attack_object(section,symbols,raw,assembly,configuration='tasks-development',image_key='fault')
+        for fields in [(section.replace('AX','WAX'),symbols,raw,assembly),(section.replace('000008','00000c'),symbols,raw,assembly),
+                       (section,symbols.replace('DEFAULT 6','DEFAULT 5'),raw,assembly),(section,symbols,struct.pack('<2I',0x100025f3,0x00008067),assembly),
+                       (section,symbols,raw,assembly.replace('sstatus','satp')),(section,symbols,raw+raw,assembly)]:
+            with self.assertRaises(Core0Error):validate_image_attack_object(*fields,**args)
+        ranges={symbol:(0x10080,8)}
+        machine=' 10080: 10002573 csrr a0, sstatus\n 10084: 00008067 ret\n'
+        validate_user_attack_machine(machine,ranges,assembly,'supervisor-csr')
+        validate_machine(' 10080: csrr a0, sstatus\n 10084: ret\n',user=True,ranges=ranges,user_csr_pc=0x10080)
+        for pc in [None,0x10084]:
+            with self.assertRaises(Core0Error):validate_machine(' 10080: csrr a0, sstatus\n 10084: ret\n',user=True,ranges=ranges,user_csr_pc=pc)
+        with self.assertRaises(Core0Error):validate_user_attack_machine(machine.replace('10002573','100025f3'),ranges,assembly,'supervisor-csr')
 
 if __name__=='__main__':unittest.main()

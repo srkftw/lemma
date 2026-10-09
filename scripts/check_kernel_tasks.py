@@ -86,6 +86,9 @@ def arithmetic_ranges(unit: dict, functions: dict, disassembly: str) -> list[dic
 
 
 class Trace:
+    keys = IMAGE_KEYS
+    configuration = "tasks-development"
+
     def __init__(self, session: Session):
         self.session = session
         self.tasks, self.creation_queue = {}, deque()
@@ -95,11 +98,11 @@ class Trace:
         audit = session.binding
         self.users = audit.get("elf", {}).get("users", {})
         self.images = audit.get("user_images", {})
-        if (set(self.users) != set(IMAGE_KEYS) or set(self.images) != set(IMAGE_KEYS)
-                or audit.get("configuration") != "tasks-development"
+        if (set(self.users) != set(self.keys) or set(self.images) != set(self.keys)
+                or audit.get("configuration") != self.configuration
                 or audit.get("stage") != "supervisor"):
-            raise Core0Error("F requires exact three-image supervisor development registry")
-        for index, key in enumerate(IMAGE_KEYS):
+            raise Core0Error("task observation requires its exact supervisor development registry")
+        for index, key in enumerate(self.keys):
             image = self.images[key]
             if (image.get("id") != index + 1 or type(image.get("text_bytes")) is not int
                     or not 0 < image["text_bytes"] <= 0xf000
@@ -152,11 +155,11 @@ class Trace:
         if tag == 0xf1:
             if (self.current is not None or not self.creation_queue
                     or (b, c) != self.creation_queue.popleft()
-                    or a < 512 or a in self.tasks or not 0 <= b < 3
+                    or a < 512 or a in self.tasks or not 0 <= b < len(self.keys)
                     or d % 4096 or not 0x82000000 <= d < 0x82200000
                     or any(task["root"] == d for id, task in self.tasks.items() if id in self.live())):
                 raise Core0Error("creation lacks a fresh generation ID, distinct owned root or requested image/nonce")
-            key = IMAGE_KEYS[b]
+            key = self.keys[b]
             pages = 17 + (self.images[key]["text_bytes"] + 4095) // 4096
             self.remaining -= pages
             if self.remaining < 0:

@@ -8,10 +8,14 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest complete Task 003 gate: E at clean0f34b21c5b1f6482f507b131bd28851b9b26fed0,
-  tree85874c8a207af2103a717febfdbccde50147ec5f. Fresh clean A–E acceptance passed.
-  F has focused runtime observations and a pending mandatory timer-disabled negative;
-  G–K remain not run. The latest checkpoint at the end of this file is authoritative.
+- Highest clean cumulative Task003 checkpoint: F at committed
+  `bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9`, tree
+  `ec56befa5ccd3c67cd61c69b296c530e9e638e94`. Strong O0/O2 context/preemption
+  observations, two isolated timer-disabled negatives and six independently
+  built user audits passed. Fresh cold A-E+F regression passed at that exact clean source;
+  22 images, 26 checker reports and 30 sessions were independently reviewed.
+  G focused O0/O2 lifecycle observations also passed; H-K have not run.
+  The latest checkpoint at the end of this file is authoritative.
 - The user explicitly extended the original time window until the full milestone
   is verified and authorized merging afterward. Do not merge a partial prefix.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
@@ -29,9 +33,8 @@
   profiles, lowering and production exporter; platform worker typed M/S/U glue
   and boot DTB validation; integration worker host builder/auditor. No production
   module may import `Compiler.Test`, examples or mutation modules.
-- Next executable checkpoint: commit the coherent F candidate, then run the
-  exact call5-only timer-disabled negative in an isolated source worktree.
-  Do not begin G until the required F timer-removal observation passes.
+- Next executable checkpoint: cold clean cumulative G acceptance, independently
+  alongside H capability implementation; H-K remain unverified.
 - Do not relabel baseline or earlier Task 002 artifacts as Task 003 passes. Do not
   infer completion of a gate from its modules. Preserve legacy profiles and checks.
 
@@ -435,3 +438,58 @@ Fresh `artifacts-attempt4` O0/O2 builds/audits passed. Actual strong `tasks-O0-a
 Latest checks: Lake55 jobs, kernel host85, Core0 host32, foundation host440, scaffold18 and metadata all passed. These are current-source development observations, not clean final qualification. Six standalone artifacts at `build/user/gateF-attempt2` are historical before the quantum/workload changes; do not relabel them. Fresh recaptures are deferred until the stronger protocol is accepted.
 
 The host-only `check_kernel_timer_negative.py` and4 negative-evidence rejection tests are ready. Commit all coherent F source/checker work, create an isolated worktree at that exact commit, replace ONLY the validated successful Firmware.call5 arm path using `timer_disabled_source(original)` (ACK SSIP, compareMAX, write actual deadline, normal reply), and build/audit both profiles. Run the negative CLI with its matching strong positive report and exact candidate commit. It must retain the inner positive checker FAIL and establish missing preemption after genuine Compute yield/Sleeper sleep/final Busy dispatch; no arbitrary startup failure or timeout is acceptable. Highest complete gate remains E until that observation is real. User authorization remains full A–K verification followed by merge; no partial merge.
+
+## Gate F timer control complete; G authorized construction
+
+Both isolated negatives passed at committed F source `bf8e3dc...` with only the canonical call5 firmware mutation retained. Each fresh O0/O2 image passed its complete artifact audit; each inner positive Session is still FAIL on the exact8-second read deadline after16 actual records/1408B, Compute yield, Sleeper sleep and Busy dispatch, with zero preemption. Both PIDs626140/627490 were live until explicit kill/reap(-9), absent afterward, and stderr empty. The independent summary hashes154 generated files and6 raw files; all source, runner and positive-control bindings were reread. The ledger contains exact report hashes.
+
+Six fresh standalone User builds/audits on clean committed F source also passed; all14 artifacts per image match the terminal full packages exactly (`build/user/gateF-final-source/result.json` and `comparison.json`). Strong runtime artifacts honestly retain their precommit465aeb5/dirty provenance; exact compiled-source hashes match committed F. Do not rewrite those identities.
+
+A new clean managed `lemma-kernel-f-acceptance` worktree at exact F commit is running `/tmp/lemma-gateF-clean-run.py` (shell session41374): cold A-E regression, then fresh full O0/O2 strong F guests. It copies no previous project outputs and writes `build/kernel/F-clean/result.json` transactionally. Preserve the separate timer-negative checkout and artifacts.
+
+Gate G construction is now authorized because focused F and mandatory timer controls actually passed. Platform owns FaultEntry/Pressure/shared TasksEntry transport factoring; compiler owns exact four-image registry/configuration and typed per-image startup; auditor owns narrow Fault-only CSR admission; root owns User.Development.Tasks.Fault and the G observer. New image index3/ID4 returns from validated zero data/BSS/user-stack checks into the existing typed actual supervisor-CSR probe. No G guest has run. No H/I/J implementation has started; the full A-K milestone plus confirmed merge remains the user objective.
+
+## Cold F complete; G artifact checkpoint
+
+- Fresh clean A-E+F controller exited0 at exact `bf8e3dc`/tree `ec56befa`.
+  Its scope requires the separately retained canonical timer negatives and six
+  independent user builds. Independent reader checked 22 images, 26 reports,
+  30 sessions, 92 raw files and 12,737 packets with all PIDs gone.
+- Cold O0: 1,189 records, 533 real M interrupts, 49 Compute arithmetic
+  interruptions; O2: 1,500 records, 684 interrupts, 34 arithmetic interruptions.
+  Both 12-instance runs restored499 frames and observed actual all-sleeping WFI.
+- Report and independent reader hashes are in `003-gates.json`. No historical
+  focused precommit artifact was relabelled as clean checkpoint output.
+- G modules compile; host evidence rejection tests pass. Genuine exporter
+  negative probes uncovered an unused Compiler.Test import accepted by the G
+  direct exporter; the narrow G-only rejection is repaired and all14 real
+  export probes now pass. The failed pre-repair report is retained.
+- G four-image O0/O2 builds are running with source frozen. The new lifecycle
+  checker requires actual fault instructions, repeated fresh owners/identities,
+  same physical data/stack reuse with zeroed secrets, continued independent
+  peers, real late loader quota failure/rollback, and complete baseline cleanup.
+  No G runtime success is yet claimed.
+
+## Focused Gate G complete; next H
+
+- O0/O2 full four-image builds and audits passed. Independent Fault builds
+  matched all14 ELF/object/payload/IR/unit/generated artifact bindings.
+- Final lifecycle attempt2 O0: 2,217 packets, 995 actual M IRQs, 17.208412s;
+  O2: 2,697 packets, 1,222 IRQs, 12.333771s. Each has18taskinstances,
+  13actualCSRfaults/code44, 10samephysicaldata/stackreusepairs with
+  fresh User zero checks and four real late quota38 rollbacks.
+- The same Busy instance progresses through every cycle. All tasks are removed
+  and reclaimed on the restored kernel root/stack; both final baselines499.
+  All raw packet grammar/hashes, command/ACK order, 112source/8runner bindings,
+  actual fault PC0x10060/stval0x10002573, stack bounds and killed/reaped PIDs
+  were independently checked. Focused provenance is honestly bf8e3dc+dirty.
+- A duplicate-EA evidence-parser gap was repaired with a negative fixture and
+  fresh attempt2 O0/O2 sessions; attempt1 remains historical evidence.
+  Pinned kernel host suite99 and scaffold metadata/18tests pass.
+- Commit this coherent G source, then run fresh cold A-E+F+G in an isolated
+  worktree. No cached earlier result will certify that new snapshot.
+- H design reserves descriptor+2560..+3647 for16capentries and a header,
+  one owned global16objectframe, monotonic local handle serials and bounded
+  object-wide revoke. Managed creation publishes after reviewed boot grants;
+  managed legacy console must deny before device effects. H is not yet built.
+  User authorization remains full A-K verification and then confirmed merge.

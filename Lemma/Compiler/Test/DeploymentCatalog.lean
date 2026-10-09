@@ -50,6 +50,32 @@ run_cmd do
   match validateImages "tasks-development" taskImages with
   | .ok _ => pure ()
   | .error error => throwError error
-  logInfo "PASS: genuine user source remains independently checked; selected roots, module identities, IDs, order, paths and singleton authority fail closed"
+  unless taskFaultImages.extract 0 3 == taskImages &&
+      taskImages.all (fun image => image.startupCase == .none) do
+    throwError "fault deployment changed the ordinary Gate F peers or startup authority"
+  let fault ← match imageFor "tasks-fault-development" "fault" with
+    | .ok image => pure image
+    | .error error => throwError error
+  unless fault.id == 4 && fault.moduleName == `Lemma.User.Development.Tasks.Fault &&
+      fault.root == `Lemma.User.Development.Tasks.Fault.main && fault.startupCase == .supervisorCsr do
+    throwError "fault startup authority escaped its exact fourth-image source"
+  match imageFor "tasks-development" "fault" with
+  | .ok _ => throwError "ordinary Gate F acquired the fault image"
+  | .error _ => pure ()
+  match validateImages "tasks-fault-development" taskFaultImages with
+  | .ok _ => pure ()
+  | .error error => throwError error
+  for images in #[taskImages, taskFaultImages.reverse,
+      taskFaultImages.set! 0 { taskFaultImages[0]! with startupCase := .supervisorCsr },
+      taskFaultImages.set! 3 { fault with startupCase := .none },
+      taskFaultImages.set! 3 { fault with moduleName := `Lemma.User.Development.Tasks.Compute },
+      taskFaultImages.set! 3 { fault with root := ``ordinary }] do
+    match validateImages "tasks-fault-development" images with
+    | .ok _ => throwError "a forged fault startup authority/module/root/order was admitted"
+    | .error _ => pure ()
+  match validateSelection "tasks-fault-development" "compute" #[fault.root] with
+  | .ok _ => throwError "fault source crossed the ordinary compute image selection"
+  | .error _ => pure ()
+  logInfo "PASS: genuine source selection, exact closed F/G registries and per-image startup authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

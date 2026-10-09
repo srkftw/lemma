@@ -27,7 +27,11 @@ ROLE_ROOTS = {
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
-                  "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development", "tasks-development")
+                  "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
+                  "tasks-development", "tasks-fault-development")
+MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development")
+INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
+                          "tasks-fault-development": {"compute", "sleeper", "busy", "fault"}}
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
@@ -69,9 +73,10 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
-    if configuration == "tasks-development":
-        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Kernel.Development.TasksEntry.boot", ()),
-                   ("Lemma.Kernel.Development.TasksEntry.dispatch", ("u64", "u64", "u64")))}
+    if configuration in MULTI_CONFIGURATIONS:
+        module = "Lemma.Kernel.Development." + ("TasksEntry" if configuration == "tasks-development" else "FaultEntry")
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": ((module + ".boot", ()),
+                   (module + ".dispatch", ("u64", "u64", "u64")))}
     if configuration == "frames-development":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Kernel.Development.FramesEntry.boot", ()),
                                         ("Lemma.Kernel.Development.FramesEntry.dispatch", ("u64", "u64", "u64")))}
@@ -86,8 +91,9 @@ def configuration_roots(configuration: str) -> dict:
 
 def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
-    if configuration == "tasks-development":
-        return {"firmware": ROLE_MODULES["firmware"], "kernel": "Lemma.Kernel.Development.TasksEntry"}
+    if configuration in MULTI_CONFIGURATIONS:
+        return {"firmware": ROLE_MODULES["firmware"], "kernel": "Lemma.Kernel.Development." +
+                ("TasksEntry" if configuration == "tasks-development" else "FaultEntry")}
     if configuration == "frames-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":
@@ -99,10 +105,18 @@ def configuration_modules(configuration: str) -> dict:
 
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
-    return (configuration == "tasks-development" and role == "kernel"
+    return (configuration in MULTI_CONFIGURATIONS and role == "kernel"
             or configuration == "frames-development" and role == "kernel"
             or configuration == "user-isolation-development" and role in {"kernel", "user"}
             or configuration == "user-syscall-development" and role == "user")
+
+
+def configuration_development_modules(configuration: str, role: str) -> tuple[str, ...]:
+    modules = configuration_modules(configuration)
+    if configuration == "tasks-fault-development" and role == "kernel":
+        return ("Lemma.Kernel.Development.FaultEntry", "Lemma.Kernel.Development.TasksEntry",
+                "Lemma.Kernel.Development.Pressure")
+    return (modules[role],) if development_role(configuration, role) else ()
 
 
 def startup_case(configuration: str) -> str:
@@ -123,7 +137,8 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
     if configuration in {"user-isolation-development", "user-csr-development", "user-nx-development",
-                         "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development", "tasks-development"} and stage != "supervisor":
+                         "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
+                         *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
 
 
@@ -144,10 +159,11 @@ def source_inputs(root: Path) -> dict[str, str]:
 
 
 def module_closure(root: Path, module: str, seen: set[str] | None = None, *, allow_development: bool = False,
-                   development_module: str | None = None) -> dict[str, str]:
+                   development_module: str | None = None,
+                   development_modules: tuple[str, ...] | None = None) -> dict[str, str]:
     import re
-    if seen is None and allow_development and development_module is None:
-        development_module = module
+    if development_modules is None:
+        development_modules = ((development_module or module,) if allow_development else ())
     seen = set() if seen is None else seen
     if module in seen or not module.startswith("Lemma."):
         return {}
@@ -156,7 +172,7 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")
     if ".Development." in module and not allow_development:
         raise Core0Error(f"normal production dependency imports development code: {module}")
-    if ".Development." in module and module != development_module:
+    if ".Development." in module and module not in development_modules:
         raise Core0Error(f"dependency imports another development image/module: {module}")
     path = root / (module.replace(".", "/") + ".lean")
     if not path.is_file():
@@ -168,7 +184,7 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
             if dependency.startswith(("examples.", "tests.")) or ".Test." in dependency:
                 raise Core0Error(f"production dependency imports test source: {dependency}")
             result.update(module_closure(root, dependency, seen, allow_development=allow_development,
-                                         development_module=development_module))
+                                         development_modules=development_modules))
     return result
 
 
@@ -318,12 +334,13 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
     invoke = command_invoker(root, output_dir, tools, timeout_seconds, commands)
 
     try:
-        dependencies = {role: module_closure(root, module, allow_development=development_role(configuration, role))
+        dependencies = {role: module_closure(root, module, allow_development=development_role(configuration, role),
+                                            development_modules=configuration_development_modules(configuration, role))
                         for role, module in modules.items()}
         source_before = source_inputs(root)
         versions, source_realization = realize_toolchain(root, tools, invoke)
         images = []
-        if configuration == "tasks-development":
+        if configuration in MULTI_CONFIGURATIONS:
             invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
             catalog = export_user_catalog(root, output_dir, configuration, invoke)
             images = catalog["images"]
@@ -389,7 +406,10 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         unit_contracts = {role: value["contract_version"] for role, value in units.items() if role != "users"}
         if images:
             unit_contracts["users"] = {key: value["contract_version"] for key, value in units["users"].items()}
+        image_startup_fields = ({"user_startup_cases": {image["key"]: image["startup_case"] for image in images}}
+                                if configuration == "tasks-fault-development" else {})
         provenance = {"schema_version": 2 if images else 1, "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
+                      **image_startup_fields,
                       "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
                       "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
@@ -397,6 +417,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                       "linked_inputs": linked_inputs, "artifacts": artifacts, "unit_contracts": unit_contracts}
         write_json(output_dir / "provenance.json", provenance)
         record = {"schema_version": 2 if images else 1, "status": "BUILT", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
+                  **image_startup_fields,
                   "lean_source_realization": source_realization,
                   "stage": stage, "optimization": opt_level, "artifacts": artifacts,
                   "provenance_sha256": sha256(output_dir / "provenance.json"),

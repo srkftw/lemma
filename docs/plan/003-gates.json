@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "E",
+  "highest_complete_gate": "G",
   "gates": [
     {
       "gate": "A",
@@ -130,10 +130,10 @@
     {
       "gate": "F",
       "name": "preemptive tasks",
-      "status": "in_progress",
-      "guest_execution": "focused O0/O2 strong preemption/context/sleep/lifecycle observations PASS; mandatory isolated timer-disabled negative pending",
-      "observed": "Compiled eight-slot owned task policy and three independently linked user images; runnable quantum1ms/idle maximum100ms, nonce arithmetic interrupted inside source-bound actual machine loop, all12instances/profile reclaimed to499. Gate F not complete until timer-disabled progress denial is actually observed.",
-      "next_command": "Commit coherent F candidate, create isolated source worktree at that exact commit, apply canonical call5-only timer mutation, build/audit and run scripts/check_kernel_timer_negative.py with exact positive-control report.",
+      "status": "passed",
+      "guest_execution": "Passed fresh clean A-E regression and strong F O0/O2, plus both isolated timer-disabled negatives and six independently built users.",
+      "observed": "Compiled eight-slot owned task policy and three independently linked users. Real 1ms runnable timer preemption inside audited arithmetic loops, independent results/canaries, Busy progress, deadline wakes, actual all-sleeping WFI and complete 12-instance reclamation/profile to499.",
+      "next_command": "Implement and observe Gate G lifecycle using closed four-image tasks-fault-development configuration; retain cold F result when it completes.",
       "focused_evidence": [
         {
           "path": "build/kernel/gateF/tasks-O0-attempt3/result.json",
@@ -173,12 +173,132 @@
           "observed": "Compute completed without an actual interruption inside its compiled arithmetic loop",
           "status": "FAIL"
         }
-      ]
+      ],
+      "source": {
+        "commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
+        "tree": "ec56befa5ccd3c67cd61c69b296c530e9e638e94",
+        "focused_artifact_reported_commit": "465aeb5a38198da972f6989c5cc2e9afc9127380",
+        "focused_artifacts_precommit": true,
+        "exact_compiled_source_hashes_match_committed_candidate": true
+      },
+      "timer_negative": [
+        {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-timer-negative/lemma/build/kernel/F-timer-negative/O0-observation/result.json",
+          "sha256": "db5b23dab27627eb8e123700dbf5d25d9d30cffb322551f0b39f7d2ec2172d90",
+          "inner_positive_status": "FAIL",
+          "status": "PASS"
+        },
+        {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-timer-negative/lemma/build/kernel/F-timer-negative/O2-observation/result.json",
+          "sha256": "624bec08188a967bfcbe9bfca0c1b28af3ce20738da2eca6a61735c04e75cb63",
+          "inner_positive_status": "FAIL",
+          "status": "PASS"
+        }
+      ],
+      "independent_users": {
+        "build/user/gateF-final-source/result.json": "8888bd6c8a6ad80676aa11bdb2f27d4d95fb805a0b31d7e1bc404de3af72deac",
+        "build/user/gateF-final-source/comparison.json": "15e06e5ba551ab2865aef658ae683925d37745d8f6e3be1d11000dda284848ab"
+      },
+      "cold_prefix": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
+          "tree": "ec56befa5ccd3c67cd61c69b296c530e9e638e94"
+        },
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/result.json",
+        "sha256": "aceb527b7eadd874691766dc9e77811e5017becdaf6162c5c57f1c17eb0b18b2",
+        "images": 22,
+        "checker_reports": 26,
+        "qemu_sessions": 30,
+        "observations": [
+          {
+            "instances": 12,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O0-run/result.json",
+            "record_count": 1189,
+            "sha256": "4695d23b9a5a273e18a44a03b1e0b7f1478cf7f40b3aee4e52d5db92a2a05202",
+            "status": "PASS"
+          },
+          {
+            "instances": 12,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O2-run/result.json",
+            "record_count": 1500,
+            "sha256": "6323467f410430a8482e90966ebcbe9d2f0c0114ca6a5651470fdfb0e02dc4fb",
+            "status": "PASS"
+          }
+        ],
+        "independent_review": {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/independent-platform-review.json",
+          "sha256": "2eec95f118a82960be8d421478f95a117573dd1f55092452df52defdef958318"
+        }
+      }
     },
     {
       "gate": "G",
       "name": "lifecycle and fault containment",
-      "status": "not_run"
+      "status": "passed",
+      "guest_execution": "Focused source-bound O0/O2 complete lifecycle observations passed; clean cumulative G checkpoint remains separately required.",
+      "observed": "18 instances/profile,13actualUCSRfaults,10samephysicaldata/stackreusepairswithfreshzeros,separateBusyprogress,4realpartialloaderquota38rollbacks,andcomplete499framebaseline.",
+      "source": {
+        "parent_commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
+        "focused_artifacts_precommit": true,
+        "clean": false
+      },
+      "host_tests": 99,
+      "next_command": "Run cold committed A-E+F+G checkpoint independently; implement H capability enforcement next.",
+      "focused_evidence": [
+        {
+          "path": "build/kernel/gateG/lifecycle-O0-attempt2/result.json",
+          "sha256": "f6f3ccd4c3a70804c1227170787d4536be6d3f4a33c48e79ce28bd0a5c360c75",
+          "status": "PASS",
+          "records": 2217,
+          "instances": 18,
+          "faults": 13,
+          "same_physical_reuses": 10,
+          "quota_rollbacks": 4,
+          "actual_machine_interrupts": 995,
+          "final_frames": 499,
+          "elapsed_seconds": 17.208412
+        },
+        {
+          "path": "build/kernel/gateG/lifecycle-O2-attempt2/result.json",
+          "sha256": "8b57b40f7c704b5c6b645595dd95ea52cbaffcc1d4f45b96539dc82f5d50d1dd",
+          "status": "PASS",
+          "records": 2697,
+          "instances": 18,
+          "faults": 13,
+          "same_physical_reuses": 10,
+          "quota_rollbacks": 4,
+          "actual_machine_interrupts": 1222,
+          "final_frames": 499,
+          "elapsed_seconds": 12.333771
+        }
+      ],
+      "independent_users": {
+        "build/user/gateG/result.json": "1a095d86bea746a8d3747d495ef99b48363c5244e72bfda9eed16698056da649",
+        "build/user/gateG/comparison.json": "6d9cdc8ed0263926ee9cc2b66f6ca7e774eefa843418847eeed2a9e2e1fc47a1"
+      },
+      "compiler_probe": {
+        "path": "build/compiler-gateG/probe-report.json",
+        "sha256": "3fee2e71a1d08254195c2807f717eaa95bebf936034051b2b21c14034cf86308",
+        "export_cases": 14,
+        "scope": "genuine elaboration/export boundary; not runtime correctness"
+      },
+      "actual_failures": [
+        {
+          "path": "build/compiler-gateG/import-rejection-before/result.json",
+          "observed": "G direct export actually accepted an imported but unused Compiler.Test module; narrow G-only import rejection repaired and genuine14casecorpuspassed.",
+          "status": "FAIL"
+        }
+      ],
+      "cold_prefix": "pending committed clean source snapshot; focused reports remain parent+dirty evidence",
+      "independent_review": {
+        "path": "build/kernel/gateG/independent-platform-review.json",
+        "sha256": "d05be08819f2a99997f08eb42c2406533bb47508f0db607cd85d7186f9e2bac2",
+        "scope": "focused source-bound parent+dirty, not clean commit qualification"
+      }
     },
     {
       "gate": "H",
@@ -201,5 +321,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0"
+  "verified_prefix_commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9"
 }

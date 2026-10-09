@@ -21,6 +21,7 @@ from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS, invalidate
 from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROLE_ROOTS,
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
                           configuration_roots, development_role, module_closure, source_inputs, startup_case, user_startup_case,
+                          configuration_development_modules,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -104,14 +105,53 @@ TASK_USER_IMAGES = tuple({"key": key, "id": index, "module": "Lemma.User.Develop
                           "symbol_prefix": "lemma_user_" + key + "_", "startup_case": "none",
                           "directory": "users/" + key}
                          for index, (key, module) in enumerate((("compute", "Compute"), ("sleeper", "Sleeper"), ("busy", "Busy")), 1))
+TASK_FAULT_USER_IMAGES = (*TASK_USER_IMAGES, {
+    "key": "fault", "id": 4, "module": "Lemma.User.Development.Tasks.Fault",
+    "source": "Lemma.User.Development.Tasks.Fault.main", "args": ["u64"],
+    "symbol_prefix": "lemma_user_fault_", "startup_case": "supervisor-csr", "directory": "users/fault"})
+MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES}
 
 
-def validate_user_image_catalog(value: object) -> dict:
+def image_specs(configuration: str) -> tuple[dict, ...]:
+    if not isinstance(configuration, str) or configuration not in MULTI_USER_CONFIGURATIONS:
+        raise Core0Error("unknown closed multi-image configuration")
+    return MULTI_USER_CONFIGURATIONS[configuration]
+
+
+def image_spec(configuration: str, image_key: str) -> dict:
+    matches = [row for row in image_specs(configuration) if row["key"] == image_key]
+    if len(matches) != 1:
+        raise Core0Error("unknown selected user image")
+    return matches[0]
+
+
+def development_modules(configuration: str, role: str) -> tuple[str, ...]:
+    expected = (("Lemma.Kernel.Development.FaultEntry", "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.Pressure")
+                if (configuration, role) == ("tasks-fault-development", "kernel") else
+                (configuration_modules(configuration)[role],) if development_role(configuration, role) else ())
+    if configuration_development_modules(configuration, role) != expected:
+        raise Core0Error("selected role Development authority differs from its exact audited module catalog")
+    return expected
+
+
+def validate_image_case_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
+    if configuration == "tasks-fault-development":
+        expected = {row["key"]: row["startup_case"] for row in image_specs(configuration)}
+        if (images != list(image_specs(configuration)) or build.get("user_startup_cases") != expected
+                or provenance.get("user_startup_cases") != expected):
+            raise Core0Error("mixed-image startup cases are missing or differ from the closed registry")
+    elif "user_startup_cases" in build or "user_startup_cases" in provenance:
+        raise Core0Error("per-image mixed startup metadata appears outside its selected configuration")
+
+
+def validate_user_image_catalog(value: object, *, configuration: str | None = None) -> dict:
     """Admit only the ordered Lean deployment catalog for the selected gate."""
     catalog = _object(value, "user image catalog")
+    selected = catalog.get("configuration") if configuration is None else configuration
+    images = image_specs(selected)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
-                "configuration": "tasks-development", "stage": "supervisor", "image_count": 3,
-                "images": list(TASK_USER_IMAGES)}
+                "configuration": selected, "stage": "supervisor", "image_count": len(images),
+                "images": list(images)}
     # Exact equality also closes paths, IDs, per-image prefixes and source roots.
     if (type(catalog.get("schema_version")) is not int or type(catalog.get("image_count")) is not int
             or catalog != expected or any(type(row.get("id")) is not int for row in catalog.get("images", []))):
@@ -256,11 +296,13 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                 "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown",
                 "Lemma.Kernel.Process.validateFrame", "Lemma.Kernel.Process.validateStack",
                 "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset"}
-    dispatch_edges = ({"Lemma.Kernel.Development.TasksEntry.dispatch": ["Lemma.Kernel.Scheduler.dispatch"],
+    task_dispatch = {"tasks-development": "Lemma.Kernel.Development.TasksEntry.dispatch",
+                     "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry.dispatch"}
+    dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
                        "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
                        "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
                        "Lemma.Kernel.Task.context": ["Lemma.Kernel.Process.validateStack"]}
-                      if unit.get("configuration") == "tasks-development" else
+                      if unit.get("configuration") in task_dispatch else
                       {"Lemma.Kernel.Process.dispatch": ["Lemma.Kernel.Process.validateFrame"]})
     required.update(dispatch_edges)
     if not required <= set(by_source):
@@ -297,7 +339,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     section of the startup object and its exact linked payload, not arbitrary
     writable data or additional target object symbols.
     """
-    multi_file = re.fullmatch(r"users/(compute|sleeper|busy)/(startup\.o|image\.elf)", object_file)
+    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault)/(startup\.o|image\.elf)", object_file)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
@@ -356,15 +398,16 @@ def _keys(value: dict, expected: set[str], context: str) -> None:
 
 def validate_unit(value: object, role: str, *, configuration: str = "normal", image_key: str | None = None) -> dict:
     unit = _object(value, f"{role} unit")
-    multi_user = configuration == "tasks-development" and role == "user"
+    multi_user = configuration in MULTI_USER_CONFIGURATIONS and role == "user"
     if (image_key is not None) != multi_user:
         raise Core0Error("per-image unit selection differs from its configuration/role")
-    image = next((row for row in TASK_USER_IMAGES if row["key"] == image_key), None) if multi_user else None
+    image = image_spec(configuration, image_key) if multi_user else None
     if multi_user and image is None:
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
             "used_execution_ops", "used_device_ops", "used_loops"}
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()), "unit")
+    case_field = {"startup_case"} if multi_user and configuration == "tasks-fault-development" else set()
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field, "unit")
     category = ("production" if configuration == "normal" else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
@@ -372,6 +415,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
+    if case_field and unit.get("startup_case") != image["startup_case"]:
+        raise Core0Error("per-image user unit startup case differs from its closed registry")
     roots = _array(unit.get("roots"), f"{role} roots")
     expected = [(image["source"], image["args"])] if multi_user else [(source, list(args)) for source, args in configuration_roots(configuration)[role]]
     if [(row.get("source"), row.get("args")) for row in roots if isinstance(row, dict)] != expected or len(roots) != len(expected):
@@ -394,8 +439,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if not production_identity or any(token in source.lower() for token in (".test.", "examples", "mutation")):
             raise Core0Error("function lacks a production Lean source identity")
         if ".Development." in source:
-            module = image["module"] if multi_user else configuration_modules(configuration)[role]
-            if (not multi_user and not development_role(configuration, role)) or not re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source):
+            allowed = (image["module"],) if multi_user else development_modules(configuration, role)
+            if not any(re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source) for module in allowed):
                 raise Core0Error("development source escapes its exact selected module namespace")
         prefix = image["symbol_prefix"] if multi_user else "lemma_" + role + "_"
         if not isinstance(symbol, str) or not re.fullmatch(re.escape(prefix) + r"[A-Za-z0-9_.$]+", symbol):
@@ -480,11 +525,12 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     return unit
 
 
-def validate_layout(value: object, *, configuration: str = "normal") -> dict:
+def validate_layout(value: object, *, configuration: str = "normal", image_key: str | None = None) -> dict:
     layout = _object(value, "layout")
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
                    "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"}, "layout")
-    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != user_startup_case(configuration):
+    selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
+    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
         raise Core0Error("pinned RAM/frame contract differs")
@@ -517,7 +563,7 @@ def validate_layout(value: object, *, configuration: str = "normal") -> dict:
 def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
     validate_configuration_stage(configuration, stage)
     catalog = _object(value, "primitive catalog")
-    multi = configuration == "tasks-development"
+    multi = configuration in MULTI_USER_CONFIGURATIONS
     _keys(catalog, {"schema_version", "contract_version", "stage", "configuration", "startup_case", "user_startup_case", "symbols",
                     "user_images" if multi else "user_symbols"}, "primitive catalog")
     expected_machine = MACHINE_SYMBOLS | (SUPERVISOR_SYMBOLS if stage == "supervisor" else set())
@@ -533,17 +579,20 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
         _keys(row, {"symbol", "privilege", "effect"}, "machine symbol")
         if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
             raise Core0Error("machine primitive privilege/effect differs")
-    expected_users = [{"key": row["key"], "id": row["id"], "startup_case": "none", "symbols": user_primitive_rows("none")}
-                      for row in TASK_USER_IMAGES] if multi else user_primitive_rows(user_startup_case(configuration))
+    expected_users = [{"key": row["key"], "id": row["id"], "startup_case": row["startup_case"], "symbols": user_primitive_rows(row["startup_case"])}
+                      for row in image_specs(configuration)] if multi else user_primitive_rows(user_startup_case(configuration))
     if (catalog.get("user_images" if multi else "user_symbols") != expected_users
             or multi and any(type(row.get("id")) is not int for row in catalog.get("user_images", []))):
         raise Core0Error("closed user primitive privilege/effect catalog differs")
     return expected_machine
 
 
-def validate_user_primitive_catalog(value: object, image: dict) -> dict:
-    expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": "tasks-development",
-                "image_key": image["key"], "image_id": image["id"], "startup_case": "none", "symbols": user_primitive_rows("none")}
+def validate_user_primitive_catalog(value: object, image: dict, *, configuration: str = "tasks-development") -> dict:
+    if image != image_spec(configuration, image.get("key")):
+        raise Core0Error("per-image primitive authority differs from the closed selected image")
+    expected = {"schema_version": 1, "contract_version": "lemma-user-execution-v1", "configuration": configuration,
+                "image_key": image["key"], "image_id": image["id"], "startup_case": image["startup_case"],
+                "symbols": user_primitive_rows(image["startup_case"])}
     catalog = _object(value, "per-image primitive catalog")
     if catalog != expected or type(catalog.get("schema_version")) is not int or type(catalog.get("image_id")) is not int:
         raise Core0Error("closed per-image user primitive catalog differs")
@@ -553,14 +602,14 @@ def validate_user_primitive_catalog(value: object, image: dict) -> dict:
 def validate_package_contract(value: object, *, configuration: str, catalog: dict | None = None) -> dict:
     image = {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
              "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0}
-    multi = configuration == "tasks-development"
+    multi = configuration in MULTI_USER_CONFIGURATIONS
     if multi:
-        selected = validate_user_image_catalog(catalog)["images"]
+        selected = validate_user_image_catalog(catalog, configuration=configuration)["images"]
         images = [{**image, "key": row["key"], "id": row["id"]} for row in selected]
     expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
                 "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
                 "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
-                "version": 1, "image_count": 3 if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
+                "version": 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
                 "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image})}
     contract = _object(value, "boot package contract")
     if (contract != expected or any(type(contract.get(key)) is not int for key in ("schema_version", "magic", "version", "image_count", "header_bytes", "descriptor_bytes"))
@@ -731,6 +780,32 @@ def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, 
             "fault_pc": {"supervisor-csr": base, "execute-data": 0x20000,
                          "execute-kernel": 0x80200000, "execute-misaligned": 0x10002}[case],
             "privileged_instruction_exceptions": [base] if case == "supervisor-csr" else []}
+
+
+def validate_image_attack_object(section_text: str, symbol_text: str, raw: bytes, assembly: str,
+                                *, configuration: str, image_key: str) -> dict:
+    """Bind the sole G CSR exception to the selected Fault startup input."""
+    image = image_spec(configuration, image_key)
+    case = image["startup_case"]
+    attacks = {symbol for symbol in defined_function_symbols(symbol_text) if symbol.startswith("lemma_user_attack_")}
+    sections = re.findall(r"(?m)^.*\.text\.user_adversarial\s+.*$", section_text)
+    if case == "none":
+        if sections or attacks or raw or ".text.user_adversarial" in assembly:
+            raise Core0Error("ordinary selected user startup object contains quarantined code")
+        return {"case": "none", "privileged_instruction_exceptions": []}
+    if (configuration, image_key, case) != ("tasks-fault-development", "fault", "supervisor-csr"):
+        raise Core0Error("unknown per-image privileged instruction authority")
+    symbol, effect, words = USER_ATTACKS[case]
+    section = re.fullmatch(r"\s*\[\s*(\d+)\]\s+\.text\.user_adversarial\s+PROGBITS\s+0+\s+[0-9a-f]+\s+000008\s+00\s+AX\s+0\s+0\s+4\s*", sections[0]) if len(sections) == 1 else None
+    rows = [line.split() for line in symbol_text.splitlines() if line.split() and line.split()[-1] == symbol]
+    if (section is None or attacks != {symbol} or len(rows) != 1 or len(rows[0]) != 8
+            or rows[0][1:] != ["0000000000000000", "8", "FUNC", "GLOBAL", "DEFAULT", section[1], symbol]
+            or raw != struct.pack("<2I", *words)
+            or _assembly_function(assembly, symbol) != ["csrr a0, sstatus", "ret"]):
+        raise Core0Error("Fault startup object CSR section/symbol/bytes/source inventory differs")
+    return {"case": case, "symbol": symbol, "effect": effect, "bytes": len(raw),
+            "section": ".text.user_adversarial", "object": image["directory"] + "/startup.o",
+            "raw_sha256": hashlib.sha256(raw).hexdigest(), "privileged_instruction_exceptions": [0]}
 
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
@@ -1072,29 +1147,31 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     This scanner independently checks every selected image's actual bytes.
     """
     image = selected_user_image(catalog, image_key)
+    configuration, user_case = catalog["configuration"], image["startup_case"]
     if optimization not in OPT_PASSES or output_dir.name != image_key or output_dir.parent.name != "users":
         raise Core0Error("per-image audit path/optimization differs")
     logs = []
     inspect = _artifact_inspector(root, output_dir, timeout_seconds, logs)
-    layout = validate_layout(load_json(output_dir / "layout.json"), configuration="tasks-development")
-    validate_user_primitive_catalog(load_json(output_dir / "primitive-catalog.json"), image)
-    unit = validate_unit(load_json(output_dir / "unit.json"), "user", configuration="tasks-development", image_key=image_key)
+    layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration, image_key=image_key)
+    validate_user_primitive_catalog(load_json(output_dir / "primitive-catalog.json"), image, configuration=configuration)
+    unit = validate_unit(load_json(output_dir / "unit.json"), "user", configuration=configuration, image_key=image_key)
     ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized")
           for kind, file in (("pre", "program.ll"), ("optimized", "program.opt.ll"))}
     assembly = (output_dir / "startup.S").read_text()
-    validate_user_entry_source(assembly, unit["roots"][0]["symbol"], "none")
-    primitive_symbols = {row["symbol"] for row in user_primitive_rows("none")}
+    validate_user_entry_source(assembly, unit["roots"][0]["symbol"], user_case)
+    primitive_symbols = {row["symbol"] for row in user_primitive_rows(user_case)}
     object_functions = {"startup.o": primitive_symbols, "program.o": set(ir["optimized"]["definitions"])}
     allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                            "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
-    initializer = None
+    initializer, attack_object = None, None
     for obj, expected in object_functions.items():
         symbols = inspect("llvm-readelf", ["-s", "--wide", obj], obj + "-symbols")
         if defined_function_symbols(symbols) != expected or not relocation_types(inspect("llvm-readelf", ["-r", obj], obj + "-relocations")) <= allowed_relocations:
             raise Core0Error("user object executable source/relocation closure differs")
         section_text = inspect("llvm-readelf", ["-S", "--wide", obj], obj + "-sections")
         sections = alloc_section_names(section_text)
-        allowed = {".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"} if obj == "startup.o" else {".text", ".rodata", ".rodata.cst8", ".data", ".bss"}
+        allowed = ({".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"}
+                   | ({".text.user_adversarial"} if user_case != "none" else set())) if obj == "startup.o" else {".text", ".rodata", ".rodata.cst8", ".data", ".bss"}
         if not sections <= allowed:
             raise Core0Error("unaccounted allocated per-image user object section")
         if ".rodata.cst8" in sections:
@@ -1102,6 +1179,12 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
             if not constant or int(constant[1], 16) == 0 or int(constant[1], 16) % 8:
                 raise Core0Error("user constant pool flags/entry size/alignment differ")
         if obj == "startup.o":
+            attack_bytes = b""
+            if user_case != "none":
+                inspect("llvm-objcopy", ["-O", "binary", "--only-section=.text.user_adversarial", obj, "audit-attack-object.bin"], "attack-object-extract")
+                attack_bytes = (output_dir / "audit-attack-object.bin").read_bytes()
+            attack_object = validate_image_attack_object(section_text, symbols, attack_bytes, assembly,
+                                                        configuration=configuration, image_key=image_key)
             inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", obj, "audit-abi-object.bin"], "abi-object-extract")
             initializer = validate_user_abi_data(section_text, (output_dir / "audit-abi-object.bin").read_bytes(), symbols, assembly,
                                                 object_file=image["directory"] + "/startup.o")
@@ -1129,7 +1212,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
                  function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined), maximum_compiled_frame_bytes=max(frames.values()))
     elf, symbols, raw, ranges = inspect_linked_elf(inspect, name="user", image="image.elf", expected=primitive_symbols | set(ir["optimized"]["definitions"]),
-                                                 layout=layout, user=True, assembly=assembly)
+                                                 layout=layout, user=True, assembly=assembly, user_case=user_case)
     for section, target in ((".text", "text.bin"), (".data", "data.bin")):
         actual = "audit-extracted-" + target
         inspect("llvm-objcopy", ["-O", "binary", "--only-section=" + section, "image.elf", actual], target + "-extract")
@@ -1145,11 +1228,12 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     elf["initialized_data"] = initialized
     return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph,
             "image_sha256": sha256(output_dir / "image.elf"), "text_sha256": sha256(output_dir / "text.bin"),
-            "data_sha256": sha256(output_dir / "data.bin"), "commands": logs}
+            "data_sha256": sha256(output_dir / "data.bin"), "commands": logs,
+            **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" else {})}
 
 
 def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
-                            optimization: str, roles: dict, standalone: bool) -> None:
+                            optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development") -> None:
     rows = _array(rows, "multi-image construction commands")
     if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
                        or not isinstance(row.get("argv"), list) or not row["argv"]
@@ -1199,7 +1283,7 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
         consumers["UserFilesExport.lean"] = f'import Lemma.Compiler.KernelExport\n\n#lemma_export_user_files "{images[0]["key"]}"\n'
     else:
         consumers["BootExport.lean"] = "import Lemma.Compiler.KernelExport\n\n#lemma_export_boot_files\n"
-        for role, module in configuration_modules("tasks-development").items():
+        for role, module in configuration_modules(configuration).items():
             consumers[role + "/Export.lean"] = (f'import {module}\nimport Lemma.Compiler.KernelExport\n\n#lemma_export_unit "{role}" ['
                                                 + ", ".join(source for source, _ in roles[role]) + "]\n")
     for path, contents in consumers.items():
@@ -1229,9 +1313,10 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         provenance = _object(load_json(output_dir / "user-provenance.json"), "independent user provenance")
         catalog = validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json"))
         image = selected_user_image(catalog, provenance.get("image_key"))
+        configuration = catalog["configuration"]
         key, directory = image["key"], image["directory"]
-        identity = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": "tasks-development",
-                    "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": "none"}
+        identity = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": configuration,
+                    "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": image["startup_case"]}
         if (any(build.get(field) != value or provenance.get(field) != value for field, value in identity.items())
                 or type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
                 or type(build.get("image_id")) is not int or type(provenance.get("image_id")) is not int
@@ -1270,7 +1355,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         expected.update(uint_source=str(uint_source), uint_source_sha256=LEAN_UINT_SOURCE_SHA256)
         if realization != expected or build.get("lean_source_realization") != expected or not uint_source.is_file() or sha256(uint_source) != LEAN_UINT_SOURCE_SHA256:
             raise Core0Error("independent user immutable Lean source evidence differs")
-        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True)
+        validate_multi_commands(provenance.get("commands"), root=root, output_dir=output_dir, images=[image], optimization=optimization, roles={}, standalone=True, configuration=configuration)
         observed = audit_user_image(root=root, output_dir=output_dir / directory, catalog=catalog, image_key=key,
                                     optimization=optimization, timeout_seconds=timeout_seconds)
         logs.extend(observed["commands"])
@@ -1317,8 +1402,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         build = _object(load_json(output_dir / "build.json"), "build report")
         provenance = _object(load_json(output_dir / "provenance.json"), "provenance")
         configuration = provenance.get("configuration")
-        multi = configuration == "tasks-development"
-        catalog = validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json")) if multi else None
+        multi = configuration in MULTI_USER_CONFIGURATIONS
+        catalog = validate_user_image_catalog(load_json(output_dir / "user-image-catalog.json"), configuration=configuration) if multi else None
         images = catalog["images"] if multi else []
         roles = configuration_roots(configuration)
         category = artifact_category(configuration)
@@ -1346,6 +1431,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             raise Core0Error("build execution stage/profile differs")
         validate_configuration_stage(configuration, stage)
         case, user_case = startup_case(configuration), user_startup_case(configuration)
+        validate_image_case_provenance(build, provenance, configuration=configuration, images=images)
         if build.get("startup_case") != case or provenance.get("startup_case") != case or build.get("user_startup_case") != user_case or provenance.get("user_startup_case") != user_case:
             raise Core0Error("build/provenance generated startup case differs")
         generated = (["startup.S", "link.ld", "layout.json", "primitive-catalog.json", "boot-package.S", "package-contract.json", "user-image-catalog.json"]
@@ -1382,8 +1468,9 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"current source differs from built input: {name}")
         for role, module in configuration_modules(configuration).items():
-            closure = module_closure(root, module, allow_development=development_role(configuration, role))
-            if any("/Development/" in path and path != module.replace(".", "/") + ".lean" for path in closure):
+            allowed = development_modules(configuration, role)
+            closure = module_closure(root, module, allow_development=bool(allowed), development_modules=allowed)
+            if any("/Development/" in path and path not in {selected.replace(".", "/") + ".lean" for selected in allowed} for path in closure):
                 raise Core0Error("dependency imports another configuration's development module")
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
@@ -1392,7 +1479,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
                 raise Core0Error("per-image dependency imports another development module")
-            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role)) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
+            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role)) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
                 raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
@@ -1435,7 +1522,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                               [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
         if multi:
-            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False)
+            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration)
         if compile_commands != expected_commands:
             raise Core0Error("actual compiler/link command closure differs")
         for map_file, allowed in ((("image.map", BOOT_OBJECTS),) if multi else (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS))):
@@ -1605,11 +1692,15 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             record["user_images"] = {image["key"]: {"id": image["id"], "module": image["module"], "source": image["source"],
                                     **{key: user_audits[image["key"]][key] for key in ("image_sha256", "text_sha256", "data_sha256", "stack_bounds")},
                                     "text_bytes": (output_dir / image["directory"] / "text.bin").stat().st_size,
-                                    "data_bytes": (output_dir / image["directory"] / "data.bin").stat().st_size} for image in images}
+                                    "data_bytes": (output_dir / image["directory"] / "data.bin").stat().st_size,
+                                    **({"startup_case": image["startup_case"], "object_quarantined_startup": user_audits[image["key"]]["object_quarantined_startup"]}
+                                       if configuration == "tasks-fault-development" else {})} for image in images}
             record["unit_ir"]["users"] = {key: value["unit_ir"] for key, value in user_audits.items()}
             record["stack_bounds"]["roles"]["users"] = {key: value["stack_bounds"] for key, value in user_audits.items()}
             record["package_images"] = package_images
             record["user_image_catalog_sha256"] = sha256(output_dir / "user-image-catalog.json")
+            if configuration == "tasks-fault-development":
+                record["user_startup_cases"] = {image["key"]: image["startup_case"] for image in images}
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
         if source_inputs(root) != source_hashes:
