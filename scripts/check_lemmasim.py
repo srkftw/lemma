@@ -292,7 +292,11 @@ def main():
         closure = sim.backend_identity(qemu, timeout=remaining(60))
         result['qemu_closure'] = closure
         command(['python3', '-m', 'unittest', 'discover', '-s', 'tests/lemmasim', '-v'], out / 'host-tests.log', 180)
-        command(['lake', 'build', 'Lemma.Platform.LemmaSim.NotebookKernel'],
+        # The kernel and user notebook are separately linked modules. Build the
+        # complete fixture import roots explicitly before invoking lean; a warm
+        # project cache must not supply otherwise missing user/compiler objects.
+        command(['lake', 'build', 'Lemma.Platform.LemmaSim.NotebookKernel',
+                 'Lemma.Applications.Notebook', 'Lemma.Compiler.CFGLower'],
                 out / 'lean-host-build.log', 1200)
         command(['lake', 'env', 'lean', 'tests/kernel/BulkCopyAndDeadline.lean'],
                 out / 'BulkCopyAndDeadline.log', 180)

@@ -70,7 +70,23 @@ closure plus RV64 O0/O2 object generation pass. Probe result SHA256:
 `build/lemmasim/ink-header-codegen-attempt1`. The first fixture elaboration FAIL
 is retained. These J and focused observations do not pass the next linked notebook.
 
-Next: freeze/commit the guest header validation; run one exact-candidate full
+The header validation is published at `115a33575e0d600151b6c83b58a7b4665906f860`.
+Its full run was stopped and reaped before a workflow when actual `dea6281` CI
+reported another fresh prerequisite omission: `NotebookReads` imports the
+separately linked Notebook module, which the kernel-only preparation never builds.
+Retain `build/lemmasim/ci-dea6281-run38083119478` and
+`build/lemmasim/task004-115a335-full1`; neither is a pass. Preparation now names
+NotebookKernel, Notebook and CFGLower explicitly. A new private workspace with
+no inherited project modules passes the three-target build and all ten fixtures
+(90.93 seconds, all child processes reaped); source hashes and the outer cache
+inventory are unchanged. Result SHA256:
+`270b83acdccc8d28206969b3cb892dc586d14ae3d09f60d0bc33f47822adc9b0` in
+`build/lemmasim/fresh-fixture-cache-115a335-checkerfix-attempt1`.
+This is fresh preparation evidence, not RV64 acceptance. Actual `dea6281` CI had five
+passed jobs, three cancelled jobs and one failed notebook job. The published
+`115a335` PR run `38083988506` was queued at its retained initial snapshot.
+
+Next: freeze/commit the explicit fixture preparation repair; run one exact-candidate full
 notebook matrix (editing, both geometries, loss, active-DMA isolation, device
 faults, two real behavioral source negatives, 16 pages / 100,000 raw samples),
 all required actual CI; the unchanged J implementation retains its separate
