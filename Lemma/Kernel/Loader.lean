@@ -242,7 +242,9 @@ private def initializeState (address record imageIndex argument : UInt64) : Acti
 private def stackFrame (owner handle : UInt64) : Action :=
   .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
   if s = 0 then
-    .bind (Frames.mappingCount owner handle) fun s pins =>
+    -- Resolve already checked the live grant; S critical sections cannot
+    -- change ownership before inspecting pins through the same physical slot.
+    .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
     if s = 0 then
       if pins = 0 then .done 0 physical else .done invariantFailure 0
     else .done invariantFailure 0
@@ -352,9 +354,11 @@ S traps keep SIE clear, so the selected audit accounts one vector and no nested
 S interrupt vector. M entry uses the separate firmware-private stack. -/
 def stackCanary : UInt64 := 0x4c4d535441434b34
 
-def validateExpandedStack (descriptor : UInt64) : Action :=
-  .bind (AddressSpace.base descriptor) fun s address => if s = 0 then
-  .bind (AddressSpace.owner descriptor) fun s owner => if s = 0 then
+/-- Kernel-internal validation in the same nonpreemptible call that obtained
+`address` from AddressSpace.base. This helper does not authorize an untrusted
+address and is never exposed through a syscall. -/
+def validateExpandedStackAt (address : UInt64) : Action :=
+  .bind (get address 24) fun s owner => if s = 0 then
   .bind (get address kernelStackHandleOffset) fun s first => if s = 0 then
   .bind (get address kernelStackSecondHandleOffset) fun s second => if s = 0 then
   .bind (get address kernelStackThirdHandleOffset) fun s third => if s = 0 then
@@ -370,7 +374,11 @@ def validateExpandedStack (descriptor : UInt64) : Action :=
   else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
   else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
   else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
-  else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0
+
+def validateExpandedStack (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s address => if s = 0 then
+  validateExpandedStackAt address else .done invariantFailure 0
 
 private def abortQuad (address owner first second third fourth : UInt64) : Action :=
   .bind (put address kernelStackTopOffset 0) fun _ _ =>

@@ -264,7 +264,8 @@ Prepare the pinned tools and guest images once, then launch without rebuilding:
 ./scripts/lemmasim run --disk build/lemmasim/my-notebook.raw --mode student
 ```
 
-The native QEMU window displays the controller's visible pixels. Pointer events
+The resizable native QEMU window fits the portrait controller image to its
+viewport and displays the controller's visible pixels. Pointer events
 enter its pen FIFO. All toolbar, ink, page and document behavior runs in the guest.
 The eight guest tools are home/notebook toggle, previous page, next/add page,
 undo, redo, erase latest stroke, width and Save. Home closes the current namespace

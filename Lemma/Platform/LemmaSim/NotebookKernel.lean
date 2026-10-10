@@ -200,7 +200,7 @@ def dispatch (frame cause value : UInt64) : Action :=
     .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
     if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else false) = true then
       deviceCall descriptor context pc number
-    else Scheduler.call descriptor context pc
+    else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
     else fatal else fatal else fatal else fatal else fatal else fatal
   else
     .bind (observeFault cause) fun s _ => if s = 0 then

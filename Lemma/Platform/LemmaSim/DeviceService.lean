@@ -18,7 +18,7 @@ open Lemma.User
 
 def state : UInt64 := 0x80400c00
 -- surface/input/block keys, tile/input handles, IRQ flags, block ready/status/kind,
--- input waiter, block waiter, last accepted paper sequence
+-- input waiter, block waiter, last accepted paper sequence, paper IRQ masked
 private def get (offset : UInt64) : Action := Access.read64 (state + offset)
 private def put (offset value : UInt64) : Action := Access.write64 (state + offset) value
 private def fatal : Action := .done 255 0
@@ -42,7 +42,8 @@ def configure (surface input block : UInt64) : Action :=
   .bind (put 32 pen) fun s _ => if s = 0 then
   .bind (put 40 0) fun s _ => if s = 0 then
   .bind (put 48 0) fun s _ => if s = 0 then
-  .bind (put 72 0) fun s _ => if s = 0 then put 80 0 else fatal
+  .bind (put 72 0) fun s _ => if s = 0 then
+  .bind (put 80 0) fun s _ => if s = 0 then put 88 0 else fatal else fatal
   else fatal else fatal else fatal else .done s 0 else fatal else .done s 0
   else fatal else fatal else fatal
 
@@ -77,14 +78,28 @@ private def refresh (descriptor fieldsPointer : UInt64) : Action :=
   else fatal else fatal else fatal else fatal else fatal else fatal else .done s 0
 
 /-- syscall64: cap, op, metadata, pixels, reserved. op0 geometry;1 upload;
-2 refresh;3 last accepted sequence. Reads are harmless; only commands refresh. -/
+2 refresh;3 last accepted sequence;4 controller status. Busy is bit0 and changes
+only through the paper model's declared refresh/completion/reset transitions. -/
+def surfaceStatus (fieldsPointer pixels : UInt64) : Action :=
+  if fieldsPointer ||| pixels = 0 then
+  .bind (IO.read64 (Lemma.Drivers.Paper.base + Lemma.Platform.LemmaSim.DeviceABI.paperStatusOffset)) fun s status => if s = 0 then
+  if status &&& 8 = 8 then .done 0 status else
+  .bind (get 88) fun s masked => if s = 0 then
+  .bind (if masked = 1 then
+    .bind Lemma.Drivers.PLIC.enablePaper fun s _ => if s = 0 then put 88 0 else fatal
+    else .done 0 0) fun s _ => if s = 0 then .done 0 status else fatal
+  else fatal else .done s 0
+  else .done 16 0
+
 def surface (descriptor handle op fieldsPointer pixels reserved : UInt64) : Action :=
   if reserved = 0 then
   .bind (authorize descriptor handle 0) fun s _ => if s = 0 then
     if op = 0 then Lemma.Drivers.Paper.dimensions else
     if op = 1 then upload descriptor fieldsPointer pixels else
     if op = 2 then refresh descriptor fieldsPointer else
-    if op = 3 then IO.read64 (Lemma.Drivers.Paper.base + 112) else .done 16 0
+    if op = 3 then IO.read64 (Lemma.Drivers.Paper.base + 112) else
+    if op = 4 then surfaceStatus fieldsPointer pixels
+    else .done 16 0
   else .done s 0 else .done 16 0
 
 private def enablePen : Action := Lemma.Drivers.PLIC.enablePen
@@ -172,7 +187,11 @@ def notification (source : UInt64) : Action :=
   if source = 1 then
     .bind (get 40) fun s flags => if s = 0 then put 40 (flags ||| 2) else fatal
   else if source = 12 then
-    .bind (get 40) fun s flags => if s = 0 then put 40 (flags ||| 4096) else fatal
+    .bind Lemma.Drivers.PLIC.disablePaper fun s _ => if s = 0 then
+    .bind (put 88 1) fun s _ => if s = 0 then
+    .bind (get 40) fun s flags => if s = 0 then
+    .bind (put 40 (flags ||| 4096)) fun s _ => if s = 0 then wakeInput else fatal
+    else fatal else fatal else fatal
   else if source = 13 then
     .bind Lemma.Drivers.PLIC.disablePen fun s _ => if s = 0 then wakeInput else fatal
   else fatal
@@ -181,7 +200,9 @@ def deferred : Action :=
   .bind (get 40) fun s flags => if s = 0 then
   .bind (put 40 0) fun s _ => if s = 0 then
   .bind (if flags &&& 2 = 2 then blockInterrupt else .done 0 0) fun s _ => if s = 0 then
-  if flags &&& 4096 = 4096 then Lemma.Drivers.Paper.completion else .done 0 0
+  if flags &&& 4096 = 4096 then
+    .bind Lemma.Drivers.Paper.completion fun s _ => if s = 0 then surfaceStatus 0 0 else fatal
+  else .done 0 0
   else fatal else fatal else fatal
 
 end Lemma.Platform.LemmaSim.DeviceService

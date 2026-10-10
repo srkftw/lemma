@@ -9,6 +9,19 @@ metadata `[0x80400000,0x80500000)`, supervisor resume/reaper stack
 `[0x80500000,0x80510000)`, boot package `[0x80600000,0x80700000)`, and boot DTB
 `[0x87e00000,0x88000000)`. Unlisted RAM is not automatically allocatable.
 
+LemmaSim's `lemma-boot-clear-v1` layout field binds the entire reserved metadata
+interval `[0x80400000,0x80500000)` to the ELF's zero-file-byte RW `PT_LOAD` BSS.
+The existing Lean-authored structured M startup clears aligned 64-bit words
+before publishing the new hart/DTB handoff. Whole-machine QEMU reset retains
+RAM, so every boot must discard old task/object/device handles before rebuilding
+frame ownership. The strict ELF audit independently checks the bounds, actual
+clear-loop words, stride and handoff stores. Historical profiles retain their
+original 128-byte boot BSS. QEMU whole-machine reset quiesces devices before
+restarting the CPU; a live driver reset still uses its explicit quiescence path.
+Developer `system_reset` may drain/flush block nodes and proves warm reboot and
+refresh recovery. It is separate from Laboratory process power cut, which
+discards the filter's volatile writes without a clean shutdown.
+
 Before initializing frames, the compiled boot path selects count, owner quota
 and kernel-stack pages in three little-endian 64 control words starting at
 `0x804006a0`. Current non-LemmaSim kernel launches select512/32/4; the explicit
@@ -52,6 +65,26 @@ generation handles and PTEs. Row access is direct; lookup scans at most the curr
 mapped-leaf count, independent of document history. Allocation exhaustion leaves
 existing mappings intact.
 
+Within one single-hart S critical section, registry and stack pin counts are
+read through the physical metadata slot whose exact owner, generation and
+purpose have just been resolved. This removes a second resolution of the same
+grant. Running/blocked context and trap-frame validation similarly share one
+freshly validated descriptor base within their call, while retaining exact
+SATP/root agreement, current stack handles and pin counts, contiguous frames,
+published top, canaries and hardware privilege checks. The low-level
+`validateStackAt`/`validateExpandedStackAt` helpers require that base from the
+same call; no user endpoint exposes them. Validation results are never cached
+across syscalls or supervisor critical sections.
+
+Lookup validates the complete directory before reading live rows. It then reads
+each page's physical address once and scans its at most128 live VA words; the
+legacy inline list uses the same bounded word scan. Finding one matching row
+does not stop the scan. A second match anywhere in the live list, including
+another registry page, rejects the descriptor. There is no stale mapping cache.
+The selected row still undergoes exact owner, generation, purpose, permission,
+tracked-PTE and real page-table validation. Single-hart supervisor critical
+sections prevent a registry mutation between directory validation and scanning.
+
 Expanded user allocation accepts aligned pages in `[0x40000,0x800000)`, except the
 reserved finisher page at `0x100000`. Legacy allocation keeps the old upper bound
 `0x100000`. The 1024 total-leaf ceiling includes text/data/stack pages and reports
@@ -93,3 +126,30 @@ two 4 KiB user pages. Both pages, permissions and the complete scratch destinati
 are validated before any writes/input consumption. Increasing this limit past
 4096 requires a new full-page preflight. The legacy console retains its explicit
 256-byte ABI; IPC retains its own packet bounds.
+
+When both physical user aliases, the scratch address, page split and byte length
+are eight-byte aligned, copying uses at most512 checked64-bit transfers. Each
+word stays wholly within a preflighted user page and the owned scratch span.
+Unaligned spans and partial-word tails use the original bounded byte path.
+Neither path writes anything until full destination validation succeeds. The
+host-only literal Action fixture `tests/kernel/BulkCopyAndDeadline.lean` checks
+4096 bytes across two pages, a13-byte unaligned crossing, read-only/missing
+second-page rejection without partial writes, stale/wrong scratch handles and
+duplicate rows in both registry layouts. CPU timing and stack bounds are
+separate artifact/boot observations.
+
+The workload checker can retain read-only allocator observations using
+`conformance/lemmasim/check_owned_memory.py`. Each physical read is at most
+64 KiB. Ready and final-before-reap observations read the bounded ownership
+array, accounting counter, task descriptors and eight registry pages per live
+task; periodic observations read one rotating ownership slice at intervals of
+at least 30 seconds. Registry words are VA, owned handle, exact PTE, permissions
+at byte offsets 0, 8, 16, 24, matching `AddressSpace.commitLeaf` and `lookup`.
+The observer checks generation, owner, purpose, mapping counts, directory/root
+identity and exact recorded PTEs without pausing or writing guest memory. A cold
+boot that quits between monitor turns gets separately labelled actual Ready
+and final reads at that boundary. Missing or contradictory observations fail;
+the maximum observed allocation is not a whole-run high-water proof. A selected
+real guest call-closure review checks that normal raw append and raster paths
+do not load complete page history or allocate pages. Toolbar/page-loading paths
+remain separate, and this review is not a whole-program memory proof.

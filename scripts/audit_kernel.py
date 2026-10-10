@@ -409,9 +409,9 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
         entry.update({cfg:p+'Development.ServiceEntry.dispatch' for cfg in SERVICE_INSTRUCTION_CONFIGURATIONS})
         dispatch=entry.get(unit.get('configuration'))
         edges=({dispatch:[p+'Scheduler.dispatch'],p+'Scheduler.dispatch':[p+'Task.capture'],
-                p+'Task.capture':[p+'Process.validateFrame'],p+'Task.context':[p+'Process.validateStack']}
+                p+'Task.capture':[p+'Process.validateFrame'],p+'Task.context':[p+'Process.validateStackAt']}
                if dispatch else {p+'Process.dispatch':[p+'Process.validateFrame']})
-        edges[p+'Process.validateFrame']=[p+'Process.validateStack']
+        edges[p+'Process.validateFrame']=[p+'Process.validateStackAt']
         required=set(edges)|{callee for callees in edges.values() for callee in callees}
         required|={p+'BootServices.bootServices',p+'Memory.Frames.configure',p+'Memory.Frames.init'}
         if not required<=all_names.keys(): raise Core0Error('four-page stack lacks its checked trap dispatch closure')
@@ -611,6 +611,82 @@ def validate_failed_call_gate(body: str, checked: str, protected: str, failed: s
         validate_call_precedes(body,checked,protected)
     return {"checked":checked,"protected":protected,"failure_helper":failed,
             "component":"status","equals":0,"gate":gate}
+
+
+def validate_fresh_descriptor_base_call(body: str, checked: str, protected: str,
+                                        failed: str | None = None, failed_body: str | None = None) -> dict:
+    """Bind a closed stack-helper call to this call's fresh descriptor result.
+
+    This is deliberately restricted to one UInt64 base argument, not a generic
+    unchecked-helper allowance. Status success must dominate every helper site.
+    """
+    variable=r'%[A-Za-z0-9_.$-]+'
+    results=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(checked)+r'\([^\n]*\)',body)
+    if len(results)!=1:
+        raise Core0Error('stack helper lacks one fresh descriptor validation')
+    values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(results[0])+r', 1$',body,re.M)
+    arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(protected)+r'\(i64 ('+variable+r'|[0-9]+)\)',body)
+    if len(values)!=1 or not arguments or any(argument!=values[0] for argument in arguments):
+        raise Core0Error('stack helper does not receive the exact fresh descriptor base')
+    if failed is None:
+        gate=validate_checked_call_gate(body,checked,protected)
+    else:
+        if failed_body is None: raise Core0Error('stack helper lacks its closed status predicate')
+        gate=validate_failed_call_gate(body,checked,protected,failed,failed_body)
+    return {'validated_base':values[0],**gate}
+
+
+def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
+    """Closed kernel-only helper inventory for within-call stack validation."""
+    names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+    p='Lemma.Kernel.'
+    base=p+'Memory.AddressSpace.base'
+    process=p+'Process.validateStackAt';loader=p+'Loader.validateExpandedStackAt'
+    allowed={process:{p+'Process.validateStack',p+'Process.validateFrame',p+'Task.context',p+'Task.savedContext'},
+             loader:{p+'Loader.validateExpandedStack',process}}
+    required={base,process,loader,p+'Process.failed'}
+    required|={p+'Memory.Access.read64',p+'Loader.kernelStackPagesOffset'}
+    if not required<=names.keys(): raise Core0Error('fresh stack helper closure is missing')
+    if unit.get('role')!='kernel': raise Core0Error('stack helper requires the kernel role')
+    by_source={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    for helper in (process,loader):
+        if by_source[helper].get('args')!=['u64'] or set(by_source[helper].get('effects',[]))!={'checked-access','physical-read'}:
+            raise Core0Error('stack helper signature differs from its single checked base')
+        if not re.search(r'^define \{ i64, i64 \} @'+re.escape(names[helper])+r'\(i64 %arg0\) nounwind noinline "disable-tail-calls"="true" \{',pre_ir,re.M):
+            raise Core0Error('stack helper emitted signature is not one checked base')
+    callers={helper:set() for helper in allowed};gates=[]
+    for source,symbol in names.items():
+        body=_ir_definition_body(pre_ir,symbol)
+        called=parse_definitions_and_calls(body)[2]
+        for helper in allowed:
+            if names[helper] not in called: continue
+            if source not in allowed[helper]: raise Core0Error('stack helper has an unapproved caller')
+            callers[helper].add(source)
+            if source==process and helper==loader:
+                arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(names[loader])+r'\(([^\n]*)\)',body)
+                if arguments!=['i64 %arg0']: raise Core0Error('expanded stack helper lost the current validated base')
+                # Only the exact four-page branch may enter the four-page helper.
+                comparisons=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 (%[A-Za-z0-9_.$-]+), 4$',body,re.M)
+                if len(comparisons)!=1: raise Core0Error('expanded stack helper lacks its exact page-count branch')
+                variable=r'%[A-Za-z0-9_.$-]+'
+                offsets=re.findall(r'('+variable+r') = call i64 @'+re.escape(names[p+'Loader.kernelStackPagesOffset'])+r'\(\)',body)
+                address=re.findall(r'('+variable+r') = add i64 %arg0, '+re.escape(offsets[0] if len(offsets)==1 else '<missing>')+r'$',body,re.M)
+                reads=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(names[p+'Memory.Access.read64'])+r'\(i64 '+re.escape(address[0] if len(address)==1 else '<missing>')+r'\)',body)
+                values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(reads[0] if len(reads)==1 else '<missing>')+r', 1$',body,re.M)
+                if len(values)!=1 or values[0]!=comparisons[0][1]:
+                    raise Core0Error('expanded stack helper page branch is not the actual descriptor field')
+                if re.fullmatch(r'\s*entry:\s*ret i64 2504\s*',_ir_definition_body(pre_ir,names[p+'Loader.kernelStackPagesOffset'])) is None:
+                    raise Core0Error('expanded stack helper page field moved')
+                gates.append({'source':source,**validate_boolean_gate(body,comparisons[0][0],names[loader])})
+            else:
+                failed=None if source==p+'Loader.validateExpandedStack' else p+('Task.failed' if source.startswith(p+'Task.') else 'Process.failed')
+                if failed is not None and failed not in names: raise Core0Error('fresh stack caller lacks its failure predicate')
+                gates.append({'source':source,**validate_fresh_descriptor_base_call(body,names[base],names[helper],
+                    None if failed is None else names[failed],None if failed is None else _ir_definition_body(pre_ir,names[failed]))})
+    if not callers[process] or callers[loader]!={process} and callers[loader]!={process,p+'Loader.validateExpandedStack'}:
+        raise Core0Error('fresh stack helper has no complete validated entry route')
+    return {'scope':'closed kernel stack helpers; fresh base shared only within a single call',
+            'callers':{helper:sorted(values) for helper,values in callers.items()},'gates':gates}
 
 
 def validate_boolean_gate(body: str, comparison: str, protected: str, *, success_when_true: bool = True,
@@ -2070,13 +2146,18 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     image = image_spec(configuration, image_key) if image_key is not None else None
     expected_managed = managed_fields(configuration, image)
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
-                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"} | set(expected_managed), "layout")
+                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"} | set(expected_managed)
+          | ({"boot_clear"} if configuration in LEMMASIM_CONFIGURATIONS else set()), "layout")
     if any(layout.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("layout managed policy/boot role differs")
     selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v2" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
     expanded = configuration in LEMMASIM_CONFIGURATIONS
+    if expanded and layout.get('boot_clear') != {
+            'contract_version': 'lemma-boot-clear-v1', 'base': 0x80400000,
+            'limit': 0x80500000, 'stride_bytes': 8, 'phase': 'M-startup-before-boot-handoff'}:
+        raise Core0Error('Lemmasim boot metadata clear interval differs')
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 8192 if expanded else 512):
         raise Core0Error("pinned RAM/frame contract differs")
     if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
@@ -2103,6 +2184,60 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
                 "stack_base": 0x3fffa000 if expanded else 0x3fffc000, "stack_pages": 4 if expanded else 2}:
         raise Core0Error("user virtual layout differs")
     return layout
+
+
+def validate_boot_metadata_clear(layout: dict, addresses: dict, segments: list[dict],
+                                 raw_machine: str, ranges: dict) -> dict:
+    """Independently bind reset initialization to actual ELF and instructions.
+
+    This checks the selected fixed startup loop; it is not a whole-program boot
+    proof. Historical profiles retain128B. LemmaSim clears its full reserved
+    metadata before writing the hart/DTB handoff on every CPU boot.
+    """
+    base = 0x80400000
+    limit = 0x80500000 if layout['configuration'] in LEMMASIM_CONFIGURATIONS else 0x80400080
+    expected = {'__bss_start': base, '__bss_end': limit,
+                '__boot_hartid': base, '__boot_dtb': base + 8}
+    if any(type(addresses.get(key)) is not int or addresses.get(key) != value
+           for key, value in expected.items()):
+        raise Core0Error('boot metadata/BSS linked symbols differ')
+    storage = [segment for segment in segments if segment['virtual_address'] < 0x80500000
+               and base < segment['virtual_address'] + segment['memory_size']]
+    if storage != [{'virtual_address': base, 'physical_address': base,
+                    'file_size': 0, 'memory_size': limit - base, 'flags': 'RW'}]:
+        raise Core0Error('boot metadata NOLOAD PT_LOAD interval differs')
+    start, size = ranges.get('_start', (None, None))
+    if type(start) is not int or type(size) is not int or start != 0x80000000 or size <= 0:
+        raise Core0Error('boot metadata clear lacks actual startup range')
+    rows = {}
+    for line in raw_machine.splitlines():
+        match = re.match(r'\s*([0-9a-f]+):\s+([0-9a-f]{8})\s', line)
+        if match and start <= int(match[1], 16) < start + size:
+            pc, word = int(match[1], 16), int(match[2], 16)
+            if pc in rows:
+                raise Core0Error('duplicated boot instruction address')
+            rows[pc] = word
+    def signed(value, bits):
+        return value - (1 << bits) if value & (1 << (bits - 1)) else value
+    def pcrel(pc, register):
+        hi, lo = rows.get(pc, 0), rows.get(pc + 4, 0)
+        if hi & 0xfff != (register << 7) | 0x17 or lo & 0xfffff != (register << 15) | (register << 7) | 0x13:
+            return None
+        return pc + signed(hi & 0xfffff000, 32) + signed(lo >> 20, 12)
+    matches = []
+    for pc in rows:
+        if (pcrel(pc, 5) == base and pcrel(pc + 8, 6) == limit
+                and [rows.get(pc + offset) for offset in (16, 20, 24, 28)]
+                    == [0x0062f863, 0x0002b023, 0x00828293, 0xff5ff06f]
+                and pcrel(pc + 32, 5) == base
+                and rows.get(pc + 40) == 0x0082b023
+                and rows.get(pc + 44) == 0x0092b423):
+            matches.append(pc)
+    if len(matches) != 1:
+        raise Core0Error('boot metadata clear loop bounds/store/stride/handoff instructions differ')
+    return {'contract_version': 'lemma-boot-clear-v1', 'base': base, 'limit': limit,
+            'bytes': limit - base, 'stride_bytes': 8, 'clear_loop_pc': matches[0] + 16,
+            'handoff_store_pc': matches[0] + 40, 'scope': 'actual fixed M startup BSS clear before hart/DTB publication'}
 
 
 def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
@@ -2709,6 +2844,9 @@ BACKEND_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Buffer.Server.existing': {'server'},
 }
 LEMMASIM_BACKEND_JUMP_TABLES = {
+    'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
+    'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
+    'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',70,['u64','u64'],[],[*range(2,18),*range(32,53),*range(64,72)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
@@ -3507,6 +3645,8 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
                      user_attack=attack if user and user_case in INSTRUCTION_CASES else None, configuration=layout["configuration"])
     record = {"entry": required, "segments": segments, "function_symbols": sorted(symbols),
               "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
+    if not user:
+        record['boot_metadata_clear'] = validate_boot_metadata_clear(layout, addresses, segments, raw_machine, ranges)
     if user:
         begin, size = ranges["_user_start"]
         pcs = [int(match[1], 16) for line in machine.splitlines()

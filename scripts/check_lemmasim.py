@@ -91,7 +91,7 @@ def image(configuration, optimization, out):
             'artifacts': sim.guest_artifact_identity(destination / 'image.elf',
                 require_capacity=configuration in ('lemmasim-notebook', 'lemmasim-isolation-development'))}
 
-def workflow(metadata, initial, name, geometry, out, timeout):
+def workflow(metadata, initial, name, geometry, out, timeout, *, observe_owned_memory=False):
     directory = out / name
     directory.mkdir()
     width, height = map(int, geometry.split('x'))
@@ -101,8 +101,17 @@ def workflow(metadata, initial, name, geometry, out, timeout):
     sim.write_json(manifest_file, manifest)
     disk = directory / 'disk.raw'
     shutil.copyfile(initial, disk)
-    result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
-                        raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
+    memory = None
+    if observe_owned_memory:
+        from check_owned_memory import Observation
+        memory = Observation(sim, directory / 'run', directory / 'owned-memory', metadata)
+        with memory:
+            result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
+                                raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
+        memory.require_observed()
+    else:
+        result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
+                            raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
     if result['status'] != 'OBSERVED_GUEST_WORKFLOW_BOUNDARY' or not result['process_reaped']:
         raise ValueError(f'{name} did not reach a quiescent guest Saved boundary')
     observed = check(disk, input_file, manifest_file, directory / 'run/devices.jsonl',
@@ -149,7 +158,9 @@ def workflow(metadata, initial, name, geometry, out, timeout):
         raise ValueError(f'{name} independent cold comparison rejected')
     return {'workflow': name, 'geometry': [width, height], 'guest_sha256': metadata['notebook']['sha256'],
             'observation': str(directory / 'workflow.json'), 'sha256': sim.sha(directory / 'workflow.json'),
-            'cold_observation': str(directory / 'cold.json'), 'cold_sha256': sim.sha(directory / 'cold.json')}
+            'cold_observation': str(directory / 'cold.json'), 'cold_sha256': sim.sha(directory / 'cold.json'),
+            **({'owned_memory_observation': str(directory / 'owned-memory/result.json'),
+                'owned_memory_sha256': sim.sha(directory / 'owned-memory/result.json')} if memory else {})}
 
 def notebook_replay(metadata, initial, out):
     directory = out / 'notebook-replay'
@@ -281,7 +292,15 @@ def main():
         closure = sim.backend_identity(qemu, timeout=remaining(60))
         result['qemu_closure'] = closure
         command(['python3', '-m', 'unittest', 'discover', '-s', 'tests/lemmasim', '-v'], out / 'host-tests.log', 180)
-        for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity'):
+        command(['lake', 'build', 'Lemma.Platform.LemmaSim.NotebookKernel'],
+                out / 'lean-host-build.log', 1200)
+        command(['lake', 'env', 'lean', 'tests/kernel/BulkCopyAndDeadline.lean'],
+                out / 'BulkCopyAndDeadline.log', 180)
+        command(['lake', 'env', 'python3', 'conformance/lemmasim/check_store_cache.py',
+                 '--output', str(out / 'store-cache')], out / 'store-cache.log', 300)
+        require_pass(out / 'store-cache/result.json')
+        for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
+                        'PaperRecovery', 'RasterizerReference', 'PacketCopies'):
             command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
                     out / f'{fixture}.log', 180)
         command(['python3', 'sim/host/check_qemu_devices.py', '--qemu', str(qemu), '--output', str(out / 'devices')], out / 'devices.log', 180)
@@ -321,6 +340,10 @@ def main():
             for loss in ('loss-overflow', 'loss-disconnect', 'loss-watchdog'):
                 result['cases'].append(workflow(metadata, initial, loss, '1650x2200', out, 300))
             result['replay'] = notebook_replay(metadata, initial, out)
+            from check_lemmasim_native import campaign as native_campaign
+            result['native_pointer'] = native_campaign(metadata, initial, out / 'native-pointer',
+                timeout=120, deadline_callback=remaining,
+                gtk=bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')))
             from check_lemmasim_faults import campaign
             baseline = out / 'basic'
             result['faults'] = campaign(metadata, qemu, baseline / 'disk.raw', baseline / 'committed',
@@ -333,12 +356,18 @@ def main():
                 before['commit'], remaining=lambda: remaining(14400))
             if result['publication_negative'].get('status') != 'PASS':
                 raise ValueError('Compiled publication-barrier regression was not observed and rejected')
-            result['cases'].append(workflow(metadata, initial, 'workload', '1650x2200', out, 3000))
+            from check_lemmasim_input_negative import campaign as input_negative
+            result['input_negative'] = input_negative(metadata, qemu, initial,
+                out / 'input-negative', before['commit'], remaining=lambda: remaining(14400))
+            if result['input_negative'].get('status') != 'PASS':
+                raise ValueError('Compiled pen-loss regression was not observed and rejected')
+            result['cases'].append(workflow(metadata, initial, 'workload', '1650x2200', out, 3000,
+                                          observe_owned_memory=True))
         if source() != before or sim.sha(qemu) != result['qemu_sha256']:
             raise ValueError('Source/backend changed during campaign')
         result['status'] = 'PASS'
         result['remaining_task_acceptance'] = ['inherited required CI/regressions',
-                                              'manual native frontend observation and draft publication']
+                                              'draft publication and retained offline evidence']
     except BaseException as error:
         result['error'] = str(error)
     finally:

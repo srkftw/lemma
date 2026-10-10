@@ -305,7 +305,7 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
         control_socket=socket_directory/'control.qmp'
     image=Path(metadata['initializer' if initializer else 'notebook']['path'])
     command=[metadata['qemu']['path'],'-machine','lemmasim-virt','-m','128M','-smp','1','-cpu','rv64,smrnmi=false,smdbltrp=false',
-             '-accel','tcg','-seed',RUN_POLICY['random_seed'],'-nodefaults','-bios','none','-kernel',str(image),'-display','none' if headless else 'gtk',
+             '-accel','tcg','-seed',RUN_POLICY['random_seed'],'-nodefaults','-bios','none','-kernel',str(image),'-display','none' if headless else 'gtk,zoom-to-fit=on',
              '-monitor','none','-serial',f'file:{out}/serial.bin','-qmp',f'unix:{control_socket},server=on,wait=off',
              '-rtc',f'base={RTC_ORIGIN},clock=vm','-global','virtio-mmio.force-legacy=false',
              '-global',f'lemma-paper-pen.width={width}','-global',f'lemma-paper-pen.height={height}',
@@ -379,7 +379,7 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                             reached=reached and captured.is_file() and captured.stat().st_size==until_ingress*72
                     if reached:
                         hardware=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
-                        if hardware['paper']['status']&1==0 and hardware['pen']['count']==0:
+                        if hardware['paper']['status']&(1|4|8)==0 and hardware['pen']['count']==0:
                             if until_view is not None and hardware['paper']['completed']<reported['view_request']['sequence']:continue
                             if until_ingress is not None:
                                 state=(reported['acknowledged_sequence'],hardware['paper']['completed'])

@@ -27,6 +27,10 @@ def ink1 : UInt64 := 0x308000
 def pageIndex : UInt64 := 0x310000
 def loadedInk : UInt64 := 0x318000
 def rootBuffer : UInt64 := 0x320000
+-- Root records use the first64 bytes of their page. The remaining bounded
+-- bitmap and a separate owned queue coalesce at most16384 controller tiles.
+def dirtyBitmap : UInt64 := rootBuffer + 512
+def dirtyQueue : UInt64 := 0x321000
 private def get (slot : UInt64) : Action := Memory.read64 (state + slot)
 private def put (slot value : UInt64) : Action := Memory.write64 (state + slot) value
 private def failed : Action := .done 95 0
@@ -96,14 +100,6 @@ def preflightChunk (buffer starting : UInt64) : Action :=
   if starting = 0 then .done 0 count else
   .bind (preflightEdit buffer) fun s _ => .done s count
 
-private def setPixel (x y color : UInt64) : Action :=
-  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
-  .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
-  if width ≤ x then .done 234 0 else if height ≤ y then .done 234 0 else
-  let address := Surface.framebuffer + y * ((width + 1) / 2) + x / 2
-  .bind (Memory.read8 address) fun s byte => if statusFailed s = true then .done s 0 else
-  Memory.write8 address (if x % 2 = 0 then (byte &&& (15 : UInt64)) ||| (color <<< 4) else (byte &&& (240 : UInt64)) ||| color)
-
 /-- Twenty bounded text cells: full commit state, namespace, page and width.
 Read-only is written READ ONLY because the small authored alphabet has no dash. -/
 def statusCharacter (save index ns page brush : UInt64) : UInt64 :=
@@ -136,17 +132,21 @@ def statusPixel (x y ns page save brush : UInt64) : UInt64 :=
     if (Surface.letter code >>> (14 - (y / 3 * 3 + withinCell / 3))) &&& 1 = 1 then 0 else 15
   else 15 else 15 else 15
 
-private def statusStep (i _ : UInt32) (acc ns page save brush : UInt64) : Action :=
-  let x := i.toUInt64 % 240
-  let y := i.toUInt64 / 240
-  .bind (setPixel (24 + x) (132 + y) (statusPixel x y ns page save brush)) fun s _ => .done s acc
+private def statusStep (i _ : UInt32) (acc ns page save dimensions : UInt64) : Action :=
+  let x := (i.toUInt64 % 120) * 2
+  let y := i.toUInt64 / 120
+  let brush := dimensions &&& 0xffff
+  let width := dimensions >>> 16
+  let packed := (statusPixel x y ns page save brush <<< 4) ||| statusPixel (x + 1) y ns page save brush
+  .bind (Memory.write8 (Surface.framebuffer + (132 + y) * ((width + 1) / 2) + (24 + x) / 2) packed) fun s _ => .done s acc
 
 private def statusBar : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (get 136) fun s save => if statusFailed s = true then .done s 0 else
   .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 3840 statusStep 3840 0 ns page save brush fun s _ => .done s 0
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 1920 statusStep 1920 0 ns page save (brush ||| (width <<< 16)) fun s _ => .done s 0
 
 private def dirty (x0 y0 x1 y1 : UInt64) : Action :=
   .bind (get 336) fun s oldX => if statusFailed s = true then .done s 0 else
@@ -158,17 +158,112 @@ private def dirty (x0 y0 x1 y1 : UInt64) : Action :=
   .bind (put 352 (maximum x1 endX)) fun s _ => if statusFailed s = true then .done s 0 else
   put 360 (maximum y1 endY)
 
-private def pumpRefresh : Action :=
+private def clearDirtyStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Memory.write64 (dirtyBitmap + i.toUInt64 * 8) 0) fun s _ => .done s acc
+
+private def clearDirtyTiles : Action :=
+  .boundedFoldU64 256 clearDirtyStep 256 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 456 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 464 0) fun s _ => if statusFailed s = true then .done s 0 else put 472 0
+
+private def queuePut (slot index : UInt64) : Action :=
+  let address := dirtyQueue + slot / 4 * 8
+  let shift := slot % 4 * 16
+  .bind (Memory.read64 address) fun s word => if statusFailed s = true then .done s 0 else
+  Memory.write64 address ((word &&& ~~~((0xffff : UInt64) <<< shift)) ||| (index <<< shift))
+
+private def queueGet (slot : UInt64) : Action :=
+  .bind (Memory.read64 (dirtyQueue + slot / 4 * 8)) fun s word =>
+  if statusFailed s = true then .done s 0 else .done 0 ((word >>> (slot % 4 * 16)) &&& 0xffff)
+
+private def markDirtyTile (index : UInt64) : Action :=
+  if 16384 ≤ index then .done 234 0 else
+  let address := dirtyBitmap + index / 8
+  let mask := (1 : UInt64) <<< (index % 8)
+  .bind (Memory.read8 address) fun s bits => if statusFailed s = true then .done s 0 else
+  if bits &&& mask = mask then .done 0 index else
+  .bind (get 456) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 472) fun s head => if statusFailed s = true then .done s 0 else
+  if 16384 ≤ count then .done 235 0 else if 16384 ≤ head then .done 234 0 else
+  .bind (queuePut head index) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write8 address (bits ||| mask)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 472 ((head + 1) % 16384)) fun s _ => if statusFailed s = true then .done s 0 else put 456 (count + 1)
+
+private def uploadTileIndex (surface dimensions index : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let columns := (width + 31) / 32
+  if columns * ((height + 31) / 32) ≤ index then .done 234 0 else
+  let x := (index % columns) * 32
+  let y := (index / columns) * 32
+  .bind (Surface.loadTile x y width height) fun s _ => if statusFailed s = true then .done s 0 else
+  Surface.uploadTile surface x y width height
+
+private def restorePaperStep (_ _ : UInt32) (acc surface dimensions _ _ : UInt64) : Action :=
+  .bind (get 488) fun s index => if statusFailed s = true then .done s 0 else
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  if ((width + 31) / 32) * ((height + 31) / 32) ≤ index then .done 0 acc else
+  .bind (uploadTileIndex surface dimensions index) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 488 (index + 1)) fun s _ => if statusFailed s = true then .done s 0 else .done 0 (acc + 1)
+
+private def uploadDirtyStep (_ _ : UInt32) (acc surface dimensions _ _ : UInt64) : Action :=
+  .bind (get 456) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 0 then .done 0 acc else if 16384 < count then .done 234 0 else
+  .bind (get 464) fun s tail => if statusFailed s = true then .done s 0 else
+  if 16384 ≤ tail then .done 234 0 else
+  .bind (queueGet tail) fun s index => if statusFailed s = true then .done s 0 else
+  .bind (uploadTileIndex surface dimensions index) fun s _ => if statusFailed s = true then .done s 0 else
+  let address := dirtyBitmap + index / 8
+  let mask := (1 : UInt64) <<< (index % 8)
+  .bind (Memory.read8 address) fun s bits => if statusFailed s = true then .done s 0 else
+  if bits &&& mask = 0 then .done 234 0 else
+  .bind (Memory.write8 address (bits ^^^ mask)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 464 ((tail + 1) % 16384)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 456 (count - 1)) fun s _ => if statusFailed s = true then .done s 0 else .done 0 (acc + 1)
+
+/-- Bounded display progress also repairs interrupted refreshes from the owned
+framebuffer. Recovery cursor/phase remain ordinary user memory, not document truth. -/
+def pumpRefresh : Action :=
+  .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Surface.status surface) fun s status => if statusFailed s = true then .done s 0 else
+  if status &&& 1 = 1 then .done 0 0 else
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  -- A completed full quality request alone clears controller bit8. If that
+  -- accepted request was reset too, start a new complete framebuffer upload.
+  .bind (if status &&& 8 = 8 then
+    if recovery = 1 then .done 0 0 else
+    .bind clearDirtyTiles fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 488 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 480 1) fun s _ => if statusFailed s = true then .done s 0 else
+    dirty 0 0 width height
+    else put 480 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 336) fun s x0 => if statusFailed s = true then .done s 0 else
   if x0 = 0xffff then .done 0 0 else
   .bind (get 344) fun s y0 => if statusFailed s = true then .done s 0 else
   .bind (get 352) fun s x1 => if statusFailed s = true then .done s 0 else
   .bind (get 360) fun s y1 => if statusFailed s = true then .done s 0 else
-  .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (if recovery = 1 then
+    .boundedFoldU64 4 restorePaperStep 4 0 surface (width ||| (height <<< 16)) 0 0 fun s count => .done s count
+    else .done 0 0) fun s uploaded => if statusFailed s = true then .done s 0 else
+  .bind (get 488) fun s restored => if statusFailed s = true then .done s 0 else
+  if (if recovery = 1 then
+    if restored < ((width + 31) / 32) * ((height + 31) / 32) then true else false
+    else false) = true then .done 0 0 else
+  -- At most four uploads per main-loop iteration. FIFO consumption and store
+  -- progress continue between batches; a refresh names only uploaded pixels.
+  .boundedFoldU64 4 uploadDirtyStep (4 - uploaded).toUInt32 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
+  if statusFailed s = true then .done s 0 else
+  .bind (get 456) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending = 0 then
   .bind (Surface.acceptedSequence surface) fun s previous => if statusFailed s = true then .done s 0 else
   if previous = 0xffffffffffffffff then .done 170 0 else
   .bind (Surface.refresh surface (previous + 1) x0 y0 (x1 - x0) (y1 - y0) 2) fun s sequence =>
   if s = 171 then .done 0 0 else if statusFailed s = true then .done s 0 else
+  .bind (put 480 (if recovery = 1 then 2 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 352 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -177,6 +272,7 @@ private def pumpRefresh : Action :=
   .bind (if opened = 1 then reportCommitState 0x425 sequence 0 else .done 0 0)
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 440 0) fun s _ => .done s sequence
+  else .done 0 0
 
 private def contextStep (i _ : UInt32) (acc record first last dimensions : UInt64) : Action :=
   let index := i.toUInt64
@@ -205,13 +301,10 @@ private def rasterTileStep (i _ : UInt32) (acc origin extent dimensions upload :
   let columns := extent &&& 0xffff
   let x := (origin &&& 0xffff) + (i.toUInt64 % columns) * 32
   let y := (origin >>> 16) + (i.toUInt64 / columns) * 32
-  .bind (Surface.loadTile x y width height) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (Rasterizer.segment context Surface.tile x y width height) fun s changed => if statusFailed s = true then .done s 0 else
+  .bind (Rasterizer.segmentSurface context Surface.framebuffer x y width height) fun s changed => if statusFailed s = true then .done s 0 else
   if changed = 0 then .done 0 acc else
-  .bind (Surface.storeTile x y width height) fun s _ => if statusFailed s = true then .done s 0 else
   if upload = 0 then .done 0 (acc + changed) else
-  .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
-  .bind (Surface.uploadTile surface x y width height) fun s _ => .done s (acc + changed)
+  .bind (markDirtyTile (y / 32 * ((width + 31) / 32) + x / 32)) fun s _ => .done s (acc + changed)
 
 private def renderPair (record first last upload : UInt64) : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
@@ -239,7 +332,7 @@ private def renderPair (record first last upload : UInt64) : Action :=
   .boundedFoldU64 16384 rasterTileStep (columns * rows).toUInt32 0
     (x0 ||| (y0 <<< 16)) (columns ||| (rows <<< 16)) dimensions upload fun s changed =>
   if statusFailed s = true then .done s 0 else
-  if upload = 0 then .done 0 changed else dirty x0 y0 x1 y1
+  if upload = 0 then .done 0 changed else if changed = 0 then .done 0 0 else dirty x0 y0 x1 y1
 
 private def renderChunkStep (i _ : UInt32) (acc record _ _ _ : UInt64) : Action :=
   let sample := record + 128 + i.toUInt64 * 72
@@ -282,6 +375,7 @@ private def redraw : Action :=
   if 512 < count then .done 234 0 else
   .boundedFoldU64 512 redrawEntryStep count.toUInt32 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind statusBar fun s _ => if statusFailed s = true then .done s 0 else
+  .bind clearDirtyTiles fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (Surface.uploadAll surface width height) fun s _ => if statusFailed s = true then .done s 0 else
   dirty 0 0 width height
@@ -338,12 +432,9 @@ private def loadNotebook (ns : UInt64) : Action :=
   .bind (put 136 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind readNotebook fun s _ => if statusFailed s = true then readOnlyNotebook s else .done 0 0
 
-private def statusTileStep (i _ : UInt32) (acc surface dimensions _ _ : UInt64) : Action :=
-  let x := i.toUInt64 * 32
+private def statusTileStep (i _ : UInt32) (acc _ dimensions _ _ : UInt64) : Action :=
   let width := dimensions &&& 0xffff
-  let height := dimensions >>> 16
-  .bind (Surface.loadTile x 128 width height) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (Surface.uploadTile surface x 128 width height) fun s _ => .done s acc
+  .bind (markDirtyTile (4 * ((width + 31) / 32) + i.toUInt64)) fun s _ => .done s acc
 
 private def publishStatus : Action :=
   .bind statusBar fun s _ => if statusFailed s = true then .done s 0 else
@@ -658,6 +749,31 @@ where
     if py < 160 then .done 0 0 else
     .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
 
+/-- A service turn drains at most eight queued samples. The controller read is
+nonblocking; Empty is observed once and ends the turn. A full raw chunk is
+checked before fetching another sample, and release, loss, or a toolbar action
+returns to the save/display pumps before a new contact can begin. -/
+def drainInput (input : UInt64) : Action :=
+  .boundedFoldU64 8 drainStep 8 0 input 0 0 0 fun s consumed =>
+    if s = Status.iterationStop then .done 0 consumed else .done s consumed
+where
+  drainStep (_ _ : UInt32) (consumed input _ _ _ : UInt64) : Action :=
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop consumed else
+    .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+    if s = 174 then .done Status.iterationStop consumed else
+    if s = 175 then
+      .bind cancelInput fun s _ =>
+      if statusFailed s = true then .done s consumed else .done Status.iterationStop consumed
+    else if statusFailed s = true then .done s consumed else
+    .bind inputSample fun s _ => if statusFailed s = true then .done s consumed else
+    if count = 383 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s consumed else
+    if active = 0 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop (consumed + 1) else
+    .done 0 (consumed + 1)
+
 private def step : Action :=
   .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
@@ -671,9 +787,14 @@ private def step : Action :=
   .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
-  .bind (Syscall.call 65 input (if pending = 0 then if dirtyX = 0xffff then 2 else 1 else 1) raw 0 0) fun s _ =>
-  if s = 175 then cancelInput else if s = 174 then Syscall.sleep 10000 else
-  if statusFailed s = true then .done s 0 else inputSample
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  if (if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false) = true then
+    .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
+    if s = 175 then cancelInput else if s = 174 then Syscall.sleep 10000 else
+    if statusFailed s = true then .done s 0 else inputSample
+  else .bind (drainInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else
+    if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
 
 private def initializeMedium : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
@@ -713,7 +834,7 @@ def main (bootArgument : UInt64) : Action :=
   .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 33 allocateStep 33 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else

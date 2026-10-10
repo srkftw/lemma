@@ -132,8 +132,28 @@ observations use new output identities; the earlier files are not relabeled.
 | 256..328 | Private checkpoint destination/cursor/copy state |
 | 336 | Failure/read-only latch |
 | 344..368 | Bounded read cursor and expected indexed sequence |
+| 376..424 | Private validated read header: valid, namespace, object, sequence, generation, sector, payload bytes |
+| 432,440 | Private body-window valid flag and exact sector |
+| 448,456 | Current read's requested namespace/object |
 | 512,576 | Two private validated root candidates |
 | 1024..1535 | Private expected-publication sector |
+| 2048..2559 | Immutable private512-byte body read window |
+
+One record header and one body sector may be reused across bounded sequential
+read RPCs. Every RPC first validates the namespace-filtered latest index entry.
+The header key is the complete tuple `(namespace, object, indexed sequence,
+generation, record sector)`; the body key additionally names its exact sector.
+Only a validated header completion and a successful actual body read completion
+publish their respective valid flags. The window is copied out of the transport
+buffer, which the block driver may subsequently reuse. Payload bounds and short
+reads are checked on hits as on misses. A crossing request copies the current
+sector prefix and issues a real read for its next sector; it never treats a
+nonmatching sector as contiguous cached bytes.
+
+Mount clears the full context. Every write/flush submission, checkpoint start,
+and transport/media failure invalidates both flags. Replaced or tombstoned index
+entries cannot reuse a former tuple. This volatile optimization changes neither
+the on-disk format nor authorization, commit acknowledgement, or recovery.
 
 Phase16 header write,17 body write,18 sentinel write,19 payload flush,20
 publication write,21 final flush. Checkpoint phases32..40 cover source header,
@@ -164,6 +184,16 @@ most 128 bytes of chunk data. Each header field is little-endian aligned u64.
 Magic is `31525453414d454c`, version is 1. The eight fields at offsets 0 through
 56 are magic, version, operation, namespace, object, transaction, offset, count.
 The sender and reply handle come from the kernel envelope, never that header.
+
+The LemmaSim deployment selects a bounded 300,000,000-tick (thirty-second at
+the descriptor's 10 MHz timebase) IPC deadline ceiling for document requests.
+The historical IPC dispatcher and maximum remain 10,000,000 ticks. The larger
+ceiling is compiled deployment policy, not a caller-controlled maximum; an
+unknown ceiling rejects. The store client requests this declared bound while
+its asynchronous completion probes allow input handling to continue. A timeout
+is an explicit uncertain/failure result and never a fabricated successful
+Save or retry. The ten-second staging inactivity lease remains a separate
+resource-recovery policy and does not limit a running checkpoint/flush.
 
 | Operation | Request semantics |
 | --- | --- |

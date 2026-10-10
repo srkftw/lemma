@@ -13,9 +13,12 @@ structure State where
   words : Std.HashMap UInt64 UInt64 := {}
   contextReads : Nat := 0
   pixelsVisited : Nat := 0
+  surfaceBytes : UInt64 := 0
+  byteWrites : Array UInt64 := #[]
 
 def context : UInt64 := 0x40000
 def tile : UInt64 := 0x41000
+def surface : UInt64 := 0x50000
 def readWord (state : State) (address : UInt64) : UInt64 := state.words.getD address 0
 def writeWord (state : State) (address value : UInt64) : State :=
   { state with words := state.words.insert address value }
@@ -45,7 +48,8 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
         value := result.2
     execute state (next status value)
   | .platform op a b _ _ _ _ next =>
-    if !((context ≤ a && a < context + 64) || (tile ≤ a && a < tile + 512)) then
+    if !((context ≤ a && a < context + 64) || (tile ≤ a && a < tile + 512) ||
+         (surface ≤ a && a < surface + (← state.get).surfaceBytes)) then
       throw <| IO.userError "ink probe escaped caller-owned spans"
     match op with
     | .virtualRead64 =>
@@ -55,7 +59,7 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
       execute state (next 0 (readWord (← state.get) a))
     | .virtualRead8 => execute state (next 0 (readByte (← state.get) a))
     | .virtualWrite8 =>
-      state.modify fun s => writeByte s a b
+      state.modify fun s => { writeByte s a b with byteWrites := s.byteWrites.push a }
       execute state (next 0 0)
     | _ => throw <| IO.userError "unexpected ink probe primitive"
   | _ => throw <| IO.userError "unexpected ink probe Action"
@@ -125,6 +129,65 @@ def checkCase (words : Array UInt64) (tx ty width height : UInt64) (pattern : Bo
 def q (pixel dimension : UInt64) : UInt64 :=
   (pixel * 0x1000000 + dimension - 2) / (dimension - 1)
 
+def checkSurfaceCase (words : Array UInt64) (tx ty width height : UInt64) : IO Unit := do
+  let stride := (width + 1) / 2
+  let mut initial : State := { surfaceBytes := stride * height }
+  for i in [:8] do initial := writeWord initial (context + i.toUInt64 * 8) words[i]!
+  -- Seed the tile plus adjacent row bytes, rather than allocate the whole
+  -- screen in this host fixture. Every actual write is separately bounded.
+  for row in [:32] do
+    let y := ty + row.toUInt64
+    if y < height then
+      let left := if tx = 0 then 0 else tx / 2 - 1
+      let right := min stride (tx / 2 + 17)
+      for offset in [left.toNat:right.toNat] do
+        let byteIndex := y * stride + offset.toUInt64
+        let pattern := (byteIndex * 37 + 11) % 256
+        let packed := if width % 2 = 1 && offset.toUInt64 + 1 = stride then pattern ||| 15 else pattern
+        initial := writeByte initial (surface + byteIndex) packed
+  let state ← IO.mkRef initial
+  let result ← execute state (Lemma.Ink.Rasterizer.segmentSurface context surface tx ty width height)
+  require (result.1 == 0) "direct surface rejected literal context"
+  let actual ← state.get
+  require (actual.contextReads == 16 && actual.pixelsVisited ≤ 1024) "direct bounded context/pixel work"
+  let x0 := words[0]! * (width - 1) / 0x1000000
+  let y0 := words[1]! * (height - 1) / 0x1000000
+  let x1 := words[2]! * (width - 1) / 0x1000000
+  let y1 := words[3]! * (height - 1) / 0x1000000
+  let mut changed : UInt64 := 0
+  for i in [:1024] do
+    let x := tx + i.toUInt64 % 32
+    let y := ty + i.toUInt64 / 32
+    if x < width && y < height then
+      let address := surface + y * stride + x / 2
+      let before := readByte initial address
+      let before := if x % 2 == 0 then before >>> 4 else before &&& 15
+      let ink := reference x y x0 y0 x1 y1 words[4]! words[5]! words[6]! words[7]!
+      let expected := if ink then 0 else before
+      let observed := readByte actual address
+      let observed := if x % 2 == 0 then observed >>> 4 else observed &&& 15
+      require (observed == expected) "independent direct surface pixel mismatch"
+      if expected != before then changed := changed + 1
+  for address in actual.byteWrites do
+    let offset := address - surface
+    let y := offset / stride
+    let x := offset % stride * 2
+    require (surface ≤ address && address < surface + stride * height &&
+             tx ≤ x && x < tx + 32 && ty ≤ y && y < ty + 32) "direct write escaped clipped tile"
+  for row in [:32] do
+    let y := ty + row.toUInt64
+    if y < height then
+      if tx > 0 then
+        let address := surface + y * stride + tx / 2 - 1
+        require (readByte actual address == readByte initial address) "direct left row guard changed"
+      if tx / 2 + 16 < stride then
+        let address := surface + y * stride + tx / 2 + 16
+        require (readByte actual address == readByte initial address) "direct right row guard changed"
+      if width % 2 == 1 then
+        require (readByte actual (surface + (y + 1) * stride - 1) &&& 15 ==
+                 readByte initial (surface + (y + 1) * stride - 1) &&& 15) "unused row nibble changed"
+  require (changed == result.2) "direct surface dirty count differs"
+
 def rejectedContext (words : Array UInt64) : IO Unit := do
   let mut initial : State := {}
   for i in [:8] do
@@ -161,7 +224,17 @@ def check : IO Unit := do
                    #[0,0,0,0,4095,4095,8193,4095],
                    #[0,0,0,0,4095,4095,512,65536]] do
     rejectedContext invalid
-  IO.println s!"INK_INDEPENDENT_RASTER:PASS cases={cases+1} cached_context_reads=16 literal_bbox_pixels={visited} oracle_scans=1024"
+  let mut surfaces := 0
+  for (width,height) in #[(1650,2200),(1404,1872),(65,67),(33,35)] do
+    for brush in #[256,512,2048,8192] do
+      let words := #[q 25 width,q 25 height,q (min 40 (width-1)) width,q (min 40 (height-1)) height,0,4095,brush,4095]
+      for (tx,ty) in #[(0,0),(32,0),(0,32),(32,32)] do
+        checkSurfaceCase words tx ty width height
+        surfaces := surfaces + 1
+    for (tx,ty) in #[(0,0),((width-1)/32*32,(height-1)/32*32)] do
+      checkSurfaceCase #[0,0,0x1000000,0x1000000,4095,0,2048,4095] tx ty width height
+      surfaces := surfaces + 1
+  IO.println s!"INK_INDEPENDENT_RASTER:PASS tile_cases={cases+1} surface_cases={surfaces} cached_context_reads=16 literal_bbox_pixels={visited} oracle_scans=1024"
 
 end InkReference
 open Lean Elab Command

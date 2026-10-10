@@ -361,6 +361,19 @@ private def userStackPagesFor (configuration : String) : Nat :=
 private def packageVersionFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 2 else 1
 
+/-- Whole-machine LemmaSim reset retains RAM. Every reserved kernel metadata
+cell belongs to the new boot epoch, including handles outside the handoff
+record. The existing M startup clears this fixed ELF BSS before publishing the
+new handoff. Historical bindings retain their original128-byte BSS. -/
+private def bootClearLimitFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then Layout.metadataLimit else Layout.metadataBase + 128
+
+private def bootClearFields (configuration : String) : List (String × Json) :=
+  if configuration.startsWith "lemmasim-" then [("boot_clear", Json.mkObj [
+    ("contract_version", .str "lemma-boot-clear-v1"), ("base", toJson Layout.metadataBase),
+    ("limit", toJson (bootClearLimitFor configuration)), ("stride_bytes", 8),
+    ("phase", .str "M-startup-before-boot-handoff")])] else []
+
 private def layoutJson (configuration : String)
     (image? : Option UserImageSpec := none) : Json := Json.mkObj ([
   ("configuration", .str configuration),
@@ -385,9 +398,9 @@ private def layoutJson (configuration : String)
   ("user", Json.mkObj [("text_base", toJson (userTextBaseFor configuration)), ("text_limit", toJson (userTextLimitFor configuration)),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),
     ("stack_base", toJson (userStackBaseFor configuration)), ("stack_pages", toJson (userStackPagesFor configuration))])] ++
-    managedPolicyFields configuration ++ imageBootRoleFields image?)
+    managedPolicyFields configuration ++ imageBootRoleFields image? ++ bootClearFields configuration)
 
-private def bootLinker : String := String.intercalate "\n" [
+private def bootLinker (configuration : String) : String := String.intercalate "\n" [
   "OUTPUT_ARCH(riscv)", "ENTRY(_start)", "PHDRS { firmware PT_LOAD FLAGS(5); supervisor PT_LOAD FLAGS(5); storage PT_LOAD FLAGS(6); package PT_LOAD FLAGS(4); }",
   "SECTIONS {", s!"  . = {Layout.firmwareBase};",
   "  .firmware : ALIGN(4096) { startup.o(.text.firmware) *firmware/program.o(.text .text.* .rodata .rodata.*) } :firmware",
@@ -396,8 +409,11 @@ private def bootLinker : String := String.intercalate "\n" [
   "  .text : ALIGN(4096) { startup.o(.text.platform) *kernel/program.o(.text .text.* .rodata .rodata.*) } :supervisor",
   s!"  ASSERT(. <= {Layout.supervisorLimit}, \"supervisor envelope exceeded\")",
   s!"  . = {Layout.metadataBase};", "  __bss_start = .;",
-  "  .kernel_storage (NOLOAD) : ALIGN(64) { __boot_hartid = .; . += 8; __boot_dtb = .; . += 8; . += 112; } :storage",
-  "  __bss_end = .;", s!"  ASSERT(__bss_end <= {Layout.metadataBase + 0x1000}, \"boot metadata envelope exceeded\")",
+  "  .kernel_storage (NOLOAD) : ALIGN(64) { __boot_hartid = .; . += 8; __boot_dtb = .; . += 8; . += " ++
+    toString (bootClearLimitFor configuration - Layout.metadataBase - 16) ++ "; } :storage",
+  "  __bss_end = .;", (if configuration.startsWith "lemmasim-" then
+    s!"  ASSERT(__bss_end == {Layout.metadataLimit}, \"boot metadata clear interval differs\")" else
+    s!"  ASSERT(__bss_end <= {Layout.metadataBase + 0x1000}, \"boot metadata envelope exceeded\")"),
   s!"  . = {Layout.packageBase};", "  .boot_package : ALIGN(4096) { KEEP(boot-package.o(.boot_package)) } :package",
   s!"  ASSERT(. <= {Layout.packageLimit}, \"boot package envelope exceeded\")",
   "  /DISCARD/ : { *(.eh_frame .eh_frame.*) }", "}", ""]
@@ -578,7 +594,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
         ("key", .str image.key), ("id", toJson image.id),
         ("startup_case", .str image.startupCase.stableId), ("symbols", userSymbolsJson image)] ++
         imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
-    for (filename, contents) in #[("startup.S", startup), ("link.ld", bootLinker),
+    for (filename, contents) in #[("startup.S", startup), ("link.ld", bootLinker configuration),
         ("layout.json", (layoutJson configuration).pretty ++ "\n"), ("primitive-catalog.json", catalog.pretty ++ "\n"),
         ("boot-package.S", multiPackageData configuration images), ("package-contract.json", (multiPackageContract configuration images).pretty ++ "\n"),
         ("user-image-catalog.json", (← IO.ofExcept <| catalogJson configuration).pretty ++ "\n")] do
@@ -596,7 +612,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
       ((Lemma.Platform.RiscV.ExecutionPrimitives.userPrimitiveCatalog config.userStartupCase).map fun (symbol, privilege, effect) =>
         Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)]))]
   for (filename, contents) in #[("startup.S", startup), ("user-startup.S", userStartup),
-      ("link.ld", bootLinker), ("user-link.ld", userLinker configuration), ("layout.json", (layoutJson configuration).pretty ++ "\n"),
+      ("link.ld", bootLinker configuration), ("user-link.ld", userLinker configuration), ("layout.json", (layoutJson configuration).pretty ++ "\n"),
       ("primitive-catalog.json", catalog.pretty ++ "\n"), ("boot-package.S", packageData configuration),
       ("package-contract.json", (packageContract configuration).pretty ++ "\n")] do
     IO.FS.writeFile (directory / filename) contents

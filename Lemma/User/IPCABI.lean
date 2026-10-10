@@ -17,6 +17,9 @@ def nonblocking : UInt64 := 0
 def blocking : UInt64 := 1
 def minimumTicks : UInt64 := 1000
 def maximumTicks : UInt64 := 10000000
+/-- Additive LemmaSim dispatcher ceiling at the existing10MHz timebase.
+The historical IPC dispatcher retains its one-second maximum. -/
+def lemmaSimMaximumTicks : UInt64 := 300000000
 def headerBytes : UInt64 := 64
 def maximumPayload : UInt64 := 192
 def maximumPacket : UInt64 := 256

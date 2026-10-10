@@ -18,18 +18,25 @@ open Format
 def field (context offset : UInt64) : Action := Lemma.User.Memory.read64 (context + offset)
 def put (context offset value : UInt64) : Action := Lemma.User.Memory.write64 (context + offset) value
 
+/-- One validated record and one immutable private body sector. Neither span
+ is the kernel DMA bounce or the reusable transport buffer. -/
+def invalidateReadCache (context : UInt64) : Action :=
+  .bind (put context 376 0) fun s _ => if s = 0 then put context 432 0 else .done s 0
+
 def request (context operation phase sector : UInt64) : Action :=
+  .bind (if operation = 1 then .done 0 0 else invalidateReadCache context) fun s _ => if s = 0 then
   .bind (put context 16 sector) fun s _ => if s = 0 then
   .bind (put context 8 phase) fun s _ => if s = 0 then
   .bind (put context 0 operation) fun s _ => .done s operation
-  else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0
 
 def failure (context : UInt64) (status : UInt8) : Action :=
+  .bind (invalidateReadCache context) fun s _ => if s = 0 then
   .bind (put context 336 1) fun s _ => if s = 0 then
   .bind (put context 32 status.toUInt64) fun s _ => if s = 0 then
   .bind (put context 8 0) fun s _ => if s = 0 then
   .bind (put context 0 0) fun s _ => if s = 0 then .done status 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 /-- A rejected client range ends this request without making the medium
 read-only. Structural media corruption uses failure instead. -/
@@ -434,6 +441,7 @@ def checkpointStart (context nextIndex : UInt64) : Action :=
   .bind (field context 104) fun s currentIndex => if s = 0 then
   if operation = 0 then if blocked = 0 then if 0 < generation then
   if generation < maximumSequence then if nextIndex = currentIndex then .done malformed 0 else
+  .bind (invalidateReadCache context) fun s _ => if s = 0 then
   .bind (Index.clear nextIndex) fun s _ => if s = 0 then
   .bind (put context 256 nextIndex) fun s _ => if s = 0 then
   .bind (put context 264 0) fun s _ => if s = 0 then
@@ -443,7 +451,7 @@ def checkpointStart (context nextIndex : UInt64) : Action :=
   .bind (put context 296 (1 - segment)) fun s _ => if s = 0 then
   .bind (put context 304 0) fun s _ => if s = 0 then checkpointNext context else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done full 0 else .done unformatted 0 else .done readOnly 0 else .done wrongPhase 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
@@ -507,32 +515,103 @@ def enumerate (context ns cursor : UInt64) : Action :=
   if s = 10 then .done 0 next else .done s next else .done s 0
   else .done malformed 0 else .done malformed 0
 
-def readStart (context ns object offset count output : UInt64) : Action :=
-  .bind (field context 0) fun s operation => if s = 0 then
-  if operation = 0 then if count ≤ maximumPayload then
-  .bind (lookup context ns object) fun s address => if s = 0 then
-  .bind (Lemma.User.Memory.read64 (address + 16)) fun s source => if s = 0 then
-  .bind (Lemma.User.Memory.read64 (address + 32)) fun s sequence => if s = 0 then
-  .bind (put context 112 output) fun s _ => if s = 0 then
-  .bind (put context 184 source) fun s _ => if s = 0 then
-  .bind (put context 344 offset) fun s _ => if s = 0 then
-  .bind (put context 352 count) fun s _ => if s = 0 then
-  .bind (put context 360 0) fun s _ => if s = 0 then
-  .bind (put context 368 sequence) fun s _ =>
-  if s = 0 then request context 1 80 source else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+private def cachedBody (context : UInt64) : Action :=
+  .bind (field context 184) fun s source => if s = 0 then
+  .bind (field context 112) fun s output => if s = 0 then
+  .bind (field context 344) fun s offset => if s = 0 then
+  .bind (field context 352) fun s count => if s = 0 then
+  .bind (field context 360) fun s copied => if s = 0 then
+  let begin := (offset + copied) % 512
+  let bytes := if count - copied < 512 - begin then count - copied else 512 - begin
+  .bind (copy (context + 2048 + begin) (output + copied) bytes) fun s _ => if s = 0 then
+  let next := copied + bytes
+  .bind (put context 360 next) fun s _ => if s = 0 then
+  if next = count then ready context
+  else if next < count then request context 1 81 (source + 1 + (offset + next) / 512)
+  else failure context malformed
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0
-  else .done malformed 0 else .done wrongPhase 0 else .done s 0
 
 private def readNext (context : UInt64) : Action :=
   .bind (field context 184) fun s source => if s = 0 then
   .bind (field context 344) fun s offset => if s = 0 then
   .bind (field context 352) fun s count => if s = 0 then
   .bind (field context 360) fun s copied => if s = 0 then
-  if copied = count then ready context
-  else if copied < count then request context 1 81 (source + 1 + (offset + copied) / 512)
-  else failure context malformed
+  if copied = count then ready context else if copied < count then
+  .bind (field context 432) fun s valid => if s = 0 then
+  .bind (field context 440) fun s cached => if s = 0 then
+  let sector := source + 1 + (offset + copied) / 512
+  if valid = 1 then if cached = sector then cachedBody context else request context 1 81 sector
+  else request context 1 81 sector
+  else .done s 0 else .done s 0 else failure context malformed
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def readRange (context bytes : UInt64) : Action :=
+  .bind (field context 344) fun s offset => if s = 0 then
+  .bind (field context 352) fun s count => if s = 0 then
+  if bytes ≤ maximumPayload then if offset ≤ bytes then
+  .bind (put context 352 (if count ≤ bytes - offset then count else bytes - offset)) fun s _ =>
+  if s = 0 then readNext context else .done s 0
+  else rejected context malformed else failure context malformed
+  else .done s 0 else .done s 0
+
+private def readCacheMatches (context ns object source sequence generation : UInt64) : Action :=
+  .bind (field context 376) fun s valid => if s = 0 then
+  .bind (field context 384) fun s cachedNs => if s = 0 then
+  .bind (field context 392) fun s cachedObject => if s = 0 then
+  .bind (field context 400) fun s cachedSequence => if s = 0 then
+  .bind (field context 408) fun s cachedGeneration => if s = 0 then
+  .bind (field context 416) fun s cachedSource =>
+  if s = 0 then
+    if valid = 1 then if cachedNs = ns then if cachedObject = object then
+    if cachedSequence = sequence then if cachedGeneration = generation then
+    if cachedSource = source then .done 0 1 else .done 0 0 else .done 0 0
+    else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Every RPC revalidates the latest namespace-filtered index tuple. A matching
+private header/body window avoids duplicate sector I/O; it cannot publish data
+from a replaced object or a previous checkpoint generation. -/
+def readStart (context ns object offset count output : UInt64) : Action :=
+  .bind (field context 0) fun s operation => if s = 0 then
+  if operation = 0 then if count ≤ maximumPayload then
+  .bind (lookup context ns object) fun s address => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (address + 16)) fun s source => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (address + 32)) fun s sequence => if s = 0 then
+  .bind (field context 56) fun s generation => if s = 0 then
+  .bind (put context 112 output) fun s _ => if s = 0 then
+  .bind (put context 184 source) fun s _ => if s = 0 then
+  .bind (put context 344 offset) fun s _ => if s = 0 then
+  .bind (put context 352 count) fun s _ => if s = 0 then
+  .bind (put context 360 0) fun s _ => if s = 0 then
+  .bind (put context 368 sequence) fun s _ => if s = 0 then
+  .bind (put context 448 ns) fun s _ => if s = 0 then
+  .bind (put context 456 object) fun s _ => if s = 0 then
+  .bind (readCacheMatches context ns object source sequence generation) fun s hit => if s = 0 then
+  if hit = 1 then
+    .bind (field context 424) fun s bytes => if s = 0 then readRange context bytes else .done s 0
+  else
+    .bind (invalidateReadCache context) fun s _ => if s = 0 then request context 1 80 source else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done wrongPhase 0 else .done s 0
+
+private def rememberHeader (context bytes : UInt64) : Action :=
+  .bind (field context 128) fun s ns => if s = 0 then
+  .bind (field context 136) fun s object => if s = 0 then
+  .bind (field context 152) fun s sequence => if s = 0 then
+  .bind (field context 56) fun s generation => if s = 0 then
+  .bind (field context 184) fun s source => if s = 0 then
+  .bind (put context 384 ns) fun s _ => if s = 0 then
+  .bind (put context 392 object) fun s _ => if s = 0 then
+  .bind (put context 400 sequence) fun s _ => if s = 0 then
+  .bind (put context 408 generation) fun s _ => if s = 0 then
+  .bind (put context 416 source) fun s _ => if s = 0 then
+  .bind (put context 424 bytes) fun s _ => if s = 0 then
+  .bind (put context 376 1) fun s _ => if s = 0 then readRange context bytes else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 private def readHeader (context : UInt64) : Action :=
   .bind (field context 24) fun s buffer => if s = 0 then
@@ -544,28 +623,27 @@ private def readHeader (context : UInt64) : Action :=
   .bind (recordFields context buffer) fun s bytes => if s = 0 then
   .bind (field context 152) fun s sequence => if s = 0 then
   .bind (field context 368) fun s expected => if s = 0 then
-  .bind (field context 344) fun s offset => if s = 0 then
-  .bind (field context 352) fun s count => if s = 0 then
-  if sequence = expected then if offset ≤ bytes then
-    .bind (put context 352 (if count ≤ bytes - offset then count else bytes - offset)) fun s _ =>
-    if s = 0 then readNext context else .done s 0
-  else rejected context malformed else failure context malformed
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else failure context malformed else failure context unsupported else failure context malformed
+  .bind (field context 128) fun s ns => if s = 0 then
+  .bind (field context 448) fun s expectedNs => if s = 0 then
+  .bind (field context 136) fun s object => if s = 0 then
+  .bind (field context 456) fun s expectedObject => if s = 0 then
+  .bind (field context 160) fun s kind => if s = 0 then
+  if sequence = expected then if ns = expectedNs then if object = expectedObject then if kind = 1 then
+  rememberHeader context bytes
+  else failure context malformed else failure context malformed else failure context malformed else failure context malformed
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else failure context malformed else failure context unsupported else failure context malformed
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 private def readBody (context : UInt64) : Action :=
   .bind (field context 24) fun s buffer => if s = 0 then
-  .bind (field context 112) fun s output => if s = 0 then
-  .bind (field context 344) fun s offset => if s = 0 then
-  .bind (field context 352) fun s count => if s = 0 then
-  .bind (field context 360) fun s copied => if s = 0 then
-  let begin := (offset + copied) % 512
-  let bytes := if count - copied < 512 - begin then count - copied else 512 - begin
-  .bind (copy (buffer + begin) (output + copied) bytes) fun s _ => if s = 0 then
-  .bind (put context 360 (copied + bytes)) fun s _ =>
-  if s = 0 then readNext context else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  .bind (field context 16) fun s sector => if s = 0 then
+  .bind (put context 432 0) fun s _ => if s = 0 then
+  .bind (copy buffer (context + 2048) 512) fun s _ => if s = 0 then
+  .bind (put context 440 sector) fun s _ => if s = 0 then
+  .bind (put context 432 1) fun s _ => if s = 0 then cachedBody context else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 private def checkpointPublication (context : UInt64) : Action :=
   .bind (field context 24) fun s buffer => if s = 0 then

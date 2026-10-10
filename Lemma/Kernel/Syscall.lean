@@ -180,6 +180,39 @@ def capConsole (descriptor handle operation pointer length : UInt64) : Action :=
     if s = 0 then selectedConsoleRead descriptor pointer length else .done s 0
   else .done 17 0
 
+/-- The deadline ceiling is deployment policy, never a User argument. The
+historical dispatcher below retains the original one-second ceiling. -/
+def dispatchManagedWithIPCLimit (maximum descriptor number a b c d e : UInt64) : Action :=
+  if number = 26 then
+    if d ||| e = 0 then Directory.discover descriptor a b c else .done 16 0
+  else
+  if (if Lemma.User.IPCABI.send ≤ number then if number ≤ Lemma.User.IPCABI.cancel then true else false else false) = true then
+    IPC.dispatchWithLimit maximum descriptor number a b c d e
+  else if number = Lemma.User.ABI.console then .done 72 0 else
+  if number = Lemma.User.CapabilityABI.bootGrant then
+    if b ||| c ||| d ||| e = 0 then Capability.bootGrant descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.info then
+    if b ||| c ||| d ||| e = 0 then Capability.info descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.check then
+    if d ||| e = 0 then Capability.check descriptor a b c else .done 16 0
+  else if number = Lemma.User.CapabilityABI.duplicate then
+    if c ||| d ||| e = 0 then Capability.duplicate descriptor a b else .done 16 0
+  else if number = Lemma.User.CapabilityABI.close then
+    if b ||| c ||| d ||| e = 0 then Capability.close descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.revoke then
+    if b ||| c ||| d ||| e = 0 then Capability.revoke descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.console then
+    if e = 0 then capConsole descriptor a b c d else .done 16 0
+  else if number = Lemma.User.CapabilityABI.createEndpoint then
+    if b ||| c ||| d ||| e = 0 then Capability.createEndpoint descriptor a else .done 16 0
+  else if number = Lemma.User.CapabilityABI.transfer then
+    if e = 0 then Capability.transfer descriptor a b c d else .done 16 0
+  else if number = Lemma.User.CapabilityABI.scopedTarget then
+    if c ||| d ||| e = 0 then Capability.scopedTarget descriptor a b else .done 16 0
+  else if number = Lemma.User.CapabilityABI.inspect then
+    if d ||| e = 0 then Capability.inspect descriptor a b c else .done 16 0
+  else dispatchLegacy descriptor number a b c d e
+
 def dispatchManaged (descriptor number a b c d e : UInt64) : Action :=
   if number = 26 then
     if d ||| e = 0 then Directory.discover descriptor a b c else .done 16 0
@@ -210,6 +243,13 @@ def dispatchManaged (descriptor number a b c d e : UInt64) : Action :=
   else if number = Lemma.User.CapabilityABI.inspect then
     if d ||| e = 0 then Capability.inspect descriptor a b c else .done 16 0
   else dispatchLegacy descriptor number a b c d e
+
+def dispatchWithIPCLimit (maximum descriptor number a b c d e : UInt64) : Action :=
+  .bind (Capability.managed descriptor) fun s managed =>
+  if s = 0 then
+    if managed = 1 then dispatchManagedWithIPCLimit maximum descriptor number a b c d e
+    else if managed = 0 then dispatchLegacy descriptor number a b c d e else fatal
+  else fatal
 
 def dispatch (descriptor number a b c d e : UInt64) : Action :=
   .bind (Capability.managed descriptor) fun s managed =>

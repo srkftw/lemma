@@ -13,7 +13,7 @@ run_cmd do
   let path := System.FilePath.mk directory
   liftIO <| IO.FS.createDirAll path
   let suite ← match checkAndLowerActionSuiteForProfile env .user_v0_1
-      #[`Lemma.Ink.Rasterizer.segment, `Lemma.Ink.Rasterizer.clearTile] with
+      #[`Lemma.Ink.Rasterizer.segment, `Lemma.Ink.Rasterizer.segmentSurface, `Lemma.Ink.Rasterizer.clearTile] with
     | .ok suite => pure suite
     | .error error => throwError error.render
   let lowered ← match lowerActionSuiteExecution .user_v0_1 suite {

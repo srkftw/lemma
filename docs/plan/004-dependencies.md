@@ -9,6 +9,10 @@ Changes to the machine profile, descriptor, MMIO or PLIC require actual boot
 DTB/descriptor checks, the device qtests and guest workflow. Paper/pen model
 changes additionally require the independent literal transitions and behavioral
 mutants, actual QEMU controller checks, loss workflows and native QEMU replay.
+The full notebook matrix includes two quarantined compiled source experiments:
+removing the final publication flush and retaining a cancelled raw pen tail.
+Each needs its positive control and a specific independent behavioral rejection;
+a changed source hash or generic process failure cannot qualify it.
 Block/filter/driver/store changes require actual VirtIO fault checks, notebook
 payload/publication/checkpoint cuts, independent recovery observations and cold
 new-process reopening. The host observer never repairs a live guest's media.

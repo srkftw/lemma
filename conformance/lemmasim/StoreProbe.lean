@@ -178,8 +178,9 @@ def main (arguments : List String) : IO UInt32 := do
   let _ ← action restored (Engine.readStart context 1 1 13 128 payload)
   drive restored
   require ((← get restored 352) == 0) "EOF did not return an empty short read"
-  let _ ← action restored (Engine.readStart context 1 1 14 128 payload)
-  step restored Format.malformed
+  let (rangeStatus, _) ← run restored (Engine.readStart context 1 1 14 128 payload)
+  require (rangeStatus == Format.malformed) "cached bad client range not rejected"
+  require ((← get restored 0) == 0) "cached bad range queued I/O"
   require ((← get restored 336) == 0) "bad client range made another notebook read-only"
   let (absent, _) ← run restored (Engine.lookup context 3 1)
   require (absent == Format.notFound) "namespace isolation lookup"

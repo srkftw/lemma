@@ -39,13 +39,62 @@ This also permits bounded cold-navigation checks without host page selection.
 | `0x310000..0x317fff` | Current page index |
 | `0x318000..0x31ffff` | One streamed ink chunk or immutable packed page-save snapshot |
 | `0x320000..0x320fff` | Notebook root |
+| `0x320200..0x3209ff` |16384-bit dirty-tile deduplication bitmap, outside the64-byte root record |
+| `0x321000..0x328fff` |16384-entry bounded FIFO of16-bit dirty tile IDs, four entries per aligned64-bit word |
 
-The notebook allocates 33 working pages plus the framebuffer. For 1650×2200,
+The notebook allocates41 working pages plus the framebuffer. For1650×2200,
 the framebuffer needs 444 pages; for 1404×1872 it needs 321 pages. These fit the
 Lemmasim descriptor's 1024-leaf User registry and expanded owned arena. The
 existing finisher address `0x100000` is excluded. Code uses the separately
 versioned LemmaSim User image layout. Exhaustion is an explicit failure, not an
 instruction to discard an existing document.
+
+Live segments paint identical brush-v1 covered pixels directly into the owned
+Gray4 framebuffer. Each invocation clips to one32×32 tile; no tile staging
+copy is required per sample. A dirty bitmap deduplicates its bounded tile queue.
+The main loop uploads at most four queued tiles per iteration when the controller
+is idle, then submits their coalesced refresh rectangle only after every pending
+tile has uploaded. Input and store progress proceed between upload batches.
+Completed or in-flight controller pixels remain governed by the unchanged
+latched paper ABI; target uploads never substitute for refresh completion.
+Page reload and edit redraw clear the dirty queue and upload the whole newly
+guest-produced surface before its full refresh.
+
+Each service turn advances one bounded save operation, then display work, then
+drains at most eight queued pen records through nonblocking input operation1.
+Empty is checked once. A full384-sample raw buffer is checked before another
+fetch; filling that buffer, release, loss, or a toolbar action ends the drain
+before a new contact begins. The pending store buffer remains immutable.
+When neither save nor display/recovery work remains, the ordinary blocking
+input operation2 sleeps through the existing interrupt/WFI path. The batch
+bound changes guest scheduling of work, not pen ordering or device semantics.
+
+Surface syscall64 retains operations0 geometry,1 upload,2 refresh and3 accepted
+sequence. Additive operation4 returns the read-only controller status register;
+its metadata and pixels arguments must both be zero. Invalid arguments return16
+without reading the controller; ordinary capability authorization runs first.
+Bit0 is Busy. It grants no MMIO pointer or reset authority and has no read side
+effect in the controller. The kernel may reenable a previously masked source12
+after this authorized query observes Interrupted8 cleared, allowing the real
+completion interrupt and ACK to proceed. Its reset/completion transitions are
+the paper ABI's existing ones.
+
+Source12 is masked after one notification and wakes a waiting input consumer.
+The deferred driver ACK clears completion/error bits2/4, while Interrupted8
+remains masked until guest recovery completes. The notebook queries status even
+when no dirty rectangle remains, restores the owned framebuffer in batches of
+at most four tiles between input/store iterations, then submits one full quality
+refresh. It keeps a nonblocking input/progress phase until completion clears8;
+it never changes notebook records or clears8 by host intervention. A reset of
+the accepted recovery refresh restarts restoration. UI state words456/464/472
+hold dirty count/tail/head and480/488 hold recovery phase/cursor; word448 remains
+the independently maintained issued IPC chunk length.
+
+The maintained Developer reset control resets the whole machine, causing normal
+boot and full guest redraw. A standalone idle controller reset in ABI1 has no
+epoch notification and is not exposed by this control. Its caller must restore
+the whole target image before subsequent incremental refreshes; retained visible
+pixels are physical controller state and do not restore target RAM.
 
 ## Fixed records
 

@@ -32,4 +32,12 @@ def disablePen : Action :=
 def enablePen : Action :=
   .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
   if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled ||| 8192) else .done s 0
+/-- Paper's interrupted-refresh level remains asserted until a full quality
+refresh completes. Mask it while the surface task performs bounded recovery. -/
+def disablePaper : Action :=
+  .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
+  if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled &&& 0xffffefff) else .done s 0
+def enablePaper : Action :=
+  .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
+  if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled ||| 4096) else .done s 0
 end Lemma.Drivers.PLIC

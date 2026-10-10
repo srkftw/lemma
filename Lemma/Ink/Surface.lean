@@ -14,6 +14,7 @@ def tile : UInt64 := 0x20500
 
 def geometry (cap : UInt64) : Action := Syscall.call 64 cap 0 0 0 0
 def acceptedSequence (cap : UInt64) : Action := Syscall.call 64 cap 3 0 0 0
+def status (cap : UInt64) : Action := Syscall.call 64 cap 4 0 0 0
 private def set (slot value : UInt64) : Action := Memory.write64 (metadata + slot) value
 
 private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=

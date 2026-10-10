@@ -128,7 +128,10 @@ private def validateRegistryStep (i _ : UInt32) (acc address owner _ _ : UInt64)
   if (if physical = recorded then false else true) = true then .done invalidDescriptor 0 else
   .boundedFoldU64 8 registryUniqueStep i 0 address physical 0 0 fun s _ =>
   if failed s = true then .done s 0 else
-  .bind (Frames.mappingCount owner handle) fun s pins =>
+  -- resolvePurpose already checked this exact generation, owner and purpose.
+  -- Single-hart S policy cannot release or remap the frame between these
+  -- reads; inspect pins in that resolved slot without resolving it again.
+  .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
   if failed s = true then .done s 0 else
   if pins = 0 then .done 0 (acc + 1) else .done invalidDescriptor 0
 
@@ -449,19 +452,35 @@ def create (owner : UInt64) : Action :=
   .bind (put address 0 magic) fun s _ =>
   if failed s = true then abortCreate descriptor address s else .done 0 descriptor
 
-private def findRowStep (i _ : UInt32) (acc address wanted _ _ : UInt64) : Action :=
-  .bind (row address i.toUInt64) fun s entry => if failed s = true then .done s 0 else
-  .bind (Access.read64 entry) fun s va =>
+private def findRowWordStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
+  .bind (Access.read64 (physical + i.toUInt64 * 32)) fun s va =>
   if failed s = true then .done s 0 else
   if va = wanted then
-    if acc = 0 then .done 0 (i.toUInt64 + 1) else .done invalidDescriptor 0
+    if acc = 0 then .done 0 (start + i.toUInt64 + 1) else .done invalidDescriptor 0
   else .done 0 acc
+
+private def findRowPageStep (i _ : UInt32) (acc address wanted amount _ : UInt64) : Action :=
+  let start := i.toUInt64 * 128
+  .bind (get address (registryList + i.toUInt64 * 16 + 8)) fun s physical =>
+  if failed s = true then .done s 0 else
+  if Frames.frameAddressValid physical = false then .done invalidDescriptor 0 else
+  let remaining := amount - start
+  let rows := if remaining < 128 then remaining else 128
+  .boundedFoldU64 128 findRowWordStep rows.toUInt32 acc physical wanted start 0 fun s found => .done s found
+
+/-- The directory is already validated by `base`. Resolve each physical page
+once, then read every live VA word, retaining duplicate detection across pages.
+There is no cached mapping or early success that could hide a duplicate row. -/
 private def findRow (address va : UInt64) : Action :=
   .bind (get address 48) fun s amount =>
   if failed s = true then .done s 0 else
   .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if amount ≤ maximum then
-    .boundedFoldU64 1024 findRowStep amount.toUInt32 0 address (page va) 0 0 fun s v => .done s v
+    if maximum = 32 then
+      .boundedFoldU64 128 findRowWordStep amount.toUInt32 0 (address + leafList) (page va) 0 0 fun s v => .done s v
+    else if maximum = expandedCapacity then
+      .boundedFoldU64 8 findRowPageStep ((amount + 127) / 128).toUInt32 0 address (page va) amount 0 fun s v => .done s v
+    else .done invalidDescriptor 0
   else .done invalidDescriptor 0
 
 private def dropHandle (owner handle : UInt64) (original : UInt8) : Action :=

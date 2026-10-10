@@ -4,7 +4,10 @@ import Lemma.User.IPC
 /-! Reusable document-endpoint client. Packet spans belong to the calling User
 task. Nonzero status is an actual transport/application failure. No retry is
 manufactured after an uncertain commit. Async begin/wait let a notebook keep
-its input loop running while the store owns the disk transaction. -/
+its input loop running while the store owns the disk transaction. This client
+uses the explicit LemmaSim thirty-second IPC ceiling; historical deployments
+retain their one-second ceiling and reject this larger request. A deadline is
+an error bound, never permission to acknowledge a pending flush. -/
 namespace Lemma.Services.Store.Client
 open Lemma.Core0.Memory
 open Lemma.User
@@ -52,8 +55,8 @@ def beginCall (endpoint outgoing operation ns object transaction offset count so
   .bind (Protocol.header outgoing operation ns object transaction offset count) fun s _ => if s = 0 then
   if operation = 3 then
     .bind (Format.copy source (outgoing + 64) count) fun s _ =>
-    if s = 0 then IPC.callBegin endpoint outgoing bytes request IPCABI.maximumTicks else .done s 0
-  else IPC.callBegin endpoint outgoing bytes request IPCABI.maximumTicks
+    if s = 0 then IPC.callBegin endpoint outgoing bytes request IPCABI.lemmaSimMaximumTicks else .done s 0
+  else IPC.callBegin endpoint outgoing bytes request IPCABI.lemmaSimMaximumTicks
   else .done s 0 else .done Format.malformed 0
 
 def waitCall (transaction incoming operation ns object request expectedCount : UInt64) : Action :=

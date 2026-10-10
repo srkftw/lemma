@@ -75,11 +75,14 @@ private def rasterStep (i _ : UInt32) (acc tile endpoints brush area : UInt64) :
   let x := (area &&& 4095) + column
   let y := ((area >>> 12) &&& 4095) + row
   let index := ((area >>> 30) &&& 1023) + row * 32 + column
+  let stride := tile >>> 32
+  let destination := tile &&& 0xffffffff
+  let targetIndex := if stride = 0 then index else y * stride * 2 + x
   if covered x y (endpoints &&& 0xffff) ((endpoints >>> 16) &&& 0xffff)
       ((endpoints >>> 32) &&& 0xffff) (endpoints >>> 48)
       (brush &&& 0xffff) ((brush >>> 16) &&& 0xffff)
       ((brush >>> 32) &&& 0xffff) (brush >>> 48) = true then
-    paint tile index acc
+    paint destination targetIndex acc
   else .done 0 acc
 
 /-- Coalesce the segment's intersecting tiles at the notebook/surface layer and
@@ -87,13 +90,13 @@ call once per such tile. Work is bounded1024 pixels plus16 context word reads pe
 call, independent of retained sample count. The pixel loop visits only the
 conservative segment bounds clipped to this tile and the screen. This version produces monochrome
 coverage in Gray4; quality-mode rendering can still display these exact pixels. -/
-def segment (context tile tileX tileY width height : UInt64) : Action :=
+private def segmentInto (context tile tileX tileY width height stride : UInt64) : Action :=
   if validDimension width = false then .done invalid 0 else
   if validDimension height = false then .done invalid 0 else
   if width ≤ tileX then .done invalid 0 else
   if height ≤ tileY then .done invalid 0 else
   if tileX % 32 = 0 then if tileY % 32 = 0 then
-  if span tile tileBytes = false then .done invalid 0 else
+  if span tile (if stride = 0 then tileBytes else stride * height) = false then .done invalid 0 else
   .bind (contextValid context) fun s _ =>
   if s = 0 then
     .bind (get context 0) fun s qx0 => if s = 0 then
@@ -122,12 +125,23 @@ def segment (context tile tileX tileY width height : UInt64) : Action :=
       let endpoints := x0 ||| (y0 <<< 16) ||| (x1 <<< 32) ||| (y1 <<< 48)
       let brush := p0 ||| (p1 <<< 16) ||| (nominal <<< 32) ||| (pressure <<< 48)
       let area := beginX ||| (beginY <<< 12) ||| (columns <<< 24) ||| (base <<< 30)
-      .boundedFoldU64 1024 rasterStep pixels.toUInt32 0 tile endpoints brush area
+      .boundedFoldU64 1024 rasterStep pixels.toUInt32 0 (tile ||| (stride <<< 32)) endpoints brush area
         fun s changed => .done s changed
     else .done 0 0 else .done 0 0
     else .done s 0 else .done s 0 else .done s 0 else .done s 0
     else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0
   else .done invalid 0 else .done invalid 0
+
+/-- Paint a bounded tile using its caller-owned512-byte staging span. -/
+def segment (context tile tileX tileY width height : UInt64) : Action :=
+  segmentInto context tile tileX tileY width height 0
+
+/-- Paint the same clipped segment pixels directly into an owned row-major
+Gray4 surface. The tile still bounds each invocation to at most1024 pixels.
+The caller can accumulate dirty tile IDs and upload them once before refresh;
+it need not copy512 bytes into and out of staging for each raw sample. -/
+def segmentSurface (context framebuffer tileX tileY width height : UInt64) : Action :=
+  segmentInto context framebuffer tileX tileY width height ((width + 1) / 2)
 
 end Lemma.Ink.Rasterizer

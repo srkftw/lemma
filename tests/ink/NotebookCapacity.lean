@@ -75,7 +75,7 @@ def initial (count edits cursor : UInt64) : State := Id.run do
   let mut s : State := {}
   for (offset, value) in #[(0,1),(24,4),(32,1650),(40,2200),(72,1),(80,1),(88,16),
       (104,13),(112,77),(128,147),(136,1),(144,0x300000),(160,3),(224,65537),
-      (272,512),(296,996),(304,1000),(336,65535),(344,65535),(408,1)] do
+      (272,512),(296,996),(304,1000),(336,65535),(344,65535),(408,1),(448,128)] do
     s := write s (0x20800 + offset) value
   s := write s (0x310000 + 32) count
   s := write s (0x310000 + 40) edits
@@ -119,8 +119,11 @@ def failure : IO Unit := do
       if read after address ≠ read before address then
         throw <| IO.userError "capacity failure mutated a page/root/raw record"
   let expected := "K1 0000000000000424 00000000000000eb 0000000000000001 0000000000000001 0000000000010001\n"
-  if after.console ≠ #[expected] || after.uploads ≠ 9 then
-    throw <| IO.userError "missing actual guest Failed diagnostic or bounded status tile uploads"
+  if after.console ≠ #[expected] || after.uploads ≠ 0 || read after (0x20800 + 456) ≠ 9 || read after (0x20800 + 448) ≠ 128 then
+    throw <| IO.userError "missing actual guest Failed diagnostic or bounded deferred status tile queue"
+  for i in [:9] do
+    if (read after (0x321000 + i.toUInt64 / 4 * 8) >>> (i.toUInt64 % 4 * 16)) &&& 0xffff ≠ 4 * 52 + i.toUInt64 then
+      throw <| IO.userError "Failed status queued an incorrect dirty tile"
 
 end NotebookCapacityFixture
 open Lean Elab Command

@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from audit_kernel import BACKEND_JUMP_TABLES, validate_backend_jump_tables, _jump_switch_default, _ir_definition_body
+from audit_kernel import LEMMASIM_BACKEND_JUMP_TABLES, BACKEND_JUMP_TABLES, validate_backend_jump_tables, _jump_switch_default, _ir_definition_body
 from core0_common import Core0Error
 
 
@@ -100,6 +100,29 @@ class BackendJumpTableFailures(unittest.TestCase):
         self.reject(unit={**data['unit'],'role':'user'});self.reject(optimization='O0')
         self.reject(optimized_ir=data['optimized_ir'].replace('i64 5, label','i64 6, label'))
         self.reject(assembly=data['assembly']+' .quad .LBB0_1\n')
+
+    def test_lemmasim_surface_switch_is_scoped_and_keeps_exact_domain(self):
+        data = fixture()
+        source = 'Lemma.Platform.LemmaSim.DeviceService.surface'
+        role, count, args, effects, cases = LEMMASIM_BACKEND_JUMP_TABLES[source]
+        data['unit'] = dict(role=role, configuration='lemmasim-notebook',
+                            functions=[dict(source=source, symbol='fw', args=args, effects=effects)])
+        data['assembly'] = data['assembly'].replace('addi a1, a1, -1', 'mv a1, a2')
+        data['optimized_ir'] = ('define { i64, i64 } @fw(' + ', '.join('i64 %arg'+str(i) for i in range(6)) + ') {\n'
+            'entry:\n switch i64 %arg2, label %default [\n'
+            + ''.join(' i64 '+str(value)+', label %good\n' for value in cases)
+            + ']\ndefault:\n ret { i64, i64 } zeroinitializer\ngood:\n ret { i64, i64 } zeroinitializer\n}\n')
+        report = validate_backend_jump_tables(**data)
+        self.assertEqual(report['jump_tables'][0]['guard']['minimum'], 0)
+        for field, value in [('configuration', 'service-normal'), ('role', 'user')]:
+            bad = copy.deepcopy(data); bad['unit'][field] = value
+            with self.assertRaises(Core0Error): validate_backend_jump_tables(**bad)
+        for field, value in [('source', source+'Status'), ('args', ['u64']*5), ('effects', effects[:-1])]:
+            bad = copy.deepcopy(data); bad['unit']['functions'][0][field] = value
+            with self.assertRaises(Core0Error): validate_backend_jump_tables(**bad)
+        bad = copy.deepcopy(data)
+        bad['optimized_ir'] = bad['optimized_ir'].replace('i64 4, label', 'i64 5, label')
+        with self.assertRaises(Core0Error): validate_backend_jump_tables(**bad)
 
     def test_exact_readonly_full_byte_coverage_and_companion_identity(self):
         data=fixture()

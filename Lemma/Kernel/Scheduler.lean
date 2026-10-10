@@ -64,6 +64,45 @@ def sleepTask (descriptor context pc ticks : UInt64) : Action :=
   .bind (Task.sleep descriptor deadline pc) fun s _ =>
   if failed s = true then fatal else returnKernel descriptor 3 pc
 
+def callWithIPCLimit (maximum descriptor context pc : UInt64) : Action :=
+  .bind (Access.read64 (context + 136)) fun s number =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 80)) fun s a =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 88)) fun s b =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 96)) fun s c =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 104)) fun s d =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 112)) fun s e =>
+  if failed s = true then fatal else
+  if number = Lemma.User.ABI.exit then
+    if b ||| c ||| d ||| e = 0 then finish descriptor 8 a pc 0
+    else Process.syscallReply context pc 16 0
+  else if number = Lemma.User.ABI.yield then
+    if a ||| b ||| c ||| d ||| e = 0 then yieldTask descriptor context pc
+    else Process.syscallReply context pc 16 0
+  else if number = Lemma.User.ABI.sleep then
+    if b ||| c ||| d ||| e = 0 then sleepTask descriptor context pc a
+    else Process.syscallReply context pc 16 0
+  else
+    .bind (Lemma.Kernel.Syscall.dispatchWithIPCLimit maximum descriptor number a b c d e) fun status value =>
+    if status = 255 then fatal else
+    if status = IPC.blockedStatus then
+      .bind (IPC.waitInfo descriptor value) fun s metadata =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.operationOffset)) fun s kind =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.deadlineOffset)) fun s expires =>
+      if failed s = true then fatal else
+      .bind (Process.syscallReply context pc 0 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Task.block descriptor value kind expires pc) fun s _ =>
+      if failed s = true then fatal else returnKernel descriptor 6 pc
+    else Process.syscallReply context pc status value
+
+/-- Legacy deployments keep the original IPC deadline policy. -/
 def call (descriptor context pc : UInt64) : Action :=
   .bind (Access.read64 (context + 136)) fun s number =>
   if failed s = true then fatal else

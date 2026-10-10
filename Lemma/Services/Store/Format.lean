@@ -128,10 +128,18 @@ private def copyStep (i _ : UInt32) (count source target _ _ : UInt64) : Action 
   .bind (Lemma.User.Memory.read8 (source + i.toUInt64)) fun s byte => if s = 0 then
   .bind (Lemma.User.Memory.write8 (target + i.toUInt64) byte) fun s _ =>
   if s = 0 then .done 0 (count + 1) else .done s 0 else .done s 0
+private def copyWordStep (i _ : UInt32) (count source target _ _ : UInt64) : Action :=
+  .bind (Lemma.User.Memory.read64 (source + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Lemma.User.Memory.write64 (target + i.toUInt64 * 8) word) fun s _ =>
+  if s = 0 then .done 0 (count + 8) else .done s 0 else .done s 0
 
 def copy (source target bytes : UInt64) : Action :=
   if bytes ≤ 512 then if source ≤ 0xffffffffffffffff - bytes then
   if target ≤ 0xffffffffffffffff - bytes then
+  if (source ||| target ||| bytes) &&& 7 = 0 then
+    .boundedFoldU64 64 copyWordStep (bytes / 8).toUInt32 0 source target 0 0 fun s copied =>
+    if s = 0 then if copied = bytes then .done 0 copied else .done malformed 0 else .done s 0
+  else
   .boundedFoldU64 512 copyStep bytes.toUInt32 0 source target 0 0 fun s copied =>
   if s = 0 then if copied = bytes then .done 0 copied else .done malformed 0 else .done s 0
   else .done malformed 0 else .done malformed 0 else .done malformed 0

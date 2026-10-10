@@ -12,7 +12,8 @@ import re
 from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph,
                           validate_compiled_stack, validate_stack_entries,
                           parse_definitions_and_calls, _ir_definition_body,
-                          optimizer_intrinsics, validate_layout)
+                          optimizer_intrinsics, validate_layout,
+                          validate_fresh_descriptor_helpers)
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
 
 CAPACITY = 16352
@@ -29,9 +30,10 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
         'Lemma.Kernel.Loader.storedQuad': ['Lemma.Kernel.Loader.quadFrame'],
         'Lemma.Kernel.Loader.quadFrame': ['Lemma.Kernel.Loader.stackFrame'],
         'Lemma.Kernel.Loader.stackFrame': ['Lemma.Kernel.Memory.Frames.resolvePurpose',
-                                          'Lemma.Kernel.Memory.Frames.mappingCount'],
-        'Lemma.Kernel.Process.validateStack': ['Lemma.Kernel.Loader.validateExpandedStack'],
-        'Lemma.Kernel.Loader.validateExpandedStack': ['Lemma.Kernel.Loader.storedQuad'],
+                                          'Lemma.Kernel.Memory.Access.read64',
+                                          'Lemma.Kernel.Memory.Frames.record'],
+        'Lemma.Kernel.Process.validateStackAt': ['Lemma.Kernel.Loader.validateExpandedStackAt'],
+        'Lemma.Kernel.Loader.validateExpandedStackAt': ['Lemma.Kernel.Loader.storedQuad'],
         'Lemma.Kernel.Loader.teardown': ['Lemma.Kernel.Loader.storedQuad',
                                         'Lemma.Kernel.Loader.releaseStackHandle'],
         'Lemma.Kernel.Memory.AddressSpace.create': ['Lemma.Kernel.Memory.AddressSpace.buildRegistry'],
@@ -73,10 +75,12 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
     body = _ir_definition_body(pre_ir, names['Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue'])
     if re.fullmatch(r'\s*entry:\s*ret i64 16384\s*', body) is None:
         raise Core0Error('four-page stack source capacity differs from its emitted value')
+    fresh=validate_fresh_descriptor_helpers(unit,pre_ir)
     return {'allocated_pages':4, 'allocated_bytes':16384, 'usable_bytes':CAPACITY,
             'sentinel_bytes':32, 'sentinels_are_hardware_guards':False,
             'construction':'owned-physically-contiguous-four',
             'source_symbols':{name:names[name] for name in sorted(required)},
+            'fresh_descriptor_helpers':fresh,
             'initial_page_table_frames':13 if expanded else 11, 'leaf_registry_frames':8 if expanded else 0,
             'user_leaf_capacity':1024 if expanded else 32, 'owned_task_base_frames':30 if expanded else 18,
             'global_task_base_frames':31 if expanded else 19, 'user_stack_pages':4 if expanded else 2,
