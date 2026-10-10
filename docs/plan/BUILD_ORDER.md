@@ -128,3 +128,8 @@ The hardware branch joins the shared contracts; no cartridge assumptions enter G
 
 The authoritative structured backlog is [construction-units.json](construction-units.json).
 Gate changes require explicit evidence; no percentage-complete score substitutes for it.
+
+## Parallel foundational workstream: LemmaSim
+
+The original G1-G7 identifiers, dependency graph and recorded evidence remain stable. In parallel with Core0 and boot work, build permanent **LemmaSim** as a first-class virtual embodiment of the finished Lemma One. A single canonical, versioned machine contract governs both embodiments; virtual motherboard, storage/power, pen/e-paper, distribution modes and cross-embodiment tests have independent exit evidence. See [LEMMASIM.md](LEMMASIM.md) and [../../LEMMA_MACHINE_CONTRACT.md](../../LEMMA_MACHINE_CONTRACT.md). Current status is architectural scaffolding, not functional equivalence achieved.
+
