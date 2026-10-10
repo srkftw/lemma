@@ -186,6 +186,12 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
 
 /-- The owned stack pair is checked independently of any supplied frame. -/
 def validateStack (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s layout =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (layout + Lemma.Kernel.Loader.kernelStackPagesOffset)) fun s pages =>
+  if failed s = true then fatal else
+  if pages = 4 then Lemma.Kernel.Loader.validateExpandedStack descriptor else
+  if pages = 2 then
   .bind (AddressSpace.base descriptor) fun s base =>
   if failed s = true then fatal else
   .bind (AddressSpace.owner descriptor) fun s owner =>
@@ -207,6 +213,7 @@ def validateStack (descriptor : UInt64) : Action :=
   if (if pins ||| secondPins = 0 then if secondBase = stackBase + Frames.bytes then
     if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then true
     else false else false else false) = true then .done 0 top else fatal
+  else fatal
 
 /-- Validate the owned frame address before its first dereference. Origin is
 read from the hardware-saved SPP and SATP, not supplied by the UART client.

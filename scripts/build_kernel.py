@@ -35,7 +35,7 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
     "service-return-supervisor-development": "return-supervisor",
     "service-return-machine-development": "return-machine",
 }
-CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
+CONFIGURATIONS = ("lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                   "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
@@ -94,6 +94,10 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
+    if configuration == "lemmasim-bringup":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.LemmaSim.Entry.boot", ()),
+                 ("Lemma.Platform.LemmaSim.Entry.dispatch", ("u64", "u64", "u64"))),
+                "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
     if configuration in MULTI_CONFIGURATIONS:
         module = "Lemma.Kernel.Development.ServiceEntry" if configuration in SERVICE_INSTRUCTION_CONFIGURATIONS else {
                   "tasks-development": "Lemma.Kernel.Development.TasksEntry",
@@ -120,6 +124,8 @@ def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
+    if configuration == "lemmasim-bringup":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.LemmaSim.Entry", "user": "Lemma.User.DeviceWorker"}
     if configuration == "frames-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":

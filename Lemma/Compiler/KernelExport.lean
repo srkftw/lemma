@@ -17,17 +17,17 @@ open Lemma.Compiler
 open Lemma.Platform.LemmaVM
 open DeploymentCatalog
 
-private def roleProfile (role : String) : Except String Profile :=
+private def roleProfile (role : String) (configuration : String) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok .kernel_v0_2
+  | "kernel" => .ok (if configuration == "lemmasim-bringup" then .kernel_v0_3 else .kernel_v0_2)
   | "user" => .ok .user_v0_1
   | _ => .error "production role must be firmware, kernel, or user"
 
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "normal" || configuration == "frames-development" ||
+  unless configuration == "lemmasim-bringup" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
       configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" ||
@@ -61,7 +61,9 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "frames-development" then
+  | "kernel" => if configuration == "lemmasim-bringup" then
+      #["Lemma.Platform.LemmaSim.Entry.boot", "Lemma.Platform.LemmaSim.Entry.dispatch"]
+    else if configuration == "frames-development" then
       #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
     else if configuration == "user-isolation-development" then
       #["Lemma.Kernel.Development.IsolationEntry.boot", "Lemma.Kernel.Development.IsolationEntry.dispatch"]
@@ -78,7 +80,9 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if isServiceDevelopmentConfiguration configuration then
       #["Lemma.Kernel.Development.ServiceEntry.boot", "Lemma.Kernel.Development.ServiceEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
-  | "user" => if configuration == "user-isolation-development" then
+  | "user" => if configuration == "lemmasim-bringup" then
+      #["Lemma.User.DeviceWorker.main"]
+    else if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
     else if configuration == "user-syscall-development" then
       #["Lemma.User.Development.Syscall.main"] else #["Lemma.User.Entry.main"]
@@ -290,7 +294,7 @@ private def validateRoots (configuration role : String) (suite : CheckedActionSu
 
 private def exportUnit (env : Environment) (configuration role : String) (names : Array Name)
     (directory : System.FilePath) (image? : Option UserImageSpec := none) : IO Unit := do
-  let profile ← IO.ofExcept (roleProfile role)
+  let profile ← IO.ofExcept (roleProfile role configuration)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
     unless selectedExecutableSource configuration role imported.toString image? do
@@ -325,7 +329,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
         name
         returnType := if spec.resultKind == .checked then .checkedResult else .i64
         parameters := spec.machineArguments.map llvmTy }
-  if !suite.usedDeviceOps.isEmpty then
+  if !suite.usedDeviceOps.isEmpty || suite.usedExecutionOps.any (·.operation.isDevice) then
     declarations := declarations.push { name := "core0_io_fence", returnType := .void, parameters := #[] }
   let module : LLVM.Module := {
     sourceName := "Lemma " ++ configuration ++ " " ++ role
@@ -345,9 +349,9 @@ private def layoutJson (configuration : String)
   ("user_startup_case", .str (image?.map (·.startupCase) |>.getD (userStartupCase configuration)).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
-  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson Layout.frameCount),
-  ("task_kernel_stack_pages", toJson Layout.taskKernelStackPages),
-  ("task_kernel_stack_bytes", toJson Layout.taskKernelStackBytes),
+  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (if configuration == "lemmasim-bringup" then 8192 else Layout.frameCount)),
+  ("task_kernel_stack_pages", toJson (if configuration == "lemmasim-bringup" then 4 else Layout.taskKernelStackPages)),
+  ("task_kernel_stack_bytes", toJson (if configuration == "lemmasim-bringup" then 16384 else Layout.taskKernelStackBytes)),
   ("context", Json.mkObj [
     ("bytes", toJson Lemma.Platform.RiscV.ExecutionPrimitives.contextBytes),
     ("kernel_resume_base", toJson Layout.kernelResumeContext),
@@ -357,7 +361,7 @@ private def layoutJson (configuration : String)
     ("translation_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedTranslationOrEnableOffset),
     ("scratch_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedKernelStackOffset)]),
   ("intervals", .arr (Layout.intervals.map fun interval => Json.mkObj [
-    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson interval.limit),
+    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson (if configuration == "lemmasim-bringup" && interval.name == "frame-pool" then 0x84000000 else interval.limit)),
     ("purpose", .str interval.purpose)])),
   ("user", Json.mkObj [("text_base", toJson Layout.userTextBase), ("text_limit", toJson Layout.userTextLimit),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),
@@ -428,7 +432,7 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
   let contract ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "contract_version").getStr?
   let category ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "artifact_category").getStr?
   let version ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "schema_version").getNat?
-  let profile ← IO.ofExcept <| roleProfile role
+  let profile ← IO.ofExcept <| roleProfile role configuration
   unless actualRole == role && actualConfiguration == configuration &&
       contract == profile.contractVersion && version == (if image?.isSome then 2 else 1) &&
       category == unitCategory configuration role do
@@ -539,7 +543,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration == "lemmasim-bringup", startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then

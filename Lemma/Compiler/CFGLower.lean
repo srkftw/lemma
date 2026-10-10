@@ -1018,7 +1018,8 @@ private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
     CFGM ActionOutcome := do
   let some width := operation.widthBytes?
     | throw "execution memory operation omitted its width"
-  unless width == 1 || width == 8 do throw "unsupported execution RAM width"
+  unless width == 1 || width == 8 || (operation.isDevice && width == 4) do
+    throw "unsupported execution access width"
   let some address := arguments[0]?
     | throw "execution memory operation omitted its address"
   let writeValue := arguments[1]?.getD (.int .i64 0)
@@ -1038,18 +1039,20 @@ private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
     (statusOperand Lemma.Core0.Memory.Status.misaligned, misalignedExit)]
   let mut values : Array (LLVM.Operand × String) := #[(.int .i64 0, misalignedExit)]
   startBlock lookupLabel
-  if operation.isWrite && width == 1 then
+  if operation.isWrite && (width == 1 || width == 4) then
     let byteOk ← freshValue (stem ++ "byte-valid.")
     let byteValidLabel ← freshBlock (stem ++ "byte-valid")
     let invalidByteLabel ← freshBlock (stem ++ "invalid-byte")
-    emit (.icmp byteOk .ule .i64 writeValue (.int .i64 255))
+    emit (.icmp byteOk .ule .i64 writeValue (.int .i64 (if width == 1 then 255 else 0xffffffff)))
     let _ ← finishBlock (.branch (.local byteOk) byteValidLabel invalidByteLabel)
     startBlock invalidByteLabel
     let invalidByteExit ← finishBlock (.jump outcomeLabel)
     statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.invalidLength, invalidByteExit)
     values := values.push (.int .i64 0, invalidByteExit)
     startBlock byteValidLabel
-  for region in Lemma.Core0.Execution.memoryRegions profile do
+  let regions := if operation.isDevice then Lemma.Core0.Execution.deviceRegions operation
+    else Lemma.Core0.Execution.memoryRegions profile
+  for region in regions do
     unless region.start < region.stop && width ≤ region.stop - region.start do
       throw "execution memory authority interval is shorter than the access width"
     let checkUpperLabel ← freshBlock (stem ++ "upper")
@@ -1070,11 +1073,12 @@ private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
     else
       let pointer ← freshValue (stem ++ "pointer.")
       emit (.intToPtr pointer address)
-      let llvmType := if width == 1 then LLVM.Ty.i8 else .i64
+      let llvmType := if width == 1 then LLVM.Ty.i8 else if width == 4 then .i32 else .i64
+      if operation.isDevice then emit (.call none .void "core0_io_fence" #[])
       let value ← if operation.isWrite then do
-        let stored ← if width == 1 then do
+        let stored ← if width == 1 || width == 4 then do
           let byte ← freshValue (stem ++ "stored-byte.")
-          emit (.trunc byte .i64 writeValue .i8)
+          emit (.trunc byte .i64 writeValue llvmType)
           pure (LLVM.Operand.local byte)
         else pure writeValue
         emit (.store llvmType stored (.local pointer) width true)
@@ -1082,11 +1086,12 @@ private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
       else do
         let loaded ← freshValue (stem ++ "loaded.")
         emit (.load loaded llvmType (.local pointer) width true)
-        if width == 1 then do
+        if width == 1 || width == 4 then do
           let word ← freshValue (stem ++ "loaded-word.")
-          emit (.zext word .i8 (.local loaded) .i64)
+          emit (.zext word llvmType (.local loaded) .i64)
           pure (LLVM.Operand.local word)
         else pure (.local loaded)
+      if operation.isDevice then emit (.call none .void "core0_io_fence" #[])
       let accessExit ← finishBlock (.jump outcomeLabel)
       statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.ok, accessExit)
       values := values.push (value, accessExit)
@@ -1425,7 +1430,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo14 status next => do
-      unless profile == .kernel_v0_2 do
+      unless profile == .kernel_v0_2 || profile == .kernel_v0_3 do
         throw "UART FIFO trigger14 requires core0-kernel-v0.2"
       unless status.ty == .u8 do
         throw "checked kernel FIFO control has an inconsistent continuation type"
@@ -1618,7 +1623,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     actualDeviceOps := collectDeviceOps actualDeviceOps function.body
   let mut seenDeviceMetadata : Array Lemma.Core0.Device.Op := #[]
   for operation in suite.usedDeviceOps do
-    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 then
+    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 && profile != .kernel_v0_3 then
       throw s!"device operation `{operation.stableId}` is denied by `{profile.contractVersion}`"
     if seenDeviceMetadata.contains operation then
       throw s!"checked Action suite repeats device metadata `{operation.stableId}`"
@@ -1721,7 +1726,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
-  if profile == .kernel_v0_2 then
+  if profile == .kernel_v0_2 || profile == .kernel_v0_3 then
     unless Lemma.Core0.Device.kernelCatalogValid && kernelDeviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.fcrEnableAndReset14.toNat == 0xc7 do
       throw "the compiled kernel-v0.2 UART catalog disagrees with the closed LLVM lowering"

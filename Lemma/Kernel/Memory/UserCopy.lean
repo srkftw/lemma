@@ -8,7 +8,7 @@ neither user memory nor kernel storage. -/
 namespace Lemma.Kernel.Memory.UserCopy
 open Lemma.Core0.Memory
 
-def maximumLength : UInt64 := 256
+def maximumLength : UInt64 := 4096
 def userBase : UInt64 := 0x10000
 def userLimit : UInt64 := 0x40000000
 
@@ -26,6 +26,10 @@ private def validRange (pointer length : UInt64) : Bool :=
   if userLimit ≤ pointer then false else
   if userLimit - pointer < length then false else true
 
+/-- A nonempty range of length at most 4096 spans at most two 4096-byte
+pages, even when unaligned: floor((offset + length - 1)/4096) ≤ 1.
+Both leaves are preflighted before any byte is written. Increasing this bound
+past one page requires a new full-page enumeration rather than this split. -/
 private def firstLength (pointer length : UInt64) : UInt64 :=
   let available := 4096 - pointer % 4096
   if length ≤ available then length else available
@@ -88,7 +92,7 @@ def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Acti
       let split := firstLength pointer length
       .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 1) fun s second =>
       if s = 0 then
-        .boundedFoldU64 256 fromStep length.toUInt32 0 first second destination split fun s copied =>
+        .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
         if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
     else .done s 0
@@ -107,7 +111,7 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
       let split := firstLength pointer length
       .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 2) fun s second =>
       if s = 0 then
-        .boundedFoldU64 256 toStep length.toUInt32 0 first second source split fun s copied =>
+        .boundedFoldU64 4096 toStep length.toUInt32 0 first second source split fun s copied =>
         if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
     else .done s 0

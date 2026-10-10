@@ -25,6 +25,8 @@ def bootFailure (status : UInt8) : Action :=
   else .done s 0
 
 def bootServices : Action :=
+  .bind (Lemma.Kernel.Memory.Frames.configure 512 32 2) fun s _ =>
+  if s = 0 then
   .bind (Lemma.Kernel.Memory.Access.write64 Lemma.Platform.LemmaVM.Layout.inputControlValue 0)
     fun s _ =>
   if s = 0 then
@@ -45,6 +47,8 @@ def bootServices : Action :=
       else .done s 0
     else bootFailure s
   else .done s 0
+  else .done s 0
+
   else .done s 0
 
 end Lemma.Kernel.BootServices

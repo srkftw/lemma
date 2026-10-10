@@ -66,6 +66,7 @@ structure Configuration where
   firmwareDispatcher : String := ""
   supervisorDispatcher : String := ""
   bootStateAddress : Nat := Layout.metadataBase
+  lemmasim : Bool := false
   deriving Repr, BEq
 
 def contextBytes : Nat := Layout.contextBytes
@@ -100,11 +101,14 @@ def pmpConfiguration : Nat := 0x1b1b1f1818
 def exceptionDelegation : Nat := 0xb1ff
 def interruptDelegation : Nat := 2
 
-private def initializePmp : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
-  pmpAddresses.flatMap (fun (csr, value) => #[
+private def initializePmp (lemmasim : Bool) : Array Line := #[ins (.csrWrite .pmpcfg0 .zero)] ++
+  (pmpAddresses ++ (if lemmasim then #[
+    (.pmpaddr5, napot 0x0c000000 0x800000),
+    (.pmpaddr6, napot 0x10001000 0x1000),
+    (.pmpaddr7, napot 0x10010000 0x2000)] else #[] : Array (CSR × Nat))).flatMap (fun (csr, value) => #[
     ins (.loadImmediate .t0 value), ins (.csrWrite csr .t0)
   ]) ++ #[
-    ins (.loadImmediate .t0 pmpConfiguration), ins (.csrWrite .pmpcfg0 .t0),
+    ins (.loadImmediate .t0 (if lemmasim then 0x1b1b1b1b1b1f1818 else pmpConfiguration)), ins (.csrWrite .pmpcfg0 .t0),
     ins .translationFenceAll
   ]
 
@@ -146,9 +150,9 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadImmediate .t0 (UInt64.toNat Lemma.Core0.Timer.MachineTimer.compareAddress)),
   ins (.loadImmediate .t1 0xffffffffffffffff),
   ins .fenceIO, ins (.storeDouble .t1 .t0 0), ins .fenceIO
-] ++ initializePmp ++ #[
+] ++ initializePmp config.lemmasim ++ #[
   ins (.loadImmediate .t0 exceptionDelegation), ins (.csrWrite .medeleg .t0),
-  ins (.loadImmediate .t0 interruptDelegation), ins (.csrWrite .mideleg .t0)
+  ins (.loadImmediate .t0 (if config.lemmasim then 514 else interruptDelegation)), ins (.csrWrite .mideleg .t0)
 ] ++ (if config.startupCase == .machineOriginProbe then #[
   ins (.loadAddress .t0 "lemma_machine_vector"), ins (.csrWrite .mtvec .t0),
   ins (.loadImmediate .t0 Layout.firmwareStackTop), ins (.csrWrite .mscratch .t0)
@@ -156,7 +160,7 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadAddress .t0 "lemma_machine_vector"), ins (.csrWrite .mtvec .t0),
   ins (.loadImmediate .t0 Layout.firmwareStackTop), ins (.csrWrite .mscratch .t0),
   ins (.loadAddress .t0 "lemma_supervisor_vector"), ins (.csrWrite .stvec .t0),
-  ins (.loadImmediate .t0 2), ins (.csrWrite .sie .t0),
+  ins (.loadImmediate .t0 (if config.lemmasim then 514 else 2)), ins (.csrWrite .sie .t0),
   ins (.loadImmediate .t0 0x82), ins (.csrWrite .mie .t0),
   ins (.loadImmediate .t0 0x1baa), ins (.csrClear .mstatus .t0),
   ins (.loadImmediate .t0 0x800), ins (.csrSet .mstatus .t0)

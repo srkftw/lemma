@@ -203,6 +203,31 @@ private def fillRange (address tableIndex physical amount flags : UInt64) : Acti
     .boundedFoldU64 512 fillStep amount.toUInt32 0 table physical flags 0 fun s v => .done s v
   else .done resourceLimit 0
 
+/-- Expanded pools share the same trusted S-only RW/NX alias limitation.
+Each additional aligned 2 MiB leaf covers allocator-owned RAM only. No U bit
+is set, and the historical 512-frame instance installs no extra leaf. -/
+private def expandedPoolStep (i _ : UInt32) (acc middle _ _ _ : UInt64) : Action :=
+  let physical := 0x82200000 + i.toUInt64 * 0x200000
+  .bind (Access.write64 (middle + (17 + i.toUInt64) * 8)
+    ((physical >>> 12) <<< 10 ||| (0xc7 : UInt64))) fun s _ => .done s (acc + 1)
+
+private def mapExpandedPool (address : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
+  if amount = 512 then .done 0 0 else
+  if amount = 8192 then
+    .bind (link address 7 96 11) fun s _ => if failed s = true then .done s 0 else
+    .bind (link address 7 97 12) fun s _ => if failed s = true then .done s 0 else
+    .bind (fillRange address 11 0x0c000000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
+    .bind (fillRange address 11 0x0c002000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
+    .bind (fillRange address 12 0x0c201000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
+    .bind (fillRange address 9 0x10001000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
+    .bind (fillRange address 9 0x10010000 2 0xc7) fun s _ => if failed s = true then .done s 0 else
+    .bind (tableAt address 1) fun s middle => if failed s = true then .done s 0 else
+    .boundedFoldU64 15 expandedPoolStep 15 0 middle 0 0 0 fun s mapped =>
+    if failed s = true then .done s 0 else
+    if mapped = 15 then .done 0 mapped else .done invariantFailure 0
+  else .done invariantFailure 0
+
 private def buildKernel (address : UInt64) : Action :=
   .bind (link address 0 2 1) fun s _ => if failed s = true then .done s 0 else
   .bind (link address 1 1 2) fun s _ => if failed s = true then .done s 0 else
@@ -219,6 +244,7 @@ private def buildKernel (address : UInt64) : Action :=
   .bind (fillRange address 3 0x80500000 16 0xc7) fun s _ => if failed s = true then .done s 0 else
   .bind (fillRange address 4 0x80600000 256 0x43) fun s _ => if failed s = true then .done s 0 else
   .bind (fillRange address 5 0x82000000 512 0xc7) fun s _ => if failed s = true then .done s 0 else
+  .bind (mapExpandedPool address) fun s _ => if failed s = true then .done s 0 else
   .bind (fillRange address 6 0x87e00000 512 0x43) fun s _ => if failed s = true then .done s 0 else
   .bind (fillRange address 8 0x00100000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
   .bind (fillRange address 9 0x10000000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
@@ -266,6 +292,8 @@ private def pinTableStep (i _ : UInt32) (acc address owner _ _ : UInt64) : Actio
   .bind (Frames.pin owner handle) fun s _ => .done s (acc + 1)
 
 def create (owner : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
+  let initialTables := if amount = 8192 then 13 else 11
   if Frames.ownerValid owner = false then .done Frames.badOwner 0 else
   .bind (Frames.allocate 1 1) fun s descriptor =>
   if failed s = true then .done s 0 else
@@ -273,11 +301,11 @@ def create (owner : UInt64) : Action :=
   if failed s = true then releaseDescriptor descriptor s else
   .bind (put address 24 owner) fun s _ =>
   if failed s = true then releaseDescriptor descriptor s else
-  .bind (Batch.allocate owner 2 11) fun s _ =>
+  .bind (Batch.allocate owner 2 initialTables) fun s _ =>
   if failed s = true then releaseDescriptor descriptor s else
-  .boundedFoldU64 11 copyTableStep 11 0 address 0 0 0 fun s _ =>
+  .boundedFoldU64 13 copyTableStep initialTables.toUInt32 0 address 0 0 0 fun s _ =>
   if failed s = true then
-    .bind (Batch.rollback owner 11 s) fun rollbackStatus _ =>
+    .bind (Batch.rollback owner initialTables s) fun rollbackStatus _ =>
     if rollbackStatus = s then releaseDescriptor descriptor s else .done invariantFailure 0
   else
   .bind (get address tableList) fun s rootHandle =>
@@ -292,7 +320,7 @@ def create (owner : UInt64) : Action :=
   .bind (put address 80 32) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 88 32) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (buildKernel address) fun s _ => if failed s = true then abortCreate descriptor address s else
-  .boundedFoldU64 11 pinTableStep 11 0 address owner 0 0 fun s _ =>
+  .boundedFoldU64 13 pinTableStep initialTables.toUInt32 0 address owner 0 0 fun s _ =>
   if failed s = true then abortCreate descriptor address s else
   .bind (put address 32 1) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 0 magic) fun s _ =>

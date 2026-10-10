@@ -13,6 +13,7 @@ inductive Op where
   | readTime | setMachineCompare | forwardSupervisor
   | firmwareCall | syscall | installSatp | fenceInstruction | enterUser | waitInterrupt
   | readSupervisorPending
+  | deviceRead32 | deviceWrite32 | deviceRead64 | deviceWrite64
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Op
@@ -21,7 +22,8 @@ def all : Array Op := #[
   .physicalRead8, .physicalRead64, .physicalWrite8, .physicalWrite64,
   .virtualRead8, .virtualRead64, .virtualWrite8, .virtualWrite64,
   .readTime, .setMachineCompare, .forwardSupervisor, .firmwareCall, .syscall,
-  .installSatp, .fenceInstruction, .enterUser, .waitInterrupt, .readSupervisorPending]
+  .installSatp, .fenceInstruction, .enterUser, .waitInterrupt, .readSupervisorPending,
+  .deviceRead32, .deviceWrite32, .deviceRead64, .deviceWrite64]
 
 def stableId : Op → String
   | .physicalRead8 => "execution.physical-read8"
@@ -42,6 +44,10 @@ def stableId : Op → String
   | .enterUser => "execution.enter-user"
   | .waitInterrupt => "execution.wait-interrupt"
   | .readSupervisorPending => "execution.supervisor-pending"
+  | .deviceRead32 => "lemmasim.device-read32"
+  | .deviceWrite32 => "lemmasim.device-write32"
+  | .deviceRead64 => "lemmasim.device-read64"
+  | .deviceWrite64 => "lemmasim.device-write64"
 
 def sourceIdentity : Op → Lean.Name
   | .physicalRead8 => ``Op.physicalRead8
@@ -62,6 +68,10 @@ def sourceIdentity : Op → Lean.Name
   | .enterUser => ``Op.enterUser
   | .waitInterrupt => ``Op.waitInterrupt
   | .readSupervisorPending => ``Op.readSupervisorPending
+  | .deviceRead32 => ``Op.deviceRead32
+  | .deviceWrite32 => ``Op.deviceWrite32
+  | .deviceRead64 => ``Op.deviceRead64
+  | .deviceWrite64 => ``Op.deviceWrite64
 
 def ofSourceIdentity? (name : Lean.Name) : Option Op :=
   all.find? fun operation => operation.sourceIdentity == name
@@ -69,10 +79,13 @@ def ofSourceIdentity? (name : Lean.Name) : Option Op :=
 def widthBytes? : Op → Option Nat
   | .physicalRead8 | .physicalWrite8 | .virtualRead8 | .virtualWrite8 => some 1
   | .physicalRead64 | .physicalWrite64 | .virtualRead64 | .virtualWrite64 => some 8
+  | .deviceRead32 | .deviceWrite32 => some 4
+  | .deviceRead64 | .deviceWrite64 => some 8
   | _ => none
 
 def isWrite : Op → Bool
   | .physicalWrite8 | .physicalWrite64 | .virtualWrite8 | .virtualWrite64 => true
+  | .deviceWrite32 | .deviceWrite64 => true
   | _ => false
 
 def isPhysical : Op → Bool
@@ -82,18 +95,22 @@ def isPhysical : Op → Bool
 def admits (profile : Profile) (operation : Op) : Bool :=
   match operation with
   | .physicalRead8 | .physicalRead64 | .physicalWrite8 | .physicalWrite64 =>
-      profile == .firmware_v0_1 || profile == .kernel_v0_1 || profile == .kernel_v0_2
+      profile == .firmware_v0_1 || profile.isKernel
   | .virtualRead8 | .virtualRead64 | .virtualWrite8 | .virtualWrite64 | .syscall =>
       profile == .user_v0_1
   | .readTime | .setMachineCompare | .forwardSupervisor => profile == .firmware_v0_1
   | .firmwareCall | .installSatp | .fenceInstruction | .enterUser | .waitInterrupt |
       .readSupervisorPending =>
-      profile == .kernel_v0_1 || profile == .kernel_v0_2
+      profile.isKernel
+  | .deviceRead32 | .deviceWrite32 | .deviceRead64 | .deviceWrite64 =>
+      profile == .kernel_v0_3
 
 /-- Number of meaningful source operands; the remaining six-word slots must be
 literal zero. Firmware/syscall operands are number followed by five payloads. -/
 def argumentCount : Op → Nat
   | .physicalWrite8 | .physicalWrite64 | .virtualWrite8 | .virtualWrite64 => 2
+  | .deviceWrite32 | .deviceWrite64 => 2
+  | .deviceRead32 | .deviceRead64 => 1
   | .physicalRead8 | .physicalRead64 | .virtualRead8 | .virtualRead64 |
       .setMachineCompare | .installSatp | .enterUser => 1
   | .forwardSupervisor => 1
@@ -114,6 +131,11 @@ def primitiveSymbol? : Op → Option String
   | _ => none
 
 end Op
+
+/-- Device accesses are separate from ordinary physical RAM authority. The
+fixed catalog admits only the selected controller register widths. -/
+def Op.isDevice (op : Op) : Bool :=
+  op == .deviceRead32 || op == .deviceWrite32 || op == .deviceRead64 || op == .deviceWrite64
 
 inductive ResultKind where
   | word | checked
@@ -170,10 +192,18 @@ structure MemoryRegion where
   writable : Bool
   deriving BEq, Inhabited, Repr
 
-def memoryRegions : Profile → Array MemoryRegion
-  | .firmware_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
-      Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
-  | .kernel_v0_1 | .kernel_v0_2 => #[
+def deviceRegions (operation : Op) : Array MemoryRegion :=
+  if operation == .deviceRead32 || operation == .deviceWrite32 then #[
+    ⟨"virtio-block", 0x10001000, 0x10001200, true⟩,
+    ⟨"plic-priority", 0x0c000004, 0x0c000038, true⟩,
+    ⟨"plic-s-enable", 0x0c002080, 0x0c002084, true⟩,
+    ⟨"plic-s-context", 0x0c201000, 0x0c201008, true⟩]
+  else if operation == .deviceRead64 || operation == .deviceWrite64 then #[
+    ⟨"paper-controller", 0x10010000, 0x10011000, true⟩,
+    ⟨"pen-controller", 0x10011000, 0x10012000, true⟩]
+  else #[]
+
+def kernelMemoryRegions : Array MemoryRegion := #[
       ⟨"kernel-image", Lemma.Platform.LemmaVM.Layout.supervisorBase,
         Lemma.Platform.LemmaVM.Layout.supervisorLimit, false⟩,
       ⟨"kernel-metadata", Lemma.Platform.LemmaVM.Layout.metadataBase,
@@ -186,6 +216,13 @@ def memoryRegions : Profile → Array MemoryRegion
         Lemma.Platform.LemmaVM.Layout.poolLimit, true⟩,
       ⟨"boot-dtb", Lemma.Platform.LemmaVM.Layout.dtbReserveBase,
         Lemma.Platform.LemmaVM.Layout.dtbReserveLimit, false⟩]
+
+def memoryRegions : Profile → Array MemoryRegion
+  | .firmware_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
+      Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
+  | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
+  | .kernel_v0_3 => kernelMemoryRegions.map fun region =>
+      if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region
   | .user_v0_1 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
   | _ => #[]
 

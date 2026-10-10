@@ -57,7 +57,7 @@ def Register.number (register : Register) : Nat :=
 /-- The M-mode substrates cannot name arbitrary CSRs. -/
 inductive CSR where
   | mstatus | mie | mtvec | mscratch | mepc | mcause | mtval | mip
-  | medeleg | mideleg | pmpcfg0 | pmpaddr0 | pmpaddr1 | pmpaddr2 | pmpaddr3 | pmpaddr4
+  | medeleg | mideleg | pmpcfg0 | pmpaddr0 | pmpaddr1 | pmpaddr2 | pmpaddr3 | pmpaddr4 | pmpaddr5 | pmpaddr6 | pmpaddr7
   | mcounteren | scounteren
   | sstatus | sie | stvec | sscratch | sepc | scause | stval | sip | satp
   deriving Repr, BEq, DecidableEq
@@ -79,6 +79,9 @@ def CSR.render : CSR → String
   | .pmpaddr2 => "pmpaddr2"
   | .pmpaddr3 => "pmpaddr3"
   | .pmpaddr4 => "pmpaddr4"
+  | .pmpaddr5 => "pmpaddr5"
+  | .pmpaddr6 => "pmpaddr6"
+  | .pmpaddr7 => "pmpaddr7"
   | .mcounteren => "mcounteren"
   | .scounteren => "scounteren"
   | .sstatus => "sstatus"

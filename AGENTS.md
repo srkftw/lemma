@@ -71,6 +71,20 @@ merge commit for this session; that authorization overrides the original
 draft-only instruction after full verification and applicable CI pass. Do not
 change repository settings or delete task branches. Leave USGCE untouched.
 
+## Fourth task's scope
+
+Task 004 is authorized by `codex/prompts/004-lemmasim-durable-ink.md`.
+It extends the historical restrictions with the `lemma-one-core/0.1.0` and
+`lemmasim-virt/0.1.0` profiles, host-only QEMU device implementation, compiled
+Lean block/pen/paper drivers, durable records, rasterized ink, isolated notebook
+applications and capture/replay. Historical profiles and evidence retain their
+original meanings. Target policy, codecs, recovery, ink and notebook remain Lean.
+Host C is confined to `sim/host/` and the separately identified QEMU patch; it
+must never enter the RV64 link. Resume the current Task 004 checkpoint. Completion
+requires a usable persistent notebook, not devices or a bring-up demonstration.
+Publish a draft PR against current main; do not merge or inherit Task 003 merge
+authorization. Keep physical conformance UNVERIFIED and USGCE untouched.
+
 ## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and

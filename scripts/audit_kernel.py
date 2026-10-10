@@ -1866,7 +1866,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
-            or unit.get("role") != role or unit.get("contract_version") != CONTRACTS[role]):
+            or unit.get("role") != role or unit.get("contract_version") !=
+                ("core0-kernel-v0.3" if role == "kernel" and configuration == "lemmasim-bringup" else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -1923,10 +1924,17 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         _keys(row, {"stable_id", "source_identity", "primitive_symbol", "arguments", "returnkind"}, "execution operation")
         identity = row.get("source_identity")
         suffix = identity.rsplit(".", 1)[-1] if isinstance(identity, str) else ""
-        if suffix not in EXECUTION_OPERATIONS or identity != "Lemma.Core0.Execution.Op." + suffix:
+        sim_operations = {
+            "deviceRead32": ("device-read32", None, 0, "word", {"kernel"}),
+            "deviceWrite32": ("device-write32", None, 0, "word", {"kernel"}),
+            "deviceRead64": ("device-read64", None, 0, "word", {"kernel"}),
+            "deviceWrite64": ("device-write64", None, 0, "word", {"kernel"}),
+        } if configuration == "lemmasim-bringup" else {}
+        operations = {**EXECUTION_OPERATIONS, **sim_operations}
+        if suffix not in operations or identity != "Lemma.Core0.Execution.Op." + suffix:
             raise Core0Error("unknown execution operation identity")
-        stable, primitive, argc, result, roles = EXECUTION_OPERATIONS[suffix]
-        if (role not in roles or row.get("stable_id") != "execution." + stable or row.get("primitive_symbol") != primitive
+        stable, primitive, argc, result, roles = operations[suffix]
+        if (role not in roles or row.get("stable_id") != ("lemmasim." if suffix in sim_operations else "execution.") + stable or row.get("primitive_symbol") != primitive
                 or row.get("arguments") != ["u64"] * argc or row.get("returnkind") != result or suffix in seen):
             raise Core0Error(f"execution operation contract/privilege differs: {suffix}")
         seen.add(suffix)
@@ -1952,7 +1960,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] == "core0-kernel-v0.2":
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:

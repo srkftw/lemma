@@ -68,6 +68,7 @@ private def writeStep (i _ : UInt32) (acc physical _ _ _ : UInt64) : Action :=
 /-- Range rejection has no device effects. A device error after transmission
 returns its status and the actual prefix count; UART output is irreversible. -/
 def consoleWrite (descriptor pointer length : UInt64) : Action :=
+  if 256 < length then .done 16 0 else
   .bind (UserCopy.validateRead descriptor pointer length) fun s _ =>
   if failed s = true then .done s 0 else
   if length = 0 then .done 0 0 else
@@ -91,6 +92,7 @@ private def readStep (i _ : UInt32) (acc physical _ _ _ : UInt64) : Action :=
 Read is nonblocking: no available byte returns12/0, otherwise a short count.
 No borrowed user pointer persists after this bounded critical section. -/
 def consoleRead (descriptor pointer length : UInt64) : Action :=
+  if 256 < length then .done 16 0 else
   .bind (UserCopy.validateWrite descriptor pointer length) fun s _ =>
   if failed s = true then .done s 0 else
   if length = 0 then .done 0 0 else

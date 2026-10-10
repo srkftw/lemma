@@ -16,6 +16,18 @@ The target is total **functional** equivalence: for every admitted guest-observa
 4. When OEM hardware differs, implement a conformance-preserving physical adapter, change hardware, or explicitly revise the versioned contract for *both* embodiments. Never silently introduce divergent guest software behavior.
 5. The guest must not use host-only shortcut services for ink, checking, storage or scheduling. Host drawing tablet, graphics and filesystem are strictly external I/O transports backing modeled devices.
 
+## Task 004 reference subset
+
+[Machine Profile 0.1.0](docs/contracts/004-machine-profile-0.1.0.md) freezes
+`lemma-one-core/0.1.0` and its first binding `lemmasim-virt/0.1.0`.
+[The declarative instance](sim/profiles/lemmasim-virt-0.1.0.json),
+[descriptor and device v1 ABIs](docs/contracts/004-devices-v1.md),
+[owned-memory extension](docs/contracts/004-owned-memory-v1.md), and
+[guest record-store format](docs/contracts/004-store-v1.md) are subordinate
+contracts. Their presence does not certify an integrated notebook, deterministic
+whole-machine replay, physical conformance, or the finished canonical machine.
+Physical conformance remains UNVERIFIED. Historical profiles retain their meanings.
+
 ## Required contract sections (unfrozen values must remain UNKNOWN)
 
 | Area | Guest-visible specification to freeze | Evidence |
