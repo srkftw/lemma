@@ -287,6 +287,16 @@ Developer capture, inspection and offline copies use the same machine:
 ./scripts/lemmasim archive --session build/lemmasim/writing-session --to /path/to/evidence.tar.gz
 ```
 
+After a successful clean full acceptance run, export its selected observations
+with `./scripts/lemmasim archive --acceptance build/lemmasim/FULL_RUN --to
+/path/to/task004-evidence.tar.gz`. This includes an exact implementation Git
+bundle, identified guest images/build records, captured input and QEMU replay,
+controller pixels, committed ink bytes, and baseline/workload/native stable
+images. The export refuses missing or failed evidence. Session archives preserve
+their captured initial medium; an external working image needs the separate
+offline `copy` command. Neither archive bundles a native runtime installer or
+provides permanent remote storage.
+
 Controls `pause`, `resume`, `reset` and `power-cut` are outside guest authority;
 mutating controls invalidate an unmodified replay claim. QEMU pause/reset may
 drain and flush block nodes; use `power-cut` for a modeled loss of volatile

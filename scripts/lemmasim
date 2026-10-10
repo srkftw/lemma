@@ -581,10 +581,7 @@ def copy_image(args):
     with lock_disk(source):shutil.copyfile(source,destination)
     print(f'Offline image copy: {destination} ({sha(destination)})')
 
-def archive_session(args):
-    session=args.session.resolve();destination=args.to.resolve()
-    if destination.exists():raise Failure('Archive destination already exists.')
-    if destination.is_relative_to(session):raise Failure('Archive destination must be outside the original session tree.')
+def session_archive_inputs(session):
     result_path=session/'run/result.json' if (session/'run/result.json').is_file() else session/'result.json'
     result=json.loads(result_path.read_text())
     if result.get('process_reaped') is not True:raise Failure('Archive requires a closed, reaped session.')
@@ -604,6 +601,14 @@ def archive_session(args):
         if not path.is_file():excluded.append(relative);continue
         files.append((path,relative))
     if not files:raise Failure('Empty session cannot be archived.')
+    return result,metadata,guest_files,files,excluded
+
+def archive_session(args):
+    if getattr(args,'acceptance',None) is not None:return archive_acceptance(args)
+    session=args.session.resolve();destination=args.to.resolve()
+    if destination.exists():raise Failure('Archive destination already exists.')
+    if destination.is_relative_to(session):raise Failure('Archive destination must be outside the original session tree.')
+    result,metadata,guest_files,files,excluded=session_archive_inputs(session)
     inventory={'schema_version':1,'scope':'offline LemmaSim evidence export; no live media recovery',
                'session_status':result['status'],'excluded_nonfiles':excluded,
                'export_scope':{'initial_media':'included when initial.raw is a listed session file',
@@ -634,6 +639,135 @@ def archive_session(args):
     print(f'Offline evidence archive: {destination} ({sha(destination)})')
 
 
+def acceptance_archive_inputs(directory):
+    """Select identified evidence only; this never parses or repairs a notebook."""
+    directory=Path(directory).resolve(strict=True)
+    files=[]
+    def add(path,name,expected=None,inside=True):
+        path=Path(path).absolute()
+        if any(part.is_symlink() for part in (path,*path.parents)) or not path.is_file():raise Failure('Acceptance artifact is missing or symlinked: '+name)
+        path=path.resolve(strict=True)
+        if inside and not path.is_relative_to(directory):raise Failure('Acceptance artifact escapes its recorded directory.')
+        if path.stat().st_size>512*1024*1024 or expected is not None and sha(path)!=expected:raise Failure('Acceptance artifact is oversized or changed: '+name)
+        files.append((path,name));return path
+    def value(path,name,status='PASS'):
+        result=json.loads(add(path,name).read_text())
+        if result.get('status')!=status:raise Failure('Acceptance export requires successful '+name)
+        return result
+    result=value(directory/'result.json','acceptance/result.json')
+    source=result.get('source',{});commit=source.get('commit','');tree=source.get('tree','')
+    if result.get('lane')!='full' or result.get('with_o0') is not True or source.get('clean') is not True or any(len(item)!=40 or any(c not in '0123456789abcdef' for c in item) for item in (commit,tree)):
+        raise Failure('Acceptance export requires a full clean committed candidate.')
+    actual=subprocess.check_output(['git','rev-parse',commit+'^{tree}'],cwd=ROOT,text=True,timeout=30).strip()
+    if actual!=tree:raise Failure('Acceptance source commit/tree is unavailable or contradictory.')
+    metadata=json.loads(add(directory/'prepared.json','acceptance/prepared.json').read_text())
+    if metadata.get('commit')!=commit or metadata.get('source_tree')!=tree:raise Failure('Acceptance prepared/source identities contradict.')
+    if result.get('qemu_closure')!=metadata.get('qemu_closure'):raise Failure('Acceptance backend closure contradicts its prepared image.')
+    expected=[('basic',[1650,2200]),('basic',[1650,2200]),('editing',[1650,2200]),('basic',[1404,1872]),
+              ('loss-overflow',[1650,2200]),('loss-disconnect',[1650,2200]),('loss-watchdog',[1650,2200]),('workload',[1650,2200])]
+    cases=result.get('cases',[])
+    if [(item.get('workflow'),item.get('geometry')) for item in cases]!=expected:raise Failure('Acceptance full workflow matrix is incomplete.')
+    for i,case in enumerate(cases):
+        for key in ('observation','cold_observation'):
+            path=add(case[key],f'acceptance/workflows/{i:02d}-{key}.json',case['sha256' if key=='observation' else 'cold_sha256'])
+            if json.loads(path.read_text()).get('status')!='PASS':raise Failure('Acceptance workflow/cold observer rejected.')
+    for field in ('faults','publication_negative','input_negative','native_pointer'):
+        if result.get(field,{}).get('status')!='PASS':raise Failure('Acceptance mandatory '+field+' is incomplete.')
+    if result['faults'].get('fault_count')!=15:raise Failure('Acceptance fault corpus is incomplete.')
+    for field in ('publication_negative','input_negative'):
+        observed=value(directory/field.replace('_','-')/'result.json','acceptance/'+field+'/result.json')
+        if observed.get('candidate_commit')!=commit or [(item.get('name'),item.get('oracle_status')) for item in observed.get('cases',[])]!=[('positive','PASS'),('negative','FAIL')]:raise Failure('Acceptance source-negative evidence is incomplete.')
+        add(directory/field.replace('_','-')/'negative-source.patch','acceptance/'+field+'/negative-source.patch',observed['source_patch_sha256'])
+        add(directory/field.replace('_','-')/'negative-image.json','acceptance/'+field+'/negative-image.json')
+    value(directory/'faults/result.json','acceptance/faults.json')
+    native=value(directory/'native-pointer/result.json','acceptance/native-pointer.json')
+    if native!=result['native_pointer']:raise Failure('Acceptance native capture summary contradicts its matrix.')
+    session=directory/'native-pointer/session'
+    if Path(native.get('record','')).resolve()!=session:raise Failure('Acceptance representative capture path differs.')
+    recorded,build,guest,capture,excluded=session_archive_inputs(session)
+    if build!=metadata:raise Failure('Acceptance capture/guest identities differ.')
+    identity=json.loads((session/'identity.json').read_text())
+    validate_replay_policy(identity,recorded,json.loads((session/'run/process.json').read_text()))
+    if (session/'controls.jsonl').exists() or recorded.get('status') not in ('CLOSED','HOST_STOPPED_AT_DEADLINE'):raise Failure('Acceptance capture is incomplete or modified by controls.')
+    for relative,field in (('initial.raw','initial_media_sha256'),('qemu.rr','rr_sha256'),('run/raw.bin','captured_raw_sha256'),
+                           ('run/descriptor.bin','machine_descriptor_sha256'),('run/machine.dtb','actual_boot_dtb_sha256')):
+        if sha(session/relative)!=identity.get(field):raise Failure('Acceptance capture identity differs: '+relative)
+    if identity['initial_media_sha256']!=result.get('initial_media_sha256'):raise Failure('Acceptance capture initial medium differs from its initialization.')
+    files.extend((path,'capture/'+name) for path,name in capture)
+    files.extend(guest)
+    for role in ('notebook','initializer'):
+        provenance=json.loads(Path(metadata[role]['artifacts']['provenance.json']['path']).read_text())
+        if provenance.get('source_commit')!=commit or provenance.get('dirty_paths')!=[]:raise Failure('Acceptance guest provenance is not the exact clean candidate.')
+    replay=Path(native.get('replay','')).absolute()
+    if replay==ROOT or any(part.is_symlink() for part in (replay,*replay.parents)):raise Failure('Acceptance replay path is missing or symlinked.')
+    comparison=json.loads(add(replay/'comparison.json','replay/comparison.json',inside=False).read_text())
+    names={'final_media_sha256','devices','storage','document_report','machine_descriptor_sha256','actual_boot_dtb_sha256',
+           'devices.jsonl','visible.ppm','raw.bin','descriptor.bin','machine.dtb','serial.bin','ordered_medium_operations'}
+    checks=comparison.get('observations',{})
+    if comparison.get('status')!='PASS' or set(checks)!=names or any(item is not True for item in checks.values()):raise Failure('Acceptance exact replay comparisons are incomplete.')
+    replay_result=json.loads(add(replay/'result.json','replay/result.json',inside=False).read_text())
+    if replay_result.get('status')!='REPLAY_BOUNDARY_REACHED' or replay_result.get('process_reaped') is not True or replay_result.get('build_identity')!=metadata:raise Failure('Acceptance replay is incomplete or belongs to another guest.')
+    for name in ('devices.jsonl','media.jsonl','serial.bin','raw.bin','visible.ppm','descriptor.bin','machine.dtb'):
+        expected_hash=None if name=='media.jsonl' else sha(session/'run'/name)
+        add(replay/name,'replay/'+name,expected_hash,inside=False)
+    for folder in ('basic','workload','native-pointer'):
+        disk=directory/folder/('record.raw' if folder=='native-pointer' else 'disk.raw')
+        process=json.loads((directory/folder/('session/run' if folder=='native-pointer' else 'run')/'result.json').read_text())
+        if process.get('process_reaped') is not True:raise Failure('Acceptance stable media is still owned by an unreaped process.')
+        add(disk,'documents/'+folder+'/stable.raw',process['final_media_sha256'])
+        exports=json.loads(add(directory/folder/'committed/result.json','documents/'+folder+'/committed/result.json').read_text())
+        if exports.get('status')!='OBSERVED' or exports.get('image_sha256')!=sha(disk) or not exports.get('objects'):raise Failure('Acceptance committed byte export is absent or belongs to another image.')
+        for item in exports['objects']:
+            name=item['export']
+            if Path(name).name!=name:raise Failure('Acceptance committed byte export path escapes its directory.')
+            add(directory/folder/'committed'/name,'documents/'+folder+'/committed/'+name,item['sha256'])
+    if replay_result.get('final_media_sha256')!=recorded.get('final_media_sha256'):raise Failure('Acceptance replay stable media differs from the capture.')
+    value(directory/'workload/owned-memory/result.json','acceptance/owned-memory.json',status='OBSERVED')
+    for name in ('ingress.json','workflow.json','cold.json','reset.json'):
+        value(directory/'native-pointer'/name,'acceptance/native-'+name)
+    for name in ('pointer-commands.json','input.json'):
+        add(directory/'native-pointer'/name,'capture/'+name)
+    for folder in ('basic','workload'):
+        for name in ('result.json','devices.jsonl','media.jsonl','serial.bin','raw.bin','visible.ppm','descriptor.bin','machine.dtb'):
+            add(directory/folder/'run'/name,'documents/'+folder+'/controller/'+name)
+    for name in ('input.bin','input.json','cold-navigation.bin','cold-navigation.json'):
+        add(directory/'workload'/name,'workload/'+name)
+    memory=list((directory/'workload/owned-memory').glob('*.bin'))
+    if not memory or len(memory)>4096:raise Failure('Acceptance raw owned-memory observations are absent or oversized.')
+    for path in sorted(memory):add(path,'workload/owned-memory/'+path.name)
+    return {'schema_version':1,'scope':'selected successful full-candidate evidence and exact implementation history; no live recovery or portable runtime installer',
+            'source':source,'backend_closure':metadata['qemu_closure'],'representative_capture':'native-pointer/session',
+            'excluded_capture_nonfiles':excluded,'retention':{'offline_archive':'owner-controlled; preserve outside build/',
+            'github_actions_configured_days':14,'permanent_remote_archive':'NOT_CONFIGURED'}},files
+
+
+def archive_acceptance(args):
+    directory=args.acceptance.resolve();destination=args.to.resolve()
+    if destination.exists():raise Failure('Archive destination already exists.')
+    if destination.is_relative_to(directory):raise Failure('Archive destination must be outside the original acceptance tree.')
+    inventory,files=acceptance_archive_inputs(directory)
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    try:
+        with tempfile.TemporaryDirectory(prefix='lemma-evidence-source-') as temporary:
+            bare=Path(temporary)/'source.git';bundle=Path(temporary)/'implementation.bundle'
+            run_command(['git','init','--bare','--quiet',str(bare)],30)
+            run_command(['git','--git-dir='+str(bare),'fetch','--quiet','--no-tags',str(ROOT),inventory['source']['commit']+':refs/heads/implementation'],60)
+            run_command(['git','--git-dir='+str(bare),'bundle','create',str(bundle),'implementation'],60)
+            heads=subprocess.check_output(['git','bundle','list-heads',str(bundle)],cwd=ROOT,text=True,timeout=30).strip()
+            if heads!=inventory['source']['commit']+' refs/heads/implementation':raise Failure('Exported source bundle does not name the exact implementation.')
+            files.append((bundle,'source/implementation.bundle'))
+            inventory['files']=[{'path':name,'bytes':path.stat().st_size,'sha256':sha(path)} for path,name in files]
+            with tarfile.open(destination,'x:gz') as archive:
+                for path,name in files:archive.add(path,arcname=name,recursive=False)
+                for item,(path,_) in zip(inventory['files'],files):
+                    if sha(path)!=item['sha256']:raise Failure('Acceptance artifact changed during offline export.')
+                payload=(json.dumps(inventory,indent=2)+'\n').encode();info=tarfile.TarInfo('inventory.json');info.size=len(payload)
+                archive.addfile(info,io.BytesIO(payload))
+    except BaseException:
+        destination.unlink(missing_ok=True);raise
+    print(f'Offline full-candidate evidence archive: {destination} ({sha(destination)})')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     p=sub.add_parser('build');p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.set_defaults(function=build)
@@ -641,7 +775,7 @@ def main():
     p=sub.add_parser('run');p.add_argument('--disk',type=Path,required=True);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry',default='1650x2200');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
     p=sub.add_parser('replay');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
-    p=sub.add_parser('archive');p.add_argument('--session',type=Path,required=True);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
+    p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
     p=sub.add_parser('copy');p.add_argument('--disk',type=Path,required=True);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=copy_image)
     args=parser.parse_args()
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=3600:parser.error('timeout must be1..3600 seconds')
