@@ -116,20 +116,32 @@ CAPABILITY_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "sour
                               for index, (key, module) in enumerate((("capabilities", "Lemma.User.Development.Capabilities"),
                                   ("peer", "Lemma.User.Development.CapabilitiesPeer"), ("busy", "Lemma.User.Development.Tasks.Busy"),
                                   ("tamper", "Lemma.User.Development.CapabilitiesTamper")), 1))
+IPC_POLICY = "lemma-ipc-v1"
+IPC_USER_IMAGES = tuple({"key":key,"id":index,"module":module,"source":module+"."+root,"args":["u64"],
+                        "symbol_prefix":"lemma_user_"+key+"_","startup_case":"none","directory":"users/"+key,
+                        "boot_role":role}
+                       for index,(key,module,root,role) in enumerate((
+                           ("server","Lemma.User.Development.IPCServer","main","ipc-server"),
+                           ("clienta","Lemma.User.Development.IPCClients","clientA","ipc-client-a"),
+                           ("clientb","Lemma.User.Development.IPCClients","clientB","ipc-client-b"),
+                           ("busy","Lemma.User.Development.Tasks.Busy","main","background-no-grants"),
+                           ("fault","Lemma.User.Development.IPCFault","main","ipc-fault-client")),1))
+MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY}
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
-                             "capabilities-development": CAPABILITY_USER_IMAGES}
+                             "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES}
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
-    if configuration != "capabilities-development":
+    if configuration not in MANAGED_POLICIES:
         return {}
-    return {"managed_policy": MANAGED_POLICY, **({"boot_role": image["boot_role"]} if image is not None else {})}
+    return {"managed_policy": MANAGED_POLICIES[configuration], **({"boot_role": image["boot_role"]} if image is not None else {})}
 
 
 def validate_managed_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
-    if configuration == "capabilities-development":
-        expected = {"managed_policy": MANAGED_POLICY, "boot_roles": {row["key"]: row["boot_role"] for row in CAPABILITY_USER_IMAGES}}
-        if (images != list(CAPABILITY_USER_IMAGES) or any("boot_role" in record for record in (build, provenance))
+    if configuration in MANAGED_POLICIES:
+        selected=image_specs(configuration)
+        expected = {"managed_policy": MANAGED_POLICIES[configuration], "boot_roles": {row["key"]: row["boot_role"] for row in selected}}
+        if (images != list(selected) or any("boot_role" in record for record in (build, provenance))
                 or any(record.get(key) != value for record in (build, provenance) for key, value in expected.items())):
             raise Core0Error("managed policy/boot roles differ from the closed source-selected deployment")
     elif any(key in record for record in (build, provenance) for key in ("managed_policy", "boot_roles", "boot_role")):
@@ -138,7 +150,7 @@ def validate_managed_provenance(build: dict, provenance: dict, *, configuration:
 
 def validate_standalone_managed_provenance(build: dict, provenance: dict, *, configuration: str, image: dict) -> None:
     expected=managed_fields(configuration,image)
-    if configuration == "capabilities-development":
+    if configuration in MANAGED_POLICIES:
         if any("boot_roles" in record or any(record.get(key)!=value for key,value in expected.items()) for record in (build,provenance)):
             raise Core0Error("independent managed policy/boot role differs from its selected source")
     elif any(key in record for record in (build,provenance) for key in ("managed_policy","boot_role","boot_roles")):
@@ -164,6 +176,8 @@ def development_modules(configuration: str, role: str) -> tuple[str, ...]:
                 ("Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias", "Lemma.Kernel.Development.TasksEntry",
                  "Lemma.Kernel.Development.CapabilityGeneration")
                 if (configuration, role) == ("capabilities-development", "kernel") else
+                ("Lemma.Kernel.Development.IPCEntry","Lemma.Kernel.Development.TasksEntry")
+                if (configuration, role) == ("ipc-development", "kernel") else
                 (configuration_modules(configuration)[role],) if development_role(configuration, role) else ())
     if configuration_development_modules(configuration, role) != expected:
         raise Core0Error("selected role Development authority differs from its exact audited module catalog")
@@ -334,7 +348,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                 "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset"}
     task_dispatch = {"tasks-development": "Lemma.Kernel.Development.TasksEntry.dispatch",
                      "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry.dispatch",
-                     "capabilities-development": "Lemma.Kernel.Development.CapsEntry.dispatch"}
+                     "capabilities-development": "Lemma.Kernel.Development.CapsEntry.dispatch",
+                     "ipc-development":"Lemma.Kernel.Development.IPCEntry.dispatch"}
     dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
                        "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
                        "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
@@ -445,7 +460,55 @@ def validate_checked_call_gate(body: str, checked: str, protected: str, *, compo
 
 
 
-def validate_boolean_gate(body: str, comparison: str, protected: str, *, success_when_true: bool = True) -> dict:
+def validate_failed_call_gate(body: str, checked: str, protected: str, failed: str,
+                              failed_body: str, *, checked_branch_only: bool = False) -> dict:
+    """Bind an emitted checked status to the exact nonzero-failure helper.
+
+    Core0 preserves static scalar helpers. Prove this helper's closed Boolean
+    body before treating its false edge as the successful checked-result edge.
+    This adds no accepted IR shape or status convention to the target compiler.
+    """
+    exact_failed=(r"\s*entry:\s*%cmp0 = icmp eq i8 %arg0, 0\s*"
+                  r"br i1 %cmp0, label %if.then.0, label %if.else.1\s*"
+                  r"if.then.0:\s*br label %if.merge.2\s*"
+                  r"if.else.1:\s*br label %if.merge.2\s*"
+                  r"if.merge.2:\s*%if.result1 = phi i1 \[ 0, %if.then.0 \], \[ 1, %if.else.1 \]\s*"
+                  r"ret i1 %if.result1\s*")
+    if re.fullmatch(exact_failed,failed_body) is None:
+        raise Core0Error("checked source failure helper differs from exact nonzero status")
+    variable=r"%[A-Za-z0-9_.$-]+"
+    calls=re.findall(r"("+variable+r") = call \{ i64, i64 \} @"+re.escape(checked)+r"\([^\n]*\)",body)
+    if len(calls)!=1:
+        raise Core0Error("checked helper gate requires one exact checked call")
+    extracted=re.findall(r"("+variable+r") = extractvalue \{ i64, i64 \} "+re.escape(calls[0])+r", 0$",body,re.M)
+    if len(extracted)!=1:
+        raise Core0Error("checked helper gate lacks one exact status extraction")
+    narrowed=re.findall(r"("+variable+r") = trunc i64 "+re.escape(extracted[0])+r" to i8$",body,re.M)
+    if len(narrowed)!=1:
+        raise Core0Error("checked helper gate lacks exact UInt8 status narrowing")
+    helpers=re.findall(r"("+variable+r") = call zeroext i1 @"+re.escape(failed)+r"\(i8 zeroext "+re.escape(narrowed[0])+r"\)",body)
+    if len(helpers)!=1:
+        raise Core0Error("checked helper gate lacks its exact failure helper/status binding")
+    comparisons=re.findall(r"("+variable+r") = icmp eq i1 "+re.escape(helpers[0])+r", 1$",body,re.M)
+    if len(comparisons)!=1:
+        raise Core0Error("checked helper gate lacks exact true-failure comparison")
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    scope=None
+    if checked_branch_only:
+        origins=[label for label,lines in blocks.items() if any(
+            re.search(re.escape(calls[0])+r" = call ",line) for line in lines)]
+        if len(origins)!=1:
+            raise Core0Error("branch-scoped checked gate lacks one checked origin")
+        scope={label for label in blocks if _structured_reachable(successors,origins[0],label)}
+    gate=validate_boolean_gate(body,comparisons[0],protected,success_when_true=False,protected_scope=scope)
+    if not checked_branch_only:
+        validate_call_precedes(body,checked,protected)
+    return {"checked":checked,"protected":protected,"failure_helper":failed,
+            "component":"status","equals":0,"gate":gate}
+
+
+def validate_boolean_gate(body: str, comparison: str, protected: str, *, success_when_true: bool = True,
+                          protected_scope: set[str] | None = None) -> dict:
     """Require the true edge of one emitted predicate before protected calls."""
     blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
     if "entry" not in blocks:
@@ -454,6 +517,8 @@ def validate_boolean_gate(body: str, comparison: str, protected: str, *, success
         r"br i1 "+re.escape(comparison)+r", label %[A-Za-z0-9_.$-]+, label %[A-Za-z0-9_.$-]+",lines[-1])]
     sites={block for block,lines in blocks.items() if any(re.search(
         r"\bcall\s+[^@\n]*@"+re.escape(protected)+r"\(",line) for line in lines)}
+    if protected_scope is not None:
+        sites &= protected_scope
     if len(branches)!=1 or not sites:
         raise Core0Error("boolean source gate lacks one branch/protected operation")
     block=branches[0];success,failure=successors[block]
@@ -469,10 +534,12 @@ def validate_boolean_gate(body: str, comparison: str, protected: str, *, success
 
 
 
-def validate_h_endpoint_budget(body: str, by_source: dict[str,str]) -> dict:
+def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bool = False) -> dict:
     """Bind the compiled bounded count/limit to preallocation CFG guards."""
     objects="Lemma.Kernel.Objects.";var=r"%[A-Za-z0-9_.$-]+";label=r"[A-Za-z0-9_.$-]+"
-    callback=by_source[objects+"endpointCountStep"]
+    counter="replyCountStep" if reply else "endpointCountStep"
+    capacity="replyCapacity" if reply else "endpointCapacity"
+    callback=by_source[objects+counter]
     folds=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(callback)+
         r"\(i32 signext ("+var+r"), i32 signext 16, i64 ("+var+r"), i64 ("+var+r"), i64 0, i64 0, i64 0\)",body)
     if len(folds)!=1:
@@ -498,7 +565,7 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str]) -> dict:
         raise Core0Error("endpoint count lacks exact checked fold outcome")
     value,exhausted,stopped,done=outcomes[0]
     outcome_status=re.findall(r"("+var+r") = phi i8 \[ 9, %"+re.escape(exhausted)+r" \], \[ "+re.escape(narrowed[0])+r", %"+re.escape(stopped)+r" \], \[ 0, %"+re.escape(done)+r" \]",body)
-    limits=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[objects+"endpointCapacity"])+r"\(\)",body)
+    limits=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[objects+capacity])+r"\(\)",body)
     comparisons=[]
     for limit in limits:
         comparisons.extend(re.findall(r"("+var+r") = icmp ult i64 "+re.escape(value)+r", "+re.escape(limit)+r"$",body,re.M))
@@ -511,10 +578,11 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str]) -> dict:
     if len(status_comparisons)!=1:
         raise Core0Error("endpoint budget lacks the exact checked fold-status guard")
     gates=[]
-    for protected in [objects+"freeObjectStep","Lemma.Kernel.Memory.Frames.allocate"]:
+    protected_sources=[objects+"freeObjectStep"] if reply else [objects+"freeObjectStep","Lemma.Kernel.Memory.Frames.allocate"]
+    for protected in protected_sources:
         gates.append({"protected_source":protected,"limit":validate_boolean_gate(body,comparisons[0],by_source[protected]),
                       "status":validate_boolean_gate(body,status_comparisons[0],by_source[protected],success_when_true=False)})
-    return {"capacity":4,"counted_rows":16,"counter_source":objects+"endpointCountStep","base_operand":base,
+    return {"capacity":8 if reply else 4,"counted_rows":16,"counter_source":objects+counter,"base_operand":base,
             "count_result":value,"checked_outcome_status":outcome_status[0],"preallocation_gates":gates}
 
 
@@ -743,6 +811,376 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
             "limitations":["Compiled call/CFG/storage binding, not a proof of authority semantics or guest execution."]}
 
 
+def _ipc_scalar_operands(body: str, constants: dict[str,int]) -> dict[str,object]:
+    var=r"%[A-Za-z0-9_.$-]+"
+    values={result:value for result,symbol in re.findall(r"("+var+r") = call i64 @([^ (]+)\(\)",body)
+            if (value:=constants.get(symbol)) is not None}
+    for result,left,right in re.findall(r"("+var+r") = add i64 ([^,\n]+), ([^\n]+)$",body,re.M):
+        a=values.get(left,int(left) if left.isdecimal() else left)
+        b=values.get(right,int(right) if right.isdecimal() else right)
+        values[result]=a+b if type(a)is int and type(b)is int else ("add",a,b)
+    return values
+
+
+def validate_ipc_read_guard(body: str, read: str, constants: dict[str,int], address: object,
+                            expected: object, protected: str, *, equal: bool = True) -> dict:
+    """Bind one loaded owned field to an exact equality CFG guard."""
+    var=r"%[A-Za-z0-9_.$-]+";values=_ipc_scalar_operands(body,constants)
+    rows=[(result,operand) for result,operand in re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(read)+r"\(i64 ([^\n)]+)\)",body)
+          if values.get(operand,int(operand) if operand.isdecimal() else operand)==address]
+    if len(rows)!=1:raise Core0Error("IPC guard lacks one exact checked field load")
+    extracted=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(rows[0][0])+r", 1$",body,re.M)
+    comparisons=[result for result,left,right in re.findall(r"("+var+r") = icmp eq i64 ([^,\n]+), ([^\n]+)$",body,re.M)
+                 if left in extracted and values.get(right,int(right) if right.isdecimal() else right)==expected]
+    if len(extracted)!=1 or len(comparisons)!=1:raise Core0Error("IPC guard lost its exact loaded field/expected binding")
+    return {'address':address,'expected':expected,**validate_boolean_gate(body,comparisons[0],protected,success_when_true=equal)}
+
+
+def validate_ipc_block_bridge(body: str, syscall_dispatch: str, wait_info: str,
+                              reply: str, block: str, return_kernel: str,
+                              blocked_status: str, failed: str, failed_body: str) -> dict:
+    """The internal254 path advances PC exactly once before suspension.
+
+    Ordinary/error paths are separate. Wakeup is audited elsewhere and must
+    write only a0/a1 plus Task bookkeeping, with no second syscallReply call.
+    """
+    var=r"%[A-Za-z0-9_.$-]+";blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    calls=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(syscall_dispatch)+r"\([^\n]*\)",body)
+    statuses=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(calls[0] if len(calls)==1 else 'NO_CALL')+r", 0$",body,re.M)
+    narrowed=re.findall(r"("+var+r") = trunc i64 "+re.escape(statuses[0] if len(statuses)==1 else 'NO_STATUS')+r" to i8$",body,re.M)
+    constants=re.findall(r"("+var+r") = call zeroext i8 @"+re.escape(blocked_status)+r"\(\)",body)
+    comparisons=re.findall(r"("+var+r") = icmp eq i8 "+re.escape(narrowed[0] if len(narrowed)==1 else 'NO_NARROW')+r", "+re.escape(constants[0] if len(constants)==1 else 'NO_CONSTANT')+r"$",body,re.M)
+    if len(calls)!=1 or len(statuses)!=1 or len(narrowed)!=1 or len(constants)!=1 or len(comparisons)!=1:
+        raise Core0Error('IPC blocked bridge lacks the actual returned status254 binding')
+    gate=validate_boolean_gate(body,comparisons[0],block)
+    branch=gate['success'];scope={label for label in blocks if _structured_reachable(successors,branch,label)}
+    zero_replies=[line for label in scope for line in blocks[label] if re.search(
+        r" = call \{ i64, i64 \} @"+re.escape(reply)+r"\(i64 %arg1, i64 %arg2, i8 zeroext 0, i64 0\)$",line)]
+    all_replies=[line for label in scope for line in blocks[label] if re.search(r"\bcall[^@\n]*@"+re.escape(reply)+r"\(",line)]
+    if len(zero_replies)!=1 or all_replies!=zero_replies:
+        raise Core0Error('IPC blocked bridge changes or repeats its one actual PC advance')
+    renamed=body.replace('@'+reply+'(i64 %arg1, i64 %arg2, i8 zeroext 0, i64 0)',
+                         '@ipc_single_pc_advance(i64 %arg1, i64 %arg2, i8 zeroext 0, i64 0)')
+    advance=validate_failed_call_gate(renamed,'ipc_single_pc_advance',block,failed,failed_body)
+    wait=validate_failed_call_gate(body,wait_info,block,failed,failed_body)
+    returned=[line for label in scope for line in blocks[label] if re.search(r'\bcall[^@\n]*@'+re.escape(return_kernel)+r'\(',line)]
+    if len(returned)!=1 or re.search(r'\(i64 %arg0, i64 6, i64 %arg2\)$',returned[0]) is None:
+        raise Core0Error('IPC blocked bridge does not return exact scheduler reason6')
+    return {'internal_status':254,'pc_advances':1,'reason':6,'blocked_gate':gate,'advance_success':advance,'wait_binding':wait}
+
+
+def validate_ipc_write_inventory(body: str, write: str, constants: dict[str,int],
+                                 expected: list[tuple[object,object]], failed: str,
+                                 failed_body: str) -> dict:
+    """Pin each compiled mutable write and successful publication edge.
+
+    Constants are already bound to genuine no-argument Lean definitions. Only
+    literal constants, argument operands and their simple emitted additions are
+    resolved here; unfamiliar expressions fail rather than acquire authority.
+    """
+    var=r"%[A-Za-z0-9_.$-]+"
+    values=_ipc_scalar_operands(body,constants)
+    rows=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(write)+r"\(i64 ([^,\n]+), i64 ([^\n)]+)\)",body)
+    observed=[(values.get(a,int(a) if a.isdecimal() else a),values.get(b,int(b) if b.isdecimal() else b)) for _,a,b in rows]
+    if observed!=expected or not rows:
+        raise Core0Error("IPC mutable write address/value inventory differs: "+str(observed))
+    # Every next write is dominated by the preceding write's actual status0
+    # edge. A final state publication therefore cannot precede earlier writes.
+    gates=[]
+    for (result,_,_),(following,_,_) in zip(rows,rows[1:]):
+        renamed=body.replace(following+" = call { i64, i64 } @"+write+"(",following+" = call { i64, i64 } @ipc_next_write(")
+        # Give this one result an unambiguous checked-call identity without
+        # changing its status/extraction/CFG. Other writes keep their identity.
+        renamed=renamed.replace(result+" = call { i64, i64 } @"+write+"(",result+" = call { i64, i64 } @ipc_previous_write(")
+        gates.append(validate_failed_call_gate(renamed,"ipc_previous_write","ipc_next_write",failed,failed_body))
+    return {"writes":[{"address":a,"value":b} for a,b in observed],"successful_write_gates":gates}
+
+
+def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
+    """Bind the selected IPC policy to its genuine source/CFG/storage closure.
+
+    This reports compiled structural obligations, not a proof or a substitute
+    for the independent IPC model and observed User execution.
+    """
+    if unit.get("configuration")!="ipc-development" or unit.get("role")!="kernel":
+        raise Core0Error("IPC graph audit requires its exact selected kernel unit")
+    by_source={re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"]):row["symbol"] for row in unit["functions"]}
+    e="Lemma.Kernel.Development.IPCEntry.";t="Lemma.Kernel.Task.";c="Lemma.Kernel.Capability."
+    o="Lemma.Kernel.Objects.";s="Lemma.Kernel.IPCStorage.";i="Lemma.Kernel.IPC."
+    a="Lemma.Kernel.Memory.AddressSpace.";f="Lemma.Kernel.Memory.Frames.";u="Lemma.Kernel.Memory.UserCopy."
+    y="Lemma.Kernel.Syscall.";q="Lemma.Kernel.Scheduler.";p="Lemma.Kernel.Process."
+    b="Lemma.User.IPCABI.";v="Lemma.User.CapabilityABI.";x="Lemma.Kernel.Memory.Access."
+    edges={
+      e+"boot":[e+"launch",t+"init",o+"init",p+"init"],e+"dispatch":[q+"dispatch"],
+      e+"launch":["Lemma.Kernel.Development.TasksEntry.readLaunchWithFourth",t+"prepareManaged",e+"configure"],
+      e+"configure":[o+"configureManagement",e+"createEndpoint",o+"table",o+"put",e+"initialGrants",e+"activate"],
+      e+"createEndpoint":[o+"createEndpoint",f+"remaining","Lemma.Kernel.Console.record"],
+      e+"initialGrants":[e+"grant"],e+"grant":[c+"grantBoot"],e+"activate":[t+"activateManaged"],
+      e+"retainedPrimary":[o+"table",o+"resolve",c+"requireActive",t+"lookup"],
+      e+"createFault":[e+"retainedPrimary",t+"prepareManaged",e+"grant",t+"activateManaged"],
+      e+"step":[e+"poll",q+"step"],e+"command":[e+"createFault","Lemma.Kernel.Development.TasksEntry.command"],
+      t+"prepareManaged":[t+"prepare",c+"attach",t+"abort",t+"prepared"],
+      t+"activateManaged":[t+"prepared",c+"activate",t+"activate"],t+"activate":[t+"checkedActivation"],
+      t+"checkedActivation":[c+"managed",c+"requireActive"],
+      t+"abort":[t+"inactiveDescriptor",t+"detachManaged","Lemma.Kernel.Loader.teardown"],
+      t+"reapOne":[t+"detachManaged","Lemma.Kernel.Loader.teardown"],t+"detachManaged":[i+"detach",c+"detach"],
+      c+"attach":[a+"base",o+"register",s+"initialize"],c+"header":[a+"base",o+"registryDescriptor"],
+      c+"managed":[a+"base",c+"header"],c+"requireActive":[c+"header"],
+      c+"lookupEntry":[c+"requireActive",o+"resolve"],c+"lookup":[c+"lookupEntry",o+"resolve",v+"rightsSubset"],
+      c+"grantBoot":[c+"header",c+"grant"],c+"grant":[o+"resolve",v+"rightsValid",c+"freeSlot",o+"nextSerial",c+"publish"],
+      c+"publish":[o+"reference",o+"publishSerial"],c+"grantReply":[c+"requireActive",o+"replyFields",c+"grant",o+"deliverReply"],
+      c+"retireReply":[o+"replyFields",s+"pending",o+"beginReplyRevoke",o+"endpointQueue",s+"queueCancelReply",s+"invalidateReply",c+"revokeTaskStep",o+"dereference",o+"destroyReply"],
+      c+"close":[c+"lookupEntry",c+"retireReply",c+"cancelEndpointReplies",c+"drop"],
+      c+"revokeKey":[c+"cancelEndpointReplies",o+"beginRevoke",c+"revokeTaskStep",o+"destroy"],
+      c+"revokeTaskStep":[o+"registryDescriptor",c+"header",c+"revokeEntryStep"],c+"revokeEntryStep":[c+"drop"],
+      c+"drop":[c+"clearEntryStep",o+"dereference"],
+      c+"cancelEndpointReplies":[c+"cancelReplyStep"],c+"cancelDescriptorReplies":[c+"cancelReplyStep"],
+      c+"cancelReplyStep":[o+"resolveRevoking",c+"retireReply"],
+      c+"detach":[c+"cancelDescriptorReplies",c+"cancelSenderStep",c+"ownedObjectStep",c+"detachEntryStep",s+"detach",o+"clearManagement",o+"unregister",c+"clearHeaderStep"],
+      c+"ownedObjectStep":[c+"revokeKey"],c+"detachEntryStep":[c+"drop"],
+      o+"table":[f+"resolvePurpose",f+"mappingCount"],o+"resolveState":[o+"table",o+"keyValid"],
+      o+"createEndpoint":[o+"endpointCountStep",o+"freeObjectStep",f+"allocate",s+"queueInitialize"],
+      o+"endpointQueue":[o+"resolveRevoking",s+"queue"],
+      o+"replyAvailable":[o+"replyCountStep",o+"freeObjectStep"],
+      o+"createReply":[s+"pending",o+"endpointQueue",o+"replyAvailable",o+"freeObjectStep"],
+      o+"replyFields":[o+"resolveRevoking",s+"pending",o+"replyPhase"],
+      o+"markReplyQueued":[o+"replyFields"],o+"deliverReply":[o+"replyFields",o+"registrySlot"],
+      o+"destroy":[o+"endpointRepliesStep",o+"invalidateEndpointWaits",f+"release"],
+      o+"destroyReply":[o+"replyFields",o+"invalidateReplyBindingStep",o+"clearObjectStep"],
+      y+"dispatch":[c+"managed",y+"dispatchManaged",y+"dispatchLegacy"],
+      y+"dispatchManaged":[i+"dispatch",y+"capConsole"],y+"capConsole":[c+"lookup",y+"consoleRead",y+"consoleWrite"],
+      i+"dispatch":[i+"send",i+"receive",i+"callBegin",i+"callWait",i+"reply",i+"cancel"],
+      i+"send":[c+"lookup",i+"payload",i+"idle",i+"queueRoom",s+"prepare",i+"stage",s+"queueEnqueue",i+"publishedSend"],
+      i+"callBegin":[c+"lookup",i+"payload",i+"idle",i+"queueRoom",o+"replyAvailable",i+"deadline",s+"prepare",i+"stage",o+"createReply",s+"setReply",s+"queueEnqueue",o+"markReplyQueued",s+"commitWait"],
+      i+"receive":[c+"lookup",i+"destination",i+"idle",i+"beginReceive",i+"deadline"],
+      i+"payload":[u+"validateRead"],i+"destination":[u+"validateWrite"],i+"deadline":["Lemma.Kernel.MachineServices.time"],
+      i+"stage":[s+"stagePayload",s+"packet",i+"stamp"],s+"stagePayload":[s+"transactionRow",u+"copyFromUser"],
+      i+"beginReceive":[s+"prepare",i+"receivePacket",s+"commitWait",i+"receiveResult",i+"finish",i+"clear"],
+      i+"receivePacket":[i+"receiveStep"],i+"receiveStep":[i+"receiveHead"],
+      i+"receiveHead":[i+"checkedTransaction",o+"endpointQueue",s+"queuePeek",i+"destination",o+"replyFields","Lemma.Kernel.MachineServices.time",c+"retireReply",c+"grantReply",i+"copyHead"],
+      i+"copyHead":[s+"queueCopyToUser",s+"queuePop"],i+"receiveResult":[s+"packet",s+"complete"],
+      i+"callWait":[i+"checkedTransaction",s+"setWaitBuffer",i+"poll",i+"completeWait"],
+      i+"completeWait":[s+"take",u+"copyToUser",i+"finish"],i+"finish":[s+"finish"],i+"clear":[s+"abort"],
+      i+"reply":[c+"lookup",i+"replyCaller",i+"payload",i+"idle",i+"stageReply"],
+      i+"replyCaller":[o+"replyFields"],i+"stageReply":[s+"packet",s+"prepare",i+"stage",s+"copyBytes",i+"commitReply"],
+      i+"commitReply":["Lemma.Kernel.MachineServices.time",s+"complete",c+"retireReply",i+"clear"],
+      i+"cancel":[i+"checkedTransaction",c+"retireReply"],i+"poll":[s+"pending",i+"pollWaiting"],
+      i+"pollWaiting":["Lemma.Kernel.MachineServices.time",i+"expireCall",i+"receivePacket",i+"receiveResult",s+"take"],
+      i+"expireCall":[c+"retireReply",s+"take"],i+"waitInfo":[i+"checkedTransaction"],
+      i+"detach":[c+"cancelDescriptorReplies",i+"detachEndpointStep"],i+"detachEndpointStep":[o+"endpointQueue",s+"queueCancelSender",o+"invalidateEndpointWaits"],
+      s+"initialize":[a+"base",s+"zeroStep"],s+"pending":[a+"base",s+"equalWord"],
+      s+"transactionRow":[s+"pending"],s+"prepare":[s+"pending",u+"validateWrite",s+"put"],
+      s+"setWaitBuffer":[s+"transactionRow",u+"validateWrite",s+"put"],
+      s+"queueFrame":[f+"resolvePurpose",f+"mappingCount"],s+"queue":[s+"queueFrame",s+"queueCheckStep"],
+      s+"queueCheckStep":[s+"wire",s+"uniqueSerialStep"],s+"queueEnqueue":[s+"queueAvailable",s+"pending",s+"wire",s+"queue",s+"copyBytes",s+"freeSlotStep",s+"put"],
+      s+"queueCopyToUser":[a+"base",u+"validateWrite",s+"queuePeek",s+"copyBytes",u+"copyToUser"],
+      s+"queuePop":[s+"queue",s+"queuePeek",s+"withdrawSlot"],s+"withdrawSlot":[s+"clearStep"],
+      s+"queueCancelReply":[s+"queue",s+"cancelQueueStep"],s+"queueCancelSender":[s+"queue",s+"cancelQueueStep"],
+      s+"complete":[s+"transactionRow",s+"put"],s+"finish":[s+"take",s+"reset"],s+"reset":[s+"resetStep"],
+      s+"invalidateReply":[s+"invalidate"],s+"invalidateEndpoint":[s+"invalidate"],s+"invalidate":[s+"pending",s+"complete"],
+      q+"dispatch":[t+"capture",q+"call"],q+"call":[y+"dispatch",i+"waitInfo",p+"syscallReply",t+"block",q+"returnKernel"],
+      q+"step":[t+"reap",t+"wakeDue",t+"pollIPC",t+"select"],
+      t+"block":[t+"lookup",c+"requireActive",t+"increment",x+"write64"],
+      t+"savedContext":[t+"lookup",a+"root",a+"satp",a+"context",p+"validateStack"],
+      t+"completeBlocked":[t+"savedContext",i+"completeWait",x+"write64"],
+      t+"pollIPC":[t+"pollIPCStep"],t+"pollIPCStep":[t+"lookup",i+"poll",t+"completeBlocked"],
+    }
+    constants={c+"headerOffset":2560,c+"entriesOffset":2624,c+"capacity":16,c+"stride":64,
+       o+"capacity":16,o+"endpointCapacity":4,o+"replyCapacity":8,o+"registryCapacity":8,o+"rows":256,o+"stride":128,
+       o+"maxGeneration":0x0fffffffffffffff,o+"maxSerial":0x0fffffffffffffff,
+       e+"primaryKeyOffset":160,a+"activeRoot":0x80400600,t+"capacity":8,t+"managedOffset":120,t+"waitEpochOffset":128,t+"waitTransactionOffset":136,
+       t+"waitKindOffset":112,t+"deadlineOffset":16,t+"stateOffset":8,t+"pcOffset":48,t+"reasonOffset":24,t+"wakeTimeOffset":104,
+       t+"blocked":5,t+"running":3,t+"runnable":2,t+"dying":6,
+       s+"magic":0x31435049414d454c,s+"queueMagic":0x31455551414d454c,
+       s+"metadataOffset":3648,s+"metadataBytes":128,s+"packetOffset":3776,s+"payloadOffset":3840,
+       s+"maximumPacket":256,s+"maximumPayload":192,s+"maxTransaction":0x0fffffffffffffff,
+       s+"stateIdle":0,s+"stateReserved":1,s+"stateWaiting":2,s+"stateReady":3,
+       s+"sendOperation":1,s+"receiveOperation":2,s+"callOperation":3,s+"stateOffset":24,s+"operationOffset":32,
+       s+"transactionOffset":40,s+"nextTransactionOffset":48,s+"endpointOffset":56,s+"replyOffset":64,
+       s+"userVAOffset":72,s+"capacityOffset":80,s+"deadlineOffset":88,s+"resultStatusOffset":96,
+       s+"resultBytesOffset":104,s+"resultSenderOffset":112,s+"resultReplyOffset":120,
+       s+"queueSlots":4,s+"queueHeaderBytes":128,s+"queueStride":320,s+"queueSlotSerialOffset":8,
+       s+"queueSlotSenderOffset":16,s+"queueSlotTransactionOffset":24,s+"queueSlotReplyOffset":32,
+       s+"queueSlotBytesOffset":40,s+"queueSlotPacketOffset":64,
+       b+"messageMagic":0x31504349414d454c,b+"magicOffset":0,b+"kindOffset":8,b+"senderOffset":16,b+"requestOffset":24,b+"replyOffset":32,b+"lengthOffset":40,b+"statusOffset":48,b+"reservedOffset":56,b+"send":20,b+"receive":21,b+"callBegin":22,b+"callWait":23,b+"reply":24,b+"cancel":25,b+"headerBytes":64,b+"maximumPayload":192,b+"maximumPacket":256,
+       b+"sendKind":1,b+"callKind":2,b+"replyKind":3,b+"minimumTicks":1000,b+"maximumTicks":10000000,
+       v+"endpointSend":4,v+"endpointReceive":8,v+"endpointCall":16,v+"replyRight":1,v+"replyType":5,v+"endpointType":2,v+"consoleType":1,v+"managementType":3}
+    required=set(constants)|set(edges)|{value for values in edges.values() for value in values}
+    if not required<=set(by_source):
+        raise Core0Error("IPC genuine lifecycle closure missing: "+str(sorted(required-set(by_source))))
+    bodies={source:_ir_definition_body(pre_ir,by_source[source]) for source in required}
+    rows={re.sub(r"^_private\..*?\.[0-9]+\.","",row['source']):row for row in unit['functions']}
+    for source,value in constants.items():
+        if rows[source]['args']!=[] or rows[source]['effects']!=[] or re.fullmatch(r"\s*entry:\s*ret i64 "+str(value)+r"\s*",bodies[source]) is None:
+            raise Core0Error("IPC genuine storage/ABI constant differs: "+source)
+    byte_constants={i+'blockedStatus':254,b+'wouldBlock':12,b+'queueFull':92,b+'timeout':93,b+'canceled':94,b+'peerDied':96,b+'invalidTransaction':97,b+'bufferTooSmall':98,b+'inFlight':99,b+'alreadyCompleted':100,b+'revoked':83,b+'invalidArgument':16}
+    for source,value in byte_constants.items():
+        if source not in by_source or re.fullmatch(r"\s*entry:\s*ret i8 "+str(value)+r"\s*",_ir_definition_body(pre_ir,by_source[source])) is None:
+            raise Core0Error('IPC genuine byte status constant differs: '+source)
+    observed=[]
+    for caller,callees in edges.items():
+        calls=parse_definitions_and_calls(bodies[caller])[2]
+        for callee in callees:
+            if by_source[callee] not in calls:
+                raise Core0Error("IPC genuine source edge missing: "+caller+" -> "+callee)
+            observed.append([caller,callee])
+    ordered=[]
+    for caller,before,after in [
+      (t+"prepareManaged",t+"prepare",c+"attach"),(t+"activateManaged",c+"activate",t+"activate"),
+      (t+"abort",t+"detachManaged","Lemma.Kernel.Loader.teardown"),(t+"reapOne",t+"detachManaged","Lemma.Kernel.Loader.teardown"),
+      (t+"detachManaged",i+"detach",c+"detach"),(c+"attach",o+"register",s+"initialize"),
+      (e+"configure",e+"initialGrants",e+"activate"),(e+"createFault",e+"retainedPrimary",t+"prepareManaged"),
+      (e+"createFault",e+"grant",t+"activateManaged"),(c+"publish",o+"reference",o+"publishSerial"),
+      (c+"retireReply",o+"beginReplyRevoke",s+"queueCancelReply"),(c+"retireReply",s+"queueCancelReply",s+"invalidateReply"),
+      (c+"retireReply",s+"invalidateReply",o+"destroyReply"),(c+"revokeKey",c+"cancelEndpointReplies",o+"beginRevoke"),
+      (c+"detach",c+"cancelDescriptorReplies",c+"ownedObjectStep"),(c+"detach",s+"detach",o+"unregister"),
+      (o+"createEndpoint",s+"queueInitialize",o+"put"),
+      (i+"callBegin",o+"replyAvailable",s+"prepare"),(i+"callBegin",o+"createReply",s+"queueEnqueue"),
+      (i+"callBegin",s+"queueEnqueue",o+"markReplyQueued"),(i+"callBegin",o+"markReplyQueued",s+"commitWait"),
+      (i+"receiveHead",i+"destination",c+"grantReply"),(i+"copyHead",s+"queueCopyToUser",s+"queuePop"),
+      (i+"callWait",s+"setWaitBuffer",i+"completeWait"),
+      (q+"step",t+"reap",t+"pollIPC"),(q+"step",t+"wakeDue",t+"pollIPC"),(q+"step",t+"pollIPC",t+"select"),
+      (q+"call",i+"waitInfo",t+"block"),(q+"call",p+"syscallReply",t+"block"),
+    ]:
+        try: ordered.append({'source':caller,**validate_call_precedes(bodies[caller],by_source[before],by_source[after])})
+        except Core0Error as error: raise Core0Error(caller+' ordered '+before+' -> '+after+': '+str(error)) from error
+    checked=[]
+    for caller,authority,protected in [
+      (i+"send",c+"lookup",i+"payload"),(i+"send",i+"payload",s+"prepare"),(i+"send",s+"prepare",s+"queueEnqueue"),
+      (i+"callBegin",c+"lookup",i+"payload"),(i+"callBegin",i+"payload",s+"prepare"),
+      (i+"callBegin",i+"queueRoom",s+"prepare"),(i+"callBegin",o+"replyAvailable",s+"prepare"),
+      (i+"receive",c+"lookup",i+"destination"),(i+"receive",i+"destination",i+"beginReceive"),
+      (i+"reply",c+"lookup",i+"replyCaller"),(i+"reply",i+"replyCaller",i+"stageReply"),(i+"reply",i+"payload",i+"stageReply"),
+      (i+"receiveHead",i+"destination",c+"grantReply"),(i+"copyHead",s+"queueCopyToUser",s+"queuePop"),
+      (s+"queueCopyToUser",u+"validateWrite",s+"copyBytes"),(s+"setWaitBuffer",u+"validateWrite",s+"put"),
+      (s+"queueEnqueue",s+"pending",s+"copyBytes"),(s+"queueEnqueue",s+"wire",s+"copyBytes"),
+      (i+"stage",s+"stagePayload",i+"stamp"),(i+"stageReply",s+"copyBytes",i+"commitReply"),
+      (c+"grantReply",c+"requireActive",c+"grant"),(c+"grantReply",o+"replyFields",c+"grant"),
+      (t+"block",c+"requireActive",x+"write64"),(t+"completeBlocked",t+"savedContext",x+"write64"),(o+"createReply",o+"replyAvailable",o+"put"),
+    ]:
+        failed=caller.rsplit('.',1)[0]+'.failed'
+        checked.append({'source':caller,**validate_failed_call_gate(bodies[caller],by_source[authority],by_source[protected],by_source[failed],_ir_definition_body(pre_ir,by_source[failed]))})
+    checked.append({'source':i+'commitReply',**validate_failed_call_gate(bodies[i+'commitReply'],by_source[s+'complete'],by_source[c+'retireReply'],by_source[i+'failed'],_ir_definition_body(pre_ir,by_source[i+'failed']),checked_branch_only=True)})
+    checked.append({'source':i+'completeWait',**validate_failed_call_gate(bodies[i+'completeWait'],by_source[u+'copyToUser'],by_source[i+'finish'],by_source[i+'failed'],_ir_definition_body(pre_ir,by_source[i+'failed']),checked_branch_only=True)})
+    for protected in (y+'dispatchManaged',y+'dispatchLegacy'):
+        checked.append({'source':y+'dispatch',**validate_checked_call_gate(bodies[y+'dispatch'],by_source[c+'managed'],by_source[protected])})
+    checked.append({'source':y+'dispatch',**validate_checked_call_gate(bodies[y+'dispatch'],by_source[c+'managed'],by_source[y+'dispatchManaged'],component='value',value=1)})
+    for protected in (y+'consoleRead',y+'consoleWrite'):
+        checked.append({'source':y+'capConsole',**validate_checked_call_gate(bodies[y+'capConsole'],by_source[c+'lookup'],by_source[protected])})
+    endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],by_source)
+    reply_budget=validate_h_endpoint_budget(bodies[o+'replyAvailable'],by_source,reply=True)
+    denial=validate_h_legacy_console_denial(bodies[y+'dispatchManaged'],by_source)
+    # Bind syscall arguments to the actual caller descriptor and closed operations.
+    var=r'%[A-Za-z0-9_.$-]+'
+    for operation,args in [('send',[0,2,3,4,5]),('receive',[0,2,3,4,5,6]),('callBegin',[0,2,3,4,5,6]),('callWait',[0,2,3,4]),('reply',[0,2,3,4,5]),('cancel',[0,2])]:
+        arguments=', '.join('i64 %arg'+str(arg) for arg in args)
+        matches=re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[i+operation])+r'\(([^\n]*)\)',bodies[i+'dispatch'])
+        if matches!=[arguments]:raise Core0Error('IPC syscall changed descriptor or closed operand mapping: '+operation)
+    managed_calls=re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[i+'dispatch'])+r'\(([^\n]*)\)',bodies[y+'dispatchManaged'])
+    if managed_calls!=[', '.join('i64 %arg'+str(arg) for arg in range(7))]:
+        raise Core0Error('managed IPC dispatcher changed actual caller identity/operands')
+    authority_constants={by_source[source]:value for source,value in constants.items()}
+    for operation,kind,right in [('send',2,4),('receive',2,8),('callBegin',2,16),('reply',5,1)]:
+        body=bodies[i+operation];operands=_ipc_scalar_operands(body,authority_constants)
+        lookups=re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[c+'lookup'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',body)
+        actual=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in lookups]
+        if actual!=[('%arg0','%arg1',kind,right)]:raise Core0Error('IPC authority lookup changed caller-local descriptor/type/rights: '+operation)
+    # Exact static image selection and source-selected grants; Busy gets none.
+    variable=r'%[A-Za-z0-9_.$-]+'
+    preparations=lambda body:re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'prepareManaged'])+r'\(i64 ([0-9]+),',body)
+    if preparations(bodies[e+'launch'])!=['0','1','2','3'] or preparations(bodies[e+'createFault'])!=['4']:
+        raise Core0Error('IPC boot roles changed exact selected image preparation')
+    grants_body=bodies[e+'initialGrants']
+    literal_symbols={by_source[o+'consoleKey']:16,by_source[o+'managementKey']:17,by_source[v+'consoleType']:1,by_source[v+'endpointType']:2,by_source[v+'managementType']:3}
+    operands={result:literal_symbols[symbol] for result,symbol in re.findall(r'('+variable+r') = call i64 @([^ (]+)\(\)',grants_body) if symbol in literal_symbols}
+    grants=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in re.findall(
+       r'call \{ i64, i64 \} @'+re.escape(by_source[e+'grant'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',grants_body)]
+    expected_grants=[('%arg0',16,1,34),('%arg0','%arg3',2,8),('%arg1',16,1,34),('%arg1','%arg3',2,20),('%arg1','%arg4',2,124),('%arg1',17,3,928),('%arg1','%arg5',2,4),('%arg2',16,1,34),('%arg2','%arg3',2,20),('%arg2','%arg5',2,8)]
+    if grants!=expected_grants:
+        raise Core0Error('IPC initial grant descriptors/keys/kinds/rights/order differ')
+    if re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'activateManaged'])+r'\(i64 ('+variable+r')\)',bodies[e+'activate'])!=['%arg0','%arg1','%arg2','%arg3']:
+        raise Core0Error('IPC managed activation role order differs')
+    # Bound every mutable completion write; no PC256 write in wakeup.
+    def result(body,source,component=1):
+        call=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(by_source[source])+r'\(',body)
+        values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(call[0] if len(call)==1 else 'NO_SINGLE_CALL')+', '+str(component)+r'$',body,re.M)
+        if len(call)!=1 or len(values)!=1:raise Core0Error('IPC write binding lacks one genuine checked result')
+        return values[0]
+    constant_symbols={by_source[source]:value for source,value in constants.items()}
+    publications=[]
+    completion=bodies[s+'complete'];base=result(completion,s+'transactionRow')
+    publications.append({'source':s+'complete',**validate_ipc_write_inventory(completion,by_source[s+'put'],constant_symbols,
+       [(('add',base,96),'%arg2'),(('add',base,104),'%arg3'),(('add',base,112),'%arg4'),(('add',base,120),'%arg5'),(('add',base,24),3)],by_source[s+'failed'],_ir_definition_body(pre_ir,by_source[s+'failed']))})
+    blocked=bodies[t+'block'];record=result(blocked,t+'lookup')
+    publications.append({'source':t+'block',**validate_ipc_write_inventory(blocked,by_source[x+'write64'],constant_symbols,
+       [(('add',record,136),'%arg1'),(('add',record,112),'%arg2'),(('add',record,16),'%arg3'),(('add',record,48),'%arg4'),(('add',record,24),6),(('add',record,8),5)],by_source[t+'failed'],_ir_definition_body(pre_ir,by_source[t+'failed']))})
+    wake=bodies[t+'completeBlocked'];context=result(wake,t+'savedContext');status=result(wake,i+'completeWait',0)
+    narrow=re.findall(r'('+variable+r') = trunc i64 '+re.escape(status)+r' to i8$',wake,re.M)
+    wide=re.findall(r'('+variable+r') = zext i8 '+re.escape(narrow[0] if len(narrow)==1 else 'NO_SINGLE_NARROW')+r' to i64$',wake,re.M)
+    if len(wide)!=1:raise Core0Error('IPC wakeup lost exact returned status widening')
+    publications.append({'source':t+'completeBlocked',**validate_ipc_write_inventory(wake,by_source[x+'write64'],constant_symbols,
+       [(('add',context,80),wide[0]),(('add',context,88),result(wake,i+'completeWait')),(('add','%arg0',16),0),(('add','%arg0',112),0),(('add','%arg0',136),0),(('add','%arg0',104),'%arg4'),(('add','%arg0',8),2)],by_source[t+'failed'],_ir_definition_body(pre_ir,by_source[t+'failed']))})
+    field_gates=[]
+    for address,expected in [(('add',record,8),3),(('add',record,120),1)]:
+        field_gates.append({'source':t+'block',**validate_ipc_read_guard(blocked,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
+    for address,expected in [(('add','%arg0',8),5),(('add','%arg0',128),'%arg2'),(('add','%arg0',136),'%arg3'),('%arg0','%arg1')]:
+        field_gates.append({'source':t+'completeBlocked',**validate_ipc_read_guard(wake,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
+    saved=bodies[t+'savedContext'];saved_context=result(saved,a+'context');translation=result(saved,a+'satp')
+    for address,expected in [(('add',saved_context,272),translation),(saved_context,0),(('add',saved_context,264),0x200000020)]:
+        field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,address,expected,by_source[p+'validateStack'])})
+    field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,0x80400600,result(saved,a+'root'),by_source[a+'context'],equal=False)})
+    wake_status=result(wake,i+'completeWait',0)
+    wake_narrow=re.findall(r'('+variable+r') = trunc i64 '+re.escape(wake_status)+r' to i8$',wake,re.M)
+    if len(wake_narrow)!=1:raise Core0Error('IPC wakeup lacks returned checked status')
+    blocked_value=re.findall(r'('+variable+r') = call zeroext i8 @'+re.escape(by_source[i+'blockedStatus'])+r'\(\)',wake)
+    for forbidden in ['255',blocked_value[0] if len(blocked_value)==1 else 'NO_STATUS254']:
+        comparisons=re.findall(r'('+variable+r') = icmp eq i8 '+re.escape(wake_narrow[0])+r', '+re.escape(forbidden)+r'$',wake,re.M)
+        if len(comparisons)!=1:raise Core0Error('IPC wakeup lost fatal/internal status exclusion')
+        field_gates.append({'source':t+'completeBlocked','forbidden_status':forbidden,**validate_boolean_gate(wake,comparisons[0],by_source[x+'write64'],success_when_true=False)})
+    bridge=validate_ipc_block_bridge(bodies[q+'call'],by_source[y+'dispatch'],by_source[i+'waitInfo'],by_source[p+'syscallReply'],by_source[t+'block'],by_source[q+'returnKernel'],by_source[i+'blockedStatus'],by_source[q+'failed'],_ir_definition_body(pre_ir,by_source[q+'failed']))
+    def read_result(body,source,address):
+        values=_ipc_scalar_operands(body,constant_symbols)
+        calls=[call for call,operand in re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(by_source[source])+r'\(i64 ([^\n)]+)\)',body)
+               if values.get(operand,int(operand) if operand.isdecimal() else operand)==address]
+        found=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0] if len(calls)==1 else 'NO_CALL')+r', 1$',body,re.M)
+        if len(calls)!=1 or len(found)!=1:raise Core0Error('IPC field result binding missing exact checked load')
+        return found[0]
+    prepare=bodies[s+'prepare'];metadata=result(prepare,s+'pending');transaction=read_result(prepare,s+'get',('add',metadata,48))
+    publications.append({'source':s+'prepare',**validate_ipc_write_inventory(prepare,by_source[s+'put'],constant_symbols,
+      [(('add',metadata,32),'%arg1'),(('add',metadata,40),transaction),(('add',metadata,56),'%arg2'),(('add',metadata,72),'%arg3'),(('add',metadata,80),'%arg4'),(('add',metadata,88),'%arg5'),(('add',metadata,24),1)],by_source[s+'failed'],_ir_definition_body(pre_ir,by_source[s+'failed']))})
+    commit=bodies[s+'commitWait'];metadata=result(commit,s+'transactionRow')
+    publications.append({'source':s+'commitWait',**validate_ipc_write_inventory(commit,by_source[s+'put'],constant_symbols,
+      [(('add',metadata,48),('add','%arg1',1)),(('add',metadata,24),2)],by_source[s+'failed'],_ir_definition_body(pre_ir,by_source[s+'failed']))})
+    stamp=_ir_definition_body(pre_ir,by_source[i+'stamp'])
+    publications.append({'source':i+'stamp',**validate_ipc_write_inventory(stamp,by_source[i+'put'],constant_symbols,
+      [(('add','%arg0',0),0x31504349414d454c),(('add','%arg0',8),'%arg1'),(('add','%arg0',16),'%arg2'),(('add','%arg0',24),'%arg3'),(('add','%arg0',32),'%arg4'),(('add','%arg0',40),'%arg5'),(('add','%arg0',48),'%arg6'),(('add','%arg0',56),0)],by_source[i+'failed'],_ir_definition_body(pre_ir,by_source[i+'failed']))})
+    enqueue=bodies[s+'queueEnqueue'];metadata=result(enqueue,s+'pending');queue=result(enqueue,s+'queue');bytes=result(enqueue,s+'wire')
+    transaction=read_result(enqueue,s+'get',('add',metadata,40));serial=read_result(enqueue,s+'get',('add',queue,32));count=read_result(enqueue,s+'get',('add',queue,24))
+    reserved=re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[s+'put'])+r'\(i64 ('+variable+r'), i64 2\)',enqueue)
+    if len(reserved)!=1:raise Core0Error('IPC queue lacks one private withdrawn slot')
+    slot=reserved[0]
+    publications.append({'source':s+'queueEnqueue',**validate_ipc_write_inventory(enqueue,by_source[s+'put'],constant_symbols,
+      [(slot,2),(('add',slot,8),serial),(('add',slot,16),'%arg2'),(('add',slot,24),transaction),(('add',slot,32),'%arg3'),(('add',slot,40),bytes),(('add',queue,32),('add',serial,1)),(('add',queue,24),('add',count,1)),(slot,1)],by_source[s+'failed'],_ir_definition_body(pre_ir,by_source[s+'failed']))})
+    for source,reader,address,expected in [(s+'prepare',s+'get',('add',result(prepare,s+'pending'),24),0),
+                                          (s+'commitWait',s+'get',('add',result(commit,s+'transactionRow'),24),1),
+                                          (s+'complete',s+'get',('add',result(completion,s+'transactionRow'),24),2),
+                                          (s+'queueEnqueue',s+'get',('add',result(enqueue,s+'pending'),24),1)]:
+        field_gates.append({'source':source,**validate_ipc_read_guard(bodies[source],by_source[reader],constant_symbols,address,expected,by_source[s+'put'])})
+    checked.append({'source':s+'queueEnqueue',**validate_failed_call_gate(enqueue,by_source[s+'copyBytes'],by_source[s+'put'],by_source[s+'failed'],_ir_definition_body(pre_ir,by_source[s+'failed']),checked_branch_only=True)})
+    stage=bodies[i+'stage'];packet=result(stage,s+'packet')
+    stamped=re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[i+'stamp'])+r'\(([^\n]*)\)',stage)
+    if stamped!=['i64 '+packet+', i64 %arg4, i64 %arg0, i64 %arg5, i64 0, i64 %arg3, i64 %arg6']:
+        raise Core0Error('IPC stamped packet sender/header fields lost actual caller binding')
+    # Immutable context validation has no write or syscallReply edge. Completion
+    # writes exactly a0/a1 and row bookkeeping, never savedPC or SATP.
+    if by_source[x+'write64'] in parse_definitions_and_calls(bodies[t+'savedContext'])[2] or by_source[p+'syscallReply'] in parse_definitions_and_calls(wake)[2]:
+        raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
+    return {'managed_policy':IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
+      'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
+      'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
+      'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
+
+
 def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
                            assembly: str, *, object_file: str) -> dict:
     """Account for the sole declarative initializer emitted by Lean startup.
@@ -751,7 +1189,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     section of the startup object and its exact linked payload, not arbitrary
     writable data or additional target object symbols.
     """
-    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper)/(startup\.o|image\.elf)", object_file)
+    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb)/(startup\.o|image\.elf)", object_file)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
@@ -818,7 +1256,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         raise Core0Error("unknown per-image user unit selection")
     keys = {"schema_version", "artifact_category", "contract_version", "configuration", "role", "roots", "functions",
             "used_execution_ops", "used_device_ops", "used_loops"}
-    case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", "capabilities-development"} else set()
+    case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
     _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed), "unit")
     if any(unit.get(key) != value for key, value in expected_managed.items()):
@@ -853,7 +1291,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             source.startswith("Lemma.") or re.fullmatch(r"_private\.(Lemma(?:\.[A-Za-z0-9_]+)+)\.[0-9]+\.\1\.[A-Za-z0-9_.$]+", source) is not None)
         if not production_identity or any(token in source.lower() for token in (".test.", "examples", "mutation")):
             raise Core0Error("function lacks a production Lean source identity")
-        if configuration == "capabilities-development" and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
+        if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
         if ".Development." in source:
             allowed = (image["module"],) if multi_user else development_modules(configuration, role)
@@ -1003,7 +1441,7 @@ def validate_catalog(value: object, *, configuration: str, stage: str) -> set[st
         if row.get("privilege") != ("M" if row["symbol"] in M_SYMBOLS else "S") or row.get("effect") != PRIMITIVE_EFFECTS[row["symbol"]]:
             raise Core0Error("machine primitive privilege/effect differs")
     expected_users = [{"key": row["key"], "id": row["id"], "startup_case": row["startup_case"], "symbols": user_primitive_rows(row["startup_case"]),
-                       **({"boot_role": row["boot_role"]} if configuration == "capabilities-development" else {})}
+                       **({"boot_role": row["boot_role"]} if configuration in MANAGED_POLICIES else {})}
                       for row in image_specs(configuration)] if multi else user_primitive_rows(user_startup_case(configuration))
     if (catalog.get("user_images" if multi else "user_symbols") != expected_users
             or multi and any(type(row.get("id")) is not int for row in catalog.get("user_images", []))):
@@ -1030,7 +1468,7 @@ def validate_package_contract(value: object, *, configuration: str, catalog: dic
     if multi:
         selected = validate_user_image_catalog(catalog, configuration=configuration)["images"]
         images = [{**image, "key": row["key"], "id": row["id"],
-                   **({"boot_role": row["boot_role"]} if configuration == "capabilities-development" else {})} for row in selected]
+                   **({"boot_role": row["boot_role"]} if configuration in MANAGED_POLICIES else {})} for row in selected]
     expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
                 "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
                 "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
@@ -1279,21 +1717,23 @@ def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tu
 
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
-    """Preserve PMP admission; add only two observed immutable H lookups."""
-    if unit.get("configuration") != "capabilities-development" or unit.get("role") != "kernel" or not optimized:
+    """Preserve PMP admission; add only the two observed managed-policy lookups."""
+    if unit.get("role") != "kernel" or not optimized:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
     if not globals_:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     by_source={re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"]):row for row in unit["functions"]}
-    specs=[("Lemma.User.CapabilityABI.typeMask",[35,124,928,1056],["u64"],[]),
+    specs=[("Lemma.User.CapabilityABI.typeMask",[35,124,928,1056,1],["u64"],[]),
            ("Lemma.Kernel.Objects.initStep",[1,3,4],["u32","u32","u64","u64","u64","u64","u64"],["checked-access","physical-write"])]
     accepted_globals=[];sites=set();observed=[];owners=_line_functions(lines)
     from audit_memory import parse_ir_functions,_parse_blocks
     functions=parse_ir_functions(ir)
     for source,values,args,effects in specs:
         row=by_source.get(source)
-        if row is None or row["args"]!=args or row["effects"]!=effects:
+        if row is None:
+            continue
+        if row["args"]!=args or row["effects"]!=effects:
             raise Core0Error("H readonly lookup lacks its exact source/signature/effects")
         symbol=row["symbol"];table="switch.table."+symbol;count=len(values)
         expected=f"@{table} = private unnamed_addr constant [{count} x i64] ["+", ".join(f"i64 {value}" for value in values)+"], align 8"
@@ -1306,9 +1746,9 @@ def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tup
         body="\n".join(line.split(";",1)[0].rstrip() for line in function.body.splitlines())
         blocks=_parse_blocks(body,symbol);load="%switch.load = load i64, ptr %switch.gep, align 8"
         if source=="Lemma.User.CapabilityABI.typeMask":
-            expected_blocks={"entry":["%switch.tableidx = add i64 %arg0, -1","%0 = icmp ult i64 %switch.tableidx, 4","br i1 %0, label %switch.lookup, label %if.merge.2"],
-                             "switch.lookup":[f"%switch.gep = getelementptr inbounds nuw [4 x i64], ptr @{table}, i64 0, i64 %switch.tableidx",load,"br label %if.merge.2"],
-                             "if.merge.2":["%if.result15 = phi i64 [ %switch.load, %switch.lookup ], [ 0, %entry ]","ret i64 %if.result15"]}
+            expected_blocks={"entry":["%switch.tableidx = add i64 %arg0, -1","%0 = icmp ult i64 %switch.tableidx, 5","br i1 %0, label %switch.lookup, label %if.merge.2"],
+                             "switch.lookup":[f"%switch.gep = getelementptr inbounds nuw [5 x i64], ptr @{table}, i64 0, i64 %switch.tableidx",load,"br label %if.merge.2"],
+                             "if.merge.2":["%if.result19 = phi i64 [ %switch.load, %switch.lookup ], [ 0, %entry ]","ret i64 %if.result19"]}
             if blocks!=expected_blocks or not re.search(r"\bi64 @"+re.escape(symbol)+r"\(i64 %arg0\)",function.header):
                 raise Core0Error("H type-mask lookup lacks exact subtraction/bound guard/default/body")
         else:
@@ -1349,44 +1789,316 @@ def validate_pmp_constant_section(section_text: str, raw: bytes, *, object_file:
 
 
 def validate_h_readonly_sections(section_text: str, symbol_text: str, relocation_text: str,
-                                 constants: bytes, rodata: bytes, *, object_file: str, tables: list[dict]) -> dict:
-    """Exact H object bytes and local symbols for the two admitted IR lookups."""
-    if object_file!="kernel/program.o" or len(tables)!=3:
-        raise Core0Error("H immutable tables lack their exact kernel object inventory")
-    pmp=[0x20001fff,0x20041fff,0x20ffffff,0x0400001f];masks=[35,124,928,1056];kinds=[1,3,4]
+                                 constants: bytes, rodata: bytes, *, object_file: str, tables: list[dict],
+                                 configuration: str = "capabilities-development") -> dict:
+    """Exact current object inventory for genuinely reachable kernel helpers.
+
+    The additive Reply ABI makes the shared mask five words. Historical H
+    four-word outputs retain their old auditor/source binding; this scanner
+    admits only the current five-word source contract.
+    """
+    configuration_roots(configuration)
+    pmp=[0x20001fff,0x20041fff,0x20ffffff,0x0400001f];masks=[35,124,928,1056,1];kinds=[1,3,4]
     sources=["Lemma.Kernel.MachineServices.expectedPmp","Lemma.User.CapabilityABI.typeMask","Lemma.Kernel.Objects.initStep"]
-    if any(re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source",""))!=source or row.get("values")!=values or row.get("readonly") is not True for row,source,values in zip(tables,sources,[pmp,masks,kinds])):
-        raise Core0Error("H object immutable-table source/content provenance differs")
+    canonical={source:values for source,values in zip(sources,[pmp,masks,kinds])}
+    actual_sources=[re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source","")) for row in tables]
+    if object_file!="kernel/program.o" or not 1<=len(tables)<=3 or actual_sources!=[source for source in sources if source in actual_sources] or len(set(actual_sources))!=len(actual_sources) or actual_sources[0]!=sources[0]:
+        raise Core0Error("immutable tables lack their exact reachable kernel object inventory")
+    if any(source not in canonical or row.get("values")!=canonical[source] or row.get("readonly") is not True for row,source in zip(tables,actual_sources)):
+        raise Core0Error("object immutable-table source/content provenance differs")
     def section(name,size,entry_size,flags):
         rows=re.findall(r"(?m)^\s*\[\s*(\d+)\]\s+"+re.escape(name)+r"\s+PROGBITS\s+0+\s+[0-9a-f]+\s+([0-9a-f]+)\s+"+entry_size+r"\s+"+flags+r"\s+0\s+0\s+8\s*$",section_text)
         if len(rows)!=1 or int(rows[0][1],16)!=size:
-            raise Core0Error("H immutable-table section size/flags/alignment differs")
+            raise Core0Error("immutable-table section size/flags/alignment differs")
         return rows[0][0]
-    cst_section=section(".rodata.cst32",64,"20","AM")
-    ro_section=section(".rodata",len(rodata),"00","A")
-    if constants!=struct.pack("<8Q",*pmp,*masks):
-        raise Core0Error("H combined PMP/type-mask immutable bytes differ")
+    cst_section=section(".rodata.cst32",32,"20","AM")
+    ro_section=section(".rodata",len(rodata),"00","A") if any(source!=sources[0] for source in actual_sources) else None
+    if constants!=struct.pack("<4Q",*pmp):
+        raise Core0Error("PMP immutable bytes differ")
     rows=[line.split() for line in symbol_text.splitlines() if len(line.split())==8 and line.split()[3]=="OBJECT" and line.split()[6]!="UND"]
     expected_names={".L"+row["global"] for row in tables}
-    if {row[-1] for row in rows}!=expected_names or len(rows)!=3:
-        raise Core0Error("H immutable object-symbol inventory differs")
-    observed=[]
-    for index,(table,values) in enumerate(zip(tables,[pmp,masks,kinds])):
+    if {row[-1] for row in rows}!=expected_names or len(rows)!=len(tables):
+        raise Core0Error("immutable object-symbol inventory differs")
+    observed=[];extents=[]
+    for table,source in zip(tables,actual_sources):
+        values=canonical[source];is_pmp=source==sources[0]
         row=next(row for row in rows if row[-1]==".L"+table["global"])
-        offset,size=int(row[1],16),int(row[2]);section_id=cst_section if index<2 else ro_section
-        raw=constants if index<2 else rodata
-        if row[4:7]!=["LOCAL","DEFAULT",section_id] or size!=len(values)*8 or offset%8 or offset+size>len(raw) or raw[offset:offset+size]!=struct.pack("<"+str(len(values))+"Q",*values) or index<2 and offset!=index*32:
-            raise Core0Error("H immutable table symbol extent/ownership/bytes differs")
+        offset,size=int(row[1],16),int(row[2]);section_id=cst_section if is_pmp else ro_section
+        section_name=".rodata.cst32" if is_pmp else ".rodata"
+        raw=constants if is_pmp else rodata
+        if row[4:7]!=["LOCAL","DEFAULT",section_id] or size!=len(values)*8 or offset%8 or offset+size>len(raw) or raw[offset:offset+size]!=struct.pack("<"+str(len(values))+"Q",*values) or is_pmp and offset!=0:
+            raise Core0Error("immutable table symbol extent/ownership/bytes differs")
+        if any(previous_section==section_id and offset<previous_end and previous_start<offset+size for previous_section,previous_start,previous_end in extents):
+            raise Core0Error("immutable table symbol extents overlap")
+        extents.append((section_id,offset,offset+size))
         current=None
         for line in relocation_text.splitlines():
             header=re.search(r"Relocation section '([^']+)'",line)
             if header:current=header[1]
             relocation=re.match(r"\s*([0-9a-f]+)\s+[0-9a-f]+\s+(R_RISCV_[A-Z0-9_]+)\s",line)
-            if relocation and current==(".rela.rodata.cst32" if index<2 else ".rela.rodata") and int(relocation[1],16)<offset+size and offset<int(relocation[1],16)+(8 if relocation[2].endswith("64") else 4):
-                raise Core0Error("H immutable table literal bytes contain a link relocation")
-        observed.append({"source":table["source"],"symbol":row[-1],"section":".rodata.cst32" if index<2 else ".rodata","offset":offset,"bytes":size,"values":values,"sha256":hashlib.sha256(raw[offset:offset+size]).hexdigest(),"relocations":[]})
-    return {"object":object_file,"configuration":"capabilities-development","readonly_tables":observed,
-            "constant_section_bytes":64,"constant_section_sha256":hashlib.sha256(constants).hexdigest()}
+            if relocation and current==".rela"+section_name and int(relocation[1],16)<offset+size and offset<int(relocation[1],16)+(8 if relocation[2].endswith("64") else 4):
+                raise Core0Error("immutable table literal bytes contain a link relocation")
+        observed.append({"source":table["source"],"symbol":row[-1],"section":section_name,"offset":offset,"bytes":size,"values":values,"sha256":hashlib.sha256(raw[offset:offset+size]).hexdigest(),"relocations":[]})
+    return {"object":object_file,"configuration":configuration,"readonly_tables":observed,
+            "constant_section_bytes":32,"constant_section_sha256":hashlib.sha256(constants).hexdigest()}
+
+
+# Closed observed LLVM RV64 switch lowering, admitted by genuine source identity.
+# The counts are backend artifact facts, not a new Core0 source-language feature.
+BACKEND_JUMP_TABLES = {
+    'Lemma.Kernel.Syscall.memoryStatus': ('kernel', 77, ['u8'], [], [0,33,37,38,71,72,73,74,76]),
+    'Lemma.Kernel.BootInfo.tokenStep': ('kernel', 9, ['u32','u32',*(['u64']*5)], ['checked-access','physical-read','physical-write'], [1,2,3,4,9]),
+    'Lemma.Kernel.IPC.dispatch': ('kernel', 6, ['u64']*7, ['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'], list(range(20,26))),
+    'Lemma.Kernel.Syscall.dispatchLegacy': ('kernel', 8, ['u64']*7, ['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'], [1,2,3,4,5,7,8]),
+    'Lemma.Kernel.Syscall.dispatchManaged': ('kernel', 18, ['u64']*7, ['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'], [2,*range(9,20)]),
+    'Lemma.Platform.RiscV.Firmware.call': ('firmware', 5, ['u64']*3, ['checked-access','mmio-read','mmio-write','io-order','machine-state','timer-state','interrupt-state','physical-read','physical-write'], list(range(1,6))),
+}
+
+
+def _object_symbols(text: str) -> dict[int, dict]:
+    result = {}
+    for line in text.splitlines():
+        row = re.fullmatch(r'\s*(\d+):\s+([0-9a-f]+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*(.*?)\s*', line)
+        if row:
+            index = int(row[1])
+            if index in result:
+                raise Core0Error('duplicate object symbol index')
+            result[index] = dict(index=index, value=int(row[2],16), size=int(row[3]), type=row[4],
+                                 binding=row[5], visibility=row[6], section=row[7], name=row[8])
+    if not result:
+        raise Core0Error('empty/unparseable object symbol table')
+    return result
+
+
+def _object_relocations(text: str, symbols: dict[int, dict]) -> list[dict]:
+    result = []; section = None
+    for line in text.splitlines():
+        header = re.search(r"Relocation section '([^']+)'",line)
+        if header:
+            section = header[1]
+        elif re.search(r'\bR_RISCV_',line):
+            row = re.fullmatch(r'\s*([0-9a-f]+)\s+([0-9a-f]+)\s+(R_RISCV_[A-Z0-9_]+)\s+([0-9a-f]+)\s+(\S+)\s+\+\s+(-?(?:0x)?[0-9a-f]+)\s*',line)
+            if row is None or section is None:
+                raise Core0Error('unparseable object relocation')
+            index = int(row[2],16)>>32; symbol = symbols.get(index)
+            if symbol is None or symbol['name']!=row[5] or symbol['value']!=int(row[4],16):
+                raise Core0Error('object relocation symbol index/name/value disagree')
+            result.append(dict(section=section,offset=int(row[1],16),type=row[3],symbol=symbol,addend=int(row[6],16)))
+    return result
+
+
+def _jump_assembly_function(assembly: str, symbol: str) -> tuple[list[tuple[str,list[str]]],dict[str,int]]:
+    match = re.search(r'(?m)^'+re.escape(symbol)+r':[^\n]*\n(.*?)^\s*\.size\s+'+re.escape(symbol)+r',',assembly,re.S)
+    if match is None:
+        raise Core0Error('companion assembly lacks owning function')
+    instructions=[];labels={symbol:0}
+    for raw in match[1].splitlines():
+        line=raw.split('#',1)[0].strip()
+        if not line: continue
+        label=re.fullmatch(r'([.$A-Za-z0-9_]+):',line)
+        if label:
+            if label[1] in labels: raise Core0Error('duplicate companion code label')
+            labels[label[1]]=len(instructions)
+        elif not line.startswith('.'):
+            parts=line.split(None,1)
+            instructions.append((parts[0],parts[1].replace(' ','').split(',') if len(parts)>1 else []))
+    return instructions,labels
+
+
+def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int) -> dict:
+    """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
+    code,labels=_jump_assembly_function(assembly,symbol)
+    uses=[i for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1]=='%pcrel_hi('+table+')']
+    if len(uses)!=1:
+        raise Core0Error('jump table lacks one owning PC-relative address use')
+    use=uses[0];base=code[use][1][0]
+    if use==0 or code[use-1][0]!='slli' or len(code[use-1][1])!=3 or code[use-1][1][2]!='3':
+        raise Core0Error('jump table index lacks exact eight-byte scaling')
+    index=code[use-1][1][1];scaled=code[use-1][1][0]
+    if base==scaled: raise Core0Error('jump table address overwrites its scaled index')
+    if len(code)<=use+4 or code[use+1][0]!='addi' or code[use+1][1][:2]!=[base,base] or not re.fullmatch(r'%pcrel_lo\(\.Lpcrel_hi\d+\)',code[use+1][1][2]):
+        raise Core0Error('jump table address lacks its matched PC-relative low half')
+    low_label=code[use+1][1][2][len('%pcrel_lo('):-1]
+    if labels.get(low_label)!=use:
+        raise Core0Error('jump table PC-relative low label points elsewhere')
+    address=code[use+2][1][0]
+    if code[use+2][0]!='add' or sorted(code[use+2][1][1:])!=sorted([scaled,base]):
+        raise Core0Error('jump table address does not add the scaled index')
+    load=code[use+3];target=load[1][0]
+    if load[0]!='ld' or load[1][1]!='0('+address+')':
+        raise Core0Error('jump table target lacks one 64-bit table load')
+    jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
+    if len(jumps)!=1 or not use+4<=jumps[0]<=use+5 or code[jumps[0]]!=('jr',[target]):
+        raise Core0Error('jump table has an unknown or unbound indirect transfer')
+    jump=jumps[0]
+    if jump==use+5 and (code[use+4][0]!='li' or code[use+4][1][0]==target):
+        raise Core0Error('jump table target is overwritten before transfer')
+    guards=[]
+    for i in range(max(0,use-8),use-1):
+        op,args=code[i]
+        if op=='bltu' and len(args)==3 and args[1]==index:
+            prior=[j for j in range(max(0,i-3),i) if code[j]==('li',[args[0],str(count-1)])]
+            if len(prior)==1 and all(code[j][1][:1]!=[args[0]] for j in range(prior[0]+1,i)):
+                guards.append(i)
+    if len(guards)!=1: raise Core0Error('jump table lacks the exact unsigned index bound')
+    guard=guards[0]
+    # Every instruction between the guard and scale preserves the bounded index.
+    if any(args[:1]==[index] for _op,args in code[guard+1:use-1]):
+        raise Core0Error('jump table bounded index is overwritten')
+    if minimum:
+        normalizations=[i for i in range(max(0,guard-5),guard) if code[i][0]=='addi' and len(code[i][1])==3 and code[i][1][0]==index and code[i][1][2]==str(-minimum)]
+        if len(normalizations)!=1 or any(args[:1]==[index] for _op,args in code[normalizations[0]+1:guard]):
+            raise Core0Error('jump table lacks exact subtraction index normalization')
+    successors={}
+    conditional={'beq','bne','blt','bge','bltu','bgeu','beqz','bnez','blez','bgez','bltz','bgtz','bgt','ble','bgtu','bleu'}
+    for i,(op,args) in enumerate(code):
+        following=[i+1] if i+1<len(code) else []
+        if op in conditional:
+            if args[-1] not in labels or labels[args[-1]]>=len(code): raise Core0Error('jump guard has nonlocal/noninstruction branch target')
+            successors[i]=[labels[args[-1]],*following]
+        elif op=='j':
+            if args!=args[-1:] or args[0] not in labels or labels[args[0]]>=len(code): raise Core0Error('jump function has nonlocal/noninstruction branch')
+            successors[i]=[labels[args[0]]]
+        elif op=='jr':
+            if any(label not in labels for label in targets): raise Core0Error('jump table contains a foreign assembly block')
+            successors[i]=list({labels[label] for label in targets})
+        elif op in {'ret','tail'}: successors[i]=[]
+        else: successors[i]=following
+    def reaches(graph,start,finish):
+        seen=set();pending=[start]
+        while pending:
+            point=pending.pop()
+            if point==finish:return True
+            if point not in seen:seen.add(point);pending.extend(graph.get(point,[]))
+        return False
+    denied={i:list(edges) for i,edges in successors.items()};denied[guard]=[labels[code[guard][1][-1]]]
+    if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
+        raise Core0Error('jump table load/transfer can bypass the unsigned guard')
+    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True)
+
+
+def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation_text: str,
+                                  rodata: bytes, *, unit: dict, optimized_ir: str, optimization: str,
+                                  readonly_tables: list[dict], assembly: str='', companion_symbols: str='',
+                                  companion_relocations: str='', text: bytes=b'', companion_text: bytes=b'') -> dict:
+    """Exact byte/relocation/source/guard provenance; not a compiler correctness proof."""
+    symbols=_object_symbols(symbol_text);relocations=_object_relocations(relocation_text,symbols)
+    sections={m[1]:m[2] for m in re.finditer(r'(?m)^\s*\[\s*(\d+)\]\s+(\S+)\s+',section_text)}
+    functions={s['name']:s for s in symbols.values() if s['type']=='FUNC' and s['section']!='UND'}
+    tables=[s for s in symbols.values() if s['name'].startswith('.LJTI')]
+    literal=[r for r in readonly_tables if r['section']=='.rodata']
+    literal_contracts={'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
+    if literal and (unit['role']!='kernel' or any(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))!=r['values'] for r in literal)):
+        raise Core0Error('readonly literal provenance escapes the exact kernel contracts')
+    observed=[];extents=[];used_relocations=set()
+    section_id=next((index for index,name in sections.items() if name=='.rodata'),None)
+    if section_id is not None:
+        row=re.search(r'(?m)^\s*\[\s*'+section_id+r'\]\s+\.rodata\s+PROGBITS\s+0+\s+[0-9a-f]+\s+([0-9a-f]+)\s+00\s+A\s+0\s+0\s+8\s*$',section_text)
+        if row is None or int(row[1],16)!=len(rodata): raise Core0Error('jump table section bytes/readonly flags/alignment differ')
+    elif rodata or tables or literal: raise Core0Error('jump table data lacks its declared readonly section')
+    if tables:
+        if optimization!='O2' or unit['role'] not in {'kernel','firmware'} or not text or text!=companion_text:
+            raise Core0Error('jump tables lack exact O2 companion code bytes/role provenance')
+        companion=_object_symbols(companion_symbols);named={s['name']:s for s in companion.values() if s['name']}
+        other_relocations=_object_relocations(companion_relocations,companion)
+        # The companion is not linked. Reassemble retained labels to bind block PCs;
+        # code bytes and all code/data relocation semantics must match the real object.
+        def canonical(rows,section_names=None):
+            return sorted((r['section'],r['offset'],r['type'],r['symbol']['value'],
+                           (sections.get(r['symbol']['section'],r['symbol']['section']) if section_names is None else section_names.get(r['symbol']['section'],r['symbol']['section'])),
+                           r['symbol']['binding'],r['symbol']['name'] if r['symbol']['binding']!='LOCAL' else '',r['addend'])
+                          for r in rows if r['section'] in {'.rela.text','.rela.rodata'})
+        # Both MC paths retain the same allocated section numbers; permit no hidden relocation semantic difference.
+        if canonical(relocations)!=canonical(other_relocations): raise Core0Error('companion code/table relocation semantics differ from actual object')
+        definitions=re.findall(r'(?m)^(\.LJTI\d+_\d+):',assembly)
+        if set(definitions)!={s['name'] for s in tables} or len(definitions)!=len(tables):
+            raise Core0Error('actual and companion jump-table label inventories differ')
+        by_symbol={r['symbol']:r for r in unit['functions']}
+        for table in sorted(tables,key=lambda s:s['value']):
+            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_0',name)
+            if match is None or table['type']!='NOTYPE' or table['binding']!='LOCAL' or table['section']!=section_id or table['size']!=0 or table['value']%8:
+                raise Core0Error('backend table label is not one local aligned readonly extent')
+            declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)',assembly)
+            if declaration is None:raise Core0Error('backend table lacks a closed companion local-block list')
+            targets=re.findall(r'\.quad\s+(\.LBB\d+_\d+)',declaration[1]);size=len(targets)*8;start=table['value']
+            references=[r for r in relocations if r['symbol']['index']==table['index']]
+            if len(references)!=1 or references[0]['section']!='.rela.text' or references[0]['type']!='R_RISCV_PCREL_HI20' or references[0]['addend']!=0:
+                raise Core0Error('backend jump table lacks one exact owning text address relocation')
+            owners=[f for f in functions.values() if sections.get(f['section'])=='.text' and f['value']<=references[0]['offset']<f['value']+f['size']]
+            if len(owners)!=1:raise Core0Error('backend jump table reference has no unique compiled function owner')
+            owner=owners[0]
+            if owner['value']%4 or owner['size']%4 or references[0]['offset']%4:
+                raise Core0Error('jump table owner/address reference has invalid instruction alignment')
+            source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
+            spec=BACKEND_JUMP_TABLES.get(source)
+            if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
+                raise Core0Error('unknown backend table owner/count/source signature/effects')
+            switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
+            if switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
+            if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
+                raise Core0Error('companion table/function extents differ from actual object')
+            rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
+            if len(rows)!=len(targets) or sorted(r['offset'] for r in rows)!=list(range(start,start+size,8)) or rodata[start:start+size]!=b'\0'*size:
+                raise Core0Error('backend table bytes/entry relocation coverage differ')
+            entries=[]
+            for row,label in zip(sorted(rows,key=lambda r:r['offset']),targets):
+                target=row['symbol'];companion_target=named.get(label)
+                if (row['type']!='R_RISCV_64' or row['addend']!=0 or target['type']!='NOTYPE' or target['binding']!='LOCAL' or target['visibility']!='DEFAULT' or target['section']!=owner['section'] or target['size']!=0
+                        or target['value']%4 or not owner['value']<=target['value']<owner['value']+owner['size'] or companion_target is None or companion_target['value']!=target['value']
+                        or not label.startswith('.LBB'+match[1]+'_')):
+                    raise Core0Error('backend table entry escapes its exact local code owner/block/alignment')
+                used_relocations.add(id(row));entries.append(dict(offset=row['offset'],target_offset=target['value'],target_label=label,symbol_index=target['index']))
+            guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]))
+            observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size']))
+            extents.append((start,start+size,'jump-table'))
+    for row in literal:
+        start=row['offset'];end=start+row['bytes']
+        if rodata[start:end]!=struct.pack('<'+str(len(row['values']))+'Q',*row['values']):raise Core0Error('declared literal extent bytes differ')
+        extents.append((start,end,'literal-table'))
+    position=0;alignment=[]
+    for start,end,kind in sorted(extents):
+        if start<position or end>len(rodata) or end<=start:raise Core0Error('readonly data extents overlap/escape their section')
+        gap=rodata[position:start]
+        if len(gap)>7 or any(gap):raise Core0Error('unaccounted readonly data bytes outside exact tables/alignment')
+        if gap:alignment.append(dict(offset=position,bytes=len(gap)))
+        position=end
+    if len(rodata)-position>7 or any(rodata[position:]):raise Core0Error('unaccounted trailing readonly data bytes')
+    if position<len(rodata):alignment.append(dict(offset=position,bytes=len(rodata)-position))
+    for row in relocations:
+        if row['section']=='.rela.rodata' and id(row) not in used_relocations:raise Core0Error('unknown readonly-data relocation')
+        if row['type']=='R_RISCV_64' and id(row) not in used_relocations:
+            target=row['symbol']
+            if row['section']!='.rela.stack_sizes' or row['addend']!=0 or target['type']!='NOTYPE' or target['binding']!='LOCAL' or target['visibility']!='DEFAULT' or target['size']!=0 or not any(target['section']==f['section'] and target['value']==f['value'] for f in functions.values()):
+                raise Core0Error('absolute relocation is neither exact local jump entry nor compiled stack metadata')
+    return dict(role=unit['role'],jump_tables=observed,jump_table_bytes=sum(r['bytes'] for r in observed),rodata_bytes=len(rodata),rodata_sha256=hashlib.sha256(rodata).hexdigest(),literal_bytes=sum(r['bytes'] for r in literal),zero_alignment=alignment,
+                limitations='Necessary LLVM/object/relocation/guard provenance checks, not a compiler correctness proof or runtime measurement.')
+
+
+def inspect_backend_jump_tables(inspect, directory: Path, *, object_file: str, section_text: str,
+                                symbol_text: str, relocation_text: str, unit: dict, optimization: str,
+                                readonly_tables: list[dict]) -> dict:
+    """Generate an audit-only companion with the identical pinned LLVM settings."""
+    prefix=object_file.removesuffix('.o');raw_file=prefix+'-audit-rodata.bin'
+    rodata=b''
+    if '.rodata' in alloc_section_names(section_text):
+        inspect('llvm-objcopy',['-O','binary','--only-section=.rodata',object_file,raw_file],prefix.replace('/','-')+'-jump-rodata')
+        rodata=(directory/raw_file).read_bytes()
+    assembly='';symbols='';relocations='';text=b'';companion_text=b'';companion_files={}
+    if '.LJTI' in symbol_text:
+        asm_file=prefix+'-audit-companion.s';companion_file=prefix+'-audit-companion.o'
+        args=[('-filetype=asm' if arg=='-filetype=obj' else arg) for arg in LLC_ARGUMENTS]
+        inspect('llc',[*args,'-stack-size-section','-'+optimization,prefix+'.opt.ll','-o',asm_file],prefix.replace('/','-')+'-jump-llc')
+        inspect('llvm-mc',['-triple=riscv64-unknown-elf','-mattr=+m,+zicsr,+zifencei,-a,-f,-d,-c,-v,-relax','-filetype=obj','-save-temp-labels',asm_file,'-o',companion_file],prefix.replace('/','-')+'-jump-mc')
+        assembly=(directory/asm_file).read_text()
+        symbols=inspect('llvm-readelf',['-s','--wide',companion_file],prefix.replace('/','-')+'-jump-companion-symbols')
+        relocations=inspect('llvm-readelf',['-r',companion_file],prefix.replace('/','-')+'-jump-companion-relocations')
+        for obj,raw in ((object_file,prefix+'-audit-text.bin'),(companion_file,prefix+'-audit-companion-text.bin')):
+            inspect('llvm-objcopy',['-O','binary','--only-section=.text',obj,raw],raw.replace('/','-'))
+        text=(directory/(prefix+'-audit-text.bin')).read_bytes();companion_text=(directory/(prefix+'-audit-companion-text.bin')).read_bytes()
+        companion_files=dict(assembly_sha256=sha256(directory/asm_file),object_sha256=sha256(directory/companion_file),code_sha256=hashlib.sha256(text).hexdigest())
+    report=validate_backend_jump_tables(section_text,symbol_text,relocation_text,rodata,unit=unit,optimized_ir=(directory/(prefix+'.opt.ll')).read_text(),optimization=optimization,readonly_tables=readonly_tables,
+                                        assembly=assembly,companion_symbols=symbols,companion_relocations=relocations,text=text,companion_text=companion_text)
+    return {**report,**companion_files}
 
 
 def _kernel_access_op(line: str, unit: dict, *, optimized: bool = False) -> str | None:
@@ -1585,7 +2297,7 @@ def validate_machine(text: str, *, user: bool = False,
 def _artifact_inspector(root: Path, directory: Path, timeout: float, logs: list[dict]):
     if isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0:
         raise Core0Error("artifact inspection timeout must be finite and positive")
-    tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy"))
+    tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy", "llc", "llvm-mc"))
     pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
     store = pin.get("tools", {}).get("llvm", {}).get("store_path")
     if pin.get("status") != "pinned" or not isinstance(store, str) or any(not path.startswith(store + "/") for path in tools.values()):
@@ -1687,9 +2399,11 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                            "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
     initializer, attack_object = None, None
+    backend_objects = []
     for obj, expected in object_functions.items():
         symbols = inspect("llvm-readelf", ["-s", "--wide", obj], obj + "-symbols")
-        if defined_function_symbols(symbols) != expected or not relocation_types(inspect("llvm-readelf", ["-r", obj], obj + "-relocations")) <= allowed_relocations:
+        relocation_text = inspect("llvm-readelf", ["-r", obj], obj + "-relocations")
+        if defined_function_symbols(symbols) != expected or not relocation_types(relocation_text) <= allowed_relocations:
             raise Core0Error("user object executable source/relocation closure differs")
         section_text = inspect("llvm-readelf", ["-S", "--wide", obj], obj + "-sections")
         sections = alloc_section_names(section_text)
@@ -1701,6 +2415,10 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
             constant = re.search(r"(?m)^\s*\[\s*\d+\]\s+\.rodata\.cst8\s+PROGBITS\s+[0-9a-f]+\s+[0-9a-f]+\s+([0-9a-f]+)\s+08\s+AM\s+0\s+0\s+8\s*$", section_text)
             if not constant or int(constant[1], 16) == 0 or int(constant[1], 16) % 8:
                 raise Core0Error("user constant pool flags/entry size/alignment differ")
+        if obj == "program.o":
+            backend_objects.append(inspect_backend_jump_tables(inspect, output_dir, object_file=obj,
+                                  section_text=section_text, symbol_text=symbols, relocation_text=relocation_text,
+                                  unit=unit, optimization=optimization, readonly_tables=[]))
         if obj == "startup.o":
             attack_bytes = b""
             if user_case != "none":
@@ -1751,7 +2469,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     elf["initialized_data"] = initialized
     return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph, **managed_fields(configuration,image),
             "image_sha256": sha256(output_dir / "image.elf"), "text_sha256": sha256(output_dir / "text.bin"),
-            "data_sha256": sha256(output_dir / "data.bin"), "commands": logs,
+            "data_sha256": sha256(output_dir / "data.bin"), "commands": logs, "backend_readonly_objects": backend_objects,
             **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" else {})}
 
 
@@ -1854,8 +2572,8 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         if provenance.get("source_inputs") != source_snapshot:
             raise Core0Error("independent user complete source inventory is missing/stale")
         closure = module_closure(root, image["module"], allow_development=True,
-                                 forbid_user_privileged_imports=configuration == "capabilities-development")
-        if configuration == "capabilities-development" and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
+                                 forbid_user_privileged_imports=configuration in MANAGED_POLICIES)
+        if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
             raise Core0Error("managed user target dependency closure contains privileged/compiler code")
         if (any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean" for path in closure)
                 or provenance.get("target_module_closures") != {"users": {key: closure}}):
@@ -1913,7 +2631,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         raise Core0Error("audit timeout must be finite and positive")
     logs = []
     try:
-        tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy"))
+        tools = require_tools(("llvm-readelf", "llvm-nm", "llvm-objdump", "llvm-objcopy", "llc", "llvm-mc"))
     except Core0Error as error:
         write_json(output_dir / "audit-failure.json", {"schema_version": 1, "status": "FAIL", "error": str(error), "commands": logs})
         raise
@@ -2009,8 +2727,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error("production import closure missing/stale")
         if multi:
             expected_users = {image["key"]: module_closure(root, image["module"], allow_development=True,
-                              forbid_user_privileged_imports=configuration == "capabilities-development") for image in images}
-            if configuration == "capabilities-development" and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
+                              forbid_user_privileged_imports=configuration in MANAGED_POLICIES) for image in images}
+            if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
                 raise Core0Error("managed user target dependency closure contains privileged/compiler code")
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
@@ -2074,6 +2792,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                                 if configuration == "capabilities-development" else None)
+        managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
+                       if configuration == "ipc-development" else None)
         object_functions = {
             "startup.o": expected_machine, "boot-package.o": set(),
             **({} if multi else {"user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}}),
@@ -2082,16 +2802,19 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         allowed_relocations = {"R_RISCV_BRANCH", "R_RISCV_JAL", "R_RISCV_PCREL_HI20", "R_RISCV_PCREL_LO12_I", "R_RISCV_PCREL_LO12_S",
                                "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
         readonly_objects = []
+        backend_objects = []
         user_abi_object = None
         for object_file, expected_functions in object_functions.items():
             label = object_file.replace("/", "-")
             object_symbols = inspect("llvm-readelf", ["-s", "--wide", object_file], label + "-symbols")
             if defined_function_symbols(object_symbols) != expected_functions:
                 raise Core0Error(f"object executable source closure differs: {object_file}")
-            relocs = relocation_types(inspect("llvm-readelf", ["-r", object_file], label + "-relocations"))
+            object_relocation_text = inspect("llvm-readelf", ["-r", object_file], label + "-relocations")
+            relocs = relocation_types(object_relocation_text)
             if not relocs <= allowed_relocations:
                 raise Core0Error(f"unknown/relaxed relocation in {object_file}: {sorted(relocs-allowed_relocations)}")
-            sections = alloc_section_names(inspect("llvm-readelf", ["-S", "--wide", object_file], label + "-sections"))
+            object_section_text = inspect("llvm-readelf", ["-S", "--wide", object_file], label + "-sections")
+            sections = alloc_section_names(object_section_text)
             if object_file == "user/startup.o" and (".text.user_adversarial" in sections) != (user_case != "none"):
                 raise Core0Error("user attack case/object section presence differs")
             allowed_sections = ({".boot_package"} if object_file == "boot-package.o" else
@@ -2106,25 +2829,33 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                     (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
                     (output_dir / "audit-user-abi-object.bin").read_bytes(), object_symbols,
                     (output_dir / "user-startup.S").read_text(), object_file=object_file)
+            literal_tables = []
             tables = ir["kernel"]["optimized"]["readonly_optimizer_tables"] if object_file == "kernel/program.o" else []
             if object_file == "kernel/program.o" and bool(tables) != (".rodata.cst32" in sections):
                 raise Core0Error("kernel PMP IR table/object constant section presence differs")
             if ".rodata.cst32" in sections:
                 inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata.cst32", object_file, "audit-kernel-pmp-table.bin"], "pmp-table-extract")
-                if configuration == "capabilities-development":
+                if len(tables) > 1:
                     inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata", object_file, "audit-kernel-h-rodata.bin"], "h-rodata-extract")
                     table_report = validate_h_readonly_sections(
                         (output_dir / ("audit-" + label + "-sections.txt")).read_text(), object_symbols,
                         (output_dir / ("audit-" + label + "-relocations.txt")).read_text(),
                         (output_dir / "audit-kernel-pmp-table.bin").read_bytes(),
-                        (output_dir / "audit-kernel-h-rodata.bin").read_bytes(), object_file=object_file, tables=tables)
+                        (output_dir / "audit-kernel-h-rodata.bin").read_bytes(), object_file=object_file, tables=tables, configuration=configuration)
                 else:
                     table_report = validate_pmp_constant_section(
                         (output_dir / ("audit-" + label + "-sections.txt")).read_text(),
                         (output_dir / "audit-kernel-pmp-table.bin").read_bytes(), object_file=object_file, tables=tables)
                     table_report["sha256"] = sha256(output_dir / "audit-kernel-pmp-table.bin")
                 readonly_objects.append(table_report)
+                literal_tables = table_report.get("readonly_tables", [])
                 allowed_sections.add(".rodata.cst32")
+            if object_file.endswith("/program.o"):
+                object_role = object_file.split("/", 1)[0]
+                backend_objects.append(inspect_backend_jump_tables(inspect, output_dir, object_file=object_file,
+                                      section_text=object_section_text, symbol_text=object_symbols,
+                                      relocation_text=object_relocation_text, unit=units[object_role],
+                                      optimization=optimization, readonly_tables=literal_tables))
             if ".rodata.cst8" in sections:
                 section_text = (output_dir / ("audit-" + label + "-sections.txt")).read_text()
                 constant = re.search(r"(?m)^\s*\[\s*\d+\]\s+\.rodata\.cst8\s+PROGBITS\s+[0-9a-f]+\s+[0-9a-f]+\s+([0-9a-f]+)\s+08\s+AM\s+0\s+0\s+8\s*$", section_text)
@@ -2228,7 +2959,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
                   "lean_source_realization": realization,
                   "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
-                  "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "elf": inspections, "commands": logs,
+                  "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
@@ -2248,8 +2979,9 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             record["user_image_catalog_sha256"] = sha256(output_dir / "user-image-catalog.json")
             if configuration == "tasks-fault-development":
                 record["user_startup_cases"] = {image["key"]: image["startup_case"] for image in images}
-            if configuration == "capabilities-development":
-                record.update(managed_policy=MANAGED_POLICY, boot_roles={image["key"]: image["boot_role"] for image in images}, managed_capabilities=managed_capabilities)
+            if configuration in MANAGED_POLICIES:
+                record.update(managed_policy=MANAGED_POLICIES[configuration], boot_roles={image["key"]: image["boot_role"] for image in images})
+                record.update({'managed_capabilities':managed_capabilities} if configuration=='capabilities-development' else {'managed_ipc':managed_ipc})
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
         if source_inputs(root) != source_hashes:

@@ -13,7 +13,7 @@ from audit_kernel import (TASK_USER_IMAGES, TASK_FAULT_USER_IMAGES, image_specs,
                           validate_user_primitive_catalog, validate_package_contract,
                           validate_package_payloads, validate_multi_commands, user_primitive_rows, audit_standalone_user,
                           validate_image_case_provenance, validate_image_attack_object, validate_user_attack_machine,
-                          validate_machine, development_modules, CAPABILITY_USER_IMAGES, MANAGED_POLICY, managed_fields, validate_managed_provenance, validate_standalone_managed_provenance)
+                          validate_machine, development_modules, CAPABILITY_USER_IMAGES, MANAGED_POLICY, IPC_USER_IMAGES, IPC_POLICY, managed_fields, validate_managed_provenance, validate_standalone_managed_provenance)
 from build_kernel import CONTRACTS, LEAN_SOURCE_EXPRESSION
 from build_core0 import LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS
 from core0_common import Core0Error
@@ -32,7 +32,7 @@ def unit(key='compute',configuration='tasks-development'):
             'configuration':configuration,'role':'user','image_key':key,'image_id':image['id'],
             'roots':[root],'functions':[{**{k:v for k,v in root.items() if k!='id'},'effects':[]}],
             'used_execution_ops':[],'used_device_ops':[],'used_loops':[],
-            **({'startup_case':image['startup_case']} if configuration in {'tasks-fault-development','capabilities-development'} else {}),
+            **({'startup_case':image['startup_case']} if configuration in {'tasks-fault-development','capabilities-development','ipc-development'} else {}),
             **managed_fields(configuration,image)}
 
 
@@ -42,7 +42,7 @@ def contract(configuration='tasks-development'):
     return {'schema_version':2,'configuration':configuration,'startup_case':'normal','user_startup_case':'none',
             'contract_version':'lemma-boot-package-v1','magic':0x31474b50414d454c,'version':1,'image_count':len(image_specs(configuration)),
             'header_bytes':32,'descriptor_bytes':96,'offset_encoding':'generated-label-differences',
-            'images':[{**image,'key':row['key'],'id':row['id'], **({'boot_role':row['boot_role']} if configuration=='capabilities-development' else {})} for row in image_specs(configuration)],
+            'images':[{**image,'key':row['key'],'id':row['id'], **({'boot_role':row['boot_role']} if configuration in {'capabilities-development','ipc-development'} else {})} for row in image_specs(configuration)],
             **managed_fields(configuration)}
 
 
@@ -292,5 +292,47 @@ class ManagedImageAuditFailures(unittest.TestCase):
             with self.assertRaises(Core0Error):validate_managed_provenance(good,bad,**args)
         for prior in ['tasks-development','tasks-fault-development']:
             with self.assertRaises(Core0Error):validate_managed_provenance(good,{},configuration=prior,images=list(image_specs(prior)))
+
+
+class IPCImageAuditFailures(unittest.TestCase):
+    configuration='ipc-development'
+
+    def test_shared_client_module_retains_separate_exact_roots_and_roles(self):
+        good=catalog(self.configuration);validate_user_image_catalog(good,configuration=self.configuration)
+        self.assertEqual([r['key'] for r in IPC_USER_IMAGES],['server','clienta','clientb','busy','fault'])
+        a,b=IPC_USER_IMAGES[1:3];self.assertEqual(a['module'],b['module']);self.assertNotEqual(a['source'],b['source'])
+        self.assertNotEqual(a['symbol_prefix'],b['symbol_prefix'])
+        for mutate in [lambda r:r.update(managed_policy=MANAGED_POLICY),lambda r:r['images'].reverse(),
+                       lambda r:r['images'][1].update(source=b['source']),lambda r:r['images'][1].update(boot_role=b['boot_role']),
+                       lambda r:r['images'][4].update(module='Lemma.User.Development.Tasks.Fault'),
+                       lambda r:r['images'][4].update(startup_case='supervisor-csr')]:
+            bad=copy.deepcopy(good);mutate(bad)
+            with self.assertRaises(Core0Error):validate_user_image_catalog(bad,configuration=self.configuration)
+
+    def test_per_image_policy_and_roots_do_not_cross_clients_or_old_configuration(self):
+        for image in IPC_USER_IMAGES:
+            good=unit(image['key'],self.configuration);validate_unit(good,'user',configuration=self.configuration,image_key=image['key'])
+            for mutate in [lambda r:r.update(managed_policy=MANAGED_POLICY),lambda r:r.pop('boot_role'),
+                           lambda r:r.update(boot_role='ipc-server'),lambda r:r.update(startup_case='supervisor-csr')]:
+                bad=copy.deepcopy(good);mutate(bad)
+                if bad==good:continue
+                with self.assertRaises(Core0Error):validate_unit(bad,'user',configuration=self.configuration,image_key=image['key'])
+        bad=unit('clienta',self.configuration);bad['roots'][0]['source']=IPC_USER_IMAGES[2]['source']
+        with self.assertRaises(Core0Error):validate_unit(bad,'user',configuration=self.configuration,image_key='clienta')
+        with self.assertRaises(Core0Error):validate_unit(unit('clienta',self.configuration),'user',configuration='capabilities-development',image_key='clienta')
+
+    def test_package_primitives_and_both_provenance_records_have_exact_source_roles(self):
+        good=catalog(self.configuration);validate_package_contract(contract(self.configuration),configuration=self.configuration,catalog=good)
+        good={'managed_policy':IPC_POLICY,'boot_roles':{r['key']:r['boot_role'] for r in IPC_USER_IMAGES}}
+        validate_managed_provenance(good,copy.deepcopy(good),configuration=self.configuration,images=list(IPC_USER_IMAGES))
+        for image in IPC_USER_IMAGES:
+            single=managed_fields(self.configuration,image)
+            validate_standalone_managed_provenance(single,single,configuration=self.configuration,image=image)
+            value={'schema_version':1,'contract_version':'lemma-user-execution-v1','configuration':self.configuration,
+                   'image_key':image['key'],'image_id':image['id'],'startup_case':'none','symbols':user_primitive_rows('none'),**single}
+            validate_user_primitive_catalog(value,image,configuration=self.configuration)
+        for bad in [{**good,'managed_policy':MANAGED_POLICY},{**good,'boot_roles':{'server':'ipc-client-a'}}]:
+            with self.assertRaises(Core0Error):validate_managed_provenance(bad,bad,configuration=self.configuration,images=list(IPC_USER_IMAGES))
+        self.assertEqual(development_modules(self.configuration,'kernel'),('Lemma.Kernel.Development.IPCEntry','Lemma.Kernel.Development.TasksEntry'))
 
 if __name__=='__main__':unittest.main()

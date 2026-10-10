@@ -42,7 +42,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
             raise Core0Error("closed registry omitted/duplicated the selected user image")
         image = selected[0]
         dependencies = module_closure(root, image["module"], allow_development=True,
-                                      forbid_user_privileged_imports=configuration == "capabilities-development")
+                                      forbid_user_privileged_imports=managed_policy(configuration) is not None)
         invoke(("lake", "build", image["module"], "Lemma.Compiler.KernelExport"), root)
         unit = export_user_image(root, output_dir, configuration, image, opt_level, invoke)
         export_user_files(root, output_dir, configuration, image, invoke)
@@ -57,7 +57,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
                   "image_key": image_key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal",
                   "user_startup_case": image["startup_case"], "optimization": opt_level, "lean_source_realization": realization,
                   "artifacts": artifacts}
-        if configuration == "capabilities-development":
+        if managed_policy(configuration) is not None:
             common.update(managed_policy=managed_policy(configuration), boot_role=image["boot_role"])
         provenance = {**common, "source_commit": commit, "dirty_paths": dirty, "source_inputs": before,
                       "target_module_closures": {"users": {image_key: dependencies}}, "tools": versions, "commands": commands,
@@ -77,7 +77,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--configuration", choices=MULTI_CONFIGURATIONS, default="tasks-development")
-    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper"), required=True)
+    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper", "server", "clienta", "clientb"), required=True)
     parser.add_argument("--opt-level", choices=("O0", "O2"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--clean", action="store_true")

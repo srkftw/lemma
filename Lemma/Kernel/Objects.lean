@@ -1,4 +1,5 @@
 import Lemma.Kernel.Memory.AddressSpace
+import Lemma.Kernel.IPCStorage
 import Lemma.User.CapabilityABI
 
 /-! Closed kernel object storage. The sole table and each endpoint's future
@@ -13,6 +14,7 @@ def control : UInt64 := Lemma.Platform.LemmaVM.Layout.capabilityControlValue
 def magic : UInt64 := 0x314a424f414d454c
 def capacity : UInt64 := 16
 def endpointCapacity : UInt64 := 4
+def replyCapacity : UInt64 := 8
 def registryCapacity : UInt64 := 8
 def rows : UInt64 := 256
 def stride : UInt64 := 128
@@ -249,6 +251,8 @@ def createEndpoint (ownerDescriptor : UInt64) : Action :=
   if count < capacity then
   .bind (Frames.allocate 1 1) fun s queueHandle =>
   if failed s = true then .done s 0 else
+  .bind (IPCStorage.queueInitialize queueHandle (generation * capacity + index)) fun s _ =>
+  if failed s = true then fatal else
   .bind (put (address + 16) CapabilityABI.endpointType) fun s _ =>
   if failed s = true then fatal else
   .bind (put (address + 32) queueHandle) fun s _ =>
@@ -267,7 +271,233 @@ def reference (key : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .bind (get (address + 24)) fun s count =>
   if failed s = true then fatal else
-  if count < 128 then put (address + 24) (count + 1) else fatal
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.replyType then
+    if count = 1 then put (address + 24) 2 else fatal
+  else if count < 128 then put (address + 24) (count + 1) else fatal
+
+def endpointQueue (key : UInt64) : Action :=
+  .bind (resolveRevoking key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.endpointType then
+  .bind (get (address + 32)) fun s handle =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queue handle key) fun s _ =>
+  if failed s = true then fatal else .done 0 handle
+  else .done CapabilityABI.wrongType 0
+
+private def replyCountStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
+  let address := row base i.toUInt64
+  .bind (get address) fun s state =>
+  if failed s = true then fatal else
+  if (if state = live then true else if state = revoking then true else false) = true then
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if CapabilityABI.typeValid kind = true then
+    .done 0 (if kind = CapabilityABI.replyType then acc + 1 else acc)
+  else fatal
+  else if retired < state then fatal else .done 0 acc
+
+/-- Pure preflight before Call storage publication. Global free capacity and
+the independent eight-Reply bound are both checked before any row changes. -/
+def replyAvailable : Action :=
+  .bind table fun s base =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 replyCountStep 16 0 base 0 0 0 fun s replies =>
+  if failed s = true then fatal else
+  if replies < replyCapacity then
+  .bind (get (base + 32)) fun s count =>
+  if failed s = true then fatal else
+  if count < capacity then
+  .boundedFoldU64 16 freeObjectStep 16 capacity base 0 0 0 fun s _ =>
+  if s = Status.iterationStop then .done 0 (replyCapacity - replies) else
+    if s = 0 then .done CapabilityABI.objectFull 0 else fatal
+  else .done CapabilityABI.objectFull 0
+  else if replies = replyCapacity then .done CapabilityABI.objectFull 0 else fatal
+
+def createReply (caller endpoint transaction deadline : UInt64) : Action :=
+  .bind (IPCStorage.pending caller) fun s metadata =>
+  if failed s = true then .done s 0 else
+  .bind (get (metadata + IPCStorage.stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.operationOffset)) fun s operation =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.transactionOffset)) fun s actual =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.endpointOffset)) fun s actualEndpoint =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.deadlineOffset)) fun s actualDeadline =>
+  if failed s = true then fatal else
+  if state = IPCStorage.stateReserved then if operation = IPCStorage.callOperation then
+  if actual = transaction then if actualEndpoint = endpoint then if actualDeadline = deadline then
+  .bind (endpointQueue endpoint) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind replyAvailable fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind table fun s base =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 freeObjectStep 16 capacity base 0 0 0 fun s index =>
+  if s = Status.iterationStop then
+  let address := row base index
+  .bind (get (address + 8)) fun s generation =>
+  if failed s = true then fatal else
+  .bind (get (base + 32)) fun s count =>
+  if failed s = true then fatal else
+  .bind (put (address + 16) CapabilityABI.replyType) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 24) 1) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 40) caller) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 56) endpoint) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 64) transaction) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 88) deadline) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (base + 32) (count + 1)) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put address live) fun s _ =>
+  if failed s = true then fatal else .done 0 (generation * capacity + index)
+  else fatal
+  else fatal else fatal else fatal else fatal else fatal
+
+/-- Reply inspection binds generation, type, caller transaction and Endpoint.
+The row address is an internal result; User never receives object pointers. -/
+private def replyPhase (address metadata refs : UInt64) : Action :=
+  .bind (get address) fun s state =>
+  if failed s = true then fatal else
+  .bind (get (address + 72)) fun s server =>
+  if failed s = true then fatal else
+  .bind (get (address + 80)) fun s phase =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.stateOffset)) fun s callerState =>
+  if failed s = true then fatal else
+  if phase = 0 then
+    if state = live then if refs = 1 then if server = 0 then
+      if callerState = IPCStorage.stateReserved then .done 0 address else fatal
+    else fatal else fatal else fatal
+  else if phase = 1 then
+    if server = 0 then
+    if state = live then
+      if 0 < refs then
+        if (if callerState = IPCStorage.stateReserved then true else
+          if callerState = IPCStorage.stateWaiting then true else false) = true then .done 0 address else fatal
+      else fatal
+    else if (if callerState = IPCStorage.stateWaiting then true else
+      if callerState = IPCStorage.stateReady then true else false) = true then .done 0 address else fatal
+    else fatal
+  else if phase = 2 then
+    if 0 < server then
+    .bind (AddressSpace.base server) fun s _ =>
+    if failed s = true then fatal else
+    .bind (registrySlot server) fun s _ =>
+    if failed s = true then fatal else
+    if (if callerState = IPCStorage.stateWaiting then true else
+      if callerState = IPCStorage.stateReady then true else false) = true then
+      if state = live then if refs = 2 then .done 0 address else fatal else .done 0 address
+    else fatal else fatal
+  else fatal
+
+def replyFields (key : UInt64) : Action :=
+  .bind (resolveRevoking key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.replyType then
+  .bind (get (address + 24)) fun s refs =>
+  if failed s = true then fatal else
+  if refs ≤ 2 then
+  .bind (get (address + 32)) fun s payload =>
+  if failed s = true then fatal else
+  .bind (get (address + 48)) fun s pin =>
+  if failed s = true then fatal else
+  if payload = 0 then if pin = 0 then
+  .bind (get (address + 40)) fun s caller =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.pending caller) fun s metadata =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.operationOffset)) fun s operation =>
+  if failed s = true then fatal else
+  if operation = IPCStorage.callOperation then
+  .bind (get (address + 64)) fun s transaction =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.transactionOffset)) fun s actual =>
+  if failed s = true then fatal else
+  if actual = transaction then
+  .bind (get (address + 56)) fun s endpoint =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.endpointOffset)) fun s actualEndpoint =>
+  if failed s = true then fatal else
+  if actualEndpoint = endpoint then
+  .bind (get (metadata + IPCStorage.replyOffset)) fun s actualReply =>
+  if failed s = true then fatal else
+  if actualReply = key then
+  .bind (get (address + 88)) fun s deadline =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.deadlineOffset)) fun s actualDeadline =>
+  if failed s = true then fatal else
+  if actualDeadline = deadline then replyPhase address metadata refs else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else .done CapabilityABI.wrongType 0
+
+def markReplyQueued (key : UInt64) : Action :=
+  .bind (replyFields key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + 80)) fun s phase =>
+  if failed s = true then fatal else
+  if phase = 0 then put (address + 80) 1 else fatal
+
+def deliverReply (key server : UInt64) : Action :=
+  .bind (AddressSpace.base server) fun s _ =>
+  if failed s = true then .done CapabilityABI.invalidHandle 0 else
+  .bind (registrySlot server) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (replyFields key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get address) fun s state =>
+  if failed s = true then fatal else
+  .bind (get (address + 72)) fun s previous =>
+  if failed s = true then fatal else
+  .bind (get (address + 80)) fun s phase =>
+  if failed s = true then fatal else
+  .bind (get (address + 24)) fun s refs =>
+  if failed s = true then fatal else
+  if state = live then if previous = 0 then if phase = 1 then if refs = 2 then
+  .bind (put (address + 72) server) fun s _ =>
+  if failed s = true then fatal else put (address + 80) 2
+  else fatal else fatal else fatal else .done CapabilityABI.invalidHandle 0
+
+def beginReplyRevoke (key : UInt64) : Action :=
+  .bind (replyFields key) fun s address =>
+  if failed s = true then .done s 0 else put address revoking
+
+private def endpointRepliesStep (i _ : UInt32) (acc base endpoint _ _ : UInt64) : Action :=
+  let address := row base i.toUInt64
+  .bind (get address) fun s state =>
+  if failed s = true then fatal else
+  if (if state = live then true else if state = revoking then true else false) = true then
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.replyType then
+  .bind (get (address + 56)) fun s actual =>
+  if failed s = true then fatal else .done 0 (if actual = endpoint then acc + 1 else acc)
+  else .done 0 acc
+  else if retired < state then fatal else .done 0 acc
+
+private def invalidateEndpointStep (i _ : UInt32) (acc key status _ _ : UInt64) : Action :=
+  .bind (registryDescriptor i.toUInt64) fun s descriptor =>
+  if failed s = true then fatal else
+  if descriptor = 0 then .done 0 acc else
+  .bind (IPCStorage.invalidateEndpoint descriptor key status) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + 1)
+
+def invalidateEndpointWaits (key status : UInt64) : Action :=
+  .boundedFoldU64 8 invalidateEndpointStep 8 0 key status 0 0 fun s count =>
+  if failed s = true then fatal else .done 0 count
 
 private def clearObjectStep (i _ : UInt32) (acc address _ _ _ : UInt64) : Action :=
   .bind (put (address + i.toUInt64 * 8) 0) fun s _ =>
@@ -296,6 +526,11 @@ def destroy (key : UInt64) : Action :=
   if pins = 0 then
   .bind table fun s base =>
   if failed s = true then fatal else
+  .boundedFoldU64 16 endpointRepliesStep 16 0 base key 0 0 fun s replies =>
+  if failed s = true then fatal else
+  if replies = 0 then
+  .bind (invalidateEndpointWaits key IPCABI.revoked.toUInt64) fun s _ =>
+  if failed s = true then fatal else
   .bind (get (base + 32)) fun s count =>
   if failed s = true then fatal else
   if 3 < count then
@@ -311,7 +546,7 @@ def destroy (key : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (put (base + 32) (count - 1)) fun s _ =>
   if failed s = true then fatal else .done 0 0
-  else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
   else fatal else .done CapabilityABI.denied 0 else .done CapabilityABI.denied 0
 
 def dereference (key : UInt64) : Action :=
@@ -326,9 +561,65 @@ def dereference (key : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (get (address + 48)) fun s pinned =>
   if failed s = true then fatal else
-  if count = 1 then if pinned = 0 then if state = live then destroy key else .done 0 0
+  .bind (get (address + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if count = 1 then if pinned = 0 then if state = live then
+    if kind = CapabilityABI.endpointType then destroy key else fatal
+    else .done 0 0
     else .done 0 0 else .done 0 0
   else fatal
+
+private def invalidateReplyBindingStep (i _ : UInt32) (acc key caller transaction _ : UInt64) : Action :=
+  .bind (registryDescriptor i.toUInt64) fun s descriptor =>
+  if failed s = true then fatal else
+  if descriptor = 0 then .done 0 acc else
+  .bind (IPCStorage.pending descriptor) fun s metadata =>
+  if failed s = true then fatal else
+  .bind (get (metadata + IPCStorage.replyOffset)) fun s actual =>
+  if failed s = true then fatal else
+  if actual = key then
+  if descriptor = caller then
+  .bind (get (metadata + IPCStorage.transactionOffset)) fun s actualTransaction =>
+  if failed s = true then fatal else
+  if actualTransaction = transaction then
+  .bind (get (metadata + IPCStorage.stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = IPCStorage.stateReady then
+  .bind (IPCStorage.invalidateReply descriptor key IPCABI.canceled.toUInt64) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + 1)
+  else fatal else fatal else fatal
+  else .done 0 acc
+
+def destroyReply (key : UInt64) : Action :=
+  .bind (replyFields key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get address) fun s state =>
+  if failed s = true then fatal else
+  if state = revoking then
+  .bind (get (address + 24)) fun s refs =>
+  if failed s = true then fatal else
+  if refs = 0 then
+  .bind (get (address + 40)) fun s caller =>
+  if failed s = true then fatal else
+  .bind (get (address + 64)) fun s transaction =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 invalidateReplyBindingStep 8 0 key caller transaction 0 fun s matched =>
+  if failed s = true then fatal else
+  if matched = 1 then
+  .bind table fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + 32)) fun s count =>
+  if failed s = true then fatal else
+  if 3 < count then
+  .boundedFoldU64 16 clearObjectStep 16 0 address 0 0 0 fun s cleared =>
+  if failed s = true then fatal else
+  if cleared = 16 then
+  let generation := keyGeneration key
+  .bind (put (address + 8) (if generation = maxGeneration then generation else generation + 1)) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put address (if generation = maxGeneration then retired else free)) fun s _ =>
+  if failed s = true then fatal else put (base + 32) (count - 1)
+  else fatal else fatal else fatal else fatal else fatal
 
 def beginRevoke (key : UInt64) : Action :=
   .bind (resolve key) fun s address =>

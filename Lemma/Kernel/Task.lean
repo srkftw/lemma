@@ -1,5 +1,6 @@
 import Lemma.Kernel.Process
 import Lemma.Kernel.Capability
+import Lemma.Kernel.IPC
 
 /-! Owned fixed-capacity task storage. IDs are the checked generation-tagged
 address-space descriptor handles. The registry and persistent user contexts
@@ -29,6 +30,8 @@ def imageOffset : UInt64 := 96
 def wakeTimeOffset : UInt64 := 104
 def waitKindOffset : UInt64 := 112
 def managedOffset : UInt64 := 120
+def waitEpochOffset : UInt64 := 128
+def waitTransactionOffset : UInt64 := 136
 def free : UInt64 := 0
 def building : UInt64 := 1
 def runnable : UInt64 := 2
@@ -168,6 +171,8 @@ private def detachManaged (record descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   if managed = 0 then .done 0 0 else
   if managed = 1 then
+    .bind (IPC.detach descriptor) fun s _ =>
+    if failed s = true then fatal else
     .bind (Capability.detach descriptor) fun s _ =>
     if failed s = true then fatal else .done 0 0
   else fatal
@@ -328,6 +333,41 @@ def context (descriptor : UInt64) : Action :=
     else fatal
   else fatal
 
+/-- Completion uses a previously captured inactive context. It validates the
+same privilege, translation and owned trap-stack authority without sanitizing
+or advancing any saved user register. A blocked user PC remains user data. -/
+def savedContext (descriptor : UInt64) : Action :=
+  .bind (lookup descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = blocked then
+    .bind (AddressSpace.root descriptor) fun s root =>
+    if failed s = true then fatal else
+    .bind (Access.read64 AddressSpace.activeRoot) fun s active =>
+    if failed s = true then fatal else
+    if active = root then fatal else
+    .bind (AddressSpace.context descriptor) fun s saved =>
+    if failed s = true then fatal else
+    .bind (AddressSpace.satp descriptor) fun s translation =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 272)) fun s actual =>
+    if failed s = true then fatal else
+    if actual = translation then
+    .bind (Access.read64 saved) fun s zero =>
+    if failed s = true then fatal else
+    if zero = 0 then
+    .bind (Access.read64 (saved + 264)) fun s status =>
+    if failed s = true then fatal else
+    if status = 0x200000020 then
+    .bind (Process.validateStack descriptor) fun s top =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 280)) fun s storedTop =>
+    if failed s = true then fatal else
+    if storedTop = top then .done 0 saved else fatal
+    else fatal else fatal else fatal
+  else fatal
+
 private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (Access.read64 (source + i.toUInt64 * 8)) fun s value =>
   if failed s = true then fatal else
@@ -379,6 +419,40 @@ def sleep (descriptor deadline pc : UInt64) : Action :=
     if failed s = true then fatal else .done 0 0
   else fatal
 
+/-- Only a managed running task may suspend an already captured ECALL. The
+caller advances its PC once before this transition. Epoch and full descriptor
+generation bind later completion; publishing blocked is the final write. -/
+def block (descriptor transaction kind deadline pc : UInt64) : Action :=
+  if transaction = 0 then fatal else
+  if (if kind = 2 then true else if kind = 3 then true else false) = false then fatal else
+  if deadline = 0 then fatal else
+  .bind (lookup descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = running then
+    .bind (Access.read64 (record + managedOffset)) fun s managed =>
+    if failed s = true then fatal else
+    if managed = 1 then
+    .bind (Capability.requireActive descriptor) fun s _ =>
+    if failed s = true then fatal else
+    .bind (increment record waitEpochOffset) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + waitTransactionOffset) transaction) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + waitKindOffset) kind) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + deadlineOffset) deadline) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + pcOffset) pc) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + reasonOffset) 6) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + stateOffset) blocked) fun s _ =>
+    if failed s = true then fatal else .done 0 transaction
+    else fatal
+  else fatal
+
 def terminate (descriptor cause code pc value : UInt64) : Action :=
   .bind (lookup descriptor) fun s record =>
   if failed s = true then .done s 0 else
@@ -418,10 +492,82 @@ def wakeDue (now : UInt64) : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 8 wakeStep 8 0 address now 0 0 fun s count => .done s count
 
+private def completeBlocked (record descriptor epoch transaction now : UInt64) : Action :=
+  .bind (savedContext descriptor) fun s context =>
+  if failed s = true then fatal else
+  .bind (IPC.completeWait descriptor transaction) fun status value =>
+  if status = 255 then fatal else
+  if status = IPC.blockedStatus then fatal else
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + waitEpochOffset)) fun s actualEpoch =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + waitTransactionOffset)) fun s actualTransaction =>
+  if failed s = true then fatal else
+  .bind (Access.read64 record) fun s actualDescriptor =>
+  if failed s = true then fatal else
+  if state = blocked then if actualEpoch = epoch then
+  if actualTransaction = transaction then if actualDescriptor = descriptor then
+    .bind (Access.write64 (context + 80) status.toUInt64) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (context + 88) value) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + deadlineOffset) 0) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + waitKindOffset) 0) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + waitTransactionOffset) 0) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + wakeTimeOffset) now) fun s _ =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + stateOffset) runnable) fun s _ =>
+    if failed s = true then fatal else .done 0 1
+  else fatal else fatal else fatal else fatal
+
+private def pollIPCStep (i _ : UInt32) (acc address now _ _ : UInt64) : Action :=
+  let record := address + i.toUInt64 * stride
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if dying < state then fatal else
+  if (if runnable ≤ state then if state < dying then true else false else false) = true then
+    .bind (Access.read64 (record + managedOffset)) fun s managed =>
+    if failed s = true then fatal else
+    if managed = 0 then .done 0 acc else
+    if managed = 1 then
+      .bind (Access.read64 record) fun s descriptor =>
+      if failed s = true then fatal else
+      .bind (lookup descriptor) fun s checked =>
+      if failed s = true then fatal else
+      if checked = record then
+      .bind (Access.read64 (record + waitEpochOffset)) fun s epoch =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (record + waitTransactionOffset)) fun s transaction =>
+      if failed s = true then fatal else
+      .bind (IPC.poll descriptor) fun status _ =>
+      if status = Lemma.User.IPCABI.wouldBlock then .done 0 acc else
+      if status = 0 then
+        if state = blocked then
+          if transaction = 0 then fatal else
+          .bind (completeBlocked record descriptor epoch transaction now) fun s woke =>
+          if failed s = true then fatal else .done 0 (acc + woke)
+        else .done 0 acc
+      else fatal
+      else fatal
+    else fatal
+  else .done 0 acc
+
+/-- Progress outstanding calls even before CallWait. Only a blocked task has
+saved registers completed here; Ready packets for a runnable caller stay held. -/
+def pollIPC (now : UInt64) : Action :=
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 pollIPCStep 8 0 address now 0 0 fun s woke =>
+  if failed s = true then fatal else .done 0 woke
+
 private def intervalStep (i _ : UInt32) (acc address now _ _ : UInt64) : Action :=
   .bind (Access.read64 (address + i.toUInt64 * stride + stateOffset)) fun s state =>
   if failed s = true then fatal else
-  if state = sleeping then
+  if (if state = sleeping then true else if state = blocked then true else false) = true then
     .bind (Access.read64 (address + i.toUInt64 * stride + deadlineOffset)) fun s deadline =>
     if failed s = true then fatal else
     let remaining := if deadline ≤ now then 1000 else deadline - now

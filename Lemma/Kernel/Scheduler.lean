@@ -78,7 +78,19 @@ def call (descriptor context pc : UInt64) : Action :=
     else Process.syscallReply context pc 16 0
   else
     .bind (Lemma.Kernel.Syscall.dispatch descriptor number a b c d e) fun status value =>
-    if status = 255 then fatal else Process.syscallReply context pc status value
+    if status = 255 then fatal else
+    if status = IPC.blockedStatus then
+      .bind (IPC.waitInfo descriptor value) fun s metadata =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.operationOffset)) fun s kind =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.deadlineOffset)) fun s expires =>
+      if failed s = true then fatal else
+      .bind (Process.syscallReply context pc 0 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Task.block descriptor value kind expires pc) fun s _ =>
+      if failed s = true then fatal else returnKernel descriptor 6 pc
+    else Process.syscallReply context pc status value
 
 def dispatch (frame cause value : UInt64) : Action :=
   .bind (Access.read64 Process.control) fun s descriptor =>
@@ -148,7 +160,7 @@ private def enter (descriptor now : UInt64) : Action :=
   if failed s = true then fatal else
   .platform .enterUser context 0 0 0 0 0 fun s reason =>
   if failed s = true then fatal else
-  if (if 1 ≤ reason then if reason ≤ 5 then true else false else false) = true then
+  if (if 1 ≤ reason then if reason ≤ 6 then true else false else false) = true then
     .bind (Access.read64 Process.control) fun s current =>
     if failed s = true then fatal else
     if current = descriptor then
@@ -174,6 +186,8 @@ def step : Action :=
   .bind MachineServices.time fun s now =>
   if failed s = true then fatal else
   .bind (Task.wakeDue now) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Task.pollIPC now) fun s _ =>
   if failed s = true then fatal else
   .bind Task.select fun s descriptor =>
   if failed s = true then fatal else

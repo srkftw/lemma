@@ -28,11 +28,12 @@ ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Ke
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
-                  "tasks-development", "tasks-fault-development", "capabilities-development")
-MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development")
+                  "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development")
+MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development")
 INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
                           "tasks-fault-development": {"compute", "sleeper", "busy", "fault"},
-                          "capabilities-development": {"capabilities", "peer", "busy", "tamper"}}
+                          "capabilities-development": {"capabilities", "peer", "busy", "tamper"},
+                          "ipc-development": {"server", "clienta", "clientb", "busy", "fault"}}
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
@@ -76,7 +77,7 @@ def configuration_roots(configuration: str) -> dict:
         raise Core0Error("unknown kernel configuration")
     if configuration in MULTI_CONFIGURATIONS:
         module = "Lemma.Kernel.Development." + {"tasks-development": "TasksEntry",
-                  "tasks-fault-development": "FaultEntry", "capabilities-development": "CapsEntry"}[configuration]
+                  "tasks-fault-development": "FaultEntry", "capabilities-development": "CapsEntry", "ipc-development": "IPCEntry"}[configuration]
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": ((module + ".boot", ()),
                    (module + ".dispatch", ("u64", "u64", "u64")))}
     if configuration == "frames-development":
@@ -96,7 +97,7 @@ def configuration_modules(configuration: str) -> dict:
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": "Lemma.Kernel.Development." +
                 {"tasks-development": "TasksEntry", "tasks-fault-development": "FaultEntry",
-                 "capabilities-development": "CapsEntry"}[configuration]}
+                 "capabilities-development": "CapsEntry", "ipc-development": "IPCEntry"}[configuration]}
     if configuration == "frames-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":
@@ -122,12 +123,14 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
     if configuration == "capabilities-development" and role == "kernel":
         return ("Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias",
                 "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration")
+    if configuration == "ipc-development" and role == "kernel":
+        return ("Lemma.Kernel.Development.IPCEntry", "Lemma.Kernel.Development.TasksEntry")
     return (modules[role],) if development_role(configuration, role) else ()
 
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
-    return "lemma-capabilities-v1" if configuration == "capabilities-development" else None
+    return {"capabilities-development": "lemma-capabilities-v1", "ipc-development": "lemma-ipc-v1"}.get(configuration)
 
 
 def startup_case(configuration: str) -> str:
@@ -360,7 +363,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             catalog = export_user_catalog(root, output_dir, configuration, invoke)
             images = catalog["images"]
             dependencies["users"] = {image["key"]: module_closure(root, image["module"], allow_development=True,
-                                     forbid_user_privileged_imports=configuration == "capabilities-development")
+                                     forbid_user_privileged_imports=managed_policy(configuration) is not None)
                                      for image in images}
         invoke(("lake", "build", *modules.values(), *(image["module"] for image in images), "Lemma.Compiler.KernelExport"), root)
         from audit_kernel import validate_unit
@@ -426,7 +429,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                                 if configuration == "tasks-fault-development" else {})
         managed_fields = ({"managed_policy": managed_policy(configuration),
                            "boot_roles": {image["key"]: image["boot_role"] for image in images}}
-                          if configuration == "capabilities-development" else {})
+                          if managed_policy(configuration) is not None else {})
         provenance = {"schema_version": 2 if images else 1, "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
                       **image_startup_fields, **managed_fields,
                       "lean_source_realization": source_realization,

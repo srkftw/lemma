@@ -169,6 +169,7 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
       else
         .bind (Lemma.Kernel.Syscall.dispatch descriptor number a b c d e) fun result output =>
         if result = 255 then fatal else
+        if result = IPC.blockedStatus then fatal else
         syscallReply frame pc result output
     -- The owned U origin is already established. A hardware ECALL at a
     -- halfword site is outside this generated ABI, but its user-selected PC

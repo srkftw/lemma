@@ -97,6 +97,8 @@ def attach (descriptor : UInt64) : Action :=
   if allZero = 1 then
   .bind (Objects.register descriptor) fun s registry =>
   if failed s = true then .done s 0 else
+  .bind (IPCStorage.initialize descriptor) fun s _ =>
+  if failed s = true then fatal else
   .bind (Objects.put (base + headerOffset + 8) 1) fun s _ =>
   if failed s = true then fatal else
   .bind (Objects.put (base + headerOffset + 16) descriptor) fun s _ =>
@@ -285,16 +287,6 @@ private def drop (descriptor base address key : UInt64) : Action :=
   if failed s = true then fatal else .done 0 descriptor
   else fatal else fatal
 
-def close (descriptor handle : UInt64) : Action :=
-  .bind (lookupEntry descriptor handle) fun s address =>
-  if failed s = true then .done s 0 else
-  .bind (requireActive descriptor) fun s base =>
-  if failed s = true then fatal else
-  .bind (Objects.get (address + 16)) fun s key =>
-  if failed s = true then fatal else
-  .bind (drop descriptor base address key) fun s _ =>
-  if failed s = true then fatal else .done 0 0
-
 private def revokeEntryStep (i _ : UInt32) (acc base descriptor key _ : UInt64) : Action :=
   let address := entry base i.toUInt64
   .bind (Objects.get address) fun s state =>
@@ -317,7 +309,136 @@ private def revokeTaskStep (i _ : UInt32) (acc key _ _ _ : UInt64) : Action :=
   .boundedFoldU64 16 revokeEntryStep 16 0 base descriptor key 0 fun s removed =>
   if failed s = true then fatal else .done 0 (acc + removed)
 
+/-- The sole Reply grant has no Duplicate/Transfer rights. Ordinary table/serial
+failure leaves its queued Call and pending reference intact for receive retry. -/
+def grantReply (server key : UInt64) : Action :=
+  .bind (requireActive server) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.replyFields key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get object) fun s state =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 72)) fun s previous =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 80)) fun s phase =>
+  if failed s = true then fatal else
+  if state = Objects.live then if previous = 0 then if phase = 1 then
+  .bind (grant server key CapabilityABI.replyRight) fun s handle =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.deliverReply key server) fun s _ =>
+  if failed s = true then fatal else .done 0 handle
+  else .done CapabilityABI.invalidHandle 0 else .done CapabilityABI.invalidHandle 0
+  else .done CapabilityABI.invalidHandle 0
+
+/-- Withdrawal precedes alias removal. The caller's already committed packet
+is immutable even when server death, timeout or endpoint revoke races later. -/
+def retireReply (key status : UInt64) : Action :=
+  if (if status = 0 then true else if status = IPCABI.timeout.toUInt64 then true else
+    if status = IPCABI.canceled.toUInt64 then true else if status = IPCABI.peerDied.toUInt64 then true else
+    if status = IPCABI.revoked.toUInt64 then true else false) = false then fatal else
+  .bind (Objects.replyFields key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (object + 40)) fun s caller =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 56)) fun s endpoint =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 64)) fun s transaction =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.pending caller) fun s metadata =>
+  if failed s = true then fatal else
+  .bind (Objects.get (metadata + IPCStorage.stateOffset)) fun s callerState =>
+  if failed s = true then fatal else
+  if (if status = 0 then if callerState = IPCStorage.stateReady then true else false else true) = true then
+  .bind (Objects.beginReplyRevoke key) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Objects.endpointQueue endpoint) fun s queueHandle =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queueCancelReply queueHandle endpoint key transaction) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.invalidateReply caller key status) fun s _ =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 revokeTaskStep 8 0 key 0 0 0 fun s removed =>
+  if failed s = true then fatal else
+  if removed ≤ 1 then
+  .bind (Objects.resolveRevoking key) fun s current =>
+  if failed s = true then fatal else
+  .bind (Objects.get (current + 24)) fun s refs =>
+  if failed s = true then fatal else
+  if refs = 1 then
+  .bind (Objects.dereference key) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Objects.destroyReply key) fun s _ =>
+  if failed s = true then fatal else .done 0 0
+  else fatal else fatal
+  else fatal
+
+private def cancelReplyStep (i _ : UInt32) (acc base endpoint descriptor status : UInt64) : Action :=
+  let object := Objects.row base i.toUInt64
+  .bind (Objects.get object) fun s state =>
+  if failed s = true then fatal else
+  if state = Objects.live then
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.replyType then
+  .bind (Objects.get (object + 40)) fun s caller =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 56)) fun s actualEndpoint =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 72)) fun s server =>
+  if failed s = true then fatal else
+  .bind (Objects.resolveRevoking actualEndpoint) fun s endpointObject =>
+  if failed s = true then fatal else
+  .bind (Objects.get (endpointObject + 40)) fun s endpointOwner =>
+  if failed s = true then fatal else
+  if (if descriptor = 0 then if actualEndpoint = endpoint then true else false else
+    if caller = descriptor then true else if server = descriptor then true else
+    if endpointOwner = descriptor then true else false) = true then
+  .bind (Objects.get (object + 8)) fun s generation =>
+  if failed s = true then fatal else
+  .bind (retireReply (generation * Objects.capacity + i.toUInt64) status) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + 1)
+  else .done 0 acc
+  else .done 0 acc
+  else if state = Objects.free then .done 0 acc else
+    if state = Objects.retired then .done 0 acc else fatal
+
+def cancelEndpointReplies (endpoint status : UInt64) : Action :=
+  .bind Objects.table fun s base =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 cancelReplyStep 16 0 base endpoint 0 status fun s count =>
+  if failed s = true then fatal else .done 0 count
+
+def cancelDescriptorReplies (descriptor status : UInt64) : Action :=
+  if descriptor = 0 then fatal else
+  .bind Objects.table fun s base =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 cancelReplyStep 16 0 base 0 descriptor status fun s count =>
+  if failed s = true then fatal else .done 0 count
+
+def close (descriptor handle : UInt64) : Action :=
+  .bind (lookupEntry descriptor handle) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (requireActive descriptor) fun s base =>
+  if failed s = true then fatal else
+  .bind (Objects.get (address + 16)) fun s key =>
+  if failed s = true then fatal else
+  .bind (Objects.resolve key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.replyType then retireReply key IPCABI.canceled.toUInt64 else
+  .bind (Objects.get (object + 24)) fun s refs =>
+  if failed s = true then fatal else
+  .bind (if kind = CapabilityABI.endpointType then
+    if refs = 1 then cancelEndpointReplies key IPCABI.revoked.toUInt64 else .done 0 0
+    else .done 0 0) fun s _ =>
+  if failed s = true then fatal else
+  .bind (drop descriptor base address key) fun s _ =>
+  if failed s = true then fatal else .done 0 0
+
 private def revokeKey (key : UInt64) : Action :=
+  .bind (cancelEndpointReplies key IPCABI.revoked.toUInt64) fun s _ =>
+  if failed s = true then fatal else
   .bind (Objects.beginRevoke key) fun s _ =>
   if failed s = true then .done s 0 else
   .boundedFoldU64 8 revokeTaskStep 8 0 key 0 0 0 fun s _ =>
@@ -355,6 +476,16 @@ private def detachEntryStep (i _ : UInt32) (acc base descriptor _ _ : UInt64) : 
   if state = entryLive then
   .bind (Objects.get (address + 16)) fun s key =>
   if failed s = true then fatal else
+  .bind (Objects.resolve key) fun s object =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 24)) fun s refs =>
+  if failed s = true then fatal else
+  .bind (if kind = CapabilityABI.endpointType then
+    if refs = 1 then cancelEndpointReplies key IPCABI.peerDied.toUInt64 else .done 0 0
+    else if kind = CapabilityABI.replyType then fatal else .done 0 0) fun s _ =>
+  if failed s = true then fatal else
   .bind (drop descriptor base address key) fun s _ =>
   if failed s = true then fatal else .done 0 (acc + 1)
   else if state = entryFree then .done 0 acc else fatal
@@ -362,6 +493,30 @@ private def detachEntryStep (i _ : UInt32) (acc base descriptor _ _ : UInt64) : 
 private def clearHeaderStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
   .bind (Objects.put (base + headerOffset + i.toUInt64 * 8) 0) fun s _ =>
   if failed s = true then fatal else .done 0 (acc + 1)
+
+private def cancelSenderStep (i _ : UInt32) (acc base descriptor _ _ : UInt64) : Action :=
+  let object := Objects.row base i.toUInt64
+  .bind (Objects.get object) fun s state =>
+  if failed s = true then fatal else
+  if state = Objects.live then
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.endpointType then
+  .bind (Objects.get (object + 8)) fun s generation =>
+  if failed s = true then fatal else
+  let key := generation * Objects.capacity + i.toUInt64
+  .bind (Objects.endpointQueue key) fun s handle =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queueCancelSender handle key descriptor) fun s count =>
+  if failed s = true then fatal else
+  .bind (Objects.get (object + 40)) fun s owner =>
+  if failed s = true then fatal else
+  .bind (if owner = descriptor then Objects.invalidateEndpointWaits key IPCABI.peerDied.toUInt64
+    else .done 0 0) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + count)
+  else .done 0 acc
+  else if state = Objects.free then .done 0 acc else
+    if state = Objects.retired then .done 0 acc else fatal
 
 /-- Called before Loader.teardown while the descriptor is still live and its
 root inactive. First revoke every owned endpoint, then close other entries and
@@ -380,6 +535,10 @@ def detach (descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (Objects.table) fun s objects =>
   if failed s = true then fatal else
+  .bind (cancelDescriptorReplies descriptor IPCABI.peerDied.toUInt64) fun s _ =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 cancelSenderStep 16 0 objects descriptor 0 0 fun s _ =>
+  if failed s = true then fatal else
   .boundedFoldU64 16 ownedObjectStep 16 0 objects descriptor 0 0 fun s _ =>
   if failed s = true then fatal else
   .boundedFoldU64 16 detachEntryStep 16 0 checked descriptor 0 0 fun s _ =>
@@ -390,6 +549,8 @@ def detach (descriptor : UInt64) : Action :=
   .bind (Objects.get (checked + headerOffset + 48)) fun s registry =>
   if failed s = true then fatal else
   .bind (Objects.clearManagement descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.detach descriptor) fun s _ =>
   if failed s = true then fatal else
   .bind (Objects.unregister descriptor registry) fun s _ =>
   if failed s = true then fatal else
@@ -482,7 +643,7 @@ def createEndpoint (descriptor managerHandle : UInt64) : Action :=
   publish descriptor key CapabilityABI.endpointMask slot serial
 
 def inspect (descriptor managerHandle subject field : UInt64) : Action :=
-  .bind (management descriptor managerHandle CapabilityABI.managementInspect) fun s _ =>
+  .bind (management descriptor managerHandle CapabilityABI.managementInspect) fun s manager =>
   if failed s = true then .done s 0 else
   if field = 0 then
   .bind (lookupEntry descriptor subject) fun s address =>
@@ -491,6 +652,14 @@ def inspect (descriptor managerHandle subject field : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (Objects.resolve key) fun s object =>
   if failed s = true then .done s 0 else Objects.get (object + 24)
+  else if field = 5 then
+  .bind (lookup descriptor subject CapabilityABI.endpointType 0) fun s key =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (manager + 56)) fun s target =>
+  if failed s = true then fatal else
+  .bind (requireActive target) fun s _ =>
+  if failed s = true then .done CapabilityABI.invalidHandle 0 else
+  IPCStorage.waitsOnReceive target key
   else if subject = 0 then
     if field = 1 then Objects.liveCount else
     if field = 2 then Frames.remaining else

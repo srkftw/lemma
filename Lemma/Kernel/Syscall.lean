@@ -2,6 +2,7 @@ import Lemma.Kernel.Memory.UserCopy
 import Lemma.Kernel.MachineServices
 import Lemma.User.ABI
 import Lemma.Kernel.Capability
+import Lemma.Kernel.IPC
 
 /-! ABI v1 scalar dispatcher. Caller identity is the validated owned descriptor,
 never a register supplied by U. Every operation is bounded; this gate's sleep
@@ -152,7 +153,9 @@ def capConsole (descriptor handle operation pointer length : UInt64) : Action :=
   else .done 17 0
 
 def dispatchManaged (descriptor number a b c d e : UInt64) : Action :=
-  if number = Lemma.User.ABI.console then .done 72 0 else
+  if (if Lemma.User.IPCABI.send ≤ number then if number ≤ Lemma.User.IPCABI.cancel then true else false else false) = true then
+    IPC.dispatch descriptor number a b c d e
+  else if number = Lemma.User.ABI.console then .done 72 0 else
   if number = Lemma.User.CapabilityABI.bootGrant then
     if b ||| c ||| d ||| e = 0 then Capability.bootGrant descriptor a else .done 16 0
   else if number = Lemma.User.CapabilityABI.info then

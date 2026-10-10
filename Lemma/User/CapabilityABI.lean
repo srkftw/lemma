@@ -20,6 +20,7 @@ def consoleType : UInt64 := 1
 def endpointType : UInt64 := 2
 def managementType : UInt64 := 3
 def directoryType : UInt64 := 4
+def replyType : UInt64 := 5
 
 def consoleRead : UInt64 := 1
 def consoleWrite : UInt64 := 2
@@ -32,11 +33,13 @@ def managementCreate : UInt64 := 128
 def managementGrant : UInt64 := 256
 def managementInspect : UInt64 := 512
 def directoryDiscover : UInt64 := 1024
+def replyRight : UInt64 := 1
 
 def consoleMask : UInt64 := 35
 def endpointMask : UInt64 := 124
 def managementMask : UInt64 := 928
 def directoryMask : UInt64 := 1056
+def replyMask : UInt64 := 1
 def knownRights : UInt64 := 2047
 
 def invalidHandle : UInt8 := 80
@@ -51,11 +54,13 @@ def fatal : UInt8 := 255
 
 def typeValid (kind : UInt64) : Bool :=
   if kind = consoleType then true else if kind = endpointType then true else
-  if kind = managementType then true else if kind = directoryType then true else false
+  if kind = managementType then true else if kind = directoryType then true else
+  if kind = replyType then true else false
 
 def typeMask (kind : UInt64) : UInt64 :=
   if kind = consoleType then consoleMask else if kind = endpointType then endpointMask else
-  if kind = managementType then managementMask else if kind = directoryType then directoryMask else 0
+  if kind = managementType then managementMask else if kind = directoryType then directoryMask else
+  if kind = replyType then replyMask else 0
 
 def rightsSubset (requested available : UInt64) : Bool :=
   if requested &&& available = requested then true else false

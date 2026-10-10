@@ -103,6 +103,37 @@ run_cmd do
     match imageFor configuration "capabilities" with
     | .ok _ => throwError "H managed source escaped to an earlier deployment"
     | .error _ => pure ()
-  logInfo "PASS: genuine source selection, exact closed F/G/H registries and per-image startup/managed authority fail closed"
+  unless managedPolicyFor "ipc-development" == some "lemma-ipc-v1" && ipcImages.size == 5 &&
+      ipcImages.all (fun image => image.startupCase == .none && image.bootRole?.isSome) do
+    throwError "IPC policy/roles differ from their exact deployment"
+  let clientA := ipcImages[1]!
+  let clientB := ipcImages[2]!
+  unless clientA.moduleName == clientB.moduleName && clientA.root != clientB.root &&
+      clientA.key == "clienta" && clientB.key == "clientb" &&
+      clientA.symbolPrefix == "lemma_user_clienta_" && clientB.symbolPrefix == "lemma_user_clientb_" do
+    throwError "shared client source module collapsed separate roots/symbol namespaces"
+  for key in #["server", "clienta", "clientb", "busy", "fault"] do
+    let image ← match imageFor "ipc-development" key with
+      | .ok image => pure image
+      | .error error => throwError error
+    match validateSelection "ipc-development" key #[image.root] with
+    | .ok _ => pure ()
+    | .error error => throwError error
+  for images in #[capabilityImages, ipcImages.reverse,
+      ipcImages.set! 1 { clientA with root := clientB.root },
+      ipcImages.set! 1 { clientA with bootRole? := clientB.bootRole? },
+      ipcImages.set! 1 { clientA with startupCase := .supervisorCsr },
+      ipcImages.set! 4 { ipcImages[4]! with moduleName := `Lemma.User.Development.Tasks.Fault }] do
+    match validateImages "ipc-development" images with
+    | .ok _ => throwError "forged IPC root/role/startup/module/order admitted"
+    | .error _ => pure ()
+  for configuration in #["tasks-development", "tasks-fault-development", "capabilities-development"] do
+    match imageFor configuration "clienta" with
+    | .ok _ => throwError "IPC client escaped to an earlier deployment"
+    | .error _ => pure ()
+  match validateSelection "ipc-development" "clienta" #[clientB.root] with
+  | .ok _ => throwError "client B root crossed separately linked client A selection"
+  | .error _ => pure ()
+  logInfo "PASS: genuine source selection, exact closed F/G/H/I registries and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

@@ -105,6 +105,19 @@ class UserBuilderFailures(unittest.TestCase):
         self.assertNotIn("Lemma.Kernel.Development.CapAlias",configuration_development_modules("tasks-fault-development","kernel"))
         self.assertNotIn("Lemma.Kernel.Development.CapabilityGeneration",configuration_development_modules("tasks-development","kernel"))
 
+    def test_ipc_selection_and_shared_client_module_are_closed(self):
+        self.assertEqual(INDEPENDENT_IMAGE_KEYS['ipc-development'],{'server','clienta','clientb','busy','fault'})
+        self.assertEqual(configuration_modules('ipc-development')['kernel'],'Lemma.Kernel.Development.IPCEntry')
+        self.assertEqual(configuration_development_modules('ipc-development','kernel'),('Lemma.Kernel.Development.IPCEntry','Lemma.Kernel.Development.TasksEntry'))
+        with self.assertRaisesRegex(Core0Error,'require supervisor'):validate_configuration_stage('ipc-development','bootstrap-m')
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);selected=root/'Lemma/User/Development/IPCClients.lean';selected.parent.mkdir(parents=True)
+            selected.write_text('import Lemma.User.IPC\n');library=root/'Lemma/User/IPC.lean';library.write_text('-- production library\n')
+            closure=module_closure(root,'Lemma.User.Development.IPCClients',allow_development=True,forbid_user_privileged_imports=True)
+            self.assertEqual(set(closure),{'Lemma/User/Development/IPCClients.lean','Lemma/User/IPC.lean'})
+            other=selected.parent/'IPCServer.lean';other.write_text('-- peer image\n');selected.write_text('import Lemma.User.Development.IPCServer\n')
+            with self.assertRaisesRegex(Core0Error,'another development'):module_closure(root,'Lemma.User.Development.IPCClients',allow_development=True,forbid_user_privileged_imports=True)
+
     def test_independent_unknown_or_path_key_fails_before_any_tool(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

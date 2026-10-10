@@ -193,7 +193,7 @@ class Trace:
             if (b == 4 and d not in self.exit_pcs(user)
                     or b in {2, 3} and d != user["syscall_bridge"]["ecall_pc"]):
                 raise Core0Error("yield/sleep/exit did not originate at the audited ordinary ECALL")
-            if task["image"] == 2 and b != 1:
+            if task["key"] == "busy" and b != 1:
                 raise Core0Error("noncooperative Busy returned without a real SSIP preemption")
             self.irq, self.current = c, None
             task["reasons"][b] += 1
@@ -209,7 +209,7 @@ class Trace:
             if d == 8:
                 if not task["complete"] or b != 0 or c != task["nonce"] or task["reasons"][4] != 1:
                     raise Core0Error("ordinary task exit differs from independently checked computation/private data")
-            elif task["image"] != 2 or b != 0x55 or c != task["nonce"]:
+            elif task["key"] != "busy" or b != 0x55 or c != task["nonce"]:
                 raise Core0Error("trusted Busy termination lacks expected code and initialized private word")
             task["terminal"] = list(event)
             task["state"] = 6
@@ -242,7 +242,7 @@ class Trace:
                               {str(id): self.tasks[id]["state"] for id in self.live()}})
         elif tag in {0xf8, 0xf9, 0xfa, 0xfb}:
             task = self._task(a)
-            if self.current != a or task["image"] == 2:
+            if self.current != a or task["key"] == "busy":
                 raise Core0Error("user output does not belong to the currently executing separate image")
             nonce = task["nonce"]
             if tag == 0xf8:

@@ -68,6 +68,8 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.FaultEntry.boot", "Lemma.Kernel.Development.FaultEntry.dispatch"]
     else if configuration == "capabilities-development" then
       #["Lemma.Kernel.Development.CapsEntry.boot", "Lemma.Kernel.Development.CapsEntry.dispatch"]
+    else if configuration == "ipc-development" then
+      #["Lemma.Kernel.Development.IPCEntry.boot", "Lemma.Kernel.Development.IPCEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
@@ -92,6 +94,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
   else if configuration == "capabilities-development" && role == "kernel" then
     #["Lemma.Kernel.Development.CapsEntry", "Lemma.Kernel.Development.CapAlias",
       "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration"]
+  else if configuration == "ipc-development" && role == "kernel" then
+    #["Lemma.Kernel.Development.IPCEntry", "Lemma.Kernel.Development.TasksEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
   else if configuration == "user-isolation-development" && role == "kernel" then
@@ -146,7 +150,7 @@ private def imageBootRoleFields (image? : Option UserImageSpec) : List (String �
   ((image?.bind (·.bootRole?)).map fun role => [("boot_role", Json.str role.stableId)]).getD []
 
 private def managedUserSource (configuration role : String) (name : Name) : Bool :=
-  if configuration != "capabilities-development" || role != "user" then true else
+  if (managedPolicyFor configuration).isNone || role != "user" then true else
     let source := (Lean.privateToUserName? name).getD name |>.toString
     !source.startsWith "Lemma.Kernel." && !source.startsWith "Lemma.Compiler."
 
@@ -222,7 +226,7 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
   let imageFields := match image? with
     | none => []
     | some image => [("image_key", Json.str image.key), ("image_id", toJson image.id)] ++
-      (if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
+      (if configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome then
         [("startup_case", Json.str image.startupCase.stableId)] else []) ++ imageBootRoleFields image?
   pure <| Json.mkObj ([("schema_version", toJson (if image?.isSome then (2 : Nat) else 1)), ("artifact_category", .str (unitCategory configuration role)),
     ("configuration", .str configuration),
@@ -239,7 +243,7 @@ private def normalized (configuration role : String) (suite : CheckedActionSuite
   s!"configuration={configuration}\nrole={role}\ncontract={suite.contractVersion}\n" ++
     (((managedPolicyFor configuration).map fun policy => s!"managed_policy={policy}\n").getD "") ++
     ((image?.map (fun image => s!"image_key={image.key}\nimage_id={image.id}\n" ++
-      (if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
+      (if configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome then
         s!"startup_case={image.startupCase.stableId}\n" else "") ++
       ((image.bootRole?.map fun role => s!"boot_role={role.stableId}\n").getD ""))).getD "") ++
     String.join (suite.scalarFunctions.toList.map fun function =>
@@ -263,7 +267,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let profile ← IO.ofExcept (roleProfile role)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
-    if (configuration == "tasks-fault-development" || configuration == "capabilities-development") &&
+    if (configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome) &&
         (imported.toString == "Lemma.Compiler.Test" || imported.toString.startsWith "Lemma.Compiler.Test.") then
       throw <| IO.userError s!"{configuration} {role} imports forbidden compiler test module `{imported}`"
     if developmentName imported then
@@ -407,7 +411,7 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
     unless jsonFieldEquals manifest "image_key" (.str image.key) &&
         jsonFieldEquals manifest "image_id" (toJson image.id) do
       throw <| IO.userError "boot export rejected a crossing user image identity"
-    if configuration == "tasks-fault-development" || configuration == "capabilities-development" then
+    if configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome then
       unless jsonFieldEquals manifest "startup_case" (.str image.startupCase.stableId) do
         throw <| IO.userError "boot export rejected a crossing user startup authority"
     if let some role := image.bootRole? then

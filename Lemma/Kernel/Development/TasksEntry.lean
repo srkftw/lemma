@@ -14,7 +14,7 @@ def fatal : Action := .done 50 0
 
 /-- Shared preboot transport reads exactly one five-word launch packet. It
 validates the fixed header before either development entry constructs tasks. -/
-def readLaunch : Action :=
+private def readLaunchMode (allowFourth : UInt64) : Action :=
   .bind Lemma.Kernel.Console.readWord fun s header =>
   if failed s = true then .done 15 0 else
   .bind Lemma.Kernel.Console.readWord fun s a =>
@@ -26,7 +26,7 @@ def readLaunch : Action :=
   .bind Lemma.Kernel.Console.readWord fun s d =>
   if failed s = true then .done 15 0 else
   if header = 0x30 then
-    if d = 0 then
+    if (if allowFourth = 1 then true else if d = 0 then true else false) = true then
       .bind (Access.write64 Task.packetBase header) fun s _ =>
       if failed s = true then fatal else
       .bind (Access.write64 (Task.packetBase + 8) a) fun s _ =>
@@ -39,6 +39,13 @@ def readLaunch : Action :=
       if failed s = true then fatal else .done 0 Task.packetBase
     else .done 16 0
   else .done 16 0
+
+/-- Historical three-image launches retain a required zero fourth word. -/
+def readLaunch : Action := readLaunchMode 0
+
+/-- The IPC development entry supplies four independent launch nonces in the
+same bounded five-word transport. No scheduler or User selection reads UART. -/
+def readLaunchWithFourth : Action := readLaunchMode 1
 
 private def launch : Action :=
   .bind readLaunch fun s address =>

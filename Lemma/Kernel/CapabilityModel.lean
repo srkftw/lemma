@@ -38,4 +38,17 @@ theorem accepted_operation_was_authorized (operation requested source : UInt64)
       _ = operation := operationSubset
   simp [Lemma.User.CapabilityABI.rightsSubset, contained]
 
+/-- The additive Reply type reuses a known bit without acquiring duplication
+authority. These are exact numeric ABI facts, not lifecycle/refinement proofs. -/
+theorem reply_right_is_known :
+    Lemma.User.CapabilityABI.rightsSubset Lemma.User.CapabilityABI.replyMask
+      Lemma.User.CapabilityABI.knownRights = true := by decide
+
+theorem reply_cannot_duplicate :
+    Lemma.User.CapabilityABI.rightsSubset Lemma.User.CapabilityABI.duplicateRight
+      Lemma.User.CapabilityABI.replyMask = false := by decide
+
+theorem unknown_2048_remains_unknown :
+    Lemma.User.CapabilityABI.rightsSubset 2048 Lemma.User.CapabilityABI.knownRights = false := by decide
+
 end Lemma.Kernel.CapabilityModel

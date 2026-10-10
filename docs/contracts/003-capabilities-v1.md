@@ -86,9 +86,10 @@ hardware isolation, reference accounting, or the whole lifecycle. Those require
 fresh audits and separately retained U-mode attack, ABA, rollback and teardown
 observations.
 
-The H artifact audit admits two observed LLVM O2 immutable lookup tables only
-for the `capabilities-development` kernel unit. `Lemma.User.CapabilityABI.typeMask`
-contains four 64-bit values `[35, 124, 928, 1056]` (32 bytes); unsigned
+The artifact audit admits two observed LLVM O2 immutable lookup tables only
+when their exact genuine reachable source declarations occur in a kernel unit.
+`Lemma.User.CapabilityABI.typeMask`
+At the historical H checkpoint it contains four 64-bit values `[35, 124, 928, 1056]` (32 bytes); unsigned
 `kind - 1 < 4` guards its sole load, with zero as the default.
 The private `Lemma.Kernel.Objects.initStep` contains three 64-bit pinned kind
 values `[1, 3, 4]` (24 bytes); unsigned `index < 3` guards its sole load and
@@ -96,8 +97,23 @@ its result is used only for the object-kind initialization write, with zero
 as the default. Exact source identities, signatures, effects, globals, pointer
 uses, guards, local object symbols, little-endian bytes and absence of table
 relocations are checked. The existing 32-byte PMP table keeps its prior
-contract. All other globals and lookup tables remain rejected; firmware,
-user, legacy and earlier deployment configurations acquire no new table
-admission. This accounts for optimizer-generated read-only data and does not
+contract. A kernel closure can contain PMP alone, PMP plus the pure mask,
+or all three tables; each present table requires its exact source row and
+object inventory. All other globals and lookup tables remain rejected, and
+firmware, user and legacy profiles acquire no table admission. Earlier
+deployment configurations may account for these same helpers only when their
+genuine reachable kernel closure includes them. This accounts for optimizer-
+generated read-only data and does not
 extend Core0's accepted language, runtime, syscall authority or MMIO access.
 The initial H O2 table rejection is retained separately from later validation.
+
+The first clean H cumulative run failed before the normal bootstrap O2 guest
+because its shared syscall closure reached the pure type-mask helper while the
+auditor incorrectly limited that helper to the capabilities deployment label.
+The repair changes source-closure accounting only; target code, profiles,
+values, guards and User authority remain unchanged. The failed run is retained.
+
+Current rebuilt H and earlier kernel closures use the additive fifth Reply mask
+recorded in `003-ipc-v1.md`; their audit pins all five values and the corresponding
+guard and object bytes. Historical four-value H artifacts retain their original
+source and audit bindings.

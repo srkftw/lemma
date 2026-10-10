@@ -8,12 +8,11 @@
 - Task 002 PR #2 is actually merged; main push CI `37888343897` passed.
 - Execution window began 2026-10-08 22:40 America/Los_Angeles
   (2026-10-09 05:40 UTC). The user's 9–10 hours is a resource limit, not evidence.
-- Highest clean cumulative Task003 checkpoint: G at committed
-  `e61766a8e06bcca34a5f2365dae436c4d2cf6c4a`, tree
-  `a746481cd5dc9d270c0687de1ebf44f41333bb1b`. Fresh cold A-E+F+G passed:
-  24 images,28 checker reports,32 guest sessions. Independent raw/artifact/stack/math
-  review also passed. H focused actual O0/O2 capability/lifecycle guests and independent review also
-  passed; committed clean H cumulative checkpoint and I-K remain unverified. The latest checkpoint at the end is authoritative.
+- Highest clean cumulative Task003 acceptance: H at isolated committed repair
+  `f77a6b1b3609876816000ce86a8a6c1904c3de2a`, tree
+  `d79e57eb0961287321d50eebf0b63f5ff8b64a3e`. Fresh cold A-E+F+G+H passed:
+  26 images,30 checker reports,34 guest sessions. Independent full raw/artifact/stack/process review passed. Earlier clean G and focused H reviews remain separately scoped.
+  I focused O0/O2 execution now passed; its independent review and clean cumulative checkpoint are pending. J/K remain unverified; the latest checkpoint at the end is authoritative.
 - The user explicitly extended the original time window until the full milestone
   is verified and authorized merging afterward. Do not merge a partial prefix.
 - Baseline: incremental Lean build 53 jobs, scaffold metadata valid, scaffold 18,
@@ -31,8 +30,9 @@
   profiles, lowering and production exporter; platform worker typed M/S/U glue
   and boot DTB validation; integration worker host builder/auditor. No production
   module may import `Compiler.Test`, examples or mutation modules.
-- Next executable checkpoint: cold clean cumulative G acceptance, independently
-  alongside H capability implementation; H-K remain unverified.
+- Next executable checkpoint: independent current I review and standalone User
+  comparison, coherent I commit, then cold A-I controller `/tmp/lemma-gateI-clean-run.py`
+  at that exact clean revision. Focused I O0/O2 passed; J/K unverified.
 - Do not relabel baseline or earlier Task 002 artifacts as Task 003 passes. Do not
   infer completion of a gate from its modules. Preserve legacy profiles and checks.
 
@@ -560,3 +560,128 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   Highest focused gateH; highest committed clean cumulative gateG. Commit the
   coherent H source now, then cold H controller `/tmp/lemma-gateH-clean-run.py`.
   IPC may advance from the observed H prefix; its gates still require real runs.
+
+## Committed H and I construction
+
+- Coherent H commit52c9586988159f546df2c485ad16f645f68d3f3b/tree
+  0ab4bcf26ab535fe49c2e52ec2aa0ec243af260c. Focused reports retain their
+  real parent+dirty provenance; no precommit report is relabelled as clean.
+- New managed `lemma-kernel-h-acceptance` worktree at that exact clean commit
+  is running cold controller `/tmp/lemma-gateH-clean-run.py`, shell session67719.
+  It must build/observe fresh A-E+F+G+H and retain unchanged source/consumer
+  inventories. No cached outputs were copied; its running state is not PASS.
+- GateI User.IPCABI and User.IPC wrappers compile (12jobs). Lower contract uses
+  the already KernelownedASdescriptor tail128metadata+256packet, existing
+  UserCopy checked scratch handles, four copied queue slots/Endpoint and8Reply
+  objects with type5/right1. Known capability rights2047 and oldCore0profiles
+  are preserved. Kernel objects/storage/cancellation and Task/Scheduler blocking
+  integration are in progress. No I guest or J/K completion is claimed.
+
+## Cold H regression stopped; precise audit repair
+
+- Exact clean52c cold H controller67719 terminatedFAIL after369.677132s.
+  A-E completed10O0images, then normal/bootstrap-m/O2 BootInfo checker rejected
+  its artifact before QEMU: `readonly PMP table global/content/use inventory
+  differs`. No stopped integration result is a clean H pass.
+- Actual postoptimization IR has PMP4 and exact pure CapabilityABI.typeMask4;
+  Objects.initStep is absent. Genuine source closure manifests typeMask and
+  its unsigned(kind-1)<4 guard/default0/soleload. The old non-H audit route
+  admitted only PMP despite the shared syscall dispatcher reaching this helper.
+- Compiler worker is repairing only precise table accounting in the isolated
+  H checkout, retaining original source/artifacts/failure. User/Firmware tables
+  stay rejected. Require fresh actual normal O2 audit/guest and then a cold
+  A-E+F+G+H rerun at a minimal committed host repair. Main checkout's independent
+  I construction continues without claiming I or clean H acceptance.
+
+## Cold H repair and held IPC checkpoint
+
+- The first cold H run at52c9586 remains FAIL: the shared legacy kernel's
+  exact reachable typeMask table was absent from its readonly routing. Minimal
+  host-only repair f77a6b1b3609876816000ce86a8a6c1904c3de2a, tree
+  d79e57eb0961287321d50eebf0b63f5ff8b64a3e, admits only exact immutable
+  helpers backed by genuinely reachable kernel source rows. Unknown tables,
+  changed guards/bytes and User/Firmware helpers remain rejected.
+- Fresh committed clean A-E+F+G+H at that repair passed836.177351s:
+  26images,30checker reports,34guest sessions. Report `/home/sreekumaar/.codex/worktrees/lemma-kernel-h-acceptance/lemma/build/kernel/H-clean-repair/result.json`
+  SHA25605f01eb2aa37feefecac2f67b894e9b3489262ea3dbcdadb6ac7dd5bbbd6b17e. Independent full
+  raw/artifact/stack/process review passed; no earlier review was inherited.
+  The isolated repair is preserved independently while the primary branch's
+  dirty IPC work includes its equivalent source-conditional audit.
+- I is in construction. Maintained descriptor IPC tail, four-packet queues,
+  one-use Reply objects, checked syscall dispatch, blocked contexts and epoch
+  wakeup now compile through real Lean/Core0; diagnostic O0/O2 RV64 objects
+  pass. Selected IPCEntry trap chain8016B atO0 fits unchanged8192B.
+  User Server, two distinct clients and Fault actors compile and are held;
+  host observer checks actual binary payloads, sender/request identity, serials,
+  rollback, Ready retries and fault/reply order. Host kernel142/scaffold18
+  passed; these are not target acceptance. Strict linked I audit is pending.
+- Next actual integration: build ipc-development supervisor O0/O2 only after
+  the source/CFG audit is complete, then run `scripts/check_kernel_ipc.py` on
+  each fresh image. I guest execution not_run; J/K not_run. Continue through
+  the fully verified milestone and authorized guarded merge.
+
+- Fresh H independent review PASS:26 images,94 actual object stack graphs,
+  30 reports,34 distinct reaped/absent PIDs,104 raw files and19,218 K1 records.
+  F/G arithmetic and actual PC preemptions recomputed; H76/20 replies, eight
+  snapshots,serials1..44, two SD faults,14 actual sent control packets perVM,
+  owner queue/remote-alias cleanup, MAX publication/91 and final498 checked.
+  `H-clean-repair/independent-summary.json` SHA256
+  56c5e4a7868bef6f2c4708b986b955ecba9ceead4061d6aa66a91773f5be667a.
+  J contract is design-only; no dependent J implementation has begun.
+
+- I artifact review found a historical H audit limitation: four kernel backend
+  jump tables(112entries/896B) and Firmware.call(5entries/40B) lacked the later
+  per-owner/per-slot/local-target provenance checks. The actual H measurements
+  above remain historical results. New narrow checks cover all linked read-only
+  bytes; final cumulative acceptance must run the tightened current audit.
+
+- Focused I attempts1/2 are retained FAIL. First: A delivered-timeout request
+  expired queued behind B, so no Server acceptance and onlyserials1..27.
+  Second: longer holds exhausted B Inbox receive0.5s. Attempt3 uses bounded
+  actual Reply-capability withdrawal polling for late replies and B1s maximum
+  receives; unchanged checker still requires actual acceptance before timeout,
+  cancel and caller fault, and actual retirement before late Reply denial.
+  Fresh full O0/O2 attempt3 is running; no J target implementation yet.
+
+## Focused Gate I actual execution complete
+
+- Fresh attempt4 O0/O2 linked packages, strict full artifact audits and actual
+  IPC guests passed168.810781s with unchanged producer/consumer snapshots.
+  Controller SHA256c367ea25e07f1b24488a687901c02b2a3549143015ae5a5a6d0054e4f07ee8e7.
+  O0 1417records, report4fc000ad1080a0fa4e2278ae729f6f41a9efe1d020bbcffaf87de9ea3bed70e5;
+  O2 1369records, report28d3e8e043d80d6c195c87a9db06d5f30e2da4d641c4a88af749780bc344f4f4.
+- Each actual VM:52 A/11 B responses,13 binary payloads/authenticated senders,
+  all28publication serials,13 accepted Calls, actual timeout/cancel/caller fault
+  after acceptance, late Reply80, actual server SD fault then pending Call96,
+  six instances reaped, three Endpoint queue frames released and final498.
+  Both live VMs actually killed/reaped(-9), stderrempty and rawcoveragechecked.
+- Attempt3 retained FAIL: retiredStep incorrectly expected rights1 from
+  Capability.check, whose public result is status/value0; Server accepted the
+  target Call then fixture exited95. Only that User fixture result guard fixed.
+  Attempts1/2 also remain FAIL; none is relabeled as an attempt4 result.
+- Current151 kernel host tests and scaffold metadata/18 tests pass. These do not
+  establish compiler correctness or replace actual guests. Independent reviews
+  and ten current standaloneUser builds/audits/comparisons are running.
+  Hold target/producers/HEAD until terminal; then coherent I commit/cold A-I.
+
+## Focused I independent checks complete
+
+- Platform source/artifact/raw/stack review PASS at focused attempt4 only:
+  report build/kernel/gateI/independent-platform-review.json SHA256
+  b675570b32cf811db2788ddb3a2bae94eb8817d4f60701723cfe68862bf152e1.
+  Actual O0/O2 replays, all caller/payload/transaction identities, one saved-PC
+  advance, Runnable-last completion, two SD faults, six reaps and498 frames
+  recomputed. Actual O0 trap stack8016/8192; O2 1856.
+- Separate source-risk review PASS, report
+  build/kernel/gateI/focused-attempt4/source-risk-report.json SHA256
+  595dea17731d38e780510b42c0712cc57ca0244455eaaa3d48f9ac2badaef9f2.
+  Late Reply80 can be logged before the Caller logs timeout93; both are after
+  genuine delivery/retirement. Distinct console log order is not assumed.
+- Ten fresh standaloneUser builds/audits PASS197.433s; all140 exact byte
+  bindings equal full focused packages and132 producer inputs unchanged.
+  build/user/gateI/independent-attempt1/verification.json SHA256
+  2456243ae597f6fc7031d4ed8c931e78c5aa0a4051949150afad9d86f1b2adc5.
+  These remain truthful precommit52c9586 plus dirty-source observations.
+- Coherent I source is ready to commit. Next cold exact clean A-E+F+G+H+I
+  checkpoint is separately required; highest complete gate remainsH until
+  that actual run completes. J/K runtime and CI/publication remainnot_run.

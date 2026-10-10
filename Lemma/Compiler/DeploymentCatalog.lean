@@ -11,6 +11,7 @@ open Lemma.Platform.RiscV.ExecutionPrimitives (UserStartupCase)
 
 inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
+  | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -18,11 +19,18 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .peer => "peer"
   | .busy => "busy"
   | .tamper => "tamper"
+  | .ipcServer => "ipc-server"
+  | .ipcClientA => "ipc-client-a"
+  | .ipcClientB => "ipc-client-b"
+  | .backgroundNoGrants => "background-no-grants"
+  | .ipcFaultClient => "ipc-fault-client"
 
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
+def ipcManagedPolicy : String := "lemma-ipc-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
-  if configuration == "capabilities-development" then some capabilityManagedPolicy else none
+  if configuration == "capabilities-development" then some capabilityManagedPolicy
+  else if configuration == "ipc-development" then some ipcManagedPolicy else none
 
 structure UserImageSpec where
   key : String
@@ -65,15 +73,30 @@ def capabilityImages : Array UserImageSpec := #[
   { key := "tamper", id := 4, moduleName := `Lemma.User.Development.CapabilitiesTamper,
     root := `Lemma.User.Development.CapabilitiesTamper.main, bootRole? := some .tamper }]
 
+
+/-- Gate I selects five independently linked images. The two client roots
+share only their exact production-library/IPCClients source module closure. -/
+def ipcImages : Array UserImageSpec := #[
+  { key := "server", id := 1, moduleName := `Lemma.User.Development.IPCServer,
+    root := `Lemma.User.Development.IPCServer.main, bootRole? := some .ipcServer },
+  { key := "clienta", id := 2, moduleName := `Lemma.User.Development.IPCClients,
+    root := `Lemma.User.Development.IPCClients.clientA, bootRole? := some .ipcClientA },
+  { key := "clientb", id := 3, moduleName := `Lemma.User.Development.IPCClients,
+    root := `Lemma.User.Development.IPCClients.clientB, bootRole? := some .ipcClientB },
+  { taskImages[2]! with id := 4, bootRole? := some .backgroundNoGrants },
+  { key := "fault", id := 5, moduleName := `Lemma.User.Development.IPCFault,
+    root := `Lemma.User.Development.IPCFault.main, bootRole? := some .ipcFaultClient }]
+
 def isMultiImageConfiguration (configuration : String) : Bool :=
   configuration == "tasks-development" || configuration == "tasks-fault-development" ||
-    configuration == "capabilities-development"
+    configuration == "capabilities-development" || configuration == "ipc-development"
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if configuration == "tasks-development" then .ok taskImages
   else if configuration == "tasks-fault-development" then .ok taskFaultImages
   else if configuration == "capabilities-development" then .ok capabilityImages
+  else if configuration == "ipc-development" then .ok ipcImages
   else .error "configuration has no admitted multiimage deployment"
 
 def imageFor (configuration key : String) : Except String UserImageSpec := do
