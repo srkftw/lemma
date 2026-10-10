@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "category": "CI-efficiency-local-validation",
+  "recorded_at_utc": "2026-10-10T19:46:49.465451+00:00",
+  "repository": "srkftw/lemma",
+  "implementation_commit": "c0e946874a8bb4d360d75703d924af759aa33375",
+  "implementation_tree": "cf2a043161622dd6d3e35a9416d763382a37d037",
+  "base_PR5_commit": "2d8813dd94b94f16d41beabfc1360abbebcb81a7",
+  "report_convention": "The clean tested implementation is identified above. This report and the accompanying policy update are a separate report-only commit; they do not rebind guest evidence to a later Git SHA.",
+  "overall_scope": "CI policy validated locally; full target campaign acceptance NOT_ESTABLISHED. Task004 completion and physical conformance are not claimed.",
+  "github_candidate_results": "NOT_RUN: no push authorized or performed",
+  "host": {
+    "status": "PASS",
+    "clean_source_at_start": true,
+    "test_counts": {
+      "scaffold-tests": 18,
+      "core0-host": 32,
+      "ci-tests": 19,
+      "foundation-host": 454,
+      "kernel-host": 296,
+      "lemmasim-host": 47
+    },
+    "total_tests": 866,
+    "lake_build": "PASS",
+    "command_results": [
+      {
+        "label": "preflight",
+        "exit_code": 0,
+        "seconds": 5.525604024005588
+      },
+      {
+        "label": "scaffold",
+        "exit_code": 0,
+        "seconds": 0.06412611101404764
+      },
+      {
+        "label": "scaffold-tests",
+        "exit_code": 0,
+        "seconds": 3.3206642819859553
+      },
+      {
+        "label": "actionlint",
+        "exit_code": 0,
+        "seconds": 0.0640809090109542
+      },
+      {
+        "label": "lake-build",
+        "exit_code": 0,
+        "seconds": 60.34199580701534
+      },
+      {
+        "label": "ci-tests",
+        "exit_code": 0,
+        "seconds": 4.524158082989743
+      },
+      {
+        "label": "core0-host",
+        "exit_code": 0,
+        "seconds": 2.018413000012515
+      },
+      {
+        "label": "foundation-host",
+        "exit_code": 0,
+        "seconds": 42.92118222697172
+      },
+      {
+        "label": "kernel-host",
+        "exit_code": 0,
+        "seconds": 6.38295369799016
+      },
+      {
+        "label": "lemmasim-host",
+        "exit_code": 0,
+        "seconds": 3.1728474099945743
+      }
+    ],
+    "preflight": {
+      "status": "PASS",
+      "tests": 69,
+      "body_seconds": 5.433298335003201,
+      "files": 5,
+      "uncompressed_bytes": 10436,
+      "scope": "Local command body/files, excludes hosted startup, source context and Actions upload"
+    }
+  },
+  "workflow_validation": {
+    "status": "PASS",
+    "actionlint_version": "1.7.12",
+    "bash_blocks": 43,
+    "python_syntax": "PASS",
+    "diff_whitespace": "PASS",
+    "CI_contract_tests": 19,
+    "independent_coverage_comparison": "All nine original job names/runners/bounds/acceptance commands/validators/step order/artifact paths/upload settings preserved; only source context and metadata CI tests added.",
+    "shallow_merge_identity": "PASS with both parent objects absent; raw commit headers preserve parents",
+    "behavior_tests": "PR identity cancellation, distinct preflight/main/manual groups, default triggers, pinned actions, narrow permissions, exact SHA/clean checkout/merge parents/pin hashes, empty/skipped/failing/import-error suites and stale/existing output rejection",
+    "hosted_behavior": "NOT_RUN: actual GitHub event payloads, scheduling/cancellation and upload behavior require authorized rollout"
+  },
+  "guest_checks": {
+    "legacy": {
+      "status": "PASS",
+      "seconds": 101.7170730829821,
+      "fresh_boots": 23,
+      "source_rejections": 13,
+      "coverage": "Independent oracle, O0/O2, separate reproducibility builds, mutation, foreign-link audit rejection"
+    },
+    "foundation_stress": {
+      "status": "PASS",
+      "seconds": 793.5408086869866,
+      "gates": 9,
+      "fresh_boots": 482,
+      "Gate9_normal_sessions": 18,
+      "Gate9_stress_sessions": 8
+    },
+    "foundation_qualification": {
+      "status": "PASS",
+      "seconds": 166.0336564820027,
+      "counts": {
+        "deterministic_artifacts_per_profile": 16,
+        "failure_path_experiments": 5,
+        "normal_sessions": 18,
+        "replayed_gate9_sessions": 26,
+        "reproducible_profiles": 2,
+        "stress_sessions": 8
+      },
+      "artifact_roles": 66,
+      "input": "Only this campaign Gate9 evidence; raw input hash retained in command manifest"
+    },
+    "kernel_A_E_F_I_J_source_negative_architecture": "NOT_RUN locally; all five workflow lanes and exact validators retained",
+    "Task004_writing": {
+      "status": "FAIL",
+      "host_qemu_build": {
+        "status": "PASS",
+        "seconds": 344.34525301499525,
+        "binary_sha256": "6ba3121bce9929ae52659b15e5203ab61a304e31334221689ae5dbdca725c102",
+        "outPath": "/nix/store/cphwmf66wkjs3zzs333pd9m8grv7lslb-lemmasim-qemu-11.1.1"
+      },
+      "checker_seconds": 3.9730745329870842,
+      "checker_exit_code": 1,
+      "host_tests": 47,
+      "diagnostic": "NotebookReads.lean: unknown module prefix 'Lemma' in fresh project",
+      "images": "NOT_RUN",
+      "guest_writing": "NOT_RUN",
+      "cold_recovery": "NOT_RUN",
+      "observations": 0,
+      "repairs": "NONE"
+    }
+  },
+  "clean_cold_distinction": "Independent acceptance checkout and notebook clone initially lacked .lake/build; all output paths were unused. Shared Nix store was warm. No cold toolchain claim; no Actions dependency/project cache was introduced.",
+  "retained_interrupted_or_failed_attempts": [
+    "Warm-Lake root notebook attempt interrupted during QEMU build before writing, to avoid masking fresh-project setup; original FAIL report and interruption reason retained separately.",
+    "Initial ignored acceptance wrapper looked for generic result.json and skipped its qualifier. Actual legacy/cumulative checker outputs were unaffected and are retained; a separate bounded qualifier validated all-results.json and gate9-results.json before consuming that current Gate9. Original guard/skip bookkeeping remains retained."
+  ],
+  "cache_evaluation": {
+    "custom_cache_added": false,
+    "cache_hit_miss_tests": "INAPPLICABLE: no new cache path; actual Actions transfer unmeasured",
+    "selected_generic_toolchain_closure_nar_bytes": 7204814352,
+    "LemmaSim_QEMU": {
+      "scope": "Actual realized local Nix output/closure NAR bytes; shared warm Nix store, no Actions dependency cache, transfer/compression/hit-miss unmeasured",
+      "output_nar_size": 21665768,
+      "output_nar_hash": "sha256-bG4AMJmiKEeXGwsjvtAdVXIROrJqU+sLBbZNysDaXT4=",
+      "closure_paths": 116,
+      "closure_nar_bytes": 369982328,
+      "commands": [
+        {
+          "argv": [
+            "nix",
+            "path-info",
+            "--json",
+            "/nix/store/cphwmf66wkjs3zzs333pd9m8grv7lslb-lemmasim-qemu-11.1.1"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.03926496801432222,
+          "output": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/notebook/fresh-project/qemu-output.json",
+          "sha256": "998cd025d69c9977d4af013f278e33fe3086ed71cb36626d405cac4c70edd003"
+        },
+        {
+          "argv": [
+            "nix",
+            "path-info",
+            "--recursive",
+            "--json",
+            "/nix/store/cphwmf66wkjs3zzs333pd9m8grv7lslb-lemmasim-qemu-11.1.1"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.042842914001084864,
+          "output": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/notebook/fresh-project/qemu-closure.json",
+          "sha256": "8ef7a2e68ca13995f38f8d6fdd8a0764c9bfb7441f47b068e9ff41be845389c0"
+        }
+      ]
+    },
+    "future_requirements": "Exact pins/platform/input keys, patch and filtered host inputs, trusted main producer with PR restore-only, NAR/source identities, normal miss realization, separate uncached qualification"
+  },
+  "savings": {
+    "measurement_source": "Checked-in baseline real GitHub API timestamps/archive metadata",
+    "projected_removed_push_runner_minutes": [
+      107.9,
+      138.75
+    ],
+    "projected_removed_push_archive_MiB": [
+      147.76,
+      157.47
+    ],
+    "paired_runner_fraction_percent_approximately": [
+      46,
+      50
+    ],
+    "caveat": "Measured old campaigns; projected future savings minus preflight and added provenance/CI tests. No measured new hosted improvement, billable-minute claim or PR wall-time reduction."
+  },
+  "artifact_policy": "All existing upload paths, always-on-failure uploads, 14-day retention and compression preserved. No historical deletion. Local report/log inventories bind raw evidence below.",
+  "remaining_limits": [
+    "Inherited default PR events omit base-retarget edits; main advances need refreshed merge-candidate acceptance.",
+    "Public main branch endpoint reported protected=false/empty required checks; rulesets=[]; dedicated protection endpoint HTTP401. Reinspect before rollout.",
+    "Task004 published baseline still fails fresh notebook setup; its active implementation work is isolated and coordinated.",
+    "Clean project/source verification differs from cold toolchain verification."
+  ],
+  "rollback": "Normally revert implementation c0e9468 on the integration branch; preserve later Task004 additions and historical evidence. A port to eight-job pre-Task004 main must preserve the ninth lane on later Task004 integration.",
+  "raw_evidence_inventory": [
+    {
+      "scope": "Host logs, preflight files, workflow checks and latest read-only inspection hashes",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/host-raw-hashes.json",
+      "bytes": 29106,
+      "sha256": "46cba8c4c8caffeccb5ee2d37dc3c72527daa9b6e2c3a9c38453fd300ad4bd98"
+    },
+    {
+      "scope": "Actual host argv/results/log paths",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/host-commands.json",
+      "bytes": 3789,
+      "sha256": "a2ce161a1678b0f7d6c2c012a7ba4b1d364743df85fcbf88bedcd0680de66ebe"
+    },
+    {
+      "scope": "Actual host versions",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/versions.json",
+      "bytes": 1293,
+      "sha256": "c0ab5fd81fcfec387bc417b7a50819ec809da609e1436b549c1f127018f5909f"
+    },
+    {
+      "scope": "Syntax and whitespace",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/syntax-and-diff.json",
+      "bytes": 370,
+      "sha256": "5cad4c400ccb0c10bc3ab5901cc47b70cc766f0e87633129a9e9708a4a95a4dc"
+    },
+    {
+      "scope": "43 shell blocks and actionlint",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/independent-review/syntax-results.json",
+      "bytes": 12464,
+      "sha256": "12f3d81254a94dbddfcbcffa0a84f3ebbf757b70ec2f7ddc01feb0e6b6ef69e3"
+    },
+    {
+      "scope": "Unchanged acceptance comparison and real shallow merge",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/independent-review/coverage-shallow-results.json",
+      "bytes": 4242,
+      "sha256": "7c35f06e890389572c33c2fc197d35b5e8e95146fc505b643e1543fb7eddc1c8"
+    },
+    {
+      "scope": "Actual fresh-project FAIL and QEMU measurement",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/notebook/fresh-project/summary.json",
+      "bytes": 4222,
+      "sha256": "463af4848ea2e22c45e8fc2e0f17c5fcdd79a4c9c98437afdd833bad9506c1f7"
+    },
+    {
+      "scope": "24 notebook campaign files/hashes; no guest observations",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/build/ci-efficiency/validation-c0e9468/notebook/fresh-project/final-inventory.json",
+      "bytes": 6477,
+      "sha256": "7b4bf7f4cd25186c57f0aceffcb90edca76ed334e339e15247acf547bc7011b5"
+    },
+    {
+      "scope": "Actual acceptance summary",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency-acceptance/lemma/build/ci-efficiency/legacy-foundation-validation.json",
+      "bytes": 7148,
+      "sha256": "0fe6dd18583f9fd0d86d35b8915e0f5103497917d21c07d91a348be019fea737"
+    },
+    {
+      "scope": "Acceptance report/log inventory",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency-acceptance/lemma/build/ci-efficiency/legacy-foundation-selected-hashes.json",
+      "bytes": 4498,
+      "sha256": "e7e60336be11cbbd64f2c1656edb90189f31bf5db37920ccc382b0c6c8facd2a"
+    },
+    {
+      "scope": "Original bookkeeping issue retained",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency-acceptance/lemma/build/ci-efficiency/retained-wrapper-guard.json",
+      "bytes": 1086,
+      "sha256": "696fd03ddd553014c709d274bf43fe39fdec9c00d791992c570ecd5fa77916c9"
+    },
+    {
+      "scope": "Historical read-only baseline inventory",
+      "path": "/home/sreekumaar/.codex/worktrees/ci-efficiency/lemma/docs/evidence/ci-efficiency-baseline.json",
+      "bytes": 21322,
+      "sha256": "d96a7541c32433318782ea4ca4e541baaa12b3115a48fe2ceec89a96392a567b"
+    }
+  ]
+}

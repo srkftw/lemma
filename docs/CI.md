@@ -34,6 +34,9 @@ exact HEAD full qualification is needed, select that branch for a manual run or
 use the pinned local acceptance interfaces. Refresh a PR with current main and
 rerun acceptance when its merge candidate changes; a historical green head is
 not evidence for a new merge tree.
+The inherited default PR events do not run on base-retarget edits alone. After
+retargeting, update the PR branch to trigger merge-candidate acceptance; a manual
+run on the branch qualifies exact HEAD only.
 
 Groups for main and manual use the event and run ID, rather than a fixed ref
 with only `cancel-in-progress: false`: GitHub can otherwise replace an older
@@ -144,6 +147,11 @@ the selected existing Lean/LLVM/LLD/stock-QEMU closure alone measured
 7,204,814,352 NAR bytes (6.71 GiB), excluding the additional devshell tools,
 pinned Lean source and derived LemmaSim QEMU. Closure transfer/compression and
 hit/miss behavior require benchmarks before proposing a cache.
+The exact local LemmaSim build took 344.345 seconds with a warm shared Nix
+store and fresh project checkout. Its output measured 21,665,768 NAR bytes
+(20.7 MiB), with 116 runtime closure paths totaling 369,982,328 bytes (352.8 MiB).
+This smaller host-tool candidate merits a transfer benchmark; no Actions cache
+hit/miss measurement or trusted main cache producer exists in this cleanup.
 
 A future dependency-only cache would need exact platform/runner/Nix-action keys,
 `flake.nix`, `flake.lock`, `lean-toolchain`, `tooling/toolchain-lock.json`, the
@@ -170,7 +178,9 @@ truth tables and real temporary-Git/unittest failure cases. These checks cannot
 establish GitHub scheduling or successful remote cache/upload behavior. Actual
 new GitHub runs require publishing; this session does not authorize a push.
 Local exact-candidate commands/results and any failures are recorded separately
-in the accompanying validation evidence. Cache hit/miss tests are inapplicable
+in [the validation evidence](evidence/ci-efficiency-validation.json). The tested
+implementation is `c0e946874a8bb4d360d75703d924af759aa33375`; subsequent evidence
+updates change only this policy document and the report. Cache hit/miss tests are inapplicable
 because no cache path was introduced.
 
 Keep Task 004's work isolated when applying this cleanup. This branch's diff is
