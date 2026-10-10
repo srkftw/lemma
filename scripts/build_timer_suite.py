@@ -14,6 +14,7 @@ from core0_common import Core0Error, repo_root
 
 EXPORT_SOURCE = Path("examples/foundation/TimerBuild.lean")
 ELABORATION_SOURCES = (
+    Path("Lemma/Platform/LemmaVM/ConsoleDevice.lean"),
     Path("examples/foundation/DeviceConformanceSupport.lean"),
     Path("examples/foundation/TrapConformance.lean"),
     Path("examples/foundation/TimerConformance.lean"),

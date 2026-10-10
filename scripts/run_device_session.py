@@ -297,6 +297,11 @@ def _read_exact(
             result.extend(chunk)
             capture.received.extend(chunk)
         elif process.poll() is not None:
+            # Exit may become visible after select's readiness snapshot. Drain
+            # buffered stdout (or observe EOF) before classifying that exit.
+            stdout_ready, _, _ = select.select([stdout_fd], [], [], 0)
+            if stdout_fd in stdout_ready:
+                continue
             raise Core0Error(
                 f"device process exited with {process.returncode} before {context}"
             )

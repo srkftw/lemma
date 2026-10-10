@@ -242,15 +242,17 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
-  | .v0_7 => primitiveAllowlistV07
+  | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
-  | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 => true
+  | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
+      .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
-  | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 => true
+  | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
+      .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -294,9 +296,11 @@ private structure LowerState where
   usedIterations : Array IterationUse := #[]
   usedMemoryOps : Array MemoryOpUse := #[]
   usedActionIterations : Array ActionIterationUse := #[]
+  usedLoops : Array ActionLoopUse := #[]
   usedDeviceOps : Array Device.Op := #[]
   usedTrapOps : Array Trap.Op := #[]
   usedTimerOps : Array Timer.Op := #[]
+  usedExecutionOps : Array Execution.OpSpec := #[]
   directEffects : EffectSet := .empty
 
 private abbrev LowerM := StateT LowerState (Except Diagnostic)
@@ -346,6 +350,13 @@ private def markActionIteration (site : ActionIterationUse) : LowerM Unit := do
   unless state.usedActionIterations.contains site do
     set { state with usedActionIterations := state.usedActionIterations.push site }
 
+private def markActionLoop (callback : Name) : LowerM Unit := do
+  let state ← get
+  let use : ActionLoopUse := { callback }
+  set { state with
+    usedLoops := if state.usedLoops.contains use then state.usedLoops else state.usedLoops.push use
+    directEffects := state.directEffects ∪ { mayDiverge := true } }
+
 private def markDeviceOp (op : Device.Op) (effects : EffectSet) : LowerM Unit := do
   let state ← get
   let uses := if state.usedDeviceOps.contains op then state.usedDeviceOps
@@ -382,6 +393,14 @@ private def markTimerOp (op : Timer.Op) : LowerM Unit := do
     usedTimerOps := uses
     directEffects := state.directEffects ∪ timerEffects op
   }
+
+private def markExecutionOp (operation : Execution.Op) : LowerM Unit := do
+  let state ← get
+  let spec := Execution.specification operation
+  set { state with
+    usedExecutionOps := if state.usedExecutionOps.contains spec then state.usedExecutionOps
+      else state.usedExecutionOps.push spec
+    directEffects := state.directEffects ∪ executionEffects operation }
 
 private def markIteration (site : IterationUse) : LowerM Unit := do
   let state ← get
@@ -1244,11 +1263,14 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 | .v0_7 => Memory.maximumBudgetV05
+  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .user_v0_1 =>
+      Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  unless ctx.profile == .v0_5 || ctx.profile == .v0_6 || ctx.profile == .v0_7 do
+  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 then
+    fail ctx .unsupportedPrimitive "closed UART trigger14 requires core0-kernel-v0.2"
+  unless op.admits ctx.profile do
     fail ctx .unsupportedPrimitive
       (s!"device operation `{op.stableId}` requires " ++
         s!"`{Profile.v0_5.contractVersion}`; `{ctx.profile.contractVersion}` " ++
@@ -1332,6 +1354,7 @@ private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr 
         (substituteActionScalar id replacement thenBranch)
         (substituteActionScalar id replacement elseBranch)
   | .call callee args => .call callee (args.map (substituteScalar id replacement))
+  | .loop callback => .loop callback
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next =>
       .boundedFoldU64 budget callback
         (substituteScalar id replacement count) (substituteScalar id replacement initial)
@@ -1347,10 +1370,15 @@ private def substituteActionScalar (id : Nat) (replacement : Expr) : ActionExpr 
         (substituteActionScalar id replacement next)
   | .uartEnableAndResetFifo status next =>
       .uartEnableAndResetFifo status (substituteActionScalar id replacement next)
+  | .uartEnableAndResetFifo14 status next =>
+      .uartEnableAndResetFifo14 status (substituteActionScalar id replacement next)
   | .trap operation status value next =>
       .trap operation status value (substituteActionScalar id replacement next)
   | .timer operation argument? status value next =>
       .timer operation (argument?.map (substituteScalar id replacement)) status value
+        (substituteActionScalar id replacement next)
+  | .platform operation arguments status value next =>
+      .platform operation (arguments.map (substituteScalar id replacement)) status value
         (substituteActionScalar id replacement next)
 
 mutual
@@ -1388,6 +1416,8 @@ mutual
       pure (.bind first status value next)
 
     else if let some width := loadConstructor? name then
+      if ctx.profile.isExecution then
+        fail ctx .unsupportedPrimitive "production profiles reject diagnostic fixed-region RAM constructors"
       unless args.size == 3 do fail ctx .arityMismatch s!"malformed `{name}` application"
       let region ← lowerExpr fuel ctx args[0]!
       let offset ← lowerExpr fuel ctx args[1]!
@@ -1398,6 +1428,8 @@ mutual
       pure (.load width region offset status value next)
 
     else if let some width := storeConstructor? name then
+      if ctx.profile.isExecution then
+        fail ctx .unsupportedPrimitive "production profiles reject diagnostic fixed-region RAM constructors"
       unless args.size == 4 do fail ctx .arityMismatch s!"malformed `{name}` application"
       let region ← lowerExpr fuel ctx args[0]!
       let offset ← lowerExpr fuel ctx args[1]!
@@ -1411,6 +1443,8 @@ mutual
 
     else if name == ``Lemma.Core0.Memory.Action.checkReadRange ||
         name == ``Lemma.Core0.Memory.Action.checkWriteRange then
+      if ctx.profile.isExecution then
+        fail ctx .unsupportedPrimitive "production profiles reject diagnostic fixed-region RAM constructors"
       unless args.size == 4 do fail ctx .arityMismatch s!"malformed `{name}` application"
       let access := if name == ``Lemma.Core0.Memory.Action.checkReadRange then
         MemoryAccess.read else .write
@@ -1462,6 +1496,15 @@ mutual
       markDeviceOp op .deviceWrite
       pure (.uartEnableAndResetFifo status next)
 
+    else if name == ``Lemma.Core0.Memory.Action.uartEnableAndResetFifo14 then
+      let op := Device.Op.uartEnableAndResetFifo14
+      requireDeviceProfile ctx op
+      unless args.size == 1 do
+        fail ctx .arityMismatch "malformed Action.uartEnableAndResetFifo14 application"
+      let (status, next) ← lowerActionContinuation1 fuel ctx args[0]!
+      markDeviceOp op .deviceWrite
+      pure (.uartEnableAndResetFifo14 status next)
+
     else if let some op := trapConstructor? name then
       requireTrapProfile ctx op
       unless args.size == 1 do
@@ -1485,6 +1528,49 @@ mutual
       let (status, value, next) ← lowerActionContinuation2 fuel ctx continuation
       markTimerOp op
       pure (.timer op argument? status value next)
+
+    else if name == ``Lemma.Core0.Memory.Action.platform then
+      unless args.size == 8 do fail ctx .arityMismatch "malformed Action.platform application"
+      let operation ← match stripMData args[0]! with
+        | .const identity [] =>
+            match Execution.Op.ofSourceIdentity? identity with
+            | some operation => pure operation
+            | none => fail ctx .unsupportedPrimitive "platform operation is not an exact closed execution identity"
+        | _ => fail ctx .unsupportedExpression "platform operation must be a literal closed execution constructor"
+      unless operation.admits ctx.profile do
+        fail ctx .unsupportedPrimitive
+          s!"operation `{operation.stableId}` is denied by `{ctx.profile.contractVersion}`"
+      let mut arguments := #[]
+      for index in [:6] do
+        let argument ← lowerExpr fuel ctx args[index + 1]!
+        ensureType ctx .u64 argument
+        if index ≥ operation.argumentCount then
+          unless argument == .lit .u64 0 do
+            fail ctx .unsupportedExpression
+              s!"unused operand #{index} of `{operation.stableId}` must be literal zero"
+        arguments := arguments.push argument
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[7]!
+      markExecutionOp operation
+      pure (.platform operation arguments status value next)
+
+    else if name == ``Lemma.Core0.Memory.Action.loop then
+      unless ctx.profile.isKernel || ctx.profile == .user_v0_1 do
+        fail ctx .unsupportedPrimitive "Action.loop requires an explicit kernel/user execution profile"
+      unless args.size == 1 do fail ctx .arityMismatch "malformed Action.loop application"
+      let callback ← match stripMData args[0]! with
+        | .const callback [] => pure callback
+        | _ => do
+            fail ctx .unsupportedExpression
+              "Action.loop step must be a direct monomorphic zero-argument Action constant"
+      let callbackCtx := { ctx with path := ctx.path ++ [callback] }
+      let signature ← match declarationActionSignature callbackCtx callback with
+        | .ok signature => pure signature
+        | .error diagnostic => throw diagnostic
+      unless signature.args.isEmpty do
+        fail ctx .typeMismatch "Action.loop step must have signature ()->Action" callbackCtx.path
+      addActionDependency callback
+      markActionLoop callback
+      pure (.loop callback)
 
     else if name == ``Lemma.Core0.Memory.Action.boundedFoldU64 then
       unless args.size == 9 do
@@ -1677,9 +1763,11 @@ private structure ActionClosure where
   usedIterations : Array IterationUse := #[]
   usedMemoryOps : Array MemoryOpUse := #[]
   usedActionIterations : Array ActionIterationUse := #[]
+  usedLoops : Array ActionLoopUse := #[]
   usedDeviceOps : Array Device.Op := #[]
   usedTrapOps : Array Trap.Op := #[]
   usedTimerOps : Array Timer.Op := #[]
+  usedExecutionOps : Array Execution.OpSpec := #[]
 
 private def pushUnique [BEq α] (values : Array α) (value : α) : Array α :=
   if values.contains value then values else values.push value
@@ -1714,7 +1802,7 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
     (declaredRoots : Array Name) :
     Except Diagnostic CheckedActionSuite := do
   unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
-      profile == .v0_7 do
+      profile == .v0_7 || profile.isExecution do
     throw {
       code := .invalidSuite
       root := declaredRoots[0]?.getD .anonymous
@@ -1795,6 +1883,8 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
               for iteration in state.usedActionIterations do
                 closure := { closure with
                   usedActionIterations := pushUnique closure.usedActionIterations iteration }
+              for use in state.usedLoops do
+                closure := { closure with usedLoops := pushUnique closure.usedLoops use }
               for operation in state.usedDeviceOps do
                 closure := { closure with
                   usedDeviceOps := pushUnique closure.usedDeviceOps operation }
@@ -1804,6 +1894,9 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
               for operation in state.usedTimerOps do
                 closure := { closure with
                   usedTimerOps := pushUnique closure.usedTimerOps operation }
+              for operation in state.usedExecutionOps do
+                closure := { closure with
+                  usedExecutionOps := pushUnique closure.usedExecutionOps operation }
               let entries := function.actionDependencies.toList.map fun dependency =>
                 ActionVisitTask.enter dependency (path ++ [dependency])
               stack := entries ++ [.exit function] ++ stack
@@ -1849,9 +1942,11 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
     usedIterations := closure.usedIterations
     usedMemoryOps := closure.usedMemoryOps
     usedActionIterations := closure.usedActionIterations
+    usedLoops := closure.usedLoops
     usedDeviceOps := closure.usedDeviceOps
     usedTrapOps := closure.usedTrapOps
     usedTimerOps := closure.usedTimerOps
+    usedExecutionOps := closure.usedExecutionOps
   }
 
 /-- Historical checked-memory Action entry point.  Device constructors are rejected. -/

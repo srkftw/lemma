@@ -1,4 +1,4 @@
-import Lemma.Core0.Device
+import Lemma.Platform.LemmaVM.ConsoleDevice
 
 /-!
 Closed helper declarations for the `core0-v0.5` compiled-device session.
@@ -40,69 +40,14 @@ def readyByte (index : UInt32) : UInt8 :=
   else if index = 19 then 0x59 -- Y
   else 0x0a
 
-/-- One transmit poll.  Read errors are terminal; a ready transmitter performs
-exactly one byte write and asks the enclosing fold to stop. -/
-def transmitPollStep (_index _count : UInt32) (accumulator byteWord
-    _context1 _context2 _context3 : UInt64) : Action :=
-  Action.uartReadStatus fun status value =>
-    if status = Status.ok then
-      let lsr := value.toUInt8
-      if (lsr &&& UART.lsrErrorMask) = 0 then
-        if (lsr &&& UART.lsrThrEmpty) = UART.lsrThrEmpty then
-          Action.uartWriteByte byteWord.toUInt8 fun writeStatus =>
-            if writeStatus = Status.ok then
-              Action.done Status.iterationStop accumulator
-            else
-              Action.done writeStatus accumulator
-        else
-          Action.done Status.ok accumulator
-      else
-        Action.done Status.lineError accumulator
-    else
-      Action.done status accumulator
-
-/-- Send one byte or return the finite transmit timeout.  Internal fold-stop
-status is converted back to public success here. -/
+-- Historical fixture names delegate to the maintained production implementation.
+def transmitPollStep (index count : UInt32) (acc c0 c1 c2 c3 : UInt64) : Action :=
+  Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep index count acc c0 c1 c2 c3
 def sendByte (byte : UInt8) : Action :=
-  Action.boundedFoldU64 1000000 transmitPollStep pollBudget 0 byte.toUInt64 0 0 0
-    fun status value =>
-      if status = Status.iterationStop then
-        Action.done Status.ok value
-      else if status = Status.ok then
-        Action.done Status.txTimeout 0
-      else
-        Action.done status value
-
-/-- One receive poll.  Reading RBR occurs only after DR is observed. -/
-def receivePollStep (_index _count : UInt32) (accumulator _context0
-    _context1 _context2 _context3 : UInt64) : Action :=
-  Action.uartReadStatus fun status value =>
-    if status = Status.ok then
-      let lsr := value.toUInt8
-      if (lsr &&& UART.lsrErrorMask) = 0 then
-        if (lsr &&& UART.lsrDataReady) = UART.lsrDataReady then
-          Action.uartReadByte fun readStatus byte =>
-            if readStatus = Status.ok then
-              Action.done Status.iterationStop byte
-            else
-              Action.done readStatus accumulator
-        else
-          Action.done Status.ok accumulator
-      else
-        Action.done Status.lineError accumulator
-    else
-      Action.done status accumulator
-
-/-- Receive one byte or return the finite receive timeout. -/
-def receiveByte : Action :=
-  Action.boundedFoldU64 1000000 receivePollStep pollBudget 0 0 0 0 0
-    fun status value =>
-      if status = Status.iterationStop then
-        Action.done Status.ok value
-      else if status = Status.ok then
-        Action.done Status.rxTimeout 0
-      else
-        Action.done status value
+  Lemma.Platform.LemmaVM.ConsoleDevice.sendByte byte
+def receivePollStep (index count : UInt32) (acc c0 c1 c2 c3 : UInt64) : Action :=
+  Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep index count acc c0 c1 c2 c3
+abbrev receiveByte := Lemma.Platform.LemmaVM.ConsoleDevice.receiveByte
 
 /-- Header and payload receiver callback.  `timeoutMode = 0` distinguishes an
 empty initial receive (status 12) from a partial header; payload mode converts
@@ -208,31 +153,8 @@ def sendRepeatedByte (count : UInt32) (byte : UInt8) : Action :=
   Action.boundedFoldU64 65535 repeatedByteStep count 0 byte.toUInt64 0 0 0
     fun status sent => Action.done status sent
 
-/-- Poll until both THRE and TEMT are observed. -/
-def drainPollStep (_index _count : UInt32) (accumulator _context0
-    _context1 _context2 _context3 : UInt64) : Action :=
-  Action.uartReadStatus fun status value =>
-    if status = Status.ok then
-      let lsr := value.toUInt8
-      if (lsr &&& UART.lsrErrorMask) = 0 then
-        if (lsr &&& (UART.lsrThrEmpty ||| UART.lsrTransmitterEmpty)) =
-            (UART.lsrThrEmpty ||| UART.lsrTransmitterEmpty) then
-          Action.done Status.iterationStop accumulator
-        else
-          Action.done Status.ok accumulator
-      else
-        Action.done Status.lineError accumulator
-    else
-      Action.done status accumulator
-
-def drain : Action :=
-  Action.boundedFoldU64 1000000 drainPollStep pollBudget 0 0 0 0 0
-    fun status value =>
-      if status = Status.iterationStop then
-        Action.done Status.ok value
-      else if status = Status.ok then
-        Action.done Status.txTimeout 0
-      else
-        Action.done status value
+def drainPollStep (index count : UInt32) (acc c0 c1 c2 c3 : UInt64) : Action :=
+  Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep index count acc c0 c1 c2 c3
+abbrev drain := Lemma.Platform.LemmaVM.ConsoleDevice.drain
 
 end Lemma.Examples.Foundation.Device.Support

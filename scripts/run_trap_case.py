@@ -137,7 +137,7 @@ def _validate_trap_audit(audit: dict[str, object], manifest: dict[str, object],
     if machine.get("machine_slot_sequences") != expected_slots or machine.get("machine_csr_operations") != 11:
         raise Core0Error("trap machine audit full-context slot/CSR counts differ")
     compiled = machine.get("compiled_functions")
-    if type(compiled) is not int or compiled != 48:
+    if type(compiled) is not int or compiled != 50:
         raise Core0Error("trap machine audit compiled function closure differs")
     expected_startup = {"restore_mutation": manifest["restore_mutation"]["identity"],
         "frame_bytes": 288, "integer_registers": 31, "csr_snapshots": 5,

@@ -1,0 +1,1260 @@
+{
+  "USGCE_untouched": true,
+  "acceptance_command_catalog": {
+    "bytes": 4078,
+    "path": "003-kernel-isolated-services-commands.json",
+    "sha256": "8a84915ead130dedbaf17e4e6dc3fea7aa824521a9a9fb47b5121d907b594ed0"
+  },
+  "accepted_gates": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K"
+  ],
+  "actual_two_client_recovery_transcript": {
+    "bytes": 19822,
+    "path": "003-kernel-isolated-services-transcript.json",
+    "sha256": "167576b855c060c877885837b5e37f8890ccdd6ae34c7414fbc9060a6882cfa7"
+  },
+  "architecture": {
+    "development_configuration": "service-development",
+    "inactive_reclaim": "fixed stable supervisor continuation",
+    "normal_images": [
+      "server",
+      "cli",
+      "peer",
+      "busy"
+    ],
+    "normal_service_configuration": "service-normal",
+    "platform": "single-hart RISC-V QEMU virt, unchanged C-capable pinned CPU",
+    "production_development_authority": "Normal closure excludes Development/task selector/restart/adversarial startups.",
+    "roles": "Compiled M firmware, compiled S supervisor kernel, independent U images",
+    "target_host_runtime_dependencies": "none",
+    "task_kernel_stack_bytes": 8192,
+    "trusted_pool_alias": "Supervisor RW direct-map exists for User RX frames; no strict whole-kernel W^X claim."
+  },
+  "artifact_category": "task003-verification-report-detail",
+  "branch": "task/003-kernel-isolated-services",
+  "current14_GitHub_integration": {
+    "CI_catalog": {
+      "bytes": 10746,
+      "path": "003-kernel-isolated-services-ci.json",
+      "sha256": "7a52ba6ff3748cb3a37f8628902f3439d8255dcd5ac48b2f03cdcfbe3c4a19b4"
+    },
+    "actual_completed_runs": {
+      "pull_request": {
+        "completed_API_record": {
+          "bytes": 15044,
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033679993-completed.json",
+          "sha256": "d4a7d560276a4868ae9ec6d8aba815d78a181d07befa3064fcfd403f301ec261"
+        },
+        "conclusion": "success",
+        "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+        "jobs": [
+          {
+            "completedAt": "2026-10-10T07:30:21Z",
+            "conclusion": "success",
+            "databaseId": 114159680103,
+            "name": "Foundation Gates 1-9 and clean qualification",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680103"
+          },
+          {
+            "completedAt": "2026-10-10T07:43:50Z",
+            "conclusion": "success",
+            "databaseId": 114159680242,
+            "name": "Task 003 implemented Gates A-E RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680242"
+          },
+          {
+            "completedAt": "2026-10-10T07:17:24Z",
+            "conclusion": "success",
+            "databaseId": 114159680251,
+            "name": "Legacy Core0 RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680251"
+          },
+          {
+            "completedAt": "2026-10-10T07:26:16Z",
+            "conclusion": "success",
+            "databaseId": 114159680287,
+            "name": "Task 003 Buffer service RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680287"
+          },
+          {
+            "completedAt": "2026-10-10T07:28:52Z",
+            "conclusion": "success",
+            "databaseId": 114159680299,
+            "name": "Task 003 Gates F-I RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680299"
+          },
+          {
+            "completedAt": "2026-10-10T07:17:39Z",
+            "conclusion": "success",
+            "databaseId": 114159680303,
+            "name": "Metadata and host-only suites",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680303"
+          },
+          {
+            "completedAt": "2026-10-10T07:33:00Z",
+            "conclusion": "success",
+            "databaseId": 114159680327,
+            "name": "Task 003 source-negative RV64 qualification",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680327"
+          },
+          {
+            "completedAt": "2026-10-10T07:35:45Z",
+            "conclusion": "success",
+            "databaseId": 114159680370,
+            "name": "Task 003 architectural containment RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:55Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680370"
+          }
+        ],
+        "jobs_successful": 8,
+        "run_id": 38033679993,
+        "status": "completed",
+        "url": "https://github.com/srkftw/lemma/actions/runs/38033679993"
+      },
+      "push": {
+        "completed_API_record": {
+          "bytes": 15036,
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033677526-completed.json",
+          "sha256": "ed7b9534425a1980c3809da64d0caaa028cc13103519db6e031c92fdaeccbf1f"
+        },
+        "conclusion": "success",
+        "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+        "jobs": [
+          {
+            "completedAt": "2026-10-10T07:24:25Z",
+            "conclusion": "success",
+            "databaseId": 114159684989,
+            "name": "Task 003 Buffer service RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:57Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159684989"
+          },
+          {
+            "completedAt": "2026-10-10T07:30:33Z",
+            "conclusion": "success",
+            "databaseId": 114159685100,
+            "name": "Foundation Gates 1-9 and clean qualification",
+            "startedAt": "2026-10-10T07:13:56Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685100"
+          },
+          {
+            "completedAt": "2026-10-10T07:24:08Z",
+            "conclusion": "success",
+            "databaseId": 114159685130,
+            "name": "Task 003 Gates F-I RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:57Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685130"
+          },
+          {
+            "completedAt": "2026-10-10T07:17:17Z",
+            "conclusion": "success",
+            "databaseId": 114159685153,
+            "name": "Legacy Core0 RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:56Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685153"
+          },
+          {
+            "completedAt": "2026-10-10T07:17:37Z",
+            "conclusion": "success",
+            "databaseId": 114159685163,
+            "name": "Metadata and host-only suites",
+            "startedAt": "2026-10-10T07:13:57Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685163"
+          },
+          {
+            "completedAt": "2026-10-10T07:43:25Z",
+            "conclusion": "success",
+            "databaseId": 114159685178,
+            "name": "Task 003 source-negative RV64 qualification",
+            "startedAt": "2026-10-10T07:13:57Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685178"
+          },
+          {
+            "completedAt": "2026-10-10T07:30:53Z",
+            "conclusion": "success",
+            "databaseId": 114159685180,
+            "name": "Task 003 implemented Gates A-E RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:56Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685180"
+          },
+          {
+            "completedAt": "2026-10-10T07:36:05Z",
+            "conclusion": "success",
+            "databaseId": 114159685221,
+            "name": "Task 003 architectural containment RV64 acceptance",
+            "startedAt": "2026-10-10T07:13:57Z",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685221"
+          }
+        ],
+        "jobs_successful": 8,
+        "run_id": 38033677526,
+        "status": "completed",
+        "url": "https://github.com/srkftw/lemma/actions/runs/38033677526"
+      }
+    },
+    "archived_evidence_limits": [
+      "This index does not itself claim all eight lanes passed or authorize merge.",
+      "Remote process absence and unuploaded legacy .olean bytes retain the explicit limits in source-specific reviews.",
+      "Remote CI PID/start/kill/reap observations are retained hash-bound evidence. Local PID numbers do not establish remote process identity; no fresh remote /proc inspection is claimed.",
+      "Uploaded mutation artifacts omit source checkout/.git and diff files. Exact one-path canonical mutations and recorded diff digests were reconstructed from immutable4f47423e Git blobs, with145 full source and68 acceptance-input bindings.",
+      "Static IR/object stack bounds and source CFG ownership gates are independent checks of retained artifacts, not physical maximum-stack measurements or compiler-refinement proofs.",
+      "Source-negative outerPASS qualifies only strict expected observed innerFAIL; original inner reports remain FAIL.",
+      "Prior external reader failures remain retained: singleton startup file location and an invalid local-versus-remote PID assumption. They are not target failures and were never relabeled.",
+      "This is current14 PR evidence. It does not itself confirm a later report-head revision, merge, main contents or post-merge CI."
+    ],
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "independent_artifact_review_status": "ALL_EIGHT_CURRENT_PR_LANES_PASS",
+    "independent_main_integration_review": {
+      "bytes": 1884,
+      "path": "/tmp/lemma-main-integration14-independent-twjdrmc6/review.json",
+      "sha256": "b34de7ee88dac52c9e38bac7c2c0a11c9d0d07bcbd2fcedabfbcea76d2413e41"
+    },
+    "independent_review_indices": {
+      "architecture_and_source_negatives": {
+        "bytes": 22834,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/summary.json",
+        "sha256": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913"
+      },
+      "independent_all_eight_binding": {
+        "bytes": 7713,
+        "path": "/tmp/lemma-task003-final-report-final14-ozdkozlp/all-eight-review-binding-final.json",
+        "sha256": "d2946dfd6dbca07c36fdf0aac93b07ded173ef6cae1c79f9c2fe759ef21f3319"
+      },
+      "platform_whole_inventory": {
+        "bytes": 1550236,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/whole-downloaded-evidence-hashes.json",
+        "sha256": "21be542808430b32f235b2d2359a18954e306b1a8876916ca9cba41b93fca44f"
+      },
+      "six_lanes": {
+        "bytes": 5785,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-reviewed/independent-six-lane-index.json",
+        "sha256": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+      }
+    },
+    "independent_synthetic_review": {
+      "bytes": 563,
+      "path": "/tmp/lemma-14-pr-synthetic-independent-akzsgcwy/review.json",
+      "sha256": "ed423bf843bc20340f352cd64371569ddd672a95641f7fdb7c25af235831ce78"
+    },
+    "no_cancelled_job_pass_inheritance": true,
+    "pull_request_run": 38033679993,
+    "push_run": 38033677526,
+    "reviewed_artifact_ids": [
+      11662843681,
+      11662803715,
+      11663029673,
+      11663339071,
+      11663284572,
+      11663595732,
+      11664265134,
+      11663540242
+    ],
+    "root_observed_mergeability": "MERGEABLE",
+    "root_observed_status": "completed_success",
+    "source": {
+      "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+      "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+    },
+    "status": "BOTH_RUNS_COMPLETED_SUCCESS_ALL_EIGHT_JOBS_EACH",
+    "synthetic_merge": {
+      "commit": "4f47423e19321356d44c35ce8e4643421990ad32",
+      "diff_against14": [],
+      "parents": [
+        "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+        "14cc79be8914a349b729347cc05091aba6ac7ca7"
+      ],
+      "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+    }
+  },
+  "current_c3_GitHub_integration": {
+    "base_scope": "Historical ff4045 Task002 base only; current main a899 docs integration and fresh synthetic merge CI are still required.",
+    "cancellation": "Existing workflow cancel-in-progress automatically superseded old c3 PR run; no explicit cancellation or settings change.",
+    "pull_request_job_counts": {
+      "cancelled": 2,
+      "success": 6
+    },
+    "pull_request_run": 38032285139,
+    "pull_request_run_conclusion": "CANCELLED",
+    "push_job_counts": {
+      "cancelled": 2,
+      "success": 6
+    },
+    "push_run": 38032283197,
+    "push_run_conclusion": "CANCELLED",
+    "source": {
+      "clean": true,
+      "commit": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+    },
+    "status": "OLD_BASE_BOTH_CANCELLED_SIX_SUCCESS_TWO_CANCELLED_EACH",
+    "synthetic_merge": {
+      "commit": "e9c7b8a25dc1c52c830c9c9248b24a4911c788f1",
+      "diff_against_c3": [],
+      "parents": [
+        "ff4045a79a6fda45f9cd8198587357846530a806",
+        "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb"
+      ],
+      "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+    }
+  },
+  "current_c3_original_cold_campaign": {
+    "Task001": {
+      "fresh_qemu_boots": 23,
+      "independent_review": {
+        "bytes": 7152,
+        "path": "/tmp/lemma-final-legacy-c3-review-svculjll/task001-review.json",
+        "sha256": "a7f7fe4323cf61f386f221dcc60bb0700275e93b059ef95191827dbe2efc777d"
+      },
+      "report": {
+        "bytes": 58434,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-qualified-legacy/lemma/build/core0/final-legacy/check-results.json",
+        "sha256": "eb9589132aa495952c6bf8b86866370f85ef44372c036d038937df2a658b3175"
+      },
+      "status": "PASS"
+    },
+    "Task002_cumulative": {
+      "fresh_qemu_boots": 482,
+      "report": {
+        "bytes": 27409035,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-qualified-legacy/lemma/build/foundation/final-cumulative/all-results.json",
+        "sha256": "64ab4c5bc7fcdb15167feebddb65ad151b3f25673b5d0dba8cb4ba8b95176d55"
+      },
+      "status": "PASS"
+    },
+    "commands_actual_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "independent_partial_review": {
+      "status": "RUNNING_READ_ONLY_PINNED_REVALIDATION"
+    },
+    "maintained_qualification": {
+      "command_exit": 0,
+      "counts": {
+        "deterministic_artifacts_per_profile": 16,
+        "failure_path_experiments": 5,
+        "normal_sessions": 18,
+        "replayed_gate9_sessions": 26,
+        "reproducible_profiles": 2,
+        "stress_sessions": 8
+      },
+      "report": {
+        "bytes": 618646,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-qualified-legacy/lemma/build/foundation/final-qualification/qualification-results.json",
+        "sha256": "78ad4ec058284fc810ae6bc99c8625cedf28b61fc1d72007269fb1b77632fea5"
+      },
+      "status": "PASS"
+    },
+    "outer": {
+      "bytes": 12979,
+      "path": "/tmp/lemma-final-legacy-combined-retry-8cd5ggtd/result.json",
+      "sha256": "ea4129e022ddda75243b525efa42c1c69e2ab8ce1df4f021ce12325f81dc5d04"
+    },
+    "outer_error": "[Errno 2] No such file or directory: 'llvm-nm'",
+    "outer_error_type": "FileNotFoundError",
+    "scope": "Original outer FAIL is retained. Its completed inner evidence is not a completed full campaign or a pass inherited by the new retry.",
+    "source": {
+      "clean": true,
+      "commit": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+    },
+    "status": "INNER_TASK001_CUMULATIVE_QUALIFICATION_PASS_OUTER_FAIL"
+  },
+  "current_c3_whole_pinned_retry": {
+    "Task001": {
+      "fresh_qemu_boots": 23,
+      "independent_review": {
+        "bytes": 6943,
+        "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/task001-review.json",
+        "sha256": "8ddad98cca9890bb61bf073c61c5d553c16b6678d5ab82f83e86e64565349716"
+      },
+      "report": {
+        "bytes": 58434,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-pinned-legacy/lemma/build/core0/final-legacy/check-results.json",
+        "sha256": "bf73073f1ab73b34d823a1adfa439ec561cf1de12600ad9b3e3d23dcec83e403"
+      },
+      "status": "PASS"
+    },
+    "Task002_cumulative": {
+      "fresh_qemu_boots": 482,
+      "gate_boots": {
+        "1": 24,
+        "2": 136,
+        "3": 88,
+        "4": 14,
+        "5": 104,
+        "6": 28,
+        "7": 32,
+        "8": 30,
+        "9": 26
+      },
+      "report": {
+        "bytes": 27404783,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-pinned-legacy/lemma/build/foundation/final-cumulative/all-results.json",
+        "sha256": "04c525357c551d5ceec582a9caea0625b4ba7dd91dc8046d4023897d3db94573"
+      },
+      "status": "PASS"
+    },
+    "actual_exit_code": 0,
+    "elapsed_seconds": 920.0363028110005,
+    "helpers_after": {
+      "owned_command_reap.py": "15dae16b684a1f817e8c7868d8f7a12e260db98334bf417ad2dafb2565ac07e8",
+      "prepared.json": "e545e71ba3365d78fc599a09c1187c7e8cd79501ce1050124bc240372d14369f",
+      "run.py": "78b5d2360285357367a420332344aeeb676213dbb4d443245f6dc83eeb5d9a6f"
+    },
+    "helpers_before": {
+      "owned_command_reap.py": "15dae16b684a1f817e8c7868d8f7a12e260db98334bf417ad2dafb2565ac07e8",
+      "prepared.json": "e545e71ba3365d78fc599a09c1187c7e8cd79501ce1050124bc240372d14369f",
+      "run.py": "78b5d2360285357367a420332344aeeb676213dbb4d443245f6dc83eeb5d9a6f"
+    },
+    "no_prior_pass_inheritance": true,
+    "no_project_outputs_copied": true,
+    "original_artifacts_unchanged": {
+      "files": 4166,
+      "total_bytes": 150506147
+    },
+    "outer_report": {
+      "bytes": 19000,
+      "path": "/tmp/lemma-final-legacy-pinned-retry-uq5uwf_2/result.json",
+      "sha256": "0489515d2a1fae118bfe5f4bcd2ff02a719107a8845222dc1ecf17d1bfa9575f"
+    },
+    "owned_cleanup": {
+      "adopted_Z_exit0_reaped": 8,
+      "primary_pids_gone": 9,
+      "remaining": []
+    },
+    "preceding_same_source_outer_FAIL_preserved": {
+      "bytes": 12979,
+      "path": "/tmp/lemma-final-legacy-combined-retry-8cd5ggtd/result.json",
+      "sha256": "ea4129e022ddda75243b525efa42c1c69e2ab8ce1df4f021ce12325f81dc5d04"
+    },
+    "qualification": {
+      "artifact_roles": 66,
+      "counts": {
+        "deterministic_artifacts_per_profile": 16,
+        "failure_path_experiments": 5,
+        "normal_sessions": 18,
+        "replayed_gate9_sessions": 26,
+        "reproducible_profiles": 2,
+        "stress_sessions": 8
+      },
+      "independent_full_review": {
+        "bytes": 199937,
+        "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/task002-review.json",
+        "sha256": "27bed71a1e5492a9a25cb7674b66c87b6be0ad9430f72480fcaf20a6f64147e8"
+      },
+      "report": {
+        "bytes": 618604,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-pinned-legacy/lemma/build/foundation/final-qualification/qualification-results.json",
+        "sha256": "fbe5eaa425d8a601d15401bd073dc443b6f28febd1469492216eb8f637530326"
+      },
+      "status": "PASS"
+    },
+    "source": {
+      "clean": true,
+      "commit": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+    },
+    "source_inventory_unchanged": {
+      "before_inventory": {
+        "bytes": 51396,
+        "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/source-inputs-reviewed.json",
+        "sha256": "74cdef4065471ab441c676247d7f8039b48271bdce7d75327187615c20d771a9"
+      },
+      "clean": true,
+      "files": 470
+    },
+    "status": "PASS",
+    "whole_pinned_nix_environment": true,
+    "worktree": "/home/sreekumaar/.codex/worktrees/lemma-kernel-pinned-legacy/lemma"
+  },
+  "current_proposed_main_base": {
+    "changes": "README integration was reviewed in candidate14; report-head publication remains pending.",
+    "commit": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "integration_status": "MERGED_NORMALLY_IN_PUBLICATION_CANDIDATE14",
+    "parent": "ff4045a79a6fda45f9cd8198587357846530a806",
+    "tree": "cdccca7edf0cad1365659f8b702614bb4db1e24f"
+  },
+  "current_reviewed_candidate": {
+    "clean": true,
+    "commit": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+    "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+  },
+  "evidence_inventory": {
+    "additional_generated_trees": 7,
+    "additional_rows": 8493,
+    "base": {
+      "bytes": 1143285,
+      "path": "003-kernel-isolated-services-hashes.json",
+      "sha256": "4a79173ca479aaf5eef8760e42e05eb66adb67a76522f5c11f04a2cc0ab93c58"
+    },
+    "base_generated_trees": 21,
+    "extension": {
+      "bytes": 2785109,
+      "path": "003-kernel-isolated-services-inventory-extension.json",
+      "sha256": "83e12c9d087e6efb5008c064d7e00fc29cb0b4168847b56a736de8838e16d203"
+    },
+    "historical_failed_reports_preserved": true,
+    "historical_inventory_snapshot_status": "Producer files retain their earlier pending milestone labels verbatim; current report completion derives from actual current14 CI.",
+    "independent_inventory_review": {
+      "bytes": 7961,
+      "path": "/tmp/lemma-final-inventory-independent-review-Bh3yPF/review.json",
+      "sha256": "b76e6a4b41480b92ed79efdeebbc17df77ceaf42c36ae548273963a6effb4b1c"
+    },
+    "scope": "Two complete immutable inventory files. The base retains all original non-tree model/source/report metadata; the extension adds source-specific f24/c3 campaigns without relabeling earlier outputs.",
+    "target_Lean_64_f24_c3_unchanged": true,
+    "unique_bytes": 1181412055,
+    "unique_files": 14415
+  },
+  "full_K": "PASS_AT_IMPLEMENTATION14_CURRENT_BASE",
+  "highest_complete_recorded_gate": "K",
+  "historical49_qualification_failure": {
+    "Task001": {
+      "command_exit": 0,
+      "fresh_boots": 23,
+      "independent_review": {
+        "bytes": 7104,
+        "path": "/tmp/lemma-final-legacy-49-review-c62b25jh/task001-review.json",
+        "sha256": "fc6d012d35b57104697e650ed9b49faf43b01dd70bb18866f2e3f588fcf31531"
+      },
+      "report": {
+        "bytes": 58434,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-closure-legacy/lemma/build/core0/final-legacy/check-results.json",
+        "sha256": "f56c3bbfa915ab9dfeef718b2f74c815ed62e8003819e45df7cd449f54d4e935"
+      },
+      "status": "PASS"
+    },
+    "Task002_cumulative": {
+      "Gate9_PID_review": {
+        "bytes": 10435,
+        "path": "/tmp/lemma-final-legacy-49-review-c62b25jh/gate9-pid-review.json",
+        "sha256": "ecdbe5a295bb590d3313e1ea33f53b23e144369c0500f9cdfc38458d9337a3ab"
+      },
+      "Gate9_raw_replays": 26,
+      "command_exit": 0,
+      "fresh_boots": 482,
+      "gate_boots": {
+        "1": 24,
+        "2": 136,
+        "3": 88,
+        "4": 14,
+        "5": 104,
+        "6": 28,
+        "7": 32,
+        "8": 30,
+        "9": 26
+      },
+      "independent_Gate9_marker_review_scope": "Proposed88-count guard used only for read-only diagnosis; not a qualification run.",
+      "independent_review": {
+        "bytes": 166227,
+        "path": "/tmp/lemma-final-legacy-49-review-c62b25jh/task002-cumulative-review.json",
+        "sha256": "0ab0ad6135b8f3851b4b4d4b2da17e87604e5a091dfe0941b3a19d69fc065532"
+      },
+      "report": {
+        "bytes": 27408018,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-closure-legacy/lemma/build/foundation/final-cumulative/all-results.json",
+        "sha256": "c1c0c28078d5c8a0c3157665b48776a13a58ed07e3a3885d0b6bbd137f65bb2d"
+      },
+      "status": "PASS"
+    },
+    "cleanup": {
+      "adopted_Z_exit0_reaped": 8,
+      "primary_pids_gone": 9,
+      "remaining": []
+    },
+    "external_helpers": {
+      "owned_command_reap.py": {
+        "bytes": 2188,
+        "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/owned_command_reap.py",
+        "sha256": "15dae16b684a1f817e8c7868d8f7a12e260db98334bf417ad2dafb2565ac07e8"
+      },
+      "prepared.json": {
+        "bytes": 704,
+        "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/prepared.json",
+        "sha256": "00698525bf08f961b583fba75a9ff4481e54b6fc9e93cafce494b7940b8a9aa4"
+      },
+      "run.py": {
+        "bytes": 7984,
+        "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/run.py",
+        "sha256": "78b5d2360285357367a420332344aeeb676213dbb4d443245f6dc83eeb5d9a6f"
+      }
+    },
+    "initial_outputs_absent": {
+      "build": true,
+      "lake": true
+    },
+    "outer": {
+      "bytes": 13207,
+      "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/result.json",
+      "sha256": "c8185f957b1a690f204829ec16d4b3f9ae6cd076f00cb055aeac6497ac358b01"
+    },
+    "qualification": {
+      "actual_genuine_marker": "54 scalar /88 Action",
+      "command_exit": 1,
+      "error": "Gate 9 retained source-probe completion marker differs",
+      "failure": {
+        "bytes": 589,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-closure-legacy/lemma/build/foundation/final-qualification/qualification-failure.json",
+        "sha256": "c6c05226c20c51d29f8fbcfea9bc47ffa990560ac8a8a4ebf59bbb2531af7b1f"
+      },
+      "log": {
+        "bytes": 227,
+        "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/logs/task002-qualification.log",
+        "sha256": "e71374b3664369668907aa65ba52fcc21b72396686095e0379969425dcdb2771"
+      },
+      "no_success_report": true,
+      "stale_marker": "54 scalar /85 Action",
+      "status": "FAIL"
+    },
+    "source": {
+      "clean": true,
+      "commit": "49e6d67190f15c74cd7d306bf7fa816bd2996c9c",
+      "qualification_status": "FAIL_STALE_MARKER",
+      "tree": "24cb64cfccf60b62ba3a04bd170d3d0e3d2c3247"
+    },
+    "source_and_evidence_unchanged": {
+      "artifact_bytes": 128566197,
+      "artifact_files": 3680,
+      "clean": true,
+      "tracked_files": 469
+    },
+    "status": "CUMULATIVE_PASS_QUALIFICATION_FAIL"
+  },
+  "historical_initial_d4_GitHub_failures": {
+    "A_E_failure": "Actual Nix path-fetch copied generated outputs and exhausted disk; both runs failed. Detailed retained PR error is in failure bundle.",
+    "Foundation_failure": "Stale exact compiled Trap runner binding on unrepaired d4; both runs failed.",
+    "J_PR": "PASS exact historical PR synthetic merge only",
+    "J_push_failure": {
+      "error": "diagnostic frame count differs after observed allocation settlement",
+      "report": {
+        "bytes": 2947301,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/initial-push-service/kernel/ci-services/J-development-O0-run/result.json",
+        "sha256": "d997571d1b653ec7b53a9c4edd2620fa7a7328556b2167b48b293f6e02c0b1be"
+      },
+      "root_diagnosis": "Remaining-frame sample406 compared after current state became407; later actual Server Create record322 explains intervening allocation. Strict deferred accounting proposal pending; no repaired guest/CI PASS.",
+      "status": "FAIL"
+    },
+    "base_and_proposed_tree_observation": {
+      "bytes": 938,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/pr3-proposed-tree-review-d4.json",
+      "sha256": "9e2bc6e28a507be29e410b27090caa3086625a099715178576ff90d81b1d258e"
+    },
+    "fresh_repaired_source_CI": "NOT_RUN",
+    "retained_failure_bundle": {
+      "bytes": 6594,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/final-ci-failures/summary.json",
+      "sha256": "ff67e9d27147999229269355edb0463e86bf22bb6b37f4c8a2c6a87fbeac01b0"
+    },
+    "runs": [
+      {
+        "conclusion": "failure",
+        "event": "push",
+        "head": "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae",
+        "id": 38029003088,
+        "jobs": [
+          {
+            "conclusion": "success",
+            "databaseId": 114145805830,
+            "name": "Legacy Core0 RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805830"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145805934,
+            "name": "Metadata and host-only suites",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805934"
+          },
+          {
+            "conclusion": "failure",
+            "databaseId": 114145805940,
+            "name": "Task 003 implemented Gates A-E RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805940"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145805948,
+            "name": "Task 003 Gates F-I RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805948"
+          },
+          {
+            "conclusion": "failure",
+            "databaseId": 114145805950,
+            "name": "Task 003 Buffer service RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805950"
+          },
+          {
+            "conclusion": "failure",
+            "databaseId": 114145805970,
+            "name": "Foundation Gates 1-9 and clean qualification",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805970"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145805972,
+            "name": "Task 003 source-negative RV64 qualification",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805972"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145805982,
+            "name": "Task 003 architectural containment RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029003088/job/114145805982"
+          }
+        ],
+        "report": {
+          "bytes": 22491,
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/initial-run-38029003088-completed.json",
+          "sha256": "f22f4359fa6afa81fc4d73b931309cab6168b28fa8da45c2cae80d3ea9a977ec"
+        },
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "event": "pull_request",
+        "head": "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae",
+        "id": 38029005344,
+        "jobs": [
+          {
+            "conclusion": "failure",
+            "databaseId": 114145812015,
+            "name": "Task 003 implemented Gates A-E RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812015"
+          },
+          {
+            "conclusion": "failure",
+            "databaseId": 114145812115,
+            "name": "Foundation Gates 1-9 and clean qualification",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812115"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812116,
+            "name": "Task 003 architectural containment RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812116"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812117,
+            "name": "Task 003 Gates F-I RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812117"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812154,
+            "name": "Metadata and host-only suites",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812154"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812156,
+            "name": "Task 003 Buffer service RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812156"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812209,
+            "name": "Task 003 source-negative RV64 qualification",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812209"
+          },
+          {
+            "conclusion": "success",
+            "databaseId": 114145812302,
+            "name": "Legacy Core0 RV64 acceptance",
+            "status": "completed",
+            "url": "https://github.com/srkftw/lemma/actions/runs/38029005344/job/114145812302"
+          }
+        ],
+        "report": {
+          "bytes": 22499,
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/initial-run-38029005344-completed.json",
+          "sha256": "1948eba8078a60dee33fe559844d54c8d576fe6a2793fca65b9f4d77383bf20c"
+        },
+        "status": "completed"
+      }
+    ],
+    "status": "HISTORICAL_D4_PUSH_AND_PR_WHOLE_FAIL",
+    "synthetic_merge": {
+      "commit": "232d5abfff50ec7d104a1a51f08be75de2061483",
+      "parents": [
+        "ff4045a79a6fda45f9cd8198587357846530a806",
+        "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae"
+      ],
+      "tree": "1f27258143b6dbb367e54aa25f66a4f5b5b5595c",
+      "tree_equals_reviewed_head": true,
+      "unexpected_diff_paths": []
+    }
+  },
+  "historical_reviewed_Task002_base": {
+    "commit": "ff4045a79a6fda45f9cd8198587357846530a806",
+    "tree": "5a0df7b44d7b71c6966b8363399acdba41c73bbc"
+  },
+  "host_repair_snapshot": {
+    "bytes": 2808,
+    "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/host/combined-CI-repair-summary.json",
+    "sha256": "eec5cf4309e4d4d13823a511fa84a938eaf12ff71a5c2248067e28b4d783291b"
+  },
+  "limits": [
+    "Virtual-platform observations are not physical measurements.",
+    "Finite host fixtures/artifact audits/QEMU runs are separate from source-model proofs.",
+    "Nine checked model statements are not a whole-kernel or compiler refinement proof.",
+    "Buffers are volatile; restart loses contents. Failed or timed-out replies do not promise exactly-once application work.",
+    "Historical f24 and64 evidence retains original producer/source identities; no report is rebound to c3 or a future docs-integrated head.",
+    "Current LemmaSim canonical architecture is unimplemented planned work; Task003 observations use the historical pinned QEMU profile and establish no canonical LemmaSim conformance or physical equivalence."
+  ],
+  "maintained_pre_final_reports": {
+    "JSON": {
+      "bytes": 16809,
+      "path": "history/003-kernel-isolated-services-pre-final.json",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.json",
+      "sha256": "be42279f0f7af6c4223a9b2ab3e00cb906e0b26ac92e6a37ec7adb11089254e0"
+    },
+    "MD": {
+      "bytes": 7807,
+      "path": "history/003-kernel-isolated-services-pre-final.md",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.md",
+      "sha256": "22403e45f128483c585f2746ab4f121fc98e4c5a46b8dafb5ac5c89bfcc5ccc4"
+    },
+    "scope": "Original maintained pre-final reports retained verbatim under docs/evidence/history; these historical reports do not inherit final A-K results."
+  },
+  "models": {
+    "commands_exit_zero": 3,
+    "compiler_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "no_project_outputs_copied": true,
+    "pipeline_refinement_proof": false,
+    "statements": [
+      {
+        "name": "Lemma.Kernel.Memory.OwnershipModel.separate_live_owners",
+        "statement": "Distinct live owners cannot have indexed pages containing the same address."
+      },
+      {
+        "name": "Lemma.Kernel.Memory.OwnershipModel.free_is_not_live",
+        "statement": "A free indexed slot cannot be a live grant to an owner."
+      },
+      {
+        "name": "Lemma.Kernel.Memory.OwnershipModel.admitted_pool_envelope",
+        "statement": "Every Fin 512 indexed page lies within 0x82000000..0x82200000."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.attenuation_is_subset",
+        "statement": "(source & requested) & source = source & requested."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.accepted_duplicate_subset",
+        "statement": "The actual rightsSubset predicate accepting a requested mask implies requested & source = requested."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.accepted_operation_was_authorized",
+        "statement": "An operation authorized by an accepted attenuated mask was authorized by the original source mask."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.reply_right_is_known",
+        "statement": "The exact Reply mask is a subset of the known ABI rights."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.reply_cannot_duplicate",
+        "statement": "The exact Reply mask lacks the duplicate right."
+      },
+      {
+        "name": "Lemma.Kernel.CapabilityModel.unknown_2048_remains_unknown",
+        "statement": "The actual rightsSubset predicate rejects bit 2048 as an unknown right."
+      }
+    ],
+    "status": "HOST_LEAN_KERNEL_CHECKED_SOURCE_STATEMENTS_ONLY",
+    "summary": {
+      "bytes": 1437,
+      "path": "/tmp/lemma-final-model-probe-ynzvpt23/qualified-summary.json",
+      "sha256": "1422e79b2603d2d1a30673aefb3ca706362e285b35239eb1e63ebf2f2b50254c"
+    },
+    "whole_kernel_proof": false
+  },
+  "pending": [
+    "Final evidence-only report-bearing head and its actual complete CI.",
+    "User-authorized guarded merge, confirmed resulting main revision and actual post-merge CI."
+  ],
+  "publication_candidate": {
+    "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "integration_paths": [
+      "AGENTS.md",
+      "LEMMA_MACHINE_CONTRACT.md",
+      "README.md",
+      "conformance/README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/plan/BUILD_ORDER.md",
+      "docs/plan/LEMMASIM.md",
+      "docs/plan/construction-units.json",
+      "sim/README.md"
+    ],
+    "parents": [
+      "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "a899ccbb3c880e44ab529b65131cf6ea49a198d2"
+    ],
+    "source_changes": "9 documentation paths only; target/compiler/host scripts/pins/workflow unchanged.",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "remaining": [
+    "managed Lean runtime/heap",
+    "filesystem, block driver, journal and persistence",
+    "networking",
+    "graphical notebook and pen/display stack",
+    "proof-checker device port and tutor",
+    "physical-board/pen/display measurements"
+  ],
+  "repository": "srkftw/lemma",
+  "schema_version": 2,
+  "snapshot_at": "2026-10-10T08:00:25.127987+00:00",
+  "source_specific_completed_observations": {
+    "J": {
+      "counts": {
+        "J_K1_records": 44423,
+        "J_development_faults": 2,
+        "J_development_lease_expiries": 2,
+        "J_development_pending_restarts": 2,
+        "J_development_reaped_tasks": 12,
+        "J_guest_sessions": 4,
+        "J_images": 4,
+        "J_ordinary_commands": 1224,
+        "J_raw_wire_events": 45647,
+        "actual_byte_comparisons": 140,
+        "actual_independent_build_audit_commands": 20,
+        "independent_guest_sessions": 0,
+        "independent_user_images": 10
+      },
+      "independent_review": {
+        "bytes": 38055,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateJ/independent-64-review/summary.json",
+        "sha256": "995bf8c36252b6a13309e5dd23bfa79342432bf78430d106a30f508a686ca3f4"
+      },
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      },
+      "status": "PASS"
+    },
+    "K_architectural_matrix": {
+      "counts": {
+        "attack_instances": 36,
+        "cases": 12,
+        "kernel_records": 9352,
+        "managed_continuation_windows": 18,
+        "managed_fault_instances": 18,
+        "managed_task_sets_fully_reaped": 42,
+        "qemu_sessions": 12,
+        "received_bytes": 831760,
+        "singleton_instances": 18,
+        "wire_events": 9442
+      },
+      "independent_review": {
+        "bytes": 74526,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/independent-64-review/summary.json",
+        "sha256": "df553e504324b21fe2e6620ecff4b3c3dcf4c79a16afa1494202d8fa4f98b074"
+      },
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      },
+      "status": "PASS"
+    },
+    "K_canonical_source_negatives": {
+      "cases": 4,
+      "images": 8,
+      "independent_review": {
+        "bytes": 22692,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/final-source-negatives-repaired/independent-summary.json",
+        "sha256": "dd43a8ff85e1718a22f77e26ccd9e7ffab4e5b4c81db42df06e15e602def68fe"
+      },
+      "original_inner_failures_retained": true,
+      "qemu_sessions": 8,
+      "result": {
+        "bytes": 1091693,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/final-source-negatives-repaired/result.json",
+        "sha256": "4b97de04978df1cc7888b91c9c1dc9a40a425cbe95bf1c52c2a2f42e84652a34"
+      },
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      },
+      "status": "PASS"
+    },
+    "final_cold_A_I": {
+      "A_E": {
+        "checker_reports": 24,
+        "images": 20,
+        "qemu_sessions": 28,
+        "result": {
+          "bytes": 64196,
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-bounded-prefix/lemma/build/kernel/final-A-E/result.json",
+          "sha256": "90f88f70bd138b7f21362669dadde17336e890c4213ce37f5af48417f8988de1"
+        }
+      },
+      "F_I": {
+        "checker_reports": 8,
+        "images": 8,
+        "qemu_sessions": 8,
+        "result": {
+          "bytes": 35637,
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-bounded-prefix/lemma/build/kernel/final-F-I/result.json",
+          "sha256": "cc75bc92d77c5bb43db3f1019d9ad64db69bb17a473afcfb268490afdad01257"
+        }
+      },
+      "independent_review": {
+        "bytes": 548297,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-bounded-prefix/lemma/build/kernel/final-independent-prefix-summary.json",
+        "sha256": "ba5a10fe971cc89655f21f31ef91363eace489ad77d7cd5d0f86e0f244005df3"
+      },
+      "source": {
+        "clean": true,
+        "commit": "f24dd39d817d88ee1073e41de4409cfadcbbbb50",
+        "qualification_status": "PASS_A_I_ONLY",
+        "tree": "6badbd832c386dc10667c357d0aeb852e4735954"
+      },
+      "status": "PASS",
+      "target_source_not_rebound_to49": true,
+      "total": {
+        "artifact_inventory": 1807,
+        "checker_reports": 32,
+        "images": 28,
+        "live_killed_reaped": 34,
+        "natural_machine_fatal48": 2,
+        "qemu_sessions": 36,
+        "stack_graphs": 108
+      },
+      "wrapper": {
+        "bytes": 57531,
+        "path": "/tmp/lemma-final-repaired-prefix-da62adqv/prefix/result.json",
+        "sha256": "902dcbd8817b5e683e9be9000da755a1246861b08e23bf3ee20909b24284263e"
+      }
+    }
+  },
+  "static_stack_scope": {
+    "largest_reviewed_selected_O0_trap_chain_bytes": 8080,
+    "margin_bytes": 112,
+    "physical_stack_measurement": false,
+    "source": {
+      "clean": true,
+      "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+      "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+    },
+    "task_kernel_stack_bytes": 8192,
+    "vector_included_bytes": 288
+  },
+  "status": "TECHNICAL_GATES_A_K_PASS_PUBLICATION_FOLLOWUP_PENDING",
+  "task": "003-kernel-isolated-services",
+  "technical_qualified_source": {
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "scope": "Actual current-base push and PR all-eight CI; exact source-specific local evidence remains labeled64/f24/c3.",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "usable_modules": [
+    {
+      "apis": [
+        "allocate",
+        "allocateContiguous2",
+        "resolve",
+        "resolvePurpose",
+        "release",
+        "remaining"
+      ],
+      "contract": "512 owned 4KiB frames; checked independent generation handles, purposes, quotas and zero-before-publication.",
+      "module": "Lemma.Kernel.Memory.Frames"
+    },
+    {
+      "apis": [
+        "create",
+        "mapUser",
+        "lookup",
+        "unmap",
+        "destroy",
+        "context",
+        "satp"
+      ],
+      "contract": "Owned Sv39 page tables and complete walks; inactive-only teardown.",
+      "module": "Lemma.Kernel.Memory.AddressSpace"
+    },
+    {
+      "apis": [
+        "validate",
+        "validateFrame",
+        "load",
+        "teardown"
+      ],
+      "contract": "Checked immutable boot package, real text/data copy, zero BSS and rollback; validateFrame is a checked owned-frame parser API.",
+      "module": "Lemma.Kernel.Loader"
+    },
+    {
+      "apis": [
+        "create",
+        "prepareManaged",
+        "activateManaged",
+        "abort",
+        "lookup",
+        "capture",
+        "savedContext",
+        "block",
+        "pollIPC",
+        "terminate",
+        "reap"
+      ],
+      "contract": "Checked full descriptor IDs, provisional construction, owned two-page stacks and safe inactive lifecycle.",
+      "module": "Lemma.Kernel.Task"
+    },
+    {
+      "apis": [
+        "dispatch",
+        "step"
+      ],
+      "contract": "Round robin, real timer notification, runnable quantum 10000 ticks; sleep/IPC blocking and bounded UART polling.",
+      "module": "Lemma.Kernel.Scheduler"
+    },
+    {
+      "apis": [
+        "validateRead",
+        "validateWrite",
+        "copyFromUser",
+        "copyToUser"
+      ],
+      "contract": "At most 256 bytes; all pages preflighted before mutation/input consumption; owned kernel scratch, no retained borrowed pointer.",
+      "module": "Lemma.Kernel.Memory.UserCopy"
+    },
+    {
+      "apis": [
+        "attach",
+        "activate",
+        "grantBoot",
+        "lookup",
+        "duplicate",
+        "close",
+        "revoke",
+        "transfer",
+        "detach"
+      ],
+      "contract": "16 caller-local entries, attenuated rights, generations/serials, alias withdrawal and one-shot Replies.",
+      "module": "Lemma.Kernel.Capability"
+    },
+    {
+      "apis": [
+        "dispatch",
+        "waitInfo",
+        "poll",
+        "detach"
+      ],
+      "contract": "Kernel-stamped full sender, copied bounded queues, blocking receive/wait and Reply/timeout/cancel/death completion.",
+      "module": "Lemma.Kernel.IPC"
+    },
+    {
+      "apis": [
+        "nextEpoch",
+        "preflightPublish",
+        "publish",
+        "server",
+        "epoch",
+        "discover"
+      ],
+      "contract": "Checked live service binding and caller-local Call-only endpoint discovery.",
+      "module": "Lemma.Kernel.Directory"
+    },
+    {
+      "apis": [
+        "init",
+        "bindReader",
+        "poll",
+        "read",
+        "mode"
+      ],
+      "contract": "One bounded UART reader and framed input; ordinary CLI is the only granted input consumer.",
+      "module": "Lemma.Kernel.KernelInput"
+    },
+    {
+      "apis": [
+        "read8/read64/write8/write64",
+        "identity/consoleRead/consoleWrite/yield/sleep/time/exit/allocatePage/releasePage",
+        "bootGrant/info/check/duplicate/close/revoke/createEndpoint/transfer/scopedTarget/inspect",
+        "send/receive/callBegin/callWait/reply/cancel",
+        "endpoint/epoch/instances/frames"
+      ],
+      "contract": "Ordinary separately compiled programs use the same checked syscall/IPC boundaries.",
+      "module": "Lemma.User.Memory / Syscall / Capability / IPC / Discovery"
+    },
+    {
+      "apis": [
+        "create",
+        "write",
+        "read",
+        "append",
+        "status",
+        "destroy",
+        "applicationStatus",
+        "packetBytes",
+        "responseField"
+      ],
+      "contract": "Transport and service errors remain distinct; successful replies bind the original request and expose explicit-length bytes.",
+      "module": "Lemma.User.BufferClient"
+    },
+    {
+      "apis": [
+        "main"
+      ],
+      "contract": "Independent U-mode images; server owns real allocated backing pages, CLI is practical, Peer is a separate client and competitor never cooperatively yields.",
+      "module": "Lemma.Services.Buffer.Server / Lemma.Applications.BufferCLI, BufferPeer, CPUBound"
+    }
+  ],
+  "whole_target_pins_and_workflow_unchanged_64_to_c3": true
+}

@@ -427,7 +427,7 @@ def _validate_branch_structural_audit(
         "branch-effect audit",
     )
     source_function = "Lemma.Examples.Foundation.Device.dispatchBranch"
-    llvm_symbol = "core0_action_13"
+    llvm_symbol = audit_device.BRANCH_SYMBOL
     selector_0 = {
         "scratch_offset": 64,
         "stored_byte": 90,

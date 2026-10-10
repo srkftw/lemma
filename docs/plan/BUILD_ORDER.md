@@ -5,8 +5,16 @@ integration evidence. Months are concentration windows, not commitments. Task 00
 a first scalar vertical slice across Stage I, not completion of all Stage I units.
 Task 002's accepted Gates 0--10 advance and qualify that foundation and partially advance
 units 2.1/2.2 with pinned M-mode boot, traps, timers and a compiled diagnostic
-monitor. Supervisor entry, address spaces, managed processes and scheduling
-remain unimplemented; G1/G2 and these broader units are not complete.
+monitor. Task 003 has observed supervisor entry, owned frames, Sv39 user
+address spaces, scalar tasks, preemption, capabilities, blocking IPC and a
+separately linked volatile buffer service through Gate K. Final O0/O2
+qualification and all eight actual push/PR CI jobs passed at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`; see its ledger for the separate
+clean-worktree sources and retained failures. Final report-head CI and the
+owner-authorized merge are subsequent publication observations.
+These advance units 2.1–2.5, 2.7–2.8 and 3.1–3.3 within the declared Core0
+profile. The managed Lean runtime in 2.6, storage in 3.4–3.8 and
+the broader G1/G2/G3 finish lines remain incomplete.
 
 ## G1 — Core0, LLVM lowering and LemmaVM
 
@@ -132,4 +140,3 @@ Gate changes require explicit evidence; no percentage-complete score substitutes
 ## Parallel foundational workstream: LemmaSim
 
 The original G1-G7 identifiers, dependency graph and recorded evidence remain stable. In parallel with Core0 and boot work, build permanent **LemmaSim** as a first-class virtual embodiment of the finished Lemma One. A single canonical, versioned machine contract governs both embodiments; virtual motherboard, storage/power, pen/e-paper, distribution modes and cross-embodiment tests have independent exit evidence. See [LEMMASIM.md](LEMMASIM.md) and [../../LEMMA_MACHINE_CONTRACT.md](../../LEMMA_MACHINE_CONTRACT.md). Current status is architectural scaffolding, not functional equivalence achieved.
-

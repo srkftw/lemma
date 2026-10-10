@@ -40,6 +40,17 @@ structure EffectSet where
   machineState : Bool := false
   timerState : Bool := false
   interruptState : Bool := false
+  physicalRead : Bool := false
+  physicalWrite : Bool := false
+  virtualRead : Bool := false
+  virtualWrite : Bool := false
+  firmwareCall : Bool := false
+  userSyscall : Bool := false
+  addressSpace : Bool := false
+  instructionSync : Bool := false
+  privilegeTransition : Bool := false
+  waitState : Bool := false
+  mayDiverge : Bool := false
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace EffectSet
@@ -75,6 +86,17 @@ def union (left right : EffectSet) : EffectSet := {
   machineState := left.machineState || right.machineState
   timerState := left.timerState || right.timerState
   interruptState := left.interruptState || right.interruptState
+  physicalRead := left.physicalRead || right.physicalRead
+  physicalWrite := left.physicalWrite || right.physicalWrite
+  virtualRead := left.virtualRead || right.virtualRead
+  virtualWrite := left.virtualWrite || right.virtualWrite
+  firmwareCall := left.firmwareCall || right.firmwareCall
+  userSyscall := left.userSyscall || right.userSyscall
+  addressSpace := left.addressSpace || right.addressSpace
+  instructionSync := left.instructionSync || right.instructionSync
+  privilegeTransition := left.privilegeTransition || right.privilegeTransition
+  waitState := left.waitState || right.waitState
+  mayDiverge := left.mayDiverge || right.mayDiverge
 }
 
 instance : Union EffectSet := ⟨union⟩
@@ -89,7 +111,18 @@ def subset (left right : EffectSet) : Bool :=
     (!left.syncTrap || right.syncTrap) &&
     (!left.machineState || right.machineState) &&
     (!left.timerState || right.timerState) &&
-    (!left.interruptState || right.interruptState)
+    (!left.interruptState || right.interruptState) &&
+    (!left.physicalRead || right.physicalRead) &&
+    (!left.physicalWrite || right.physicalWrite) &&
+    (!left.virtualRead || right.virtualRead) &&
+    (!left.virtualWrite || right.virtualWrite) &&
+    (!left.firmwareCall || right.firmwareCall) &&
+    (!left.userSyscall || right.userSyscall) &&
+    (!left.addressSpace || right.addressSpace) &&
+    (!left.instructionSync || right.instructionSync) &&
+    (!left.privilegeTransition || right.privilegeTransition) &&
+    (!left.waitState || right.waitState) &&
+    (!left.mayDiverge || right.mayDiverge)
 
 def render (effects : EffectSet) : String :=
   let names :=
@@ -102,10 +135,37 @@ def render (effects : EffectSet) : String :=
     (if effects.syncTrap then ["sync-trap"] else []) ++
     (if effects.machineState then ["machine-state"] else []) ++
     (if effects.timerState then ["timer-state"] else []) ++
-    (if effects.interruptState then ["interrupt-state"] else [])
+    (if effects.interruptState then ["interrupt-state"] else []) ++
+    (if effects.physicalRead then ["physical-read"] else []) ++
+    (if effects.physicalWrite then ["physical-write"] else []) ++
+    (if effects.virtualRead then ["virtual-read"] else []) ++
+    (if effects.virtualWrite then ["virtual-write"] else []) ++
+    (if effects.firmwareCall then ["firmware-call"] else []) ++
+    (if effects.userSyscall then ["user-syscall"] else []) ++
+    (if effects.addressSpace then ["address-space"] else []) ++
+    (if effects.instructionSync then ["instruction-sync"] else []) ++
+    (if effects.privilegeTransition then ["privilege-transition"] else []) ++
+    (if effects.waitState then ["wait-state"] else []) ++
+    (if effects.mayDiverge then ["may-diverge"] else [])
   "[" ++ String.intercalate "," names ++ "]"
 
 end EffectSet
+
+def executionEffects : Execution.Op → EffectSet
+  | .physicalRead8 | .physicalRead64 => { checkedAccess := true, physicalRead := true }
+  | .physicalWrite8 | .physicalWrite64 => { checkedAccess := true, physicalWrite := true }
+  | .virtualRead8 | .virtualRead64 => { checkedAccess := true, virtualRead := true }
+  | .virtualWrite8 | .virtualWrite64 => { checkedAccess := true, virtualWrite := true }
+  | .readTime => .timerRead
+  | .setMachineCompare => .timerWrite
+  | .forwardSupervisor => { machineState := true, interruptState := true, ioOrder := true }
+  | .firmwareCall => { firmwareCall := true, machineState := true, ioOrder := true }
+  | .syscall => { userSyscall := true, privilegeTransition := true, ioOrder := true }
+  | .installSatp => { machineState := true, addressSpace := true, ioOrder := true }
+  | .fenceInstruction => { instructionSync := true, ioOrder := true }
+  | .enterUser => { privilegeTransition := true, machineState := true, physicalRead := true }
+  | .waitInterrupt => { waitState := true, interruptState := true }
+  | .readSupervisorPending => { interruptState := true }
 
 structure ActionSignature where
   args : Array Ty
@@ -133,6 +193,11 @@ structure ActionIterationUse where
   callback : Lean.Name
   deriving BEq, Inhabited, Repr
 
+structure ActionLoopUse where
+  stableId : String := "action.loop"
+  callback : Lean.Name
+  deriving BEq, Inhabited, Repr
+
 def boundedFoldU64StableId : String := "action.u64.bounded-fold"
 
 /-- Checked Action tree.  Every embedded value is ordinary checked scalar Core0 IR. -/
@@ -147,6 +212,7 @@ inductive ActionExpr where
       (status : Param) (next : ActionExpr)
   | ite (condition : Expr) (thenBranch elseBranch : ActionExpr)
   | call (callee : Lean.Name) (args : List Expr)
+  | loop (callback : Lean.Name)
   | boundedFoldU64 (budget : Nat) (callback : Lean.Name)
       (count initial ctx0 ctx1 ctx2 ctx3 : Expr)
       (status value : Param) (next : ActionExpr)
@@ -154,8 +220,11 @@ inductive ActionExpr where
   | uartReadByte (status value : Param) (next : ActionExpr)
   | uartWriteByte (value : Expr) (status : Param) (next : ActionExpr)
   | uartEnableAndResetFifo (status : Param) (next : ActionExpr)
+  | uartEnableAndResetFifo14 (status : Param) (next : ActionExpr)
   | trap (operation : Trap.Op) (status value : Param) (next : ActionExpr)
   | timer (operation : Timer.Op) (argument? : Option Expr)
+      (status value : Param) (next : ActionExpr)
+  | platform (operation : Execution.Op) (arguments : Array Expr)
       (status value : Param) (next : ActionExpr)
   deriving BEq, Inhabited, Repr
 
@@ -181,6 +250,7 @@ def ActionExpr.renderNormalized : ActionExpr → String
   | .call callee args =>
       let rendered := String.intercalate " " (args.map Expr.renderNormalized)
       s!"(action.call {callee} [{rendered}])"
+  | .loop callback => s!"(action.loop callback={callback};repeat-status=0;return-nonzero-status-value)"
   | .boundedFoldU64 budget callback count initial ctx0 ctx1 ctx2 ctx3 status value next =>
       s!"(action.bounded-fold-u64 budget={budget} callback={callback} " ++
         s!"count={count.renderNormalized} initial={initial.renderNormalized} " ++
@@ -198,12 +268,18 @@ def ActionExpr.renderNormalized : ActionExpr → String
         s!"{next.renderNormalized})"
   | .uartEnableAndResetFifo status next =>
       s!"(action.uart-enable-reset-fifo (status %{status.id}) {next.renderNormalized})"
+  | .uartEnableAndResetFifo14 status next =>
+      s!"(action.uart-enable-reset-fifo-trigger14 (status %{status.id}) {next.renderNormalized})"
   | .trap operation status value next =>
       s!"(action.trap {operation.stableId} (status %{status.id}) " ++
         s!"(value %{value.id}) {next.renderNormalized})"
   | .timer operation argument? status value next =>
       let argument := argument?.map Expr.renderNormalized |>.getD "none"
       s!"(action.timer {operation.stableId} (argument {argument}) " ++
+        s!"(status %{status.id}) (value %{value.id}) {next.renderNormalized})"
+  | .platform operation arguments status value next =>
+      let rendered := String.intercalate " " (arguments.toList.map Expr.renderNormalized)
+      s!"(action.platform {operation.stableId} [{rendered}] " ++
         s!"(status %{status.id}) (value %{value.id}) {next.renderNormalized})"
 
 structure ActionFunction where
@@ -213,7 +289,7 @@ structure ActionFunction where
   body : ActionExpr
   /-- Ordinary scalar dependencies, checked under the same selected Action profile. -/
   scalarDependencies : Array Lean.Name
-  /-- Direct Action-returning calls and bounded-fold callbacks. -/
+  /-- Direct Action-returning calls, bounded-fold callbacks, and loop callbacks. -/
   actionDependencies : Array Lean.Name
   directEffects : EffectSet
   /-- Exact transitive closure over `actionDependencies`. -/
@@ -237,12 +313,15 @@ structure CheckedActionSuite where
   usedIterations : Array IterationUse := #[]
   usedMemoryOps : Array MemoryOpUse
   usedActionIterations : Array ActionIterationUse := #[]
+  usedLoops : Array ActionLoopUse := #[]
   /-- Exact closed v0.5 device identities, in first-use order. -/
   usedDeviceOps : Array Device.Op := #[]
   /-- Exact closed v0.6 synchronous-trap identities, in first-use order. -/
   usedTrapOps : Array Trap.Op := #[]
   /-- Exact closed v0.7 timer/interrupt identities, in first-use order. -/
   usedTimerOps : Array Timer.Op := #[]
+  /-- Exact checked execution primitive signatures, not just friendly names. -/
+  usedExecutionOps : Array Execution.OpSpec := #[]
   deriving BEq, Inhabited, Repr
 
 def CheckedActionSuite.findActionFunction? (suite : CheckedActionSuite)

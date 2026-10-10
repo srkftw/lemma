@@ -216,7 +216,11 @@ mutual
             program.contractVersion == Profile.v0_4.contractVersion ||
             program.contractVersion == Profile.v0_5.contractVersion ||
             program.contractVersion == Profile.v0_6.contractVersion ||
-            program.contractVersion == Profile.v0_7.contractVersion do
+            program.contractVersion == Profile.v0_7.contractVersion ||
+            program.contractVersion == Profile.firmware_v0_1.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_1.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_2.contractVersion ||
+            program.contractVersion == Profile.user_v0_1.contractVersion do
           evalFail stack .invalidCheckedIR
             s!"bounded iteration is not available in {program.contractVersion}"
         unless budget ≤ Lemma.Core0.Bounded.maximumBudget do

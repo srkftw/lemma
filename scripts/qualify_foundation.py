@@ -181,7 +181,7 @@ def _validate_probe_and_rejections(
     expected_probe_log = gate9_directory / "probes/monitor-policy-frontend.txt"
     expected_frontend = (
         "Monitor genuine v0.7 frontend/lowering passed: 54 scalar functions, "
-        "85 Action functions, 7 timer/2 trap/4 UART operations"
+        "88 Action functions, 7 timer/2 trap/4 UART operations"
     )
     if (
         set(probe) != {

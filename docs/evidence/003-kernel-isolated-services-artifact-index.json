@@ -1,0 +1,128 @@
+{
+  "actual_completed_CI": {
+    "pull_request": {
+      "bytes": 15044,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033679993-completed.json",
+      "sha256": "d4a7d560276a4868ae9ec6d8aba815d78a181d07befa3064fcfd403f301ec261"
+    },
+    "push": {
+      "bytes": 15036,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033677526-completed.json",
+      "sha256": "ed7b9534425a1980c3809da64d0caaa028cc13103519db6e031c92fdaeccbf1f"
+    }
+  },
+  "artifact_ids": [
+    11662843681,
+    11662803715,
+    11663029673,
+    11663339071,
+    11663284572,
+    11663595732,
+    11664265134,
+    11663540242
+  ],
+  "current_PR_independent_indices": {
+    "architecture_and_source_negatives": {
+      "bytes": 22834,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/summary.json",
+      "sha256": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913"
+    },
+    "independent_all_eight_binding": {
+      "bytes": 7713,
+      "path": "/tmp/lemma-task003-final-report-final14-ozdkozlp/all-eight-review-binding-final.json",
+      "sha256": "d2946dfd6dbca07c36fdf0aac93b07ded173ef6cae1c79f9c2fe759ef21f3319"
+    },
+    "platform_whole_inventory": {
+      "bytes": 1550236,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/whole-downloaded-evidence-hashes.json",
+      "sha256": "21be542808430b32f235b2d2359a18954e306b1a8876916ca9cba41b93fca44f"
+    },
+    "six_lanes": {
+      "bytes": 5785,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-reviewed/independent-six-lane-index.json",
+      "sha256": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+    }
+  },
+  "inventory_independent_review": {
+    "bytes": 7961,
+    "path": "/tmp/lemma-final-inventory-independent-review-Bh3yPF/review.json",
+    "sha256": "b76e6a4b41480b92ed79efdeebbc17df77ceaf42c36ae548273963a6effb4b1c"
+  },
+  "local_legacy_independent_review": {
+    "bytes": 199937,
+    "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/task002-review.json",
+    "sha256": "27bed71a1e5492a9a25cb7674b66c87b6be0ad9430f72480fcaf20a6f64147e8"
+  },
+  "maintained_pre_final_reports": {
+    "JSON": {
+      "bytes": 16809,
+      "path": "history/003-kernel-isolated-services-pre-final.json",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.json",
+      "sha256": "be42279f0f7af6c4223a9b2ab3e00cb906e0b26ac92e6a37ec7adb11089254e0"
+    },
+    "MD": {
+      "bytes": 7807,
+      "path": "history/003-kernel-isolated-services-pre-final.md",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.md",
+      "sha256": "22403e45f128483c585f2746ab4f121fc98e4c5a46b8dafb5ac5c89bfcc5ccc4"
+    },
+    "scope": "Original maintained pre-final reports retained verbatim under docs/evidence/history; these historical reports do not inherit final A-K results."
+  },
+  "no_maintained_writes_by_report_preparation": true,
+  "packaged_files": {
+    "003-kernel-isolated-services-ci.json": {
+      "bytes": 10746,
+      "path": "003-kernel-isolated-services-ci.json",
+      "sha256": "7a52ba6ff3748cb3a37f8628902f3439d8255dcd5ac48b2f03cdcfbe3c4a19b4"
+    },
+    "003-kernel-isolated-services-commands.json": {
+      "bytes": 4078,
+      "path": "003-kernel-isolated-services-commands.json",
+      "sha256": "8a84915ead130dedbaf17e4e6dc3fea7aa824521a9a9fb47b5121d907b594ed0"
+    },
+    "003-kernel-isolated-services-detail.json": {
+      "bytes": 50389,
+      "path": "003-kernel-isolated-services-detail.json",
+      "sha256": "919771e2eb18dcdae2ef551ff25ebb42c62ce4cef0de72e752722e928f4fa51c"
+    },
+    "003-kernel-isolated-services-hashes.json": {
+      "bytes": 1143285,
+      "path": "003-kernel-isolated-services-hashes.json",
+      "sha256": "4a79173ca479aaf5eef8760e42e05eb66adb67a76522f5c11f04a2cc0ab93c58"
+    },
+    "003-kernel-isolated-services-inventory-extension.json": {
+      "bytes": 2785109,
+      "path": "003-kernel-isolated-services-inventory-extension.json",
+      "sha256": "83e12c9d087e6efb5008c064d7e00fc29cb0b4168847b56a736de8838e16d203"
+    },
+    "003-kernel-isolated-services-transcript.json": {
+      "bytes": 19822,
+      "path": "003-kernel-isolated-services-transcript.json",
+      "sha256": "167576b855c060c877885837b5e37f8890ccdd6ae34c7414fbc9060a6882cfa7"
+    },
+    "003-kernel-isolated-services.json": {
+      "bytes": 11439,
+      "path": "003-kernel-isolated-services.json",
+      "sha256": "df67db24cae66c6da64eabb719267873e3cf872669f1346723215efd76779465"
+    },
+    "003-kernel-isolated-services.md": {
+      "bytes": 14888,
+      "path": "003-kernel-isolated-services.md",
+      "sha256": "91b74937de5cd9b298a88f030c47f3f7a08d7aaa06365af99a565abbd1e507e7"
+    }
+  },
+  "pending": [
+    "Final evidence-only report-bearing head and its actual complete CI.",
+    "User-authorized guarded merge, confirmed resulting main revision and actual post-merge CI."
+  ],
+  "schema_version": 1,
+  "scope": "Final report package and exact current-base completed CI/independent lane indices. Source-specific local inventories remain64/f24/c3. Publication followup remains separate pending.",
+  "status": "FINAL_TECHNICAL_A_K_PASS_AT_14",
+  "technical_source": {
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "scope": "Actual current-base push and PR all-eight CI; exact source-specific local evidence remains labeled64/f24/c3.",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  }
+}

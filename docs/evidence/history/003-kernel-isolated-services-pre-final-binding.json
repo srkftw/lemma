@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "bytes": 7807,
+      "path": "docs/evidence/history/003-kernel-isolated-services-pre-final.md",
+      "sha256": "22403e45f128483c585f2746ab4f121fc98e4c5a46b8dafb5ac5c89bfcc5ccc4",
+      "source_commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+      "source_path": "docs/evidence/003-kernel-isolated-services.md"
+    },
+    {
+      "bytes": 16809,
+      "path": "docs/evidence/history/003-kernel-isolated-services-pre-final.json",
+      "sha256": "be42279f0f7af6c4223a9b2ab3e00cb906e0b26ac92e6a37ec7adb11089254e0",
+      "source_commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+      "source_path": "docs/evidence/003-kernel-isolated-services.json"
+    }
+  ],
+  "scope": "Verbatim earlier report; historical A-J/K-in-progress snapshot, not current milestone status."
+}

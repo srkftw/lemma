@@ -109,6 +109,8 @@ class PinnedLeanSourceRealizationTests(unittest.TestCase):
                 ),
             )
             self.assertIn("in pkgs.lean4.src", source_command[6])
+            self.assertIn('builtins.getFlake ("git+file://" + toString ./.)', source_command[6])
+            self.assertNotIn("builtins.getFlake (toString ./.)", source_command[6])
             self.assertNotIn("src.outPath", source_command[6])
             self.assertFalse(any(command[:2] == ("nix", "eval") for command in calls))
             self.assertTrue(uint_source.is_file())

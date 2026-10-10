@@ -1,0 +1,11 @@
+{
+  "scope": "Actual linked ELF24-byte halfword function/disassembler extraction; earlier fullaudit failed on decoder formatting. Not a guest observation or passed artifact.",
+  "producer": {
+    "artifact": "build/kernel/K-focused-halfword-O0-attempt2/users/fault",
+    "image_sha256": "58170b40d1e81b157b48ff4f212e6f497a826165bd814b4db995602fd3e8c440"
+  },
+  "base": 65632,
+  "size": 24,
+  "raw_hex": "970200009382020193822200678002001300730000000000",
+  "disassembly": "   10060:      \tauipc\tt0, 0x0\n   10064:      \taddi\tt0, t0, 0x10\n   10068:      \taddi\tt0, t0, 0x2\n   1006c:      \tjr\tt0\n   10070:      \taddi\tzero, t1, 0x7\n   10074:      \t<unknown>\n   10076:      \t<unknown>\n"
+}

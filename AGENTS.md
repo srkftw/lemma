@@ -2,7 +2,7 @@
 
 ## Read before changing code
 
-Read `README.md`, `docs/ARCHITECTURE.md`, the four files in `docs/contracts/`,
+Read `README.md`, `docs/ARCHITECTURE.md`, the files in `docs/contracts/`,
 `docs/plan/BUILD_ORDER.md`, and the assigned task under `codex/prompts/`.
 This is a tested, bounded freestanding foundation, not a complete OS. Do not invent successful builds.
 
@@ -54,7 +54,24 @@ filesystem, proof checker, notebook, networking, tutor, and physical-board claim
 Resume from `docs/plan/002-session-state.md` and `docs/plan/002-gates.json`; do not
 infer that a later gate passed from the existence of code or a cached earlier run.
 
-## Evidence discipline
+## Third task's scope
+
+Task 003 is authorized by `codex/prompts/003-kernel-isolated-services.md`.
+It extends the earlier task boundaries with a real supervisor kernel, owned
+physical pages, Sv39 user address spaces, syscalls, preemptive tasks, capabilities,
+blocking IPC and a separately linked volatile buffer service. Preserve every
+legacy Core0 profile and check. Keep target policy and algorithms in compiled
+Lean; structured machine primitives implement only the declared hardware boundary.
+Resume from `docs/plan/003-session-state.md` and `docs/plan/003-gates.json`.
+Gates A–K require their own observed results; code existence does not pass a gate.
+The managed Lean heap/runtime, filesystem/persistence, networking, graphical
+notebook, tutor and physical-board claims remain out of scope. Publish a draft PR
+against main. The owner explicitly authorized completion and then a guarded
+merge commit for this session; that authorization overrides the original
+draft-only instruction after full verification and applicable CI pass. Do not
+change repository settings or delete task branches. Leave USGCE untouched.
+
+## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and
   mark blocked/not-run work accurately. Never print fabricated expected logs as results.
@@ -139,7 +156,37 @@ its valid cumulative/legacy results and failed report remain retained. The fixed
 candidate's complete detached rerun passed. Do not relabel earlier artifacts as
 outputs of the fix, or infer CI success from the workflow file.
 
+## Task 003 verification and recovery
+
+The A–K milestone is recorded at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`, separately from the report-bearing
+head and subsequent merge. Read the Task 003 report, ledger and checkpoint
+before resuming; historical failures retain their original results. The full
+acceptance interfaces use the pinned environment and require clean committed
+source and unused output paths:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_kernel.py \
+  --work-dir build/kernel/verify-A-E --clean --timeout 300 --qemu-timeout 90 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane F-I --work-dir build/kernel/verify-F-I --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane J --work-dir build/kernel/verify-J --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_architecture.py \
+  --work-dir build/kernel/verify-architecture --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_mutations.py \
+  --expected-commit "$(git rev-parse HEAD)" \
+  --work-dir build/kernel/verify-source-negatives --deadline 2400
+```
+
+Keep the separate legacy Core0 and cumulative/stress foundation qualification
+above. README contains actual build, boot and ordinary terminal commands;
+`docs/evidence/003-kernel-isolated-services-commands.json` lists all acceptance
+interfaces. Recover an interrupted campaign using a new output path; never
+overwrite or turn a retained FAIL into PASS. A report-only commit may reference
+its tested implementation as permitted by the assignment. Do not start the
+managed runtime or another implementation task as part of this publication.
+
 ## LemmaSim first-class architecture
 
 Read `LEMMA_MACHINE_CONTRACT.md` and `docs/plan/LEMMASIM.md` before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned `docs/contracts/LEMMA_VM.md` boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.
-

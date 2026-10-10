@@ -137,6 +137,8 @@ inductive Instruction where
   | uartWrite8 (site : Nat) (value : Operand)
   /-- Enable and reset both 16550 FIFOs by writing the fixed byte `0x07` to FCR. -/
   | uartEnableAndResetFifo (site : Nat)
+  /-- Kernel-v0.2 only: fixed RX trigger14 and FIFO enable/reset byte `0xc7`. -/
+  | uartEnableAndResetFifo14 (site : Nat)
   /-- Construct word zero of the Gate 5 checked result.  `status` is already
   zero-extended to `i64`; keeping the aggregate operation closed prevents an
   arbitrary aggregate language from entering the backend. -/
@@ -198,6 +200,11 @@ def Instruction.render : Instruction → String
       s!"; lemma.uart-site={site};op=uart.fcr.enable-reset\n" ++
         "  call void @core0_io_fence()\n" ++
         "  store volatile i8 7, ptr inttoptr (i64 268435458 to ptr), align 1\n" ++
+        "  call void @core0_io_fence()"
+  | .uartEnableAndResetFifo14 site =>
+      s!"; lemma.uart-site={site};op=uart.fcr.enable-reset-trigger14\n" ++
+        "  call void @core0_io_fence()\n" ++
+        "  store volatile i8 199, ptr inttoptr (i64 268435458 to ptr), align 1\n" ++
         "  call void @core0_io_fence()"
   | .insertResultStatus result status =>
       assignment result ++

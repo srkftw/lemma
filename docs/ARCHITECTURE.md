@@ -59,4 +59,3 @@ to the virtual platform contract. See `docs/SOURCES.md` for official references.
 ## First-class LemmaSim decision (2026-10-09)
 
 Lemma One is one specified machine with two embodiments: permanent user-facing **LemmaSim** and physical **Lemma One**. The canonical intended machine contract lives in [../LEMMA_MACHINE_CONTRACT.md](../LEMMA_MACHINE_CONTRACT.md); the existing LemmaVM document remains the tested historical boot-profile contract. The full virtual hardware, including pen and e-paper controllers, storage, reset and device error behavior, is a foundational parallel workstream. The guest executes the actual Lean-authored software through genuine device interfaces rather than host-side software substitutes. Student, Developer and Laboratory modes share those guest interfaces. Simulator completion requires conformance evidence; physical equivalence requires physical measurements and hardware testing. See [plan/LEMMASIM.md](plan/LEMMASIM.md).
-

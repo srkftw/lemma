@@ -205,41 +205,41 @@ MACHINE_PRIMITIVES = [
 # make the complete source/body/dependency and LLVM closure explicit instead of
 # accepting exporter-authored catalogs by shape alone.
 MONITOR_MANIFEST_CANONICAL_SHA256 = (
-    "86746f2b5634d28e434beabe798cba576160ea650c4f8b071a208a84652fb86c"
+    "d403581ee82835c0b06ecdeddd065b54f1e27780de4f64881317f731a443726e"
 )
 MONITOR_NORMALIZED_SHA256 = (
-    "9710e1056ad3e772b61c1f7f30fec0de8f9ff5831596d7870f79dca75accfe96"
+    "6900269b277fad3db2e521c59a7dc86f59c1eec69e4c13c179ac6bd3b29ef772"
 )
 MONITOR_IR_SHA256 = {
-    "program.ll": "4f168dc9993820a5ca776c430ab5725d3c28a7eb856625310c19f17656675541",
-    "O0": "f6f154be553e77a7ac2e39f6a530644956e0b24cae9a28d00d436d6265d6494c",
-    "O2": "1c076a19fd38a95764f2c8a50bfa61799726f7d0f6da822dd15ef3e04bab9ddb",
+    "program.ll": "7dbfb15dbc71ccd9645ccd18e31c8ed38e97c690913179677a4fbbc3b525dac4",
+    "O0": "eb9b158f22196bfce8d9bab11dae46c2e278f046141536e3a8c966647a70cdbe",
+    "O2": "0d6b6a0c2bd6bf1d4a95b6e55cc067df325d57f99c80e94e227b80095ab6c1b2",
 }
 MONITOR_START_MACHINE_BODY_SHA256 = {
-    "O0": "85e2cf360c82a80b120cd7dc40b88cb77495f91cac9ca8e6f6c792e6d3ecb0ca",
-    "O2": "47e29c3da060e84271d9763550523bf52c774048aef1a9d883a1e9205b9c2f6b",
+    "O0": "a1e489f383be3da3d9de86a132d78841ca85b95f4ffe7e75dccadb49460cddfe",
+    "O2": "d94a54353af289708f428c376dc2f5d4478d5759dce204376429f87acb7c9927",
 }
 MONITOR_O2_JUMP_TABLE_RELOCATIONS = 40
 MONITOR_MACHINE_ACCESS_SEQUENCE = (
     ("uart.lsr.read8", "core0_action_6", "lbu", 0x10000005),
     ("uart.thr.write8", "core0_action_6", "sb", 0x10000000),
-    ("uart.lsr.read8", "core0_action_10", "lbu", 0x10000005),
-    ("uart.lsr.read8", "core0_action_13", "lbu", 0x10000005),
-    ("uart.rbr.read8", "core0_action_13", "lbu", 0x10000000),
-    ("uart.fcr.enable-reset", "core0_action_77", "sb", 0x10000002),
+    ("uart.lsr.read8", "core0_action_11", "lbu", 0x10000005),
+    ("uart.lsr.read8", "core0_action_15", "lbu", 0x10000005),
+    ("uart.rbr.read8", "core0_action_15", "lbu", 0x10000000),
+    ("uart.fcr.enable-reset", "core0_action_80", "sb", 0x10000002),
 )
 MONITOR_MACHINE_DENIED_METADATA = Counter({
     "core0_action_0": 1,
     "core0_action_3": 1,
-    "core0_action_15": 1,
     "core0_action_18": 1,
-    "core0_action_20": 1,
-    "core0_action_22": 4,
-    "core0_action_26": 1,
-    "core0_action_45": 1,
-    "core0_action_73": 6,
-    "core0_action_74": 1,
-    "core0_action_81": 1,
+    "core0_action_21": 1,
+    "core0_action_23": 1,
+    "core0_action_25": 4,
+    "core0_action_29": 1,
+    "core0_action_48": 1,
+    "core0_action_76": 6,
+    "core0_action_77": 1,
+    "core0_action_84": 1,
 })
 MONITOR_MACHINE_CALLS_SOURCE = {
     "irq.restore": 8,
@@ -869,8 +869,8 @@ def validate_monitor_ir(
         observed_source != MONITOR_MACHINE_CALLS_SOURCE
         or observed_pre_counts != MONITOR_MACHINE_CALLS_PRE
         or observed_post_counts != MONITOR_MACHINE_CALLS_POST[optimization]
-        or len(pre_functions) != 140
-        or len(post_functions) != 140
+        or len(pre_functions) != 143
+        or len(post_functions) != 143
         or bool_machine_calls != 13
         or bool_zext != 13
         or optimizer_intrinsics
@@ -934,7 +934,7 @@ def validate_monitor_machine_disassembly(
     if report.get("mutation") != "none":
         raise Core0Error("monitor final image is not the clean machine substrate")
     if (
-        report.get("compiled_functions") != 139
+        report.get("compiled_functions") != 142
         or report.get("compiled_privileged_instructions") != 0
         or report.get("startup_functions") != 16
         or report.get("machine_csr_operations") != 28

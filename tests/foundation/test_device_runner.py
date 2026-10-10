@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -233,6 +235,80 @@ class DeviceRunnerTests(unittest.TestCase):
                 record = self.run_child(scenario, _terminal_child(scenario))
                 self.assertEqual(record["qemu_returncode"], scenario.expected_exit_status)
                 self.assertEqual(record["exchanges"], [])
+
+    def test_exit_after_stale_readiness_snapshot_drains_actual_stdout(self) -> None:
+        partial = b"LMS6\x01"
+        for label, response, exit_status, diagnostic in (
+            ("partial-success-exit", partial, 0, "truncated.*received 5 of 24 bytes"),
+            ("partial-failure-exit", partial, 5, "exited with 5"),
+            ("complete-success-exit", bytes(range(24)), 0, None),
+        ):
+            with self.subTest(label=label):
+                code = (
+                    "import sys;"
+                    f"sys.stdout.buffer.write(bytes.fromhex('{response.hex()}'));"
+                    "sys.stdout.buffer.flush();"
+                    f"sys.exit({exit_status})"
+                )
+                process = subprocess.Popen(
+                    (sys.executable, "-u", "-c", code),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                try:
+                    self.assertEqual(process.wait(timeout=2), exit_status)
+                    self.assertIsNotNone(process.stdout)
+                    self.assertIsNotNone(process.stderr)
+                    stdout_fd = process.stdout.fileno()
+                    stderr_fd = process.stderr.fileno()
+                    os.set_blocking(stdout_fd, False)
+                    os.set_blocking(stderr_fd, False)
+                    capture = run_device_session._Capture()
+                    real_select = run_device_session.select.select
+                    select_calls = 0
+
+                    def stale_first_snapshot(readers, writers, exceptional, timeout):
+                        nonlocal select_calls
+                        select_calls += 1
+                        if select_calls == 1:
+                            self.assertEqual(set(readers), {stdout_fd, stderr_fd})
+                            # Model the snapshot just before stdout becomes ready.
+                            # The child, exit status and buffered output are real.
+                            return [stderr_fd], [], []
+                        return real_select(readers, writers, exceptional, timeout)
+
+                    with mock.patch.object(
+                        run_device_session.select, "select", side_effect=stale_first_snapshot
+                    ):
+                        if diagnostic is None:
+                            self.assertEqual(
+                                run_device_session._read_exact(
+                                    process, 24, deadline=time.monotonic() + 2,
+                                    capture=capture, context="reading exchange 0 response",
+                                ),
+                                response,
+                            )
+                        else:
+                            with self.assertRaisesRegex(core0_common.Core0Error, diagnostic):
+                                run_device_session._read_exact(
+                                    process, 24, deadline=time.monotonic() + 2,
+                                    capture=capture, context="reading exchange 0 response",
+                                )
+                    self.assertGreaterEqual(select_calls, 2)
+                    self.assertEqual(bytes(capture.received), response)
+                    self.assertEqual(bytes(capture.stderr), b"")
+                    if exit_status:
+                        self.assertEqual(capture.returncode, exit_status)
+                    with self.assertRaises(ProcessLookupError):
+                        os.kill(process.pid, 0)
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                        process.wait(timeout=2)
+                    if process.stdout is not None:
+                        process.stdout.close()
+                    if process.stderr is not None:
+                        process.stderr.close()
 
     def test_truncated_and_malformed_response_fail_closed(self) -> None:
         scenario = gate6_corpus.ARITHMETIC

@@ -1,0 +1,457 @@
+{
+  "schema_version": 1,
+  "task": "003-kernel-isolated-services",
+  "accepted_gates": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J"
+  ],
+  "higher_gates": "K implementation in progress; architectural and complete final-source qualification not run.",
+  "proof_scope": "Indexed ownership and capability rights-attenuation model lemmas only; no emitted-code/whole-kernel correctness theorem",
+  "gateC": {
+    "schema_version": 1,
+    "status": "PASS",
+    "accepted_gate": "C",
+    "observations": {
+      "build/kernel/gateC/qualified-supervisor-O0-run/result.json": {
+        "sha256": "0725837b96560d02179ec844ac00a0fcfa5eb9b1e6d218029bc978d35eeffb66",
+        "returncode": -9,
+        "cleanup": {
+          "explicit_host_stop": true,
+          "process_group_killed": true,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-supervisor-O2-run/result.json": {
+        "sha256": "a1d8067a9bf2d0abf41a218b29b4e8bb0fa327e3b28007bc1a4e9de99999953c",
+        "returncode": -9,
+        "cleanup": {
+          "explicit_host_stop": true,
+          "process_group_killed": true,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-machine-origin-O0-run-after-trace-fix/result.json": {
+        "sha256": "b7c2722a186fc00625d608a72e085abff2fe89ea493bfb9ad334cb790d6697c1",
+        "returncode": 48,
+        "cleanup": {
+          "explicit_host_stop": false,
+          "process_reaped": true
+        }
+      },
+      "build/kernel/gateC/qualified-machine-origin-O2-run/result.json": {
+        "sha256": "e26136c3608d5c8084f048e6c9b2655cdbb698e2d594e412a94af810d92a9bee",
+        "returncode": 48,
+        "cleanup": {
+          "explicit_host_stop": false,
+          "process_reaped": true
+        }
+      }
+    },
+    "hash_inventory": {
+      "path": "build/kernel/gateC/hash-inventory.json",
+      "sha256": "2e51c8ee0e1d613ded7ee66b5f75e6874855bdf20950a12e213e04ade37ccaa1"
+    },
+    "scope": {
+      "supervisor_execution": "actualsavedMPP1/cause9 origin witness",
+      "machine_timer": "actualirqdelta1",
+      "notification": "actualSIP.SSIP1 then0",
+      "delivered_supervisor_interrupts": 0,
+      "user_execution": "not_run",
+      "scheduling": "not_run"
+    },
+    "kernel_host_tests": 22,
+    "failure_history": [
+      "initial artifact audit nonvolatile LLVM readonly table",
+      "next allocated .rodata.cst32 rejection",
+      "negative host transport keyword mismatch",
+      "negative parser plain-vs-0x formatting mismatch"
+    ]
+  },
+  "gate_D_positive_prefix": {
+    "path": "build/kernel/gateD/positive-prefix-result.json",
+    "sha256": "653f5b2e6095139e958d8b2adf9de73a1082b87bab125444b4162189983c9131",
+    "schema_version": 1,
+    "phase": "Gate D ordinary user and address-space API",
+    "status": "PASS",
+    "full_gate_D": "in_progress: hardware denials not_run",
+    "source_base_commit": "0aeb8f07940c404357ca95e091f13e843af1ca2f",
+    "source_dirty": true,
+    "observations": {
+      "normal-O0-run": {
+        "path": "build/kernel/gateD/normal-O0-run/result.json",
+        "sha256": "d324b7dd7fa75fa3fd926fcfb8e8a92bc10bd024afe605c0ecbbb83eebd13e92",
+        "protocol": "user-D-positive-v1",
+        "records": 14,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "fresh_runs": 3,
+        "baseline_frames": 500,
+        "task_frames": 17,
+        "actual_user_supervisor_notifications": 0
+      },
+      "normal-O2-run": {
+        "path": "build/kernel/gateD/normal-O2-run/result.json",
+        "sha256": "e2f3863accff87bc7e9422c02ea1206cb31a6fee3cb95240cc4e4cba2f4f2401",
+        "protocol": "user-D-positive-v1",
+        "records": 14,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "fresh_runs": 3,
+        "baseline_frames": 500,
+        "task_frames": 17,
+        "actual_user_supervisor_notifications": 0
+      },
+      "address-space-O0-run": {
+        "path": "build/kernel/gateD/address-space-O0-run/result.json",
+        "sha256": "09f36d295fcda01c0e851955b52f19032cdb7ccf329e7ef07b9050cd47f455f5",
+        "protocol": "address-space-D-api-v1",
+        "records": 203,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "final_remaining": 512,
+        "rollback": [
+          "actual create quota failure",
+          "actual lazy-L0 quota failure"
+        ]
+      },
+      "address-space-O2-run": {
+        "path": "build/kernel/gateD/address-space-O2-run/result.json",
+        "sha256": "faa8ad8e87c9a424799fac9336ddb0d0a83d68c3cbbd255b3610c84633e7a5ef",
+        "protocol": "address-space-D-api-v1",
+        "records": 203,
+        "status": "PASS",
+        "pid_absent": true,
+        "returncode": -9,
+        "final_remaining": 512,
+        "rollback": [
+          "actual create quota failure",
+          "actual lazy-L0 quota failure"
+        ]
+      }
+    },
+    "hash_inventory": {
+      "path": "build/kernel/gateD/positive-hash-inventory.json",
+      "sha256": "5c7f65ab562ff78a68a8cdff2accdfd29c25306c17945c25f30fda41bfecdd4e",
+      "file_count": 350
+    },
+    "scheduling": "not_run",
+    "later_gates": "not_run"
+  },
+  "gate_D_clean": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "fb524b945f66241ee36a434abe39b3d854c2d9d2",
+      "tree": "e9d21676f615560d05340d1fdf26695968a0282c"
+    },
+    "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-d-acceptance/lemma/build/kernel/D-clean/result.json",
+    "report_sha256": "c077b8b57a134c17101a634875e64a23f4aa7ec7a8e076eda3671a3683d7d0e2",
+    "images": 18,
+    "checker_reports": 22,
+    "qemu_sessions": 26,
+    "host_tests": 45,
+    "elapsed_seconds": 280.31879886800016,
+    "hash_inventory": {
+      "path": "build/kernel/gateD/D-clean-hash-inventory.json",
+      "sha256": "c6dbb1c4711d2b860397e8e5799291140752df4d5886f3b3daf4a6746c828400",
+      "file_count": 1720
+    },
+    "scope": "Clean Gates A-D checkpoint; E-K not run",
+    "cleanup": {
+      "live_kill_reap": 24,
+      "natural_machine_origin_fatal48": 2,
+      "all_stderr_empty": true,
+      "all_pids_absent": true
+    }
+  },
+  "current_tested_source": {
+    "clean": true,
+    "commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0",
+    "tree": "85874c8a207af2103a717febfdbccde50147ec5f"
+  },
+  "historical_AB_tested_source_dirty": true,
+  "gate_E_clean": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "0f34b21c5b1f6482f507b131bd28851b9b26fed0",
+      "tree": "85874c8a207af2103a717febfdbccde50147ec5f"
+    },
+    "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-e-acceptance/lemma/build/kernel/E-clean/result.json",
+    "report_sha256": "83ead347364c6fc940cf69778d860f1c388a73346f088386c6d62f5876406962",
+    "images": 20,
+    "checker_reports": 24,
+    "qemu_sessions": 28,
+    "syscall_user_instances": 6,
+    "host_tests": 58,
+    "elapsed_seconds": 437.6366691860021,
+    "hash_inventory": {
+      "path": "build/kernel/gateE/E-clean-hash-inventory.json",
+      "sha256": "d5322413053166ee1a585d4ea060b1f73bd35185ba930df54e04eed1709fd628",
+      "file_count": 2083
+    },
+    "cleanup": {
+      "live_kill_reap": 26,
+      "natural_machine_origin_fatal48": 2,
+      "all_stderr_empty": true,
+      "all_pids_absent": true
+    },
+    "scope": "Clean Gates A-E checkpoint; F-K not run"
+  },
+  "historical_AB_observations": {
+    "build/kernel/gateAB/accepted-frames-development-O0-run/result.json": {
+      "sha256": "fd408eabe424e6f97f0ca1b7d197a520f91df9634045232c59f2c8db29f24221",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-frames-development-O2-run/result.json": {
+      "sha256": "c09751d3b15884f0807892d59e48093373e85babe395f7626dc2388fdc4fb1f5",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O0-bootinfo-check/result.json": {
+      "sha256": "47fb2e0dd0c23c77f18a59df6f85a8e34d0c5655f317207b048060401109fb9f",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O0-run/result.json": {
+      "sha256": "b7c026e2d5734b92fb15333e1f5566b2fae3077a6d0f9110a514957f25b1785c",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O2-bootinfo-check/result.json": {
+      "sha256": "cd8e0b2a1718fe5805850bb3c00f149ad04cf9236ff8ccaecca0f859426a28d2",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/accepted-normal-O2-run/result.json": {
+      "sha256": "a7ae1d4478cc9a88a6568c3502be9caba96a44b3cd141b170243ac72a076b36f",
+      "status": "PASS"
+    },
+    "build/kernel/gateAB/final-legacy-monitor/gate9-results.json": {
+      "sha256": "822a223cb841198e8e88fd79b44ae432575277f48d53e78865a3abdff71eb6d0",
+      "status": "PASS"
+    }
+  },
+  "historical_AB_legacy_monitor": {
+    "boots": 18,
+    "requests": 1598,
+    "hardware_irqs": 1411,
+    "synchronous_recoveries": 20,
+    "ring_records": 192,
+    "all_processes_reaped": true
+  },
+  "historical_AB_frame_checker": {
+    "records_per_profile": 2214,
+    "capacity_before_retirement": 512,
+    "capacity_after_one_retirement": 511,
+    "installed_mapping_test": "deferred to D"
+  },
+  "historical_AB_host_tests": {
+    "scaffold": 18,
+    "core0": 32,
+    "foundation": 439,
+    "kernel_audit": 13
+  },
+  "historical_AB_hash_inventory": {
+    "path": "build/kernel/gateAB/hash-inventory.json",
+    "sha256": "cef5cb629f603c9730754f06a9b7e9b5313a1f0ffe5a08f948d647f96b6d9967"
+  },
+  "historical_AB_tested_git_base": "ff4045a79a6fda45f9cd8198587357846530a806",
+  "tested_source_dirty": false,
+  "host_tests": {
+    "kernel": 58,
+    "scaffold": 18,
+    "core0": 32,
+    "foundation": 440,
+    "scope": "kernel58 in fresh clean acceptance; remaining suites on same implementation before commit"
+  },
+  "gateF_checkpoint": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "bf8e3dc570d74b3444d4d1966e83fbeb2cb188a9",
+      "tree": "ec56befa5ccd3c67cd61c69b296c530e9e638e94"
+    },
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/result.json",
+    "sha256": "aceb527b7eadd874691766dc9e77811e5017becdaf6162c5c57f1c17eb0b18b2",
+    "images": 22,
+    "checker_reports": 26,
+    "qemu_sessions": 30,
+    "observations": [
+      {
+        "instances": 12,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O0-run/result.json",
+        "record_count": 1189,
+        "sha256": "4695d23b9a5a273e18a44a03b1e0b7f1478cf7f40b3aee4e52d5db92a2a05202",
+        "status": "PASS"
+      },
+      {
+        "instances": 12,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/tasks-O2-run/result.json",
+        "record_count": 1500,
+        "sha256": "6323467f410430a8482e90966ebcbe9d2f0c0114ca6a5651470fdfb0e02dc4fb",
+        "status": "PASS"
+      }
+    ],
+    "independent_review": {
+      "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-f-acceptance/lemma/build/kernel/F-clean/independent-platform-review.json",
+      "sha256": "2eec95f118a82960be8d421478f95a117573dd1f55092452df52defdef958318"
+    }
+  },
+  "gateG_checkpoint": {
+    "status": "PASS",
+    "source": {
+      "clean": true,
+      "commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+      "tree": "a746481cd5dc9d270c0687de1ebf44f41333bb1b"
+    },
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/result.json",
+    "sha256": "d1d8005299b052a503a0b38da782a9fef2eca792d25db629c18ee1ee2d863f17",
+    "images": 24,
+    "checker_reports": 28,
+    "qemu_sessions": 32,
+    "elapsed_seconds": 562.3520683630195,
+    "observations": [
+      {
+        "gate": "F",
+        "instances": 12,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O0-run/result.json",
+        "record_count": 1291,
+        "sha256": "dc56ee75363bcacaee04229d92b84d5bdd9db103bcbf2ebe9ef7ea885389cb30",
+        "status": "PASS"
+      },
+      {
+        "gate": "F",
+        "instances": 12,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/F-O2-run/result.json",
+        "record_count": 1453,
+        "sha256": "54b46e3af456e7f9d6040d7411cd7d06e4ff6625715e02c7540e9dd9b50d1bb0",
+        "status": "PASS"
+      },
+      {
+        "gate": "G",
+        "instances": 18,
+        "optimization": "O0",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O0-run/result.json",
+        "record_count": 2339,
+        "sha256": "52a7dcc014847c6f33dc271b19081532b4e5f99bd8db31283f1e50f2b60aad8e",
+        "status": "PASS"
+      },
+      {
+        "gate": "G",
+        "instances": 18,
+        "optimization": "O2",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/G-O2-run/result.json",
+        "record_count": 2703,
+        "sha256": "d1413bed5ad5551e089d3fa9d1c0d84542ef4f9d45ab6e496a3a3a7e6445705b",
+        "status": "PASS"
+      }
+    ],
+    "independent_review": {
+      "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-g-acceptance/lemma/build/kernel/G-clean/independent-summary.json",
+      "sha256": "7bb914cc1e43125dc06e078cccc3fbe700060c7d208673974d8e369421af17a3",
+      "images": 24,
+      "checker_reports": 28,
+      "qemu_sessions": 32,
+      "object_stack_graphs": 82,
+      "all_pids_absent": true,
+      "all_stderr_empty": true
+    }
+  },
+  "latest_host_probes": {
+    "kernel": 121,
+    "scaffold": 18,
+    "scope": "held H focused host/export/object probes; full H artifacts and actual U acceptance pending"
+  },
+  "gateH_checkpoint": {
+    "status": "passed",
+    "guest_execution": "Expanded source-bound O0/O2 actual U capability/lifecycle corpus and independent raw/object/stack review passed; cold committed checkpoint remains separately required.",
+    "source": {
+      "parent_commit": "e61766a8e06bcca34a5f2365dae436c4d2cf6c4a",
+      "focused_artifacts_precommit": true,
+      "clean": false,
+      "exact_compiled_source_bindings": 124
+    },
+    "focused_evidence": [
+      {
+        "path": "build/kernel/gateH/capabilities-O0-attempt2/result.json",
+        "sha256": "980c01b603cede408a25dbdfd8aa9f9a172ae4f18f6ba39d432f4c887192397d",
+        "status": "PASS",
+        "clean": false,
+        "records": 803,
+        "instances": 5,
+        "tester_replies": 76,
+        "peer_replies": 20,
+        "publication_serials": 44,
+        "hardware_cap_header_store_faults": 2,
+        "actual_machine_interrupts": 318,
+        "owner_death_queue_cleanup": [
+          246,
+          526,
+          437,
+          460,
+          0
+        ],
+        "final_frames": 498,
+        "elapsed_seconds": 31.901705
+      },
+      {
+        "path": "build/kernel/gateH/capabilities-O2-attempt2/result.json",
+        "sha256": "297e24d3fec5480665dfa5623c190aef085a0798ff473b42f9c9ddc75bf8dd49",
+        "status": "PASS",
+        "clean": false,
+        "records": 633,
+        "instances": 5,
+        "tester_replies": 76,
+        "peer_replies": 20,
+        "publication_serials": 44,
+        "hardware_cap_header_store_faults": 2,
+        "actual_machine_interrupts": 213,
+        "owner_death_queue_cleanup": [
+          246,
+          526,
+          441,
+          462,
+          0
+        ],
+        "final_frames": 498,
+        "elapsed_seconds": 18.588865
+      }
+    ],
+    "independent_users": {
+      "build/user/gateH/independent-attempt2/result.json": "c392fea402879c3e9acb55c56e1ab3718884ce3e47cba115f4199bd97f97b71f",
+      "build/user/gateH/independent-attempt2/comparison.json": "4d413ba2e0e55b48135f13896b2c6bece4dffb18942fedb45c2ff4791186010a",
+      "standalone_images": 8,
+      "exact_artifact_comparisons": 112
+    },
+    "independent_review": {
+      "path": "build/kernel/gateH/independent-platform-review.json",
+      "sha256": "20437edea941cebe88f6f7a216d29732c726f4092c4031798e5f7d4b555d32d3",
+      "scope": "focused parent+dirty; actual raw/source/artifact/stack/cleanup review, not clean qualification"
+    },
+    "cold_prefix": "pending committed clean source snapshot; focused reports retain parent+dirty identities"
+  },
+  "gate_J_clean_exit": {
+    "source": {
+      "clean": true,
+      "commit": "d5bff55786b52daba9857b46edf617397bb8cb78",
+      "tree": "b3a713087ff6b1370a90635e3729e04e3f417b22"
+    },
+    "independent_validation": "build/kernel/gateJ/J-equivalent-independent-validation.json",
+    "independent_validation_sha256": "f72b30e24c27bc470cd80ddf5af4d53a790fb9bbd9b6bf671e5ce63ff279b199",
+    "positive_profiles": 4,
+    "canonical_append_negative_profiles": 2,
+    "all_guest_pids_absent": true
+  }
+}

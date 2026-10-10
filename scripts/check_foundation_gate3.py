@@ -674,7 +674,7 @@ def _pinned_lean_provenance(
         raise Core0Error(f"pinned Lean binary reports an unexpected git hash: {binary_githash}")
 
     source_expression = (
-        "let flake = builtins.getFlake (toString ./.); "
+        'let flake = builtins.getFlake ("git+file://" + toString ./.); '
         "pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; "
         "in pkgs.lean4.src"
     )

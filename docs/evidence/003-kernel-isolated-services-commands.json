@@ -1,0 +1,169 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/check_kernel.py",
+        "--work-dir",
+        "build/kernel/verify-A-E",
+        "--clean",
+        "--timeout",
+        "300",
+        "--qemu-timeout",
+        "90",
+        "--deadline",
+        "2400"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "A-E"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/check_kernel_cumulative.py",
+        "--lane",
+        "F-I",
+        "--work-dir",
+        "build/kernel/verify-F-I",
+        "--clean",
+        "--timeout",
+        "300",
+        "--deadline",
+        "2400"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "F-I"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/check_kernel_cumulative.py",
+        "--lane",
+        "J",
+        "--work-dir",
+        "build/kernel/verify-J",
+        "--clean",
+        "--timeout",
+        "300",
+        "--deadline",
+        "2400"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "J"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/check_kernel_architecture.py",
+        "--work-dir",
+        "build/kernel/verify-architecture",
+        "--clean",
+        "--timeout",
+        "300",
+        "--deadline",
+        "2400"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "K-architecture"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/check_kernel_mutations.py",
+        "--work-dir",
+        "build/kernel/verify-source-negatives-UNUSED",
+        "--expected-commit",
+        "FULL_CLEAN_COMMIT",
+        "--deadline",
+        "2400"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "K-canonical-source-negatives"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "./scripts/check-core0.sh",
+        "--work-dir",
+        "build/core0/verify-legacy",
+        "--clean"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "Task001"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "./scripts/check-foundation.sh",
+        "--all",
+        "--stress",
+        "--work-dir",
+        "build/foundation/verify-cumulative",
+        "--clean",
+        "--timeout",
+        "300",
+        "--qemu-timeout",
+        "20"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "Task002"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--no-write-lock-file",
+        "--command",
+        "python3",
+        "scripts/qualify_foundation.py",
+        "--gate9-dir",
+        "build/foundation/verify-cumulative/gate9",
+        "--work-dir",
+        "build/foundation/verify-qualification",
+        "--clean",
+        "--timeout",
+        "300",
+        "--qemu-timeout",
+        "20"
+      ],
+      "cwd": "exact clean committed Lemma checkout",
+      "executed_by_draft": "NOT_RUN",
+      "id": "Task002-qualification"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Maintained real acceptance interfaces, not commands run by this draft. Choose unused output paths; full SHA placeholder must be replaced with the exact clean committed source. Fresh detached source mutation controls use no copied outputs."
+}

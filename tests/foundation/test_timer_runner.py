@@ -230,8 +230,8 @@ class TimerBindingTests(unittest.TestCase):
             "test_abi": corpus.TEST_ABI, "timer_mutation": runner.mutation_metadata(mutation),
             "roots": [{"source": f"Lemma.Examples.Foundation.Timer.{name}", "signature": {"args": args},
                        "llvm": symbol}
-                      for name, args, symbol in (("foreground", [], "core0_action_33"),
-                                                 ("dispatch", ["u64"] * 9, "core0_action_39"))]}
+                      for name, args, symbol in (("foreground", [], "core0_action_35"),
+                                                 ("dispatch", ["u64"] * 9, "core0_action_41"))]}
         abi = {"mock_complete_abi": True}
         linked = [{"path": name, "kind": kind, "sha256": sha256(self.directory / name)}
                   for name, kind in (("startup.o", "lean-structured-timer-startup"), ("program.o", "test-timer-suite-llvm"))]
@@ -263,24 +263,24 @@ class TimerBindingTests(unittest.TestCase):
             "core0_timer_read_time": 1, "core0_timer_set_compare": 1,
             "core0_timer_read_pending": 0, "core0_irq_save_disable": 0,
             "core0_irq_restore": 0, "core0_timer_set_interrupt": 0, "core0_timer_probe": 106}
-        foreground = {"bytes": 3536, "chain": ["core0_main", "core0_action_33"],
-            "machine_entry": "core0_main", "checked_root": "core0_action_33",
+        foreground = {"bytes": 3536, "chain": ["core0_main", "core0_action_35"],
+            "machine_entry": "core0_main", "checked_root": "core0_action_35",
             "capacity_bytes": 65520, "stack_region_bytes": 65536, "low_canary_bytes": 16}
-        dispatcher = {"bytes": 2048, "chain": ["core0_action_39"],
-            "checked_root": "core0_action_39", "capacity_bytes": 16048,
+        dispatcher = {"bytes": 2048, "chain": ["core0_action_41"],
+            "checked_root": "core0_action_41", "capacity_bytes": 16048,
             "trap_frame_bytes": 288, "outgoing_argument_bytes": 16, "usable_trap_stack_bytes": 16352}
         body_hashes = dict(TIMER_MACHINE_BODY_SHA256)
         if mutation == 2:
             body_hashes["core0_timer_set_compare"] = DISABLE_ARMING_MACHINE_BODY_SHA256
         machine = {"approved_resume_pairs": 2, "compiled_gp_tp_free": True,
-            "compiled_privileged_instructions": 0, "compiled_functions": 80,
+            "compiled_privileged_instructions": 0, "compiled_functions": 82,
             "fatal_stackless_self_loops": 2, "startup_functions": 16, "timer_functions": 7,
             "timer_mmio_accesses": 3, "timer_mmio_width_bits": 64, "timer_fence_operations": 14,
             "machine_csr_operations": 28, "mutation": corpus.MUTATION_IDENTITIES[mutation],
             "timer_machine_body_sha256": body_hashes,
             "timer_start_machine_body_sha256": {
-                "O0": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
-                "O2": "c28069c5eb66e5c6bfaad03ecbbf3f740d447d345ad671cdc08751b2c36a9407",
+                "O0": "1d57c4b2fb78146d7acf3aacc0a91c53d363d17bc6dba495aaf6443abf62f071",
+                "O2": "29e19ddeb78734da1067ec6bded4f9eb06d70e17a20870503afbce0d6525c0d7",
             }[optimization],
             "timer_mmio_machine": {"access_count": 3, "width_bits": 64,
                 "compiled_program_accesses": 0, "all_inferred_accesses_are_approved": True,
@@ -315,7 +315,7 @@ class TimerBindingTests(unittest.TestCase):
             "accesses": [{"operation": operation, "function": function, "instruction": instruction,
                           "address": address, "fence_before": True, "fence_after": True}
                          for operation, function, instruction, address in zip(operations,
-                             ("core0_action_0", "core0_action_0", "core0_action_12", "core0_action_33"),
+                             ("core0_action_0", "core0_action_0", "core0_action_13", "core0_action_35"),
                              ("lbu", "sb", "lbu", "sb"),
                              ("0x10000005", "0x10000000", "0x10000005", "0x10000002"), strict=True)]}
         write_json(self.directory / "audit.json", {"schema_version": 1, "status": "pass",
@@ -325,7 +325,7 @@ class TimerBindingTests(unittest.TestCase):
             "timer_ir_audit": {"optimization": optimization,
                 "timer_calls": {"source": source_counts, "pre_optimization": lowered, "post_optimization": post_lowered},
                 "post_optimization_tail_merge": {
-                    "function": "core0_action_36", "source_sites": 2, "machine_calls": 1,
+                    "function": "core0_action_38", "source_sites": 2, "machine_calls": 1,
                     "selector": "two-input phi from the mutually exclusive deadline branches",
                 } if optimization == "O2" else None,
                 "optimizer_intrinsics": {"llvm.umin.i64": 1 if optimization == "O2" else 0,
@@ -334,7 +334,7 @@ class TimerBindingTests(unittest.TestCase):
                 "machine_timer_mmio_in_program": 0,
                 "bool_machine_arguments": {"calls": 6, "lowering": "canonical i1-to-i64 zext"},
                 "uart": {label: {"operations": operations, "accesses": 4,
-                    "functions": ["core0_action_0", "core0_action_12", "core0_action_33"]}
+                    "functions": ["core0_action_0", "core0_action_13", "core0_action_35"]}
                     for label in ("pre", "post")},
                 "memory": {"access_count": 2, "loads": 1, "stores": 1,
                     "source_memory_site_count": 2, "volatile_policy": True,
@@ -343,7 +343,7 @@ class TimerBindingTests(unittest.TestCase):
             "stack_sizes": {"call_graph": {"acyclic": True, "dynamic_alloca": False,
                 "stack_limit_bytes": 65536, "foreground": foreground, "trap_dispatcher": dispatcher,
                 "frame_chains": {"core0_main": {key: foreground[key] for key in ("bytes", "chain")},
-                    "core0_action_39": {key: dispatcher[key] for key in ("bytes", "chain")}}}}})
+                    "core0_action_41": {key: dispatcher[key] for key in ("bytes", "chain")}}}}})
 
     def validate(self, mutation=0):
         with mock.patch.object(runner, "_validate_manifest") as schema:
@@ -393,6 +393,17 @@ class TimerBindingTests(unittest.TestCase):
             with self.assertRaises(Core0Error):
                 self.validate()
             self.bind()
+
+    def test_exact_factored_console_function_count_rejects_stale_or_open_counts(self):
+        self.validate()
+        for count in (80, 81, 83, True, 82.0, None):
+            with self.subTest(count=count):
+                audit = json.loads((self.directory / "audit.json").read_text())
+                audit["timer_machine_audit"]["compiled_functions"] = count
+                write_json(self.directory / "audit.json", audit)
+                with self.assertRaisesRegex(Core0Error, "machine compiled_functions"):
+                    self.validate()
+                self.bind()
 
     def test_weakened_final_machine_evidence_is_rejected(self):
         for path, value in (
@@ -487,7 +498,7 @@ class TimerBindingTests(unittest.TestCase):
                 ("optimizer_intrinsics", {"llvm.umin.i64": 1,
                     "function": "core0_scalar_27", "upper_bound": 17}),
                 ("post_optimization_tail_merge", {}),
-                ("post_optimization_tail_merge", {"function": "core0_action_36",
+                ("post_optimization_tail_merge", {"function": "core0_action_38",
                     "source_sites": 2, "machine_calls": 2,
                     "selector": "two-input phi from the mutually exclusive deadline branches"}),
             ):

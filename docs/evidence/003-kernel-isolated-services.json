@@ -1,0 +1,293 @@
+{
+  "USGCE_untouched": true,
+  "acceptance_commands": {
+    "bytes": 4078,
+    "path": "003-kernel-isolated-services-commands.json",
+    "sha256": "8a84915ead130dedbaf17e4e6dc3fea7aa824521a9a9fb47b5121d907b594ed0"
+  },
+  "accepted_gates": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K"
+  ],
+  "actual_transcript": {
+    "bytes": 19822,
+    "path": "003-kernel-isolated-services-transcript.json",
+    "sha256": "167576b855c060c877885837b5e37f8890ccdd6ae34c7414fbc9060a6882cfa7"
+  },
+  "artifact_category": "task003-verification-report",
+  "completed_source_specific_evidence": {
+    "architectural_K_subset": {
+      "attack_instances": 36,
+      "cases": 12,
+      "independent_review": {
+        "bytes": 74526,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/independent-64-review/summary.json",
+        "sha256": "df553e504324b21fe2e6620ecff4b3c3dcf4c79a16afa1494202d8fa4f98b074"
+      },
+      "sessions": 12,
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      }
+    },
+    "canonical_source_negatives": {
+      "cases": 4,
+      "images": 8,
+      "independent_review": {
+        "bytes": 22692,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/final-source-negatives-repaired/independent-summary.json",
+        "sha256": "dd43a8ff85e1718a22f77e26ccd9e7ffab4e5b4c81db42df06e15e602def68fe"
+      },
+      "result": {
+        "bytes": 1091693,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/final-source-negatives-repaired/result.json",
+        "sha256": "4b97de04978df1cc7888b91c9c1dc9a40a425cbe95bf1c52c2a2f42e84652a34"
+      },
+      "sessions": 8,
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      }
+    },
+    "cold_A_I": {
+      "counts": {
+        "artifact_inventory": 1807,
+        "checker_reports": 32,
+        "images": 28,
+        "live_killed_reaped": 34,
+        "natural_machine_fatal48": 2,
+        "qemu_sessions": 36,
+        "stack_graphs": 108
+      },
+      "independent_review": {
+        "bytes": 548297,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-bounded-prefix/lemma/build/kernel/final-independent-prefix-summary.json",
+        "sha256": "ba5a10fe971cc89655f21f31ef91363eace489ad77d7cd5d0f86e0f244005df3"
+      },
+      "source": {
+        "clean": true,
+        "commit": "f24dd39d817d88ee1073e41de4409cfadcbbbb50",
+        "qualification_status": "PASS_A_I_ONLY",
+        "tree": "6badbd832c386dc10667c357d0aeb852e4735954"
+      }
+    },
+    "service_J": {
+      "independent_byte_bindings": 140,
+      "independent_review": {
+        "bytes": 38055,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateJ/independent-64-review/summary.json",
+        "sha256": "995bf8c36252b6a13309e5dd23bfa79342432bf78430d106a30f508a686ca3f4"
+      },
+      "independent_user_images": 10,
+      "ordinary_commands": 1224,
+      "sessions": 4,
+      "source": {
+        "clean": true,
+        "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+      }
+    }
+  },
+  "current14_CI": {
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "catalog": {
+      "bytes": 10746,
+      "path": "003-kernel-isolated-services-ci.json",
+      "sha256": "7a52ba6ff3748cb3a37f8628902f3439d8255dcd5ac48b2f03cdcfbe3c4a19b4"
+    },
+    "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "independent_artifact_review_status": "ALL_EIGHT_CURRENT_PR_LANES_PASS",
+    "independent_index_sha256": {
+      "architecture_and_source_negatives": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913",
+      "six_lanes": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+    },
+    "job_counts": {
+      "PR_successful": 8,
+      "push_successful": 8
+    },
+    "pull_request_run": 38033679993,
+    "push_run": 38033677526,
+    "status": "BOTH_RUNS_COMPLETED_SUCCESS_ALL_EIGHT_JOBS_EACH",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "current_main_base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+  "detailed_report": {
+    "bytes": 50389,
+    "path": "003-kernel-isolated-services-detail.json",
+    "sha256": "919771e2eb18dcdae2ef551ff25ebb42c62ce4cef0de72e752722e928f4fa51c"
+  },
+  "evidence_inventory": {
+    "additional_generated_trees": 7,
+    "additional_rows": 8493,
+    "base": {
+      "bytes": 1143285,
+      "path": "003-kernel-isolated-services-hashes.json",
+      "sha256": "4a79173ca479aaf5eef8760e42e05eb66adb67a76522f5c11f04a2cc0ab93c58"
+    },
+    "base_generated_trees": 21,
+    "extension": {
+      "bytes": 2785109,
+      "path": "003-kernel-isolated-services-inventory-extension.json",
+      "sha256": "83e12c9d087e6efb5008c064d7e00fc29cb0b4168847b56a736de8838e16d203"
+    },
+    "historical_failed_reports_preserved": true,
+    "historical_inventory_snapshot_status": "Producer files retain their earlier pending milestone labels verbatim; current report completion derives from actual current14 CI.",
+    "independent_inventory_review": {
+      "bytes": 7961,
+      "path": "/tmp/lemma-final-inventory-independent-review-Bh3yPF/review.json",
+      "sha256": "b76e6a4b41480b92ed79efdeebbc17df77ceaf42c36ae548273963a6effb4b1c"
+    },
+    "scope": "Two complete immutable inventory files. The base retains all original non-tree model/source/report metadata; the extension adds source-specific f24/c3 campaigns without relabeling earlier outputs.",
+    "target_Lean_64_f24_c3_unchanged": true,
+    "unique_bytes": 1181412055,
+    "unique_files": 14415
+  },
+  "full_K": "PASS_AT_IMPLEMENTATION14_CURRENT_BASE",
+  "fully_pinned_cold_legacy": {
+    "cleanup": {
+      "adopted_Z_exit0_reaped": 8,
+      "primary_pids_gone": 9,
+      "remaining": []
+    },
+    "counts": {
+      "Task001_boots": 23,
+      "Task002_boots": 482,
+      "artifact_roles": 66,
+      "detected_failure_experiments": 5,
+      "deterministic_artifacts_per_profile": 16,
+      "qualification_raw_replays": 26,
+      "reproducible_profiles": 2,
+      "tracked_source_files": 470,
+      "unchanged_original_evidence_files": 4166
+    },
+    "elapsed_seconds": 920.0363028110005,
+    "independent_complete_review": {
+      "bytes": 199937,
+      "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/task002-review.json",
+      "sha256": "27bed71a1e5492a9a25cb7674b66c87b6be0ad9430f72480fcaf20a6f64147e8"
+    },
+    "outer_report": {
+      "bytes": 19000,
+      "path": "/tmp/lemma-final-legacy-pinned-retry-uq5uwf_2/result.json",
+      "sha256": "0489515d2a1fae118bfe5f4bcd2ff02a719107a8845222dc1ecf17d1bfa9575f"
+    },
+    "source": {
+      "clean": true,
+      "commit": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3"
+    },
+    "status": "PASS"
+  },
+  "highest_complete_recorded_gate": "K",
+  "implementation_source": {
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "scope": "Actual current-base push and PR all-eight CI; exact source-specific local evidence remains labeled64/f24/c3.",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "limits": {
+    "canonical_LemmaSim_conformance": false,
+    "largest_selected_O0_trap_chain_bytes": 8080,
+    "physical_equivalence": false,
+    "physical_stack_measurement": false,
+    "pinned_single_hart_QEMU_only": true,
+    "static_margin_bytes": 112,
+    "strict_whole_kernel_WX": false,
+    "task_kernel_stack_bytes": 8192,
+    "trusted_S_pool_RW_alias": true,
+    "volatile_buffers": true
+  },
+  "maintained_pre_final_reports": {
+    "JSON": {
+      "bytes": 16809,
+      "path": "history/003-kernel-isolated-services-pre-final.json",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.json",
+      "sha256": "be42279f0f7af6c4223a9b2ab3e00cb906e0b26ac92e6a37ec7adb11089254e0"
+    },
+    "MD": {
+      "bytes": 7807,
+      "path": "history/003-kernel-isolated-services-pre-final.md",
+      "recorded_producer_path": "/home/sreekumaar/Downloads/lemma/docs/evidence/history/003-kernel-isolated-services-pre-final.md",
+      "sha256": "22403e45f128483c585f2746ab4f121fc98e4c5a46b8dafb5ac5c89bfcc5ccc4"
+    },
+    "scope": "Original maintained pre-final reports retained verbatim under docs/evidence/history; these historical reports do not inherit final A-K results."
+  },
+  "models": {
+    "checked_source_statements": 9,
+    "compiler_refinement_proof": false,
+    "summary": {
+      "bytes": 1437,
+      "path": "/tmp/lemma-final-model-probe-ynzvpt23/qualified-summary.json",
+      "sha256": "1422e79b2603d2d1a30673aefb3ca706362e285b35239eb1e63ebf2f2b50254c"
+    },
+    "whole_kernel_proof": false
+  },
+  "pending": [
+    "Final evidence-only report-bearing head and its actual complete CI.",
+    "User-authorized guarded merge, confirmed resulting main revision and actual post-merge CI."
+  ],
+  "preserved_historical_failures": {
+    "first_c3_outer_FAIL": {
+      "bytes": 12979,
+      "path": "/tmp/lemma-final-legacy-combined-retry-8cd5ggtd/result.json",
+      "sha256": "ea4129e022ddda75243b525efa42c1c69e2ab8ce1df4f021ce12325f81dc5d04"
+    },
+    "initial_d4_whole_CI": "Both push and PR completed failure with eight jobs each; complete original facts remain in the detailed JSON and base inventory.",
+    "old49_qualification_FAIL": {
+      "actual_genuine_marker": "54 scalar /88 Action",
+      "command_exit": 1,
+      "error": "Gate 9 retained source-probe completion marker differs",
+      "failure": {
+        "bytes": 589,
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-closure-legacy/lemma/build/foundation/final-qualification/qualification-failure.json",
+        "sha256": "c6c05226c20c51d29f8fbcfea9bc47ffa990560ac8a8a4ebf59bbb2531af7b1f"
+      },
+      "log": {
+        "bytes": 227,
+        "path": "/tmp/lemma-final-legacy-closure-retry-dgu6ck9b/logs/task002-qualification.log",
+        "sha256": "e71374b3664369668907aa65ba52fcc21b72396686095e0379969425dcdb2771"
+      },
+      "no_success_report": true,
+      "stale_marker": "54 scalar /85 Action",
+      "status": "FAIL"
+    },
+    "old_c3_CI": "Both runs cancelled after six successful/two cancelled jobs; not whole PASS."
+  },
+  "publication_candidate": {
+    "commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "integration_paths": [
+      "AGENTS.md",
+      "LEMMA_MACHINE_CONTRACT.md",
+      "README.md",
+      "conformance/README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/plan/BUILD_ORDER.md",
+      "docs/plan/LEMMASIM.md",
+      "docs/plan/construction-units.json",
+      "sim/README.md"
+    ],
+    "parents": [
+      "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+      "a899ccbb3c880e44ab529b65131cf6ea49a198d2"
+    ],
+    "source_changes": "9 documentation paths only; target/compiler/host scripts/pins/workflow unchanged.",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "repository": "srkftw/lemma",
+  "schema_version": 2,
+  "status": "TECHNICAL_GATES_A_K_PASS_PUBLICATION_FOLLOWUP_PENDING",
+  "task": "003-kernel-isolated-services"
+}

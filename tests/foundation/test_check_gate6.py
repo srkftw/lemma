@@ -78,7 +78,7 @@ class Gate6DriverTests(unittest.TestCase):
 
     def test_branch_structural_audit_requires_exclusive_source_and_cfg_placement(self) -> None:
         source_function = "Lemma.Examples.Foundation.Device.dispatchBranch"
-        symbol = "core0_action_13"
+        symbol = check_foundation_gate6.audit_device.BRANCH_SYMBOL
         selector_0 = {
             "scratch_offset": 64,
             "stored_byte": 90,

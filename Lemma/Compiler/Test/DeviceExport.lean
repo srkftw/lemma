@@ -92,6 +92,7 @@ private def deviceSourceIdentity : Lemma.Core0.Device.Op → String
   | .uartReadByte => "Lemma.Core0.Memory.Action.uartReadByte"
   | .uartWriteByte => "Lemma.Core0.Memory.Action.uartWriteByte"
   | .uartEnableAndResetFifo => "Lemma.Core0.Memory.Action.uartEnableAndResetFifo"
+  | .uartEnableAndResetFifo14 => "Lemma.Core0.Memory.Action.uartEnableAndResetFifo14"
 
 private def renderDeviceUse (op : Lemma.Core0.Device.Op)
     (spec : Lemma.Core0.Device.OpSpec) : String :=

@@ -33,10 +33,12 @@ CONTRACT_VERSION = "core0-v0.5"
 ARTIFACT_CATEGORY = "test-device-suite"
 TEST_ABI = "lemma-device-session-v1"
 ROOT_SOURCE = "Lemma.Examples.Foundation.Device.deviceSession"
-ROOT_SYMBOL = "core0_action_21"
+ROOT_SYMBOL = "core0_action_24"
 BRANCH_SOURCE = "Lemma.Examples.Foundation.Device.dispatchBranch"
-BRANCH_SYMBOL = "core0_action_13"
+BRANCH_SYMBOL = "core0_action_15"
 SEND_BYTE_SOURCE = "Lemma.Examples.Foundation.Device.Support.sendByte"
+SEND_BYTE_SYMBOL = "core0_action_2"
+SEND_RESPONSE_SYMBOL = "core0_action_12"
 
 UART_BASE = 0x10000000
 UART_SPAN = 0x100
@@ -268,12 +270,15 @@ MACHINE_PRIMITIVES = [
 ACTION_CONTRACTS: tuple[
     tuple[str, tuple[str, ...], tuple[str, ...], tuple[str, ...], tuple[str, ...]], ...
 ] = (
-    ("Lemma.Examples.Foundation.Device.Support.transmitPollStep",
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep",
      ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (),
      ("mmio-read", "mmio-write", "io-order"),
      ("mmio-read", "mmio-write", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.sendByte", ("u8",),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep",), (),
+     ("mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.sendByte", ("u8",),
-     ("Lemma.Examples.Foundation.Device.Support.transmitPollStep",), (),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.sendByte",), (),
      ("mmio-read", "mmio-write", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.readyStep",
      ("u32", "u32", "u64", "u64", "u64", "u64", "u64"),
@@ -282,11 +287,14 @@ ACTION_CONTRACTS: tuple[
     ("Lemma.Examples.Foundation.Device.Support.sendReady", (),
      ("Lemma.Examples.Foundation.Device.Support.readyStep",), (),
      ("mmio-read", "mmio-write", "io-order")),
-    ("Lemma.Examples.Foundation.Device.Support.receivePollStep",
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep",
      ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (),
      ("mmio-read", "io-order"), ("mmio-read", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.receiveByte", (),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep",), (),
+     ("mmio-read", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.receiveByte", (),
-     ("Lemma.Examples.Foundation.Device.Support.receivePollStep",), (),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.receiveByte",), (),
      ("mmio-read", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.receiveIntoStep",
      ("u32", "u32", "u64", "u64", "u64", "u64", "u64"),
@@ -339,11 +347,14 @@ ACTION_CONTRACTS: tuple[
       "Lemma.Examples.Foundation.Device.Support.receivePayload",
       "Lemma.Examples.Foundation.Device.dispatchRequest"),
      ("checked-access", "fixed-ram-read"), tuple(EFFECT_ORDER)),
-    ("Lemma.Examples.Foundation.Device.Support.drainPollStep",
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep",
      ("u32", "u32", "u64", "u64", "u64", "u64", "u64"), (),
      ("mmio-read", "io-order"), ("mmio-read", "io-order")),
+    ("Lemma.Platform.LemmaVM.ConsoleDevice.drain", (),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep",), (),
+     ("mmio-read", "io-order")),
     ("Lemma.Examples.Foundation.Device.Support.drain", (),
-     ("Lemma.Examples.Foundation.Device.Support.drainPollStep",), (),
+     ("Lemma.Platform.LemmaVM.ConsoleDevice.drain",), (),
      ("mmio-read", "io-order")),
     (ROOT_SOURCE, (),
      ("Lemma.Examples.Foundation.Device.Support.sendReady",
@@ -354,12 +365,12 @@ ACTION_CONTRACTS: tuple[
 
 ITERATION_CONTRACTS = (
     (21, "Lemma.Examples.Foundation.Device.Support.readyStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.transmitPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep"),
     (16, "Lemma.Examples.Foundation.Device.Support.receiveIntoStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.receivePollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep"),
     (24, "Lemma.Examples.Foundation.Device.Support.responseStep"),
     (65535, "Lemma.Examples.Foundation.Device.Support.repeatedByteStep"),
-    (1000000, "Lemma.Examples.Foundation.Device.Support.drainPollStep"),
+    (1000000, "Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep"),
 )
 
 SOURCE_DEVICE_TOKENS = {
@@ -1734,7 +1745,7 @@ def _validate_readback_encoding(
             if incoming & forwarded and phi.group(1) not in forwarded:
                 forwarded.add(phi.group(1))
                 changed = True
-    calls = re.findall(r"call \{ i64, i64 \} @core0_action_10\([^\n]+\)", text)
+    calls = re.findall(r"call \{ i64, i64 \} @" + re.escape(SEND_RESPONSE_SYMBOL) + r"\([^\n]+\)", text)
     if not any(any(re.search(rf", i64 {re.escape(value)}\)$", call) for value in forwarded) for call in calls):
         raise Core0Error("dispatchBranch response does not consume its actual RAM readback")
 
@@ -1748,7 +1759,7 @@ def validate_branch_ir_placement(ir: str, *, optimized: bool) -> dict[str, objec
     load_sites: list[tuple[str, str, str]] = []
     send_sites: list[tuple[str, str]] = []
     send_pattern = re.compile(
-        r"\bcall \{ i64, i64 \} @core0_action_1\(i8 zeroext (?:165|-91)\)"
+        r"\bcall \{ i64, i64 \} @" + re.escape(SEND_BYTE_SYMBOL) + r"\(i8 zeroext (?:165|-91)\)"
     )
     for label, lines in blocks.items():
         for line in lines:
@@ -1987,7 +1998,7 @@ def manifest_mutations(manifest: Mapping[str, object]) -> list[AuditMutation]:
         _mapping(function, "mutated Action function")
         for function in functions
         if _mapping(function, "mutated Action function").get("source")
-        == "Lemma.Examples.Foundation.Device.Support.transmitPollStep"
+        == "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep"
     )
     target["transitive_effects"] = ["mmio-read", "mmio-write"]
 

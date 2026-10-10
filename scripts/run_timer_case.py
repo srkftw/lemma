@@ -136,7 +136,7 @@ def _validate_timer_audit(audit: dict[str, object], manifest: dict[str, object],
         "pre_optimization": lowered_counts, "post_optimization": post_counts},
         "source/pre/post timer operation closure")
     _same_evidence(ir.get("post_optimization_tail_merge"), {
-        "function": "core0_action_36", "source_sites": 2, "machine_calls": 1,
+        "function": "core0_action_38", "source_sites": 2, "machine_calls": 1,
         "selector": "two-input phi from the mutually exclusive deadline branches",
     } if optimization == "O2" else None, "exact optimizer compare tail merge")
     _same_evidence(ir.get("optimizer_intrinsics"), {
@@ -167,7 +167,7 @@ def _validate_timer_audit(audit: dict[str, object], manifest: dict[str, object],
         raise Core0Error("timer audit lacks meaningful volatile checked-RAM evidence")
     machine = _object(audit.get("timer_machine_audit"), "timer final machine audit")
     invariants = {"approved_resume_pairs": 2, "compiled_gp_tp_free": True,
-        "compiled_privileged_instructions": 0, "compiled_functions": 80,
+        "compiled_privileged_instructions": 0, "compiled_functions": 82,
         "fatal_stackless_self_loops": 2, "startup_functions": 16,
         "timer_functions": 7, "timer_mmio_accesses": 3,
         "timer_mmio_width_bits": 64, "timer_fence_operations": 14,
@@ -181,8 +181,8 @@ def _validate_timer_audit(audit: dict[str, object], manifest: dict[str, object],
     _same_evidence(machine.get("timer_machine_body_sha256"), expected_body_hashes,
         "complete final timer primitive bodies")
     _same_evidence(machine.get("timer_start_machine_body_sha256"), {
-        "O0": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
-        "O2": "c28069c5eb66e5c6bfaad03ecbbf3f740d447d345ad671cdc08751b2c36a9407",
+        "O0": "1d57c4b2fb78146d7acf3aacc0a91c53d363d17bc6dba495aaf6443abf62f071",
+        "O2": "29e19ddeb78734da1067ec6bded4f9eb06d70e17a20870503afbce0d6525c0d7",
     }[optimization], "profile-specific complete machine entry body")
     _same_evidence(machine.get("timer_mmio_machine"), {
         "access_count": 3, "width_bits": 64, "compiled_program_accesses": 0,

@@ -11,7 +11,20 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The historical boot reference is **LemmaVM**; the permanent virtual embodiment is **LemmaSim**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested freestanding diagnostic monitor and machine foundation.**
+**Current state: tested supervisor kernel and isolated volatile buffer service.**
+Task 003 adds owned physical pages, Sv39 user address spaces, ordinary syscalls,
+preemptive tasks, capabilities, blocking IPC and separately linked U-mode
+applications. O0/O2 acceptance and legacy regressions passed at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`; all eight jobs passed in both actual
+[push](https://github.com/srkftw/lemma/actions/runs/38033677526) and
+[PR CI](https://github.com/srkftw/lemma/actions/runs/38033679993).
+Read the [Task 003 report](docs/evidence/003-kernel-isolated-services.md),
+[gate ledger](docs/plan/003-gates.json) and
+[checkpoint](docs/plan/003-session-state.md) for source-specific results,
+commands, failures and trust limits. Its final report commit, merge and
+post-merge CI are separate publication observations.
+
+The earlier machine foundation remains qualified:
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
 RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–10 extend and qualify it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
@@ -19,7 +32,7 @@ checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
 traps with checked context preservation, and actual timer interrupts during
 foreground computation. The integrated ten-command monitor and full cumulative/
 legacy suite passed clean detached O0/O2 qualification at `09c47ba`.
-Task 002 is published as [draft stacked PR #2](https://github.com/srkftw/lemma/pull/2);
+Task 002 was merged through [PR #2](https://github.com/srkftw/lemma/pull/2);
 the initial actual CI failed at Gate 3's pinned-source materialization. Its repair
 passed full fresh local qualification and all three jobs in both actual
 [push](https://github.com/srkftw/lemma/actions/runs/37825241614) and
@@ -134,15 +147,121 @@ successful `e0e1f21` run is historical, not rebound. See the report for exact so
 and later publication identities. CI separately runs metadata/host,
 legacy RV64, and cumulative foundation/qualification jobs with retained artifacts.
 
+## Kernel foundation development
+
+The independent boot package and frame API remain available. These
+commands run inside the pinned environment; `bootstrap-m` does not claim S/U
+execution. Keep source stable between build and observation: stale bindings fail.
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration normal --stage bootstrap-m --opt-level O2 \
+  --output-dir build/kernel/normal --clean
+nix develop --no-write-lock-file --command python3 scripts/run_kernel.py \
+  --image build/kernel/normal/image.elf --output-dir build/kernel/normal-run --clean
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration frames-development --stage bootstrap-m --opt-level O2 \
+  --output-dir build/kernel/frames --clean
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_frames.py \
+  --image build/kernel/frames/image.elf --output-dir build/kernel/frames-run --clean
+```
+
+The development transport remains live for fresh requests after boot. The
+independent user ELF is in the build's `user/` directory. A supervisor build now
+loads it into owned Sv39 mappings and accepts continuous run requests. The
+ordinary U-mode, address-space API and architectural denial checks have observed
+O0/O2 results in the gate ledger. Run the focused positive check with:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration normal --stage supervisor --opt-level O2 \
+  --output-dir build/kernel/user --clean
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_user.py \
+  --image build/kernel/user/image.elf --output-dir build/kernel/user-run --clean
+```
+
+Each finite runner stops/reaps QEMU after actual observations and records that
+explicit host cleanup. It does not treat a timeout or host stop as normal exit.
+
+The service package has separately linked U-mode Buffer Server,
+command client, peer client and CPU-bound application. Build and interact with
+the ordinary package using:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration service-normal --stage supervisor --opt-level O2 \
+  --output-dir build/kernel/service-normal --clean --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/buffer-cli.py \
+  --image build/kernel/service-normal/image.elf \
+  --output-dir build/kernel/service-terminal --timeout 3600
+```
+
+Each registered user image can also be compiled and linked independently:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-user.sh \
+  --configuration service-normal --image-key server --opt-level O2 \
+  --output-dir build/user/buffer-server --clean --timeout 300
+nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh \
+  build/user/buffer-server --timeout 120
+```
+
+The closed source registry is `Lemma/Compiler/DeploymentCatalog.lean`. The
+independent user ELF, text/data payloads and manifest match the corresponding
+boot-package constituent; the kernel loader supplies its owned mappings and
+initial context.
+
+The terminal accepts `help`, `version`, `ps`, `mem`, `discover` and bounded
+`buffer create/write/append/read/status/destroy` commands. Read the returned
+handle after creation. Text is encoded as UTF-8; `hex:00ff` supplies opaque
+binary bytes. Each operation carries at most 128 bytes. Buffers are volatile,
+and an old service epoch cannot identify data after a restart. Ordinary clients
+have no task-management grant. The separate `service-development` package
+contains the diagnostic controller and fault client used for acceptance.
+
+The maintained service observer is `scripts/check_kernel_buffer.py`. Clean
+committed-source acceptance uses the separate cumulative lanes:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane F-I --work-dir build/kernel/acceptance-F-I --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane J --work-dir build/kernel/acceptance-J --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_architecture.py \
+  --work-dir build/kernel/acceptance-K --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_mutations.py \
+  --expected-commit "$(git rev-parse HEAD)" \
+  --work-dir build/kernel/acceptance-K-mutations --deadline 2400
+```
+
+The mutation campaign requires an unused output path and creates its own exact
+clean detached controls and narrowly changed source checkouts. It preserves
+original failed target observations rather than treating an unrelated failure
+as mutation detection. Recover an interrupted run from the ledger and use a new
+output path to retain previous evidence.
+
+These lanes require their own observed results. The A-E controller, legacy
+Core0/foundation acceptance and final Task003 qualification remain separate
+requirements; a passing earlier checkpoint does not certify changed source.
+
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
-Task 001 is [PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
-[draft PR #2](https://github.com/srkftw/lemma/pull/2), stacked against
-`task/001-core0-freestanding-slice` as originally proposed. Check GitHub for current merge status; historical PR descriptions are not live status reports.
+Task 001 [PR #1](https://github.com/srkftw/lemma/pull/1) and Task 002
+[PR #2](https://github.com/srkftw/lemma/pull/2) were merged by explicit owner
+authorization. The reviewed Task002 integration is
+`ff4045a79a6fda45f9cd8198587357846530a806`; subsequent main commit
+`a899ccbb3c880e44ab529b65131cf6ea49a198d2` adds the LemmaSim architecture
+documents from [PR #4](https://github.com/srkftw/lemma/pull/4). Both task
+branches remain available. Check GitHub for live revision and merge status.
 
-For the current work, select `task/002-machine-foundation` and read
-`codex/prompts/002-machine-foundation.md`, the gate ledger and resume checkpoint.
+For current kernel work, select `task/003-kernel-isolated-services` and read
+its assignment, gate ledger and resume checkpoint. The accepted Task 003
+integration is A–K at `14cc79be8914a349b729347cc05091aba6ac7ca7`, with a draft
+[PR #3](https://github.com/srkftw/lemma/pull/3) against current main. The owner
+authorized a guarded merge after the report-bearing head's checks pass.
+This report snapshot precedes that final merge and post-merge CI. See
+[Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.
 

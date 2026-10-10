@@ -82,11 +82,11 @@ def _memory_contract() -> dict[str, object]:
 def _direct_body_tokens(source: str) -> list[str]:
     base = "Lemma.Examples.Foundation.Device"
     exact = {
-        f"{base}.Support.transmitPollStep": [
+        "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep": [
             "(action.uart-read-status (status %0) (value %1))",
             "(action.uart-write-byte (var 0 u8) (status %2))",
         ],
-        f"{base}.Support.receivePollStep": [
+        "Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep": [
             "(action.uart-read-status (status %0) (value %1))",
             "(action.uart-read-byte (status %2) (value %3))",
         ],
@@ -108,7 +108,7 @@ def _direct_body_tokens(source: str) -> list[str]:
         f"{base}.handleRequest": [
             "(action.load8 (lit u8 1) (lit u64 0) (status %0) (value %1))"
         ],
-        f"{base}.Support.drainPollStep": [
+        "Lemma.Platform.LemmaVM.ConsoleDevice.drainPollStep": [
             "(action.uart-read-status (status %0) (value %1))"
         ],
         audit_device.ROOT_SOURCE: ["(action.uart-enable-reset-fifo (status %0))"],
@@ -274,7 +274,7 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
             "  ret void",
             "}",
             "",
-            "define { i64, i64 } @core0_action_13(i64 %arg0) nounwind noinline {",
+            f"define {{ i64, i64 }} @{audit_device.BRANCH_SYMBOL}(i64 %arg0) nounwind noinline {{",
             "entry:",
             f"  %branch.value = load volatile i8, ptr inttoptr (i64 {0x80801010} to ptr), align 1",
             "  %mem.0.value.0 = zext i8 %branch.value to i64",
@@ -319,11 +319,11 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
             "  %false.shift = shl i64 %false.value, 8",
             "  %false.encoded = add i64 %false.shift, %mem.0.value.0",
             "  %false.response = call { i64, i64 } "
-            "@core0_action_10(i8 zeroext 0, i64 %arg0, i64 %false.encoded)",
+            f"@{audit_device.SEND_RESPONSE_SYMBOL}(i8 zeroext 0, i64 %arg0, i64 %false.encoded)",
             "  br label %branch.merge",
             "branch.one:",
             "  %branch.send = call { i64, i64 } "
-            f"@core0_action_1(i8 zeroext {send_value})",
+            f"@{audit_device.SEND_BYTE_SYMBOL}(i8 zeroext {send_value})",
             "  br label %branch.one.readback",
             "branch.one.readback:",
             "  %true.loaded = load volatile i8, ptr inttoptr "
@@ -335,7 +335,7 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
             "  %true.shift = shl i64 %true.value, 8",
             "  %true.encoded = add i64 %true.shift, %mem.0.value.0",
             "  %true.response = call { i64, i64 } "
-            "@core0_action_10(i8 zeroext 0, i64 %arg0, i64 %true.encoded)",
+            f"@{audit_device.SEND_RESPONSE_SYMBOL}(i8 zeroext 0, i64 %arg0, i64 %true.encoded)",
             "  br label %branch.merge",
             "branch.default:",
             "  br label %branch.merge",
@@ -349,12 +349,29 @@ def ir_fixture(*, markers: bool, optimized: bool = False) -> str:
 
 
 class DeviceManifestAuditTests(unittest.TestCase):
+    def test_legacy_clients_have_only_exact_shared_uart_dependencies(self) -> None:
+        for name in ("sendByte", "receiveByte", "drain"):
+            fixture = closed_manifest_fixture()
+            source = "Lemma.Examples.Foundation.Device.Support." + name
+            client = next(row for row in fixture["action_functions"] if row["source"] == source)
+            self.assertEqual(client["action_dependencies"], ["Lemma.Platform.LemmaVM.ConsoleDevice." + name])
+            self.assertEqual(client["direct_effects"], [])
+            # A different production namespace or an extra direct MMIO effect
+            # cannot be admitted merely because a legacy client delegates.
+            for field, value in (("action_dependencies", ["Lemma.Kernel.Hidden." + name]),
+                                 ("direct_effects", ["mmio-write", "io-order"])):
+                changed = copy.deepcopy(fixture)
+                row = next(row for row in changed["action_functions"] if row["source"] == source)
+                row[field] = value
+                with self.subTest(client=name, field=field), self.assertRaises(Core0Error):
+                    audit_device.validate_effect_closure(changed)
+
     def test_closed_manifest_abi_and_normalized_companion(self) -> None:
         manifest = closed_manifest_fixture()
         report = audit_device.validate_device_suite_manifest(
             manifest, normalized=normalized_fixture(manifest)
         )
-        self.assertEqual(report["action_functions"], 22)
+        self.assertEqual(report["action_functions"], 25)
         self.assertEqual(report["source_device_operations"], 6)
         self.assertEqual(report["device_operations"], 4)
         branch = report["branch_effects"]

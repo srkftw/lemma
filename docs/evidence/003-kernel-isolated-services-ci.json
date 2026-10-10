@@ -1,0 +1,239 @@
+{
+  "archived_evidence_limits": [
+    "This index does not itself claim all eight lanes passed or authorize merge.",
+    "Remote process absence and unuploaded legacy .olean bytes retain the explicit limits in source-specific reviews.",
+    "Remote CI PID/start/kill/reap observations are retained hash-bound evidence. Local PID numbers do not establish remote process identity; no fresh remote /proc inspection is claimed.",
+    "Uploaded mutation artifacts omit source checkout/.git and diff files. Exact one-path canonical mutations and recorded diff digests were reconstructed from immutable4f47423e Git blobs, with145 full source and68 acceptance-input bindings.",
+    "Static IR/object stack bounds and source CFG ownership gates are independent checks of retained artifacts, not physical maximum-stack measurements or compiler-refinement proofs.",
+    "Source-negative outerPASS qualifies only strict expected observed innerFAIL; original inner reports remain FAIL.",
+    "Prior external reader failures remain retained: singleton startup file location and an invalid local-versus-remote PID assumption. They are not target failures and were never relabeled.",
+    "This is current14 PR evidence. It does not itself confirm a later report-head revision, merge, main contents or post-merge CI."
+  ],
+  "independent_archived_hash_review": {
+    "bytes": 1172732472,
+    "files": 13897,
+    "scope": "Read-only current PR artifact binding; full raw/object/stack semantic reviews remain in the exact eight lane indices."
+  },
+  "independent_artifact_review_status": "ALL_EIGHT_CURRENT_PR_LANES_PASS",
+  "independent_review_indices": {
+    "architecture_and_source_negatives": {
+      "bytes": 22834,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/summary.json",
+      "sha256": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913"
+    },
+    "independent_all_eight_binding": {
+      "bytes": 7713,
+      "path": "/tmp/lemma-task003-final-report-final14-ozdkozlp/all-eight-review-binding-final.json",
+      "sha256": "d2946dfd6dbca07c36fdf0aac93b07ded173ef6cae1c79f9c2fe759ef21f3319"
+    },
+    "platform_whole_inventory": {
+      "bytes": 1550236,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/whole-downloaded-evidence-hashes.json",
+      "sha256": "21be542808430b32f235b2d2359a18954e306b1a8876916ca9cba41b93fca44f"
+    },
+    "six_lanes": {
+      "bytes": 5785,
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-reviewed/independent-six-lane-index.json",
+      "sha256": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+    }
+  },
+  "publication_followup": "Evidence-only report-head checks, user-authorized guarded merge, actual resulting main and post-merge CI remain pending at this snapshot.",
+  "reviewed_artifact_ids": [
+    11662843681,
+    11662803715,
+    11663029673,
+    11663339071,
+    11663284572,
+    11663595732,
+    11664265134,
+    11663540242
+  ],
+  "runs": {
+    "pull_request": {
+      "completed_API_record": {
+        "bytes": 15044,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033679993-completed.json",
+        "sha256": "d4a7d560276a4868ae9ec6d8aba815d78a181d07befa3064fcfd403f301ec261"
+      },
+      "conclusion": "success",
+      "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+      "jobs": [
+        {
+          "completedAt": "2026-10-10T07:30:21Z",
+          "conclusion": "success",
+          "databaseId": 114159680103,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680103"
+        },
+        {
+          "completedAt": "2026-10-10T07:43:50Z",
+          "conclusion": "success",
+          "databaseId": 114159680242,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680242"
+        },
+        {
+          "completedAt": "2026-10-10T07:17:24Z",
+          "conclusion": "success",
+          "databaseId": 114159680251,
+          "name": "Legacy Core0 RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680251"
+        },
+        {
+          "completedAt": "2026-10-10T07:26:16Z",
+          "conclusion": "success",
+          "databaseId": 114159680287,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680287"
+        },
+        {
+          "completedAt": "2026-10-10T07:28:52Z",
+          "conclusion": "success",
+          "databaseId": 114159680299,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680299"
+        },
+        {
+          "completedAt": "2026-10-10T07:17:39Z",
+          "conclusion": "success",
+          "databaseId": 114159680303,
+          "name": "Metadata and host-only suites",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680303"
+        },
+        {
+          "completedAt": "2026-10-10T07:33:00Z",
+          "conclusion": "success",
+          "databaseId": 114159680327,
+          "name": "Task 003 source-negative RV64 qualification",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680327"
+        },
+        {
+          "completedAt": "2026-10-10T07:35:45Z",
+          "conclusion": "success",
+          "databaseId": 114159680370,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:55Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033679993/job/114159680370"
+        }
+      ],
+      "jobs_successful": 8,
+      "run_id": 38033679993,
+      "status": "completed",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38033679993"
+    },
+    "push": {
+      "completed_API_record": {
+        "bytes": 15036,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033677526-completed.json",
+        "sha256": "ed7b9534425a1980c3809da64d0caaa028cc13103519db6e031c92fdaeccbf1f"
+      },
+      "conclusion": "success",
+      "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+      "jobs": [
+        {
+          "completedAt": "2026-10-10T07:24:25Z",
+          "conclusion": "success",
+          "databaseId": 114159684989,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:57Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159684989"
+        },
+        {
+          "completedAt": "2026-10-10T07:30:33Z",
+          "conclusion": "success",
+          "databaseId": 114159685100,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "startedAt": "2026-10-10T07:13:56Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685100"
+        },
+        {
+          "completedAt": "2026-10-10T07:24:08Z",
+          "conclusion": "success",
+          "databaseId": 114159685130,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:57Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685130"
+        },
+        {
+          "completedAt": "2026-10-10T07:17:17Z",
+          "conclusion": "success",
+          "databaseId": 114159685153,
+          "name": "Legacy Core0 RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:56Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685153"
+        },
+        {
+          "completedAt": "2026-10-10T07:17:37Z",
+          "conclusion": "success",
+          "databaseId": 114159685163,
+          "name": "Metadata and host-only suites",
+          "startedAt": "2026-10-10T07:13:57Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685163"
+        },
+        {
+          "completedAt": "2026-10-10T07:43:25Z",
+          "conclusion": "success",
+          "databaseId": 114159685178,
+          "name": "Task 003 source-negative RV64 qualification",
+          "startedAt": "2026-10-10T07:13:57Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685178"
+        },
+        {
+          "completedAt": "2026-10-10T07:30:53Z",
+          "conclusion": "success",
+          "databaseId": 114159685180,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:56Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685180"
+        },
+        {
+          "completedAt": "2026-10-10T07:36:05Z",
+          "conclusion": "success",
+          "databaseId": 114159685221,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "startedAt": "2026-10-10T07:13:57Z",
+          "status": "completed",
+          "url": "https://github.com/srkftw/lemma/actions/runs/38033677526/job/114159685221"
+        }
+      ],
+      "jobs_successful": 8,
+      "run_id": 38033677526,
+      "status": "completed",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38033677526"
+    }
+  },
+  "schema_version": 1,
+  "source": {
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "PR_synthetic_parents": [
+      "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+      "14cc79be8914a349b729347cc05091aba6ac7ca7"
+    ],
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224"
+  },
+  "status": "BOTH_CURRENT14_RUNS_COMPLETED_SUCCESS"
+}

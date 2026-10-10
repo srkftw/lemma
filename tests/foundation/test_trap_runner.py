@@ -220,7 +220,7 @@ class TrapBindingTests(unittest.TestCase):
             "linked_inputs": linked, "status": "pass", "manifest": self.manifest,
             "hashes": {name: hashes[name] for name in runner.AUDIT_ARTIFACTS},
             "trap_machine_audit": {"approved_resume_pairs": 2, "compiled_gp_tp_free": True,
-                "compiled_functions": 48, "fatal_stackless_self_loops": 2,
+                "compiled_functions": 50, "fatal_stackless_self_loops": 2,
                 "compiled_privileged_instructions": 0,
                 "machine_slot_sequences": {"core0_trap_vector": 75,
                     "core0_trap_ecall": 106, "core0_trap_breakpoint": 106},
@@ -357,6 +357,17 @@ class TrapBindingTests(unittest.TestCase):
         write_json(self.directory / "audit.json", audit)
         with self.assertRaisesRegex(Core0Error, "startup/context"):
             self.validate()
+
+    def test_exact_factored_console_function_count_rejects_stale_or_open_counts(self):
+        self.validate()
+        for count in (48, 49, 51, True, 50.0, None):
+            with self.subTest(count=count):
+                audit = json.loads((self.directory / "audit.json").read_text())
+                audit["trap_machine_audit"]["compiled_functions"] = count
+                write_json(self.directory / "audit.json", audit)
+                with self.assertRaisesRegex(Core0Error, "trap machine audit compiled function closure"):
+                    self.validate()
+                self.bind()
 
     def test_final_machine_register_slot_csr_and_uart_invariants_are_closed(self):
         for field, value in (("compiled_privileged_instructions", 1),

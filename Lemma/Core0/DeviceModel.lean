@@ -119,6 +119,8 @@ inductive ActionStepDiagnosticCode where
   | nonDeviceActionUnsupported
   | trapActionUnsupported
   | timerActionUnsupported
+  | executionActionUnsupported
+  | loopActionUnsupported
   deriving BEq, DecidableEq, Inhabited, Repr
 
 structure ActionStepDiagnostic where
@@ -144,6 +146,10 @@ def stepDeviceAction (state : State) (action : Action) :
   | .uartEnableAndResetFifo next =>
       let result := uartEnableAndResetFifo state
       .ok (result, next result.status)
+  | .uartEnableAndResetFifo14 _ => .error {
+      code := .executionActionUnsupported
+      message := "the finite UART model does not simulate kernel-v0.2 FIFO configuration"
+    }
   | .trapEcall _ | .trapBreakpoint _ | .trapUnexpectedEcall _ |
       .trapIllegalInstruction _ =>
       .error {
@@ -156,6 +162,15 @@ def stepDeviceAction (state : State) (action : Action) :
       .error {
         code := .timerActionUnsupported
         message := "the finite UART model does not simulate timer/interrupt actions"
+      }
+  | .loop _ => .error {
+      code := .loopActionUnsupported
+      message := "the finite UART model does not execute unbounded production loops"
+    }
+  | .platform .. =>
+      .error {
+        code := .executionActionUnsupported
+        message := "the finite UART model does not simulate production privilege/memory actions"
       }
   | _ =>
       .error {
