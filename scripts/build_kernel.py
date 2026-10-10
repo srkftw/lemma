@@ -62,10 +62,11 @@ USER_OBJECTS = ("user/startup.o", "user/program.o")
 MULTI_BOOT_FILES = ("startup.S", "link.ld", "layout.json", "primitive-catalog.json",
                     "boot-package.S", "package-contract.json", "user-image-catalog.json")
 USER_IMAGE_FILES = ("startup.S", "link.ld", "layout.json", "primitive-catalog.json")
-# Same immutable realization expression and UInt audit hash used by Task002
-# Gate3. Each independent CI job must realize this input itself; a tool binary
-# in the development shell does not retain the compiler's upstream sources.
-LEAN_SOURCE_EXPRESSION = ("let flake = builtins.getFlake (toString ./.); "
+# Resolve the locked flake through Nix's Git fetcher so ignored build/.lake
+# outputs cannot be copied into the store. Tracked working-tree edits remain
+# visible; target source identity is independently bound by source_inputs. Each
+# CI job still realizes and verifies the immutable upstream Lean source itself.
+LEAN_SOURCE_EXPRESSION = ('let flake = builtins.getFlake ("git+file://" + toString ./.); '
                           "pkgs = import flake.inputs.nixpkgs { system = builtins.currentSystem; }; "
                           "in pkgs.lean4.src")
 LEAN_UINT_SOURCE_SHA256 = "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94"

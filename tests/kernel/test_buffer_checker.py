@@ -289,6 +289,137 @@ class BufferCheckerFailures(unittest.TestCase):
                     trace.client(reply)
                     trace.require_settled_releases()
                     self.assertEqual(trace.rpc_pairs[-1]['response'],reply)
+    def query_fixture(self, directory, *, sample_delta=-1, pc=0x10024, reason=1):
+        """Ordered host fixture, never a replacement for real guest evidence."""
+        trace,session=self.fixture(directory,'service-development')
+        session.events=[{"fixture_prefix":i} for i in range(7)]
+        def emit(row):
+            raw=('K1'+''.join(f' {word:016x}' for word in row)+'\n').encode()
+            event,tail=decode_uart(raw)
+            self.assertFalse(tail)
+            session.events.append(event[0]);trace.observe(row);trace.events.append(list(row))
+        trace.current=1536
+        emit((0x331,1536,1,114,2))
+        emit((0xf2,1536,3,0,0x10020))
+        emit((0xf3,512,0x82004000,1,100))
+        emit((0x321,512,99,1536,130))
+        emit((0xf2,512,reason,1,pc))
+        before=trace.remaining
+        action={'kind':'diagnostic','index':len(session.events),'words':[0x31,2048,0,0,0],'expected_status':0}
+        trace.begin_action(action)
+        emit((0xfc,2048,2,3,100))
+        query=(0xf7,0x31,0,before+sample_delta,2048)
+        return trace,session,emit,query,before
+
+    def finish_query_allocation(self,trace,emit):
+        emit((0xf3,512,0x82004000,2,120))
+        emit((0x322,512,0x40000,0,0x40000))
+        emit((0x323,512,99,0,64))
+        emit((0xf2,512,1,2,0x10000))
+        emit((0xf3,1536,0x82002000,1,130))
+        emit((0x335,1536,4,64,1))
+        emit((0xf2,1536,3,2,0x10020))
+        emit((0xf3,512,0x82004000,3,140))
+        emit((0x327,512,99,0,0))
+        emit((0xf2,512,6,2,0x10020))
+
+    def test_deferred_query_requires_exact_matching_effect_and_fresh_settled_query(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            trace,session,emit,query,before=self.query_fixture(Path(tmp))
+            emit(query)
+            sample=trace.diagnostic_frame_samples[-1]
+            self.assertEqual(sample['record'],list(query))
+            self.assertEqual(sample['record_accounting_at_query'],before)
+            self.assertEqual(sample['acceptance'],[512,99,1536])
+            self.assertIsNone(sample['reconciliation'])
+            with self.assertRaisesRegex(Core0Error,'unresolved diagnostic'):
+                checker.qualification(trace)
+            self.finish_query_allocation(trace,emit)
+            self.assertEqual(trace.remaining,query[3])
+            self.assertEqual(sample['reconciliation']['record'],[0x322,512,0x40000,0,0x40000])
+            self.assertEqual(sample['reconciliation']['acceptance'],sample['acceptance'])
+            self.assertGreater(sample['reconciliation']['index'],sample['index'])
+            with self.assertRaisesRegex(Core0Error,'fresh exact settled query'):
+                trace.require_settled_frame_samples()
+            trace.begin_action({'kind':'diagnostic','index':len(session.events),'words':[0x31,2048,0,0,0]})
+            emit((0xfc,2048,2,3,101));emit((0xf7,0x31,0,trace.remaining,2048))
+            trace.require_settled_frame_samples()
+            self.assertTrue(trace.diagnostic_frame_samples[-1]['settled'])
+            self.assertEqual(trace.diagnostic_frame_samples[0]['record'],list(query))
+            snapshot=trace.snapshot();self.assertEqual(snapshot,json.loads(json.dumps(snapshot)))
+
+    def test_deferred_release_sample_needs_exact_release_and_confirmed_destroy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            trace,session,emit,query,_=self.query_fixture(Path(tmp),sample_delta=1)
+            # Prior live backing/owner is fixture setup, not guest evidence.
+            trace.backings[512]={0x40000};trace.remaining-=1
+            trace.model.foreign_created(4);trace.foreign[4]={'owner':1536,'epoch':1,'capacity':64}
+            trace.peer_state[1536]['temporary']=4
+            query=(0xf7,0x31,0,trace.remaining+1,2048);emit(query)
+            emit((0xf3,512,0x82004000,2,120));emit((0x324,512,0x40000,0,0x40000))
+            self.assertEqual(trace.diagnostic_frame_samples[-1]['reconciliation']['record'],[0x324,512,0x40000,0,0x40000])
+            emit((0x323,512,99,0,64));emit((0xf2,512,1,2,0x10000))
+            emit((0xf3,1536,0x82002000,1,130));emit((0x337,1536,4,1,0))
+            self.assertTrue(trace.actual_buffer_releases[-1]['confirmed'])
+            emit((0xf2,1536,3,2,0x10020));emit((0xf3,512,0x82004000,3,140))
+            emit((0x327,512,99,0,0));emit((0xf2,512,6,2,0x10020))
+            trace.begin_action({'kind':'diagnostic','index':len(session.events),'words':[0x31,2048,0,0,0]})
+            emit((0xfc,2048,2,3,101));emit((0xf7,0x31,0,trace.remaining,2048))
+            trace.require_settled_releases();trace.require_settled_frame_samples()
+
+    def test_query_discrepancy_rejects_unexplained_or_non_return_boundary(self):
+        for variant in ('no-request','response-present','wrong-pc','sleep','outside-count'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_,emit,query,_=self.query_fixture(Path(tmp),
+                    pc=0x10000 if variant=='wrong-pc' else 0x10020 if variant=='sleep' else 0x10024,
+                    reason=3 if variant=='sleep' else 1,
+                    sample_delta=513 if variant=='outside-count' else -1)
+                if variant=='no-request':trace.active_accept.clear()
+                if variant=='response-present':trace.active_accept[512]['response']=[0x323,512,99,0,64]
+                with self.assertRaisesRegex(Core0Error,'unresolved full Server request at syscall return'):
+                    emit(query)
+                self.assertFalse(trace.diagnostic_frame_samples)
+
+    def test_next_backing_record_must_be_exact_success_for_same_full_request(self):
+        for variant in ('wrong-count','failed-allocation','wrong-full-caller','unrelated-frame-effect'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_,emit,query,_=self.query_fixture(Path(tmp),sample_delta=-2 if variant=='wrong-count' else -1)
+                emit(query)
+                if variant=='unrelated-frame-effect':
+                    with self.assertRaisesRegex(Core0Error,'unrelated frame effect'):
+                        emit((0xf6,2048,trace.remaining,trace.remaining+18,0))
+                else:
+                    emit((0xf3,512,0x82004000,2,120))
+                    if variant=='wrong-full-caller':trace.active_accept[512]['key']=(512,99,1024)
+                    with self.assertRaisesRegex(Core0Error,'next exact same-request backing effect'):
+                        emit((0x322,512,0x40000,38,0) if variant=='failed-allocation' else (0x322,512,0x40000,0,0x40000))
+                self.assertIsNone(trace.diagnostic_frame_samples[0]['reconciliation'])
+
+    def test_never_settled_query_remains_failure_after_unrelated_progress(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            trace,_,emit,query,_=self.query_fixture(Path(tmp));emit(query)
+            emit((0xf3,2048,0x82003000,1,120));emit((0xf2,2048,1,2,0x10000))
+            with self.assertRaisesRegex(Core0Error,'unresolved diagnostic frame samples'):
+                trace.require_settled_frame_samples()
+            with self.assertRaisesRegex(Core0Error,'unresolved diagnostic frame samples'):
+                checker.qualification(trace)
+
+    def test_live_diagnostic_waits_for_effect_without_rechecking_stale_ack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            trace,session,emit,query,_=self.query_fixture(Path(tmp))
+            trace.pending_ack=trace.pending_ack_action=None
+            rows=iter([query,(0xf3,512,0x82004000,2,120),(0x322,512,0x40000,0,0x40000)])
+            session.send=lambda *_args,**_kwargs:None
+            waits=[]
+            def until(predicate):
+                waits.append(0)
+                while not predicate():
+                    emit(next(rows));waits[-1]+=1
+            with patch.object(trace,'until',side_effect=until):
+                result=trace.diagnostic(0x31,2048)
+            self.assertEqual(result,list(query));self.assertEqual(waits,[1,2])
+            self.assertIsNotNone(trace.diagnostic_frame_samples[-1]['reconciliation'])
+
     def test_quota_claim_needs_actual_server_denial_and_full_snapshot(self):
         with tempfile.TemporaryDirectory() as tmp:
             trace,_=self.fixture(Path(tmp));trace.current=1536

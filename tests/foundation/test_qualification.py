@@ -317,7 +317,7 @@ class FoundationQualificationTests(unittest.TestCase):
             source.write_text("#guard true\n" * 50, encoding="utf-8")
             log.write_text(
                 "Monitor genuine v0.7 frontend/lowering passed: 54 scalar functions, "
-                "85 Action functions, 7 timer/2 trap/4 UART operations\n"
+                "88 Action functions, 7 timer/2 trap/4 UART operations\n"
                 + qualifier.gate9_checker.POLICY_MARKER + "\n",
                 encoding="utf-8",
             )
@@ -348,6 +348,59 @@ class FoundationQualificationTests(unittest.TestCase):
                                 root,
                                 gate9,
                             )
+
+    def test_probe_completion_marker_matches_current_closed_monitor_closure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            gate9 = root / "build/gate9"
+            source = root / "examples/foundation/MonitorPolicyProbes.lean"
+            log = gate9 / "probes/monitor-policy-frontend.txt"
+            source.parent.mkdir(parents=True)
+            log.parent.mkdir(parents=True)
+            source.write_text("#guard true\n" * 50, encoding="utf-8")
+            frontend = (
+                "Monitor genuine v0.7 frontend/lowering passed: 54 scalar functions, "
+                "88 Action functions, 7 timer/2 trap/4 UART operations"
+            )
+            marker = qualifier.gate9_checker.POLICY_MARKER
+            good = frontend + "\n" + marker + "\n"
+            probe = {
+                "source": str(source.relative_to(root)),
+                "source_sha256": sha256(source),
+                "argv": ["lake", "env", "lean", str(source.relative_to(root))],
+                "returncode": 0,
+                "policy_probes": 50,
+                "frontend_lowering": 1,
+                "log": str(log.relative_to(root)),
+                "scope": "direct source predicates/encoding/frontend observations, not hardware or compiler proof",
+            }
+            with mock.patch.object(
+                qualifier.gate8_checker, "_load_rejections", return_value=()
+            ):
+                for output in (
+                    good,
+                    good.replace("88 Action", "85 Action"),
+                    good.replace("54 scalar", "53 scalar"),
+                    good.replace(frontend, ""),
+                    good + frontend + "\n",
+                    good.replace(marker, ""),
+                    good + marker + "\n",
+                    good + "sorryAx\n",
+                ):
+                    with self.subTest(output=output):
+                        log.write_text(output, encoding="utf-8")
+                        # Rehash each mutation so completion validation, rather
+                        # than an incidental stale digest, must reject it.
+                        probe["log_sha256"] = sha256(log)
+                        report = {"source_probes": probe, "source_rejections": []}
+                        if output == good:
+                            actual = qualifier._validate_probe_and_rejections(
+                                report, root, gate9
+                            )
+                            self.assertEqual(actual["probe_log_sha256"], sha256(log))
+                        else:
+                            with self.assertRaisesRegex(Core0Error, "completion marker"):
+                                qualifier._validate_probe_and_rejections(report, root, gate9)
 
     def test_missing_retained_raw_file_is_rejected_before_replay(self):
         with tempfile.TemporaryDirectory() as temporary:

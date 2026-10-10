@@ -1258,3 +1258,49 @@ running at this checkpoint. Preserve the failedCI log SHA256
 `5bcc7ec53c31d0de9429e4f962c178700c8bcfc5191e36d68d83df9c936e405f`.
 No fullCI success, ready state or merge is claimed. Final current-head CI and
 the user-authorized guarded merge remain pending; highest complete gate remainsJ.
+
+## Initial CI failures and exact host repairs (2026-10-10 06:47 UTC)
+
+Both initial actual d4 push/PR runs38029003088/38029005344 completedFAIL.
+A–E failed in both after19 images/23 reports because path-flake source
+realization copied ignored growing outputs into the Nix store and exhausted
+the runner disk. Foundation failed both on the previously recorded closed
+runner count. Push J additionally failed at diagnostic query ACK406 versus
+record ledger407; its full9064-event raw capture later contains the matching
+Server322 allocation, reconciling the count. PR J passed. These original
+reports remain FAIL and are bound in the retained failure summary.
+
+The fresh exact49 cold legacy run passed Task00123 boots and all482 Task002
+cumulative/stress boots, then qualificationFAILED on the stale54scalar/85Action
+frontend marker. Both genuine O0/O2 closed manifests and the genuine frontend
+log are54/88. OuterFAILSHA256
+`c8185f957b1a690f204829ec16d4b3f9ae6cd076f00cb055aeac6497ac358b01`;
+qualification failureSHA256
+`c6c05226c20c51d29f8fbcfea9bc47ffa990560ac8a8a4ebf59bbb2531af7b1f`.
+Independent full482-boot replaySHA256
+`0ab0ad6135b8f3851b4b4d4b2da17e87604e5a091dfe0941b3a19d69fc065532`.
+This is cumulativePASS with qualificationFAIL, not complete qualification.
+
+The two realization expressions now use the local Nix Git fetcher, excluding
+ignored build/.lake outputs while retaining tracked working-tree edits. Actual
+project-cwd realization returned the same locked Lean source/NAR/UInt hashes.
+The qualifier changes only85→88 and retains exact source/log/argv/marker checks.
+Meaningful rehashed stale/missing/duplicate/forbidden-proof marker fixtures reject.
+
+The buffer observer preserves each actual diagnostic sample. A discrepancy
+requires an accepted full Server/request/Caller and the actual SSIP return at
+the audited syscall bridge RET. The next successful same-request322/324 must
+reconcile its exact count; unrelated effects, missing settlement and a missing
+later fresh exact settled query reject. Existing deadlines, complete raw replay
+and exact final497-frame reclaim remain mandatory. The old failed capture
+is still rejected because it lacks the fresh settled query. No targetLean,
+toolchain lock or workflow changed.
+
+Actual host checks passed452foundation (source/marker snapshot),293kernel
+(combined repair),18scaffold and metadata, all observed exits0. Combined summary
+SHA256 `eec5cf4309e4d4d13823a511fa84a938eaf12ff71a5c2248067e28b4d783291b`. Original CI/cold failures remain bound by
+`ff67e9d27147999229269355edb0463e86bf22bb6b37f4c8a2c6a87fbeac01b0`.
+Commit this candidate and run another fresh source-only cold full legacy
+qualification plus actual current-head push/PR CI. Final evidence inventory,
+publication verification and the authorized guarded merge remain pending.
+Highest complete recorded gate remainsJ; no current-head targetPASS is inherited.

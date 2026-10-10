@@ -1603,6 +1603,24 @@
         "PR_run": 38029005344,
         "PR_foundation": "FAIL: same Gate7 closed-count mismatch",
         "merge": "NOT_RUN"
+      },
+      "initial_CI_and_qualification_repairs": {
+        "status": "HOST_PASS_ONLY",
+        "summary": "build/kernel/gateK/host/combined-CI-repair-summary.json",
+        "sha256": "eec5cf4309e4d4d13823a511fa84a938eaf12ff71a5c2248067e28b4d783291b",
+        "foundation_tests": 452,
+        "foundation_scope": "source/marker snapshot before buffer repair",
+        "kernel_tests": 293,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "target_Lean_and_workflow_changes": false,
+        "initial_push_and_PR_CI": "FAIL actual38029003088/38029005344; no pass carried forward",
+        "cold49_legacy": "Task00123 and cumulative482 actualPASS; qualificationFAIL54/85 marker vs genuine54/88",
+        "original_outer_sha256": "c8185f957b1a690f204829ec16d4b3f9ae6cd076f00cb055aeac6497ac358b01",
+        "independent_cumulative_sha256": "0ab0ad6135b8f3851b4b4d4b2da17e87604e5a091dfe0941b3a19d69fc065532",
+        "fresh_clean_full_legacy": "NOT_RUN",
+        "new_head_push_PR_CI": "NOT_RUN",
+        "merge": "NOT_RUN"
       }
     }
   ],

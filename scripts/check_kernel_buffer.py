@@ -94,6 +94,8 @@ class ServiceTrace(Trace):
         self.actual_buffer_releases, self.new_allocations = [], {}
         self.pending_ack_action = None
         self.frame_samples = []
+        self.diagnostic_frame_samples = []
+        self.last_user_returns = {}
         self.busy_math = []
         unit = json.loads((session.image.parent / "users/busy/unit.json").read_text())
         symbols = [row["symbol"] for row in unit["functions"] if row["source"] == self.busy_callback]
@@ -150,6 +152,8 @@ class ServiceTrace(Trace):
         if len(event) != 5 or any(type(x) is not int or not 0 <= x <= MASK for x in event):
             raise Core0Error("service control is not five exact unsigned words")
         tag, a, b, c, d = event
+        if tag in {0xb4, 0xf1, 0xf6} and self.unsettled_frame_samples():
+            raise Core0Error("deferred diagnostic frame sample crossed an unrelated frame effect")
         if tag == 0xb4:
             if self.current is not None or a < 512 or b < 16 or a in self.endpoints or d:
                 raise Core0Error("service Endpoint allocation identity/order differs")
@@ -199,6 +203,7 @@ class ServiceTrace(Trace):
                 raise Core0Error("fault return lacks an actual fault or checked restart interception")
             self.current = None; self.irq = c; task["reasons"][b] += 1
             task["state"] = 4 if b == 3 else 5 if b == 6 else 6 if b == 5 else 2
+            self.last_user_returns[a] = {"record": list(event), "index": len(self.session.events) - 1}
             if b == 1:
                 task["preempt_irqs"].append(c)
                 if task["key"] == "busy" and in_ranges(d, self.busy_math_range): self.busy_math.append(list(event))
@@ -255,7 +260,7 @@ class ServiceTrace(Trace):
             if d >> 4 in self.serials: raise Core0Error("Server Reply alias reused a publication serial")
             if d % 16 != 2:
                 raise Core0Error("Server Reply alias is outside its sole free slot2")
-            self.serials.add(d >> 4); self.active_accept[a] = {"key": key, "record": list(event), "response": None,
+            self.serials.add(d >> 4); self.active_accept[a] = {"key": key, "record": list(event), "index": len(self.session.events) - 1, "response": None,
                                                             "actual_backing_count": len(self.backings.get(a, ()))}
             if c == self.cli:
                 if not self.pending_rpc or self.pending_rpc["words"][0] > 6 or self.pending_rpc.get("server_key"):
@@ -284,6 +289,7 @@ class ServiceTrace(Trace):
                 if c or d != b or b not in pages: raise Core0Error("Server release lacks a live real backing page")
                 pages.remove(b); self.remaining += 1; self.releases.append(list(event))
                 self.release_at_syscall_record(a, b)
+            self.reconcile_frame_sample(event)
         elif tag == 0x323:
             self.actual_user(a, {"server"}); accepted = self.active_accept.get(a)
             if not accepted or accepted["key"][1] != b or accepted["response"] is not None or c not in (0, *range(200, 209)) or not 64 <= d <= 192:
@@ -366,8 +372,8 @@ class ServiceTrace(Trace):
             action = self.pending_ack_action
             if not action or b != action.get("expected_status", 0):
                 raise Core0Error("diagnostic returned unexpected actual status")
-            if a == 0x31 and c != self.remaining:
-                raise Core0Error("diagnostic frame count differs after observed allocation settlement")
+            if a == 0x31:
+                self.record_frame_sample(event, action)
             if a == 0x33 and b == 0 and (c not in self.tasks or self.tasks[c]["key"] != "fault" or self.tasks[c]["nonce"] != action["words"][2]):
                 raise Core0Error("Fault creation acknowledgment lacks exact published full identity")
             if a == 0x40 and b == 0 and c != self.epoch:
@@ -376,6 +382,64 @@ class ServiceTrace(Trace):
             self.pending_ack = self.pending_ack_action = None
         else:
             super().observe(event)
+            if tag == 0xf3:
+                self.last_user_returns.pop(a, None)
+
+    def unsettled_frame_samples(self):
+        return [row for row in self.diagnostic_frame_samples
+                if row["status"] == "deferred" and row["reconciliation"] is None]
+
+    def record_frame_sample(self, event, action):
+        """Keep the real sample; one pending syscall record may explain its lag."""
+        tag, number, status, count, target = event
+        row = {"record": list(event), "index": len(self.session.events) - 1,
+               "input_index": action["index"], "record_accounting_at_query": self.remaining,
+               "status": "exact", "acceptance": None, "server_return": None,
+               "reconciliation": None, "settled": False}
+        if count != self.remaining:
+            accepted = self.active_accept.get(self.server)
+            returned = self.last_user_returns.get(self.server)
+            bridge = self.users["server"]["syscall_bridge"]["ecall_pc"]
+            if (status != 0 or not 0 <= count <= 512 or not accepted
+                    or accepted["response"] is not None or not returned
+                    or returned["record"][2] != 1 or returned["record"][4] != bridge + 4
+                    or self.tasks[self.server]["state"] != 2
+                    or returned["index"] < accepted["index"]):
+                raise Core0Error("diagnostic frame discrepancy lacks an unresolved full Server request at syscall return")
+            row.update(status="deferred", acceptance=list(accepted["key"]),
+                       server_return=deepcopy(returned))
+        else:
+            row["settled"] = (not self.active_accept and self.pending_expiry is None
+                              and all(r["confirmed"] for r in self.actual_buffer_releases)
+                              and all(r["claimed"] for r in self.new_allocations.values()))
+        self.diagnostic_frame_samples.append(row)
+
+    def reconcile_frame_sample(self, event):
+        """The next matching actual backing effect must explain the exact sample."""
+        pending = self.unsettled_frame_samples()
+        if not pending:
+            return
+        tag, server, va, status, value = event
+        accepted = self.active_accept.get(server)
+        for row in pending:
+            if (status != 0 or value != va or not accepted
+                    or list(accepted["key"]) != row["acceptance"]
+                    or accepted["response"] is not None or self.remaining != row["record"][3]):
+                raise Core0Error("deferred diagnostic frame sample lacks its next exact same-request backing effect")
+        for row in pending:
+            row["reconciliation"] = {"record": list(event), "index": len(self.session.events) - 1,
+                                     "resulting_remaining_frames": self.remaining,
+                                     "acceptance": list(accepted["key"])}
+
+    def require_settled_frame_samples(self):
+        if self.unsettled_frame_samples():
+            raise Core0Error("service contains unresolved diagnostic frame samples")
+        for row in self.diagnostic_frame_samples:
+            if row["status"] == "deferred" and not any(
+                    later["status"] == "exact" and later["settled"]
+                    and later["index"] > row["reconciliation"]["index"]
+                    for later in self.diagnostic_frame_samples):
+                raise Core0Error("reconciled diagnostic frame sample lacks a fresh exact settled query")
 
     def release_at_syscall_record(self, server, va):
         """Count the real page now; wait for expiry or Destroy evidence."""
@@ -423,6 +487,7 @@ class ServiceTrace(Trace):
     def require_settled_releases(self):
         if self.pending_expiry is not None or any(not r["confirmed"] for r in self.actual_buffer_releases):
             raise Core0Error("service contains unmatched or unconfirmed actual page releases")
+        self.require_settled_frame_samples()
 
     def service_quiescent(self, peer):
         return (self.tasks[self.server]["state"] == 5 and self.tasks[peer]["state"] == 4
@@ -699,7 +764,8 @@ class ServiceTrace(Trace):
                 "server_replies": [{**row, "key": list(row["key"])} for row in self.replies], "actual_expiries": self.expiries,
                 "actual_backings": {str(k): sorted(v) for k, v in self.backings.items()},
                 "faults": self.faults, "restarts": self.restart_witnesses, "diagnostic_acknowledgments": self.acks,
-                "queries": self.queries, "buffer_releases": self.actual_buffer_releases, "actual_frame_samples": self.frame_samples, "remaining_frames": self.remaining, "machine_interrupts": self.irq,
+                "queries": self.queries, "buffer_releases": self.actual_buffer_releases, "actual_frame_samples": self.frame_samples,
+                "diagnostic_frame_samples": self.diagnostic_frame_samples, "remaining_frames": self.remaining, "machine_interrupts": self.irq,
                 "busy_math_preemptions": self.busy_math, "busy_unit": self.busy_unit,
                 "compiled_service_evidence": self.service_binding}
 
@@ -722,7 +788,12 @@ class ServiceTrace(Trace):
         self.until(lambda: len(self.acks) == before + 1)
         result = self.acks[-1]; self.pending_ack = None
         if result[2] != expected_status: raise Core0Error("diagnostic returned unexpected actual status")
-        if number == 0x31 and result[3] != self.remaining: raise Core0Error("diagnostic frame count differs")
+        if number == 0x31:
+            sample = self.diagnostic_frame_samples[-1]
+            if sample["status"] == "deferred":
+                # This waits under the existing finite session deadline/event
+                # budget. The old ACK remains the sample; it is never rewritten.
+                self.until(lambda: sample["reconciliation"] is not None)
         return result
 
     def ignored_diagnostic(self):
