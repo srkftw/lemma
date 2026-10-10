@@ -356,6 +356,22 @@ def callWait (descriptor transaction pointer capacity : UInt64) : Action :=
     if status = IPCABI.wouldBlock then .done blockedStatus transaction else fatal
   else .done IPCABI.invalidTransaction 0
 
+/-- Additive LemmaSim service operation. An in-flight reply remains owned by
+its transaction; the caller may service ink before retrying. The historical
+blocking callWait ABI and dispatcher are unchanged. -/
+def tryCallWait (descriptor transaction pointer capacity : UInt64) : Action :=
+  .bind (checkedTransaction descriptor transaction) fun s metadata =>
+  if failed s = true then .done s 0 else
+  .bind (word metadata IPCStorage.operationOffset) fun s operation =>
+  if failed s = true then fatal else
+  if operation = IPCStorage.callOperation then
+    .bind (IPCStorage.setWaitBuffer descriptor transaction pointer capacity) fun s _ =>
+    if failed s = true then .done s 0 else
+    .bind (poll descriptor) fun status _ =>
+    if status = 0 then completeWait descriptor transaction else
+    if status = IPCABI.wouldBlock then .done IPCABI.wouldBlock 0 else fatal
+  else .done IPCABI.invalidTransaction 0
+
 private def replyCaller (key server : UInt64) : Action :=
   .bind (Objects.replyFields key) fun s fields =>
   if failed s = true then .done s 0 else

@@ -20,14 +20,15 @@ open DeploymentCatalog
 private def roleProfile (role : String) (configuration : String) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if configuration == "lemmasim-bringup" then .kernel_v0_3 else .kernel_v0_2)
+  | "kernel" => .ok (if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
   | "user" => .ok .user_v0_1
   | _ => .error "production role must be firmware, kernel, or user"
 
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "lemmasim-bringup" || configuration == "normal" || configuration == "frames-development" ||
+  unless configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+      configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
       configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" ||
@@ -61,7 +62,11 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "lemmasim-bringup" then
+  | "kernel" => if configuration == "lemmasim-notebook" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.boot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-initialize" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-bringup" then
       #["Lemma.Platform.LemmaSim.Entry.boot", "Lemma.Platform.LemmaSim.Entry.dispatch"]
     else if configuration == "frames-development" then
       #["Lemma.Kernel.Development.FramesEntry.boot", "Lemma.Kernel.Development.FramesEntry.dispatch"]
@@ -80,7 +85,7 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if isServiceDevelopmentConfiguration configuration then
       #["Lemma.Kernel.Development.ServiceEntry.boot", "Lemma.Kernel.Development.ServiceEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
-  | "user" => if configuration == "lemmasim-bringup" then
+  | "user" => if configuration.startsWith "lemmasim-" then
       #["Lemma.User.DeviceWorker.main"]
     else if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
@@ -172,7 +177,8 @@ private def managedUserSource (configuration role : String) (name : Name) : Bool
 /-- Application/service executable modules are independent linkage roots, not
 shared libraries. Gate J may import only the selected executable namespace. -/
 private def serviceExecutableSource (source : String) : Bool :=
-  source.startsWith "Lemma.Applications." || source == "Lemma.Services.Buffer.Server" ||
+  source.startsWith "Lemma.Applications." || source == "Lemma.Services.Store.Server" ||
+    source.startsWith "Lemma.Services.Store.Server." || source == "Lemma.Services.Buffer.Server" ||
     source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
     source.startsWith "Lemma.User.Development.BufferFault."
 
@@ -342,6 +348,13 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
       ("normalized.txt", normalized configuration role suite image?), ("symbols.txt", lowered.renderSymbolManifest)] do
     IO.FS.writeFile (directory / filename) contents
 
+private def userTextBaseFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then 0x1000000 else Layout.userTextBase
+private def userTextLimitFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then 0x1080000 else Layout.userTextLimit
+private def packageVersionFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then 2 else 1
+
 private def layoutJson (configuration : String)
     (image? : Option UserImageSpec := none) : Json := Json.mkObj ([
   ("configuration", .str configuration),
@@ -349,9 +362,9 @@ private def layoutJson (configuration : String)
   ("user_startup_case", .str (image?.map (·.startupCase) |>.getD (userStartupCase configuration)).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
-  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (if configuration == "lemmasim-bringup" then 8192 else Layout.frameCount)),
-  ("task_kernel_stack_pages", toJson (if configuration == "lemmasim-bringup" then 4 else Layout.taskKernelStackPages)),
-  ("task_kernel_stack_bytes", toJson (if configuration == "lemmasim-bringup" then 16384 else Layout.taskKernelStackBytes)),
+  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount)),
+  ("task_kernel_stack_pages", toJson (if configuration.startsWith "lemmasim-" then 4 else Layout.taskKernelStackPages)),
+  ("task_kernel_stack_bytes", toJson (if configuration.startsWith "lemmasim-" then 16384 else Layout.taskKernelStackBytes)),
   ("context", Json.mkObj [
     ("bytes", toJson Lemma.Platform.RiscV.ExecutionPrimitives.contextBytes),
     ("kernel_resume_base", toJson Layout.kernelResumeContext),
@@ -361,9 +374,9 @@ private def layoutJson (configuration : String)
     ("translation_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedTranslationOrEnableOffset),
     ("scratch_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedKernelStackOffset)]),
   ("intervals", .arr (Layout.intervals.map fun interval => Json.mkObj [
-    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson (if configuration == "lemmasim-bringup" && interval.name == "frame-pool" then 0x84000000 else interval.limit)),
+    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson (if configuration.startsWith "lemmasim-" && interval.name == "frame-pool" then 0x84000000 else interval.limit)),
     ("purpose", .str interval.purpose)])),
-  ("user", Json.mkObj [("text_base", toJson Layout.userTextBase), ("text_limit", toJson Layout.userTextLimit),
+  ("user", Json.mkObj [("text_base", toJson (userTextBaseFor configuration)), ("text_limit", toJson (userTextLimitFor configuration)),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),
     ("stack_base", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages)])] ++
     managedPolicyFields configuration ++ imageBootRoleFields image?)
@@ -383,10 +396,10 @@ private def bootLinker : String := String.intercalate "\n" [
   s!"  ASSERT(. <= {Layout.packageLimit}, \"boot package envelope exceeded\")",
   "  /DISCARD/ : { *(.eh_frame .eh_frame.*) }", "}", ""]
 
-private def userLinker (directory : String := "user") : String := String.intercalate "\n" [
+private def userLinker (configuration : String) (directory : String := "user") : String := String.intercalate "\n" [
   "OUTPUT_ARCH(riscv)", "ENTRY(_user_start)", "PHDRS { text PT_LOAD FLAGS(5); data PT_LOAD FLAGS(6); }", "SECTIONS {",
-  s!"  . = {Layout.userTextBase};", "  .text : ALIGN(4096) { " ++ directory ++ "/startup.o(.text.user_start) *(.text .text.* .rodata .rodata.*) } :text",
-  s!"  ASSERT(. <= {Layout.userTextLimit}, \"user text envelope exceeded\")",
+  s!"  . = {(userTextBaseFor configuration)};", "  .text : ALIGN(4096) { " ++ directory ++ "/startup.o(.text.user_start) *(.text .text.* .rodata .rodata.*) } :text",
+  s!"  ASSERT(. <= {(userTextLimitFor configuration)}, \"user text envelope exceeded\")",
   s!"  . = {Layout.userDataBase};", "  .data : ALIGN(4096) { *(.data .data.* .sdata .sdata.*) } :data",
   "  __user_data_file_end = .;", "  .bss (NOLOAD) : ALIGN(8) { *(.bss .bss.* .sbss .sbss.*) *(COMMON)",
   s!"    . = MAX(., ABSOLUTE({Layout.userDataBase + Layout.userDataBytes})); } :data",
@@ -397,18 +410,18 @@ private def packageContract (configuration : String) : Json := Json.mkObj [
   ("configuration", .str configuration),
   ("startup_case", .str (startupCase configuration).stableId),
   ("user_startup_case", .str (userStartupCase configuration).stableId),
-  ("schema_version", 1), ("contract_version", .str "lemma-boot-package-v1"),
-  ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", 1),
+  ("schema_version", 1), ("contract_version", .str (if configuration.startsWith "lemmasim-" then "lemma-boot-package-v2" else "lemma-boot-package-v1")),
+  ("magic", toJson (0x31474b50414d454c : Nat)), ("version", toJson (packageVersionFor configuration)), ("image_count", 1),
   ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
-  ("image", Json.mkObj [("id", 1), ("entry", toJson Layout.userTextBase), ("text_va", toJson Layout.userTextBase),
-    ("text_capacity", toJson (Layout.userTextLimit - Layout.userTextBase)), ("data_va", toJson Layout.userDataBase),
+  ("image", Json.mkObj [("id", 1), ("entry", toJson (userTextBaseFor configuration)), ("text_va", toJson (userTextBaseFor configuration)),
+    ("text_capacity", toJson ((userTextLimitFor configuration) - (userTextBaseFor configuration))), ("data_va", toJson Layout.userDataBase),
     ("data_mem_bytes", toJson Layout.userDataBytes), ("stack_va", toJson Layout.userStackBase),
     ("stack_pages", toJson Layout.userStackPages), ("flags", 0)])]
 
-private def packageData : String := String.intercalate "\n" [
+private def packageData (configuration : String) : String := String.intercalate "\n" [
   ".section .boot_package, \"a\", @progbits", ".balign 8", ".globl lemma_boot_package", "lemma_boot_package:",
-  "  .quad 0x31474b50414d454c", "  .quad 1", "  .quad 1", "  .quad .Llemma_package_end - lemma_boot_package",
-  "  .quad 1", s!"  .quad {Layout.userTextBase}", s!"  .quad {Layout.userTextBase}",
+  "  .quad 0x31474b50414d454c", s!"  .quad {packageVersionFor configuration}", "  .quad 1", "  .quad .Llemma_package_end - lemma_boot_package",
+  "  .quad 1", s!"  .quad {(userTextBaseFor configuration)}", s!"  .quad {(userTextBaseFor configuration)}",
   "  .quad .Llemma_package_text - lemma_boot_package", "  .quad .Llemma_package_text_end - .Llemma_package_text",
   s!"  .quad {Layout.userDataBase}", "  .quad .Llemma_package_data - lemma_boot_package",
   "  .quad .Llemma_package_data_end - .Llemma_package_data", s!"  .quad {Layout.userDataBytes}",
@@ -494,32 +507,32 @@ private def exportUserFiles (directory : System.FilePath) (configuration : Strin
   let user ← readRootSymbol directory configuration "user" 0 (some image)
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderUserStartup user image.startupCase
   let target := directory / image.directory
-  for (filename, contents) in #[("startup.S", startup), ("link.ld", userLinker image.directory),
+  for (filename, contents) in #[("startup.S", startup), ("link.ld", userLinker configuration image.directory),
       ("layout.json", (layoutJson configuration (some image)).pretty ++ "\n"),
       ("primitive-catalog.json", (userImageCatalog configuration image).pretty ++ "\n")] do
     IO.FS.writeFile (target / filename) contents
 
 private def multiPackageContract (configuration : String) (images : Array UserImageSpec) : Json :=
-  Json.mkObj ([("schema_version", 2), ("contract_version", .str "lemma-boot-package-v1"),
+  Json.mkObj ([("schema_version", 2), ("contract_version", .str (if configuration.startsWith "lemmasim-" then "lemma-boot-package-v2" else "lemma-boot-package-v1")),
     ("configuration", .str configuration), ("startup_case", .str "normal"), ("user_startup_case", .str "none"),
-    ("magic", toJson (0x31474b50414d454c : Nat)), ("version", 1), ("image_count", toJson images.size),
+    ("magic", toJson (0x31474b50414d454c : Nat)), ("version", toJson (packageVersionFor configuration)), ("image_count", toJson images.size),
     ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
     ("images", .arr (images.map fun image => Json.mkObj ([
-      ("key", .str image.key), ("id", toJson image.id), ("entry", toJson Layout.userTextBase),
-      ("text_va", toJson Layout.userTextBase), ("text_capacity", toJson (Layout.userTextLimit - Layout.userTextBase)),
+      ("key", .str image.key), ("id", toJson image.id), ("entry", toJson (userTextBaseFor configuration)),
+      ("text_va", toJson (userTextBaseFor configuration)), ("text_capacity", toJson ((userTextLimitFor configuration) - (userTextBaseFor configuration))),
       ("data_va", toJson Layout.userDataBase), ("data_mem_bytes", toJson Layout.userDataBytes),
       ("stack_va", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages), ("flags", 0)] ++
       imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
 
 /-- Data-only package construction. Sizes/offsets are assembler label
 differences over the actual separately linked bytes, never predicted values. -/
-private def multiPackageData (images : Array UserImageSpec) : String := Id.run do
+private def multiPackageData (configuration : String) (images : Array UserImageSpec) : String := Id.run do
   let mut lines := #[".section .boot_package, \"a\", @progbits", ".balign 8", ".globl lemma_boot_package",
-    "lemma_boot_package:", "  .quad 0x31474b50414d454c", "  .quad 1", s!"  .quad {images.size}",
+    "lemma_boot_package:", "  .quad 0x31474b50414d454c", s!"  .quad {packageVersionFor configuration}", s!"  .quad {images.size}",
     "  .quad .Llemma_package_end - lemma_boot_package"]
   for image in images do
     let label := ".Llemma_package_" ++ image.key
-    lines := lines ++ #[s!"  .quad {image.id}", s!"  .quad {Layout.userTextBase}", s!"  .quad {Layout.userTextBase}",
+    lines := lines ++ #[s!"  .quad {image.id}", s!"  .quad {(userTextBaseFor configuration)}", s!"  .quad {(userTextBaseFor configuration)}",
       s!"  .quad {label}_text - lemma_boot_package", s!"  .quad {label}_text_end - {label}_text",
       s!"  .quad {Layout.userDataBase}", s!"  .quad {label}_data - lemma_boot_package",
       s!"  .quad {label}_data_end - {label}_data", s!"  .quad {Layout.userDataBytes}",
@@ -543,7 +556,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, lemmasim := configuration == "lemmasim-bringup", startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration.startsWith "lemmasim-", startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then
@@ -561,7 +574,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
         imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
     for (filename, contents) in #[("startup.S", startup), ("link.ld", bootLinker),
         ("layout.json", (layoutJson configuration).pretty ++ "\n"), ("primitive-catalog.json", catalog.pretty ++ "\n"),
-        ("boot-package.S", multiPackageData images), ("package-contract.json", (multiPackageContract configuration images).pretty ++ "\n"),
+        ("boot-package.S", multiPackageData configuration images), ("package-contract.json", (multiPackageContract configuration images).pretty ++ "\n"),
         ("user-image-catalog.json", (← IO.ofExcept <| catalogJson configuration).pretty ++ "\n")] do
       IO.FS.writeFile (directory / filename) contents
     return
@@ -577,8 +590,8 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
       ((Lemma.Platform.RiscV.ExecutionPrimitives.userPrimitiveCatalog config.userStartupCase).map fun (symbol, privilege, effect) =>
         Json.mkObj [("symbol", .str symbol), ("privilege", .str privilege), ("effect", .str effect)]))]
   for (filename, contents) in #[("startup.S", startup), ("user-startup.S", userStartup),
-      ("link.ld", bootLinker), ("user-link.ld", userLinker), ("layout.json", (layoutJson configuration).pretty ++ "\n"),
-      ("primitive-catalog.json", catalog.pretty ++ "\n"), ("boot-package.S", packageData),
+      ("link.ld", bootLinker), ("user-link.ld", userLinker configuration), ("layout.json", (layoutJson configuration).pretty ++ "\n"),
+      ("primitive-catalog.json", catalog.pretty ++ "\n"), ("boot-package.S", packageData configuration),
       ("package-contract.json", (packageContract configuration).pretty ++ "\n")] do
     IO.FS.writeFile (directory / filename) contents
 

@@ -20,6 +20,18 @@ def arenaAddress (va : UInt64) : Bool :=
   if 0x40000 ≤ va then if va < 0x100000 then
     if va % 4096 = 0 then true else false
   else false else false
+/-- Discovery selects the expanded arena; historical callers retain the exact
+old limit. The machine finisher page remains excluded by AddressSpace. -/
+def ownedArenaAddress (va : UInt64) : Action :=
+  if 0x40000 ≤ va then
+    if va % 4096 = 0 then
+      if va = 0x100000 then .done 71 0 else
+      .bind Frames.runtimeCount fun s amount =>
+      if failed s = true then .done 255 0 else
+      let limit := if amount = 8192 then 0x800000 else 0x100000
+      if va < limit then .done 0 va else .done 71 0
+    else .done 71 0
+  else .done 71 0
 def memoryStatus (s : UInt8) : UInt8 :=
   if s = 0 then 0 else if s = 33 then 33 else if s = 38 then 38 else
   if s = 71 then 71 else if s = 72 then 72 else if s = 73 then 73 else
@@ -31,19 +43,21 @@ private def releaseProvisional (owner handle : UInt64) (status : UInt8) : Action
 
 def allocate (descriptor va count : UInt64) : Action :=
   if count = 1 then
-    if arenaAddress va = true then
+    .bind (ownedArenaAddress va) fun s _ =>
+    if s = 0 then
       .bind (AddressSpace.owner descriptor) fun s owner =>
       if failed s = true then fatal else
       .bind (Frames.allocate owner 4) fun s handle =>
       if failed s = true then .done (memoryStatus s) 0 else
       .bind (AddressSpace.mapUser descriptor va handle 3) fun s _ =>
       if failed s = true then releaseProvisional owner handle s else .done 0 va
-    else .done 71 0
+    else .done s 0
   else .done 16 0
 
 def release (descriptor va count : UInt64) : Action :=
   if count = 1 then
-    if arenaAddress va = true then
+    .bind (ownedArenaAddress va) fun s _ =>
+    if s = 0 then
       .bind (AddressSpace.owner descriptor) fun s owner =>
       if failed s = true then fatal else
       .bind (AddressSpace.unmap descriptor va) fun s handle =>
@@ -52,7 +66,7 @@ def release (descriptor va count : UInt64) : Action :=
       if failed s = true then fatal else
       .bind (Frames.release owner handle) fun s _ =>
       if failed s = true then fatal else .done 0 va
-    else .done 71 0
+    else .done s 0
   else .done 16 0
 
 private def freeScratch (handle : UInt64) (status : UInt8) (count : UInt64) : Action :=

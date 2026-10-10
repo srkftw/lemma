@@ -31,6 +31,14 @@ def failure (context : UInt64) (status : UInt8) : Action :=
   .bind (put context 0 0) fun s _ => if s = 0 then .done status 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0
 
+/-- A rejected client range ends this request without making the medium
+read-only. Structural media corruption uses failure instead. -/
+def rejected (context : UInt64) (status : UInt8) : Action :=
+  .bind (put context 32 status.toUInt64) fun s _ => if s = 0 then
+  .bind (put context 8 0) fun s _ => if s = 0 then
+  .bind (put context 0 0) fun s _ => if s = 0 then .done status 0 else .done s 0
+  else .done s 0 else .done s 0
+
 def ready (context : UInt64) : Action :=
   .bind (put context 32 0) fun s _ => if s = 0 then
   .bind (put context 8 0) fun s _ => if s = 0 then
@@ -538,9 +546,10 @@ private def readHeader (context : UInt64) : Action :=
   .bind (field context 368) fun s expected => if s = 0 then
   .bind (field context 344) fun s offset => if s = 0 then
   .bind (field context 352) fun s count => if s = 0 then
-  if sequence = expected then if offset ≤ bytes then if count ≤ bytes - offset then
-    readNext context
-  else failure context malformed else failure context malformed else failure context malformed
+  if sequence = expected then if offset ≤ bytes then
+    .bind (put context 352 (if count ≤ bytes - offset then count else bytes - offset)) fun s _ =>
+    if s = 0 then readNext context else .done s 0
+  else rejected context malformed else failure context malformed
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else failure context malformed else failure context unsupported else failure context malformed
   else .done s 0 else .done s 0 else .done s 0 else .done s 0

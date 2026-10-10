@@ -1,18 +1,22 @@
 # Guest record store v1
 
-Status: compiled Lean production library and focused host Action/format checks;
-kernel block/IPC integration and cold RV64 notebook acceptance are pending.
+Status: compiled Lean production library, separately linked service source and
+asynchronous IPC client, with focused host Action/format checks. The source has
+passed genuine Core0 elaboration and LLVM lowering. Linked kernel/block/IPC
+execution and cold RV64 notebook acceptance require their own observed results.
 This contract freezes the disk format. It does not certify durability of a host
 backend or physical medium. Implementation is `Lemma/Services/Store/`.
 
-The service protocol requires namespace-scoped create/open (catalog records), object
+The reusable library supports namespace-scoped create/open (catalog records), object
 replacement/append, lookup, enumerate, bounded read, deletion tombstones,
 checkpoint and close. Create/open/close authority and IPC session handles belong
 to the capability wrapper; they are not supplied by the disk format. An ordinary
 client receives document records, never an index address, raw-block capability,
-DMA pointer or service memory. The wrapper must authenticate the kernel-stamped
-sender and granted namespace before invoking the library. That wrapper is not
-yet implemented. No isolation result is inferred from scalar namespace keys.
+DMA pointer or service memory. `Server` authenticates the kernel-stamped sender
+for staging ownership and admits namespaces 1 and 2 through a document endpoint
+whose Call grants authorize those two namespaces. This is one authority domain;
+the namespace field is not an authentication token. No isolation result is
+inferred from scalar namespace keys or from compilation alone.
 
 Every original stroke is a stable object. Later replacement records for a page
 edit summary or catalog supersede the same namespace/object pair. Deletion is
@@ -131,8 +135,74 @@ The adapter executes exactly one matching request, then invokes `complete` once.
 Status0 on flush means actual flush completion, never merely queued work.
 Calling completion without an outstanding request fails. Fields are service
 private; a client cannot forge them. The engine does not sleep/spin itself:
-the IPC/block worker blocks for device completion and clients retain pending
-state while the UI continues. No daemon/task integration is claimed yet.
+the IPC/block worker waits for device completion and clients retain pending
+state while the UI continues. The initial worker uses a bounded guest timer
+sleep of 10000 ticks between asynchronous completion probes. This is a temporary
+completion wait adapter, not a host sleep or a declaration of event blocking.
+
+The service receives raw-block authority in boot slot 0 and document endpoint
+Receive authority in boot slot 1. It allocates 34 private pages for its context,
+sector buffer, two 1024-row indexes and one 32 KiB staging payload. Those pages
+must be included in the deployment's real quota and user mapping capacity.
+The kernel block bridge accepts only private sector spans and owns pinned DMA
+bounces. Syscall 66 supplies capacity, sector read/write, flush and completion;
+accepted work returns 168 until actual completion. Application death does not
+make a queued write durable or release a writable DMA frame.
+
+The document message payload is bounded by the existing 256-byte IPC packet:
+a 64-byte kernel IPC envelope, the following 64-byte application header, and at
+most 128 bytes of chunk data. Each header field is little-endian aligned u64.
+Magic is `31525453414d454c`, version is 1. The eight fields at offsets 0 through
+56 are magic, version, operation, namespace, object, transaction, offset, count.
+The sender and reply handle come from the kernel envelope, never that header.
+
+| Operation | Request semantics |
+| --- | --- |
+| 1 | Open namespace; returns mount mode and acknowledged sequence |
+| 2 | Begin replacement with nonzero object/transaction and desired length ≤ 32768 |
+| 3 | Stage at most 128 bytes at exactly the next offset, for the same sender/key/transaction |
+| 4 | Commit the complete staged replacement; reply follows final flush |
+| 5 | Read at most 128 bytes of an object at an offset; short read/EOF is explicit |
+| 6 | Commit a zero-payload tombstone with nonzero object/transaction |
+| 7 | Checkpoint current latest objects; reply follows root publication flush |
+| 8 | Inspect acknowledged sequence and mount mode |
+| 9 | Cancel an uncommitted staging buffer owned by the same sender/key/transaction |
+| 10 | Close only when the shared staging slot is free |
+| 11 | Explicit format; requires launch boot argument 1 and unformatted mode |
+
+Operations 1, 7, 8 and 10 have object/transaction/offset/count zero. Operation
+11 also has namespace zero; all other requests admit only namespaces 1 or 2.
+Catalog creation is an ordinary versioned replacement record, rather than a
+kernel notebook operation. Enumeration is a reusable library entry and is not
+yet a document-endpoint message. A notebook may use its own indexed catalog
+objects without rescanning history. Unknown operations and malformed framing
+reject before document or staging changes.
+
+Replies repeat operation/namespace/object, put the actual acknowledged global
+sequence in the transaction field, and put actual read length in count. Read
+length may be less than the offered count; offset equal to object length returns
+zero, and offset beyond it rejects without making other clients read-only.
+Malformed media headers and actual transport errors still latch failure. Other
+successful replies have count zero.
+Detail is mount mode (0 mounting, 1 ready, 2 no validated root, 3 failed) or the
+next staging offset. Error replies have no data. Application statuses 220–230
+are format/engine failures; 231 is staging busy, 232 wrong staging owner, and
+233 incomplete replacement. Packet length must exactly agree with count.
+
+Only one immutable payload and one transaction are outstanding. An abandoned
+uncommitted stage expires after ten guest seconds; this releases no DMA pins,
+committed record or acknowledged sequence. During I/O the service retains the
+reply capability and does not receive another document command. Other tasks,
+including the notebook's input loop, remain scheduled. `Client.beginCall` plus
+`pollCall` supports that loop: additive syscall 67 returns IPC `wouldBlock` 12
+with zero bytes without consuming a transaction, or returns a completely
+validated reply. `waitCall` uses the existing blocking ABI.
+
+Normal launch argument 0 forbids format. Argument 1 is permitted only for the
+launcher's verified-empty image recipe or an explicit destructive operation;
+no-root status alone does not prove an empty disk. A failed nonempty mount never
+becomes a successful format. The launcher and capability deployment remain
+separate checks from the codec's host oracle.
 
 Focused checks use the actual elaborated Action declarations in a host-only
 memory/sector effect harness and export durable disk bytes. A separately written

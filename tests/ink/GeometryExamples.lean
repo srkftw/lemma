@@ -1,4 +1,5 @@
 import Lemma.Ink.Geometry
+import Lean.Elab.Command
 
 /-! Literal examples check the production integer expressions through Lean's
 ordinary evaluator. This host fixture is not a guest-execution certificate. -/

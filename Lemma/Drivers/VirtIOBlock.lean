@@ -86,10 +86,14 @@ private def initializeQueue (handle base capacity ro : UInt64) : Action :=
   if failed s = true then .done s 0 else .done 0 capacity
 
 private def allocateQueue (capacity ro : UInt64) : Action :=
-  .bind (Frames.allocate 1 1) fun s handle =>
+  .bind (get 0) fun s previous => if s = 0 then
+  .bind (if previous = 0 then Frames.allocate 1 1 else .done 0 previous) fun s handle =>
   if failed s = true then .done s 0 else
   .bind (Frames.resolvePurpose 1 handle 1) fun s base =>
-  if failed s = true then .done s 0 else initializeQueue handle base capacity ro
+  if failed s = true then .done s 0 else
+  -- initialize/reset has observed status0 before any old ring is cleared.
+  .bind (Frames.zero base) fun s _ => if s = 0 then
+  initializeQueue handle base capacity ro else .done s 0 else .done s 0
 
 private def capacityStable (ro : UInt64) : Action :=
   .bind (reg 0xfc) fun s before =>
@@ -208,9 +212,27 @@ private def publish (base kind sector : UInt64) : Action :=
 
 /-- kind 0 read, 1 write, 4 flush. At most one outstanding request; wrapping
 16-bit indices does not release the chain before validated completion. -/
+private def requireLive : Action :=
+  .bind (reg 0x70) fun s status => if s = 0 then
+  if status = 15 then .done 0 0 else
+  .bind (put 56 1) fun s _ => if s = 0 then .done poisoned 0 else .done s 0
+  else .done s 0
+
+/-- Request and observe transport reset before clearing/reusing a DMA ring.
+No frame is released: failure to quiesce leaves it quarantined. Reinitialization
+negotiates features again and reuses this retained owned frame. -/
+def quiesce : Action :=
+  .bind (put 56 1) fun s _ => if s = 0 then
+  .bind (set 0x70 0) fun s _ => if s = 0 then
+  .bind (reg 0x70) fun s status => if s = 0 then
+  if status = 0 then
+  .bind (put 40 0) fun s _ => if s = 0 then .done 0 0 else .done s 0
+  else .done busy 0 else .done s 0 else .done s 0 else .done s 0
+
 def submit (kind sector : UInt64) : Action :=
   if (if kind = 0 then true else if kind = 1 then true else if kind = 4 then true else false) = false then
     .done invalidRequest 0 else
+  .bind requireLive fun s _ => if s = 0 then
   .bind (get 56) fun s poison =>
   if failed s = true then .done s 0 else
   if poison = 0 then
@@ -221,7 +243,7 @@ def submit (kind sector : UInt64) : Action :=
   if failed s = true then .done s 0 else
   if kind = 1 then if ro = 1 then .done readOnly 0 else submitWritable kind sector
   else submitWritable kind sector
-  else .done busy 0 else .done poisoned 0
+  else .done busy 0 else .done poisoned 0 else .done s 0
 where
   submitWritable (kind sector : UInt64) : Action :=
     .bind capacity fun s sectors =>
@@ -263,6 +285,7 @@ entry. Bad IDs, lengths, indices or sentinel status quarantine the DMA frame.
 The used element is only4-byte aligned: its two u32 fields are read as bytes.
 The actual read below is assembled by readUsed to avoid a misaligned64 load. -/
 def finish : Action :=
+  .bind requireLive fun s _ => if s = 0 then
   .bind (reg 0x60) fun s irq =>
   if failed s = true then .done s 0 else
   .bind (set 0x64 (irq &&& 3)) fun s _ =>
@@ -281,6 +304,6 @@ def finish : Action :=
   if failed s = true then .done s 0 else
   if used = index then .done pending 0 else
   if used = ((index + 1) &&& 65535) then complete base index request else corrupt
-  else .done poisoned 0
+  else .done poisoned 0 else .done s 0
 
 end Lemma.Drivers.VirtIOBlock

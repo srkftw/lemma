@@ -1,12 +1,13 @@
 import Lemma.Platform.LemmaSim.IO
 import Lemma.Kernel.BootInfo
 import Lemma.Kernel.Memory.Frames
+import Lemma.Platform.LemmaSim.DescriptorDTB
 
 /-! Bounded binary descriptor consumer, v1. The actual reset DTB is validated
 by BootInfo before this module runs. Unknown versions, checksum errors, geometry,
 reservations or device-map differences fail closed before allocator setup.
-This first binding checks RAM plus reset-DTB identity/envelope; complete DTB
-peripheral-property validation remains an integration obligation. -/
+The subordinate bounded FDT pass checks actual peripheral properties, including
+range/IRQ/identity/clock/geometry consistency, before allocator setup. -/
 namespace Lemma.Platform.LemmaSim.Descriptor
 open Lemma.Core0.Memory
 open Lemma.Kernel.Memory
@@ -55,7 +56,11 @@ private def geometry : Action :=
   .bind (IO.read64 0x10011048) fun s actualPressure =>
   if failed s = true then .done s 0 else
   if width = actualWidth then if height = actualHeight then
-  if pressure = actualPressure then .done 0 width else .done invalid 0
+  if pressure = actualPressure then
+  .bind (word 26) fun s dtb => if s = 0 then
+  .bind (word 27) fun s bytes => if s = 0 then
+  DescriptorDTB.validate dtb bytes width height pressure
+  else .done s 0 else .done s 0 else .done invalid 0
   else .done invalid 0 else .done invalid 0
 
 /-- Called once before the frame allocator. It never treats a host JSON profile

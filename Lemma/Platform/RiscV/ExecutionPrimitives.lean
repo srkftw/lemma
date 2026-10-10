@@ -125,7 +125,10 @@ private def recordBootState (config : Configuration) : Array Line := #[
   (.mstatus, 88), (.satp, 96)
 ] : Array (CSR × Nat)).flatMap (fun (csr, slot) => #[
   ins (.csrRead .t1 csr), ins (.storeDouble .t1 .t0 (offset slot))
-])
+]) ++ (if config.lemmasim then
+  (#[ (.pmpaddr5, 104), (.pmpaddr6, 112), (.pmpaddr7, 120) ] : Array (CSR × Nat)).flatMap
+    (fun (csr, slot) => #[ins (.csrRead .t1 csr), ins (.storeDouble .t1 .t0 (offset slot))])
+  else #[])
 
 def startup (config : Configuration) : Array Line := #[
   label "_start",

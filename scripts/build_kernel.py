@@ -35,16 +35,17 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
     "service-return-supervisor-development": "return-supervisor",
     "service-return-machine-development": "return-machine",
 }
-CONFIGURATIONS = ("lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
+CONFIGURATIONS = ("lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                   "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
                   "service-normal", "service-development", *USER_INSTRUCTION_CONFIGURATIONS,
                   *SERVICE_INSTRUCTION_CONFIGURATIONS)
-MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
+MULTI_CONFIGURATIONS = ("lemmasim-notebook", "lemmasim-initialize", "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
                        "service-normal", "service-development", *SERVICE_INSTRUCTION_CONFIGURATIONS)
 SERVICE_CONFIGURATIONS = ("service-normal", "service-development", *SERVICE_INSTRUCTION_CONFIGURATIONS)
-INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
+INDEPENDENT_IMAGE_KEYS = {"lemmasim-notebook": {"store", "notebook"},
+                          "lemmasim-initialize": {"store", "notebook"}, "tasks-development": {"compute", "sleeper", "busy"},
                           "tasks-fault-development": {"compute", "sleeper", "busy", "fault"},
                           "capabilities-development": {"capabilities", "peer", "busy", "tamper"},
                           "ipc-development": {"server", "clienta", "clientb", "busy", "fault"},
@@ -94,6 +95,10 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
+    if configuration in {"lemmasim-notebook", "lemmasim-initialize"}:
+        entry = "initializeMedium" if configuration == "lemmasim-initialize" else "boot"
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
+                 ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64")))}
     if configuration == "lemmasim-bringup":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.LemmaSim.Entry.boot", ()),
                  ("Lemma.Platform.LemmaSim.Entry.dispatch", ("u64", "u64", "u64"))),
@@ -158,6 +163,8 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
+    if configuration in {"lemmasim-notebook", "lemmasim-initialize"}:
+        return "lemma-notebook-v1"
     if configuration in SERVICE_CONFIGURATIONS:
         return "lemma-buffer-service-v1"
     return {"capabilities-development": "lemma-capabilities-v1", "ipc-development": "lemma-ipc-v1",
@@ -190,16 +197,17 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
 
 def artifact_category(configuration: str) -> str:
     configuration_roots(configuration)
-    return ("production" if configuration in {"normal", "service-normal"} else "development") + "-kernel-boot-package"
+    return ("production" if configuration in {"normal", "service-normal", "lemmasim-notebook", "lemmasim-initialize"} else "development") + "-kernel-boot-package"
 
 
 def user_artifact_category(configuration: str) -> str:
     configuration_roots(configuration)
-    return ("production" if configuration == "service-normal" else "development") + "-user-image"
+    return ("production" if configuration in {"service-normal", "lemmasim-notebook", "lemmasim-initialize"} else "development") + "-user-image"
 
 
 def service_executable_module(module: str) -> bool:
-    return (module.startswith("Lemma.Applications.") or module == "Lemma.Services.Buffer.Server"
+    return (module.startswith("Lemma.Applications.") or module == "Lemma.Services.Store.Server"
+            or module.startswith("Lemma.Services.Store.Server.") or module == "Lemma.Services.Buffer.Server"
             or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
             or module.startswith("Lemma.User.Development.BufferFault."))
 
@@ -208,7 +216,7 @@ def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str
     """Selected target source only; exporter/compiler host imports are separate."""
     return module_closure(root, image["module"], allow_development=".Development." in image["module"],
                           forbid_user_privileged_imports=managed_policy(configuration) is not None,
-                          selected_executable_module=image["module"] if configuration in SERVICE_CONFIGURATIONS else None)
+                          selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize") else None)
 
 
 def source_inputs(root: Path) -> dict[str, str]:
@@ -324,6 +332,10 @@ def export_user_files(root: Path, output_dir: Path, configuration: str, image: d
     _nonempty(output_dir / image["directory"], USER_IMAGE_FILES)
 
 
+def configuration_lemmasim(layout: dict) -> bool:
+    return layout.get("configuration") in {"lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup"}
+
+
 def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     """Link/extract a single ELF at its declared virtual layout, independently."""
     relative = image["directory"]
@@ -348,7 +360,9 @@ def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     # Loader ownership quota includes the eleven initial page tables, data,
     # user stack and authoritative paired kernel stack. Runtime arena grants
     # remain checked by the allocator; this rejects an impossible initial load.
-    if 11 + math.ceil(text_bytes / layout["frame_bytes"]) + 1 + user["stack_pages"] + layout["task_kernel_stack_pages"] > 32:
+    base_tables = 21 if configuration_lemmasim(layout) else 11
+    owner_quota = 8192 if configuration_lemmasim(layout) else 32
+    if base_tables + math.ceil(text_bytes / layout["frame_bytes"]) + 1 + user["stack_pages"] + layout["task_kernel_stack_pages"] > owner_quota:
         raise Core0Error("independent user image cannot fit the loader's 32-frame owner quota")
     validate_service_user_quota(layout, image, text_bytes)
 

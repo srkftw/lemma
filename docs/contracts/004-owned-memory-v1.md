@@ -1,4 +1,4 @@
-# LemmaSim owned memory and stacks v 1
+# LemmaSim owned memory and stacks v1
 
 Task 004's `core0-kernel-v0.3` compilation floor permits the reserved 32 MiB
 physical pool `[0x82000000,0x84000000)`. The historical kernel compilation
@@ -35,10 +35,26 @@ The existing UART page table also maps VirtIO, paper and pen in the expanded
 configuration. Fifteen aligned 2 MiB S-only RW/NX leaves map the extra 30 MiB of
 pool RAM; the original first 2 MiB table stays unchanged. The trusted writable
 supervisor alias for user executable frames remains an explicit limitation.
-The 32-entry user-leaf registry is unchanged: clients must stream tile/record
-buffers within their mapped-page limit; the 32 MiB pool does not imply an arbitrary
-32 MiB user mapping. Extending that registry requires an independently checked
-larger metadata layout.
+Historical address-space descriptors retain version 1 and 32 inline user-leaf
+rows. LemmaSim descriptors use version 2 and 1024 rows in eight separately owned
+purpose-1 metadata pages, 128 rows per page. These pages have no U mapping and no
+DMA grant. The descriptor's registry count at +1408 and eight 16-byte
+handle/physical-address directory entries at +1424..+1551 fit before the saved
+user context at +2048. Every descriptor validation checks all eight live owner,
+generation, purpose, physical-address and zero-pin facts and rejects duplicate
+directory pages. Publication follows allocation/zeroing; rollback and teardown
+release all eight pages after removing user leaves. Registry rows retain exact
+generation handles and PTEs. Row access is direct; lookup scans at most the current
+mapped-leaf count, independent of document history. Allocation exhaustion leaves
+existing mappings intact.
+
+Expanded user allocation accepts aligned pages in `[0x40000,0x800000)`, except the
+reserved finisher page at `0x100000`. Legacy allocation keeps the old upper bound
+`0x100000`. The 1024 total-leaf ceiling includes text/data/stack pages and reports
+explicit exhaustion. A default task's owned base cost is 13 initial tables +
+8 registry pages + 1 data + 2 user stack + 4 kernel stack = 28 frames, plus text
+and any additional low-address page tables. Its descriptor costs one separate
+owner-1 frame. The 32 MiB global pool is not a promise of 32 MiB per application.
 
 LemmaSim task trap stacks own four adjacent 4 KiB purpose 1 frames with independent
 handles. Two 16-byte sentinel reservations leave 16352 bytes of usable call-stack
@@ -52,7 +68,7 @@ handle once, and runs on the stable supervisor reaper stack.
 
 Supervisor handlers keep SIE clear: one S vector is counted and nested S interrupt
 entry is not permitted. M trap entry uses its separate firmware stack. Final
-compiled O 0/O 2 selected-path audits must account the vector and require at least
+compiled O0/O2 selected-path audits must account the vector and require at least
 25 percent margin in the expanded usable capacity. They are finite artifact
 call-chain bounds, not a whole-program stack proof or physical measurement.
 

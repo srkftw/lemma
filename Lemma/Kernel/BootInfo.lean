@@ -93,6 +93,12 @@ private def readName (address limit : UInt64) : Action :=
     else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
+/-- Decoder reuse for a subordinate binding check, after validate established
+the containing FDT envelope. These aliases do not alter historical validation. -/
+def readBE32 (address : UInt64) : Action := be32 address
+def readBE64 (address : UInt64) : Action := be64 address
+def readBoundedName (address limit : UInt64) : Action := readName address limit
+
 private def propertyKind (length lo hi : UInt64) : UInt64 :=
   if length = 14 then
     if lo = 0x7373657264646123 then

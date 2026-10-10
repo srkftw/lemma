@@ -78,7 +78,7 @@ def action (vm : IO.Ref VM) (program : Action) : IO UInt64 := do
 def get (vm : IO.Ref VM) (offset : UInt64) : IO UInt64 := do
   pure <| readWord (← vm.get).memory (context + offset)
 
-def step (vm : IO.Ref VM) : IO Unit := do
+def step (vm : IO.Ref VM) (expectedStatus : UInt8 := 0) : IO Unit := do
   let operation ← get vm 0
   let phase ← get vm 8
   let sector ← get vm 16
@@ -100,7 +100,8 @@ def step (vm : IO.Ref VM) : IO Unit := do
         disk := disk.set! (sector.toNat * 512 + i) state.memory[buffer.toNat + i]!
       return disk }
   else vm.modify fun state => { state with durable := state.pending }
-  let _ ← action vm (Engine.complete context 0)
+  let (status, _) ← run vm (Engine.complete context 0)
+  require (status == expectedStatus) s!"unexpected actual store completion status{status}"
   if 16 ≤ phase && phase ≤ 20 then require ((← get vm 40) == ack) "acknowledged before final flush"
   if operation != 3 then require ((← vm.get).durable == before.durable) "write changed stable medium"
 
@@ -165,6 +166,16 @@ def main (arguments : List String) : IO UInt32 := do
   drive restored
   let memory := (← restored.get).memory
   require ((ByteArray.mk (memory.extract payload.toNat (payload.toNat + 13))).utf8Decode? == some "first revised".toList.toArray) "ordinary record consumer read"
+  let _ ← action restored (Engine.readStart context 1 1 7 128 payload)
+  drive restored
+  require ((← get restored 352) == 6) "short read did not report actual length"
+  require ((ByteArray.mk ((← restored.get).memory.extract payload.toNat (payload.toNat + 6))).utf8Decode? == some "evised".toList.toArray) "short read bytes"
+  let _ ← action restored (Engine.readStart context 1 1 13 128 payload)
+  drive restored
+  require ((← get restored 352) == 0) "EOF did not return an empty short read"
+  let _ ← action restored (Engine.readStart context 1 1 14 128 payload)
+  step restored Format.malformed
+  require ((← get restored 336) == 0) "bad client range made another notebook read-only"
   let (absent, _) ← run restored (Engine.lookup context 3 1)
   require (absent == Format.notFound) "namespace isolation lookup"
   writeArtifacts directory "recovered" restored
