@@ -25,20 +25,33 @@ ROLE_ROOTS = {
     "user": (("Lemma.User.Entry.main", ("u64",)),),
 }
 ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Kernel.Entry", "user": "Lemma.User.Entry"}
+USER_INSTRUCTION_CONFIGURATIONS = {
+    "user-halfword-ecall-development": "halfword-ecall",
+    "user-return-supervisor-development": "return-supervisor",
+    "user-return-machine-development": "return-machine",
+}
+SERVICE_INSTRUCTION_CONFIGURATIONS = {
+    "service-halfword-ecall-development": "halfword-ecall",
+    "service-return-supervisor-development": "return-supervisor",
+    "service-return-machine-development": "return-machine",
+}
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                   "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
-                  "service-normal", "service-development")
+                  "service-normal", "service-development", *USER_INSTRUCTION_CONFIGURATIONS,
+                  *SERVICE_INSTRUCTION_CONFIGURATIONS)
 MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
-                       "service-normal", "service-development")
-SERVICE_CONFIGURATIONS = ("service-normal", "service-development")
+                       "service-normal", "service-development", *SERVICE_INSTRUCTION_CONFIGURATIONS)
+SERVICE_CONFIGURATIONS = ("service-normal", "service-development", *SERVICE_INSTRUCTION_CONFIGURATIONS)
 INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
                           "tasks-fault-development": {"compute", "sleeper", "busy", "fault"},
                           "capabilities-development": {"capabilities", "peer", "busy", "tamper"},
                           "ipc-development": {"server", "clienta", "clientb", "busy", "fault"},
                           "service-normal": {"server", "cli", "peer", "busy"},
                           "service-development": {"server", "cli", "peer", "busy", "fault"}}
+INDEPENDENT_IMAGE_KEYS.update({configuration: {"server", "cli", "peer", "busy", "fault"}
+                               for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
@@ -81,7 +94,8 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in MULTI_CONFIGURATIONS:
-        module = {"tasks-development": "Lemma.Kernel.Development.TasksEntry",
+        module = "Lemma.Kernel.Development.ServiceEntry" if configuration in SERVICE_INSTRUCTION_CONFIGURATIONS else {
+                  "tasks-development": "Lemma.Kernel.Development.TasksEntry",
                   "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry",
                   "capabilities-development": "Lemma.Kernel.Development.CapsEntry",
                   "ipc-development": "Lemma.Kernel.Development.IPCEntry",
@@ -137,6 +151,8 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
+    if configuration in SERVICE_CONFIGURATIONS:
+        return "lemma-buffer-service-v1"
     return {"capabilities-development": "lemma-capabilities-v1", "ipc-development": "lemma-ipc-v1",
             "service-normal": "lemma-buffer-service-v1", "service-development": "lemma-buffer-service-v1"}.get(configuration)
 
@@ -149,7 +165,8 @@ def startup_case(configuration: str) -> str:
 def user_startup_case(configuration: str) -> str:
     configuration_roots(configuration)
     return {"user-csr-development": "supervisor-csr", "user-nx-development": "execute-data",
-            "user-kernel-fetch-development": "execute-kernel", "user-misaligned-development": "execute-misaligned"}.get(configuration, "none")
+            "user-kernel-fetch-development": "execute-kernel", "user-misaligned-development": "execute-misaligned",
+            **USER_INSTRUCTION_CONFIGURATIONS}.get(configuration, "none")
 
 
 def validate_configuration_stage(configuration: str, stage: str) -> None:
@@ -160,7 +177,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("machine-origin-development requires bootstrap-m")
     if configuration in {"user-isolation-development", "user-csr-development", "user-nx-development",
                          "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
-                         *MULTI_CONFIGURATIONS} and stage != "supervisor":
+                         *USER_INSTRUCTION_CONFIGURATIONS, *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
 
 
@@ -475,7 +492,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         if images:
             unit_contracts["users"] = {key: value["contract_version"] for key, value in units["users"].items()}
         image_startup_fields = ({"user_startup_cases": {image["key"]: image["startup_case"] for image in images}}
-                                if configuration == "tasks-fault-development" else {})
+                                if configuration == "tasks-fault-development" or configuration in SERVICE_INSTRUCTION_CONFIGURATIONS else {})
         managed_fields = ({"managed_policy": managed_policy(configuration),
                            "boot_roles": {image["key"]: image["boot_role"] for image in images}}
                           if managed_policy(configuration) is not None else {})

@@ -175,6 +175,7 @@ def validate_quiescence(report: dict, rawstdout: bytes, rawstderr: bytes) -> dic
 
 
 class BufferSession(Session):
+    CONFIGURATIONS = ("service-normal", "service-development")
     RUNNER_PATHS = ("scripts/run_buffer_session.py", "scripts/buffer_transport.py",
                     "scripts/buffer-cli.py",
                     "scripts/run_kernel.py", "scripts/run_device_session.py",
@@ -194,7 +195,7 @@ class BufferSession(Session):
             self.__exit__(type(error), error, error.__traceback__)
             raise
         super().__enter__()
-        if self.binding.get("configuration") not in ("service-normal", "service-development"):
+        if self.binding.get("configuration") not in self.CONFIGURATIONS:
             error = Core0Error("Buffer transport requires its closed service deployment")
             self.__exit__(type(error), error, error.__traceback__)
             raise error

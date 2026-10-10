@@ -355,10 +355,16 @@ jobs:
 
       - name: Require complete Task 003 acceptance evidence
         run: |
-          python3 - <<'PY'
+          set -euo pipefail
+          nix develop --no-write-lock-file --command python3 - <<'PY'
           import hashlib
           import json
+          import sys
           from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from build_kernel import source_inputs
+          from check_kernel import acceptance_inputs, matrix, source_identity, validate_session
+          from check_kernel_syscall import DEFAULT_SEEDS
           def require(condition):
               if not condition:
                   raise RuntimeError("Missing or changed mandatory Task 003 evidence")
@@ -371,20 +377,56 @@ jobs:
           require(value["required_gate_prefix"] == "A-E" and value["highest_exercised_gate"] == "E")
           require(len(value["images"]) == 20 and len(value["observations"]) == 24)
           require(value["qemu_sessions"] == 28 and value["syscall_user_instances"] == 6)
+          require(value["source"] == source_identity(Path.cwd()))
+          require(value["source_inputs"] == source_inputs(Path.cwd()))
+          require(value["acceptance_inputs"] == acceptance_inputs(Path.cwd()))
+          require([(row["configuration"], row["stage"], row["optimization"]) for row in value["images"]] == list(matrix()))
+          expected_observations = []
+          for cfg, stage, opt in matrix():
+              roles = (["bootinfo"] if cfg == "normal" and stage == "bootstrap-m" else
+                       ["user"] if cfg == "normal" else
+                       ["frames", "address-space", "loader"] if cfg == "frames-development" else
+                       ["machine-origin"] if cfg == "machine-origin-development" else
+                       ["syscall"] if cfg == "user-syscall-development" else ["isolation"])
+              expected_observations.extend((cfg, stage, opt, role) for role in roles)
+          require([(r["configuration"], r["stage"], r["optimization"], r["role"]) for r in value["observations"]] == expected_observations)
+          require(sum(r["qemu_sessions"] for r in value["observations"]) == 28)
+          require(sum(r["syscall_user_instances"] for r in value["observations"]) == 6)
+          images = {(row["configuration"], row["stage"], row["optimization"]): Path(row["image"]).resolve() for row in value["images"]}
           for row in value["images"]:
               image = Path(row["image"])
               require(image.is_file() and image.stat().st_size > 0 and digest(image) == row["sha256"])
               audit, provenance = image.parent / "audit.json", image.parent / "provenance.json"
               require(digest(audit) == row["audit_sha256"] and digest(provenance) == row["provenance_sha256"])
-              require(json.loads(audit.read_text())["status"] == "PASS")
+              audited = json.loads(audit.read_text())
+              require(audited["status"] == "PASS" and audited["dirty_paths"] == [])
+              require(audited["source_commit"] == value["source"]["commit"] and audited["image_sha256"] == row["sha256"])
+              require(tuple(audited[k] for k in ("configuration", "stage", "optimization")) == tuple(row[k] for k in ("configuration", "stage", "optimization")))
               recorded = json.loads(provenance.read_text())
-              require(recorded["source_commit"] == value["source"]["commit"])
+              require(recorded["source_commit"] == value["source"]["commit"] and recorded["dirty_paths"] == [])
+              require(recorded["source_inputs"] == value["source_inputs"])
+              require(tuple(recorded[k] for k in ("configuration", "stage", "optimization")) == tuple(row[k] for k in ("configuration", "stage", "optimization")))
               realized = recorded["lean_source_realization"]
               require(realized["source_path"] == lean["source_path"] and realized["revision"] == lean["revision"])
               require(realized["narHash"] == lean["source_sha256"] and realized["narSize"] == lean["source_nar_size"])
           for row in value["observations"]:
               observed = Path(row["result"])
-              require(digest(observed) == row["sha256"] and json.loads(observed.read_text())["status"] == "PASS")
+              result = json.loads(observed.read_text())
+              require(digest(observed) == row["sha256"] and result["status"] == "PASS")
+              image = images[(row["configuration"], row["stage"], row["optimization"])]
+              require(row["status"] == "PASS" and type(row["qemu_sessions"]) is int and row["qemu_sessions"] == (3 if row["role"] == "bootinfo" else 1))
+              require(type(row["syscall_user_instances"]) is int and row["syscall_user_instances"] == (3 if row["role"] == "syscall" else 0))
+              if row["role"] == "syscall":
+                  actual = result["observed"]
+                  require(actual["protocol"] == "user-E-syscalls-v1" and actual["fresh_user_runs"] == 3)
+                  require([case["runtime_seed"] for case in actual["cases"]] == list(DEFAULT_SEEDS))
+              if row["role"] == "bootinfo":
+                  require([child["kind"] for child in result["cases"]] == ["ordinary", "reserved-pool", "root-cells"])
+                  for child in result["cases"]:
+                      require(digest(Path(child["result"])) == child["result_sha256"])
+                      validate_session(Path(child["result"]), image)
+              else:
+                  validate_session(observed.resolve(), image, machine_origin=row["role"] == "machine-origin")
           PY
 
       - name: Retain Task 003 prefix evidence
@@ -396,6 +438,119 @@ jobs:
             build/kernel/ci-prefix/
             build/ci/kernel-rv64.log
             docs/evidence/003-*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  kernel-source-negatives-rv64:
+    name: Task 003 source-negative RV64 qualification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare source-negative log directory
+        run: mkdir -p build/ci
+
+      - name: Build fresh controls and qualify both mutations at O0 and O2
+        run: |
+          set -euo pipefail
+          candidate="$(git rev-parse HEAD)"
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel_mutations.py \
+                --expected-commit "$candidate" \
+                --work-dir build/kernel/ci-source-negatives --deadline 2400 \
+            2>&1 | tee build/ci/kernel-source-negatives-rv64.log
+
+      - name: Require complete controls and retained actual negative evidence
+        run: |
+          set -euo pipefail
+          nix develop --no-write-lock-file --command python3 - <<'PYCODE'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from check_kernel_mutations import validate_campaign
+          value = validate_campaign(Path("build/kernel/ci-source-negatives/result.json"), Path.cwd())
+          if value["protocol"] != "kernel-source-mutations-K-v1" or len(value["cases"]) != 4:
+              raise RuntimeError("Missing mandatory source-negative qualification")
+          PYCODE
+
+      - name: Retain source-negative evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-source-negatives-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/kernel/ci-source-negatives/result.json
+            build/kernel/ci-source-negatives/logs/
+            build/kernel/ci-source-negatives/checkouts/*/build/kernel/K-mutations/
+            build/ci/kernel-source-negatives-rv64.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  kernel-architecture-rv64:
+    name: Task 003 architectural containment RV64 acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare architectural test log directory
+        run: mkdir -p build/ci
+
+      - name: Build, audit and observe exact architectural cases at O0 and O2
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel_architecture.py \
+                --work-dir build/kernel/ci-architecture --clean \
+                --timeout 300 --deadline 2400 \
+            2>&1 | tee build/ci/kernel-architecture-rv64.log
+
+      - name: Require all actual architectural faults and continuing services
+        run: |
+          set -euo pipefail
+          nix develop --no-write-lock-file --command python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from check_kernel_architecture import validate_architecture
+          value = validate_architecture(Path("build/kernel/ci-architecture/result.json"), Path.cwd())
+          if value["status"] != "PASS" or len(value["cases"]) != 12:
+              raise RuntimeError("Missing mandatory architectural containment evidence")
+          PY
+
+      - name: Retain architectural containment evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-architecture-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/kernel/ci-architecture/
+            build/ci/kernel-architecture-rv64.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6

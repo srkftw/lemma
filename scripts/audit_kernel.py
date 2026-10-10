@@ -22,7 +22,8 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
                           configuration_roots, development_role, module_closure, source_inputs, startup_case, user_startup_case,
                           configuration_development_modules,
-                          SERVICE_CONFIGURATIONS, service_executable_module, user_module_closure, user_artifact_category,
+                          SERVICE_CONFIGURATIONS, USER_INSTRUCTION_CONFIGURATIONS, SERVICE_INSTRUCTION_CONFIGURATIONS,
+                          service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -97,7 +98,12 @@ USER_ATTACKS = {
     "execute-data": ("lemma_user_attack_execute_data", "adversarial-nx-fetch", (0x000202b7, 0x00028067)),
     "execute-kernel": ("lemma_user_attack_kernel_fetch", "adversarial-kernel-fetch", (0x40100293, 0x01529293, 0x00028067)),
     "execute-misaligned": ("lemma_user_attack_misaligned", "adversarial-illegal-halfword-fetch", (0x000102b7, 0x0022829b, 0x00028067)),
+    "halfword-ecall": ("lemma_user_attack_halfword_ecall", "adversarial-halfword-ecall", (0x00000297, 0x01028293, 0x00228293, 0x00028067, 0x00730013, 0)),
+    "return-supervisor": ("lemma_user_attack_supervisor_return", "adversarial-supervisor-return", (0x10200073,)),
+    "return-machine": ("lemma_user_attack_machine_return", "adversarial-machine-return", (0x30200073,)),
 }
+INSTRUCTION_CASES = {"halfword-ecall": (18, 0x00000073),
+                     "return-supervisor": (0, 0x10200073), "return-machine": (0, 0x30200073)}
 USER_ABI_INITIAL_DATA = struct.pack("<2Q", 0, 1)
 USER_SYSCALL_WORDS = (0x00050893, 0x00058513, 0x00060593, 0x00068613,
                       0x00070693, 0x00078713, 0x00000073, 0x00008067)
@@ -142,9 +148,14 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
     "startup_case":"none","directory":"users/fault","boot_role":"buffer-fault-client"})
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
+MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
                              "service-normal":SERVICE_USER_IMAGES,"service-development":SERVICE_DEVELOPMENT_USER_IMAGES}
+MULTI_USER_CONFIGURATIONS.update({configuration: (*SERVICE_USER_IMAGES, {
+    "key": "fault", "id": 5, "module": "Lemma.User.Entry", "source": "Lemma.User.Entry.main", "args": ["u64"],
+    "symbol_prefix": "lemma_user_fault_", "startup_case": case, "directory": "users/fault", "boot_role": "buffer-fault-client"})
+    for configuration, case in SERVICE_INSTRUCTION_CONFIGURATIONS.items()})
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -201,7 +212,7 @@ def development_modules(configuration: str, role: str) -> tuple[str, ...]:
 
 
 def validate_image_case_provenance(build: dict, provenance: dict, *, configuration: str, images: list[dict]) -> None:
-    if configuration == "tasks-fault-development":
+    if configuration == "tasks-fault-development" or configuration in SERVICE_INSTRUCTION_CONFIGURATIONS:
         expected = {row["key"]: row["startup_case"] for row in image_specs(configuration)}
         if (images != list(image_specs(configuration)) or build.get("user_startup_cases") != expected
                 or provenance.get("user_startup_cases") != expected):
@@ -368,6 +379,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                      "ipc-development":"Lemma.Kernel.Development.IPCEntry.dispatch",
                      "service-normal":"Lemma.Kernel.ServiceEntry.dispatch",
                      "service-development":"Lemma.Kernel.Development.ServiceEntry.dispatch"}
+    task_dispatch.update({configuration: "Lemma.Kernel.Development.ServiceEntry.dispatch"
+                          for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
     dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
                        "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
                        "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
@@ -404,7 +417,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             "source_functions": {source: by_source[source] for source in sorted(required)}}
 
 
-def validate_call_precedes(body: str, before: str, after: str) -> dict:
+def validate_call_precedes(body: str, before: str, after: str, *,
+                          before_arguments: str | None = None, after_arguments: str | None = None) -> dict:
     """Every reachable protected call must follow a particular emitted call.
 
     This checks the genuine pre-optimization CFG, including alternate paths and
@@ -414,8 +428,10 @@ def validate_call_precedes(body: str, before: str, after: str) -> dict:
     successors = _structured_successors(blocks)
     if "entry" not in blocks:
         raise Core0Error("ordered source call audit lacks the exact entry block")
-    before_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(before) + r"\(")
-    after_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(after) + r"\(")
+    before_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(before) + r"\(" +
+                                (before_arguments + r"\)" if before_arguments is not None else ""))
+    after_pattern = re.compile(r"\bcall\s+[^@\n]*@" + re.escape(after) + r"\(" +
+                               (after_arguments + r"\)" if after_arguments is not None else ""))
     pending, seen, protected = [("entry", False)], set(), set()
     while pending:
         block, observed = pending.pop()
@@ -1466,7 +1482,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
     o='Lemma.Kernel.Objects.';c='Lemma.Kernel.Capability.';t='Lemma.Kernel.Task.';y='Lemma.Kernel.Syscall.'
     u='Lemma.Kernel.Memory.UserCopy.';a='Lemma.Kernel.Memory.AddressSpace.';f='Lemma.Kernel.Memory.Frames.'
     x='Lemma.Kernel.Memory.Access.';q='Lemma.Kernel.Scheduler.';v='Lemma.User.CapabilityABI.'
-    selected='Lemma.Kernel.Development.ServiceEntry.' if configuration=='service-development' else e
+    selected=e if configuration=='service-normal' else 'Lemma.Kernel.Development.ServiceEntry.'
     edges={
       selected+'boot':[e+'initialize',e+'construct'],selected+'dispatch':[q+'dispatch'],
       e+'initialize':['Lemma.Kernel.BootServices.bootServices',o+'init',o+'serviceInitialize',n+'init'],
@@ -1686,7 +1702,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
     if grants!=[('%arg0',16,1,2),('%arg0','%arg3',2,8),('%arg1',16,1,3),('%arg1',18,4,1024),('%arg2',16,1,2),('%arg2',18,4,1024)]:
         raise Core0Error('service exact role grants/attenuation/order differ')
     mode_call=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[e+'initialize'])+r'\(i64 ([0-9]+)\)',bodies[selected+'boot'])
-    if mode_call!=['2' if configuration=='service-development' else '1']:
+    if mode_call!=['1' if configuration=='service-normal' else '2']:
         raise Core0Error('service input mode is not selected solely by exact boot root')
     return {'managed_policy':BUFFER_POLICY,'common_ipc':common,'source_call_edges':observed,
        'source_constants':{source:{'symbol':by[source],'value':value} for source,value in sorted(constants.items())},
@@ -2138,8 +2154,106 @@ def validate_user_syscall_bridge(assembly: str, raw_machine: str, ranges: dict[s
             "result_registers": ["a0:status", "a1:value"], "raw_sha256": hashlib.sha256(packed).hexdigest()}
 
 
+def validate_instruction_selection(case: str, *, configuration: str, image_key: str | None, unit: dict) -> None:
+    """Only an exact selected genuine Entry root can reach a K startup site."""
+    expected = (USER_INSTRUCTION_CONFIGURATIONS.get(configuration) if image_key is None else
+                SERVICE_INSTRUCTION_CONFIGURATIONS.get(configuration) if image_key == "fault" else None)
+    if case not in INSTRUCTION_CASES or expected != case:
+        raise Core0Error("instruction startup authority differs from its exact configuration/image")
+    validate_unit(unit, "user", configuration=configuration, image_key=image_key)
+    if [(row["source"], row["args"]) for row in unit["roots"]] != [("Lemma.User.Entry.main", ["u64"])]:
+        raise Core0Error("instruction probe lacks the genuine initial-data/BSS Entry precondition")
+
+def validate_architecture_diagnostics(unit: dict, pre_ir: str) -> dict:
+    """Bind diagnostic words to the validated original frame, not a literal.
+
+    This is a narrow genuine source/CFG obligation. Actual U origin, opcode,
+    trap contents, termination and continuing peers require guest evidence.
+    """
+    configuration = unit.get("configuration")
+    managed = configuration in SERVICE_INSTRUCTION_CONFIGURATIONS
+    if configuration not in { *USER_INSTRUCTION_CONFIGURATIONS, *SERVICE_INSTRUCTION_CONFIGURATIONS } or unit.get("role") != "kernel":
+        raise Core0Error("architecture diagnostics require one exact selected kernel configuration")
+    by = {re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]): row["symbol"] for row in unit["functions"]}
+    p, q, t, x, c = "Lemma.Kernel.Process.", "Lemma.Kernel.Scheduler.", "Lemma.Kernel.Task.", "Lemma.Kernel.Memory.Access.", "Lemma.Kernel.Console."
+    required = {p + "validateFrame", x + "read64", c + "record"}
+    required |= ({q + "dispatch", q + "reportFault", q + "failed", q + "finish", q + "returnKernel", t + "capture", t + "failed",
+                  "Lemma.Kernel.Memory.AddressSpace.context"} if managed else
+                 {p + "dispatch", p + "userTrap", p + "failed", p + "finish"})
+    if not required <= by.keys(): raise Core0Error("architecture diagnostic genuine source closure is incomplete")
+    body = {source: _ir_definition_body(pre_ir, by[source]) for source in required}
+    variable = r"%[-A-Za-z0-9_.$]+"
+    def status_load(source, frame):
+        offsets = re.findall(r"(" + variable + r") = add i64 " + re.escape(frame) + r", 264$", body[source], re.M)
+        if len(offsets) != 1: raise Core0Error("diagnostic status is not read from the original hardware frame+264")
+        calls = re.findall(r"(" + variable + r") = call \{ i64, i64 \} @" + re.escape(by[x + "read64"]) + r"\(i64 " + re.escape(offsets[0]) + r"\)", body[source])
+        values = re.findall(r"(" + variable + r") = extractvalue \{ i64, i64 \} " + re.escape(calls[0] if len(calls) == 1 else "NO_STATUS_LOAD") + r", 1$", body[source], re.M)
+        if len(calls) != 1 or len(values) != 1: raise Core0Error("hardware status load/result binding is missing or duplicated")
+        return values[0]
+    if managed:
+        dispatch, report, failed = q + "dispatch", q + "reportFault", q + "failed"
+        gates = [{"source": dispatch, **validate_failed_call_gate(body[dispatch], by[t + "capture"], by[report], by[failed], body[failed])}]
+        capture_body = _ir_definition_body(pre_ir, by[t + "capture"])
+        task_failed = by.get(t + "failed")
+        context = by.get("Lemma.Kernel.Memory.AddressSpace.context")
+        if task_failed is None or context is None: raise Core0Error("capture ownership proof source closure is incomplete")
+        gates.append({"source": t + "capture", **validate_failed_call_gate(capture_body, by[p + "validateFrame"], context, task_failed, _ir_definition_body(pre_ir, task_failed))})
+        calls = re.findall(r"call \{ i64, i64 \} @" + re.escape(by[report]) + r"\(([^)]+)\)", body[dispatch])
+        if len(calls) != 2 or any(re.fullmatch(r"i64 " + variable + r", i64 %arg0, i64 %arg1, i64 %arg2, i64 " + variable, args) is None for args in calls):
+            raise Core0Error("managed fault paths substitute the original frame/cause/stval")
+        raw_status = status_load(report, "%arg1")
+        expected_d4 = "i64 212, i64 %arg2, i64 %arg4, i64 %arg3, i64 " + raw_status
+        if re.findall(r"call \{ i64, i64 \} @" + re.escape(by[c + "record"]) + r"\(([^)]+)\)", body[report]) != [expected_d4]:
+            raise Core0Error("managed D4 substitutes sanitized or fabricated hardware trap fields")
+        if re.findall(r"call \{ i64, i64 \} @" + re.escape(by[q + "finish"]) + r"\(([^)]+)\)", body[report]) != ["i64 %arg0, i64 %arg2, i64 44, i64 %arg4, i64 %arg3"]:
+            raise Core0Error("managed diagnostic does not terminate the same task with code44")
+        gates.extend([{"source": report, **validate_failed_call_gate(body[report], by[x + "read64"], by[c + "record"], by[failed], body[failed])},
+                      {"source": report, **validate_failed_call_gate(body[report], by[c + "record"], by[q + "finish"], by[failed], body[failed])}])
+        ordered = validate_call_precedes(body[report], by[c + "record"], by[q + "finish"])
+        finish = body[q + "finish"]
+        comparisons = re.findall(r"(" + variable + r") = icmp eq i64 %arg1, 8$", finish, re.M)
+        branches = re.findall(r"br i1 " + re.escape(comparisons[0] if len(comparisons) == 1 else "NO_CAUSE") + r", label %(\S+), label %(\S+)", finish)
+        phis = re.findall(r"(" + variable + r") = phi i64 \[ 4, %([^ ]+) \], \[ 5, %([^ ]+) \]", finish)
+        if len(branches) != 1 or len(phis) != 1 or branches[0] != phis[0][1:] or not re.search(
+            r"call \{ i64, i64 \} @" + re.escape(by[q + "returnKernel"]) + r"\(i64 %arg0, i64 " + re.escape(phis[0][0]) + r", i64 %arg3\)", finish):
+            raise Core0Error("managed code44 return reason is not cause8->4 / otherfault->5")
+    else:
+        dispatch, trap, failed = p + "dispatch", p + "userTrap", p + "failed"
+        gates = [{"source": dispatch, **validate_failed_call_gate(body[dispatch], by[p + "validateFrame"], by[x + "read64"], by[failed], body[failed])}]
+        raw_status = status_load(dispatch, "%arg0")
+        arguments = re.findall(r"call \{ i64, i64 \} @" + re.escape(by[trap]) + r"\(([^)]+)\)", body[dispatch])
+        if len(arguments) != 1 or re.fullmatch(r"i64 " + variable + r", i64 %arg0, i64 %arg1, i64 %arg2, i64 " + variable + r", i64 " + re.escape(raw_status) + r", i64 " + variable, arguments[0]) is None:
+            raise Core0Error("single-process dispatch does not forward its actual saved hardware status")
+        d4_args = "i64 212, i64 %arg2, i64 %arg4, i64 %arg3, i64 %arg5"
+        finish_args = "i64 %arg0, i64 %arg2, i64 44, i64 %arg4, i64 %arg5, i64 %arg6"
+        if len(re.findall(r"call \{ i64, i64 \} @" + re.escape(by[c + "record"]) + r"\(" + re.escape(d4_args) + r"\)", body[trap])) != 2:
+            raise Core0Error("halfword and hardware faults lack actual D4 PC/stval/status diagnostics")
+        if len(re.findall(r"call \{ i64, i64 \} @" + re.escape(by[p + "finish"]) + r"\(" + re.escape(finish_args) + r"\)", body[trap])) != 2:
+            raise Core0Error("halfword and hardware faults lack same-instance termination44")
+        ordered = validate_call_precedes(body[trap], by[c + "record"], by[p + "finish"],
+                    before_arguments=re.escape(d4_args), after_arguments=re.escape(finish_args))
+    return {"raw_status_offset": 264, "diagnostic_tag": 212, "diagnostic_words": ["cause", "pc", "stval", "original_hardware_status"],
+            "termination_code": 44, "halfword_ecall_return_reason": 4 if managed else None,
+            "hardware_fault_return_reason": 5 if managed else None,
+            "source_functions": {source: by[source] for source in sorted(required)}, "ownership_gates": gates,
+            "diagnostic_before_termination": ordered,
+            "limitations": ["Necessary genuine source/CFG binding; hardware trap, containment and service continuation require actual guest evidence."]}
+
+
+def _attack_source(case: str) -> list[str]:
+    return {"supervisor-csr": ["csrr a0, sstatus", "ret"],
+            "execute-data": ["li t0, 131072", "jalr zero, 0(t0)"],
+            "execute-kernel": ["li t0, 2149580800", "jalr zero, 0(t0)"],
+            "execute-misaligned": ["li t0, 65538", "jalr zero, 0(t0)"],
+            "halfword-ecall": ["la t0, .Llemma_user_halfword_ecall_pair", "addi t0, t0, 2", "jalr zero, 0(t0)",
+                               ".Llemma_user_halfword_ecall_pair:", "addi zero, t1, 7", ".word 0x00000000"],
+            "return-supervisor": ["sret"], "return-machine": ["mret"]}[case]
+
+
 def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, int]],
-                                 assembly: str, case: str) -> dict:
+                                 assembly: str, case: str, *, raw_bytes: bytes | None = None,
+                                 configuration: str | None = None, image_key: str | None = None,
+                                 unit: dict | None = None) -> dict:
     attacks = {symbol for symbol in ranges if symbol.startswith("lemma_user_attack_")}
     if case == "none":
         if attacks or ".text.user_adversarial" in assembly:
@@ -2147,22 +2261,32 @@ def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, 
         return {"case": "none", "privileged_instruction_exceptions": []}
     if case not in USER_ATTACKS:
         raise Core0Error("unknown quarantined user attack")
+    if case in INSTRUCTION_CASES:
+        validate_instruction_selection(case, configuration=configuration, image_key=image_key, unit=unit)
     symbol, effect, words = USER_ATTACKS[case]
     packed = struct.pack(f"<{len(words)}I", *words)
-    if attacks != {symbol} or _raw_function(raw_machine, ranges, symbol) != packed:
+    actual = raw_bytes if case == "halfword-ecall" else _raw_function(raw_machine, ranges, symbol)
+    if attacks != {symbol} or actual != packed or ranges.get(symbol, (None, None))[1] != len(packed):
         raise Core0Error("quarantined user attack symbol/opcode/size inventory differs")
-    expected = {"supervisor-csr": ["csrr a0, sstatus", "ret"], "execute-data": ["li t0, 131072", "jalr zero, 0(t0)"],
-                "execute-kernel": ["li t0, 2149580800", "jalr zero, 0(t0)"],
-                "execute-misaligned": ["li t0, 65538", "jalr zero, 0(t0)"]}[case]
-    if _assembly_function(assembly, symbol) != expected or len(re.findall(r'(?m)^\.section \.text\.user_adversarial,\s*"ax",\s*@progbits$', assembly)) != 1:
+    if _assembly_function(assembly, symbol) != _attack_source(case) or len(re.findall(r'(?m)^\.section \.text\.user_adversarial,\s*"ax",\s*@progbits$', assembly)) != 1:
         raise Core0Error("quarantined user attack generated source/section differs")
     base, size = ranges[symbol]
+    if base % 4 or size % 4:
+        raise Core0Error("quarantined function envelope is not word aligned")
     if case == "execute-misaligned":
-        # The pinned CPU supports compressed instructions. 0x10002 is aligned
-        # for that hardware, but selects the illegal zero upper halfword of
-        # the audited first, uncompressed `mv gp, zero` startup instruction.
         if ranges.get("_user_start", (None, None))[0] != 0x10000 or _raw_function(raw_machine, ranges, "_user_start")[:4] != struct.pack("<I", 0x00000193):
             raise Core0Error("illegal-halfword fixture lacks its exact audited startup word/target")
+    if case in INSTRUCTION_CASES:
+        offset, opcode = INSTRUCTION_CASES[case]
+        if struct.unpack_from("<I", actual, offset)[0] != opcode:
+            raise Core0Error("instruction site is not the exact linked four-byte opcode")
+        site = {"pc": base + offset, "offset": offset, "instruction_bits": 32, "opcode": opcode}
+        return {"case": case, "symbol": symbol, "effect": effect, "base": base, "bytes": size,
+                "raw_sha256": hashlib.sha256(actual).hexdigest(), "fault_pc": site["pc"],
+                "instruction_site": site,
+                "privileged_instruction_exceptions": [site["pc"]] if case != "halfword-ecall" else [],
+                **({"overlapping_words": {"offset": 16, "bytes": 8, "words": [0x00730013, 0],
+                                           "instruction_pair_offset": 2}} if case == "halfword-ecall" else {})}
     return {"case": case, "symbol": symbol, "effect": effect, "base": base, "bytes": size,
             "raw_sha256": hashlib.sha256(packed).hexdigest(),
             "fault_pc": {"supervisor-csr": base, "execute-data": 0x20000,
@@ -2170,30 +2294,68 @@ def validate_user_attack_machine(raw_machine: str, ranges: dict[str, tuple[int, 
             "privileged_instruction_exceptions": [base] if case == "supervisor-csr" else []}
 
 
-def validate_image_attack_object(section_text: str, symbol_text: str, raw: bytes, assembly: str,
-                                *, configuration: str, image_key: str) -> dict:
-    """Bind the sole G CSR exception to the selected Fault startup input."""
-    image = image_spec(configuration, image_key)
-    case = image["startup_case"]
+def validate_user_attack_object(section_text: str, symbol_text: str, raw: bytes, assembly: str,
+                                *, configuration: str, image_key: str | None, unit: dict | None = None,
+                                relocation_text: str = "") -> dict:
+    """The same object scanner covers singleton and selected managed probes."""
+    image = image_spec(configuration, image_key) if image_key is not None else None
+    case = image["startup_case"] if image is not None else user_startup_case(configuration)
     attacks = {symbol for symbol in defined_function_symbols(symbol_text) if symbol.startswith("lemma_user_attack_")}
     sections = re.findall(r"(?m)^.*\.text\.user_adversarial\s+.*$", section_text)
     if case == "none":
         if sections or attacks or raw or ".text.user_adversarial" in assembly:
             raise Core0Error("ordinary selected user startup object contains quarantined code")
         return {"case": "none", "privileged_instruction_exceptions": []}
-    if (configuration, image_key, case) != ("tasks-fault-development", "fault", "supervisor-csr"):
+    if case in INSTRUCTION_CASES:
+        validate_instruction_selection(case, configuration=configuration, image_key=image_key, unit=unit)
+    elif image_key is not None and (configuration, image_key, case) != ("tasks-fault-development", "fault", "supervisor-csr"):
         raise Core0Error("unknown per-image privileged instruction authority")
     symbol, effect, words = USER_ATTACKS[case]
-    section = re.fullmatch(r"\s*\[\s*(\d+)\]\s+\.text\.user_adversarial\s+PROGBITS\s+0+\s+[0-9a-f]+\s+000008\s+00\s+AX\s+0\s+0\s+4\s*", sections[0]) if len(sections) == 1 else None
+    # LLVM's assembler resolves this same-section local LA in startup.o.
+    # Its exact AUIPC(0)/ADDI(16) pair is already relocation-free; accepting
+    # unresolved placeholders or foreign relocations would change authority.
+    expected_raw = struct.pack(f"<{len(words)}I", *words)
+    section = re.fullmatch(r"\s*\[\s*(\d+)\]\s+\.text\.user_adversarial\s+PROGBITS\s+0+\s+[0-9a-f]+\s+([0-9a-f]+)\s+00\s+AX\s+0\s+0\s+4\s*", sections[0]) if len(sections) == 1 else None
     rows = [line.split() for line in symbol_text.splitlines() if line.split() and line.split()[-1] == symbol]
-    if (section is None or attacks != {symbol} or len(rows) != 1 or len(rows[0]) != 8
-            or rows[0][1:] != ["0000000000000000", "8", "FUNC", "GLOBAL", "DEFAULT", section[1], symbol]
-            or raw != struct.pack("<2I", *words)
-            or _assembly_function(assembly, symbol) != ["csrr a0, sstatus", "ret"]):
-        raise Core0Error("Fault startup object CSR section/symbol/bytes/source inventory differs")
-    return {"case": case, "symbol": symbol, "effect": effect, "bytes": len(raw),
-            "section": ".text.user_adversarial", "object": image["directory"] + "/startup.o",
-            "raw_sha256": hashlib.sha256(raw).hexdigest(), "privileged_instruction_exceptions": [0]}
+    if (section is None or int(section[2], 16) != len(expected_raw) or attacks != {symbol} or len(rows) != 1 or len(rows[0]) != 8
+            or rows[0][1:] != ["0000000000000000", str(len(expected_raw)), "FUNC", "GLOBAL", "DEFAULT", section[1], symbol]
+            or raw != expected_raw or _assembly_function(assembly, symbol) != _attack_source(case)
+            or len(re.findall(r'(?m)^\.section \.text\.user_adversarial,\s*"ax",\s*@progbits$', assembly)) != 1):
+        raise Core0Error("startup object attack section/symbol/bytes/source inventory differs")
+    relocations = re.findall(r"(?ms)^Relocation section ['\"]\.rela\.text\.user_adversarial['\"][^\n]*\n(.*?)(?=^Relocation section |\Z)", relocation_text)
+    relocation_rows = [line.split() for block in relocations for line in block.splitlines() if re.match(r"\s*[0-9a-f]+\s+[0-9a-f]+\s+R_", line)]
+    evidence = None
+    if case == "halfword-ecall":
+        if relocations or relocation_rows:
+            raise Core0Error("halfword same-section local pair has unexpected relocations")
+        mapping = [row for line in symbol_text.splitlines() if len(row := line.split()) == 8
+                   and row[3:7] == ["NOTYPE", "LOCAL", "DEFAULT", section[1]]]
+        if sorted((int(row[1], 16), row[7]) for row in mapping) != [(0, "$x"), (20, "$d")]:
+            raise Core0Error("halfword object instruction/fixed-zero mapping differs")
+        evidence = {"kind": "assembler-resolved-local-pair", "pc_relative_start": 0,
+                    "pair_offset": 16, "halfword_offset": 2, "relocations": []}
+    elif relocation_rows:
+        raise Core0Error("fixed attack instruction object has unexpected relocations")
+    owner = image["directory"] + "/startup.o" if image is not None else "user/startup.o"
+    record = {"case": case, "symbol": symbol, "effect": effect, "bytes": len(raw),
+              "section": ".text.user_adversarial", "object": owner,
+              "raw_sha256": hashlib.sha256(raw).hexdigest(), "privileged_instruction_exceptions": [0] if case == "supervisor-csr" else []}
+    if case in INSTRUCTION_CASES:
+        offset, opcode = INSTRUCTION_CASES[case]
+        if struct.unpack_from("<I", raw, offset)[0] != opcode:
+            raise Core0Error("object instruction site differs from its declared four-byte opcode")
+        record.update(base=0, instruction_site={"pc": offset, "offset": offset, "instruction_bits": 32, "opcode": opcode},
+                      privileged_instruction_exceptions=[offset] if case != "halfword-ecall" else [])
+        if evidence is not None: record["local_pair_resolution"] = evidence
+    return record
+
+
+def validate_image_attack_object(section_text: str, symbol_text: str, raw: bytes, assembly: str,
+                                *, configuration: str, image_key: str, unit: dict | None = None,
+                                relocation_text: str = "") -> dict:
+    return validate_user_attack_object(section_text, symbol_text, raw, assembly,
+                                      configuration=configuration, image_key=image_key, unit=unit,
+                                      relocation_text=relocation_text)
 
 
 def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
@@ -2383,7 +2545,7 @@ BACKEND_JUMP_TABLES = {
 }
 BACKEND_JUMP_TABLE_CONFIGURATIONS = {
     'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
-    'Lemma.Kernel.Development.ServiceEntry.command': {'service-development'},
+    'Lemma.Kernel.Development.ServiceEntry.command': set(SERVICE_CONFIGURATIONS) - {'service-normal'},
     'Lemma.Services.Buffer.Protocol.requestShape': set(SERVICE_CONFIGURATIONS),
     'Lemma.Services.Buffer.Server.existing': set(SERVICE_CONFIGURATIONS),
 }
@@ -2924,12 +3086,32 @@ def function_ranges(symbol_text: str) -> dict[str, tuple[int, int]]:
 
 
 def validate_machine(text: str, *, user: bool = False,
-                     ranges: dict[str, tuple[int, int]] | None = None, user_csr_pc: int | None = None) -> None:
+                     ranges: dict[str, tuple[int, int]] | None = None, user_csr_pc: int | None = None,
+                     user_attack: dict | None = None) -> None:
     if user_csr_pc is not None and (not user or type(user_csr_pc) is not int):
         raise Core0Error("CSR exception lacks exact user instruction address")
+    return_site, zero_window = None, None
+    if user_attack is not None:
+        if not user or ranges is None or user_attack.get("case") not in INSTRUCTION_CASES:
+            raise Core0Error("instruction exception lacks a selected proved user function")
+        case = user_attack["case"]
+        symbol, effect, words = USER_ATTACKS[case]
+        base, size = ranges.get(symbol, (None, None))
+        offset, opcode = INSTRUCTION_CASES[case]
+        if (type(base) is not int or base % 4 or size != 4 * len(words) or
+                any(user_attack.get(key) != value for key, value in {
+                    "symbol": symbol, "effect": effect, "base": base, "bytes": size,
+                    "raw_sha256": hashlib.sha256(struct.pack(f"<{len(words)}I", *words)).hexdigest(),
+                    "fault_pc": base + offset,
+                    "instruction_site": {"pc": base + offset, "offset": offset, "instruction_bits": 32, "opcode": opcode}}.items())):
+            raise Core0Error("instruction exception is not bound to its exact audited function/site/bytes")
+        if case == "halfword-ecall": zero_window = (base + 20, base + 24)
+        else: return_site = (base, "sret" if case == "return-supervisor" else "mret")
     found = 0
     expected = None if ranges is None else {address for begin, size in ranges.values() for address in range(begin, begin+size, 4)}
     observed = set()
+    zero_sites = set()
+    if zero_window is not None: expected.remove(zero_window[0])
     for line in text.splitlines():
         match = re.match(r"\s*([0-9a-f]+):\s+(\S+)\s*(.*)", line)
         if not match:
@@ -2937,15 +3119,25 @@ def validate_machine(text: str, *, user: bool = False,
         address = int(match[1], 16)
         if ranges is not None and not any(begin <= address < begin+size for begin, size in ranges.values()):
             continue  # source-bound object constant pools are not FUNC bytes
+        instruction, operands = match[2], match[3]
+        if zero_window is not None and zero_window[0] <= address < zero_window[1]:
+            # Pinned LLVM prints the proven fixed-zero word as two unknown
+            # halfwords. This exception is only formatting of these exact
+            # extracted zero bytes inside the selected24-byte function.
+            if address in zero_sites or address not in {zero_window[0], zero_window[0] + 2} or instruction != "<unknown>" or operands.strip():
+                raise Core0Error("halfword fixed zero window disassembly differs")
+            zero_sites.add(address)
+            continue
         if address in observed or expected is not None and address not in expected:
             raise Core0Error("duplicate/unaligned instruction inside a function range")
         observed.add(address)
-        instruction, operands = match[2], match[3]
         found += 1
         if instruction not in INTEGER_INSTRUCTIONS:
             raise Core0Error(f"unknown/noninteger/compressed machine instruction: {instruction}")
         allowed_csr = address == user_csr_pc and instruction == "csrr" and operands.replace(" ", "") == "a0,sstatus"
-        if user and (instruction.startswith("csr") and not allowed_csr or instruction in {"mret", "sret", "wfi", "sfence.vma"}):
+        allowed_return = return_site == (address, instruction) and not operands.strip()
+        if user and (instruction.startswith("csr") and not allowed_csr or
+                     instruction in {"mret", "sret", "wfi", "sfence.vma"} and not allowed_return):
             raise Core0Error("ordinary user image contains privileged machine instructions")
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
@@ -2955,6 +3147,8 @@ def validate_machine(text: str, *, user: bool = False,
         raise Core0Error("empty machine instruction corpus")
     if expected is not None and observed != expected:
         raise Core0Error("disassembly does not cover every four-byte function instruction")
+    if zero_window is not None and zero_sites != {zero_window[0], zero_window[0] + 2}:
+        raise Core0Error("halfword fixed zero word lacks complete disassembly coverage")
 
 
 
@@ -2979,7 +3173,8 @@ def _artifact_inspector(root: Path, directory: Path, timeout: float, logs: list[
 
 
 def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], layout: dict,
-                       user: bool, assembly: str, user_case: str = "none") -> tuple[dict, str, str, dict]:
+                       user: bool, assembly: str, user_case: str = "none",
+                       output_dir: Path | None = None, unit: dict | None = None) -> tuple[dict, str, str, dict]:
     """One linked-code scanner shared by each boot and separately linked user ELF."""
     header = inspect("llvm-readelf", ["-h", image], name + "-header")
     if not all(token in header for token in ("ELF64", "little endian", "RISC-V")) or not re.search(r"Flags:\s+0x0(?:\s|$)", header):
@@ -3023,8 +3218,22 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
     machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
     ranges = function_ranges(symbol_text)
     raw_machine = inspect("llvm-objdump", ["-d", image], name + "-raw-disassembly")
-    attack = validate_user_attack_machine(raw_machine, ranges, assembly, user_case) if user else None
-    validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None)
+    attack_bytes = None
+    if user and user_case == "halfword-ecall":
+        if output_dir is None:
+            raise Core0Error("halfword linked instruction audit lacks actual ELF byte extraction")
+        binary = "audit-" + name + "-code.bin"
+        inspect("llvm-objcopy", ["-O", "binary", "--only-section=.text", image, binary], name + "-code-extract")
+        text = (output_dir / binary).read_bytes()
+        base, size = ranges.get(USER_ATTACKS[user_case][0], (None, None))
+        if type(base) is not int or base < 0x10000 or base + size > 0x10000 + len(text):
+            raise Core0Error("halfword function exceeds its independently extracted ELF code bytes")
+        attack_bytes = text[base - 0x10000: base - 0x10000 + size]
+    attack = validate_user_attack_machine(raw_machine, ranges, assembly, user_case, raw_bytes=attack_bytes,
+                                         configuration=layout["configuration"], image_key=unit.get("image_key") if unit else None,
+                                         unit=unit) if user else None
+    validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None,
+                     user_attack=attack if user and user_case in INSTRUCTION_CASES else None)
     record = {"entry": required, "segments": segments, "function_symbols": sorted(symbols),
               "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
     if user:
@@ -3089,7 +3298,8 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
                 inspect("llvm-objcopy", ["-O", "binary", "--only-section=.text.user_adversarial", obj, "audit-attack-object.bin"], "attack-object-extract")
                 attack_bytes = (output_dir / "audit-attack-object.bin").read_bytes()
             attack_object = validate_image_attack_object(section_text, symbols, attack_bytes, assembly,
-                                                        configuration=configuration, image_key=image_key)
+                                                        configuration=configuration, image_key=image_key, unit=unit,
+                                                        relocation_text=relocation_text)
             inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", obj, "audit-abi-object.bin"], "abi-object-extract")
             initializer = validate_user_abi_data(section_text, (output_dir / "audit-abi-object.bin").read_bytes(), symbols, assembly,
                                                 object_file=image["directory"] + "/startup.o")
@@ -3134,7 +3344,8 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
             time=source_symbols[expected[2]],expire=source_symbols[expected[3]],create=source_symbols[expected[6]],
             existing=source_symbols[expected[7]],lease=source_symbols[expected[8]])
     elf, symbols, raw, ranges = inspect_linked_elf(inspect, name="user", image="image.elf", expected=primitive_symbols | set(ir["optimized"]["definitions"]),
-                                                 layout=layout, user=True, assembly=assembly, user_case=user_case)
+                                                  layout=layout, user=True, assembly=assembly, user_case=user_case,
+                                                  output_dir=output_dir, unit=unit)
     for section, target in ((".text", "text.bin"), (".data", "data.bin")):
         actual = "audit-extracted-" + target
         inspect("llvm-objcopy", ["-O", "binary", "--only-section=" + section, "image.elf", actual], target + "-extract")
@@ -3161,7 +3372,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
             "data_sha256": sha256(output_dir / "data.bin"), "commands": logs, "backend_readonly_objects": backend_objects,
             **({"owned_page_budget": service_quota} if service_quota is not None else {}),
             **({'server_lease_scan':lease_scan} if lease_scan is not None else {}),
-            **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" else {})}
+            **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" or configuration in SERVICE_INSTRUCTION_CONFIGURATIONS else {})}
 
 
 def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
@@ -3495,7 +3706,9 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                "R_RISCV_CALL", "R_RISCV_CALL_PLT", "R_RISCV_64", "R_RISCV_32", "R_RISCV_ADD64", "R_RISCV_SUB64"}
         readonly_objects = []
         backend_objects = []
-        user_abi_object = None
+        architecture = (validate_architecture_diagnostics(units["kernel"], (output_dir / "kernel/program.ll").read_text())
+                        if configuration in {*USER_INSTRUCTION_CONFIGURATIONS, *SERVICE_INSTRUCTION_CONFIGURATIONS} else None)
+        user_abi_object, user_attack_object = None, None
         for object_file, expected_functions in object_functions.items():
             label = object_file.replace("/", "-")
             object_symbols = inspect("llvm-readelf", ["-s", "--wide", object_file], label + "-symbols")
@@ -3514,6 +3727,14 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                 {".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"} | ({".text.user_adversarial"} if user_case != "none" else set()) if object_file == "user/startup.o" else
                                 {".text", ".rodata", ".rodata.cst8", ".data", ".bss"})
             if object_file == "user/startup.o":
+                attack_bytes = b""
+                if user_case != "none":
+                    inspect("llvm-objcopy", ["-O", "binary", "--only-section=.text.user_adversarial", object_file,
+                                            "audit-user-attack-object.bin"], "user-attack-object-extract")
+                    attack_bytes = (output_dir / "audit-user-attack-object.bin").read_bytes()
+                user_attack_object = validate_user_attack_object(object_section_text, object_symbols, attack_bytes,
+                    (output_dir / "user-startup.S").read_text(), configuration=configuration, image_key=None,
+                    unit=units["user"], relocation_text=object_relocation_text)
                 if ".data.user_abi" not in sections:
                     raise Core0Error("user startup lacks its sole declared initialized-data section")
                 inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", object_file, "audit-user-abi-object.bin"], "user-abi-object-extract")
@@ -3612,7 +3833,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             specs.append(("user", "user/image.elf", {row["symbol"] for row in user_primitive_rows(user_case)} | set(ir["user"]["optimized"]["definitions"]), True))
         for name, image_file, expected, user in specs:
             info, symbol_text, raw_machine, ranges = inspect_linked_elf(inspect, name=name, image=image_file, expected=expected,
-                                                                      layout=layout, user=user, assembly=user_startup, user_case=user_case)
+                                                                      layout=layout, user=user, assembly=user_startup, user_case=user_case,
+                                                                      output_dir=output_dir, unit=units.get("user") if user else None)
             inspections[name] = info
             if not user:
                 machine = (output_dir / "audit-boot-disassembly.txt").read_text()
@@ -3625,6 +3847,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 if user_abi_object is None or initialized["sha256"] != user_abi_object["sha256"]:
                     raise Core0Error("linked user initializer differs from its accounted startup object")
                 info["initialized_data"] = initialized
+                if user_case in INSTRUCTION_CASES:
+                    info["object_quarantined_startup"] = user_attack_object
         if multi:
             inspections["users"] = {key: value["elf"] for key, value in user_audits.items()}
         package_contract = validate_package_contract(load_json(output_dir / "package-contract.json"), configuration=configuration, catalog=catalog)
@@ -3654,6 +3878,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
+                  **({"architecture_diagnostics": architecture} if architecture is not None else {}),
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."
                                     if stage == "bootstrap-m" else "Supervisor artifact audit does not establish a running isolated user task.")]}
@@ -3664,12 +3889,12 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                     "data_bytes": (output_dir / image["directory"] / "data.bin").stat().st_size,
                                     **managed_fields(configuration,image),
                                     **({"startup_case": image["startup_case"], "object_quarantined_startup": user_audits[image["key"]]["object_quarantined_startup"]}
-                                       if configuration == "tasks-fault-development" else {})} for image in images}
+                                       if configuration == "tasks-fault-development" or configuration in SERVICE_INSTRUCTION_CONFIGURATIONS else {})} for image in images}
             record["unit_ir"]["users"] = {key: value["unit_ir"] for key, value in user_audits.items()}
             record["stack_bounds"]["roles"]["users"] = {key: value["stack_bounds"] for key, value in user_audits.items()}
             record["package_images"] = package_images
             record["user_image_catalog_sha256"] = sha256(output_dir / "user-image-catalog.json")
-            if configuration == "tasks-fault-development":
+            if configuration == "tasks-fault-development" or configuration in SERVICE_INSTRUCTION_CONFIGURATIONS:
                 record["user_startup_cases"] = {image["key"]: image["startup_case"] for image in images}
             if configuration in MANAGED_POLICIES:
                 record.update(managed_policy=MANAGED_POLICIES[configuration], boot_roles={image["key"]: image["boot_role"] for image in images})

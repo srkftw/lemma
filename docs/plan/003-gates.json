@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "I",
+  "highest_complete_gate": "J",
   "gates": [
     {
       "gate": "A",
@@ -860,7 +860,7 @@
     {
       "gate": "J",
       "name": "buffer service and client",
-      "status": "in_progress",
+      "status": "passed",
       "host_preparation": {
         "status": "HOST_REVIEW_COMPLETE",
         "scope": "Historical host-only preparation before cold I; subsequent J target results are separately recorded below.",
@@ -938,7 +938,7 @@
           ]
         }
       },
-      "next_command": "Commit the equivalent canonical mutator and narrow host repairs. Fresh clean four-profile J and actual canonical append O0/O2 negatives at that same exact commit remain required.",
+      "next_command": "K closed architectural instruction cases and truthful frame diagnostics; then full final exact-clean qualification.",
       "repaired_focused_O0": {
         "status": "PASS",
         "scope": "precommit focused actual guests with then-held exact consumers; not clean qualification",
@@ -993,7 +993,7 @@
           }
         ]
       },
-      "pending": "Commit the equivalent canonical mutator and narrow host repairs. Fresh clean four-profile J and actual canonical append O0/O2 negatives at that same exact commit remain required.",
+      "pending": "Final-source regression after K changes remains required; this J completion belongs to exact d5bff55.",
       "practical_terminal_failures": [
         {
           "report": "build/kernel/gateJ/focused-readable-terminal-attempt1/result.json",
@@ -1231,12 +1231,169 @@
         "scope": "Genuine Lean elaboration and existing frontend/backend to pinned LLVM O0/O2 RV64 object. Thirty-five ordinary Lean boundary cases are finite tests. No package audit or guest mutation qualification.",
         "replacement": "count - (if operation = 4 then if 0 < count then 1 else 0 else 0)",
         "observed": "Original generated O2 usub.sat; replacement generated no intrinsics and had no undefined symbols at O0/O2. Intrinsic auditor unchanged."
+      },
+      "evidence": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "d5bff55786b52daba9857b46edf617397bb8cb78",
+          "tree": "b3a713087ff6b1370a90635e3729e04e3f417b22"
+        },
+        "independent_validation": "build/kernel/gateJ/J-equivalent-independent-validation.json",
+        "independent_validation_sha256": "f72b30e24c27bc470cd80ddf5af4d53a790fb9bbd9b6bf671e5ce63ff279b199",
+        "lane": {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-mutation-acceptance/lemma/build/kernel/J-equivalent-clean-attempt1/result.json",
+          "sha256": "8855bff833c2e76e7c065518669f21e52c75cd2a1de027776fa5882d13e8db40"
+        },
+        "positive_cases": [
+          {
+            "configuration": "service-normal",
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-mutation-acceptance/lemma/build/kernel/J-equivalent-clean-attempt1/J-normal-O0-run/result.json",
+            "pid": 781773,
+            "pid_absent": true,
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 0,
+              "actual_global_denials": 0,
+              "actual_lease_expiries": 0,
+              "actual_math_preemptions": 568,
+              "actual_pending_restarts": 0,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 406,
+              "ordinary_commands": 306
+            },
+            "returncode": -9,
+            "sha256": "d96a7a62f7fd0ef76663f955a9e55880c43c2d0fb532336e306b963c58e164b9"
+          },
+          {
+            "configuration": "service-normal",
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-mutation-acceptance/lemma/build/kernel/J-equivalent-clean-attempt1/J-normal-O2-run/result.json",
+            "pid": 782825,
+            "pid_absent": true,
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 0,
+              "actual_global_denials": 0,
+              "actual_lease_expiries": 0,
+              "actual_math_preemptions": 468,
+              "actual_pending_restarts": 0,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 416,
+              "ordinary_commands": 306
+            },
+            "returncode": -9,
+            "sha256": "c4ec51bde5d1356e0c5caa809214956543c36079045fd55a8c346423eeab66cb"
+          },
+          {
+            "configuration": "service-development",
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-mutation-acceptance/lemma/build/kernel/J-equivalent-clean-attempt1/J-development-O0-run/result.json",
+            "pid": 783619,
+            "pid_absent": true,
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 1,
+              "actual_global_denials": 46,
+              "actual_lease_expiries": 1,
+              "actual_math_preemptions": 1070,
+              "actual_pending_restarts": 1,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 497,
+              "ordinary_commands": 306
+            },
+            "returncode": -9,
+            "sha256": "db2d3027917394f1ed9f3c9916f33d431db221bcfaf376d63a8cda88d75556f7"
+          },
+          {
+            "configuration": "service-development",
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-mutation-acceptance/lemma/build/kernel/J-equivalent-clean-attempt1/J-development-O2-run/result.json",
+            "pid": 784458,
+            "pid_absent": true,
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 1,
+              "actual_global_denials": 58,
+              "actual_lease_expiries": 1,
+              "actual_math_preemptions": 1214,
+              "actual_pending_restarts": 1,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 497,
+              "ordinary_commands": 306
+            },
+            "returncode": -9,
+            "sha256": "06ab3d091c02ead125b81225fe27b94280d8281477ef5225fb1ca59c5856ffbf"
+          }
+        ],
+        "negative_cases": [
+          {
+            "actual_data_hex": "1bc2908f703a5cc0397dd2e21afc4bb17c129f2e94559a7dce39c8e41ad4ebc9f6a16eaff408a99fa1cced9c04d0814491763198d4a1f57c266fdbfd6a241cccc1f67997c2d7b417f71cb87a9dabee341c3ab9e2ebfdacf970d0321574c901a7794609dd06d406fe836146e7e5a4581be50305d8c0ca633a22ad7610769afe00",
+            "expected_data_hex": "1bc2908f703a5cc0397dd2e21afc4bb17c129f2e94559a7dce39c8e41ad4ebc9f6a16eaff408a99fa1cced9c04d0814491763198d4a1f57c266fdbfd6a241cccc1f67997c2d7b417f71cb87a9dabee341c3ab9e2ebfdacf970d0321574c901a7794609dd06d406fe836146e7e5a4581be50305d8c0ca633a22ad7610769afeff",
+            "inner_path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-equivalent-negative/lemma/build/kernel/J-equivalent-negative-O0-run/inner-session/result.json",
+            "inner_sha256": "292430436b0d119c72915e452540232c2955bcb6f0ddb83057449896ece001ac",
+            "inner_status": "FAIL",
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-equivalent-negative/lemma/build/kernel/J-equivalent-negative-O0-run/result.json",
+            "pid": 784512,
+            "pid_absent": true,
+            "returncode": -9,
+            "sha256": "49803925fd3bdee2c0f9099e50ae19ddc0d650b5c9de752f8d623c01cc991599"
+          },
+          {
+            "actual_data_hex": "374921494a3554d5e8f71382c28b10565de5929ad8d6fa34b15dd92cec765eba800e4a88ad0fd2baefba313e80679b532d1dc68d787d0ed99feb58827b3e6cd0a79cb337e28fc98bf2b744feb94e33736b9a112b9c55559f44611f4e8058cbdd1820c8575742c538eb58406229514d62338d8adfffda1f42c333c57008407c00",
+            "expected_data_hex": "374921494a3554d5e8f71382c28b10565de5929ad8d6fa34b15dd92cec765eba800e4a88ad0fd2baefba313e80679b532d1dc68d787d0ed99feb58827b3e6cd0a79cb337e28fc98bf2b744feb94e33736b9a112b9c55559f44611f4e8058cbdd1820c8575742c538eb58406229514d62338d8adfffda1f42c333c57008407cff",
+            "inner_path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-equivalent-negative/lemma/build/kernel/J-equivalent-negative-O2-run/inner-session/result.json",
+            "inner_sha256": "597f2c563cde49624a83cf183f58825c077999917ead378ccb0328966055a2ab",
+            "inner_status": "FAIL",
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-equivalent-negative/lemma/build/kernel/J-equivalent-negative-O2-run/result.json",
+            "pid": 784831,
+            "pid_absent": true,
+            "returncode": -9,
+            "sha256": "429184f4a903f4cee60251483f3cead85acd2e41ab4b24e28b3505bb7202eb8a"
+          }
+        ],
+        "scope": "Fresh clean four-profile J and actual canonical append byte-negative at both optimizations; exact d5bff55 source, original failed inner reports retained."
       }
     },
     {
       "gate": "K",
       "name": "clean qualification and publication",
-      "status": "not_run",
+      "status": "in_progress",
       "host_mutation_campaign": {
         "status": "HOST_PREPARATION_PASS",
         "actual_campaign": "NOT_RUN",
@@ -1248,8 +1405,67 @@
         "independent_review": "build/kernel/gateK/mutation-controller-independent-review/summary.json",
         "independent_review_sha256": "f949998251dda376583fe62f12b27e13ad26cce2fd4ed2a6c5d3fde25b9691c0",
         "scope": "Four exact source negatives using fresh same-commit controls; actual target campaign still not run. Pre-existing descendant ownership repair observed with native child/reparenting fixture."
+      },
+      "target_status": "Fresh focused managedhalfwordO0 build/fullartifactaudit PASS, exact24B/site+18 and raw original-frame diagnostic CFG bound; trap8080/8192. Clean12case guestmatrix and fullfinalsource qualification pending.",
+      "focused_architecture_attempts": [
+        {
+          "attempt": 1,
+          "source_scope": "held dirty working source; not clean gate acceptance",
+          "configuration": "service-halfword-ecall-development",
+          "optimization": "O0",
+          "build": "PASS",
+          "audit": "FAIL",
+          "guest": "NOT_RUN",
+          "summary": "build/kernel/gateK/focused-halfword-attempt1-summary.json",
+          "summary_sha256": "9c223d7d431e6ac45dae587408347cff2cf3cf3f5e9090fc41cd8a83f12ee26f",
+          "cause": "LLVM resolved the same-section local LA into exact24B/no-attack-relocation output; checker wrongly required unresolved local labels/PCREL relocations. Original failure retained, narrow auditor repair pending."
+        },
+        {
+          "attempt": 2,
+          "source_scope": "dirty-source focused package, not clean Gate K acceptance",
+          "configuration": "service-halfword-ecall-development",
+          "optimization": "O0",
+          "build": "PASS",
+          "audit": "FAIL",
+          "guest": "NOT_RUN",
+          "summary": "build/kernel/gateK/focused-halfword-attempt2-summary.json",
+          "summary_sha256": "b0be51d2c9f3a9454e3b6ed8f3242930ed7b8956458dc131216a8d15d9df3996",
+          "cause": "LLVM20 displays the two exact zero halfwords at attack symbol+20/+22 as <unknown> under the declared no-C ELF attributes; raw bytes remain0000/0000. Only that fingerprint-bound window may admit these decoder rows."
+        },
+        {
+          "attempt": 3,
+          "source_scope": "held dirty-source focused actualbuild/artifactaudit; not cleanGateK acceptance or guestexecution",
+          "configuration": "service-halfword-ecall-development",
+          "optimization": "O0",
+          "build": "PASS",
+          "audit": "PASS",
+          "guest": "NOT_RUN",
+          "trap_stack": {
+            "domain": "kernel-trap",
+            "total_bytes": 8080,
+            "capacity_bytes": 8192,
+            "margin_bytes": 112,
+            "vector_bytes": 288
+          },
+          "summary": "build/kernel/gateK/focused-halfword-attempt3-summary.json",
+          "summary_sha256": "51b9832309cfd847e24d4c10987a9e1f3055accc7212ea3792ac5ae8e09edae2"
+        }
+      ],
+      "held_candidate_host_checks": {
+        "kernel_tests": 273,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "genuine_lean_registry": "PASS",
+        "workflow_actionlint": "1.7.12 PASS, pinned nixpkgs tool",
+        "workflow_embedded_python": "six actual blocks syntax PASS",
+        "logs": [
+          "build/kernel/gateK/host/kernel-host-final-inventory.log",
+          "build/kernel/gateK/host/genuine-lean-initial.log",
+          "build/kernel/gateK/host/workflow-actionlint-initial.log"
+        ],
+        "scope": "Host checks/artifact audit only; full clean guest verification pending."
       }
     }
   ],
-  "verified_prefix_commit": "22183c167ca62102a4a8db10a95ee77b27137f10"
+  "verified_prefix_commit": "d5bff55786b52daba9857b46edf617397bb8cb78"
 }

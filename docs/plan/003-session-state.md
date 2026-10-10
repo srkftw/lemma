@@ -999,3 +999,72 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   Native pre-existing grandchild survived actual reparenting with unchanged
   identity while the runner killed/reaped its own independently sessioned child.
   This is host cleanup evidence; actual four-negative campaign still NOT_RUN.
+
+## J exit complete; K released (2026-10-10 04:00 UTC)
+
+- Exact clean d5bff55786b52daba9857b46edf617397bb8cb78, tree
+  b3a713087ff6b1370a90635e3729e04e3f417b22, passed all four freshly built
+  J profiles and canonical append source negatives at O0/O2. No project outputs
+  copied. Both actual mutant packages passed unchanged artifact audits.
+- Original inner byte-reference FAILs are retained. Both observed the final
+  successful128-byte Append/Read mismatch FF-to-00, complete failed replay,
+  quiet settlement and live kill/reap. All six guest PIDs are absent.
+- Independent full lane/control/negative/source/runner/raw/artifact revalidation
+  passed actual exit0, summary J-equivalent-independent-validation.json SHA256
+  f72b30e24c27bc470cd80ddf5af4d53a790fb9bbd9b6bf671e5ce63ff279b199.
+- External negative orchestration attempt1 failed before any command/QEMU on
+  an incorrect expected source-identity dictionary (extra dirty_paths key).
+  Original FAIL remains; corrected fresh orchestration attempt2 produced both
+  qualifying negatives. No maintained checker or actual result was rewritten.
+- Highest completed gate J at that source; K target is now released. Three
+  closed typed attack bodies/six development configs and host observers are
+  assigned. Root owns truthful original-frame diagnostics and final CI/docs.
+  No K actual build/guest/qualification or Task003 remote publication yet.
+- Next: hold all K source edits, genuine Lake + exact object/fingerprint and O0
+  8192-byte trap-stack audit, observe all12 architectural cases, commit coherent
+  implementation, then cold full A-K/legacy/foundation/source-negative campaigns.
+  Previous J/I results remain historical and are not final-source qualification.
+
+
+## K first emitted package (2026-10-10)
+
+All K source owners held. Genuine closed-registry Lean compilation passed and
+pinned actionlint 1.7.12 passed the eight-job workflow. Host suite passed 270
+kernel tests, 18 scaffold tests and metadata. These do not establish execution.
+
+The focused dirty-source `service-halfword-ecall-development` O0 package built
+at `build/kernel/K-focused-halfword-O0-attempt1`, then its full audit failed
+closed: `startup object attack section/symbol/bytes/source inventory differs`.
+LLVM had resolved the same-section local `la`; the exact six words occupy 24
+bytes and have no attack-section relocations or retained temporary labels.
+The checker had predicted the unresolved form. Preserve this artifact and the
+original failure; the auditor is being narrowed to the observed resolved form.
+No guest started and no stack pass is claimed. Summary SHA256:
+`9c223d7d431e6ac45dae587408347cff2cf3cf3f5e9090fc41cd8a83f12ee26f`.
+
+Next: fresh focused package after the auditor repair is held, full strict audit
+including the unchanged 8192-byte owned trap-stack limit, then coherent commit
+and fresh clean 12-case K matrix plus final legacy/A–J/source-mutation runs.
+
+
+K focused attempt2 also built, but the linked instruction audit failed closed
+before any guest: `halfword fixed zero window disassembly differs`. The actual
+LLVM20 raw disassembly prints the two fingerprint-bound zero halfwords at the
+selected symbol+20/+22 as `<unknown>` (`0000`/`0000`), rather than `unimp` under
+the declared no-C ELF attributes. Preserve attempt2; the correction admits only
+those exact decoder rows after full raw/source/section binding. No general
+unknown-instruction exception or stack pass is authorized. Continue with a
+fresh attempt3 package and the unchanged full audit.
+
+
+K focused attempt3 passed its real build and full artifact audit. The audited
+managed O0 trap entry is 8080/8192 bytes (112-byte margin, including the 288-byte
+hardware frame). Exact startup object/link bytes, resolved local pair, selected
+halfword site+18 and original-frame diagnostic CFG passed. This is a dirty
+working-source package, not clean architectural execution acceptance. No guest
+ran in this focused probe. Earlier two failed audits remain retained.
+
+Next: commit the held candidate, create fresh exact clean detached worktrees
+with `.lake` and `build` absent, and run K12/J4, A–E20/F–I8, final Task001/002
+regressions, source-negative controls/mutants and independent users. Publish
+only after the complete milestone has observed passing evidence.

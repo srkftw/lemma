@@ -10,9 +10,10 @@
     "F",
     "G",
     "H",
-    "I"
+    "I",
+    "J"
   ],
-  "higher_gates": "J clean positives observed at b297; O2 canonical append mutation audit rejected, so J exit incomplete and K held.",
+  "higher_gates": "K implementation in progress; architectural and complete final-source qualification not run.",
   "proof_scope": "Indexed ownership and capability rights-attenuation model lemmas only; no emitted-code/whole-kernel correctness theorem",
   "gateC": {
     "schema_version": 1,
@@ -440,5 +441,17 @@
       "scope": "focused parent+dirty; actual raw/source/artifact/stack/cleanup review, not clean qualification"
     },
     "cold_prefix": "pending committed clean source snapshot; focused reports retain parent+dirty identities"
+  },
+  "gate_J_clean_exit": {
+    "source": {
+      "clean": true,
+      "commit": "d5bff55786b52daba9857b46edf617397bb8cb78",
+      "tree": "b3a713087ff6b1370a90635e3729e04e3f417b22"
+    },
+    "independent_validation": "build/kernel/gateJ/J-equivalent-independent-validation.json",
+    "independent_validation_sha256": "f72b30e24c27bc470cd80ddf5af4d53a790fb9bbd9b6bf671e5ce63ff279b199",
+    "positive_profiles": 4,
+    "canonical_append_negative_profiles": 2,
+    "all_guest_pids_absent": true
   }
 }

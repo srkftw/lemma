@@ -134,6 +134,35 @@ run_cmd do
   match validateSelection "ipc-development" "clienta" #[clientB.root] with
   | .ok _ => throwError "client B root crossed separately linked client A selection"
   | .error _ => pure ()
-  logInfo "PASS: genuine source selection, exact closed F/G/H/I registries and per-image startup/managed authority fail closed"
+  for (suffix, userCase) in #[("halfword-ecall", Lemma.Platform.RiscV.ExecutionPrimitives.UserStartupCase.halfwordEcall),
+      ("return-supervisor", .returnSupervisor), ("return-machine", .returnMachine)] do
+    let singleton := "user-" ++ suffix ++ "-development"
+    let managed := "service-" ++ suffix ++ "-development"
+    unless singletonInstructionCase? singleton == some userCase &&
+        serviceInstructionCase? managed == some userCase &&
+        singletonInstructionCase? managed == none && serviceInstructionCase? singleton == none do
+      throwError "instruction startup authority crossed its exact deployment kind"
+    let images ← match imagesFor managed with
+      | .ok images => pure images
+      | .error error => throwError error
+    unless images.extract 0 4 == serviceImages && images.size == 5 do
+      throwError "instruction quarantine changed ordinary service images"
+    let probe := images[4]!
+    unless probe.moduleName == `Lemma.User.Entry && probe.root == `Lemma.User.Entry.main &&
+        probe.startupCase == userCase && probe.id == 5 && probe.key == "fault" do
+      throwError "instruction probe lacks its exact genuine Entry precondition"
+    for forged in #[images.set! 0 { images[0]! with startupCase := userCase },
+        images.set! 4 { probe with startupCase := .none },
+        images.set! 4 { probe with root := `Lemma.User.Development.BufferFault.main }] do
+      match validateImages managed forged with
+      | .ok _ => throwError "instruction authority escaped its selected fifth image"
+      | .error _ => pure ()
+    match imagesFor singleton with
+    | .ok _ => throwError "singleton instruction startup acquired managed images"
+    | .error _ => pure ()
+  for unknown in #["service-halfword-ecall", "service-normal-return-machine-development", "user-unknown-development"] do
+    unless singletonInstructionCase? unknown == none && serviceInstructionCase? unknown == none do
+      throwError "unknown instruction configuration admitted"
+  logInfo "PASS: genuine source selection, exact closed F/G/H/I/K registries and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

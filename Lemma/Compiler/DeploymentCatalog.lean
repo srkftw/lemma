@@ -9,6 +9,25 @@ namespace Lemma.Compiler.DeploymentCatalog
 open Lean
 open Lemma.Platform.RiscV.ExecutionPrimitives (UserStartupCase)
 
+/-- These exact deployment names select diagnostic startup authority. They
+are never an independent case, module, or instruction-list input. -/
+def singletonInstructionCase? (configuration : String) : Option UserStartupCase :=
+  if configuration == "user-halfword-ecall-development" then some .halfwordEcall
+  else if configuration == "user-return-supervisor-development" then some .returnSupervisor
+  else if configuration == "user-return-machine-development" then some .returnMachine else none
+
+def serviceInstructionCase? (configuration : String) : Option UserStartupCase :=
+  if configuration == "service-halfword-ecall-development" then some .halfwordEcall
+  else if configuration == "service-return-supervisor-development" then some .returnSupervisor
+  else if configuration == "service-return-machine-development" then some .returnMachine else none
+
+def isServiceConfiguration (configuration : String) : Bool :=
+  configuration == "service-normal" || configuration == "service-development" ||
+    (serviceInstructionCase? configuration).isSome
+
+def isServiceDevelopmentConfiguration (configuration : String) : Bool :=
+  configuration == "service-development" || (serviceInstructionCase? configuration).isSome
+
 inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
@@ -37,7 +56,7 @@ def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 def managedPolicyFor (configuration : String) : Option String :=
   if configuration == "capabilities-development" then some capabilityManagedPolicy
   else if configuration == "ipc-development" then some ipcManagedPolicy
-  else if configuration == "service-normal" || configuration == "service-development" then
+  else if isServiceConfiguration configuration then
     some bufferManagedPolicy else none
 
 structure UserImageSpec where
@@ -111,10 +130,14 @@ def serviceDevelopmentImages : Array UserImageSpec := serviceImages.push {
   key := "fault", id := 5, moduleName := `Lemma.User.Development.BufferFault,
   root := `Lemma.User.Development.BufferFault.main, bootRole? := some .bufferFaultClient }
 
+def serviceInstructionImages (userCase : UserStartupCase) : Array UserImageSpec := serviceImages.push {
+  key := "fault", id := 5, moduleName := `Lemma.User.Entry,
+  root := `Lemma.User.Entry.main, startupCase := userCase, bootRole? := some .bufferFaultClient }
+
 def isMultiImageConfiguration (configuration : String) : Bool :=
   configuration == "tasks-development" || configuration == "tasks-fault-development" ||
     configuration == "capabilities-development" || configuration == "ipc-development" ||
-    configuration == "service-normal" || configuration == "service-development"
+    isServiceConfiguration configuration
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
@@ -124,6 +147,7 @@ def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   else if configuration == "ipc-development" then .ok ipcImages
   else if configuration == "service-normal" then .ok serviceImages
   else if configuration == "service-development" then .ok serviceDevelopmentImages
+  else if let some userCase := serviceInstructionCase? configuration then .ok (serviceInstructionImages userCase)
   else .error "configuration has no admitted multiimage deployment"
 
 def imageFor (configuration key : String) : Except String UserImageSpec := do

@@ -118,6 +118,9 @@ inductive Instruction where
   | environmentCall
   | breakpoint
   | illegalInstruction
+  /-- Fixed zero word for a closed architectural instruction-pair probe. No
+  operand or arbitrary instruction encoding can be supplied. -/
+  | zeroInstructionWord
   | machineReturn
   | supervisorReturn
   | move (dst src : Register)
@@ -158,6 +161,7 @@ def Instruction.render : Instruction → String
   | .environmentCall => "ecall"
   | .breakpoint => "ebreak"
   | .illegalInstruction => ".word 0x0000000b"
+  | .zeroInstructionWord => ".word 0x00000000"
   | .machineReturn => "mret"
   | .supervisorReturn => "sret"
   | .move dst src => s!"mv {dst.render}, {src.render}"

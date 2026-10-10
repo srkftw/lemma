@@ -98,6 +98,7 @@ def acceptance_inputs(root: Path) -> dict:
              *(root / "scripts" / name for name in ("buffer_transport.py", "run_buffer_session.py", "buffer-cli.py", "buffer_reference.py"))}
     paths.update((root / "scripts").glob("check_kernel_*.py"))
     paths.update((root / "tests/kernel").rglob("*.py"))
+    paths.update((root / "tests/kernel").rglob("*.json"))
     return {str(path.relative_to(root)): sha256(path) for path in sorted(paths)}
 
 
@@ -145,18 +146,32 @@ def validate_session(path: Path, image: Path, *, machine_origin: bool = False) -
     elif value.get("wire_format") == "kernel-buffer-uart-v1":
         from run_buffer_session import validate_quiescence
         validate_quiescence(value, received, (path.parent / "stderr.bin").read_bytes())
-        if (provenance.get("configuration") not in {"service-normal", "service-development"}
+        if value.get("observed", {}).get("protocol") == "architectural-containment-K-v1":
+            from check_kernel_architecture import CONFIGURATIONS, validate_replay, runner_inputs
+            root = repo_root()
+            if (provenance.get("configuration") not in CONFIGURATIONS
+                    or value.get("architecture_runner_inputs") != runner_inputs(root)
+                    or value.get("architecture_runner_inputs_after") != value["architecture_runner_inputs"]
+                    or value.get("source_inputs_after") != value["source_inputs"]
+                    or value.get("image_sha256_after") != value["image_sha256"]
+                    or value.get("audit_sha256_after") != value["audit_sha256"]
+                    or value.get("provenance_sha256_after") != value["provenance_sha256"]
+                    or value.get("observed", {}).get("complete_semantic_replay") is not True
+                    or validate_replay(root, image.resolve(), value, path.parent) != value["observed"]):
+                raise Core0Error("architecture full semantic/site/source replay differs")
+        elif (provenance.get("configuration") not in {"service-normal", "service-development"}
                 or value.get("observed", {}).get("protocol") != "buffer-service-J-v1"
                 or value.get("observed", {}).get("complete_semantic_replay") is not True):
             raise Core0Error("Buffer UART grammar requires its exact source-bound complete J observation")
-        from check_kernel_buffer import validate_replay, runner_inputs
-        root = repo_root()
-        if (value.get("service_runner_inputs") != runner_inputs(root)
-                or value.get("service_runner_inputs_after") != value["service_runner_inputs"]):
-            raise Core0Error("service acceptance runner/reference inventory is missing or changed")
-        replayed = validate_replay(root, image, value, path.parent)
-        if replayed != value["observed"]:
-            raise Core0Error("service complete semantic replay differs from retained observations")
+        else:
+            from check_kernel_buffer import validate_replay, runner_inputs
+            root = repo_root()
+            if (value.get("service_runner_inputs") != runner_inputs(root)
+                    or value.get("service_runner_inputs_after") != value["service_runner_inputs"]):
+                raise Core0Error("service acceptance runner/reference inventory is missing or changed")
+            replayed = validate_replay(root, image, value, path.parent)
+            if replayed != value["observed"]:
+                raise Core0Error("service complete semantic replay differs from retained observations")
     elif value.get("wire_format") is not None:
         raise Core0Error("unknown guest UART evidence format")
     elif (len(received) != RECORD_BYTES * len(value["records"])
@@ -294,7 +309,7 @@ def check(*, root: Path, work_dir: Path, clean: bool, timeout: float, qemu_timeo
             raise Core0Error("acceptance source/consumer changed during qualification")
         remaining(); report.update(status="PASS", highest_exercised_gate="E", qemu_sessions=sessions, syscall_user_instances=syscall_instances)
         report["limitations"] = ["Fresh clean acceptance of the implemented A-E prefix; not completion of Task003.",
-                                  "Gates F-J and full-milestone GateK remain unfinished.",
+                                  "A-E prefix alone does not qualify Gates F-K; their evidence is separate.",
                                   "Legacy and Task002 cumulative acceptance are separate mandatory workflow jobs."]
     except Exception as error:
         report["error"] = str(error)

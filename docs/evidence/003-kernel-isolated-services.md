@@ -1,12 +1,12 @@
 # Task 003 kernel and isolated services
 
-Current accepted prefix: Gates A–I at clean implementation
-`22183c167ca62102a4a8db10a95ee77b27137f10`, tree
-`685a03cbf162aed80854ea19e0edf39e9bae6f3a`. J has four fresh clean
-passing service profiles at `b2979083fb10a6540d78737d6f9b738e9b482f94`,
-but its O2 append mutation remains blocked by a closed intrinsic audit rejection.
-Gate K target qualification is held. No Task003 push, PR, actual CI or merge
-has occurred. The full milestone remains unfinished.
+Current accepted prefix: Gates A–J. The fresh J exit was observed at
+`d5bff55786b52daba9857b46edf617397bb8cb78`, tree
+`b3a713087ff6b1370a90635e3729e04e3f417b22`: four clean service profiles
+and both canonical append source negatives passed full independent validation.
+The original inner byte-reference FAILs remain retained. Gate K implementation
+is in progress; architectural and complete final-source qualification remain
+outstanding. No Task003 push, PR, actual CI or merge has occurred.
 
 The following A–E paragraph is a historical checkpoint; the gate ledger and
 session state carry the later source-bound I and J observations.

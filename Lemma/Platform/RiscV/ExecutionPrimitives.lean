@@ -43,6 +43,9 @@ inductive UserStartupCase where
   | executeData
   | executeKernel
   | executeMisaligned
+  | halfwordEcall
+  | returnSupervisor
+  | returnMachine
   deriving Repr, BEq
 
 def UserStartupCase.stableId : UserStartupCase → String
@@ -51,6 +54,9 @@ def UserStartupCase.stableId : UserStartupCase → String
   | .executeData => "execute-data"
   | .executeKernel => "execute-kernel"
   | .executeMisaligned => "execute-misaligned"
+  | .halfwordEcall => "halfword-ecall"
+  | .returnSupervisor => "return-supervisor"
+  | .returnMachine => "return-machine"
 
 structure Configuration where
   stage : Stage
@@ -443,6 +449,21 @@ def userAttackFunction : UserStartupCase → Option (String × Array Line)
       label "lemma_user_attack_misaligned",
       ins (.loadImmediate .t0 0x10002), ins (.jumpRegisterZero .t0)
     ])
+  | .halfwordEcall => some ("lemma_user_attack_halfword_ecall", #[
+      label "lemma_user_attack_halfword_ecall",
+      ins (.loadAddress .t0 ".Llemma_user_halfword_ecall_pair"),
+      ins (.addImmediate .t0 .t0 2), ins (.jumpRegisterZero .t0),
+      -- ADDI zero,t1,7 encodes 0x00730013. Its upper halfword and the
+      -- following fixed zero word form an ECALL at pair+2 on IALIGN16.
+      label ".Llemma_user_halfword_ecall_pair",
+      ins (.addImmediate .zero .t1 7), ins .zeroInstructionWord
+    ])
+  | .returnSupervisor => some ("lemma_user_attack_supervisor_return", #[
+      label "lemma_user_attack_supervisor_return", ins .supervisorReturn
+    ])
+  | .returnMachine => some ("lemma_user_attack_machine_return", #[
+      label "lemma_user_attack_machine_return", ins .machineReturn
+    ])
 
 def userPrimitiveCatalog (userCase : UserStartupCase := .none) :
     Array (String × String × String) := #[
@@ -457,7 +478,13 @@ def userPrimitiveCatalog (userCase : UserStartupCase := .none) :
   | .executeKernel => #[
       ("lemma_user_attack_kernel_fetch", "U", "adversarial-kernel-fetch")]
   | .executeMisaligned => #[
-      ("lemma_user_attack_misaligned", "U", "adversarial-illegal-halfword-fetch")])
+      ("lemma_user_attack_misaligned", "U", "adversarial-illegal-halfword-fetch")]
+  | .halfwordEcall => #[
+      ("lemma_user_attack_halfword_ecall", "U", "adversarial-halfword-ecall")]
+  | .returnSupervisor => #[
+      ("lemma_user_attack_supervisor_return", "U", "adversarial-supervisor-return")]
+  | .returnMachine => #[
+      ("lemma_user_attack_machine_return", "U", "adversarial-machine-return")])
 
 private def userExit : Array Line := #[
     ins (.loadImmediate .a1 0), ins (.loadImmediate .a2 0),

@@ -174,7 +174,9 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
     -- The owned U origin is already established. A hardware ECALL at a
     -- halfword site is outside this generated ABI, but its user-selected PC
     -- cannot establish a kernel integrity failure. Terminate that instance.
-    else finish descriptor cause 44 pc status translation
+    else
+      .bind (Lemma.Kernel.Console.record 0xd4 cause pc value status) fun s _ =>
+      if failed s = true then fatal else finish descriptor cause 44 pc status translation
   else if (if cause ≤ 7 then true else if cause = 12 then true else
     if cause = 13 then true else if cause = 15 then true else false) = true then
     .bind (Lemma.Kernel.Console.record 0xd4 cause pc value status) fun s _ =>

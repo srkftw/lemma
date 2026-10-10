@@ -8,6 +8,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from audit_kernel import _jump_assembly_guard, _jump_service_default, BACKEND_JUMP_TABLES, BACKEND_JUMP_TABLE_CONFIGURATIONS, BACKEND_JUMP_TABLE_USER_IMAGES, validate_server_lease_scan, validate_server_application_expiry, validate_dynamic_copy_gate, validate_input_read_inventory
 from core0_common import Core0Error
 
+SERVICE_CASE_CONFIGURATIONS = {
+    "service-normal", "service-development", "service-halfword-ecall-development",
+    "service-return-supervisor-development", "service-return-machine-development",
+}
+
 
 class ServiceTableFailures(unittest.TestCase):
     def fixture(self):
@@ -37,7 +42,7 @@ class ServiceTableFailures(unittest.TestCase):
                     configuration="service-normal", image_key="server")
 
     def test_exact_incoming_argument_reload_preserves_target(self):
-        for configuration in ["service-normal", "service-development"]:
+        for configuration in sorted(SERVICE_CASE_CONFIGURATIONS):
             data=self.fixture();data["configuration"]=configuration
             report=_jump_assembly_guard(**data)
             self.assertEqual(report["target_preserving_reload"]["incoming_argument"],8)
@@ -65,7 +70,7 @@ class ServiceTableFailures(unittest.TestCase):
             "Lemma.Services.Buffer.Protocol.requestShape","Lemma.Services.Buffer.Server.existing"})
         for source in BACKEND_JUMP_TABLE_USER_IMAGES:
             self.assertEqual(BACKEND_JUMP_TABLE_USER_IMAGES[source],{"server"})
-            self.assertEqual(BACKEND_JUMP_TABLE_CONFIGURATIONS[source],{"service-normal","service-development"})
+            self.assertEqual(BACKEND_JUMP_TABLE_CONFIGURATIONS[source], SERVICE_CASE_CONFIGURATIONS)
             self.assertEqual(BACKEND_JUMP_TABLES[source][0],"user")
 
     def test_sparse_development_commands_keep_genuine_default_acknowledgement(self):
@@ -73,7 +78,8 @@ class ServiceTableFailures(unittest.TestCase):
         data={k:v for k,v in value.items() if k not in ['scope','producer']}
         actual=_jump_service_default(**data)
         self.assertEqual(actual['holes'],list(range(52,64)))
-        self.assertEqual(BACKEND_JUMP_TABLE_CONFIGURATIONS['Lemma.Kernel.Development.ServiceEntry.command'],{'service-development'})
+        self.assertEqual(BACKEND_JUMP_TABLE_CONFIGURATIONS['Lemma.Kernel.Development.ServiceEntry.command'],
+                         SERVICE_CASE_CONFIGURATIONS - {'service-normal'})
         body=data['optimized_ir']
         call=re.search(r'call \{ i64, i64 \} @[^\n]+\(i64 %arg0, i8 zeroext 17, i64 0, i64 %arg1\)',body)[0]
         for before,after in [('i8 zeroext 17','i8 zeroext 0'),('i64 0, i64 %arg1','i64 1, i64 %arg1'),

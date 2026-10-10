@@ -141,7 +141,8 @@ sanitizes restored status. Internal integrity status255 terminates the kernel;
 it is never exposed as a normal user result.
 An ECALL from a verified U context at a halfword site lies outside this generated
 ABI and terminates only that instance with code44; it cannot confer kernel
-authority. Its direct architectural witness remains a separate pending fixture.
+authority. The closed architectural corpus below requires its direct hardware
+witness, separately from source rejection or an alignment model.
 
 Numbers are1 identity,2 console,3 yield,4 sleep,5 time,6 exit,7 allocate page,
 8 release page. Unknown numbers return17. Identity is the current validated
@@ -176,3 +177,45 @@ pointer or physical alias beyond the bounded syscall critical section.
 This describes the current construction interface. Gate E remains incomplete
 until its complete O0/O2 artifact audits and actual guest corpus pass. Historical
 Gate D evidence binds its earlier one-page-stack implementation separately.
+
+## Closed Gate K architectural instruction cases
+
+Three selected development startup cases run only after the genuine separately
+compiled `Lemma.User.Entry.main(UInt64)` returns status zero. That root checks
+the copied ABI word and zero BSS, writes `mix(argument)` to private user data
+and reads it back. A failed precondition exits normally and cannot qualify an
+attack. The ordinary four service images and all production startup paths use
+case `none`; these cases add no accepted Core0 source feature or user authority.
+
+The exact configurations are `user-halfword-ecall-development`,
+`user-return-supervisor-development`, `user-return-machine-development` and
+the corresponding `service-` configurations. All are supervisor-stage development
+packages. The singleton selects the ordinary user root; a managed package
+replaces only fault image ID5 with that root and its selected startup case.
+
+The halfword body is24 bytes: a structured local-address load, add2, indirect
+jump, ADDI zero,t1,7 (word00730013), and one fixed zero word. The instruction
+bytes at the pair's +2 site form ECALL00000073. The pinned CPU supports IALIGN16;
+this is a hardware U ECALL at a site denied by the four-byte generated ABI,
+not an IALIGN32 hardware misalignment claim. Expected cause is8 and stval0.
+The SRET and MRET bodies contain exactly one4-byte instruction10200073 or
+30200073. In U they must produce illegal-instruction cause2; the pinned QEMU
+source predicts the respective opcode in stval, which actual tests must confirm.
+No arbitrary instruction-word operand is admitted by the fixed zero primitive.
+
+Both startup.o and linked User code require the exact selected source/case,
+symbol, executable section, entire bytes, local relocation targets and genuine
+main/status-zero gate. Audit `instruction_site` contains actual PC, symbol-relative
+offset, instruction_bits32 and opcode; the halfword pair-relative offset2 is
+not the symbol-relative offset. User SRET/MRET exceptions apply only to that
+proven selected site. Ordinary User instructions retain their privilege audit.
+
+A rejected halfword ABI call and an architectural user fault emit D4 with cause,
+PC, stval and raw hardware-saved sstatus before code44 termination. Managed
+policy reads the original owned frame only after Task.capture validates its
+address, stack pair, origin and translation. The separate saved context status
+is sanitized for restoration and is not raw trap evidence. Actual tests require
+three fresh generations, private mix results, complete reclamation, and ordinary
+CLI/Peer progress plus CPU arithmetic preemption between managed faults.
+These tests and byte/stack audits do not establish a whole-kernel proof or
+physical-board measurement.

@@ -12,7 +12,7 @@ checked fixed-region RAM, compiled Lean UART interaction, and synchronous M-mode
 traps with checked context preservation, and actual timer interrupts during
 foreground computation. The integrated ten-command monitor and full cumulative/
 legacy suite passed clean detached O0/O2 qualification at `09c47ba`.
-Task 002 is published as [draft stacked PR #2](https://github.com/srkftw/lemma/pull/2);
+Task 002 was merged through [PR #2](https://github.com/srkftw/lemma/pull/2);
 the initial actual CI failed at Gate 3's pinned-source materialization. Its repair
 passed full fresh local qualification and all three jobs in both actual
 [push](https://github.com/srkftw/lemma/actions/runs/37825241614) and
@@ -129,7 +129,7 @@ legacy RV64, and cumulative foundation/qualification jobs with retained artifact
 
 ## Kernel foundation development
 
-The accepted A/B prefix has an independent boot package and frame API. These
+The independent boot package and frame API remain available. These
 commands run inside the pinned environment; `bootstrap-m` does not claim S/U
 execution. Keep source stable between build and observation: stale bindings fail.
 
@@ -149,8 +149,8 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_frames.p
 The development transport remains live for fresh requests after boot. The
 independent user ELF is in the build's `user/` directory. A supervisor build now
 loads it into owned Sv39 mappings and accepts continuous run requests. The
-ordinary U-mode and address-space API checks passed at O0/O2; full Gate D still
-requires architectural denial tests. Run the current positive check with:
+ordinary U-mode, address-space API and architectural denial checks have observed
+O0/O2 results in the gate ledger. Run the focused positive check with:
 
 ```sh
 nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
@@ -163,7 +163,7 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_user.py 
 Each finite runner stops/reaps QEMU after actual observations and records that
 explicit host cleanup. It does not treat a timeout or host stop as normal exit.
 
-The current service candidate has separately linked U-mode Buffer Server,
+The service package has separately linked U-mode Buffer Server,
 command client, peer client and CPU-bound application. Build and interact with
 the ordinary package using:
 
@@ -175,6 +175,21 @@ nix develop --no-write-lock-file --command python3 scripts/buffer-cli.py \
   --image build/kernel/service-normal/image.elf \
   --output-dir build/kernel/service-terminal --timeout 3600
 ```
+
+Each registered user image can also be compiled and linked independently:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-user.sh \
+  --configuration service-normal --image-key server --opt-level O2 \
+  --output-dir build/user/buffer-server --clean --timeout 300
+nix develop --no-write-lock-file --command ./scripts/audit-kernel.sh \
+  build/user/buffer-server --timeout 120
+```
+
+The closed source registry is `Lemma/Compiler/DeploymentCatalog.lean`. The
+independent user ELF, text/data payloads and manifest match the corresponding
+boot-package constituent; the kernel loader supplies its owned mappings and
+initial context.
 
 The terminal accepts `help`, `version`, `ps`, `mem`, `discover` and bounded
 `buffer create/write/append/read/status/destroy` commands. Read the returned
@@ -192,7 +207,18 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulati
   --lane F-I --work-dir build/kernel/acceptance-F-I --clean --timeout 300 --deadline 2400
 nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
   --lane J --work-dir build/kernel/acceptance-J --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_architecture.py \
+  --work-dir build/kernel/acceptance-K --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_mutations.py \
+  --expected-commit "$(git rev-parse HEAD)" \
+  --work-dir build/kernel/acceptance-K-mutations --deadline 2400
 ```
+
+The mutation campaign requires an unused output path and creates its own exact
+clean detached controls and narrowly changed source checkouts. It preserves
+original failed target observations rather than treating an unrelated failure
+as mutation detection. Recover an interrupted run from the ledger and use a new
+output path to retain previous evidence.
 
 These lanes require their own observed results. The A-E controller, legacy
 Core0/foundation acceptance and final Task003 qualification remain separate
@@ -208,9 +234,9 @@ Task002 tree. Both task branches remain available.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
 its assignment, gate ledger and resume checkpoint. The current accepted prefix
-is A–I at the clean implementation `22183c167ca62102a4a8db10a95ee77b27137f10`.
-Gate J's service candidate is undergoing live acceptance. Final qualification,
-CI and Task003 publication remain outstanding. See
+is A–J; J passed at `d5bff55786b52daba9857b46edf617397bb8cb78`.
+Gate K architectural qualification, final cumulative verification, CI and
+Task003 publication are in progress. See
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

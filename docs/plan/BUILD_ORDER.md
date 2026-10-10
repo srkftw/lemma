@@ -5,8 +5,13 @@ integration evidence. Months are concentration windows, not commitments. Task 00
 a first scalar vertical slice across Stage I, not completion of all Stage I units.
 Task 002's accepted Gates 0--10 advance and qualify that foundation and partially advance
 units 2.1/2.2 with pinned M-mode boot, traps, timers and a compiled diagnostic
-monitor. Supervisor entry, address spaces, managed processes and scheduling
-remain unimplemented; G1/G2 and these broader units are not complete.
+monitor. Task 003 has observed supervisor entry, owned frames, Sv39 user
+address spaces, scalar tasks, preemption, capabilities, blocking IPC and a
+separately linked volatile buffer service through Gate J. Final Gate K
+qualification is in progress; see its ledger for exact source identities.
+These advance units 2.1–2.5, 2.7–2.8 and 3.1–3.3 within the declared Core0
+profile. The managed Lean runtime in 2.6, persistent storage in 3.5–3.8 and
+the broader G1/G2/G3 finish lines remain incomplete.
 
 ## G1 — Core0, LLVM lowering and LemmaVM
 

@@ -31,7 +31,8 @@ private def readConfiguration : IO String := do
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
       configuration == "user-kernel-fetch-development" || configuration == "user-misaligned-development" ||
-      configuration == "user-syscall-development" || isMultiImageConfiguration configuration do
+      configuration == "user-syscall-development" || (singletonInstructionCase? configuration).isSome ||
+      isMultiImageConfiguration configuration do
     throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
   pure configuration
 
@@ -44,13 +45,14 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   if configuration == "user-csr-development" then .supervisorCsr
   else if configuration == "user-nx-development" then .executeData
   else if configuration == "user-kernel-fetch-development" then .executeKernel
-  else if configuration == "user-misaligned-development" then .executeMisaligned else .none
+  else if configuration == "user-misaligned-development" then .executeMisaligned
+  else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
   configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
-    isMultiImageConfiguration configuration
+    (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
 
 private def unitCategory (configuration role : String) : String :=
   (if configuration == "normal" || configuration == "service-normal" then
@@ -73,7 +75,7 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.IPCEntry.boot", "Lemma.Kernel.Development.IPCEntry.dispatch"]
     else if configuration == "service-normal" then
       #["Lemma.Kernel.ServiceEntry.boot", "Lemma.Kernel.ServiceEntry.dispatch"]
-    else if configuration == "service-development" then
+    else if isServiceDevelopmentConfiguration configuration then
       #["Lemma.Kernel.Development.ServiceEntry.boot", "Lemma.Kernel.Development.ServiceEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
@@ -103,7 +105,7 @@ private def developmentModules (configuration role : String) (image? : Option Us
       "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration"]
   else if configuration == "ipc-development" && role == "kernel" then
     #["Lemma.Kernel.Development.IPCEntry", "Lemma.Kernel.Development.TasksEntry"]
-  else if configuration == "service-development" && role == "kernel" then
+  else if isServiceDevelopmentConfiguration configuration && role == "kernel" then
     #["Lemma.Kernel.Development.ServiceEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
@@ -172,7 +174,7 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if configuration != "service-normal" && configuration != "service-development" then true
+  if !isServiceConfiguration configuration then true
   else if !serviceExecutableSource source then true
   else if role != "user" then false
   else image?.any fun image => source == image.moduleName.toString ||

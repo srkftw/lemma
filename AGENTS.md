@@ -66,7 +66,10 @@ Resume from `docs/plan/003-session-state.md` and `docs/plan/003-gates.json`.
 Gates A–K require their own observed results; code existence does not pass a gate.
 The managed Lean heap/runtime, filesystem/persistence, networking, graphical
 notebook, tutor and physical-board claims remain out of scope. Publish a draft PR
-against main; do not merge it or change repository settings. Leave USGCE untouched.
+against main. The owner explicitly authorized completion and then a guarded
+merge commit for this session; that authorization overrides the original
+draft-only instruction after full verification and applicable CI pass. Do not
+change repository settings or delete task branches. Leave USGCE untouched.
 
 ## Evidence discipline (all tasks)
 

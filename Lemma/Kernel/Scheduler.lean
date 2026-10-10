@@ -92,6 +92,15 @@ def call (descriptor context pc : UInt64) : Action :=
       if failed s = true then fatal else returnKernel descriptor 6 pc
     else Process.syscallReply context pc status value
 
+/-- Called only after capture has validated the original owned hardware frame.
+Task.context sanitizes the separate saved context; that word cannot describe
+the actual trap. Read the original frame on the fault path before termination. -/
+private def reportFault (descriptor frame cause value pc : UInt64) : Action :=
+  .bind (Access.read64 (frame + 264)) fun s status =>
+  if failed s = true then fatal else
+  .bind (Lemma.Kernel.Console.record 0xd4 cause pc value status) fun s _ =>
+  if failed s = true then fatal else finish descriptor cause 44 pc value
+
 def dispatch (frame cause value : UInt64) : Action :=
   .bind (Access.read64 Process.control) fun s descriptor =>
   if failed s = true then fatal else
@@ -106,11 +115,10 @@ def dispatch (frame cause value : UInt64) : Action :=
     if pc % 4 = 0 then
       .bind (AddressSpace.lookup descriptor pc 4) fun s _ =>
       if failed s = true then fatal else call descriptor context pc
-    else finish descriptor cause 44 pc value
+    else reportFault descriptor frame cause value pc
   else if (if cause ≤ 7 then true else if cause = 12 then true else
       if cause = 13 then true else if cause = 15 then true else false) = true then
-    .bind (Lemma.Kernel.Console.record 0xd4 cause pc value 0x200000020) fun s _ =>
-    if failed s = true then fatal else finish descriptor cause 44 pc value
+    reportFault descriptor frame cause value pc
   else fatal
 
 /-- Relative arming avoids a stale absolute minimum deadline. The earliest

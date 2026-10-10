@@ -63,16 +63,18 @@ def require_service_binding(audit):
 
 
 class ServiceTrace(Trace):
+    configurations = ("service-normal", "service-development")
+    development_configurations = ("service-development",)
     arithmetic_required = False
     busy_root = "Lemma.Applications.CPUBound.main"
     busy_callback = "Lemma.Applications.CPUBound.tick"
 
     def __init__(self, session):
         cfg = session.binding.get("configuration")
-        if cfg not in ("service-normal", "service-development"):
+        if cfg not in self.configurations:
             raise Core0Error("J requires its exact service configuration")
         self.configuration = cfg
-        self.keys = ("server", "cli", "peer", "busy") + (("fault",) if cfg == "service-development" else ())
+        self.keys = ("server", "cli", "peer", "busy") + (("fault",) if cfg in self.development_configurations else ())
         super().__init__(session)
         if session.binding.get("managed_policy") != POLICY:
             raise Core0Error("J deployment policy differs")
@@ -127,7 +129,7 @@ class ServiceTrace(Trace):
             self.pending_rpc = action
         elif kind == "diagnostic":
             number, a, b, c, d = action["words"]
-            if self.configuration != "service-development" or self.pending_ack is not None:
+            if self.configuration not in self.development_configurations or self.pending_ack is not None:
                 raise Core0Error("diagnostic authority outside development or overlapping acknowledgment")
             self.pending_ack = (number, a)
             self.pending_ack_action = action
