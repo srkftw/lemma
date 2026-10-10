@@ -296,10 +296,13 @@ def main():
         # complete fixture import roots explicitly before invoking lean; a warm
         # project cache must not supply otherwise missing user/compiler objects.
         command(['lake', 'build', 'Lemma.Platform.LemmaSim.NotebookKernel',
-                 'Lemma.Applications.Notebook', 'Lemma.Compiler.CFGLower'],
+                 'Lemma.Applications.Notebook', 'Lemma.Compiler.CFGLower',
+                 'Lemma.Compiler.KernelExport'],
                 out / 'lean-host-build.log', 1200)
         command(['lake', 'env', 'lean', 'tests/kernel/BulkCopyAndDeadline.lean'],
                 out / 'BulkCopyAndDeadline.log', 180)
+        command(['lake', 'env', 'lean', 'tests/kernel/LemmaSimImageIdentity.lean'],
+                out / 'LemmaSimImageIdentity.log', 180)
         command(['lake', 'env', 'python3', 'conformance/lemmasim/check_store_cache.py',
                  '--output', str(out / 'store-cache')], out / 'store-cache.log', 300)
         require_pass(out / 'store-cache/result.json')

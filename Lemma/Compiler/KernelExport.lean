@@ -294,6 +294,19 @@ private def normalized (configuration role : String) (suite : CheckedActionSuite
     String.join (suite.usedDeviceOps.toList.map fun operation => s!"device={operation.stableId}\n") ++
     String.join (suite.usedLoops.toList.map fun use => "loop=" ++ (loopJson use).compress ++ "\n")
 
+/-- The separately linked LemmaSim User unit identifies its actual source root,
+independently of the enclosing production or isolation deployment. LLVM records
+this name as a FILE symbol; deployment identity remains in every manifest. All
+historical configurations and non-User roles keep their original source name. -/
+def llvmModuleSourceName (configuration role : String)
+    (image? : Option UserImageSpec := none) : String :=
+  if role == "user" && (configuration == "lemmasim-notebook" ||
+      configuration == "lemmasim-initialize" || configuration == "lemmasim-isolation-development") then
+    match image? with
+    | some image => "Lemma lemmasim-virt/0.1.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else "Lemma " ++ configuration ++ " " ++ role
+
 private def validateRoots (configuration role : String) (suite : CheckedActionSuite)
     (image? : Option UserImageSpec := none) : Except String Unit := do
   validateSelectedRoots configuration role (suite.roots.map (·.source)) image?
@@ -340,7 +353,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   if !suite.usedDeviceOps.isEmpty || suite.usedExecutionOps.any (·.operation.isDevice) then
     declarations := declarations.push { name := "core0_io_fence", returnType := .void, parameters := #[] }
   let module : LLVM.Module := {
-    sourceName := "Lemma " ++ configuration ++ " " ++ role
+    sourceName := llvmModuleSourceName configuration role image?
     declarations
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
