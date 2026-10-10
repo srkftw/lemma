@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "J",
+  "highest_complete_gate": "K",
   "gates": [
     {
       "gate": "A",
@@ -560,7 +560,7 @@
     {
       "gate": "I",
       "name": "blocking IPC",
-      "status": "PASS",
+      "status": "passed",
       "guest_execution": "clean_cumulative_O0_O2_PASS",
       "observed": "Fresh exact clean repaired A-I acceptance and full independent source/artifact/raw/stack/process review PASS. Ten independently built current IPC Users match140 artifact bindings. Historical focused and failed cold attempts retain their original provenance. J/K remain unverified.",
       "diagnostic_only": {
@@ -1393,7 +1393,7 @@
     {
       "gate": "K",
       "name": "clean qualification and publication",
-      "status": "in_progress",
+      "status": "passed",
       "host_mutation_campaign": {
         "status": "HOST_PREPARATION_PASS",
         "actual_campaign": "FAIL_BEFORE_MUTANT_QEMU",
@@ -1406,7 +1406,7 @@
         "independent_review_sha256": "f949998251dda376583fe62f12b27e13ad26cce2fd4ed2a6c5d3fde25b9691c0",
         "scope": "Fresh exact78ac203 timerO0 positive control passed; mutant built and audited, but mandatory Session re-audit was interrupted by outer38s command bound before guest launch. Exact8s negative observation remains required; original failure retained."
       },
-      "target_status": "Exact64 K12, J4, standalone10/140 and four source-negative cases independentlyPASS. Final coldlegacy failed Gate6 declared ConsoleDevice dependency and prefix78 F-I failed H stale console audit after F/G PASS. Narrow host repairs and fresh full A-I/legacy acceptance pending; publication/actualCI/merge NOT_RUN.",
+      "target_status": "PASS at exact current-base14 with all eight actual push/PR CI jobs SUCCESS and all eight PR artifact lanes independently reviewed. Clean local f24/64/c3 results retain their own revisions; final report-head CI/confirmed merge/main CI remain additional publication steps.",
       "focused_architecture_attempts": [
         {
           "attempt": 1,
@@ -1594,15 +1594,15 @@
         "original_host450_failure_retained": true
       },
       "publication_observed": {
-        "status": "DRAFT_OPEN_CI_INCOMPLETE",
+        "status": "DRAFT_OPEN_CURRENT_IMPLEMENTATION_CI_PASS",
         "url": "https://github.com/srkftw/lemma/pull/3",
-        "head": "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae",
-        "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-        "synthetic_merge": "232d5abfff50ec7d104a1a51f08be75de2061483",
-        "push_run": 38029003088,
-        "PR_run": 38029005344,
-        "PR_foundation": "FAIL: same Gate7 closed-count mismatch",
-        "merge": "NOT_RUN"
+        "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+        "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+        "synthetic_merge": "4f47423e19321356d44c35ce8e4643421990ad32",
+        "push_run": 38033677526,
+        "PR_run": 38033679993,
+        "jobs_passed_each": 8,
+        "merge": "PENDING_AT_REPORT_SNAPSHOT"
       },
       "initial_CI_and_qualification_repairs": {
         "status": "HOST_PASS_ONLY",
@@ -1621,8 +1621,131 @@
         "fresh_clean_full_legacy": "NOT_RUN",
         "new_head_push_PR_CI": "NOT_RUN",
         "merge": "NOT_RUN"
+      },
+      "target_status_historical": "Exact64 K12, J4, standalone10/140 and four source-negative cases independentlyPASS. Final coldlegacy failed Gate6 declared ConsoleDevice dependency and prefix78 F-I failed H stale console audit after F/G PASS. Narrow host repairs and fresh full A-I/legacy acceptance pending; publication/actualCI/merge NOT_RUN.",
+      "publication_observed_historical": {
+        "status": "DRAFT_OPEN_CI_INCOMPLETE",
+        "url": "https://github.com/srkftw/lemma/pull/3",
+        "head": "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae",
+        "base": "ff4045a79a6fda45f9cd8198587357846530a806",
+        "synthetic_merge": "232d5abfff50ec7d104a1a51f08be75de2061483",
+        "push_run": 38029003088,
+        "PR_run": 38029005344,
+        "PR_foundation": "FAIL: same Gate7 closed-count mismatch",
+        "merge": "NOT_RUN"
+      },
+      "latest_verified_acceptance": {
+        "current14_independent_reviews": {
+          "six_lanes": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-reviewed/independent-six-lane-index.json",
+            "bytes": 5785,
+            "sha256": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+          },
+          "architecture_and_source_negatives": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/summary.json",
+            "bytes": 22834,
+            "sha256": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913"
+          }
+        },
+        "fully_pinned_cold_legacy": {
+          "status": "PASS",
+          "source": "c3b71eaf1568cc5eb0fc9b03500523b76c8adfdb",
+          "tree": "cc36063ff26a154b7c792317a8a1c9554235e7a3",
+          "outer": {
+            "path": "/tmp/lemma-final-legacy-pinned-retry-uq5uwf_2/result.json",
+            "bytes": 19000,
+            "sha256": "0489515d2a1fae118bfe5f4bcd2ff02a719107a8845222dc1ecf17d1bfa9575f"
+          },
+          "independent": {
+            "path": "/tmp/lemma-final-legacy-c3-pinned-review-kf5gh_q2/task002-review.json",
+            "bytes": 199937,
+            "sha256": "27bed71a1e5492a9a25cb7674b66c87b6be0ad9430f72480fcaf20a6f64147e8"
+          },
+          "Task001_boots": 23,
+          "Task002_boots": 482,
+          "qualification_replays": 26,
+          "qualification_roles": 66,
+          "failure_experiments": 5
+        },
+        "full_inventory": {
+          "base_sha256": "4a79173ca479aaf5eef8760e42e05eb66adb67a76522f5c11f04a2cc0ab93c58",
+          "extension_sha256": "83e12c9d087e6efb5008c064d7e00fc29cb0b4168847b56a736de8838e16d203",
+          "unique_files": 14415,
+          "unique_bytes": 1181412055,
+          "independent_sha256": "b76e6a4b41480b92ed79efdeebbc17df77ceaf42c36ae548273963a6effb4b1c"
+        }
       }
     }
   ],
-  "verified_prefix_commit": "d5bff55786b52daba9857b46edf617397bb8cb78"
+  "verified_prefix_commit": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+  "current_main_base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+  "historical_evidence_scope": "Named checkpoint evidence and deferred/NOT_RUN/IN_PROGRESS descriptions remain their original source-specific snapshots. latest_verified_integration records current acceptance; no historical report is rebound.",
+  "latest_verified_integration": {
+    "status": "PASS",
+    "gates": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K"
+    ],
+    "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+    "tree": "7a3a5d25c7bdb0e599e8c1ade0771f5533c09224",
+    "base": "a899ccbb3c880e44ab529b65131cf6ea49a198d2",
+    "PR_synthetic": "4f47423e19321356d44c35ce8e4643421990ad32",
+    "CI": [
+      {
+        "id": 38033677526,
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+        "jobs": 8,
+        "url": "https://github.com/srkftw/lemma/actions/runs/38033677526",
+        "api_record": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033677526-completed.json",
+          "bytes": 15036,
+          "sha256": "ed7b9534425a1980c3809da64d0caaa028cc13103519db6e031c92fdaeccbf1f"
+        }
+      },
+      {
+        "id": 38033679993,
+        "event": "pull_request",
+        "status": "completed",
+        "conclusion": "success",
+        "head": "14cc79be8914a349b729347cc05091aba6ac7ca7",
+        "jobs": 8,
+        "url": "https://github.com/srkftw/lemma/actions/runs/38033679993",
+        "api_record": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/14-run-38033679993-completed.json",
+          "bytes": 15044,
+          "sha256": "d4a7d560276a4868ae9ec6d8aba815d78a181d07befa3064fcfd403f301ec261"
+        }
+      }
+    ],
+    "independent_eight_lane_reviews": {
+      "six_lanes": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-reviewed/independent-six-lane-index.json",
+        "bytes": 5785,
+        "sha256": "9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a"
+      },
+      "architecture_and_source_negatives": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/gateK/github/artifacts/14-pr-platform-reviewed/independent-review-final/summary.json",
+        "bytes": 22834,
+        "sha256": "65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913"
+      }
+    },
+    "scope": "Actual clean current-base O0/O2 target acceptance, legacy regressions and eight independently reviewed PR CI artifacts. This is the bounded scalar process/service milestone, not completion of broader G1/G2/G3, canonical LemmaSim or a managed Lean runtime.",
+    "report": "docs/evidence/003-kernel-isolated-services.md",
+    "compact_result": "docs/evidence/003-kernel-isolated-services.json",
+    "report_head_checks": "PENDING_AT_REPORT_SNAPSHOT",
+    "user_authorized_confirmed_merge": "PENDING_AT_REPORT_SNAPSHOT",
+    "post_merge_CI": "PENDING_AT_REPORT_SNAPSHOT"
+  }
 }

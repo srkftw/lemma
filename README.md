@@ -11,7 +11,20 @@ A pen-first mathematics computer, constructed from a freestanding Lean 4 foundat
 on RISC-V. The historical boot reference is **LemmaVM**; the permanent virtual embodiment is **LemmaSim**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested freestanding diagnostic monitor and machine foundation.**
+**Current state: tested supervisor kernel and isolated volatile buffer service.**
+Task 003 adds owned physical pages, Sv39 user address spaces, ordinary syscalls,
+preemptive tasks, capabilities, blocking IPC and separately linked U-mode
+applications. O0/O2 acceptance and legacy regressions passed at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`; all eight jobs passed in both actual
+[push](https://github.com/srkftw/lemma/actions/runs/38033677526) and
+[PR CI](https://github.com/srkftw/lemma/actions/runs/38033679993).
+Read the [Task 003 report](docs/evidence/003-kernel-isolated-services.md),
+[gate ledger](docs/plan/003-gates.json) and
+[checkpoint](docs/plan/003-session-state.md) for source-specific results,
+commands, failures and trust limits. Its final report commit, merge and
+post-merge CI are separate publication observations.
+
+The earlier machine foundation remains qualified:
 Task 001 established the Lean elaboration -> checked Core0 -> LLVM -> static
 RV64 ELF -> QEMU `virt` path. Task 002 Gates 0–10 extend and qualify it with compiler-fault
 detection, multi-root conformance, validated control flow, bounded iteration,
@@ -243,10 +256,11 @@ documents from [PR #4](https://github.com/srkftw/lemma/pull/4). Both task
 branches remain available. Check GitHub for live revision and merge status.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
-its assignment, gate ledger and resume checkpoint. The current accepted prefix
-is A–J; J passed at `d5bff55786b52daba9857b46edf617397bb8cb78`.
-Gate K architectural qualification, final cumulative verification, CI and
-Task003 publication are in progress. See
+its assignment, gate ledger and resume checkpoint. The accepted Task 003
+integration is A–K at `14cc79be8914a349b729347cc05091aba6ac7ca7`, with a draft
+[PR #3](https://github.com/srkftw/lemma/pull/3) against current main. The owner
+authorized a guarded merge after the report-bearing head's checks pass.
+This report snapshot precedes that final merge and post-merge CI. See
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

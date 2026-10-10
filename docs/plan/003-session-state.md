@@ -1304,3 +1304,81 @@ Commit this candidate and run another fresh source-only cold full legacy
 qualification plus actual current-head push/PR CI. Final evidence inventory,
 publication verification and the authorized guarded merge remain pending.
 Highest complete recorded gate remainsJ; no current-head targetPASS is inherited.
+
+## Completed A–K integration and publication handoff (2026-10-10 07:57 UTC)
+
+The highest verified Task003 integration is now **K**, at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`, tree
+`7a3a5d25c7bdb0e599e8c1ade0771f5533c09224`. Actual push run
+`38033677526` and PR run `38033679993` both completed SUCCESS with all eight
+jobs each. All eight PR artifact-lane reviews passed. Target lanes underwent
+complete retained raw replay and source/object/ELF checks; Metadata binds the
+actual host suites. The six-lane index is SHA256
+`9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a`;
+the architecture/source-negative index is SHA256
+`65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913`.
+Read the final report and CI catalog for the actual artifact IDs/digests and
+the distinction between retained remote cleanup facts and fresh local checks.
+
+Main advanced concurrently through docs-only LemmaSim PR#4 to
+`a899ccbb3c880e44ab529b65131cf6ea49a198d2`. Its exact diff was reviewed before
+normal merge integration. The implementation14 parents are c3 and a899;
+the proposed PR checkout `4f47423e19321356d44c35ce8e4643421990ad32`
+has a899/14 parents and the identical 7a3a tree. The nine c3→14 changed paths
+are documentation only. The canonical LemmaSim contract remains planned and
+unimplemented; these target tests use the historical pinned QEMU profile.
+Old c3 push/PR runs `38032283197`/`38032285139` were automatically CANCELLED
+by the existing workflow after six successful/two cancelled jobs each.
+Their complete outcomes are preserved and are not whole-run passes.
+
+The first exactc3 cold legacy attempt ran all nine commands successfully,
+including Task00123 boots, cumulative482 boots and maintained qualification,
+but its external post-command validator FAILED on missing host-PATH llvm-nm.
+OuterFAIL SHA256
+`ea4129e022ddda75243b525efa42c1c69e2ab8ce1df4f021ce12325f81dc5d04`
+is retained. A separate new managed worktree began exactc3 clean/cold with no
+copied project outputs. The unchanged wrapper ran inside the whole pinned
+Nix environment and passed in 920.036302811s: 23/482 fresh boots,
+26 qualification raw replays, 66 artifact roles, two reproducible profiles
+and five detected failure experiments. All 470 tracked inputs and 4,166
+generated evidence/helper/log files stayed unchanged; nine primary processes
+were gone and eight exact-owned exit0 zombies were actually waited/reaped.
+OuterPASS SHA256
+`0489515d2a1fae118bfe5f4bcd2ff02a719107a8845222dc1ecf17d1bfa9575f`;
+complete independent review SHA256
+`27bed71a1e5492a9a25cb7674b66c87b6be0ad9430f72480fcaf20a6f64147e8`.
+This c3 source remains separate from docs-integrated14 and older f24/64 runs.
+
+Current PR A–E artifacts contain 20 images/24 reports/28 sessions, including
+two natural machine-origin exit48 results; F–I and J complete retained raw
+sessions passed. Architecture artifacts contain 12 cases/36 real traps and
+18 managed per-fault continuation windows. Four paired source-negative cases
+retain four controlPASS and four exact expected innerFAIL results. Every
+actual byte/record observer remains strict. No new runtime observation of the
+rare deferred diagnostic-frame reconciliation branch is claimed; its host
+regressions and the original failed capture remain distinct.
+
+The two immutable full inventories cover 14,415 unique files/1,181,412,055
+bytes and keep earlier source labels/pending snapshot fields intact. Their
+current completion is established by the newer report, not by relabeling
+producer files. Independent full inventory rehash SHA256
+`b76e6a4b41480b92ed79efdeebbc17df77ceaf42c36ae548273963a6effb4b1c`.
+The earlier maintained report MD/JSON are preserved byte-for-byte under
+`docs/evidence/history/`. Nine checked source-model statements are separate
+from execution and compiler/ELF audits; no whole-kernel/compiler proof exists.
+The largest selected O0 static trap chain is 8080/8192 bytes, margin112;
+this is not measured physical stack use. The supervisor RW pool alias remains
+a trusted limitation; User leaf W^X is not strict whole-kernel W^X.
+
+Publication remains the only work authorized for this task. The owner explicitly
+extended the original time window until the milestone is verified and then
+authorized its merge, overriding the original draft-only instruction. Commit
+this evidence-only report increment, push normally and require all eight
+actual push/PR jobs to pass at its full head. Re-read live main, PR head/base,
+reviews and checks; inspect any intervening revision. Mark PR#3 ready and use
+a merge commit guarded by that exact reviewed head. Confirm GitHub reports
+MERGED, record the actual merge/main SHAs and verify ancestry and the resulting
+tree, then observe actual post-merge main CI. A queued merge or command exit0
+does not complete this publication. Preserve task branches, local work and
+all ignored evidence worktrees; leave USGCE untouched. Do not start Task004,
+the managed runtime, persistence, networking or another implementation task.

@@ -156,6 +156,37 @@ its valid cumulative/legacy results and failed report remain retained. The fixed
 candidate's complete detached rerun passed. Do not relabel earlier artifacts as
 outputs of the fix, or infer CI success from the workflow file.
 
+## Task 003 verification and recovery
+
+The A–K milestone is recorded at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`, separately from the report-bearing
+head and subsequent merge. Read the Task 003 report, ledger and checkpoint
+before resuming; historical failures retain their original results. The full
+acceptance interfaces use the pinned environment and require clean committed
+source and unused output paths:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_kernel.py \
+  --work-dir build/kernel/verify-A-E --clean --timeout 300 --qemu-timeout 90 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane F-I --work-dir build/kernel/verify-F-I --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane J --work-dir build/kernel/verify-J --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_architecture.py \
+  --work-dir build/kernel/verify-architecture --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_mutations.py \
+  --expected-commit "$(git rev-parse HEAD)" \
+  --work-dir build/kernel/verify-source-negatives --deadline 2400
+```
+
+Keep the separate legacy Core0 and cumulative/stress foundation qualification
+above. README contains actual build, boot and ordinary terminal commands;
+`docs/evidence/003-kernel-isolated-services-commands.json` lists all acceptance
+interfaces. Recover an interrupted campaign using a new output path; never
+overwrite or turn a retained FAIL into PASS. A report-only commit may reference
+its tested implementation as permitted by the assignment. Do not start the
+managed runtime or another implementation task as part of this publication.
+
 ## LemmaSim first-class architecture
 
 Read `LEMMA_MACHINE_CONTRACT.md` and `docs/plan/LEMMASIM.md` before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned `docs/contracts/LEMMA_VM.md` boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.

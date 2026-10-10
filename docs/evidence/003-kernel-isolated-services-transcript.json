@@ -1,0 +1,610 @@
+{
+  "schema_version": 1,
+  "scope": "selected actual J-development-O0 two-client/preemption/fault/lease/restart wire excerpts; full raw replay independently passed in separate review",
+  "source": {
+    "clean": true,
+    "commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+    "tree": "1099ec42d068d80c797e440ae91023ddcf114165"
+  },
+  "report": {
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-repaired-services/lemma/build/kernel/final-J/J-development-O0-run/result.json",
+    "bytes": 5888017,
+    "sha256": "7255365a42c304778bac307f471198cc449080b6620fc682f3e6c96e6692a346"
+  },
+  "received": {
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-repaired-services/lemma/build/kernel/final-J/J-development-O0-run/received.bin",
+    "bytes": 1321136,
+    "sha256": "44b5b0c9178d06dfe2d25fff48e3a55b67057eb3f219c8730db74c09b1180695"
+  },
+  "sent": {
+    "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-repaired-services/lemma/build/kernel/final-J/J-development-O0-run/sent.bin",
+    "bytes": 15515,
+    "sha256": "0a496d8831c991dd52687ac010e1e99e31e4e34cf3597302c3c1be5ad043e332"
+  },
+  "actual_full_ids": {
+    "CLI": 550,
+    "Peer": 572,
+    "Busy": 596,
+    "Fault": 6251
+  },
+  "selected_actual_K1_records": [
+    {
+      "label": "initial real service publication",
+      "wire_index": 18,
+      "raw_byte_offset": 1584,
+      "raw_bytes": 88,
+      "words": [
+        768,
+        527,
+        19,
+        1,
+        550
+      ],
+      "actual_raw_utf8": "K1 0000000000000300 000000000000020f 0000000000000013 0000000000000001 0000000000000226\n",
+      "raw_slice_sha256": "885b9ee18d58653797fd958deb78b7c342e31cc8123d6b0e92b57a39b24cfda8"
+    },
+    {
+      "label": "actual busy arithmetic timer-preemption",
+      "wire_index": 26,
+      "raw_byte_offset": 2288,
+      "raw_bytes": 88,
+      "words": [
+        242,
+        596,
+        1,
+        5,
+        66096
+      ],
+      "actual_raw_utf8": "K1 00000000000000f2 0000000000000254 0000000000000001 0000000000000005 0000000000010230\n",
+      "raw_slice_sha256": "c2dbc08be6ec5d52f4a86f3f55fdf93919aba765f9a2bacba8149b5be89b8ff3"
+    },
+    {
+      "label": "authenticated independent Peer accepted Call",
+      "wire_index": 73,
+      "raw_byte_offset": 6424,
+      "raw_bytes": 88,
+      "words": [
+        801,
+        527,
+        1,
+        572,
+        130
+      ],
+      "actual_raw_utf8": "K1 0000000000000321 000000000000020f 0000000000000001 000000000000023c 0000000000000082\n",
+      "raw_slice_sha256": "45aef4caf0ecfeda184d040695dde31458a2eefa2903a322d337a3e752a9de54"
+    },
+    {
+      "label": "ordinary Peer separately owned persistent buffer creation",
+      "wire_index": 123,
+      "raw_byte_offset": 10824,
+      "raw_bytes": 88,
+      "words": [
+        818,
+        572,
+        4,
+        128,
+        1
+      ],
+      "actual_raw_utf8": "K1 0000000000000332 000000000000023c 0000000000000004 0000000000000080 0000000000000001\n",
+      "raw_slice_sha256": "d3375da492b2607f5f1ae0871ab7a28ebeeaee85b42b23d6a425cdf4b1c1c3e9"
+    },
+    {
+      "label": "ordinary Peer actual retained private-buffer read",
+      "wire_index": 231,
+      "raw_byte_offset": 20328,
+      "raw_bytes": 88,
+      "words": [
+        820,
+        572,
+        4,
+        3314360880404304355,
+        0
+      ],
+      "actual_raw_utf8": "K1 0000000000000334 000000000000023c 0000000000000004 2dfef9a915f311e3 0000000000000000\n",
+      "raw_slice_sha256": "8964b929aed9c54dc31a7299f7bf2473b74c9bd921413af6e710641af57f48cd"
+    },
+    {
+      "label": "authenticated ordinary CLI accepted Call",
+      "wire_index": 346,
+      "raw_byte_offset": 30368,
+      "raw_bytes": 88,
+      "words": [
+        801,
+        527,
+        1,
+        550,
+        242
+      ],
+      "actual_raw_utf8": "K1 0000000000000321 000000000000020f 0000000000000001 0000000000000226 00000000000000f2\n",
+      "raw_slice_sha256": "97573bde3d6016e7ac5b8288260c0e4081228c4590c50544359f80d8eb57e6e6"
+    },
+    {
+      "label": "actual third client global204 denial",
+      "wire_index": 1382,
+      "raw_byte_offset": 121648,
+      "raw_bytes": 88,
+      "words": [
+        835,
+        6251,
+        1,
+        204,
+        0
+      ],
+      "actual_raw_utf8": "K1 0000000000000343 000000000000186b 0000000000000001 00000000000000cc 0000000000000000\n",
+      "raw_slice_sha256": "210b4621e89235e8edc2651901b7d3480e793ce894684a7803ddc5ceacf61191"
+    },
+    {
+      "label": "actual third client verified own bytes before fault",
+      "wire_index": 1776,
+      "raw_byte_offset": 156320,
+      "raw_bytes": 88,
+      "words": [
+        836,
+        6251,
+        11,
+        1,
+        177265354358023643
+      ],
+      "actual_raw_utf8": "K1 0000000000000344 000000000000186b 000000000000000b 0000000000000001 0275c5e68d7e65db\n",
+      "raw_slice_sha256": "7cc76ef1c90b61739c559c8b172a173fd83c9c89c56fb022c9bbe67a94a5d940"
+    },
+    {
+      "label": "actual User store-pagefault15 hardware record",
+      "wire_index": 1785,
+      "raw_byte_offset": 157112,
+      "raw_bytes": 88,
+      "words": [
+        212,
+        15,
+        67100,
+        65536,
+        8589934624
+      ],
+      "actual_raw_utf8": "K1 00000000000000d4 000000000000000f 000000000001061c 0000000000010000 0000000200000020\n",
+      "raw_slice_sha256": "acac38b8b2faf258124a317d30db52ff14cc91874d02353142c5f753aceeed7d"
+    },
+    {
+      "label": "actual fault scheduler return reason5",
+      "wire_index": 1786,
+      "raw_byte_offset": 157200,
+      "raw_bytes": 88,
+      "words": [
+        242,
+        6251,
+        5,
+        782,
+        67100
+      ],
+      "actual_raw_utf8": "K1 00000000000000f2 000000000000186b 0000000000000005 000000000000030e 000000000001061c\n",
+      "raw_slice_sha256": "55c61817d6522673cf1b644110d3545d803ea35b069a95ca3fb79ee390e75d18"
+    },
+    {
+      "label": "actual contained task termination44",
+      "wire_index": 1787,
+      "raw_byte_offset": 157288,
+      "raw_bytes": 88,
+      "words": [
+        244,
+        6251,
+        44,
+        177265354358023643,
+        15
+      ],
+      "actual_raw_utf8": "K1 00000000000000f4 000000000000186b 000000000000002c 0275c5e68d7e65db 000000000000000f\n",
+      "raw_slice_sha256": "c734ae2b72e987e0fe8e230d2d481495c1c918228363a99d83508c4940b17239"
+    },
+    {
+      "label": "actual contained fault lifecycle statistics",
+      "wire_index": 1788,
+      "raw_byte_offset": 157376,
+      "raw_bytes": 88,
+      "words": [
+        245,
+        6251,
+        18,
+        0,
+        28
+      ],
+      "actual_raw_utf8": "K1 00000000000000f5 000000000000186b 0000000000000012 0000000000000000 000000000000001c\n",
+      "raw_slice_sha256": "55512354ab784852f6f4bbf8a1feeedf2effcd9c7e7cfc484e4fa7a9aead1009"
+    },
+    {
+      "label": "actual contained fault owned-task reclamation",
+      "wire_index": 1789,
+      "raw_byte_offset": 157464,
+      "raw_bytes": 88,
+      "words": [
+        246,
+        6251,
+        383,
+        405,
+        0
+      ],
+      "actual_raw_utf8": "K1 00000000000000f6 000000000000186b 000000000000017f 0000000000000195 0000000000000000\n",
+      "raw_slice_sha256": "2d467e4f488d37b0ed8fedeb33e44f24b495fe97f5c50b27ef44436efdb8aff0"
+    },
+    {
+      "label": "actual dead-client Server lease expiry",
+      "wire_index": 10680,
+      "raw_byte_offset": 942912,
+      "raw_bytes": 88,
+      "words": [
+        805,
+        527,
+        11,
+        6251,
+        121165086
+      ],
+      "actual_raw_utf8": "K1 0000000000000325 000000000000020f 000000000000000b 000000000000186b 000000000738d51e\n",
+      "raw_slice_sha256": "08572862c67f45611b25c72b02300499840bedbdfcfd8c22efd7ba0746e45bc9"
+    },
+    {
+      "label": "actual expiry fresh hardware-time scan",
+      "wire_index": 10687,
+      "raw_byte_offset": 943528,
+      "raw_bytes": 88,
+      "words": [
+        806,
+        527,
+        121192068,
+        3,
+        2
+      ],
+      "actual_raw_utf8": "K1 0000000000000326 000000000000020f 0000000007393e84 0000000000000003 0000000000000002\n",
+      "raw_slice_sha256": "d8403f5cdcfb816448fdb8e2209caed728a8492f9cec1d82834335702a717f37"
+    },
+    {
+      "label": "trusted generic full-CLI restart arm",
+      "wire_index": 10977,
+      "raw_byte_offset": 968984,
+      "raw_bytes": 88,
+      "words": [
+        769,
+        527,
+        550,
+        0,
+        0
+      ],
+      "actual_raw_utf8": "K1 0000000000000301 000000000000020f 0000000000000226 0000000000000000 0000000000000000\n",
+      "raw_slice_sha256": "cce2bdca07f0d89a9bdc21efde889b2a74d264aa56be947b9c3f85be47c11acc"
+    },
+    {
+      "label": "actual delivered Reply fullCaller/fullServer interception",
+      "wire_index": 10993,
+      "raw_byte_offset": 970392,
+      "raw_bytes": 88,
+      "words": [
+        770,
+        527,
+        550,
+        3444,
+        136
+      ],
+      "actual_raw_utf8": "K1 0000000000000302 000000000000020f 0000000000000226 0000000000000d74 0000000000000088\n",
+      "raw_slice_sha256": "3c03f13faee2deb196704df338974ecbef1ee7ca4da7dc3fe0c047048c7258ca"
+    },
+    {
+      "label": "actual saved User PC and fresh unexpired deadline",
+      "wire_index": 10994,
+      "raw_byte_offset": 970480,
+      "raw_bytes": 88,
+      "words": [
+        771,
+        527,
+        65608,
+        134697641,
+        124791401
+      ],
+      "actual_raw_utf8": "K1 0000000000000303 000000000000020f 0000000000010048 00000000080752a9 0000000007702a69\n",
+      "raw_slice_sha256": "08e45525ae4e1caddd15762c13432e8e1b93a14951c7c02004080e8d16021962"
+    },
+    {
+      "label": "actual replacement monotonic service publication",
+      "wire_index": 11003,
+      "raw_byte_offset": 971272,
+      "raw_bytes": 88,
+      "words": [
+        768,
+        1039,
+        35,
+        2,
+        550
+      ],
+      "actual_raw_utf8": "K1 0000000000000300 000000000000040f 0000000000000023 0000000000000002 0000000000000226\n",
+      "raw_slice_sha256": "12867ba4f40d09a1ec22115bad928ae5bbfc562e757c84563e885f0e9f67eaeb"
+    },
+    {
+      "label": "actual replacement successful restart witness",
+      "wire_index": 11004,
+      "raw_byte_offset": 971360,
+      "raw_bytes": 88,
+      "words": [
+        772,
+        527,
+        3444,
+        0,
+        2
+      ],
+      "actual_raw_utf8": "K1 0000000000000304 000000000000020f 0000000000000d74 0000000000000000 0000000000000002\n",
+      "raw_slice_sha256": "b7b65b2a33a703fb75ca144eadea9d6770d6005477021c2057d4cc4c87d071bd"
+    },
+    {
+      "label": "ordinary Peer reconnect stale epoch tuple rejection",
+      "wire_index": 11160,
+      "raw_byte_offset": 985056,
+      "raw_bytes": 88,
+      "words": [
+        826,
+        572,
+        4,
+        200,
+        2
+      ],
+      "actual_raw_utf8": "K1 000000000000033a 000000000000023c 0000000000000004 00000000000000c8 0000000000000002\n",
+      "raw_slice_sha256": "4f2db3ee8954d92ce6f2366129a13fa44bf65bfad1b72bf819cbbfcdbb32c641"
+    },
+    {
+      "label": "ordinary Peer actual new-epoch private-buffer progress",
+      "wire_index": 11332,
+      "raw_byte_offset": 1000160,
+      "raw_bytes": 88,
+      "words": [
+        820,
+        572,
+        4,
+        3314360880404304355,
+        42
+      ],
+      "actual_raw_utf8": "K1 0000000000000334 000000000000023c 0000000000000004 2dfef9a915f311e3 000000000000002a\n",
+      "raw_slice_sha256": "69183846b9aefb0600e6b6952687f4011ef2a54edaf8a058b4079b23a512339e"
+    }
+  ],
+  "selected_actual_RPC_frames": [
+    {
+      "label": "ordinary CLI separately owned buffer creation",
+      "input_next_wire_index": 300,
+      "sent_byte_offset": 248,
+      "actual_sent_bytes_hex": "4c4d49310100280001000000000000000100000000000000000000000000000000000000000000000001000000000000",
+      "response_wire_index": 374,
+      "received_byte_offset": 32832,
+      "actual_response_raw_hex": "4c4d4f31010040004c454d41424652310100000000000000010000000000000001000000000000000600000000000000000000000000000000000000000000000001000000000000",
+      "actual_input": {
+        "actual_backing_count": 2,
+        "data_hex": "",
+        "epoch": 1,
+        "expected_transport": 0,
+        "index": 300,
+        "kind": "rpc",
+        "server_key": [
+          527,
+          1,
+          550
+        ],
+        "words": [
+          1,
+          1,
+          0,
+          0,
+          256
+        ]
+      },
+      "actual_response": {
+        "application_status": 0,
+        "count": 0,
+        "data_hex": "",
+        "detail": 256,
+        "epoch": 1,
+        "handle": 6,
+        "length": 0,
+        "operation": 1,
+        "transport_status": 0,
+        "words": [
+          3553980306326111564,
+          1,
+          1,
+          1,
+          6,
+          0,
+          0,
+          256
+        ]
+      }
+    },
+    {
+      "label": "live CLI exact128bytes early in dead-client lease window after faultF6",
+      "input_next_wire_index": 1838,
+      "sent_byte_offset": 1419,
+      "actual_sent_bytes_hex": "4c4d49310100280003000000000000000100000000000000060000000000000080000000000000008000000000000000",
+      "response_wire_index": 1869,
+      "received_byte_offset": 164488,
+      "actual_response_raw_hex": "4c4d4f310100c0004c454d4142465231010000000000000003000000000000000100000000000000060000000000000000010000000000008000000000000000000100000000000038dd40c486e428a2f99ca60d8b8ca54e9a9ac11162f84875edf55a1821615aefbe04fbd47416b86ec1b30ba75f438f338344a94d5950a22ab18b2c296e7ddf15ac099b1d83912894ba68ce0fdeb990a0f865bcf0d9da2d3b58d5e9172967443be5494ae4dc7f1f4ebd7014d3477d1086541ff298cbc2344b4cfb0ddd76b896ff",
+      "actual_input": {
+        "actual_backing_count": 4,
+        "data_hex": "",
+        "epoch": 1,
+        "expected_transport": 0,
+        "index": 1838,
+        "kind": "rpc",
+        "server_key": [
+          527,
+          19,
+          550
+        ],
+        "words": [
+          3,
+          1,
+          6,
+          128,
+          128
+        ]
+      },
+      "actual_response": {
+        "application_status": 0,
+        "count": 128,
+        "data_hex": "38dd40c486e428a2f99ca60d8b8ca54e9a9ac11162f84875edf55a1821615aefbe04fbd47416b86ec1b30ba75f438f338344a94d5950a22ab18b2c296e7ddf15ac099b1d83912894ba68ce0fdeb990a0f865bcf0d9da2d3b58d5e9172967443be5494ae4dc7f1f4ebd7014d3477d1086541ff298cbc2344b4cfb0ddd76b896ff",
+        "detail": 256,
+        "epoch": 1,
+        "handle": 6,
+        "length": 256,
+        "operation": 3,
+        "transport_status": 0,
+        "words": [
+          3553980306326111564,
+          1,
+          3,
+          1,
+          6,
+          256,
+          128,
+          256
+        ]
+      }
+    },
+    {
+      "label": "same live CLI exact128bytes late in dead-client lease window",
+      "input_next_wire_index": 10523,
+      "sent_byte_offset": 6747,
+      "actual_sent_bytes_hex": "4c4d49310100280003000000000000000100000000000000060000000000000080000000000000008000000000000000",
+      "response_wire_index": 10582,
+      "received_byte_offset": 934192,
+      "actual_response_raw_hex": "4c4d4f310100c0004c454d4142465231010000000000000003000000000000000100000000000000060000000000000000010000000000008000000000000000000100000000000038dd40c486e428a2f99ca60d8b8ca54e9a9ac11162f84875edf55a1821615aefbe04fbd47416b86ec1b30ba75f438f338344a94d5950a22ab18b2c296e7ddf15ac099b1d83912894ba68ce0fdeb990a0f865bcf0d9da2d3b58d5e9172967443be5494ae4dc7f1f4ebd7014d3477d1086541ff298cbc2344b4cfb0ddd76b896ff",
+      "actual_input": {
+        "actual_backing_count": 4,
+        "data_hex": "",
+        "epoch": 1,
+        "expected_transport": 0,
+        "index": 10523,
+        "kind": "rpc",
+        "server_key": [
+          527,
+          130,
+          550
+        ],
+        "words": [
+          3,
+          1,
+          6,
+          128,
+          128
+        ]
+      },
+      "actual_response": {
+        "application_status": 0,
+        "count": 128,
+        "data_hex": "38dd40c486e428a2f99ca60d8b8ca54e9a9ac11162f84875edf55a1821615aefbe04fbd47416b86ec1b30ba75f438f338344a94d5950a22ab18b2c296e7ddf15ac099b1d83912894ba68ce0fdeb990a0f865bcf0d9da2d3b58d5e9172967443be5494ae4dc7f1f4ebd7014d3477d1086541ff298cbc2344b4cfb0ddd76b896ff",
+        "detail": 256,
+        "epoch": 1,
+        "handle": 6,
+        "length": 256,
+        "operation": 3,
+        "transport_status": 0,
+        "words": [
+          3553980306326111564,
+          1,
+          3,
+          1,
+          6,
+          256,
+          128,
+          256
+        ]
+      }
+    },
+    {
+      "label": "actual pending CLI transport96 on Server replacement",
+      "input_next_wire_index": 10979,
+      "sent_byte_offset": 7179,
+      "actual_sent_bytes_hex": "4c4d49310100280005000000000000000100000000000000060000000000000000000000000000000000000000000000",
+      "response_wire_index": 11006,
+      "received_byte_offset": 971536,
+      "actual_response_raw_hex": "4c4d4f31010040004c454d41424652310100000000000000050000000000000001000000000000000000000000000000000000000000000000000000000000000000000000600000",
+      "actual_input": {
+        "data_hex": "",
+        "epoch": 1,
+        "expected_transport": 96,
+        "index": 10979,
+        "kind": "rpc",
+        "words": [
+          5,
+          1,
+          6,
+          0,
+          0
+        ]
+      },
+      "actual_response": {
+        "application_status": 0,
+        "count": 0,
+        "data_hex": "",
+        "detail": 0,
+        "epoch": 1,
+        "handle": 0,
+        "length": 0,
+        "operation": 5,
+        "transport_status": 96,
+        "words": [
+          3553980306326111564,
+          1,
+          5,
+          1,
+          0,
+          0,
+          0,
+          105553116266496
+        ]
+      }
+    },
+    {
+      "label": "postreplacement ordinary CLI binary read",
+      "input_next_wire_index": 11366,
+      "sent_byte_offset": 7547,
+      "actual_sent_bytes_hex": "4c4d49310100280003000000000000000200000000000000050000000000000000000000000000008000000000000000",
+      "response_wire_index": 11436,
+      "received_byte_offset": 1009296,
+      "actual_response_raw_hex": "4c4d4f310100c0004c454d4142465231010000000000000003000000000000000200000000000000050000000000000080000000000000008000000000000000000100000000000000ff4c4d49314c4d4f314b31cebbf8a27e21214520939cd00b5b22171551a9369991b70182b2e503236fd03438750b4084383144d8deac14edb3cec62294966da9c4c364552634c282a43aeaa69d849fa1e41b65ca95917123dde6b0adbe430d1712e9f9f7d99b6a0ed02f8494b44b29aef33f956d9f746e755d8b5b6aa681dd",
+      "actual_input": {
+        "actual_backing_count": 3,
+        "data_hex": "",
+        "epoch": 2,
+        "expected_transport": 0,
+        "index": 11366,
+        "kind": "rpc",
+        "server_key": [
+          1039,
+          141,
+          550
+        ],
+        "words": [
+          3,
+          2,
+          5,
+          0,
+          128
+        ]
+      },
+      "actual_response": {
+        "application_status": 0,
+        "count": 128,
+        "data_hex": "00ff4c4d49314c4d4f314b31cebbf8a27e21214520939cd00b5b22171551a9369991b70182b2e503236fd03438750b4084383144d8deac14edb3cec62294966da9c4c364552634c282a43aeaa69d849fa1e41b65ca95917123dde6b0adbe430d1712e9f9f7d99b6a0ed02f8494b44b29aef33f956d9f746e755d8b5b6aa681dd",
+        "detail": 256,
+        "epoch": 2,
+        "handle": 5,
+        "length": 128,
+        "operation": 3,
+        "transport_status": 0,
+        "words": [
+          3553980306326111564,
+          1,
+          3,
+          2,
+          5,
+          128,
+          128,
+          256
+        ]
+      }
+    }
+  ],
+  "same_CLI_128_bytes_repeated_during_dead_client_lease_window": true,
+  "scope_limit": "This O0 stream has no same-handle128-byte read after the lease-expiry record and before the restart arm. The excerpt states actual repeated reads during the dead-client lease window and separately actual selective expiry/replacement; it does not invent a post-expiry read."
+}

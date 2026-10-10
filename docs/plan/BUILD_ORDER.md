@@ -7,10 +7,13 @@ Task 002's accepted Gates 0--10 advance and qualify that foundation and partiall
 units 2.1/2.2 with pinned M-mode boot, traps, timers and a compiled diagnostic
 monitor. Task 003 has observed supervisor entry, owned frames, Sv39 user
 address spaces, scalar tasks, preemption, capabilities, blocking IPC and a
-separately linked volatile buffer service through Gate J. Final Gate K
-qualification is in progress; see its ledger for exact source identities.
+separately linked volatile buffer service through Gate K. Final O0/O2
+qualification and all eight actual push/PR CI jobs passed at implementation
+`14cc79be8914a349b729347cc05091aba6ac7ca7`; see its ledger for the separate
+clean-worktree sources and retained failures. Final report-head CI and the
+owner-authorized merge are subsequent publication observations.
 These advance units 2.1–2.5, 2.7–2.8 and 3.1–3.3 within the declared Core0
-profile. The managed Lean runtime in 2.6, persistent storage in 3.5–3.8 and
+profile. The managed Lean runtime in 2.6, storage in 3.4–3.8 and
 the broader G1/G2/G3 finish lines remain incomplete.
 
 ## G1 — Core0, LLVM lowering and LemmaVM
