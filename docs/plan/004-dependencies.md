@@ -23,6 +23,16 @@ Pending receipt acceptance must never become Saved. Genuine elaboration/lowering
 and linked O0/O2 User stack audits cover the changed service/client closure; a
 host-only Action fixture is not durable guest execution.
 
+Notebook Save/Compact or tool-layout changes additionally require genuine Lean
+tool/state fixtures, independent literal glyph/layout observations and linked
+raw-toolbar input. Save must use short durable Inspect without starting a
+checkpoint; Compact must retain the v2 Pending-to-final-root-flush boundary.
+Exercise large retained data so routine Save cannot hide an O(live history)
+copy. The full workload invokes explicit Compact separately, checks ordinary
+Save/cold bytes and pixels, and retains the actual Compact latency and root
+generation change. Compaction fault and early-acknowledgement controls remain
+required; a faster Save does not remove the reclamation acceptance obligation.
+
 Ink, page codecs or editing changes require their focused genuine Lean exports
 and independent literal checks, the editing/two-namespace workflow and cold
 byte/pixel comparison. The header fixture also pins refusal of unsupported brush

@@ -4,11 +4,14 @@ These fixtures test observer decisions, not execution or task containment.
 Only fresh real QEMU/guest observations can establish the integration result.
 """
 import copy
+import hashlib
 from pathlib import Path
+import struct
 import sys
 import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'conformance/lemmasim'))
-from check_notebook_isolation import delayed_dma_observation, serial_observations
+from check_notebook_isolation import delayed_dma_observation, ordinary_basic_fixture, serial_observations
+from notebook_input import generate
 
 
 def literal():
@@ -40,6 +43,27 @@ def literal():
 
 
 class IsolationObserver(unittest.TestCase):
+    def test_ordinary_stroke_provenance_and_real_short_save_suffix(self):
+        for width, height in ((1650, 2200), (1404, 1872)):
+            raw, manifest = generate('basic', width, height, 200000000, 100000, 200000000)
+            samples, actions = ordinary_basic_fixture(raw, manifest)
+            self.assertEqual(len(samples), 53)
+            self.assertEqual([(row['first_sequence'], row['last_sequence']) for row in actions], [(2, 26), (27, 51)])
+            self.assertEqual([row[5] for row in samples[-2:]], [3, 2])
+            for field, value in ((2, 32768), (4, 0), (5, 2), (8, 2)):
+                damaged = bytearray(raw)
+                struct.pack_into('<Q', damaged, 51 * 72 + field * 8, value)
+                identity = copy.deepcopy(manifest)
+                identity['input_sha256'] = hashlib.sha256(damaged).hexdigest()
+                with self.assertRaisesRegex(ValueError, 'actual raw down/up on Save7'):
+                    ordinary_basic_fixture(bytes(damaged), identity)
+            wrong = copy.deepcopy(manifest)
+            wrong['actions'][-1]['button'] = 8
+            with self.assertRaisesRegex(ValueError, 'short Save suffix'):
+                ordinary_basic_fixture(raw, wrong)
+            with self.assertRaisesRegex(ValueError, 'ordinary two-stroke and Save fixture'):
+                ordinary_basic_fixture(raw[:-144], manifest)
+
     def test_literal_requires_real_rejections_fault_cleanup_and_continuation(self):
         value = serial_observations(literal())
         self.assertEqual(value['client'], 19)

@@ -12,6 +12,7 @@ def require (value : Bool) (message : String) : IO Unit :=
 
 def rows (code : Char) : Array String :=
   if code == 'A' then #["010","101","111","101","101"] else
+  if code == 'C' then #["111","100","100","100","111"] else
   if code == 'D' then #["110","101","101","101","110"] else
   if code == 'E' then #["111","100","110","100","111"] else
   if code == 'F' then #["111","100","110","100","100"] else
@@ -45,12 +46,13 @@ def packed (rows : Array String) : UInt64 :=
     (fun value bit => value * 2 + (if bit == '1' then 1 else 0)) value) 0
 
 def check : IO Unit := do
-  for char in "ADEFGHILNOPRSUVWY0123456789 ".toList do
+  for char in "ACDEFGHILNOPRSUVWY0123456789 ".toList do
     require (Surface.letter char.toNat.toUInt64 == packed (rows char)) s!"incorrect literal glyph {char}"
   let left := #["010","100","111","100","010"]
   let right := #["010","001","111","001","010"]
   require (Surface.glyph 1 == packed left && Surface.glyph 2 == packed right) "previous/next arrows"
   require (Surface.glyph 5 == packed (rows 'E') && Surface.glyph 7 == packed (rows 'S')) "erase/save labels swapped"
+  require (Surface.glyph 8 == packed (rows 'C') && Surface.glyph 9 == 0) "compact/unknown labels"
   require (Surface.letter 83 != Surface.letter 50) "Saved begins with a digit2"
   for (state, text) in #[(0,"SAVED     N2 P64 W8 "),(1,"PENDING   N2 P64 W8 "),
                          (2,"FAILED    N2 P64 W8 "),(3,"READ ONLY N2 P64 W8 ")] do
@@ -70,15 +72,15 @@ def check : IO Unit := do
     require (Notebook.statusPixel 240 0 2 64 state 2048 == 15 &&
       Notebook.statusPixel 0 16 2 64 state 2048 == 15) "status overflow clipping"
   for (width,height) in #[(1650,2200),(1404,1872),(512,320)] do
-    for (button, expected) in #[(1,left),(2,right),(5,rows 'E'),(7,rows 'S')] do
+    for (button, expected) in #[(1,left),(2,right),(5,rows 'E'),(7,rows 'S'),(8,rows 'C')] do
       for row in [:5] do
         for col in [:3] do
           let black := (expected[row]!.toList.toArray)[col]! == '1'
-          let x := button * (width / 8) + 24 + col.toUInt64 * 12 + 1
+          let x := button * (width / 9) + 24 + col.toUInt64 * 12 + 1
           let y := 36 + row.toUInt64 * 12 + 1
           require (Surface.backgroundPixel x y width height == if black then 0 else 15)
             "runtime geometry toolbar glyph placement"
-  IO.println "NOTEBOOK_GLYPHS:PASS literal arrows/E/S and full4-state words;20cells/3840pixels;both geometries"
+  IO.println "NOTEBOOK_GLYPHS:PASS literal arrows/E/S/C and full4-state words;20cells/3840pixels;both geometries"
 
 end NotebookGlyphs
 open Lean Elab Command

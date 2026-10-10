@@ -32,7 +32,8 @@ def allocate (width height : UInt64) : Action :=
 /-- Authored3x5 uppercase alphabet and digits, row-major top-left bit14.
 Source assets have no imported font or runtime dependency. -/
 def letter (code : UInt64) : UInt64 :=
-  if code = 65 then 0x2bed else if code = 68 then 0x6b6e else
+  if code = 65 then 0x2bed else if code = 67 then 0x7927 else
+  if code = 68 then 0x6b6e else
   if code = 69 then 0x79a7 else if code = 70 then 0x79a4 else
   if code = 71 then 0x796f else if code = 72 then 0x5bed else
   if code = 73 then 0x7497 else if code = 76 then 0x4927 else
@@ -47,17 +48,18 @@ def letter (code : UInt64) : UInt64 :=
   if code = 54 then 0x79ef else if code = 55 then 0x7292 else
   if code = 56 then 0x7bef else if code = 57 then 0x7bcf else 0
 
-/-- Home, left/right arrows, undo, redo, erase, width, save. -/
+/-- Home, left/right arrows, undo, redo, erase, width, save, compact. -/
 def glyph (number : UInt64) : UInt64 :=
   if number = 0 then letter 72 else if number = 1 then 0x29e2 else
   if number = 2 then 0x23ca else if number = 3 then letter 85 else
   if number = 4 then letter 82 else if number = 5 then letter 69 else
-  if number = 6 then letter 87 else letter 83
+  if number = 6 then letter 87 else if number = 7 then letter 83 else
+  if number = 8 then letter 67 else 0
 
 def backgroundPixel (x y width height : UInt64) : UInt64 :=
   if height ≤ y then 15 else
   if y < 128 then
-    let buttonWidth := width / 8
+    let buttonWidth := width / 9
     let buttonX := x % buttonWidth
     let button := x / buttonWidth
     if buttonX < 3 then 0 else if buttonWidth - 3 ≤ buttonX then 0 else

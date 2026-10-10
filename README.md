@@ -267,13 +267,19 @@ Prepare the pinned tools and guest images once, then launch without rebuilding:
 The resizable native QEMU window fits the portrait controller image to its
 viewport and displays the controller's visible pixels. Pointer events
 enter its pen FIFO. All toolbar, ink, page and document behavior runs in the guest.
-The eight guest tools are home/notebook toggle, previous page, next/add page,
-undo, redo, erase latest stroke, width and Save. Home closes the current namespace
-and opens the other of two notebooks. The text beside the page number shows
-SAVED, PENDING, FAILED or READ ONLY. Completed strokes autosave; Save requests a
-durable checkpoint. Wait for Saved before closing when you want all pending work.
-Large checkpoints keep an owner-bound guest receipt and use short status calls;
-Pending remains visible until the replacement root's final flush succeeds.
+The nine guest tools are home/notebook toggle, previous page, next/add page,
+undo, redo, erase latest stroke, width, Save and Compact. Home closes the current
+namespace and opens the other of two notebooks. The text beside the page number shows
+SAVED, PENDING, FAILED or READ ONLY. Completed strokes autosave. After those
+publications drain, Save checks the store's durable sequence with a short status
+request; it does not copy the live record set. Wait for Saved before closing.
+Compact explicitly reclaims append space by copying the latest records and
+durably switching roots. It keeps an owner-bound guest receipt and uses short
+status calls; Pending remains visible until the replacement root's final flush
+succeeds. Compact before append space fills; after a Full error, restart to
+recover acknowledged writing, then request Compact. It retains original ink,
+including hidden strokes, and can take substantially longer than Save. It cannot
+reclaim those immutable keys or bypass page/edit limits.
 Startup polls the store's Mounting state before opening a page, with a checked
 ten-minute guest deadline. Neither operation extends a kernel reply lease.
 A failed mount never triggers automatic formatting. `init` refuses existing
@@ -324,7 +330,7 @@ archive is the explicit owner-controlled retention path.
 
 ## GitHub and Codex
 
-The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
+The repository is **`srkftw/lemma`**, with default branch **`main`**.
 Task 001 [PR #1](https://github.com/srkftw/lemma/pull/1) and Task 002
 [PR #2](https://github.com/srkftw/lemma/pull/2) were merged by explicit owner
 authorization. The reviewed Task002 integration is

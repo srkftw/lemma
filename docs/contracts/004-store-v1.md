@@ -29,6 +29,18 @@ index, 32768 bytes per transaction, one outstanding transaction. Exhaustion
 rejects before affecting the active committed root. These memory-index limits
 are implementation bounds; changing them does not change the disk encoding.
 
+The notebook's Save tool drains its existing transactions, then uses the short
+v1 Inspect operation 8 to verify ready mode 1 and a durable sequence at least the
+captured prior acknowledgement. Ordinary Save
+does not invoke checkpoint or scan/copy the current live set. The separate
+Compact tool uses v2 Begin 12 and Status 13 to reclaim append space. Its work is
+proportional to the bounded latest-object set; it preserves immutable ink,
+including hidden strokes, and therefore cannot relieve the distinct 1024-key or
+per-page chunk/edit limits. The caller remains Pending until the real root switch
+is durable. Request Compact before append space fills; after a Full error, the
+notebook must restart to its recovered acknowledged state before that tool is
+available. Neither tool changes this disk format or the existing operation 7.
+
 All sectors are 512 bytes. All fields below are aligned little-endian u64.
 Every reserved byte is zero. FNV-1a64 uses offset `cbf29ce484222325` and prime
 `100000001b3`, modulo 2^64, over the specified serialized bytes. It detects

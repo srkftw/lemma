@@ -17,6 +17,35 @@ from inspect_notebook import inspect_page
 from store_oracle import recover
 
 
+def ordinary_basic_fixture(raw, manifest):
+    """Independent two-stroke provenance plus the explicit short Save suffix."""
+    if (manifest.get('schema_version') != 1 or manifest.get('profile') != 'lemmasim-virt/0.1.0' or
+            manifest.get('workflow') != 'basic' or manifest.get('input_samples') != 53 or len(raw) != 53 * 72 or
+            manifest.get('clock_hz') != 10000000 or hashlib.sha256(raw).hexdigest() != manifest['input_sha256']):
+        raise ValueError('isolation input must be the ordinary two-stroke and Save fixture')
+    width, height = manifest['geometry']
+    if (width, height) not in ((1650, 2200), (1404, 1872)):
+        raise ValueError('isolation fixture geometry differs from the exercised instances')
+    samples = [struct.unpack_from('<9Q', raw, offset) for offset in range(0, len(raw), 72)]
+    actions = manifest['actions']
+    if (len(actions) != 3 or [row['kind'] for row in actions] != ['stroke', 'stroke', 'tool'] or
+            [(row['namespace'], row['page'], row['first_sequence'], row['last_sequence'], row['raw_samples'])
+             for row in actions[:2]] != [(1, 1, 2, 26, 25), (1, 1, 27, 51, 25)] or
+            {key: actions[2].get(key) for key in ('button', 'first_sequence', 'last_sequence')} !=
+            {'button': 7, 'first_sequence': 52, 'last_sequence': 53} or
+            manifest['expected']['retained_raw_samples'] != 50):
+        raise ValueError('isolation fixture lost literal stroke provenance or the short Save suffix')
+    center = 15 * (width // 9) // 2
+    x = (center * 65535 + width - 2) // (width - 1)
+    y = (64 * 65535 + height - 2) // (height - 1)
+    down, up = samples[-2:]
+    if (tuple(row[0] for row in samples) != tuple(range(1, 54)) or
+            any(a[1] >= b[1] for a, b in zip(samples, samples[1:])) or
+            down[2:] != (x, y, 2048, 3, 1, 0, 1) or up[2:] != (x, y, 0, 2, 1, 0, 1)):
+        raise ValueError('isolation suffix is not an actual raw down/up on Save7 in the nine-tool strip')
+    return samples, actions[:2]
+
+
 def serial_observations(events):
     def single(tag):
         rows = [(index, row) for index, row in enumerate(events) if row[0] == tag]
@@ -168,11 +197,7 @@ def check(before_disk, after_disk, serial, devices, media, visible, input_file, 
         raise ValueError('latest document publication lacks post-fault durable acknowledgement')
     manifest = json.loads(manifest_file.read_text())
     raw = input_file.read_bytes()
-    if (manifest.get('schema_version') != 1 or manifest.get('profile') != 'lemmasim-virt/0.1.0' or
-            manifest.get('workflow') != 'basic' or manifest.get('input_samples') != 51 or len(raw) != 51 * 72 or
-            manifest.get('clock_hz') != 10000000 or hashlib.sha256(raw).hexdigest() != manifest['input_sha256']):
-        raise ValueError('isolation input must be the unchanged ordinary two-stroke fixture')
-    samples = [struct.unpack_from('<9Q', raw, offset) for offset in range(0, len(raw), 72)]
+    samples, actions = ordinary_basic_fixture(raw, manifest)
     events = device_events(devices)
     ingress = {}
     completions = []
@@ -212,11 +237,6 @@ def check(before_disk, after_disk, serial, devices, media, visible, input_file, 
         values = [struct.unpack_from('<9Q', payload, 128 + i * 72) for i in range(header[6])]
         grouped.setdefault(stroke, []).append((header, values))
     retained = [set(join_chunks(chunks)) for chunks in grouped.values()]
-    actions = [row for row in manifest['actions'] if row['kind'] == 'stroke']
-    if (len(actions) != 2 or [(row['namespace'], row['page'], row['first_sequence'], row['last_sequence'], row['raw_samples'])
-                              for row in actions] != [(1, 1, 2, 26, 25), (1, 1, 27, 51, 25)] or
-            manifest['expected']['retained_raw_samples'] != 50):
-        raise ValueError('isolation fixture is not the literal ordinary two-stroke workflow')
     expected = [set((ingress[i][0], *samples[i - 1][1:8], ingress[i][1])
                     for i in range(action['first_sequence'], action['last_sequence'] + 1)) for action in actions]
     if len(retained) != len(expected) or any(sum(actual == wanted for actual in retained) != 1 for wanted in expected):

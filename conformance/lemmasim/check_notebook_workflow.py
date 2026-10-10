@@ -50,6 +50,37 @@ def visible_pixels(path: Path) -> tuple[int, int, bytes]:
     return width, height, pixels
 
 
+def check_toolbar_pixels(width: int, height: int, pixels: bytes) -> None:
+    """Independent visible examples for the nine guest controls.
+
+    Literal3x5 rows are independent of production Lean glyph constants and
+    transitions. These points observe controller output; they never draw a
+    host toolbar or provide pixels to the guest.
+    """
+    if not 512 <= width <= 4096 or not 320 <= height <= 4096 or len(pixels) != width * height * 3:
+        raise ValueError('toolbar observation geometry or length differs')
+    glyphs = (
+        ('101', '101', '111', '101', '101'),  # H: notebook/home
+        ('010', '100', '111', '100', '010'),  # previous
+        ('010', '001', '111', '001', '010'),  # next/add
+        ('101', '101', '101', '101', '111'),  # U: undo
+        ('110', '101', '110', '101', '101'),  # R: redo
+        ('111', '100', '110', '100', '111'),  # E: stroke erase
+        ('101', '101', '101', '111', '111'),  # W: brush width
+        ('111', '100', '111', '001', '111'),  # S: short Save
+        ('111', '100', '100', '100', '111'),  # C: explicit Compact
+    )
+    for button, rows in enumerate(glyphs):
+        for row, pattern in enumerate(rows):
+            for column, bit in enumerate(pattern):
+                x = button * (width // 9) + 24 + column * 12 + 1
+                y = 36 + row * 12 + 1
+                offset = (y * width + x) * 3
+                expected = bytes([0 if bit == '1' else 255]) * 3
+                if pixels[offset:offset + 3] != expected:
+                    raise ValueError(f'guest nine-tool toolbar glyph differs at control{button}/cell{column},{row}')
+
+
 def join_chunks(chunks: list[tuple[tuple[int, ...], list[tuple[int, ...]]]]) -> list[tuple[int, ...]]:
     """Independent literal lifecycle/duplication rules, without raster code."""
     if not chunks:
@@ -256,6 +287,7 @@ def check(disk: Path, input_file: Path, manifest_file: Path, device_file: Path,
     width, height, pixels = visible_pixels(visible_file)
     if [width, height] != manifest['geometry']:
         raise ValueError('visible geometry/byte length differs')
+    check_toolbar_pixels(width, height, pixels)
     final_view = manifest['expected']['final_view']
     selected = [action for action in actions if action['namespace'] == final_view['namespace']
                 and action['page'] == final_view['page']
@@ -288,6 +320,7 @@ def check(disk: Path, input_file: Path, manifest_file: Path, device_file: Path,
             'committed_sequence': sequence, 'retained_unique_raw_samples': retained,
             'stroke_count': len(actual_strokes), 'page_count': len(pages),
             'notebooks': sorted(roots), 'guest_document_acknowledgements': acknowledgements,
+            'guest_toolbar_literal_cells': 135,
             'loss_boundary': loss_expected, 'rejected_ingress': sorted(rejected),
             'paper_completions': completed,
             'artifact_sha256': {str(path): hashlib.sha256(path.read_bytes()).hexdigest()

@@ -31,7 +31,7 @@ PREFIX = 'Lemma.Platform.LemmaSim.'
 # Independent visible rows for the guest-authored bounded font. These are
 # packed here rather than imported from the production Lean lookup.
 FONT_ROWS = {
-    'A':'010101111101101', 'D':'110101101101110', 'E':'111100110100111',
+    'A':'010101111101101', 'C':'111100100100111', 'D':'110101101101110', 'E':'111100110100111',
     'F':'111100110100100', 'G':'111100101101111', 'H':'101101111101101',
     'I':'111010010010111', 'L':'100100100100111', 'N':'101111111111101',
     'O':'111101101101111', 'P':'111101111100100', 'R':'110101110101101',

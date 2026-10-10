@@ -5,11 +5,32 @@ Branch: `task/004-lemmasim-durable-ink`, based on main
 Status: IMPLEMENTING; the primary completion boundary is unmet.
 [Draft PR #5](https://github.com/srkftw/lemma/pull/5) remains draft. No merge is authorized.
 
-Prior published implementation: `dfd5c90cc457e2e1094792453f2a040abc19a54b`, tree
-`5ddf2b0b0ef16e93da326fdd49d1f52c0937c1cb`. The genuine compiled RV64 guest has
+Latest published implementation: `ce4eb75d7f9f792ab1d27b009c61e33dd74c54f2`, tree
+`82d2195e8de92fe62f5f8a50c7cca7227e1da338`. The genuine compiled RV64 guest has
 32 MiB owned memory, 16 KiB stacks, checked discovery, PLIC pen/paper, modern
 VirtIO/flush, isolated record storage, integer ink/rasterization and page/edit
 workflows. Source existence and scoped passes do not complete Task004.
+
+Its exact clean matrix `build/lemmasim/task004-ce4eb75-full1-headless` is retained
+FAIL, SHA256 `27bd74bec61b427cc69a36c7561b947fb7197803f402f1d6bd19ef13756ca915`.
+O2/O0 basic writing/cold, editing/cold, second geometry/cold, overflow/cold,
+strict production-object isolation/live DMA ownership and unknown/damaged-media
+checks completed. Production review then found that every explicit Save copied
+the entire latest-object set. The owner interrupted the controller to repair
+that scalability defect; its reason is retained separately in
+`interruption-reason.json`. The active disconnect run was interrupted and reaped,
+and the original aggregate error remains "loss-disconnect did not reach a
+quiescent guest Saved boundary". Later cases and aggregate acceptance did not
+pass. No observation is relabeled by this repair.
+
+The current repair separates the ninth tool Compact (C) from Save (S). Routine
+Save waits for notebook publications and uses short durable Inspect 8; it does
+not scan or copy the live set. Compact explicitly uses v2 Begin/Status 12/13,
+retaining the actual two-segment copy and final root-flush acknowledgement.
+Autosave and all stored formats remain unchanged. Reclamation retains original
+ink and cannot remove the separate object-key or per-page chunk/edit limits.
+Fresh linked Save/Compact observations, full acceptance and repaired-candidate
+CI are pending.
 
 The exact dfd headless full matrix `build/lemmasim/task004-dfd5c90-full2-headless`
 is retained FAIL, SHA256 `eb32a2b7045b6c03ee18ad767f46e2a47e8e527a7b266fb825b83053345c3852`.
@@ -23,7 +44,7 @@ interrupted the failed workflow; QEMU was reaped. The outer checker separately
 reported missing consistent final owned-memory observations. No workload cold
 comparison or aggregate PASS was obtained. Both failures remain original FAIL.
 
-This repair adds checkpoint-only endpoint v2 Begin/Status operations12/13,
+The ce4 repair added checkpoint-only endpoint v2 Begin/Status operations12/13,
 bound to the full kernel-stamped sender, namespace and positive ticket. Pending
 is an observation, never a durable acknowledgement; completion is latched only
 after the engine's final root flush. The v1 disk format and operations1–11,
@@ -46,9 +67,15 @@ The ordinary build refused to publish its prepared manifest when a test fixture
 changed mid-build; that failure is retained. Explicit development metadata never
 claims ordinary CLI or clean-source qualification. Store endpoint and notebook
 literal fixtures also passed through genuine Lean elaboration/Core0 lowering.
-Selected O2 kernel trap bound1984 /16352 usable bytes includes288-byte entry;
-this is a selected-path bound, not a whole-program proof. Fresh repaired O0 and
-full exact-candidate acceptance are pending.
+The clean ce4 O2 selected bounds are kernel trap 1984/16352 usable bytes,
+Notebook 1408/16384 and Store 736/16384. Its O0 bounds are kernel trap 9328/16352,
+Notebook 10368/16384 and Store 4304/16384, leaving at least 36.72% headroom on those
+entries. Both trap bounds include the 288-byte entry frame. The new receipt
+paths were included in each actual acyclic compiled graph; no dynamic stack
+allocation was admitted. These are selected call-chain checks, not whole-program
+proofs. User stacks have real unmapped guards; kernel canaries are not hardware
+guards, and the trusted writable supervisor alias remains. Changed executable
+paths require new candidate audits rather than inheritance of these bounds.
 
 Actual prior PR CI [38086018901](https://github.com/srkftw/lemma/actions/runs/38086018901)
 passed allnine jobs at synthetic merge `6f2ff0cb93bfc5d8306a500fe2735892de4a7247`
@@ -68,7 +95,7 @@ production-object comparison; no old FAIL has been relabeled.
 
 Pinned host QEMU v17 SHA256:
 `0e95380d2eb582ebf95f989fc6a07eac26a50c222bbbee95dd5fa5421d2864ce`.
-Next: commit this functional repair, run one fresh clean exact-candidate full
+Next: validate and commit the Save/Compact repair, run one fresh clean exact-candidate full
 matrix and required actual CI, export verified offline evidence outside ignored
 build/, write one concise report/result/manifest, and update the draft for review.
 Preserve the original failures, legacy profiles, physical UNVERIFIED status, and

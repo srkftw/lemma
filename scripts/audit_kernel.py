@@ -2985,8 +2985,8 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
     'Lemma.Services.Store.Engine.complete': ('user',81,['u64','u8'],['checked-access','virtual-read','virtual-write'],[*range(1,6),*range(16,22),*range(32,41),*range(64,70),80,81]),
     'Lemma.Services.Store.Server.application': ('user',9,['u64']*3,['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[2,3,4,5,6,7,9,10]),
-    'Lemma.Applications.Notebook.toolbar': ('user',8,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(8))),
-    'Lemma.Ink.Surface.glyph': ('user',7,['u64'],[],list(range(7))),
+    'Lemma.Applications.Notebook.toolbar': ('user',9,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(9))),
+    'Lemma.Ink.Surface.glyph': ('user',9,['u64'],[],list(range(9))),
     'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
@@ -3206,7 +3206,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
             raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     elif jump==use+6:
         if (source=='Lemma.Ink.Surface.glyph' and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS
-            and image_key=='notebook' and count==7 and minimum==0
+            and image_key=='notebook' and count==9 and minimum==0
             and index==scaled==address=='a0' and base==target=='a1'
             and code[:2]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)'])]
             and code[use+4:jump]==[('lui',['a0','3']),('addiw',['a0','a0','-1566'])]):

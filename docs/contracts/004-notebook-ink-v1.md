@@ -189,15 +189,25 @@ transactions. `Saved` and diagnostic marker `0x421` follow the final root's
 acknowledgement. Previously acknowledged roots and referenced records are never
 deleted by this consumer. An interruption between these publications may leave
 an orphan chunk or a wholly valid unacknowledged page change; it cannot make an
-earlier acknowledged publication disappear. Store checkpoint/reclamation is
-requested by the Save tool and follows the store's two-segment protocol.
+earlier acknowledged publication disappear. The nine guest tools are H, previous
+arrow, next arrow, U, R, E, W, S and C. Save (tool index 7) waits for notebook
+publications to settle and requests the store's short v1 Inspect operation 8.
+Save captures the prior acknowledgement before issuing Inspect, requires ready
+mode 1 and an observed durable sequence at least that acknowledgement, and only
+then reports Saved. It does not enumerate or copy existing ink. Compact
+(index 8) explicitly requests store
+checkpoint/reclamation through v2 Begin 12 and Status 13. Compact copies the
+bounded latest-object set and follows the store's two-segment protocol, so its
+cost grows with retained records. Routine stroke commits and Save do not perform
+that copy. These tool semantics do not change any on-disk ink or page field.
 
 The guest writes the full state words SAVED, PENDING, FAILED or READ ONLY in an
 authored 3×5 alphabet, together with N (namespace), P (two-digit page) and W
 (brush width in pixels). The 20 cells occupy 240×16 pixels beginning at (24,132),
 and status uploads cover nine tiles in the 288×32 band. This fits both queried
 geometries and the application's minimum 512-pixel width. Previous/next use
-literal arrow glyphs; erase/save are E/S. No host font or UI supplies these words.
+literal arrow glyphs; erase/save/compact are E/S/C. No host font or UI supplies
+these words.
 A second
 full buffer applies bounded backpressure instead of overwriting raw samples.
 Page switches and edits wait until the outstanding save and current stroke have
@@ -215,13 +225,18 @@ unsaved tail, resynchronizes contact, preserves prior indexed/root bytes and the
 acknowledged sequence, and keeps the guest loop alive in FAILED state with a
 recovery repaint. It does not acknowledge an unindexable chunk or silently erase
 an older committed stroke. Restart remains the way to reopen after this failure;
-this bounded consumer has no history-compaction UI.
+this bounded consumer has no history-compaction UI. Compact reclaims obsolete
+revisions, not immutable chunk keys or the page's retained edit history; reaching
+those independent bounds still requires a new page/notebook or explicit failure.
+Compact is available while writable, before append space fills. After a Full
+failure, restart to recover the acknowledged state before requesting Compact;
+the Failed view does not allow a post-failure Compact in the same session.
 Guest diagnostic record `0x423` reports Pending with the expected store sequence,
 page, namespace and object; `0x424` reports Save failed with its error, page,
 namespace and object. Opening unformatted/damaged media also reports its error
 through `0x424`, keeps the notebook read-only, and draws its diagnostic page
 without invoking format. The final `0x421` carries the acknowledged sequence, page,
-namespace and stroke. Checkpoint reports object/stroke zero and preserves the
+namespace and stroke. Save and Compact report object/stroke zero and preserve the
 logical document sequence. These bounded console observations allow Developer
 mode to display guest-reported state without parsing live application memory.
 

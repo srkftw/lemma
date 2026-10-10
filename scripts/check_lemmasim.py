@@ -113,7 +113,9 @@ def workflow(metadata, initial, name, geometry, out, timeout, *, observe_owned_m
         result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
                             raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
     if result['status'] != 'OBSERVED_GUEST_WORKFLOW_BOUNDARY' or not result['process_reaped']:
-        raise ValueError(f'{name} did not reach a quiescent guest Saved boundary')
+        raise ValueError(f'{name} did not reach a quiescent guest Saved boundary: '
+                         f'status={result.get("status")}, returncode={result.get("returncode")}, '
+                         f'process_reaped={result.get("process_reaped")}')
     observed = check(disk, input_file, manifest_file, directory / 'run/devices.jsonl',
                      directory / 'run/serial.bin', directory / 'run/visible.ppm')
     sim.write_json(directory / 'workflow.json', observed)

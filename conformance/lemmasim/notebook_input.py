@@ -52,8 +52,10 @@ class Input:
         self.tick += self.gap
 
     def tool(self, button: int, name: str):
+        if type(button) is not int or not 0 <= button <= 8:
+            raise ValueError('unknown notebook tool; nine controls are indexed0..8')
         start = len(self.events) + 1
-        x = (button * 2 + 1) * (self.width // 8) // 2
+        x = (button * 2 + 1) * (self.width // 9) // 2
         self.sample(x, 64, 2048, True)
         self.sample(x, 64, 0, False)
         self.actions.append({'kind': 'tool', 'name': name, 'button': button,
@@ -68,6 +70,7 @@ def generate(workflow: str, width: int, height: int, first: int, interval: int, 
     if workflow == 'basic':
         stream.stroke('a', 1, 1, 25, height // 3)
         stream.stroke('b', 1, 1, 25, height // 2)
+        stream.tool(7, 'save durable state')
         expected = {'pages': {'1': [1]}, 'visible_strokes': {'1/1': ['a', 'b']},
                     'retained_raw_samples': 50, 'final_view': {'namespace': 1, 'page': 1}}
     elif workflow == 'editing':
@@ -82,7 +85,7 @@ def generate(workflow: str, width: int, height: int, first: int, interval: int, 
         stream.tool(0, 'create/open notebook2')
         stream.stroke('d', 1, 2, 25, height // 2, brush=1024)
         stream.tool(0, 'reopen notebook1 page1')
-        stream.tool(7, 'save checkpoint')
+        stream.tool(7, 'save durable state')
         expected = {'pages': {'1': [1, 2], '2': [1]},
                     'visible_strokes': {'1/1': ['a'], '1/2': ['c'], '2/1': ['d']},
                     'retained_raw_samples': 100, 'final_view': {'namespace': 1, 'page': 1}, 'required_edit_history': {'1/1': 3}}
@@ -91,7 +94,8 @@ def generate(workflow: str, width: int, height: int, first: int, interval: int, 
             stream.stroke(f'page{page}', page, 1, 6250, height // 3)
             if page < 16:
                 stream.tool(2, f'add page{page + 1}')
-        stream.tool(7, 'save checkpoint')
+        stream.tool(7, 'save durable state')
+        stream.tool(8, 'compact committed records')
         expected = {'pages': {'1': list(range(1, 17))},
                     'visible_strokes': {f'1/{page}': [f'page{page}'] for page in range(1, 17)},
                     'retained_raw_samples': 100000, 'final_view': {'namespace': 1, 'page': 16}}

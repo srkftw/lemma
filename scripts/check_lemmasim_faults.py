@@ -46,7 +46,7 @@ def write_json(path: Path, result: dict) -> None:
 
 
 def raw_fixture(out: Path, operation: str) -> tuple[Path, Path]:
-    """Raw controller samples: one new stroke or the ordinary Save tool tap."""
+    """Raw controller samples: one new stroke or the explicit Compact tool tap."""
     raw, manifest = generate('basic', 1650, 2200, 200000000, 1000000, 200000000)
     if operation == 'append':
         # Keep exactly the initial release and first writing action. Move the
@@ -59,14 +59,15 @@ def raw_fixture(out: Path, operation: str) -> tuple[Path, Path]:
         raw = b''.join(struct.pack('<9Q', *row) for row in rows)
         manifest['actions'] = [dict(action, name='crash append')]
     else:
-        # Button 7 is the guest Save/checkpoint control, reached solely via FIFO.
-        x = (7 * 2 + 1) * (1650 // 8) // 2
+        # Button8 is explicit guest compaction; ordinary Save7 stays a short
+        # durable-state check. Both controls are reached solely through FIFO.
+        x = (8 * 2 + 1) * (1650 // 9) // 2
         xraw, yraw = (x * 65535 + 1648) // 1649, (64 * 65535 + 2198) // 2199
         rows = [(1, 200000000, 32768, 32768, 0, 2, 1, 0, 1),
                 (2, 210000000, xraw, yraw, 2048, 3, 1, 0, 1),
                 (3, 211000000, xraw, yraw, 0, 2, 1, 0, 1)]
         raw = b''.join(struct.pack('<9Q', *row) for row in rows)
-        manifest['actions'] = [{'kind': 'tool', 'name': 'save/checkpoint',
+        manifest['actions'] = [{'kind': 'tool', 'name': 'compact committed records', 'button': 8,
                                 'first_sequence': 2, 'last_sequence': 3}]
     manifest.update(workflow='crash-' + operation, input_samples=len(raw) // 72,
                     input_sha256=hashlib.sha256(raw).hexdigest(),

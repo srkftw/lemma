@@ -9,12 +9,12 @@ from core0_common import Core0Error
 
 
 def fixture():
-    # Independent small trace of the seven explicit cases; Save is the default.
+    # Independent small trace of all nine explicit cases; unknown tools return0.
     assembly='''owner:
  addi sp, sp, -16
  sd ra, 8(sp)
- li a1, 6
- bltu a1, a0, .LBB0_6
+ li a1, 8
+ bltu a1, a0, .LBB0_12
  slli a0, a0, 3
 .Lpcrel_hi0:
  auipc a1, %pcrel_hi(.LJTI0_0)
@@ -45,6 +45,13 @@ def fixture():
  j .LBB0_9
 .LBB0_8:
  li a0, 87
+ j .LBB0_9
+.LBB0_11:
+ li a0, 67
+ j .LBB0_9
+.LBB0_12:
+ li a0, 0
+ j .LBB0_10
 .LBB0_9:
  call letter
 .LBB0_10:
@@ -54,8 +61,8 @@ def fixture():
  .size owner, .-owner
 '''
     return dict(assembly=assembly,symbol='owner',table='.LJTI0_0',
-                targets=['.LBB0_2','.LBB0_10','.LBB0_4','.LBB0_5','.LBB0_3','.LBB0_7','.LBB0_8'],
-                count=7,minimum=0,source='Lemma.Ink.Surface.glyph',
+                targets=['.LBB0_2','.LBB0_10','.LBB0_4','.LBB0_5','.LBB0_3','.LBB0_7','.LBB0_8','.LBB0_6','.LBB0_11'],
+                count=9,minimum=0,source='Lemma.Ink.Surface.glyph',
                 configuration='lemmasim-notebook',image_key='notebook')
 
 
@@ -64,7 +71,7 @@ class AuthoredGlyphJump(unittest.TestCase):
         for configuration in ['lemmasim-notebook','lemmasim-initialize','lemmasim-isolation-development']:
             data=fixture();data['configuration']=configuration
             result=_jump_assembly_guard(**data)
-            self.assertEqual(result['bound'],7)
+            self.assertEqual(result['bound'],9)
             self.assertEqual(result['target_preserving_literal']['value'],0x29e2)
             self.assertEqual(result['target_preserving_literal']['preserved_target_register'],'a1')
             self.assertTrue(result['guard_dominates_load'])
@@ -73,7 +80,7 @@ class AuthoredGlyphJump(unittest.TestCase):
         for key,value in [('source',None),('source','Lemma.Ink.Surface.letter'),
                           ('image_key','isolation'),('image_key','store'),
                           ('configuration','normal'),('configuration','lemmasim-bringup'),
-                          ('count',8),('minimum',1)]:
+                          ('count',7),('count',8),('count',10),('minimum',1)]:
             data=fixture();data[key]=value
             with self.assertRaises(Core0Error):_jump_assembly_guard(**data)
 
@@ -84,9 +91,9 @@ class AuthoredGlyphJump(unittest.TestCase):
             ('addiw a0, a0, -1566','addiw a0, a1, -1566'),
             ('addiw a0, a0, -1566','addiw a0, a0, -1565'),
             ('jr a1','jr a0'),('jr a1','nop\n jr a1'),
-            ('li a1, 6','li a1, 7'),('bltu a1, a0','blt a1, a0'),
+            ('li a1, 8','li a1, 7'),('bltu a1, a0','blt a1, a0'),
             ('slli a0, a0, 3','slli a0, a0, 2'),
-            ('bltu a1, a0, .LBB0_6','bltu a1, a0, .Lpcrel_hi0'),
+            ('bltu a1, a0, .LBB0_12','bltu a1, a0, .Lpcrel_hi0'),
             ('addi sp, sp, -16','addi sp, sp, -32'),('sd ra, 8(sp)','sd ra, 16(sp)')]:
             data=fixture();data['assembly']=data['assembly'].replace(before,after)
             with self.assertRaises(Core0Error):_jump_assembly_guard(**data)

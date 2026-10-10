@@ -13,6 +13,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+import struct
 import sys
 import threading
 import time
@@ -42,6 +43,35 @@ def pointer(directory, x, y, down):
         {'type': 'abs', 'data': {'axis': 'x', 'value': x}},
         {'type': 'abs', 'data': {'axis': 'y', 'value': y}},
         {'type': 'btn', 'data': {'button': 'left', 'down': down}}]})
+
+
+def toolbar_point(width, height, button):
+    """Nine-control center in QMP coordinates, using queried geometry.
+
+    This is an input-fixture helper; it only chooses an ordinary pointer
+    location. The guest remains responsible for hit testing and tool policy.
+    """
+    if (type(button) is not int or not 0 <= button <= 8 or
+            type(width) is not int or not 512 <= width <= 4096 or
+            type(height) is not int or not 320 <= height <= 4096):
+        raise ValueError('native toolbar geometry or control index is invalid')
+    pixel = (button * 2 + 1) * (width // 9) // 2
+    return ((pixel * 32767 + width - 2) // (width - 1),
+            (64 * 32767 + height - 2) // (height - 1))
+
+
+def toolbar_pointer(directory, button, down):
+    """Inject a pointer sample after reading the actual paper geometry."""
+    geometry_file = directory / f'pointer-geometry-{time.time_ns()}.bin'
+    sim.qmp(endpoint(directory), 'pmemsave', {'val': 0x10010020, 'size': 16,
+                                             'filename': str(geometry_file)})
+    data = geometry_file.read_bytes()
+    if len(data) != 16:
+        raise ValueError('native paper geometry read was incomplete')
+    width, height = struct.unpack('<2Q', data)
+    x, y = toolbar_point(width, height, button)
+    pointer(directory, x, y, down)
+    return {'x': x, 'y': y, 'down': down}
 
 
 class OwnedLaunch:

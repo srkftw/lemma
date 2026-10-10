@@ -43,6 +43,14 @@ def checkpointResponseStatus (operation detail : UInt64) : UInt8 :=
   if operation = 12 then if detail = 1 then 0 else 234 else
   if operation = 13 then if detail ≤ 1 then 0 else 234 else 234
 
+/-- Explicit Save confirms previously acknowledged data, without checkpointing.
+The prior ACK is captured before issuing Inspect; mounting/read-only/error mode
+or a regressed sequence cannot confirm it. Outstanding local writing is checked
+separately before submission and before displaying Saved. -/
+def saveResponseStatus (operation mode observed prior : UInt64) : UInt8 :=
+  if operation = 8 then if mode = 1 then if prior ≤ observed then 0 else 234
+  else 234 else 234
+
 /-- Developer observations originate in the authorized guest consumer. These
 bounded records describe UI commit state without host document parsing. -/
 private def reportCommitState (tag value object : UInt64) : Action :=
@@ -451,7 +459,8 @@ private def issue (operation offset count source : UInt64) : Action :=
   .bind (get 496) fun s checkpoint => if statusFailed s = true then .done s 0 else
   .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.beginCall endpoint outgoing operation ns object
-    (if operation = 12 then checkpoint else if operation = 13 then checkpoint else if operation = 7 then 0 else transaction)
+    (if operation = 12 then checkpoint else if operation = 13 then checkpoint else
+      if operation = 7 then 0 else if operation = 8 then 0 else transaction)
     offset count source request)
     fun s pending => if statusFailed s = true then .done s 0 else
   .bind (put 168 pending) fun s _ => if statusFailed s = true then .done s 0 else
@@ -557,6 +566,11 @@ private def pumpSave : Action :=
   .bind (get 176) fun s request => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.pollCall pending incoming operation ns object request 0) fun s sequence =>
   if s = IPCABI.wouldBlock then .done 0 0 else if statusFailed s = true then saveFailure s else
+  .bind (if phase = 6 then
+    .bind (get 496) fun s prior => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Services.Store.Client.responseField incoming 48) fun s mode =>
+    if statusFailed s = true then .done s 0 else .done (saveResponseStatus operation mode sequence prior) 0
+    else .done 0 0) fun s _ => if statusFailed s = true then saveFailure s else
   .bind (put 128 sequence) fun s _ => if statusFailed s = true then .done s 0 else
   if phase = 1 then issueNext else if phase = 2 then
     .bind (get 184) fun s offset => if statusFailed s = true then .done s 0 else
@@ -577,6 +591,14 @@ private def pumpSave : Action :=
       .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
       .bind (reportCommitState 0x421 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
     else saveFailure 234 else saveFailure 234
+  else if phase = 6 then
+    .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+    .bind (get 144) fun s buffered => if statusFailed s = true then .done s 0 else
+    let clean := if count ||| buffered = 0 then true else false
+    .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 136 (if clean then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState (if clean then 0x421 else 0x423) sequence 0) fun s _ =>
+    if statusFailed s = true then .done s 0 else publishStatus
   else .done 234 0
 
 private def prepareChunk (buffer stroke lifecycle : UInt64) : Action :=
@@ -681,6 +703,14 @@ private def toolbar (button : UInt64) : Action :=
     .bind (Lemma.Documents.Ink.root rootBuffer pages width) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (startSave rootBuffer 64 1 2) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
   else if button = 7 then
+    .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
+    .bind (put 496 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 224 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 160 6) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState 0x423 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (issue 8 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
+  else if button = 8 then
     .bind (put 224 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 160 4) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
@@ -763,7 +793,7 @@ where
     .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
     let px := Geometry.pixel (Geometry.normalized x maxX) width
     let py := Geometry.pixel (Geometry.normalized y maxY) height
-    if py < 128 then toolbar (minimum 7 (px / (width / 8))) else
+    if py < 128 then toolbar (minimum 8 (px / (width / 9))) else
     if py < 160 then .done 0 0 else
     .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
 

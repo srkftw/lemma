@@ -13,7 +13,7 @@ from core0_common import Core0Error
 def fixture():
     # Fixed literal expected font table, independently written as artifact bytes.
     values=[31599,11415,29671,29647,23497,31183,31215,29330,31727,31695,
-            0,0,0,0,0,0,0,11245,0,0,27502,31143,31140,31087,23533,29847,
+            0,0,0,0,0,0,0,11245,0,31015,27502,31143,31140,31087,23533,29847,
             0,0,18727,0,24573,31599,31716,0,27565,31183,0,23407,23402,23423,0,23186]
     unit={'configuration':'lemmasim-notebook','role':'user','functions':[{
         'source':'Lemma.Ink.Surface.letter','symbol':'letter','args':['u64'],'effects':[]}]}
@@ -42,6 +42,7 @@ class LemmaSimArtifactBoundaries(unittest.TestCase):
         bad=copy.deepcopy(unit);bad['configuration']='normal'
         with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(ir,bad,optimized=True)
         for changed in [ir.replace('constant [42','global [42'),ir.replace('i64 31599','i64 31600'),
+                        ir.replace('i64 31015','i64 0'),ir.replace('i64 31015','i64 31014'),
                         ir.replace('icmp ult i64 %index, 42','icmp ult i64 %index, 43'),
                         ir.replace('br i1 %bound, label %lookup, label %done','br i1 %bound, label %done, label %lookup'),
                         ir.replace('i64 0, i64 %index','i64 0, i64 42'),
