@@ -30,10 +30,12 @@ private def validate (incoming operation ns object request expectedCount bytes :
   .bind (responseField incoming 24) fun s observedNs => if s = 0 then
   .bind (responseField incoming 32) fun s observedObject => if s = 0 then
   .bind (responseField incoming 40) fun s sequence => if s = 0 then
+  .bind (responseField incoming 48) fun s detail => if s = 0 then
   .bind (responseField incoming 56) fun s count => if s = 0 then
-  if magic = Protocol.magic then if version = 1 then
+  if magic = Protocol.magic then if version = Protocol.requestVersion operation then
   if observedOperation = operation then if observedNs = ns then if observedObject = object then
   if sequence ≤ Format.maximumSequence then
+  if Protocol.checkpointReplyValid operation app detail count = 1 then
   if app = 0 then
     if (if operation = 5 then if count ≤ expectedCount then (1 : UInt64) else 0 else if count = 0 then 1 else 0) = 1 then
     if bytes = 128 + count then .done 0 sequence else .done IPCABI.invalidPacket 0
@@ -42,9 +44,9 @@ private def validate (incoming operation ns object request expectedCount bytes :
     if count = 0 then if bytes = 128 then .done app.toUInt8 sequence else .done IPCABI.invalidPacket 0
     else .done IPCABI.invalidPacket 0
   else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0
+  else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0
   else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0
-  else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0 else .done IPCABI.invalidPacket 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done IPCABI.invalidPacket 0 else .done s 0

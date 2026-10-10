@@ -16,6 +16,12 @@ a changed source hash or generic process failure cannot qualify it.
 Block/filter/driver/store changes require actual VirtIO fault checks, notebook
 payload/publication/checkpoint cuts, independent recovery observations and cold
 new-process reopening. The host observer never repairs a live guest's media.
+Checkpoint endpoint or mount-handshake changes also require exact v1 framing
+regression, v2 Begin/Status receipt and real root-flush failure boundaries, and
+a large existing-image checkpoint/cold mount that exceeds one RPC deadline.
+Pending receipt acceptance must never become Saved. Genuine elaboration/lowering
+and linked O0/O2 User stack audits cover the changed service/client closure; a
+host-only Action fixture is not durable guest execution.
 
 Ink, page codecs or editing changes require their focused genuine Lean exports
 and independent literal checks, the editing/two-namespace workflow and cold

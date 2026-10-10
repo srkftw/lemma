@@ -5,66 +5,71 @@ Branch: `task/004-lemmasim-durable-ink`, based on main
 Status: IMPLEMENTING; the primary completion boundary is unmet.
 [Draft PR #5](https://github.com/srkftw/lemma/pull/5) remains draft. No merge is authorized.
 
-Published implementation: `c96a375531cbf9a8e6e692b4b1aec2760c290eef`, tree
-`5a251eef6386ddf14e41e6d7261165fe41d12b71`. README has actual build/init/run,
-Developer capture/replay and offline copy/archive commands. The compiled guest
-has descriptor/DTB validation, a 32 MiB owned pool, 16 KiB stacks, PLIC pen/paper,
-modern VirtIO/flush, isolated durable records, integer ink/rasterization, pages,
-editing and an asynchronous save path. Source existence is not gate acceptance.
+Prior published implementation: `dfd5c90cc457e2e1094792453f2a040abc19a54b`, tree
+`5ddf2b0b0ef16e93da326fdd49d1f52c0937c1cb`. The genuine compiled RV64 guest has
+32 MiB owned memory, 16 KiB stacks, checked discovery, PLIC pen/paper, modern
+VirtIO/flush, isolated record storage, integer ink/rasterization and page/edit
+workflows. Source existence and scoped passes do not complete Task004.
 
-Exact-candidate `build/lemmasim/task004-c96a375-full1` is FAIL/reaped before
-isolation boot: the strict production-object comparison found LLVM's local FILE
-symbol differed by deployment name. Actual notebook/store code, data,
-relocations and linked bytes match. The Lean exporter now uses a scoped stable
-semantic label; the complete-object comparison is retained. Fresh dirty
-ordinary/isolation O2 builds and full audits pass; both complete production
-objects and linked User images are identical, with unchanged executable text.
-Result: `lemmasim-complete-object-identity-dev1/result.json`, SHA256
-`f3b1745a3d3ccdb98996dbaba30b84918665804971a3dbc604232a2e8cb06cca`.
-A fresh private four-root build and all eleven actual fixtures pass (112.96s):
-`fresh-writing-imports-four-roots-attempt1/result.json`, SHA256
-`fde3db62baa3eaea2fb0ee8bc6824e405d51756e3fc373362c60111ecd220edd`.
-All processes are reaped; these are preflight observations, not a new guest pass. O2/O0 basic
-writing and cold committed-byte/controller-pixel comparison, editing/two
-notebooks and cold recovery pass in this same campaign. Later isolation,
-read-only media, second geometry, loss/replay/native, faults, source negatives
-and 100,000-sample workload are NOT_RUN. Do not turn the retained FAIL into PASS.
-O2 notebook SHA256: `902e4a5841bcf93fba429d24faf47965b65953765d3fb6295bba2c6aa5617ff1`.
-Selected trap bounds: O0 9,328 / 16,352; O2 1,984 / 16,352 usable bytes, including
-288-byte entry. These are selected-path bounds, not whole-program proofs.
+The exact dfd headless full matrix `build/lemmasim/task004-dfd5c90-full2-headless`
+is retained FAIL, SHA256 `eb32a2b7045b6c03ee18ad767f46e2a47e8e527a7b266fb825b83053345c3852`.
+Its seven workflow/cold pairs, isolation and live-DMA client death, unknown/damaged
+media refusal, all15 real storage faults/cold checks, two behavioral source
+negatives, captured native ingress and thirteen replay observations passed.
+The final100,000-sample workload reached acknowledged sequence848 across16 pages,
+then Save used a long-lived checkpoint reply and reported IPC timeout93 after
+thirty seconds. The service continued the actual root replacement. The owner
+interrupted the failed workflow; QEMU was reaped. The outer checker separately
+reported missing consistent final owned-memory observations. No workload cold
+comparison or aggregate PASS was obtained. Both failures remain original FAIL.
 
-Actual PR CI run `38084399190` checks synthetic merge
-`e67aebe0b632ccaf35f4ff8397b09d0a106a3dbf`. At its retained progress snapshot,
-host, legacy and buffer jobs passed; six jobs were running with no failure.
-Snapshot directory: `build/lemmasim/ci-c96a375-run38084399190`.
-No older green result passes a changed executable candidate.
+This repair adds checkpoint-only endpoint v2 Begin/Status operations12/13,
+bound to the full kernel-stamped sender, namespace and positive ticket. Pending
+is an observation, never a durable acknowledgement; completion is latched only
+after the engine's final root flush. The v1 disk format and operations1–11,
+including legacy deferred checkpoint7, retain their meanings. The notebook
+polls short replies every100ms of monotonic guest time and waits for initial
+Mounting through the same service. It keeps the thirty-second per-RPC ceiling.
+The launcher now diagnoses an observed Save failure once all scheduled input
+has arrived, instead of waiting indefinitely for a quiescent Saved boundary.
 
-Keep failures in `task004-80b89dc-full1`, `task004-dea6281-full1`,
-`task004-115a335-full1` and their `ci-*` directories. Stale IPC audits and fresh
-Store/Notebook module prerequisites were repaired. Fresh private preparation
-passed all ten fixtures without inherited modules or outer-cache changes:
-`fresh-fixture-cache-115a335-checkerfix-attempt1/result.json`, SHA256
-`270b83acdccc8d28206969b3cb892dc586d14ae3d09f60d0bc33f47822adc9b0`.
-The header validator's literal checks, genuine Core0 closure and RV64 O0/O2
-objects pass: `ink-header-codegen-attempt1/result.json`, SHA256
-`9f86794ee14b9e0401633fa71d9f1db45fd35ba4802be17adaa23e5515e13b10`.
-The separate exact `dea6281` J lane passed four actual O0/O2 workflows and audits:
-`build/worktrees/task004-inherited-kernel/build/kernel/verify-J-dea6281/result.json`,
-SHA256 `0a928036080269b3556a1b24f27116e09faece1d23b86acb61bf5e8b40116875`.
+Actual dirty development observation `build/lemmasim/large-checkpoint-async-dev-attempt1/result.json`
+is PASS, not exact-candidate acceptance. It copied the retained full2 disk without
+changing the original. The guest mounted in83.7336s; Save stayed Pending for
+157.15795 guest seconds and became Saved848 after two durable flushes with zero
+pending sectors. Root generation2/segment1 became generation3/segment0. All289
+committed objects and100,000 unique raw samples were preserved byte-for-byte.
+A separate cold process mounted in84.7791s and matched document bytes and exact
+visible pixels; both processes were reaped. Audited dirty Notebook O2 image:
+`aab2e53d53f39cd216808d910c6ff9f9fb9cf09a4cdf14b6ab7016e51c414efd`.
+The ordinary build refused to publish its prepared manifest when a test fixture
+changed mid-build; that failure is retained. Explicit development metadata never
+claims ordinary CLI or clean-source qualification. Store endpoint and notebook
+literal fixtures also passed through genuine Lean elaboration/Core0 lowering.
+Selected O2 kernel trap bound1984 /16352 usable bytes includes288-byte entry;
+this is a selected-path bound, not a whole-program proof. Fresh repaired O0 and
+full exact-candidate acceptance are pending.
 
-Earlier dirty development observations remain scoped: unchanged 100 Hz dev6
-retained 6,250 unique samples with Saved53 and exact cold bytes/pixels; original
-observer FAILs remain. Dirty dev5 native GTK/QMP ingress, actual QEMU replay,
-cold recovery and reset-during-busy restoration passed. Manual interaction and
-physical tablet input are NOT_RUN. Retain `focused6250-64e3bbb-input8-dev6`,
-`native-gtk-64e3bbb-dirty-dev5-attempt1`, `inherited-a1-handoff.json` and historical
-CI artifacts. QMP reset may drain/flush; it is not a power cut.
+Actual prior PR CI [38086018901](https://github.com/srkftw/lemma/actions/runs/38086018901)
+passed allnine jobs at synthetic merge `6f2ff0cb93bfc5d8306a500fe2735892de4a7247`
+with the exact dfd tree. Nine artifact ZIPs were downloaded and verified against
+service digest/size;14-day expiry is2026-10-24. Those checks do not pass this
+changed executable source. Exact repaired-candidate CI and final offline archive
+are pending; no permanent remote archive is configured.
+
+Prior dfd controlled native GTK/Xvfb capture, replay, cold recovery and busy-reset
+restoration passed, as did ordinary CLI init/write/cold/copy and Developer
+pause/inspect/resume. These were automated observations: manual interaction and
+physical pressure-aware tablet input are NOT_RUN. The separate ambient GTK
+attempt remains FAIL; its close actor is UNKNOWN. Historical c96 complete-object
+identity failure and earlier campaign/CI failures remain under their original
+ignored output paths. The scoped Lean exporter repair retained the strict entire
+production-object comparison; no old FAIL has been relabeled.
 
 Pinned host QEMU v17 SHA256:
 `0e95380d2eb582ebf95f989fc6a07eac26a50c222bbbee95dd5fa5421d2864ce`.
-Next: commit the verified scoped exporter fix, run the fresh exact-candidate full
-matrix and required actual CI, export offline evidence outside ignored build/,
-write one concise report/result/manifest, and update the draft. Actions artifacts
-retain for 14 days; final permanent offline retention is pending. Legacy profiles,
-physical UNVERIFIED status, and later managed-runtime/mathematics boundaries stay
-unchanged. Do not claim completion from this checkpoint.
+Next: commit this functional repair, run one fresh clean exact-candidate full
+matrix and required actual CI, export verified offline evidence outside ignored
+build/, write one concise report/result/manifest, and update the draft for review.
+Preserve the original failures, legacy profiles, physical UNVERIFIED status, and
+later managed-runtime/mathematics boundaries. Do not claim completion here.

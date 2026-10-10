@@ -296,7 +296,7 @@ def main():
         # complete fixture import roots explicitly before invoking lean; a warm
         # project cache must not supply otherwise missing user/compiler objects.
         command(['lake', 'build', 'Lemma.Platform.LemmaSim.NotebookKernel',
-                 'Lemma.Applications.Notebook', 'Lemma.Compiler.CFGLower',
+                 'Lemma.Applications.Notebook', 'Lemma.Services.Store.Server', 'Lemma.Compiler.CFGLower',
                  'Lemma.Compiler.KernelExport'],
                 out / 'lean-host-build.log', 1200)
         command(['lake', 'env', 'lean', 'tests/kernel/BulkCopyAndDeadline.lean'],
@@ -306,8 +306,10 @@ def main():
         command(['lake', 'env', 'python3', 'conformance/lemmasim/check_store_cache.py',
                  '--output', str(out / 'store-cache')], out / 'store-cache.log', 300)
         require_pass(out / 'store-cache/result.json')
+        command(['lake', 'env', 'lean', 'tests/store/CheckpointEndpoint.lean'],
+                out / 'CheckpointEndpoint.log', 300)
         for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
-                        'PaperRecovery', 'RasterizerReference', 'PacketCopies', 'InkHeaders'):
+                        'PaperRecovery', 'RasterizerReference', 'PacketCopies', 'InkHeaders', 'NotebookCheckpoint'):
             command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
                     out / f'{fixture}.log', 180)
         command(['python3', 'sim/host/check_qemu_devices.py', '--qemu', str(qemu), '--output', str(out / 'devices')], out / 'devices.log', 180)

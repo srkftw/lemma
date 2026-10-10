@@ -252,6 +252,12 @@ def document_observations(serial):
     result['authority']='compiled guest reports; not host journal interpretation'
     return result
 
+def require_nonfailed_input_boundary(reported,captured_samples,required_samples):
+    """A completed input stream with a guest Save failure cannot become quiescent."""
+    if captured_samples==required_samples and reported.get('status')=='SAVE_FAILED':
+        raise Failure(f"Guest Save failed at completed input boundary: status {reported.get('failure')}, "
+                      f"previous acknowledged sequence {reported.get('acknowledged_sequence')}.")
+
 def validated_faults(faults,mode):
     result=dict(faults or {})
     ordinals={'fail-write','fail-flush','cut-before-flush','cut-after-flush','tear-flush'}
@@ -370,6 +376,7 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                     reached=(reported['commit_count']>=until_commits if until_commits is not None else reported['ready'])
                     if until_ingress is not None:
                         captured=out/'raw.bin'
+                        require_nonfailed_input_boundary(reported,captured.stat().st_size//72 if captured.is_file() else 0,until_ingress)
                         reached=(captured.is_file() and captured.stat().st_size==until_ingress*72 and reported['status']=='SAVED')
                     if until_view is not None:
                         view=reported.get('view_request',{})

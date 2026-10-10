@@ -272,6 +272,10 @@ undo, redo, erase latest stroke, width and Save. Home closes the current namespa
 and opens the other of two notebooks. The text beside the page number shows
 SAVED, PENDING, FAILED or READ ONLY. Completed strokes autosave; Save requests a
 durable checkpoint. Wait for Saved before closing when you want all pending work.
+Large checkpoints keep an owner-bound guest receipt and use short status calls;
+Pending remains visible until the replacement root's final flush succeeds.
+Startup polls the store's Mounting state before opening a page, with a checked
+ten-minute guest deadline. Neither operation extends a kernel reply lease.
 A failed mount never triggers automatic formatting. `init` refuses existing
 images unless `--force` explicitly requests destruction.
 

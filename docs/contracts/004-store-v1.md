@@ -181,7 +181,8 @@ make a queued write durable or release a writable DMA frame.
 The document message payload is bounded by the existing 256-byte IPC packet:
 a 64-byte kernel IPC envelope, the following 64-byte application header, and at
 most 128 bytes of chunk data. Each header field is little-endian aligned u64.
-Magic is `31525453414d454c`, version is 1. The eight fields at offsets 0 through
+Magic is `31525453414d454c`. Operations 1–11 retain version 1; only the additive
+checkpoint operations 12–13 use version 2. The eight fields at offsets 0 through
 56 are magic, version, operation, namespace, object, transaction, offset, count.
 The sender and reply handle come from the kernel envelope, never that header.
 
@@ -208,9 +209,15 @@ resource-recovery policy and does not limit a running checkpoint/flush.
 | 9 | Cancel an uncommitted staging buffer owned by the same sender/key/transaction |
 | 10 | Close only when the shared staging slot is free |
 | 11 | Explicit format; requires launch boot argument 1 and unformatted mode |
+| 12 (v2) | Begin checkpoint with a positive caller ticket; returns a Pending receipt promptly |
+| 13 (v2) | Inspect that checkpoint with the same kernel sender, namespace and ticket |
 
 Operations 1, 7, 8 and 10 have object/transaction/offset/count zero. Operation
 11 also has namespace zero; all other requests admit only namespaces 1 or 2.
+Operations 12–13 require object/offset/count zero and a positive transaction
+ticket. Their version is 2; version 1 with these operations, or version 2 with
+operations 1–11, rejects before state changes. On-disk store and ink formats are
+unchanged. The ticket is an opaque caller scalar, never authority.
 Catalog creation is an ordinary versioned replacement record, rather than a
 kernel notebook operation. Enumeration is a reusable library entry and is not
 yet a document-endpoint message. A notebook may use its own indexed catalog
@@ -224,18 +231,59 @@ zero, and offset beyond it rejects without making other clients read-only.
 Malformed media headers and actual transport errors still latch failure. Other
 successful replies have count zero.
 Detail is mount mode (0 mounting, 1 ready, 2 no validated root, 3 failed) or the
-next staging offset. Error replies have no data. Application statuses 220–230
+next staging offset for v1. Version 2 replies have exactly 64 application bytes
+and count zero; detail 1 with status 0 means Pending, detail 0 with status 0
+means durable checkpoint success, and detail 0 with nonzero status is the actual
+failure. No other v2 detail is valid. The reply's transaction field is the
+original acknowledged document sequence, not the request ticket; checkpoint
+does not change that sequence. The IPC request identifier binds each response.
+Error replies have no data. Application statuses 220–230
 are format/engine failures; 231 is staging busy, 232 wrong staging owner, and
-233 incomplete replacement. Packet length must exactly agree with count.
+233 incomplete replacement. A checkpoint status with a wrong full sender,
+namespace or ticket returns 232. A different begin while a checkpoint or staged
+replacement is active returns 231. Packet length must exactly agree with count.
 
 Only one immutable payload and one transaction are outstanding. An abandoned
 uncommitted stage expires after ten guest seconds; this releases no DMA pins,
-committed record or acknowledged sequence. During I/O the service retains the
+committed record or acknowledged sequence. During v1 I/O the service retains the
 reply capability and does not receive another document command. Other tasks,
 including the notebook's input loop, remain scheduled. `Client.beginCall` plus
 `pollCall` supports that loop: additive syscall 67 returns IPC `wouldBlock` 12
 with zero bytes without consuming a transaction, or returns a completely
 validated reply. `waitCall` uses the existing blocking ABI.
+
+The v2 checkpoint receipt occupies private service state offsets 128 through
+176: state (0 absent, 1 pending, 2 complete, 3 failed), full kernel sender,
+namespace, ticket, original sequence, final sequence, and application error.
+All 24 service-state words are cleared at boot. The receipt is separate from
+the staged payload, its lease, and a kernel reply capability. Begin starts the
+actual engine once and replies Pending without retaining that reply handle.
+Repeated begin with the same full binding returns the existing receipt; it
+does not restart I/O. Every status request replies independently. Completion
+latches exactly once after the engine becomes idle: successful root publication
+flush changes the root/index/generation before a complete receipt is published;
+an actual engine error latches a failed receipt. Original/final document sequence
+must agree or the service fails closed. Subsequent ordinary I/O cannot rewrite
+the latched receipt. A newly accepted begin replaces it only after completion;
+older tickets then return 232. Receipts are volatile service state; after a cold
+restart the caller opens the recovered durable store rather than resubmitting
+an uncertain checkpoint automatically.
+
+While checkpoint work is pending, each worker step pumps at most one actual
+block submission/completion and makes a nonblocking IPC receive attempt. Status
+13, idempotent begin 12 and inspect 8 remain available; other document I/O
+returns Busy. There is no 100 ms blocking receive between checkpoint sectors.
+Client death, request timeout or reply revocation does not cancel the engine,
+expire its receipt, release DMA pins, or imply durability. The block completion
+adapter retains its declared one-millisecond guest sleep while a device request
+is pending. Once work ends, ordinary blocking idle receive resumes.
+
+Initial mount also pumps I/O and receives nonblocking status requests. Version 1
+inspect 8 replies with mode 0 while mounting and never advertises Ready. Other
+requests return Busy until mount completes; open 1 retains its established
+ready/unformatted/read-only semantics afterward. A client can poll inspect at
+a bounded guest-time interval, then issue open, without extending the kernel IPC
+deadline or holding an open reply across a full journal scan.
 
 Normal launch argument 0 forbids format. Argument 1 is permitted only for the
 launcher's verified-empty image recipe or an explicit destructive operation;

@@ -66,8 +66,7 @@ private def expireStage : Action :=
   else failed else failed
   else .done 0 0 else failed else failed
 
-private def respond (reply operation ns object detail count : UInt64) (app : UInt8) : Action :=
-  .bind (Engine.field context 40) fun s sequence => if s = 0 then
+private def respondAt (reply operation ns object sequence detail count : UInt64) (app : UInt8) : Action :=
   .bind (Protocol.header outgoing operation ns object sequence detail count) fun s _ => if s = 0 then
   .bind (IPC.reply reply outgoing (64 + count) app.toUInt64) fun s value =>
   if value = 0 then
@@ -76,7 +75,94 @@ private def respond (reply operation ns object detail count : UInt64) (app : UIn
     if s = IPCABI.peerDied then .done 0 0 else
     if s = IPCABI.revoked then .done 0 0 else failed
   else failed
+  else failed
+
+private def respond (reply operation ns object detail count : UInt64) (app : UInt8) : Action :=
+  .bind (Engine.field context 40) fun s sequence => if s = 0 then
+  respondAt reply operation ns object sequence detail count app else failed
+
+/-- Receipt fields128..176 are independent of the staged payload lease and
+retained v1 reply handle. The full kernel sender, namespace and ticket bind
+every observation. No client lifetime transition releases live block work. -/
+def checkpointOwner (sender ns ticket : UInt64) : Action :=
+  .bind (get 128) fun s receipt => if s = 0 then
+  .bind (get 136) fun s owner => if s = 0 then
+  .bind (get 144) fun s storedNs => if s = 0 then
+  .bind (get 152) fun s storedTicket => if s = 0 then
+  if receipt ≤ 3 then
+  if receipt = 0 then .done 0 0 else
+  if owner = sender then if storedNs = ns then if storedTicket = ticket then .done 0 1
+  else .done 0 0 else .done 0 0 else .done 0 0
+  else failed else failed else failed else failed else failed
+
+def checkpointStatus (sender reply operation ns ticket : UInt64) : Action :=
+  .bind (checkpointOwner sender ns ticket) fun s matched => if s = 0 then
+  if matched = 1 then
+  .bind (get 128) fun s receipt => if s = 0 then
+  .bind (get 160) fun s originalSequence => if s = 0 then
+  if receipt = 1 then respondAt reply operation ns 0 originalSequence 1 0 0 else
+  .bind (get 168) fun s finalSequence => if s = 0 then
+  .bind (get 176) fun s error => if s = 0 then
+  if finalSequence = originalSequence then
+    if receipt = 2 then
+      if error = 0 then respondAt reply operation ns 0 finalSequence 0 0 0 else failed
+    else if receipt = 3 then
+      if 220 ≤ error then if error ≤ 230 then
+        respondAt reply operation ns 0 finalSequence 0 0 error.toUInt8 else failed else failed
+    else failed
+  else failed else failed else failed else failed else failed
+  else respond reply operation ns 0 0 0 Protocol.wrongOwner else failed
+
+def checkpointBegin (sender reply ns ticket : UInt64) : Action :=
+  .bind (checkpointOwner sender ns ticket) fun s matched => if s = 0 then
+  if matched = 1 then checkpointStatus sender reply 12 ns ticket else
+  .bind (get 128) fun s receipt => if s = 0 then
+  .bind (get 48) fun s stagedOwner => if s = 0 then
+  .bind (Engine.field context 0) fun s operation => if s = 0 then
+  .bind (get 24) fun s mode => if s = 0 then
+  if receipt = 1 then respond reply 12 ns 0 0 0 Protocol.busy else
+  if mode = 0 then respond reply 12 ns 0 0 0 Protocol.busy else
+  if mode = 1 then
+  if stagedOwner = 0 then if operation = 0 then
+  .bind (Engine.field context 40) fun s sequence => if s = 0 then
+  .bind (Engine.field context 104) fun s index => if s = 0 then
+  .bind (Engine.checkpointStart context (if index = index0 then index1 else index0)) fun status _ =>
+  if status = 0 then
+  .bind (put 136 sender) fun s _ => if s = 0 then
+  .bind (put 144 ns) fun s _ => if s = 0 then
+  .bind (put 152 ticket) fun s _ => if s = 0 then
+  .bind (put 160 sequence) fun s _ => if s = 0 then
+  .bind (put 168 sequence) fun s _ => if s = 0 then
+  .bind (put 176 0) fun s _ => if s = 0 then
+  .bind (put 128 1) fun s _ => if s = 0 then
+  respondAt reply 12 ns 0 sequence 1 0 0
+  else failed else failed else failed else failed else failed else failed else failed
+  else respond reply 12 ns 0 0 0 status else failed else failed
+  else respond reply 12 ns 0 0 0 Protocol.busy
+  else respond reply 12 ns 0 0 0 Protocol.busy
+  else respond reply 12 ns 0 0 0 Format.readOnly
+  else failed else failed else failed else failed else failed
+
+/-- Latch a single terminal receipt only after the actual engine completion.
+Checkpoint never changes acknowledged document sequence; a mismatch fails
+closed rather than publishing a receipt for another operation. -/
+def settleCheckpoint : Action :=
+  .bind (get 128) fun s receipt => if s = 0 then
+  if receipt = 1 then
+  .bind (Engine.field context 0) fun s operation => if s = 0 then
+  if operation = 0 then
+  .bind (Engine.field context 32) fun s result => if s = 0 then
+  .bind (Engine.field context 40) fun s sequence => if s = 0 then
+  .bind (get 160) fun s originalSequence => if s = 0 then
+  if sequence = originalSequence then
+  if (if result = 0 then (1 : UInt64) else if 220 ≤ result then if result ≤ 230 then 1 else 0 else 0) = 1 then
+  .bind (put 168 sequence) fun s _ => if s = 0 then
+  .bind (put 176 result) fun s _ => if s = 0 then
+  .bind (put 128 (if result = 0 then 2 else 3)) fun s _ => if s = 0 then .done 0 0 else failed
   else failed else failed
+  else failed else failed else failed else failed else failed
+  else .done 0 0 else failed
+  else .done 0 0 else failed
 
 private def finishEngine (status : UInt8) : Action :=
   .bind (Engine.complete context status) fun s _ =>
@@ -111,6 +197,7 @@ private def settle : Action :=
   .bind (Engine.field context 336) fun s readOnly => if s = 0 then
   let nextMode := if result = 0 then (1 : UInt64) else if result = 221 then 2 else if readOnly = 0 then 1 else 3
   .bind (put 24 nextMode) fun s _ => if s = 0 then
+  .bind settleCheckpoint fun s _ => if s = 0 then
   .bind (get 40) fun s reply => if s = 0 then
   if reply = 0 then .done 0 mode else
   .bind (get 56) fun s request => if s = 0 then
@@ -124,7 +211,7 @@ private def settle : Action :=
   .bind (respond reply request ns object nextMode count result.toUInt8) fun s _ =>
   if s = 0 then clearStage else failed
   else failed else failed else failed else failed else failed else failed else failed
-  else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed else failed
   else .done 0 0 else failed
 
 private def stageOwner (sender ns object transaction : UInt64) : Action :=
@@ -218,7 +305,7 @@ private def format (sender reply : UInt64) : Action :=
   else failed else respond reply 11 0 0 mode 0 Format.readOnly
   else respond reply 11 0 0 mode 0 Format.readOnly else failed else failed
 
-private def application (sender reply bytes : UInt64) : Action :=
+def application (sender reply bytes : UInt64) : Action :=
   if 64 ≤ bytes then
   .bind (Protocol.field (incoming + 64) 0) fun s magic => if s = 0 then
   .bind (Protocol.field (incoming + 64) 8) fun s version => if s = 0 then
@@ -229,11 +316,15 @@ private def application (sender reply bytes : UInt64) : Action :=
   .bind (Protocol.field (incoming + 64) 48) fun s offset => if s = 0 then
   .bind (Protocol.field (incoming + 64) 56) fun s count => if s = 0 then
   .bind (get 24) fun s mode => if s = 0 then
-  if magic = Protocol.magic then if version = 1 then
+  .bind (Engine.field context 0) fun s active => if s = 0 then
+  if magic = Protocol.magic then if version = Protocol.requestVersion operation then
   if Protocol.shape operation ns object transaction offset count bytes = 1 then
+    if operation = 13 then checkpointStatus sender reply operation ns transaction else
+    if operation = 8 then respond reply operation ns object mode 0 0 else
+    if operation = 12 then checkpointBegin sender reply ns transaction
+    else if 0 < active then respond reply operation ns object 0 0 Protocol.busy else
     if operation = 11 then format sender reply else
     if operation = 1 then respond reply operation ns object mode 0 (if mode = 1 then 0 else if mode = 2 then Format.unformatted else Format.readOnly)
-    else if operation = 8 then respond reply operation ns object mode 0 0
     else if mode = 1 then
       if operation = 2 then begin sender reply ns object transaction count else
       if operation = 3 then chunk sender reply ns object transaction offset count else
@@ -255,13 +346,15 @@ private def application (sender reply bytes : UInt64) : Action :=
   else respond reply operation ns object 0 0 Format.malformed
   else respond reply operation ns object 0 0 Format.unsupported
   else respond reply operation ns object 0 0 Format.malformed
-  else failed else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed else failed
   else failed else failed else failed else failed
   else respond reply 0 0 0 0 0 Format.malformed
 
-private def receive : Action :=
+def receive (nonblocking : UInt64) : Action :=
   .bind (get 8) fun s endpoint => if s = 0 then
-  .bind (IPC.receive endpoint incoming IPCABI.maximumPacket 1000000) fun status bytes =>
+  .bind (if nonblocking = 1 then IPC.tryReceive endpoint incoming IPCABI.maximumPacket
+    else IPC.receive endpoint incoming IPCABI.maximumPacket 1000000) fun status bytes =>
+  if status = IPCABI.wouldBlock then if bytes = 0 then .done 0 0 else failed else
   if status = IPCABI.timeout then .done 0 0 else
   if status = 0 then
   .bind (IPC.validate incoming bytes) fun s kind => if s = 0 then
@@ -273,12 +366,16 @@ private def receive : Action :=
   else failed else failed else failed
   else .done 0 0 else failed else failed else failed
 
-private def step : Action :=
+def step : Action :=
   .bind pump fun s _ => if s = 0 then
   .bind settle fun s _ => if s = 0 then
   .bind expireStage fun s _ => if s = 0 then
   .bind (Engine.field context 0) fun s operation => if s = 0 then
-  if operation = 0 then receive else .done 0 0
+  if operation = 0 then receive 0 else
+  .bind (get 24) fun s mode => if s = 0 then
+  .bind (get 128) fun s receipt => if s = 0 then
+  if mode = 0 then receive 1 else if receipt = 1 then receive 1 else .done 0 0
+  else failed else failed
   else failed else failed else failed else failed
 
 def main (bootArgument : UInt64) : Action :=
@@ -288,8 +385,8 @@ def main (bootArgument : UInt64) : Action :=
   .bind Syscall.identity fun s identity => if s = 0 then
   .boundedFoldU64 34 allocateStep 34 0 0 0 0 0 fun s pages =>
   if s = 0 then if pages = 34 then
-  .boundedFoldU64 16 clearStep 16 0 0 0 0 0 fun s fields =>
-  if s = 0 then if fields = 16 then
+  .boundedFoldU64 24 clearStep 24 0 0 0 0 0 fun s fields =>
+  if s = 0 then if fields = 24 then
   .bind (put 0 block) fun s _ => if s = 0 then
   .bind (put 8 endpoint) fun s _ => if s = 0 then
   .bind (put 16 identity) fun s _ => if s = 0 then

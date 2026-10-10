@@ -37,6 +37,12 @@ private def failed : Action := .done 95 0
 private def minimum (a b : UInt64) : UInt64 := if a < b then a else b
 private def maximum (a b : UInt64) : UInt64 := if a < b then b else a
 
+/-- A fresh checkpoint Begin is only Pending. Only a matching Status completion
+may authorize the notebook's Saved transition; unknown detail is a failure. -/
+def checkpointResponseStatus (operation detail : UInt64) : UInt8 :=
+  if operation = 12 then if detail = 1 then 0 else 234 else
+  if operation = 13 then if detail ≤ 1 then 0 else 234 else 234
+
 /-- Developer observations originate in the authorized guest consumer. These
 bounded records describe UI commit state without host document parsing. -/
 private def reportCommitState (tag value object : UInt64) : Action :=
@@ -442,8 +448,11 @@ private def issue (operation offset count source : UInt64) : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
   .bind (get 384) fun s transaction => if statusFailed s = true then .done s 0 else
+  .bind (get 496) fun s checkpoint => if statusFailed s = true then .done s 0 else
   .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Services.Store.Client.beginCall endpoint outgoing operation ns object (if operation = 7 then 0 else transaction) offset count source request)
+  .bind (Lemma.Services.Store.Client.beginCall endpoint outgoing operation ns object
+    (if operation = 12 then checkpoint else if operation = 13 then checkpoint else if operation = 7 then 0 else transaction)
+    offset count source request)
     fun s pending => if statusFailed s = true then .done s 0 else
   .bind (put 168 pending) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 232 operation) fun s _ => if statusFailed s = true then .done s 0 else put 448 count
@@ -535,6 +544,12 @@ def failWriting (status : UInt8) : Action :=
 private def pumpSave : Action :=
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
   if phase = 0 then .done 0 0 else
+  if phase = 5 then
+    .bind (get 504) fun s deadline => if statusFailed s = true then .done s 0 else
+    .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+    if now < deadline then .done 0 0 else
+    .bind (put 160 4) fun s _ => if statusFailed s = true then .done s 0 else issue 13 0 0 0
+  else
   .bind (get 168) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 232) fun s operation => if statusFailed s = true then .done s 0 else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
@@ -550,10 +565,18 @@ private def pumpSave : Action :=
   else if phase = 3 then
     .bind finishRecord fun s value => if statusFailed s = true then failWriting s else .done 0 value
   else if phase = 4 then
-    .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
-    .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (reportCommitState 0x421 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+    .bind (Lemma.Services.Store.Client.responseField incoming 48) fun s detail => if statusFailed s = true then .done s 0 else
+    if checkpointResponseStatus operation detail = 234 then saveFailure 234 else
+    if detail = 1 then
+      .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+      if 0xffffffffffffffff - 1000000 < now then saveFailure 235 else
+      .bind (put 504 (now + 1000000)) fun s _ => if statusFailed s = true then .done s 0 else put 160 5
+    else if detail = 0 then if operation = 13 then
+      .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+      .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
+      .bind (reportCommitState 0x421 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+    else saveFailure 234 else saveFailure 234
   else .done 234 0
 
 private def prepareChunk (buffer stroke lifecycle : UInt64) : Action :=
@@ -663,7 +686,9 @@ private def toolbar (button : UInt64) : Action :=
     .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
     .bind (reportCommitState 0x423 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (issue 7 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
+    .bind nextRequest fun s ticket => if statusFailed s = true then .done s 0 else
+    .bind (put 496 ticket) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (issue 12 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
   else .done 0 0
 
 private def beginStroke : Action :=
@@ -789,6 +814,33 @@ private def step : Action :=
     if statusFailed s = true then .done s 0 else
     if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
 
+/-- A large disk scan never owns an expiring open Reply. Mode zero means
+Mounting; no Ready or Saved observation is emitted. A checked ten-minute
+monotonic acceptance deadline bounds readiness; each RPC retains its separate
+thirty-second failure ceiling. Failed media is never automatically formatted. -/
+private def mountStatusStep (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (get 504) fun s deadline => if statusFailed s = true then .done s 0 else
+  .bind Syscall.time fun s before => if statusFailed s = true then .done s 0 else
+  if deadline ≤ before then .done IPCABI.timeout 0 else
+  .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.call endpoint outgoing incoming 8 1 0 0 0 0 0 request)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind Syscall.time fun s after => if statusFailed s = true then .done s 0 else
+  if deadline ≤ after then .done IPCABI.timeout 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 48) fun s mode => if statusFailed s = true then .done s 0 else
+  if mode = 0 then
+    .bind (Syscall.sleep 1000000) fun s _ => .done s (acc + 1)
+  else if mode ≤ 3 then .done Status.iterationStop mode else .done 234 0
+
+private def waitForMount : Action :=
+  .bind Syscall.time fun s now => if statusFailed s = true then .done s 0 else
+  if 0xffffffffffffffff - 6000000000 < now then .done 235 0 else
+  .bind (put 504 (now + 6000000000)) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 6000 mountStatusStep 6000 0 0 0 0 0 fun s mode =>
+  if s = Status.iterationStop then .done 0 mode else
+  if s = 0 then .done IPCABI.timeout 0 else .done s 0
+
 private def initializeMedium : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Services.Store.Client.call endpoint outgoing incoming 11 0 0 0 0 0 0 1) fun s sequence =>
@@ -808,6 +860,7 @@ def main (bootArgument : UInt64) : Action :=
   .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else
   if bootArgument = 1 then initializeMedium else
   .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
   let width := geometry &&& 0xffffffff

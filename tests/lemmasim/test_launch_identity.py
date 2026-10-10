@@ -42,6 +42,21 @@ def literal_policy():
 
 
 class LaunchIdentity(unittest.TestCase):
+    def test_completed_input_preserves_actual_save_failure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            serial = Path(folder) / 'serial.bin'
+            serial.write_text('K1 0000000000000421 0000000000000350 0000000000000010 0000000000000001 000000000000031e\n'
+                              'K1 0000000000000423 0000000000000350 0000000000000010 0000000000000001 0000000000000000\n'
+                              'K1 0000000000000424 000000000000005d 0000000000000010 0000000000000001 0000000000000000\n')
+            observed = sim.document_observations(serial)
+            self.assertEqual(observed['acknowledged_sequence'], 848)
+            self.assertEqual(observed['failure'], 93)
+            sim.require_nonfailed_input_boundary(observed, 100032, 100033)
+            with self.assertRaisesRegex(sim.Failure, 'status 93, previous acknowledged sequence 848'):
+                sim.require_nonfailed_input_boundary(observed, 100033, 100033)
+            serial.write_text(serial.read_text() + 'K1 0000000000000421 0000000000000350 0000000000000010 0000000000000001 0000000000000000\n')
+            sim.require_nonfailed_input_boundary(sim.document_observations(serial), 100033, 100033)
+
     def test_backend_evaluation_is_read_only_bounded_and_exact(self):
         answer = subprocess.CompletedProcess([], 0,
                  json.dumps({'output': OUTPUT, 'derivation': DERIVATION}), '')
