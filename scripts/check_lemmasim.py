@@ -87,7 +87,9 @@ def image(configuration, optimization, out):
                 out / f'{configuration}-{optimization}-capacity.log', 120)
         require_pass(destination / 'capacity.json')
     return {'path': str(destination / 'image.elf'), 'sha256': sim.sha(destination / 'image.elf'),
-            'build_sha256': sim.sha(destination / 'build.json'), 'audit_sha256': sim.sha(destination / 'audit.json')}
+            'build_sha256': sim.sha(destination / 'build.json'), 'audit_sha256': sim.sha(destination / 'audit.json'),
+            'artifacts': sim.guest_artifact_identity(destination / 'image.elf',
+                require_capacity=configuration in ('lemmasim-notebook', 'lemmasim-isolation-development'))}
 
 def workflow(metadata, initial, name, geometry, out, timeout):
     directory = out / name
@@ -276,7 +278,12 @@ def main():
             raise ValueError('Missing prepared LemmaSim QEMU')
         qemu = args.qemu.resolve()
         result['qemu_sha256'] = sim.sha(qemu)
+        closure = sim.backend_identity(qemu, timeout=remaining(60))
+        result['qemu_closure'] = closure
         command(['python3', '-m', 'unittest', 'discover', '-s', 'tests/lemmasim', '-v'], out / 'host-tests.log', 180)
+        for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity'):
+            command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
+                    out / f'{fixture}.log', 180)
         command(['python3', 'sim/host/check_qemu_devices.py', '--qemu', str(qemu), '--output', str(out / 'devices')], out / 'devices.log', 180)
         require_pass(out / 'devices/result.json')
         command(['python3', 'sim/host/check_qemu_medium.py', '--qemu', str(qemu), '--output', str(out / 'medium')], out / 'medium.log', 180)
@@ -284,11 +291,10 @@ def main():
         metadata = {'schema_version': 1, 'commit': before['commit'], 'core': 'lemma-one-core/0.1.0',
                     'source_tree': before['tree'], 'profile': 'lemmasim-virt/0.1.0',
                     'profile_sha256': sim.sha(ROOT / 'sim/profiles/lemmasim-virt-0.1.0.json'),
-                    'backend_sources': {str(path.relative_to(ROOT)): sim.sha(path)
-                                        for path in sorted((ROOT / 'sim/host').glob('*')) if path.is_file()},
-                    'qemu_build_recipe_sha256': sim.sha(ROOT / 'tooling/lemmasim/qemu.nix'),
-                    'qemu_patch_recipe_sha256': sim.sha(ROOT / 'tooling/lemmasim/apply_qemu.py'),
-                    'qemu': {'path': str(qemu), 'sha256': sim.sha(qemu)}}
+                    'qemu_closure': closure, 'qemu': closure['binary'],
+                    **{key: closure[key] for key in ('backend_sources', 'qemu_recipe_sha256',
+                                                     'qemu_patch_sha256', 'flake_lock_sha256')}}
+        sim.validate_backend_identity(metadata)
         metadata['notebook'] = image('lemmasim-notebook', 'O2', out)
         metadata['initializer'] = image('lemmasim-initialize', 'O2', out)
         sim.write_json(out / 'prepared.json', metadata)

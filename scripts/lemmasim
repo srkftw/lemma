@@ -11,6 +11,12 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PREPARED=ROOT/'build/lemmasim/prepared.json'
 CONFIGS={'notebook':'lemmasim-notebook','initializer':'lemmasim-initialize'}
+RTC_ORIGIN='2026-10-10T00:00:00'
+RUN_POLICY={'core':'lemma-one-core/0.1.0','binding':'lemmasim-virt/0.1.0',
+            'pressure_max':4095,'timebase_hz':10000000,'icount_shift':3,
+            'clock_policy':f'QEMU virtual clock, RTC origin{RTC_ORIGIN}, blkreplay completion ordering',
+            'close_policy':'record-SIGTERM/replay-no-shutdown/exact-instruction-boundary-v1',
+            'random_seed':'0x4c454d4d413031','media_backend':'lemma-durable/1'}
 class Failure(Exception):pass
 
 def sha(path):
@@ -30,10 +36,134 @@ def run_command(args,timeout):
         if process.poll() is None:os.killpg(process.pid,signal.SIGKILL)
         process.wait(timeout=5);raise
 
+def backend_sources():
+    return {str(p.relative_to(ROOT)):sha(p) for p in sorted((ROOT/'sim/host').glob('*')) if p.is_file()}
+
+def backend_identity(qemu,timeout=60):
+    """Bind a supplied executable to the current recipe without building it."""
+    if not 0<timeout<=300:raise Failure('Backend identity evaluation requires a bounded deadline.')
+    binary=Path(qemu).resolve()
+    if not binary.is_file() or not os.access(binary,os.X_OK):raise Failure('QEMU backend executable is missing.')
+    inputs={'qemu_recipe_sha256':sha(ROOT/'tooling/lemmasim/qemu.nix'),
+            'qemu_patch_sha256':sha(ROOT/'tooling/lemmasim/apply_qemu.py'),
+            'flake_lock_sha256':sha(ROOT/'flake.lock'),'backend_sources':backend_sources()}
+    # An attribute named outPath makes Nix JSON-coerce the whole set to that
+    # string. Use neutral keys so both independently declared paths survive.
+    expression='let backend = import (builtins.toPath '+json.dumps(str(ROOT/'tooling/lemmasim/qemu.nix'))+'); in { output = backend.outPath; derivation = backend.drvPath; }'
+    evaluated=subprocess.run(['nix-instantiate','--eval','--strict','--json','--expr',expression],
+                             cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
+    if evaluated.returncode:raise Failure('Backend identity evaluation failed: '+evaluated.stderr[-2048:].strip())
+    try:declared=json.loads(evaluated.stdout)
+    except ValueError as error:raise Failure('Backend identity evaluation returned malformed JSON.') from error
+    if not isinstance(declared,dict) or set(declared)!={'output','derivation'} or not all(isinstance(value,str) and value.startswith('/nix/store/') for value in declared.values()):
+        raise Failure('Backend identity evaluation lacks exact Nix output/derivation paths.')
+    declared={'outPath':declared['output'],'drvPath':declared['derivation']}
+    expected=Path(declared['outPath'])/'bin/qemu-system-riscv64'
+    if binary!=expected:raise Failure('Supplied QEMU is not the executable of the current LemmaSim derivation.')
+    if not Path(declared['drvPath']).is_file():raise Failure('Evaluated backend derivation is missing.')
+    result={'schema_version':1,'authority':'evaluated Nix derivation and immutable output executable',
+            **declared,'binary':{'path':str(binary),'sha256':sha(binary)},
+            'derivation_sha256':sha(declared['drvPath']),**inputs}
+    after={'qemu_recipe_sha256':sha(ROOT/'tooling/lemmasim/qemu.nix'),
+           'qemu_patch_sha256':sha(ROOT/'tooling/lemmasim/apply_qemu.py'),
+           'flake_lock_sha256':sha(ROOT/'flake.lock'),'backend_sources':backend_sources()}
+    if after!=inputs:raise Failure('Backend sources changed during identity evaluation.')
+    return result
+
+def validate_backend_identity(metadata):
+    """Validate a prepared immutable closure; ordinary launches do not run Nix."""
+    closure=metadata.get('qemu_closure')
+    if not isinstance(closure,dict) or closure.get('schema_version')!=1:
+        raise Failure('Prepared/replay backend identity is unsupported; prepare a build with a Nix closure identity.')
+    try:
+        output=Path(closure['outPath']);derivation=Path(closure['drvPath'])
+        binary=Path(metadata['qemu']['path']).resolve()
+        if not str(output).startswith('/nix/store/') or not str(derivation).startswith('/nix/store/'):
+            raise Failure('Prepared backend closure is outside the immutable Nix store.')
+        if binary!=output/'bin/qemu-system-riscv64' or closure['binary']!=metadata['qemu']:
+            raise Failure('Prepared QEMU executable differs from its recorded Nix closure.')
+        if not binary.is_file() or not os.access(binary,os.X_OK) or sha(binary)!=closure['binary']['sha256']:
+            raise Failure('Prepared QEMU executable is missing or changed.')
+        if not derivation.is_file() or sha(derivation)!=closure['derivation_sha256']:
+            raise Failure('Prepared backend derivation is missing or changed.')
+        for key in ('qemu_recipe_sha256','qemu_patch_sha256','flake_lock_sha256'):
+            value=closure[key]
+            if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value):
+                raise Failure('Prepared backend source hash is malformed.')
+            if key in metadata and metadata[key]!=value:raise Failure('Prepared backend source identities contradict.')
+        sources=closure['backend_sources']
+        if not isinstance(sources,dict) or not sources or any(not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef' for c in value) for value in sources.values()):
+            raise Failure('Prepared backend source inventory is malformed.')
+        if 'backend_sources' in metadata and metadata['backend_sources']!=sources:
+            raise Failure('Prepared backend source inventories contradict.')
+    except (KeyError,TypeError) as error:raise Failure('Prepared backend closure identity is incomplete.') from error
+    return closure
+
+def source_identity():
+    def git(*arguments):
+        return subprocess.check_output(['git',*arguments],cwd=ROOT,timeout=30)
+    status=git('status','--porcelain=v1').decode().splitlines()
+    untracked={}
+    for entry in git('ls-files','--others','--exclude-standard','-z').split(b'\0'):
+        if entry:
+            path=ROOT/os.fsdecode(entry)
+            if not path.is_file():raise Failure('Untracked source identity includes a non-file.')
+            untracked[os.fsdecode(entry)]=sha(path)
+    return {'source_commit':git('rev-parse','HEAD').decode().strip(),
+            'source_tree':git('rev-parse','HEAD^{tree}').decode().strip(),
+            'source_clean':not status,'dirty_paths':status,
+            'working_tree_diff_sha256':hashlib.sha256(git('diff','--binary','HEAD')).hexdigest(),
+            'untracked_source_sha256':untracked}
+
+def guest_artifact_identity(image,require_capacity=False):
+    """Identify the small fixed artifact set required for an offline export."""
+    image=Path(image).absolute()
+    if any(item.is_symlink() for item in (image,*image.parents)):
+        raise Failure('Guest artifact identity refuses symlinked paths.')
+    image=image.resolve()
+    if image.name!='image.elf':raise Failure('Guest artifact identity requires the built image.elf.')
+    names=('image.elf','build.json','provenance.json','audit.json')+(('capacity.json',) if require_capacity else ())
+    artifacts={}
+    for name in names:
+        path=image.parent/name
+        if any(item.is_symlink() for item in (path,*path.parents)) or not path.is_file():
+            raise Failure('Guest artifact is missing or symlinked: '+name)
+        artifacts[name]={'path':str(path),'sha256':sha(path)}
+    return artifacts
+
+def validate_guest_artifact_identity(entry,require_capacity=False):
+    artifacts=entry.get('artifacts')
+    required={'image.elf','build.json','provenance.json','audit.json'}|({'capacity.json'} if require_capacity else set())
+    if not isinstance(artifacts,dict) or set(artifacts)!=required:
+        raise Failure('Offline export guest artifact identity is unsupported or incomplete; prepare a new identified build.')
+    try:
+        original_image=Path(entry['path'])
+        if any(item.is_symlink() for item in (original_image,*original_image.parents)):
+            raise Failure('Offline export guest image is symlinked.')
+        image=original_image.resolve()
+        if entry['sha256']!=artifacts['image.elf']['sha256'] or str(image)!=artifacts['image.elf']['path']:
+            raise Failure('Offline export guest image identities contradict.')
+        paths=[]
+        for name,item in sorted(artifacts.items()):
+            path=Path(item['path'])
+            if not path.is_absolute() or path.name!=name or path.parent!=image.parent:
+                raise Failure('Offline export artifact is not the identified adjacent build file.')
+            if any(part.is_symlink() for part in (path,*path.parents)) or not path.is_file():
+                raise Failure('Offline export guest artifact is missing or symlinked.')
+            if path.stat().st_size>256*1024*1024 or sha(path)!=item['sha256']:
+                raise Failure('Offline export guest artifact is oversized or changed.')
+            paths.append((path,name))
+        for name,key in (('build.json','build_sha256'),('audit.json','audit_sha256')):
+            if key in entry and entry[key]!=artifacts[name]['sha256']:
+                raise Failure('Offline export build/audit identities contradict.')
+        return paths
+    except (KeyError,TypeError) as error:raise Failure('Offline export guest artifact identity is malformed.') from error
+
 def prepared():
     try:metadata=json.loads(PREPARED.read_text())
     except (OSError,ValueError) as error:raise Failure('Build once with scripts/lemmasim build before launching.') from error
     if metadata.get('schema_version')!=1:raise Failure('Unsupported prepared build manifest.')
+    validate_backend_identity(metadata)
     for key in ('qemu','notebook','initializer'):
         path=Path(metadata[key]['path'])
         if not path.is_file() or sha(path)!=metadata[key]['sha256']:raise Failure(f'Prepared {key} is missing or changed.')
@@ -47,16 +177,16 @@ def lock_disk(path):
         yield stream
 
 def build(args):
-    identity=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    source_before=source_identity();identity=source_before['source_commit']
     stamp=f'{identity[:12]}-{time.time_ns()}'
-    backend_before={str(p.relative_to(ROOT)):sha(p) for p in sorted((ROOT/'sim/host').glob('*')) if p.is_file()}
     qemu_link=ROOT/'build/lemmasim/qemu'
     run_command(['nix','build','--no-write-lock-file','--file','tooling/lemmasim/qemu.nix','--out-link',str(qemu_link)],2400)
     qemu=(qemu_link/'bin/qemu-system-riscv64').resolve()
     if not qemu.is_file():raise Failure('QEMU derivation produced no executable.')
+    closure=backend_identity(qemu)
     metadata={'schema_version':1,'commit':identity,'profile':'lemmasim-virt/0.1.0','core':'lemma-one-core/0.1.0',
-              'qualification':'UNQUALIFIED until exact candidate acceptance completes',
-              'qemu':{'path':str(qemu),'sha256':sha(qemu)}}
+              'qualification':'UNQUALIFIED until exact candidate acceptance completes' if source_before['source_clean'] else 'UNQUALIFIED_DIRTY_SOURCE',
+              **source_before,'qemu':closure['binary'],'qemu_closure':closure}
     for key,configuration in CONFIGS.items():
         out=ROOT/f'build/kernel/lemmasim-{key}-{stamp}-{args.opt_level}'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
@@ -74,9 +204,10 @@ def build(args):
                          '--output',str(out/'capacity.json')],120)
             if json.loads((out/'capacity.json').read_text()).get('status')!='PASS':raise Failure('Guest selected stack/capacity audit did not pass.')
         metadata[key]={'path':str(image),'sha256':sha(image),'build_sha256':sha(out/'build.json'),
-                       'audit_sha256':sha(out/'audit.json')}
-    metadata['backend_sources']={str(p.relative_to(ROOT)):sha(p) for p in sorted((ROOT/'sim/host').glob('*')) if p.is_file()}
-    if metadata['backend_sources']!=backend_before:raise Failure('Host hardware sources changed during preparation.')
+                       'audit_sha256':sha(out/'audit.json'),
+                       'artifacts':guest_artifact_identity(image,require_capacity=key=='notebook')}
+    metadata.update({key:closure[key] for key in ('backend_sources','qemu_recipe_sha256','qemu_patch_sha256','flake_lock_sha256')})
+    if source_identity()!=source_before:raise Failure('Source inputs changed during preparation; no prepared manifest was published.')
     metadata['profile_sha256']=sha(ROOT/'sim/profiles/lemmasim-virt-0.1.0.json')
     write_json(PREPARED,metadata)
     print('Prepared native guest images and host devices; launch does not rebuild dependencies.')
@@ -133,7 +264,34 @@ def validated_faults(faults,mode):
     if result.get('delay-after-ns',0) and not result.get('delay-write-ns',0):raise Failure('A write-delay threshold requires a duration.')
     return result
 
-def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,until_view=None,mode="student"):
+def validate_replay_policy(identity,original,process):
+    for key,expected in RUN_POLICY.items():
+        if type(identity.get(key)) is not type(expected) or identity[key]!=expected:
+            raise Failure('Unsupported or contradictory frozen replay policy: '+key)
+    mode=identity.get('mode')
+    if mode not in ('student','developer','laboratory') or original.get('mode')!=mode or process.get('mode')!=mode:
+        raise Failure('Replay mode contradicts its recorded process/result.')
+    if process.get('recording') is not True or process.get('replaying') is not False:
+        raise Failure('Replay source lacks an actual recording process identity.')
+    geometry=identity.get('geometry')
+    if geometry not in ('1650x2200','1404x1872') or original.get('geometry')!=list(map(int,geometry.split('x'))):
+        raise Failure('Replay geometry contradicts its recorded result.')
+    faults=validated_faults(identity.get('fault_inputs',{}),mode)
+    if original.get('fault_inputs')!=faults:raise Failure('Replay device faults contradict their recorded result.')
+    metadata=identity['build']
+    if metadata.get('core')!=RUN_POLICY['core'] or metadata.get('profile')!=RUN_POLICY['binding'] or original.get('build_identity')!=metadata:
+        raise Failure('Replay build identity contradicts its recorded result.')
+    argv=original.get('argv')
+    if not isinstance(argv,list) or not argv or argv[0]!=metadata['qemu']['path']:
+        raise Failure('Replay backend executable contradicts its recorded launch.')
+    for key,expected in (('guest_sha256',metadata['notebook']['sha256']),
+                         ('initial_media_sha256',identity['initial_media_sha256']),
+                         ('media_backend',RUN_POLICY['media_backend']),('random_seed',RUN_POLICY['random_seed']),
+                         ('machine_descriptor_sha256',identity.get('machine_descriptor_sha256')),
+                         ('actual_boot_dtb_sha256',identity.get('actual_boot_dtb_sha256'))):
+        if not expected or original.get(key)!=expected:raise Failure('Replay identity contradicts its recorded '+key+'.')
+
+def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,until_view=None,mode="student",expected_initial=None):
     faults=validated_faults(faults,mode)
     width,height=map(int,geometry.split('x'))
     if (width,height) not in ((1650,2200),(1404,1872)):raise Failure('Unsupported geometry instance.')
@@ -147,9 +305,9 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
         control_socket=socket_directory/'control.qmp'
     image=Path(metadata['initializer' if initializer else 'notebook']['path'])
     command=[metadata['qemu']['path'],'-machine','lemmasim-virt','-m','128M','-smp','1','-cpu','rv64,smrnmi=false,smdbltrp=false',
-             '-accel','tcg','-seed','0x4c454d4d413031','-nodefaults','-bios','none','-kernel',str(image),'-display','none' if headless else 'gtk',
+             '-accel','tcg','-seed',RUN_POLICY['random_seed'],'-nodefaults','-bios','none','-kernel',str(image),'-display','none' if headless else 'gtk',
              '-monitor','none','-serial',f'file:{out}/serial.bin','-qmp',f'unix:{control_socket},server=on,wait=off',
-             '-rtc','base=2026-10-10T00:00:00,clock=vm','-global','virtio-mmio.force-legacy=false',
+             '-rtc',f'base={RTC_ORIGIN},clock=vm','-global','virtio-mmio.force-legacy=false',
              '-global',f'lemma-paper-pen.width={width}','-global',f'lemma-paper-pen.height={height}',
              '-global',f'lemma-paper-pen.trace-file={out}/devices.jsonl',
              '-global',f'lemma-paper-pen.raw-output={out}/raw.bin']
@@ -164,16 +322,16 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
         command+=['-blockdev',json.dumps({'driver':'blkreplay','image':'lemma-medium','node-name':'lemma-replay'})]
         backend='lemma-replay'
         rr_mode='record' if record else 'replay';rr=record or replay
-        command+=['-icount',f'shift=3,align=off,sleep=on,rr={rr_mode},rrfile={rr}']
+        command+=['-icount',f'shift={RUN_POLICY["icount_shift"]},align=off,sleep=on,rr={rr_mode},rrfile={rr}']
     if replay and (not isinstance(replay_boundary,int) or replay_boundary<=0):raise Failure('Replay needs an observed positive instruction boundary.')
     command+=['-S']
     if replay:command+=['-no-shutdown']
     command+=['-device',f'virtio-blk-device,drive={backend},bus=virtio-mmio-bus.0,werror=report,rerror=report']
     if raw:command+=['-global',f'lemma-paper-pen.raw-input={raw}']
     result={'schema_version':1,'status':'RUNNING','scope':'native guest notebook session, qualification separate',
-            'argv':command,'initial_media_sha256':sha(disk),'guest_sha256':sha(image),
+            'argv':command,'build_identity':metadata,'initial_media_sha256':sha(disk),'guest_sha256':sha(image),
             'host_storage_assumptions':'lemma-durable keeps completed writes in RAM; flush writes stable image then invokes QEMU host fsync; filesystem/device must honor successful flush',
-            'media_backend':'lemma-durable/1','fault_inputs':faults or {},'random_seed':'0x4c454d4d413031',
+            'media_backend':RUN_POLICY['media_backend'],'fault_inputs':faults or {},'random_seed':RUN_POLICY['random_seed'],
             'geometry':[width,height],'mode':mode,'physical_tablet_exercised':False}
     started=time.monotonic();process=None;settled=None
     try:
@@ -196,6 +354,10 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
             dtb=(out/'machine.dtb').read_bytes()
             if dtb[:4]!=b'\xd0\x0d\xfe\xed' or struct.unpack('>I',dtb[4:8])[0]!=length:raise Failure('Captured actual DTB header differs.')
             result['machine_descriptor_sha256']=sha(out/'descriptor.bin');result['actual_boot_dtb_sha256']=sha(out/'machine.dtb')
+            if expected_initial is not None:
+                for field in ('machine_descriptor_sha256','actual_boot_dtb_sha256'):
+                    if not expected_initial.get(field) or expected_initial[field]!=result[field]:
+                        raise Failure(f'Replay initial {field} identity differs; guest execution refused.')
             if replay:qmp(control_socket,'replay-break',{'icount':replay_boundary})
             qmp(control_socket,'cont')
             while process.poll() is None:
@@ -308,11 +470,10 @@ def run_locked(args):
         if out.exists():raise Failure('Recording session already exists.')
         out.mkdir(parents=True);initial=out/'initial.raw'
         shutil.copyfile(disk,initial)
-        identity={'schema_version':1,'core':metadata['core'],'binding':metadata['profile'],'build':metadata,
-                  'geometry':args.geometry,'mode':args.mode,'pressure_max':4095,'timebase_hz':10000000,'icount_shift':3,
-                  'clock_policy':'QEMU virtual clock, RTC origin2026-10-10T00:00:00, blkreplay completion ordering',
-                  'close_policy':'record-SIGTERM/replay-no-shutdown/exact-instruction-boundary-v1',
-                  'random_seed':'0x4c454d4d413031','fault_inputs':faults,'media_backend':'lemma-durable/1',
+        if metadata.get('core')!=RUN_POLICY['core'] or metadata.get('profile')!=RUN_POLICY['binding']:
+            raise Failure('Prepared build differs from the supported recording machine family.')
+        identity={'schema_version':1,**RUN_POLICY,'build':metadata,
+                  'geometry':args.geometry,'mode':args.mode,'fault_inputs':faults,
                   'initial_media_sha256':sha(initial),'claim':'UNQUALIFIED until meaningful replay comparisons pass',
                   'raw_input_sha256':sha(args.raw_input) if args.raw_input else None,
                   'input_source':'scheduled-raw-file' if args.raw_input else 'native-QEMU-input'}
@@ -333,12 +494,17 @@ def replay(args):
     session=args.session.resolve();identity=json.loads((session/'identity.json').read_text());metadata=identity['build']
     if identity.get('schema_version')!=1 or identity.get('binding')!='lemmasim-virt/0.1.0':raise Failure('Unsupported session identity.')
     if identity.get('close_policy')!='record-SIGTERM/replay-no-shutdown/exact-instruction-boundary-v1':raise Failure('Unsupported replay closing policy.')
+    disk=args.disk_copy.resolve()
+    if disk.exists() or disk==session/'initial.raw':raise Failure('Replay requires a fresh disk copy path.')
+    if disk.is_relative_to(session):raise Failure('Replay disk copy must be outside the original session tree.')
+    validate_backend_identity(metadata)
+    original=json.loads((session/'run/result.json').read_text())
+    process=json.loads((session/'run/process.json').read_text())
+    validate_replay_policy(identity,original,process)
     for key in ('qemu','notebook'):
         if sha(metadata[key]['path'])!=metadata[key]['sha256']:raise Failure(f'Replay {key} identity differs.')
     initial=session/'initial.raw'
     if sha(initial)!=identity['initial_media_sha256']:raise Failure('Initial media identity differs.')
-    disk=args.disk_copy.resolve()
-    if disk.exists() or disk==initial:raise Failure('Replay requires a fresh disk copy path.')
     out=ROOT/f'build/lemmasim/replay-{time.time_ns()}'
     if (session/'controls.jsonl').exists():raise Failure('External Developer changes invalidate this unmodified-run replay claim.')
     if not identity.get('rr_sha256') or sha(session/'qemu.rr')!=identity['rr_sha256']:raise Failure('QEMU replay stream is missing, incomplete or changed.')
@@ -349,12 +515,15 @@ def replay(args):
         if sha(raw)!=identity['raw_input_sha256']:raise Failure('Scheduled raw input identity differs.')
     elif identity.get('input_source')=='native-QEMU-input':raw=None
     else:raise Failure('Replay external input source is unspecified.')
-    original=json.loads((session/'run/result.json').read_text())
+    if identity.get('input_source')=='native-QEMU-input' and identity.get('raw_input_sha256') is not None:
+        raise Failure('Native replay identity contradicts a scheduled raw input hash.')
+    for field,name in (('machine_descriptor_sha256','descriptor.bin'),('actual_boot_dtb_sha256','machine.dtb')):
+        if sha(session/'run'/name)!=identity[field]:raise Failure('Recorded initial '+field+' bytes differ.')
     if original.get('status') not in ('CLOSED','HOST_STOPPED_AT_DEADLINE'):raise Failure('Incomplete or power-cut recordings do not establish exact replay.')
     boundary=original.get('replay_boundary',{}).get('icount')
     if not isinstance(boundary,int) or boundary<=0:raise Failure('Missing positive recorded instruction boundary.')
     disk.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(initial,disk)
-    result=launch(metadata,disk,out,geometry=identity['geometry'],headless=True,replay=session/'qemu.rr',raw=raw,timeout=args.timeout,faults=identity.get('fault_inputs',{}),replay_boundary=boundary,mode=identity.get('mode','developer'))
+    result=launch(metadata,disk,out,geometry=identity['geometry'],headless=True,replay=session/'qemu.rr',raw=raw,timeout=args.timeout,faults=identity.get('fault_inputs',{}),replay_boundary=boundary,mode=identity.get('mode','developer'),expected_initial=identity)
     if original.get('status') not in ('CLOSED','HOST_STOPPED_AT_DEADLINE'):raise Failure('Incomplete or power-cut recordings do not establish exact replay.')
     if sha(session/'qemu.rr')!=identity['rr_sha256'] or sha(initial)!=identity['initial_media_sha256']:raise Failure('Replay changed original session/media identities.')
     compared={}
@@ -415,9 +584,18 @@ def copy_image(args):
 def archive_session(args):
     session=args.session.resolve();destination=args.to.resolve()
     if destination.exists():raise Failure('Archive destination already exists.')
+    if destination.is_relative_to(session):raise Failure('Archive destination must be outside the original session tree.')
     result_path=session/'run/result.json' if (session/'run/result.json').is_file() else session/'result.json'
     result=json.loads(result_path.read_text())
     if result.get('process_reaped') is not True:raise Failure('Archive requires a closed, reaped session.')
+    identity=session/'identity.json'
+    metadata=json.loads(identity.read_text()).get('build') if identity.is_file() else result.get('build_identity')
+    if not isinstance(metadata,dict):raise Failure('Offline export build identity is unsupported; older observations are retained but lack identified guest artifacts.')
+    validate_backend_identity(metadata)
+    guest_files=[]
+    for role in ('notebook','initializer'):
+        if role not in metadata:raise Failure('Offline export lacks an identified guest '+role+'.')
+        guest_files.extend((path,'artifacts/'+role+'/'+name) for path,name in validate_guest_artifact_identity(metadata[role],require_capacity=role=='notebook'))
     files=[];excluded=[]
     for path in sorted(session.rglob('*')):
         if path.is_symlink():raise Failure('Session archive refuses symlinked inputs.')
@@ -428,6 +606,15 @@ def archive_session(args):
     if not files:raise Failure('Empty session cannot be archived.')
     inventory={'schema_version':1,'scope':'offline LemmaSim evidence export; no live media recovery',
                'session_status':result['status'],'excluded_nonfiles':excluded,
+               'export_scope':{'initial_media':'included when initial.raw is a listed session file',
+                               'record_replay':'included when qemu.rr and its identity are listed session files',
+                               'guest_builds':'identified notebook/initializer ELFs and fixed build records included',
+                               'final_working_media':'external working image is not copied; preserve it separately with an offline image copy',
+                               'committed_records':'included only when already exported into listed session files',
+                               'native_host_runtime':'recorded Nix closure identity only; runtime dependencies are not bundled',
+                               'portable_runtime_installer':False},
+               'backend_closure':metadata['qemu_closure'],
+               'guest_artifacts':[{'path':relative,'identified_path':str(path),'bytes':path.stat().st_size,'sha256':sha(path)} for path,relative in guest_files],
                'retention':{'offline_archive':'owner-controlled; preserve this file outside build/',
                             'github_actions_configured_days':14,'permanent_remote_archive':'NOT_CONFIGURED'},
                'files':[{'path':relative,'bytes':path.stat().st_size,'sha256':sha(path)} for path,relative in files]}
@@ -435,6 +622,11 @@ def archive_session(args):
     try:
         with tarfile.open(destination,'x:gz') as archive:
             for path,relative in files:archive.add(path,arcname='session/'+relative,recursive=False)
+            for path,relative in guest_files:archive.add(path,arcname=relative,recursive=False)
+            for observed,(path,_) in zip(inventory['files'],files):
+                if sha(path)!=observed['sha256']:raise Failure('Session input changed during offline export.')
+            for observed,(path,_) in zip(inventory['guest_artifacts'],guest_files):
+                if sha(path)!=observed['sha256']:raise Failure('Guest artifact changed during offline export.')
             payload=(json.dumps(inventory,indent=2)+'\n').encode();info=tarfile.TarInfo('inventory.json');info.size=len(payload)
             archive.addfile(info,io.BytesIO(payload))
     except BaseException:

@@ -1,8 +1,9 @@
 # Source map
 
-Tasks 001 and 002 implement the bounded Core0/compiler/machine foundation below.
-Runtime, kernel and service rows remain naming guidance for later stages and must
-not be read as implemented subsystems.
+Tasks001/002 implement the bounded Core0/compiler/machine foundation. Task003
+adds the tested owned-page supervisor/User kernel and volatile service. Task004
+adds the explicit LemmaSim hardware binding and durable notebook. Runtime,
+mathematics and tutor rows remain naming guidance, not implemented subsystems.
 
 | Area | Intended responsibility |
 | --- | --- |
@@ -11,8 +12,15 @@ not be read as implemented subsystems.
 | `Lemma/Machine/` | Machine primitives, target layout, startup generation |
 | `Lemma/Runtime/` | Stage II runtime; do not stub it in task 001 |
 | `Lemma/Kernel/` | Tasks, memory, capabilities, scheduling |
-| `Lemma/Services/` | IPC, storage, display/input and networking |
-| `Lemma/Ink/` | Stroke/document editing and deterministic replay |
+| `Lemma/Services/Store/` | Guest block-backed record engine, codecs, isolated service and client protocol |
+| `Lemma/Drivers/` | Lean VirtIO block, PLIC, paper and pen hardware drivers |
+| `Lemma/Platform/LemmaSim/` | Descriptor/DTB validation, bounded device mediation and isolated deployments |
+| `Lemma/Ink/` | Integer geometry, pressure-aware tile rasterization and owned Gray4 surface |
+| `Lemma/Documents/Ink.lean` | Versioned raw provenance, page indices and stable-ID edits |
+| `Lemma/Applications/Notebook.lean` | Guest toolbar, streamed pages, live ink and asynchronous commit state |
+| `sim/host/` | Host-only QEMU hardware models/adapters; no guest notebook or recovery algorithms |
+| `sim/profiles/` | Versioned machine-readable reference binding |
+| `conformance/lemmasim/` | Independent offline observations/oracles and raw input fixtures |
 | `Lemma/Verify/` | Exact checkers, proof checking and evidence |
 | `Lemma/Learn/` | Content, prerequisites, learner observations/policy |
 | `Lemma/Tutor/` | Permissioned remote assistance |

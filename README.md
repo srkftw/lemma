@@ -318,12 +318,14 @@ authorization. The reviewed Task002 integration is
 documents from [PR #4](https://github.com/srkftw/lemma/pull/4). Both task
 branches remain available. Check GitHub for live revision and merge status.
 
-For current kernel work, select `task/003-kernel-isolated-services` and read
-its assignment, gate ledger and resume checkpoint. The accepted Task 003
-integration is A–K at `14cc79be8914a349b729347cc05091aba6ac7ca7`, with a draft
-[PR #3](https://github.com/srkftw/lemma/pull/3) against current main. The owner
-authorized a guarded merge after the report-bearing head's checks pass.
-This report snapshot precedes that final merge and post-merge CI. See
+Current notebook work uses `task/004-lemmasim-durable-ink` and draft
+[PR #5](https://github.com/srkftw/lemma/pull/5). Its assignment is
+[Task004](codex/prompts/004-lemmasim-durable-ink.md); resume from its checkpoint
+above. This task has a draft/review boundary and no merge authorization.
+The Task003 A–K implementation is
+`14cc79be8914a349b729347cc05091aba6ac7ca7`, subsequently merged through
+[PR #3](https://github.com/srkftw/lemma/pull/3). Task004 started from reviewed
+main `504f6e462e502d93192ba689d16d8552ca1e68b5`. See the separately identified
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

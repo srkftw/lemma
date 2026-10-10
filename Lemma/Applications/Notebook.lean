@@ -78,6 +78,24 @@ def readObject (object target length : UInt64) : Action :=
   .boundedFoldU64 256 readPartStep ((length + 127) / 128).toUInt32 0 object target length 0 fun s n => .done s n
   else .done 234 0
 
+/-- Check the resident edit cursor before changing visibility or adding an
+operation. A new operation may replace a redo suffix, but never exceed512. -/
+def preflightEdit (buffer : UInt64) : Action :=
+  .bind (Lemma.Documents.Ink.field buffer 40) fun s edits => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Ink.field buffer 48) fun s cursor => if statusFailed s = true then .done s 0 else
+  if 512 < edits then .done 234 0 else if edits < cursor then .done 234 0 else
+  if cursor = 512 then .done 235 0 else .done 0 cursor
+
+/-- Reserve logical index capacity before publishing an immutable chunk.
+Only the first chunk needs a new edit; continuations share its stroke/edit ID.
+This read-only preflight does not advance IDs or alter resident records. -/
+def preflightChunk (buffer starting : UInt64) : Action :=
+  if 1 < starting then .done 234 0 else
+  .bind (Lemma.Documents.Ink.field buffer 32) fun s count => if statusFailed s = true then .done s 0 else
+  if 512 < count then .done 234 0 else if count = 512 then .done 235 0 else
+  if starting = 0 then .done 0 count else
+  .bind (preflightEdit buffer) fun s _ => .done s count
+
 private def setPixel (x y color : UInt64) : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
@@ -384,6 +402,7 @@ private def finishRecord : Action :=
     .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.field source 32) fun s stroke => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.field source 112) fun s lifecycle => if statusFailed s = true then .done s 0 else
+    .bind (preflightChunk pageIndex (lifecycle &&& 1)) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.addEntry pageIndex object stroke) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (if lifecycle &&& 1 = 1 then Lemma.Documents.Ink.addEdit pageIndex 1 stroke else .done 0 0)
       fun s _ => if statusFailed s = true then .done s 0 else
@@ -414,6 +433,21 @@ private def saveFailure (status : UInt8) : Action :=
   .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
   .bind (reportCommitState 0x424 status.toUInt64 object) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
 
+private def cancelInput : Action :=
+  .bind (put 104 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 112 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 296 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 304 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 408 0) fun s _ => if statusFailed s = true then .done s 0 else
+  put 432 1
+
+/-- A declared representation limit stops the unsaved tail and resynchronizes
+contact. The previous resident/persistent page stays available; the loop keeps
+running to publish Failed and its recovery refresh rather than exiting User. -/
+def failWriting (status : UInt8) : Action :=
+  .bind cancelInput fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 144 0) fun s _ => if statusFailed s = true then .done s 0 else saveFailure status
+
 private def pumpSave : Action :=
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
   if phase = 0 then .done 0 0 else
@@ -429,7 +463,9 @@ private def pumpSave : Action :=
     .bind (get 184) fun s offset => if statusFailed s = true then .done s 0 else
     .bind (get 448) fun s count => if statusFailed s = true then .done s 0 else
     .bind (put 184 (offset + count)) fun s _ => if statusFailed s = true then .done s 0 else issueNext
-  else if phase = 3 then finishRecord else if phase = 4 then
+  else if phase = 3 then
+    .bind finishRecord fun s value => if statusFailed s = true then failWriting s else .done 0 value
+  else if phase = 4 then
     .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
     .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
@@ -461,6 +497,8 @@ private def enqueue : Action :=
   .bind (get 120) fun s source => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Ink.field source 112) fun s lifecycle => if statusFailed s = true then .done s 0 else
+  .bind (preflightChunk pageIndex (lifecycle &&& 1)) fun s _ =>
+  if statusFailed s = true then failWriting s else
   .bind (Lemma.Documents.Ink.finishChunk source count (lifecycle ||| (if active = 0 then 2 else 0)))
     fun s bytes => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
@@ -491,6 +529,7 @@ private def editPage (operation : UInt64) : Action :=
     .bind (Lemma.Documents.Ink.field pageIndex 32) fun s count => if statusFailed s = true then .done s 0 else
     .boundedFoldU64 512 latestVisibleStep count.toUInt32 0 0 0 0 0 fun s stroke =>
     if statusFailed s = true then .done s 0 else if stroke = 0 then .done 0 0 else
+    .bind (preflightEdit pageIndex) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.visibility pageIndex stroke 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.addEdit pageIndex 2 stroke) fun s _ => .done s stroke)
     fun s changed => if statusFailed s = true then saveFailure s else
@@ -544,10 +583,11 @@ private def toolbar (button : UInt64) : Action :=
   else .done 0 0
 
 private def beginStroke : Action :=
+  .bind (preflightChunk pageIndex 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
   .bind (get 96) fun s next => if statusFailed s = true then .done s 0 else
   let stroke := maximum next (sequence + 1)
-  if 0x7ffffffffffffffe ≤ stroke then saveFailure 235 else
+  if 0x7ffffffffffffffe ≤ stroke then .done 235 0 else
   .bind (get 120) fun s buffer => if statusFailed s = true then .done s 0 else
   .bind (prepareChunk buffer stroke 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 96 (stroke + 1)) fun s _ => if statusFailed s = true then .done s 0 else
@@ -567,14 +607,6 @@ private def appendRaw : Action :=
   else .bind (renderPair buffer (if count = 0 then sample else sample - 72) sample 1) fun s _ =>
     if statusFailed s = true then .done s 0 else
     if count + 1 = 384 then enqueue else .done 0 0
-
-private def cancelInput : Action :=
-  .bind (put 104 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 112 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 296 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 304 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 408 0) fun s _ => if statusFailed s = true then .done s 0 else
-  put 432 1
 
 private def pumpCancelledRedraw : Action :=
   .bind (get 432) fun s needed => if statusFailed s = true then .done s 0 else
@@ -624,7 +656,7 @@ where
     let py := Geometry.pixel (Geometry.normalized y maxY) height
     if py < 128 then toolbar (minimum 7 (px / (width / 8))) else
     if py < 160 then .done 0 0 else
-    .bind beginStroke fun s _ => if statusFailed s = true then .done s 0 else appendRaw
+    .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
 
 private def step : Action :=
   .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else

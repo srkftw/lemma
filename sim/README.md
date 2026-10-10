@@ -1,11 +1,31 @@
 # LemmaSim
 
-Permanent, first-class virtual Lemma One. **Status: architectural scaffold; no complete simulated device implemented here yet.**
+Permanent virtual Lemma One. Task004 implements the native reference binding,
+project-owned pen/paper devices and volatile/durable block transport, with a
+compiled Lean notebook and isolated record service. Complete candidate
+qualification is in progress; see the [checkpoint](../docs/plan/004-session-state.md).
 
 The canonical machine contract is [../LEMMA_MACHINE_CONTRACT.md](../LEMMA_MACHINE_CONTRACT.md). Historic tested QEMU `virt` boot profiles remain in [../docs/contracts/LEMMA_VM.md](../docs/contracts/LEMMA_VM.md).
 
-Planned runtime: emulated RV64 and board, device models for storage/reset/power/pen/display/connectivity, a host drawing-tablet bridge feeding *guest-visible digitizer events*, and a rendered virtual e-paper surface driven by the *guest controller protocol*. Student, Developer and Laboratory modes share machine behavior; Developer/Laboratory expose inspection, replay and fault controls.
+The separately pinned QEMU `lemmasim-virt` runs the real M/S/U RV64 path.
+Host pointer or recorded samples enter the pen FIFO and PLIC; guest drivers,
+ink, rasterization and toolbar produce controller pixels. The record service
+uses guest VirtIO writes and flush publication. The host never draws strokes,
+parses live documents or reconstructs a notebook for recovery. Student,
+Developer and Laboratory modes share that machine. Developer controls and
+Laboratory faults operate outside guest authority.
 
-Implementation must separately document device register maps, state transitions, version identifiers, virtual-time event ordering, failure semantics and external input recording. Underlying QEMU, Renode, RTL or circuit simulators are implementation choices; none substitutes for interface conformance. Physical-only modeling (thermals, electrical characteristics, optical/tactile feel) is outside the functional equivalence guarantee.
+The [profile](profiles/lemmasim-virt-0.1.0.json),
+[descriptor/register ABI](../docs/contracts/004-devices-v1.md),
+[block medium](../docs/contracts/004-block-medium-v1.md) and
+[host boundary](host/README.md) bind discovery, state transitions, virtual
+timing, failure and capture. The maintained command is `scripts/lemmasim`;
+ordinary launch uses prepared tools/images and an existing persistent disk.
+See the [runnable workflow](../README.md#task004-lemmasim-implementation-checkpoint).
 
-No simulator executables or tests are asserted to exist by this README. See [../docs/plan/LEMMASIM.md](../docs/plan/LEMMASIM.md).
+Headless and native display consume the same controller state. Mouse pressure
+and refresh timing are synthetic. Native manual/tablet input has not been
+exercised in the development evidence. Physical conformance remains unverified;
+networking, managed Lean runtime, mathematics/tutor and whole-machine snapshots
+remain outside this implementation. The future machine is governed by
+[LEMMASIM.md](../docs/plan/LEMMASIM.md), not completed by this bounded notebook.

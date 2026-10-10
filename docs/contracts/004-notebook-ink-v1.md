@@ -148,6 +148,16 @@ pages per notebook, and the underlying service's independent object/disk limits;
 limits produce explicit errors. The 16-page/100,000-sample workload fits these
 representation bounds but requires its own observed end-to-end acceptance.
 Changing brush width publishes its new root through the same transaction path.
+Chunk admission checks the resident entry capacity before any document begin or
+commit. A new stroke also checks edit capacity; a continuation reuses the first
+chunk's edit. Erase checks its edit cursor before changing visibility. A redo
+suffix may be replaced when the cursor still has room. Bounds are checked again
+before the completed chunk mutates the resident index. Limit235 cancels the
+unsaved tail, resynchronizes contact, preserves prior indexed/root bytes and the
+acknowledged sequence, and keeps the guest loop alive in FAILED state with a
+recovery repaint. It does not acknowledge an unindexable chunk or silently erase
+an older committed stroke. Restart remains the way to reopen after this failure;
+this bounded consumer has no history-compaction UI.
 Guest diagnostic record `0x423` reports Pending with the expected store sequence,
 page, namespace and object; `0x424` reports Save failed with its error, page,
 namespace and object. Opening unformatted/damaged media also reports its error

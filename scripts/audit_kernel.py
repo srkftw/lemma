@@ -2717,6 +2717,7 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Services.Store.Server.application': ('user',9,['u64']*3,['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[2,3,4,5,6,7,9,10]),
     'Lemma.Applications.Notebook.toolbar': ('user',8,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(8))),
     'Lemma.Ink.Surface.glyph': ('user',7,['u64'],[],list(range(7))),
+    'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
@@ -2724,6 +2725,7 @@ LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Server.application': {'store'},
     'Lemma.Applications.Notebook.toolbar': {'notebook'},
     'Lemma.Ink.Surface.glyph': {'notebook'},
+    'Lemma.Applications.Notebook.statusCharacter': {'notebook'},
 }
 
 
@@ -2857,6 +2859,36 @@ def _jump_assembly_function(assembly: str, symbol: str) -> tuple[list[tuple[str,
     return instructions,labels
 
 
+def _jump_status_default(optimized_body: str, assembly: str, symbol: str,
+                         targets: list[str], cases: list[int]) -> dict:
+    """Check the authored footer's two sparse slots independently in IR/code."""
+    switches=re.findall(r'switch i64 %arg1, label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',optimized_body,re.S)
+    selected=[(default,block) for default,block in switches
+              if sorted(int(value) for value in re.findall(r'i64 (-?\d+), label',block))==cases]
+    if cases!=[10,11,13,14,15,17,18] or len(targets)!=9 or len(selected)!=1:
+        raise Core0Error('notebook footer lacks its exact index/default switch')
+    from audit_memory import _parse_blocks
+    blocks=_parse_blocks('\n'.join(line.split(';',1)[0] for line in optimized_body.splitlines()),symbol)
+    default,_=selected[0]
+    lines=blocks.get(default,[])
+    branch=re.fullmatch(r'br label %([A-Za-z0-9_.$-]+)',lines[0]) if len(lines)==1 else None
+    returned=blocks.get(branch[1],[]) if branch else []
+    phi=(re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = phi i64 (.+)',returned[0])
+         if len(returned)==2 else None)
+    if (phi is None or returned[1]!='ret i64 '+phi[1]
+        or len(re.findall(r'\[ 32, %'+re.escape(default)+r' \]',phi[2]))!=1):
+        raise Core0Error('notebook footer default does not return the authored space32')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    holes=[12,16]
+    machine_default=targets[2]
+    if targets[6]!=machine_default or machine_default not in labels:
+        raise Core0Error('notebook footer holes do not share one local default')
+    at=labels[machine_default]
+    if code[at:at+2]!=[('li',['a0','32']),('ret',[])]:
+        raise Core0Error('notebook footer machine default does not return space32')
+    return {'holes':holes,'llvm_default':default,'machine_default':machine_default,'default_value':32}
+
+
 def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
                          *, source: str | None = None, configuration: str | None = None, image_key: str | None = None) -> dict:
     """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
@@ -2881,10 +2913,11 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    if len(jumps)!=1 or not use+4<=jumps[0]<=use+5 or code[jumps[0]]!=('jr',[target]):
+    if len(jumps)!=1 or not use+4<=jumps[0]<=use+6 or code[jumps[0]]!=('jr',[target]):
         raise Core0Error('jump table has an unknown or unbound indirect transfer')
     jump=jumps[0]
     reload = None
+    literal = None
     if jump==use+5:
         intervening=code[use+4]
         if intervening[0]=='li' and intervening[1][0]!=target:
@@ -2901,13 +2934,43 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                     'loaded_register':'a2','preserved_target_register':'a0'}
         else:
             raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
+    elif jump==use+6:
+        if (source=='Lemma.Ink.Surface.glyph' and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS
+            and image_key=='notebook' and count==7 and minimum==0
+            and index==scaled==address=='a0' and base==target=='a1'
+            and code[:2]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)'])]
+            and code[use+4:jump]==[('lui',['a0','3']),('addiw',['a0','a0','-1566'])]):
+            # This exact authored arrow is the preloaded return value for its
+            # local merge block. The two instructions preserve the loaded a1
+            # branch target; no other source, image, literal or register shape
+            # gains a two-instruction exception.
+            literal={'instructions':['lui a0,3','addiw a0,a0,-1566'],
+                     'value':0x29e2,'loaded_register':'a0','preserved_target_register':'a1'}
+        else:
+            raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     guards=[]
+    hoisted=None
     for i in range(max(0,use-8),use-1):
         op,args=code[i]
         if op=='bltu' and len(args)==3 and args[1]==index:
             prior=[j for j in range(max(0,i-3),i) if code[j]==('li',[args[0],str(count-1)])]
             if len(prior)==1 and all(code[j][1][:1]!=[args[0]] for j in range(prior[0]+1,i)):
                 guards.append(i)
+            elif (source=='Lemma.Applications.Notebook.statusCharacter'
+                  and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+                  and count==9 and minimum==10 and index==scaled==target=='a1' and base==address=='a0'
+                  and code[0]==('li',['a5','8']) and args[:2]==['a5','a1']
+                  and code[1][0]=='bltu' and code[1][1][:2]==['a5','a1']
+                  and labels.get(code[1][1][-1])==i-1
+                  and code[i-1]==('addi',['a1','a1','-10'])
+                  and all(operation in {'li','beq','bnez','bgeu','slli','auipc','addi','j'}
+                          and words[:1]!=['a5'] for operation,words in code[2:i])):
+                # Only this pure notebook footer reuses its entry index bound
+                # after the exact local normalization. The entry branch, one
+                # preserved definition and normalizing target are all bound.
+                guards.append(i)
+                hoisted={'instruction':'li a5,8','definition_instruction':0,
+                         'preserved_register':'a5','normalized_index_register':'a1'}
     if len(guards)!=1: raise Core0Error('jump table lacks the exact unsigned index bound')
     guard=guards[0]
     # Every instruction between the guard and scale preserves the bounded index.
@@ -2943,7 +3006,9 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
     return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
-                **({'target_preserving_reload':reload} if reload is not None else {}))
+                **({'target_preserving_reload':reload} if reload is not None else {}),
+                **({'target_preserving_literal':literal} if literal is not None else {}),
+                **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 
 
 def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation_text: str,
@@ -3031,7 +3096,10 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                                            owner['name'], targets, spec[4])
                        if source == 'Lemma.Kernel.Development.FramesEntry.operation' else
                        _jump_service_default(optimized_ir,assembly,owner['name'],targets,spec[4],unit)
-                       if source == 'Lemma.Kernel.Development.ServiceEntry.command' else None)
+                       if source == 'Lemma.Kernel.Development.ServiceEntry.command' else
+                       _jump_status_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
+                                            owner['name'],targets,spec[4])
+                       if source == 'Lemma.Applications.Notebook.statusCharacter' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
             rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
