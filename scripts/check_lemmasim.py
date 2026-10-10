@@ -300,7 +300,7 @@ def main():
                  '--output', str(out / 'store-cache')], out / 'store-cache.log', 300)
         require_pass(out / 'store-cache/result.json')
         for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
-                        'PaperRecovery', 'RasterizerReference', 'PacketCopies'):
+                        'PaperRecovery', 'RasterizerReference', 'PacketCopies', 'InkHeaders'):
             command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
                     out / f'{fixture}.log', 180)
         command(['python3', 'sim/host/check_qemu_devices.py', '--qemu', str(qemu), '--output', str(out / 'devices')], out / 'devices.log', 180)

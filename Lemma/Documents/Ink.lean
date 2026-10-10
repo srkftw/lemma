@@ -29,6 +29,54 @@ def put (buffer offset value : UInt64) : Action := Memory.write64 (buffer + offs
 def entry (buffer index : UInt64) : UInt64 := buffer + 128 + index * 24
 def edit (buffer index : UInt64) : UInt64 := buffer + editOffset + index * 16
 
+private def validChunkLifecycle (lifecycle : UInt64) : Bool :=
+  if lifecycle &&& 0xfffffffffffffff8 = 0 then
+    let origin := lifecycle &&& 5
+    if origin = 1 then true else if origin = 4 then true else false
+  else false
+
+/-- Validate a v1 chunk's 128-byte header against its page-index identity.
+The returned byte length bounds the later body read. Only brush version 1 is
+implemented; unclosed acknowledged Start/Continuation prefixes remain valid.
+This action is read-only and propagates memory failures before any rendering. -/
+def validateChunkHeader (buffer page stroke : UInt64) : Action :=
+  if page = 0 then .done malformed 0 else if maximumPages < page then .done malformed 0 else
+  if stroke = 0 then .done malformed 0 else
+  .bind (field buffer 0) fun s value => if statusFailed s = true then .done s 0 else
+  if different value magic = true then .done malformed 0 else
+  .bind (field buffer 8) fun s value => if statusFailed s = true then .done s 0 else
+  if different value version = true then .done malformed 0 else
+  .bind (field buffer 16) fun s value => if statusFailed s = true then .done s 0 else
+  if different value 3 = true then .done malformed 0 else
+  .bind (field buffer 24) fun s value => if statusFailed s = true then .done s 0 else
+  if different value page = true then .done malformed 0 else
+  .bind (field buffer 32) fun s value => if statusFailed s = true then .done s 0 else
+  if different value stroke = true then .done malformed 0 else
+  .bind (field buffer 40) fun s value => if statusFailed s = true then .done s 0 else
+  if different value 0 = true then .done malformed 0 else
+  .bind (field buffer 48) fun s count => if statusFailed s = true then .done s 0 else
+  if count = 0 then .done malformed 0 else if maximumSamples < count then .done malformed 0 else
+  .bind (field buffer 56) fun s value => if statusFailed s = true then .done s 0 else
+  if value < 256 then .done malformed 0 else if 8192 < value then .done malformed 0 else
+  .bind (field buffer 64) fun s value => if statusFailed s = true then .done s 0 else
+  if different value 1 = true then .done malformed 0 else
+  .bind (field buffer 72) fun s value => if statusFailed s = true then .done s 0 else
+  if value = 0 then .done malformed 0 else if 65535 < value then .done malformed 0 else
+  .bind (field buffer 80) fun s value => if statusFailed s = true then .done s 0 else
+  if value = 0 then .done malformed 0 else if 65535 < value then .done malformed 0 else
+  .bind (field buffer 88) fun s value => if statusFailed s = true then .done s 0 else
+  if 65535 < value then .done malformed 0 else
+  .bind (field buffer 96) fun s value => if statusFailed s = true then .done s 0 else
+  if Lemma.Ink.Geometry.validDimension value = false then .done malformed 0 else
+  .bind (field buffer 104) fun s value => if statusFailed s = true then .done s 0 else
+  if Lemma.Ink.Geometry.validDimension value = false then .done malformed 0 else
+  if value ≤ 161 then .done malformed 0 else
+  .bind (field buffer 112) fun s value => if statusFailed s = true then .done s 0 else
+  if validChunkLifecycle value = false then .done malformed 0 else
+  .bind (field buffer 120) fun s value => if statusFailed s = true then .done s 0 else
+  if different value 0 = true then .done malformed 0 else
+  .done 0 (headerBytes + count * sampleBytes)
+
 private def zeroStep (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
   .bind (Memory.write64 (buffer + i.toUInt64 * 8) 0) fun s _ => .done s acc
 
@@ -66,7 +114,7 @@ def chunk (buffer page stroke brush pressureMaximum : UInt64) : Action :=
 
 def finishChunk (buffer count lifecycle : UInt64) : Action :=
   if count = 0 then .done malformed 0 else if maximumSamples < count then .done full 0 else
-  if lifecycle &&& 0xfffffffffffffff8 = 0 then
+  if validChunkLifecycle lifecycle = true then
   .bind (put buffer 48 count) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 112 lifecycle) fun s _ => .done s (128 + count * 72)
    else .done malformed 0

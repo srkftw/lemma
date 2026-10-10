@@ -54,10 +54,27 @@ Pinned host QEMU v17 SHA256:
 `0e95380d2eb582ebf95f989fc6a07eac26a50c222bbbee95dd5fa5421d2864ce`.
 Legacy profiles and historical evidence meanings are preserved.
 
-Next: freeze/commit the narrow harness repairs; run one exact-candidate full
+The harness/archive repairs are published at `dea6281d64a44e5c409fe33e1df7bf4a5f86feb9`.
+Its fresh focused J lane passes all four O0/O2 audits and real workflows, including
+held-buffer denial, fault/restart and exact final accounting. Result SHA256:
+`0a928036080269b3556a1b24f27116e09faece1d23b86acb61bf5e8b40116875` under
+`build/worktrees/task004-inherited-kernel/build/kernel/verify-J-dea6281`.
+The full notebook campaign `build/lemmasim/task004-dea6281-full1` was stopped and
+reaped before its first workflow after source inspection found that reload did
+not reject an unknown stored brush version or contradictory page/stroke ID.
+Its original FAIL/interruption remain retained. A bounded guest header validator
+and literal rejection fixtures are integrated; normal produced v1 records
+remain unchanged. The focused literal/read/input-drain checks and genuine Core0
+closure plus RV64 O0/O2 object generation pass. Probe result SHA256:
+`9f86794ee14b9e0401633fa71d9f1db45fd35ba4802be17adaa23e5515e13b10` in
+`build/lemmasim/ink-header-codegen-attempt1`. The first fixture elaboration FAIL
+is retained. These J and focused observations do not pass the next linked notebook.
+
+Next: freeze/commit the guest header validation; run one exact-candidate full
 notebook matrix (editing, both geometries, loss, active-DMA isolation, device
 faults, two real behavioral source negatives, 16 pages / 100,000 raw samples),
-focused J and all required actual CI. Export final offline evidence outside
+all required actual CI; the unchanged J implementation retains its separate
+exact `dea6281` local observation rather than inheriting it into the new notebook. Export final offline evidence outside
 ignored `build/`, write the concise report/result/manifest, and update the draft.
 Actions artifacts retain for 14 days; permanent offline retention is pending.
 Do not claim Task004 completion, physical conformance, managed runtime or later

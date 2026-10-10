@@ -151,8 +151,17 @@ An ink chunk has a 128-byte header followed by 1–384 original 72-byte pen samp
 Each original sample retains sequence, guest timestamp, raw X/Y, pressure,
 contact/proximity/disconnect/synthetic flags, tool, buttons and device epoch.
 Continuation chunks repeat the previous chunk's final sample as their first
-sample, preserving interpolation across the explicit boundary. The lifecycle is
-document provenance; recovery never resumes an active physical contact.
+sample, preserving interpolation across the explicit boundary. A chunk has
+exactly one of Start or Continuation, with optional End: the supported values
+are 1, 3, 4 and 6. An acknowledged prefix without End remains valid document
+provenance; recovery never resumes an active physical contact.
+
+Before reading a streamed body and again before rendering it, the guest checks
+the 128-byte header against the current page and indexed stroke ID. Ink version 1
+requires brush version 1, zero reserved words, declared sample/range/geometry
+bounds, and a supported lifecycle. Unknown versions, contradictory identities
+and malformed headers return error 234; they are never interpreted as brush 1.
+This bounded load check does not scan notebook history on incoming pen samples.
 
 Page coordinates use the canonical `[0,2^24]` range. X maps directly through the
 recorded raw range. Y is calibrated against the recorded screen geometry, removes

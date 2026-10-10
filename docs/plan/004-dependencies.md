@@ -19,7 +19,10 @@ new-process reopening. The host observer never repairs a live guest's media.
 
 Ink, page codecs or editing changes require their focused genuine Lean exports
 and independent literal checks, the editing/two-namespace workflow and cold
-byte/pixel comparison. Rasterizer changes additionally require the independent
+byte/pixel comparison. The header fixture also pins refusal of unsupported brush
+versions and contradictory indexed page/stroke identities before bounded body
+reads and rendering; it is a host fixture plus genuine compiler lowering, not
+a substitute for linked execution. Rasterizer changes additionally require the independent
 integer full-tile oracle and recorded workload. Geometry changes require the
 same guest binary at both named instance sizes.
 

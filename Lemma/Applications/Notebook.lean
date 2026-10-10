@@ -341,31 +341,24 @@ private def renderChunkStep (i _ : UInt32) (acc record _ _ _ : UInt64) : Action 
   let previous := if i = 0 then sample else sample - 72
   .bind (renderPair record previous sample 0) fun s _ => .done s (acc + 1)
 
-private def renderLoadedChunk : Action :=
-  .bind (Lemma.Documents.Ink.field loadedInk 0) fun s magic => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 8) fun s version => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 16) fun s kind => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 48) fun s count => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 56) fun s brush => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 88) fun s pressure => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 96) fun s sourceWidth => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 104) fun s sourceHeight => if statusFailed s = true then .done s 0 else
-  if different magic Lemma.Documents.Ink.magic = true then .done 234 0 else if different version 1 = true then .done 234 0 else
-  if different kind 3 = true then .done 234 0 else if count = 0 then .done 234 0 else if 384 < count then .done 234 0 else
-  if brush < 256 then .done 234 0 else if 8192 < brush then .done 234 0 else if 65535 < pressure then .done 234 0 else
-  if Geometry.validDimension sourceWidth = false then .done 234 0 else
-  if Geometry.validDimension sourceHeight = false then .done 234 0 else if sourceHeight ≤ 161 then .done 234 0 else
+private def renderLoadedChunk (page stroke bytes : UInt64) : Action :=
+  .bind (Lemma.Documents.Ink.validateChunkHeader loadedInk page stroke) fun s expected =>
+  if statusFailed s = true then .done s 0 else
+  if different bytes expected = true then .done 234 0 else
+  let count := (expected - 128) / 72
   .boundedFoldU64 384 renderChunkStep count.toUInt32 0 loadedInk 0 0 0 fun s n => .done s n
 
 private def redrawEntryStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (Lemma.Documents.Ink.field (Lemma.Documents.Ink.entry pageIndex i.toUInt64) 16) fun s visible => if statusFailed s = true then .done s 0 else
   if visible = 0 then .done 0 acc else
   .bind (Lemma.Documents.Ink.field (Lemma.Documents.Ink.entry pageIndex i.toUInt64) 0) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Ink.field (Lemma.Documents.Ink.entry pageIndex i.toUInt64) 8) fun s stroke => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (readObject object loadedInk 128) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Ink.field loadedInk 48) fun s count => if statusFailed s = true then .done s 0 else
-  if count = 0 then .done 234 0 else if 384 < count then .done 234 0 else
-  .bind (readObject object loadedInk (128 + count * 72)) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind renderLoadedChunk fun s _ => .done s (acc + 1)
+  .bind (Lemma.Documents.Ink.validateChunkHeader loadedInk page stroke) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (readObject object loadedInk bytes) fun s copied => if statusFailed s = true then .done s 0 else
+  if different copied bytes = true then .done 234 0 else
+  .bind (renderLoadedChunk page stroke copied) fun s _ => .done s (acc + 1)
 
 private def redraw : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
