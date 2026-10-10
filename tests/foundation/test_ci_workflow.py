@@ -10,29 +10,44 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 
-def job_block(source: str, job: str, following: str | None = None) -> str:
-    start = source.index(f"  {job}:\n")
-    if following is None:
-        return source[start:]
-    return source[start:source.index(f"  {following}:\n", start)]
+JOBS = ("metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
+        "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
+        "kernel-architecture-rv64")
+
+
+def job_block(source: str, job: str) -> str:
+    """Slice one actual job, independent of its following sibling's name."""
+    jobs = list(re.finditer(r"^  ([a-z0-9-]+):$", source.split("jobs:\n", 1)[1], re.MULTILINE))
+    body = source.split("jobs:\n", 1)[1]
+    selected = [index for index, match in enumerate(jobs) if match[1] == job]
+    if len(selected) != 1:
+        raise ValueError("missing/duplicate job: " + job)
+    index = selected[0]
+    return body[jobs[index].start():jobs[index + 1].start() if index + 1 < len(jobs) else len(body)]
+
+
+def logged_blocks(source: str) -> list[str]:
+    blocks = re.findall(r"run: \|\n((?: {10}.*(?:\n|$))+)", source)
+    return [block for block in blocks if "| tee " in block]
 
 
 class CiWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.source = WORKFLOW.read_text()
-        cls.metadata = job_block(cls.source, "metadata", "legacy-rv64")
-        cls.legacy = job_block(cls.source, "legacy-rv64", "foundation-rv64")
-        cls.foundation = job_block(cls.source, "foundation-rv64", "kernel-rv64")
-        cls.kernel = job_block(cls.source, "kernel-rv64")
+        cls.blocks = {name: job_block(cls.source, name) for name in JOBS}
+        cls.metadata = cls.blocks["metadata"]
+        cls.legacy = cls.blocks["legacy-rv64"]
+        cls.foundation = cls.blocks["foundation-rv64"]
+        cls.kernel = cls.blocks["kernel-rv64"]
         cls.task002 = cls.metadata + cls.legacy + cls.foundation
 
     def test_separate_jobs_keep_host_metadata_away_from_qemu(self):
         jobs = re.findall(
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
-        self.assertEqual(jobs, ["metadata", "legacy-rv64", "foundation-rv64", "kernel-rv64"])
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation"):
+        self.assertEqual(jobs, list(JOBS))
+        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build", self.metadata)
@@ -76,14 +91,32 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertEqual(timeouts, [45, 45, 60])
 
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
-        pipeline_blocks = re.findall(
-            r"run: \|\n((?: {10}.*(?:\n|$))+)", self.task002
-        )
-        logged = [block for block in pipeline_blocks if "| tee " in block]
-        self.assertEqual(len(logged), 8)
-        for block in logged:
-            commands = [line.strip() for line in block.splitlines() if line.strip()]
-            self.assertEqual(commands[0], "set -euo pipefail")
+        expected = {
+            "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
+                         "metadata/core0-host-unittest.log", "metadata/lake-build.log",
+                         "metadata/foundation-host-unittest.log", "metadata/kernel-host-unittest.log"),
+            "legacy-rv64": ("legacy-rv64.log",),
+            "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
+            "kernel-managed-rv64": ("kernel-managed-rv64.log",),
+            "kernel-services-rv64": ("kernel-services-rv64.log",),
+            "kernel-rv64": ("kernel-rv64.log",),
+            "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
+            "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
+        }
+        for job, names in expected.items():
+            with self.subTest(job=job):
+                blocks = logged_blocks(self.blocks[job])
+                self.assertEqual([re.findall(r"\| tee build/ci/([^\s]+)", block)[0] for block in blocks], list(names))
+                for block in blocks:
+                    commands = [line.strip() for line in block.splitlines() if line.strip()]
+                    self.assertEqual(commands[0], "set -euo pipefail")
+                    self.assertEqual(block.count("| tee "), 1)
+
+    def test_job_slice_cannot_absorb_an_added_sibling(self):
+        source = "jobs:\n  metadata:\n    run: host-only\n  new-job:\n    run: qemu\n  legacy-rv64:\n    run: guest\n"
+        self.assertEqual(job_block(source, "metadata"), "  metadata:\n    run: host-only\n")
+        self.assertEqual(job_block(source, "new-job"), "  new-job:\n    run: qemu\n")
+        with self.assertRaises(ValueError): job_block(source, "missing")
 
     def test_kernel_lane_requires_bounded_clean_source_and_complete_evidence(self):
         self.assertIn("timeout-minutes: 45", self.kernel)
@@ -104,7 +137,7 @@ class CiWorkflowTests(unittest.TestCase):
                          'realized["source_path"] == lean["source_path"] and realized["revision"] == lean["revision"]',
                          'realized["narHash"] == lean["source_sha256"] and realized["narSize"] == lean["source_nar_size"]',
                          'digest(audit) == row["audit_sha256"] and digest(provenance) == row["provenance_sha256"]',
-                         'digest(observed) == row["sha256"] and json.loads(observed.read_text())["status"] == "PASS"'):
+                         'digest(observed) == row["sha256"] and result["status"] == "PASS"'):
             self.assertIn(required, self.kernel)
         self.assertIn("if: ${{ always() }}", self.kernel)
         self.assertIn("actions/upload-artifact@", self.kernel)
@@ -112,6 +145,59 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("build/kernel/ci-prefix/", self.kernel)
         self.assertIn("build/ci/kernel-rv64.log", self.kernel)
         self.assertIn("retention-days: 14", self.kernel)
+
+    def test_new_kernel_lanes_require_exact_bounded_commands_and_revalidators(self):
+        cases = (
+            ("kernel-managed-rv64", "scripts/check_kernel_cumulative.py",
+             ("--lane F-I", "--clean", "--timeout 300"), "validate_lane", "ci-managed",
+             ('value["lane"] != "F-I" or len(value["cases"]) != 8',)),
+            ("kernel-services-rv64", "scripts/check_kernel_cumulative.py",
+             ("--lane J", "--clean", "--timeout 300"), "validate_lane", "ci-services",
+             ('value["lane"] != "J" or len(value["cases"]) != 4',)),
+            ("kernel-source-negatives-rv64", "scripts/check_kernel_mutations.py",
+             ('candidate="$(git rev-parse HEAD)"', '--expected-commit "$candidate"'),
+             "validate_campaign", "ci-source-negatives",
+             ('value["protocol"] != "kernel-source-mutations-K-v1" or len(value["cases"]) != 4',
+              'build/kernel/ci-source-negatives/checkouts/*/build/kernel/K-mutations/')),
+            ("kernel-architecture-rv64", "scripts/check_kernel_architecture.py",
+             ("--clean", "--timeout 300"), "validate_architecture", "ci-architecture",
+             ('value["status"] != "PASS" or len(value["cases"]) != 12',)),
+        )
+        for job, checker, arguments, validator, evidence, gates in cases:
+            with self.subTest(job=job):
+                block = self.blocks[job]
+                self.assertEqual(re.findall(r"^    timeout-minutes: (\d+)$", block, re.M), ["45"])
+                for required in (checker, *arguments, validator, *gates, "--deadline 2400",
+                                 "timeout --foreground --signal=TERM --kill-after=30s 40m",
+                                 "nix develop --no-write-lock-file --command",
+                                 "--work-dir build/kernel/" + evidence,
+                                 'Path("build/kernel/' + evidence + '/result.json")',
+                                 "Path.cwd()", "raise RuntimeError", "set -euo pipefail",
+                                 "if: ${{ always() }}", "actions/upload-artifact@",
+                                 "if-no-files-found: error", "retention-days: 14",
+                                 "build/ci/" + job + ".log"):
+                    self.assertIn(required, block)
+                self.assertNotRegex(block, r"\bassert\s")
+                self.assertNotIn("continue-on-error", block)
+
+    def test_prefix_revalidator_binds_current_source_exact_roles_and_real_sessions(self):
+        for required in ('value["source"] == source_identity(Path.cwd())',
+                         'value["source_inputs"] == source_inputs(Path.cwd())',
+                         'value["acceptance_inputs"] == acceptance_inputs(Path.cwd())',
+                         'for cfg, stage, opt in matrix():',
+                         'expected_observations.extend((cfg, stage, opt, role) for role in roles)',
+                         '== expected_observations)',
+                         'audited["dirty_paths"] == []', 'recorded["dirty_paths"] == []',
+                         'recorded["source_inputs"] == value["source_inputs"]',
+                         'tuple(audited[k] for k in ("configuration", "stage", "optimization"))',
+                         'tuple(recorded[k] for k in ("configuration", "stage", "optimization"))',
+                         'result = json.loads(observed.read_text())',
+                         'actual["fresh_user_runs"] == 3', '== list(DEFAULT_SEEDS)',
+                         'validate_session(Path(child["result"]), image)',
+                         'validate_session(observed.resolve(), image, machine_origin=row["role"] == "machine-origin")'):
+            self.assertIn(required, self.kernel)
+        self.assertNotRegex(self.kernel, r"\bassert\s")
+        self.assertNotIn("continue-on-error", self.source)
 
     def test_each_lane_retains_bounded_artifacts_even_on_failure(self):
         for block in (self.metadata, self.legacy, self.foundation):

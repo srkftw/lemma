@@ -33,6 +33,12 @@ KINDS = {
     "append": ("service-normal", "check_kernel_buffer.py", "check_kernel_buffer_negative.py", 300, 60,
                "append-truncated-K-v1", "successful-append128-read128-final-FF-to-00"),
 }
+# Session starts its guest deadline only after a fresh complete artifact audit.
+# Positive-control validation also runs before QEMU; retained-control/raw replay
+# and owned cleanup run afterward. These finite host allowances do not extend
+# any guest deadline and are still capped by Commands.remaining().
+OBSERVATION_SETUP_SECONDS = 120
+OBSERVATION_REPLAY_SECONDS = 60
 CHECKOUTS = ("control", "timer", "append")
 PROTOCOL = "kernel-source-mutations-K-v1"
 NO_HASH = object()
@@ -373,8 +379,9 @@ def _case_commands(paths: dict, kind: str, opt: str) -> list[tuple[str, list[str
                 "--timeout", str(positive_bound if role == "control" else negative_bound)]
         # The caller supplies the exact commit; the plan marker is never executed.
         if role == "mutant": argv += ["--positive-control", str(paths["control_run"] / "result.json"), "--expected-commit", "COMMIT"]
+        guest_bound = positive_bound if role == "control" else negative_bound
         commands.append((label + "-" + role + "-observe", argv, root,
-                         (positive_bound if role == "control" else negative_bound) + 30))
+                         OBSERVATION_SETUP_SECONDS + guest_bound + OBSERVATION_REPLAY_SECONDS))
     return commands
 
 

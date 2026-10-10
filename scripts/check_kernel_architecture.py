@@ -109,6 +109,41 @@ def require_diagnostics(image, binding, managed):
     return deepcopy(value)
 
 
+def require_managed_task_stack(image, binding):
+    """Require exact global/owner accounting and genuine owned-stack sources.
+
+    The AS descriptor belongs to kernel owner1.  A managed instance therefore
+    consumes 17 global base frames while charging 16 to its private owner;
+    text pages are additional.  This is distinct from the legacy single-owner
+    singleton accounting accepted by task_frame_overhead.
+    """
+    stack = binding.get("task_kernel_stack")
+    numeric = {"pages": 2, "bytes": 8192, "first_handle_offset": 2400,
+               "second_handle_offset": 2480, "base_owned_task_frames": 16,
+               "base_global_task_frames": 17}
+    if (not isinstance(stack, dict) or set(stack) != {*numeric, "construction", "source_functions"}
+            or any(type(stack.get(name)) is not int or stack[name] != value for name, value in numeric.items())
+            or stack.get("construction") != "owned-physically-contiguous-pair"):
+        raise Core0Error("managed architecture accounting lacks exact owned16/global17 two-page stack construction")
+    required = {"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
+                "Lemma.Kernel.Memory.Frames.allocateContiguous2", "Lemma.Kernel.Loader.allocateStack",
+                "Lemma.Kernel.Loader.installStackPair", "Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.stackPair",
+                "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown",
+                "Lemma.Kernel.Process.validateFrame", "Lemma.Kernel.Process.validateStack",
+                "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset",
+                "Lemma.Kernel.Development.ServiceEntry.dispatch", "Lemma.Kernel.Scheduler.dispatch",
+                "Lemma.Kernel.Task.capture", "Lemma.Kernel.Task.context"}
+    sources = stack.get("source_functions")
+    unit = load_json(image.parent / "kernel/unit.json")
+    actual = {re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]): row["symbol"]
+              for row in unit.get("functions", [])}
+    if (not isinstance(sources, dict) or set(sources) != required
+            or any(not isinstance(symbol, str) or not symbol.startswith("lemma_kernel_")
+                   or actual.get(source) != symbol for source, symbol in sources.items())):
+        raise Core0Error("managed architecture owned-stack identities differ from the genuine kernel unit")
+    return deepcopy(stack)
+
+
 def require_case(image, binding):
     """Bind the closed case to genuine main, full attack bytes and actual site."""
     cfg = binding.get("configuration")
@@ -117,7 +152,10 @@ def require_case(image, binding):
     case = CONFIGURATIONS[cfg]
     managed = cfg in SERVICE_CONFIGURATIONS
     diagnostic = require_diagnostics(image, binding, managed)
-    task_frame_overhead(SimpleNamespace(binding=binding))
+    if managed:
+        require_managed_task_stack(image, binding)
+    else:
+        task_frame_overhead(SimpleNamespace(binding=binding))
     user = binding.get("elf", {}).get("users", {}).get("fault", {}) if managed else binding.get("elf", {}).get("user", {})
     row = user.get("quarantined_startup", {})
     site = row.get("instruction_site", {})

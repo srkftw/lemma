@@ -1396,7 +1396,7 @@
       "status": "in_progress",
       "host_mutation_campaign": {
         "status": "HOST_PREPARATION_PASS",
-        "actual_campaign": "NOT_RUN",
+        "actual_campaign": "FAIL_BEFORE_MUTANT_QEMU",
         "kernel_host_tests": 254,
         "scaffold_tests": 18,
         "metadata": "PASS",
@@ -1404,9 +1404,9 @@
         "summary_sha256": "2ba38e1b9ba974a71534a21b76d8cc0889ffe7d19f1613fccc762691c46d9712",
         "independent_review": "build/kernel/gateK/mutation-controller-independent-review/summary.json",
         "independent_review_sha256": "f949998251dda376583fe62f12b27e13ad26cce2fd4ed2a6c5d3fde25b9691c0",
-        "scope": "Four exact source negatives using fresh same-commit controls; actual target campaign still not run. Pre-existing descendant ownership repair observed with native child/reparenting fixture."
+        "scope": "Fresh exact78ac203 timerO0 positive control passed; mutant built and audited, but mandatory Session re-audit was interrupted by outer38s command bound before guest launch. Exact8s negative observation remains required; original failure retained."
       },
-      "target_status": "Fresh focused managedhalfwordO0 build/fullartifactaudit PASS, exact24B/site+18 and raw original-frame diagnostic CFG bound; trap8080/8192. Clean12case guestmatrix and fullfinalsource qualification pending.",
+      "target_status": "At exact clean78ac203, six singleton architectural O0/O2 cases passed (18 actual7/0/7 instances). Managed firstcase failed during startup accounting; source-negative firstcase outer timeout interrupted fresh audit before QEMU. Legacy host suite exposed four stale workflow fixtures. FullK/finalregressions/publication remain pending; original failures retained.",
       "focused_architecture_attempts": [
         {
           "attempt": 1,
@@ -1464,6 +1464,34 @@
           "build/kernel/gateK/host/workflow-actionlint-initial.log"
         ],
         "scope": "Host checks/artifact audit only; full clean guest verification pending."
+      },
+      "final_first_attempts": {
+        "implementation_commit": "78ac20301226727f76fb50bb109a4a0d889da84c",
+        "tree": "bb21281f945c183df1ccbbcc2768e8acfbeb046e",
+        "cold_initial_binding": "build/kernel/gateK/final-initial-source-binding.json",
+        "cold_initial_binding_sha256": "5a5249fe99f0612aad2997079a995ca14e7c23c7c0f7f1a88f2748048fa32749",
+        "architectural_singleton_cases_passed": 6,
+        "actual_singleton_instances": 18,
+        "managed_architecture": "FAIL: singleton owner17 accounting was applied to genuine managed owner16/global17 audited stack; only7startuprecords/noattack",
+        "source_negatives": "FAIL: outer38s interrupted mandatory fresh audit before mutant QEMU; timer8s protocol unchanged",
+        "prefix": "IN_PROGRESS in unchanged detached78ac203 checkout",
+        "legacy": "FAIL before targetcampaign:440foundationhosttests/4staleworkflowfixture failures; externalowned-childreap retry observedfiveexit0",
+        "failure_summary": "build/kernel/gateK/final-first-attempt-failures/summary.json",
+        "failure_summary_sha256": "7620c75863c68cdd98ca07af705430967aaffd64d3b9338b745e50c92efcfb15",
+        "legacy_failure_summary": "build/kernel/gateK/final-first-attempt-failures/legacy-retry-summary.json",
+        "legacy_failure_summary_sha256": "b548dd1b05a9ca514af6e510c7939f878122d37678aa068c7621d120d731905d",
+        "no_pass_inheritance": true
+      },
+      "qualification_host_repairs": {
+        "status": "HOST_PASS_ONLY",
+        "summary": "build/kernel/gateK/host/qualification-repair-summary.json",
+        "summary_sha256": "bec6a1db1cf03f97041bc4cb0a5b3d89dd0d44840ce753e4fc8908c99aad547b",
+        "kernel_tests": 276,
+        "foundation_tests": 443,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "target_lean_changes": false,
+        "clean_target_reruns": "NOT_RUN"
       }
     }
   ],

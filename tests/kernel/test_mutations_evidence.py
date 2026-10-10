@@ -22,6 +22,47 @@ import check_kernel_mutations as mutations
 from core0_common import Core0Error, load_json, sha256, write_json
 
 
+class MutationObservationBudgetTests(unittest.TestCase):
+    def test_setup_and_replay_allowances_preserve_each_exact_guest_deadline(self):
+        for kind, opt in mutations.plan():
+            paths = mutations._paths(Path("/host-only/budget-fixture"), kind, opt)
+            _, _, _, positive, negative, _, _ = mutations.KINDS[kind]
+            for label, argv, _, bound in mutations._case_commands(paths, kind, opt):
+                if not label.endswith("-observe"):
+                    continue
+                guest = negative if label.endswith("-mutant-observe") else positive
+                with self.subTest(kind=kind, opt=opt, label=label):
+                    self.assertEqual(argv[argv.index("--timeout") + 1], str(guest))
+                    self.assertEqual(bound, 120 + guest + 60)
+                    # A legitimate mandatory setup alone exceeded the old
+                    # timer mutant's entire 38-second process deadline.
+                    self.assertGreaterEqual(bound - guest, 70 + 30)
+        self.assertEqual(mutations.KINDS["timer"][4], 8)
+        self.assertEqual(mutations.KINDS["append"][4], 60)
+
+    def test_larger_observe_allowance_is_clamped_by_remaining_campaign_budget(self):
+        class CompletedCommand:
+            pid, returncode = 999999999, 0
+            waited = None
+            def wait(self, *, timeout):
+                self.waited = timeout
+                return self.returncode
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            runner = object.__new__(mutations.Commands)
+            runner.work, runner.report, runner.process = work, {"commands": []}, None
+            child = CompletedCommand()
+            paths = mutations._paths(work, "timer", "O0")
+            label, argv, cwd, bound = mutations._case_commands(paths, "timer", "O0")[-1]
+            with patch.object(runner, "remaining", return_value=17), \
+                 patch.object(runner, "inventory", return_value={}), \
+                 patch.object(mutations.subprocess, "Popen", return_value=child):
+                row = runner.run(label, argv, cwd, bound)
+            self.assertEqual(child.waited, 17)
+            self.assertEqual(row["timeout_seconds"], 17)
+            self.assertEqual(row["returncode"], 0)
+
+
 class MutationEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)

@@ -41,7 +41,9 @@ class ArchitectureCheckerTests(unittest.TestCase):
         (unit_dir/"text.bin" if managed else directory/"user-text.bin").write_bytes(text)
         (directory/"layout.json").write_text(json.dumps({"task_kernel_stack_pages":2,"task_kernel_stack_bytes":8192}))
         audit = {"status":"PASS","configuration":cfg,"stage":"supervisor","elf":{"users":{"fault":user}} if managed else {"user":user},
-                 "task_kernel_stack":{"pages":2,"bytes":8192,"construction":"owned-physically-contiguous-pair","base_owned_task_frames":17}}
+                 "task_kernel_stack":{"pages":2,"bytes":8192,"construction":"owned-physically-contiguous-pair",
+                    "first_handle_offset":2400,"second_handle_offset":2480,
+                    **({"base_owned_task_frames":16,"base_global_task_frames":17} if managed else {"base_owned_task_frames":17})}}
         p,q,t='Lemma.Kernel.Process.','Lemma.Kernel.Scheduler.','Lemma.Kernel.Task.'
         read,control='Lemma.Kernel.Memory.Access.read64','Lemma.Kernel.Console.record'
         context='Lemma.Kernel.Memory.AddressSpace.context'
@@ -59,8 +61,25 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 'block':'entry','success':'ok','failure':'fail','protected_blocks':['ok']}} for caller,checked,protected,failed in pairs],
             'diagnostic_before_termination':{'before':sources[control],'after':sources[(q if managed else p)+'finish'],
                 'protected_sites':[['ok',1]]}}
+        kernel_sources=dict(sources)
+        if managed:
+            required_stack={"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
+                "Lemma.Kernel.Memory.Frames.allocateContiguous2","Lemma.Kernel.Loader.allocateStack",
+                "Lemma.Kernel.Loader.installStackPair","Lemma.Kernel.Loader.storedStack","Lemma.Kernel.Loader.stackPair",
+                "Lemma.Kernel.Loader.releaseStackHandle","Lemma.Kernel.Loader.teardown",
+                "Lemma.Kernel.Process.validateFrame","Lemma.Kernel.Process.validateStack",
+                "Lemma.Kernel.Loader.kernelStackHandleOffset","Lemma.Kernel.Loader.kernelStackSecondHandleOffset",
+                "Lemma.Kernel.Development.ServiceEntry.dispatch","Lemma.Kernel.Scheduler.dispatch",
+                "Lemma.Kernel.Task.capture","Lemma.Kernel.Task.context"}
+            stack_sources={source:sources.get(source,f'lemma_kernel_stack_fixture_{i}') for i,source in enumerate(sorted(required_stack))}
+            audit['task_kernel_stack']['source_functions']=stack_sources
+            kernel_sources.update(stack_sources)
         kernel=directory/'kernel';kernel.mkdir(exist_ok=True)
-        (kernel/'unit.json').write_text(json.dumps({'functions':[{'source':source,'symbol':symbol} for source,symbol in sources.items()]}))
+        (kernel/'unit.json').write_text(json.dumps({'functions':[{'source':source,'symbol':symbol} for source,symbol in kernel_sources.items()]}))
+        if managed:
+            audit['user_images']={'fault':{'id':5,'source':'Lemma.User.Entry.main','module':'Lemma.User.Entry',
+                'boot_role':'buffer-fault-client','text_bytes':len(text),'text_sha256':hashlib.sha256(text).hexdigest()}}
+            audit['elf']['users'].update({key:{'quarantined_startup':{'case':'none'}} for key in ('server','cli','peer','busy')})
         return image,audit
 
     def test_site_matches_actual_linked_words_and_genuine_root(self):
@@ -76,6 +95,30 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 unit=json.loads((image.parent/'user/unit.json').read_text()); unit['roots'][0]['source']='Lemma.User.Development.Other.main'
                 (image.parent/'user/unit.json').write_text(json.dumps(unit))
                 with self.assertRaisesRegex(Core0Error,'genuine maintained'):k.require_case(image,audit)
+
+    def test_managed_stack_uses_owner16_global17_and_genuine_sources_only(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            image,audit=self.binding(Path(tmp),managed=True)
+            self.assertTrue(k.require_case(image,audit)['managed'])
+            numeric={"pages":True,"bytes":4096,"first_handle_offset":2480,"second_handle_offset":2400,
+                     "base_owned_task_frames":17,"base_global_task_frames":16}
+            for field,value in numeric.items():
+                changed=deepcopy(audit);changed['task_kernel_stack'][field]=value
+                with self.subTest(field=field),self.assertRaises(Core0Error):k.require_case(image,changed)
+            for field in ('base_owned_task_frames','base_global_task_frames'):
+                changed=deepcopy(audit);changed['task_kernel_stack'][field]=True
+                with self.subTest(boolean=field),self.assertRaises(Core0Error):k.require_case(image,changed)
+            changed=deepcopy(audit);changed['task_kernel_stack']['source_functions']['Lemma.Kernel.Loader.allocateStack']='lemma_kernel_stale'
+            with self.assertRaises(Core0Error):k.require_case(image,changed)
+            unit=json.loads((image.parent/'kernel/unit.json').read_text())
+            unit['functions']=[row for row in unit['functions'] if row['source']!='Lemma.Kernel.Memory.Frames.allocateContiguous2']
+            (image.parent/'kernel/unit.json').write_text(json.dumps(unit))
+            with self.assertRaises(Core0Error):k.require_case(image,audit)
+        with tempfile.TemporaryDirectory() as tmp:
+            image,audit=self.binding(Path(tmp))
+            self.assertFalse(k.require_case(image,audit)['managed'])
+            audit['task_kernel_stack']['base_owned_task_frames']=16
+            with self.assertRaisesRegex(Core0Error,'task accounting lacks'):k.require_case(image,audit)
 
     def test_original_frame_diagnostic_requires_exact_sources_gates_and_order(self):
         for managed in (False,True):

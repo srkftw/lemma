@@ -1068,3 +1068,52 @@ Next: commit the held candidate, create fresh exact clean detached worktrees
 with `.lake` and `build` absent, and run K12/J4, A–E20/F–I8, final Task001/002
 regressions, source-negative controls/mutants and independent users. Publish
 only after the complete milestone has observed passing evidence.
+
+
+## Final clean candidate first attempts (2026-10-10)
+
+Candidate `78ac20301226727f76fb50bb109a4a0d889da84c`, tree
+`bb21281f945c183df1ccbbcc2768e8acfbeb046e`, was committed clean. Three
+fresh detached worktrees began with `.lake` and `build` absent; no prior
+project outputs were copied. Their initial binding is retained under
+`build/kernel/gateK/final-initial-source-binding.json`.
+
+Six singleton architectural cases passed at O0/O2: 18 fresh instances observed
+actual halfword ECALL cause8/stval0, SRET cause2/stval10200073, and MRET
+cause2/stval30200073. All showed original hardware status200000020, code44,
+private result and full482-to500 reclamation. The first managed case stopped
+after seven startup records because its observer used the singleton owner17
+frame count instead of the audited managed owner16/global17 count. No managed
+attack completed. Original FAIL and six singleton reports remain unchanged.
+
+The source-negative attempt had a real passing timerO0 control and a built,
+audited mutant. Its outer38s observe command interrupted the required fresh
+Session audit before QEMU spawned. Empty mutant raw files and PID-null inner
+FAIL are retained; this is no evidence of timer starvation. A bounded host
+setup/replay allowance is being corrected while keeping exact8s/60s guest
+limits and the2400s campaign deadline.
+
+The initial external legacy wrapper rejected five already-terminated adopted
+fixture children; cleanup reaped each with actual exit0. A separately reviewed
+external retry reaped and recorded those exact owned zombies before checking
+for leftovers. Metadata, scaffold18, Core0 host and cold Lake passed. Foundation
+host ran440 tests with four failures in obsolete workflow-layout expectations.
+No legacy target campaign began. Both wrapper failures and actual cleanup are
+preserved. Workflow fixture coverage is being corrected for all eight jobs.
+
+The detached78ac203 A–E/F–I campaign continues with its own frozen source.
+Only host qualification/accounting and workflow fixtures are being repaired in
+the root branch; no target algorithm or old detached evidence is changed. New
+clean services, source-negative and legacy campaigns must use the repaired
+committed revision; actual PR CI must qualify its full integration. Highest
+complete gate remains J. Do not publish or merge a partial K result.
+
+The narrow host repairs are held and passed real276 kernel,443 foundation and18
+scaffold tests plus metadata; changed Python sources parse and diff checking
+passes. Managed architecture now requires exact owner16/global17, unchanged
+8192-byte pair and16 actual kernel-source symbol bindings. Mutation commands
+allow120s host setup and60s replay while retaining guest8s/60s and total2400s.
+Workflow fixtures isolate sibling jobs and validate each of the eight lanes.
+No target Lean source or workflow changed in this repair. Commit this candidate
+and run fresh exact clean services/source-negative/legacy qualification; do not
+mark K passed from these host results.
