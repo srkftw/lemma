@@ -3,7 +3,7 @@
   "task": "003-kernel-isolated-services",
   "branch": "task/003-kernel-isolated-services",
   "base": "ff4045a79a6fda45f9cd8198587357846530a806",
-  "highest_complete_gate": "H",
+  "highest_complete_gate": "I",
   "gates": [
     {
       "gate": "A",
@@ -560,9 +560,9 @@
     {
       "gate": "I",
       "name": "blocking IPC",
-      "status": "in_progress",
-      "guest_execution": "focused_O0_O2_PASS",
-      "observed": "Current genuine full IPC packages and actual O0/O2 guests passed strict source/CFG/stack/read-only provenance, independent full source/artifact/raw review and all ten independently built User images. Clean cumulative A-I remains separately required.",
+      "status": "PASS",
+      "guest_execution": "clean_cumulative_O0_O2_PASS",
+      "observed": "Fresh exact clean repaired A-I acceptance and full independent source/artifact/raw/stack/process review PASS. Ten independently built current IPC Users match140 artifact bindings. Historical focused and failed cold attempts retain their original provenance. J/K remain unverified.",
       "diagnostic_only": {
         "kernel_probe": "build/compiler-gateI/kernel-probe-attempt1/result.json",
         "client_probe": "build/compiler-gateI/user-probe-attempt2/result.json",
@@ -697,7 +697,7 @@
         "exact_artifact_bindings": 140,
         "scope": "actual independent Lean/Core0 builds and strict audits, not independent guests; precommit dirty provenance retained"
       },
-      "next_command": "Run distinct fresh exact committed I clean-repair checkpoint with the narrowed current auditor; require terminal actual A-I PASS and independent full review before any J target implementation.",
+      "next_command": "Implement separately linked buffer service and ordinary clients at Gate J; require actual O0/O2 service acceptance and strict audits. Gate K final-source full regression/qualification/publication follows.",
       "cold_current": {
         "status": "FAIL",
         "source_commit": "ea5037b486f76fc0dc9ccb3b725d9a3fb2a47e76",
@@ -742,12 +742,145 @@
           "actual_evidence_mutations_rejected": 21,
           "scope": "Final held auditor/source-selected table review,44 genuine survey object/IR hash bindings and original failed artifacts unchanged; no new guest claim"
         }
+      },
+      "cold_repair_current": {
+        "status": "PASS",
+        "source": {
+          "commit": "22183c167ca62102a4a8db10a95ee77b27137f10",
+          "tree": "685a03cbf162aed80854ea19e0edf39e9bae6f3a",
+          "clean": true
+        },
+        "worktree": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma",
+        "expected_report": "build/kernel/I-clean-repair-attempt1/result.json",
+        "controller": "/tmp/lemma-gateI-clean-run-repair-attempt1.py",
+        "controller_sha256": "d141331acdce3d3a7aa5679b7cf2ffd772313dd91385607d219a71b0d8e6c735",
+        "shell_session": 17618,
+        "scope": "fresh exact clean A-E plus strong F/G/H/I with current strict audits; independently built Users compared separately; original FAIL preserved",
+        "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/result.json",
+        "sha256": "bca9adc9d1aed14895a77cccbe4caa8803397981b96a96a128fc6840251e805d",
+        "elapsed_seconds": 1499.380589723005,
+        "images": 28,
+        "reports": 32,
+        "guest_sessions": 36,
+        "observations": [
+          {
+            "gate": "F",
+            "instances": 12,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/F-O0-run/result.json",
+            "record_count": 1257,
+            "sha256": "df690f78247f3e4dc00522c30eecb4a7ed0171736ff6bfff2b9d9d6abc45fcde",
+            "status": "PASS"
+          },
+          {
+            "gate": "F",
+            "instances": 12,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/F-O2-run/result.json",
+            "record_count": 1479,
+            "sha256": "7e6ce36e3a955a67aa0365c6936e9c15fcd8f2a4d5666b0bdba39efa476de415",
+            "status": "PASS"
+          },
+          {
+            "gate": "G",
+            "instances": 18,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/G-O0-run/result.json",
+            "record_count": 2317,
+            "sha256": "7d63c470705ec6c7fcc8a252d8cc3168c8d83fd65261dea12beecf6fd887f33e",
+            "status": "PASS"
+          },
+          {
+            "gate": "G",
+            "instances": 18,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/G-O2-run/result.json",
+            "record_count": 2713,
+            "sha256": "2123e8d0131f084d75f46a95d75080cb20f4fd6929909eb00405195dccbef6ee",
+            "status": "PASS"
+          },
+          {
+            "gate": "H",
+            "instances": 5,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/H-O0-run/result.json",
+            "record_count": 819,
+            "sha256": "ce32937475659fae4dcb65ce59bea22482c84233f095b61e3ea39aa2cc751810",
+            "status": "PASS"
+          },
+          {
+            "gate": "H",
+            "instances": 5,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/H-O2-run/result.json",
+            "record_count": 609,
+            "sha256": "b012de66d4ac362dd6b110f950fa4ddc1eda72ca81ffb52bb4eac8e6c1b2f70d",
+            "status": "PASS"
+          },
+          {
+            "gate": "I",
+            "instances": 6,
+            "optimization": "O0",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/I-O0-run/result.json",
+            "record_count": 1443,
+            "sha256": "72bc8e480e4d9204b60c505dd92c877944c106f4a9b25a27bf04d14d3fb404aa",
+            "status": "PASS"
+          },
+          {
+            "gate": "I",
+            "instances": 6,
+            "optimization": "O2",
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/I-O2-run/result.json",
+            "record_count": 1393,
+            "sha256": "c18980e90e6ce4578e9dc43c59c8334a2853f2047c4ade12ed8c22285455c422",
+            "status": "PASS"
+          }
+        ],
+        "independent_review": {
+          "status": "PASS",
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/kernel/I-clean-repair-attempt1/independent-summary.json",
+          "sha256": "c3af9111c2edc845e5b68350657bcc39e2fed9cb95be373f17d56f82d1178364",
+          "object_stack_graphs": 108,
+          "raw_files": 110,
+          "K1_records": 22080,
+          "all_pids_absent": true,
+          "max_task_stack_bytes": 8016,
+          "task_stack_capacity_bytes": 8192
+        },
+        "independent_users": {
+          "status": "PASS",
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma/build/user/gateI-clean-repair-independent-attempt1/verification.json",
+          "sha256": "cad20271acfac919ff2e550bee27c70fc7100e75ac45af1623d3ed25fb457171",
+          "images": 10,
+          "byte_bindings": 140,
+          "source_unchanged": true
+        }
       }
     },
     {
       "gate": "J",
       "name": "buffer service and client",
-      "status": "not_run"
+      "status": "not_run",
+      "host_preparation": {
+        "status": "HOST_REVIEW_COMPLETE",
+        "scope": "Only serial framing/terminal/mixed-capture and independent byte-shadow consumers. No J target build or guest execution; target remains held behind cold I.",
+        "reports": [
+          {
+            "path": "build/kernel/gateJ/host/review-result.json",
+            "sha256": "49fb2918d0d83f4016a62a97727deb5c29691228ba0d03f4503f0e797db966f9"
+          },
+          {
+            "path": "build/kernel/gateJ/host/reference-review-result.json",
+            "sha256": "13f3464367c5af670653821fc52c29d00ba33da0ec65a1b3d5827eac35d379ed"
+          }
+        ],
+        "host_tests": {
+          "transport": 12,
+          "byte_reference": 10,
+          "scaffold": 18
+        },
+        "construction_design": "docs/contracts/003-buffer-service-v1.md"
+      }
     },
     {
       "gate": "K",
@@ -755,5 +888,5 @@
       "status": "not_run"
     }
   ],
-  "verified_prefix_commit": "f77a6b1b3609876816000ce86a8a6c1904c3de2a"
+  "verified_prefix_commit": "22183c167ca62102a4a8db10a95ee77b27137f10"
 }

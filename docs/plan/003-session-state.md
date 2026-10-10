@@ -749,3 +749,37 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   build/kernel/gateI/repair-review/result.json SHA256
   c8a1011893fb86dd9138a1c74e230a3e80c42f29043794b3e09d614b17ddb489.
   This is audit repair evidence, not a new clean guest acceptance result.
+
+## Exact committed I repair checkpoint running
+
+- Minimal four-file host/ledger repair commit22183c167ca62102a4a8db10a95ee77b27137f10,
+  tree685a03cbf162aed80854ea19e0edf39e9bae6f3a. Fresh managed checkout
+  /home/sreekumaar/.codex/worktrees/lemma-kernel-i-repair-acceptance/lemma
+  is clean at that revision, with no copied project outputs.
+- External controller/tmp/lemma-gateI-clean-run-repair-attempt1.py shell17618
+  runs fresh A-E/F/G/H/I into build/kernel/I-clean-repair-attempt1. Log is
+  under ignored build/kernel/I-clean-controller-logs/repair-attempt1.log.
+  Independent full reviewer prepared; current-source ten standaloneUsers
+  built/audited separately, with140 package-byte comparisons pending actual
+  fresh full I packages. No former failed output is inherited or relabeled.
+- Primary root prepares host-only Buffer command/reference consumers. These
+  files are excluded from the repair checkpoint. J target remains held until
+  terminal actual coldI PASS and independent review. K remains not_run.
+
+## Clean A-I accepted checkpoint (2026-10-10 00:57 UTC)
+
+- Exact clean committed repair22183c167ca62102a4a8db10a95ee77b27137f10,
+  tree685a03cbf162aed80854ea19e0edf39e9bae6f3a, cold controller PASS1499.380590s.
+  Fresh28images/32checkerreports/36actual guest sessions. Report SHA256
+  bca9adc9d1aed14895a77cccbe4caa8803397981b96a96a128fc6840251e805d.
+- Full independent review PASS:108object stack graphs,110rawfiles,22080K1
+  packets, all36PIDs absent,132producer/37consumer snapshots unchanged.
+  Review SHA256c3af9111c2edc845e5b68350657bcc39e2fed9cb95be373f17d56f82d1178364.
+  Maximum task trap stack8016/8192 remains a strict bound, with176bytes margin.
+- Ten separately built clean current IPC Users passed audits and all140 exact
+  package-byte comparisons. Verification SHA256
+  cad20271acfac919ff2e550bee27c70fc7100e75ac45af1623d3ed25fb457171.
+  No copied artifacts or independent User guests claimed.
+- Highest complete gate isI. Earlier cold FAILs remain preserved unchanged.
+  J target implementation is now released; K and publication remainnot_run.
+  Final-source legacy, A-K acceptance and actual CI are required before merge.
