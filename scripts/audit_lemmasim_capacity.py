@@ -34,6 +34,11 @@ def construction(unit: dict, pre_ir: str) -> dict:
         'Lemma.Kernel.Loader.validateExpandedStack': ['Lemma.Kernel.Loader.storedQuad'],
         'Lemma.Kernel.Loader.teardown': ['Lemma.Kernel.Loader.storedQuad',
                                         'Lemma.Kernel.Loader.releaseStackHandle'],
+        'Lemma.Kernel.Memory.AddressSpace.create': ['Lemma.Kernel.Memory.AddressSpace.buildRegistry'],
+        'Lemma.Kernel.Memory.AddressSpace.buildRegistry': ['Lemma.Kernel.Memory.Batch.allocate',
+                                                          'Lemma.Kernel.Memory.AddressSpace.copyRegistryStep'],
+        'Lemma.Kernel.Memory.AddressSpace.base': ['Lemma.Kernel.Memory.AddressSpace.validateRegistry'],
+        'Lemma.Kernel.Memory.AddressSpace.destroy': ['Lemma.Kernel.Memory.AddressSpace.rollbackRegistry'],
     }
     required = set(edges) | {name for callees in edges.values() for name in callees}
     required |= {'Lemma.Kernel.Memory.Frames.runtimeCount', 'Lemma.Kernel.Memory.Frames.runtimeQuota',
@@ -41,6 +46,9 @@ def construction(unit: dict, pre_ir: str) -> dict:
                  'Lemma.Kernel.Loader.kernelStackThirdHandleOffset',
                  'Lemma.Kernel.Loader.kernelStackFourthHandleOffset',
                  'Lemma.Kernel.Loader.kernelStackPagesOffset', 'Lemma.Kernel.Loader.kernelStackBaseOffset'}
+    required |= {'Lemma.Kernel.Memory.AddressSpace.registryCount',
+                 'Lemma.Kernel.Memory.AddressSpace.registryList',
+                 'Lemma.Kernel.Memory.AddressSpace.expandedCapacity'}
     if not required <= names.keys():
         raise Core0Error(f'expanded-stack genuine source closure missing: {sorted(required - names.keys())}')
     for caller, callees in edges.items():
@@ -54,19 +62,24 @@ def construction(unit: dict, pre_ir: str) -> dict:
         body = _ir_definition_body(pre_ir, names['Lemma.Kernel.Loader.' + short])
         if re.fullmatch(r'\s*entry:\s*ret i64 ' + str(value) + r'\s*', body) is None:
             raise Core0Error('expanded-stack layout constant differs from emitted value')
+    for short, value in {'registryCount':1408, 'registryList':1424, 'expandedCapacity':1024}.items():
+        body = _ir_definition_body(pre_ir, names['Lemma.Kernel.Memory.AddressSpace.' + short])
+        if re.fullmatch(r'\s*entry:\s*ret i64 ' + str(value) + r'\s*', body) is None:
+            raise Core0Error('expanded registry layout differs from emitted value')
     return {'allocated_pages':4, 'allocated_bytes':16384, 'usable_bytes':CAPACITY,
             'sentinel_bytes':32, 'sentinels_are_hardware_guards':False,
             'construction':'owned-physically-contiguous-four',
             'source_symbols':{name:names[name] for name in sorted(required)},
-            'initial_page_table_frames':13, 'owned_task_base_frames':20,
-            'global_task_base_frames':21,
-            'accounting_formula':'13 initial tables + 1 data + 2 user stack + 4 kernel stack; descriptor charged separately to owner1'}
+            'initial_page_table_frames':13, 'leaf_registry_frames':8,
+            'user_leaf_capacity':1024, 'owned_task_base_frames':28,
+            'global_task_base_frames':29,
+            'accounting_formula':'13 initial tables + 8 leaf registry + 1 data + 2 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1'}
 
 
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') != 'lemmasim-bringup' or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
+    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize'} or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

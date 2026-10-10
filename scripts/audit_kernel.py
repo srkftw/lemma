@@ -149,6 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
+MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
                              "service-normal":SERVICE_USER_IMAGES,"service-development":SERVICE_DEVELOPMENT_USER_IMAGES}
@@ -156,6 +157,16 @@ MULTI_USER_CONFIGURATIONS.update({configuration: (*SERVICE_USER_IMAGES, {
     "key": "fault", "id": 5, "module": "Lemma.User.Entry", "source": "Lemma.User.Entry.main", "args": ["u64"],
     "symbol_prefix": "lemma_user_fault_", "startup_case": case, "directory": "users/fault", "boot_role": "buffer-fault-client"})
     for configuration, case in SERVICE_INSTRUCTION_CONFIGURATIONS.items()})
+
+
+NOTEBOOK_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "source": module + ".main", "args": ["u64"],
+                              "symbol_prefix": "lemma_user_" + key + "_", "startup_case": "none", "directory": "users/" + key,
+                              "boot_role": role}
+                             for index, (key, module, role) in enumerate((("store", "Lemma.Services.Store.Server", "store-server"),
+                                 ("notebook", "Lemma.Applications.Notebook", "notebook")), 1))
+MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-notebook", "lemmasim-initialize"})
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -362,6 +373,14 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
 
 
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
+    if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
+        # The selected audit checks the genuinely elaborated construction,
+        # registry, validation and cleanup closure for this larger profile.
+        from audit_lemmasim_capacity import construction
+        report = construction(unit, pre_ir)
+        if (layout["task_kernel_stack_pages"], layout["task_kernel_stack_bytes"]) != (4, 16384):
+            raise Core0Error("expanded stack source/layout contract differs")
+        return report
     """Bind the capacity to genuine reachable construction and cleanup code."""
     by_source = {}
     for row in unit["functions"]:
@@ -1867,7 +1886,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
-                ("core0-kernel-v0.3" if role == "kernel" and configuration == "lemmasim-bringup" else CONTRACTS[role])):
+                ("core0-kernel-v0.3" if role == "kernel" and configuration in {"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"} else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -1929,7 +1948,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             "deviceWrite32": ("device-write32", None, 0, "word", {"kernel"}),
             "deviceRead64": ("device-read64", None, 0, "word", {"kernel"}),
             "deviceWrite64": ("device-write64", None, 0, "word", {"kernel"}),
-        } if configuration == "lemmasim-bringup" else {}
+        } if configuration in {"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"} else {}
         operations = {**EXECUTION_OPERATIONS, **sim_operations}
         if suffix not in operations or identity != "Lemma.Core0.Execution.Op." + suffix:
             raise Core0Error("unknown execution operation identity")
@@ -2005,17 +2024,18 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
-    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
+    expanded = configuration in LEMMASIM_CONFIGURATIONS
+    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 8192 if expanded else 512):
         raise Core0Error("pinned RAM/frame contract differs")
     if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
-            or layout["task_kernel_stack_pages"] != 2 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
-        raise Core0Error("owned two-page kernel stack construction contract differs")
+            or layout["task_kernel_stack_pages"] != (4 if expanded else 2) or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
+        raise Core0Error("owned kernel stack construction contract differs")
     if layout.get("context") != CONTEXT_LAYOUT:
         raise Core0Error("fixed supervisor context/stack contract differs")
     expected = {"firmware": (0x80000000, 0x80010000), "firmware-private": (0x80100000, 0x80110000),
                 "supervisor": (0x80200000, 0x80300000), "metadata": (0x80400000, 0x80500000),
                 "supervisor-stack": (0x80500000, 0x80510000), "boot-package": (0x80600000, 0x80700000),
-                "frame-pool": (0x82000000, 0x82200000), "dtb-reserve": (0x87e00000, 0x88000000)}
+                "frame-pool": (0x82000000, 0x84000000 if expanded else 0x82200000), "dtb-reserve": (0x87e00000, 0x88000000)}
     rows = _array(layout.get("intervals"), "layout intervals")
     observed = {}
     for raw in rows:
@@ -2027,7 +2047,8 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     if observed != expected:
         raise Core0Error("authoritative reserved-region contract differs")
     user = _object(layout.get("user"), "user layout")
-    if user != {"text_base": 0x10000, "text_limit": 0x1f000, "data_base": 0x20000, "data_bytes": 4096,
+    notebook = configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS
+    if user != {"text_base": 0x1000000 if notebook else 0x10000, "text_limit": 0x1080000 if notebook else 0x1f000, "data_base": 0x20000, "data_bytes": 4096,
                 "stack_base": 0x3fffc000, "stack_pages": 2}:
         raise Core0Error("user virtual layout differs")
     return layout
@@ -2076,7 +2097,8 @@ def validate_user_primitive_catalog(value: object, image: dict, *, configuration
 
 
 def validate_package_contract(value: object, *, configuration: str, catalog: dict | None = None) -> dict:
-    image = {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
+    notebook = configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS
+    image = {"id": 1, "entry": 0x1000000 if notebook else 0x10000, "text_va": 0x1000000 if notebook else 0x10000, "text_capacity": 0x80000 if notebook else 0xf000,
              "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0}
     multi = configuration in MULTI_USER_CONFIGURATIONS
     if multi:
@@ -2085,8 +2107,8 @@ def validate_package_contract(value: object, *, configuration: str, catalog: dic
                    **({"boot_role": row["boot_role"]} if configuration in MANAGED_POLICIES else {})} for row in selected]
     expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
                 "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
-                "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
-                "version": 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
+                "contract_version": "lemma-boot-package-v2" if notebook else "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
+                "version": 2 if notebook else 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
                 "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image}),
                 **managed_fields(configuration)}
     contract = _object(value, "boot package contract")
@@ -2101,7 +2123,7 @@ def validate_package_payloads(package: bytes, contract: dict, payloads: list[tup
     """Bind every v1 descriptor to a separately audited image, in registry order."""
     count = contract["image_count"]
     minimum = 32 + count * 96
-    if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], 1, count, len(package)):
+    if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], contract["version"], count, len(package)):
         raise Core0Error("boot package header/count/extent differs")
     images = contract.get("images", [contract.get("image")])
     occupied, last, reports = bytearray(len(package)), minimum, []
@@ -3161,7 +3183,7 @@ def function_ranges(symbol_text: str) -> dict[str, tuple[int, int]]:
 
 def validate_machine(text: str, *, user: bool = False,
                      ranges: dict[str, tuple[int, int]] | None = None, user_csr_pc: int | None = None,
-                     user_attack: dict | None = None) -> None:
+                     user_attack: dict | None = None, configuration: str = "normal") -> None:
     if user_csr_pc is not None and (not user or type(user_csr_pc) is not int):
         raise Core0Error("CSR exception lacks exact user instruction address")
     return_site, zero_window = None, None
@@ -3215,7 +3237,8 @@ def validate_machine(text: str, *, user: bool = False,
             raise Core0Error("ordinary user image contains privileged machine instructions")
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
-            if not names or not set(names) <= KNOWN_CSRS:
+            allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
+            if not names or not set(names) <= allowed:
                 raise Core0Error("unknown CSR in platform code")
     if not found:
         raise Core0Error("empty machine instruction corpus")
@@ -3267,10 +3290,11 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
         raise Core0Error(f"{name} executable symbol provenance differs: missing {sorted(expected-symbols)}; unexpected {sorted(symbols-expected)}")
     addresses = numeric_symbols(inspect("llvm-nm", ["--defined-only", image], name + "-addresses"))
     segments = parse_load_segments(inspect("llvm-readelf", ["-l", "--wide", image], name + "-segments"))
-    intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(0x10000, 0x1f000), (0x20000, 0x21000)]
+    text_base, text_limit = layout["user"]["text_base"], layout["user"]["text_limit"]
+    intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(text_base, text_limit), (0x20000, 0x21000)]
     if not segments:
         raise Core0Error("ELF load segment corpus is empty")
-    if user and (len(segments) != 2 or segments[0]["virtual_address"] != 0x10000 or segments[0]["flags"] != "RE"
+    if user and (len(segments) != 2 or segments[0]["virtual_address"] != text_base or segments[0]["flags"] != "RE"
                  or segments[0]["memory_size"] != segments[0]["file_size"]
                  or segments[1]["virtual_address"] != 0x20000 or segments[1]["flags"] != "RW"
                  or segments[1]["file_size"] != 16 or segments[1]["memory_size"] != 4096):
@@ -3281,12 +3305,12 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
                 or not any(lo <= begin and begin + size <= hi for lo, hi in intervals) or segment["physical_address"] != begin):
             raise Core0Error("ELF PT_LOAD permissions or declared range differs")
     entry = re.search(r"Entry point address:\s*(0x[0-9a-fA-F]+)", header)
-    required = 0x10000 if user else 0x80000000
+    required = text_base if user else 0x80000000
     if not entry or int(entry[1], 16) != required:
         raise Core0Error("ELF entry point differs")
     for symbol in symbols:
         privilege = "U" if user else ("M" if symbol.startswith("lemma_firmware_") or symbol in M_SYMBOLS else "S")
-        low, high = ((0x10000, 0x1f000) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
+        low, high = ((text_base, text_limit) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
         if symbol not in addresses or not low <= addresses[symbol] < high:
             raise Core0Error(f"{symbol} lies outside its source privilege range")
     machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
@@ -3307,7 +3331,7 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
                                          configuration=layout["configuration"], image_key=unit.get("image_key") if unit else None,
                                          unit=unit) if user else None
     validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None,
-                     user_attack=attack if user and user_case in INSTRUCTION_CASES else None)
+                     user_attack=attack if user and user_case in INSTRUCTION_CASES else None, configuration=layout["configuration"])
     record = {"entry": required, "segments": segments, "function_symbols": sorted(symbols),
               "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
     if user:
@@ -3426,7 +3450,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
         if (output_dir / actual).read_bytes() != (output_dir / target).read_bytes():
             raise Core0Error("per-image packaged payload differs from its independently extracted ELF section")
     text, data = (output_dir / "text.bin").read_bytes(), (output_dir / "data.bin").read_bytes()
-    if not 0 < len(text) <= 0xf000 or len(data) != 16:
+    if not 0 < len(text) <= layout["user"]["text_limit"] - layout["user"]["text_base"] or len(data) != 16:
         raise Core0Error("per-image user text/initialized-data extent differs")
     service_quota = None
     if configuration in SERVICE_CONFIGURATIONS:
@@ -3861,8 +3885,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         intervals = {row["name"]: row for row in layout["intervals"]}
         capacities = {"machine": intervals["firmware-private"]["limit"] - intervals["firmware-private"]["base"],
                       "boot": intervals["supervisor-stack"]["limit"] - layout["context"]["boot_stack_floor"],
-                      "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
-        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 8192, "user": 8192}:
+                      "kernel-trap": layout["task_kernel_stack_bytes"] - (32 if configuration in LEMMASIM_CONFIGURATIONS else 0), "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
+        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 16352 if configuration in LEMMASIM_CONFIGURATIONS else 8192, "user": 8192}:
             raise Core0Error("authoritative stack capacities differ")
         startup = (output_dir / "startup.S").read_text()
         user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
@@ -3887,7 +3911,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             primitive_source = user_startup if role == "user" else startup
             primitives = {row["primitive_symbol"]: machine_frame(primitive_source, row["primitive_symbol"])
                           for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
-            if unit["used_device_ops"]:
+            if unit["used_device_ops"] or configuration in LEMMASIM_CONFIGURATIONS and any(row["stable_id"].startswith("lemmasim.device-") for row in unit["used_execution_ops"]):
                 primitives["core0_io_fence"] = machine_frame(primitive_source, "core0_io_fence")
             undefined = {line.split()[-1] for line in inspect("llvm-nm", ["--undefined-only", object_file], role + "-stack-undefined").splitlines() if line.split()}
             if not undefined <= set(primitives):
