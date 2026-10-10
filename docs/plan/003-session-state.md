@@ -1183,3 +1183,17 @@ pre-IR host fixtures passed; no new H artifact or guest pass is inferred.
 Independent final review also found that the cumulative checker did not include
 its final observer/replay in its deadline acceptance. A narrow bounded-check
 repair and meaningful failure fixtures are required before committing/rerunning.
+
+The final host-only regression repairs passed283 kernel tests (including actual
+main/check deadline-overrun failures),445 foundation tests,18 scaffold tests and
+metadata; diff checking passed. All real host commands exited0. The kernel log's
+late-contradiction line comes from an expected failing observer fixture, not a
+failed unittest run. Summary:
+`build/kernel/gateK/host/final-regression-repair-summary.json`, SHA256
+`4c5ae7467a688ea794df5b8965f801b3e471b1ebfd4dd1920d0917d90b8ced40`. The repairs are committed at `afcc5e87d707fbd07e50ecb05d59c15765aeb675`.
+The cumulative deadline now includes the last observer and full semantic replay,
+rejects missing/nonfinite/out-of-range timing and verifies the absolute deadline
+again after persistence. No maintained target Lean or workflow changed. Run
+fresh cold full A–I plus full Task001/Task002 stress/qualification in separate
+exact-revision worktrees. Existing64 K/J/User and mutation results remain source
+specific; actual current-head CI is required before the authorized guarded merge.

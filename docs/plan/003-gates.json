@@ -1536,6 +1536,20 @@
         "original_failures": "build/kernel/gateK/final-regression-failures/summary.json",
         "original_failures_sha256": "755c4f9c5456f316503a3cc43f078af58f209fed8b0bf5791bb11e8d44fedf40",
         "no_pass_inheritance": true
+      },
+      "final_regression_host_repairs": {
+        "status": "HOST_PASS_ONLY",
+        "implementation_commit": "afcc5e87d707fbd07e50ecb05d59c15765aeb675",
+        "kernel_tests": 283,
+        "foundation_tests": 445,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "target_lean_and_workflow_changes": false,
+        "summary": "build/kernel/gateK/host/final-regression-repair-summary.json",
+        "summary_sha256": "4c5ae7467a688ea794df5b8965f801b3e471b1ebfd4dd1920d0917d90b8ced40",
+        "cold_A_I": "NOT_RUN",
+        "cold_legacy_cumulative_qualification": "NOT_RUN",
+        "CI_publication_merge": "NOT_RUN"
       }
     }
   ],
