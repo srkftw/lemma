@@ -337,7 +337,7 @@ class ServiceTrace(Trace):
                     action["reference"] = deepcopy(self.model)
                     action["actual_backing_count"] = accepted["actual_backing_count"]
             self.expiries.append({"release": previous, "time": list(event)}); self.pending_expiry = None
-        elif 0x331 <= tag <= 0x33c or 0x340 <= tag <= 0x345:
+        elif 0x331 <= tag <= 0x33c or 0x340 <= tag <= 0x346:
             self.observe_actor(event)
         elif tag == 0x301:
             if self.configuration != "service-development" or self.current is not None or (a, b, c, d) != (self.server, self.cli, 0, 0) or self.armed:
@@ -556,12 +556,20 @@ class ServiceTrace(Trace):
             if tag == 0x341:
                 request = allocation["request"]
                 accepted = self.accepted_result(self.server, request, a)
+                phase = state.get("fault_phase", 0)
                 if (state["temporary"] or state.get("fault_create") is not None
                         or request != state.get("next_create", 1) or not 1 <= request <= 255 or request % 2 != 1
+                        or phase not in {0, 2}
                         or not accepted or accepted["response"] != [0x323, self.server, request, 0, 64]):
                     raise Core0Error("Fault creation lacks its exact bounded successful Create response")
-                state["fault_create"] = {"request": request, "handle": b,
-                                         "discard": not state.get("seen_global_denial", False)}
+                if phase == 2:
+                    old = state.get("released_fault_handle")
+                    if (not state.get("seen_global_denial", False) or old is None
+                            or b & 3 != old & 3 or b >> 2 <= old >> 2):
+                        raise Core0Error("Fault replacement lacks the released slot's fresh post-denial generation")
+                state["fault_create"] = {"request": request, "handle": b, "phase": phase}
+                state["fault_phase"] = 1 if phase == 0 else 3
+                state["next_create"] = request + 2
             allocation["claimed"] = True
             self.model.foreign_created(b); self.foreign[b] = {"owner": a, "epoch": d, "capacity": c}
             state["persistent" if tag == 0x332 else "temporary"] = b
@@ -576,7 +584,8 @@ class ServiceTrace(Trace):
             elif d != length: raise Core0Error("ordinary actor binary count differs")
             if tag == 0x342:
                 creation = state.get("fault_create")
-                if (not creation or creation["discard"] or creation["handle"] != b
+                if (not creation or creation["phase"] != 2 or creation["handle"] != b
+                        or state.get("fault_phase") != 3 or state.get("released_fault_handle") is None
                         or not state.get("seen_global_denial", False)):
                     raise Core0Error("Fault binary witness preceded its own actual global denial")
                 for request, payload_bytes in ((257, 64), (258, 80)):
@@ -595,19 +604,30 @@ class ServiceTrace(Trace):
             if not accepted or accepted["response"] != [0x323, self.server, releases[0]["request"], 0, 64]:
                 raise Core0Error("Peer destroy lacks its exact authenticated successful response")
             releases[0]["confirmed"] = True; state["temporary"] = 0
-        elif tag in {0x338, 0x343}:
-            if c != 204 or d != (self.epoch if peer else 0): raise Core0Error("actual global quota denial differs")
+        elif tag in {0x338, 0x343, 0x346}:
+            if c != 204 or peer and d != self.epoch: raise Core0Error("actual global quota denial differs")
             accepted = self.accepted_result(self.server, b, a)
             if not accepted or not accepted["response"] or accepted["response"][3] != 204:
                 raise Core0Error("quota witness lacks actual authenticated Server denial")
             if accepted.get("actual_backing_count") != 4:
                 raise Core0Error("global denial lacks four actual live backing pages")
             if not peer:
-                if (state["temporary"] or state.get("fault_create") is not None
-                        or b != state.get("next_create", 1) or not 1 <= b <= 255 or b % 2 != 1
+                if (b != state.get("next_create", 1) or not 1 <= b <= 255 or b % 2 != 1
                         or accepted["response"] != [0x323, self.server, b, 204, 64]):
                     raise Core0Error("Fault denial lacks its exact next bounded Create request")
-                state["seen_global_denial"] = True
+                phase = state.get("fault_phase", 0)
+                creation = state.get("fault_create")
+                if tag == 0x343:
+                    if (phase != 1 or not creation or creation["phase"] != 0
+                            or d != state["temporary"] or d != creation["handle"]
+                            or d not in self.foreign or self.foreign[d]["owner"] != a):
+                        raise Core0Error("Fault quota witness lacks its retained pre-denial buffer")
+                    state["seen_global_denial"] = True
+                    state["denial_request"] = b
+                    state["fault_phase"] = 4
+                elif (phase not in {0, 2} or d != phase or state["temporary"]
+                        or creation is not None):
+                    raise Core0Error("Fault retry denial differs from its acquiring/replacement phase")
                 state["next_create"] = b + 2
         elif tag == 0x339:
             if b not in {80, 83, 96, 200, 201} or not c <= self.epoch or d != state["persistent"]:
@@ -628,10 +648,11 @@ class ServiceTrace(Trace):
                 raise Core0Error("faulting actor did not verify its own actual buffer")
         elif tag == 0x345:
             creation = state.get("fault_create")
-            if (not creation or not creation["discard"] or creation["handle"] != b
-                    or state["temporary"] != b or c != self.epoch or d != creation["request"] + 1
-                    or not 2 <= d <= 256 or d % 2 != 0 or state.get("seen_global_denial", False)):
-                raise Core0Error("Fault retry destroy identity/epoch/request differs from its premature Create")
+            if (not creation or creation["phase"] != 0 or creation["handle"] != b
+                    or state["temporary"] != b or c != self.epoch or d != state.get("denial_request", 0) + 1
+                    or not 2 <= d <= 256 or d % 2 != 0 or not state.get("seen_global_denial", False)
+                    or state.get("fault_phase") != 4):
+                raise Core0Error("Fault destroy identity/epoch/request preceded its own held-buffer denial")
             accepted = self.accepted_result(self.server, d, a)
             if not accepted or accepted["response"] != [0x323, self.server, d, 0, 64]:
                 raise Core0Error("Fault retry destroy lacks its actual successful full-caller response")
@@ -643,6 +664,8 @@ class ServiceTrace(Trace):
             releases[0]["confirmed"] = True
             state["temporary"] = 0
             state["fault_create"] = None
+            state["released_fault_handle"] = b
+            state["fault_phase"] = 2
             state["next_create"] = d + 1
         else: raise Core0Error("unknown service actor record")
         self.actor_events.append(list(event))
