@@ -21,3 +21,15 @@ neither managed Lean support nor arbitrary foreign-code linkage. Compiler fixtur
 `tests/lemmasim/CompilerDevices.lean` checks genuine elaboration, rejection under
 old profiles, access widths, volatile operations, and fences. This local check is
 not compiler correctness or a whole-machine execution certificate.
+
+The pinned optimizer may replace declared scalar arithmetic with
+`llvm.usub.sat.i64` (unsigned subtraction clamped to zero) and `llvm.fshl.i64`
+(concatenated unsigned funnel shift modulo 64). The compiled notebook's observed
+funnel shift has equal input words and therefore rotates its value. The artifact
+auditor admits these two optimizer intrinsics only for the closed LemmaSim
+configurations, together with historical min/max intrinsics. They lower to
+ordinary RV64IM integer instructions and introduce no runtime helper or target
+source-language operation. Undefined symbols, generated instructions, literal
+tables, ownership and stack accounting remain independently checked. This is
+accounting for pinned optimized artifacts, not a claim of general LLVM or Lean
+compiler correctness.

@@ -243,21 +243,29 @@ private def redraw : Action :=
   dirty 0 0 width height
 
 private def loadPage (page : UInt64) : Action :=
-  .bind (readObject (0x100 + page) pageIndex Lemma.Documents.Ink.pageBytes) fun s _ =>
-  .bind (if s = 230 then Lemma.Documents.Ink.emptyPage pageIndex page else if s = 0 then Lemma.Documents.Ink.validatePage pageIndex page else .done s 0)
-    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (readObject (0x100 + page) loadedInk 128) fun s _ =>
+  .bind (if s = 230 then Lemma.Documents.Ink.emptyPage pageIndex page else if s = 0 then
+    .bind (Lemma.Documents.Ink.pageRecordBytes loadedInk) fun s bytes => if statusFailed s = true then .done s 0 else
+    .bind (readObject (0x100 + page) loadedInk bytes) fun s copied => if statusFailed s = true then .done s 0 else
+    Lemma.Documents.Ink.decodePage loadedInk pageIndex page copied
+    else .done s 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 80 page) fun s _ => if statusFailed s = true then .done s 0 else redraw
 
-private def loadNotebook (ns : UInt64) : Action :=
-  .bind (put 72 ns) fun s _ => if statusFailed s = true then .done s 0 else
+private def readOnlyNotebook (status : UInt8) : Action :=
+  .bind (put 136 3) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 424 status.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 416 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 88 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Ink.emptyPage pageIndex 1) fun s _ => if statusFailed s = true then .done s 0 else redraw
+
+private def readNotebook : Action :=
   .bind (readObject 1 rootBuffer 64) fun s _ =>
   if s = 230 then
     .bind (put 88 1) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 416 1) fun s _ => if statusFailed s = true then .done s 0 else loadPage 1
   else if statusFailed s = true then
-    .bind (put 136 3) fun stored _ => if statusFailed stored = true then .done stored 0 else
-    .bind (put 424 s.toUInt64) fun stored _ => if statusFailed stored = true then .done stored 0 else
-    .bind (Lemma.Documents.Ink.emptyPage pageIndex 1) fun stored _ => if statusFailed stored = true then .done stored 0 else redraw
+    readOnlyNotebook s
   else
     .bind (Lemma.Documents.Ink.field rootBuffer 0) fun s magic => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.field rootBuffer 8) fun s version => if statusFailed s = true then .done s 0 else
@@ -269,6 +277,20 @@ private def loadNotebook (ns : UInt64) : Action :=
     if (if brush = 256 then true else if brush = 512 then true else if brush = 1024 then true else if brush = 2048 then true else false) = false then .done 234 0 else
     .bind (put 272 brush) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 88 pages) fun s _ => if statusFailed s = true then .done s 0 else loadPage 1
+
+/-- Switching the home notebook closes the old namespace and opens the new
+one through the ordinary document endpoint. Toolbar dispatch permits this
+only after all pending transactions and partial strokes have drained. -/
+private def loadNotebook (ns : UInt64) : Action :=
+  .bind (get 72) fun s previous => if statusFailed s = true then .done s 0 else
+  .bind (if previous = 0 then .done 0 0 else blocking 10 0 0 0 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 72 ns) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 416 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (blocking 1 0 0 0 0 0) fun s _ =>
+  if statusFailed s = true then readOnlyNotebook s else
+  .bind (put 136 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind readNotebook fun s _ => if statusFailed s = true then readOnlyNotebook s else .done 0 0
 
 private def statusTileStep (i _ : UInt32) (acc surface dimensions _ _ : UInt64) : Action :=
   let x := i.toUInt64 * 32
@@ -296,6 +318,14 @@ private def issue (operation offset count source : UInt64) : Action :=
   .bind (put 168 pending) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 232 operation) fun s _ => if statusFailed s = true then .done s 0 else put 448 count
 
+/-- Developer observations originate in the authorized guest consumer. These
+bounded records describe UI commit state without host document parsing. -/
+private def reportCommitState (tag value object : UInt64) : Action :=
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console tag value page ns object
+
 private def startSave (source bytes object stage : UInt64) : Action :=
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
   if 0x7ffffffffffffffe ≤ sequence then .done 235 0 else
@@ -306,7 +336,14 @@ private def startSave (source bytes object stage : UInt64) : Action :=
   .bind (put 384 (sequence + 1)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 184 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 160 1) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else issue 2 0 bytes 0
+  .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x423 (sequence + 1) object) fun s _ => if statusFailed s = true then .done s 0 else issue 2 0 bytes 0
+
+/-- Snapshot the bounded current index into compact v2 bytes. The staging
+span is immutable until the async store has consumed its transaction. -/
+private def savePage (page : UInt64) : Action :=
+  .bind (Lemma.Documents.Ink.encodePage pageIndex loadedInk) fun s bytes =>
+  if statusFailed s = true then .done s 0 else startSave loadedInk bytes (0x100 + page) 1
 
 private def issueNext : Action :=
   .bind (get 184) fun s offset => if statusFailed s = true then .done s 0 else
@@ -330,7 +367,7 @@ private def finishRecord : Action :=
     .bind (Lemma.Documents.Ink.addEntry pageIndex object stroke) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (if lifecycle &&& 1 = 1 then Lemma.Documents.Ink.addEdit pageIndex 1 stroke else .done 0 0)
       fun s _ => if statusFailed s = true then .done s 0 else
-    startSave pageIndex Lemma.Documents.Ink.pageBytes (0x100 + page) 1
+    savePage page
   else if stage = 1 then
     .bind (get 88) fun s pages => if statusFailed s = true then .done s 0 else
     .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
@@ -353,7 +390,9 @@ private def finishRecord : Action :=
 private def saveFailure (status : UInt8) : Action :=
   .bind (put 424 status.toUInt64) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 136 2) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+  .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x424 status.toUInt64 object) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
 
 private def pumpSave : Action :=
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
@@ -373,7 +412,8 @@ private def pumpSave : Action :=
   else if phase = 3 then finishRecord else if phase = 4 then
     .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
     .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
+    .bind (put 136 (if count = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState 0x421 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
   else .done 234 0
 
 private def prepareChunk (buffer stroke lifecycle : UInt64) : Action :=
@@ -438,7 +478,7 @@ private def editPage (operation : UInt64) : Action :=
   .bind (put 240 changed) fun s _ => if statusFailed s = true then .done s 0 else
   .bind redraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (startSave pageIndex Lemma.Documents.Ink.pageBytes (0x100 + page) 1) fun s _ =>
+  .bind (savePage page) fun s _ =>
   if statusFailed s = true then saveFailure s else publishStatus
 
 private def toolbar (button : UInt64) : Action :=
@@ -455,7 +495,7 @@ private def toolbar (button : UInt64) : Action :=
     .bind (loadNotebook (if ns = 1 then 2 else 1)) fun s _ => if statusFailed s = true then saveFailure s else
     .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
     if create = 1 then
-      .bind (startSave pageIndex Lemma.Documents.Ink.pageBytes 0x101 1) fun s _ =>
+      .bind (savePage 1) fun s _ =>
       if statusFailed s = true then saveFailure s else publishStatus
     else .done 0 0
   else if button = 1 then if 1 < page then loadPage (page - 1) else .done 0 0
@@ -463,18 +503,23 @@ private def toolbar (button : UInt64) : Action :=
     if pages < 64 then
       .bind (put 88 (pages + 1)) fun s _ => if statusFailed s = true then .done s 0 else
       .bind (loadPage (pages + 1)) fun s _ => if statusFailed s = true then .done s 0 else
-      .bind (startSave pageIndex Lemma.Documents.Ink.pageBytes (0x101 + pages) 1) fun s _ =>
+      .bind (savePage (pages + 1)) fun s _ =>
       if statusFailed s = true then saveFailure s else publishStatus
     else saveFailure 235
   else if button = 3 then editPage 3 else if button = 4 then editPage 4 else if button = 5 then editPage 5 else
   if button = 6 then
     .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
     .bind (put 272 (if brush < 2048 then brush * 2 else 256)) fun s _ =>
-    if statusFailed s = true then .done s 0 else publishStatus
+    if statusFailed s = true then .done s 0 else
+    .bind (get 272) fun s width => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Documents.Ink.root rootBuffer pages width) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (startSave rootBuffer 64 1 2) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
   else if button = 7 then
     .bind (put 224 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 160 4) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState 0x423 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (issue 7 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
   else .done 0 0
 
@@ -516,6 +561,8 @@ private def pumpCancelledRedraw : Action :=
   if needed = 0 then .done 0 0 else
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
   if different phase 0 = true then .done 0 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  .bind (if status < 2 then put 136 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind redraw fun s _ => if statusFailed s = true then .done s 0 else put 432 0
 
 private def inputSample : Action :=
@@ -618,7 +665,7 @@ def main (bootArgument : UInt64) : Action :=
   .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
-  .bind (if create = 1 then startSave pageIndex Lemma.Documents.Ink.pageBytes 0x101 1 else .done 0 0)
+  .bind (if create = 1 then savePage 1 else .done 0 0)
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else

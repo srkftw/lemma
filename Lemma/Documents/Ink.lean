@@ -166,6 +166,95 @@ def redo (buffer : UInt64) : Action :=
   .bind (put buffer 48 (cursor + 1)) fun s _ => .done s stroke
 
 
+/-- The resident page uses fixed v1 offsets. A v2 on-disk page contains only
+its active entry/edit prefixes, with the same ordered stable IDs. -/
+def pageRecordVersion : UInt64 := 2
+
+private def pageShape (buffer : UInt64) : Action :=
+  .bind (field buffer 0) fun s observed => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 8) fun s v => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 16) fun s kind => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 24) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 32) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 40) fun s edits => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 48) fun s cursor => if statusFailed s = true then .done s 0 else
+  if observed = magic then if (if v = version then true else if v = pageRecordVersion then true else false) = true then
+  if kind = 2 then if 0 < page then if page ≤ maximumPages then
+  if count ≤ maximumEntries then if edits ≤ maximumEdits then if cursor ≤ edits then
+  .done 0 (128 + count * 24 + edits * 16)
+  else .done malformed 0 else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0 else .done malformed 0
+
+/-- Packed length for a validated resident or packed page header. -/
+def encodedPageBytes (buffer : UInt64) : Action := pageShape buffer
+
+/-- Read length selected by explicit version; unknown versions fail. -/
+def pageRecordBytes (buffer : UInt64) : Action :=
+  .bind (pageShape buffer) fun s packed => if statusFailed s = true then .done s 0 else
+  .bind (field buffer 8) fun s v => if statusFailed s = true then .done s 0 else
+  if v = version then .done 0 pageBytes else .done 0 packed
+
+private def copyPageWord (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (source + i.toUInt64 * 8)) fun s word => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 (target + i.toUInt64 * 8) word) fun s _ => .done s acc
+
+private def copyPageWords (source target words : UInt64) : Action :=
+  if words ≤ 2576 then
+  .boundedFoldU64 2576 copyPageWord words.toUInt32 0 source target 0 0 fun s _ => .done s 0
+  else .done malformed 0
+
+private def reservedPageWord (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
+  .bind (field buffer (56 + i.toUInt64 * 8)) fun s word => if statusFailed s = true then .done s 0 else
+  if word = 0 then .done 0 acc else .done malformed 0
+
+private def packedEditValidateStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
+  .bind (field base (i.toUInt64 * 16)) fun s kind => if statusFailed s = true then .done s 0 else
+  .bind (field base (i.toUInt64 * 16 + 8)) fun s stroke => if statusFailed s = true then .done s 0 else
+  if (if kind = 1 then true else if kind = 2 then true else false) = true then
+  if 0 < stroke then .done 0 (acc + 1) else .done malformed 0 else .done malformed 0
+
+/-- Serialize a resident page into a distinct immutable save buffer. Callers
+own and preflight both complete spans before starting a disk transaction. -/
+def encodePage (source target : UInt64) : Action :=
+  if source = target then .done malformed 0 else
+  .bind (field source 24) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (validatePage source page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (pageShape source) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (field source 32) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (field source 40) fun s edits => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 9 reservedPageWord 9 0 source 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (copyPageWords source target (16 + count * 3)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (copyPageWords (source + editOffset) (target + 128 + count * 24) (edits * 2)) fun s _ =>
+  if statusFailed s = true then .done s 0 else
+  .bind (put target 8 pageRecordVersion) fun s _ => .done s bytes
+
+/-- Validate either exact fixed v1 or packed v2 content before replacing the
+resident page. Stored versions select offsets explicitly; edits retain cursor. -/
+def decodePage (encoded working page bytes : UInt64) : Action :=
+  if encoded = working then .done malformed 0 else
+  .bind (pageRecordBytes encoded) fun s expected => if statusFailed s = true then .done s 0 else
+  if bytes = expected then
+  .bind (field encoded 8) fun s v => if statusFailed s = true then .done s 0 else
+  .bind (field encoded 24) fun s identity => if statusFailed s = true then .done s 0 else
+  if identity = page then
+  if v = version then
+    .bind (validatePage encoded page) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (copyPageWords encoded working 2576) fun s _ => .done s 0
+  else
+    .bind (field encoded 32) fun s count => if statusFailed s = true then .done s 0 else
+    .bind (field encoded 40) fun s edits => if statusFailed s = true then .done s 0 else
+    .boundedFoldU64 9 reservedPageWord 9 0 encoded 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+    .boundedFoldU64 512 entryValidateStep count.toUInt32 0 encoded 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+    .boundedFoldU64 512 packedEditValidateStep edits.toUInt32 0 (encoded + 128 + count * 24) 0 0 0 fun s _ =>
+    if statusFailed s = true then .done s 0 else
+    .bind (emptyPage working page) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (copyPageWords encoded working (16 + count * 3)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (copyPageWords (encoded + 128 + count * 24) (working + editOffset) (edits * 2)) fun s _ =>
+    if statusFailed s = true then .done s 0 else
+    put working 8 version
+  else .done malformed 0
+  else .done malformed 0
+
 def pageY (raw maximum sourceHeight : UInt64) : UInt64 :=
   let pixel := Lemma.Ink.Geometry.pixel (Lemma.Ink.Geometry.normalized raw maximum) sourceHeight
   if pixel ≤ 160 then 0 else (pixel - 160) * 0x1000000 / (sourceHeight - 161)

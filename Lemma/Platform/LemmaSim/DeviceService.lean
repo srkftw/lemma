@@ -166,7 +166,7 @@ private def wakeInput : Action :=
     .bind (Access.write64 (record + Task.deadlineOffset) 0) fun s _ => if s = 0 then
     .bind (Access.write64 (record + Task.stateOffset) Task.runnable) fun s _ => if s = 0 then put 72 0 else fatal else fatal
   else if state = Task.running then .done 0 0 else put 72 0
-  else fatal else .done s 0 else fatal
+  else fatal else if s = 74 then put 72 0 else fatal else fatal
 
 def notification (source : UInt64) : Action :=
   if source = 1 then

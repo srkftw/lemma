@@ -18,11 +18,27 @@ def failed (s : UInt8) : Bool := if s = 0 then false else true
 private def read (offset : UInt64) : Action := Lemma.Platform.LemmaSim.IO.read64 (base + offset)
 private def write (offset value : UInt64) : Action := Lemma.Platform.LemmaSim.IO.write64 (base + offset) value
 
+/-- Only the exact empty cold-reset boundary may be consumed before a User
+contact exists. Overflow, disconnection, errors and retained heads still reach
+the consumer as loss. LOSS_ACK keeps the controller's fresh-release requirement. -/
+private def acknowledgeColdBoundary (epoch : UInt64) : Action :=
+  if epoch = 2 then
+  .bind (read DeviceABI.penStatusOffset) fun s status => if failed s = true then .done s 0 else
+  .bind (read DeviceABI.penCountOffset) fun s count => if failed s = true then .done s 0 else
+  .bind (read DeviceABI.penLossOffset) fun s losses => if failed s = true then .done s 0 else
+  if status = 6 then if count = 0 then if losses = 1 then
+    .bind (write DeviceABI.penLossAckOffset epoch) fun s _ => .done s epoch
+  else .done 0 epoch else .done 0 epoch else .done 0 epoch
+  else .done 0 epoch
+
 def «initialize» : Action :=
   .bind (read DeviceABI.penMagicOffset) fun s magic => if failed s = true then .done s 0 else
   if magic = DeviceABI.penMagic then
   .bind (read DeviceABI.penVersionOffset) fun s version => if failed s = true then .done s 0 else
-  if version = 1 then read 40 else .done invalid 0 else .done invalid 0
+  if version = 1 then
+    .bind (read DeviceABI.penEpochOffset) fun s epoch =>
+    if s = 0 then acknowledgeColdBoundary epoch else .done s 0
+  else .done invalid 0 else .done invalid 0
 
 private def copyWord (i _ : UInt32) (acc destination _ _ _ : UInt64) : Action :=
   .bind (read (0x100 + i.toUInt64 * 8)) fun s value =>

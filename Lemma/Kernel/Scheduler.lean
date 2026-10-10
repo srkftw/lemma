@@ -13,12 +13,22 @@ def failed (s : UInt8) : Bool := if s = 0 then false else true
 def fatal : Action := .done 50 0
 def quantum : UInt64 := 10000 -- 1ms on the pinned 10MHz machine timer
 
+/-- The historical qualification profile records every transition. The
+expanded notebook profile keeps fault/boot/commit records and device traces,
+but does not synchronously transmit 88 UART bytes on every scheduling event.
+This selects diagnostics from validated kernel boot state, never a user flag. -/
+private def schedulingRecord (kind a b c d : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s count =>
+  if failed s = true then fatal else
+  if count = 8192 then .done 0 0 else
+  Lemma.Kernel.Console.record kind a b c d
+
 /-- No mapping mutation may follow the final active-root update before typed
 restoration. This does not reclaim anything on the outgoing owned task stack. -/
 def returnKernel (descriptor reason pc : UInt64) : Action :=
   .bind MachineServices.interruptCount fun s interrupts =>
   if failed s = true then fatal else
-  .bind (Lemma.Kernel.Console.record 0xf2 descriptor reason interrupts pc) fun s _ =>
+  .bind (schedulingRecord 0xf2 descriptor reason interrupts pc) fun s _ =>
   if failed s = true then fatal else
   .bind (Access.read64 (Process.control + 8)) fun s root =>
   if failed s = true then fatal else
@@ -145,7 +155,7 @@ private def idle (now : UInt64) : Action :=
     if failed s = true then fatal else
     .bind MachineServices.interruptCount fun s count =>
     if failed s = true then fatal else
-    .bind (Lemma.Kernel.Console.record 0xfd now count observed deadline) fun s _ =>
+    .bind (schedulingRecord 0xfd now count observed deadline) fun s _ =>
     if failed s = true then fatal else .done 0 0
   else if pending = 1 then .done 0 0 else fatal
 
@@ -158,7 +168,7 @@ private def enter (descriptor now : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (Access.read64 (record + Task.dispatchOffset)) fun s dispatches =>
   if failed s = true then fatal else
-  .bind (Lemma.Kernel.Console.record 0xf3 descriptor root dispatches now) fun s _ =>
+  .bind (schedulingRecord 0xf3 descriptor root dispatches now) fun s _ =>
   if failed s = true then fatal else
   .bind (arm now) fun s _ =>
   if failed s = true then fatal else

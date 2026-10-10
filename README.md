@@ -244,6 +244,67 @@ These lanes require their own observed results. The A-E controller, legacy
 Core0/foundation acceptance and final Task003 qualification remain separate
 requirements; a passing earlier checkpoint does not certify changed source.
 
+## Task004 LemmaSim implementation checkpoint
+
+The new `task/004-lemmasim-durable-ink` branch contains a genuine compiled RV64
+notebook, isolated record service, pen/paper hardware models and a volatile/durable
+block backend. Its primary notebook acceptance is still in progress. See the
+[checkpoint](docs/plan/004-session-state.md),
+[machine profile](docs/contracts/004-machine-profile-0.1.0.md),
+[device ABI](docs/contracts/004-devices-v1.md),
+[storage model](docs/contracts/004-block-medium-v1.md) and
+[ink/page formats](docs/contracts/004-notebook-ink-v1.md).
+Historical launch profiles retain their original meaning.
+
+Prepare the pinned tools and guest images once, then launch without rebuilding:
+
+```sh
+./scripts/lemmasim build
+./scripts/lemmasim init --disk build/lemmasim/my-notebook.raw --size-mib 256
+./scripts/lemmasim run --disk build/lemmasim/my-notebook.raw --mode student
+```
+
+The native QEMU window displays the controller's visible pixels. Pointer events
+enter its pen FIFO. All toolbar, ink, page and document behavior runs in the guest.
+The eight guest tools are home/notebook toggle, previous page, next/add page,
+undo, redo, erase latest stroke, width and Save. Home closes the current namespace
+and opens the other of two notebooks. S/P/F/R beside the page number means
+Saved/Pending/Save failed/Read-only. Completed strokes autosave; Save requests a
+durable checkpoint. Wait for Saved before closing when you want all pending work.
+A failed mount never triggers automatic formatting. `init` refuses existing
+images unless `--force` explicitly requests destruction.
+
+Developer capture, inspection and offline copies use the same machine:
+
+```sh
+./scripts/lemmasim run --disk build/lemmasim/my-notebook.raw --mode developer \
+  --record build/lemmasim/writing-session
+./scripts/lemmasim control --run-directory build/lemmasim/writing-session/run inspect
+./scripts/lemmasim replay --session build/lemmasim/writing-session \
+  --disk-copy build/lemmasim/replayed.raw
+./scripts/lemmasim copy --disk build/lemmasim/my-notebook.raw --to /path/to/backup.raw
+./scripts/lemmasim archive --session build/lemmasim/writing-session --to /path/to/evidence.tar.gz
+```
+
+Controls `pause`, `resume`, `reset` and `power-cut` are outside guest authority;
+mutating controls invalidate an unmodified replay claim. Replay uses a fresh
+media copy and refuses changed identities. Laboratory faults act on real block
+write/flush ordinals (`--mode laboratory --fault cut-before-flush=N`, also
+`cut-after-flush`, `tear-flush`, `fail-write`, `fail-flush`). Their exact notebook
+crash acceptance is pending. Successful host flush assumes the local filesystem
+and device honor QEMU's fsync. A process power cut loses the hardware filter's
+volatile RAM writes; ordinary QEMU close is a separate clean host operation.
+
+Use `--headless` when no native display is available and `--geometry 1404x1872`
+for the second instance. Default geometry is1650×2200. The same guest queries
+runtime geometry; neither instance is a procurement or physical-conformance
+claim. Mouse pressure is synthetic; no physical pressure-aware tablet or visible
+manual workflow has been tested here. The bounded guest supports64pages per
+notebook and512chunk/edit entries per page, with explicit resource errors. The
+required16-page/100000-sample workload and complete candidate regressions remain
+unrun at this checkpoint. Actions artifacts expire after14days; the offline
+archive is the explicit owner-controlled retention path.
+
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.

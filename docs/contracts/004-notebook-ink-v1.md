@@ -1,4 +1,4 @@
-# Notebook and ink records v1
+# Notebook and ink records: envelope v1, page v2
 
 This is the bounded document consumer implemented by
 `Lemma/Applications/Notebook.lean`, `Lemma/Documents/Ink.lean` and
@@ -12,6 +12,10 @@ The contract does not establish physical input, timing or target acceptance.
 Boot grants are surface, input, namespace-scoped document endpoint and diagnostic
 console, in slots 0–3. There is no raw block, MMIO or task-management grant.
 The notebook selects namespaces 1 and 2 through the same document service.
+The home tool closes the old namespace with document operation 10, then opens
+the new namespace with operation 1 after pending work has drained. A missing
+root creates that namespace's first page through ordinary guest transactions;
+opening an unformatted or damaged medium displays read-only state instead.
 Neither namespace's object IDs are interpreted in the other namespace.
 
 The current page index is resident; other page indices and immutable ink chunks
@@ -26,7 +30,7 @@ opening may scan the current page's bounded index.
 | `0x110000..0x110000+ceil(width/2)*height` | Gray4 framebuffer, separately allocated whole pages |
 | `0x300000..0x307fff`, `0x308000..0x30ffff` | Two 32 KiB raw ink buffers |
 | `0x310000..0x317fff` | Current page index |
-| `0x318000..0x31ffff` | One streamed ink chunk |
+| `0x318000..0x31ffff` | One streamed ink chunk or immutable packed page-save snapshot |
 | `0x320000..0x320fff` | Notebook root |
 
 The notebook allocates 33 working pages plus the framebuffer. For 1650×2200,
@@ -39,7 +43,8 @@ instruction to discard an existing document.
 ## Fixed records
 
 All fields are aligned little-endian unsigned 64-bit words. Magic is
-`0x314b4e49414d454c`, version is 1. Unsupported versions and malformed bounds are
+`0x314b4e49414d454c`. Roots and raw chunks use version 1; current page records
+use version 2. Unsupported versions and malformed bounds are
 rejected. The underlying record service provides lengths, checksums and durable
 publication; those checksums detect corruption and do not authenticate media.
 
@@ -47,15 +52,30 @@ Notebook root object 1 is 64 bytes: magic, version, kind 1, page count, selected
 brush width in Q8 pixels, then three reserved zero words. Page count is 1–64;
 the UI selects brush widths 256, 512, 1024 and 2048 (1, 2, 4 and 8 pixels).
 
-Page object `0x100+pageID` is exactly 20,608 bytes. Its 128-byte header contains
-magic, version, kind 2, page ID, chunk count, edit count and edit cursor, followed
-by reserved zero words. At offset 128 are 512 entries of three words:
-immutable chunk object ID, stable stroke ID, and visible flag 0/1. At offset
-12,416 are 512 two-word edits: operation kind and stable stroke ID. Kind 1 adds
+Page object `0x100+pageID` has an exact version-2 byte length of
+`128 + chunkCount*24 + editCount*16`. Its 128-byte header contains magic,
+version 2, kind 2, page ID, chunk count, edit count and edit cursor, followed
+by nine reserved zero words. At offset 128 are `chunkCount` entries of three
+words: immutable chunk object ID, stable stroke ID, and visible flag 0/1. At
+offset `128 + chunkCount*24` are `editCount` two-word edits: operation kind and
+stable stroke ID. Both counts are at most 512; the cursor is at most edit count.
+Kind 1 adds
 the stroke; kind 2 hides it. Undo reverses the operation before the cursor; redo
 reapplies the operation at the cursor. A new edit clears the redo suffix. Hidden
 raw chunks are retained. Erase hides the latest visible stroke, including every
 chunk carrying that stroke ID; it is an explicit whole-stroke editing operation.
+
+The guest reads historical version-1 pages only at their exact 20,608-byte length,
+with 512 fixed entry slots at offset 128 and 512 fixed edit slots at offset 12,416.
+Version selects these offsets explicitly; an unknown version is refused. The
+resident page retains this fixed layout and version 1. Version-2 decoding checks
+the complete active prefixes and exact length before clearing and replacing the
+resident page; unused slots are zeroed and the edit cursor is preserved. Saving
+copies the active prefixes into the separately owned streamed buffer, sets
+version 2 there, and holds that serialized buffer immutable until the asynchronous
+transaction ends. A page containing one stroke and its add operation is 168
+bytes rather than 20,608 bytes. Root/chunk formats and stable object IDs do not
+change, and old pages are rewritten as v2 only upon a normal acknowledged edit.
 
 Ink object IDs exceed `0x10000` and derive from the monotonic document sequence.
 An ink chunk has a 128-byte header followed by 1–384 original 72-byte pen samples
@@ -106,6 +126,13 @@ settled. This implementation has 512 chunk entries and 512 edits per page, 64
 pages per notebook, and the underlying service's independent object/disk limits;
 limits produce explicit errors. The 16-page/100,000-sample workload fits these
 representation bounds but requires its own observed end-to-end acceptance.
+Changing brush width publishes its new root through the same transaction path.
+Guest diagnostic record `0x423` reports Pending with the expected store sequence,
+page, namespace and object; `0x424` reports Save failed with its error, page,
+namespace and object. The final `0x421` carries the acknowledged sequence, page,
+namespace and stroke. Checkpoint reports object/stroke zero and preserves the
+logical document sequence. These bounded console observations allow Developer
+mode to display guest-reported state without parsing live application memory.
 
 An explicit device loss, epoch/sequence gap or backward timestamp cancels the
 active unsaved tail. Prior published chunks remain. The guest defers a full

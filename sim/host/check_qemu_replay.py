@@ -4,7 +4,7 @@
 This uses a real supplied guest; it does not create guest pixels or transactions.
 The output scope remains transport-only until a notebook workflow is supplied.
 """
-import argparse,hashlib,json,shutil,socket,subprocess,tempfile,time
+import argparse,hashlib,json,shutil,signal,socket,subprocess,tempfile,time
 from pathlib import Path
 
 def sha(path):
@@ -14,10 +14,11 @@ def sha(path):
     return digest.hexdigest()
 class Machine:
     def __init__(self,qemu,image,out,disk,rr,mode):
-        self.out=out;out.mkdir();self.messages=[];self.stream=None;self.channel=None
+        self.out=out;out.mkdir();self.messages=[];self.stream=None;self.channel=None;self.mode=mode
         self.dir=tempfile.TemporaryDirectory(prefix='lemma-rr-');self.endpoint=Path(self.dir.name)/'control.sock'
         medium={'driver':'lemma-durable','node-name':'medium','file':{'driver':'raw','file':{'driver':'file','filename':str(disk.resolve()),'cache':{'no-flush':False}}},'trace-file':str((out/'media.trace').resolve())}
         self.argv=[str(qemu),'-machine','lemmasim-virt','-m','128M','-smp','1','-cpu','rv64,smrnmi=false,smdbltrp=false','-accel','tcg','-seed','0x4c454d4d413031','-bios','none','-kernel',str(image.resolve()),'-nodefaults','-display','none','-monitor','none','-rtc','base=2026-10-10T00:00:00,clock=vm','-serial',f'file:{out.resolve()}/serial.bin','-qmp',f'unix:{self.endpoint},server=on,wait=off','-global','virtio-mmio.force-legacy=false','-global',f'lemma-paper-pen.trace-file={out.resolve()}/devices.trace','-global',f'lemma-paper-pen.raw-output={out.resolve()}/raw.bin','-blockdev',json.dumps(medium),'-blockdev',json.dumps({'driver':'blkreplay','image':'medium','node-name':'replay'}),'-device','virtio-blk-device,drive=replay,bus=virtio-mmio-bus.0,werror=report,rerror=report','-icount',f'shift=3,align=off,sleep=on,rr={mode},rrfile={rr.resolve()}','-S']
+        if mode=='replay':self.argv.append('-no-shutdown')
         self.stdout=(out/'qemu.stdout').open('wb');self.stderr=(out/'qemu.stderr').open('wb')
         self.process=subprocess.Popen(self.argv,stdout=self.stdout,stderr=self.stderr,start_new_session=True)
         try:
@@ -47,19 +48,29 @@ class Machine:
     def observe(self):
         info=self.qmp('query-replay');state=json.loads(self.qmp('qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
         self.qmp('screendump',{'filename':str((self.out/'visible.ppm').resolve())})
-        result={'query_replay':info,'device_state':state,'files':{name:sha(self.out/name) for name in ('devices.trace','media.trace','raw.bin','visible.ppm','serial.bin')}}
+        result={'query_replay':info,'stop_status':self.qmp('query-status'),'device_state':state,'files':{name:sha(self.out/name) for name in ('devices.trace','media.trace','raw.bin','visible.ppm','serial.bin')}}
         (self.out/'observation.json').write_text(json.dumps(result,indent=2)+'\n');return result
     def close(self):
         if getattr(self,'process',None) and self.process.poll() is None:
-            try:self.qmp('quit')
-            except (OSError,ValueError,RuntimeError):self.process.kill()
+            if self.mode=='record':
+                # A recorded QMP quit forces shutdown at the observed icount and
+                # can beat the replay-break callback at that same count. SIGTERM
+                # finalizes the log with HOST_SIGNAL; replay -no-shutdown pauses
+                # there if it reaches shutdown before the breakpoint callback.
+                self.process.send_signal(signal.SIGTERM)
+            else:
+                try:self.qmp('quit')
+                except (OSError,ValueError,RuntimeError):self.process.kill()
         if getattr(self,'process',None):
             try:self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:self.process.kill();self.process.wait(timeout=5)
-        if self.stream:self.stream.close()
+        if self.stream:
+            try:self.stream.close()
+            except OSError:pass
         if self.channel:self.channel.close()
         self.stdout.close();self.stderr.close();self.dir.cleanup()
         (self.out/'qmp.json').write_text(json.dumps(self.messages,indent=2)+'\n')
+        (self.out/'process.json').write_text(json.dumps({'argv':self.argv,'returncode':self.process.returncode,'process_reaped':self.process.poll() is not None},indent=2)+'\n')
     def __enter__(self):return self
     def __exit__(self,*unused):self.close()
 
@@ -91,7 +102,19 @@ def main():
         if original['device_state']!=repeated['device_state']:raise RuntimeError('replayed controller state differs')
         if original['files']!=repeated['files']:raise RuntimeError('replayed raw/event/pixel/block/serial observations differ')
         if sha(record_disk)!=sha(replay_disk):raise RuntimeError('replayed stable medium differs')
-        result.update(status='PASS',icount=n,guest_sha256=sha(a.image),qemu_sha256=sha(a.qemu),rr_sha256=sha(rr),initial_media_sha256=sha(initial),final_media_sha256=sha(record_disk),observations=original)
+        # Independently exercise the same-count shutdown guard without installing
+        # a breakpoint. This diagnoses the fallback that prevents the observed
+        # QMP-quit/breakpoint race from terminating inspection.
+        guard_disk=a.output/'guard.raw';shutil.copyfile(initial,guard_disk)
+        with Machine(a.qemu,a.image,a.output/'shutdown-guard',guard_disk,rr,'replay') as m:
+            m.qmp('cont');until=time.monotonic()+30
+            while m.qmp('query-status')['running']:
+                if time.monotonic()>until:raise TimeoutError('recorded shutdown did not pause the replay')
+                time.sleep(.01)
+            guarded=m.observe()
+            if guarded['query_replay']['icount']!=n or guarded['stop_status']['status']!='shutdown':raise RuntimeError('same-count shutdown guard failed')
+        if guarded['device_state']!=original['device_state'] or guarded['files']!=original['files']:raise RuntimeError('same-count shutdown altered observations')
+        result.update(status='PASS',icount=n,close_policy='record SIGTERM after stopped observation; replay no-shutdown at exact count',guest_sha256=sha(a.image),qemu_sha256=sha(a.qemu),rr_sha256=sha(rr),initial_media_sha256=sha(initial),final_media_sha256=sha(record_disk),observations=original,shutdown_guard_status=guarded['stop_status'])
     except BaseException as error:result['error']=str(error);raise
     finally:(a.output/'result.json').write_text(json.dumps(result,indent=2)+'\n')
 if __name__=='__main__':main()

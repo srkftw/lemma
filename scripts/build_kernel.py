@@ -225,7 +225,7 @@ def source_inputs(root: Path) -> dict[str, str]:
                                      "scripts/audit_core0.py", "scripts/audit_device.py",
                                      "scripts/audit_memory.py", "scripts/audit_monitor.py", "scripts/audit_timer.py", "scripts/audit_trap.py",
                                      "scripts/build-kernel.sh", "scripts/audit-kernel.sh",
-                                     "scripts/build_kernel.py", "scripts/audit_kernel.py", "scripts/build_user.py", "scripts/build-user.sh")]
+                                     "scripts/build_kernel.py", "scripts/audit_kernel.py", "scripts/lemmasim_readonly.py", "scripts/build_user.py", "scripts/build-user.sh")]
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 

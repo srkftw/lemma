@@ -2,7 +2,7 @@
 """Independent, offline evidence observer; never feeds recovery to a guest.
 
 The store oracle is independent of production Lean. This observer validates the
-small ink-v1 envelope and exports retained bytes for inspection/comparison.
+versioned ink envelopes and exports retained bytes for inspection/comparison.
 It does not supply a live notebook, draw pixels, or repair damaged media.
 """
 from __future__ import annotations
@@ -14,6 +14,34 @@ from pathlib import Path
 from store_oracle import recover
 
 MAGIC = 0x314B4E49414D454C
+
+def inspect_page(payload: bytes, object_id: int) -> list[tuple[int, int, int]]:
+    if len(payload) < 128:
+        raise ValueError('page is shorter than its header')
+    fields = struct.unpack_from('<16Q', payload)
+    if fields[0] != MAGIC or fields[1] not in (1, 2) or fields[2] != 2:
+        raise ValueError('unknown page format/version')
+    if object_id != 256 + fields[3] or not 1 <= fields[3] <= 64:
+        raise ValueError('invalid page index identity')
+    count, edits, cursor = fields[4:7]
+    if count > 512 or edits > 512 or cursor > edits:
+        raise ValueError('invalid page/edit bounds')
+    expected = 20608 if fields[1] == 1 else 128 + count * 24 + edits * 16
+    if len(payload) != expected:
+        raise ValueError('invalid page index length')
+    if fields[1] == 2 and any(fields[7:]):
+        raise ValueError('unknown mandatory page header field')
+    entries = [struct.unpack_from('<3Q', payload, 128 + index * 24)
+               for index in range(count)]
+    if any(obj <= 65536 or not stroke or visible not in (0, 1)
+           for obj, stroke, visible in entries):
+        raise ValueError('invalid indexed ink identity')
+    edit_offset = 12416 if fields[1] == 1 else 128 + count * 24
+    operations = [struct.unpack_from('<2Q', payload, edit_offset + index * 16)
+                  for index in range(edits)]
+    if any(kind not in (1, 2) or not stroke for kind, stroke in operations):
+        raise ValueError('invalid indexed edit operation')
+    return entries
 
 def inspect(image: Path, output: Path) -> dict:
     if output.exists():
@@ -31,26 +59,18 @@ def inspect(image: Path, output: Path) -> dict:
         if len(payload) < 64:
             raise ValueError('notebook record is shorter than its header')
         fields = struct.unpack_from('<8Q', payload)
-        if fields[:2] != (MAGIC, 1):
+        if fields[0] != MAGIC:
             raise ValueError('unknown ink format/version')
         kind = fields[2]
         if kind == 1:
-            if object_id != 1 or len(payload) != 64 or not 1 <= fields[3] <= 64:
+            if fields[1] != 1 or object_id != 1 or len(payload) != 64 or not 1 <= fields[3] <= 64:
                 raise ValueError('invalid notebook root')
         elif kind == 2:
-            if len(payload) != 20608 or object_id != 256 + fields[3] or not 1 <= fields[3] <= 64:
-                raise ValueError('invalid page index identity/length')
-            if fields[4] > 512 or fields[5] > 512 or fields[6] > fields[5]:
-                raise ValueError('invalid page/edit bounds')
-            entries = [struct.unpack_from('<3Q', payload, 128 + index * 24)
-                       for index in range(fields[4])]
-            if any(obj <= 65536 or not stroke or visible not in (0, 1)
-                   for obj, stroke, visible in entries):
-                raise ValueError('invalid indexed ink identity')
+            entries = inspect_page(payload, object_id)
             if any((namespace, obj) not in records for obj, _, _ in entries):
                 raise ValueError('published page references absent ink')
         elif kind == 3:
-            if len(payload) < 128 or not 1 <= fields[6] <= 384 or len(payload) != 128 + fields[6] * 72:
+            if fields[1] != 1 or len(payload) < 128 or not 1 <= fields[6] <= 384 or len(payload) != 128 + fields[6] * 72:
                 raise ValueError('invalid raw chunk count/length')
             if object_id <= 65536 or not fields[4]:
                 raise ValueError('invalid raw chunk identity')

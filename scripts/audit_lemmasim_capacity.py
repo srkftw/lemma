@@ -12,7 +12,7 @@ import re
 from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph,
                           validate_compiled_stack, validate_stack_entries,
                           parse_definitions_and_calls, _ir_definition_body,
-                          OPTIMIZER_INTRINSICS)
+                          optimizer_intrinsics, validate_layout)
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
 
 CAPACITY = 16352
@@ -71,9 +71,10 @@ def construction(unit: dict, pre_ir: str) -> dict:
             'construction':'owned-physically-contiguous-four',
             'source_symbols':{name:names[name] for name in sorted(required)},
             'initial_page_table_frames':13, 'leaf_registry_frames':8,
-            'user_leaf_capacity':1024, 'owned_task_base_frames':28,
-            'global_task_base_frames':29,
-            'accounting_formula':'13 initial tables + 8 leaf registry + 1 data + 2 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1'}
+            'user_leaf_capacity':1024, 'owned_task_base_frames':30,
+            'global_task_base_frames':31, 'user_stack_pages':4, 'user_stack_bytes':16384,
+            'user_stack_base':0x3fffa000, 'user_stack_guards':[0x3fff9000,0x3fffe000],
+            'accounting_formula':'13 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1'}
 
 
 def audit(build: Path, output: Path, timeout: float) -> dict:
@@ -92,6 +93,7 @@ def audit(build: Path, output: Path, timeout: float) -> dict:
             raise Core0Error(f'inspection command failed: {argv}')
         return commands[-1]['stdout']
     pre_ir=(build/'kernel/program.ll').read_text()
+    validate_layout(load_json(build/'layout.json'),configuration=unit['configuration'])
     owned=construction(unit,pre_ir)
     frames=parse_stack_sizes(invoke(['llvm-readelf','--stack-sizes','kernel/program.o']))
     validate_compiled_stack(invoke(['llvm-objdump','-d','--no-show-raw-insn','kernel/program.o']),frames)
@@ -102,10 +104,10 @@ def audit(build: Path, output: Path, timeout: float) -> dict:
         primitives['core0_io_fence']=machine_frame(startup,'core0_io_fence')
     ir=(build/'kernel/program.opt.ll').read_text()
     called=parse_definitions_and_calls(ir)[2]
-    for intrinsic in called & OPTIMIZER_INTRINSICS:
+    for intrinsic in called & optimizer_intrinsics(unit):
         primitives[intrinsic]=0
     graph=weighted_stack_graph(ir,frames,primitives)
-    entries=validate_stack_entries(unit,graph,capacities={'machine':65536,'boot':61440,'kernel-trap':CAPACITY,'user':8192},vector_bytes=288)
+    entries=validate_stack_entries(unit,graph,capacities={'machine':65536,'boot':61440,'kernel-trap':CAPACITY,'user':16384},vector_bytes=288)
     selected=[entry for entry in entries if entry['domain']=='kernel-trap']
     if len(selected)!=1 or any(entry['margin_bytes']*4<CAPACITY for entry in selected):
         raise Core0Error('expanded selected trap chain has less than 25percent usable stack headroom')

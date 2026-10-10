@@ -80,6 +80,13 @@ scope; notebook ink/edit/recovery acceptance remains necessary. The pinned
 QEMU record/replay configuration uses `shift=3,align=off,sleep=on`: its
 `icount_account_warp_timer` does not process asynchronous replay events with
 `sleep=off`. Record/replay clock and warp inputs belong to the session identity.
+At the record observation boundary, stop the VM, inspect and save its instruction
+count, then terminate cleanly with SIGTERM. Replay starts with `-S -no-shutdown`,
+installs `replay-break` at that count and requires the observed count to match.
+The recorded HOST_SIGNAL shutdown pauses if it reaches that same count before
+the deferred breakpoint callback. A recorded QMP quit instead forces process
+exit and can race inspection; it is not this close policy. The checker also
+replays without a breakpoint to independently exercise the shutdown guard.
 
 Read-only initial boot observations can be exported while the machine starts
 with `-S`: QMP `pmemsave` at `0x10010400`, length256 yields the binary descriptor.
