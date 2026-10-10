@@ -91,6 +91,11 @@ are documented in [the source map](docs/SOURCE_MAP.md).
 
 ## Checks
 
+CI runs one full campaign for each PR update, full verification for every main
+push, and separately isolated manual qualification. Task-branch pushes get
+short host-only preflight. See [CI coverage, trigger policy and measurements](docs/CI.md)
+for the retained independent lanes, exact-source provenance and development loop.
+
 ```sh
 python3 scripts/check_scaffold.py
 python3 -m unittest discover -s tests/scaffold -v
