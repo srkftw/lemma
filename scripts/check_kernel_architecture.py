@@ -54,16 +54,17 @@ CURRENT_QUAD_STACK_SOURCES = {
     'Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue',
     *('Lemma.Kernel.Loader.'+name for name in (
         'allocateStack','allocateStackQuad','installStackQuad','storedQuad','quadFrame','stackFrame',
-        'validateExpandedStack','teardown','releaseStackHandle','stackCanary',
+        'validateExpandedStackAt','teardown','releaseStackHandle','stackCanary',
         'kernelStackHandleOffset','kernelStackSecondHandleOffset','kernelStackTopOffset',
         'kernelStackThirdHandleOffset','kernelStackFourthHandleOffset','kernelStackPagesOffset','kernelStackBaseOffset')),
     *('Lemma.Kernel.Memory.Frames.'+name for name in (
-        'allocateContiguous4','resolvePurpose','mappingCount','runtimeCount','runtimeQuota','configure','init')),
+        'allocateContiguous4','resolvePurpose','record','runtimeCount','runtimeQuota','configure','init')),
     *('Lemma.Kernel.Memory.AddressSpace.'+name for name in (
         'create','buildRegistry','copyRegistryStep','base','validateRegistry','destroy','rollbackRegistry',
         'registryCount','registryList','expandedCapacity')),
     'Lemma.Kernel.Memory.Batch.allocate','Lemma.Kernel.BootServices.bootServices',
-    'Lemma.Kernel.Process.validateFrame','Lemma.Kernel.Process.validateStack',
+    'Lemma.Kernel.Process.validateFrame','Lemma.Kernel.Process.validateStackAt',
+    'Lemma.Kernel.Memory.Access.read64',
     'Lemma.Kernel.Development.ServiceEntry.dispatch','Lemma.Kernel.Scheduler.dispatch',
     'Lemma.Kernel.Task.capture','Lemma.Kernel.Task.context',
 }

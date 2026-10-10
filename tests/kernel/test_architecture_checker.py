@@ -117,6 +117,32 @@ class ArchitectureCheckerTests(unittest.TestCase):
             audit['task_kernel_stack']['base_owned_task_frames']=16
             with self.assertRaisesRegex(Core0Error,'task accounting lacks'):k.require_case(image,audit)
 
+    def test_current_stack_rejects_legacy_helper_inventory_even_when_unit_agrees(self):
+        # These literal identities describe the current fresh-descriptor path;
+        # replacing both evidence and unit with historical aliases cannot pass.
+        current = ('Lemma.Kernel.Process.validateStackAt',
+                   'Lemma.Kernel.Loader.validateExpandedStackAt',
+                   'Lemma.Kernel.Memory.Frames.record',
+                   'Lemma.Kernel.Memory.Access.read64')
+        legacy = ('Lemma.Kernel.Process.validateStack',
+                  'Lemma.Kernel.Loader.validateExpandedStack',
+                  'Lemma.Kernel.Memory.Frames.mappingCount')
+        self.assertTrue(set(current) <= k.CURRENT_QUAD_STACK_SOURCES)
+        self.assertFalse(set(legacy) & k.CURRENT_QUAD_STACK_SOURCES)
+        for new, old in zip(current, (*legacy, 'Lemma.Kernel.Memory.Access.write64')):
+            with self.subTest(new=new, old=old), tempfile.TemporaryDirectory() as tmp:
+                image, audit = self.binding(Path(tmp), managed=True)
+                sources = audit['task_kernel_stack']['source_functions']
+                sources[old] = sources.pop(new)
+                unit_path = image.parent / 'kernel/unit.json'
+                unit = json.loads(unit_path.read_text())
+                for row in unit['functions']:
+                    if row['source'] == new:
+                        row['source'] = old
+                unit_path.write_text(json.dumps(unit))
+                with self.assertRaisesRegex(Core0Error, 'owned-stack identities'):
+                    k.require_managed_task_stack(image, audit)
+
     def test_original_frame_diagnostic_requires_exact_sources_gates_and_order(self):
         for managed in (False,True):
             with self.subTest(managed=managed),tempfile.TemporaryDirectory() as tmp:

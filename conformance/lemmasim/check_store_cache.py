@@ -2,13 +2,15 @@
 """Run the real guest Action cache probe and independently inspect its bytes.
 
 Host-only development check; this cannot pass RV64/device acceptance.
-Invoke through `lake env` so the pinned Lean module search path is available.
+Invoke in the pinned environment. A private Lake build supplies the actual
+guest import closure, including when the enclosing .lake directory is empty.
 """
 import argparse
 import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import signal
 import subprocess
 import time
@@ -16,6 +18,7 @@ import time
 from store_oracle import recover
 
 ROOT = Path(__file__).resolve().parents[2]
+ENGINE = 'Lemma.Services.Store.Engine'
 
 
 def sha(path):
@@ -36,6 +39,43 @@ def command(argv, log, env):
             process.wait(timeout=5)
 
 
+def prepare_dependencies(output, inherited):
+    """Build only the probe's guest dependency in fresh, private Lake outputs.
+
+    NotebookKernel does not import the separately linked store. An enclosing
+    `lake env` therefore cannot establish that Engine's object exists. The
+    private package copies maintained sources without alteration and never
+    reads or writes the caller's .lake cache. Lake resolves the real import
+    closure; this host check does not manufacture guest declarations.
+    """
+    workspace = output / 'dependencies'
+    workspace.mkdir()
+    shutil.copytree(ROOT / 'Lemma', workspace / 'Lemma')
+    for name in ('lakefile.toml', 'lean-toolchain'):
+        shutil.copyfile(ROOT / name, workspace / name)
+    env = dict(inherited)
+    # `lake env` callers can otherwise leak a populated or stale outer cache.
+    env.pop('LEAN_PATH', None)
+    env.pop('LEAN_SRC_PATH', None)
+    lake = ['lake', '--no-cache', '-d', str(workspace)]
+    command(lake + ['build', ENGINE], output / 'dependencies.log', env)
+    library = workspace / '.lake/build/lib/lean'
+    engine = library / 'Lemma/Services/Store/Engine.olean'
+    if not engine.is_file():
+        raise ValueError('fresh Lake build did not produce the actual Engine object')
+    sources, objects = {}, {}
+    for compiled in sorted((library / 'Lemma').rglob('*.olean')):
+        module = compiled.relative_to(library).with_suffix('')
+        source = module.with_suffix('.lean')
+        snapshot, original = workspace / source, ROOT / source
+        if not snapshot.is_file() or sha(snapshot) != sha(original):
+            raise ValueError('compiled guest dependency differs from maintained source: ' + str(source))
+        sources[str(source)] = sha(snapshot)
+        objects[str(compiled.relative_to(output))] = sha(compiled)
+    return lake, env, {'sources': sources, 'objects': objects,
+                       'package_inputs': {name: sha(workspace / name) for name in ('lakefile.toml', 'lean-toolchain')}}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -50,12 +90,15 @@ def main():
     try:
         support = output / 'support'
         support.mkdir()
-        env = dict(os.environ)
-        command(['lean', '-o', str(support / 'StoreProbe.olean'), 'conformance/lemmasim/StoreProbe.lean'],
+        lake, env, dependencies = prepare_dependencies(output, os.environ)
+        result['dependencies'] = dependencies
+        command(lake + ['env', 'lean', '-o', str(support / 'StoreProbe.olean'),
+                        str(ROOT / 'conformance/lemmasim/StoreProbe.lean')],
                 output / 'support.log', env)
-        env['LEAN_PATH'] = str(support) + ':' + env.get('LEAN_PATH', '')
+        env['LEAN_PATH'] = str(support)
         env['LEMMA_CACHE_OUT'] = str(output / 'observations')
-        command(['lean', 'conformance/lemmasim/StoreReadCache.lean'], output / 'probe.log', env)
+        command(lake + ['env', 'lean', str(ROOT / 'conformance/lemmasim/StoreReadCache.lean')],
+                output / 'probe.log', env)
         image = output / 'observations/cached-recovery.img'
         root, sequence, objects = recover(image.read_bytes())
         if root.generation != 2 or sequence != 3 or len(objects) != 2:

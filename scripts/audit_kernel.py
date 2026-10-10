@@ -1144,6 +1144,120 @@ def validate_ipc_write_inventory(body: str, write: str, constants: dict[str,int]
     return {"writes":[{"address":a,"value":b} for a,b in observed],"successful_write_gates":gates}
 
 
+def validate_current_ipc_saved_context(body: str, names: dict[str, str],
+                                       constants: dict[str, int], failed_body: str) -> dict:
+    """Exact four-page blocked context reads from one freshly checked base.
+
+    Internal names below only distinguish existing checked read sites for CFG
+    inspection; they never add a machine primitive or an unchecked target call.
+    """
+    p='Lemma.Kernel.';t=p+'Task.';a=p+'Memory.AddressSpace.'
+    read=names[p+'Memory.Access.read64'];base=names[a+'base']
+    lookup=names[t+'lookup'];stack=names[p+'Process.validateStackAt'];failed=names[t+'failed']
+    variable=r'%[A-Za-z0-9_.$-]+'
+    def result(symbol):
+        calls=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(symbol)+r'\(([^\n]*)\)',body)
+        if len(calls)!=1: raise Core0Error('current IPC context lacks one exact checked call')
+        values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0][0])+r', 1$',body,re.M)
+        if len(values)!=1: raise Core0Error('current IPC context lost its checked value')
+        return calls[0],values[0]
+    lookup_call,record=result(lookup);base_call,address=result(base);stack_call,top=result(stack)
+    if lookup_call[1]!='i64 %arg0' or base_call[1]!='i64 %arg0' or stack_call[1]!='i64 '+address:
+        raise Core0Error('current IPC context changed descriptor or exact fresh helper base')
+    saved=('add',address,2048);scalars=_ipc_scalar_operands(body,constants)
+    expected=[('add',record,8),('add',address,64),0x80400600,('add',address,72),
+              ('add',saved,272),saved,('add',saved,264),('add',saved,280)]
+    reads=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(read)+r'\(i64 ([^\n)]+)\)',body)
+    actual=[scalars.get(operand,int(operand) if operand.isdecimal() else operand) for _,operand in reads]
+    if actual!=expected: raise Core0Error('current IPC context read addresses/order differ')
+    aliases=[];values=[];bound=body
+    for index,(call,operand) in enumerate(reads):
+        alias='ipc_saved_context_read_'+str(index);aliases.append(alias)
+        bound=bound.replace(call+' = call { i64, i64 } @'+read+'(',call+' = call { i64, i64 } @'+alias+'(')
+        extracted=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(call)+r', 1$',body,re.M)
+        if len(extracted)!=1: raise Core0Error('current IPC context lost an exact read value')
+        values.append(extracted[0])
+    allowed={lookup,base,stack,read,failed,names[t+'fatal'],names[t+'stateOffset'],
+             names[t+'blocked'],names[a+'activeRoot'],names[a+'userContextOffset']}
+    if parse_definitions_and_calls(body)[2]-allowed:
+        raise Core0Error('current IPC saved context has an unexpected call or mutation')
+    status_gates=[]
+    for before,after in [(lookup,aliases[0]),(aliases[0],base),(base,aliases[1]),
+                         (aliases[1],aliases[2]),(aliases[2],aliases[3]),
+                         (aliases[3],aliases[4]),(aliases[4],aliases[5]),
+                         (aliases[5],aliases[6]),(aliases[6],stack),(stack,aliases[7])]:
+        status_gates.append(validate_failed_call_gate(bound,before,after,failed,failed_body))
+    fresh=validate_fresh_descriptor_base_call(body,base,stack,failed,failed_body)
+    fields=[validate_ipc_read_guard(bound,aliases[0],constants,expected[0],5,base)]
+    for protected in (*aliases[3:],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[2],constants,expected[2],values[1],protected,equal=False))
+    for protected in (*aliases[5:],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[4],constants,expected[4],values[3],protected))
+    for protected in (aliases[6],aliases[7],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[5],constants,saved,0,protected))
+    for protected in (aliases[7],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[6],constants,expected[6],0x200000020,protected))
+    # Pin the sole successful return diamond to storedTop=validatedTop. All
+    # other source branches use the independently pinned Task.fatal result.
+    blocks=_structured_ir_blocks(bound);successors=_structured_successors(blocks)
+    comparisons=re.findall(r'('+variable+r') = icmp eq i64 '+re.escape(values[7])+r', '+re.escape(top)+r'$',bound,re.M)
+    branches=[label for label,lines in blocks.items() if len(comparisons)==1 and
+              lines[-1].startswith('br i1 '+comparisons[0]+', ')]
+    if len(branches)!=1: raise Core0Error('current IPC context lost its stored trap-stack top check')
+    success,failure=successors[branches[0]];lines=blocks[success]
+    if len(lines)!=3 or not re.fullmatch(variable+r' = call i64 @'+re.escape(names[a+'userContextOffset'])+r'\(\)',lines[0]):
+        raise Core0Error('current IPC context successful return invokes unexpected code')
+    offset=lines[0].split(' = ',1)[0];pointer=re.fullmatch('('+variable+r') = add i64 '+re.escape(address)+r', '+re.escape(offset),lines[1])
+    if pointer is None or len(successors[success])!=1 or _structured_reachable(successors,failure,success):
+        raise Core0Error('current IPC context successful pointer is not the fresh context base')
+    merge=successors[success][0];out=blocks[merge]
+    denied=blocks[failure]
+    failure_call=re.fullmatch('('+variable+r') = call \{ i64, i64 \} @'+re.escape(names[t+'fatal'])+r'\(\)',denied[0]) if len(denied)==5 else None
+    if failure_call is None or successors[failure]!=(merge,):
+        raise Core0Error('current IPC top mismatch does not take its exact fatal return')
+    failure_word=re.fullmatch('('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(failure_call[1])+r', 0',denied[1])
+    failure_status=re.fullmatch('('+variable+r') = trunc i64 '+re.escape(failure_word[1] if failure_word else '<missing>')+r' to i8',denied[2])
+    failure_value=re.fullmatch('('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(failure_call[1])+r', 1',denied[3])
+    if failure_status is None or failure_value is None or len(out)!=3 or not re.fullmatch(variable+r' = phi i8 \[ 0, %'+re.escape(success)+r' \], \[ '+re.escape(failure_status[1])+r', %'+re.escape(failure)+r' \]',out[0]) or not re.fullmatch(variable+r' = phi i64 \[ '+re.escape(pointer[1])+r', %'+re.escape(success)+r' \], \[ '+re.escape(failure_value[1])+r', %'+re.escape(failure)+r' \]',out[1]):
+        raise Core0Error('current IPC context does not publish the exact checked pointer/status0')
+    if len(re.findall(r'\[ 0, %[A-Za-z0-9_.$-]+ \]', '\n'.join(line for line in body.splitlines() if ' = phi i8 ' in line)))!=1 or len(re.findall(r'^\s*ret \{ i64, i64 \}',body,re.M))!=1:
+        raise Core0Error('current IPC context has another successful return route')
+    # Carry this checked pair unchanged through the generated Action merge
+    # chain. A valid context computed above cannot be replaced at the final
+    # aggregate return, and an error must not be converted to a success there.
+    status=out[0].split(' = ',1)[0];value=out[1].split(' = ',1)[0]
+    predecessor=merge;visited={merge}
+    while len(successors[predecessor])==1:
+        following=successors[predecessor][0]
+        if following in visited: raise Core0Error('current IPC return merge chain is cyclic')
+        visited.add(following);tail=blocks[following]
+        if tail[0].find(' = phi i8 ')!=-1:
+            if len(tail)<3 or tail[1].find(' = phi i64 ')==-1:
+                raise Core0Error('current IPC return pair has a malformed merge')
+            if len(re.findall(r'\[ '+re.escape(status)+r', %'+re.escape(predecessor)+r' \]',tail[0]))!=1 or len(re.findall(r'\[ '+re.escape(value)+r', %'+re.escape(predecessor)+r' \]',tail[1]))!=1:
+                raise Core0Error('current IPC return merge changes the checked status/pointer')
+            status=tail[0].split(' = ',1)[0];value=tail[1].split(' = ',1)[0];tail=tail[2:]
+        if len(tail)==1 and len(successors[following])==1:
+            predecessor=following
+            continue
+        if len(tail)!=4:
+            raise Core0Error('current IPC checked context does not reach its exact aggregate return')
+        wide=re.fullmatch('('+variable+r') = zext i8 '+re.escape(status)+r' to i64',tail[0])
+        partial=re.fullmatch('('+variable+r') = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(wide[1] if wide else '<missing>')+r', 0',tail[1])
+        complete=re.fullmatch('('+variable+r') = insertvalue \{ i64, i64 \} '+re.escape(partial[1] if partial else '<missing>')+r', i64 '+re.escape(value)+r', 1',tail[2])
+        if complete is None or tail[3]!='ret { i64, i64 } '+complete[1] or successors[following]:
+            raise Core0Error('current IPC aggregate return changes the checked status/pointer')
+        break
+    else:
+        raise Core0Error('current IPC checked pair lacks one aggregate return route')
+    returned=bound.replace(lines[0],lines[0].replace('@'+names[a+'userContextOffset']+'(', '@ipc_saved_context_success('))
+    fields.append(validate_ipc_read_guard(returned,aliases[7],constants,expected[7],top,'ipc_saved_context_success'))
+    status_gates.append(validate_failed_call_gate(returned,aliases[7],'ipc_saved_context_success',failed,failed_body))
+    return {'descriptor_base':address,'context_offset':2048,'read_addresses':actual,
+            'fresh_descriptor_gate':fresh,'checked_read_gates':status_gates,'loaded_field_gates':fields,
+            'success_block':success,'saved_pointer':pointer[1],'scope':'exact current four-page blocked context; no cross-call cache'}
+
+
 def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     """Bind the selected IPC policy to its genuine source/CFG/storage closure.
 
@@ -1159,6 +1273,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     a="Lemma.Kernel.Memory.AddressSpace.";f="Lemma.Kernel.Memory.Frames.";u="Lemma.Kernel.Memory.UserCopy."
     y="Lemma.Kernel.Syscall.";q="Lemma.Kernel.Scheduler.";p="Lemma.Kernel.Process."
     b="Lemma.User.IPCABI.";v="Lemma.User.CapabilityABI.";x="Lemma.Kernel.Memory.Access."
+    current_context=p+'validateStackAt' in by_source
     edges={
       e+"boot":[e+"launch",t+"init",o+"init",p+"init"],e+"dispatch":[q+"dispatch"],
       e+"launch":["Lemma.Kernel.Development.TasksEntry.readLaunchWithFourth",t+"prepareManaged",e+"configure"],
@@ -1258,7 +1373,13 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     if service:
         edges={caller:callees for caller,callees in edges.items() if not caller.startswith(e)}
         constants={source:value for source,value in constants.items() if not source.startswith(e)}
+    if current_context:
+        edges[t+'savedContext']=[t+'lookup',a+'base',x+'read64',p+'validateStackAt']
+        constants[a+'userContextOffset']=2048
+        constants['Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue']=16384
     required=set(constants)|set(edges)|{value for values in edges.values() for value in values}
+    if current_context:
+        required |= {t+'fatal',t+'failed'}
     if not required<=set(by_source):
         raise Core0Error("IPC genuine lifecycle closure missing: "+str(sorted(required-set(by_source))))
     bodies={source:_ir_definition_body(pre_ir,by_source[source]) for source in required}
@@ -1382,10 +1503,20 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         field_gates.append({'source':t+'block',**validate_ipc_read_guard(blocked,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
     for address,expected in [(('add','%arg0',8),5),(('add','%arg0',128),'%arg2'),(('add','%arg0',136),'%arg3'),('%arg0','%arg1')]:
         field_gates.append({'source':t+'completeBlocked',**validate_ipc_read_guard(wake,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
-    saved=bodies[t+'savedContext'];saved_context=result(saved,a+'context');translation=result(saved,a+'satp')
-    for address,expected in [(('add',saved_context,272),translation),(saved_context,0),(('add',saved_context,264),0x200000020)]:
-        field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,address,expected,by_source[p+'validateStack'])})
-    field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,0x80400600,result(saved,a+'root'),by_source[a+'context'],equal=False)})
+    saved=bodies[t+'savedContext'];fresh_context=None
+    if current_context:
+        helpers=validate_fresh_descriptor_helpers(unit,pre_ir)
+        fatal=_ir_definition_body(pre_ir,by_source[t+'fatal'])
+        if re.fullmatch(r'\s*entry:\s*(%[A-Za-z0-9_.$-]+) = zext i8 50 to i64\s*(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} poison, i64 \1, 0\s*(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} \2, i64 0, 1\s*ret \{ i64, i64 \} \3\s*',fatal) is None:
+            raise Core0Error('current IPC context failure does not return fatal50/value0')
+        fresh_context=validate_current_ipc_saved_context(saved,by_source,constant_symbols,_ir_definition_body(pre_ir,by_source[t+'failed']))
+        fresh_context['closed_stack_helpers']=helpers
+        field_gates.extend({'source':t+'savedContext',**gate} for gate in fresh_context['loaded_field_gates'])
+    else:
+        saved_context=result(saved,a+'context');translation=result(saved,a+'satp')
+        for address,expected in [(('add',saved_context,272),translation),(saved_context,0),(('add',saved_context,264),0x200000020)]:
+            field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,address,expected,by_source[p+'validateStack'])})
+        field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,0x80400600,result(saved,a+'root'),by_source[a+'context'],equal=False)})
     wake_status=result(wake,i+'completeWait',0)
     wake_narrow=re.findall(r'('+variable+r') = trunc i64 '+re.escape(wake_status)+r' to i8$',wake,re.M)
     if len(wake_narrow)!=1:raise Core0Error('IPC wakeup lacks returned checked status')
@@ -1434,6 +1565,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
     return {'managed_policy':BUFFER_POLICY if service else IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
+      **({'current_saved_context':fresh_context} if fresh_context else {}),
       'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
       'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
 
