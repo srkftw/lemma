@@ -89,6 +89,8 @@ class Trace:
     keys = IMAGE_KEYS
     configuration = "tasks-development"
     arithmetic_required = True
+    busy_root = "Lemma.User.Development.Tasks.Busy.main"
+    busy_callback = "Lemma.User.Development.Tasks.Busy.tick"
 
     def __init__(self, session: Session):
         self.session = session
@@ -122,10 +124,10 @@ class Trace:
         rendered = json.dumps(unit, sort_keys=True)
         if (not isinstance(execution, list) or not execution or not isinstance(actions, list) or not actions
                 or not isinstance(loops, list) or len(loops) != 1
-                or loops[0].get("callback") != "Lemma.User.Development.Tasks.Busy.tick"
+                or loops[0].get("callback") != self.busy_callback
                 or "syscall" in str(execution).lower() or "Lemma.User.Syscall" in rendered
-                or "Lemma.User.Development.Tasks.Busy.main" not in rendered
-                or "Lemma.User.Development.Tasks.Busy.tick" not in rendered):
+                or self.busy_root not in rendered
+                or self.busy_callback not in rendered):
             raise Core0Error("Busy genuine reachable closure has a syscall or lacks its maintained loop")
         self.busy_unit = {"path": str(unit_path), "sha256": sha256(unit_path),
                           "execution_requirements": execution,

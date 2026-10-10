@@ -77,6 +77,21 @@ def source_binding(root: Path, expected_commit: str) -> dict:
     if mutated != timer_disabled_source(original.decode()).encode():
         raise Core0Error("Firmware differs beyond the canonical call5 successful rearm mutation")
     sources = source_inputs(root)
+    if not sources or FIRMWARE not in sources:
+        raise Core0Error("timer mutation lacks its complete source inventory")
+    entries = {}
+    for row in git("ls-tree", "-rz", "HEAD").split(b"\0"):
+        if row:
+            metadata, name = row.split(b"\t", 1)
+            entries[name.decode()] = metadata.decode().split()
+    for name, digest in sources.items():
+        entry = entries.get(name)
+        if not entry or entry[:2] not in (["100644", "blob"], ["100755", "blob"]):
+            raise Core0Error("timer source inventory contains an uncommitted or nonregular input")
+        content = original if name == FIRMWARE else (root / name).read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(content)).encode() + b"\0" + content).hexdigest()
+        if blob != entry[2] or digest != sha256(root / name):
+            raise Core0Error("timer source inventory differs from the committed control tree")
     baseline = {**sources, FIRMWARE: hashlib.sha256(original).hexdigest()}
     tree = git("rev-parse", "HEAD^{tree}").decode().strip()
     if not re.fullmatch(r"[0-9a-f]{40}", tree):
@@ -100,10 +115,12 @@ def positive_control(path: Path, binding: dict, root: Path, optimization: str) -
     audit = load_json(image.parent / "audit.json")
     if (value.get("source_inputs") != binding["control_source_inputs"]
             or provenance.get("source_inputs") != binding["control_source_inputs"]
+            or provenance.get("source_commit") != binding["commit"] or provenance.get("dirty_paths") != []
             or (provenance.get("configuration"), provenance.get("stage"), provenance.get("optimization"))
             != ("tasks-development", "supervisor", optimization)
             or (audit.get("status"), audit.get("configuration"), audit.get("stage"))
             != ("PASS", "tasks-development", "supervisor")
+            or audit.get("source_commit") != binding["commit"] or audit.get("dirty_paths") != []
             or value.get("observed", {}).get("protocol") != "preemptive-tasks-F-v1"
             or value.get("observed", {}).get("final_remaining_frames") != 499):
         raise Core0Error("positive F control does not bind the exact unchanged compiled source and profile")

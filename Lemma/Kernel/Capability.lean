@@ -250,6 +250,61 @@ private def grant (descriptor key rights : UInt64) : Action :=
   if failed s = true then .done s 0 else publish descriptor key rights slot serial
   else .done CapabilityABI.invalidArgument 0
 
+private def discoveredStep (i _ : UInt32) (acc base key descriptor _ : UInt64) : Action :=
+  let address := entry base i.toUInt64
+  .bind (Objects.get address) fun s state =>
+  if failed s = true then fatal else
+  if state = entryFree then .done 0 acc else
+  if state = entryLive then
+  .bind (Objects.get (address + 16)) fun s current =>
+  if failed s = true then fatal else
+  .bind (Objects.get (address + 24)) fun s rights =>
+  if failed s = true then fatal else
+  if current = key then if rights = CapabilityABI.endpointCall then
+  .bind (Objects.get (address + 8)) fun s serial =>
+  if failed s = true then fatal else
+  let handle := serial * capacity + i.toUInt64
+  .bind (lookupEntry descriptor handle) fun s checked =>
+  if failed s = true then fatal else
+  if checked = address then .done Status.iterationStop handle else fatal
+  else .done 0 acc else .done 0 acc
+  else fatal
+
+/-- Discovery has one fixed attenuation, Call16. Existing exact current-key
+entries are returned by a read-only path even when the table/serial space is
+full. Only a genuinely absent entry reaches ordinary grant publication. -/
+def grantDiscovered (descriptor key : UInt64) : Action :=
+  .bind (requireActive descriptor) fun s base =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.resolve key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.endpointType then
+  .bind (entryCount descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .boundedFoldU64 16 discoveredStep 16 0 base key descriptor 0 fun s handle =>
+  if s = Status.iterationStop then .done 0 handle else
+  if s = 0 then grant descriptor key CapabilityABI.endpointCall else fatal
+  else .done CapabilityABI.wrongType 0
+
+private def activeRegisteredStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Objects.registryDescriptor i.toUInt64) fun s descriptor =>
+  if failed s = true then fatal else
+  if descriptor = 0 then .done 0 acc else
+  .bind (header descriptor) fun s base =>
+  if failed s = true then fatal else
+  .bind (Objects.get (base + headerOffset + 24)) fun s state =>
+  if failed s = true then fatal else
+  if state = active then .done 0 (acc + 1) else
+  if state = constructing then .done 0 acc else fatal
+
+/-- Count only full generation-checked active managed registrations. This low
+module has no Task import and discloses no descriptor or pointer to User. -/
+def activeRegisteredCount : Action :=
+  .boundedFoldU64 8 activeRegisteredStep 8 0 0 0 0 0 fun s count =>
+  if failed s = true then fatal else .done 0 count
+
 def grantBoot (descriptor key rights : UInt64) : Action :=
   .bind (header descriptor) fun s base =>
   if failed s = true then .done s 0 else

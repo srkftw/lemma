@@ -28,12 +28,17 @@ ROLE_MODULES = {"firmware": "Lemma.Platform.RiscV.Firmware", "kernel": "Lemma.Ke
 CONFIGURATIONS = ("normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
-                  "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development")
-MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development")
+                  "tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
+                  "service-normal", "service-development")
+MULTI_CONFIGURATIONS = ("tasks-development", "tasks-fault-development", "capabilities-development", "ipc-development",
+                       "service-normal", "service-development")
+SERVICE_CONFIGURATIONS = ("service-normal", "service-development")
 INDEPENDENT_IMAGE_KEYS = {"tasks-development": {"compute", "sleeper", "busy"},
                           "tasks-fault-development": {"compute", "sleeper", "busy", "fault"},
                           "capabilities-development": {"capabilities", "peer", "busy", "tamper"},
-                          "ipc-development": {"server", "clienta", "clientb", "busy", "fault"}}
+                          "ipc-development": {"server", "clienta", "clientb", "busy", "fault"},
+                          "service-normal": {"server", "cli", "peer", "busy"},
+                          "service-development": {"server", "cli", "peer", "busy", "fault"}}
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
 CONTRACTS["kernel"] = "core0-kernel-v0.2"
 BOOT_FILES = ("startup.S", "user-startup.S", "link.ld", "user-link.ld", "layout.json",
@@ -76,8 +81,12 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in MULTI_CONFIGURATIONS:
-        module = "Lemma.Kernel.Development." + {"tasks-development": "TasksEntry",
-                  "tasks-fault-development": "FaultEntry", "capabilities-development": "CapsEntry", "ipc-development": "IPCEntry"}[configuration]
+        module = {"tasks-development": "Lemma.Kernel.Development.TasksEntry",
+                  "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry",
+                  "capabilities-development": "Lemma.Kernel.Development.CapsEntry",
+                  "ipc-development": "Lemma.Kernel.Development.IPCEntry",
+                  "service-normal": "Lemma.Kernel.ServiceEntry",
+                  "service-development": "Lemma.Kernel.Development.ServiceEntry"}[configuration]
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": ((module + ".boot", ()),
                    (module + ".dispatch", ("u64", "u64", "u64")))}
     if configuration == "frames-development":
@@ -95,9 +104,7 @@ def configuration_roots(configuration: str) -> dict:
 def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
-        return {"firmware": ROLE_MODULES["firmware"], "kernel": "Lemma.Kernel.Development." +
-                {"tasks-development": "TasksEntry", "tasks-fault-development": "FaultEntry",
-                 "capabilities-development": "CapsEntry", "ipc-development": "IPCEntry"}[configuration]}
+        return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
     if configuration == "frames-development":
         return {**ROLE_MODULES, "kernel": "Lemma.Kernel.Development.FramesEntry"}
     if configuration == "user-isolation-development":
@@ -109,7 +116,7 @@ def configuration_modules(configuration: str) -> dict:
 
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
-    return (configuration in MULTI_CONFIGURATIONS and role == "kernel"
+    return (configuration in MULTI_CONFIGURATIONS and configuration != "service-normal" and role == "kernel"
             or configuration == "frames-development" and role == "kernel"
             or configuration == "user-isolation-development" and role in {"kernel", "user"}
             or configuration == "user-syscall-development" and role == "user")
@@ -130,7 +137,8 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
-    return {"capabilities-development": "lemma-capabilities-v1", "ipc-development": "lemma-ipc-v1"}.get(configuration)
+    return {"capabilities-development": "lemma-capabilities-v1", "ipc-development": "lemma-ipc-v1",
+            "service-normal": "lemma-buffer-service-v1", "service-development": "lemma-buffer-service-v1"}.get(configuration)
 
 
 def startup_case(configuration: str) -> str:
@@ -158,7 +166,25 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
 
 def artifact_category(configuration: str) -> str:
     configuration_roots(configuration)
-    return ("production" if configuration == "normal" else "development") + "-kernel-boot-package"
+    return ("production" if configuration in {"normal", "service-normal"} else "development") + "-kernel-boot-package"
+
+
+def user_artifact_category(configuration: str) -> str:
+    configuration_roots(configuration)
+    return ("production" if configuration == "service-normal" else "development") + "-user-image"
+
+
+def service_executable_module(module: str) -> bool:
+    return (module.startswith("Lemma.Applications.") or module == "Lemma.Services.Buffer.Server"
+            or module.startswith("Lemma.Services.Buffer.Server.") or module == "Lemma.User.Development.BufferFault"
+            or module.startswith("Lemma.User.Development.BufferFault."))
+
+
+def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str, str]:
+    """Selected target source only; exporter/compiler host imports are separate."""
+    return module_closure(root, image["module"], allow_development=".Development." in image["module"],
+                          forbid_user_privileged_imports=managed_policy(configuration) is not None,
+                          selected_executable_module=image["module"] if configuration in SERVICE_CONFIGURATIONS else None)
 
 
 def source_inputs(root: Path) -> dict[str, str]:
@@ -175,7 +201,8 @@ def source_inputs(root: Path) -> dict[str, str]:
 def module_closure(root: Path, module: str, seen: set[str] | None = None, *, allow_development: bool = False,
                    development_module: str | None = None,
                    development_modules: tuple[str, ...] | None = None,
-                   forbid_user_privileged_imports: bool = False) -> dict[str, str]:
+                   forbid_user_privileged_imports: bool = False,
+                   selected_executable_module: str | None = None) -> dict[str, str]:
     import re
     if development_modules is None:
         development_modules = ((development_module or module,) if allow_development else ())
@@ -185,6 +212,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     seen.add(module)
     if forbid_user_privileged_imports and module.startswith(("Lemma.Kernel.", "Lemma.Compiler.")):
         raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
+    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module:
+        raise Core0Error(f"user dependency imports another executable module: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")
     if ".Development." in module and not allow_development:
@@ -202,7 +231,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
                 raise Core0Error(f"production dependency imports test source: {dependency}")
             result.update(module_closure(root, dependency, seen, allow_development=allow_development,
                                          development_modules=development_modules,
-                                         forbid_user_privileged_imports=forbid_user_privileged_imports))
+                                         forbid_user_privileged_imports=forbid_user_privileged_imports,
+                                         selected_executable_module=selected_executable_module))
     return result
 
 
@@ -296,6 +326,25 @@ def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     # remain checked by the allocator; this rejects an impossible initial load.
     if 11 + math.ceil(text_bytes / layout["frame_bytes"]) + 1 + user["stack_pages"] + layout["task_kernel_stack_pages"] > 32:
         raise Core0Error("independent user image cannot fit the loader's 32-frame owner quota")
+    validate_service_user_quota(layout, image, text_bytes)
+
+
+def validate_service_user_quota(layout: dict, image: dict, text_bytes: int) -> dict | None:
+    """Reserve the Server's four real arena pages in its initial image budget.
+
+    The descriptor belongs to owner1 and contributes to global accounting,
+    separately from the sixteen task-owned fixed pages.
+    """
+    if layout.get("configuration") not in SERVICE_CONFIGURATIONS:
+        return None
+    if type(text_bytes) is not int or text_bytes <= 0 or layout.get("frame_bytes") != 4096:
+        raise Core0Error("service text extent/frame size is invalid")
+    pages = (text_bytes + 4095) // 4096
+    reserve = 4 if image["key"] == "server" else 0
+    if 16 + pages + reserve > 32:
+        raise Core0Error("service user image leaves insufficient owned-page quota for its backing pages")
+    return {"base_owned_task_frames": 16, "base_global_task_frames": 17,
+            "text_pages": pages, "reserved_arena_pages": reserve, "owner_quota": 32}
 
 
 def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
@@ -353,7 +402,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
 
     try:
         dependencies = {role: module_closure(root, module, allow_development=development_role(configuration, role),
-                                            development_modules=configuration_development_modules(configuration, role))
+                                            development_modules=configuration_development_modules(configuration, role),
+                                            selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
                         for role, module in modules.items()}
         source_before = source_inputs(root)
         versions, source_realization = realize_toolchain(root, tools, invoke)
@@ -362,8 +412,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
             catalog = export_user_catalog(root, output_dir, configuration, invoke)
             images = catalog["images"]
-            dependencies["users"] = {image["key"]: module_closure(root, image["module"], allow_development=True,
-                                     forbid_user_privileged_imports=managed_policy(configuration) is not None)
+            dependencies["users"] = {image["key"]: user_module_closure(root, image, configuration)
                                      for image in images}
         invoke(("lake", "build", *modules.values(), *(image["module"] for image in images), "Lemma.Compiler.KernelExport"), root)
         from audit_kernel import validate_unit

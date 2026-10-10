@@ -22,6 +22,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           UNIT_FILES, USER_OBJECTS, artifact_category, configuration_modules,
                           configuration_roots, development_role, module_closure, source_inputs, startup_case, user_startup_case,
                           configuration_development_modules,
+                          SERVICE_CONFIGURATIONS, service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -126,9 +127,24 @@ IPC_USER_IMAGES = tuple({"key":key,"id":index,"module":module,"source":module+".
                            ("clientb","Lemma.User.Development.IPCClients","clientB","ipc-client-b"),
                            ("busy","Lemma.User.Development.Tasks.Busy","main","background-no-grants"),
                            ("fault","Lemma.User.Development.IPCFault","main","ipc-fault-client")),1))
-MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY}
+BUFFER_POLICY = "lemma-buffer-service-v1"
+SERVICE_USER_IMAGES = tuple({"key":key,"id":index,"module":module,"source":module+".main","args":["u64"],
+                            "symbol_prefix":"lemma_user_"+key+"_","startup_case":"none","directory":"users/"+key,
+                            "boot_role":role}
+                           for index,(key,module,role) in enumerate((
+                               ("server","Lemma.Services.Buffer.Server","buffer-server"),
+                               ("cli","Lemma.Applications.BufferCLI","buffer-cli"),
+                               ("peer","Lemma.Applications.BufferPeer","buffer-peer"),
+                               ("busy","Lemma.Applications.CPUBound","background-no-grants")),1))
+SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
+    "key":"fault","id":5,"module":"Lemma.User.Development.BufferFault",
+    "source":"Lemma.User.Development.BufferFault.main","args":["u64"],"symbol_prefix":"lemma_user_fault_",
+    "startup_case":"none","directory":"users/fault","boot_role":"buffer-fault-client"})
+MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
+                    "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
-                             "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES}
+                             "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
+                             "service-normal":SERVICE_USER_IMAGES,"service-development":SERVICE_DEVELOPMENT_USER_IMAGES}
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -349,7 +365,9 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
     task_dispatch = {"tasks-development": "Lemma.Kernel.Development.TasksEntry.dispatch",
                      "tasks-fault-development": "Lemma.Kernel.Development.FaultEntry.dispatch",
                      "capabilities-development": "Lemma.Kernel.Development.CapsEntry.dispatch",
-                     "ipc-development":"Lemma.Kernel.Development.IPCEntry.dispatch"}
+                     "ipc-development":"Lemma.Kernel.Development.IPCEntry.dispatch",
+                     "service-normal":"Lemma.Kernel.ServiceEntry.dispatch",
+                     "service-development":"Lemma.Kernel.Development.ServiceEntry.dispatch"}
     dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
                        "Lemma.Kernel.Scheduler.dispatch": ["Lemma.Kernel.Task.capture"],
                        "Lemma.Kernel.Task.capture": ["Lemma.Kernel.Process.validateFrame"],
@@ -379,7 +397,10 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             raise Core0Error("owned task-stack source call chain omits pair construction or validation")
     return {"pages": layout["task_kernel_stack_pages"], "bytes": layout["task_kernel_stack_bytes"],
             "construction": "owned-physically-contiguous-pair", "first_handle_offset": 2400, "second_handle_offset": 2480,
-            "base_owned_task_frames": 15 + layout["task_kernel_stack_pages"],
+            **({"base_owned_task_frames": 14 + layout["task_kernel_stack_pages"],
+                "base_global_task_frames": 15 + layout["task_kernel_stack_pages"]}
+               if unit.get("configuration") in SERVICE_CONFIGURATIONS else
+               {"base_owned_task_frames": 15 + layout["task_kernel_stack_pages"]}),
             "source_functions": {source: by_source[source] for source in sorted(required)}}
 
 
@@ -902,8 +923,9 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     This reports compiled structural obligations, not a proof or a substitute
     for the independent IPC model and observed User execution.
     """
-    if unit.get("configuration")!="ipc-development" or unit.get("role")!="kernel":
+    if unit.get("configuration") not in {"ipc-development",*SERVICE_CONFIGURATIONS} or unit.get("role")!="kernel":
         raise Core0Error("IPC graph audit requires its exact selected kernel unit")
+    service = unit["configuration"] in SERVICE_CONFIGURATIONS
     by_source={re.sub(r"^_private\..*?\.[0-9]+\.","",row["source"]):row["symbol"] for row in unit["functions"]}
     e="Lemma.Kernel.Development.IPCEntry.";t="Lemma.Kernel.Task.";c="Lemma.Kernel.Capability."
     o="Lemma.Kernel.Objects.";s="Lemma.Kernel.IPCStorage.";i="Lemma.Kernel.IPC."
@@ -948,7 +970,8 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       o+"destroy":[o+"endpointRepliesStep",o+"invalidateEndpointWaits",f+"release"],
       o+"destroyReply":[o+"replyFields",o+"invalidateReplyBindingStep",o+"clearObjectStep"],
       y+"dispatch":[c+"managed",y+"dispatchManaged",y+"dispatchLegacy"],
-      y+"dispatchManaged":[i+"dispatch",y+"capConsole"],y+"capConsole":[c+"lookup",y+"consoleRead",y+"consoleWrite"],
+      y+"dispatchManaged":[i+"dispatch",y+"capConsole"],y+"capConsole":[c+"lookup",y+"selectedConsoleRead",y+"consoleWrite"],
+      y+"selectedConsoleRead":["Lemma.Kernel.KernelInput.mode",y+"consoleRead","Lemma.Kernel.KernelInput.read"],
       i+"dispatch":[i+"send",i+"receive",i+"callBegin",i+"callWait",i+"reply",i+"cancel"],
       i+"send":[c+"lookup",i+"payload",i+"idle",i+"queueRoom",s+"prepare",i+"stage",s+"queueEnqueue",i+"publishedSend"],
       i+"callBegin":[c+"lookup",i+"payload",i+"idle",i+"queueRoom",o+"replyAvailable",i+"deadline",s+"prepare",i+"stage",o+"createReply",s+"setReply",s+"queueEnqueue",o+"markReplyQueued",s+"commitWait"],
@@ -1005,6 +1028,9 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
        b+"messageMagic":0x31504349414d454c,b+"magicOffset":0,b+"kindOffset":8,b+"senderOffset":16,b+"requestOffset":24,b+"replyOffset":32,b+"lengthOffset":40,b+"statusOffset":48,b+"reservedOffset":56,b+"send":20,b+"receive":21,b+"callBegin":22,b+"callWait":23,b+"reply":24,b+"cancel":25,b+"headerBytes":64,b+"maximumPayload":192,b+"maximumPacket":256,
        b+"sendKind":1,b+"callKind":2,b+"replyKind":3,b+"minimumTicks":1000,b+"maximumTicks":10000000,
        v+"endpointSend":4,v+"endpointReceive":8,v+"endpointCall":16,v+"replyRight":1,v+"replyType":5,v+"endpointType":2,v+"consoleType":1,v+"managementType":3}
+    if service:
+        edges={caller:callees for caller,callees in edges.items() if not caller.startswith(e)}
+        constants={source:value for source,value in constants.items() if not source.startswith(e)}
     required=set(constants)|set(edges)|{value for values in edges.values() for value in values}
     if not required<=set(by_source):
         raise Core0Error("IPC genuine lifecycle closure missing: "+str(sorted(required-set(by_source))))
@@ -1042,6 +1068,8 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       (q+"step",t+"reap",t+"pollIPC"),(q+"step",t+"wakeDue",t+"pollIPC"),(q+"step",t+"pollIPC",t+"select"),
       (q+"call",i+"waitInfo",t+"block"),(q+"call",p+"syscallReply",t+"block"),
     ]:
+        if service and caller.startswith(e):
+            continue
         try: ordered.append({'source':caller,**validate_call_precedes(bodies[caller],by_source[before],by_source[after])})
         except Core0Error as error: raise Core0Error(caller+' ordered '+before+' -> '+after+': '+str(error)) from error
     checked=[]
@@ -1065,7 +1093,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     for protected in (y+'dispatchManaged',y+'dispatchLegacy'):
         checked.append({'source':y+'dispatch',**validate_checked_call_gate(bodies[y+'dispatch'],by_source[c+'managed'],by_source[protected])})
     checked.append({'source':y+'dispatch',**validate_checked_call_gate(bodies[y+'dispatch'],by_source[c+'managed'],by_source[y+'dispatchManaged'],component='value',value=1)})
-    for protected in (y+'consoleRead',y+'consoleWrite'):
+    for protected in (y+'selectedConsoleRead',y+'consoleWrite'):
         checked.append({'source':y+'capConsole',**validate_checked_call_gate(bodies[y+'capConsole'],by_source[c+'lookup'],by_source[protected])})
     endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],by_source)
     reply_budget=validate_h_endpoint_budget(bodies[o+'replyAvailable'],by_source,reply=True)
@@ -1087,19 +1115,21 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         if actual!=[('%arg0','%arg1',kind,right)]:raise Core0Error('IPC authority lookup changed caller-local descriptor/type/rights: '+operation)
     # Exact static image selection and source-selected grants; Busy gets none.
     variable=r'%[A-Za-z0-9_.$-]+'
-    preparations=lambda body:re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'prepareManaged'])+r'\(i64 ([0-9]+),',body)
-    if preparations(bodies[e+'launch'])!=['0','1','2','3'] or preparations(bodies[e+'createFault'])!=['4']:
-        raise Core0Error('IPC boot roles changed exact selected image preparation')
-    grants_body=bodies[e+'initialGrants']
-    literal_symbols={by_source[o+'consoleKey']:16,by_source[o+'managementKey']:17,by_source[v+'consoleType']:1,by_source[v+'endpointType']:2,by_source[v+'managementType']:3}
-    operands={result:literal_symbols[symbol] for result,symbol in re.findall(r'('+variable+r') = call i64 @([^ (]+)\(\)',grants_body) if symbol in literal_symbols}
-    grants=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in re.findall(
-       r'call \{ i64, i64 \} @'+re.escape(by_source[e+'grant'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',grants_body)]
-    expected_grants=[('%arg0',16,1,34),('%arg0','%arg3',2,8),('%arg1',16,1,34),('%arg1','%arg3',2,20),('%arg1','%arg4',2,124),('%arg1',17,3,928),('%arg1','%arg5',2,4),('%arg2',16,1,34),('%arg2','%arg3',2,20),('%arg2','%arg5',2,8)]
-    if grants!=expected_grants:
-        raise Core0Error('IPC initial grant descriptors/keys/kinds/rights/order differ')
-    if re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'activateManaged'])+r'\(i64 ('+variable+r')\)',bodies[e+'activate'])!=['%arg0','%arg1','%arg2','%arg3']:
-        raise Core0Error('IPC managed activation role order differs')
+    grants=[]
+    if not service:
+        preparations=lambda body:re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'prepareManaged'])+r'\(i64 ([0-9]+),',body)
+        if preparations(bodies[e+'launch'])!=['0','1','2','3'] or preparations(bodies[e+'createFault'])!=['4']:
+            raise Core0Error('IPC boot roles changed exact selected image preparation')
+        grants_body=bodies[e+'initialGrants']
+        literal_symbols={by_source[o+'consoleKey']:16,by_source[o+'managementKey']:17,by_source[v+'consoleType']:1,by_source[v+'endpointType']:2,by_source[v+'managementType']:3}
+        operands={result:literal_symbols[symbol] for result,symbol in re.findall(r'('+variable+r') = call i64 @([^ (]+)\(\)',grants_body) if symbol in literal_symbols}
+        grants=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in re.findall(
+           r'call \{ i64, i64 \} @'+re.escape(by_source[e+'grant'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',grants_body)]
+        expected_grants=[('%arg0',16,1,34),('%arg0','%arg3',2,8),('%arg1',16,1,34),('%arg1','%arg3',2,20),('%arg1','%arg4',2,124),('%arg1',17,3,928),('%arg1','%arg5',2,4),('%arg2',16,1,34),('%arg2','%arg3',2,20),('%arg2','%arg5',2,8)]
+        if grants!=expected_grants:
+            raise Core0Error('IPC initial grant descriptors/keys/kinds/rights/order differ')
+        if re.findall(r'call \{ i64, i64 \} @'+re.escape(by_source[t+'activateManaged'])+r'\(i64 ('+variable+r')\)',bodies[e+'activate'])!=['%arg0','%arg1','%arg2','%arg3']:
+            raise Core0Error('IPC managed activation role order differs')
     # Bound every mutable completion write; no PC256 write in wakeup.
     def result(body,source,component=1):
         call=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(by_source[source])+r'\(',body)
@@ -1175,10 +1205,500 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     # writes exactly a0/a1 and row bookkeeping, never savedPC or SATP.
     if by_source[x+'write64'] in parse_definitions_and_calls(bodies[t+'savedContext'])[2] or by_source[p+'syscallReply'] in parse_definitions_and_calls(wake)[2]:
         raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
-    return {'managed_policy':IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
+    return {'managed_policy':BUFFER_POLICY if service else IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
       'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
       'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
+
+
+def _service_minimum_operands(body: str) -> dict[str, object]:
+    """Recognize only a closed, side-effect-free unsigned minimum diamond."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks);values={}
+    for merge,lines in blocks.items():
+        for line in lines:
+            phi=re.fullmatch(r'('+var+r') = phi i64 \[ ('+var+r'), %('+label+r') \], \[ ('+var+r'), %('+label+r') \]',line)
+            if phi is None:
+                continue
+            result,left,yes,right,no=phi.groups()
+            if blocks.get(yes)!=['br label %'+merge] or blocks.get(no)!=['br label %'+merge]:
+                continue
+            guards=[block for block,targets in successors.items() if targets==(yes,no) and len(blocks[block])>=2
+                    and re.fullmatch(r'('+var+r') = icmp ule i64 '+re.escape(left)+r', '+re.escape(right),blocks[block][-2])
+                    and blocks[block][-1]=='br i1 '+blocks[block][-2].split(' = ',1)[0]+', label %'+yes+', label %'+no]
+            if len(guards)==1:
+                values[result]=('unsigned-min',left,right)
+    return values
+
+
+def validate_dynamic_copy_gate(body: str, copy: str, protected: str) -> dict:
+    """Bind actual copied bytes to that call's dynamic requested count."""
+    var=r'%[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(copy)+r'\(([^\n]*)\)',body)
+    if len(calls)!=1:
+        raise Core0Error('input copy count gate needs one exact checked call')
+    result,arguments=calls[0];parts=arguments.split(', ')
+    if len(parts)!=5 or any(not part.startswith('i64 ') for part in parts):
+        raise Core0Error('input copy count gate argument shape differs')
+    requested=parts[-1][4:]
+    if not re.fullmatch(var,requested):
+        raise Core0Error('input copy must retain the dynamic requested count')
+    values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(result)+r', 1$',body,re.M)
+    minimums=_service_minimum_operands(body)
+    comparisons=[comparison for comparison,expected in re.findall(
+        r'('+var+r') = icmp eq i64 '+re.escape(values[0] if len(values)==1 else 'NO_VALUE')+r', ('+var+r')$',body,re.M)
+        if minimums.get(expected,expected)==minimums.get(requested,requested)]
+    if len(values)!=1 or len(comparisons)!=1:
+        raise Core0Error('input copy advancement lacks actual copied==requested binding')
+    return {'actual_count':values[0],'requested_count':requested,'requested_expression':minimums.get(requested,requested),
+            **validate_boolean_gate(body,comparisons[0],protected)}
+
+
+def validate_server_lease_scan(body: str, *, receive: str, time: str, expire: str, dispatch: str) -> dict:
+    """Successful receive needs a fresh time and completed four-row expiry scan."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    clocks=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(time)+r'\(\)',body)
+    if len(clocks)!=2:
+        raise Core0Error('Server expiry needs both timeout and post-receive time samples')
+    fresh=clocks[1]
+    values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(fresh)+r', 1$',body,re.M)
+    if len(values)!=1:
+        raise Core0Error('Server post-receive sample lacks actual time value')
+    callbacks=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(expire)+
+        r'\(i32 signext ('+var+r'), i32 signext 4, i64 ('+var+r'), i64 ('+var+r'), i64 ('+var+r'), i64 '+re.escape(values[0])+r', i64 0\)',body)
+    if len(callbacks)!=1:
+        raise Core0Error('Server post-receive expiry lacks the exact four-row fresh-time callback')
+    callback,index,accumulator,console,identity=callbacks[0]
+    renamed=body.replace(fresh+' = call { i64, i64 } @'+time+'(',fresh+' = call { i64, i64 } @service_fresh_time(')
+    renamed=renamed.replace(callback+' = call { i64, i64 } @'+expire+'(',callback+' = call { i64, i64 } @service_fresh_expire(')
+    ordered=validate_call_precedes(renamed,receive,'service_fresh_time')
+    receive_gate=validate_checked_call_gate(renamed,receive,'service_fresh_time')
+    time_gate=validate_checked_call_gate(renamed,'service_fresh_time','service_fresh_expire')
+    callback_status=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(callback)+r', 0$',body,re.M)
+    narrow=re.findall(r'('+var+r') = trunc i64 '+re.escape(callback_status[0] if len(callback_status)==1 else 'NO_STATUS')+r' to i8$',body,re.M)
+    outcomes=re.findall(r'('+var+r') = phi i8 \[ 9, %('+label+r') \], \[ '+re.escape(narrow[0] if len(narrow)==1 else 'NO_NARROW')+r', %('+label+r') \], \[ 0, %('+label+r') \]',body)
+    headers=re.findall(re.escape(index)+r' = phi i32 \[ 0, %('+label+r') \], \[ ('+var+r'), %('+label+r') \]',body)
+    comparisons=re.findall(r'('+var+r') = icmp eq i8 '+re.escape(outcomes[0][0] if len(outcomes)==1 else 'NO_OUTCOME')+r', 0$',body,re.M)
+    if (len(narrow)!=1 or len(outcomes)!=1 or len(headers)!=1 or len(comparisons)!=1
+            or re.search(re.escape(headers[0][1])+r' = add i32 '+re.escape(index)+r', 1$',body,re.M) is None
+            or len(re.findall(r'icmp ult i32 '+re.escape(index)+r', 4$',body,re.M))!=1):
+        raise Core0Error('Server post-receive scan lost its bounded status/completion shape')
+    completed=validate_boolean_gate(body,comparisons[0],dispatch)
+    # The dispatch must also remain on successful receive, even though the
+    # timeout branch returns ordinary success after its separate initial scan.
+    dispatch_gate=validate_checked_call_gate(body,receive,dispatch)
+    return {'time_sample':fresh,'time_value':values[0],'callback':callback,'scan_rows':4,
+            'receive_before_sample':ordered,'successful_receive_gate':receive_gate,
+            'successful_time_gate':time_gate,'completed_scan_gate':completed,'dispatch_receive_gate':dispatch_gate}
+
+
+def validate_fixed_fold(body: str, callback: str, count: int) -> dict:
+    """Check one emitted zero-based callback loop with its closed iteration bound."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(callback)+r'\(i32 signext ('+var+r'), i32 signext '+str(count)+r', i64 ('+var+r'),',body)
+    if len(calls)!=1:
+        raise Core0Error('service callback lacks one exact bounded fold: '+callback)
+    result,index,accumulator=calls[0]
+    headers=re.findall(re.escape(index)+r' = phi i32 \[ 0, %('+label+r') \], \[ ('+var+r'), %('+label+r') \]',body)
+    continues=re.findall(r'('+var+r') = icmp ult i32 '+re.escape(index)+r', '+str(count)+r'$',body,re.M)
+    if (len(headers)!=1 or len(continues)!=1 or re.search(re.escape(headers[0][1])+r' = add i32 '+re.escape(index)+r', 1$',body,re.M) is None):
+        raise Core0Error('service fixed fold index or iteration bound differs')
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    preheader,next_index,latch=headers[0]
+    header=[block for block,lines in blocks.items() if any(line.startswith(index+' = phi i32 ') for line in lines)]
+    callback_block=[block for block,lines in blocks.items() if any(line.startswith(result+' = call ') for line in lines)]
+    if len(header)!=1 or len(callback_block)!=1 or len(successors.get(header[0],()))!=2:
+        raise Core0Error('service fixed fold lacks its actual loop blocks')
+    actual_body,done=successors[header[0]]
+    if (actual_body!=callback_block[0] or blocks[header[0]][-1]!='br i1 '+continues[0]+', label %'+actual_body+', label %'+done
+            or blocks.get(preheader)!=['br label %'+header[0]]
+            or blocks.get(latch)!=[next_index+' = add i32 '+index+', 1','br label %'+header[0]]
+            or {block for block,targets in successors.items() if header[0] in targets}!={preheader,latch}
+            or {block for block,targets in successors.items() if actual_body in targets}!={header[0]}
+            or {block for block,targets in successors.items() if done in targets}!={header[0]}):
+        raise Core0Error('service fixed fold has a skipped or redirected iteration edge')
+    return {'callback':callback,'count':count,'index':index,'result':result,'accumulator':accumulator}
+
+
+def validate_server_application_expiry(body: str, *, time: str, expire: str,
+                                       create: str, existing: str, lease: str) -> dict:
+    """Creation/renewal uses the same fresh clock as its completed expiry scan."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    clocks=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(time)+r'\(\)',body)
+    times=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(clocks[0] if len(clocks)==1 else 'NO_TIME')+r', 1$',body,re.M)
+    if len(clocks)!=1 or len(times)!=1:
+        raise Core0Error('Server application requires one actual fresh checked time')
+    now=times[0]
+    fold=validate_fixed_fold(body,expire,4)
+    callbacks=re.findall(r'call \{ i64, i64 \} @'+re.escape(expire)+r'\(([^\n]*)\)',body)
+    if callbacks!=['i32 signext '+fold['index']+', i32 signext 4, i64 '+fold['accumulator']+', i64 %arg0, i64 %arg1, i64 '+now+', i64 0']:
+        raise Core0Error('Server application scan substitutes its fresh time/identity')
+    status=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(fold['result'])+r', 0$',body,re.M)
+    narrow=re.findall(r'('+var+r') = trunc i64 '+re.escape(status[0] if len(status)==1 else 'NO_STATUS')+r' to i8$',body,re.M)
+    outcomes=re.findall(r'('+var+r') = phi i8 \[ 9, %('+label+r') \], \[ '+re.escape(narrow[0] if len(narrow)==1 else 'NO_NARROW')+r', %('+label+r') \], \[ 0, %('+label+r') \]',body)
+    comparisons=re.findall(r'('+var+r') = icmp eq i8 '+re.escape(outcomes[0][0] if len(outcomes)==1 else 'NO_OUTCOME')+r', 0$',body,re.M)
+    if len(status)!=1 or len(narrow)!=1 or len(outcomes)!=1 or len(comparisons)!=1:
+        raise Core0Error('Server application lacks exact successful scan completion')
+    scanned=re.findall(r'('+var+r') = phi i64 \[ 0, %'+re.escape(outcomes[0][1])+r' \], \[ '+var+r', %'+re.escape(outcomes[0][2])+r' \], \[ '+re.escape(fold['accumulator'])+r', %'+re.escape(outcomes[0][3])+r' \]',body)
+    scan_bounds=re.findall(r'('+var+r') = icmp ule i64 '+re.escape(scanned[0] if len(scanned)==1 else 'NO_SCANNED')+r', 4$',body,re.M)
+    if len(scanned)!=1 or len(scan_bounds)!=1:
+        raise Core0Error('Server application lost completed scan count bound')
+    lease_values={value for value in re.findall(r'('+var+r') = call i64 @'+re.escape(lease)+r'\(\)',body)}
+    deadline_values={value for value,left,right in re.findall(r'('+var+r') = add i64 ('+var+r'), ('+var+r')$',body,re.M)
+                     if left==now and right in lease_values}
+    gates=[]
+    for protected,arity in [(create,7),(existing,9)]:
+        calls=re.findall(r'call \{ i64, i64 \} @'+re.escape(protected)+r'\(([^\n]*)\)',body)
+        if len(calls)!=1 or len(calls[0].split(', '))!=arity or calls[0].split(', ')[-1][4:] not in deadline_values:
+            raise Core0Error('Server application renewal/create deadline lost same-time binding')
+        gates.append({'protected':protected,'time_status':validate_checked_call_gate(body,time,protected),
+          'time_before_scan':validate_call_precedes(body,time,expire),
+          'time_status_before_scan':validate_checked_call_gate(body,time,expire),
+          'completed_scan':validate_boolean_gate(body,comparisons[0],protected),
+          'bounded_scan_value':validate_boolean_gate(body,scan_bounds[0],protected)})
+    return {'scan_rows':4,'same_time_value':now,'fold':fold,'deadline_expression':['add',now,'leaseTicks'],
+            'application_gates':gates}
+
+
+def validate_service_reuse(body: str, *, grant: str, stop: str) -> dict:
+    """The iterationStop hit returns the existing handle without grant effects."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    stopped=re.findall(r'('+var+r') = call zeroext i8 @'+re.escape(stop)+r'\(\)',body)
+    conditions=re.findall(r'('+var+r') = icmp eq i8 ('+var+r'), '+re.escape(stopped[0] if len(stopped)==1 else 'NO_STOP')+r'$',body,re.M)
+    if len(stopped)!=1 or len(conditions)!=1:
+        raise Core0Error('discovery reuse lacks exact stopped-loop status')
+    comparison,status=conditions[0];blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    branch=[block for block,lines in blocks.items() if lines[-1].startswith('br i1 '+comparison+', ')]
+    if len(branch)!=1:
+        raise Core0Error('discovery reuse lacks one actual status branch')
+    success,failure=successors[branch[0]]
+    if len(blocks[success])!=1 or not blocks[success][0].startswith('br label %'):
+        raise Core0Error('discovery reuse success invokes an unexpected helper')
+    merge=successors[success][0];lines=blocks[merge]
+    values=re.findall(r'('+var+r') = phi i64 \[ 0, %'+label+r' \], \[ '+var+r', %'+label+r' \], \[ '+var+r', %'+label+r' \]',body)
+    if len(values)!=1 or len(lines)<2 or re.search(r'phi i8 \[ 0, %'+re.escape(success)+r' \]',lines[0]) is None or re.search(r'phi i64 \[ '+re.escape(values[0])+r', %'+re.escape(success)+r' \]',lines[1]) is None:
+        raise Core0Error('discovery reuse does not return the existing checked handle/status0')
+    gate=validate_boolean_gate(body,comparison,grant,success_when_true=False)
+    return {'reuse_branch':success,'existing_handle':values[0],'mutation_exclusion':gate}
+
+
+def validate_input_read_inventory(body: str, *, get: str, put: str, copy: str,
+                                  table: str, snapshot: str, failed: str,
+                                  failed_body: str, constants: dict[str,int]) -> dict:
+    """Exactly the copied minimum advances head/count in the validated frame."""
+    var=r'%[A-Za-z0-9_.$-]+';label=r'[A-Za-z0-9_.$-]+'
+    scalars=_ipc_scalar_operands(body,constants);minimums=_service_minimum_operands(body)
+    def word_call(symbol,arguments):
+        rows=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(symbol)+r'\(([^\n]*)\)',body)
+        calls=[result for result,args in rows if args==arguments]
+        values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0] if len(calls)==1 else 'NO_CALL')+r', 1$',body,re.M)
+        if len(calls)!=1 or len(values)!=1:raise Core0Error('input inventory lacks one exact checked field/call')
+        return values[0]
+    base=word_call(table,'')
+    def field(offset):
+        calls=[result for result,address in re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(get)+r'\(i64 ([^\n)]+)\)',body)
+               if scalars.get(address,address)==('add',base,offset)]
+        values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0] if len(calls)==1 else 'NO_FIELD')+r', 1$',body,re.M)
+        if len(calls)!=1 or len(values)!=1:raise Core0Error('input read field inventory changed')
+        return values[0]
+    available,head,handle=field(48),field(40),field(24)
+    canonical=('unsigned-min','%arg2',available)
+    def minimum(value):return minimums.get(value,value)
+    copies=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(copy)+r'\(([^\n]*)\)',body)
+    if len(copies)!=1:raise Core0Error('input read lost its one range copy')
+    arguments=copies[0][1].split(', ')
+    if (len(arguments)!=5 or arguments[:3]!=['i64 %arg0','i64 %arg1','i64 '+handle]
+            or scalars.get(arguments[3][4:])!=832 or minimum(arguments[4][4:])!=canonical):
+        raise Core0Error('input copy source handle/scratch/minimum inventory changed')
+    snapshots=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(snapshot)+r'\(([^\n]*)\)',body)
+    if len(snapshots)!=1:raise Core0Error('input read lost its one bounded snapshot')
+    snapshot_arguments=snapshots[0][1].split(', ')
+    loop_bound=re.findall(r'('+var+r') = icmp ult i32 ('+var+r'), ('+var+r')$',body,re.M)
+    truncations={value:operand for value,operand in re.findall(r'('+var+r') = trunc i64 ('+var+r') to i32$',body,re.M)}
+    if (len(snapshot_arguments)!=7 or len(loop_bound)!=1 or snapshot_arguments[1]!='i32 signext '+loop_bound[0][2]
+            or snapshot_arguments[3:]!=['i64 '+base,'i64 '+head,'i64 0','i64 0']
+            or minimum(truncations.get(loop_bound[0][2],''))!=canonical
+            or len(re.findall(r'icmp ule i32 '+re.escape(loop_bound[0][2])+r', 256$',body,re.M))!=1):
+        raise Core0Error('input snapshot budget/index/owned source differs')
+    writes=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(put)+r'\(i64 ([^,\n]+), i64 ([^\n)]+)\)',body)
+    if len(writes)!=2 or [scalars.get(address,address) for _,address,_ in writes]!=[('add',base,40),('add',base,48)]:
+        raise Core0Error('input advancement mutable field inventory differs')
+    head_value,count_value=writes[0][2],writes[1][2]
+    sub=re.findall(re.escape(count_value)+r' = sub i64 ('+var+r'), ('+var+r')$',body,re.M)
+    if len(sub)!=1 or sub[0][0]!=available or minimum(sub[0][1])!=canonical:
+        raise Core0Error('input count subtraction does not consume exactly the copied minimum')
+    phis=re.findall(re.escape(head_value)+r' = phi i64 \[ ('+var+r'), %('+label+r') \], \[ ('+var+r'), %('+label+r') \]',body)
+    if len(phis)!=1:raise Core0Error('input head lacks the genuine modulo diamond')
+    added,zero_block,remainder,nonzero_block=phis[0]
+    additions=re.findall(re.escape(added)+r' = add i64 ('+var+r'), ('+var+r')$',body,re.M)
+    remainders=re.findall(re.escape(remainder)+r' = urem i64 '+re.escape(added)+r', ('+var+r')$',body,re.M)
+    if len(additions)!=1 or additions[0][0]!=head or minimum(additions[0][1])!=canonical or len(remainders)!=1 or scalars.get(remainders[0])!=512:
+        raise Core0Error('input head does not wrap actual head+copied count at512')
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    conditions=re.findall(r'('+var+r') = icmp eq i64 '+re.escape(remainders[0])+r', 0$',body,re.M)
+    guards=[block for block,lines in blocks.items() if lines[-1]=='br i1 '+(conditions[0] if len(conditions)==1 else 'NO_CONDITION')+', label %'+zero_block+', label %'+nonzero_block]
+    merged=[block for block,lines in blocks.items() if any(line.startswith(head_value+' = phi ') for line in lines)]
+    if (len(guards)!=1 or len(merged)!=1 or blocks[zero_block]!=['br label %'+merged[0]]
+            or blocks[nonzero_block]!=[remainder+' = urem i64 '+added+', '+remainders[0],'br label %'+merged[0]]
+            or {block for block,targets in successors.items() if zero_block in targets}!={guards[0]}
+            or {block for block,targets in successors.items() if nonzero_block in targets}!={guards[0]}):
+        raise Core0Error('input head modulo has an alternate entry or changed zero-divisor shape')
+    renamed=body.replace(writes[0][0]+' = call { i64, i64 } @'+put+'(',writes[0][0]+' = call { i64, i64 } @service_first_advance(')
+    renamed=renamed.replace(writes[1][0]+' = call { i64, i64 } @'+put+'(',writes[1][0]+' = call { i64, i64 } @service_second_advance(')
+    return {'source_frame':base,'source_handle':handle,'copied_count_expression':canonical,
+      'head':['urem',['add',head,canonical],512],'count':['sub',available,canonical],
+      'writes':2,'successful_head_before_count':validate_failed_call_gate(renamed,'service_first_advance','service_second_advance',failed,failed_body)}
+
+
+def validate_service_graph(unit: dict, pre_ir: str) -> dict:
+    """Closed Buffer boot/Directory/input source and CFG artifact obligations.
+
+    These structural checks are necessary evidence, separate from model proofs,
+    compiler correctness and independently observed input/service execution.
+    """
+    configuration=unit.get('configuration')
+    if configuration not in SERVICE_CONFIGURATIONS or unit.get('role')!='kernel':
+        raise Core0Error('service graph requires the exact selected kernel unit')
+    common=validate_ipc_graph(unit,pre_ir)
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']}
+    by={source:r['symbol'] for source,r in rows.items()}
+    e='Lemma.Kernel.ServiceEntry.';d='Lemma.Kernel.Directory.';n='Lemma.Kernel.KernelInput.'
+    o='Lemma.Kernel.Objects.';c='Lemma.Kernel.Capability.';t='Lemma.Kernel.Task.';y='Lemma.Kernel.Syscall.'
+    u='Lemma.Kernel.Memory.UserCopy.';a='Lemma.Kernel.Memory.AddressSpace.';f='Lemma.Kernel.Memory.Frames.'
+    x='Lemma.Kernel.Memory.Access.';q='Lemma.Kernel.Scheduler.';v='Lemma.User.CapabilityABI.'
+    selected='Lemma.Kernel.Development.ServiceEntry.' if configuration=='service-development' else e
+    edges={
+      selected+'boot':[e+'initialize',e+'construct'],selected+'dispatch':[q+'dispatch'],
+      e+'initialize':['Lemma.Kernel.BootServices.bootServices',o+'init',o+'serviceInitialize',n+'init'],
+      e+'construct':[e+'serverBudget',d+'nextEpoch',t+'prepareManaged',e+'configure'],
+      e+'serverBudget':['Lemma.Kernel.Loader.validate',x+'read64'],
+      e+'configure':[e+'createEndpoint',e+'grants',d+'preflightPublish',n+'bindReader',t+'activateManaged',e+'activatePublished'],
+      e+'grants':[e+'grant'],e+'grant':[c+'grantBoot'],e+'createEndpoint':[o+'createEndpoint'],
+      e+'activatePublished':[t+'activateManaged',d+'publish'],
+      d+'nextEpoch':[d+'epoch'],d+'epoch':[o+'serviceBinding',o+'get'],
+      d+'preflightPublish':[o+'serviceBinding',d+'nextEpoch',c+'entryCount',o+'resolve'],
+      d+'publish':[d+'preflightPublish',c+'requireActive',o+'publishServiceBinding'],
+      d+'current':[o+'serviceBinding',c+'requireActive',o+'resolve',o+'get'],
+      d+'discover':[c+'lookup',d+'current',c+'grantDiscovered',d+'epoch',c+'activeRegisteredCount',f+'remaining'],
+      o+'serviceBinding':[o+'table',a+'base',o+'registrySlot',o+'resolveRevoking'],
+      o+'serviceInitialize':[o+'serviceBinding',o+'put'],
+      o+'publishServiceBinding':[o+'serviceBinding',a+'base',o+'registrySlot',o+'resolve',o+'put'],
+      o+'withdrawService':[o+'serviceBinding',o+'put'],
+      o+'beginRevoke':[o+'withdrawService',o+'put'],o+'destroy':[o+'withdrawService',o+'invalidateEndpointWaits',f+'release'],
+      c+'grantDiscovered':[c+'requireActive',o+'resolve',c+'entryCount',c+'discoveredStep',c+'grant'],
+      c+'discoveredStep':[o+'get',c+'lookupEntry'],c+'activeRegisteredCount':[c+'activeRegisteredStep'],
+      c+'activeRegisteredStep':[o+'registryDescriptor',c+'header',o+'get'],
+      y+'dispatchManaged':[d+'discover'],y+'selectedConsoleRead':[n+'mode',y+'consoleRead',n+'read'],
+      n+'init':[n+'get',f+'allocate',f+'resolvePurpose',n+'put'],
+      n+'table':[n+'get',f+'resolvePurpose',f+'mappingCount',n+'bodyValid'],
+      n+'mode':[n+'get',n+'table'],n+'bindReader':[a+'base',n+'table',n+'get',n+'put'],
+      n+'poll':[n+'table',n+'flushPending',n+'pollStep'],
+      n+'pollStep':[n+'flushPending','Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep',n+'acceptByte'],
+      n+'flushPending':[n+'get',n+'ringPublishStep',n+'diagnosticPublishStep',n+'put',n+'resetParser'],
+      n+'ringPublishStep':[x+'read8',x+'write8'],n+'diagnosticPublishStep':[x+'read8',x+'write8'],
+      n+'acceptByte':[n+'acceptHeaderByte',n+'get',x+'write8',n+'put'],
+      n+'read':[u+'validateWrite',n+'table',n+'get',n+'snapshotStep',u+'copyToUser',n+'put'],
+      n+'snapshotStep':[x+'read8',x+'write8'],
+    }
+    if configuration=='service-normal':
+        edges[e+'step']=[n+'poll',q+'step']
+        forbidden=[source for source in rows if source.startswith('Lemma.Kernel.Development.') or service_executable_module(source)]
+        if forbidden:
+            raise Core0Error('normal service reaches a development policy or User executable: '+str(forbidden))
+    else:
+        edges[selected+'step']=[n+'poll',selected+'diagnostic',q+'step',selected+'completeRestart']
+        edges[selected+'diagnostic']=[n+'diagnosticPacket',n+'consumeDiagnostic',selected+'command']
+        edges[selected+'replacement']=[selected+'stableKernel',d+'nextEpoch',t+'prepareManaged',e+'createEndpoint',e+'grant',d+'preflightPublish',e+'activatePublished']
+        edges[selected+'stopServer']=[selected+'stableKernel',d+'server',t+'lookup',t+'terminate',t+'reap']
+        edges[selected+'intercept']=[o+'replyFields', 'Lemma.Kernel.IPCStorage.pending',t+'lookup',c+'requireActive','Lemma.Kernel.MachineServices.time',t+'terminate',q+'returnKernel']
+    constants={o+'serviceMagic':0x31565253414d454c,o+'serviceOffset':224,o+'serviceEpochOffset':232,o+'serviceKeyOffset':240,o+'serviceOwnerOffset':248,
+       n+'control':0x80400660,n+'magic':0x31504e49414d454c,n+'frameVersion':1,
+       n+'ringOffset':128,n+'ringCapacity':512,n+'pendingOffset':640,n+'pendingCapacity':168,
+       n+'scratchOffset':832,n+'diagnosticOffset':1088,n+'diagnosticBytes':40,
+       n+'readerOffset':32,n+'headOffset':40,n+'countOffset':48,n+'stateOffset':56,n+'headerOffset':64,n+'headerCountOffset':72,
+       n+'classOffset':80,n+'lengthOffset':88,n+'receivedOffset':96,n+'diagnosticReadyOffset':104,
+       n+'headerState':0,n+'bodyState':1,n+'pendingState':2,d+'serviceID':1,v+'endpointCall':16,v+'directoryType':4,v+'directoryDiscover':1024}
+    required=set(constants)|set(edges)|{callee for callees in edges.values() for callee in callees}
+    if not required<=by.keys():
+        raise Core0Error('service genuine closure missing: '+str(sorted(required-by.keys())))
+    bodies={source:_ir_definition_body(pre_ir,by[source]) for source in required}
+    for source,value in constants.items():
+        # Layout authority may be a zero-argument scalar call, never a pointer.
+        body=bodies[source]
+        if source==n+'control':
+            layout='Lemma.Platform.LemmaVM.Layout.inputControlValue'
+            if layout not in by or not re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',_ir_definition_body(pre_ir,by[layout])):
+                raise Core0Error('input control lacks authoritative Layout value')
+            if re.fullmatch(r'\s*entry:\s*%call0 = call i64 @'+re.escape(by[layout])+r'\(\)\s*ret i64 %call0\s*',body) is None:
+                raise Core0Error('input control differs from Layout authority')
+        elif rows[source]['args'] or rows[source]['effects'] or re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',body) is None:
+            raise Core0Error('service storage constant differs: '+source)
+    observed=[]
+    for caller,callees in edges.items():
+        calls=parse_definitions_and_calls(bodies[caller])[2]
+        for callee in callees:
+            if by[callee] not in calls:
+                raise Core0Error('service source edge missing: '+caller+' -> '+callee)
+            observed.append([caller,callee])
+    ordered=[]
+    for caller,before,after in [
+      (e+'initialize','Lemma.Kernel.BootServices.bootServices',n+'init'),(e+'initialize',o+'serviceInitialize',n+'init'),
+      (e+'construct',e+'serverBudget',t+'prepareManaged'),(e+'configure',e+'grants',d+'preflightPublish'),
+      (e+'configure',d+'preflightPublish',n+'bindReader'),(e+'configure',n+'bindReader',t+'activateManaged'),
+      (e+'configure',t+'activateManaged',e+'activatePublished'),(e+'activatePublished',t+'activateManaged',d+'publish'),
+      (o+'beginRevoke',o+'withdrawService',o+'put'),(o+'destroy',o+'withdrawService',o+'invalidateEndpointWaits'),
+      (o+'destroy',o+'withdrawService',f+'release'),(d+'publish',d+'preflightPublish',c+'requireActive'),
+      (d+'publish',c+'requireActive',o+'publishServiceBinding'),
+      (n+'read',u+'validateWrite',n+'snapshotStep'),(n+'read',u+'validateWrite',u+'copyToUser'),
+    ]:
+        ordered.append({'source':caller,**validate_call_precedes(bodies[caller],by[before],by[after])})
+    checked=[]
+    for caller,authority,protected in [
+      (d+'discover',c+'lookup',d+'current'),(d+'discover',d+'current',c+'grantDiscovered'),
+      (d+'publish',d+'preflightPublish',o+'publishServiceBinding'),(d+'publish',c+'requireActive',o+'publishServiceBinding'),
+      (c+'grantDiscovered',c+'requireActive',c+'grant'),(c+'grantDiscovered',o+'resolve',c+'grant'),
+      (n+'read',u+'validateWrite',n+'snapshotStep'),(n+'read',u+'validateWrite',u+'copyToUser'),
+      (n+'read',u+'copyToUser',n+'put'),(n+'bindReader',a+'base',n+'put'),
+      (y+'selectedConsoleRead',n+'mode',y+'consoleRead'),(y+'selectedConsoleRead',n+'mode',n+'read'),
+      (e+'configure',d+'preflightPublish',t+'activateManaged'),(e+'configure',n+'bindReader',t+'activateManaged'),
+    ]:
+        failure=caller.rsplit('.',1)[0]+'.failed'
+        checked.append({'source':caller,**validate_failed_call_gate(bodies[caller],by[authority],by[protected],by[failure],_ir_definition_body(pre_ir,by[failure]))})
+    var=r'%[A-Za-z0-9_.$-]+'
+    read=bodies[n+'read']
+    if re.findall(r'call \{ i64, i64 \} @'+re.escape(by[u+'validateWrite'])+r'\(([^\n]*)\)',read)!=['i64 %arg0, i64 %arg1, i64 %arg2']:
+        raise Core0Error('input preflight changed complete offered range/caller')
+    copy_args=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[u+'copyToUser'])+r'\(([^\n]*)\)',read)
+    if len(copy_args)!=1 or not copy_args[0].startswith('i64 %arg0, i64 %arg1, i64 '):
+        raise Core0Error('input copy changed actual caller or destination')
+    count_gate=validate_dynamic_copy_gate(read,by[u+'copyToUser'],by[n+'put'])
+    # Reader is the full generation-tagged descriptor; no image/owner selector.
+    input_result=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[n+'table'])+r'\(\)',read)
+    base=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(input_result[0] if len(input_result)==1 else 'NO_TABLE')+r', 1$',read,re.M)
+    constants_by={by[source]:value for source,value in constants.items()}
+    advancement=validate_input_read_inventory(read,get=by[n+'get'],put=by[n+'put'],copy=by[u+'copyToUser'],
+        table=by[n+'table'],snapshot=by[n+'snapshotStep'],failed=by[n+'failed'],
+        failed_body=_ir_definition_body(pre_ir,by[n+'failed']),constants=constants_by)
+    if len(base)!=1:
+        raise Core0Error('input read lacks one validated owned frame')
+    reader_gate=validate_ipc_read_guard(read,by[n+'get'],constants_by,('add',base[0],32),'%arg0',by[u+'copyToUser'])
+    initialized=bodies[n+'init']
+    allocated=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[f+'allocate'])+r'\(i64 1, i64 1\)',initialized)
+    allocated_handle=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(allocated[0] if len(allocated)==1 else 'NO_ALLOCATION')+r', 1$',initialized,re.M)
+    resolved=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[f+'resolvePurpose'])+r'\(i64 1, i64 '+re.escape(allocated_handle[0] if len(allocated_handle)==1 else 'NO_HANDLE')+r', i64 1\)',initialized)
+    resolved_base=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(resolved[0] if len(resolved)==1 else 'NO_RESOLVE')+r', 1$',initialized,re.M)
+    if len(allocated)!=1 or len(allocated_handle)!=1 or len(resolved)!=1 or len(resolved_base)!=1:
+        raise Core0Error('input initialization lacks its actual owner1/purpose1 allocated frame')
+    initialization=validate_ipc_write_inventory(initialized,by[n+'put'],constants_by,
+        [(('add',resolved_base[0],8),1),(('add',resolved_base[0],16),'%arg0'),
+         (('add',resolved_base[0],24),allocated_handle[0]),(resolved_base[0],0x31504e49414d454c),
+         (0x80400660,allocated_handle[0])],by[n+'failed'],_ir_definition_body(pre_ir,by[n+'failed']))
+    initialization['zero_control_before_allocation']=validate_ipc_read_guard(initialized,by[n+'get'],constants_by,0x80400660,0,by[f+'allocate'])
+    initialization['resolved_before_publication']=validate_failed_call_gate(initialized,by[f+'resolvePurpose'],by[n+'put'],by[n+'failed'],_ir_definition_body(pre_ir,by[n+'failed']))
+    # The only source-level getters of this authoritative control constant are
+    # validation, mode, one-time initialization, and common boot clearing.
+    # Indirect computed address semantics remain a separate source/ELF obligation.
+    control_sources={n+'table',n+'mode',n+'init','Lemma.Kernel.BootServices.bootServices'}
+    control_symbols={by[n+'control'],by['Lemma.Platform.LemmaVM.Layout.inputControlValue']}
+    all_bodies={match[1]:match[2] for match in re.finditer(r'(?ms)^define[^\n]*@([^( ]+)\([^\n]*\)[^\n]*\{\n(.*?)^\}',pre_ir)}
+    if not set(by.values())<=all_bodies.keys():
+        raise Core0Error('input control inventory cannot read every genuine definition')
+    control_users={source for source,symbol in by.items() if source!=n+'control'
+                   and any('@'+control+'(' in all_bodies[symbol] for control in control_symbols)}
+    if control_users!=control_sources:
+        raise Core0Error('input control authority has unexpected source-level users: '+str(sorted(control_users)))
+    initialization['control_source_users']=sorted(control_users)
+    # Every recomputed unsigned minimum has the same two immutable operands.
+    # The offered length, copied count and actual available ring count cannot
+    # be replaced by a constant or a smaller preflight range.
+    minimums=_service_minimum_operands(read)
+    requested=count_gate['requested_count']
+    available_calls=[result for result,address in re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[n+'get'])+r'\(i64 ([^\n)]+)\)',read)
+       if _ipc_scalar_operands(read,constants_by).get(address,address)==('add',base[0],48)]
+    available_values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(available_calls[0] if len(available_calls)==1 else 'NO_AVAILABLE')+r', 1$',read,re.M)
+    if len(available_values)!=1 or minimums.get(requested)!=('unsigned-min','%arg2',available_values[0]):
+        raise Core0Error('input count is not min(complete offered length, actual available bytes)')
+    reuse=validate_service_reuse(bodies[c+'grantDiscovered'],grant=by[c+'grant'],stop=by['Lemma.Core0.Memory.Status.iterationStop'])
+    folds={'input_poll':validate_fixed_fold(bodies[n+'poll'],by[n+'pollStep'],64),
+           'discovery':validate_fixed_fold(bodies[c+'grantDiscovered'],by[c+'discoveredStep'],16),
+           'active_registrations':validate_fixed_fold(bodies[c+'activeRegisteredCount'],by[c+'activeRegisteredStep'],8),
+           'diagnostic_publication':validate_fixed_fold(bodies[n+'flushPending'],by[n+'diagnosticPublishStep'],40)}
+    callback=bodies[c+'discoveredStep']
+    entry_calls=re.findall(r'('+var+r') = call i64 @'+re.escape(by[c+'entry'])+r'\([^\n]*\)',callback)
+    entry_arguments=re.findall(r'call \bi64 @'+re.escape(by[c+'entry'])+r'\(i64 %arg3, i64 ('+var+r')\)',callback)
+    widened=set(re.findall(r'('+var+r') = zext i32 %arg0 to i64$',callback,re.M))
+    if not entry_calls or len(entry_arguments)!=len(entry_calls) or not set(entry_arguments)<=widened:
+        raise Core0Error('discovery hit lacks exact local entry geometry/index')
+    callback_values=_ipc_scalar_operands(callback,constants_by)
+    addresses=[callback_values.get(address,address) for address in re.findall(r'call \{ i64, i64 \} @'+re.escape(by[o+'get'])+r'\(i64 ([^\n)]+)\)',callback)]
+    key_addresses=[address for address in addresses if isinstance(address,tuple) and address[0]=='add' and address[1] in entry_calls and address[2]==16]
+    rights_addresses=[address for address in addresses if isinstance(address,tuple) and address[0]=='add' and address[1] in entry_calls and address[2]==24]
+    if len(key_addresses)!=1 or len(rights_addresses)!=1:
+        raise Core0Error('discovery hit lacks one exact key/rights read')
+    hit_gates=[validate_ipc_read_guard(callback,by[o+'get'],constants_by,key_addresses[0],'%arg4',by[c+'lookupEntry']),
+               validate_ipc_read_guard(callback,by[o+'get'],constants_by,rights_addresses[0],16,by[c+'lookupEntry'])]
+    # Read-only hit search cannot reach serial/reference/table publication.
+    mutators={by[source] for source in [c+'freeSlot',o+'nextSerial',o+'reference',c+'publish',c+'grant',o+'put',x+'write64']}
+    pending=[by[c+'discoveredStep']];seen=set()
+    while pending:
+        symbol=pending.pop()
+        if symbol in mutators:
+            raise Core0Error('discovery existing-entry search reaches a grant mutation')
+        if symbol not in seen:
+            seen.add(symbol)
+            called=parse_definitions_and_calls(_ir_definition_body(pre_ir,symbol))[2]
+            pending.extend(callee for callee in called if callee in set(by.values()))
+    raw_mode=validate_checked_call_gate(bodies[y+'selectedConsoleRead'],by[n+'mode'],by[y+'consoleRead'],component='value',value=0)
+    legacy_control=validate_ipc_read_guard(bodies[n+'mode'],by[n+'get'],constants_by,0x80400660,0,by[n+'table'],equal=False)
+    # A single primitive poll transports its exact byte value even when00.
+    poll_body=bodies[n+'pollStep'];primitive='Lemma.Platform.LemmaVM.ConsoleDevice.receivePollStep'
+    primitive_calls=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[primitive])+r'\(([^\n]*)\)',poll_body)
+    if len(primitive_calls)!=1 or primitive_calls[0][1]!=', '.join(['i32 signext 0','i32 signext 0',*(['i64 0']*5)]):
+        raise Core0Error('input poll does not use the exact single bounded receive operation')
+    poll_value=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(primitive_calls[0][0])+r', 1$',poll_body,re.M)
+    if len(poll_value)!=1 or re.findall(r'call \{ i64, i64 \} @'+re.escape(by[n+'acceptByte'])+r'\(([^\n]*)\)',poll_body)!=['i64 %arg3, i64 '+poll_value[0]]:
+        raise Core0Error('input poll drops or substitutes its actual byte')
+    # Complete publication: epoch and full owner precede key, withdrawals clear
+    # key then owner and retain the epoch. All stores are successful checked calls.
+    publication=bodies[o+'publishServiceBinding'];result=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[o+'serviceBinding'])+r'\(\)',publication)
+    binding_base=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(result[0] if len(result)==1 else 'NO_BINDING')+r', 1$',publication,re.M)
+    if len(binding_base)!=1:
+        raise Core0Error('service publication lacks one checked binding base')
+    publication_inventory=validate_ipc_write_inventory(publication,by[o+'put'],constants_by,
+       [(('add',binding_base[0],232),'%arg2'),(('add',binding_base[0],248),'%arg0'),(('add',binding_base[0],240),'%arg1')],by[o+'failed'],_ir_definition_body(pre_ir,by[o+'failed']))
+    withdrawal=bodies[o+'withdrawService'];result=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[o+'serviceBinding'])+r'\(\)',withdrawal)
+    withdrawn_base=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(result[0] if len(result)==1 else 'NO_BINDING')+r', 1$',withdrawal,re.M)
+    if len(withdrawn_base)!=1:
+        raise Core0Error('service withdrawal lacks one checked binding base')
+    withdrawal_inventory=validate_ipc_write_inventory(withdrawal,by[o+'put'],constants_by,
+       [(('add',withdrawn_base[0],240),0),(('add',withdrawn_base[0],248),0)],by[o+'failed'],_ir_definition_body(pre_ir,by[o+'failed']))
+    # The exact ordinary boot role indices/arguments and grant attenuation.
+    preparations=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[t+'prepareManaged'])+r'\(i64 ([0-9]+), i64 ([^\n)]+)\)',bodies[e+'construct'])
+    if len(preparations)!=4 or [r[0] for r in preparations]!=['0','1','2','3'] or [r[1] for r in preparations[1:]]!=['1','2','3']:
+        raise Core0Error('service boot images/public seed arguments differ')
+    epoch_result=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(by[d+'nextEpoch'])+r'\(\)',bodies[e+'construct'])
+    epoch_value=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(epoch_result[0] if len(epoch_result)==1 else 'NO_EPOCH')+r', 1$',bodies[e+'construct'],re.M)
+    if len(epoch_value)!=1 or preparations[0][1]!=epoch_value[0]:
+        raise Core0Error('Server argument is not the actual next Directory epoch')
+    operands=_ipc_scalar_operands(bodies[e+'grants'],{by[o+'consoleKey']:16,by[o+'directoryKey']:18,by[v+'consoleType']:1,by[v+'directoryType']:4,by[v+'endpointType']:2})
+    grants=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in re.findall(
+       r'call \{ i64, i64 \} @'+re.escape(by[e+'grant'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',bodies[e+'grants'])]
+    if grants!=[('%arg0',16,1,2),('%arg0','%arg3',2,8),('%arg1',16,1,3),('%arg1',18,4,1024),('%arg2',16,1,2),('%arg2',18,4,1024)]:
+        raise Core0Error('service exact role grants/attenuation/order differ')
+    mode_call=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[e+'initialize'])+r'\(i64 ([0-9]+)\)',bodies[selected+'boot'])
+    if mode_call!=['2' if configuration=='service-development' else '1']:
+        raise Core0Error('service input mode is not selected solely by exact boot root')
+    return {'managed_policy':BUFFER_POLICY,'common_ipc':common,'source_call_edges':observed,
+       'source_constants':{source:{'symbol':by[source],'value':value} for source,value in sorted(constants.items())},
+       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'input_copy_count_gate':count_gate,'input_reader_gate':reader_gate,
+       'input_advancement':advancement,
+       'input_initialization':initialization,
+       'discovery_reuse':reuse,'discovery_hit_gates':hit_gates,'discovery_readonly_search':sorted(seen),
+       'bounded_folds':folds,'legacy_input_mode_gate':legacy_control,'raw_console_mode_gate':raw_mode,
+       'binding_publication':publication_inventory,'binding_withdrawal':withdrawal_inventory,'initial_grants':grants,
+       'input':{'control':0x80400660,'ring_offset':128,'ring_bytes':512,'pending_offset':640,'pending_bytes':168,'scratch_offset':832,'diagnostic_offset':1088,'diagnostic_bytes':40,'poll_budget':64},
+       'owned_page_budget':{'base_owned_task_frames':16,'base_global_task_frames':17,'server_reserved_arena_pages':4,'owner_quota':32,'server_max_text_pages':12},
+       'limitations':['Necessary genuine source/CFG/byte binding; independent service/reference tests, model proofs and physical execution remain separate.']}
 
 
 def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
@@ -1189,7 +1709,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     section of the startup object and its exact linked payload, not arbitrary
     writable data or additional target object symbols.
     """
-    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb)/(startup\.o|image\.elf)", object_file)
+    multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb|cli)/(startup\.o|image\.elf)", object_file)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
@@ -1261,7 +1781,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed), "unit")
     if any(unit.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("unit managed policy/boot role differs")
-    category = ("production" if configuration == "normal" else "development") + f"-{role}-unit"
+    category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") != CONTRACTS[role]):
@@ -1293,6 +1813,10 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             raise Core0Error("function lacks a production Lean source identity")
         if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
+        normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
+        if configuration in SERVICE_CONFIGURATIONS and service_executable_module(normalized_source):
+            if role != "user" or not normalized_source.startswith(image["module"] + "."):
+                raise Core0Error("service unit reaches another executable namespace")
         if ".Development." in source:
             allowed = (image["module"],) if multi_user else development_modules(configuration, role)
             if not any(re.search(r"(?:^|\.[0-9]+\.)" + re.escape(module) + r"\.", source) for module in allowed):
@@ -1853,9 +2377,19 @@ BACKEND_JUMP_TABLES = {
     'Lemma.Kernel.Syscall.dispatchManaged': ('kernel', 18, ['u64']*7, ['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'], [2,*range(9,20)]),
     'Lemma.Platform.RiscV.Firmware.call': ('firmware', 5, ['u64']*3, ['checked-access','mmio-read','mmio-write','io-order','machine-state','timer-state','interrupt-state','physical-read','physical-write'], list(range(1,6))),
     'Lemma.Kernel.Development.FramesEntry.operation': ('kernel', 22, ['u64']*5, ['checked-access','io-order','machine-state','physical-read','physical-write','address-space','instruction-sync'], [*range(7),*range(8,22)]),
+    'Lemma.Kernel.Development.ServiceEntry.command': ('kernel', 17, ['u64']*5, ['checked-access','mmio-read','mmio-write','io-order','machine-state','physical-read','physical-write','address-space','instruction-sync'], [49,50,51,64,65]),
+    'Lemma.Services.Buffer.Protocol.requestShape': ('user', 6, ['u64']*6, [], list(range(1,7))),
+    'Lemma.Services.Buffer.Server.existing': ('user', 5, ['u64']*9, ['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'], list(range(2,7))),
 }
 BACKEND_JUMP_TABLE_CONFIGURATIONS = {
     'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
+    'Lemma.Kernel.Development.ServiceEntry.command': {'service-development'},
+    'Lemma.Services.Buffer.Protocol.requestShape': set(SERVICE_CONFIGURATIONS),
+    'Lemma.Services.Buffer.Server.existing': set(SERVICE_CONFIGURATIONS),
+}
+BACKEND_JUMP_TABLE_USER_IMAGES = {
+    'Lemma.Services.Buffer.Protocol.requestShape': {'server'},
+    'Lemma.Services.Buffer.Server.existing': {'server'},
 }
 
 
@@ -1894,6 +2428,49 @@ def _jump_switch_default(optimized_body: str, assembly: str, symbol: str,
         raise Core0Error('diagnostic switch default PHIs do not reach the checked return')
     return {'holes': holes, 'llvm_default': default, 'machine_default': labels[0],
             'default_status': 17, 'default_value': 0}
+
+
+def _jump_service_default(optimized_ir: str, assembly: str, symbol: str,
+                          targets: list[str], cases: list[int], unit: dict) -> dict:
+    """Sparse development commands acknowledge17/0 on the genuine default."""
+    body=_ir_definition_body(optimized_ir,symbol);var=r'%[A-Za-z0-9_.$-]+'
+    switches=re.findall(r'switch i64 %arg0, label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',body,re.S)
+    if len(switches)!=1 or sorted(int(v) for v in re.findall(r'i64 (-?\d+), label',switches[0][1]))!=cases:
+        raise Core0Error('service command default lacks one exact genuine switch')
+    default=switches[0][0]
+    owner=re.search(r'(?m)^'+re.escape(symbol)+r':[^\n]*\n(.*?)^\s*\.size\s+'+re.escape(symbol)+r',',assembly,re.S)
+    labels=re.findall(r'(?m)^(\.LBB\d+_\d+):[^\n]*# %'+re.escape(default)+r'\s*$',owner[1]) if owner else []
+    holes=[v for v in range(min(cases),max(cases)+1) if v not in cases]
+    if len(labels)!=1 or any(targets[v-min(cases)]!=labels[0] for v in holes):
+        raise Core0Error('service command holes do not reach the exact default block')
+    sources={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    ack=sources.get('Lemma.Kernel.Development.ServiceEntry.acknowledge')
+    if ack is None or ack['args']!=['u64','u8','u64','u64']:
+        raise Core0Error('service command default lacks exact static acknowledgement source')
+    blocks=_structured_ir_blocks('\n'.join(line.split(';',1)[0] for line in body.splitlines()))
+    lines=blocks.get(default,[])
+    call=re.fullmatch(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(ack['symbol'])+r'\(i64 %arg0, i8 zeroext 17, i64 0, i64 %arg1\)',lines[0]) if len(lines)==4 else None
+    if call is None:
+        raise Core0Error('service unknown command changes actual number/status17/value0/subject')
+    status=re.fullmatch(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(call[1])+r', 0',lines[1])
+    value=re.fullmatch(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(call[1])+r', 1',lines[2])
+    merge=re.fullmatch(r'br label %([A-Za-z0-9_.$-]+)',lines[3])
+    if status is None or value is None or merge is None:
+        raise Core0Error('service default loses its actual checked acknowledgement result')
+    returned=blocks.get(merge[1],[])
+    status_phi=re.match(r'('+var+r') = phi i64 ',returned[0]) if len(returned)==6 else None
+    value_phi=re.match(r'('+var+r') = phi i64 ',returned[1]) if len(returned)==6 else None
+    if (status_phi is None or value_phi is None or '[ '+status[1]+', %'+default+' ]' not in returned[0]
+            or '[ '+value[1]+', %'+default+' ]' not in returned[1]):
+        raise Core0Error('service default checked words do not reach the return PHIs')
+    masked=re.fullmatch(r'('+var+r') = and i64 '+re.escape(status_phi[1])+r', 255',returned[2])
+    partial=re.fullmatch(r'('+var+r') = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(masked[1] if masked else 'NO_MASK')+r', 0',returned[3])
+    complete=re.fullmatch(r'('+var+r') = insertvalue \{ i64, i64 \} '+re.escape(partial[1] if partial else 'NO_PARTIAL')+r', i64 '+re.escape(value_phi[1])+r', 1',returned[4])
+    if complete is None or returned[5]!='ret { i64, i64 } '+complete[1]:
+        raise Core0Error('service default checked words do not reach the exact aggregate return')
+    return {'holes':holes,'llvm_default':default,'machine_default':labels[0],
+            'acknowledgement_source':ack['source'],'acknowledged_status':17,'acknowledged_value':0,
+            'actual_command_operand':'%arg0','actual_subject_operand':'%arg1'}
 
 
 def _object_symbols(text: str) -> dict[int, dict]:
@@ -1946,7 +2523,8 @@ def _jump_assembly_function(assembly: str, symbol: str) -> tuple[list[tuple[str,
     return instructions,labels
 
 
-def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int) -> dict:
+def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
+                         *, source: str | None = None, configuration: str | None = None, image_key: str | None = None) -> dict:
     """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
     code,labels=_jump_assembly_function(assembly,symbol)
     uses=[i for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1]=='%pcrel_hi('+table+')']
@@ -1972,8 +2550,23 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if len(jumps)!=1 or not use+4<=jumps[0]<=use+5 or code[jumps[0]]!=('jr',[target]):
         raise Core0Error('jump table has an unknown or unbound indirect transfer')
     jump=jumps[0]
-    if jump==use+5 and (code[use+4][0]!='li' or code[use+4][1][0]==target):
-        raise Core0Error('jump table target is overwritten before transfer')
+    reload = None
+    if jump==use+5:
+        intervening=code[use+4]
+        if intervening[0]=='li' and intervening[1][0]!=target:
+            pass
+        elif (source=='Lemma.Services.Buffer.Server.existing' and configuration in SERVICE_CONFIGURATIONS and image_key=='server'
+              and count==5 and minimum==2 and index==scaled==address==target=='a0' and base=='a2'
+              and code[0]==('addi',['sp','sp','-112']) and intervening==('ld',['a2','112(sp)'])
+              and code[use-4]==('addi',['a0','s3','-2']) and code[use-3]==('li',['a2','4'])
+              and code[use-2][0]=='bltu' and code[use-2][1][:2]==['a2','a0']):
+            # Nine scalar arguments: this exact fixed-frame load recovers the
+            # ninth incoming argument at the original SP. It cannot change a0,
+            # the bounded/scaled index or loaded branch target.
+            reload={'instruction':'ld a2,112(sp)','fixed_frame_bytes':112,'incoming_argument':8,
+                    'loaded_register':'a2','preserved_target_register':'a0'}
+        else:
+            raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     guards=[]
     for i in range(max(0,use-8),use-1):
         op,args=code[i]
@@ -2015,7 +2608,8 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     denied={i:list(edges) for i,edges in successors.items()};denied[guard]=[labels[code[guard][1][-1]]]
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
-    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True)
+    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
+                **({'target_preserving_reload':reload} if reload is not None else {}))
 
 
 def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation_text: str,
@@ -2038,7 +2632,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
         if row is None or int(row[1],16)!=len(rodata): raise Core0Error('jump table section bytes/readonly flags/alignment differ')
     elif rodata or tables or literal: raise Core0Error('jump table data lacks its declared readonly section')
     if tables:
-        if optimization!='O2' or unit['role'] not in {'kernel','firmware'} or not text or text!=companion_text:
+        if optimization!='O2' or unit['role'] not in {'kernel','firmware','user'} or not text or text!=companion_text:
             raise Core0Error('jump tables lack exact O2 companion code bytes/role provenance')
         companion=_object_symbols(companion_symbols);named={s['name']:s for s in companion.values() if s['name']}
         other_relocations=_object_relocations(companion_relocations,companion)
@@ -2080,11 +2674,15 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                     configuration=unit.get('configuration'))))
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
+            if unit['role']=='user' and (source not in BACKEND_JUMP_TABLE_USER_IMAGES or unit.get('image_key') not in BACKEND_JUMP_TABLE_USER_IMAGES[source]):
+                raise Core0Error('User backend table escapes its exact selected image: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
             if switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
             default = (_jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
                                            owner['name'], targets, spec[4])
-                       if source == 'Lemma.Kernel.Development.FramesEntry.operation' else None)
+                       if source == 'Lemma.Kernel.Development.FramesEntry.operation' else
+                       _jump_service_default(optimized_ir,assembly,owner['name'],targets,spec[4],unit)
+                       if source == 'Lemma.Kernel.Development.ServiceEntry.command' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
             rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
@@ -2098,7 +2696,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                         or not label.startswith('.LBB'+match[1]+'_')):
                     raise Core0Error('backend table entry escapes its exact local code owner/block/alignment')
                 used_relocations.add(id(row));entries.append(dict(offset=row['offset'],target_offset=target['value'],target_label=label,symbol_index=target['index']))
-            guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]))
+            guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]),
+                                       source=source,configuration=unit.get('configuration'),image_key=unit.get('image_key'))
             observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size'],
                                  **({'switch_default': default} if default is not None else {})))
             extents.append((start,start+size,'jump-table'))
@@ -2174,14 +2773,28 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
         return
     by_source = {row["source"]: row["symbol"] for row in unit["functions"]}
     initialize = by_source.get("Lemma.Platform.LemmaVM.ConsoleDevice.initialize14")
-    boot = by_source.get("Lemma.Kernel.Entry.bootServices")
+    factored_boot = by_source.get("Lemma.Kernel.BootServices.bootServices")
+    boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
         body = _ir_definition_body(ir, boot)
         calls = re.findall(r"(?m)^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:tail )?call\s+[^\n]*?@([-A-Za-z0-9_.$]+)\(", body)
-        if not calls or calls[0] != initialize or calls.count(initialize) != 1:
-            raise Core0Error("boot services do not initialize the FIFO once before their first effect")
+        if factored_boot is not None:
+            control = by_source.get("Lemma.Platform.LemmaVM.Layout.inputControlValue")
+            write = by_source.get("Lemma.Kernel.Memory.Access.write64")
+            if (control is None or write is None or calls[:3] != [control, write, initialize]
+                    or re.fullmatch(r"\s*entry:\s*ret i64 " + str(0x80400660) + r"\s*", _ir_definition_body(ir, control)) is None):
+                raise Core0Error("factored boot lacks its exact initial input-control clear and FIFO sequence")
+            addresses = re.findall(r"(%[A-Za-z0-9_.$-]+) = call i64 @" + re.escape(control) + r"\(\)", body)
+            writes = re.findall(r"call \{ i64, i64 \} @" + re.escape(write) + r"\(i64 ([^,\n]+), i64 ([^\n)]+)\)", body)
+            if len(addresses) != 1 or writes != [(addresses[0], "0")]:
+                raise Core0Error("boot input-control clear changed address/value or added a write")
+            validate_checked_call_gate(body, write, initialize)
+        elif not calls or calls[0] != initialize:
+            raise Core0Error("boot services do not initialize the FIFO before their first effect")
+        if calls.count(initialize) != 1:
+            raise Core0Error("boot services do not initialize the FIFO exactly once")
         total = len(re.findall(r"(?m)^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:tail )?call\s+[^\n]*?@" + re.escape(initialize) + r"\(", ir))
         if total != 1:
             raise Core0Error("compiled boot closure contains an additional FIFO reset")
@@ -2503,6 +3116,23 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     capacities = {"machine": 65536, "boot": 61440, "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
     graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
                  function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined), maximum_compiled_frame_bytes=max(frames.values()))
+    lease_scan = None
+    if configuration in SERVICE_CONFIGURATIONS and image_key == 'server':
+        source_symbols={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+        expected=['Lemma.Services.Buffer.Server.step','Lemma.User.IPC.receive','Lemma.User.Syscall.time',
+                  'Lemma.Services.Buffer.Server.expireStep','Lemma.Services.Buffer.Server.dispatch',
+                  'Lemma.Services.Buffer.Server.application','Lemma.Services.Buffer.Server.create',
+                  'Lemma.Services.Buffer.Server.existing','Lemma.Services.Buffer.Protocol.leaseTicks']
+        if not set(expected)<=source_symbols.keys():
+            raise Core0Error('Server lease scan source closure is incomplete')
+        lease_scan=validate_server_lease_scan(_ir_definition_body((output_dir/'program.ll').read_text(),source_symbols[expected[0]]),
+            receive=source_symbols[expected[1]],time=source_symbols[expected[2]],expire=source_symbols[expected[3]],dispatch=source_symbols[expected[4]])
+        if re.fullmatch(r'\s*entry:\s*ret i64 100000000\s*',_ir_definition_body((output_dir/'program.ll').read_text(),source_symbols[expected[8]])) is None:
+            raise Core0Error('Server application leaseTicks contract differs')
+        lease_scan['application']=validate_server_application_expiry(
+            _ir_definition_body((output_dir/'program.ll').read_text(),source_symbols[expected[5]]),
+            time=source_symbols[expected[2]],expire=source_symbols[expected[3]],create=source_symbols[expected[6]],
+            existing=source_symbols[expected[7]],lease=source_symbols[expected[8]])
     elf, symbols, raw, ranges = inspect_linked_elf(inspect, name="user", image="image.elf", expected=primitive_symbols | set(ir["optimized"]["definitions"]),
                                                  layout=layout, user=True, assembly=assembly, user_case=user_case)
     for section, target in ((".text", "text.bin"), (".data", "data.bin")):
@@ -2513,6 +3143,14 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     text, data = (output_dir / "text.bin").read_bytes(), (output_dir / "data.bin").read_bytes()
     if not 0 < len(text) <= 0xf000 or len(data) != 16:
         raise Core0Error("per-image user text/initialized-data extent differs")
+    service_quota = None
+    if configuration in SERVICE_CONFIGURATIONS:
+        text_pages = (len(text) + 4095) // 4096
+        arena_pages = 4 if image_key == "server" else 0
+        if 16 + text_pages + arena_pages > 32:
+            raise Core0Error("service image exceeds owned-page quota with its reserved backing pages")
+        service_quota = {"base_owned_task_frames":16,"base_global_task_frames":17,
+                         "text_pages":text_pages,"reserved_arena_pages":arena_pages,"owner_quota":32}
     initialized = validate_user_abi_data(inspect("llvm-readelf", ["-S", "--wide", "image.elf"], "user-sections"), data, symbols, assembly,
                                        object_file=image["directory"] + "/image.elf")
     if initializer is None or initialized["sha256"] != initializer["sha256"]:
@@ -2521,6 +3159,8 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     return {"image_key": image_key, "image_id": image["id"], "unit_ir": ir, "elf": elf, "stack_bounds": graph, **managed_fields(configuration,image),
             "image_sha256": sha256(output_dir / "image.elf"), "text_sha256": sha256(output_dir / "text.bin"),
             "data_sha256": sha256(output_dir / "data.bin"), "commands": logs, "backend_readonly_objects": backend_objects,
+            **({"owned_page_budget": service_quota} if service_quota is not None else {}),
+            **({'server_lease_scan':lease_scan} if lease_scan is not None else {}),
             **({"startup_case": user_case, "object_quarantined_startup": attack_object} if configuration == "tasks-fault-development" else {})}
 
 
@@ -2608,7 +3248,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         configuration = catalog["configuration"]
         key, directory = image["key"], image["directory"]
         validate_standalone_managed_provenance(build, provenance, configuration=configuration, image=image)
-        identity = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": configuration,
+        identity = {"schema_version": 2, "artifact_category": user_artifact_category(configuration), "configuration": configuration,
                     "image_key": key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal", "user_startup_case": image["startup_case"],
                     **managed_fields(configuration, image)}
         if (any(build.get(field) != value or provenance.get(field) != value for field, value in identity.items())
@@ -2622,8 +3262,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         source_snapshot = source_inputs(root)
         if provenance.get("source_inputs") != source_snapshot:
             raise Core0Error("independent user complete source inventory is missing/stale")
-        closure = module_closure(root, image["module"], allow_development=True,
-                                 forbid_user_privileged_imports=configuration in MANAGED_POLICIES)
+        closure = user_module_closure(root, image, configuration)
         if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for path in closure):
             raise Core0Error("managed user target dependency closure contains privileged/compiler code")
         if (any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean" for path in closure)
@@ -2771,20 +3410,20 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 raise Core0Error(f"current source differs from built input: {name}")
         for role, module in configuration_modules(configuration).items():
             allowed = development_modules(configuration, role)
-            closure = module_closure(root, module, allow_development=bool(allowed), development_modules=allowed)
+            closure = module_closure(root, module, allow_development=bool(allowed), development_modules=allowed,
+                                     selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
             if any("/Development/" in path and path not in {selected.replace(".", "/") + ".lean" for selected in allowed} for path in closure):
                 raise Core0Error("dependency imports another configuration's development module")
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
         if multi:
-            expected_users = {image["key"]: module_closure(root, image["module"], allow_development=True,
-                              forbid_user_privileged_imports=configuration in MANAGED_POLICIES) for image in images}
+            expected_users = {image["key"]: user_module_closure(root, image, configuration) for image in images}
             if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
                 raise Core0Error("managed user target dependency closure contains privileged/compiler code")
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
                 raise Core0Error("per-image dependency imports another development module")
-            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role)) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
+            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
                 raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
@@ -2845,6 +3484,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                 if configuration == "capabilities-development" else None)
         managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                        if configuration == "ipc-development" else None)
+        managed_service = (validate_service_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
+                           if configuration in SERVICE_CONFIGURATIONS else None)
         object_functions = {
             "startup.o": expected_machine, "boot-package.o": set(),
             **({} if multi else {"user/startup.o": {row["symbol"] for row in user_primitive_rows(user_case)}}),
@@ -3032,7 +3673,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                 record["user_startup_cases"] = {image["key"]: image["startup_case"] for image in images}
             if configuration in MANAGED_POLICIES:
                 record.update(managed_policy=MANAGED_POLICIES[configuration], boot_roles={image["key"]: image["boot_role"] for image in images})
-                record.update({'managed_capabilities':managed_capabilities} if configuration=='capabilities-development' else {'managed_ipc':managed_ipc})
+                record.update({'managed_capabilities':managed_capabilities} if configuration=='capabilities-development' else
+                              {'managed_service':managed_service} if configuration in SERVICE_CONFIGURATIONS else {'managed_ipc':managed_ipc})
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
         if source_inputs(root) != source_hashes:

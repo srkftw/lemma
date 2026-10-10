@@ -18,6 +18,9 @@ def metadataLimit : Nat := 0x80500000
 /-- Checked owner1/purpose1 object-table handle. Zero retains legacy profiles;
 managed entries initialize this control cell before constructing any task. -/
 def capabilityControlValue : UInt64 := 0x80400620
+/-- Boot-cleared checked input-frame handle. Zero selects the historical raw
+UART route; service boot may publish it once and has no runtime reset API. -/
+def inputControlValue : UInt64 := 0x80400660
 def supervisorStackBase : Nat := 0x80500000
 def supervisorStackTop : Nat := 0x80510000
 /-- The first stack page is fixed supervisor context storage; live call stacks

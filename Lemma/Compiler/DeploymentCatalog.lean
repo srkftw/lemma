@@ -12,6 +12,7 @@ open Lemma.Platform.RiscV.ExecutionPrimitives (UserStartupCase)
 inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
+  | bufferServer | bufferCLI | bufferPeer | bufferFaultClient
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -24,13 +25,20 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .ipcClientB => "ipc-client-b"
   | .backgroundNoGrants => "background-no-grants"
   | .ipcFaultClient => "ipc-fault-client"
+  | .bufferServer => "buffer-server"
+  | .bufferCLI => "buffer-cli"
+  | .bufferPeer => "buffer-peer"
+  | .bufferFaultClient => "buffer-fault-client"
 
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
 def ipcManagedPolicy : String := "lemma-ipc-v1"
+def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
   if configuration == "capabilities-development" then some capabilityManagedPolicy
-  else if configuration == "ipc-development" then some ipcManagedPolicy else none
+  else if configuration == "ipc-development" then some ipcManagedPolicy
+  else if configuration == "service-normal" || configuration == "service-development" then
+    some bufferManagedPolicy else none
 
 structure UserImageSpec where
   key : String
@@ -87,9 +95,26 @@ def ipcImages : Array UserImageSpec := #[
   { key := "fault", id := 5, moduleName := `Lemma.User.Development.IPCFault,
     root := `Lemma.User.Development.IPCFault.main, bootRole? := some .ipcFaultClient }]
 
+/-- The normal service deployment consists of production executables. The
+fault client is selected only by the separate development registry. -/
+def serviceImages : Array UserImageSpec := #[
+  { key := "server", id := 1, moduleName := `Lemma.Services.Buffer.Server,
+    root := `Lemma.Services.Buffer.Server.main, bootRole? := some .bufferServer },
+  { key := "cli", id := 2, moduleName := `Lemma.Applications.BufferCLI,
+    root := `Lemma.Applications.BufferCLI.main, bootRole? := some .bufferCLI },
+  { key := "peer", id := 3, moduleName := `Lemma.Applications.BufferPeer,
+    root := `Lemma.Applications.BufferPeer.main, bootRole? := some .bufferPeer },
+  { key := "busy", id := 4, moduleName := `Lemma.Applications.CPUBound,
+    root := `Lemma.Applications.CPUBound.main, bootRole? := some .backgroundNoGrants }]
+
+def serviceDevelopmentImages : Array UserImageSpec := serviceImages.push {
+  key := "fault", id := 5, moduleName := `Lemma.User.Development.BufferFault,
+  root := `Lemma.User.Development.BufferFault.main, bootRole? := some .bufferFaultClient }
+
 def isMultiImageConfiguration (configuration : String) : Bool :=
   configuration == "tasks-development" || configuration == "tasks-fault-development" ||
-    configuration == "capabilities-development" || configuration == "ipc-development"
+    configuration == "capabilities-development" || configuration == "ipc-development" ||
+    configuration == "service-normal" || configuration == "service-development"
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
@@ -97,6 +122,8 @@ def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   else if configuration == "tasks-fault-development" then .ok taskFaultImages
   else if configuration == "capabilities-development" then .ok capabilityImages
   else if configuration == "ipc-development" then .ok ipcImages
+  else if configuration == "service-normal" then .ok serviceImages
+  else if configuration == "service-development" then .ok serviceDevelopmentImages
   else .error "configuration has no admitted multiimage deployment"
 
 def imageFor (configuration key : String) : Except String UserImageSpec := do

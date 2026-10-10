@@ -163,6 +163,41 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_user.py 
 Each finite runner stops/reaps QEMU after actual observations and records that
 explicit host cleanup. It does not treat a timeout or host stop as normal exit.
 
+The current service candidate has separately linked U-mode Buffer Server,
+command client, peer client and CPU-bound application. Build and interact with
+the ordinary package using:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/build-kernel.sh \
+  --configuration service-normal --stage supervisor --opt-level O2 \
+  --output-dir build/kernel/service-normal --clean --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/buffer-cli.py \
+  --image build/kernel/service-normal/image.elf \
+  --output-dir build/kernel/service-terminal --timeout 3600
+```
+
+The terminal accepts `help`, `version`, `ps`, `mem`, `discover` and bounded
+`buffer create/write/append/read/status/destroy` commands. Read the returned
+handle after creation. Text is encoded as UTF-8; `hex:00ff` supplies opaque
+binary bytes. Each operation carries at most 128 bytes. Buffers are volatile,
+and an old service epoch cannot identify data after a restart. Ordinary clients
+have no task-management grant. The separate `service-development` package
+contains the diagnostic controller and fault client used for acceptance.
+
+The maintained service observer is `scripts/check_kernel_buffer.py`. Clean
+committed-source acceptance uses the separate cumulative lanes:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane F-I --work-dir build/kernel/acceptance-F-I --clean --timeout 300 --deadline 2400
+nix develop --no-write-lock-file --command python3 scripts/check_kernel_cumulative.py \
+  --lane J --work-dir build/kernel/acceptance-J --clean --timeout 300 --deadline 2400
+```
+
+These lanes require their own observed results. The A-E controller, legacy
+Core0/foundation acceptance and final Task003 qualification remain separate
+requirements; a passing earlier checkpoint does not certify changed source.
+
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
@@ -173,8 +208,9 @@ Task002 tree. Both task branches remain available.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
 its assignment, gate ledger and resume checkpoint. The current accepted prefix
-is A–C, with ordinary U-mode execution and the address-space API verified as a
-Gate D subportion. Architectural denial tests and services remain outstanding. See
+is A–I at the clean implementation `22183c167ca62102a4a8db10a95ee77b27137f10`.
+Gate J's service candidate is undergoing live acceptance. Final qualification,
+CI and Task003 publication remain outstanding. See
 [Task003 evidence](docs/evidence/003-kernel-isolated-services.md).
 Task 001's original assignment remains preserved at
 `codex/prompts/001-core0-freestanding-slice.md`.

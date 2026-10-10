@@ -10,7 +10,7 @@ import sys
 from build_core0 import OPT_PASSES, prepare_output_directory
 from build_kernel import (INDEPENDENT_IMAGE_KEYS, MULTI_CONFIGURATIONS, USER_IMAGE_FILES, command_invoker, export_user_catalog,
                           export_user_files, export_user_image, link_user_image,
-                          managed_policy, module_closure, realize_toolchain, source_inputs)
+                          managed_policy, user_module_closure, user_artifact_category, realize_toolchain, source_inputs)
 from core0_common import Core0Error, repo_root, require_tools, sha256, write_json
 
 
@@ -41,8 +41,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
         if len(selected) != 1:
             raise Core0Error("closed registry omitted/duplicated the selected user image")
         image = selected[0]
-        dependencies = module_closure(root, image["module"], allow_development=True,
-                                      forbid_user_privileged_imports=managed_policy(configuration) is not None)
+        dependencies = user_module_closure(root, image, configuration)
         invoke(("lake", "build", image["module"], "Lemma.Compiler.KernelExport"), root)
         unit = export_user_image(root, output_dir, configuration, image, opt_level, invoke)
         export_user_files(root, output_dir, configuration, image, invoke)
@@ -53,7 +52,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
         dirty = invoke(("git", "status", "--porcelain=v1", "--untracked-files=all"), root).decode().splitlines()
         artifacts = {str(path.relative_to(output_dir)): sha256(path) for path in sorted(output_dir.rglob("*"))
                      if path.is_file() and path.name not in {"commands.json", "user-build.json", "user-provenance.json"}}
-        common = {"schema_version": 2, "artifact_category": "development-user-image", "configuration": configuration,
+        common = {"schema_version": 2, "artifact_category": user_artifact_category(configuration), "configuration": configuration,
                   "image_key": image_key, "image_id": image["id"], "stage": "supervisor", "startup_case": "normal",
                   "user_startup_case": image["startup_case"], "optimization": opt_level, "lean_source_realization": realization,
                   "artifacts": artifacts}
@@ -77,7 +76,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--configuration", choices=MULTI_CONFIGURATIONS, default="tasks-development")
-    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper", "server", "clienta", "clientb"), required=True)
+    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper", "server", "clienta", "clientb", "cli"), required=True)
     parser.add_argument("--opt-level", choices=("O0", "O2"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--clean", action="store_true")

@@ -80,6 +80,22 @@ jobs:
               python3 -m unittest discover -s tests/foundation -v \
             2>&1 | tee build/ci/metadata/foundation-host-unittest.log
 
+      - name: Run kernel host-harness suite
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 15m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/kernel -v \
+            2>&1 | tee build/ci/metadata/kernel-host-unittest.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          value = Path("build/ci/metadata/kernel-host-unittest.log").read_text()
+          count = re.search(r"Ran ([0-9]+) tests?", value)
+          if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
+              raise RuntimeError("Kernel host suite is missing, empty or failing")
+          PY
+
       - name: Retain host-suite logs
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -87,6 +103,116 @@ jobs:
           name: metadata-host-suites-${{ github.run_id }}-${{ github.run_attempt }}
           path: build/ci/metadata/
           if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
+
+  kernel-managed-rv64:
+    name: Task 003 Gates F-I RV64 acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare managed-kernel log directory
+        run: mkdir -p build/ci
+
+      - name: Build, audit and observe fresh F-I images
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel_cumulative.py \
+                --lane F-I --work-dir build/kernel/ci-managed \
+                --clean --timeout 300 --deadline 2400 \
+            2>&1 | tee build/ci/kernel-managed-rv64.log
+
+      - name: Require all managed-kernel artifacts and actual sessions
+        run: |
+          set -euo pipefail
+          nix develop --no-write-lock-file --command python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from check_kernel_cumulative import validate_lane
+          value = validate_lane(Path("build/kernel/ci-managed/result.json"), Path.cwd())
+          if value["lane"] != "F-I" or len(value["cases"]) != 8:
+              raise RuntimeError("Missing mandatory F-I evidence")
+          PY
+
+      - name: Retain managed-kernel evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-F-I-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/kernel/ci-managed/
+            build/ci/kernel-managed-rv64.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  kernel-services-rv64:
+    name: Task 003 Buffer service RV64 acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare service log directory
+        run: mkdir -p build/ci
+
+      - name: Build, audit and observe fresh ordinary and development services
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 40m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_kernel_cumulative.py \
+                --lane J --work-dir build/kernel/ci-services \
+                --clean --timeout 300 --deadline 2400 \
+            2>&1 | tee build/ci/kernel-services-rv64.log
+
+      - name: Require all service artifacts and actual sessions
+        run: |
+          set -euo pipefail
+          nix develop --no-write-lock-file --command python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from check_kernel_cumulative import validate_lane
+          value = validate_lane(Path("build/kernel/ci-services/result.json"), Path.cwd())
+          if value["lane"] != "J" or len(value["cases"]) != 4:
+              raise RuntimeError("Missing mandatory service evidence")
+          PY
+
+      - name: Retain service evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kernel-service-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/kernel/ci-services/
+            build/ci/kernel-services-rv64.log
+          if-no-files-found: error
           retention-days: 14
           compression-level: 6
 

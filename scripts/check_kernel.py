@@ -94,7 +94,8 @@ def source_identity(root: Path) -> dict:
 
 def acceptance_inputs(root: Path) -> dict:
     paths = {root / ".github/workflows/core0.yml", root / "scripts/check_kernel.py", root / "scripts/run_kernel.py",
-             root / "scripts/run_device_session.py", root / "scripts/run_monitor_session.py"}
+             root / "scripts/run_device_session.py", root / "scripts/run_monitor_session.py",
+             *(root / "scripts" / name for name in ("buffer_transport.py", "run_buffer_session.py", "buffer-cli.py", "buffer_reference.py"))}
     paths.update((root / "scripts").glob("check_kernel_*.py"))
     paths.update((root / "tests/kernel").rglob("*.py"))
     return {str(path.relative_to(root)): sha256(path) for path in sorted(paths)}
@@ -141,6 +142,21 @@ def validate_session(path: Path, image: Path, *, machine_origin: bool = False) -
             raise Core0Error("mixed UART grammar is scoped to the exact E syscall observation")
         from check_kernel_syscall import validate_wire_segments
         validate_wire_segments(received, value["records"], value.get("wire_segments"))
+    elif value.get("wire_format") == "kernel-buffer-uart-v1":
+        from run_buffer_session import validate_quiescence
+        validate_quiescence(value, received, (path.parent / "stderr.bin").read_bytes())
+        if (provenance.get("configuration") not in {"service-normal", "service-development"}
+                or value.get("observed", {}).get("protocol") != "buffer-service-J-v1"
+                or value.get("observed", {}).get("complete_semantic_replay") is not True):
+            raise Core0Error("Buffer UART grammar requires its exact source-bound complete J observation")
+        from check_kernel_buffer import validate_replay, runner_inputs
+        root = repo_root()
+        if (value.get("service_runner_inputs") != runner_inputs(root)
+                or value.get("service_runner_inputs_after") != value["service_runner_inputs"]):
+            raise Core0Error("service acceptance runner/reference inventory is missing or changed")
+        replayed = validate_replay(root, image, value, path.parent)
+        if replayed != value["observed"]:
+            raise Core0Error("service complete semantic replay differs from retained observations")
     elif value.get("wire_format") is not None:
         raise Core0Error("unknown guest UART evidence format")
     elif (len(received) != RECORD_BYTES * len(value["records"])

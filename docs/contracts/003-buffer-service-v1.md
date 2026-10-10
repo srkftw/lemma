@@ -92,6 +92,19 @@ client checks the original IPC packet before forming this output. Local
 commands7(help/version),8(instance count),9(frame count) and10(discovery)
 return this framing without invoking a Buffer method.
 
+The typed client also binds a successful reply to the original request: the
+existing handle and write/read/append count must match, and a create reply must
+report the requested capacity. Error200 can report the current service epoch;
+error206 can do so too because request-shape validation precedes epoch
+validation. Other application errors must report the requested epoch.
+
+Ordinary commands form a byte stream after envelope validation. Oversized
+write/append counts are rejected at the forty-byte command header. Supplying
+extra body bytes for such an invalid command does not establish a recoverable
+command boundary; those bytes remain in the stream. The practical host client
+rejects oversized commands before transmission. Header-scanner recovery is
+tested separately with an invalid envelope that declares no body.
+
 This magic is distinct from the kernel's88-byte ASCII `K1` records. The host
 demultiplexer consumes exact envelope lengths; embedded binary bytes are never
 parsed as control records. Kernel records can occur between complete Console
@@ -182,7 +195,11 @@ contents.
 
 Every successful owner operation refreshes a fixed10-second lease using actual
 time. Addition overflow is rejected before publication. The Server checks all
-four rows before each request and on its100ms receive timeout. Expired rows
+four rows before each request and on its100ms receive timeout. It scans again
+after a successful receive, then uses one fresh application-time sample for
+both a completed four-row expiry scan and the operation's renewal deadline.
+That sample defines the operation's lease decision; unrelated User preemption
+cannot make an older scan and a newer renewal sample disagree. Expired rows
 release their real pages and advance or retire their generation. Another
 client cannot renew a lease. A dead client's buffers can remain until expiry;
 its own kernel frame reclamation does not reclaim the Server's pages. This
@@ -229,6 +246,15 @@ reconnect through their Directory grant, obtain a fresh attenuated local Call
 capability, and observe the larger epoch. An old `(epoch,handle)` is rejected;
 new buffers are empty. No reply promises persistence or durable saving.
 
+A pending-call restart test arms checked full Server and Caller descriptors in
+development-only control words. The Caller must be idle when armed. After an
+actual successful Server receive, the hook checks the live accepted Reply,
+full Caller/Server identities, waiting transaction and unexpired deadline
+before termination. It runs on the saved kernel continuation and postpones
+replacement construction until the outgoing task has been reaped. A Peer call
+cannot satisfy an arm for the command client. The hook has no Buffer-operation,
+request-ID or test-PC selector and is absent from the normal closure.
+
 ## Required actual evidence
 
 O0 and O2 must run the same ordinary image with fresh runtime command streams.
@@ -237,6 +263,27 @@ Evidence includes two clients' independent buffers,00/ff and UTF-8 data,
 denial, real CPU preemption, and actual fault containment. A surviving client
 must read unchanged content while the dead client's lease expires and only
 its service-owned pages are released.
+
+The global-full denial needs three distinct authenticated clients: with only
+two clients holding their maximum two buffers each, the per-client quota is
+the first applicable rejection. The second ordinary client holds its temporary
+second buffer across a short real sleep/use interval. The host waits for its
+actual live-buffer witness before starting the development fault client while
+the command client owns two buffers. Loader/scheduler progress may release that
+temporary slot before the third client runs. Within its128-probe bound, the
+third client records each actual successful creation and destroys it through
+ordinary IPC until it has witnessed an actual global204 denial. The observer
+requires the authenticated request, real backing allocation and page release
+for every such discarded probe. After an actual denial, a later real success
+may retain a buffer, verify its bytes and execute the contained store fault.
+Create/destroy request IDs are the disjoint odd/even values1..256; the final
+write/read use257/258. No longer sleep or expected denial substitutes for an
+observed Server result.
+The host byte reference does not establish that guest allocation or denial.
+
+A transport error can occur after application work. A host reference leaves
+its shadow uncommitted on that error and must settle the actual outcome or
+witness a service-epoch restart before treating its former bytes as current.
 
 The development restart observation must include an actually accepted pending
 call failing on Server death, complete old resources reclaimed, epoch increase,

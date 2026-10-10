@@ -53,7 +53,8 @@ private def requiresSupervisor (configuration : String) : Bool :=
     isMultiImageConfiguration configuration
 
 private def unitCategory (configuration role : String) : String :=
-  (if configuration == "normal" then "production-" else "development-") ++ role ++ "-unit"
+  (if configuration == "normal" || configuration == "service-normal" then
+    "production-" else "development-") ++ role ++ "-unit"
 
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
@@ -70,6 +71,10 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Kernel.Development.CapsEntry.boot", "Lemma.Kernel.Development.CapsEntry.dispatch"]
     else if configuration == "ipc-development" then
       #["Lemma.Kernel.Development.IPCEntry.boot", "Lemma.Kernel.Development.IPCEntry.dispatch"]
+    else if configuration == "service-normal" then
+      #["Lemma.Kernel.ServiceEntry.boot", "Lemma.Kernel.ServiceEntry.dispatch"]
+    else if configuration == "service-development" then
+      #["Lemma.Kernel.Development.ServiceEntry.boot", "Lemma.Kernel.Development.ServiceEntry.dispatch"]
     else #["Lemma.Kernel.Entry.boot", "Lemma.Kernel.Entry.dispatch"]
   | "user" => if configuration == "user-isolation-development" then
       #["Lemma.User.Development.Isolation.main"]
@@ -85,7 +90,9 @@ private def rootArguments (role : String) : Array (Array Ty) :=
   | _ => #[]
 
 private def developmentModules (configuration role : String) (image? : Option UserImageSpec := none) : Array String :=
-  if let some image := image? then #[image.moduleName.toString]
+  if let some image := image? then
+    if image.moduleName.toString.startsWith "Lemma.User.Development." then #[image.moduleName.toString]
+    else #[]
   else if configuration == "tasks-development" && role == "kernel" then
     #["Lemma.Kernel.Development.TasksEntry"]
   else if configuration == "tasks-fault-development" && role == "kernel" then
@@ -96,6 +103,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
       "Lemma.Kernel.Development.TasksEntry", "Lemma.Kernel.Development.CapabilityGeneration"]
   else if configuration == "ipc-development" && role == "kernel" then
     #["Lemma.Kernel.Development.IPCEntry", "Lemma.Kernel.Development.TasksEntry"]
+  else if configuration == "service-development" && role == "kernel" then
+    #["Lemma.Kernel.Development.ServiceEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
   else if configuration == "user-isolation-development" && role == "kernel" then
@@ -153,6 +162,21 @@ private def managedUserSource (configuration role : String) (name : Name) : Bool
   if (managedPolicyFor configuration).isNone || role != "user" then true else
     let source := (Lean.privateToUserName? name).getD name |>.toString
     !source.startsWith "Lemma.Kernel." && !source.startsWith "Lemma.Compiler."
+
+/-- Application/service executable modules are independent linkage roots, not
+shared libraries. Gate J may import only the selected executable namespace. -/
+private def serviceExecutableSource (source : String) : Bool :=
+  source.startsWith "Lemma.Applications." || source == "Lemma.Services.Buffer.Server" ||
+    source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
+    source.startsWith "Lemma.User.Development.BufferFault."
+
+private def selectedExecutableSource (configuration role source : String)
+    (image? : Option UserImageSpec) : Bool :=
+  if configuration != "service-normal" && configuration != "service-development" then true
+  else if !serviceExecutableSource source then true
+  else if role != "user" then false
+  else image?.any fun image => source == image.moduleName.toString ||
+    source.startsWith (image.moduleName.toString ++ ".")
 
 private def rootSymbol (lowered : LoweredActionSuite) (name : Name) : Except String String := do
   let some symbol := lowered.symbols.find? (fun symbol => symbol.source == name)
@@ -267,6 +291,8 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let profile ← IO.ofExcept (roleProfile role)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
+    unless selectedExecutableSource configuration role imported.toString image? do
+      throw <| IO.userError s!"{configuration} {role} imports sibling executable module `{imported}`"
     if (configuration == "tasks-fault-development" || (managedPolicyFor configuration).isSome) &&
         (imported.toString == "Lemma.Compiler.Test" || imported.toString.startsWith "Lemma.Compiler.Test.") then
       throw <| IO.userError s!"{configuration} {role} imports forbidden compiler test module `{imported}`"
@@ -279,11 +305,13 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   IO.ofExcept (validateRoots configuration role suite image?)
   for function in suite.scalarFunctions do
     unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
-        managedUserSource configuration role function.name do
+        managedUserSource configuration role function.name &&
+        selectedExecutableSource configuration role ((Lean.privateToUserName? function.name).getD function.name).toString image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   for function in suite.actionFunctions do
     unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
-        managedUserSource configuration role function.name do
+        managedUserSource configuration role function.name &&
+        selectedExecutableSource configuration role ((Lean.privateToUserName? function.name).getD function.name).toString image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {

@@ -79,8 +79,13 @@ class TimerNegativeEvidence(unittest.TestCase):
             git("-c", "user.name=host fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "host fixture")
             commit = git("rev-parse", "HEAD")
             firmware.write_text(negative.timer_disabled_source(original))
+            ignored = root / "Lemma/Ignored.lean"
+            link = root / "other-link.txt"
             def inputs(_root):
-                return {negative.FIRMWARE: sha256(firmware), "other.txt": sha256(other)}
+                values = {negative.FIRMWARE: sha256(firmware), "other.txt": sha256(other)}
+                if ignored.exists(): values["Lemma/Ignored.lean"] = sha256(ignored)
+                if link.exists(): values["other-link.txt"] = sha256(link)
+                return values
             with patch.object(negative, "source_inputs", side_effect=inputs):
                 result = negative.source_binding(root, commit)
                 self.assertEqual(result["control_source_inputs"][negative.FIRMWARE], hashlib.sha256(original.encode()).hexdigest())
@@ -90,6 +95,20 @@ class TimerNegativeEvidence(unittest.TestCase):
                 other.write_text("unchanged")
                 firmware.write_text(negative.timer_disabled_source(original).replace("else reply pc 17 0", "else reply pc 0 0"))
                 with self.assertRaises(Core0Error): negative.source_binding(root, commit)
+                firmware.write_text(negative.timer_disabled_source(original))
+                (root / ".git/info/exclude").write_text("/Lemma/Ignored.lean\n")
+                ignored.write_text("-- ignored extra input must not bind to a clean control\n")
+                with self.assertRaisesRegex(Core0Error, "uncommitted or nonregular"):
+                    negative.source_binding(root, commit)
+                ignored.unlink()
+                firmware.write_text(original)
+                link.symlink_to("other.txt")
+                git("add", "other-link.txt")
+                git("-c", "user.name=host fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "symlink fixture")
+                commit = git("rev-parse", "HEAD")
+                firmware.write_text(negative.timer_disabled_source(original))
+                with self.assertRaisesRegex(Core0Error, "uncommitted or nonregular"):
+                    negative.source_binding(root, commit)
 
     def test_only_the_started_peers_and_last_live_busy_prefix_qualifies(self):
         with tempfile.TemporaryDirectory(dir=ROOT / "build/kernel") as temporary:
@@ -106,6 +125,38 @@ class TimerNegativeEvidence(unittest.TestCase):
                 with self.assertRaises(Core0Error): negative.validate_stalled_runtime(bad, sent, image=image, audit=audit)
             for packet in (sent[:-1], sent + sent):
                 with self.assertRaises(Core0Error): negative.validate_stalled_runtime(records, packet, image=image, audit=audit)
+
+    def test_positive_control_requires_exact_clean_committed_revision(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / "build/kernel") as temporary:
+            directory = Path(temporary)
+            image, audit, _, _ = self.fixture(directory)
+            sources = {negative.FIRMWARE: "host-fixture-source"}
+            binding = {"control_source_inputs": sources, "commit": "a" * 40}
+            provenance = {"source_inputs": sources, "source_commit": binding["commit"], "dirty_paths": [],
+                          "configuration": "tasks-development", "stage": "supervisor", "optimization": "O2"}
+            audit.update(source_commit=binding["commit"], dirty_paths=[])
+            runners = {name: "host-fixture-runner" for name in negative.POSITIVE_RUNNERS}
+            value = {"image": str(image), "source_inputs": sources,
+                     "image_sha256": "host-fixture-image", "audit_sha256": "host-fixture-audit",
+                     "provenance_sha256": "host-fixture-provenance", "runner_inputs": runners,
+                     "acceptance_checker_sha256": runners["scripts/check_kernel_tasks.py"],
+                     "observed": {"protocol": "preemptive-tasks-F-v1", "final_remaining_frames": 499,
+                                  "tasks": {"512": {"image": 0, "complete": True, "arithmetic_preemptions": [1]}}}}
+            path = directory / "result.json"; write_json(path, value)
+            def validate():
+                write_json(directory / "provenance.json", provenance)
+                write_json(directory / "audit.json", audit)
+                with patch.object(negative, "validate_session", return_value=value), \
+                     patch.object(negative, "sha256", return_value="host-fixture-runner"):
+                    return negative.positive_control(path, binding, directory, "O2")
+            self.assertEqual(validate()["reported_source_commit"], binding["commit"])
+            for target, field, bad in ((provenance, "source_commit", "b" * 40),
+                                       (provenance, "dirty_paths", [" M " + negative.FIRMWARE]),
+                                       (audit, "source_commit", "b" * 40),
+                                       (audit, "dirty_paths", [" M " + negative.FIRMWARE])):
+                previous = target[field]; target[field] = bad
+                with self.assertRaises(Core0Error): validate()
+                target[field] = previous
 
     def test_arbitrary_timeout_early_exit_wrong_binding_and_cleanup_suffix_reject(self):
         with tempfile.TemporaryDirectory(dir=ROOT / "build/kernel") as temporary:

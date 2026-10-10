@@ -860,10 +860,10 @@
     {
       "gate": "J",
       "name": "buffer service and client",
-      "status": "not_run",
+      "status": "in_progress",
       "host_preparation": {
         "status": "HOST_REVIEW_COMPLETE",
-        "scope": "Only serial framing/terminal/mixed-capture and independent byte-shadow consumers. No J target build or guest execution; target remains held behind cold I.",
+        "scope": "Historical host-only preparation before cold I; subsequent J target results are separately recorded below.",
         "reports": [
           {
             "path": "build/kernel/gateJ/host/review-result.json",
@@ -880,6 +880,166 @@
           "scaffold": 18
         },
         "construction_design": "docs/contracts/003-buffer-service-v1.md"
+      },
+      "focused_precommit": {
+        "source_parent": "af890c124a874db4e937a2af88909e3fff0f56a5",
+        "clean": false,
+        "scope": "Focused genuine artifacts and sessions; clean J acceptance and the source-mutation exit remain pending.",
+        "normal_O2_artifact_review": {
+          "status": "PASS",
+          "path": "build/kernel/gateJ/independent-normal-O2-review-attempt1/summary.json",
+          "sha256": "5321038fc6694942b59204a05dda8a2f5d032da141ed76b27812aa17c73c8edc",
+          "sources": 145,
+          "immutable_artifacts": 93,
+          "trap_stack_bytes": 1856,
+          "trap_stack_capacity": 8192
+        },
+        "development_O2": {
+          "status": "PASS",
+          "path": "build/kernel/gateJ/focused-development-O2-attempt1-run/result.json",
+          "sha256": "094dacd36ae09fe1a0fec5000afdc9258a1c7746b4e0d4564527de1c3bfc7439",
+          "ordinary_commands": 306,
+          "faults": 1,
+          "global_denials": 43,
+          "lease_expiries": 1,
+          "math_preemptions": 1104,
+          "pending_restarts": 1,
+          "final_frames": 497
+        },
+        "retained_failures": [
+          {
+            "path": "build/kernel/gateJ/independent-first-run-validation",
+            "observed": "First normal O2 guest command returned0, but independent validator rejected serialized reply-key tuples. Narrow list snapshot repair and real JSON-roundtrip fixture passed; original report unchanged and old runner inventory remains stale."
+          },
+          {
+            "path": "build/kernel/gateJ/focused-normal-O0-attempt1/build-failure.json",
+            "observed": "Nix source realization failed while copying a concurrently generated temporary Lake file, before target export. Serialized retry built successfully; no failed output relabeled."
+          },
+          {
+            "path": "build/kernel/gateJ/focused-normal-O2-attempt2-run/result.json",
+            "observed": "306-command qualification completed, but explicit host cleanup retained a truncated K1 frame at offset662216. Report correctly FAIL; bounded transport cleanup repair is pending."
+          },
+          {
+            "path": "build/kernel/gateJ/focused-development-O0-attempt1-run/result.json",
+            "observed": "Fresh strict O0 artifact audit and real U store fault/reap occurred. Peer woke and released its temporary backing before Fault first allocation; that allocation correctly succeeded. Actual204 denial absent; observer correctly FAIL. Repair only bounded DevFault probe to release premature success and require actual denial before final allocation."
+          }
+        ],
+        "four_profile_attempt1": {
+          "status": "FAIL",
+          "path": "build/kernel/gateJ/focused-four-profile-attempt1.json",
+          "sha256": "e7c8a5f172c76bceec22908b64a0d57330b34a2c7c164d61898ac31a2dbd8132",
+          "actual_checker_passes": [
+            "normal-O0",
+            "normal-O2",
+            "development-O2"
+          ],
+          "actual_checker_failures": [
+            "development-O0"
+          ]
+        }
+      },
+      "next_command": "Commit the held J candidate; create a fresh exact clean worktree; run maintained check_kernel_cumulative.py --lane J, then isolated canonical Server append mutation at both optimizations using those exact clean controls.",
+      "repaired_focused_O0": {
+        "status": "PASS",
+        "scope": "precommit focused actual guests with then-held exact consumers; not clean qualification",
+        "report": "build/kernel/gateJ/independent-repaired-focused-validation-attempt1.json",
+        "sha256": "aef8d73402a5bd7523ba1f495ad449a0501d04ff2751fecad5774f4eec0c454c",
+        "cases": [
+          {
+            "label": "development-O0",
+            "result_sha256": "6c94832cfa3da53a884ac0c4a8af34c80c39edef76315f2fe9e67d364104b454",
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 1,
+              "actual_global_denials": 34,
+              "actual_lease_expiries": 1,
+              "actual_math_preemptions": 1048,
+              "actual_pending_restarts": 1,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 497,
+              "ordinary_commands": 306
+            }
+          },
+          {
+            "label": "normal-O0",
+            "result_sha256": "305e3b1f6cbea7b5fcaea7ccf29b24be7b69ca28f1c5341525fbcddf9ae35b16",
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 0,
+              "actual_global_denials": 0,
+              "actual_lease_expiries": 0,
+              "actual_math_preemptions": 562,
+              "actual_pending_restarts": 0,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 406,
+              "ordinary_commands": 306
+            }
+          }
+        ]
+      },
+      "pending": "Practical CLI and held host fixes passed. Commit candidate and require fresh clean four-profile J lane and canonical append-copy mutation at O0/O2 before releasing K.",
+      "practical_terminal_failures": [
+        {
+          "report": "build/kernel/gateJ/focused-readable-terminal-attempt1/result.json",
+          "sha256": "8299bfbd64d89923531e834eafcef789ed802fd4d38fcba538bf2265d8dbe7f2",
+          "status": "FAIL",
+          "observed": "First request sent before service publication; no actual client response; operator interrupt, real kill/reap; live cleanup full-prefix decoding exceeded5s."
+        },
+        {
+          "report": "build/kernel/gateJ/focused-readable-terminal-attempt2/result.json",
+          "sha256": "14c8e8fb38186891d4148480a42d1207e7a41179aa73e7600bbb2353e6cc6875",
+          "status": "FAIL",
+          "observed": "Actual publication precedes input; blocking operator input stopped guest-output consumption. Exactly65536 unread bytes, natural exit50, no completed fault diagnostic; no sent input."
+        }
+      ],
+      "terminal_diagnosis": {
+        "report": "build/kernel/gateJ/independent-readable-terminal-attempt2/summary.json",
+        "sha256": "f05468419aede539984cd2b13d98fa73eac053bb182cc615a1052e4d0d043732",
+        "scope": "actual backlog plus pinned QEMU/source inference, not an observed trapPC/cause"
+      },
+      "held_host_repairs": {
+        "kernel_tests": 237,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "diff_check": "PASS",
+        "transport_summary": "build/kernel/gateJ/host/transport-prefix-host-summary.json",
+        "transport_summary_sha256": "d97bcd4b2de1b4de53763600e2d87638b6f17a71a4ef7cccc0998dd7904a6143",
+        "cli_fairness_summary": "build/kernel/gateJ/host/cli-fairness-host-summary.json",
+        "cli_fairness_summary_sha256": "9268c03944280781f6dad15a51ce94465a5efb08c3f1198f2336830f2c376412",
+        "root_full_host_log": "build/kernel/gateJ/host/root-held-final-host-attempt2.log",
+        "independent_readonly_review": "PASS; no concrete parser or fairness regression"
+      },
+      "practical_terminal": {
+        "status": "PASS",
+        "report": "build/kernel/gateJ/focused-readable-terminal-attempt3/result.json",
+        "report_sha256": "32e60d30a5e6997d99c9729046e5c0db6f3ca00c8137ca975f706ce6e35a9375",
+        "independent_validation": "build/kernel/gateJ/independent-readable-terminal-attempt3.json",
+        "independent_validation_sha256": "d0edd338cccfe318ca52e3116a5dc12d4288e1c5f88544932171ba05f28dfeaa",
+        "commands": 12,
+        "binary_read_hex": "00ffcebbe28891",
+        "utf8_read": "\u03bb\u2211",
+        "destroyed_handle_status": 201,
+        "raw_bytes": 6063460,
+        "pid": 766112,
+        "returncode": -9,
+        "pid_absent": true,
+        "scope": "Actual ordinary operator CLI; not clean cumulative J acceptance"
       }
     },
     {

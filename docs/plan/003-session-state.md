@@ -783,3 +783,138 @@ Gate G construction is now authorized because focused F and mandatory timer cont
 - Highest complete gate isI. Earlier cold FAILs remain preserved unchanged.
   J target implementation is now released; K and publication remainnot_run.
   Final-source legacy, A-K acceptance and actual CI are required before merge.
+
+
+## Gate J focused candidate (2026-10-10 02:03 UTC)
+
+- Held J source includes separately linked Server/CLI/Peer/CPUBound and a
+  development-only fault client. Genuine four-application O0/O2 exports/ELFs and
+  strict kernel stack probes passed; no cached I result certifies J.
+- Independent normal O2 review reproduced six genuine Lean export/object sets,
+  all four User images/payloads and the whole boot ELF. Source145/artifact93
+  bindings matched; dispatch stack1856/8192, Server page budget23/32. Review
+  SHA2565321038fc6694942b59204a05dda8a2f5d032da141ed76b27812aa17c73c8edc.
+- Actual development O2 PASS306 commands, one contained fault,43 global denials,
+  one lease expiry,1104 CPU arithmetic preemptions, one pending-call restart and
+  complete teardown to497. Independent raw review is running.
+- First normal O2 command returned0, but independent validation found177 reply
+  tuple/list serialization differences. Narrow list snapshot repair plus real
+  JSON-roundtrip host fixture passed. Original report and rejection preserved;
+  its old runner hashes are stale, so it is not clean acceptance.
+- Fresh normal O2 retry completed306 commands but correctly FAILED complete raw
+  cleanup at truncated K1 frame offset662216 after host kill. Diagnose and repair
+  host-only bounded cleanup; never discard the suffix or relabel this FAIL.
+- Normal O0 initial build failed before target export because Nix source copying
+  observed a transient concurrent Lake .olean.tmp. Serialized retry built. Dev
+  O0 and Dev O2 built. Keep all prior attempts. Current full kernel host suite
+  actually passed217 tests; scaffold18 and metadata passed.
+- Highest complete gate remains I. J requires complete four-profile live checks,
+  clean committed-source lane and actual source-algorithm mutation evidence. K
+  target attacks, final-source legacy/full acceptance, CI, publication and merge
+  remain pending. All target/auditor sources held until J focused repair settles.
+
+
+## Four-profile J focused result and actual O0 denial race (02:23 UTC)
+
+- Fresh repaired-cleanup observer returned0 for normalO0, normalO2 and DevO2,
+  each306 ordinary commands with complete raw replay and explicit live kill/reap.
+  DevO0 returned1: third caller missed actual full-storage denial. Combined
+  focused-four-profile-attempt1.json SHA256
+  e7c8a5f172c76bceec22908b64a0d57330b34a2c7c164d61898ac31a2dbd8132
+  remains FAIL. These precommit consumer-bound reports are not final acceptance.
+- The DevO0 guest did execute an actual protected-text SD15 and reclaim the
+  fault task. But Peer woke after its deadline and released its temporary page
+  before Fault's first create, so that create correctly succeeded and no actual
+  204 was witnessed. Preserve the complete1728-event failure capture.
+- Repair only the development client's bounded probe: until it receives actual
+  204, successful creation is recorded, destroyed through ordinary IPC, recorded
+  against actual page release, and retried. After actual denial, a later real
+  success may verify bytes and execute the fault. No guessed longer hold or
+  kernel Buffer-method knowledge; normal Peer remains unchanged.
+- Cleanup helper held9daf36a6320679069db980678432e9dd753de0da7ef9cc37a521921b56cf4187,
+  root full223 host tests and18 scaffold passed. The remaining fail-closed base
+  cleanup exception-retention gap is being repaired after these guests ended.
+  New complete target builds/observers and clean committed qualification are
+  required after both repairs. K target remains held.
+
+
+## Repaired J O0 observations (2026-10-10 02:35 UTC)
+
+- Repaired development O0 actual306 ordinary commands passed with34 global
+  denials, one contained fault, one lease expiry,1048 arithmetic preemptions,
+  one pending-call restart and final497 frames. Normal O0 passed306 with562
+  arithmetic preemptions. Both have full strict raw replay and live kill/reap.
+  Independent absolute-path validation passed actual exit0; summary
+  build/kernel/gateJ/independent-repaired-focused-validation-attempt1.json.
+- An initial root revalidation supplied a relative image path and got a
+  busy_unit.path string difference; diagnostic retained. The actual maintained
+  controller uses absolute paths. No checker change or original rebinding.
+- Independent source review found a concrete host-observer false rejection:
+  an application fresh-time lease scan can release a page after acceptance321.
+  Existing324 classification incorrectly assumes all releases under acceptance
+  are Destroy. Narrow observer settlement/reference repair is underway, with
+  source-derived ordered regression; target Server policy remains unchanged.
+- These are focused precommit results, not a clean J pass. Highest remainsI.
+  Fresh held-consumer O0/O2 normal/development, clean J acceptance and actual
+  isolated service algorithm mutation remain mandatory before K is released.
+
+
+## Practical terminal failures and host repair (2026-10-10 02:58 UTC)
+
+- Held strict lease/Destroy settlement and byte-failure background settling
+  passed229 pinned kernel host tests,18 scaffold and metadata. Target unchanged.
+  Summary lease-settlement-complete-host-summary.json SHA256
+  9f612ca00b917d085d23286afb0ffd4914fde48f0d0128e4c117b1c0226f2b98.
+- Actual normal readable terminal attempt1 sent help before service readiness
+  and received no client frame. Operator interrupt was retained asFAIL; QEMU
+  killed/reaped. Its122k-frame already-consumed prefix was redundantly decoded
+  during live5s cleanup and that stage failed. No earlierPASS was rewritten.
+- Narrow CLI publication wait added. Attempt2 observed actual0x300 at wire18
+  before any input, then blocking input() stopped output draining. Raw bytes
+  are19*88+65536 exactly: an entire unread64KiB pipe. QEMU naturally exited50,
+  with763 full K1 plus64-byte Server323 prefix and no sent input. No complete
+  D4/DC/DD/DF diagnostic provides a PC/cause/status. Exact UART transmit11 and
+  eventual fatal50 route is a pinned source inference, not a measured trap.
+  Read-only diagnosis f05468419aede539984cd2b13d98fa73eac053bb182cc615a1052e4d0d043732.
+- Host-only fixes underway: one parser owner pumps guest output while waiting
+  for bounded UTF8 operator lines; cleanup reuses its actual contiguous parsed
+  prefix while retaining full postkill raw decode/equality/hashes/replay. Remove
+  the decoder's quadratic whole-tail slicing without changing its grammar.
+- No target policy change justified by these failures. All original artifacts
+  remainFAIL. Highest complete gateI; J clean/source-mutation and K remainopen.
+
+## Held host transport repair (2026-10-10 03:08 UTC)
+
+- The linear UART decoder and validated contiguous parsed-prefix cleanup cursor
+  passed236 pinned kernel host tests,18 scaffold tests, metadata and diff checks.
+  Evidence: build/kernel/gateJ/host/transport-prefix-host-summary.json, SHA256
+  d97bcd4b2de1b4de53763600e2d87638b6f17a71a4ef7cccc0998dd7904a6143.
+- Independent read-only review found no concrete parser or acceptance regression.
+  The cursor only saves live freeze work; complete postkill raw decoding, exact
+  observed-prefix equality, frozen stdout/stderr hashes and strict replay remain
+  mandatory. Native-child fixtures cover a4096-frame parsed prefix, partial K1
+  and LMO1 tails, malformed cursor fields and changed already-parsed bytes.
+- The first CLI output pump passed its host tests, but root review identified
+  possible input starvation from an unconditional stdout-ready continue. Fair
+  bounded input delivery is being repaired before another actual terminal run.
+  No new target execution or clean J acceptance is claimed here.
+
+## Practical terminal passed; clean J next (2026-10-10 03:13 UTC)
+
+- Fair one-frame input pumping passed4 pinned CLI host fixtures and independent
+  read-only review. Final full kernel host suite passed237 tests; scaffold18,
+  metadata and diff checks passed. All source and transport files are held.
+- Actual normal O2 terminal attempt3 passed12 ordinary commands. It observed
+  publication before first input, read back binary00ffcebbe28891, displayed
+  UTF8 lambda/summation, destroyed handle621 and received stale status201.
+  QEMU766112 remained live, then was explicitly killed/reaped with return-9;
+  PID absent. All6063460 retained UART bytes decode at the frozen boundary.
+  Result SHA25632e60d30a5e6997d99c9729046e5c0db6f3ca00c8137ca975f706ce6e35a9375.
+- Independent raw/input/response/source/runner/artifact validation passed;
+  build/kernel/gateJ/independent-readable-terminal-attempt3.json SHA256
+  d0edd338cccfe318ca52e3116a5dc12d4288e1c5f88544932171ba05f28dfeaa.
+  This is practical interaction evidence, not a cumulative acceptance claim.
+- Commit the J candidate, run the maintained four-profile J lane in a fresh
+  exact clean worktree, and observe canonical append-copy source mutation at
+  O0/O2 using those exact clean controls. Highest complete gate remainsI;
+  Gate K target changes are held until both J exit obligations actually pass.

@@ -3,6 +3,8 @@ import Lemma.Kernel.MachineServices
 import Lemma.User.ABI
 import Lemma.Kernel.Capability
 import Lemma.Kernel.IPC
+import Lemma.Kernel.Directory
+import Lemma.Kernel.KernelInput
 
 /-! ABI v1 scalar dispatcher. Caller identity is the validated owned descriptor,
 never a register supplied by U. Every operation is bounded; this gate's sleep
@@ -106,6 +108,16 @@ def consoleRead (descriptor pointer length : UInt64) : Action :=
     if failed copiedStatus = true then freeScratch handle copiedStatus 0
     else freeScratch handle s copied
 
+/-- The boot-cleared zero control retains every earlier raw-UART profile.
+A service frame selects copied buffered input without any raw fallback. -/
+def selectedConsoleRead (descriptor pointer length : UInt64) : Action :=
+  .bind KernelInput.mode fun s selectedMode =>
+  if failed s = true then fatal else
+  if selectedMode = 0 then consoleRead descriptor pointer length else
+  if (if selectedMode = 1 then true else if selectedMode = 2 then true else false) = true then
+    KernelInput.read descriptor pointer length
+  else fatal
+
 def sleep (ticks : UInt64) : Action :=
   .bind (Lemma.Kernel.MachineServices.rearmRelative ticks) fun s deadline =>
   if failed s = true then .done s 0 else
@@ -149,10 +161,13 @@ def capConsole (descriptor handle operation pointer length : UInt64) : Action :=
   else if operation = 1 then
     .bind (Capability.lookup descriptor handle Lemma.User.CapabilityABI.consoleType
       Lemma.User.CapabilityABI.consoleRead) fun s _ =>
-    if s = 0 then consoleRead descriptor pointer length else .done s 0
+    if s = 0 then selectedConsoleRead descriptor pointer length else .done s 0
   else .done 17 0
 
 def dispatchManaged (descriptor number a b c d e : UInt64) : Action :=
+  if number = 26 then
+    if d ||| e = 0 then Directory.discover descriptor a b c else .done 16 0
+  else
   if (if Lemma.User.IPCABI.send ≤ number then if number ≤ Lemma.User.IPCABI.cancel then true else false else false) = true then
     IPC.dispatch descriptor number a b c d e
   else if number = Lemma.User.ABI.console then .done 72 0 else

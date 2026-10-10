@@ -153,6 +153,100 @@ def registrySlot (descriptor : UInt64) : Action :=
   if s = Status.iterationStop then .done 0 index else
   if s = 0 then .done CapabilityABI.invalidHandle 0 else fatal
 
+def serviceMagic : UInt64 := 0x31565253414d454c
+def serviceOffset : UInt64 := 224
+def serviceEpochOffset : UInt64 := 232
+def serviceKeyOffset : UInt64 := 240
+def serviceOwnerOffset : UInt64 := 248
+
+/-- The legacy all-zero binding is valid but unavailable. An initialized
+binding is either wholly withdrawn or names a full registered descriptor and
+its exact live/revoking Endpoint. No task pointer or extra reference is held. -/
+def serviceBinding : Action :=
+  .bind table fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceOffset)) fun s tag =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceEpochOffset)) fun s epoch =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceKeyOffset)) fun s key =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceOwnerOffset)) fun s owner =>
+  if failed s = true then fatal else
+  if tag = 0 then
+    if epoch ||| key ||| owner = 0 then .done 0 base else fatal
+  else if tag = serviceMagic then
+    if key = 0 then if owner = 0 then .done 0 base else fatal else
+    if epoch = 0 then fatal else
+    .bind (AddressSpace.base owner) fun s _ =>
+    if failed s = true then fatal else
+    .bind (registrySlot owner) fun s _ =>
+    if failed s = true then fatal else
+    .bind (resolveRevoking key) fun s object =>
+    if failed s = true then fatal else
+    .bind (get (object + 16)) fun s kind =>
+    if failed s = true then fatal else
+    .bind (get (object + 40)) fun s actualOwner =>
+    if failed s = true then fatal else
+    if kind = CapabilityABI.endpointType then
+      if actualOwner = owner then .done 0 base else fatal
+    else fatal
+  else fatal
+
+/-- Boot-only initialization in the checked global object's reserved words. -/
+def serviceInitialize : Action :=
+  .bind serviceBinding fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceOffset)) fun s tag =>
+  if failed s = true then fatal else
+  if tag = 0 then put (base + serviceOffset) serviceMagic
+  else .done CapabilityABI.invalidArgument 0
+
+def publishServiceBinding (server key epoch : UInt64) : Action :=
+  .bind serviceBinding fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceOffset)) fun s tag =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceEpochOffset)) fun s previous =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceKeyOffset)) fun s existing =>
+  if failed s = true then fatal else
+  if tag = serviceMagic then if existing = 0 then
+  if previous < 0xffffffffffffffff then if epoch = previous + 1 then
+  .bind (AddressSpace.base server) fun s _ =>
+  if failed s = true then fatal else
+  .bind (registrySlot server) fun s _ =>
+  if failed s = true then fatal else
+  .bind (resolve key) fun s object =>
+  if failed s = true then fatal else
+  .bind (get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  .bind (get (object + 40)) fun s owner =>
+  if failed s = true then fatal else
+  if kind = CapabilityABI.endpointType then if owner = server then
+  .bind (put (base + serviceEpochOffset) epoch) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (base + serviceOwnerOffset) server) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (base + serviceKeyOffset) key) fun s _ =>
+  if failed s = true then fatal else .done 0 epoch
+  else fatal else fatal else fatal else fatal else fatal else fatal
+
+/-- Both revocation and last-alias destruction call this before changing the
+Endpoint or releasing its queue. Withdrawal preserves the last epoch. -/
+def withdrawService (key owner : UInt64) : Action :=
+  .bind serviceBinding fun s base =>
+  if failed s = true then fatal else
+  .bind (get (base + serviceKeyOffset)) fun s current =>
+  if failed s = true then fatal else
+  if current = key then
+  .bind (get (base + serviceOwnerOffset)) fun s actualOwner =>
+  if failed s = true then fatal else
+  if actualOwner = owner then
+  .bind (put (base + serviceKeyOffset) 0) fun s _ =>
+  if failed s = true then fatal else put (base + serviceOwnerOffset) 0
+  else fatal else .done 0 0
+
 private def freeRegisteredStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
   .bind (get (base + 64 + i.toUInt64 * 8)) fun s current =>
   if failed s = true then fatal else
@@ -529,6 +623,10 @@ def destroy (key : UInt64) : Action :=
   .boundedFoldU64 16 endpointRepliesStep 16 0 base key 0 0 fun s replies =>
   if failed s = true then fatal else
   if replies = 0 then
+  .bind (get (address + 40)) fun s owner =>
+  if failed s = true then fatal else
+  .bind (withdrawService key owner) fun s _ =>
+  if failed s = true then fatal else
   .bind (invalidateEndpointWaits key IPCABI.revoked.toUInt64) fun s _ =>
   if failed s = true then fatal else
   .bind (get (base + 32)) fun s count =>
@@ -626,7 +724,12 @@ def beginRevoke (key : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .bind (get (address + 16)) fun s kind =>
   if failed s = true then fatal else
-  if kind = CapabilityABI.endpointType then put address revoking else .done CapabilityABI.denied 0
+  if kind = CapabilityABI.endpointType then
+  .bind (get (address + 40)) fun s owner =>
+  if failed s = true then fatal else
+  .bind (withdrawService key owner) fun s _ =>
+  if failed s = true then fatal else put address revoking
+  else .done CapabilityABI.denied 0
 
 def configureManagement (ownerDescriptor targetDescriptor : UInt64) : Action :=
   .bind (AddressSpace.base ownerDescriptor) fun s _ =>
