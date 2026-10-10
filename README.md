@@ -336,3 +336,16 @@ No project license has been selected. Do not add a license, publish the reposito
 or change visibility without the owner's decision. Preserve licenses and notices
 for any third-party code introduced later. Do not commit supplier correspondence,
 NDA documentation, panel waveforms, credentials, textbook files or personal learner data.
+
+The new hardware/notebook observation matrix is maintained as:
+
+```sh
+nix develop --no-write-lock-file --command ./scripts/check-lemmasim.sh --clean
+```
+
+It uses the separately prepared LemmaSim QEMU, requires clean committed source,
+builds fresh identified guest images and keeps every result under a new ignored
+output path. `--lane writing` is a scoped development check. Required inherited
+CI, client-isolation and source-negative qualification remain separate until
+the Task004 report records their actual candidate results. The dependency map is
+[recorded here](docs/plan/004-dependencies.md).

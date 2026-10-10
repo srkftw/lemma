@@ -5,7 +5,7 @@ Host code transports modeled input/pixels/blocks. It never parses notebook
 records or constructs transactions, strokes, documents or recovery state.
 """
 from __future__ import annotations
-import argparse, fcntl, hashlib, json, os, selectors, shutil, signal, socket, subprocess, sys, time, tarfile, io, struct
+import argparse, fcntl, hashlib, json, os, selectors, shutil, signal, socket, subprocess, sys, time, tarfile, io, struct, tempfile
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -98,23 +98,33 @@ def document_observations(serial):
         except ValueError:raise Failure('Malformed guest observation.')
         if kind==0x420:result['ready']=True
         if kind==0x421:
+            for stale in ('pending_transaction','object','failure'):result.pop(stale,None)
             result.update(status='SAVED',acknowledged_sequence=a,page=b,namespace=c,stroke=d)
             result['commit_count']+=1
-        elif kind==0x423:result.update(status='PENDING',pending_transaction=a,page=b,namespace=c,object=d)
-        elif kind==0x424:result.update(status='SAVE_FAILED',failure=a,page=b,namespace=c,object=d)
+        elif kind==0x423:
+            result.pop('failure',None)
+            result.update(status='PENDING',pending_transaction=a,page=b,namespace=c,object=d)
+        elif kind==0x424:
+            if 'pending_transaction' in result:result['failed_transaction']=result.pop('pending_transaction')
+            result.update(status='SAVE_FAILED',failure=a,page=b,namespace=c,object=d)
     result['authority']='compiled guest reports; not host journal interpretation'
     return result
 
-def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False):
+def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,mode="student"):
     width,height=map(int,geometry.split('x'))
     if (width,height) not in ((1650,2200),(1404,1872)):raise Failure('Unsupported geometry instance.')
     if not headless and not (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
         raise Failure('No native display is available; use --headless for device testing.')
     out.mkdir(parents=True,exist_ok=False)
+    control_socket=out/'control.qmp'
+    socket_directory=None
+    if len(os.fsencode(control_socket))>=104:
+        socket_directory=Path(tempfile.mkdtemp(prefix='lemma-qmp-'))
+        control_socket=socket_directory/'control.qmp'
     image=Path(metadata['initializer' if initializer else 'notebook']['path'])
     command=[metadata['qemu']['path'],'-machine','lemmasim-virt','-m','128M','-smp','1','-cpu','rv64,smrnmi=false,smdbltrp=false',
              '-accel','tcg','-seed','0x4c454d4d413031','-nodefaults','-bios','none','-kernel',str(image),'-display','none' if headless else 'gtk',
-             '-monitor','none','-serial',f'file:{out}/serial.bin','-qmp',f'unix:{out}/control.qmp,server=on,wait=off',
+             '-monitor','none','-serial',f'file:{out}/serial.bin','-qmp',f'unix:{control_socket},server=on,wait=off',
              '-rtc','base=2026-10-10T00:00:00,clock=vm','-global','virtio-mmio.force-legacy=false',
              '-global',f'lemma-paper-pen.width={width}','-global',f'lemma-paper-pen.height={height}',
              '-global',f'lemma-paper-pen.trace-file={out}/devices.jsonl',
@@ -140,42 +150,51 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
             'argv':command,'initial_media_sha256':sha(disk),'guest_sha256':sha(image),
             'host_storage_assumptions':'lemma-durable keeps completed writes in RAM; flush writes stable image then invokes QEMU host fsync; filesystem/device must honor successful flush',
             'media_backend':'lemma-durable/1','fault_inputs':faults or {},'random_seed':'0x4c454d4d413031',
-            'geometry':[width,height],'physical_tablet_exercised':False}
-    started=time.monotonic();process=None
+            'geometry':[width,height],'mode':mode,'physical_tablet_exercised':False}
+    started=time.monotonic();process=None;settled=None
     try:
         with (nullcontext() if disk_locked else lock_disk(disk)), (out/'stderr.bin').open('wb') as errors:
             process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=errors,start_new_session=True)
-            write_json(out/'process.json',{'pid':process.pid,'process_group':process.pid,'recording':bool(record),'replaying':bool(replay),'linux_start_ticks':Path(f'/proc/{process.pid}/stat').read_text().rsplit(')',1)[1].split()[19]})
+            write_json(out/'process.json',{'pid':process.pid,'process_group':process.pid,'recording':bool(record),'replaying':bool(replay),'mode':mode,'qmp_socket':str(control_socket),'linux_start_ticks':Path(f'/proc/{process.pid}/stat').read_text().rsplit(')',1)[1].split()[19]})
             ready=time.monotonic()+20
-            while not (out/'control.qmp').exists():
+            while not control_socket.exists():
                 if process.poll() is not None:raise Failure('QEMU failed before QMP readiness.')
                 if time.monotonic()>=ready:raise Failure('QMP readiness timed out.')
                 time.sleep(.02)
-            qmp(out/'control.qmp','pmemsave',{'val':0x10010400,'size':256,'filename':str(out/'descriptor.bin')})
+            qmp(control_socket,'pmemsave',{'val':0x10010400,'size':256,'filename':str(out/'descriptor.bin')})
             descriptor=struct.unpack('<32Q',(out/'descriptor.bin').read_bytes())
             if descriptor[:3]!=(1280132179,1,256) or descriptor[3]!=(sum(descriptor[:3])+sum(descriptor[4:]))&((1<<64)-1):
                 raise Failure('Captured machine descriptor is malformed.')
             address,length=descriptor[26:28]
             if not 0x80000000<=address<0x88000000 or not 40<=length<=2*1024*1024 or address+length>0x88000000:
                 raise Failure('Captured actual DTB is outside bounded reference RAM.')
-            qmp(out/'control.qmp','pmemsave',{'val':address,'size':length,'filename':str(out/'machine.dtb')})
+            qmp(control_socket,'pmemsave',{'val':address,'size':length,'filename':str(out/'machine.dtb')})
             dtb=(out/'machine.dtb').read_bytes()
             if dtb[:4]!=b'\xd0\x0d\xfe\xed' or struct.unpack('>I',dtb[4:8])[0]!=length:raise Failure('Captured actual DTB header differs.')
             result['machine_descriptor_sha256']=sha(out/'descriptor.bin');result['actual_boot_dtb_sha256']=sha(out/'machine.dtb')
-            if replay:qmp(out/'control.qmp','replay-break',{'icount':replay_boundary})
-            qmp(out/'control.qmp','cont')
+            if replay:qmp(control_socket,'replay-break',{'icount':replay_boundary})
+            qmp(control_socket,'cont')
             while process.poll() is None:
-                if replay and not qmp(out/'control.qmp','query-status')['running']:
-                    boundary=qmp(out/'control.qmp','query-replay')
+                if replay and not qmp(control_socket,'query-status')['running']:
+                    boundary=qmp(control_socket,'query-replay')
                     if boundary.get('icount')!=replay_boundary:raise Failure('Replay stopped at an unexpected instruction boundary.')
                     result['status']='REPLAY_BOUNDARY_REACHED';break
-                if until_commits is not None or until_ready:
+                if until_commits is not None or until_ready or until_ingress is not None:
                     reported=document_observations(out/'serial.bin')
                     reached=(reported['commit_count']>=until_commits if until_commits is not None else reported['ready'])
+                    if until_ingress is not None:
+                        captured=out/'raw.bin'
+                        reached=(captured.is_file() and captured.stat().st_size==until_ingress*72 and reported['status']=='SAVED')
                     if reached:
-                        hardware=json.loads(qmp(out/'control.qmp','qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
+                        hardware=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
                         if hardware['paper']['status']&1==0 and hardware['pen']['count']==0:
+                            if until_ingress is not None:
+                                state=(reported['acknowledged_sequence'],hardware['paper']['completed'])
+                                if settled is None or settled[0]!=state:settled=(state,time.monotonic())
+                                if time.monotonic()-settled[1]<1:continue
                             result['status']='OBSERVED_GUEST_WORKFLOW_BOUNDARY';break
+                        else:settled=None
+                    else:settled=None
                 if initializer:
                     serial=out/'serial.bin'
                     if serial.exists() and serial.stat().st_size<=8*1024*1024 and b'K1 000000000000041f ' in serial.read_bytes():
@@ -193,22 +212,22 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                 else:result['status']='CLOSED'
             if process.poll() is None:
                 try:
-                    qmp(out/'control.qmp','stop')
-                    result['replay_boundary']=qmp(out/'control.qmp','query-replay')
-                    result['cpu_inventory']=qmp(out/'control.qmp','query-cpu-model-expansion',
+                    qmp(control_socket,'stop')
+                    result['replay_boundary']=qmp(control_socket,'query-replay')
+                    result['cpu_inventory']=qmp(control_socket,'query-cpu-model-expansion',
                         {'type':'full','model':{'name':'rv64','props':{'smrnmi':False,'smdbltrp':False}}})
-                    result['devices']=json.loads(qmp(out/'control.qmp','qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
-                    result['storage']=json.loads(qmp(out/'control.qmp','qom-get',{'path':'/machine/lemma-hardware','property':'storage-state'}))
+                    result['devices']=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
+                    result['storage']=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'storage-state'}))
                     result['document_report']=document_observations(out/'serial.bin')
                 except (OSError,ValueError,Failure) as error:result['inspection_error']=str(error)
-                try:qmp(out/'control.qmp','screendump',{'filename':str(out/'visible.ppm')})
+                try:qmp(control_socket,'screendump',{'filename':str(out/'visible.ppm')})
                 except (OSError,ValueError,Failure) as error:result['screenshot_error']=str(error)
                 if record:
                     # A recorded HOST_SIGNAL pauses replay at the exact observed
                     # boundary under -no-shutdown; forced QMPQUIT can exit first.
                     os.killpg(process.pid,signal.SIGTERM)
                 else:
-                    try:qmp(out/'control.qmp','quit')
+                    try:qmp(control_socket,'quit')
                     except (OSError,ValueError,Failure):os.killpg(process.pid,signal.SIGTERM)
             process.wait(timeout=5)
     except BaseException as error:
@@ -222,6 +241,7 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                       process_reaped=process is None or process.poll() is not None,
                       returncode=process.returncode if process else None)
         write_json(out/'result.json',result)
+        if socket_directory is not None:shutil.rmtree(socket_directory)
     return result
 
 def initialize(args):
@@ -259,7 +279,7 @@ def run_locked(args):
         out.mkdir(parents=True);initial=out/'initial.raw'
         shutil.copyfile(disk,initial)
         identity={'schema_version':1,'core':metadata['core'],'binding':metadata['profile'],'build':metadata,
-                  'geometry':args.geometry,'pressure_max':4095,'timebase_hz':10000000,'icount_shift':3,
+                  'geometry':args.geometry,'mode':args.mode,'pressure_max':4095,'timebase_hz':10000000,'icount_shift':3,
                   'clock_policy':'QEMU virtual clock, RTC origin2026-10-10T00:00:00, blkreplay completion ordering',
                   'close_policy':'record-SIGTERM/replay-no-shutdown/exact-instruction-boundary-v1',
                   'random_seed':'0x4c454d4d413031','fault_inputs':faults,'media_backend':'lemma-durable/1',
@@ -269,7 +289,7 @@ def run_locked(args):
         if args.raw_input:shutil.copyfile(args.raw_input,out/'input.bin')
         write_json(out/'identity.json',identity);rr=out/'qemu.rr'
     result=launch(metadata,disk,out/'run' if args.record else out,geometry=args.geometry,headless=args.headless,
-                  record=rr,raw=(out/'input.bin' if args.record and args.raw_input else args.raw_input),timeout=args.timeout,faults=faults,disk_locked=True)
+                  record=rr,raw=(out/'input.bin' if args.record and args.raw_input else args.raw_input),timeout=args.timeout,faults=faults,disk_locked=True,mode=args.mode)
     if args.record:
         identity['rr_sha256']=sha(rr)
         identity['captured_raw_sha256']=sha(out/'run/raw.bin')
@@ -304,7 +324,7 @@ def replay(args):
     boundary=original.get('replay_boundary',{}).get('icount')
     if not isinstance(boundary,int) or boundary<=0:raise Failure('Missing positive recorded instruction boundary.')
     disk.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(initial,disk)
-    result=launch(metadata,disk,out,geometry=identity['geometry'],headless=True,replay=session/'qemu.rr',raw=raw,timeout=args.timeout,faults=identity.get('fault_inputs',{}),replay_boundary=boundary)
+    result=launch(metadata,disk,out,geometry=identity['geometry'],headless=True,replay=session/'qemu.rr',raw=raw,timeout=args.timeout,faults=identity.get('fault_inputs',{}),replay_boundary=boundary,mode=identity.get('mode','developer'))
     if original.get('status') not in ('CLOSED','HOST_STOPPED_AT_DEADLINE'):raise Failure('Incomplete or power-cut recordings do not establish exact replay.')
     if sha(session/'qemu.rr')!=identity['rr_sha256'] or sha(initial)!=identity['initial_media_sha256']:raise Failure('Replay changed original session/media identities.')
     compared={}
@@ -331,11 +351,17 @@ def replay(args):
     print(f'Exact replay observations match: {out}')
 
 def control(args):
-    path=args.run_directory.resolve()/'control.qmp'
+    identity=json.loads((args.run_directory.resolve()/'process.json').read_text())
+    path=Path(identity.get('qmp_socket',str(args.run_directory.resolve()/'control.qmp')))
+    if identity.get('mode') not in ('developer','laboratory'):raise Failure('Developer controls require Developer or Laboratory mode.')
     if args.action=='inspect':
+        register_file=args.run_directory.resolve()/f'pen-inspection-{time.time_ns()}.bin'
+        qmp(path,'pmemsave',{'val':0x10011010,'size':40,'filename':str(register_file)})
+        status,error,count,epoch,losses=struct.unpack('<5Q',register_file.read_bytes())
         result={'devices':json.loads(qmp(path,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'})),
                 'storage':json.loads(qmp(path,'qom-get',{'path':'/machine/lemma-hardware','property':'storage-state'})),
-                'document_report':document_observations(args.run_directory.resolve()/'serial.bin')}
+                'document_report':document_observations(args.run_directory.resolve()/'serial.bin'),
+                'pen_registers':{'status':status,'error':error,'count':count,'epoch':epoch,'cumulative_losses':losses,'current_loss':bool(status&2)}}
         print(json.dumps(result,indent=2))
     else:
         run_dir=args.run_directory.resolve();process=json.loads((run_dir/'process.json').read_text())

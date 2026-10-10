@@ -5,21 +5,26 @@ import sys
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from audit_kernel import (validate_readonly_pmp_lookup, validate_machine,
-                          validate_user_abi_data, USER_ABI_INITIAL_DATA)
+                          validate_user_abi_data, USER_ABI_INITIAL_DATA,
+                          validate_ir)
 from core0_common import Core0Error
 
 
 def fixture():
-    values=[23533,18724,4681,27471,31565,31183,23405]
+    # Fixed literal expected font table, independently written as artifact bytes.
+    values=[31599,11415,29671,29647,23497,31183,31215,29330,31727,31695,
+            0,0,0,0,0,0,0,11245,0,0,27502,31143,31140,31087,23533,29847,
+            0,0,18727,0,24573,31599,31716,0,27565,31183,0,23407,23402,23423,0,23186]
     unit={'configuration':'lemmasim-notebook','role':'user','functions':[{
-        'source':'Lemma.Ink.Surface.glyph','symbol':'glyph','args':['u64'],'effects':[]}]}
-    ir='@switch.table.glyph = private unnamed_addr constant [7 x i64] ['+', '.join('i64 '+str(v) for v in values)+'''], align 8
-define i64 @glyph(i64 %arg0) {
+        'source':'Lemma.Ink.Surface.letter','symbol':'letter','args':['u64'],'effects':[]}]}
+    ir='@switch.table.letter = private unnamed_addr constant [42 x i64] ['+', '.join('i64 '+str(v) for v in values)+'''], align 8
+define i64 @letter(i64 %arg0) {
 entry:
- %bound = icmp ult i64 %arg0, 7
+ %index = add i64 %arg0, -48
+ %bound = icmp ult i64 %index, 42
  br i1 %bound, label %lookup, label %done
 lookup:
- %pointer = getelementptr inbounds nuw [7 x i64], ptr @switch.table.glyph, i64 0, i64 %arg0
+ %pointer = getelementptr inbounds nuw [42 x i64], ptr @switch.table.letter, i64 0, i64 %index
  %loaded = load i64, ptr %pointer, align 8
  br label %done
 done:
@@ -33,13 +38,13 @@ done:
 class LemmaSimArtifactBoundaries(unittest.TestCase):
     def test_literal_is_bounded_readonly_and_keeps_historical_scope(self):
         ir,unit=fixture();sites,tables=validate_readonly_pmp_lookup(ir,unit,optimized=True)
-        self.assertEqual(len(sites),1);self.assertEqual(tables[0]['index_bound'],7)
+        self.assertEqual(len(sites),1);self.assertEqual(tables[0]['index_bound'],42)
         bad=copy.deepcopy(unit);bad['configuration']='normal'
         with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(ir,bad,optimized=True)
-        for changed in [ir.replace('constant [7','global [7'),ir.replace('i64 23533','i64 23534'),
-                        ir.replace('icmp ult i64 %arg0, 7','icmp ult i64 %arg0, 8'),
+        for changed in [ir.replace('constant [42','global [42'),ir.replace('i64 31599','i64 31600'),
+                        ir.replace('icmp ult i64 %index, 42','icmp ult i64 %index, 43'),
                         ir.replace('br i1 %bound, label %lookup, label %done','br i1 %bound, label %done, label %lookup'),
-                        ir.replace('i64 0, i64 %arg0','i64 0, i64 7'),
+                        ir.replace('i64 0, i64 %index','i64 0, i64 42'),
                         ir.replace('ret i64 %result','store i64 0, ptr %pointer\n ret i64 %result')]:
             with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(changed,unit,optimized=True)
 
@@ -48,6 +53,16 @@ class LemmaSimArtifactBoundaries(unittest.TestCase):
         with self.assertRaises(Core0Error): validate_machine(text)
         validate_machine(text,configuration='lemmasim-notebook')
         with self.assertRaises(Core0Error): validate_machine(text,user=True,configuration='lemmasim-notebook')
+
+    def test_o0_cannot_masquerade_as_an_o2_literal_lowering(self):
+        ir,unit=fixture()
+        unit.update(used_execution_ops=[],used_device_ops=[],used_loops=[])
+        ir='target triple = "riscv64-unknown-unknown-elf"\n'+ir
+        self.assertEqual(len(validate_ir(ir,unit,optimized=True,optimization='O2')['readonly_optimizer_tables']),1)
+        with self.assertRaises(Core0Error):
+            validate_ir(ir,unit,optimized=True,optimization='O0')
+        with self.assertRaises(Core0Error):
+            validate_ir(ir,unit,optimized=True,optimization='unknown')
 
     def test_notebook_initializer_owner_requires_exact_new_profile(self):
         section='  [ 3] .data.user_abi PROGBITS 0000000000000000 000040 000010 00 WA 0 0 8\n'

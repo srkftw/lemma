@@ -28,6 +28,19 @@ DTB_LITERALS = {
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
 WORD_CODES = [4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70]
 PREFIX = 'Lemma.Platform.LemmaSim.'
+# Independent visible rows for the guest-authored bounded font. These are
+# packed here rather than imported from the production Lean lookup.
+FONT_ROWS = {
+    'A':'010101111101101', 'D':'110101101101110', 'E':'111100110100111',
+    'F':'111100110100100', 'G':'111100101101111', 'H':'101101111101101',
+    'I':'111010010010111', 'L':'100100100100111', 'N':'101111111111101',
+    'O':'111101101101111', 'P':'111101111100100', 'R':'110101110101101',
+    'S':'111100111001111', 'U':'101101101101111', 'V':'101101101101010',
+    'W':'101101101111111', 'Y':'101101010010010', '0':'111101101101111',
+    '1':'010110010010111', '2':'111001111100111', '3':'111001111001111',
+    '4':'101101111001001', '5':'111100111001111', '6':'111100111101111',
+    '7':'111001010010010', '8':'111101111101111', '9':'111101111001111',
+}
 
 def canonical_specs():
     lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,72)]
@@ -41,10 +54,8 @@ def canonical_specs():
        22:0x2000000,23:0xc000000,24:0x10000000,25:0x101000,
        28:0x80000000,29:0x2000000,30:0x87e00000,31:0x200000}.items():
         fields[key]=value
-    letters=[0]*36
-    for code,value in {83:0x73e7,80:0x7bea,70:0x7be4,82:0x7beb,72:0x5bed,
-         48:0x7b6f,49:0x2c97,50:0x73e7,51:0x73cf,52:0x5bc9,53:0x79cf,
-         54:0x79ef,55:0x7249,56:0x7bef,57:0x7bcf}.items(): letters[code-48]=value
+    letters=[int(FONT_ROWS[chr(code)],2) if chr(code) in FONT_ROWS else 0
+             for code in range(48,90)]
     return {
       PREFIX+'DescriptorDTB.literalLength': ('kernel',['u64'],[],[lengths]),
       PREFIX+'DescriptorDTB.literalWord': ('kernel',['u64','u64'],[],words),
@@ -53,10 +64,9 @@ def canonical_specs():
       PREFIX+'DescriptorDTB.expectedBase': ('kernel',['u64'],[],[[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,0x10000000,0x101000]]),
       PREFIX+'DescriptorDTB.expectedSpan': ('kernel',['u64'],[],[[0x600000,0x10000,0x100]]),
       PREFIX+'Descriptor.expected': ('kernel',['u64'],[],[fields]),
-      'Lemma.Ink.Surface.glyph': ('user',['u64'],[],[[0x5bed,0x4924,0x1249,0x6b4f,0x7b4d,0x79cf,0x5b6d]]),
-      'Lemma.Applications.Notebook.letter': ('user',['u64'],[],[letters]),
-      'Lemma.Applications.Notebook.statusStep': ('user',['u32','u32',*(['u64']*5)],
-             ['checked-access','virtual-read','virtual-write'],[[83,80,70]]),
+      'Lemma.Ink.Surface.letter': ('user',['u64'],[],[letters]),
+      'Lemma.Applications.Notebook.statusCharacter': ('user',['u64']*5,[],
+             [list(map(ord,text)) for text in ['SAVED','PENDING','FAILED','READ ONLY']]),
     }
 
 # Closed normalized bodies of the pinned optimizer's four hardware primitives.
@@ -130,6 +140,25 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             raise Core0Error('Lemmasim literal content/global use inventory differs: '+source)
         body='\n'.join(line.split(';',1)[0].rstrip() for line in _ir_definition_body(ir,symbol).splitlines())
         blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+        # The inherited local CFG helper intentionally recognizes branches.
+        # These pinned lookup owners also have scalar i64 switch selection;
+        # model every edge explicitly so a bound cannot be "proved" by omitting
+        # a route through a switch. Unknown switch forms fail closed.
+        for block,lines in blocks.items():
+            starts=[i for i,line in enumerate(lines) if line.startswith('switch ')]
+            if not starts: continue
+            if len(starts)!=1 or lines[-1]!=']':
+                raise Core0Error('Literal owner has an unrecognized switch terminator')
+            start=starts[0]
+            head=re.fullmatch(r'switch i64 %[A-Za-z0-9_.$-]+, label %([A-Za-z0-9_.$-]+) \[',lines[start])
+            rows=[re.fullmatch(r'i64 (-?\d+), label %([A-Za-z0-9_.$-]+)',line)
+                  for line in lines[start+1:-1]]
+            if head is None or not rows or any(row is None for row in rows) or len({row[1] for row in rows})!=len(rows):
+                raise Core0Error('Literal owner switch cases are malformed or repeated')
+            targets=(head[1],*(row[2] for row in rows))
+            if any(target not in blocks for target in targets):
+                raise Core0Error('Literal owner switch targets an unknown block')
+            successors[block]=targets
         geps=re.findall(r'(%[A-Za-z0-9_.$-]+) = getelementptr inbounds nuw \['+str(count)+r' x i64\], ptr @'+re.escape(table)+r', i64 0, i64 (%[A-Za-z0-9_.$-]+)',body)
         if len(geps)!=1: raise Core0Error('Lemmasim literal lacks one exact typed pointer derivation')
         pointer,operand=geps[0]
@@ -137,8 +166,8 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0),
             PREFIX+'DescriptorDTB.requiredFlags':('%arg0',-1), PREFIX+'DescriptorDTB.expectedIRQ':('%arg0',-1),
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
-            PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.glyph':('%arg0',0),
-            'Lemma.Applications.Notebook.letter':('%arg0',-48), 'Lemma.Applications.Notebook.statusStep':('%arg5',0),
+            PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.letter':('%arg0',-48),
+            'Lemma.Applications.Notebook.statusCharacter':('%arg1',0),
         }[source]
         if shift:
             if len(re.findall(re.escape(operand)+r' = add i64 '+re.escape(argument)+', '+str(shift)+r'$',body,re.M))!=1:
@@ -167,6 +196,21 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             guard=guards[0];code=WORD_CODES[index]
             if len(re.findall(r'i64 '+str(code)+r', label %'+re.escape(guard)+r'(?![A-Za-z0-9_.$-])',body))!=1:
                 raise Core0Error('FDT word table is not bound to its exact literal code')
+        if source.endswith('statusCharacter'):
+            # Each word belongs to one declared save state; the default state
+            # is read-only. A valid index bound alone cannot certify that bind.
+            branch = re.search(r'switch i64 %arg0, label %([A-Za-z0-9_.$-]+) \[\s*'
+                r'i64 0, label %([A-Za-z0-9_.$-]+)\s*'
+                r'i64 1, label %([A-Za-z0-9_.$-]+)\s*'
+                r'i64 2, label %([A-Za-z0-9_.$-]+)\s*\]', body)
+            if branch is None:
+                raise Core0Error('Notebook status words lack the exact save-state selection')
+            selected=branch[index+2] if index<3 else branch[1]
+            if not _structured_reachable(successors,selected,load_block):
+                raise Core0Error('Notebook status word is not reached by its declared save state')
+            for other in [branch[1],branch[2],branch[3],branch[4]]:
+                if other!=selected and _structured_reachable(successors,other,load_block):
+                    raise Core0Error('Notebook status word is reachable from a different save state')
         located={i for i,line in enumerate(ir.splitlines()) if owners[i]==symbol and line.strip().startswith(load+' = load')}
         if len(located)!=1: raise Core0Error('Lemmasim literal load inventory differs')
         sites|=located;removed.add(global_line)

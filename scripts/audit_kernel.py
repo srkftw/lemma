@@ -3108,7 +3108,9 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             raise Core0Error("compiled boot closure contains an additional FIFO reset")
 
 
-def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
+def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
+    if optimization is not None and optimization not in OPT_PASSES:
+        raise Core0Error("IR audit optimization level differs from closed pipeline")
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
     primitives = {row["primitive_symbol"] for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
@@ -3150,9 +3152,14 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
         raise Core0Error("LLVM IO fence calling convention differs")
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
-    readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit, optimized=optimized)
+    # A post-pipeline O0 file still contains the untransformed genuine bodies.
+    # Preserve historical validators and classify only new LemmaSim lowering
+    # by the actual recorded optimization command, not its filename.
+    sim_transformed = optimized and optimization != "O0"
+    readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit,
+        optimized=sim_transformed if unit.get('configuration') in LEMMASIM_CONFIGURATIONS else optimized)
     from lemmasim_readonly import validate_devices
-    sim_device_sites, sim_devices = validate_devices(ir, unit, optimized)
+    sim_device_sites, sim_devices = validate_devices(ir, unit, sim_transformed)
     line_functions = _line_functions(lines)
     expected_sites = {(site["site"], site["symbol"], operation["lowering_id"])
                       for operation in unit["used_device_ops"] for site in operation["sites"]}
@@ -3414,7 +3421,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration, image_key=image_key)
     validate_user_primitive_catalog(load_json(output_dir / "primitive-catalog.json"), image, configuration=configuration)
     unit = validate_unit(load_json(output_dir / "unit.json"), "user", configuration=configuration, image_key=image_key)
-    ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized")
+    ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
           for kind, file in (("pre", "program.ll"), ("optimized", "program.opt.ll"))}
     assembly = (output_dir / "startup.S").read_text()
     validate_user_entry_source(assembly, unit["roots"][0]["symbol"], user_case)
@@ -3858,7 +3865,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
-        ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
+        ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())

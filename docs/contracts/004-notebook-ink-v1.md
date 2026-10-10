@@ -107,6 +107,14 @@ point ABI is involved. Gray4 is row-major, even X in the high nibble, with unuse
 edge nibbles white. The initial brush produces black ink; paper/background rules
 and toolbar glyphs are authored guest pixels.
 
+The rasterizer validates the eight-word segment context and then caches mapped
+pixel endpoints and brush parameters in fixed-width loop arguments. It scans
+the conservative segment bounds intersected with one 32×32 tile and the screen,
+at most 1024 pixels. There are 16 context word reads per tile rather than context
+reads for every pixel. This changes work only; brush version 1 and its covered
+pixels retain their original meaning. A host-only signed-integer oracle scans
+each full tile independently to compare exact Gray4 bytes and dirty counts.
+
 ## Publication and input loss
 
 A chunk's immutable buffer is held while the service performs begin, bounded
@@ -119,7 +127,13 @@ an orphan chunk or a wholly valid unacknowledged page change; it cannot make an
 earlier acknowledged publication disappear. Store checkpoint/reclamation is
 requested by the Save tool and follows the store's two-segment protocol.
 
-The displayed S/P/F/R state means Saved/Pending/Save failed/Read-only. A second
+The guest writes the full state words SAVED, PENDING, FAILED or READ ONLY in an
+authored 3×5 alphabet, together with N (namespace), P (two-digit page) and W
+(brush width in pixels). The 20 cells occupy 240×16 pixels beginning at (24,132),
+and status uploads cover nine tiles in the 288×32 band. This fits both queried
+geometries and the application's minimum 512-pixel width. Previous/next use
+literal arrow glyphs; erase/save are E/S. No host font or UI supplies these words.
+A second
 full buffer applies bounded backpressure instead of overwriting raw samples.
 Page switches and edits wait until the outstanding save and current stroke have
 settled. This implementation has 512 chunk entries and 512 edits per page, 64
@@ -129,7 +143,9 @@ representation bounds but requires its own observed end-to-end acceptance.
 Changing brush width publishes its new root through the same transaction path.
 Guest diagnostic record `0x423` reports Pending with the expected store sequence,
 page, namespace and object; `0x424` reports Save failed with its error, page,
-namespace and object. The final `0x421` carries the acknowledged sequence, page,
+namespace and object. Opening unformatted/damaged media also reports its error
+through `0x424`, keeps the notebook read-only, and draws its diagnostic page
+without invoking format. The final `0x421` carries the acknowledged sequence, page,
 namespace and stroke. Checkpoint reports object/stroke zero and preserves the
 logical document sequence. These bounded console observations allow Developer
 mode to display guest-reported state without parsing live application memory.

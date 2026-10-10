@@ -22,6 +22,8 @@ private def span (address bytes : UInt64) : Bool :=
   if 0x10000 ≤ address then if address < 0x40000000 then
   if bytes ≤ 0x40000000 - address then true else false else false else false
 private def get (context offset : UInt64) : Action := Lemma.User.Memory.read64 (context + offset)
+private def minimum (a b : UInt64) : UInt64 := if a < b then a else b
+private def maximum (a b : UInt64) : UInt64 := if a < b then b else a
 
 private def clearStep (i _ : UInt32) (acc tile _ _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.write8 (tile + i.toUInt64) 255) fun s _ => .done s acc
@@ -64,29 +66,26 @@ private def paint (tile index acc : UInt64) : Action :=
     if s = 0 then .done 0 (acc + 1) else .done s 0
   else .done s 0
 
-private def rasterStep (i _ : UInt32) (acc context tile dimensions origin : UInt64) : Action :=
-  let width := dimensions &&& 0xffff
-  let height := dimensions >>> 16
-  let x := (origin &&& 0xffff) + i.toUInt64 % 32
-  let y := (origin >>> 16) + i.toUInt64 / 32
-  if width ≤ x then .done 0 acc else
-  if height ≤ y then .done 0 acc else
-  .bind (get context 0) fun s qx0 => if s = 0 then
-  .bind (get context 8) fun s qy0 => if s = 0 then
-  .bind (get context 16) fun s qx1 => if s = 0 then
-  .bind (get context 24) fun s qy1 => if s = 0 then
-  .bind (get context 32) fun s p0 => if s = 0 then
-  .bind (get context 40) fun s p1 => if s = 0 then
-  .bind (get context 48) fun s nominal => if s = 0 then
-  .bind (get context 56) fun s pressureMaximum => if s = 0 then
-  if covered x y (pixel qx0 width) (pixel qy0 height) (pixel qx1 width) (pixel qy1 height)
-      p0 p1 nominal pressureMaximum = true then paint tile i.toUInt64 acc else .done 0 acc
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+private def rasterStep (i _ : UInt32) (acc tile endpoints brush area : UInt64) : Action :=
+  -- Validated values fit these fixed-width fields. Cached arguments avoid any
+  -- context memory access or normalized-coordinate conversion per pixel.
+  let columns := (area >>> 24) &&& 63
+  let column := i.toUInt64 % columns
+  let row := i.toUInt64 / columns
+  let x := (area &&& 4095) + column
+  let y := ((area >>> 12) &&& 4095) + row
+  let index := ((area >>> 30) &&& 1023) + row * 32 + column
+  if covered x y (endpoints &&& 0xffff) ((endpoints >>> 16) &&& 0xffff)
+      ((endpoints >>> 32) &&& 0xffff) (endpoints >>> 48)
+      (brush &&& 0xffff) ((brush >>> 16) &&& 0xffff)
+      ((brush >>> 32) &&& 0xffff) (brush >>> 48) = true then
+    paint tile index acc
+  else .done 0 acc
 
 /-- Coalesce the segment's intersecting tiles at the notebook/surface layer and
-call once per such tile. Work is bounded1024 pixels plus8 preflight words per
-call, independent of retained sample count. This version produces monochrome
+call once per such tile. Work is bounded1024 pixels plus16 context word reads per
+call, independent of retained sample count. The pixel loop visits only the
+conservative segment bounds clipped to this tile and the screen. This version produces monochrome
 coverage in Gray4; quality-mode rendering can still display these exact pixels. -/
 def segment (context tile tileX tileY width height : UInt64) : Action :=
   if validDimension width = false then .done invalid 0 else
@@ -97,8 +96,37 @@ def segment (context tile tileX tileY width height : UInt64) : Action :=
   if span tile tileBytes = false then .done invalid 0 else
   .bind (contextValid context) fun s _ =>
   if s = 0 then
-    .boundedFoldU64 1024 rasterStep 1024 0 context tile (width ||| (height <<< 16))
-      (tileX ||| (tileY <<< 16)) fun s changed => .done s changed
+    .bind (get context 0) fun s qx0 => if s = 0 then
+    .bind (get context 8) fun s qy0 => if s = 0 then
+    .bind (get context 16) fun s qx1 => if s = 0 then
+    .bind (get context 24) fun s qy1 => if s = 0 then
+    .bind (get context 32) fun s p0 => if s = 0 then
+    .bind (get context 40) fun s p1 => if s = 0 then
+    .bind (get context 48) fun s nominal => if s = 0 then
+    .bind (get context 56) fun s pressure => if s = 0 then
+    let x0 := pixel qx0 width
+    let y0 := pixel qy0 height
+    let x1 := pixel qx1 width
+    let y1 := pixel qy1 height
+    let radius := (nominal + 511) / 512
+    let left := minimum x0 x1
+    let top := minimum y0 y1
+    let beginX := maximum tileX (if radius < left then left - radius else 0)
+    let beginY := maximum tileY (if radius < top then top - radius else 0)
+    let endX := minimum width (minimum (tileX + 32) (maximum x0 x1 + radius + 1))
+    let endY := minimum height (minimum (tileY + 32) (maximum y0 y1 + radius + 1))
+    if beginX < endX then if beginY < endY then
+      let columns := endX - beginX
+      let pixels := columns * (endY - beginY)
+      let base := (beginY - tileY) * 32 + beginX - tileX
+      let endpoints := x0 ||| (y0 <<< 16) ||| (x1 <<< 32) ||| (y1 <<< 48)
+      let brush := p0 ||| (p1 <<< 16) ||| (nominal <<< 32) ||| (pressure <<< 48)
+      let area := beginX ||| (beginY <<< 12) ||| (columns <<< 24) ||| (base <<< 30)
+      .boundedFoldU64 1024 rasterStep pixels.toUInt32 0 tile endpoints brush area
+        fun s changed => .done s changed
+    else .done 0 0 else .done 0 0
+    else .done s 0 else .done s 0 else .done s 0 else .done s 0
+    else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0
   else .done invalid 0 else .done invalid 0
 

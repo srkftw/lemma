@@ -28,13 +28,30 @@ def allocate (width height : UInt64) : Action :=
   if 1024 < pages then .done 16 0 else
   .boundedFoldU64 1024 allocateStep pages.toUInt32 0 0 0 0 0 fun s n => .done s n
 
-/-- Own3x5 glyphs, authored as literal bits, no imported font/license dependency.
-Toolstrip glyphs: home, previous, next, undo, redo, eraser, width, save. -/
+/-- Authored3x5 uppercase alphabet and digits, row-major top-left bit14.
+Source assets have no imported font or runtime dependency. -/
+def letter (code : UInt64) : UInt64 :=
+  if code = 65 then 0x2bed else if code = 68 then 0x6b6e else
+  if code = 69 then 0x79a7 else if code = 70 then 0x79a4 else
+  if code = 71 then 0x796f else if code = 72 then 0x5bed else
+  if code = 73 then 0x7497 else if code = 76 then 0x4927 else
+  if code = 78 then 0x5ffd else if code = 79 then 0x7b6f else
+  if code = 80 then 0x7be4 else if code = 82 then 0x6bad else
+  if code = 83 then 0x79cf else if code = 85 then 0x5b6f else
+  if code = 86 then 0x5b6a else if code = 87 then 0x5b7f else
+  if code = 89 then 0x5a92 else
+  if code = 48 then 0x7b6f else if code = 49 then 0x2c97 else
+  if code = 50 then 0x73e7 else if code = 51 then 0x73cf else
+  if code = 52 then 0x5bc9 else if code = 53 then 0x79cf else
+  if code = 54 then 0x79ef else if code = 55 then 0x7292 else
+  if code = 56 then 0x7bef else if code = 57 then 0x7bcf else 0
+
+/-- Home, left/right arrows, undo, redo, erase, width, save. -/
 def glyph (number : UInt64) : UInt64 :=
-  if number = 0 then 0x5bed else if number = 1 then 0x4924 else
-  if number = 2 then 0x1249 else if number = 3 then 0x6b4f else
-  if number = 4 then 0x7b4d else if number = 5 then 0x79cf else
-  if number = 6 then 0x5b6d else 0x79e7
+  if number = 0 then letter 72 else if number = 1 then 0x29e2 else
+  if number = 2 then 0x23ca else if number = 3 then letter 85 else
+  if number = 4 then letter 82 else if number = 5 then letter 69 else
+  if number = 6 then letter 87 else letter 83
 
 def backgroundPixel (x y width height : UInt64) : UInt64 :=
   if height ≤ y then 15 else

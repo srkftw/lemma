@@ -33,6 +33,14 @@ private def failed : Action := .done 95 0
 private def minimum (a b : UInt64) : UInt64 := if a < b then a else b
 private def maximum (a b : UInt64) : UInt64 := if a < b then b else a
 
+/-- Developer observations originate in the authorized guest consumer. These
+bounded records describe UI commit state without host document parsing. -/
+private def reportCommitState (tag value object : UInt64) : Action :=
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console tag value page ns object
+
 private def allocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   let address := ink0 + i.toUInt64 * 4096
   .bind (Syscall.allocatePage address) fun s actual => if statusFailed s = true then .done s 0 else
@@ -78,35 +86,49 @@ private def setPixel (x y color : UInt64) : Action :=
   .bind (Memory.read8 address) fun s byte => if statusFailed s = true then .done s 0 else
   Memory.write8 address (if x % 2 = 0 then (byte &&& (15 : UInt64)) ||| (color <<< 4) else (byte &&& (240 : UInt64)) ||| color)
 
-/-- Authored3x5 bits. S/P/F/R mark Saved/Pending/Failed/Read-only; page and
-namespace digits and brush width remain visible beside the tool strip. -/
-private def letter (code : UInt64) : UInt64 :=
-  if code = 83 then 0x73e7 else if code = 80 then 0x7bea else if code = 70 then 0x7be4 else
-  if code = 82 then 0x7beb else if code = 72 then 0x5bed else
-  if code = 48 then 0x7b6f else if code = 49 then 0x2c97 else if code = 50 then 0x73e7 else
-  if code = 51 then 0x73cf else if code = 52 then 0x5bc9 else if code = 53 then 0x79cf else
-  if code = 54 then 0x79ef else if code = 55 then 0x7249 else if code = 56 then 0x7bef else
-  if code = 57 then 0x7bcf else 0
+/-- Twenty bounded text cells: full commit state, namespace, page and width.
+Read-only is written READ ONLY because the small authored alphabet has no dash. -/
+def statusCharacter (save index ns page brush : UInt64) : UInt64 :=
+  if index < 9 then
+    if save = 0 then
+      if index = 0 then 83 else if index = 1 then 65 else if index = 2 then 86 else
+      if index = 3 then 69 else if index = 4 then 68 else 32
+    else if save = 1 then
+      if index = 0 then 80 else if index = 1 then 69 else if index = 2 then 78 else
+      if index = 3 then 68 else if index = 4 then 73 else if index = 5 then 78 else
+      if index = 6 then 71 else 32
+    else if save = 2 then
+      if index = 0 then 70 else if index = 1 then 65 else if index = 2 then 73 else
+      if index = 3 then 76 else if index = 4 then 69 else if index = 5 then 68 else 32
+    else
+      if index = 0 then 82 else if index = 1 then 69 else if index = 2 then 65 else
+      if index = 3 then 68 else if index = 5 then 79 else if index = 6 then 78 else
+      if index = 7 then 76 else if index = 8 then 89 else 32
+  else if index = 10 then 78 else if index = 11 then 48 + ns else
+    if index = 13 then 80 else if index = 14 then 48 + page / 10 else
+    if index = 15 then 48 + page % 10 else if index = 17 then 87 else
+    if index = 18 then 48 + brush / 256 else 32
+
+/-- Square3-pixel glyphs in12-pixel cells, inside240×16 owned pixels. -/
+def statusPixel (x y ns page save brush : UInt64) : UInt64 :=
+  if x < 240 then if y < 15 then
+  let withinCell := x % 12
+  if withinCell < 9 then
+    let code := statusCharacter save (x / 12) ns page brush
+    if (Surface.letter code >>> (14 - (y / 3 * 3 + withinCell / 3))) &&& 1 = 1 then 0 else 15
+  else 15 else 15 else 15
 
 private def statusStep (i _ : UInt32) (acc ns page save brush : UInt64) : Action :=
-  let x := i.toUInt64 % 160
-  let y := i.toUInt64 / 160
-  let index := x / 24
-  let code := if index = 0 then (if save = 0 then 83 else if save = 1 then 80 else if save = 2 then 70 else 82)
-    else if index = 1 then 48 + ns else if index = 2 then 48 + page / 10 else
-    if index = 3 then 48 + page % 10 else if index = 5 then 48 + brush / 256 else 32
-  let withinCell := x % 24
-  let black := if withinCell < 18 then if y < 15 then
-    if (letter code >>> (14 - (y / 3 * 3 + withinCell / 6))) &&& 1 = 1 then true else false
-    else false else false
-  .bind (setPixel (24 + x) (132 + y) (if black = true then 0 else 15)) fun s _ => .done s acc
+  let x := i.toUInt64 % 240
+  let y := i.toUInt64 / 240
+  .bind (setPixel (24 + x) (132 + y) (statusPixel x y ns page save brush)) fun s _ => .done s acc
 
 private def statusBar : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (get 136) fun s save => if statusFailed s = true then .done s 0 else
   .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 2560 statusStep 2560 0 ns page save brush fun s _ => .done s 0
+  .boundedFoldU64 3840 statusStep 3840 0 ns page save brush fun s _ => .done s 0
 
 private def dirty (x0 y0 x1 y1 : UInt64) : Action :=
   .bind (get 336) fun s oldX => if statusFailed s = true then .done s 0 else
@@ -257,6 +279,7 @@ private def readOnlyNotebook (status : UInt8) : Action :=
   .bind (put 416 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 88 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x424 status.toUInt64 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Ink.emptyPage pageIndex 1) fun s _ => if statusFailed s = true then .done s 0 else redraw
 
 private def readNotebook : Action :=
@@ -304,8 +327,8 @@ private def publishStatus : Action :=
   .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 6 statusTileStep 6 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
-  if statusFailed s = true then .done s 0 else dirty 0 128 192 160
+  .boundedFoldU64 9 statusTileStep 9 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
+  if statusFailed s = true then .done s 0 else dirty 0 128 288 160
 
 private def issue (operation offset count source : UInt64) : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
@@ -317,14 +340,6 @@ private def issue (operation offset count source : UInt64) : Action :=
     fun s pending => if statusFailed s = true then .done s 0 else
   .bind (put 168 pending) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 232 operation) fun s _ => if statusFailed s = true then .done s 0 else put 448 count
-
-/-- Developer observations originate in the authorized guest consumer. These
-bounded records describe UI commit state without host document parsing. -/
-private def reportCommitState (tag value object : UInt64) : Action :=
-  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
-  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
-  CapabilityConsole.record console tag value page ns object
 
 private def startSave (source bytes object stage : UInt64) : Action :=
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else

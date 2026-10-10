@@ -13,13 +13,21 @@ versioned pages/edit history; native QEMU hardware frontend; integrated volatile
 block filter; captured raw input and pinned QEMU record/replay transport.
 The new packed page-v2 codec retains an explicit fixed page-v1 reader.
 
-Observed exact guest `dcac50ca3aeb07adea6168237fb6add562f4331e`:
-actual descriptor/DTB validation and separate store/notebook startup, explicit
-VirtIO initialization with durable acknowledgement, guest-drawn page, and25
-original samples committed through real block I/O. A cold restart recovered
-those bytes and redrew the ink. The70s first writing run stopped before its
-final notebook-root acknowledgement; it is NOT a live-workflow PASS. The compact
-page and quiet-scheduling changes require a fresh linked guest run.
+Observed exact guest `6bcbe63720e1a0095fb59a94d2112c472a3a90c3`:
+actual descriptor/DTB validation, separate store/notebook startup and modern
+VirtIO flush publication, guest-drawn page, two strokes/50 original samples,
+genuine final Saved sequence8. Independent workflow and new-process cold
+committed-byte/controller-pixel comparison pass. The earlier malformed input
+manifest FAIL is retained; a fresh manifest describes identical raw input bytes.
+An actual notebook recording and exact native QEMU replay compare all media,
+raw/device/guest events, descriptor/DTB, controller pixels and ordered block
+operations. This is development evidence, not the final Task004 matrix.
+
+New cached-context/clipped rasterizer and readable guest toolbar/status words
+have genuine elaboration/codegen and independent literal checks. They require a
+fresh linked guest run. Actual append/checkpoint cut campaign is in progress;
+observed payload/publication cuts preserve earlier acknowledged writing after
+new-process recovery. Complete fault/workload/isolation acceptance remains open.
 
 Host QEMU v14-fixed SHA256:
 `bb1f83174881786ab59bbf2d15b68b489e738097c37b50750066dadf848f5f82`.
@@ -39,14 +47,15 @@ Earlier host fold harness PASS results are explicitly invalid for compiled-fold
 coverage; corrected literal/native probes and real guest observations supersede
 that limited claim without relabeling the retained artifacts.
 
-Next: compile the clean compact-page candidate and run basic writing/cold reopen,
-editing/two namespaces, second geometry, actual notebook device cuts/checkpoint,
-input loss/isolation, meaningful notebook replay and16-page100000-sample workload.
-Then perform one exact-candidate inherited acceptance/CI matrix and draft PR.
-Selected O2 stack observations at the earlier guest are kernel2000/16352,
-notebook1264/16384 and store736/16384; these are selected compiled call-chain
-bounds, not whole-program proofs. Updated O0 paths and full final coverage remain
-unrun. No physical conformance, managed runtime or later mathematics gate passed.
+Next: commit/build the raster/UI candidate, then editing/two namespaces,
+second geometry, complete actual notebook cuts/checkpoint, loss/isolation and
+16-page100000-sample workload. Run the exact-candidate inherited acceptance/CI
+matrix and publish the draft PR. New O0 selected call-chain bounds at6bcbe637 are
+kernel9296/16352, notebook9008/16384 and store3936/16384; all exceed25% margin.
+These are selected bounds, not whole-program proofs. A legacy service O0 path
+now measures8928/8192 and fails. The owned kernel stack extension/accounting
+repair is in progress; assertions are retained. No final-candidate or CI PASS,
+physical conformance, managed runtime or later mathematics gate is claimed.
 
 Generated outputs are ignored under `build/`. Ordinary launch must use a prepared
 build; it never rebuilds dependencies or formats a failed mount. The maintained
