@@ -8,7 +8,7 @@ Read the [cross-cutting LemmaSim plan](docs/plan/LEMMASIM.md) and the [simulatio
 
 
 A pen-first mathematics computer, constructed from a freestanding Lean 4 foundation
-on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
+on RISC-V. The historical boot reference is **LemmaVM**; the permanent virtual embodiment is **LemmaSim**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
 **Current state: tested freestanding diagnostic monitor and machine foundation.**
@@ -137,11 +137,9 @@ legacy RV64, and cumulative foundation/qualification jobs with retained artifact
 ## GitHub and Codex
 
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
-Task 001 is [draft PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
+Task 001 is [PR #1](https://github.com/srkftw/lemma/pull/1). Task 002 is
 [draft PR #2](https://github.com/srkftw/lemma/pull/2), stacked against
-`task/001-core0-freestanding-slice` because Task 001 remains unmerged. Neither PR
-is merged automatically; `main` still contains the starter rather than this
-implementation.
+`task/001-core0-freestanding-slice` as originally proposed. Check GitHub for current merge status; historical PR descriptions are not live status reports.
 
 For the current work, select `task/002-machine-foundation` and read
 `codex/prompts/002-machine-foundation.md`, the gate ledger and resume checkpoint.
