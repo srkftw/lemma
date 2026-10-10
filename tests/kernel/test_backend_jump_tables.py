@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from audit_kernel import BACKEND_JUMP_TABLES, validate_backend_jump_tables
+from audit_kernel import BACKEND_JUMP_TABLES, validate_backend_jump_tables, _jump_switch_default, _ir_definition_body
 from core0_common import Core0Error
 
 
@@ -52,6 +52,38 @@ def fixture():
 '''+''.join(' .quad '+target+'\n' for target in targets)
     ir='define { i64, i64 } @fw(i64 %arg0, i64 %arg1, i64 %arg2) {\nentry:\n switch i64 %arg1, label %default [\n'+''.join(' i64 '+str(value)+', label %good\n' for value in cases)+']\ndefault:\n ret { i64, i64 } zeroinitializer\ngood:\n ret { i64, i64 } zeroinitializer\n}\n'
     return dict(section_text=section,symbol_text=symbols,relocation_text=relocs,rodata=b'\0'*40,unit=unit,optimized_ir=ir,optimization='O2',readonly_tables=[],assembly=asm,companion_symbols=companion,companion_relocations=companion_relocs,text=b'\x13\0\0\0'*11,companion_text=b'\x13\0\0\0'*11)
+
+
+def frame_fixture():
+    data = fixture()
+    source = 'Lemma.Kernel.Development.FramesEntry.operation'
+    role, count, args, effects, cases = BACKEND_JUMP_TABLES[source]
+    data['unit'] = dict(role=role, configuration='frames-development',
+                        functions=[dict(source=source, symbol='fw', args=args, effects=effects)])
+    data['section_text'] = data['section_text'].replace('000028 00 A', '0000b0 00 A')
+    data['rodata'] = b'\0' * (count * 8)
+    targets = ['.LBB0_2' if index == 7 else '.LBB0_1' for index in range(count)]
+    for field, companion in [('relocation_text', False), ('companion_relocations', True)]:
+        data[field] = data[field].split("Relocation section '.rela.rodata'", 1)[0]
+        data[field] += "Relocation section '.rela.rodata' at offset 0:\n"
+        for index, target in enumerate(targets):
+            symbol, value = (6, 40) if target == '.LBB0_2' else (4, 36)
+            data[field] += (f'{index*8:08x} {symbol:08x}00000002 R_RISCV_64 {value:08x} '
+                            + (target if companion else '.L0') + ' + 0\n')
+    data['assembly'] = data['assembly'].split('.LJTI0_0:\n', 1)[0].replace(
+        'addi a1, a1, -1', 'mv a1, a0').replace('li a2, 4', 'li a2, 21').replace(
+        '.LBB0_2:\n', '.LBB0_2: # %default\n')
+    data['assembly'] += '.LJTI0_0:\n' + ''.join(' .quad '+target+'\n' for target in targets)
+    data['optimized_ir'] = ('define { i64, i64 } @fw('+', '.join('i64 %arg'+str(i) for i in range(5))+') {\n'
+        'entry:\n switch i64 %arg0, label %default [\n'
+        + ''.join(' i64 '+str(value)+', label %good\n' for value in cases)
+        + ']\ndefault:\n %status = phi i64 [ 17, %entry ], [ 0, %good ]\n'
+          ' %value = phi i64 [ 0, %entry ], [ 1, %good ]\n'
+          ' %masked = and i64 %status, 255\n'
+          ' %partial = insertvalue { i64, i64 } poison, i64 %masked, 0\n'
+          ' %complete = insertvalue { i64, i64 } %partial, i64 %value, 1\n'
+          ' ret { i64, i64 } %complete\ngood:\n br label %default\n}\n')
+    return data
 
 
 class BackendJumpTableFailures(unittest.TestCase):
@@ -105,6 +137,43 @@ class BackendJumpTableFailures(unittest.TestCase):
         self.reject(relocation_text=data['relocation_text']+"Relocation section '.rela.data' at offset 0:\n00000000 0000000500000002 R_RISCV_64 00000000 .L0 + 0\n")
         self.reject(relocation_text=data['relocation_text'].replace('00000020 0000000400000002','00000028 0000000400000002'))
         self.reject(relocation_text=data['relocation_text'].replace('00000000 0000000500000002','00000000 0000000400000002').replace('R_RISCV_64 00000000 .L0','R_RISCV_64 00000024 .L0'))
+
+    def test_frame_dispatch_is_exactly_quarantined_and_keeps_hole7_default(self):
+        data = frame_fixture()
+        report = validate_backend_jump_tables(**data)
+        table = report['jump_tables'][0]
+        self.assertEqual((table['bytes'], table['switch_default']['holes']), (176, [7]))
+        self.assertEqual((table['switch_default']['default_status'], table['switch_default']['default_value']), (17, 0))
+        for configuration in [None, 'normal', 'ipc-development', 'tasks-development']:
+            bad = copy.deepcopy(data)
+            bad['unit']['configuration'] = configuration
+            with self.assertRaisesRegex(Core0Error, 'exact selected configuration'):
+                validate_backend_jump_tables(**bad)
+        for field, value in [('source', 'Lemma.Kernel.Development.FramesEntry.other'),
+                             ('args', ['u64']*4), ('effects', data['unit']['functions'][0]['effects'][:-1])]:
+            bad = copy.deepcopy(data)
+            bad['unit']['functions'][0][field] = value
+            with self.assertRaisesRegex(Core0Error, 'owner/count/source signature/effects:'):
+                validate_backend_jump_tables(**bad)
+
+    def test_frame_default_target_and_unsupported_result_are_bound(self):
+        data = frame_fixture()
+        source = 'Lemma.Kernel.Development.FramesEntry.operation'
+        cases = BACKEND_JUMP_TABLES[source][4]
+        targets = ['.LBB0_2' if index == 7 else '.LBB0_1' for index in range(22)]
+        body = _ir_definition_body(data['optimized_ir'], 'fw')
+        _jump_switch_default(body, data['assembly'], 'fw', targets, cases)
+        wrong = targets.copy(); wrong[7] = '.LBB0_1'
+        for body, assembly, entries in [
+                (body, data['assembly'], wrong),
+                (body, data['assembly'].replace('# %default', '# %good'), targets),
+                (body.replace('[ 17, %entry ]', '[ 0, %entry ]'), data['assembly'], targets),
+                (body.replace('[ 0, %entry ]', '[ 1, %entry ]'), data['assembly'], targets),
+                (body.replace('ret { i64, i64 } %complete', 'ret { i64, i64 } zeroinitializer'), data['assembly'], targets),
+                (body.replace('i64 %value, 1', 'i64 %status, 1'), data['assembly'], targets),
+                (body.replace('i64 %masked, 0', 'i64 %masked, 1'), data['assembly'], targets)]:
+            with self.assertRaises(Core0Error):
+                _jump_switch_default(body, assembly, 'fw', entries, cases)
 
 
 if __name__=='__main__':unittest.main()

@@ -697,7 +697,52 @@
         "exact_artifact_bindings": 140,
         "scope": "actual independent Lean/Core0 builds and strict audits, not independent guests; precommit dirty provenance retained"
       },
-      "next_command": "Commit coherent I source, then cold fresh A-E+F+G+H+I at that exact clean commit; no prior artifact is inherited as a current pass."
+      "next_command": "Run distinct fresh exact committed I clean-repair checkpoint with the narrowed current auditor; require terminal actual A-I PASS and independent full review before any J target implementation.",
+      "cold_current": {
+        "status": "FAIL",
+        "source_commit": "ea5037b486f76fc0dc9ccb3b725d9a3fb2a47e76",
+        "source_tree": "8aad67e3fd2979cfffaf7446a84ad67b8a33a4ae",
+        "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-i-acceptance/lemma/build/kernel/I-clean-attempt2/result.json",
+        "sha256": "c7de712285e51d63fe3afe345a261f296e11bc47e5ab81cdaa6619ddca3a53e8",
+        "elapsed_seconds": 694.5444970389945,
+        "error": "Strict readonly provenance rejected previously unaccounted exact22-entry FramesEntry.operation development-only command switch; failed Session launched no QEMU. Partial A-E observations remain separately retained, not cumulative I acceptance.",
+        "repair": "Narrow immutable source/signature/effects/domain/guard/local-target/whole-rodata accounting is in progress. Targets remain unchanged; J target implementation held."
+      },
+      "cold_audit_repair": {
+        "status": "object_preflight_PASS",
+        "scope": "Final repaired auditor: current-source genuine Lean/LLVM/object readonly-table provenance for all13 existing configurations plus host malformed fixtures. No full linked-artifact or new guest acceptance claim.",
+        "verification": {
+          "path": "build/compiler-gateI/cold-table-repair-verification.json",
+          "sha256": "a5a078374516a1dc972839741eab85b1fe695427f5d58fe1e400fe853a4e9d68"
+        },
+        "survey": {
+          "path": "build/compiler-gateI/cold-table-survey-attempt2/result.json",
+          "sha256": "1481d2437e466196d85c2d31d48ace4e24b31e4a71b2ad85a7140670a11f1b98",
+          "elapsed_seconds": 218.18574214700493,
+          "configurations": 13,
+          "unique_genuine_closures": 22,
+          "fresh_O0_O2_objects": 44,
+          "source_inputs": 132,
+          "source_unchanged": true
+        },
+        "auditor_sha256": "f896479016815e50bfd4841852cbaf37e3433952880a4d83217115d66af60e00",
+        "fixture_sha256": "96113a2911bce04b0fa11848e907780706da3d6de171eb3c7d70d752ef6eb890",
+        "original_failure_artifacts_unchanged": true,
+        "host_checks": {
+          "backend": 7,
+          "kernel": 165,
+          "scaffold": 18,
+          "kernel_scope": "165 total includes twelve held untracked Gate J host-only transport tests; target and linked/guest acceptance not inferred"
+        },
+        "required_next": "Commit narrow host repair and run a distinct fresh exact-clean A-E+F+G+H+I checkpoint; original cold FAIL remains historical.",
+        "independent_review": {
+          "status": "PASS",
+          "path": "build/kernel/gateI/repair-review/result.json",
+          "sha256": "c8a1011893fb86dd9138a1c74e230a3e80c42f29043794b3e09d614b17ddb489",
+          "actual_evidence_mutations_rejected": 21,
+          "scope": "Final held auditor/source-selected table review,44 genuine survey object/IR hash bindings and original failed artifacts unchanged; no new guest claim"
+        }
+      }
     },
     {
       "gate": "J",

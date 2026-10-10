@@ -1852,7 +1852,48 @@ BACKEND_JUMP_TABLES = {
     'Lemma.Kernel.Syscall.dispatchLegacy': ('kernel', 8, ['u64']*7, ['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'], [1,2,3,4,5,7,8]),
     'Lemma.Kernel.Syscall.dispatchManaged': ('kernel', 18, ['u64']*7, ['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'], [2,*range(9,20)]),
     'Lemma.Platform.RiscV.Firmware.call': ('firmware', 5, ['u64']*3, ['checked-access','mmio-read','mmio-write','io-order','machine-state','timer-state','interrupt-state','physical-read','physical-write'], list(range(1,6))),
+    'Lemma.Kernel.Development.FramesEntry.operation': ('kernel', 22, ['u64']*5, ['checked-access','io-order','machine-state','physical-read','physical-write','address-space','instruction-sync'], [*range(7),*range(8,22)]),
 }
+BACKEND_JUMP_TABLE_CONFIGURATIONS = {
+    'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
+}
+
+
+def _jump_switch_default(optimized_body: str, assembly: str, symbol: str,
+                         targets: list[str], cases: list[int]) -> dict:
+    """Bind the diagnostic switch's unlisted slot to the genuine default block."""
+    switches = re.findall(r'switch i64 %arg0, label %([A-Za-z0-9_.$-]+) \[([^]]+)\]', optimized_body, re.S)
+    selected = [(default, block) for default, block in switches
+                if sorted(int(value) for value in re.findall(r'i64 (-?\d+), label', block)) == cases]
+    if len(selected) != 1:
+        raise Core0Error('diagnostic jump table lacks one exact command/default switch')
+    default, _ = selected[0]
+    owner = re.search(r'(?m)^'+re.escape(symbol)+r':[^\n]*\n(.*?)^\s*\.size\s+'+re.escape(symbol)+r',', assembly, re.S)
+    labels = re.findall(r'(?m)^(\.LBB\d+_\d+):[^\n]*# %'+re.escape(default)+r'\s*$', owner[1]) if owner else []
+    holes = [value for value in range(min(cases), max(cases)+1) if value not in cases]
+    if len(labels) != 1 or any(targets[value-min(cases)] != labels[0] for value in holes):
+        raise Core0Error('diagnostic jump table hole does not target its genuine default block')
+    from audit_memory import _parse_blocks
+    blocks = _parse_blocks('\n'.join(line.split(';', 1)[0] for line in optimized_body.splitlines()), symbol)
+    status = [line for line in blocks.get(default, []) if ' = phi i64 ' in line and re.search(r'\[ 17, %entry \]', line)]
+    value = [line for line in blocks.get(default, []) if ' = phi i64 ' in line and re.search(r'\[ 0, %entry \]', line)]
+    if len(status) != 1 or len(value) != 1:
+        raise Core0Error('diagnostic switch default lacks checked unsupported17/value0 provenance')
+    lines = blocks[default]
+    word = r'(%[A-Za-z0-9_.$-]+)'
+    status_word = re.match(word+r' = phi i64 ', status[0])[1]
+    value_word = re.match(word+r' = phi i64 ', value[0])[1]
+    if len(lines) != 6 or lines[:2] != [status[0], value[0]]:
+        raise Core0Error('diagnostic switch default lacks its exact checked aggregate return')
+    masked = re.fullmatch(word+r' = and i64 '+re.escape(status_word)+r', 255', lines[2])
+    partial = (re.fullmatch(word+r' = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(masked[1])+r', 0', lines[3])
+               if masked else None)
+    complete = (re.fullmatch(word+r' = insertvalue \{ i64, i64 \} '+re.escape(partial[1])+r', i64 '+re.escape(value_word)+r', 1', lines[4])
+                if partial else None)
+    if complete is None or lines[5] != 'ret { i64, i64 } '+complete[1]:
+        raise Core0Error('diagnostic switch default PHIs do not reach the checked return')
+    return {'holes': holes, 'llvm_default': default, 'machine_default': labels[0],
+            'default_status': 17, 'default_value': 0}
 
 
 def _object_symbols(text: str) -> dict[int, dict]:
@@ -2032,9 +2073,18 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
             spec=BACKEND_JUMP_TABLES.get(source)
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
-                raise Core0Error('unknown backend table owner/count/source signature/effects')
+                raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
+                    table=name, source=source, role=unit['role'], count=len(targets),
+                    args=source_row.get('args') if source_row else None,
+                    effects=source_row.get('effects') if source_row else None,
+                    configuration=unit.get('configuration'))))
+            if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
+                raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
             if switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
+            default = (_jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
+                                           owner['name'], targets, spec[4])
+                       if source == 'Lemma.Kernel.Development.FramesEntry.operation' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
             rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
@@ -2049,7 +2099,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                     raise Core0Error('backend table entry escapes its exact local code owner/block/alignment')
                 used_relocations.add(id(row));entries.append(dict(offset=row['offset'],target_offset=target['value'],target_label=label,symbol_index=target['index']))
             guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]))
-            observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size']))
+            observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size'],
+                                 **({'switch_default': default} if default is not None else {})))
             extents.append((start,start+size,'jump-table'))
     for row in literal:
         start=row['offset'];end=start+row['bytes']

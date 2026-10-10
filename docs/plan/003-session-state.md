@@ -685,3 +685,67 @@ Gate G construction is now authorized because focused F and mandatory timer cont
 - Coherent I source is ready to commit. Next cold exact clean A-E+F+G+H+I
   checkpoint is separately required; highest complete gate remainsH until
   that actual run completes. J/K runtime and CI/publication remainnot_run.
+
+## Committed I cold checkpoint in progress
+
+- Coherent IPC implementation commit
+  ea5037b486f76fc0dc9ccb3b725d9a3fb2a47e76, tree
+  8aad67e3fd2979cfffaf7446a84ad67b8a33a4ae. All prior focused reports
+  retain their parent+dirty provenance and exact source inventories.
+- Fresh managed lemma-kernel-i-acceptance checkout at that exact source runs
+  /tmp/lemma-gateI-clean-run-attempt2.py, shell session24130, output
+  build/kernel/I-clean-attempt2. No project outputs were copied.
+- First controller launch failed closed before any target build: a mistakenly
+  untracked root controller log violated clean-source qualification. Original
+  FAIL build/kernel/I-clean/result.json is retained, with log moved into
+  ignored build/kernel/I-clean-launch-failure. The second run is distinct.
+- Highest complete integration remainsH until actual cold A-I completes.
+  J target/producers are held. Root prepared only host command framing, mixed
+  UART transport and a readable terminal; five framing tests passed, with no
+  J guest or service pass inferred. Worker read-only J interfaces are agreed.
+- Normal service design boots directly: first Server argument is actual
+  nextEpoch1; CLI1/Peer2/CPU3 are public boot-policy arguments. Framed commands
+  provide fresh runtime inputs; there is no acceptance-only launch packet.
+
+## Cold I strict audit counterexample
+
+- Exact ea5037b cold A-I attempt2 stopped FAIL694.544497s during A-E
+  frames-development/bootstrap-M/O2, before any F-I guest. Report SHA256
+  c7de712285e51d63fe3afe345a261f296e11bc47e5ab81cdaa6619ddca3a53e8.
+  Nested A-E report SHA256
+  b542e7ea64753269807d68e609b03f32411317237f137ffff7ad535390bc3c14.
+- Strict backend audit found one unaccounted exact source table:
+  Lemma.Kernel.Development.FramesEntry.operation, five u64 arguments,
+ 22entries/176bytes, LLVM cases0..6 and8..21(default hole7). Independent
+  actual-object review confirms unsigned<=21 guard, scaled8B entries, one
+  indirect branch, local targets in its492-byte owner and zero addends.
+- Failed artifact Session pidnull/argvempty/rawempty: it did not launch QEMU.
+  Earlier passing O0 and first O2 observations remain partial results only.
+  Isolated clean source and original failure are preserved without mutation.
+- Compiler worker is authorized for only precise host auditor/negative-fixture
+  repair, plus actual current-configuration table preflight. Targets remainheld
+  and J/K notrun. Commit this narrow repair then a distinct clean rerun; never
+  bypass unknown bytes or relabel the failed output.
+
+## Narrow cold-I host repair preflight
+
+- Final auditor pins only the existing frames-development operation declaration,
+  five u64 arguments, exact effects,22 entries and LLVM cases0..6/8..21. Hole7
+  targets the genuine default whose status17/value0 PHIs reach the aggregate
+  return. Source/configuration/signature/effects/domain/guard/target/whole-byte
+  checks remain fail-closed; no target/compiler/language/backend setting changed.
+- All13 current configurations,22 genuine closures and44 fresh O0/O2 objects
+  passed218.185742s with132 source inputs unchanged. Verification report
+  build/compiler-gateI/cold-table-repair-verification.json SHA256
+  a5a078374516a1dc972839741eab85b1fe695427f5d58fe1e400fe853a4e9d68.
+- Original failed Frames artifact read-only recheck passed with its bytes
+  unchanged. The original cold attempt remains FAIL, not a repaired guest pass.
+  Seven focused fixtures,165 total kernel host tests(includes twelve held
+  untracked J transport tests), scaffold metadata and18 tests passed.
+- New clean package/guest acceptance remains required after the repair commit.
+  Held J host preparation is excluded from that minimal commit; J target held.
+- Independent final repair review PASS;21 mutations of actual original evidence
+  rejected,44 survey object/optimized-IR bindings independently hashchecked.
+  build/kernel/gateI/repair-review/result.json SHA256
+  c8a1011893fb86dd9138a1c74e230a3e80c42f29043794b3e09d614b17ddb489.
+  This is audit repair evidence, not a new clean guest acceptance result.
