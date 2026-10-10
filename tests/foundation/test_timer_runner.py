@@ -273,14 +273,14 @@ class TimerBindingTests(unittest.TestCase):
         if mutation == 2:
             body_hashes["core0_timer_set_compare"] = DISABLE_ARMING_MACHINE_BODY_SHA256
         machine = {"approved_resume_pairs": 2, "compiled_gp_tp_free": True,
-            "compiled_privileged_instructions": 0, "compiled_functions": 80,
+            "compiled_privileged_instructions": 0, "compiled_functions": 82,
             "fatal_stackless_self_loops": 2, "startup_functions": 16, "timer_functions": 7,
             "timer_mmio_accesses": 3, "timer_mmio_width_bits": 64, "timer_fence_operations": 14,
             "machine_csr_operations": 28, "mutation": corpus.MUTATION_IDENTITIES[mutation],
             "timer_machine_body_sha256": body_hashes,
             "timer_start_machine_body_sha256": {
-                "O0": "9a46933e45b7e67131862fb81f3eae09a6f23d80570d98195ea21c3f9e7c1653",
-                "O2": "c28069c5eb66e5c6bfaad03ecbbf3f740d447d345ad671cdc08751b2c36a9407",
+                "O0": "1d57c4b2fb78146d7acf3aacc0a91c53d363d17bc6dba495aaf6443abf62f071",
+                "O2": "29e19ddeb78734da1067ec6bded4f9eb06d70e17a20870503afbce0d6525c0d7",
             }[optimization],
             "timer_mmio_machine": {"access_count": 3, "width_bits": 64,
                 "compiled_program_accesses": 0, "all_inferred_accesses_are_approved": True,
@@ -393,6 +393,17 @@ class TimerBindingTests(unittest.TestCase):
             with self.assertRaises(Core0Error):
                 self.validate()
             self.bind()
+
+    def test_exact_factored_console_function_count_rejects_stale_or_open_counts(self):
+        self.validate()
+        for count in (80, 81, 83, True, 82.0, None):
+            with self.subTest(count=count):
+                audit = json.loads((self.directory / "audit.json").read_text())
+                audit["timer_machine_audit"]["compiled_functions"] = count
+                write_json(self.directory / "audit.json", audit)
+                with self.assertRaisesRegex(Core0Error, "machine compiled_functions"):
+                    self.validate()
+                self.bind()
 
     def test_weakened_final_machine_evidence_is_rejected(self):
         for path, value in (

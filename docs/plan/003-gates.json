@@ -1563,6 +1563,46 @@
         "prior_cold_f24_legacy": "FAIL at Gate7 O0; Task00123boots and Task002 Gates1-6 actual394boots; qualifier NOT_RUN",
         "fresh_cold_legacy": "NOT_RUN",
         "prefix_f24": "IN_PROGRESS"
+      },
+      "final_f24_prefix": {
+        "status": "PASS",
+        "source_commit": "f24dd39d817d88ee1073e41de4409cfadcbbbb50",
+        "tree": "6badbd832c386dc10667c357d0aeb852e4735954",
+        "images": 28,
+        "checker_reports": 32,
+        "qemu_sessions": 36,
+        "stack_graphs": 108,
+        "outer_sha256": "902dcbd8817b5e683e9be9000da755a1246861b08e23bf3ee20909b24284263e",
+        "A_E_sha256": "90f88f70bd138b7f21362669dadde17336e890c4213ce37f5af48417f8988de1",
+        "F_I_sha256": "cc75bc92d77c5bb43db3f1019d9ad64db69bb17a473afcfb268490afdad01257",
+        "independent_summary": "/home/sreekumaar/.codex/worktrees/lemma-kernel-final-bounded-prefix/lemma/build/kernel/final-independent-prefix-summary.json",
+        "independent_sha256": "ba5a10fe971cc89655f21f31ef91363eace489ad77d7cd5d0f86e0f244005df3",
+        "source_specific": true
+      },
+      "closed_legacy_and_reader_repair": {
+        "status": "HOST_PASS_ONLY",
+        "summary": "build/kernel/gateK/host/final-legacy-closure-and-drain-repair-summary.json",
+        "sha256": "2b303e065a2772649a42773c4cdb70f3c3cca3bd044b55d0dfd5bc69dc4d9635",
+        "foundation_tests": 451,
+        "kernel_tests": 283,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "target_Lean_and_workflow_changes": false,
+        "prior_d4_cold_legacy": "FAIL at Gate7O0 runner48 versus exactcatalog50; Task00123boots and Task002Gates1-6actual394boots only",
+        "prior_outer_sha256": "f696a00c9128f5232a7e7a26f07a46af603c0c4b2ba13762f500693ca7cafbb6",
+        "fresh_cold_legacy_and_timer": "NOT_RUN",
+        "original_host450_failure_retained": true
+      },
+      "publication_observed": {
+        "status": "DRAFT_OPEN_CI_INCOMPLETE",
+        "url": "https://github.com/srkftw/lemma/pull/3",
+        "head": "d4cff1b03a507d5b5f31f11015c761e4ea4bf1ae",
+        "base": "ff4045a79a6fda45f9cd8198587357846530a806",
+        "synthetic_merge": "232d5abfff50ec7d104a1a51f08be75de2061483",
+        "push_run": 38029003088,
+        "PR_run": 38029005344,
+        "PR_foundation": "FAIL: same Gate7 closed-count mismatch",
+        "merge": "NOT_RUN"
       }
     }
   ],

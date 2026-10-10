@@ -1216,3 +1216,45 @@ Summary `build/kernel/gateK/host/legacy-elaboration-sequence-repair-summary.json
 `50d628d97d897e8f2c633882259627c688a04cc02debd968d6caa125c63e4970`. Commit this repair and start another source-only cold legacy
 checkout. The unchanged f24 full A–I campaign continues separately. Final
 publication, actual current-head CI and authorized guarded merge remain pending.
+
+## Final prefix and legacy closure repair (2026-10-10 06:15 UTC)
+
+The full cold f24 A–E/F–I outer campaign actually exited0/PASS in2074.53s.
+Independent replay verified28images/32checkerreports/36sessions (34live−9
+kill/reaps and2natural48),108staticstackgraphs,1807retainedfilehashes, all
+source/consumer/helper inventories unchanged and all36PIDs absent. Outer SHA256
+`902dcbd8817b5e683e9be9000da755a1246861b08e23bf3ee20909b24284263e`;
+independent summary SHA256
+`ba5a10fe971cc89655f21f31ef91363eace489ad77d7cd5d0f86e0f244005df3`.
+These remain exactf24 observations, not the current changed host consumers.
+
+The fresh d4 legacy outer failed again before Gate7QEMU: genuine trap machine
+audit50 was compared with stale runner48. Every ordered source/signature/effect
+in the manifest matches the closed26scalar+23Action catalog plus main. Timer
+similarly needs exact82 and the two startup fingerprints already pinned by its
+full machine auditor. Twelve same-count source/symbol/signature substitutions
+reject; real retained Timer/Monitor O0/O2 objects independently match their
+closedIR/machine policies. Monitor142 is unchanged. This diagnostic review is
+not fresh Gate8/9 execution. The actuald4 failure remains SHA256
+`f696a00c9128f5232a7e7a26f07a46af603c0c4b2ba13762f500693ca7cafbb6`;
+Task00123 and Gates1–6 actual394boots revalidated, qualifier NOT_RUN.
+
+Initial451-candidate host work first ran450foundation tests and failed one
+existing truncated-response fixture. A real-pipe regression confirms a stale
+readiness snapshot could classify a child exit before consuming queued stdout.
+A zero-time stdout-only readiness recheck now returns buffered data/EOF through
+existing exact-read/deadline/nonzero checks; unready output keeps the exit error.
+Original450FAIL is retained. Complete451foundation/283kernel/18scaffold plus
+metadata actually passed with exit0 after the narrow repair. Summary SHA256
+`2b303e065a2772649a42773c4cdb70f3c3cca3bd044b55d0dfd5bc69dc4d9635`. No maintained targetLean or workflow changed. Commit
+this candidate, run focused fresh phase8 and another source-only cold full
+Task001/Task002stress/qualification. No PASS is inherited across changed consumers.
+
+Draft PR#3 is now actually pushed/open against main at d4; proposed merge232d5ab
+has exact main/d4 parents and equals d4 tree. Actual PRrun38029005344 and
+push38029003088 started8jobs. PR metadata/legacy/F–I/J/architecture passed;
+foundation failed the same stale Gate7count and A–E/source-negatives are still
+running at this checkpoint. Preserve the failedCI log SHA256
+`5bcc7ec53c31d0de9429e4f962c178700c8bcfc5191e36d68d83df9c936e405f`.
+No fullCI success, ready state or merge is claimed. Final current-head CI and
+the user-authorized guarded merge remain pending; highest complete gate remainsJ.
