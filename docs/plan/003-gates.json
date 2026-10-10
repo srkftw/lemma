@@ -1550,6 +1550,19 @@
         "cold_A_I": "NOT_RUN",
         "cold_legacy_cumulative_qualification": "NOT_RUN",
         "CI_publication_merge": "NOT_RUN"
+      },
+      "legacy_elaboration_sequence_repair": {
+        "status": "HOST_PASS_ONLY",
+        "foundation_tests": 448,
+        "core0_tests": 32,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "summary": "build/kernel/gateK/host/legacy-elaboration-sequence-repair-summary.json",
+        "sha256": "50d628d97d897e8f2c633882259627c688a04cc02debd968d6caa125c63e4970",
+        "target_and_workflow_changes": false,
+        "prior_cold_f24_legacy": "FAIL at Gate7 O0; Task00123boots and Task002 Gates1-6 actual394boots; qualifier NOT_RUN",
+        "fresh_cold_legacy": "NOT_RUN",
+        "prefix_f24": "IN_PROGRESS"
       }
     }
   ],

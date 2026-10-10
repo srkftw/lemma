@@ -1197,3 +1197,22 @@ again after persistence. No maintained target Lean or workflow changed. Run
 fresh cold full A–I plus full Task001/Task002 stress/qualification in separate
 exact-revision worktrees. Existing64 K/J/User and mutation results remain source
 specific; actual current-head CI is required before the authorized guarded merge.
+
+The fresh cold f24 legacy run genuinely compiled ConsoleDevice at both
+optimizations and passed Gate6, then Gate7 O0 rejected three stale exact
+Trap/Timer/Monitor elaboration tuples. Task00123boots and Task002 Gates1–6
+actual394boots independently replayed; cumulative failed and qualification did
+not run. Original wrapper SHA256
+`7c55d91979e0acd3a8dcc52ca7a4fdd9215e0bf2c90156f3f477388816d451c1`;
+independent completed-gates replay SHA256
+`8ab97030db902355b2825654a760cf64f193db7b39f610051941160b3cd753ed`.
+Only those three exact audit tuples now include the real ConsoleDevice dependency
+before DeviceConformanceSupport. Per-row source/module hashes, uniqueness,
+source bindings and actual generation-command checks remain mandatory. Meaningful
+host guard fixtures reject missing/reordered/duplicate/hash-unbound dependencies
+and missing real compilation commands. Full448 foundation,32 Core0 and18 scaffold
+tests plus metadata passed with actual exit0; no target Lean or workflow changed.
+Summary `build/kernel/gateK/host/legacy-elaboration-sequence-repair-summary.json`, SHA256
+`50d628d97d897e8f2c633882259627c688a04cc02debd968d6caa125c63e4970`. Commit this repair and start another source-only cold legacy
+checkout. The unchanged f24 full A–I campaign continues separately. Final
+publication, actual current-head CI and authorized guarded merge remain pending.

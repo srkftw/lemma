@@ -5175,6 +5175,7 @@ def audit(
             item.get("source") for item in elaborated_inputs
         ] != [
             "examples/core0/Positive.lean",
+            "Lemma/Platform/LemmaVM/ConsoleDevice.lean",
             "examples/foundation/DeviceConformanceSupport.lean",
             "examples/foundation/TrapConformance.lean",
         ]:
@@ -5185,6 +5186,7 @@ def audit(
             item.get("source") for item in elaborated_inputs
         ] != [
             "examples/core0/Positive.lean",
+            "Lemma/Platform/LemmaVM/ConsoleDevice.lean",
             "examples/foundation/DeviceConformanceSupport.lean",
             "examples/foundation/TrapConformance.lean",
             "examples/foundation/TimerConformance.lean",
@@ -5196,6 +5198,7 @@ def audit(
             item.get("source") for item in elaborated_inputs
         ] != [
             "examples/core0/Positive.lean",
+            "Lemma/Platform/LemmaVM/ConsoleDevice.lean",
             "examples/foundation/DeviceConformanceSupport.lean",
             "examples/foundation/TrapConformance.lean",
             "examples/foundation/TimerConformance.lean",
