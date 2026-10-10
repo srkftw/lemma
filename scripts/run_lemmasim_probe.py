@@ -15,7 +15,7 @@ def argv(qemu,image,disk,raw=None,trace=None):
           '-accel','tcg','-nodefaults','-bios','none','-kernel',str(image),'-display','none','-monitor','none','-serial','stdio',
           '-rtc','base=2026-10-10T00:00:00,clock=vm','-global','virtio-mmio.force-legacy=false',
           '-drive',f'if=none,id=lemma-disk,file={disk},format=raw,cache=directsync',
-          '-device','virtio-blk-device,drive=lemma-disk,bus=virtio-mmio-bus.0']
+          '-device','virtio-blk-device,drive=lemma-disk,bus=virtio-mmio-bus.0,werror=report,rerror=report']
     if raw:args+=['-global',f'lemma-paper-pen.raw-input={raw}']
     if trace:args+=['-global',f'lemma-paper-pen.trace-file={trace}']
     return args

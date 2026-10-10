@@ -57,11 +57,18 @@ private def step : Action :=
   .bind DeviceService.deferred fun s _ => if s = 0 then Scheduler.step else fatal
   else fatal
 
+private def observedStage (stage : UInt64) (status : UInt8) (value : UInt64) : Action :=
+  .bind (Lemma.Kernel.Console.record 0x407 stage status.toUInt64 value 0) fun s _ =>
+  if s = 0 then .done status value else .done s 0
+
 private def bootSelected (initialization : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
-  .bind BootInfo.validate fun s _ => if s = 0 then
-  .bind Descriptor.validate fun s _ => if s = 0 then
-  .bind Lemma.Platform.LemmaSim.MachineServices.validate fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind Descriptor.validate fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind Lemma.Platform.LemmaSim.MachineServices.validate fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
   .bind Frames.init fun s _ => if s = 0 then
   .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
   .bind Lemma.Drivers.Paper.initialize fun s geometry => if s = 0 then

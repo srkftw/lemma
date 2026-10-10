@@ -38,8 +38,8 @@ def emptyPage (buffer page : UInt64) : Action :=
   .bind (put buffer 0 magic) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 8 version) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 16 2) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put buffer 24 page) fun s _ => .done s 0   
-  
+  .bind (put buffer 24 page) fun s _ => .done s 0
+
 
 def root (buffer pages brush : UInt64) : Action :=
   if pages = 0 then .done malformed 0 else if maximumPages < pages then .done malformed 0 else
@@ -48,8 +48,8 @@ def root (buffer pages brush : UInt64) : Action :=
   .bind (put buffer 8 version) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 16 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 24 pages) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put buffer 32 brush) fun s _ => .done s 0   
-  
+  .bind (put buffer 32 brush) fun s _ => .done s 0
+
 
 def chunk (buffer page stroke brush pressureMaximum : UInt64) : Action :=
   .boundedFoldU64 16 zeroStep 16 0 buffer 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
@@ -61,8 +61,8 @@ def chunk (buffer page stroke brush pressureMaximum : UInt64) : Action :=
   .bind (put buffer 56 brush) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 64 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 88 pressureMaximum) fun s _ => .done s 0
-     
-     
+
+
 
 def finishChunk (buffer count lifecycle : UInt64) : Action :=
   if count = 0 then .done malformed 0 else if maximumSamples < count then .done full 0 else
@@ -79,7 +79,7 @@ private def entryValidateStep (i count : UInt32) (acc buffer _ _ _ : UInt64) : A
     if 0x10000 < object then if 0 < stroke then if visible ≤ 1 then .done 0 (acc + 1)
     else .done malformed 0 else .done malformed 0 else .done malformed 0
   else if object ||| stroke ||| visible = 0 then .done 0 acc else .done malformed 0
-    
+
 
 private def editValidateStep (i count : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
   .bind (field (edit buffer i.toUInt64) 0) fun s kind => if statusFailed s = true then .done s 0 else
@@ -89,7 +89,7 @@ private def editValidateStep (i count : UInt32) (acc buffer _ _ _ : UInt64) : Ac
     if 0 < stroke then .done 0 (acc + 1) else .done malformed 0
     else .done malformed 0
   else if kind ||| stroke = 0 then .done 0 acc else .done malformed 0
-   
+
 
 def validatePage (buffer page : UInt64) : Action :=
   .bind (field buffer 0) fun s observed => if statusFailed s = true then .done s 0 else
@@ -103,22 +103,22 @@ def validatePage (buffer page : UInt64) : Action :=
   if count ≤ maximumEntries then if edits ≤ maximumEdits then if cursor ≤ edits then
   .boundedFoldU64 512 entryValidateStep count.toUInt32 0 buffer 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 512 editValidateStep edits.toUInt32 0 buffer 0 0 0 fun s _ => .done s count
-  
+
   else .done malformed 0 else .done malformed 0 else .done malformed 0
   else .done malformed 0 else .done malformed 0 else .done malformed 0 else .done malformed 0
-        
+
 
 private def visibilityStep (i _ : UInt32) (acc buffer stroke visible _ : UInt64) : Action :=
   .bind (field (entry buffer i.toUInt64) 8) fun s observed => if statusFailed s = true then .done s 0 else
   if observed = stroke then
     .bind (put (entry buffer i.toUInt64) 16 visible) fun s _ => .done s (acc + 1)
-  else .done 0 acc 
+  else .done 0 acc
 
 def visibility (buffer stroke visible : UInt64) : Action :=
   .bind (field buffer 32) fun s count => if statusFailed s = true then .done s 0 else
   if count ≤ maximumEntries then if visible ≤ 1 then
   .boundedFoldU64 512 visibilityStep count.toUInt32 0 buffer stroke visible 0 fun s n => .done s n
-  else .done malformed 0 else .done malformed 0 
+  else .done malformed 0 else .done malformed 0
 
 def addEntry (buffer object stroke : UInt64) : Action :=
   .bind (field buffer 32) fun s count => if statusFailed s = true then .done s 0 else
@@ -127,12 +127,12 @@ def addEntry (buffer object stroke : UInt64) : Action :=
   .bind (put (entry buffer count) 8 stroke) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put (entry buffer count) 16 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 32 (count + 1)) fun s _ => .done s count
-     
-  else .done full 0 
+
+  else .done full 0
 
 private def clearEditsStep (i _ : UInt32) (acc buffer start _ _ : UInt64) : Action :=
   .bind (put (edit buffer (start + i.toUInt64)) 0 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put (edit buffer (start + i.toUInt64)) 8 0) fun s _ => .done s acc 
+  .bind (put (edit buffer (start + i.toUInt64)) 8 0) fun s _ => .done s acc
 
 def addEdit (buffer kind stroke : UInt64) : Action :=
   .bind (field buffer 48) fun s cursor => if statusFailed s = true then .done s 0 else
@@ -143,8 +143,8 @@ def addEdit (buffer kind stroke : UInt64) : Action :=
   .bind (put (edit buffer cursor) 8 stroke) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 40 (cursor + 1)) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put buffer 48 (cursor + 1)) fun s _ => .done s cursor
-     
-   else .done malformed 0 else .done malformed 0 else .done full 0  
+
+   else .done malformed 0 else .done malformed 0 else .done full 0
 
 def undo (buffer : UInt64) : Action :=
   .bind (field buffer 48) fun s cursor => if statusFailed s = true then .done s 0 else
@@ -152,8 +152,8 @@ def undo (buffer : UInt64) : Action :=
   .bind (field (edit buffer (cursor - 1)) 0) fun s kind => if statusFailed s = true then .done s 0 else
   .bind (field (edit buffer (cursor - 1)) 8) fun s stroke => if statusFailed s = true then .done s 0 else
   .bind (visibility buffer stroke (if kind = 1 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put buffer 48 (cursor - 1)) fun s _ => .done s stroke  
-    
+  .bind (put buffer 48 (cursor - 1)) fun s _ => .done s stroke
+
 
 def redo (buffer : UInt64) : Action :=
   .bind (field buffer 48) fun s cursor => if statusFailed s = true then .done s 0 else
@@ -163,8 +163,8 @@ def redo (buffer : UInt64) : Action :=
   .bind (field (edit buffer cursor) 0) fun s kind => if statusFailed s = true then .done s 0 else
   .bind (field (edit buffer cursor) 8) fun s stroke => if statusFailed s = true then .done s 0 else
   .bind (visibility buffer stroke (if kind = 1 then 1 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put buffer 48 (cursor + 1)) fun s _ => .done s stroke  
-     
+  .bind (put buffer 48 (cursor + 1)) fun s _ => .done s stroke
+
 
 def pageY (raw maximum sourceHeight : UInt64) : UInt64 :=
   let pixel := Lemma.Ink.Geometry.pixel (Lemma.Ink.Geometry.normalized raw maximum) sourceHeight

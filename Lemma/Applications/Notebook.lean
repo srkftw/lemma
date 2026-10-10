@@ -58,10 +58,14 @@ private def readPartStep (i _ : UInt32) (acc object target length _ : UInt64) : 
   let offset := i.toUInt64 * 128
   let count := minimum 128 (length - offset)
   .bind (blocking 5 object 0 offset count 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.responseField incoming 56) fun s actualCount => if statusFailed s = true then .done s 0 else
+  if different actualCount count = true then .done 234 0 else
   .bind (Lemma.Services.Store.Format.copy (Lemma.Services.Store.Client.responseData incoming) (target + offset) count) fun s _ =>
   .done s (acc + count)
 
-private def readObject (object target length : UInt64) : Action :=
+/-- Read an exact fixed record through bounded IPC. A short read is malformed
+before any bytes from that reply enter the destination. -/
+def readObject (object target length : UInt64) : Action :=
   if length ≤ 32768 then
   .boundedFoldU64 256 readPartStep ((length + 127) / 128).toUInt32 0 object target length 0 fun s n => .done s n
   else .done 234 0
