@@ -161,7 +161,7 @@ def startup (config : Configuration) : Array Line := #[
   ins (.loadImmediate .t0 Layout.firmwareStackTop), ins (.csrWrite .mscratch .t0),
   ins (.loadAddress .t0 "lemma_supervisor_vector"), ins (.csrWrite .stvec .t0),
   ins (.loadImmediate .t0 (if config.lemmasim then 514 else 2)), ins (.csrWrite .sie .t0),
-  ins (.loadImmediate .t0 0x82), ins (.csrWrite .mie .t0),
+  ins (.loadImmediate .t0 (if config.lemmasim then 0x282 else 0x82)), ins (.csrWrite .mie .t0),
   ins (.loadImmediate .t0 0x1baa), ins (.csrClear .mstatus .t0),
   ins (.loadImmediate .t0 0x800), ins (.csrSet .mstatus .t0)
 ] else #[]) ++ recordBootState config ++
