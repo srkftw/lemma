@@ -6,7 +6,7 @@ class DeviceModels(unittest.TestCase):
     def test_behavioral_mutations_are_rejected(self):
         original=(ROOT/'sim/host/lemma_model.c').read_text()
         changes=[('busy', 'if(p->status&1) {paper_error(p,4);return;}', '/* faulty replacement of in-flight refresh */'),
-                 ('loss', 'p->head=p->count=0; p->contact_deadline=0;', 'p->contact_deadline=0;')]
+                 ('loss', 'p->count=p->count?1:0; p->contact_deadline=0;', 'p->count=p->count; p->contact_deadline=0;')]
         for name,before,after in changes:
             with self.subTest(name=name),tempfile.TemporaryDirectory(prefix='lemma-mutant-') as d:
                 self.assertEqual(original.count(before),1)

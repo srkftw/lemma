@@ -18,7 +18,7 @@
   },
   "descriptor":{"base":268502016,"bytes":256,"magic":1280132179,"abi":1},
   "disk_initial_sectors":524288,
-  "inherited_fixed_devices":"QEMU virt: mask ROM, finisher, CLINT, PLIC, UART, goldfish RTC, eight VirtIO MMIO transports, PCIe host, two CFI flash banks, fw_cfg, platform bus. These remain present; only block slot1 is attached. RTC base comes from pinned virt map.",
+  "inherited_fixed_devices":"QEMU virt: mask ROM, finisher, CLINT, PLIC, UART, goldfish RTC, eight VirtIO MMIO transports, PCIe host, two CFI flash banks, fw_cfg, platform bus. These remain present; only block transport slot0 (IRQ1) is attached. RTC base comes from pinned virt map.",
   "registers":{
     "paper":{"MAGIC":0,"VERSION":8,"STATUS":16,"ERROR":24,"WIDTH":32,"HEIGHT":40,"STRIDE":48,"CAPS":56,"TILE_X":64,"TILE_Y":72,"TILE_W":80,"TILE_H":88,"TILE_LEN":96,"COMMAND":104,"SEQUENCE":112,"RECT_X":120,"RECT_Y":128,"RECT_W":136,"RECT_H":144,"MODE":152,"COMPLETED":160,"ACK":168,"RESET":176,"DESCRIPTOR":1024,"APERTURE":2048},
     "pen":{"MAGIC":0,"VERSION":8,"STATUS":16,"ERROR":24,"COUNT":32,"EPOCH":40,"LOSS":48,"MAX_X":56,"MAX_Y":64,"PRESSURE_MAX":72,"CAPS":80,"ACK":88,"LOSS_ACK":96,"RESET":104,"HEAD_SEQ":256,"HEAD_TIME":264,"HEAD_X":272,"HEAD_Y":280,"HEAD_PRESSURE":288,"HEAD_FLAGS":296,"HEAD_TOOL":304,"HEAD_BUTTONS":312,"HEAD_EPOCH":320}

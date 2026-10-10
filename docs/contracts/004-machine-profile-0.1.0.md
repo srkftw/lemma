@@ -25,6 +25,11 @@ keeps the pinned Lean/LLVM/LLD/Nix environment, and is separately named
 `-bios none` preserve real reset ROM/DTB and Lean M-firmware → S-kernel → U-task
 handoff. Integer-only emitted code does not imply the CPU lacks inherited
 extensions. The generated DTB/CPU inventory belongs to each run identity.
+The [fixed inventory](../../sim/profiles/virt-fixed-inventory-0.1.0.json)
+records the actual advertised ISA, Sv57 maximum, expanded CPU switches and
+pinned CSR implementation hashes. The supported guest uses Sv39 and the
+integer application ABI; inherited floating-point/H/compressed CPU behavior
+is explicitly accounted for.
 
 | Function | Base | Span | IRQ |
 | --- | ---: | ---: | ---: |
@@ -42,8 +47,10 @@ mask ROM, SiFive finisher, CLINT, PLIC, UART, RTC (`0x00101000`), fw_cfg,
 platform bus, PCIe host/interrupts and two CFI flash banks remain present and
 must be accounted for in binding observations. Additional guest-visible
 peripherals and CPU features cannot be erased from identity by `-nodefaults`.
-No network/PCI endpoints, random input device or flash image is attached by the
-Task 004 launch. RTC origin is fixed by its launch policy. UART is diagnostic,
+No network/PCI endpoints, RNG device or flash image is attached by the
+Task 004 launch. Inherited `/chosen/rng-seed` remains guest-visible: construction
+and reset use QEMU guest-random, bound to `-seed 0x4c454d4d413031`; record/replay
+records its bytes. RTC origin is fixed by its launch policy. UART is diagnostic,
 not pen/disk transport.
 
 A bounded descriptor is read by the guest from the paper device; its exact

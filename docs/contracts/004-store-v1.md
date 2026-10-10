@@ -112,6 +112,15 @@ to service-owned memory before entry. No span overlap is permitted. Read output
 is preflighted completely before the first copy. The block adapter must retain
 its kernel-owned bounce pins until DMA completion or actual reset/quiescence.
 
+Core0 bounded folds preserve every nonzero callback status. Index/search
+callbacks use status10 solely for intentional early termination; their own
+consumer explicitly converts that particular outcome to success. Other errors
+remain errors. The focused host probes preserve the same fold result and check
+a literal status10/value77 fixture. Earlier retained `store-probe-native1/2`
+and `descriptor-dtb-fixture3` PASS artifacts used an incorrect probe-wide
+status10 conversion and do not validate compiled fold semantics. Corrected
+observations use new output identities; the earlier files are not relabeled.
+
 | Context offset | Field |
 | --- | --- |
 | 0 | Requested operation:0 idle,1 read,2 write,3 flush |

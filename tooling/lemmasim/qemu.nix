@@ -12,6 +12,12 @@ let
     minimal = true; gtkSupport = true; sdlSupport = false; vncSupport = true;
     enableDocs = false; enableTools = false; guestAgentSupport = false;
   };
+  hardwareSources = builtins.path {
+    path = ../../sim/host;
+    name = "lemmasim-host-hardware";
+    filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
+      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_durable.c" ];
+  };
 in base.overrideAttrs (old: {
   pname = "lemmasim-qemu";
   nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.python3Packages.qemu-qmp ];
@@ -19,20 +25,22 @@ in base.overrideAttrs (old: {
   buildPhase = ''
     set -e
     runHook preBuild
-    make -C build -j$NIX_BUILD_CORES qemu-system-riscv64
+    make -C build -j$NIX_BUILD_CORES qemu-system-riscv64 trace/trace-events-all qemu-gmo
     test -x build/qemu-system-riscv64
     runHook postBuild
   '';
   installPhase = ''
     set -e
     runHook preInstall
-    make -C build install
+    # Only maintained executable targets are needed; do not compile unrelated
+    # upstream test executables as a side effect of installation.
+    build/pyvenv/bin/meson install -C build --no-rebuild
     test -x "$out/bin/qemu-system-riscv64"
     "$out/bin/qemu-system-riscv64" -machine help > machine-help.txt
     grep -q lemmasim-virt machine-help.txt
     runHook postInstall
   '';
   postPatch = (old.postPatch or "") + ''
-    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${../../sim/host}
+    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources}
   '';
 })

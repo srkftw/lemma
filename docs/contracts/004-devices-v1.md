@@ -7,7 +7,7 @@ second generic interface-description language. Host models are
 [lemma_model.c](../../sim/host/lemma_model.c); QEMU callbacks do transport only.
 
 Control registers and sample fields are aligned little-endian64-bit. Aperture
-accesses are1 or8bytes; unsupported/unaligned controls are rejected with error,
+accesses are1..8bytes; unsupported/unaligned controls are rejected with error,
 unknown reads return0. Writes to read-only/unknown registers set invalid-operation
 error. Reset value1 is the only command. IRQs are level-triggered via actual PLIC
 sources12/13; masking belongs to PLIC. MMIO reads never acknowledge anything.
@@ -15,7 +15,8 @@ sources12/13; masking belongs to PLIC. MMIO reads never acknowledge anything.
 Paper at`0x10010000`, pen at`0x10011000`, each span4096. Device identity values
 are paper1280331856, pen1280331854, ABI1. Errors:1 invalid access/command,
 2 wrong acknowledgement,3 malformed extent,4 Busy,5 sequence exhaustion,
-6 interrupted refresh. Reset does not restart sequence numbering.
+6 interrupted refresh. Reset does not restart sequence numbering. Read paper SEQUENCE112 after reset
+to derive a fresh request number, including interrupted accepted requests.
 
 | Paper offset | Meaning/reset |
 | ---: | --- |
@@ -24,7 +25,7 @@ are paper1280331856, pen1280331854, ABI1. Errors:1 invalid access/command,
 |32/40/48/56|width/height/packed stride/capabilities3; instance-fixed|
 |64/72/80/88/96|tile x/y/width/height/length;0|
 |104|command:1 upload tile,2 refresh; write-latched|
-|112|request sequence;0 staging|
+|112|write:stage request sequence; read:last accepted sequence;0 initial|
 |120/128/136/144/152|refresh x/y/width/height/mode;0 staging|
 |160|last completed sequence;0|
 |168|ack completed sequence; wrong value sets error2|
@@ -75,8 +76,12 @@ physical pressure measurement. Native QEMU input currently exposes ordinary abso
 pointer/buttons; physical tablet pressure has not been exercised.
 
 Status Data1, Loss2, Resync4, Error8. IRQ asserts for data/loss/error. Overflow,
-disconnection, invalid sample or reset drops queued **unacknowledged** stream,
-increments epoch/loss, latches out-of-band Loss and inhibits further ingress. The
+disconnection, invalid sample or reset discards queued followers and preserves
+the old immutable head as at most one diagnostic record, increments epoch/loss,
+latches out-of-band Loss and inhibits further ingress. The old head remains
+byte-stable across loss until exact head ACK or exact epoch LOSS_ACK. LOSS_ACK
+explicitly discards that old-epoch head; records must not be treated as drawing
+input while Loss is set. This prevents mixed fields during a concurrent overflow. The
 guest must end/cancel its current stroke, ack the exact epoch, then wait for a
 noncontact followed by fresh contact. A continuing held pen cannot fabricate a
 connecting line. Stale loss/head acknowledgements set error2. Counters saturate
@@ -91,6 +96,14 @@ sequence1..N, epoch1, nondecreasing tick timestamps, at most1million records.
 Adapter rejects empty/truncated/out-of-order streams. Each raw record enters FIFO
 at virtual time`timestamp*100ns`; ties preserve file order. Device assigns its own
 sequence/epoch. This input never accesses guest ink functions or application RAM.
+Optional `raw-output` captures every external ingress record, including rejected
+events, to a new file in that same input schema. Its sequence/epoch identify the
+external bridge stream (1..N/1); the controller assigns independent FIFO values.
+Native input already appears in QEMU record/replay: replay must not also inject
+its captured raw-output as a second source. Scheduled raw-file sessions identify
+and preserve their original file. Equal-time raw records retain file order;
+equal-time QEMU virtual timers follow stable arming order in the pinned timer
+list. No host sleeps choose guest event timestamps.
 
 Descriptor is32u64 words/256bytes at paper+1024. Word0 magic1280132179;1 ABI1;
 2 bytes256;3 sum of other words modulo2^64 (integrity check, not authentication);

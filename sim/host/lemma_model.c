@@ -6,7 +6,8 @@
 #include <limits.h>
 static void pen_loss(LemmaPen *p)
 {
-    p->head=p->count=0; p->contact_deadline=0; p->loss=true; p->resync=true; p->release_seen=false;
+    /* Preserve the immutable old head across loss; discard its followers. */
+    p->count=p->count?1:0; p->contact_deadline=0; p->loss=true; p->resync=true; p->release_seen=false;
     if (p->epoch != UINT64_MAX) p->epoch++; else p->error=5;
     if (p->lost != UINT64_MAX) p->lost++;
 }
@@ -74,7 +75,7 @@ void lemma_pen_write(LemmaPen *p,uint32_t a,uint64_t v)
             p->head=(p->head+1)%LEMMA_PEN_FIFO; p->count--;
         } else p->error=2;
     } else if(a==LEMMA_PEN_LOSS_ACK) {
-        if(p->loss && v==p->epoch) { p->loss=false; p->error=0; }
+        if(p->loss && v==p->epoch) { p->head=p->count=0; p->loss=false; p->error=0; }
         else p->error=2;
     } else if(a==LEMMA_PEN_RESET && v==1) {
         pen_loss(p);
@@ -124,6 +125,7 @@ uint64_t lemma_paper_read(const LemmaPaper *p,uint32_t a,unsigned size)
     case LEMMA_PAPER_ERROR:return p->error;case LEMMA_PAPER_WIDTH:return p->width;
     case LEMMA_PAPER_HEIGHT:return p->height;case LEMMA_PAPER_STRIDE:return p->stride;
     case LEMMA_PAPER_CAPS:return 3;case LEMMA_PAPER_COMPLETED:return p->completed;
+    case LEMMA_PAPER_SEQUENCE:return p->last_sequence;
     default:return 0;
     }
 }

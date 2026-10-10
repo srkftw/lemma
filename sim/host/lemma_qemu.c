@@ -7,6 +7,7 @@
 #include "hw/core/irq.h"
 #include "hw/core/qdev-properties.h"
 #include "hw/core/boards.h"
+#include "hw/core/resettable.h"
 #include "qemu/timer.h"
 #include "ui/console.h"
 #include "ui/input.h"
@@ -24,14 +25,16 @@ struct LemmaDevices {
     QemuConsole *console; QemuInputHandlerState *input;
     uint64_t mouse_x,mouse_y,mouse_flags;
     bool input_dirty;
-    char *input_file,*trace_file;
-    FILE *trace;
+    char *input_file,*output_file,*trace_file;
+    FILE *trace,*raw_output;
+    uint64_t ingress_sequence;
     LemmaSample *recorded;
     size_t recorded_count,recorded_next;
 };
 void lemma_binding_create(MachineState *,DeviceState *);
 void lemma_binding_add_fdt(MachineState *);
 void lemma_binding_set_dtb(uint64_t,uint64_t);
+char *lemma_block_state_json(void);
 static LemmaDevices *binding_devices;
 static void lemma_trace(LemmaDevices *s,const char *event,uint64_t a,uint64_t b,uint64_t c)
 {
@@ -43,6 +46,23 @@ static void lemma_trace(LemmaDevices *s,const char *event,uint64_t a,uint64_t b,
 }
 static void lemma_update_irqs(LemmaDevices *s)
 { qemu_set_irq(s->paper_irq,lemma_paper_irq(&s->paper));qemu_set_irq(s->pen_irq,lemma_pen_irq(&s->pen)); }
+static void lemma_ingress(LemmaDevices *s,const LemmaSample *sample)
+{
+    /* Capture external ingress, including events rejected at a loss boundary.
+     * Controller sequence/epoch remain independently observable in its head. */
+    uint64_t fields[]={++s->ingress_sequence,sample->time,sample->x,sample->y,
+        sample->pressure,sample->flags,sample->tool,sample->buttons,1};
+    if(s->raw_output) {
+        uint8_t bytes[72];
+        for(unsigned i=0;i<9;i++)for(unsigned j=0;j<8;j++)bytes[i*8+j]=fields[i]>>(j*8);
+        if(fwrite(bytes,1,sizeof(bytes),s->raw_output)!=sizeof(bytes) || fflush(s->raw_output)) {
+            error_report("LemmaSim raw-output write failed");exit(1);
+        }
+    }
+    bool accepted=lemma_pen_push(&s->pen,sample);
+    lemma_trace(s,accepted?"pen-input":"pen-input-rejected",s->ingress_sequence,
+        accepted?s->pen.next_sequence-1:0,s->pen.epoch);
+}
 static void lemma_watchdog(void *opaque)
 {
     LemmaDevices *s=opaque;
@@ -84,6 +104,7 @@ static void lemma_pen_mmio_write(void *opaque,hwaddr a,uint64_t v,unsigned size)
 {
     LemmaDevices *s=opaque;
     if(size==8 && !(a&7))lemma_pen_write(&s->pen,a,v);else s->pen.error=3;
+    lemma_schedule_watchdog(s);
     lemma_update_irqs(s);
 }
 static const MemoryRegionOps paper_ops={.read=lemma_paper_mmio_read,.write=lemma_paper_mmio_write,
@@ -95,11 +116,14 @@ static const MemoryRegionOps pen_ops={.read=lemma_pen_mmio_read,.write=lemma_pen
 static bool lemma_gfx_update(void *opaque)
 {
     LemmaDevices *s=opaque; DisplaySurface *surface=qemu_console_surface(s->console);
-    uint32_t *pixels=surface_data(surface);
+    uint8_t *pixels=surface_data(surface);
     for(uint32_t y=0;y<s->height;y++)for(uint32_t x=0;x<s->width;x++) {
+        /* Pixman may pad each host row beyond width*4; guest Gray4 remains
+         * tightly packed with its independently declared controller stride. */
+        uint32_t *row=(uint32_t *)(pixels+(size_t)y*surface_stride(surface));
         uint8_t q=s->paper.visible[y*s->paper.stride+x/2];
         uint32_t c=((x&1)?q&15:q>>4)*17;
-        pixels[y*s->width+x]=0xff000000|c|(c<<8)|(c<<16);
+        row[x]=0xff000000|c|(c<<8)|(c<<16);
     }
     qemu_console_update(s->console,0,0,s->width,s->height);
     return true;
@@ -125,7 +149,7 @@ static void lemma_input_sync(DeviceState *dev)
     LemmaSample sample={.time=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/100,
         .x=s->mouse_x,.y=s->mouse_y,.pressure=(s->mouse_flags&1)?s->pressure_max/2:0,
         .flags=s->mouse_flags|LEMMA_PEN_PROXIMITY|LEMMA_PEN_SYNTHETIC,.tool=1};
-    if(s->input_dirty) {lemma_pen_push(&s->pen,&sample);lemma_trace(s,"pen-input",s->pen.next_sequence-1,sample.flags,s->pen.epoch);lemma_schedule_watchdog(s);lemma_update_irqs(s);s->input_dirty=false;}
+    if(s->input_dirty) {lemma_ingress(s,&sample);lemma_schedule_watchdog(s);lemma_update_irqs(s);s->input_dirty=false;}
 }
 static const QemuInputHandler lemma_input_handler={.name="Lemma raw pointer (synthetic pressure)",
     .mask=INPUT_EVENT_MASK_ABS|INPUT_EVENT_MASK_BTN,.event=lemma_input_event,.sync=lemma_input_sync};
@@ -134,7 +158,7 @@ static void lemma_recorded_input(void *opaque)
     LemmaDevices *s=opaque;uint64_t now=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
     while(s->recorded_next<s->recorded_count && s->recorded[s->recorded_next].time<=now/100) {
         LemmaSample *sample=&s->recorded[s->recorded_next++];
-        lemma_pen_push(&s->pen,sample);lemma_trace(s,"pen-input",s->pen.next_sequence-1,sample->flags,s->pen.epoch);
+        lemma_ingress(s,sample);
     }
     lemma_schedule_watchdog(s);lemma_update_irqs(s);
     if(s->recorded_next<s->recorded_count)timer_mod_ns(s->input_timer,s->recorded[s->recorded_next].time*100);
@@ -160,11 +184,17 @@ static void lemma_load_input(LemmaDevices *s,Error **errp)
     }
     timer_mod_ns(s->input_timer,s->recorded[0].time*100);
 }
-static void lemma_reset(DeviceState *dev)
+static void lemma_reset_enter(Object *obj,ResetType type)
 {
-    LemmaDevices *s=LEMMA_PAPER_PEN(dev);
+    LemmaDevices *s=LEMMA_PAPER_PEN(obj);
     timer_del(s->timer);timer_del(s->pen_timer);lemma_paper_reset(&s->paper);
-    lemma_pen_write(&s->pen,LEMMA_PEN_RESET,1);lemma_trace(s,"device-reset",s->paper.status,s->pen.epoch,0);lemma_update_irqs(s);
+    lemma_pen_write(&s->pen,LEMMA_PEN_RESET,1);
+    lemma_trace(s,"device-reset",s->paper.status,s->pen.epoch,0);
+}
+static void lemma_reset_exit(Object *obj,ResetType type)
+{
+    /* PLIC legacy hold resets pending bits; drive levels only after it finishes. */
+    lemma_update_irqs(LEMMA_PAPER_PEN(obj));
 }
 static void lemma_realize(DeviceState *dev,Error **errp)
 {
@@ -186,6 +216,10 @@ static void lemma_realize(DeviceState *dev,Error **errp)
         s->trace=fopen(s->trace_file,"wx");
         if(!s->trace) {error_setg(errp,"trace-file must be a new writable file: %s",strerror(errno));return;}
     }
+    if(s->output_file) {
+        s->raw_output=fopen(s->output_file,"wx");
+        if(!s->raw_output) {error_setg(errp,"raw-output must be a new writable file: %s",strerror(errno));return;}
+    }
     lemma_load_input(s,errp);
 }
 static void lemma_finalize(Object *obj)
@@ -196,6 +230,7 @@ static void lemma_finalize(Object *obj)
     if(s->input_timer)timer_free(s->input_timer);
     if(s->pen_timer)timer_free(s->pen_timer);
     if(s->trace)fclose(s->trace);
+    if(s->raw_output)fclose(s->raw_output);
     g_free(s->recorded);lemma_paper_destroy(&s->paper);
 }
 static const Property lemma_properties[]={
@@ -203,6 +238,7 @@ static const Property lemma_properties[]={
     DEFINE_PROP_UINT32("height",LemmaDevices,height,2200),
     DEFINE_PROP_UINT32("pressure-max",LemmaDevices,pressure_max,4095),
     DEFINE_PROP_STRING("raw-input",LemmaDevices,input_file),
+    DEFINE_PROP_STRING("raw-output",LemmaDevices,output_file),
     DEFINE_PROP_STRING("trace-file",LemmaDevices,trace_file),
 };
 static char *lemma_get_state(Object *obj,Error **errp)
@@ -213,12 +249,17 @@ static char *lemma_get_state(Object *obj,Error **errp)
     return g_strdup_printf("{\"abi\":1,\"pen\":{\"count\":%u,\"epoch\":%"PRIu64",\"loss\":%"PRIu64",\"resync\":%s,\"head_sequence\":%"PRIu64"},\"paper\":{\"status\":%"PRIu64",\"error\":%"PRIu64",\"completed\":%"PRIu64",\"pending_sequence\":%"PRIu64",\"target_sha256\":\"%s\",\"visible_sha256\":\"%s\"}}",
         s->pen.count,s->pen.epoch,s->pen.lost,s->pen.resync?"true":"false",lemma_pen_read(&s->pen,LEMMA_PEN_HEAD_SEQ),s->paper.status,s->paper.error,s->paper.completed,s->paper.last_sequence,target,visible);
 }
+static char *lemma_get_storage_state(Object *obj,Error **errp)
+{ return lemma_block_state_json(); }
 static void lemma_class_init(ObjectClass *klass,const void *data)
 {
     DeviceClass *dc=DEVICE_CLASS(klass);
-    dc->realize=lemma_realize;device_class_set_legacy_reset(dc,lemma_reset);
+    ResettableClass *rc=RESETTABLE_CLASS(klass);
+    dc->realize=lemma_realize;
+    rc->phases.enter=lemma_reset_enter;rc->phases.exit=lemma_reset_exit;
     device_class_set_props(dc,lemma_properties);
     object_class_property_add_str(klass,"device-state",lemma_get_state,NULL);
+    object_class_property_add_str(klass,"storage-state",lemma_get_storage_state,NULL);
     dc->desc="LemmaSim project-owned paper/pen controllers v1 (host hardware only)";
     /* This device has no VMState: whole-machine snapshots are explicitly unsupported. */
 }
@@ -247,6 +288,9 @@ void lemma_binding_create(MachineState *machine,DeviceState *irqchip)
     if(machine->ram_size!=128*MiB || machine->smp.cpus!=1 || machine->dtb) {
         error_report("lemmasim-virt/0.1.0 requires 128MiB, one hart, generated DTB");exit(1);
     }
+    dev->id=g_strdup("lemma-hardware");
+    /* Fixed board hardware is outside the dynamic platform-bus inventory. */
+    object_property_add_child(OBJECT(machine),dev->id,OBJECT(dev));
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev),&error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev),0,LEMMA_PAPER_BASE);sysbus_mmio_map(SYS_BUS_DEVICE(dev),1,LEMMA_PEN_BASE);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev),0,qdev_get_gpio_in(irqchip,12));
