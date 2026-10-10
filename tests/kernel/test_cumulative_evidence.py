@@ -87,5 +87,33 @@ class CumulativeEvidenceTests(unittest.TestCase):
     def test_complete_bound_fixture_is_accepted(self):
         self.assertEqual(self.validate()["status"], "PASS")
 
+    def test_relative_lane_directory_is_bound_to_explicit_checkout_before_build(self):
+        # The CLI accepts relative build/kernel paths. This fixture runs from
+        # another cwd and fails deliberately at build, without any guest claim.
+        output = self.root / "build/kernel/relative-lane"
+        def unavailable(**kwargs):
+            self.assertEqual(kwargs["root"], self.root.resolve())
+            self.assertEqual(kwargs["output_dir"], output / "J-normal-O0")
+            self.assertTrue(kwargs["output_dir"].is_absolute())
+            raise Core0Error("fixture builder unavailable")
+        with patch.object(cumulative, "source_identity", return_value=self.identity), \
+             patch.object(cumulative, "require_tools"), \
+             patch.object(cumulative, "source_inputs", return_value=self.sources), \
+             patch.object(cumulative, "acceptance_inputs", return_value=self.consumers), \
+             patch.object(cumulative, "build", side_effect=unavailable) as builder:
+            report = cumulative.check(root=self.root, work_dir=Path("build/kernel/relative-lane"),
+                                      lane="J", clean=False, timeout=300, deadline=2400)
+        builder.assert_called_once()
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(report["error"], "fixture builder unavailable")
+        self.assertEqual(json.loads((output / "result.json").read_text()), report)
+
+    def test_relative_output_traversal_is_rejected_before_build(self):
+        with patch.object(cumulative, "build") as builder:
+            with self.assertRaisesRegex(Core0Error, "build/kernel subdirectory"):
+                cumulative.check(root=self.root, work_dir=Path("../outside"),
+                                 lane="J", clean=False, timeout=300, deadline=2400)
+        builder.assert_not_called()
+
 
 if __name__ == "__main__": unittest.main()

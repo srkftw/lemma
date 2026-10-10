@@ -89,6 +89,8 @@ def validate_lane(path: Path, root: Path) -> dict:
 
 def check(*, root: Path, work_dir: Path, lane: str, clean: bool,
           timeout: float, deadline: float) -> dict:
+    root = root.resolve()
+    work_dir = (root / work_dir).resolve()
     if (any(isinstance(v, bool) or not math.isfinite(v) or v <= 0 for v in (timeout, deadline))
             or timeout > 600 or deadline > 2400):
         raise Core0Error("finite build timeout<=600 and lane deadline<=2400 required")

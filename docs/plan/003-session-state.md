@@ -918,3 +918,16 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   exact clean worktree, and observe canonical append-copy source mutation at
   O0/O2 using those exact clean controls. Highest complete gate remainsI;
   Gate K target changes are held until both J exit obligations actually pass.
+
+## Clean J controller path failure (2026-10-10 03:17 UTC)
+
+- Committed candidate78deb0e69347d1e70bd5c34a40095cf86a767967, tree
+  4e7a526d64604ec4e80b52613afc73ce61392790, was checked out fresh with no
+  .lake/build output. Maintained J clean attempt1 failed before any QEMU launch:
+  relative CatalogExport.lean was not a subpath of the absolute checkout root.
+  The original FAIL report remains in lemma-kernel-j-acceptance/lemma/build/kernel.
+- Narrow host repair resolves the explicit root and root-relative work directory
+  before invoking builders. Regression fixtures exercise a relative path from
+  another cwd and reject relative traversal before any build. Target unchanged.
+- Commit this host repair separately and start fresh clean acceptance at that
+  exact revision. Do not relabel the first run or carry its partial output forward.

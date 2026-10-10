@@ -993,7 +993,7 @@
           }
         ]
       },
-      "pending": "Practical CLI and held host fixes passed. Commit candidate and require fresh clean four-profile J lane and canonical append-copy mutation at O0/O2 before releasing K.",
+      "pending": "Fresh clean J attempt1 failed before QEMU on a host relative path. Narrow path repair committed next; fresh clean four-profile acceptance and canonical append mutation O0/O2 remain required.",
       "practical_terminal_failures": [
         {
           "report": "build/kernel/gateJ/focused-readable-terminal-attempt1/result.json",
@@ -1040,6 +1040,21 @@
         "returncode": -9,
         "pid_absent": true,
         "scope": "Actual ordinary operator CLI; not clean cumulative J acceptance"
+      },
+      "clean_path_failure": {
+        "status": "FAIL",
+        "source": {
+          "clean": true,
+          "commit": "78deb0e69347d1e70bd5c34a40095cf86a767967",
+          "tree": "4e7a526d64604ec4e80b52613afc73ce61392790"
+        },
+        "report": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-acceptance/lemma/build/kernel/J-clean-attempt1/result.json",
+        "report_sha256": "5f61f7f337a1584fd5cad002981dce109335f1e5a94451e3185f3bca6d26511e",
+        "elapsed_seconds": 37.588707105023786,
+        "error": "'build/kernel/J-clean-attempt1/J-normal-O0/CatalogExport.lean' is not in the subpath of '/home/sreekumaar/.codex/worktrees/lemma-kernel-j-acceptance/lemma'",
+        "completed_cases": 0,
+        "qemu_sessions": 0,
+        "repair": "Normalize explicit root and lane output to absolute paths before builder invocation; target unchanged."
       }
     },
     {
