@@ -29,7 +29,7 @@ class BufferNegativeEvidence(unittest.TestCase):
         changed = negative.append_truncated_source(original)
         self.assertEqual(changed.replace(negative.AFTER, negative.BEFORE, 1), original)
         self.assertEqual(changed.count(negative.AFTER), 1)
-        self.assertIn("if operation = 4 then if 0 < count then count - 1", changed)
+        self.assertIn("count - (if operation = 4 then if 0 < count then 1 else 0 else 0)", changed)
         for source in (changed, original + negative.BEFORE, original.replace(negative.BEFORE, ""),
                        original.replace("(page slot + offset) count", "(page slot + offset) (count - 1)")):
             with self.assertRaises(Core0Error): negative.append_truncated_source(source)

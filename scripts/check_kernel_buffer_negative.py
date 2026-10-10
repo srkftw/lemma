@@ -27,7 +27,10 @@ from run_buffer_session import BufferSession, validate_quiescence
 SERVER = "Lemma/Services/Buffer/Server.lean"
 RUNNERS = (*POSITIVE_RUNNERS, "scripts/check_kernel_buffer_negative.py")
 BEFORE = "  .bind (Protocol.copy (incoming + 128) (page slot + offset) count) fun s _ => if s = 0 then\n"
-AFTER = "  .bind (Protocol.copy (incoming + 128) (page slot + offset) (if operation = 4 then if 0 < count then count - 1 else count else count)) fun s _ => if s = 0 then\n"
+# Subtract the selected one rather than selecting an already decremented
+# value. Both forms truncate positive Appends only, but the latter introduces
+# llvm.usub.sat.i64 under pinned O2 and fails the unchanged intrinsic audit.
+AFTER = "  .bind (Protocol.copy (incoming + 128) (page slot + offset) (count - (if operation = 4 then if 0 < count then 1 else 0 else 0))) fun s _ => if s = 0 then\n"
 CLEANUP = {"explicit_host_stop": True, "process_group_killed": True,
            "target_exited_before_cleanup": False, "process_reaped": True}
 

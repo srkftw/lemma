@@ -9,9 +9,10 @@
     "E",
     "F",
     "G",
-    "H"
+    "H",
+    "I"
   ],
-  "higher_gates": "I-K not run; clean committed H cumulative checkpoint pending",
+  "higher_gates": "J clean positives observed at b297; O2 canonical append mutation audit rejected, so J exit incomplete and K held.",
   "proof_scope": "Indexed ownership and capability rights-attenuation model lemmas only; no emitted-code/whole-kernel correctness theorem",
   "gateC": {
     "schema_version": 1,

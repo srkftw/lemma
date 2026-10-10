@@ -1,10 +1,15 @@
 # Task 003 kernel and isolated services
 
-Current accepted prefix: Gates A–E at clean implementation
-`0f34b21c5b1f6482f507b131bd28851b9b26fed0`, tree
-`85874c8a207af2103a717febfdbccde50147ec5f`. F–K remain not run; the full
-scheduler, capabilities, IPC and buffer-service milestone is unfinished.
-No Task003 push, PR, actual CI or merge has occurred.
+Current accepted prefix: Gates A–I at clean implementation
+`22183c167ca62102a4a8db10a95ee77b27137f10`, tree
+`685a03cbf162aed80854ea19e0edf39e9bae6f3a`. J has four fresh clean
+passing service profiles at `b2979083fb10a6540d78737d6f9b738e9b482f94`,
+but its O2 append mutation remains blocked by a closed intrinsic audit rejection.
+Gate K target qualification is held. No Task003 push, PR, actual CI or merge
+has occurred. The full milestone remains unfinished.
+
+The following A–E paragraph is a historical checkpoint; the gate ledger and
+session state carry the later source-bound I and J observations.
 
 Fresh clean A–E acceptance passed at O0 and O2:58host tests,20images,24checker
 reports,28QEMU sessions and6fresh syscall corpora, in437.64s. All images were

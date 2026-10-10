@@ -18,6 +18,9 @@ def unit(role='user',configuration='normal'):
             'used_execution_ops':[],'used_device_ops':[],'used_loops':[]}
 
 class KernelAuditFailures(unittest.TestCase):
+    def setUp(self):
+        (ROOT/'build/kernel').mkdir(parents=True, exist_ok=True)
+
     def test_trigger14_fifo_is_exact_kernel_v02_authority_and_preserves_legacy(self):
         from audit_kernel import _kernel_access_op
         from audit_device import _access_op

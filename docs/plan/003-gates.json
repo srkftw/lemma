@@ -938,7 +938,7 @@
           ]
         }
       },
-      "next_command": "Commit the held J candidate; create a fresh exact clean worktree; run maintained check_kernel_cumulative.py --lane J, then isolated canonical Server append mutation at both optimizations using those exact clean controls.",
+      "next_command": "Commit the equivalent canonical mutator and narrow host repairs. Fresh clean four-profile J and actual canonical append O0/O2 negatives at that same exact commit remain required.",
       "repaired_focused_O0": {
         "status": "PASS",
         "scope": "precommit focused actual guests with then-held exact consumers; not clean qualification",
@@ -993,7 +993,7 @@
           }
         ]
       },
-      "pending": "Fresh clean J attempt1 failed before QEMU on a host relative path. Narrow path repair committed next; fresh clean four-profile acceptance and canonical append mutation O0/O2 remain required.",
+      "pending": "Commit the equivalent canonical mutator and narrow host repairs. Fresh clean four-profile J and actual canonical append O0/O2 negatives at that same exact commit remain required.",
       "practical_terminal_failures": [
         {
           "report": "build/kernel/gateJ/focused-readable-terminal-attempt1/result.json",
@@ -1055,12 +1055,200 @@
         "completed_cases": 0,
         "qemu_sessions": 0,
         "repair": "Normalize explicit root and lane output to absolute paths before builder invocation; target unchanged."
+      },
+      "fresh_host_setup_failure": {
+        "status": "FAIL",
+        "source_commit": "b2979083fb10a6540d78737d6f9b738e9b482f94",
+        "log": "build/kernel/gateJ/host/J-clean-path-pinned-host.log",
+        "tests_run": 239,
+        "errors": 3,
+        "error": "Three existing host fixtures required build/kernel before TemporaryDirectory; no target launched by those errors.",
+        "repair": "Fixture classes now create their scratch parent; three original fixtures passed in a genuinely empty temporary checkout root.",
+        "repair_log": "build/kernel/gateJ/host/fresh-host-fixture-repair.log",
+        "repair_scope": "Host fixture setup only; no target change and original FAIL retained."
+      },
+      "clean_four_profile_observation": {
+        "status": "PASS",
+        "source": {
+          "clean": true,
+          "commit": "b2979083fb10a6540d78737d6f9b738e9b482f94",
+          "tree": "72355a3a39101e8a503e91065ed6b84aad607d2a"
+        },
+        "report": {
+          "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-acceptance/lemma/build/kernel/J-clean-path-attempt1/result.json",
+          "sha256": "0cebb3b805bf080b4a86bb6324ab35d44abd4cdce19086b9d97cd181332fce76"
+        },
+        "elapsed_seconds": 454.272660246992,
+        "cases": [
+          {
+            "configuration": "service-normal",
+            "optimization": "O0",
+            "report": {
+              "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-acceptance/lemma/build/kernel/J-clean-path-attempt1/J-normal-O0-run/result.json",
+              "sha256": "0e490266062005c086a7fabe7fcfb1c27d86fed644be7cc724a9c63e2d4ea485"
+            },
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 0,
+              "actual_global_denials": 0,
+              "actual_lease_expiries": 0,
+              "actual_math_preemptions": 537,
+              "actual_pending_restarts": 0,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 406,
+              "ordinary_commands": 306
+            },
+            "pid": 771637,
+            "returncode": -9,
+            "pid_absent": true
+          },
+          {
+            "configuration": "service-normal",
+            "optimization": "O2",
+            "report": {
+              "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-acceptance/lemma/build/kernel/J-clean-path-attempt1/J-normal-O2-run/result.json",
+              "sha256": "947769a382df4e641cffba4d6b921e94eedce26bde099dd3c4e4872caeaf5049"
+            },
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 0,
+              "actual_global_denials": 0,
+              "actual_lease_expiries": 0,
+              "actual_math_preemptions": 401,
+              "actual_pending_restarts": 0,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 416,
+              "ordinary_commands": 306
+            },
+            "pid": 772397,
+            "returncode": -9,
+            "pid_absent": true
+          },
+          {
+            "configuration": "service-development",
+            "optimization": "O0",
+            "report": {
+              "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-acceptance/lemma/build/kernel/J-clean-path-attempt1/J-development-O0-run/result.json",
+              "sha256": "230367a941085aa3cc5825db8af5218933d8d1b5d4df1eff5ffe86668e4b68d2"
+            },
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 1,
+              "actual_global_denials": 38,
+              "actual_lease_expiries": 1,
+              "actual_math_preemptions": 1075,
+              "actual_pending_restarts": 1,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 497,
+              "ordinary_commands": 306
+            },
+            "pid": 773081,
+            "returncode": -9,
+            "pid_absent": true
+          },
+          {
+            "configuration": "service-development",
+            "optimization": "O2",
+            "report": {
+              "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-acceptance/lemma/build/kernel/J-clean-path-attempt1/J-development-O2-run/result.json",
+              "sha256": "bd9774df2b2e88ff71b7f1bc0c6f444f69f3c0a44d0e3b5c152b320931995b5b"
+            },
+            "qualification": {
+              "actual_binary_append_cases": 1,
+              "actual_faults": 1,
+              "actual_global_denials": 66,
+              "actual_lease_expiries": 1,
+              "actual_math_preemptions": 1334,
+              "actual_pending_restarts": 1,
+              "application_statuses": [
+                0,
+                200,
+                201,
+                202,
+                203,
+                205,
+                206
+              ],
+              "final_remaining_frames": 497,
+              "ordinary_commands": 306
+            },
+            "pid": 774010,
+            "returncode": -9,
+            "pid_absent": true
+          }
+        ],
+        "scope": "Fresh clean J positives at b297 only; mutation exit incomplete, highest remains I."
+      },
+      "append_source_negative_observation": {
+        "source_commit": "b2979083fb10a6540d78737d6f9b738e9b482f94",
+        "O0": {
+          "status": "PASS",
+          "report": {
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-append-negative/lemma/build/kernel/J-append-negative-O0-run/result.json",
+            "sha256": "00bbbf44d1901d943b4644d9317d17679d540273912e08ba9f6f6d3d805df125"
+          },
+          "scope": "Actual final append byte FF-to-00; original inner semantic FAIL retained with full replay and live kill/reap."
+        },
+        "O2": {
+          "status": "BLOCKED",
+          "audit_status": "FAIL",
+          "guest_execution": "NOT_RUN",
+          "audit_failure": {
+            "path": "/home/sreekumaar/.codex/worktrees/lemma-kernel-j-path-append-negative/lemma/build/kernel/J-append-negative-O2/audit-failure.json",
+            "sha256": "236db94a62d2f1851ef31d6e0ba6114d564745c25f3d8d87d621cfc67e7bf7b5"
+          },
+          "observed": "Pinned LLVM O2 emitted llvm.usub.sat.i64 for the canonical zero-safe decrement. Closed intrinsic audit rejected it; no mutation pass inferred."
+        }
+      },
+      "canonical_mutation_probe": {
+        "status": "PASS",
+        "path": "build/compiler-gateK/append-decrement-probe-attempt2/result.json",
+        "sha256": "8accc478482fcf5fa9bda7629e792eb5268adfe5ab544be547c52c03ad2462b5",
+        "scope": "Genuine Lean elaboration and existing frontend/backend to pinned LLVM O0/O2 RV64 object. Thirty-five ordinary Lean boundary cases are finite tests. No package audit or guest mutation qualification.",
+        "replacement": "count - (if operation = 4 then if 0 < count then 1 else 0 else 0)",
+        "observed": "Original generated O2 usub.sat; replacement generated no intrinsics and had no undefined symbols at O0/O2. Intrinsic auditor unchanged."
       }
     },
     {
       "gate": "K",
       "name": "clean qualification and publication",
-      "status": "not_run"
+      "status": "not_run",
+      "host_mutation_campaign": {
+        "status": "HOST_PREPARATION_PASS",
+        "actual_campaign": "NOT_RUN",
+        "kernel_host_tests": 254,
+        "scaffold_tests": 18,
+        "metadata": "PASS",
+        "summary": "build/kernel/gateK/host/mutations-descendant-host-summary.json",
+        "summary_sha256": "2ba38e1b9ba974a71534a21b76d8cc0889ffe7d19f1613fccc762691c46d9712",
+        "independent_review": "build/kernel/gateK/mutation-controller-independent-review/summary.json",
+        "independent_review_sha256": "f949998251dda376583fe62f12b27e13ad26cce2fd4ed2a6c5d3fde25b9691c0",
+        "scope": "Four exact source negatives using fresh same-commit controls; actual target campaign still not run. Pre-existing descendant ownership repair observed with native child/reparenting fixture."
+      }
     }
   ],
   "verified_prefix_commit": "22183c167ca62102a4a8db10a95ee77b27137f10"

@@ -931,3 +931,71 @@ Gate G construction is now authorized because focused F and mandatory timer cont
   another cwd and reject relative traversal before any build. Target unchanged.
 - Commit this host repair separately and start fresh clean acceptance at that
   exact revision. Do not relabel the first run or carry its partial output forward.
+
+## Fresh host scratch setup (2026-10-10 03:21 UTC)
+
+- At cleanb2979083fb10a6540d78737d6f9b738e9b482f94, the first kernel host
+  suite ran239 tests but three existing fixtures errored because build/kernel
+  did not yet exist. The original log remains J-clean-path-pinned-host.log.
+- The two fixture classes now create their owned scratch parent. All three
+  original fixtures then passed under an actually empty temporary checkout root;
+  fresh-host-fixture-repair.log. This changes no target code or acceptance rule.
+- The independent clean J lane is running at unchangedb297908. Its normal O0
+  actual306-command protocol passed, with537 arithmetic preemptions and strict
+  raw replay. Later profiles and canonical mutation remain pending; no full J
+  pass is claimed. Host suite is also rerun atb297908 with the scratch parent
+  present; that setup distinction must remain explicit in the evidence.
+
+## Clean J positives; O2 mutation blocked (2026-10-10 03:40 UTC)
+
+- Fresh clean b2979083fb10a6540d78737d6f9b738e9b482f94, tree
+  72355a3a39101e8a503e91065ed6b84aad607d2a, passed all four actual J
+  profiles with306 ordinary commands each. Source/consumer inventories stayed
+  bound; all four VMs were explicitly killed/reaped and PIDs are absent.
+  Aggregate454.273s, report SHA256
+  0cebb3b805bf080b4a86bb6324ab35d44abd4cdce19086b9d97cd181332fce76.
+- Development O0/O2 each observed one actual fault, lease expiry and pending
+  restart, final497 frames. The independent summary accidentally queried the
+  wrong pending-restart key and wrote null; the original actual reports use
+  actual_pending_restarts=1. Ledger reads the actual qualification dictionaries.
+- Isolated canonical append mutation O0 passed its outer negative qualification:
+  successful128-byte Append followed by Read expected finalFF, observed00.
+  Actual inner byte-reference FAIL is unchanged; full replay, quiet settlement,
+  live explicit kill/reap and absentPID passed. Outer SHA256
+  00bbbf44d1901d943b4644d9317d17679d540273912e08ba9f6f6d3d805df125.
+- O2 built but closed artifact audit rejected generated llvm.usub.sat.i64.
+  No O2 guest ran; this rejection is not a qualifying mutation result. Genuine
+  Lean elaboration/LLVM diagnostic probe is underway for an equivalent closed
+  mutator form. No intrinsic audit weakening or target policy change approved.
+- New K host mutation campaign is held, host253/scaffold18/metadata PASS;
+  actual campaign NOT_RUN. Highest complete remains I and K target is held.
+  Commit the narrow repaired canonical mutator and host fixture setup, then
+  rerun fresh J positives and both actual negatives at the same exact revision.
+
+## Equivalent canonical mutator probe (2026-10-10 03:47 UTC)
+
+- Ignored genuine Lean probe attempt2 passed declaration elaboration and the
+  existing frontend/backend, then pinned O0/O2 LLVM optimization/object lowering.
+  Original expression reproduced llvm.usub.sat.i64 at O2. Equivalent
+  count - (if operation=4 then if0<count then1 else0 else0) emitted no
+  intrinsics and no undefined symbols. Thirty-five ordinary Lean boundary cases
+  covered zero/max/other operations; finite tests, not a universal proof.
+  Report SHA2568accc478482fcf5fa9bda7629e792eb5268adfe5ab544be547c52c03ad2462b5.
+- Host canonical mutator now uses that equivalent form; target Server unchanged
+  and no intrinsic audit rule changed. Full package O2 may optimize differently,
+  so fresh clean controls, actual artifact audits and both guest negatives remain
+  mandatory at the next exact committed revision. Old failures stay retained.
+- Read-only highest-risk review found no new concrete target defect. K requires
+  actual raw managed status from validated original hardware frame, halfword
+  ECALL diagnostic and fresh exact O0 stack audit. Pinned QEMU source predicts
+  U SRET/MRET cause2 and opcode stval; actual guests must later confirm.
+- Mutation host runner had a concrete pre-existing grandchild ownership defect.
+  Narrow full-descendant baseline repair and actual reparenting fixture are
+  authorized before its new files are held again. Campaign still NOT_RUN.
+
+- Mutation controller cleanup repair is now held and independently reviewed:
+  actual focused15, pinned kernel254, scaffold18 and metadata passed. Summary
+  2ba38e1b9ba974a71534a21b76d8cc0889ffe7d19f1613fccc762691c46d9712.
+  Native pre-existing grandchild survived actual reparenting with unchanged
+  identity while the runner killed/reaped its own independently sessioned child.
+  This is host cleanup evidence; actual four-negative campaign still NOT_RUN.

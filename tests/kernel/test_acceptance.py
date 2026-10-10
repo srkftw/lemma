@@ -17,6 +17,9 @@ from run_kernel import Session
 
 
 class AcceptanceFailures(unittest.TestCase):
+    def setUp(self):
+        (ROOT/'build/kernel').mkdir(parents=True, exist_ok=True)
+
     def test_interrupted_guest_context_owns_actual_wait_status_and_cleanup(self):
         with tempfile.TemporaryDirectory(dir=ROOT/'build/kernel') as temporary:
             p=Path(temporary); image=p/'image.elf'; image.write_bytes(b'host-fixture-not-ELF')
