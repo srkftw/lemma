@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 
 import audit_device
@@ -2608,7 +2609,42 @@ def _llvm_scalar_parameter(ty: str) -> str:
     return _llvm_scalar_type(ty) + suffix
 
 
+@lru_cache(maxsize=2)
+def _ir_definition_index(ir: str) -> dict[str, tuple[str, ...]] | None:
+    """Index the exact existing header/body boundary once per immutable IR text.
+
+    Only lexical identifiers use the index. Malformed/nested definition
+    boundaries and other requested symbol spellings retain the original exact
+    regular-expression path. Duplicate bodies remain separate so extraction
+    still requires precisely one definition. Two texts bound retained storage.
+    """
+    pattern = re.compile(
+        r"(?P<header>^define\s+[^\n]*\{\n)(?P<body>.*?)^\}\s*$",
+        re.MULTILINE | re.DOTALL,
+    )
+    matches = list(pattern.finditer(ir))
+    if len(matches) != len(re.findall(r"^define\s", ir, re.MULTILINE)):
+        return None
+    index: dict[str, list[str]] = {}
+    for match in matches:
+        header = match.group("header")
+        for symbol in set(re.findall(r"@([A-Za-z_.$][A-Za-z0-9_.$-]*)\(", header)):
+            # Apply the previous symbol-specific header rule to the complete
+            # captured header, including aggregate results and attributes.
+            exact = rf"define\s+[^\n]*@{re.escape(symbol)}\([^\n]*\)[^\n]*\{{\n"
+            if re.fullmatch(exact, header):
+                index.setdefault(symbol, []).append(match.group("body"))
+    return {symbol: tuple(bodies) for symbol, bodies in index.items()}
+
+
 def _ir_definition_body(ir: str, symbol: str) -> str:
+    if re.fullmatch(r"[A-Za-z_.$][A-Za-z0-9_.$-]*", symbol):
+        index = _ir_definition_index(ir)
+        if index is not None:
+            bodies = index.get(symbol, ())
+            if len(bodies) != 1:
+                raise Core0Error(f"LLVM IR does not contain exactly one definition of {symbol}")
+            return bodies[0]
     pattern = re.compile(
         rf"^define\s+[^\n]*@{re.escape(symbol)}\([^\n]*\)[^\n]*\{{\n"
         rf"(?P<body>.*?)^\}}\s*$",
