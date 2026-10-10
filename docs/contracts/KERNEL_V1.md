@@ -54,11 +54,18 @@ checked generations. It requires two free slots and quota/global room for both,
 zeros both before publishing either grant, and returns two handles in fixed
 kernel scratch storage80400580/+8. Ordinary rejection acquires no frames. The
 loader copies both handles into its descriptor at2400/2480 before another pair
-transaction, with top at2408. Layout declares two pages and8192 bytes for the
-owned kernel trap stack. Both purpose1 handles, owner, zero mapping pins and
+transaction, with top at2408. Task003 evidence used two pages and8192 bytes for
+the owned kernel trap stack. Both purpose1 handles, owner, zero mapping pins and
 physical contiguity are revalidated before reading an incoming trap frame.
 Inactive teardown clears each handle immediately after its release; a suspended
 or active task stack cannot be reclaimed from that stack.
+
+Task004 current launches use the checked four-page constructor and
+`lemma-kernel-layout-v2`, with16KiB allocation and16352 usable bytes after
+sentinel reservations. The pair operation and explicit512/32/2 fixture
+configuration keep their prior meaning. Current allocation/accounting,
+canaries and interrupt-nesting assumptions are specified in
+[`004-owned-memory-v1.md`](004-owned-memory-v1.md); earlier evidence is unchanged.
 
 Normal roots exclude development imports. The separate frames-development
 configuration exposes raw privileged probes and metadata fixtures for acceptance.

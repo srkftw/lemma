@@ -1,4 +1,5 @@
 import Lemma.Kernel.Syscall
+import Lemma.Kernel.Process
 import Lemma.Ink.Rasterizer
 import Lean.Elab.Command
 import Std.Data.HashMap
@@ -172,6 +173,67 @@ def checkLegacy : IO Unit := do
   require (read64 (← state.get) Frames.accounting == 512) "legacy quota and teardown preserved"
   IO.println "OWNED_CAPACITY_LEGACY:PASS"
 
+/-- Current ordinary boot uses the same finite512-frame/quota32 pool with a
+real four-page owned kernel stack. Expectations below spell out every page;
+no displayed capacity field or production accounting helper supplies the sum. -/
+def checkCurrentLegacyStack : IO Unit := do
+  let state ← IO.mkRef ({} : State)
+  discard <| success state (Frames.configure 512 32 4)
+  require ((← success state Frames.runtimeStackPages) == 4) "current kernel stack selection"
+  rejected state (Frames.configure 512 33 4)
+  rejected state (Frames.configure 512 32 3)
+  require ((← success state Frames.runtimeStackPages) == 4) "invalid constructor must leave previous selection intact"
+  discard <| success state Frames.init
+  let descriptor ← success state (AddressSpace.create 2)
+  let address ← success state (AddressSpace.base descriptor)
+  let result ← success state (Frames.allocateContiguous4 2 1)
+  let first := read64 (← state.get) result
+  let second := read64 (← state.get) (result + 8)
+  let third := read64 (← state.get) (result + 16)
+  let fourth := read64 (← state.get) (result + 24)
+  let physical ← success state (Frames.resolvePurpose 2 first 1)
+  require ((← success state (Frames.resolvePurpose 2 second 1)) == physical + 4096 &&
+    (← success state (Frames.resolvePurpose 2 third 1)) == physical + 8192 &&
+    (← success state (Frames.resolvePurpose 2 fourth 1)) == physical + 12288)
+    "four independently owned contiguous stack frames"
+  for (slot,value) in #[(2400,first),(2480,second),(2488,third),(2496,fourth),
+      (2504,4),(2512,physical),(2408,physical + 16368)] do
+    state.modify fun s => write64 s (address + slot) value
+  state.modify fun s => write64 (write64 s physical Lemma.Kernel.Loader.stackCanary)
+    (physical + 16376) Lemma.Kernel.Loader.stackCanary
+  --1 data+2 User stack+1 text, separately mapped and owned.
+  for (va,purpose,permissions) in #[(0x20000,4,3),(0x3fffc000,5,3),
+      (0x3fffd000,5,3),(0x10000,3,5)] do
+    let handle ← success state (Frames.allocate 2 purpose)
+    discard <| success state (AddressSpace.mapUser descriptor va handle permissions)
+  require ((← success state (Frames.ownedCount 2)) == 19) "11 tables+1 data+2 User stack+4 kernel stack+1 text"
+  require ((← success state (Frames.ownedCount 1)) == 1 &&
+    (← success state Frames.remaining) == 492) "separate descriptor makes20 actual global frames"
+  require ((← success state (Lemma.Kernel.Process.validateStack descriptor)) == physical + 16368)
+    "published current stack top"
+  let original ← state.get
+  for (slot,value) in #[(physical,0),(physical + 16376,0),(address + 2488,second),
+      (address + 2496,fourth + 512),(address + 2408,physical + 8192),(address + 2400,0)] do
+    state.modify fun s => write64 s slot value
+    rejected state (Lemma.Kernel.Process.validateStack descriptor)
+    state.set original
+  discard <| success state (Frames.pin 2 first)
+  rejected state (Lemma.Kernel.Process.validateStack descriptor)
+  discard <| success state (Frames.unpin 2 first)
+  discard <| success state (Lemma.Kernel.Loader.teardown descriptor)
+  require ((← success state (Frames.ownedCount 2)) == 0 &&
+    (← success state (Frames.ownedCount 1)) == 0 && (← success state Frames.remaining) == 512)
+    "inactive four-page stack/leaf/descriptor teardown restores exact supply"
+  -- Genuine failure state before contiguous stack publication: cleanup still
+  -- reclaims the eleven AS table frames and the separate owner1 descriptor.
+  let empty ← success state (AddressSpace.create 3)
+  let emptyAddress ← success state (AddressSpace.base empty)
+  state.modify fun s => write64 s (emptyAddress + 2504) 4
+  discard <| success state (Lemma.Kernel.Loader.teardown empty)
+  require ((← success state Frames.remaining) == 512 &&
+    (← success state (Frames.ownedCount 3)) == 0) "empty unpublished four-page constructor cleanup"
+  IO.println "OWNED_CURRENT_KERNEL_STACK:PASS allocated4 usable16352 ownerbase18/global19;canaries/generation/contiguity/pins/teardown"
+
 def checkInk : IO Unit := do
   let state ← IO.mkRef ({} : State)
   let context := (0x40000 : UInt64)
@@ -204,4 +266,5 @@ run_cmd do
   liftIO OwnedCapacityFixture.checkFoldStatus
   liftIO OwnedCapacityFixture.checkExpanded
   liftIO OwnedCapacityFixture.checkLegacy
+  liftIO OwnedCapacityFixture.checkCurrentLegacyStack
   liftIO OwnedCapacityFixture.checkInk

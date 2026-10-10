@@ -47,6 +47,27 @@ CONFIGURATIONS = {prefix + case + "-development": case
 SERVICE_CONFIGURATIONS = tuple(cfg for cfg in CONFIGURATIONS if cfg.startswith("service-"))
 MATRIX = tuple((cfg, opt) for cfg in CONFIGURATIONS for opt in ("O0", "O2"))
 
+# Closed source inventory for current four-page construction/teardown. This
+# observer independently checks the actual unit's source identities; historical
+# two-page evidence is retained separately and cannot satisfy the new fields.
+CURRENT_QUAD_STACK_SOURCES = {
+    'Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue',
+    *('Lemma.Kernel.Loader.'+name for name in (
+        'allocateStack','allocateStackQuad','installStackQuad','storedQuad','quadFrame','stackFrame',
+        'validateExpandedStack','teardown','releaseStackHandle','stackCanary',
+        'kernelStackHandleOffset','kernelStackSecondHandleOffset','kernelStackTopOffset',
+        'kernelStackThirdHandleOffset','kernelStackFourthHandleOffset','kernelStackPagesOffset','kernelStackBaseOffset')),
+    *('Lemma.Kernel.Memory.Frames.'+name for name in (
+        'allocateContiguous4','resolvePurpose','mappingCount','runtimeCount','runtimeQuota','configure','init')),
+    *('Lemma.Kernel.Memory.AddressSpace.'+name for name in (
+        'create','buildRegistry','copyRegistryStep','base','validateRegistry','destroy','rollbackRegistry',
+        'registryCount','registryList','expandedCapacity')),
+    'Lemma.Kernel.Memory.Batch.allocate','Lemma.Kernel.BootServices.bootServices',
+    'Lemma.Kernel.Process.validateFrame','Lemma.Kernel.Process.validateStack',
+    'Lemma.Kernel.Development.ServiceEntry.dispatch','Lemma.Kernel.Scheduler.dispatch',
+    'Lemma.Kernel.Task.capture','Lemma.Kernel.Task.context',
+}
+
 
 def runner_inputs(root):
     return {name: sha256(root / name) for name in (*RUNNERS, "scripts/check_kernel_architecture.py")}
@@ -113,26 +134,21 @@ def require_managed_task_stack(image, binding):
     """Require exact global/owner accounting and genuine owned-stack sources.
 
     The AS descriptor belongs to kernel owner1.  A managed instance therefore
-    consumes 17 global base frames while charging 16 to its private owner;
+    consumes19 global base frames while charging18 to its private owner;
     text pages are additional.  This is distinct from the legacy single-owner
     singleton accounting accepted by task_frame_overhead.
     """
     stack = binding.get("task_kernel_stack")
-    numeric = {"pages": 2, "bytes": 8192, "first_handle_offset": 2400,
-               "second_handle_offset": 2480, "base_owned_task_frames": 16,
-               "base_global_task_frames": 17}
-    if (not isinstance(stack, dict) or set(stack) != {*numeric, "construction", "source_functions"}
+    numeric = {"pages":4,"bytes":16384,"usable_bytes":16352,"sentinel_bytes":32,
+               "first_handle_offset":2400,"second_handle_offset":2480,"third_handle_offset":2488,
+               "fourth_handle_offset":2496,"pages_offset":2504,"base_offset":2512,
+               "base_owned_task_frames":18,"base_global_task_frames":19}
+    if (not isinstance(stack, dict) or set(stack) != {*numeric,"construction","source_functions","sentinels_are_hardware_guards"}
             or any(type(stack.get(name)) is not int or stack[name] != value for name, value in numeric.items())
-            or stack.get("construction") != "owned-physically-contiguous-pair"):
-        raise Core0Error("managed architecture accounting lacks exact owned16/global17 two-page stack construction")
-    required = {"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
-                "Lemma.Kernel.Memory.Frames.allocateContiguous2", "Lemma.Kernel.Loader.allocateStack",
-                "Lemma.Kernel.Loader.installStackPair", "Lemma.Kernel.Loader.storedStack", "Lemma.Kernel.Loader.stackPair",
-                "Lemma.Kernel.Loader.releaseStackHandle", "Lemma.Kernel.Loader.teardown",
-                "Lemma.Kernel.Process.validateFrame", "Lemma.Kernel.Process.validateStack",
-                "Lemma.Kernel.Loader.kernelStackHandleOffset", "Lemma.Kernel.Loader.kernelStackSecondHandleOffset",
-                "Lemma.Kernel.Development.ServiceEntry.dispatch", "Lemma.Kernel.Scheduler.dispatch",
-                "Lemma.Kernel.Task.capture", "Lemma.Kernel.Task.context"}
+            or stack.get("construction") != "owned-physically-contiguous-four"
+            or stack.get('sentinels_are_hardware_guards') is not False):
+        raise Core0Error("managed architecture accounting lacks exact owned18/global19 four-page stack construction")
+    required = CURRENT_QUAD_STACK_SOURCES
     sources = stack.get("source_functions")
     unit = load_json(image.parent / "kernel/unit.json")
     actual = {re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]): row["symbol"]

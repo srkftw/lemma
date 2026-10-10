@@ -101,7 +101,7 @@ class IPCTrace(Trace):
     def observe(self, event):
         tag,a,b,c,d = event
         if tag == 0xb4:
-            pages = sum(17 + (self.images[key]["text_bytes"] + 4095)//4096 for key in self.keys[:4])
+            pages = sum(19 + (self.images[key]["text_bytes"] + 4095)//4096 for key in self.keys[:4])
             expected = 498 - pages - len(self.endpoints) - 1
             if self.tasks or len(self.endpoints)>=3 or a<512 or b<16 or c!=expected or d:
                 raise Core0Error("IPC queue lacks actual one-frame allocation before task publication")

@@ -41,6 +41,20 @@ Laboratory options use exact1-based request ordinals; zero disables a fault:
 |`cut-before-flush=N`|discard process/RAM immediately before flushN writes|
 |`cut-after-flush=N`|cut after durable child flushN, before VirtIO completion|
 |`tear-flush=N`|write first dirty sector as first256new/last256old bytes, flush that mixed sector, then cut|
+|`delay-after-ns=T`, `delay-write-ns=D`|one-shot first valid write beginning at/after virtual timeT waitsD before reading its data iovec or completing; no sector/content selection|
+
+The optional write-delay policy is `virtual-one-shot-write-delay/1`; both fields
+default0 (disabled). Duration is1..10000000000ns, threshold0..3600000000000ns.
+A nonzero threshold requires a duration. The frontend admits these options only
+in Laboratory mode and binds them in run/replay `fault_inputs`. This uses QEMU's
+virtual-clock coroutine timer; actual completion occurs at/after its recorded
+deadline and may reflect event-dispatch granularity. The request and its DMA
+iovec remain live across the wait. Normal reference runs receive no delay.
+Trace `write-delay-begin`/`write-delay-end` retain actual virtual timestamps,
+offset and byte count. Read-only `delayed_write` state exposes active/used,
+request ordinal, offset, bytes and deadline. QEMU drain (pause/reset/close) wakes
+the delay early and records `write-delay-drained`; that interval cannot establish
+the full-delay client-death observation. A whole-process power cut drops it.
 
 A tear requested with no dirty sector reports an explicit error. Power cuts exit86
 without QEMU cleanup, so they cannot silently flush pending data. Other child
@@ -48,7 +62,11 @@ I/O/flush errors propagate; the store must keep its last acknowledged sequence
 and expose failure. The journal protocol decides which prior publication remains
 valid; this filter never deletes or selects notebook records. A normal QMP quit
 can invoke QEMU's close-time flush, so it is a clean host shutdown, not a laboratory
-power cut. Unacknowledged transactions may consequently recover wholly.
+power cut. QMP `stop`/Developer pause also drains the QEMU block graph and may
+flush pending writes before reporting paused. It is an inspection boundary,
+not a physical power-loss operation. Unacknowledged transactions may consequently
+recover wholly. A Laboratory whole-process cut must run without a preceding
+pause, quit, reset or cleanup flush when testing loss of volatile sectors.
 
 An optional new `trace-file` records virtual-time hardware write/flush/fault
 observations. QOM `storage-state` on `/machine/lemma-hardware` exposes

@@ -11,7 +11,11 @@ metadata `[0x80400000,0x80500000)`, supervisor resume/reaper stack
 
 Before initializing frames, the compiled boot path selects count, owner quota
 and kernel-stack pages in three little-endian 64 control words starting at
-`0x804006a0`. Historical boots explicitly select 512/32/2. LemmaSim selects
+`0x804006a0`. Current non-LemmaSim kernel launches select512/32/4; the explicit
+512/32/2 constructor remains accepted for historical allocator fixtures.
+Historical Task003 evidence still means its original two-page allocation.
+The current `lemma-kernel-layout-v2` manifest records four pages for every
+owned kernel trap stack. LemmaSim selects
 8192/8192/4 only after machine-descriptor/boot consistency validation. Unsupported
 combinations fail with invariant status 39. This is a boot-only constructor with
 no user syscall/capability route. Changing a live allocator's configuration is
@@ -56,7 +60,8 @@ explicit exhaustion. A default task's owned base cost is 13 initial tables +
 and any additional low-address page tables. Its descriptor costs one separate
 owner-1 frame. The 32 MiB global pool is not a promise of 32 MiB per application.
 
-LemmaSim task trap stacks own four adjacent 4 KiB purpose 1 frames with independent
+Current task trap stacks, including the existing kernel development profiles,
+own four adjacent 4 KiB purpose1 frames with independent
 handles. Two 16-byte sentinel reservations leave 16352 bytes of usable call-stack
 space. The published top is physicalBase+16368; vector entry consumes 288 bytes
 below that top. Canary words at physicalBase and physicalBase+16376 are checked
@@ -74,7 +79,12 @@ handle once, and runs on the stable supervisor reaper stack.
 Supervisor handlers keep SIE clear: one S vector is counted and nested S interrupt
 entry is not permitted. M trap entry uses its separate firmware stack. Final
 compiled O0/O2 selected-path audits must account the vector and require at least
-25 percent margin in the expanded usable capacity. They are finite artifact
+25 percent margin in the usable capacity. Non-LemmaSim managed tasks now charge
+11 initial tables+1 data+2 User stacks+4 kernel stacks=18 privately owned frames;
+the separate owner1 descriptor makes19 global frames, before text pages. The
+owner quota stays32, so the buffer server's four reserved arena pages permit
+at most10 text pages. These formulas replace current checks' old16/17 counts;
+they do not relabel the retained Task003 observations. They are finite artifact
 call-chain bounds, not a whole-program stack proof or physical measurement.
 
 Checked bulk copies may transfer 4096 bytes through one owned kernel scratch

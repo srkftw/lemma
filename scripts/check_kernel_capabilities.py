@@ -67,7 +67,7 @@ class CapabilityTrace(Trace):
                 raise Core0Error("object retirement fixture lacks its actual free-slot generation seed")
             self.seed = list(event)
         elif tag == 0xb4:
-            expected = 497 - sum(17 + (self.images[key]["text_bytes"] + 4095) // 4096 for key in self.keys[:3])
+            expected = 497 - sum(19 + (self.images[key]["text_bytes"] + 4095) // 4096 for key in self.keys[:3])
             if (self.queue is not None or self.seed is None or self.tasks or a < 512
                     or b != (MAX_SERIAL << 4) | self.seed[1] or c != expected or d):
                 raise Core0Error("initial shared endpoint lacks the measured one-frame queue allocation")

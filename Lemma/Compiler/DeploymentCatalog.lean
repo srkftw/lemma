@@ -32,7 +32,7 @@ inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
   | bufferServer | bufferCLI | bufferPeer | bufferFaultClient
-  | storeServer | notebook
+  | storeServer | notebook | notebookIsolation
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -51,13 +51,15 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .bufferFaultClient => "buffer-fault-client"
   | .storeServer => "store-server"
   | .notebook => "notebook"
+  | .notebookIsolation => "notebook-isolation-client"
 
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
 def ipcManagedPolicy : String := "lemma-ipc-v1"
 def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
-  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" then some "lemma-notebook-v1"
+  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
+      configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
   else if configuration == "capabilities-development" then some capabilityManagedPolicy
   else if configuration == "ipc-development" then some ipcManagedPolicy
   else if isServiceConfiguration configuration then
@@ -144,15 +146,22 @@ def notebookImages : Array UserImageSpec := #[
   { key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
     root := `Lemma.Applications.Notebook.main, bootRole? := some .notebook }]
 
+/-- Ordinary store/notebook specifications are byte-for-byte the selected
+production peers; only this closed deployment admits the third User fixture. -/
+def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
+  key := "isolation", id := 3, moduleName := `Lemma.User.Development.NotebookIsolation,
+  root := `Lemma.User.Development.NotebookIsolation.main, bootRole? := some .notebookIsolation }
+
 def isMultiImageConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
-  configuration == "tasks-development" || configuration == "tasks-fault-development" ||
+  configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
     configuration == "capabilities-development" || configuration == "ipc-development" ||
     isServiceConfiguration configuration
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" then .ok notebookImages
+  else if configuration == "lemmasim-isolation-development" then .ok notebookIsolationImages
   else if configuration == "tasks-development" then .ok taskImages
   else if configuration == "tasks-fault-development" then .ok taskFaultImages
   else if configuration == "capabilities-development" then .ok capabilityImages

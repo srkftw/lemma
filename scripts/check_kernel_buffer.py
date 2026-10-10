@@ -157,7 +157,7 @@ class ServiceTrace(Trace):
         if tag == 0xb4:
             if self.current is not None or a < 512 or b < 16 or a in self.endpoints or d:
                 raise Core0Error("service Endpoint allocation identity/order differs")
-            pending_pages = sum(17 + (self.images[self.keys[i]]["text_bytes"] + 4095)//4096
+            pending_pages = sum(19 + (self.images[self.keys[i]]["text_bytes"] + 4095)//4096
                                 for i, _ in self.creation_queue)
             if c != self.remaining - pending_pages - 1:
                 raise Core0Error("service queue allocation lacks exact actual one-frame accounting")

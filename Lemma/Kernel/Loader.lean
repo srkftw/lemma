@@ -275,14 +275,14 @@ private def storedStack (owner first second top : UInt64) : Action :=
     .bind (stackFrame owner first) fun s physical =>
     if s = 0 then
       if top = 0 then .done 0 0 else
-      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      if top = physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then .done 0 0
       else .done invariantFailure 0
     else .done invariantFailure 0
   else
     .bind (stackPair owner first second) fun s physical =>
     if s = 0 then
       if top = 0 then .done 0 0 else
-      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      if top = physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then .done 0 0
       else .done invariantFailure 0
     else .done invariantFailure 0
 
@@ -308,7 +308,7 @@ private def installStackPair (address owner first second : UInt64) : Action :=
     if s = 0 then
       .bind (put address kernelStackSecondHandleOffset second) fun s _ =>
       if s = 0 then
-        .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue)) fun s _ =>
+        .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue)) fun s _ =>
         if s = 0 then .done 0 0 else .done invariantFailure 0
       else
         .bind (put address kernelStackHandleOffset 0) fun cleared _ =>
@@ -325,6 +325,12 @@ private def quadFrame (owner handle physical : UInt64) : Action :=
   else .done invariantFailure 0
 
 private def storedQuad (owner first second third fourth physical top : UInt64) : Action :=
+  -- Allocation can fail before any stack frame/base was published. An empty
+  -- unpublished constructor owns no stack and must still release its AS.
+  if physical = 0 then
+    if first ||| second ||| third ||| fourth ||| top = 0 then .done 0 0
+    else .done invariantFailure 0
+  else
   if Frames.frameAddressValid physical = false then .done invariantFailure 0 else
   .bind (quadFrame owner first physical) fun s _ => if s = 0 then
   .bind (quadFrame owner second (physical + 4096)) fun s _ => if s = 0 then
@@ -335,11 +341,12 @@ private def storedQuad (owner first second third fourth physical top : UInt64) :
   if second = 0 then .done invariantFailure 0 else
   if third = 0 then .done invariantFailure 0 else
   if fourth = 0 then .done invariantFailure 0 else
-  if top = physical + 16368 then .done 0 physical else .done invariantFailure 0
+  if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 16 then
+    .done 0 physical else .done invariantFailure 0
   else .done invariantFailure 0 else .done invariantFailure 0
   else .done invariantFailure 0 else .done invariantFailure 0
 
-/-- Expanded-stack canaries detect overwrites; these are not unmapped guards.
+/-- Four-page stack canaries detect overwrites; these are not unmapped guards.
 The existing S direct map cannot provide a per-task unmapped physical guard.
 S traps keep SIE clear, so the selected audit accounts one vector and no nested
 S interrupt vector. M entry uses the separate firmware-private stack. -/
@@ -357,7 +364,7 @@ def validateExpandedStack (descriptor : UInt64) : Action :=
   if top = 0 then .done invariantFailure 0 else
   .bind (storedQuad owner first second third fourth physical top) fun s _ => if s = 0 then
   .bind (Access.read64 physical) fun s low => if s = 0 then
-  .bind (Access.read64 (physical + 16376)) fun s high => if s = 0 then
+  .bind (Access.read64 (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 8)) fun s high => if s = 0 then
   if low = stackCanary then if high = stackCanary then .done 0 top else .done invariantFailure 0
   else .done invariantFailure 0
   else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
@@ -384,8 +391,8 @@ private def installStackQuad (address owner first second third fourth : UInt64) 
       .bind (put address kernelStackThirdHandleOffset third) fun s _ => if s = 0 then
       .bind (put address kernelStackFourthHandleOffset fourth) fun s _ => if s = 0 then
       .bind (Access.write64 physical stackCanary) fun s _ => if s = 0 then
-      .bind (Access.write64 (physical + 16376) stackCanary) fun s _ => if s = 0 then
-      .bind (put address kernelStackTopOffset (physical + 16368)) fun s _ =>
+      .bind (Access.write64 (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 8) stackCanary) fun s _ => if s = 0 then
+      .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 16)) fun s _ =>
       if s = 0 then .done 0 0 else abortQuad address owner first second third fourth
       else abortQuad address owner first second third fourth
       else abortQuad address owner first second third fourth

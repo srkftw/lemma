@@ -62,7 +62,7 @@ class BufferCheckerFailures(unittest.TestCase):
         for id,kind,rights in [(512,1,2),(512,2,8),(1024,1,3),(1024,4,1024),(1536,1,2),(1536,4,1024)]:
             slot=len(trace.grants.get(id,[]));serial=len(trace.serials)+1
             trace.observe((0xb1,id,(serial<<4)|slot,kind,rights))
-        trace.observe((0xb4,512,51,424,0))
+        trace.observe((0xb4,512,51,416,0))
         for id,index,nonce,root in [(1024,1,1,0x82001000),(1536,2,2,0x82002000),(2048,3,3,0x82003000),(512,0,1,0x82004000)]:
             trace.observe((0xf1,id,index,nonce,root))
         trace.observe((0x300,512,51,1,1024))
@@ -387,7 +387,7 @@ class BufferCheckerFailures(unittest.TestCase):
                 emit(query)
                 if variant=='unrelated-frame-effect':
                     with self.assertRaisesRegex(Core0Error,'unrelated frame effect'):
-                        emit((0xf6,2048,trace.remaining,trace.remaining+18,0))
+                        emit((0xf6,2048,trace.remaining,trace.remaining+20,0))
                 else:
                     emit((0xf3,512,0x82004000,2,120))
                     if variant=='wrong-full-caller':trace.active_accept[512]['key']=(512,99,1024)
@@ -464,7 +464,7 @@ class BufferCheckerFailures(unittest.TestCase):
                      (0xc1,2,3,1,0),(0xc2,17,22,22,123),(0xd3,0x82000000,0x8000000000082000,500,0),
                      (0xf0,1,8,512,10000),(0xb0,1,16,16,497)]
             controls=initial+[r for rows in trace.grants.values() for r in rows]
-            controls += [(0xb4,512,51,424,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
+            controls += [(0xb4,512,51,416,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
                          (0xf1,2048,3,3,0x82003000),(0xf1,512,0,1,0x82004000),(0x300,512,51,1,1024),
                          (0xf3,1024,0x82001000,1,100),(0x310,1024,1,trace.grants[1024][0][2],trace.grants[1024][1][2])]
             raw=b''.join(('K1'+''.join(f' {w:016x}' for w in row)+'\n').encode() for row in controls)
@@ -492,7 +492,7 @@ class BufferCheckerFailures(unittest.TestCase):
                      (0xc1,2,3,1,0),(0xc2,17,22,22,123),(0xd3,0x82000000,0x8000000000082000,500,0),
                      (0xf0,1,8,512,10000),(0xb0,1,16,16,497)]
             records=initial+[r for rows in base.grants.values() for r in rows]
-            records += [(0xb4,512,51,424,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
+            records += [(0xb4,512,51,416,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
                         (0xf1,2048,3,3,0x82003000),(0xf1,512,0,1,0x82004000),(0x300,512,51,1,1024),
                         (0xf3,512,0x82004000,1,100),(0x320,512,1,base.grants[512][1][2],base.grants[512][0][2]),
                         (0xf2,512,6,0,0x10020),(0xf3,1024,0x82001000,1,110),

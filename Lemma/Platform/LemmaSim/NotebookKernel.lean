@@ -18,7 +18,79 @@ private def fatal : Action := .done 50 0
 private def grant (descriptor key rights : UInt64) : Action :=
   Capability.grantBoot descriptor key rights
 
-private def construct (initialization : UInt64) : Action :=
+/-- Kernel-only observation cells for the closed third-client deployment. No
+User mapping or grant exposes these cells. Other deployments explicitly clear
+selection, and never publish fixture observations. -/
+private def isolationState : UInt64 := 0x80400f00
+private def isolatedGet (offset : UInt64) : Action := Access.read64 (isolationState + offset)
+private def isolatedPut (offset value : UInt64) : Action := Access.write64 (isolationState + offset) value
+private def bad (status : UInt8) : Bool := if status = 0 then false else true
+
+private def observeDMA (phase : UInt64) : Action :=
+  .bind (Access.read64 Lemma.Drivers.VirtIOBlock.state) fun s handle =>
+  if bad s = true then fatal else
+  .bind (Access.read64 (Lemma.Drivers.VirtIOBlock.state + 8)) fun s base =>
+  if bad s = true then fatal else
+  .bind (Frames.resolvePurpose 1 handle 1) fun s resolved =>
+  if bad s = true then fatal else
+  if resolved = base then
+  .bind (Frames.purpose 1 handle) fun s purpose =>
+  if bad s = true then fatal else
+  .bind (Frames.mappingCount 1 handle) fun s mappings =>
+  if bad s = true then fatal else
+  .bind (Access.read64 (Lemma.Drivers.VirtIOBlock.state + 40)) fun s pending =>
+  if bad s = true then fatal else
+  .bind Frames.remaining fun s remaining =>
+  if bad s = true then fatal else
+  .bind (if phase = 0 then
+      .bind (isolatedPut 16 handle) fun s _ => if s = 0 then isolatedPut 24 base else fatal
+    else
+      .bind (isolatedGet 16) fun s originalHandle => if s = 0 then
+      .bind (isolatedGet 24) fun s originalBase => if s = 0 then
+      if originalHandle = handle then if originalBase = base then .done 0 0 else fatal else fatal
+      else fatal else fatal) fun s _ =>
+  if bad s = true then fatal else
+  .bind (Lemma.Kernel.Console.record 0x433 phase handle base pending) fun s _ =>
+  if bad s = true then fatal else
+  .bind (Lemma.Kernel.Console.record 0x434 phase purpose mappings remaining) fun s _ =>
+  if bad s = true then fatal else
+  .bind MachineServices.time fun s now =>
+  if bad s = true then fatal else
+  Lemma.Kernel.Console.record 0x436 phase now pending 0
+  else fatal
+
+private def configureIsolation (enabled documents : UInt64) : Action :=
+  .bind (isolatedPut 0 0) fun s _ => if s = 0 then
+  .bind (isolatedPut 8 0) fun s _ => if s = 0 then
+  if enabled = 0 then .done 0 0 else if enabled = 1 then
+  .bind (Task.prepareManaged 2 0) fun s client => if s = 0 then
+  .bind (grant client documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
+  .bind (grant client Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (Task.activateManaged client) fun s _ => if s = 0 then
+  .bind (isolatedPut 0 client) fun s _ => if s = 0 then observeDMA 0 else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+
+private def observeReaped : Action :=
+  .bind (isolatedGet 8) fun s phase => if s = 0 then
+  if phase = 1 then
+  .bind (isolatedGet 0) fun s client => if s = 0 then
+  .bind (Task.lookup client) fun status _ =>
+  if status = 74 then
+    .bind (observeDMA 2) fun s _ => if s = 0 then isolatedPut 8 2 else fatal
+  else if status = 0 then .done 0 0 else fatal
+  else fatal else .done 0 0 else fatal
+
+private def observeFault (cause : UInt64) : Action :=
+  if cause = 13 then
+  .bind (isolatedGet 0) fun s client => if s = 0 then
+  if client = 0 then .done 0 0 else
+  .bind (Access.read64 Process.control) fun s current => if s = 0 then
+  if current = client then
+    .bind (observeDMA 1) fun s _ => if s = 0 then isolatedPut 8 1 else fatal
+  else .done 0 0 else fatal else fatal
+  else .done 0 0
+
+private def construct (initialization isolation : UInt64) : Action :=
   .bind Process.init fun s _ => if s = 0 then
   .bind Task.init fun s _ => if s = 0 then
   .bind Objects.init fun s _ => if s = 0 then
@@ -38,10 +110,11 @@ private def construct (initialization : UInt64) : Action :=
   .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
   .bind (Task.activateManaged store) fun s _ => if s = 0 then
   .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
-  Lemma.Kernel.Console.record 0x410 store notebook documents 8192
+  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents 8192) fun s _ => if s = 0 then
+  configureIsolation isolation documents
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
-  else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
 
 /-- S policy runs with SIE clear. WFI wakes for an enabled external source even
 before a U task is entered. Claim one real PLIC source after each wake/return so
@@ -54,14 +127,16 @@ private def acceptPending : Action :=
 
 private def step : Action :=
   .bind acceptPending fun s _ => if s = 0 then
-  .bind DeviceService.deferred fun s _ => if s = 0 then Scheduler.step else fatal
+  .bind DeviceService.deferred fun s _ => if s = 0 then
+  .bind Scheduler.step fun s reason => if s = 0 then
+  .bind observeReaped fun s _ => if s = 0 then .done 0 reason else fatal else fatal else fatal
   else fatal
 
 private def observedStage (stage : UInt64) (status : UInt8) (value : UInt64) : Action :=
   .bind (Lemma.Kernel.Console.record 0x407 stage status.toUInt64 value 0) fun s _ =>
   if s = 0 then .done status value else .done s 0
 
-private def bootSelected (initialization : UInt64) : Action :=
+private def bootSelected (initialization isolation : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
   .bind (observedStage 1 status value) fun s _ => if s = 0 then
@@ -75,13 +150,16 @@ private def bootSelected (initialization : UInt64) : Action :=
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
   .bind Lemma.Drivers.PLIC.initialize fun s _ => if s = 0 then
-  .bind (construct initialization) fun s _ => if s = 0 then .loop step else .done s 0
+  .bind (construct initialization isolation) fun s _ => if s = 0 then .loop step else .done s 0
   else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
-def boot : Action := bootSelected 0
+def boot : Action := bootSelected 0 0
 /-- Selected only by the explicit initialize deployment on a newly created raw image. -/
-def initializeMedium : Action := bootSelected 1
+def initializeMedium : Action := bootSelected 1 0
+
+/-- The only deployment that admits the third isolated ordinary-client fixture. -/
+def isolationBoot : Action := bootSelected 0 1
 
 private def deviceCall (descriptor context pc number : UInt64) : Action :=
   .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
@@ -124,6 +202,8 @@ def dispatch (frame cause value : UInt64) : Action :=
       deviceCall descriptor context pc number
     else Scheduler.call descriptor context pc
     else fatal else fatal else fatal else fatal else fatal else fatal
-  else Scheduler.dispatch frame cause value
+  else
+    .bind (observeFault cause) fun s _ => if s = 0 then
+    Scheduler.dispatch frame cause value else fatal
 
 end Lemma.Platform.LemmaSim.NotebookKernel

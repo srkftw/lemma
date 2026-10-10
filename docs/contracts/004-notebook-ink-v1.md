@@ -24,6 +24,13 @@ do not scan previous pages or notebook history. Rasterization touches only tiles
 intersecting the current segment's bounded bounding rectangle. Editing and page
 opening may scan the current page's bounded index.
 
+Cold boot opens notebook1/page1. Other recovered pages are opened through the
+same guest toolbar. Diagnostic record `0x425` names an accepted full-page
+refresh: sequence, page, namespace, zero. It is emitted after streamed guest
+redraw and controller command acceptance; it is not a completion or Save ACK.
+Developer observations check that sequence against real controller completion.
+This also permits bounded cold-navigation checks without host page selection.
+
 | Owned virtual range | Purpose |
 |---|---|
 | `0x20000..0x20fff` | Existing User data page: surface metadata/tile, raw head, 64-byte raster context, notebook state and IPC packets |

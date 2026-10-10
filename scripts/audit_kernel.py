@@ -149,7 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
-MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1"})
+MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1", "lemmasim-isolation-development": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
                              "service-normal":SERVICE_USER_IMAGES,"service-development":SERVICE_DEVELOPMENT_USER_IMAGES}
@@ -164,9 +164,14 @@ NOTEBOOK_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "source
                               "boot_role": role}
                              for index, (key, module, role) in enumerate((("store", "Lemma.Services.Store.Server", "store-server"),
                                  ("notebook", "Lemma.Applications.Notebook", "notebook")), 1))
-MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"})
-LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-notebook", "lemmasim-initialize"})
+NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3,
+    "module": "Lemma.User.Development.NotebookIsolation", "source": "Lemma.User.Development.NotebookIsolation.main",
+    "args": ["u64"], "symbol_prefix": "lemma_user_isolation_", "startup_case": "none",
+    "directory": "users/isolation", "boot_role": "notebook-isolation-client"})
+MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES,
+                                 "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -388,6 +393,44 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
         if (layout["task_kernel_stack_pages"], layout["task_kernel_stack_bytes"]) != (4, 16384):
             raise Core0Error("expanded stack source/layout contract differs")
         return report
+    if layout.get('task_kernel_stack_pages') == 4:
+        from audit_lemmasim_capacity import construction
+        report=construction(unit,pre_ir,expanded=False)
+        if layout.get('task_kernel_stack_bytes')!=16384:
+            raise Core0Error('current four-page owned stack layout differs')
+        names=report['source_symbols']
+        all_names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+        p='Lemma.Kernel.'
+        entry={'tasks-development':p+'Development.TasksEntry.dispatch',
+               'tasks-fault-development':p+'Development.FaultEntry.dispatch',
+               'capabilities-development':p+'Development.CapsEntry.dispatch',
+               'ipc-development':p+'Development.IPCEntry.dispatch',
+               'service-normal':p+'ServiceEntry.dispatch','service-development':p+'Development.ServiceEntry.dispatch'}
+        entry.update({cfg:p+'Development.ServiceEntry.dispatch' for cfg in SERVICE_INSTRUCTION_CONFIGURATIONS})
+        dispatch=entry.get(unit.get('configuration'))
+        edges=({dispatch:[p+'Scheduler.dispatch'],p+'Scheduler.dispatch':[p+'Task.capture'],
+                p+'Task.capture':[p+'Process.validateFrame'],p+'Task.context':[p+'Process.validateStack']}
+               if dispatch else {p+'Process.dispatch':[p+'Process.validateFrame']})
+        edges[p+'Process.validateFrame']=[p+'Process.validateStack']
+        required=set(edges)|{callee for callees in edges.values() for callee in callees}
+        required|={p+'BootServices.bootServices',p+'Memory.Frames.configure',p+'Memory.Frames.init'}
+        if not required<=all_names.keys(): raise Core0Error('four-page stack lacks its checked trap dispatch closure')
+        for caller,callees in edges.items():
+            if not {all_names[callee] for callee in callees}<=parse_definitions_and_calls(_ir_definition_body(pre_ir,all_names[caller]))[2]:
+                raise Core0Error('four-page stack omits a checked trap validation edge')
+        boot=_ir_definition_body(pre_ir,all_names[p+'BootServices.bootServices'])
+        configurations=re.findall(r'call \{ i64, i64 \} @'+re.escape(all_names[p+'Memory.Frames.configure'])+r'\(([^\n]*)\)',boot)
+        if configurations!=['i64 512, i64 32, i64 4']:
+            raise Core0Error('ordinary current boot does not select its actual four-page owned stack')
+        validate_checked_call_gate(boot,all_names[p+'Memory.Frames.configure'],all_names[p+'Memory.Frames.init'])
+        sources={**names,**{name:all_names[name] for name in required}}
+        return {'pages':4,'bytes':16384,'usable_bytes':16352,'sentinel_bytes':32,
+                'construction':'owned-physically-contiguous-four','sentinels_are_hardware_guards':False,
+                'first_handle_offset':2400,'second_handle_offset':2480,
+                'third_handle_offset':2488,'fourth_handle_offset':2496,'pages_offset':2504,'base_offset':2512,
+                **({'base_owned_task_frames':18,'base_global_task_frames':19}
+                   if unit.get('configuration') in SERVICE_CONFIGURATIONS else {'base_owned_task_frames':19}),
+                'source_functions':sources}
     """Bind the capacity to genuine reachable construction and cleanup code."""
     by_source = {}
     for row in unit["functions"]:
@@ -1805,7 +1848,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
        'bounded_folds':folds,'legacy_input_mode_gate':legacy_control,'raw_console_mode_gate':raw_mode,
        'binding_publication':publication_inventory,'binding_withdrawal':withdrawal_inventory,'initial_grants':grants,
        'input':{'control':0x80400660,'ring_offset':128,'ring_bytes':512,'pending_offset':640,'pending_bytes':168,'scratch_offset':832,'diagnostic_offset':1088,'diagnostic_bytes':40,'poll_budget':64},
-       'owned_page_budget':{'base_owned_task_frames':16,'base_global_task_frames':17,'server_reserved_arena_pages':4,'owner_quota':32,'server_max_text_pages':12},
+       'owned_page_budget':{'base_owned_task_frames':18,'base_global_task_frames':19,'server_reserved_arena_pages':4,'owner_quota':32,'server_max_text_pages':10},
        'limitations':['Necessary genuine source/CFG/byte binding; independent service/reference tests, model proofs and physical execution remain separate.']}
 
 
@@ -1819,7 +1862,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     """
     multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb|cli)/(startup\.o|image\.elf)", object_file)
     sim_file = (configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and
-                re.fullmatch(r"users/(store|notebook)/(startup\.o|image\.elf)", object_file) is not None)
+                re.fullmatch(r"users/(store|notebook|isolation)/(startup\.o|image\.elf)", object_file) is not None)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
@@ -1895,7 +1938,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
-                ("core0-kernel-v0.3" if role == "kernel" and configuration in {"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"} else CONTRACTS[role])):
+                ("core0-kernel-v0.3" if role == "kernel" and configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -1957,7 +2000,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             "deviceWrite32": ("device-write32", None, 0, "word", {"kernel"}),
             "deviceRead64": ("device-read64", None, 0, "word", {"kernel"}),
             "deviceWrite64": ("device-write64", None, 0, "word", {"kernel"}),
-        } if configuration in {"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize"} else {}
+        } if configuration in LEMMASIM_CONFIGURATIONS else {}
         operations = {**EXECUTION_OPERATIONS, **sim_operations}
         if suffix not in operations or identity != "Lemma.Core0.Execution.Op." + suffix:
             raise Core0Error("unknown execution operation identity")
@@ -2031,13 +2074,13 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     if any(layout.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("layout managed policy/boot role differs")
     selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
-    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
+    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v2" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
     expanded = configuration in LEMMASIM_CONFIGURATIONS
     if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 8192 if expanded else 512):
         raise Core0Error("pinned RAM/frame contract differs")
     if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
-            or layout["task_kernel_stack_pages"] != (4 if expanded else 2) or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
+            or layout["task_kernel_stack_pages"] != 4 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
         raise Core0Error("owned kernel stack construction contract differs")
     if layout.get("context") != CONTEXT_LAYOUT:
         raise Core0Error("fixed supervisor context/stack contract differs")
@@ -2673,12 +2716,14 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Services.Store.Engine.complete': ('user',81,['u64','u8'],['checked-access','virtual-read','virtual-write'],[*range(1,6),*range(16,22),*range(32,41),*range(64,70),80,81]),
     'Lemma.Services.Store.Server.application': ('user',9,['u64']*3,['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[2,3,4,5,6,7,9,10]),
     'Lemma.Applications.Notebook.toolbar': ('user',8,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(8))),
+    'Lemma.Ink.Surface.glyph': ('user',7,['u64'],[],list(range(7))),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
-    'Lemma.Services.Store.Protocol.shape': {'store','notebook'},
+    'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
     'Lemma.Services.Store.Engine.complete': {'store'},
     'Lemma.Services.Store.Server.application': {'store'},
     'Lemma.Applications.Notebook.toolbar': {'notebook'},
+    'Lemma.Ink.Surface.glyph': {'notebook'},
 }
 
 
@@ -3529,9 +3574,9 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     if configuration in SERVICE_CONFIGURATIONS:
         text_pages = (len(text) + 4095) // 4096
         arena_pages = 4 if image_key == "server" else 0
-        if 16 + text_pages + arena_pages > 32:
+        if 18 + text_pages + arena_pages > 32:
             raise Core0Error("service image exceeds owned-page quota with its reserved backing pages")
-        service_quota = {"base_owned_task_frames":16,"base_global_task_frames":17,
+        service_quota = {"base_owned_task_frames":18,"base_global_task_frames":19,
                          "text_pages":text_pages,"reserved_arena_pages":arena_pages,"owner_quota":32}
     linked_sections=inspect("llvm-readelf", ["-S", "--wide", "image.elf"], "user-sections")
     initializer_symbols=symbols
@@ -3977,8 +4022,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         intervals = {row["name"]: row for row in layout["intervals"]}
         capacities = {"machine": intervals["firmware-private"]["limit"] - intervals["firmware-private"]["base"],
                       "boot": intervals["supervisor-stack"]["limit"] - layout["context"]["boot_stack_floor"],
-                      "kernel-trap": layout["task_kernel_stack_bytes"] - (32 if configuration in LEMMASIM_CONFIGURATIONS else 0), "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
-        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 16352 if configuration in LEMMASIM_CONFIGURATIONS else 8192, "user": 16384 if configuration in LEMMASIM_CONFIGURATIONS else 8192}:
+                      "kernel-trap": layout["task_kernel_stack_bytes"] - 32, "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
+        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 16352, "user": 16384 if configuration in LEMMASIM_CONFIGURATIONS else 8192}:
             raise Core0Error("authoritative stack capacities differ")
         startup = (output_dir / "startup.S").read_text()
         user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
@@ -4016,8 +4061,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
                          function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined),
                          maximum_compiled_frame_bytes=max(frames.values()))
-            if configuration in LEMMASIM_CONFIGURATIONS and any(row['margin_bytes'] * 4 < row['capacity_bytes'] for row in graph['entries']):
-                raise Core0Error('Lemmasim compiled privileged stack has less than 25percent headroom')
+            if any(row['margin_bytes'] * 4 < row['capacity_bytes'] for row in graph['entries']):
+                raise Core0Error('current compiled privileged stack has less than 25percent headroom')
             stacks[role] = graph
         inspections = {}
         specs = [("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False)]

@@ -15,7 +15,9 @@ import json
 import shutil
 import struct
 import sys
+import time
 from pathlib import Path
+from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'conformance/lemmasim'))
@@ -71,6 +73,9 @@ def raw_fixture(out: Path, operation: str) -> tuple[Path, Path]:
                     first_tick=rows[0][1], last_tick=rows[-1][1],
                     expected={'acknowledged_baseline_preserved': True,
                               'new_operation': 'absent or wholly valid after admitted fault'})
+    manifest.pop('sample_interval_ticks', None)
+    manifest.pop('action_gap_ticks', None)
+    manifest['timing_policy'] = 'absolute serialized sample timestamps in 10 MHz guest ticks'
     input_path, manifest_path = out / (operation + '.bin'), out / (operation + '.json')
     input_path.write_bytes(raw)
     write_json(manifest_path, manifest)
@@ -79,7 +84,16 @@ def raw_fixture(out: Path, operation: str) -> tuple[Path, Path]:
 
 def campaign(metadata: dict, qemu: Path | str, baseline_disk: Path | str,
              baseline_export: Path | str, baseline_serial: Path | str,
-             out: Path | str) -> dict:
+             out: Path | str, *, deadline_seconds: float | None = None,
+             remaining: Callable[[], float] | None = None) -> dict:
+    expires = time.monotonic() + deadline_seconds if deadline_seconds is not None else None
+    def bounded_timeout(limit: float) -> float:
+        budget = min(limit, expires - time.monotonic()) if expires is not None else limit
+        if remaining is not None:
+            budget = min(budget, remaining())
+        if budget <= 0:
+            raise TimeoutError('overall fault campaign deadline expired')
+        return budget
     out = Path(out).resolve()
     out.mkdir(parents=True, exist_ok=False)
     baseline_disk, baseline_export, baseline_serial = (Path(path).resolve()
@@ -115,7 +129,7 @@ def campaign(metadata: dict, qemu: Path | str, baseline_disk: Path | str,
             disk = directory / 'disk.raw'
             shutil.copyfile(baseline_disk, disk)
             launched = native.launch(metadata, disk, directory / 'r', headless=True,
-                                     raw=inputs[operation][0], timeout=120, until_commits=1)
+                                     raw=inputs[operation][0], timeout=bounded_timeout(120), until_commits=1)
             if launched['status'] != 'OBSERVED_GUEST_WORKFLOW_BOUNDARY' or launched.get('document_report', {}).get('status') != 'SAVED':
                 raise ValueError(operation + ' reference failed to reach a genuine guest Saved boundary')
             observed = plan(disk, directory / 'r/media.jsonl', baseline_export)
@@ -160,8 +174,8 @@ def campaign(metadata: dict, qemu: Path | str, baseline_disk: Path | str,
             write_json(case_path, case)
             operation = template['operation']
             launched = native.launch(metadata, disk, directory / 'r', headless=True,
-                                     raw=inputs[operation][0], timeout=75,
-                                     faults={fault: template['ordinal']})
+                                     raw=inputs[operation][0], timeout=bounded_timeout(75),
+                                     faults={fault: template['ordinal']}, mode='laboratory')
             if fault != 'fail-flush' and (launched['status'] != 'MODELED_POWER_CUT' or launched['returncode'] != 86):
                 raise ValueError(name + ': actual modeled power cut did not exit at device boundary')
             if not launched['process_reaped']:
@@ -180,7 +194,7 @@ def campaign(metadata: dict, qemu: Path | str, baseline_disk: Path | str,
             cold_disk = directory / 'cold.raw'
             shutil.copyfile(disk, cold_disk)
             cold_run = native.launch(metadata, cold_disk, directory / 'c', headless=True,
-                                     timeout=120, until_ready=True)
+                                     timeout=bounded_timeout(120), until_ready=True)
             if cold_run['status'] != 'OBSERVED_GUEST_WORKFLOW_BOUNDARY' or not cold_run['process_reaped']:
                 raise ValueError(name + ': cold new-process guest did not reach completed page readiness')
             cold = check_cold(disk, cold_disk, expected_visible, directory / 'c/visible.ppm',

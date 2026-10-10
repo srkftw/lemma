@@ -24,6 +24,10 @@ typedef struct BDRVLemmaDurable {
     CoMutex lock;
     uint64_t limit,write_number,flush_number,durable_flush;
     uint64_t fail_write,fail_flush,cut_before_flush,cut_after_flush,tear_flush;
+    uint64_t delay_after_ns,delay_write_ns,delay_deadline_ns;
+    uint64_t delay_ordinal,delay_offset,delay_bytes;
+    bool delay_used,delay_active;
+    QemuCoSleep delay_sleep;
     FILE *trace;
 } BDRVLemmaDurable;
 static BDRVLemmaDurable *active_medium;
@@ -32,8 +36,10 @@ char *lemma_block_state_json(void)
 {
     BDRVLemmaDurable *s=active_medium;
     if(!s)return g_strdup("{\"backend\":\"ABSENT\"}");
-    return g_strdup_printf("{\"backend\":\"lemma-durable/1\",\"pending_sectors\":%u,\"pending_limit\":%"PRIu64",\"writes\":%"PRIu64",\"flushes\":%"PRIu64",\"durable_flush\":%"PRIu64"}",
-        g_hash_table_size(s->pending),s->limit,s->write_number,s->flush_number,s->durable_flush);
+    return g_strdup_printf("{\"backend\":\"lemma-durable/1\",\"pending_sectors\":%u,\"pending_limit\":%"PRIu64",\"writes\":%"PRIu64",\"flushes\":%"PRIu64",\"durable_flush\":%"PRIu64",\"delayed_write\":{\"active\":%s,\"used\":%s,\"ordinal\":%"PRIu64",\"offset\":%"PRIu64",\"bytes\":%"PRIu64",\"deadline_ns\":%"PRIu64"}}",
+        g_hash_table_size(s->pending),s->limit,s->write_number,s->flush_number,s->durable_flush,
+        s->delay_active?"true":"false",s->delay_used?"true":"false",s->delay_ordinal,
+        s->delay_offset,s->delay_bytes,s->delay_deadline_ns);
 }
 static void medium_trace(BDRVLemmaDurable *s,const char *event,uint64_t a,uint64_t b)
 {
@@ -58,6 +64,8 @@ static QemuOptsList medium_options={
         {.name="cut-before-flush",.type=QEMU_OPT_NUMBER},
         {.name="cut-after-flush",.type=QEMU_OPT_NUMBER},
         {.name="tear-flush",.type=QEMU_OPT_NUMBER},
+        {.name="delay-after-ns",.type=QEMU_OPT_NUMBER},
+        {.name="delay-write-ns",.type=QEMU_OPT_NUMBER},
         {.name="trace-file",.type=QEMU_OPT_STRING},
         { }
     }
@@ -74,8 +82,14 @@ static int medium_open(BlockDriverState *bs,QDict *options,int flags,Error **err
     s->cut_before_flush=qemu_opt_get_number(opts,"cut-before-flush",0);
     s->cut_after_flush=qemu_opt_get_number(opts,"cut-after-flush",0);
     s->tear_flush=qemu_opt_get_number(opts,"tear-flush",0);
+    s->delay_after_ns=qemu_opt_get_number(opts,"delay-after-ns",0);
+    s->delay_write_ns=qemu_opt_get_number(opts,"delay-write-ns",0);
     if(!s->limit || s->limit>262144 || (flags&BDRV_O_NO_FLUSH)) {
         error_setg(errp,"lemma-durable needs 1..262144 pending sectors and enabled flushes");goto end;
+    }
+    if(s->delay_write_ns>10000000000ULL || s->delay_after_ns>3600000000000ULL ||
+       (s->delay_after_ns && !s->delay_write_ns)) {
+        error_setg(errp,"lemma-durable write delay needs duration 1..10s and threshold 0..3600s, or both disabled");goto end;
     }
     if(active_medium) {error_setg(errp,"lemmasim-virt/0.1.0 permits one lemma-durable medium");goto end;}
     const char *path=qemu_opt_get(opts,"trace-file");
@@ -139,6 +153,19 @@ static int coroutine_fn GRAPH_RDLOCK medium_write(BlockDriverState *bs,int64_t o
     if(s->write_number==UINT64_MAX) {ret=-EOVERFLOW;goto end;}
     s->write_number++;
     if(s->write_number==s->fail_write) {medium_trace(s,"write-failed",offset,bytes);ret=-EIO;goto end;}
+    uint64_t now=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    if(s->delay_write_ns && !s->delay_used && now>=s->delay_after_ns) {
+        /* The VirtIO request still owns qiov and cannot publish a used entry.
+         * No sector bytes or guest document metadata are inspected to select it. */
+        s->delay_used=true;s->delay_active=true;
+        s->delay_ordinal=s->write_number;
+        s->delay_offset=offset;s->delay_bytes=bytes;
+        s->delay_deadline_ns=now+s->delay_write_ns;
+        medium_trace(s,"write-delay-begin",offset,bytes);
+        qemu_co_sleep_ns_wakeable(&s->delay_sleep,QEMU_CLOCK_VIRTUAL,s->delay_write_ns);
+        medium_trace(s,"write-delay-end",offset,bytes);
+        s->delay_active=false;
+    }
     uint64_t needed=0;
     for(int64_t n=0;n<bytes;n+=512) {
         uint64_t sector=(offset+n)/512;
@@ -155,6 +182,16 @@ static int coroutine_fn GRAPH_RDLOCK medium_write(BlockDriverState *bs,int64_t o
     medium_trace(s,"write-volatile",offset,bytes);ret=0;
 end:
     qemu_co_mutex_unlock(&s->lock);return ret;
+}
+static void medium_drain_begin(BlockDriverState *bs)
+{
+    BDRVLemmaDurable *s=bs->opaque;
+    if(s->delay_active) {
+        /* Pause/reset/close may stop virtual time while draining requests.
+         * Unblock this synthetic delay, recording the policy outcome explicitly. */
+        medium_trace(s,"write-delay-drained",s->delay_offset,s->delay_bytes);
+        qemu_co_sleep_wake(&s->delay_sleep);
+    }
 }
 static gint sector_order(gconstpointer a,gconstpointer b,gpointer unused)
 {
@@ -209,6 +246,7 @@ static BlockDriver medium_driver={
     .bdrv_open=medium_open,.bdrv_close=medium_close,.bdrv_child_perm=bdrv_default_perms,
     .bdrv_co_getlength=medium_length,.bdrv_co_preadv=medium_read,
     .bdrv_co_pwritev=medium_write,.bdrv_co_flush=medium_flush,
+    .bdrv_drain_begin=medium_drain_begin,
 };
 static void medium_register(void) {bdrv_register(&medium_driver);}
 block_init(medium_register);

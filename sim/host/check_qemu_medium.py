@@ -55,7 +55,7 @@ class DeviceMachine:
         for low,high,addr in [(0x80,0x84,0x81000000),(0x90,0x94,0x81001000),(0xa0,0xa4,0x81002000)]:self.write(b+low,addr);self.write(b+high,0)
         self.memory(0x81001000,bytes(32));self.memory(0x81002000,bytes(80))
         self.write(b+0x44,1);self.write(b+0x70,15)
-    def request(self,kind,sector=0,payload=None,expect_cut=False):
+    def request(self,kind,sector=0,payload=None,expect_cut=False,defer=False):
         # VirtIO1.2 fixed little-endian header and split descriptor layout.
         header=struct.pack('<IIQ',kind,0,sector)
         self.memory(0x81003000,header)
@@ -68,6 +68,9 @@ class DeviceMachine:
         self.memory(0x81000000,descriptors)
         self.write(0x81001004+(self.index%8)*2,0,'w');self.index=(self.index+1)%65536
         self.write(0x81001002,self.index,'w');self.write(0x10001050,0)
+        if defer:return self.index
+        return self.completion(expect_cut)
+    def completion(self,expect_cut=False):
         deadline=time.monotonic()+10
         try:
             while self.read(0x81002002,'w')!=self.index:
@@ -128,6 +131,40 @@ def main():
             assert m.request(1,1,b'E'*512)==1
             assert m.read_sector()==b'D'*512 and m.read_sector(1)==bytes(512)
         observations.append('pending exhaustion rejects next request and preserves existing bytes')
+        disk=a.output/'delay.raw';initialize(disk)
+        with DeviceMachine(a.qemu,a.output/'virtual-delay',disk,**{'delay-write-ns':3000000000}) as m:
+            # Literal timer boundary: no used entry / status write before3s.
+            index=m.request(1,payload=b'F'*512,defer=True)
+            assert m.read(0x81002002,'w')!=index and m.read(0x81005000,'b')==255
+            m.transact('clock_step 2999999999')
+            assert m.read(0x81002002,'w')!=index and m.read(0x81005000,'b')==255
+            m.transact('clock_step 1')
+            assert m.completion()==0
+            assert stable(disk)==bytes(512),'delayed completion still volatile'
+            assert m.request(1,payload=b'G'*512)==0,'delay is one shot'
+            assert m.read_sector()==b'G'*512
+        trace=(a.output/'virtual-delay/media.trace').read_text().splitlines()
+        begin=[row.split() for row in trace if ' write-delay-begin ' in row]
+        end=[row.split() for row in trace if ' write-delay-end ' in row]
+        assert len(begin)==len(end)==1 and begin[0][2:4]==end[0][2:4]==['0','512']
+        assert int(end[0][0])-int(begin[0][0])==3000000000
+        assert not any(' write-delay-drained ' in row for row in trace)
+        observations.append('one-shot actual VirtIO write remains pending until literal virtual3s timer; used/status untouched before boundary')
+        disk=a.output/'delay-drain.raw';initialize(disk)
+        with DeviceMachine(a.qemu,a.output/'virtual-delay-drain',disk,**{'delay-write-ns':3000000000}) as m:
+            index=m.request(1,payload=b'H'*512,defer=True)
+            assert m.read(0x81002002,'w')!=index
+            # Actual VirtIO reset drains hardware before discarding its queue.
+            # Virtual time remains0: a reset must explicitly unblock this wait.
+            m.write(0x10001070,0)
+            m.index=0;m.transport_init()
+            assert m.read_sector()==b'H'*512 and stable(disk)==bytes(512)
+        trace=(a.output/'virtual-delay-drain/media.trace').read_text().splitlines()
+        assert sum(' write-delay-drained ' in row for row in trace)==1
+        begin=next(row.split() for row in trace if ' write-delay-begin ' in row)
+        end=next(row.split() for row in trace if ' write-delay-end ' in row)
+        assert begin[2:4]==end[2:4]==['0','512'] and int(end[0])-int(begin[0])<3000000000
+        observations.append('actual VirtIO reset drains/unblocks delayed request explicitly; no virtualtimer hang or false full-delay observation')
         (a.output/'result.json').write_text(json.dumps({'status':'PASS','scope':'actual device-only medium/VirtIO observations; no guest journal/notebook claim','observations':observations},indent=2)+'\n')
     except BaseException as e:
         (a.output/'result.json').write_text(json.dumps({'status':'FAIL','error':repr(e),'observations':observations},indent=2)+'\n');raise

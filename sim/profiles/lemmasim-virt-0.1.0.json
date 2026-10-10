@@ -18,6 +18,7 @@
   },
   "descriptor":{"base":268502016,"bytes":256,"magic":1280132179,"abi":1},
   "disk_initial_sectors":524288,
+  "laboratory_write_delay":{"policy":"virtual-one-shot-write-delay/1","default_duration_ns":0,"max_duration_ns":10000000000,"max_after_ns":3600000000000,"drain":"wake early and record write-delay-drained"},
   "inherited_fixed_devices":"QEMU virt: mask ROM, finisher, CLINT, PLIC, UART, goldfish RTC, eight VirtIO MMIO transports, PCIe host, two CFI flash banks, fw_cfg, platform bus. These remain present; only block transport slot0 (IRQ1) is attached. RTC base comes from pinned virt map.",
   "registers":{
     "paper":{"MAGIC":0,"VERSION":8,"STATUS":16,"ERROR":24,"WIDTH":32,"HEIGHT":40,"STRIDE":48,"CAPS":56,"TILE_X":64,"TILE_Y":72,"TILE_W":80,"TILE_H":88,"TILE_LEN":96,"COMMAND":104,"SEQUENCE":112,"RECT_X":120,"RECT_Y":128,"RECT_W":136,"RECT_H":144,"MODE":152,"COMPLETED":160,"ACK":168,"RESET":176,"DESCRIPTOR":1024,"APERTURE":2048},

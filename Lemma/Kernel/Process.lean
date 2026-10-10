@@ -184,7 +184,8 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
   else
     .bind (Lemma.Kernel.Console.record 0xdd cause value pc status) fun _ _ => fatal
 
-/-- The owned stack pair is checked independently of any supplied frame. -/
+/-- The configured owned stack is checked independently of any supplied frame.
+Current boots construct four pages; explicit historical fixtures retain pairs. -/
 def validateStack (descriptor : UInt64) : Action :=
   .bind (AddressSpace.base descriptor) fun s layout =>
   if failed s = true then fatal else
@@ -211,7 +212,7 @@ def validateStack (descriptor : UInt64) : Action :=
   .bind (Access.read64 (base + 2408)) fun s top =>
   if failed s = true then fatal else
   if (if pins ||| secondPins = 0 then if secondBase = stackBase + Frames.bytes then
-    if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then true
+    if top = stackBase + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then true
     else false else false else false) = true then .done 0 top else fatal
   else fatal
 

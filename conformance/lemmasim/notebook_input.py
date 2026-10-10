@@ -33,7 +33,7 @@ class Input:
                             1, 0, 1))
         self.tick += self.interval
 
-    def stroke(self, name: str, page: int, namespace: int, count: int, row: int):
+    def stroke(self, name: str, page: int, namespace: int, count: int, row: int, brush: int = 512):
         if count < 3:
             raise ValueError('a stroke needs contact samples plus pen-up')
         start = len(self.events) + 1
@@ -47,7 +47,8 @@ class Input:
         self.sample(x, y, 0, False)
         self.actions.append({'kind': 'stroke', 'name': name, 'namespace': namespace,
                              'page': page, 'first_sequence': start,
-                             'last_sequence': len(self.events), 'raw_samples': count})
+                             'last_sequence': len(self.events), 'raw_samples': count,
+                             'brush_q8': brush})
         self.tick += self.gap
 
     def tool(self, button: int, name: str):
@@ -76,9 +77,10 @@ def generate(workflow: str, width: int, height: int, first: int, interval: int, 
         stream.tool(4, 'redo b')
         stream.tool(5, 'erase latest b')
         stream.tool(2, 'add page2')
-        stream.stroke('c', 2, 1, 25, height // 3)
+        stream.tool(6, 'select width4')
+        stream.stroke('c', 2, 1, 25, height // 3, brush=1024)
         stream.tool(0, 'create/open notebook2')
-        stream.stroke('d', 1, 2, 25, height // 2)
+        stream.stroke('d', 1, 2, 25, height // 2, brush=1024)
         stream.tool(0, 'reopen notebook1 page1')
         stream.tool(7, 'save checkpoint')
         expected = {'pages': {'1': [1, 2], '2': [1]},

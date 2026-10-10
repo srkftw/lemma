@@ -64,7 +64,17 @@ def build(args):
                      '--output-dir',str(out),'--timeout','300'],1200)
         image=out/'image.elf'
         if not image.is_file() or not (out/'build.json').is_file():raise Failure('Guest build lacks its completed build manifest.')
-        metadata[key]={'path':str(image),'sha256':sha(image),'build_sha256':sha(out/'build.json')}
+        run_command(['nix','develop','--no-write-lock-file','--command','python3',
+                     'scripts/audit_kernel.py',str(out)],300)
+        audit=json.loads((out/'audit.json').read_text())
+        if audit.get('status')!='PASS':raise Failure('Guest linked-code audit did not pass.')
+        if key=='notebook':
+            run_command(['nix','develop','--no-write-lock-file','--command','python3',
+                         'scripts/audit_lemmasim_capacity.py','--build',str(out),
+                         '--output',str(out/'capacity.json')],120)
+            if json.loads((out/'capacity.json').read_text()).get('status')!='PASS':raise Failure('Guest selected stack/capacity audit did not pass.')
+        metadata[key]={'path':str(image),'sha256':sha(image),'build_sha256':sha(out/'build.json'),
+                       'audit_sha256':sha(out/'audit.json')}
     metadata['backend_sources']={str(p.relative_to(ROOT)):sha(p) for p in sorted((ROOT/'sim/host').glob('*')) if p.is_file()}
     if metadata['backend_sources']!=backend_before:raise Failure('Host hardware sources changed during preparation.')
     metadata['profile_sha256']=sha(ROOT/'sim/profiles/lemmasim-virt-0.1.0.json')
@@ -97,6 +107,7 @@ def document_observations(serial):
         try:kind,a,b,c,d=(int(value,16) for value in fields[1:])
         except ValueError:raise Failure('Malformed guest observation.')
         if kind==0x420:result['ready']=True
+        if kind==0x425:result['view_request']={'sequence':a,'page':b,'namespace':c,'meaning':'guest full-page refresh accepted; controller completion observed separately'}
         if kind==0x421:
             for stale in ('pending_transaction','object','failure'):result.pop(stale,None)
             result.update(status='SAVED',acknowledged_sequence=a,page=b,namespace=c,stroke=d)
@@ -110,7 +121,20 @@ def document_observations(serial):
     result['authority']='compiled guest reports; not host journal interpretation'
     return result
 
-def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,mode="student"):
+def validated_faults(faults,mode):
+    result=dict(faults or {})
+    ordinals={'fail-write','fail-flush','cut-before-flush','cut-after-flush','tear-flush'}
+    allowed=ordinals|{'delay-after-ns','delay-write-ns'}
+    if result and mode!='laboratory':raise Failure('Device faults require Laboratory mode.')
+    for key,value in result.items():
+        maximum=1000000000 if key in ordinals else 10000000000 if key=='delay-write-ns' else 3600000000000
+        if key not in allowed or type(value) is not int or not 0<=value<=maximum or key in ordinals and value==0:
+            raise Failure('Invalid device-fault option or bound.')
+    if result.get('delay-after-ns',0) and not result.get('delay-write-ns',0):raise Failure('A write-delay threshold requires a duration.')
+    return result
+
+def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,until_view=None,mode="student"):
+    faults=validated_faults(faults,mode)
     width,height=map(int,geometry.split('x'))
     if (width,height) not in ((1650,2200),(1404,1872)):raise Failure('Unsupported geometry instance.')
     if not headless and not (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
@@ -179,15 +203,22 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                     boundary=qmp(control_socket,'query-replay')
                     if boundary.get('icount')!=replay_boundary:raise Failure('Replay stopped at an unexpected instruction boundary.')
                     result['status']='REPLAY_BOUNDARY_REACHED';break
-                if until_commits is not None or until_ready or until_ingress is not None:
+                if until_commits is not None or until_ready or until_ingress is not None or until_view is not None:
                     reported=document_observations(out/'serial.bin')
                     reached=(reported['commit_count']>=until_commits if until_commits is not None else reported['ready'])
                     if until_ingress is not None:
                         captured=out/'raw.bin'
                         reached=(captured.is_file() and captured.stat().st_size==until_ingress*72 and reported['status']=='SAVED')
+                    if until_view is not None:
+                        view=reported.get('view_request',{})
+                        reached=(view.get('namespace'),view.get('page'))==until_view
+                        if until_ingress is not None:
+                            captured=out/'raw.bin'
+                            reached=reached and captured.is_file() and captured.stat().st_size==until_ingress*72
                     if reached:
                         hardware=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
                         if hardware['paper']['status']&1==0 and hardware['pen']['count']==0:
+                            if until_view is not None and hardware['paper']['completed']<reported['view_request']['sequence']:continue
                             if until_ingress is not None:
                                 state=(reported['acknowledged_sequence'],hardware['paper']['completed'])
                                 if settled is None or settled[0]!=state:settled=(state,time.monotonic())
@@ -266,12 +297,11 @@ def run_locked(args):
     faults={}
     if args.fault:
         if args.mode!='laboratory':raise Failure('Device faults require Laboratory mode.')
-        allowed={'fail-write','fail-flush','cut-before-flush','cut-after-flush','tear-flush'}
         for item in args.fault:
             key,value=item.split('=',1)
-            if key not in allowed or not 0<int(value)<=1000000000:raise Failure('Invalid device-fault ordinal.')
             if key in faults:raise Failure('Repeated fault option.')
             faults[key]=int(value)
+    faults=validated_faults(faults,args.mode)
     out=(args.record.resolve() if args.record else ROOT/f'build/lemmasim/session-{time.time_ns()}')
     rr=None
     if args.record:

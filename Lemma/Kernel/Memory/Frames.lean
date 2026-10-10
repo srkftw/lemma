@@ -12,13 +12,15 @@ def count : UInt64 := Lemma.Platform.LemmaVM.Layout.frameCountValue
 def bytes : UInt64 := Lemma.Platform.LemmaVM.Layout.frameBytesValue
 def pool : UInt64 := Lemma.Platform.LemmaVM.Layout.poolValue
 /-- Boot-only configuration cells. The validated machine descriptor selects the
-expanded floor before init; historical boot explicitly selects 512/32/2. There
+expanded floor before init; current ordinary boot selects512/32/4. The512/32/2
+constructor remains for explicit historical allocator fixtures. There
 is no syscall or capability exposing this constructor. -/
 def configuration : UInt64 := 0x804006a0
 def maximumCount : UInt64 := 8192
 def expandedPoolLimit : UInt64 := 0x84000000
 def configure (amount quota stackPages : UInt64) : Action :=
-  if (if amount = 512 then if quota = 32 then if stackPages = 2 then true else false else false
+  if (if amount = 512 then if quota = 32 then if stackPages = 2 then true else
+      if stackPages = 4 then true else false else false
       else if amount = 8192 then if 128 ≤ quota then if quota ≤ amount then if stackPages = 4 then true else false else false else false
       else false) = false then .done 39 0 else
   .bind (Access.write64 configuration amount) fun s _ =>
@@ -49,7 +51,8 @@ def runtimeStackPages : Action :=
   if s = 0 then
     .bind (Access.read64 (configuration + 16)) fun s pages =>
     if s = 0 then
-      if amount = 512 then if pages = 2 then .done 0 pages else .done 39 0
+      if amount = 512 then if pages = 2 then .done 0 pages else
+        if pages = 4 then .done 0 pages else .done 39 0
       else if pages = 4 then .done 0 pages else .done 39 0
     else .done s 0
   else .done s 0

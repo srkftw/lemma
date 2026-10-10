@@ -18,7 +18,7 @@ from core0_common import Core0Error, load_json, require_tools, run_bounded, sha2
 CAPACITY = 16352
 
 
-def construction(unit: dict, pre_ir: str) -> dict:
+def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
     names = {re.sub(r'^_private\..*?\.[0-9]+\.', '', row['source']): row['symbol']
              for row in unit['functions']}
     edges = {
@@ -43,19 +43,23 @@ def construction(unit: dict, pre_ir: str) -> dict:
     required = set(edges) | {name for callees in edges.values() for name in callees}
     required |= {'Lemma.Kernel.Memory.Frames.runtimeCount', 'Lemma.Kernel.Memory.Frames.runtimeQuota',
                  'Lemma.Kernel.Memory.Frames.configure', 'Lemma.Kernel.Loader.stackCanary',
+                 'Lemma.Kernel.Loader.kernelStackHandleOffset',
+                 'Lemma.Kernel.Loader.kernelStackSecondHandleOffset','Lemma.Kernel.Loader.kernelStackTopOffset',
                  'Lemma.Kernel.Loader.kernelStackThirdHandleOffset',
                  'Lemma.Kernel.Loader.kernelStackFourthHandleOffset',
                  'Lemma.Kernel.Loader.kernelStackPagesOffset', 'Lemma.Kernel.Loader.kernelStackBaseOffset'}
     required |= {'Lemma.Kernel.Memory.AddressSpace.registryCount',
                  'Lemma.Kernel.Memory.AddressSpace.registryList',
-                 'Lemma.Kernel.Memory.AddressSpace.expandedCapacity'}
+                 'Lemma.Kernel.Memory.AddressSpace.expandedCapacity',
+                 'Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue'}
     if not required <= names.keys():
         raise Core0Error(f'expanded-stack genuine source closure missing: {sorted(required - names.keys())}')
     for caller, callees in edges.items():
         called = parse_definitions_and_calls(_ir_definition_body(pre_ir, names[caller]))[2]
         if not {names[callee] for callee in callees} <= called:
             raise Core0Error(f'expanded-stack ownership/cleanup edge missing: {caller}')
-    constants = {'kernelStackThirdHandleOffset':2488, 'kernelStackFourthHandleOffset':2496,
+    constants = {'kernelStackHandleOffset':2400,'kernelStackSecondHandleOffset':2480,'kernelStackTopOffset':2408,
+                 'kernelStackThirdHandleOffset':2488, 'kernelStackFourthHandleOffset':2496,
                  'kernelStackPagesOffset':2504, 'kernelStackBaseOffset':2512,
                  'stackCanary':0x4c4d535441434b34}
     for short, value in constants.items():
@@ -66,21 +70,27 @@ def construction(unit: dict, pre_ir: str) -> dict:
         body = _ir_definition_body(pre_ir, names['Lemma.Kernel.Memory.AddressSpace.' + short])
         if re.fullmatch(r'\s*entry:\s*ret i64 ' + str(value) + r'\s*', body) is None:
             raise Core0Error('expanded registry layout differs from emitted value')
+    body = _ir_definition_body(pre_ir, names['Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue'])
+    if re.fullmatch(r'\s*entry:\s*ret i64 16384\s*', body) is None:
+        raise Core0Error('four-page stack source capacity differs from its emitted value')
     return {'allocated_pages':4, 'allocated_bytes':16384, 'usable_bytes':CAPACITY,
             'sentinel_bytes':32, 'sentinels_are_hardware_guards':False,
             'construction':'owned-physically-contiguous-four',
             'source_symbols':{name:names[name] for name in sorted(required)},
-            'initial_page_table_frames':13, 'leaf_registry_frames':8,
-            'user_leaf_capacity':1024, 'owned_task_base_frames':30,
-            'global_task_base_frames':31, 'user_stack_pages':4, 'user_stack_bytes':16384,
-            'user_stack_base':0x3fffa000, 'user_stack_guards':[0x3fff9000,0x3fffe000],
-            'accounting_formula':'13 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1'}
+            'initial_page_table_frames':13 if expanded else 11, 'leaf_registry_frames':8 if expanded else 0,
+            'user_leaf_capacity':1024 if expanded else 32, 'owned_task_base_frames':30 if expanded else 18,
+            'global_task_base_frames':31 if expanded else 19, 'user_stack_pages':4 if expanded else 2,
+            'user_stack_bytes':16384 if expanded else 8192,
+            'user_stack_base':0x3fffa000 if expanded else 0x3fffc000,
+            'user_stack_guards':[0x3fff9000,0x3fffe000] if expanded else [0x3fffb000,0x3fffe000],
+            'accounting_formula': ('13 initial tables + 8 leaf registry + 1 data + 4 user stack + 4 kernel stack; text/lazy tables additional; descriptor charged separately to owner1' if expanded else
+                '11 initial tables + 1 data + 2 user stack + 4 kernel stack =18 privately owned; descriptor separately charged toowner1 makes19 global; text additional')}
 
 
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize'} or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
+    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development'} or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

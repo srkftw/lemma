@@ -64,6 +64,8 @@ private def rootIdentities (configuration role : String) : Array String :=
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
   | "kernel" => if configuration == "lemmasim-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.boot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-isolation-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.isolationBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-initialize" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-bringup" then
@@ -364,7 +366,7 @@ private def layoutJson (configuration : String)
   ("configuration", .str configuration),
   ("startup_case", .str (startupCase configuration).stableId),
   ("user_startup_case", .str (image?.map (·.startupCase) |>.getD (userStartupCase configuration)).stableId),
-  ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v1"),
+  ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v2"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
   ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount)),
   ("task_kernel_stack_pages", toJson (if configuration.startsWith "lemmasim-" then 4 else Layout.taskKernelStackPages)),

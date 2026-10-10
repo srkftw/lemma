@@ -121,3 +121,34 @@ valid publication when the old trailing bytes were also zero. That admitted
 outcome is reported honestly. The separate torn-payload case writes a new
 header while leaving its body/publication incomplete; the store observer must
 retain the acknowledged baseline and refuse the incomplete append suffix.
+
+The maintained publication-barrier regression is
+`scripts/check_lemmasim_publication_negative.py`. It requires a positive image
+whose actual clean build provenance matches the supplied committed candidate.
+It creates a fresh detached experimental checkout and changes exactly one Lean
+branch: completion of publication write (phase 20) calls `acknowledged` instead
+of requesting the real final flush (phase 21). The genuine pinned Lean/LLVM/RV64
+pipeline builds that quarantined image. Its source patch, original build
+provenance, and separate `UNQUALIFIED_NEGATIVE_ONLY` label are retained; the
+altered implementation is never imported into the trusted checkout.
+
+```sh
+python3 scripts/check_lemmasim_publication_negative.py \
+  --metadata PREPARED_BUILD_JSON --qemu PINNED_LEMMASIM_QEMU \
+  --candidate-commit EXACT_CLEAN_BUILD_COMMIT \
+  --baseline-disk ACKNOWLEDGED_DISK_COPY --baseline-export BASELINE_EXPORT \
+  --baseline-serial BASELINE_SERIAL --output build/lemmasim/new-barrier-regression
+```
+
+Both positive and negative consume the same ordinary one-stroke raw device
+input on fresh copies. After the actual guest `0x421` record, maintained
+read-only inspection captures pending medium state, then Laboratory controls
+cut the running whole process with SIGKILL. The owner launch thread reaps the process. There is no normal
+QMP stop, quit, reset or cleanup flush before that cut. QEMU stop can
+flush block nodes and would mask this particular ordering error. The independent store oracle must
+retain the positive ACK and reject the negative's ACK beyond stable recovery.
+The negative observer's result remains **FAIL**; the enclosing regression may
+report PASS only when that real behavioral failure was observed and rejected,
+with previously acknowledged ink preserved in both cases. This tests a storage
+ordering bug, not a changed-source hash. Final candidate execution is separate
+from development experiments using earlier explicitly identified images.

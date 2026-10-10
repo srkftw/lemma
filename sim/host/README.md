@@ -43,7 +43,8 @@ Properties on QOM type`lemma-paper-pen`:
   busy/completion plus packed target/visible SHA256 values. Use QMP`qom-get` on
   `/machine/lemma-hardware`; no guest memory modification.
 * read-only `storage-state`: volatile-sector count/capacity and block write,
-  flush and durable-flush counters. Document sequences remain guest state.
+  flush and durable-flush counters, plus the optional one-shot delayed write's
+  actual transport ownership interval. Document sequences remain guest state.
 
 QEMU ordinary pointer events enter its input/replay system and then the modeled
 FIFO. Mouse pressure is half-range and explicitly Synthetic. No physical pressure
@@ -52,6 +53,10 @@ headless screendump uses the same graphic console. Frontend rendering never owns
 strokes or pages. Standard QMP stop/cont and system_reset are external Developer
 controls. Whole-machine snapshots are unsupported by this adapter; CPU/RAM-only
 save state cannot be advertised as a coherent snapshot.
+Pause drains QEMU's block graph and can flush the volatile sector overlay. It
+does not simulate power loss. Use a declared device cut or Laboratory
+whole-process SIGKILL while running to test disappearance of pending writes;
+do not pause first.
 Native replay uses QEMU's recorded input; feeding captured raw-output a second
 time would duplicate ingress. Raw-file sessions preserve their scheduled input
 as an explicit identity-bound source. See the

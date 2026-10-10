@@ -154,7 +154,11 @@ private def pumpRefresh : Action :=
   .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 352 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 360 0) fun s _ => .done s sequence
+  .bind (put 360 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 440) fun s opened => if statusFailed s = true then .done s 0 else
+  .bind (if opened = 1 then reportCommitState 0x425 sequence 0 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 440 0) fun s _ => .done s sequence
 
 private def contextStep (i _ : UInt32) (acc record first last dimensions : UInt64) : Action :=
   let index := i.toUInt64
@@ -271,7 +275,8 @@ private def loadPage (page : UInt64) : Action :=
     .bind (readObject (0x100 + page) loadedInk bytes) fun s copied => if statusFailed s = true then .done s 0 else
     Lemma.Documents.Ink.decodePage loadedInk pageIndex page copied
     else .done s 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 80 page) fun s _ => if statusFailed s = true then .done s 0 else redraw
+  .bind (put 80 page) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind redraw fun s _ => if statusFailed s = true then .done s 0 else put 440 1
 
 private def readOnlyNotebook (status : UInt8) : Action :=
   .bind (put 136 3) fun s _ => if statusFailed s = true then .done s 0 else

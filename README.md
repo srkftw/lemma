@@ -268,8 +268,8 @@ The native QEMU window displays the controller's visible pixels. Pointer events
 enter its pen FIFO. All toolbar, ink, page and document behavior runs in the guest.
 The eight guest tools are home/notebook toggle, previous page, next/add page,
 undo, redo, erase latest stroke, width and Save. Home closes the current namespace
-and opens the other of two notebooks. S/P/F/R beside the page number means
-Saved/Pending/Save failed/Read-only. Completed strokes autosave; Save requests a
+and opens the other of two notebooks. The text beside the page number shows
+SAVED, PENDING, FAILED or READ ONLY. Completed strokes autosave; Save requests a
 durable checkpoint. Wait for Saved before closing when you want all pending work.
 A failed mount never triggers automatic formatting. `init` refuses existing
 images unless `--force` explicitly requests destruction.
@@ -287,7 +287,9 @@ Developer capture, inspection and offline copies use the same machine:
 ```
 
 Controls `pause`, `resume`, `reset` and `power-cut` are outside guest authority;
-mutating controls invalidate an unmodified replay claim. Replay uses a fresh
+mutating controls invalidate an unmodified replay claim. QEMU pause/reset may
+drain and flush block nodes; use `power-cut` for a modeled loss of volatile
+writes. Replay uses a fresh
 media copy and refuses changed identities. Laboratory faults act on real block
 write/flush ordinals (`--mode laboratory --fault cut-before-flush=N`, also
 `cut-after-flush`, `tear-flush`, `fail-write`, `fail-flush`). Their exact notebook

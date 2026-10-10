@@ -39,11 +39,13 @@ class ArchitectureCheckerTests(unittest.TestCase):
         (unit_dir/"unit.json").write_text(json.dumps(unit))
         text = bytes(128)+body
         (unit_dir/"text.bin" if managed else directory/"user-text.bin").write_bytes(text)
-        (directory/"layout.json").write_text(json.dumps({"task_kernel_stack_pages":2,"task_kernel_stack_bytes":8192}))
+        (directory/"layout.json").write_text(json.dumps({"task_kernel_stack_pages":4,"task_kernel_stack_bytes":16384}))
         audit = {"status":"PASS","configuration":cfg,"stage":"supervisor","elf":{"users":{"fault":user}} if managed else {"user":user},
-                 "task_kernel_stack":{"pages":2,"bytes":8192,"construction":"owned-physically-contiguous-pair",
+                 "task_kernel_stack":{"pages":4,"bytes":16384,"construction":"owned-physically-contiguous-four",
                     "first_handle_offset":2400,"second_handle_offset":2480,
-                    **({"base_owned_task_frames":16,"base_global_task_frames":17} if managed else {"base_owned_task_frames":17})}}
+                    **({"usable_bytes":16352,"sentinel_bytes":32,"sentinels_are_hardware_guards":False,
+                        "third_handle_offset":2488,"fourth_handle_offset":2496,"pages_offset":2504,"base_offset":2512,
+                        "base_owned_task_frames":18,"base_global_task_frames":19} if managed else {"base_owned_task_frames":19})}}
         p,q,t='Lemma.Kernel.Process.','Lemma.Kernel.Scheduler.','Lemma.Kernel.Task.'
         read,control='Lemma.Kernel.Memory.Access.read64','Lemma.Kernel.Console.record'
         context='Lemma.Kernel.Memory.AddressSpace.context'
@@ -63,14 +65,7 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 'protected_sites':[['ok',1]]}}
         kernel_sources=dict(sources)
         if managed:
-            required_stack={"Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue",
-                "Lemma.Kernel.Memory.Frames.allocateContiguous2","Lemma.Kernel.Loader.allocateStack",
-                "Lemma.Kernel.Loader.installStackPair","Lemma.Kernel.Loader.storedStack","Lemma.Kernel.Loader.stackPair",
-                "Lemma.Kernel.Loader.releaseStackHandle","Lemma.Kernel.Loader.teardown",
-                "Lemma.Kernel.Process.validateFrame","Lemma.Kernel.Process.validateStack",
-                "Lemma.Kernel.Loader.kernelStackHandleOffset","Lemma.Kernel.Loader.kernelStackSecondHandleOffset",
-                "Lemma.Kernel.Development.ServiceEntry.dispatch","Lemma.Kernel.Scheduler.dispatch",
-                "Lemma.Kernel.Task.capture","Lemma.Kernel.Task.context"}
+            required_stack=k.CURRENT_QUAD_STACK_SOURCES
             stack_sources={source:sources.get(source,f'lemma_kernel_stack_fixture_{i}') for i,source in enumerate(sorted(required_stack))}
             audit['task_kernel_stack']['source_functions']=stack_sources
             kernel_sources.update(stack_sources)
@@ -96,12 +91,14 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 (image.parent/'user/unit.json').write_text(json.dumps(unit))
                 with self.assertRaisesRegex(Core0Error,'genuine maintained'):k.require_case(image,audit)
 
-    def test_managed_stack_uses_owner16_global17_and_genuine_sources_only(self):
+    def test_managed_stack_uses_owner18_global19_and_genuine_sources_only(self):
         with tempfile.TemporaryDirectory() as tmp:
             image,audit=self.binding(Path(tmp),managed=True)
             self.assertTrue(k.require_case(image,audit)['managed'])
             numeric={"pages":True,"bytes":4096,"first_handle_offset":2480,"second_handle_offset":2400,
-                     "base_owned_task_frames":17,"base_global_task_frames":16}
+                     "third_handle_offset":2480,"fourth_handle_offset":2488,"usable_bytes":16384,
+                     "sentinel_bytes":0,"pages_offset":2408,"base_offset":2504,
+                     "base_owned_task_frames":19,"base_global_task_frames":18}
             for field,value in numeric.items():
                 changed=deepcopy(audit);changed['task_kernel_stack'][field]=value
                 with self.subTest(field=field),self.assertRaises(Core0Error):k.require_case(image,changed)
@@ -111,7 +108,7 @@ class ArchitectureCheckerTests(unittest.TestCase):
             changed=deepcopy(audit);changed['task_kernel_stack']['source_functions']['Lemma.Kernel.Loader.allocateStack']='lemma_kernel_stale'
             with self.assertRaises(Core0Error):k.require_case(image,changed)
             unit=json.loads((image.parent/'kernel/unit.json').read_text())
-            unit['functions']=[row for row in unit['functions'] if row['source']!='Lemma.Kernel.Memory.Frames.allocateContiguous2']
+            unit['functions']=[row for row in unit['functions'] if row['source']!='Lemma.Kernel.Memory.Frames.allocateContiguous4']
             (image.parent/'kernel/unit.json').write_text(json.dumps(unit))
             with self.assertRaises(Core0Error):k.require_case(image,audit)
         with tempfile.TemporaryDirectory() as tmp:
@@ -144,7 +141,7 @@ class ArchitectureCheckerTests(unittest.TestCase):
                  (0xc0,0x534543414c4c0001,0x1b1b1f1818,0xb1ff,0x1446),
                  (0xc1,4,5,1,0),(0xc2,17,22,22,1000000),(0xd3,kernel,k.satp(kernel),500,0)]
         text=(directory/'user-text.bin').stat().st_size
-        before=500-17-(text+4095)//4096
+        before=500-19-(text+4095)//4096
         rows=list(initial)
         for i,arg in enumerate(k.ARGUMENTS):
             root=0x82001000+i*0x1000
@@ -206,7 +203,7 @@ class ArchitectureCheckerTests(unittest.TestCase):
         for id,kind,rights in [(512,1,2),(512,2,8),(1024,1,3),(1024,4,1024),(1536,1,2),(1536,4,1024)]:
             slot=len(trace.grants.get(id,[]));serial=len(trace.serials)+1
             trace.observe((0xb1,id,(serial<<4)|slot,kind,rights))
-        trace.observe((0xb4,512,51,424,0))
+        trace.observe((0xb4,512,51,416,0))
         for id,index,nonce,root in [(1024,1,1,0x82001000),(1536,2,2,0x82002000),(2048,3,3,0x82003000),(512,0,1,0x82004000)]:trace.observe((0xf1,id,index,nonce,root))
         trace.observe((0x300,512,51,1,1024))
         trace.begin_action({'kind':'diagnostic','index':7,'words':[0x33,4,7,0,0]})
@@ -229,7 +226,7 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 with self.assertRaises(Core0Error):trace.observe((0xf4,2560,44,7,spec['cause']))
                 trace.observe((0xf4,2560,44,k.mix(7),spec['cause']))
                 trace.observe((0xf5,2560,0,0,1));before=trace.remaining
-                trace.observe((0xf6,2560,before,before+18,0))
+                trace.observe((0xf6,2560,before,before+20,0))
                 self.assertTrue(trace.tasks[2560]['reaped'])
                 trace.current=1024
                 with self.assertRaises(Core0Error):trace.observe((0xd4,spec['cause'],pc,spec['stval'],k.USER_STATUS))

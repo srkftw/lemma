@@ -30,6 +30,9 @@ definition='''# @BlockdevOptionsLemmaDurable:
 # @cut-before-flush: Cut power before this numbered flush.
 # @cut-after-flush: Cut power after this numbered durable flush.
 # @tear-flush: Tear first sector at this flush, then cut power.
+# @delay-after-ns: Earliest virtual time for one delayed write.
+# @delay-write-ns: Virtual delay of first eligible write.
+#     Default disabled.
 # @trace-file: New file for normalized media-device observations.
 #
 # Since: 11.1
@@ -39,6 +42,7 @@ definition='''# @BlockdevOptionsLemmaDurable:
   'data': { '*pending-sectors': 'uint64', '*fail-write': 'uint64',
             '*fail-flush': 'uint64', '*cut-before-flush': 'uint64',
             '*cut-after-flush': 'uint64', '*tear-flush': 'uint64',
+            '*delay-after-ns': 'uint64', '*delay-write-ns': 'uint64',
             '*trace-file': 'str' } }
 
 ##

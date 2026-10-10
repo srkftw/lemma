@@ -231,6 +231,10 @@ def check(disk: Path, input_file: Path, manifest_file: Path, device_file: Path,
         if len(matches) != 1:
             raise ValueError(f'raw stroke {identity} not retained exactly once')
         names[identity] = matches[0]
+        action = next(row for row in actions if (row['namespace'], row['name']) == identity)
+        brushes = {header[7] for header, _ in stroke_chunks[identity[0], matches[0]]}
+        if brushes != {action.get('brush_q8', 512)}:
+            raise ValueError('guest brush selection was not retained with the original stroke')
     if len(actual_strokes) != len(expected_samples):
         raise ValueError('unexpected retained stroke or host/application shortcut')
     for identity, expected_names in manifest['expected']['visible_strokes'].items():
