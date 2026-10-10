@@ -141,5 +141,5 @@ outputs of the fix, or infer CI success from the workflow file.
 
 ## LemmaSim first-class architecture
 
-Read [LEMMA_MACHINE_CONTRACT.md](LEMMA_MACHINE_CONTRACT.md) and [docs/plan/LEMMASIM.md](docs/plan/LEMMASIM.md) before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned `docs/contracts/LEMMA_VM.md` boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.
+Read `LEMMA_MACHINE_CONTRACT.md` and `docs/plan/LEMMASIM.md` before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned `docs/contracts/LEMMA_VM.md` boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.
 
