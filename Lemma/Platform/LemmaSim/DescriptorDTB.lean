@@ -352,7 +352,8 @@ private def matchStep (i _ : UInt32) (acc address code _ _ : UInt64) : Action :=
 
 private def equalLiteral (address bytes code : UInt64) : Action :=
   if bytes = literalLength code then
-    .boundedFoldU64 32 matchStep bytes.toUInt32 1 address code 0 0 fun s same => .done s same
+    .boundedFoldU64 32 matchStep bytes.toUInt32 1 address code 0 0 fun s same =>
+    if s = 10 then .done 0 0 else .done s same
   else .done 0 0
 
 private def findStep (i _ : UInt32) (acc address bytes start _ : UInt64) : Action :=
@@ -362,7 +363,8 @@ private def findStep (i _ : UInt32) (acc address bytes start _ : UInt64) : Actio
 
 private def findCode (address bytes start count : UInt64) : Action :=
   if count ≤ 21 then
-    .boundedFoldU64 21 findStep count.toUInt32 0 address bytes start 0 fun s code => .done s code
+    .boundedFoldU64 21 findStep count.toUInt32 0 address bytes start 0 fun s code =>
+    if s = 10 then .done 0 code else .done s code
   else .done invalid 0
 
 private def leaf (role : UInt64) : UInt64 :=

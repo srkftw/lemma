@@ -48,7 +48,8 @@ partial def run (vm : IO.Ref VM) : Action → IO (UInt8 × UInt64)
           let (s, v) ← run vm (step (UInt32.ofNat i) count value c0 c1 c2 c3)
           status := s
           value := v
-      run vm (next (if status = 10 then 0 else status) value)
+      -- Match the compiled fold ABI: preserve the callback's stop status.
+      run vm (next status value)
   | .platform operation a b _ _ _ _ next => do
       if a.toNat > 0x100000 - 8 then throw <| IO.userError "probe memory bounds" else
       match operation with
@@ -149,10 +150,14 @@ def fixture : IO (IO.Ref VM) := do
   require ((← get vm 40) == 3) "fixture acknowledgement"
   pure vm
 
+private def stopStep (_ _ : UInt32) (_ _ _ _ _ : UInt64) : Action := .done 10 77
+
 def main (arguments : List String) : IO UInt32 := do
   let directory := arguments.headD "build/lemmasim/store-probe"
   IO.FS.createDirAll directory
   let vm ← fixture
+  let stop : Action := .boundedFoldU64 1 stopStep 1 0 0 0 0 0 fun s value => .done s value
+  require ((← run vm stop) == (10,77)) "fold harness changed compiled nonzero-stop semantics"
   writeArtifacts directory "append" vm
   let _ ← action vm (Engine.checkpointStart context nextIndex)
   drive vm

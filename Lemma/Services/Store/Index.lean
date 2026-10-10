@@ -36,8 +36,9 @@ The caller verifies the namespace/object before reading its value. -/
 def find (base ns object : UInt64) : Action :=
   if 0 < ns then if 0 < object then
   .boundedFoldU64 1024 findStep 1024 0 base ns object (keySlot ns object) fun s found =>
-  if s = 0 then if 0 < found then .done 0 (found - 1) else .done Format.indexFull 0
-  else .done s 0 else .done Format.malformed 0 else .done Format.malformed 0
+  if s = 10 then if 0 < found then .done 0 (found - 1) else .done Format.malformed 0
+  else if s = 0 then .done Format.indexFull 0 else .done s 0
+  else .done Format.malformed 0 else .done Format.malformed 0
 
 def publish (base slot ns object sector sectors sequence kind : UInt64) : Action :=
   if slot < 1024 then if 0 < ns then if 0 < object then

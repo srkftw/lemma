@@ -44,7 +44,7 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
         let result ← execute state (step index.toUInt32 count acc c0 c1 c2 c3)
         status := result.1
         acc := result.2
-    execute state (next (if status = 10 then 0 else status) acc)
+    execute state (next status acc)
   | .platform op a b _ _ _ _ next =>
     let old ← state.get
     if old.operations ≥ 50000000 then throw <| IO.userError "fixture operation budget exhausted"
@@ -86,6 +86,13 @@ def rejected (state : IO.Ref State) (action : Action) : IO Unit := do
 def require (value : Bool) (message : String) : IO Unit :=
   if value then pure () else throw <| IO.userError message
 
+def checkFoldStatus : IO Unit := do
+  let state ← IO.mkRef ({} : State)
+  let step := fun (_ _ : UInt32) (_ _ _ _ _ : UInt64) => Action.done 10 42
+  let (status, value) ← execute state (.boundedFoldU64 2 step 2 7 0 0 0 0 fun s v => .done s v)
+  require (status == 10 && value == 42) "boundedFold must preserve nonzero callback status"
+  IO.println "OWNED_FIXTURE_FOLD_STATUS:PASS status10 preserved"
+
 def checkExpanded : IO Unit := do
   let state ← IO.mkRef ({} : State)
   discard <| success state (Frames.configure 8192 8192 4)
@@ -108,6 +115,24 @@ def checkExpanded : IO Unit := do
     finalHandle := handle
   discard <| success state (AddressSpace.lookup descriptor finalVA 2)
   require ((← success state (Frames.ownedCount 2)) == 542) "520 data + 21 base + one extra L0 table"
+  -- Four separately owned U stack leaves. The lower/upper guard PTEs remain
+  -- literally absent, and a trusted map request cannot populate them.
+  let guardHandle ← success state (Frames.allocate 2 5)
+  rejected state (AddressSpace.mapUser descriptor 0x3fff9000 guardHandle 3)
+  rejected state (AddressSpace.mapUser descriptor 0x3fffe000 guardHandle 3)
+  require ((← success state (Frames.mappingCount 2 guardHandle)) == 0) "rejected guard mapping took no pin"
+  discard <| success state (AddressSpace.mapUser descriptor 0x3fffa000 guardHandle 3)
+  for index in [:3] do
+    let handle ← success state (Frames.allocate 2 5)
+    discard <| success state (AddressSpace.mapUser descriptor (0x3fffb000 + index.toUInt64 * 4096) handle 3)
+  for index in [:4] do
+    discard <| success state (AddressSpace.lookup descriptor (0x3fffa000 + index.toUInt64 * 4096) 2)
+  rejected state (AddressSpace.lookup descriptor 0x3fff9000 1)
+  rejected state (AddressSpace.lookup descriptor 0x3fffe000 1)
+  let stackTable := read64 (← state.get) (address + 296)
+  require (read64 (← state.get) (stackTable + 505 * 8) == 0 &&
+    read64 (← state.get) (stackTable + 510 * 8) == 0) "true unmapped stack guards"
+  require ((← success state (Frames.ownedCount 2)) == 546) "four User stack frames charged"
   discard <| success state (Lemma.Kernel.Syscall.ownedArenaAddress 0x7ff000)
   rejected state (Lemma.Kernel.Syscall.ownedArenaAddress 0x800000)
   rejected state (Lemma.Kernel.Syscall.ownedArenaAddress 0x100000)
@@ -127,7 +152,7 @@ def checkExpanded : IO Unit := do
   require ((← success state (Frames.ownedCount 1)) == 0 &&
     (← success state (Frames.ownedCount 2)) == 0) "complete expanded teardown"
   require (read64 (← state.get) Frames.accounting == 8192) "all expanded frames recovered"
-  IO.println s!"OWNED_CAPACITY_EXPANDED:PASS operations={(← state.get).operations} mapped=520"
+  IO.println s!"OWNED_CAPACITY_EXPANDED:PASS operations={(← state.get).operations} mapped=524 user_stack_pages=4"
 
 def checkLegacy : IO Unit := do
   let state ← IO.mkRef ({} : State)
@@ -176,6 +201,7 @@ end OwnedCapacityFixture
 
 open Lean Elab Command
 run_cmd do
+  liftIO OwnedCapacityFixture.checkFoldStatus
   liftIO OwnedCapacityFixture.checkExpanded
   liftIO OwnedCapacityFixture.checkLegacy
   liftIO OwnedCapacityFixture.checkInk

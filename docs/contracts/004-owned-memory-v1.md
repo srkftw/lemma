@@ -52,7 +52,7 @@ Expanded user allocation accepts aligned pages in `[0x40000,0x800000)`, except t
 reserved finisher page at `0x100000`. Legacy allocation keeps the old upper bound
 `0x100000`. The 1024 total-leaf ceiling includes text/data/stack pages and reports
 explicit exhaustion. A default task's owned base cost is 13 initial tables +
-8 registry pages + 1 data + 2 user stack + 4 kernel stack = 28 frames, plus text
+8 registry pages + 1 data + 4 user stack + 4 kernel stack = 30 frames, plus text
 and any additional low-address page tables. Its descriptor costs one separate
 owner-1 frame. The 32 MiB global pool is not a promise of 32 MiB per application.
 
@@ -62,7 +62,12 @@ space. The published top is physicalBase+16368; vector entry consumes 288 bytes
 below that top. Canary words at physicalBase and physicalBase+16376 are checked
 before context use. These sentinels are overflow detection, not hardware guards;
 the current supervisor direct map supplies no per-task unmapped guard. The
-existing separately mapped user stacks retain their real unmapped adjacent pages.
+LemmaSim User stacks separately own four purpose-5 frames mapped at
+`[0x3fffa000,0x3fffe000)`, with true unmapped lower/upper guard pages at
+`0x3fff9000` and `0x3fffe000`. The package v2 descriptor and loader agree on
+this four-page interval; the saved User top remains `0x3fffe000`. Historical
+package v1 stacks remain two pages at `0x3fffc000`, with their existing guards.
+The expanded address-space API also rejects attempts to map the new guard pages.
 Teardown validates every surviving handle, withdraws top first, releases each
 handle once, and runs on the stable supervisor reaper stack.
 

@@ -47,7 +47,9 @@ partial def run (vm : IO.Ref VM) : Action → IO (UInt8 × UInt64)
           let (s,v) ← run vm (step (UInt32.ofNat i) count value c0 c1 c2 c3)
           status := s
           value := v
-      run vm (next (if status = 10 then 0 else status) value)
+      -- CFGLower preserves every nonzero callback status, including the
+      -- deliberate early-stop status. A consumer must normalize it itself.
+      run vm (next status value)
   | .platform operation a b _ _ _ _ next => do
       match operation with
       | .physicalRead8 | .physicalRead64 =>
@@ -63,10 +65,15 @@ partial def run (vm : IO.Ref VM) : Action → IO (UInt8 × UInt64)
       | _ => throw <| IO.userError "host probe denied unsupported primitive"
   | _ => throw <| IO.userError "host probe denied unsupported Action"
 
+private def stopStep (_ _ : UInt32) (_ _ _ _ _ : UInt64) : Action := .done 10 77
+
 def main (args : List String) : IO UInt32 := do
   unless args.length = 1 do throw <| IO.userError "descriptor probe requires one DTB path"
   let dtb ← IO.FS.readBinFile args[0]!
   let vm ← IO.mkRef {dtb, ram := write (Array.replicate 4096 0) 8 pointer}
+  let stop : Action := .boundedFoldU64 1 stopStep 1 0 0 0 0 0 fun s value => .done s value
+  let stopped ← run vm stop
+  if stopped != (10,77) then throw <| IO.userError "fold harness changed compiled nonzero-stop semantics"
   let (status,value) ← run vm (Lemma.Platform.LemmaSim.DescriptorDTB.validate pointer dtb.size.toUInt64 1650 2200 4095)
   IO.println s!"DESCRIPTOR_HOST_ACTION:{status}:{value}"
   pure <| if status = 0 then 0 else 1

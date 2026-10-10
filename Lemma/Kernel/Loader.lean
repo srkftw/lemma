@@ -85,11 +85,13 @@ private def validateDescriptor (record header total : UInt64) : Action :=
   -- last partial text page and the stack's two surrounding unmapped pages.
   if textCapacity < ((textBytes + 4095) / 4096) * 4096 then .done invalidBounds 0 else
   if disjoint textVA (((textBytes + 4095) / 4096) * 4096) dataVA dataMemoryBytes = false then .done invalidBounds 0 else
-  if 0x3fffb000 < dataVA + dataMemoryBytes then .done invalidBounds 0 else
+  let stackBase := if frameCount = 8192 then 0x3fffa000 else 0x3fffc000
+  let stackCount := if frameCount = 8192 then 4 else 2
+  if stackBase - 4096 < dataVA + dataMemoryBytes then .done invalidBounds 0 else
   .bind (get record 72) fun s stackVA => if failed s = true then .done s 0 else
-  if (if stackVA = 0x3fffc000 then false else true) = true then .done invalidImage 0 else
+  if (if stackVA = stackBase then false else true) = true then .done invalidImage 0 else
   .bind (get record 80) fun s stackPages => if failed s = true then .done s 0 else
-  if (if stackPages = 2 then false else true) = true then .done invalidImage 0 else
+  if (if stackPages = stackCount then false else true) = true then .done invalidImage 0 else
   .bind (get record 88) fun s flags => if failed s = true then .done s 0 else
   if flags = 0 then .done 0 record else .done invalidImage 0
 
@@ -195,8 +197,8 @@ private def textStep (i _ : UInt32) (acc descriptor owner record _ : UInt64) : A
   .bind (get record 16) fun s textVA => if failed s = true then .done s 0 else
   .bind (page descriptor owner (textVA + offset) 3 5 (packageBase + textOffset + offset) amount) fun s _ =>
   if failed s = true then .done s 0 else .done 0 (acc + 1)
-private def stackStep (i _ : UInt32) (acc descriptor owner _ _ : UInt64) : Action :=
-  .bind (page descriptor owner (0x3fffc000 + i.toUInt64 * 4096) 5 3 0 0) fun s _ =>
+private def stackStep (i _ : UInt32) (acc descriptor owner base _ : UInt64) : Action :=
+  .bind (page descriptor owner (base + i.toUInt64 * 4096) 5 3 0 0) fun s _ =>
   if failed s = true then .done s 0 else .done 0 (acc + 1)
 private def clearContextStep (i _ : UInt32) (acc context _ _ _ : UInt64) : Action :=
   .bind (Access.write64 (context + i.toUInt64 * 8) 0) fun s _ => .done s (acc + 1)
@@ -475,9 +477,11 @@ private def build (descriptor address record owner imageIndex argument : UInt64)
   .bind (get record 56) fun s dataBytes => if failed s = true then .done s 0 else
   .bind (page descriptor owner 0x20000 4 3 (packageBase + dataOffset) dataBytes) fun s _ =>
   if failed s = true then .done s 0 else
-  .boundedFoldU64 2 stackStep 2 0 descriptor owner 0 0 fun s stacks =>
+  .bind (get record 72) fun s userStackBase => if failed s = true then .done s 0 else
+  .bind (get record 80) fun s userStackPages => if failed s = true then .done s 0 else
+  .boundedFoldU64 4 stackStep userStackPages.toUInt32 0 descriptor owner userStackBase 0 fun s stacks =>
   if failed s = true then .done s 0 else
-  if (if stacks = 2 then false else true) = true then .done invariantFailure 0 else
+  if (if stacks = userStackPages then false else true) = true then .done invariantFailure 0 else
   .bind (initializeContext descriptor address record argument) fun s _ => if failed s = true then .done s 0 else
   .platform .fenceInstruction 0 0 0 0 0 0 fun s _ =>
   if failed s = true then .done s 0 else

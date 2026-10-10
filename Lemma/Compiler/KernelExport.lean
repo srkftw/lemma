@@ -352,6 +352,10 @@ private def userTextBaseFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 0x1000000 else Layout.userTextBase
 private def userTextLimitFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 0x1080000 else Layout.userTextLimit
+private def userStackBaseFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then 0x3fffa000 else Layout.userStackBase
+private def userStackPagesFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-" then 4 else Layout.userStackPages
 private def packageVersionFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 2 else 1
 
@@ -378,7 +382,7 @@ private def layoutJson (configuration : String)
     ("purpose", .str interval.purpose)])),
   ("user", Json.mkObj [("text_base", toJson (userTextBaseFor configuration)), ("text_limit", toJson (userTextLimitFor configuration)),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),
-    ("stack_base", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages)])] ++
+    ("stack_base", toJson (userStackBaseFor configuration)), ("stack_pages", toJson (userStackPagesFor configuration))])] ++
     managedPolicyFields configuration ++ imageBootRoleFields image?)
 
 private def bootLinker : String := String.intercalate "\n" [
@@ -415,8 +419,8 @@ private def packageContract (configuration : String) : Json := Json.mkObj [
   ("header_bytes", 32), ("descriptor_bytes", 96), ("offset_encoding", .str "generated-label-differences"),
   ("image", Json.mkObj [("id", 1), ("entry", toJson (userTextBaseFor configuration)), ("text_va", toJson (userTextBaseFor configuration)),
     ("text_capacity", toJson ((userTextLimitFor configuration) - (userTextBaseFor configuration))), ("data_va", toJson Layout.userDataBase),
-    ("data_mem_bytes", toJson Layout.userDataBytes), ("stack_va", toJson Layout.userStackBase),
-    ("stack_pages", toJson Layout.userStackPages), ("flags", 0)])]
+    ("data_mem_bytes", toJson Layout.userDataBytes), ("stack_va", toJson (userStackBaseFor configuration)),
+    ("stack_pages", toJson (userStackPagesFor configuration)), ("flags", 0)])]
 
 private def packageData (configuration : String) : String := String.intercalate "\n" [
   ".section .boot_package, \"a\", @progbits", ".balign 8", ".globl lemma_boot_package", "lemma_boot_package:",
@@ -425,7 +429,7 @@ private def packageData (configuration : String) : String := String.intercalate 
   "  .quad .Llemma_package_text - lemma_boot_package", "  .quad .Llemma_package_text_end - .Llemma_package_text",
   s!"  .quad {Layout.userDataBase}", "  .quad .Llemma_package_data - lemma_boot_package",
   "  .quad .Llemma_package_data_end - .Llemma_package_data", s!"  .quad {Layout.userDataBytes}",
-  s!"  .quad {Layout.userStackBase}", s!"  .quad {Layout.userStackPages}", "  .quad 0",
+  s!"  .quad {userStackBaseFor configuration}", s!"  .quad {userStackPagesFor configuration}", "  .quad 0",
   ".Llemma_package_text:", "  .incbin \"user-text.bin\"", ".Llemma_package_text_end:", ".balign 8",
   ".Llemma_package_data:", "  .incbin \"user-data.bin\"", ".Llemma_package_data_end:", ".Llemma_package_end:",
   ".section .note.GNU-stack, \"\", @progbits", ""]
@@ -521,7 +525,7 @@ private def multiPackageContract (configuration : String) (images : Array UserIm
       ("key", .str image.key), ("id", toJson image.id), ("entry", toJson (userTextBaseFor configuration)),
       ("text_va", toJson (userTextBaseFor configuration)), ("text_capacity", toJson ((userTextLimitFor configuration) - (userTextBaseFor configuration))),
       ("data_va", toJson Layout.userDataBase), ("data_mem_bytes", toJson Layout.userDataBytes),
-      ("stack_va", toJson Layout.userStackBase), ("stack_pages", toJson Layout.userStackPages), ("flags", 0)] ++
+      ("stack_va", toJson (userStackBaseFor configuration)), ("stack_pages", toJson (userStackPagesFor configuration)), ("flags", 0)] ++
       imageBootRoleFields (some image))))] ++ managedPolicyFields configuration)
 
 /-- Data-only package construction. Sizes/offsets are assembler label
@@ -536,7 +540,7 @@ private def multiPackageData (configuration : String) (images : Array UserImageS
       s!"  .quad {label}_text - lemma_boot_package", s!"  .quad {label}_text_end - {label}_text",
       s!"  .quad {Layout.userDataBase}", s!"  .quad {label}_data - lemma_boot_package",
       s!"  .quad {label}_data_end - {label}_data", s!"  .quad {Layout.userDataBytes}",
-      s!"  .quad {Layout.userStackBase}", s!"  .quad {Layout.userStackPages}", "  .quad 0"]
+      s!"  .quad {userStackBaseFor configuration}", s!"  .quad {userStackPagesFor configuration}", "  .quad 0"]
   for image in images do
     let label := ".Llemma_package_" ++ image.key
     lines := lines ++ #[".balign 8", label ++ "_text:", s!"  .incbin \"{image.directory}/text.bin\"",

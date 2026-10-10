@@ -401,7 +401,7 @@ private def checkpointNext (context : UInt64) : Action :=
   .bind (field context 80) fun s length => if s = 0 then
   if cursor ≤ 1024 then
   .boundedFoldU64 1024 checkpointFindStep (1024 - cursor).toUInt32 0 index cursor 0 0 fun s found =>
-  if s = 0 then if found = 0 then
+  if (if s = 10 then (0 : UInt8) else s) = 0 then if found = 0 then
   .bind (clearSector buffer) fun s _ =>
   if s = 0 then request context 2 37 (start + tail) else .done s 0
   else
@@ -504,7 +504,7 @@ def enumerate (context ns cursor : UInt64) : Action :=
   if 0 < ns then if cursor ≤ maximumObjects then
   .bind (field context 104) fun s index => if s = 0 then
   .boundedFoldU64 1024 enumerateStep (maximumObjects - cursor).toUInt32 0 index ns cursor 0 fun s next =>
-  .done s next else .done s 0
+  if s = 10 then .done 0 next else .done s next else .done s 0
   else .done malformed 0 else .done malformed 0
 
 def readStart (context ns object offset count output : UInt64) : Action :=

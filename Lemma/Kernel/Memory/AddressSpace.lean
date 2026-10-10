@@ -57,6 +57,13 @@ def addressValid (va : UInt64) : Bool :=
   else false
 def alignedAddress (va : UInt64) : Bool :=
   if addressValid va = true then if va % 4096 = 0 then true else false else false
+/-- Expanded User stacks have true unmapped neighboring leaves. Legacy
+profiles retain their prior address checks and Loader-established guards. -/
+def bindingAddressValid (va maximum : UInt64) : Bool :=
+  if maximum = expandedCapacity then
+    if page va = 0x3fff9000 then false else
+    if page va = 0x3fffe000 then false else true
+  else true
 def permissionsValid (permissions : UInt64) : Bool :=
   if permissions = 1 then true else if permissions = 3 then true else if permissions = 5 then true else false
 def requestValid (permission : UInt64) : Bool :=
@@ -565,6 +572,8 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   if permissionsValid permissions = false then .done invalidPermission 0 else
   .bind (base descriptor) fun s address =>
   if failed s = true then .done s 0 else
+  .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
+  if bindingAddressValid va maximum = false then .done invalidAddress 0 else
   .bind (get address 24) fun s owner =>
   if failed s = true then .done s 0 else
   if owner = 1 then .done invalidPermission 0 else
@@ -578,7 +587,6 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   if (if found = 0 then false else true) = true then .done duplicateMapping 0 else
   .bind (get address 48) fun s index =>
   if failed s = true then .done s 0 else
-  .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if maximum ≤ index then .done resourceLimit 0 else
   .bind (get address 40) fun s oldTables =>
   if failed s = true then .done s 0 else
@@ -599,6 +607,8 @@ def lookup (descriptor va permission : UInt64) : Action :=
   if requestValid permission = false then .done invalidPermission 0 else
   .bind (base descriptor) fun s address =>
   if failed s = true then .done s 0 else
+  .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
+  if bindingAddressValid va maximum = false then .done invalidAddress 0 else
   .bind (findRow address va) fun s found =>
   if failed s = true then .done s 0 else
   if found = 0 then .done missingMapping 0 else
