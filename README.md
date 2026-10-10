@@ -1,7 +1,14 @@
 # Lemma
 
+## LemmaSim: permanent virtual Lemma One
+
+**LemmaSim is a first-class, distributable embodiment of Lemma One**, not a temporary emulator. Both virtual and physical embodiments target one versioned [canonical machine contract](LEMMA_MACHINE_CONTRACT.md), sharing the freestanding Lean-authored RV64 operating system, mathematical capabilities, and user-visible device semantics. The ambition is complete functional equivalence, **not an already established physical-hardware result**. Physical properties such as thermals and writing-surface feel remain separate. Student, Developer, and Laboratory are modes of one LemmaSim.
+
+Read the [cross-cutting LemmaSim plan](docs/plan/LEMMASIM.md) and the [simulation](sim/README.md) / [conformance](conformance/README.md) scaffolds. The existing `LemmaVM` QEMU boot-slice contract and G1-G7 implementation evidence remain unchanged and do not certify the complete virtual machine.
+
+
 A pen-first mathematics computer, constructed from a freestanding Lean 4 foundation
-on RISC-V. The reference machine is **LemmaVM**; the operating system is **LemmaOS**;
+on RISC-V. The historical boot reference is **LemmaVM**; the permanent virtual embodiment is **LemmaSim**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
 **Current state: tested freestanding diagnostic monitor and machine foundation.**
@@ -229,8 +236,11 @@ requirements; a passing earlier checkpoint does not certify changed source.
 The repository is **`srkftw/lemma`**, private, with default branch **`main`**.
 Task 001 [PR #1](https://github.com/srkftw/lemma/pull/1) and Task 002
 [PR #2](https://github.com/srkftw/lemma/pull/2) were merged by explicit owner
-authorization. Main `ff4045a79a6fda45f9cd8198587357846530a806` contains the reviewed
-Task002 tree. Both task branches remain available.
+authorization. The reviewed Task002 integration is
+`ff4045a79a6fda45f9cd8198587357846530a806`; subsequent main commit
+`a899ccbb3c880e44ab529b65131cf6ea49a198d2` adds the LemmaSim architecture
+documents from [PR #4](https://github.com/srkftw/lemma/pull/4). Both task
+branches remain available. Check GitHub for live revision and merge status.
 
 For current kernel work, select `task/003-kernel-isolated-services` and read
 its assignment, gate ledger and resume checkpoint. The current accepted prefix
