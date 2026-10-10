@@ -163,8 +163,8 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
     if record or replay:
         command+=['-blockdev',json.dumps({'driver':'blkreplay','image':'lemma-medium','node-name':'lemma-replay'})]
         backend='lemma-replay'
-        mode='record' if record else 'replay';rr=record or replay
-        command+=['-icount',f'shift=3,align=off,sleep=on,rr={mode},rrfile={rr}']
+        rr_mode='record' if record else 'replay';rr=record or replay
+        command+=['-icount',f'shift=3,align=off,sleep=on,rr={rr_mode},rrfile={rr}']
     if replay and (not isinstance(replay_boundary,int) or replay_boundary<=0):raise Failure('Replay needs an observed positive instruction boundary.')
     command+=['-S']
     if replay:command+=['-no-shutdown']

@@ -282,7 +282,13 @@ def main():
         command(['python3', 'sim/host/check_qemu_medium.py', '--qemu', str(qemu), '--output', str(out / 'medium')], out / 'medium.log', 180)
         require_pass(out / 'medium/result.json')
         metadata = {'schema_version': 1, 'commit': before['commit'], 'core': 'lemma-one-core/0.1.0',
-                    'profile': 'lemmasim-virt/0.1.0', 'qemu': {'path': str(qemu), 'sha256': sim.sha(qemu)}}
+                    'source_tree': before['tree'], 'profile': 'lemmasim-virt/0.1.0',
+                    'profile_sha256': sim.sha(ROOT / 'sim/profiles/lemmasim-virt-0.1.0.json'),
+                    'backend_sources': {str(path.relative_to(ROOT)): sim.sha(path)
+                                        for path in sorted((ROOT / 'sim/host').glob('*')) if path.is_file()},
+                    'qemu_build_recipe_sha256': sim.sha(ROOT / 'tooling/lemmasim/qemu.nix'),
+                    'qemu_patch_recipe_sha256': sim.sha(ROOT / 'tooling/lemmasim/apply_qemu.py'),
+                    'qemu': {'path': str(qemu), 'sha256': sim.sha(qemu)}}
         metadata['notebook'] = image('lemmasim-notebook', 'O2', out)
         metadata['initializer'] = image('lemmasim-initialize', 'O2', out)
         sim.write_json(out / 'prepared.json', metadata)
