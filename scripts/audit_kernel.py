@@ -695,6 +695,70 @@ def validate_h_legacy_console_denial(body: str, by_source: dict[str,str]) -> dic
     return {"legacy_console_number":2,"denied_status":72,"guard_block":branches[0],"denied_block":denied,"ordinary_block":ordinary}
 
 
+def validate_h_console_router(pre_ir: str, by_source: dict[str,str]) -> dict:
+    """Bind H's capability-checked read intermediary to the closed mode router.
+
+    The mode call must succeed before either read, mode zero alone selects the
+    legacy read, and only the emitted mode-one-or-two predicate selects buffered
+    input. Every read keeps the actual descriptor/pointer/complete offered length.
+    """
+    y="Lemma.Kernel.Syscall.";n="Lemma.Kernel.KernelInput."
+    wrapper=_ir_definition_body(pre_ir,by_source[y+"capConsole"])
+    dispatcher=_ir_definition_body(pre_ir,by_source[y+"dispatchManaged"])
+    protected_sources=(y+"selectedConsoleRead",y+"consoleRead",y+"consoleWrite",n+"read")
+    if {by_source[source] for source in protected_sources} & parse_definitions_and_calls(dispatcher)[2]:
+        raise Core0Error("managed dispatch directly bypasses capability-checked console wrapper")
+    capability=validate_checked_call_gate(wrapper,by_source["Lemma.Kernel.Capability.lookup"],by_source[y+"selectedConsoleRead"])
+    if re.findall(r"call \{ i64, i64 \} @"+re.escape(by_source[y+"selectedConsoleRead"])+r"\(([^\n]*)\)",wrapper)!=["i64 %arg0, i64 %arg3, i64 %arg4"]:
+        raise Core0Error("H capability wrapper changed actual caller/pointer/length")
+    body=_ir_definition_body(pre_ir,by_source[y+"selectedConsoleRead"])
+    failed=_ir_definition_body(pre_ir,by_source[y+"failed"])
+    mode=by_source[n+"mode"];raw=by_source[y+"consoleRead"];buffered=by_source[n+"read"]
+    checked=[validate_failed_call_gate(body,mode,protected,by_source[y+"failed"],failed)
+             for protected in (raw,buffered)]
+    legacy=validate_checked_call_gate(body,mode,raw,component="value",value=0)
+    for protected in (raw,buffered):
+        arguments=re.findall(r"call \{ i64, i64 \} @"+re.escape(protected)+r"\(([^\n]*)\)",body)
+        if arguments!=["i64 %arg0, i64 %arg1, i64 %arg2"]:
+            raise Core0Error("H console router changed caller/pointer/complete offered length")
+    var=r"%[A-Za-z0-9_.$-]+"
+    results=re.findall(r"("+var+r") = call \{ i64, i64 \} @"+re.escape(mode)+r"\(\)",body)
+    values=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(results[0] if len(results)==1 else "NO_MODE")+r", 1$",body,re.M)
+    if len(results)!=1 or len(values)!=1:
+        raise Core0Error("H console router lacks one actual mode result")
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    def branch(number):
+        comparisons=re.findall(r"("+var+r") = icmp eq i64 "+re.escape(values[0])+", "+str(number)+r"$",body,re.M)
+        origins=[label for label,lines in blocks.items() if len(comparisons)==1 and lines[-1].startswith("br i1 "+comparisons[0]+",")]
+        if len(origins)!=1:
+            raise Core0Error("H console router lost its exact mode comparison")
+        return comparisons[0],origins[0],successors[origins[0]]
+    zero,zorigin,_=branch(0);one,origin,(yes1,no1)=branch(1);two,origin2,(yes2,no2)=branch(2)
+    nonzero=validate_boolean_gate(body,zero,buffered,success_when_true=False)
+    if (origin2!=no1 or blocks[no1]!=[two+" = icmp eq i64 "+values[0]+", 2", "br i1 "+two+", label %"+yes2+", label %"+no2]
+            or len(successors[yes1])!=1 or len(successors[yes2])!=1 or successors[yes2]!=successors[no2]):
+        raise Core0Error("H buffered console lost its exact mode-one-or-two predicate")
+    merge1=successors[yes1][0];merge2=successors[yes2][0]
+    inner=re.findall(r"("+var+r") = phi i1 \[ 1, %"+re.escape(yes2)+r" \], \[ 0, %"+re.escape(no2)+r" \]$",body,re.M)
+    outer=re.findall(r"("+var+r") = phi i1 \[ 1, %"+re.escape(yes1)+r" \], \[ "+re.escape(inner[0] if len(inner)==1 else "NO_INNER")+", %"+re.escape(merge2)+r" \]$",body,re.M)
+    predicates=re.findall(r"("+var+r") = icmp eq i1 "+re.escape(outer[0] if len(outer)==1 else "NO_OUTER")+r", 1$",body,re.M)
+    if len(inner)!=1 or len(outer)!=1 or len(predicates)!=1:
+        raise Core0Error("H buffered console predicate has changed Boolean values")
+    phi2=inner[0]+" = phi i1 [ 1, %"+yes2+" ], [ 0, %"+no2+" ]"
+    phi1=outer[0]+" = phi i1 [ 1, %"+yes1+" ], [ "+inner[0]+", %"+merge2+" ]"
+    if (blocks[yes1]!=["br label %"+merge1] or blocks[yes2]!=["br label %"+merge2] or blocks[no2]!=["br label %"+merge2]
+            or blocks[merge2]!=[phi2,"br label %"+merge1]
+            or len(blocks[merge1])!=3 or blocks[merge1][:2]!=[phi1,predicates[0]+" = icmp eq i1 "+outer[0]+", 1"]
+            or {p for p,s in successors.items() if merge1 in s}!={yes1,merge2}
+            or {p for p,s in successors.items() if merge2 in s}!={yes2,no2}
+            or {p for p,s in successors.items() if no1 in s}!={origin}):
+        raise Core0Error("H buffered console predicate has an alternate entry or changed merge")
+    admitted=validate_boolean_gate(body,predicates[0],buffered)
+    return {"source":y+"selectedConsoleRead","mode_source":n+"mode","raw_mode":0,"buffered_modes":[1,2],
+            "arguments":["caller_descriptor","pointer","complete_offered_length"],
+            "capability_status_gate":capability,"successful_mode_gates":checked,"raw_mode_gate":legacy,"nonzero_gate":nonzero,"buffered_mode_gate":admitted}
+
+
 def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
     """Bind H labels to actual compiled enrollment, gates and teardown paths.
 
@@ -769,7 +833,8 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         objects+"endpointCountStep":[objects+"get",objects+"live",objects+"revoking",userabi+"typeValid",userabi+"endpointType"],
         syscalls+"dispatch":[caps+"managed",syscalls+"dispatchManaged",syscalls+"dispatchLegacy"],
         syscalls+"dispatchManaged":[caps+"bootGrant",caps+"info",caps+"check",caps+"duplicate",caps+"close",caps+"revoke",syscalls+"capConsole",caps+"createEndpoint",caps+"transfer",caps+"scopedTarget",caps+"inspect",syscalls+"dispatchLegacy"],
-        syscalls+"capConsole":[caps+"lookup",syscalls+"consoleRead",syscalls+"consoleWrite"],
+        syscalls+"capConsole":[caps+"lookup",syscalls+"selectedConsoleRead",syscalls+"consoleWrite"],
+        syscalls+"selectedConsoleRead":["Lemma.Kernel.KernelInput.mode",syscalls+"consoleRead","Lemma.Kernel.KernelInput.read",syscalls+"failed"],
         "Lemma.Kernel.Scheduler.dispatch":["Lemma.Kernel.Task.capture","Lemma.Kernel.Scheduler.call"],
         "Lemma.Kernel.Scheduler.call":[syscalls+"dispatch"],
         alias+"install":[task+"prepared",address+"base",alias+"checkedHeader",frames+"mappingCount",address+"owner",address+"root",alias+"checkedTable",address+"flushCurrent"],
@@ -819,16 +884,17 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
     for protected in (syscalls+"dispatchManaged",syscalls+"dispatchLegacy"):
         gates.append({"source":syscalls+"dispatch",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"dispatch"]),by_source[caps+"managed"],by_source[protected])})
     gates.append({"source":syscalls+"dispatch",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"dispatch"]),by_source[caps+"managed"],by_source[syscalls+"dispatchManaged"],component="value",value=1)})
-    for protected in (syscalls+"consoleRead",syscalls+"consoleWrite"):
+    for protected in (syscalls+"selectedConsoleRead",syscalls+"consoleWrite"):
         gates.append({"source":syscalls+"capConsole",**validate_checked_call_gate(_ir_definition_body(pre_ir,by_source[syscalls+"capConsole"]),by_source[caps+"lookup"],by_source[protected])})
     # Only the capability wrapper may call the actual UART/copy routines from
     # the managed dispatcher; its legacy fallthrough rejects console number2.
     managed_body=_ir_definition_body(pre_ir,by_source[syscalls+"dispatchManaged"])
-    if {by_source[syscalls+"consoleRead"],by_source[syscalls+"consoleWrite"]} & parse_definitions_and_calls(managed_body)[2]:
+    if {by_source[syscalls+"selectedConsoleRead"],by_source[syscalls+"consoleRead"],by_source[syscalls+"consoleWrite"],by_source["Lemma.Kernel.KernelInput.read"]} & parse_definitions_and_calls(managed_body)[2]:
         raise Core0Error("managed dispatch directly bypasses capability-checked console wrapper")
     for row in re.findall(r"(?m)^.*\bcall[^@\n]*@([^ (]+)\(([^\n]*)\)$",managed_body):
         if row[0] in {by_source[source] for source in edges[syscalls+"dispatchManaged"] if source.startswith(caps)} and not row[1].startswith("i64 %arg0,"):
             raise Core0Error("managed syscall changed caller-local descriptor to a user-selected identity")
+    router_report=validate_h_console_router(pre_ir,by_source)
     endpoint_report=validate_h_endpoint_budget(_ir_definition_body(pre_ir,by_source[objects+"createEndpoint"]),by_source)
     # Bind the helper's status inversion; a count callback failure must never
     # be accepted as a successful preallocation result.
@@ -842,7 +908,7 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
     pattern=r"call \{ i64, i64 \} @"+re.escape(by_source[task+"prepareManaged"])+r"\(i64 ([0-9]+),"
     if re.findall(pattern,launch_body)!=["0","1","2"] or re.findall(pattern,tamper_body)!=["3"]:
         raise Core0Error("managed image preparation differs from exact source-selected boot roles")
-    return {"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
+    return {"selected_console_router":router_report,"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
             "source_constants":{source:{"symbol":by_source[source],"value":value} for source,value in sorted(constants.items())},
             "source_call_edges":observed_edges,"ordered_cfg_calls":ordered,"checked_cfg_gates":gates,
             "limitations":["Compiled call/CFG/storage binding, not a proof of authority semantics or guest execution."]}

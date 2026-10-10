@@ -47,10 +47,23 @@ def plan(lane: str) -> tuple:
                  for optimization in ("O0", "O2"))
 
 
-def validate_lane(path: Path, root: Path) -> dict:
+def _check_deadline(finish_by):
+    if finish_by is not None and time.monotonic() >= finish_by:
+        raise Core0Error("Task003 cumulative lane deadline expired")
+
+
+def validate_lane(path: Path, root: Path, *, finish_by=None) -> dict:
     """Require every mandatory bound artifact and observed session again."""
+    _check_deadline(finish_by)
     value = load_json(path)
-    if (not isinstance(value, dict) or value.get("status") != "PASS"
+    if (not isinstance(value, dict)
+            or type(value.get("schema_version")) is not int or value["schema_version"] != 1
+            or value.get("artifact_category") != "kernel-clean-cumulative-lane"
+            or type(value.get("deadline_seconds")) not in (int, float)
+            or not math.isfinite(value["deadline_seconds"]) or not 0 < value["deadline_seconds"] <= 2400
+            or type(value.get("elapsed_seconds")) not in (int, float)
+            or not math.isfinite(value["elapsed_seconds"]) or not 0 <= value["elapsed_seconds"] <= value["deadline_seconds"]
+            or value.get("status") != "PASS"
             or value.get("source") != source_identity(root)
             or value.get("source_inputs") != source_inputs(root)
             or value.get("acceptance_inputs") != acceptance_inputs(root)
@@ -62,6 +75,7 @@ def validate_lane(path: Path, root: Path) -> dict:
     if not isinstance(rows, list) or len(rows) != len(expected):
         raise Core0Error("mandatory Task003 case corpus is incomplete")
     for row, case in zip(rows, expected):
+        _check_deadline(finish_by)
         gate, configuration, module, protocol, _, optimization = case
         if (not isinstance(row, dict) or (row.get("gate"), row.get("configuration"), row.get("optimization"))
                 != (gate, configuration, optimization) or row.get("checker") != module
@@ -82,8 +96,10 @@ def validate_lane(path: Path, root: Path) -> dict:
                 != (configuration, optimization, "supervisor")):
             raise Core0Error("fresh lane artifact has stale or different provenance")
         session = validate_session(observed, image)
+        _check_deadline(finish_by)
         if session.get("observed", {}).get("protocol") != protocol:
             raise Core0Error("lane session did not execute the required maintained protocol")
+    _check_deadline(finish_by)
     return value
 
 
@@ -162,8 +178,10 @@ def check(*, root: Path, work_dir: Path, lane: str, clean: bool,
                 raise Core0Error("actual lane protocol identity differs")
             row.update(result_sha256=sha256(observed / "result.json"),
                        records=len(session["records"]), status="PASS")
+            remaining()
         if source_identity(root) != identity or source_inputs(root) != sources or acceptance_inputs(root) != consumers:
             raise Core0Error("lane source or acceptance consumers changed during execution")
+        remaining()
         report.update(status="PASS", source_unchanged_after=True, acceptance_unchanged_after=True)
     except Exception as error:
         report.update(error=str(error))
@@ -173,9 +191,15 @@ def check(*, root: Path, work_dir: Path, lane: str, clean: bool,
         (work_dir / "result.json.tmp").replace(work_dir / "result.json")
     if report["status"] == "PASS":
         try:
-            validate_lane(work_dir / "result.json", root)
+            validate_lane(work_dir / "result.json", root, finish_by=finish_by)
+            remaining()
+            report["elapsed_seconds"] = time.monotonic() - started
+            write_json(work_dir / "result.json.tmp", report)
+            (work_dir / "result.json.tmp").replace(work_dir / "result.json")
+            remaining()
         except Exception as error:
-            report.update(status="FAIL", error=str(error), failure_category="mandatory-lane-evidence")
+            report.update(status="FAIL", error=str(error), failure_category="mandatory-lane-evidence",
+                          elapsed_seconds=time.monotonic() - started)
             write_json(work_dir / "result.json.tmp", report)
             (work_dir / "result.json.tmp").replace(work_dir / "result.json")
     return report

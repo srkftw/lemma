@@ -1117,3 +1117,69 @@ Workflow fixtures isolate sibling jobs and validate each of the eight lanes.
 No target Lean source or workflow changed in this repair. Commit this candidate
 and run fresh exact clean services/source-negative/legacy qualification; do not
 mark K passed from these host results.
+
+## Final qualification follow-up (2026-10-10 05:23 UTC)
+
+The exact clean `64ca4f5254170c07989d1788bf9c2714004443e3` services
+checkout passed the complete twelve-case architectural matrix in1170.663s.
+Independent replay verified36 exact hardware traps,18 singleton instances and
+18 managed fault/continued CLI-binary/Peer/Busy preemption windows, all actual
+kill/reap cleanup and strict O0 managed8080/8192-byte stack bounds. Review:
+`build/kernel/gateK/independent-64-review/summary.json`, SHA256
+`df553e504324b21fe2e6620ecff4b3c3dcf4c79a16afa1494202d8fa4f98b074`.
+The fresh J lane and ten standalone User comparisons remain in progress.
+
+The actual source-negative campaign at the same exact clean revision exited0:
+four cases/eight images/eight guests in1509.286/2400s. Independently replayed
+timer negatives observed Busy starvation at the exact8s bound; append negatives
+retained the original inner FAIL and successful128-byte read with127 equal
+bytes and finalFF-to-00 mismatch. All680 artifact hashes,24 raw captures,
+145 source/65 consumer bindings and27 commands revalidated; all guest PIDs
+were killed/reaped and absent. Aggregate SHA256
+`4b97de04978df1cc7888b91c9c1dc9a40a425cbe95bf1c52c2a2f42e84652a34`;
+independent summary `build/kernel/final-source-negatives-repaired/independent-summary.json`,
+SHA256 `dd43a8ff85e1718a22f77e26ccd9e7ffab4e5b4c81db42df06e15e602def68fe`.
+This source freeze is now released. These passes retain their exact64 identity.
+
+Two actual final regressions still failed. The unchanged clean78 prefix passed
+A–E (20images/24checker reports/28VMs/6E instances); its initial outer wrapper
+rejected three completed owned children that were all actually reaped with0.
+Strict fresh F–I resume revalidated A–E, then passed F/G at both optimizations
+before H-O0 rejected a stale auditor direct-call edge from capConsole to
+consoleRead. Production now uses selectedConsoleRead; no H guest ran. The
+clean64 legacy campaign passed all host suites and the full Task00123boots,
+then Task002 Gates1–5 (466 reported boots) before Gate6 failed on missing
+ConsoleDevice.olean. Task002 qualification did not run. Retained failure
+inventory `build/kernel/gateK/final-regression-failures/summary.json`, SHA256
+`755c4f9c5456f316503a3cc43f078af58f209fed8b0bf5791bb11e8d44fedf40`.
+
+Repair the four legacy builders' explicit ConsoleDevice elaboration dependency
+and the H auditor's checked intermediate console route. Keep target sources and
+the public Lean root unchanged; require source/call/authorization binding, do
+not bypass the audit. Run meaningful host checks, commit the repair, then run
+fresh cold full A–I and full legacy/cumulative/qualification checkouts. No
+project outputs may be copied. Current highest complete integration remains J;
+K publication, actual PR CI and guarded merge remain pending.
+
+The clean64 services campaign has now actually completed with outer exit0 and
+unchanged full tracked source: K1176.69s, J443.97s and standalone92.97s, total
+1715.04s. Independent J review replays all1224 commands/45647 wire events,
+actual two-client isolation, noncooperative preemption, contained fault15,
+lease expiry, pending-call failure/server epoch restart and unchanged survivor
+bytes. Normal captures preserve four live actors (remaining406/O0 and416/O2)
+until host stop; each development run explicitly reaps six tasks to497.
+The ten standalone images'140 whole-artifact byte comparisons and all20 real
+build/audit commands passed. Independent summary:
+`build/kernel/gateJ/independent-64-review/summary.json`, SHA256
+`995bf8c36252b6a13309e5dd23bfa79342432bf78430d106a30f508a686ca3f4`.
+These are exact64 observations; final prefix/legacy acceptance is still required.
+
+The explicit four-builder dependency repair passed445 foundation host tests.
+The H audit repair retains169 source call edges, requires the capability-checked
+selected read, checked mode success, mode0 raw versus exact1/2 buffered input,
+and unchanged caller/pointer/full offered length. Direct managed-dispatch
+bypasses of both raw and buffered console routines reject. Three genuine
+pre-IR host fixtures passed; no new H artifact or guest pass is inferred.
+Independent final review also found that the cumulative checker did not include
+its final observer/replay in its deadline acceptance. A narrow bounded-check
+repair and meaningful failure fixtures are required before committing/rerunning.

@@ -1406,7 +1406,7 @@
         "independent_review_sha256": "f949998251dda376583fe62f12b27e13ad26cce2fd4ed2a6c5d3fde25b9691c0",
         "scope": "Fresh exact78ac203 timerO0 positive control passed; mutant built and audited, but mandatory Session re-audit was interrupted by outer38s command bound before guest launch. Exact8s negative observation remains required; original failure retained."
       },
-      "target_status": "At exact clean78ac203, six singleton architectural O0/O2 cases passed (18 actual7/0/7 instances). Managed firstcase failed during startup accounting; source-negative firstcase outer timeout interrupted fresh audit before QEMU. Legacy host suite exposed four stale workflow fixtures. FullK/finalregressions/publication remain pending; original failures retained.",
+      "target_status": "Exact64 K12, J4, standalone10/140 and four source-negative cases independentlyPASS. Final coldlegacy failed Gate6 declared ConsoleDevice dependency and prefix78 F-I failed H stale console audit after F/G PASS. Narrow host repairs and fresh full A-I/legacy acceptance pending; publication/actualCI/merge NOT_RUN.",
       "focused_architecture_attempts": [
         {
           "attempt": 1,
@@ -1492,6 +1492,50 @@
         "metadata": "PASS",
         "target_lean_changes": false,
         "clean_target_reruns": "NOT_RUN"
+      },
+      "final_64_observed": {
+        "source_commit": "64ca4f5254170c07989d1788bf9c2714004443e3",
+        "architectural_matrix": {
+          "status": "PASS",
+          "cases": 12,
+          "hardware_traps": 36,
+          "managed_continuation_windows": 18,
+          "independent_summary": "build/kernel/gateK/independent-64-review/summary.json",
+          "sha256": "df553e504324b21fe2e6620ecff4b3c3dcf4c79a16afa1494202d8fa4f98b074"
+        },
+        "source_negative_campaign": {
+          "status": "PASS",
+          "cases": 4,
+          "images": 8,
+          "qemu_sessions": 8,
+          "elapsed_seconds": 1509.2856173329928,
+          "deadline_seconds": 2400,
+          "aggregate_sha256": "4b97de04978df1cc7888b91c9c1dc9a40a425cbe95bf1c52c2a2f42e84652a34",
+          "independent_summary": "build/kernel/final-source-negatives-repaired/independent-summary.json",
+          "sha256": "dd43a8ff85e1718a22f77e26ccd9e7ffab4e5b4c81db42df06e15e602def68fe"
+        },
+        "services_J_and_standalone": {
+          "status": "PASS",
+          "J_profiles": 4,
+          "ordinary_commands": 1224,
+          "user_images": 10,
+          "whole_artifact_byte_comparisons": 140,
+          "wrapper_sha256": "bf84367066239a65ade90215afe389d24b7d391f53348bb0890958578c6fcd5d",
+          "J_sha256": "f5d387614f0799eca566f4fdbece95fa33c8acd813c00a163ffc72a31b4ad686",
+          "standalone_sha256": "db9b26a244bee9fa4485b237d775750c8f8126d2e09931f3877694e6bf11c404",
+          "independent_summary": "build/kernel/gateJ/independent-64-review/summary.json",
+          "independent_sha256": "995bf8c36252b6a13309e5dd23bfa79342432bf78430d106a30f508a686ca3f4",
+          "normal_remaining_frames": {
+            "O0": 406,
+            "O2": 416
+          },
+          "development_reaped_remaining_frames": 497
+        },
+        "legacy": "FAIL at Gate6 missing ConsoleDevice.olean; Task001 complete23boots and Task002 Gates1-5 reported466boots passed; qualification NOT_RUN",
+        "prefix_78_resume": "FAIL at H-O0 stale direct capConsole-consoleRead audit edge; F/G O0/O2 actual PASS",
+        "original_failures": "build/kernel/gateK/final-regression-failures/summary.json",
+        "original_failures_sha256": "755c4f9c5456f316503a3cc43f078af58f209fed8b0bf5791bb11e8d44fedf40",
+        "no_pass_inheritance": true
       }
     }
   ],
