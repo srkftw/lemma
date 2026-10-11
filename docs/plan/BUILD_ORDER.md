@@ -141,6 +141,14 @@ separate from physical memory integration, analog sensing, panel qualification
 and foundry acceptance. Earlier supplier/board/cartridge discussions remain
 historical; they do not gate this implementation.
 
+Task005 has observed Lean M/S/U execution, isolated-service fault containment,
+guest pen/paper/block access, a real notebook startup display, and full bounded
+SoC standard-cell mapping. The short RTL durable notebook workflow remains in
+progress. Paper placement/CTS/global routing produced measured area and timing;
+setup timing failed and detailed routing timed out. Physical memory and boot,
+completed controller routing, DRC/LVS and physical conformance remain separate
+open dependencies. See the [Task005 checkpoint](005-session-state.md).
+
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |
 | H.1 | Open RV64 compute, fabric and boot | 2.1 | Real RTL reset/Lean M/S/U execution, synthesis and explicit ROM/RAM implementation; eventual physical boot has separate evidence. |

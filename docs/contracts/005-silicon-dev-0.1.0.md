@@ -69,9 +69,9 @@ floor or the full canonical notebook workload. It uses the existing expanded
 loader/text/registry/guard semantics and allocator scans, generation checks,
 ownership, zeroing and teardown algorithms. The 512-frame historical profile and
 8,192-frame native notebook profile retain their original selections. The
-current 512x640 O2 notebook needs 125 owner pages: 21 fixed table/registry pages,
-4 kernel stack, 12 text, 1 data, 4 User stack, 2 extra L0 tables, 41 ink/index buffers
-and 40 framebuffer pages. Its quota leaves three spare pages; future image or
+current 512x640 O2 notebook needs 126 owner pages: 21 fixed table/registry pages,
+4 kernel stack, 13 text, 1 data, 4 User stack, 2 extra L0 tables, 41 ink/index buffers
+and 40 framebuffer pages. Its quota leaves two spare pages; future image or
 application growth must be checked against that bound. The silicon descriptor,
 RTL block DMA span and top-level DMA guard all enforce the same 4 MiB window.
 The remaining architectural RAM is external simulation memory, outside this

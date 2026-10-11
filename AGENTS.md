@@ -102,7 +102,9 @@ pen/paper/block controllers -> short durable notebook -> scoped open-flow
 feasibility. External simulation RAM is not on-chip SRAM. Track exact core,
 tool, library and source identities, unresolved cells and failed observations.
 Synthesis, routed-controller feasibility, DRC/LVS and physical conformance
-have separate results. No managed-runtime rewrite, radio, browser rewrite,
+have separate results. Reuse artifacts only after validating their exact consumed
+source/tool identities; distinguish literal RTL tests, real guest execution and
+physical-flow results. No managed-runtime rewrite, radio, browser rewrite,
 fabrication submission, paid infrastructure, supplier outreach or proprietary
 closure. Publish one draft PR against main; do not merge. USGCE is untouched.
 

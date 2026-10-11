@@ -392,7 +392,7 @@ Prepare the selected workload once; ordinary runs reuse identified artifacts:
 ```sh
 ./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.1.0 --workload service
 ./scripts/lemmasim run --backend rtl --mode developer --workload service \
-  --cycles 100000000 --observer-cycle 50000000 --timeout 1800 \
+  --cycles 400000000 --observer-cycle 300000000 --timeout 1800 \
   --record build/silicon/developer-service --trace-limit 10000
 ```
 
