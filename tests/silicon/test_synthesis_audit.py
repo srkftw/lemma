@@ -81,6 +81,20 @@ class SynthesisAuditTests(unittest.TestCase):
                 with self.subTest(report=report), self.assertRaises(RuntimeError):
                     silicon_synth.layout_reports(out, global_route=True)
 
+    def test_small_negative_slack_and_negative_zero_do_not_become_met(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "global-route-summary.json").write_text('{"instances":1}')
+            (out / "global-hold-summary.rpt").write_text("worst slack min 0.000001\n")
+            for value in ("-0.000001", "-0.000000", "-0.00"):
+                (out / "global-setup-summary.rpt").write_text(f"worst slack max {value}\n")
+                result = silicon_synth.layout_reports(out, global_route=True)
+                with self.subTest(value=value):
+                    self.assertEqual(result["setup_timing"], "VIOLATED")
+                    self.assertEqual(result["hold_timing"], "MET")
+            (out / "global-setup-summary.rpt").write_text("worst slack max 0.000001\n")
+            self.assertEqual(silicon_synth.layout_reports(out, global_route=True)["setup_timing"], "MET")
+
     def test_expired_process_is_reaped_and_cannot_become_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
             log = Path(tmp) / "command.log"

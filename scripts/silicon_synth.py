@@ -150,7 +150,9 @@ def layout_reports(out: Path, *, global_route: bool = False) -> dict:
             raise RuntimeError(f"Missing {prefix}{kind} timing estimate")
         value = float(slack.group(1))
         result[f"{kind}_worst_slack_ns"] = value
-        result[f"{kind}_timing"] = "MET" if value >= 0 else "VIOLATED"
+        # A negative value rounded to signed zero is not evidence of closure.
+        negative = value < 0 or (value == 0 and slack.group(1).startswith("-"))
+        result[f"{kind}_timing"] = "VIOLATED" if negative else "MET"
     return result
 
 
