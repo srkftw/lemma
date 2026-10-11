@@ -54,6 +54,15 @@ private def deadline (ticks : UInt64) : Action :=
   if failed s = true then fatal else
   if 0xffffffffffffffff - ticks < now then .done 22 0 else .done 0 (now + ticks)
 
+def deadlineWithLimit (ticks maximum : UInt64) : Action :=
+  if (if maximum = IPCABI.maximumTicks then true else
+      if maximum = IPCABI.lemmaSimMaximumTicks then true else false) = false then .done 22 0 else
+  if ticks < IPCABI.minimumTicks then .done 22 0 else
+  if maximum < ticks then .done 22 0 else
+  .bind MachineServices.time fun s now =>
+  if failed s = true then fatal else
+  if 0xffffffffffffffff - ticks < now then .done 22 0 else .done 0 (now + ticks)
+
 private def queueRoom (key : UInt64) : Action :=
   .bind (Objects.endpointQueue key) fun s queue =>
   if failed s = true then .done s 0 else
@@ -116,7 +125,7 @@ def send (descriptor handle pointer length request : UInt64) : Action :=
   .bind (IPCStorage.queueEnqueue queue key descriptor 0) fun s _ =>
   if failed s = true then fatal else publishedSend descriptor transaction
 
-def callBegin (descriptor handle pointer length request ticks : UInt64) : Action :=
+def callBeginWithLimit (maximum descriptor handle pointer length request ticks : UInt64) : Action :=
   .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointCall) fun s key =>
   if failed s = true then .done s 0 else
   .bind (payload descriptor pointer length) fun s _ =>
@@ -128,7 +137,7 @@ def callBegin (descriptor handle pointer length request ticks : UInt64) : Action
   .bind Objects.replyAvailable fun s available =>
   if failed s = true then .done s 0 else
   if available = 0 then .done CapabilityABI.objectFull 0 else
-  .bind (deadline ticks) fun s expires =>
+  .bind (deadlineWithLimit ticks maximum) fun s expires =>
   if failed s = true then .done s 0 else
   .bind (IPCStorage.prepare descriptor IPCStorage.callOperation key 0 0 expires) fun s transaction =>
   if failed s = true then .done s 0 else
@@ -233,7 +242,7 @@ private def beginReceive (descriptor key pointer capacity expires mode : UInt64)
     if failed s = true then fatal else .done blockedStatus transaction
   else if status = 255 then fatal else clear descriptor transaction status 0
 
-def receive (descriptor handle pointer capacity ticks mode : UInt64) : Action :=
+def receiveWithLimit (maximum descriptor handle pointer capacity ticks mode : UInt64) : Action :=
   .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointReceive) fun s key =>
   if failed s = true then .done s 0 else
   .bind (destination descriptor pointer capacity) fun s _ =>
@@ -244,7 +253,7 @@ def receive (descriptor handle pointer capacity ticks mode : UInt64) : Action :=
     if ticks = 0 then beginReceive descriptor key pointer capacity 0 mode
     else .done IPCABI.invalidArgument 0
   else if mode = IPCABI.blocking then
-    .bind (deadline ticks) fun s expires =>
+    .bind (deadlineWithLimit ticks maximum) fun s expires =>
     if failed s = true then .done s 0 else beginReceive descriptor key pointer capacity expires mode
   else .done IPCABI.invalidArgument 0
 
@@ -356,6 +365,22 @@ def callWait (descriptor transaction pointer capacity : UInt64) : Action :=
     if status = IPCABI.wouldBlock then .done blockedStatus transaction else fatal
   else .done IPCABI.invalidTransaction 0
 
+/-- Additive LemmaSim service operation. An in-flight reply remains owned by
+its transaction; the caller may service ink before retrying. The historical
+blocking callWait ABI and dispatcher are unchanged. -/
+def tryCallWait (descriptor transaction pointer capacity : UInt64) : Action :=
+  .bind (checkedTransaction descriptor transaction) fun s metadata =>
+  if failed s = true then .done s 0 else
+  .bind (word metadata IPCStorage.operationOffset) fun s operation =>
+  if failed s = true then fatal else
+  if operation = IPCStorage.callOperation then
+    .bind (IPCStorage.setWaitBuffer descriptor transaction pointer capacity) fun s _ =>
+    if failed s = true then .done s 0 else
+    .bind (poll descriptor) fun status _ =>
+    if status = 0 then completeWait descriptor transaction else
+    if status = IPCABI.wouldBlock then .done IPCABI.wouldBlock 0 else fatal
+  else .done IPCABI.invalidTransaction 0
+
 private def replyCaller (key server : UInt64) : Action :=
   .bind (Objects.replyFields key) fun s fields =>
   if failed s = true then .done s 0 else
@@ -461,6 +486,67 @@ def detach (descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 16 detachEndpointStep 16 0 base descriptor 0 0 fun s _ =>
   if failed s = true then fatal else .done 0 0
+
+def callBegin (descriptor handle pointer length request ticks : UInt64) : Action :=
+  .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointCall) fun s key =>
+  if failed s = true then .done s 0 else
+  .bind (payload descriptor pointer length) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (idle descriptor) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (queueRoom key) fun s queue =>
+  if failed s = true then .done s 0 else
+  .bind Objects.replyAvailable fun s available =>
+  if failed s = true then .done s 0 else
+  if available = 0 then .done CapabilityABI.objectFull 0 else
+  .bind (deadline ticks) fun s expires =>
+  if failed s = true then .done s 0 else
+  .bind (IPCStorage.prepare descriptor IPCStorage.callOperation key 0 0 expires) fun s transaction =>
+  if failed s = true then .done s 0 else
+  .bind (stage descriptor transaction pointer length IPCABI.callKind request 0) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Objects.createReply descriptor key transaction expires) fun s reply =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.setReply descriptor transaction reply) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.queueEnqueue queue key descriptor reply) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Objects.markReplyQueued reply) fun s _ =>
+  if failed s = true then fatal else
+  .bind (IPCStorage.commitWait descriptor transaction) fun s _ =>
+  if failed s = true then fatal else .done 0 transaction
+
+def receive (descriptor handle pointer capacity ticks mode : UInt64) : Action :=
+  .bind (Capability.lookup descriptor handle CapabilityABI.endpointType CapabilityABI.endpointReceive) fun s key =>
+  if failed s = true then .done s 0 else
+  .bind (destination descriptor pointer capacity) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (idle descriptor) fun s _ =>
+  if failed s = true then .done s 0 else
+  if mode = IPCABI.nonblocking then
+    if ticks = 0 then beginReceive descriptor key pointer capacity 0 mode
+    else .done IPCABI.invalidArgument 0
+  else if mode = IPCABI.blocking then
+    .bind (deadline ticks) fun s expires =>
+    if failed s = true then .done s 0 else beginReceive descriptor key pointer capacity expires mode
+  else .done IPCABI.invalidArgument 0
+
+/-- The trusted binding supplies one of two named ceilings. User syscall
+arguments still supply only their requested ticks, never this selector. -/
+def dispatchWithLimit (maximum descriptor number a b c d e : UInt64) : Action :=
+  if (if maximum = IPCABI.maximumTicks then true else
+      if maximum = IPCABI.lemmaSimMaximumTicks then true else false) = false then .done 22 0 else
+  if number = IPCABI.send then
+    if e = 0 then send descriptor a b c d else .done IPCABI.invalidArgument 0
+  else if number = IPCABI.receive then receiveWithLimit maximum descriptor a b c d e
+  else if number = IPCABI.callBegin then callBeginWithLimit maximum descriptor a b c d e
+  else if number = IPCABI.callWait then
+    if d ||| e = 0 then callWait descriptor a b c else .done IPCABI.invalidArgument 0
+  else if number = IPCABI.reply then
+    if e = 0 then reply descriptor a b c d else .done IPCABI.invalidArgument 0
+  else if number = IPCABI.cancel then
+    if b ||| c ||| d ||| e = 0 then cancel descriptor a else .done IPCABI.invalidArgument 0
+  else .done Lemma.User.ABI.unsupported 0
 
 def dispatch (descriptor number a b c d e : UInt64) : Action :=
   if number = IPCABI.send then

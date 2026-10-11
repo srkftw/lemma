@@ -20,6 +20,10 @@ def invariantFailure : UInt8 := 84
 def kernelStackHandleOffset : UInt64 := 2400
 def kernelStackTopOffset : UInt64 := 2408
 def kernelStackSecondHandleOffset : UInt64 := 2480
+def kernelStackThirdHandleOffset : UInt64 := 2488
+def kernelStackFourthHandleOffset : UInt64 := 2496
+def kernelStackPagesOffset : UInt64 := 2504
+def kernelStackBaseOffset : UInt64 := 2512
 def entryOffset : UInt64 := 2416
 def textBytesOffset : UInt64 := 2424
 def exitCodeOffset : UInt64 := 2432
@@ -56,10 +60,17 @@ private def validateDescriptor (record header total : UInt64) : Action :=
   if id = 0 then .done invalidImage 0 else
   .bind (get record 8) fun s entry => if failed s = true then .done s 0 else
   .bind (get record 16) fun s textVA => if failed s = true then .done s 0 else
-  if (if textVA = 0x10000 then false else true) = true then .done invalidImage 0 else
+  .bind Frames.runtimeCount fun s frameCount => if failed s = true then .done s 0 else
+  let textBase := if frameCount = 8192 then 0x1000000 else 0x10000
+  let textCapacity := if frameCount = 8192 then 0x80000 else 0xf000
+  if (if textVA = textBase then false else true) = true then .done invalidImage 0 else
   .bind (get record 24) fun s textOffset => if failed s = true then .done s 0 else
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
-  if entryValid entry textBytes = false then .done invalidImage 0 else
+  if textBytes < 4 then .done invalidImage 0 else
+  if textCapacity < textBytes then .done invalidImage 0 else
+  if entry < textBase then .done invalidImage 0 else
+  if textBytes - 4 < entry - textBase then .done invalidImage 0 else
+  if (if entry % 4 = 0 then false else true) = true then .done invalidImage 0 else
   if fileRange textOffset textBytes header total = false then .done invalidBounds 0 else
   .bind (get record 40) fun s dataVA => if failed s = true then .done s 0 else
   if (if dataVA = 0x20000 then false else true) = true then .done invalidImage 0 else
@@ -72,12 +83,15 @@ private def validateDescriptor (record header total : UInt64) : Action :=
   if disjoint textOffset textBytes dataOffset dataFileBytes = false then .done invalidBounds 0 else
   -- Fixed virtual segment intervals are independently checked, including the
   -- last partial text page and the stack's two surrounding unmapped pages.
-  if 0x20000 < 0x10000 + ((textBytes + 4095) / 4096) * 4096 then .done invalidBounds 0 else
-  if 0x3fffb000 < dataVA + dataMemoryBytes then .done invalidBounds 0 else
+  if textCapacity < ((textBytes + 4095) / 4096) * 4096 then .done invalidBounds 0 else
+  if disjoint textVA (((textBytes + 4095) / 4096) * 4096) dataVA dataMemoryBytes = false then .done invalidBounds 0 else
+  let stackBase := if frameCount = 8192 then 0x3fffa000 else 0x3fffc000
+  let stackCount := if frameCount = 8192 then 4 else 2
+  if stackBase - 4096 < dataVA + dataMemoryBytes then .done invalidBounds 0 else
   .bind (get record 72) fun s stackVA => if failed s = true then .done s 0 else
-  if (if stackVA = 0x3fffc000 then false else true) = true then .done invalidImage 0 else
+  if (if stackVA = stackBase then false else true) = true then .done invalidImage 0 else
   .bind (get record 80) fun s stackPages => if failed s = true then .done s 0 else
-  if (if stackPages = 2 then false else true) = true then .done invalidImage 0 else
+  if (if stackPages = stackCount then false else true) = true then .done invalidImage 0 else
   .bind (get record 88) fun s flags => if failed s = true then .done s 0 else
   if flags = 0 then .done 0 record else .done invalidImage 0
 
@@ -119,7 +133,9 @@ private def validateView (storageBase storageBytes imageIndex : UInt64) : Action
   .bind (get storageBase 0) fun s magic => if failed s = true then .done s 0 else
   if (if magic = packageMagic then false else true) = true then .done invalidPackage 0 else
   .bind (get storageBase 8) fun s version => if failed s = true then .done s 0 else
-  if (if version = 1 then false else true) = true then .done invalidPackage 0 else
+  .bind Frames.runtimeCount fun s frameCount => if failed s = true then .done s 0 else
+  let expectedVersion := if frameCount = 8192 then 2 else 1
+  if (if version = expectedVersion then false else true) = true then .done invalidPackage 0 else
   .bind (get storageBase 16) fun s count => if failed s = true then .done s 0 else
   if count = 0 then .done invalidPackage 0 else
   if 8 < count then .done invalidPackage 0 else
@@ -178,10 +194,11 @@ private def textStep (i _ : UInt32) (acc descriptor owner record _ : UInt64) : A
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
   let offset := i.toUInt64 * 4096
   let amount := if 4096 < textBytes - offset then 4096 else textBytes - offset
-  .bind (page descriptor owner (0x10000 + offset) 3 5 (packageBase + textOffset + offset) amount) fun s _ =>
+  .bind (get record 16) fun s textVA => if failed s = true then .done s 0 else
+  .bind (page descriptor owner (textVA + offset) 3 5 (packageBase + textOffset + offset) amount) fun s _ =>
   if failed s = true then .done s 0 else .done 0 (acc + 1)
-private def stackStep (i _ : UInt32) (acc descriptor owner _ _ : UInt64) : Action :=
-  .bind (page descriptor owner (0x3fffc000 + i.toUInt64 * 4096) 5 3 0 0) fun s _ =>
+private def stackStep (i _ : UInt32) (acc descriptor owner base _ : UInt64) : Action :=
+  .bind (page descriptor owner (base + i.toUInt64 * 4096) 5 3 0 0) fun s _ =>
   if failed s = true then .done s 0 else .done 0 (acc + 1)
 private def clearContextStep (i _ : UInt32) (acc context _ _ _ : UInt64) : Action :=
   .bind (Access.write64 (context + i.toUInt64 * 8) 0) fun s _ => .done s (acc + 1)
@@ -208,6 +225,11 @@ private def initializeState (address record imageIndex argument : UInt64) : Acti
   .bind (put address kernelStackHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
   .bind (put address kernelStackSecondHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
   .bind (put address kernelStackTopOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind (put address kernelStackThirdHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind (put address kernelStackFourthHandleOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind (put address kernelStackBaseOffset 0) fun s _ => if failed s = true then .done s 0 else
+  .bind Frames.runtimeStackPages fun s pages => if failed s = true then .done s 0 else
+  .bind (put address kernelStackPagesOffset pages) fun s _ => if failed s = true then .done s 0 else
   .bind (put address entryOffset entry) fun s _ => if failed s = true then .done s 0 else
   .bind (put address textBytesOffset textBytes) fun s _ => if failed s = true then .done s 0 else
   .bind (put address exitCodeOffset 0) fun s _ => if failed s = true then .done s 0 else
@@ -220,7 +242,9 @@ private def initializeState (address record imageIndex argument : UInt64) : Acti
 private def stackFrame (owner handle : UInt64) : Action :=
   .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
   if s = 0 then
-    .bind (Frames.mappingCount owner handle) fun s pins =>
+    -- Resolve already checked the live grant; S critical sections cannot
+    -- change ownership before inspecting pins through the same physical slot.
+    .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
     if s = 0 then
       if pins = 0 then .done 0 physical else .done invariantFailure 0
     else .done invariantFailure 0
@@ -253,14 +277,14 @@ private def storedStack (owner first second top : UInt64) : Action :=
     .bind (stackFrame owner first) fun s physical =>
     if s = 0 then
       if top = 0 then .done 0 0 else
-      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      if top = physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then .done 0 0
       else .done invariantFailure 0
     else .done invariantFailure 0
   else
     .bind (stackPair owner first second) fun s physical =>
     if s = 0 then
       if top = 0 then .done 0 0 else
-      if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then .done 0 0
+      if top = physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then .done 0 0
       else .done invariantFailure 0
     else .done invariantFailure 0
 
@@ -286,7 +310,7 @@ private def installStackPair (address owner first second : UInt64) : Action :=
     if s = 0 then
       .bind (put address kernelStackSecondHandleOffset second) fun s _ =>
       if s = 0 then
-        .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue)) fun s _ =>
+        .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue)) fun s _ =>
         if s = 0 then .done 0 0 else .done invariantFailure 0
       else
         .bind (put address kernelStackHandleOffset 0) fun cleared _ =>
@@ -295,7 +319,116 @@ private def installStackPair (address owner first second : UInt64) : Action :=
     else releaseUnpublishedPair owner first second invariantFailure
   else releaseUnpublishedPair owner first second s
 
+
+private def quadFrame (owner handle physical : UInt64) : Action :=
+  if handle = 0 then .done 0 0 else
+  .bind (stackFrame owner handle) fun s actual =>
+  if s = 0 then if actual = physical then .done 0 actual else .done invariantFailure 0
+  else .done invariantFailure 0
+
+private def storedQuad (owner first second third fourth physical top : UInt64) : Action :=
+  -- Allocation can fail before any stack frame/base was published. An empty
+  -- unpublished constructor owns no stack and must still release its AS.
+  if physical = 0 then
+    if first ||| second ||| third ||| fourth ||| top = 0 then .done 0 0
+    else .done invariantFailure 0
+  else
+  if Frames.frameAddressValid physical = false then .done invariantFailure 0 else
+  .bind (quadFrame owner first physical) fun s _ => if s = 0 then
+  .bind (quadFrame owner second (physical + 4096)) fun s _ => if s = 0 then
+  .bind (quadFrame owner third (physical + 8192)) fun s _ => if s = 0 then
+  .bind (quadFrame owner fourth (physical + 12288)) fun s _ => if s = 0 then
+  if top = 0 then .done 0 physical else
+  if first = 0 then .done invariantFailure 0 else
+  if second = 0 then .done invariantFailure 0 else
+  if third = 0 then .done invariantFailure 0 else
+  if fourth = 0 then .done invariantFailure 0 else
+  if top = physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 16 then
+    .done 0 physical else .done invariantFailure 0
+  else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0 else .done invariantFailure 0
+
+/-- Four-page stack canaries detect overwrites; these are not unmapped guards.
+The existing S direct map cannot provide a per-task unmapped physical guard.
+S traps keep SIE clear, so the selected audit accounts one vector and no nested
+S interrupt vector. M entry uses the separate firmware-private stack. -/
+def stackCanary : UInt64 := 0x4c4d535441434b34
+
+/-- Kernel-internal validation in the same nonpreemptible call that obtained
+`address` from AddressSpace.base. This helper does not authorize an untrusted
+address and is never exposed through a syscall. -/
+def validateExpandedStackAt (address : UInt64) : Action :=
+  .bind (get address 24) fun s owner => if s = 0 then
+  .bind (get address kernelStackHandleOffset) fun s first => if s = 0 then
+  .bind (get address kernelStackSecondHandleOffset) fun s second => if s = 0 then
+  .bind (get address kernelStackThirdHandleOffset) fun s third => if s = 0 then
+  .bind (get address kernelStackFourthHandleOffset) fun s fourth => if s = 0 then
+  .bind (get address kernelStackBaseOffset) fun s physical => if s = 0 then
+  .bind (get address kernelStackTopOffset) fun s top => if s = 0 then
+  if top = 0 then .done invariantFailure 0 else
+  .bind (storedQuad owner first second third fourth physical top) fun s _ => if s = 0 then
+  .bind (Access.read64 physical) fun s low => if s = 0 then
+  .bind (Access.read64 (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 8)) fun s high => if s = 0 then
+  if low = stackCanary then if high = stackCanary then .done 0 top else .done invariantFailure 0
+  else .done invariantFailure 0
+  else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0 else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0
+
+def validateExpandedStack (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s address => if s = 0 then
+  validateExpandedStackAt address else .done invariantFailure 0
+
+private def abortQuad (address owner first second third fourth : UInt64) : Action :=
+  .bind (put address kernelStackTopOffset 0) fun _ _ =>
+  .bind (releaseStackHandle address owner kernelStackHandleOffset first) fun a _ =>
+  .bind (releaseStackHandle address owner kernelStackSecondHandleOffset second) fun b _ =>
+  .bind (releaseStackHandle address owner kernelStackThirdHandleOffset third) fun c _ =>
+  .bind (releaseStackHandle address owner kernelStackFourthHandleOffset fourth) fun d _ =>
+  if a ||| b ||| c ||| d = 0 then .done invariantFailure 0 else .done invariantFailure 0
+
+private def installStackQuad (address owner first second third fourth : UInt64) : Action :=
+  .bind (stackFrame owner first) fun s physical =>
+  if s = 0 then
+    .bind (storedQuad owner first second third fourth physical 0) fun s _ =>
+    if s = 0 then
+      .bind (put address kernelStackBaseOffset physical) fun s _ => if s = 0 then
+      .bind (put address kernelStackHandleOffset first) fun s _ => if s = 0 then
+      .bind (put address kernelStackSecondHandleOffset second) fun s _ => if s = 0 then
+      .bind (put address kernelStackThirdHandleOffset third) fun s _ => if s = 0 then
+      .bind (put address kernelStackFourthHandleOffset fourth) fun s _ => if s = 0 then
+      .bind (Access.write64 physical stackCanary) fun s _ => if s = 0 then
+      .bind (Access.write64 (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 8) stackCanary) fun s _ => if s = 0 then
+      .bind (put address kernelStackTopOffset (physical + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue - 16)) fun s _ =>
+      if s = 0 then .done 0 0 else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+      else abortQuad address owner first second third fourth
+    else abortQuad address owner first second third fourth
+  else abortQuad address owner first second third fourth
+
+private def allocateStackQuad (address owner : UInt64) : Action :=
+  .bind (Frames.allocateContiguous4 owner 1) fun s result => if s = 0 then
+  if result = Frames.quadResult then
+    .bind (Access.read64 result) fun s first => if s = 0 then
+    .bind (Access.read64 (result + 8)) fun s second => if s = 0 then
+    .bind (Access.read64 (result + 16)) fun s third => if s = 0 then
+    .bind (Access.read64 (result + 24)) fun s fourth => if s = 0 then
+    installStackQuad address owner first second third fourth
+    else .done invariantFailure 0 else .done invariantFailure 0
+    else .done invariantFailure 0 else .done invariantFailure 0
+  else .done invariantFailure 0 else .done s 0
+
 private def allocateStack (address owner : UInt64) : Action :=
+  .bind (get address kernelStackPagesOffset) fun s pages =>
+  if s = 0 then
+  if pages = 4 then allocateStackQuad address owner else
+  if pages = 2 then
   .bind (Frames.allocateContiguous2 owner 1) fun s result =>
   if s = 0 then
     if result = Frames.pairResult then
@@ -305,6 +438,8 @@ private def allocateStack (address owner : UInt64) : Action :=
         if s = 0 then installStackPair address owner first second else .done invariantFailure 0
       else .done invariantFailure 0
     else .done invariantFailure 0
+  else .done s 0
+  else .done invariantFailure 0
   else .done s 0
 
 /-- Inactive-only teardown runs on the restored supervisor boot/reaper stack.
@@ -320,13 +455,23 @@ def teardown (descriptor : UInt64) : Action :=
   .bind (get address kernelStackHandleOffset) fun s first => if failed s = true then .done s 0 else
   .bind (get address kernelStackSecondHandleOffset) fun s second => if failed s = true then .done s 0 else
   .bind (get address kernelStackTopOffset) fun s top => if failed s = true then .done s 0 else
-  .bind (storedStack owner first second top) fun s _ => if failed s = true then .done s 0 else
+  .bind (get address kernelStackPagesOffset) fun s pages => if failed s = true then .done s 0 else
+  .bind (get address kernelStackThirdHandleOffset) fun s third => if failed s = true then .done s 0 else
+  .bind (get address kernelStackFourthHandleOffset) fun s fourth => if failed s = true then .done s 0 else
+  .bind (get address kernelStackBaseOffset) fun s physical => if failed s = true then .done s 0 else
+  .bind (if pages = 2 then storedStack owner first second top else
+    if pages = 4 then storedQuad owner first second third fourth physical top else .done invariantFailure 0)
+    fun s _ => if failed s = true then .done s 0 else
   -- Inactive and fully validated: withdraw the stack top before the first
   -- release, so retries contain only zero or separately owned live handles.
   .bind (put address kernelStackTopOffset 0) fun s _ => if failed s = true then .done invariantFailure 0 else
   .bind (releaseStackHandle address owner kernelStackHandleOffset first) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (releaseStackHandle address owner kernelStackSecondHandleOffset second) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (releaseStackHandle address owner kernelStackThirdHandleOffset third) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (releaseStackHandle address owner kernelStackFourthHandleOffset fourth) fun s _ =>
   if failed s = true then .done s 0 else
   AddressSpace.destroy descriptor
 
@@ -340,16 +485,18 @@ private def build (descriptor address record owner imageIndex argument : UInt64)
   .bind (allocateStack address owner) fun s _ => if failed s = true then .done s 0 else
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
   let pages := (textBytes + 4095) / 4096
-  .boundedFoldU64 15 textStep pages.toUInt32 0 descriptor owner record 0 fun s copiedPages =>
+  .boundedFoldU64 128 textStep pages.toUInt32 0 descriptor owner record 0 fun s copiedPages =>
   if failed s = true then .done s 0 else
   if (if copiedPages = pages then false else true) = true then .done invariantFailure 0 else
   .bind (get record 48) fun s dataOffset => if failed s = true then .done s 0 else
   .bind (get record 56) fun s dataBytes => if failed s = true then .done s 0 else
   .bind (page descriptor owner 0x20000 4 3 (packageBase + dataOffset) dataBytes) fun s _ =>
   if failed s = true then .done s 0 else
-  .boundedFoldU64 2 stackStep 2 0 descriptor owner 0 0 fun s stacks =>
+  .bind (get record 72) fun s userStackBase => if failed s = true then .done s 0 else
+  .bind (get record 80) fun s userStackPages => if failed s = true then .done s 0 else
+  .boundedFoldU64 4 stackStep userStackPages.toUInt32 0 descriptor owner userStackBase 0 fun s stacks =>
   if failed s = true then .done s 0 else
-  if (if stacks = 2 then false else true) = true then .done invariantFailure 0 else
+  if (if stacks = userStackPages then false else true) = true then .done invariantFailure 0 else
   .bind (initializeContext descriptor address record argument) fun s _ => if failed s = true then .done s 0 else
   .platform .fenceInstruction 0 0 0 0 0 0 fun s _ =>
   if failed s = true then .done s 0 else

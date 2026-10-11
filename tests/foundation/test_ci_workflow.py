@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 
-JOBS = ("metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
+JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
         "kernel-architecture-rv64")
 
@@ -92,6 +92,7 @@ class CiWorkflowTests(unittest.TestCase):
 
     def test_every_logged_pipeline_fails_closed_with_explicit_pipefail(self):
         expected = {
+            "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
                          "metadata/foundation-host-unittest.log", "metadata/kernel-host-unittest.log"),
@@ -111,6 +112,16 @@ class CiWorkflowTests(unittest.TestCase):
                     commands = [line.strip() for line in block.splitlines() if line.strip()]
                     self.assertEqual(commands[0], "set -euo pipefail")
                     self.assertEqual(block.count("| tee "), 1)
+
+    def test_lemmasim_lane_builds_pinned_host_and_checks_real_cold_guest_ink(self):
+        lane = self.blocks['lemmasim-writing-rv64']
+        for required in ('tooling/lemmasim/qemu.nix', './scripts/check-lemmasim.sh',
+                         '--clean --lane writing --with-o0', '--deadline 3500',
+                         "value['source']['commit'] != head", "len(value['cases']) != 2",
+                         "observed['retained_unique_raw_samples'] != 50", "cold['status'] != 'PASS'",
+                         'if-no-files-found: error', 'retention-days: 14'):
+            self.assertIn(required, lane)
+        self.assertEqual(lane.count('timeout --foreground --signal=TERM --kill-after=30s'), 2)
 
     def test_job_slice_cannot_absorb_an_added_sibling(self):
         source = "jobs:\n  metadata:\n    run: host-only\n  new-job:\n    run: qemu\n  legacy-rv64:\n    run: guest\n"

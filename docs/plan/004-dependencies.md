@@ -1,0 +1,51 @@
+# Task004 dependency checks
+
+Changes to the Core0 accepted language or lowering require the legacy Core0
+acceptance and source negatives. Changes to ownership, loader, scheduler,
+capabilities, copy, traps or stack layout require the Task003 A–K interfaces and
+foundation regression qualification. Their existing CI jobs remain unchanged.
+
+Changes to the machine profile, descriptor, MMIO or PLIC require actual boot
+DTB/descriptor checks, the device qtests and guest workflow. Paper/pen model
+changes additionally require the independent literal transitions and behavioral
+mutants, actual QEMU controller checks, loss workflows and native QEMU replay.
+The full notebook matrix includes two quarantined compiled source experiments:
+removing the final publication flush and retaining a cancelled raw pen tail.
+Each needs its positive control and a specific independent behavioral rejection;
+a changed source hash or generic process failure cannot qualify it.
+Block/filter/driver/store changes require actual VirtIO fault checks, notebook
+payload/publication/checkpoint cuts, independent recovery observations and cold
+new-process reopening. The host observer never repairs a live guest's media.
+Checkpoint endpoint or mount-handshake changes also require exact v1 framing
+regression, v2 Begin/Status receipt and real root-flush failure boundaries, and
+a large existing-image checkpoint/cold mount that exceeds one RPC deadline.
+Pending receipt acceptance must never become Saved. Genuine elaboration/lowering
+and linked O0/O2 User stack audits cover the changed service/client closure; a
+host-only Action fixture is not durable guest execution.
+
+Notebook Save/Compact or tool-layout changes additionally require genuine Lean
+tool/state fixtures, independent literal glyph/layout observations and linked
+raw-toolbar input. Save must use short durable Inspect without starting a
+checkpoint; Compact must retain the v2 Pending-to-final-root-flush boundary.
+Exercise large retained data so routine Save cannot hide an O(live history)
+copy. The full workload invokes explicit Compact separately, checks ordinary
+Save/cold bytes and pixels, and retains the actual Compact latency and root
+generation change. Compaction fault and early-acknowledgement controls remain
+required; a faster Save does not remove the reclamation acceptance obligation.
+
+Ink, page codecs or editing changes require their focused genuine Lean exports
+and independent literal checks, the editing/two-namespace workflow and cold
+byte/pixel comparison. The header fixture also pins refusal of unsupported brush
+versions and contradictory indexed page/stroke identities before bounded body
+reads and rendering; it is a host fixture plus genuine compiler lowering, not
+a substitute for linked execution. Rasterizer changes additionally require the independent
+integer full-tile oracle and recorded workload. Geometry changes require the
+same guest binary at both named instance sizes.
+
+The maintained `scripts/check-lemmasim.sh --clean` runs fresh linked O2/O0
+notebook paths and the new guest/device observation matrix. `--lane writing` is
+an explicitly scoped development run. Its result never inherits an earlier
+commit's pass, and neither lane reports Task004 complete. Required inherited
+CI/regressions, new client isolation, publication negatives and review handoff
+remain separate acceptance obligations until their real results are recorded.
+All generated evidence uses unused ignored output paths; failures are retained.

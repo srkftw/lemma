@@ -1,15 +1,15 @@
 # LemmaSim first-class construction workstream
 
-Status: planned. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
+Status: partial — Task004 bounded native notebook subset observed; finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
 
 | ID | Deliverable | Depends on | Required exit evidence | Status |
 | --- | --- | --- | --- | --- |
-| S0 | Canonical machine contract and versioned assumptions | architecture baseline | interface inventory, UNKNOWN fields and reviewable compatibility policy | partial (draft only) |
-| S1 | Deterministic virtual motherboard | S0, G1 | real Lean-authored ELF boots, traceable RV64/MMIO/clock/reset events, negative tests | planned |
-| S2 | Virtual memory/storage/power fault models | S1, G2/G3 | invalid accesses, flush/crash cutpoints and recovery independently checked | planned |
-| S3 | Virtual pen and e-paper controllers | S1, G4 interfaces | physical USB tablet bridge -> virtual controller -> guest driver -> pixels, with ordered traces | planned |
-| S4 | Virtual interaction and distribution | S3, G4/G6 | installable Student mode; offline notebook; snapshot and restore | planned |
-| S5 | Developer and Laboratory modes | S2-S4 | reproducible replay, fault injection, inspectable device state, no bypass of guest enforcement | planned |
+| S0 | Canonical machine contract and versioned assumptions | architecture baseline | interface inventory, UNKNOWN fields and reviewable compatibility policy | partial: frozen core/binding 0.1.0 and device/store ABIs; finished contract remains broader |
+| S1 | Deterministic virtual motherboard | S0, G1 | real Lean-authored ELF boots, traceable RV64/MMIO/clock/reset events, negative tests | partial: actual one-hart RV64 binding/discovery/replay; no physical board result |
+| S2 | Virtual memory/storage/power fault models | S1, G2/G3 | invalid accesses, flush/crash cutpoints and recovery independently checked | partial: owned memory and admitted block/flush/cut recovery |
+| S3 | Virtual pen and e-paper controllers | S1, G4 interfaces | physical USB tablet bridge -> virtual controller -> guest driver -> pixels, with ordered traces | partial: pen FIFO/PLIC, guest ink/paper, recorded pressure; physical USB/manual NOT_RUN |
+| S4 | Virtual interaction and distribution | S3, G4/G6 | installable Student mode; offline notebook; snapshot and restore | partial: native launch and offline notebook; installer and whole-machine snapshot NOT_BUILT |
+| S5 | Developer and Laboratory modes | S2-S4 | reproducible replay, fault injection, inspectable device state, no bypass of guest enforcement | partial: bounded Developer inspection/replay and Laboratory fault workflows |
 | S6 | Integrated virtual finished machine | S4/S5, G5-G7 | complete documented student workflows; proof and tutor trust boundaries checked | planned |
 | S7 | Physical/virtual conformance | S6 and physical board/cartridge | independently captured physical traces meet per-interface equivalence relations | blocked: physical hardware unavailable |
 
@@ -30,8 +30,12 @@ G1: capture board/ISA boot profiles, then build S1 in parallel with Core0. G2/G3
 ## Initial repository layout
 
 - `LEMMA_MACHINE_CONTRACT.md`: top-level normative machine target.
-- `sim/`: host simulation backends, device models, launch profiles and user distribution (currently design scaffold).
-- `conformance/`: cross-embodiment input traces, invariants, model tests and recorded evidence (currently design scaffold).
+- `sim/`: host simulation backends, device models, launch profiles and user distribution (implemented Task004 hardware binding and command surface).
+- `conformance/`: independent virtual input/device/store observations and checks; physical trace comparison remains unverified.
 - `docs/plan/LEMMASIM.md`: durable sequencing and evidence policy.
 
-Next implementation slice: version a *minimal canonical motherboard profile*, specify one concrete register-level virtual device and independent oracle, run a Lean-authored RV64 guest operation through it, retain full stimulus/output traces, then add a fail-closed CI check. Do not guess display/OEM values.
+[Task004 evidence](../evidence/004-lemmasim-durable-ink.md) binds its tested
+implementation, retained failures, CI and offline export. The observed notebook
+is a foundation for mathematical documents; S6 proof/tutor integration and S7
+physical parity remain unfinished. Keep the named partial scopes and do not
+replace the existing G1–G7 completion requirements with this subset.

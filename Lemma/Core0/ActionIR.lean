@@ -166,6 +166,8 @@ def executionEffects : Execution.Op → EffectSet
   | .enterUser => { privilegeTransition := true, machineState := true, physicalRead := true }
   | .waitInterrupt => { waitState := true, interruptState := true }
   | .readSupervisorPending => { interruptState := true }
+  | .deviceRead32 | .deviceRead64 => { checkedAccess := true, mmioRead := true, ioOrder := true }
+  | .deviceWrite32 | .deviceWrite64 => { checkedAccess := true, mmioWrite := true, ioOrder := true }
 
 structure ActionSignature where
   args : Array Ty

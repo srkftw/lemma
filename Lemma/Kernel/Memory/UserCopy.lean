@@ -8,7 +8,7 @@ neither user memory nor kernel storage. -/
 namespace Lemma.Kernel.Memory.UserCopy
 open Lemma.Core0.Memory
 
-def maximumLength : UInt64 := 256
+def maximumLength : UInt64 := 4096
 def userBase : UInt64 := 0x10000
 def userLimit : UInt64 := 0x40000000
 
@@ -26,6 +26,10 @@ private def validRange (pointer length : UInt64) : Bool :=
   if userLimit ≤ pointer then false else
   if userLimit - pointer < length then false else true
 
+/-- A nonempty range of length at most 4096 spans at most two 4096-byte
+pages, even when unaligned: floor((offset + length - 1)/4096) ≤ 1.
+Both leaves are preflighted before any byte is written. Increasing this bound
+past one page requires a new full-page enumeration rather than this split. -/
 private def firstLength (pointer length : UInt64) : UInt64 :=
   let available := 4096 - pointer % 4096
   if length ≤ available then length else available
@@ -75,6 +79,31 @@ private def toStep (i _ : UInt32) (acc first second source split : UInt64) : Act
     if s = 0 then .done 0 (acc + 1) else .done Lemma.User.ABI.kernelFatal 0
   else .done Lemma.User.ABI.kernelFatal 0
 
+private def fromWordStep (i _ : UInt32) (acc first second destination split : UInt64) : Action :=
+  let index := i.toUInt64 * 8
+  let source := if index < split then first + index else second + (index - split)
+  .bind (Access.read64 source) fun s word =>
+  if s = 0 then
+    .bind (Access.write64 (destination + index) word) fun s _ =>
+    if s = 0 then .done 0 (acc + 8) else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+
+private def toWordStep (i _ : UInt32) (acc first second source split : UInt64) : Action :=
+  let index := i.toUInt64 * 8
+  let destination := if index < split then first + index else second + (index - split)
+  .bind (Access.read64 (source + index)) fun s word =>
+  if s = 0 then
+    .bind (Access.write64 destination word) fun s _ =>
+    if s = 0 then .done 0 (acc + 8) else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+
+/-- Every transferred word is wholly inside a preflighted page and scratch
+span. Unaligned and partial-word copies keep their exact byte semantics. -/
+private def wordsAligned (first second scratch split length : UInt64) : Bool :=
+  if first % 8 = 0 then if second % 8 = 0 then if scratch % 8 = 0 then
+  if split % 8 = 0 then if length % 8 = 0 then true else false else false
+  else false else false else false
+
 /-- A kernel scratch handle must name a live owner-1 purpose-1 frame. All
 spanned user leaves are checked before the bounded copy changes scratch. -/
 def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Action :=
@@ -88,8 +117,12 @@ def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Acti
       let split := firstLength pointer length
       .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 1) fun s second =>
       if s = 0 then
-        .boundedFoldU64 256 fromStep length.toUInt32 0 first second destination split fun s copied =>
-        if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+        if wordsAligned first second destination split length = true then
+          .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 first second destination split fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+        else
+          .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
     else .done s 0
   else .done s 0
@@ -107,8 +140,12 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
       let split := firstLength pointer length
       .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 2) fun s second =>
       if s = 0 then
-        .boundedFoldU64 256 toStep length.toUInt32 0 first second source split fun s copied =>
-        if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+        if wordsAligned first second source split length = true then
+          .boundedFoldU64 512 toWordStep (length / 8).toUInt32 0 first second source split fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+        else
+          .boundedFoldU64 4096 toStep length.toUInt32 0 first second source split fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
     else .done s 0
   else .done s 0

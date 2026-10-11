@@ -163,6 +163,26 @@ run_cmd do
   for unknown in #["service-halfword-ecall", "service-normal-return-machine-development", "user-unknown-development"] do
     unless singletonInstructionCase? unknown == none && serviceInstructionCase? unknown == none do
       throwError "unknown instruction configuration admitted"
+  unless notebookIsolationImages.extract 0 2 == notebookImages && notebookIsolationImages.size == 3 do
+    throwError "isolation deployment changed the production store/notebook images"
+  let isolated ← match imageFor "lemmasim-isolation-development" "isolation" with
+    | .ok image => pure image
+    | .error error => throwError error
+  unless isolated.id == 3 && isolated.moduleName == `Lemma.User.Development.NotebookIsolation &&
+      isolated.root == `Lemma.User.Development.NotebookIsolation.main && isolated.startupCase == .none &&
+      isolated.bootRole?.map ManagedBootRole.stableId == some "notebook-isolation-client" do
+    throwError "isolation fixture escaped its ordinary User source/role"
+  for configuration in #["lemmasim-notebook", "lemmasim-initialize", "service-normal"] do
+    match imageFor configuration "isolation" with
+    | .ok _ => throwError "isolation fixture entered a production deployment"
+    | .error _ => pure ()
+  for forged in #[notebookImages, notebookIsolationImages.reverse,
+      notebookIsolationImages.set! 0 isolated,
+      notebookIsolationImages.set! 2 { isolated with startupCase := .supervisorCsr },
+      notebookIsolationImages.set! 2 { isolated with root := `Lemma.Applications.Notebook.main }] do
+    match validateImages "lemmasim-isolation-development" forged with
+    | .ok _ => throwError "forged isolation startup/source/catalog admitted"
+    | .error _ => pure ()
   logInfo "PASS: genuine source selection, exact closed F/G/H/I/K registries and per-image startup/managed authority fail closed"
 
 end Lemma.Compiler.Test.DeploymentCatalog

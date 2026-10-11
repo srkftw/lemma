@@ -1,0 +1,27 @@
+{
+  "profile": "lemmasim-virt/0.1.0", "core": "lemma-one-core/0.1.0",
+  "status": "IMPLEMENTING", "physical_conformance": "UNVERIFIED",
+  "qemu_revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+  "machine": "lemmasim-virt", "cpu": "rv64,smrnmi=false,smdbltrp=false",
+  "ram_base": 2147483648, "ram_bytes": 134217728, "harts": 1,
+  "clock_hz": 10000000, "geometry": [1650,2200], "other_geometry": [1404,1872],
+  "pixel": "Gray4-high-even", "pressure_max": 4095,
+  "synthetic_timing_v1_ns": {"fast":2000000,"quality":25000000},
+  "devices": {
+    "paper":{"base":268500992,"span":4096,"irq":12,"abi":1,"magic":1280331856},
+    "pen":{"base":268505088,"span":4096,"irq":13,"abi":1,"magic":1280331854,"fifo":256},
+    "block":{"base":268439552,"span":4096,"irq":1,"transport":"virtio-mmio-modern","sector":512,"required_features":[32,9]},
+    "uart":{"base":268435456,"span":256,"irq":10},
+    "rtc":{"base":1052672,"span":4096,"irq":11},
+    "plic":{"base":201326592,"span":6291456},
+    "clint":{"base":33554432,"span":65536}
+  },
+  "descriptor":{"base":268502016,"bytes":256,"magic":1280132179,"abi":1},
+  "disk_initial_sectors":524288,
+  "laboratory_write_delay":{"policy":"virtual-one-shot-write-delay/1","default_duration_ns":0,"max_duration_ns":10000000000,"max_after_ns":3600000000000,"drain":"wake early and record write-delay-drained"},
+  "inherited_fixed_devices":"QEMU virt: mask ROM, finisher, CLINT, PLIC, UART, goldfish RTC, eight VirtIO MMIO transports, PCIe host, two CFI flash banks, fw_cfg, platform bus. These remain present; only block transport slot0 (IRQ1) is attached. RTC base comes from pinned virt map.",
+  "registers":{
+    "paper":{"MAGIC":0,"VERSION":8,"STATUS":16,"ERROR":24,"WIDTH":32,"HEIGHT":40,"STRIDE":48,"CAPS":56,"TILE_X":64,"TILE_Y":72,"TILE_W":80,"TILE_H":88,"TILE_LEN":96,"COMMAND":104,"SEQUENCE":112,"RECT_X":120,"RECT_Y":128,"RECT_W":136,"RECT_H":144,"MODE":152,"COMPLETED":160,"ACK":168,"RESET":176,"DESCRIPTOR":1024,"APERTURE":2048},
+    "pen":{"MAGIC":0,"VERSION":8,"STATUS":16,"ERROR":24,"COUNT":32,"EPOCH":40,"LOSS":48,"MAX_X":56,"MAX_Y":64,"PRESSURE_MAX":72,"CAPS":80,"ACK":88,"LOSS_ACK":96,"RESET":104,"HEAD_SEQ":256,"HEAD_TIME":264,"HEAD_X":272,"HEAD_Y":280,"HEAD_PRESSURE":288,"HEAD_FLAGS":296,"HEAD_TOOL":304,"HEAD_BUTTONS":312,"HEAD_EPOCH":320}
+  }
+}

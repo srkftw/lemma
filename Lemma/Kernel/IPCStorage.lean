@@ -70,8 +70,17 @@ private def copyStep (i _ : UInt32) (acc source destination _ _ : UInt64) : Acti
   if failed s = true then fatal else
   .bind (Access.write8 (destination + i.toUInt64) byte) fun s _ =>
   if failed s = true then fatal else .done 0 (acc + 1)
+private def copyWordStep (i _ : UInt32) (acc source destination _ _ : UInt64) : Action :=
+  .bind (Access.read64 (source + i.toUInt64 * 8)) fun s word =>
+  if failed s = true then fatal else
+  .bind (Access.write64 (destination + i.toUInt64 * 8) word) fun s _ =>
+  if failed s = true then fatal else .done 0 (acc + 8)
 def copyBytes (source destination length : UInt64) : Action :=
   if maximumPacket < length then fatal else
+  if (source ||| destination ||| length) &&& 7 = 0 then
+    .boundedFoldU64 32 copyWordStep (length / 8).toUInt32 0 source destination 0 0 fun s copied =>
+    if failed s = true then fatal else if copied = length then .done 0 copied else fatal
+  else
   .boundedFoldU64 256 copyStep length.toUInt32 0 source destination 0 0 fun s copied =>
   if failed s = true then fatal else if copied = length then .done 0 copied else fatal
 

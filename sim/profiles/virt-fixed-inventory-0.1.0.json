@@ -1,0 +1,375 @@
+{
+  "binding": "lemmasim-virt/0.1.0",
+  "source_revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+  "basis": "hw/riscv/virt.c virt_memmap, hw/riscv/virt.h IRQ/layout, one-hart128MiB legacy CLINT/PLIC configuration",
+  "intervals": [
+    {
+      "name": "reset mask ROM",
+      "base": "0x1000",
+      "bytes": "0xf000"
+    },
+    {
+      "name": "SiFive finisher",
+      "base": "0x100000",
+      "bytes": "0x1000"
+    },
+    {
+      "name": "goldfish RTC",
+      "base": "0x101000",
+      "bytes": "0x1000",
+      "irqs": [
+        11
+      ]
+    },
+    {
+      "name": "CLINT",
+      "base": "0x2000000",
+      "bytes": "0x10000"
+    },
+    {
+      "name": "PCIe PIO",
+      "base": "0x3000000",
+      "bytes": "0x10000"
+    },
+    {
+      "name": "platform bus reservation",
+      "base": "0x4000000",
+      "bytes": "0x2000000",
+      "irqs": [
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95
+      ]
+    },
+    {
+      "name": "PLIC",
+      "base": "0xc000000",
+      "bytes": "0x600000"
+    },
+    {
+      "name": "16550 UART",
+      "base": "0x10000000",
+      "bytes": "0x100",
+      "irqs": [
+        10
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot0",
+      "base": "0x10001000",
+      "bytes": "0x1000",
+      "irqs": [
+        1
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot1",
+      "base": "0x10002000",
+      "bytes": "0x1000",
+      "irqs": [
+        2
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot2",
+      "base": "0x10003000",
+      "bytes": "0x1000",
+      "irqs": [
+        3
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot3",
+      "base": "0x10004000",
+      "bytes": "0x1000",
+      "irqs": [
+        4
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot4",
+      "base": "0x10005000",
+      "bytes": "0x1000",
+      "irqs": [
+        5
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot5",
+      "base": "0x10006000",
+      "bytes": "0x1000",
+      "irqs": [
+        6
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot6",
+      "base": "0x10007000",
+      "bytes": "0x1000",
+      "irqs": [
+        7
+      ]
+    },
+    {
+      "name": "VirtIO MMIO slot7",
+      "base": "0x10008000",
+      "bytes": "0x1000",
+      "irqs": [
+        8
+      ]
+    },
+    {
+      "name": "Lemma paper",
+      "base": "0x10010000",
+      "bytes": "0x1000",
+      "irqs": [
+        12
+      ]
+    },
+    {
+      "name": "Lemma pen",
+      "base": "0x10011000",
+      "bytes": "0x1000",
+      "irqs": [
+        13
+      ]
+    },
+    {
+      "name": "fw_cfg",
+      "base": "0x10100000",
+      "bytes": "0x18"
+    },
+    {
+      "name": "CFI flash bank0",
+      "base": "0x20000000",
+      "bytes": "0x2000000"
+    },
+    {
+      "name": "CFI flash bank1",
+      "base": "0x22000000",
+      "bytes": "0x2000000"
+    },
+    {
+      "name": "PCIe ECAM",
+      "base": "0x30000000",
+      "bytes": "0x10000000",
+      "irqs": [
+        32,
+        33,
+        34,
+        35
+      ]
+    },
+    {
+      "name": "PCIe low MMIO",
+      "base": "0x40000000",
+      "bytes": "0x40000000"
+    },
+    {
+      "name": "RAM",
+      "base": "0x80000000",
+      "bytes": "0x8000000"
+    },
+    {
+      "name": "PCIe high MMIO",
+      "base": "0x400000000",
+      "bytes": "0x400000000"
+    }
+  ],
+  "inactive_options": [
+    "ACLINT",
+    "APLIC-M/S",
+    "IMSIC-M/S",
+    "system IOMMU",
+    "PCI endpoints",
+    "network endpoints",
+    "pflash media"
+  ],
+  "reset_policy": "QEMU reset mask ROM and generated DTB are real boot artifacts; bios none skips external firmware only",
+  "rtc_policy": "Launch fixes -rtc base=2026-10-10T00:00:00,clock=vm; wall-clock RTC is not admitted for exact replay",
+  "random_policy": "No RNG device is attached. Inherited /chosen/rng-seed is 32 bytes, randomized at construction/reset via qemu_guest_getrandom_nofail; launch fixes -seed 0x4c454d4d413031 and QEMU record/replay records these bytes. CPU features are inventoried from generated riscv,isa/extension properties.",
+  "physical": "UNVERIFIED",
+  "cpu_inventory": {
+    "configuration": "rv64,smrnmi=false,smdbltrp=false; TCG; one hart",
+    "advertised_isa": "rv64imafdch_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zifencei_zihintntl_zihintpause_zihpm_zmmul_za64rs_zaamo_zalrsc_zawrs_zfa_zca_zcd_zba_zbb_zbc_zbs_sdtrig_shcounterenw_shgatpa_shtvala_shvsatpa_shvstvala_shvstvecd_ssccptr_sscounterenw_ssstrict_sstc_sstvala_sstvecd_ssu64xl_svadu_svvptc",
+    "advertised_mmu": "riscv,sv57",
+    "guest_supported_abi": "RV64IM integer LP64; M/S/U; Sv39 4KiB. Advertised F/D/H/compressed and wider translation modes are inherited CPU behavior, not a supported application ABI.",
+    "full_boolean_property_expansion": {
+      "ssdbltrp": false,
+      "zvkt": false,
+      "zvks": false,
+      "zvkn": false,
+      "zvkg": false,
+      "zvkb": false,
+      "zvfh": false,
+      "zvbc": false,
+      "zvbb": false,
+      "zicond": false,
+      "xmipscmov": false,
+      "zclsd": false,
+      "zcmop": false,
+      "zicbop": true,
+      "mmu": true,
+      "xtheadbs": false,
+      "xtheadbb": false,
+      "xtheadba": false,
+      "xtheadmemidx": false,
+      "svvptc": true,
+      "smstateen": false,
+      "zvksh": false,
+      "zvksg": false,
+      "zvksc": false,
+      "zvkng": false,
+      "zvknc": false,
+      "zfinx": false,
+      "zalrsc": false,
+      "zama16b": false,
+      "zvknhb": false,
+      "zfhmin": false,
+      "xventanacondops": false,
+      "zimop": false,
+      "zilsd": false,
+      "zihpm": true,
+      "zicsr": true,
+      "xtheadcondmov": false,
+      "zihintntl": true,
+      "svpbmt": false,
+      "zbs": true,
+      "zbc": true,
+      "zbb": true,
+      "zba": true,
+      "zicboz": true,
+      "ziccrse": true,
+      "zvfbfmin": false,
+      "xtheadmac": false,
+      "zbkx": false,
+      "zbkc": false,
+      "zbkb": false,
+      "zk": false,
+      "zve64x": false,
+      "zve32x": false,
+      "smepmp": false,
+      "zvfhmin": false,
+      "zfbfmin": false,
+      "zalasr": false,
+      "sdtrig": true,
+      "smcntrpmf": false,
+      "xtheadmempair": false,
+      "zkt": false,
+      "zks": false,
+      "zkr": false,
+      "zkn": false,
+      "smrnmi": false,
+      "zicfilp": false,
+      "smnpm": false,
+      "smmpm": false,
+      "smctr": false,
+      "smaia": false,
+      "zksh": false,
+      "zknh": false,
+      "zkne": false,
+      "zknd": false,
+      "zhinx": false,
+      "sscofpmf": false,
+      "zicfiss": false,
+      "sstc": true,
+      "sspm": false,
+      "zihintpause": true,
+      "xtheadcmo": false,
+      "zksed": false,
+      "svrsw60t59b": false,
+      "ssnpm": false,
+      "ssctr": false,
+      "ssaia": false,
+      "xtheadsync": false,
+      "zhinxmin": false,
+      "zifencei": true,
+      "svadu": true,
+      "svade": false,
+      "xtheadfmv": false,
+      "smpmpmt": false,
+      "ztso": false,
+      "zawrs": true,
+      "zacas": false,
+      "zabha": false,
+      "zaamo": false,
+      "svnapot": false,
+      "pmp": true,
+      "smcdeleg": false,
+      "ssccfg": false,
+      "xtheadfmemidx": false,
+      "zvknha": false,
+      "zvfbfa": false,
+      "zdinx": false,
+      "zicbom": true,
+      "rva23u64": false,
+      "rva22u64": false,
+      "smcsrind": false,
+      "zve64f": false,
+      "zve32f": false,
+      "xlrbr": false,
+      "svinval": false,
+      "supm": false,
+      "zicntr": true,
+      "zce": false,
+      "zcd": true,
+      "zcf": false,
+      "zcb": false,
+      "zca": true,
+      "smdbltrp": false,
+      "xmipscbop": false,
+      "zmmul": false,
+      "sscsrind": false,
+      "zvfbfwma": false,
+      "x-svukte": false,
+      "zfh": false,
+      "zfa": true,
+      "rva23s64": false,
+      "rva22s64": false,
+      "zcmt": false,
+      "zcmp": false,
+      "zvksed": false,
+      "zvkned": false,
+      "zve64d": false,
+      "xmipslsp": false
+    },
+    "csr_behavior_basis": {
+      "source_revision": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+      "source_sha256": {
+        "target/riscv/cpu.c": "47a2a33230a5597dfc75294601bae8994a1d00d34cbec6af88a7b01bc3ca7645",
+        "target/riscv/cpu_cfg.h": "9d8dfb2bf5053f6a10ddf8d9399f88479f10182c6409b40e29a14df4ab242080",
+        "target/riscv/tcg/csr.c": "631294ef82387021c1a40d2125b636b4097a9350a2bc50d299ff38d5aa856360"
+      },
+      "scope": "Exact pinned CPU/CSR implementation identity; no whole-CSR behavioral proof is claimed."
+    }
+  }
+}

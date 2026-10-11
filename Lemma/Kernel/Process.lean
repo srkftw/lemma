@@ -184,29 +184,40 @@ def userTrap (descriptor frame cause value pc status translation : UInt64) : Act
   else
     .bind (Lemma.Kernel.Console.record 0xdd cause value pc status) fun _ _ => fatal
 
-/-- The owned stack pair is checked independently of any supplied frame. -/
-def validateStack (descriptor : UInt64) : Action :=
-  .bind (AddressSpace.base descriptor) fun s base =>
+/-- Kernel-internal stack check using a descriptor base validated in this same
+single-hart S critical section. Handles, ownership, pins, adjacency, top and
+canaries are still checked. No address or validation result crosses a syscall. -/
+def validateStackAt (base : UInt64) : Action :=
+  .bind (Access.read64 (base + Lemma.Kernel.Loader.kernelStackPagesOffset)) fun s pages =>
   if failed s = true then fatal else
-  .bind (AddressSpace.owner descriptor) fun s owner =>
+  if pages = 4 then Lemma.Kernel.Loader.validateExpandedStackAt base else
+  if pages = 2 then
+  .bind (Access.read64 (base + 24)) fun s owner =>
   if failed s = true then fatal else
   .bind (Access.read64 (base + 2400)) fun s stackHandle =>
   if failed s = true then fatal else
   .bind (Frames.resolvePurpose owner stackHandle 1) fun s stackBase =>
   if failed s = true then fatal else
-  .bind (Frames.mappingCount owner stackHandle) fun s pins =>
+  .bind (Access.read64 (Frames.record ((stackBase - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
   if failed s = true then fatal else
   .bind (Access.read64 (base + 2480)) fun s secondHandle =>
   if failed s = true then fatal else
   .bind (Frames.resolvePurpose owner secondHandle 1) fun s secondBase =>
   if failed s = true then fatal else
-  .bind (Frames.mappingCount owner secondHandle) fun s secondPins =>
+  .bind (Access.read64 (Frames.record ((secondBase - Frames.pool) / Frames.bytes) + 16)) fun s secondPins =>
   if failed s = true then fatal else
   .bind (Access.read64 (base + 2408)) fun s top =>
   if failed s = true then fatal else
   if (if pins ||| secondPins = 0 then if secondBase = stackBase + Frames.bytes then
-    if top = stackBase + Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue then true
+    if top = stackBase + Lemma.Platform.LemmaVM.Layout.legacyKernelStackBytesValue then true
     else false else false else false) = true then .done 0 top else fatal
+  else fatal
+
+/-- The configured owned stack is checked independently of any supplied frame.
+Current boots construct four pages; explicit historical fixtures retain pairs. -/
+def validateStack (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else validateStackAt base
 
 /-- Validate the owned frame address before its first dereference. Origin is
 read from the hardware-saved SPP and SATP, not supplied by the UART client.
@@ -215,7 +226,9 @@ def validateFrame (frame : UInt64) : Action :=
   .bind (Access.read64 control) fun s descriptor =>
   if failed s = true then fatal else
   if descriptor = 0 then fatal else
-  .bind (validateStack descriptor) fun s top =>
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else
+  .bind (validateStackAt base) fun s top =>
   if failed s = true then fatal else
   if frame = top - 288 then
     .bind (Access.read64 (frame + 264)) fun s status =>
@@ -224,7 +237,7 @@ def validateFrame (frame : UInt64) : Action :=
       if (status >>> 32) &&& 3 = 2 then
         .bind (Access.read64 (frame + 272)) fun s translation =>
         if failed s = true then fatal else
-        .bind (AddressSpace.satp descriptor) fun s expected =>
+        .bind (Access.read64 (base + 72)) fun s expected =>
         if failed s = true then fatal else
         if translation = expected then .done 0 descriptor
         else fatal

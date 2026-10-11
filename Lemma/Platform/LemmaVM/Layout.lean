@@ -1,6 +1,7 @@
-/-! Authoritative Task 003 single-hart RV64 boot and owned-memory layout.
+/-! Authoritative single-hart RV64 boot and owned-memory layout.
 The frame pool is a reserved subset of the pinned 128 MiB RAM, not all RAM.
-No host-assigned task frames or page tables appear in this layout. -/
+No host-assigned task frames or page tables appear in this layout. Task004
+raises current owned kernel stacks; historical Task003 evidence remains 8KiB. -/
 namespace Lemma.Platform.LemmaVM.Layout
 
 def ramBase : Nat := 0x80000000
@@ -37,8 +38,9 @@ def frameBytesValue : UInt64 := 4096
 def frameCountValue : UInt64 := 512
 def frameBytes : Nat := frameBytesValue.toNat
 def frameCount : Nat := frameCountValue.toNat
-def taskKernelStackPagesValue : UInt64 := 2
-def taskKernelStackBytesValue : UInt64 := 8192
+def legacyKernelStackBytesValue : UInt64 := 8192
+def taskKernelStackPagesValue : UInt64 := 4
+def taskKernelStackBytesValue : UInt64 := 16384
 def taskKernelStackPages : Nat := taskKernelStackPagesValue.toNat
 def taskKernelStackBytes : Nat := taskKernelStackBytesValue.toNat
 def userTextBase : Nat := 0x10000
@@ -72,7 +74,7 @@ def intervals : Array Interval := #[
 
 def valid : Bool :=
   poolLimit - poolBase == frameCount * frameBytes &&
-  taskKernelStackPages == 2 && taskKernelStackBytes == taskKernelStackPages * frameBytes &&
+  taskKernelStackPages == 4 && taskKernelStackBytes == taskKernelStackPages * frameBytes &&
   contextBytes < taskKernelStackBytes &&
   supervisorStackBase ≤ kernelResumeContext && kernelResumeContext % 16 == 0 &&
   contextBytes == 288 && contextBytes % 16 == 0 &&

@@ -168,7 +168,8 @@ class Trace:
                     or any(task["root"] == d for id, task in self.tasks.items() if id in self.live())):
                 raise Core0Error("creation lacks a fresh generation ID, distinct owned root or requested image/nonce")
             key = self.keys[b]
-            pages = 17 + (self.images[key]["text_bytes"] + 4095) // 4096
+            #11 tables+1 data+2 User stack+4 kernel stack+1 descriptor.
+            pages = 19 + (self.images[key]["text_bytes"] + 4095) // 4096
             self.remaining -= pages
             if self.remaining < 0:
                 raise Core0Error("task construction exceeded observed physical capacity")

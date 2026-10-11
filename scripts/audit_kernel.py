@@ -149,6 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
+MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1", "lemmasim-isolation-development": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
                              "service-normal":SERVICE_USER_IMAGES,"service-development":SERVICE_DEVELOPMENT_USER_IMAGES}
@@ -156,6 +157,28 @@ MULTI_USER_CONFIGURATIONS.update({configuration: (*SERVICE_USER_IMAGES, {
     "key": "fault", "id": 5, "module": "Lemma.User.Entry", "source": "Lemma.User.Entry.main", "args": ["u64"],
     "symbol_prefix": "lemma_user_fault_", "startup_case": case, "directory": "users/fault", "boot_role": "buffer-fault-client"})
     for configuration, case in SERVICE_INSTRUCTION_CONFIGURATIONS.items()})
+
+
+NOTEBOOK_USER_IMAGES = tuple({"key": key, "id": index, "module": module, "source": module + ".main", "args": ["u64"],
+                              "symbol_prefix": "lemma_user_" + key + "_", "startup_case": "none", "directory": "users/" + key,
+                              "boot_role": role}
+                             for index, (key, module, role) in enumerate((("store", "Lemma.Services.Store.Server", "store-server"),
+                                 ("notebook", "Lemma.Applications.Notebook", "notebook")), 1))
+NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3,
+    "module": "Lemma.User.Development.NotebookIsolation", "source": "Lemma.User.Development.NotebookIsolation.main",
+    "args": ["u64"], "symbol_prefix": "lemma_user_isolation_", "startup_case": "none",
+    "directory": "users/isolation", "boot_role": "notebook-isolation-client"})
+MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES,
+                                 "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+
+
+def optimizer_intrinsics(unit: dict) -> set[str]:
+    # LLVM's saturating unsigned subtraction and funnel shift lower to ordinary
+    # RV64 integer code, with no foreign runtime boundary. Only the new profile's
+    # genuine store/notebook consumer authorizes these observed optimizations.
+    return OPTIMIZER_INTRINSICS | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -362,6 +385,52 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
 
 
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
+    if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
+        # The selected audit checks the genuinely elaborated construction,
+        # registry, validation and cleanup closure for this larger profile.
+        from audit_lemmasim_capacity import construction
+        report = construction(unit, pre_ir)
+        if (layout["task_kernel_stack_pages"], layout["task_kernel_stack_bytes"]) != (4, 16384):
+            raise Core0Error("expanded stack source/layout contract differs")
+        return report
+    if layout.get('task_kernel_stack_pages') == 4:
+        from audit_lemmasim_capacity import construction
+        report=construction(unit,pre_ir,expanded=False)
+        if layout.get('task_kernel_stack_bytes')!=16384:
+            raise Core0Error('current four-page owned stack layout differs')
+        names=report['source_symbols']
+        all_names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+        p='Lemma.Kernel.'
+        entry={'tasks-development':p+'Development.TasksEntry.dispatch',
+               'tasks-fault-development':p+'Development.FaultEntry.dispatch',
+               'capabilities-development':p+'Development.CapsEntry.dispatch',
+               'ipc-development':p+'Development.IPCEntry.dispatch',
+               'service-normal':p+'ServiceEntry.dispatch','service-development':p+'Development.ServiceEntry.dispatch'}
+        entry.update({cfg:p+'Development.ServiceEntry.dispatch' for cfg in SERVICE_INSTRUCTION_CONFIGURATIONS})
+        dispatch=entry.get(unit.get('configuration'))
+        edges=({dispatch:[p+'Scheduler.dispatch'],p+'Scheduler.dispatch':[p+'Task.capture'],
+                p+'Task.capture':[p+'Process.validateFrame'],p+'Task.context':[p+'Process.validateStackAt']}
+               if dispatch else {p+'Process.dispatch':[p+'Process.validateFrame']})
+        edges[p+'Process.validateFrame']=[p+'Process.validateStackAt']
+        required=set(edges)|{callee for callees in edges.values() for callee in callees}
+        required|={p+'BootServices.bootServices',p+'Memory.Frames.configure',p+'Memory.Frames.init'}
+        if not required<=all_names.keys(): raise Core0Error('four-page stack lacks its checked trap dispatch closure')
+        for caller,callees in edges.items():
+            if not {all_names[callee] for callee in callees}<=parse_definitions_and_calls(_ir_definition_body(pre_ir,all_names[caller]))[2]:
+                raise Core0Error('four-page stack omits a checked trap validation edge')
+        boot=_ir_definition_body(pre_ir,all_names[p+'BootServices.bootServices'])
+        configurations=re.findall(r'call \{ i64, i64 \} @'+re.escape(all_names[p+'Memory.Frames.configure'])+r'\(([^\n]*)\)',boot)
+        if configurations!=['i64 512, i64 32, i64 4']:
+            raise Core0Error('ordinary current boot does not select its actual four-page owned stack')
+        validate_checked_call_gate(boot,all_names[p+'Memory.Frames.configure'],all_names[p+'Memory.Frames.init'])
+        sources={**names,**{name:all_names[name] for name in required}}
+        return {'pages':4,'bytes':16384,'usable_bytes':16352,'sentinel_bytes':32,
+                'construction':'owned-physically-contiguous-four','sentinels_are_hardware_guards':False,
+                'first_handle_offset':2400,'second_handle_offset':2480,
+                'third_handle_offset':2488,'fourth_handle_offset':2496,'pages_offset':2504,'base_offset':2512,
+                **({'base_owned_task_frames':18,'base_global_task_frames':19}
+                   if unit.get('configuration') in SERVICE_CONFIGURATIONS else {'base_owned_task_frames':19}),
+                'source_functions':sources}
     """Bind the capacity to genuine reachable construction and cleanup code."""
     by_source = {}
     for row in unit["functions"]:
@@ -542,6 +611,82 @@ def validate_failed_call_gate(body: str, checked: str, protected: str, failed: s
         validate_call_precedes(body,checked,protected)
     return {"checked":checked,"protected":protected,"failure_helper":failed,
             "component":"status","equals":0,"gate":gate}
+
+
+def validate_fresh_descriptor_base_call(body: str, checked: str, protected: str,
+                                        failed: str | None = None, failed_body: str | None = None) -> dict:
+    """Bind a closed stack-helper call to this call's fresh descriptor result.
+
+    This is deliberately restricted to one UInt64 base argument, not a generic
+    unchecked-helper allowance. Status success must dominate every helper site.
+    """
+    variable=r'%[A-Za-z0-9_.$-]+'
+    results=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(checked)+r'\([^\n]*\)',body)
+    if len(results)!=1:
+        raise Core0Error('stack helper lacks one fresh descriptor validation')
+    values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(results[0])+r', 1$',body,re.M)
+    arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(protected)+r'\(i64 ('+variable+r'|[0-9]+)\)',body)
+    if len(values)!=1 or not arguments or any(argument!=values[0] for argument in arguments):
+        raise Core0Error('stack helper does not receive the exact fresh descriptor base')
+    if failed is None:
+        gate=validate_checked_call_gate(body,checked,protected)
+    else:
+        if failed_body is None: raise Core0Error('stack helper lacks its closed status predicate')
+        gate=validate_failed_call_gate(body,checked,protected,failed,failed_body)
+    return {'validated_base':values[0],**gate}
+
+
+def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
+    """Closed kernel-only helper inventory for within-call stack validation."""
+    names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+    p='Lemma.Kernel.'
+    base=p+'Memory.AddressSpace.base'
+    process=p+'Process.validateStackAt';loader=p+'Loader.validateExpandedStackAt'
+    allowed={process:{p+'Process.validateStack',p+'Process.validateFrame',p+'Task.context',p+'Task.savedContext'},
+             loader:{p+'Loader.validateExpandedStack',process}}
+    required={base,process,loader,p+'Process.failed'}
+    required|={p+'Memory.Access.read64',p+'Loader.kernelStackPagesOffset'}
+    if not required<=names.keys(): raise Core0Error('fresh stack helper closure is missing')
+    if unit.get('role')!='kernel': raise Core0Error('stack helper requires the kernel role')
+    by_source={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    for helper in (process,loader):
+        if by_source[helper].get('args')!=['u64'] or set(by_source[helper].get('effects',[]))!={'checked-access','physical-read'}:
+            raise Core0Error('stack helper signature differs from its single checked base')
+        if not re.search(r'^define \{ i64, i64 \} @'+re.escape(names[helper])+r'\(i64 %arg0\) nounwind noinline "disable-tail-calls"="true" \{',pre_ir,re.M):
+            raise Core0Error('stack helper emitted signature is not one checked base')
+    callers={helper:set() for helper in allowed};gates=[]
+    for source,symbol in names.items():
+        body=_ir_definition_body(pre_ir,symbol)
+        called=parse_definitions_and_calls(body)[2]
+        for helper in allowed:
+            if names[helper] not in called: continue
+            if source not in allowed[helper]: raise Core0Error('stack helper has an unapproved caller')
+            callers[helper].add(source)
+            if source==process and helper==loader:
+                arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(names[loader])+r'\(([^\n]*)\)',body)
+                if arguments!=['i64 %arg0']: raise Core0Error('expanded stack helper lost the current validated base')
+                # Only the exact four-page branch may enter the four-page helper.
+                comparisons=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 (%[A-Za-z0-9_.$-]+), 4$',body,re.M)
+                if len(comparisons)!=1: raise Core0Error('expanded stack helper lacks its exact page-count branch')
+                variable=r'%[A-Za-z0-9_.$-]+'
+                offsets=re.findall(r'('+variable+r') = call i64 @'+re.escape(names[p+'Loader.kernelStackPagesOffset'])+r'\(\)',body)
+                address=re.findall(r'('+variable+r') = add i64 %arg0, '+re.escape(offsets[0] if len(offsets)==1 else '<missing>')+r'$',body,re.M)
+                reads=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(names[p+'Memory.Access.read64'])+r'\(i64 '+re.escape(address[0] if len(address)==1 else '<missing>')+r'\)',body)
+                values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(reads[0] if len(reads)==1 else '<missing>')+r', 1$',body,re.M)
+                if len(values)!=1 or values[0]!=comparisons[0][1]:
+                    raise Core0Error('expanded stack helper page branch is not the actual descriptor field')
+                if re.fullmatch(r'\s*entry:\s*ret i64 2504\s*',_ir_definition_body(pre_ir,names[p+'Loader.kernelStackPagesOffset'])) is None:
+                    raise Core0Error('expanded stack helper page field moved')
+                gates.append({'source':source,**validate_boolean_gate(body,comparisons[0][0],names[loader])})
+            else:
+                failed=None if source==p+'Loader.validateExpandedStack' else p+('Task.failed' if source.startswith(p+'Task.') else 'Process.failed')
+                if failed is not None and failed not in names: raise Core0Error('fresh stack caller lacks its failure predicate')
+                gates.append({'source':source,**validate_fresh_descriptor_base_call(body,names[base],names[helper],
+                    None if failed is None else names[failed],None if failed is None else _ir_definition_body(pre_ir,names[failed]))})
+    if not callers[process] or callers[loader]!={process} and callers[loader]!={process,p+'Loader.validateExpandedStack'}:
+        raise Core0Error('fresh stack helper has no complete validated entry route')
+    return {'scope':'closed kernel stack helpers; fresh base shared only within a single call',
+            'callers':{helper:sorted(values) for helper,values in callers.items()},'gates':gates}
 
 
 def validate_boolean_gate(body: str, comparison: str, protected: str, *, success_when_true: bool = True,
@@ -999,6 +1144,120 @@ def validate_ipc_write_inventory(body: str, write: str, constants: dict[str,int]
     return {"writes":[{"address":a,"value":b} for a,b in observed],"successful_write_gates":gates}
 
 
+def validate_current_ipc_saved_context(body: str, names: dict[str, str],
+                                       constants: dict[str, int], failed_body: str) -> dict:
+    """Exact four-page blocked context reads from one freshly checked base.
+
+    Internal names below only distinguish existing checked read sites for CFG
+    inspection; they never add a machine primitive or an unchecked target call.
+    """
+    p='Lemma.Kernel.';t=p+'Task.';a=p+'Memory.AddressSpace.'
+    read=names[p+'Memory.Access.read64'];base=names[a+'base']
+    lookup=names[t+'lookup'];stack=names[p+'Process.validateStackAt'];failed=names[t+'failed']
+    variable=r'%[A-Za-z0-9_.$-]+'
+    def result(symbol):
+        calls=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(symbol)+r'\(([^\n]*)\)',body)
+        if len(calls)!=1: raise Core0Error('current IPC context lacks one exact checked call')
+        values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0][0])+r', 1$',body,re.M)
+        if len(values)!=1: raise Core0Error('current IPC context lost its checked value')
+        return calls[0],values[0]
+    lookup_call,record=result(lookup);base_call,address=result(base);stack_call,top=result(stack)
+    if lookup_call[1]!='i64 %arg0' or base_call[1]!='i64 %arg0' or stack_call[1]!='i64 '+address:
+        raise Core0Error('current IPC context changed descriptor or exact fresh helper base')
+    saved=('add',address,2048);scalars=_ipc_scalar_operands(body,constants)
+    expected=[('add',record,8),('add',address,64),0x80400600,('add',address,72),
+              ('add',saved,272),saved,('add',saved,264),('add',saved,280)]
+    reads=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(read)+r'\(i64 ([^\n)]+)\)',body)
+    actual=[scalars.get(operand,int(operand) if operand.isdecimal() else operand) for _,operand in reads]
+    if actual!=expected: raise Core0Error('current IPC context read addresses/order differ')
+    aliases=[];values=[];bound=body
+    for index,(call,operand) in enumerate(reads):
+        alias='ipc_saved_context_read_'+str(index);aliases.append(alias)
+        bound=bound.replace(call+' = call { i64, i64 } @'+read+'(',call+' = call { i64, i64 } @'+alias+'(')
+        extracted=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(call)+r', 1$',body,re.M)
+        if len(extracted)!=1: raise Core0Error('current IPC context lost an exact read value')
+        values.append(extracted[0])
+    allowed={lookup,base,stack,read,failed,names[t+'fatal'],names[t+'stateOffset'],
+             names[t+'blocked'],names[a+'activeRoot'],names[a+'userContextOffset']}
+    if parse_definitions_and_calls(body)[2]-allowed:
+        raise Core0Error('current IPC saved context has an unexpected call or mutation')
+    status_gates=[]
+    for before,after in [(lookup,aliases[0]),(aliases[0],base),(base,aliases[1]),
+                         (aliases[1],aliases[2]),(aliases[2],aliases[3]),
+                         (aliases[3],aliases[4]),(aliases[4],aliases[5]),
+                         (aliases[5],aliases[6]),(aliases[6],stack),(stack,aliases[7])]:
+        status_gates.append(validate_failed_call_gate(bound,before,after,failed,failed_body))
+    fresh=validate_fresh_descriptor_base_call(body,base,stack,failed,failed_body)
+    fields=[validate_ipc_read_guard(bound,aliases[0],constants,expected[0],5,base)]
+    for protected in (*aliases[3:],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[2],constants,expected[2],values[1],protected,equal=False))
+    for protected in (*aliases[5:],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[4],constants,expected[4],values[3],protected))
+    for protected in (aliases[6],aliases[7],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[5],constants,saved,0,protected))
+    for protected in (aliases[7],stack):
+        fields.append(validate_ipc_read_guard(bound,aliases[6],constants,expected[6],0x200000020,protected))
+    # Pin the sole successful return diamond to storedTop=validatedTop. All
+    # other source branches use the independently pinned Task.fatal result.
+    blocks=_structured_ir_blocks(bound);successors=_structured_successors(blocks)
+    comparisons=re.findall(r'('+variable+r') = icmp eq i64 '+re.escape(values[7])+r', '+re.escape(top)+r'$',bound,re.M)
+    branches=[label for label,lines in blocks.items() if len(comparisons)==1 and
+              lines[-1].startswith('br i1 '+comparisons[0]+', ')]
+    if len(branches)!=1: raise Core0Error('current IPC context lost its stored trap-stack top check')
+    success,failure=successors[branches[0]];lines=blocks[success]
+    if len(lines)!=3 or not re.fullmatch(variable+r' = call i64 @'+re.escape(names[a+'userContextOffset'])+r'\(\)',lines[0]):
+        raise Core0Error('current IPC context successful return invokes unexpected code')
+    offset=lines[0].split(' = ',1)[0];pointer=re.fullmatch('('+variable+r') = add i64 '+re.escape(address)+r', '+re.escape(offset),lines[1])
+    if pointer is None or len(successors[success])!=1 or _structured_reachable(successors,failure,success):
+        raise Core0Error('current IPC context successful pointer is not the fresh context base')
+    merge=successors[success][0];out=blocks[merge]
+    denied=blocks[failure]
+    failure_call=re.fullmatch('('+variable+r') = call \{ i64, i64 \} @'+re.escape(names[t+'fatal'])+r'\(\)',denied[0]) if len(denied)==5 else None
+    if failure_call is None or successors[failure]!=(merge,):
+        raise Core0Error('current IPC top mismatch does not take its exact fatal return')
+    failure_word=re.fullmatch('('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(failure_call[1])+r', 0',denied[1])
+    failure_status=re.fullmatch('('+variable+r') = trunc i64 '+re.escape(failure_word[1] if failure_word else '<missing>')+r' to i8',denied[2])
+    failure_value=re.fullmatch('('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(failure_call[1])+r', 1',denied[3])
+    if failure_status is None or failure_value is None or len(out)!=3 or not re.fullmatch(variable+r' = phi i8 \[ 0, %'+re.escape(success)+r' \], \[ '+re.escape(failure_status[1])+r', %'+re.escape(failure)+r' \]',out[0]) or not re.fullmatch(variable+r' = phi i64 \[ '+re.escape(pointer[1])+r', %'+re.escape(success)+r' \], \[ '+re.escape(failure_value[1])+r', %'+re.escape(failure)+r' \]',out[1]):
+        raise Core0Error('current IPC context does not publish the exact checked pointer/status0')
+    if len(re.findall(r'\[ 0, %[A-Za-z0-9_.$-]+ \]', '\n'.join(line for line in body.splitlines() if ' = phi i8 ' in line)))!=1 or len(re.findall(r'^\s*ret \{ i64, i64 \}',body,re.M))!=1:
+        raise Core0Error('current IPC context has another successful return route')
+    # Carry this checked pair unchanged through the generated Action merge
+    # chain. A valid context computed above cannot be replaced at the final
+    # aggregate return, and an error must not be converted to a success there.
+    status=out[0].split(' = ',1)[0];value=out[1].split(' = ',1)[0]
+    predecessor=merge;visited={merge}
+    while len(successors[predecessor])==1:
+        following=successors[predecessor][0]
+        if following in visited: raise Core0Error('current IPC return merge chain is cyclic')
+        visited.add(following);tail=blocks[following]
+        if tail[0].find(' = phi i8 ')!=-1:
+            if len(tail)<3 or tail[1].find(' = phi i64 ')==-1:
+                raise Core0Error('current IPC return pair has a malformed merge')
+            if len(re.findall(r'\[ '+re.escape(status)+r', %'+re.escape(predecessor)+r' \]',tail[0]))!=1 or len(re.findall(r'\[ '+re.escape(value)+r', %'+re.escape(predecessor)+r' \]',tail[1]))!=1:
+                raise Core0Error('current IPC return merge changes the checked status/pointer')
+            status=tail[0].split(' = ',1)[0];value=tail[1].split(' = ',1)[0];tail=tail[2:]
+        if len(tail)==1 and len(successors[following])==1:
+            predecessor=following
+            continue
+        if len(tail)!=4:
+            raise Core0Error('current IPC checked context does not reach its exact aggregate return')
+        wide=re.fullmatch('('+variable+r') = zext i8 '+re.escape(status)+r' to i64',tail[0])
+        partial=re.fullmatch('('+variable+r') = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(wide[1] if wide else '<missing>')+r', 0',tail[1])
+        complete=re.fullmatch('('+variable+r') = insertvalue \{ i64, i64 \} '+re.escape(partial[1] if partial else '<missing>')+r', i64 '+re.escape(value)+r', 1',tail[2])
+        if complete is None or tail[3]!='ret { i64, i64 } '+complete[1] or successors[following]:
+            raise Core0Error('current IPC aggregate return changes the checked status/pointer')
+        break
+    else:
+        raise Core0Error('current IPC checked pair lacks one aggregate return route')
+    returned=bound.replace(lines[0],lines[0].replace('@'+names[a+'userContextOffset']+'(', '@ipc_saved_context_success('))
+    fields.append(validate_ipc_read_guard(returned,aliases[7],constants,expected[7],top,'ipc_saved_context_success'))
+    status_gates.append(validate_failed_call_gate(returned,aliases[7],'ipc_saved_context_success',failed,failed_body))
+    return {'descriptor_base':address,'context_offset':2048,'read_addresses':actual,
+            'fresh_descriptor_gate':fresh,'checked_read_gates':status_gates,'loaded_field_gates':fields,
+            'success_block':success,'saved_pointer':pointer[1],'scope':'exact current four-page blocked context; no cross-call cache'}
+
+
 def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     """Bind the selected IPC policy to its genuine source/CFG/storage closure.
 
@@ -1014,6 +1273,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     a="Lemma.Kernel.Memory.AddressSpace.";f="Lemma.Kernel.Memory.Frames.";u="Lemma.Kernel.Memory.UserCopy."
     y="Lemma.Kernel.Syscall.";q="Lemma.Kernel.Scheduler.";p="Lemma.Kernel.Process."
     b="Lemma.User.IPCABI.";v="Lemma.User.CapabilityABI.";x="Lemma.Kernel.Memory.Access."
+    current_context=p+'validateStackAt' in by_source
     edges={
       e+"boot":[e+"launch",t+"init",o+"init",p+"init"],e+"dispatch":[q+"dispatch"],
       e+"launch":["Lemma.Kernel.Development.TasksEntry.readLaunchWithFourth",t+"prepareManaged",e+"configure"],
@@ -1113,7 +1373,13 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     if service:
         edges={caller:callees for caller,callees in edges.items() if not caller.startswith(e)}
         constants={source:value for source,value in constants.items() if not source.startswith(e)}
+    if current_context:
+        edges[t+'savedContext']=[t+'lookup',a+'base',x+'read64',p+'validateStackAt']
+        constants[a+'userContextOffset']=2048
+        constants['Lemma.Platform.LemmaVM.Layout.taskKernelStackBytesValue']=16384
     required=set(constants)|set(edges)|{value for values in edges.values() for value in values}
+    if current_context:
+        required |= {t+'fatal',t+'failed'}
     if not required<=set(by_source):
         raise Core0Error("IPC genuine lifecycle closure missing: "+str(sorted(required-set(by_source))))
     bodies={source:_ir_definition_body(pre_ir,by_source[source]) for source in required}
@@ -1237,10 +1503,20 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         field_gates.append({'source':t+'block',**validate_ipc_read_guard(blocked,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
     for address,expected in [(('add','%arg0',8),5),(('add','%arg0',128),'%arg2'),(('add','%arg0',136),'%arg3'),('%arg0','%arg1')]:
         field_gates.append({'source':t+'completeBlocked',**validate_ipc_read_guard(wake,by_source[x+'read64'],constant_symbols,address,expected,by_source[x+'write64'])})
-    saved=bodies[t+'savedContext'];saved_context=result(saved,a+'context');translation=result(saved,a+'satp')
-    for address,expected in [(('add',saved_context,272),translation),(saved_context,0),(('add',saved_context,264),0x200000020)]:
-        field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,address,expected,by_source[p+'validateStack'])})
-    field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,0x80400600,result(saved,a+'root'),by_source[a+'context'],equal=False)})
+    saved=bodies[t+'savedContext'];fresh_context=None
+    if current_context:
+        helpers=validate_fresh_descriptor_helpers(unit,pre_ir)
+        fatal=_ir_definition_body(pre_ir,by_source[t+'fatal'])
+        if re.fullmatch(r'\s*entry:\s*(%[A-Za-z0-9_.$-]+) = zext i8 50 to i64\s*(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} poison, i64 \1, 0\s*(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} \2, i64 0, 1\s*ret \{ i64, i64 \} \3\s*',fatal) is None:
+            raise Core0Error('current IPC context failure does not return fatal50/value0')
+        fresh_context=validate_current_ipc_saved_context(saved,by_source,constant_symbols,_ir_definition_body(pre_ir,by_source[t+'failed']))
+        fresh_context['closed_stack_helpers']=helpers
+        field_gates.extend({'source':t+'savedContext',**gate} for gate in fresh_context['loaded_field_gates'])
+    else:
+        saved_context=result(saved,a+'context');translation=result(saved,a+'satp')
+        for address,expected in [(('add',saved_context,272),translation),(saved_context,0),(('add',saved_context,264),0x200000020)]:
+            field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,address,expected,by_source[p+'validateStack'])})
+        field_gates.append({'source':t+'savedContext',**validate_ipc_read_guard(saved,by_source[x+'read64'],constant_symbols,0x80400600,result(saved,a+'root'),by_source[a+'context'],equal=False)})
     wake_status=result(wake,i+'completeWait',0)
     wake_narrow=re.findall(r'('+variable+r') = trunc i64 '+re.escape(wake_status)+r' to i8$',wake,re.M)
     if len(wake_narrow)!=1:raise Core0Error('IPC wakeup lacks returned checked status')
@@ -1289,6 +1565,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
     return {'managed_policy':BUFFER_POLICY if service else IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
+      **({'current_saved_context':fresh_context} if fresh_context else {}),
       'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
       'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
 
@@ -1779,12 +2056,12 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
        'bounded_folds':folds,'legacy_input_mode_gate':legacy_control,'raw_console_mode_gate':raw_mode,
        'binding_publication':publication_inventory,'binding_withdrawal':withdrawal_inventory,'initial_grants':grants,
        'input':{'control':0x80400660,'ring_offset':128,'ring_bytes':512,'pending_offset':640,'pending_bytes':168,'scratch_offset':832,'diagnostic_offset':1088,'diagnostic_bytes':40,'poll_budget':64},
-       'owned_page_budget':{'base_owned_task_frames':16,'base_global_task_frames':17,'server_reserved_arena_pages':4,'owner_quota':32,'server_max_text_pages':12},
+       'owned_page_budget':{'base_owned_task_frames':18,'base_global_task_frames':19,'server_reserved_arena_pages':4,'owner_quota':32,'server_max_text_pages':10},
        'limitations':['Necessary genuine source/CFG/byte binding; independent service/reference tests, model proofs and physical execution remain separate.']}
 
 
 def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
-                           assembly: str, *, object_file: str) -> dict:
+                           assembly: str, *, object_file: str, configuration: str = "normal") -> dict:
     """Account for the sole declarative initializer emitted by Lean startup.
 
     Compiled unit globals remain forbidden. This admits only the named input
@@ -1792,7 +2069,9 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
     writable data or additional target object symbols.
     """
     multi_file = re.fullmatch(r"users/(compute|sleeper|busy|fault|capabilities|peer|tamper|server|clienta|clientb|cli)/(startup\.o|image\.elf)", object_file)
-    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None:
+    sim_file = (configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and
+                re.fullmatch(r"users/(store|notebook|isolation)/(startup\.o|image\.elf)", object_file) is not None)
+    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
     section, address, alignment = (".data", 0x20000, 4096) if linked else (".data.user_abi", 0, 8)
@@ -1866,7 +2145,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
-            or unit.get("role") != role or unit.get("contract_version") != CONTRACTS[role]):
+            or unit.get("role") != role or unit.get("contract_version") !=
+                ("core0-kernel-v0.3" if role == "kernel" and configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -1923,10 +2203,17 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         _keys(row, {"stable_id", "source_identity", "primitive_symbol", "arguments", "returnkind"}, "execution operation")
         identity = row.get("source_identity")
         suffix = identity.rsplit(".", 1)[-1] if isinstance(identity, str) else ""
-        if suffix not in EXECUTION_OPERATIONS or identity != "Lemma.Core0.Execution.Op." + suffix:
+        sim_operations = {
+            "deviceRead32": ("device-read32", None, 0, "word", {"kernel"}),
+            "deviceWrite32": ("device-write32", None, 0, "word", {"kernel"}),
+            "deviceRead64": ("device-read64", None, 0, "word", {"kernel"}),
+            "deviceWrite64": ("device-write64", None, 0, "word", {"kernel"}),
+        } if configuration in LEMMASIM_CONFIGURATIONS else {}
+        operations = {**EXECUTION_OPERATIONS, **sim_operations}
+        if suffix not in operations or identity != "Lemma.Core0.Execution.Op." + suffix:
             raise Core0Error("unknown execution operation identity")
-        stable, primitive, argc, result, roles = EXECUTION_OPERATIONS[suffix]
-        if (role not in roles or row.get("stable_id") != "execution." + stable or row.get("primitive_symbol") != primitive
+        stable, primitive, argc, result, roles = operations[suffix]
+        if (role not in roles or row.get("stable_id") != ("lemmasim." if suffix in sim_operations else "execution.") + stable or row.get("primitive_symbol") != primitive
                 or row.get("arguments") != ["u64"] * argc or row.get("returnkind") != result or suffix in seen):
             raise Core0Error(f"execution operation contract/privilege differs: {suffix}")
         seen.add(suffix)
@@ -1952,7 +2239,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] == "core0-kernel-v0.2":
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -1991,23 +2278,29 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     image = image_spec(configuration, image_key) if image_key is not None else None
     expected_managed = managed_fields(configuration, image)
     _keys(layout, {"schema_version", "contract_version", "configuration", "startup_case", "user_startup_case", "ram_base", "ram_limit",
-                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"} | set(expected_managed), "layout")
+                   "frame_bytes", "frame_count", "task_kernel_stack_pages", "task_kernel_stack_bytes", "context", "intervals", "user"} | set(expected_managed)
+          | ({"boot_clear"} if configuration in LEMMASIM_CONFIGURATIONS else set()), "layout")
     if any(layout.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("layout managed policy/boot role differs")
     selected_case = image_spec(configuration, image_key)["startup_case"] if image_key is not None else user_startup_case(configuration)
-    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v1" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
+    if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v2" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
-    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 512):
+    expanded = configuration in LEMMASIM_CONFIGURATIONS
+    if expanded and layout.get('boot_clear') != {
+            'contract_version': 'lemma-boot-clear-v1', 'base': 0x80400000,
+            'limit': 0x80500000, 'stride_bytes': 8, 'phase': 'M-startup-before-boot-handoff'}:
+        raise Core0Error('Lemmasim boot metadata clear interval differs')
+    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 8192 if expanded else 512):
         raise Core0Error("pinned RAM/frame contract differs")
     if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
-            or layout["task_kernel_stack_pages"] != 2 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
-        raise Core0Error("owned two-page kernel stack construction contract differs")
+            or layout["task_kernel_stack_pages"] != 4 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
+        raise Core0Error("owned kernel stack construction contract differs")
     if layout.get("context") != CONTEXT_LAYOUT:
         raise Core0Error("fixed supervisor context/stack contract differs")
     expected = {"firmware": (0x80000000, 0x80010000), "firmware-private": (0x80100000, 0x80110000),
                 "supervisor": (0x80200000, 0x80300000), "metadata": (0x80400000, 0x80500000),
                 "supervisor-stack": (0x80500000, 0x80510000), "boot-package": (0x80600000, 0x80700000),
-                "frame-pool": (0x82000000, 0x82200000), "dtb-reserve": (0x87e00000, 0x88000000)}
+                "frame-pool": (0x82000000, 0x84000000 if expanded else 0x82200000), "dtb-reserve": (0x87e00000, 0x88000000)}
     rows = _array(layout.get("intervals"), "layout intervals")
     observed = {}
     for raw in rows:
@@ -2019,10 +2312,64 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     if observed != expected:
         raise Core0Error("authoritative reserved-region contract differs")
     user = _object(layout.get("user"), "user layout")
-    if user != {"text_base": 0x10000, "text_limit": 0x1f000, "data_base": 0x20000, "data_bytes": 4096,
-                "stack_base": 0x3fffc000, "stack_pages": 2}:
+    if user != {"text_base": 0x1000000 if expanded else 0x10000, "text_limit": 0x1080000 if expanded else 0x1f000, "data_base": 0x20000, "data_bytes": 4096,
+                "stack_base": 0x3fffa000 if expanded else 0x3fffc000, "stack_pages": 4 if expanded else 2}:
         raise Core0Error("user virtual layout differs")
     return layout
+
+
+def validate_boot_metadata_clear(layout: dict, addresses: dict, segments: list[dict],
+                                 raw_machine: str, ranges: dict) -> dict:
+    """Independently bind reset initialization to actual ELF and instructions.
+
+    This checks the selected fixed startup loop; it is not a whole-program boot
+    proof. Historical profiles retain128B. LemmaSim clears its full reserved
+    metadata before writing the hart/DTB handoff on every CPU boot.
+    """
+    base = 0x80400000
+    limit = 0x80500000 if layout['configuration'] in LEMMASIM_CONFIGURATIONS else 0x80400080
+    expected = {'__bss_start': base, '__bss_end': limit,
+                '__boot_hartid': base, '__boot_dtb': base + 8}
+    if any(type(addresses.get(key)) is not int or addresses.get(key) != value
+           for key, value in expected.items()):
+        raise Core0Error('boot metadata/BSS linked symbols differ')
+    storage = [segment for segment in segments if segment['virtual_address'] < 0x80500000
+               and base < segment['virtual_address'] + segment['memory_size']]
+    if storage != [{'virtual_address': base, 'physical_address': base,
+                    'file_size': 0, 'memory_size': limit - base, 'flags': 'RW'}]:
+        raise Core0Error('boot metadata NOLOAD PT_LOAD interval differs')
+    start, size = ranges.get('_start', (None, None))
+    if type(start) is not int or type(size) is not int or start != 0x80000000 or size <= 0:
+        raise Core0Error('boot metadata clear lacks actual startup range')
+    rows = {}
+    for line in raw_machine.splitlines():
+        match = re.match(r'\s*([0-9a-f]+):\s+([0-9a-f]{8})\s', line)
+        if match and start <= int(match[1], 16) < start + size:
+            pc, word = int(match[1], 16), int(match[2], 16)
+            if pc in rows:
+                raise Core0Error('duplicated boot instruction address')
+            rows[pc] = word
+    def signed(value, bits):
+        return value - (1 << bits) if value & (1 << (bits - 1)) else value
+    def pcrel(pc, register):
+        hi, lo = rows.get(pc, 0), rows.get(pc + 4, 0)
+        if hi & 0xfff != (register << 7) | 0x17 or lo & 0xfffff != (register << 15) | (register << 7) | 0x13:
+            return None
+        return pc + signed(hi & 0xfffff000, 32) + signed(lo >> 20, 12)
+    matches = []
+    for pc in rows:
+        if (pcrel(pc, 5) == base and pcrel(pc + 8, 6) == limit
+                and [rows.get(pc + offset) for offset in (16, 20, 24, 28)]
+                    == [0x0062f863, 0x0002b023, 0x00828293, 0xff5ff06f]
+                and pcrel(pc + 32, 5) == base
+                and rows.get(pc + 40) == 0x0082b023
+                and rows.get(pc + 44) == 0x0092b423):
+            matches.append(pc)
+    if len(matches) != 1:
+        raise Core0Error('boot metadata clear loop bounds/store/stride/handoff instructions differ')
+    return {'contract_version': 'lemma-boot-clear-v1', 'base': base, 'limit': limit,
+            'bytes': limit - base, 'stride_bytes': 8, 'clear_loop_pc': matches[0] + 16,
+            'handoff_store_pc': matches[0] + 40, 'scope': 'actual fixed M startup BSS clear before hart/DTB publication'}
 
 
 def validate_catalog(value: object, *, configuration: str, stage: str) -> set[str]:
@@ -2068,8 +2415,9 @@ def validate_user_primitive_catalog(value: object, image: dict, *, configuration
 
 
 def validate_package_contract(value: object, *, configuration: str, catalog: dict | None = None) -> dict:
-    image = {"id": 1, "entry": 0x10000, "text_va": 0x10000, "text_capacity": 0xf000,
-             "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffc000, "stack_pages": 2, "flags": 0}
+    notebook = configuration in LEMMASIM_CONFIGURATIONS
+    image = {"id": 1, "entry": 0x1000000 if notebook else 0x10000, "text_va": 0x1000000 if notebook else 0x10000, "text_capacity": 0x80000 if notebook else 0xf000,
+             "data_va": 0x20000, "data_mem_bytes": 4096, "stack_va": 0x3fffa000 if configuration in LEMMASIM_CONFIGURATIONS else 0x3fffc000, "stack_pages": 4 if configuration in LEMMASIM_CONFIGURATIONS else 2, "flags": 0}
     multi = configuration in MULTI_USER_CONFIGURATIONS
     if multi:
         selected = validate_user_image_catalog(catalog, configuration=configuration)["images"]
@@ -2077,8 +2425,8 @@ def validate_package_contract(value: object, *, configuration: str, catalog: dic
                    **({"boot_role": row["boot_role"]} if configuration in MANAGED_POLICIES else {})} for row in selected]
     expected = {"schema_version": 2 if multi else 1, "configuration": configuration,
                 "startup_case": startup_case(configuration), "user_startup_case": user_startup_case(configuration),
-                "contract_version": "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
-                "version": 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
+                "contract_version": "lemma-boot-package-v2" if notebook else "lemma-boot-package-v1", "magic": 0x31474b50414d454c,
+                "version": 2 if notebook else 1, "image_count": len(images) if multi else 1, "header_bytes": 32, "descriptor_bytes": 96,
                 "offset_encoding": "generated-label-differences", **({"images": images} if multi else {"image": image}),
                 **managed_fields(configuration)}
     contract = _object(value, "boot package contract")
@@ -2093,7 +2441,7 @@ def validate_package_payloads(package: bytes, contract: dict, payloads: list[tup
     """Bind every v1 descriptor to a separately audited image, in registry order."""
     count = contract["image_count"]
     minimum = 32 + count * 96
-    if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], 1, count, len(package)):
+    if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], contract["version"], count, len(package)):
         raise Core0Error("boot package header/count/extent differs")
     images = contract.get("images", [contract.get("image")])
     occupied, last, reports = bytearray(len(package)), minimum, []
@@ -2470,6 +2818,14 @@ def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tu
 
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
     """Preserve PMP admission; add only the two observed managed-policy lookups."""
+    if optimized and unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
+        from lemmasim_readonly import validate_lookup
+        sim_sites, sim_tables, removed = validate_lookup(ir, unit)
+        filtered = "\n".join("" if line.strip() in removed else line for line in ir.splitlines())
+        # Re-enter the unchanged historical policy with its closed admission.
+        old_unit = {**unit, "configuration": "normal"}
+        old_sites, old_tables = validate_readonly_pmp_lookup(filtered, old_unit, optimized=optimized)
+        return sim_sites | old_sites, [*old_tables, *sim_tables]
     if unit.get("role") != "kernel" or not optimized:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
@@ -2619,6 +2975,30 @@ BACKEND_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Buffer.Protocol.requestShape': {'server'},
     'Lemma.Services.Buffer.Server.existing': {'server'},
 }
+LEMMASIM_BACKEND_JUMP_TABLES = {
+    'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
+    'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
+    'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',70,['u64','u64'],[],[*range(2,18),*range(32,53),*range(64,72)]),
+    'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
+    'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
+    'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
+    'Lemma.Services.Store.Engine.complete': ('user',81,['u64','u8'],['checked-access','virtual-read','virtual-write'],[*range(1,6),*range(16,22),*range(32,41),*range(64,70),80,81]),
+    'Lemma.Services.Store.Server.application': ('user',9,['u64']*3,['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[2,3,4,5,6,7,9,10]),
+    'Lemma.Applications.Notebook.toolbar': ('user',9,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(9))),
+    'Lemma.Applications.Notebook.pumpSave': ('user',6,[],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[1,2,3,4,6]),
+    'Lemma.Ink.Surface.glyph': ('user',9,['u64'],[],list(range(9))),
+    'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
+}
+LEMMASIM_JUMP_TABLE_USER_IMAGES = {
+    'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
+    'Lemma.Services.Store.Engine.complete': {'store'},
+    'Lemma.Services.Store.Server.application': {'store'},
+    'Lemma.Applications.Notebook.toolbar': {'notebook'},
+    'Lemma.Applications.Notebook.pumpSave': {'notebook'},
+    'Lemma.Ink.Surface.glyph': {'notebook'},
+    'Lemma.Applications.Notebook.statusCharacter': {'notebook'},
+}
 
 
 def _jump_switch_default(optimized_body: str, assembly: str, symbol: str,
@@ -2751,6 +3131,82 @@ def _jump_assembly_function(assembly: str, symbol: str) -> tuple[list[tuple[str,
     return instructions,labels
 
 
+def _jump_status_default(optimized_body: str, assembly: str, symbol: str,
+                         targets: list[str], cases: list[int]) -> dict:
+    """Check the authored footer's two sparse slots independently in IR/code."""
+    switches=re.findall(r'switch i64 %arg1, label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',optimized_body,re.S)
+    selected=[(default,block) for default,block in switches
+              if sorted(int(value) for value in re.findall(r'i64 (-?\d+), label',block))==cases]
+    if cases!=[10,11,13,14,15,17,18] or len(targets)!=9 or len(selected)!=1:
+        raise Core0Error('notebook footer lacks its exact index/default switch')
+    from audit_memory import _parse_blocks
+    blocks=_parse_blocks('\n'.join(line.split(';',1)[0] for line in optimized_body.splitlines()),symbol)
+    default,_=selected[0]
+    lines=blocks.get(default,[])
+    branch=re.fullmatch(r'br label %([A-Za-z0-9_.$-]+)',lines[0]) if len(lines)==1 else None
+    returned=blocks.get(branch[1],[]) if branch else []
+    phi=(re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = phi i64 (.+)',returned[0])
+         if len(returned)==2 else None)
+    if (phi is None or returned[1]!='ret i64 '+phi[1]
+        or len(re.findall(r'\[ 32, %'+re.escape(default)+r' \]',phi[2]))!=1):
+        raise Core0Error('notebook footer default does not return the authored space32')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    holes=[12,16]
+    machine_default=targets[2]
+    if targets[6]!=machine_default or machine_default not in labels:
+        raise Core0Error('notebook footer holes do not share one local default')
+    at=labels[machine_default]
+    if code[at:at+2]!=[('li',['a0','32']),('ret',[])]:
+        raise Core0Error('notebook footer machine default does not return space32')
+    return {'holes':holes,'llvm_default':default,'machine_default':machine_default,'default_value':32}
+
+
+def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
+                       targets: list[str], cases: list[int]) -> dict:
+    """Bind the notebook phase5 hole to its checked error234 return, not a phase."""
+    switches=re.findall(r'switch i64 (%[A-Za-z0-9_.$-]+), label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',optimized_body,re.S)
+    selected=[(value,default,block) for value,default,block in switches
+              if sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==cases]
+    if cases!=[1,2,3,4,6] or len(targets)!=6 or len(selected)!=1:
+        raise Core0Error('notebook Save lacks its exact phase/default switch')
+    value,default,_=selected[0]
+    waits=[block for operand,_default,block in switches if operand==value
+           and sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==[0,5]]
+    if len(waits)!=1:
+        raise Core0Error('notebook Save phase0/5 wait split differs')
+    from audit_memory import _parse_blocks
+    blocks=_parse_blocks('\n'.join(line.split(';',1)[0] for line in optimized_body.splitlines()),symbol)
+    owners=[label for label,lines in blocks.items() if any(line.startswith('switch i64 '+value+', label %'+default+' [') for line in lines)]
+    returned=blocks.get(default,[])
+    phi=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = phi i64 (.+)',returned[0]) if len(returned)==5 else None
+    if (len(owners)!=1 or phi is None or
+        len(re.findall(r'\[ 234, %'+re.escape(owners[0])+r' \]',phi[2]))!=1):
+        raise Core0Error('notebook Save default lacks its checked error234 PHI')
+    masked=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = and i64 '+re.escape(phi[1])+r', 255',returned[1])
+    partial=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(masked[1] if masked else 'NO_MASK')+r', 0',returned[2])
+    complete=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} '+re.escape(partial[1] if partial else 'NO_PARTIAL')+r', i64 0, 1',returned[3])
+    if complete is None or returned[4]!='ret { i64, i64 } '+complete[1]:
+        raise Core0Error('notebook Save default changes its checked return words')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    hole=targets[4]
+    marked=[label for label in re.findall(r'(?m)^(\.LBB\d+_\d+):[^\n]*# %'+re.escape(default)+r'\s*$',assembly)
+            if label in labels]
+    if hole not in marked or hole not in labels:
+        raise Core0Error('notebook Save phase5 is not the actual local default block')
+    at=labels[hole]
+    epilogue=[('andi',['a0','s0','255']),('li',['a1','0'])]
+    epilogue += [('ld',[register,str(offset)+'(sp)']) for register,offset in
+                 [('ra',56),('s0',48),('s1',40),('s2',32),('s3',24),('s4',16),('s5',8),('s6',0)]]
+    epilogue += [('addi',['sp','sp','64']),('ret',[])]
+    uses=[i for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
+    if (code[at:at+len(epilogue)]!=epilogue or len(uses)!=1 or uses[0]<5 or
+        code[uses[0]-5:uses[0]]!=[('addi',['s3','s3','-1']),('li',['a0','5']),
+          ('li',['s0','234']),('bltu',['a0','s3',hole]),('slli',['s3','s3','3'])]):
+        raise Core0Error('notebook Save default error/frame or phase guard differs')
+    return {'holes':[5],'llvm_default':default,'machine_default':hole,
+            'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
+
+
 def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
                          *, source: str | None = None, configuration: str | None = None, image_key: str | None = None) -> dict:
     """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
@@ -2775,10 +3231,11 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    if len(jumps)!=1 or not use+4<=jumps[0]<=use+5 or code[jumps[0]]!=('jr',[target]):
+    if len(jumps)!=1 or not use+4<=jumps[0]<=use+6 or code[jumps[0]]!=('jr',[target]):
         raise Core0Error('jump table has an unknown or unbound indirect transfer')
     jump=jumps[0]
     reload = None
+    literal = None
     if jump==use+5:
         intervening=code[use+4]
         if intervening[0]=='li' and intervening[1][0]!=target:
@@ -2795,13 +3252,43 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                     'loaded_register':'a2','preserved_target_register':'a0'}
         else:
             raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
+    elif jump==use+6:
+        if (source=='Lemma.Ink.Surface.glyph' and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS
+            and image_key=='notebook' and count==9 and minimum==0
+            and index==scaled==address=='a0' and base==target=='a1'
+            and code[:2]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)'])]
+            and code[use+4:jump]==[('lui',['a0','3']),('addiw',['a0','a0','-1566'])]):
+            # This exact authored arrow is the preloaded return value for its
+            # local merge block. The two instructions preserve the loaded a1
+            # branch target; no other source, image, literal or register shape
+            # gains a two-instruction exception.
+            literal={'instructions':['lui a0,3','addiw a0,a0,-1566'],
+                     'value':0x29e2,'loaded_register':'a0','preserved_target_register':'a1'}
+        else:
+            raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     guards=[]
+    hoisted=None
     for i in range(max(0,use-8),use-1):
         op,args=code[i]
         if op=='bltu' and len(args)==3 and args[1]==index:
             prior=[j for j in range(max(0,i-3),i) if code[j]==('li',[args[0],str(count-1)])]
             if len(prior)==1 and all(code[j][1][:1]!=[args[0]] for j in range(prior[0]+1,i)):
                 guards.append(i)
+            elif (source=='Lemma.Applications.Notebook.statusCharacter'
+                  and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+                  and count==9 and minimum==10 and index==scaled==target=='a1' and base==address=='a0'
+                  and code[0]==('li',['a5','8']) and args[:2]==['a5','a1']
+                  and code[1][0]=='bltu' and code[1][1][:2]==['a5','a1']
+                  and labels.get(code[1][1][-1])==i-1
+                  and code[i-1]==('addi',['a1','a1','-10'])
+                  and all(operation in {'li','beq','bnez','bgeu','slli','auipc','addi','j'}
+                          and words[:1]!=['a5'] for operation,words in code[2:i])):
+                # Only this pure notebook footer reuses its entry index bound
+                # after the exact local normalization. The entry branch, one
+                # preserved definition and normalizing target are all bound.
+                guards.append(i)
+                hoisted={'instruction':'li a5,8','definition_instruction':0,
+                         'preserved_register':'a5','normalized_index_register':'a1'}
     if len(guards)!=1: raise Core0Error('jump table lacks the exact unsigned index bound')
     guard=guards[0]
     # Every instruction between the guard and scale preserves the bounded index.
@@ -2837,7 +3324,9 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
     return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
-                **({'target_preserving_reload':reload} if reload is not None else {}))
+                **({'target_preserving_reload':reload} if reload is not None else {}),
+                **({'target_preserving_literal':literal} if literal is not None else {}),
+                **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 
 
 def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation_text: str,
@@ -2851,7 +3340,20 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     tables=[s for s in symbols.values() if s['name'].startswith('.LJTI')]
     literal=[r for r in readonly_tables if r['section']=='.rodata']
     literal_contracts={'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
-    if literal and (unit['role']!='kernel' or any(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))!=r['values'] for r in literal)):
+    sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
+    if sim_literals:
+        from lemmasim_readonly import canonical_specs
+        extra = canonical_specs()
+        def admitted_literal(row):
+            source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+            if source in literal_contracts:
+                return unit['role']=='kernel' and literal_contracts[source]==row['values']
+            spec=extra.get(source)
+            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in spec[3]]
+        valid_literals=all(admitted_literal(row) for row in literal)
+    else:
+        valid_literals=unit['role']=='kernel' and all(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))==r['values'] for r in literal)
+    if literal and not valid_literals:
         raise Core0Error('readonly literal provenance escapes the exact kernel contracts')
     observed=[];extents=[];used_relocations=set()
     section_id=next((index for index,name in sections.items() if name=='.rodata'),None)
@@ -2893,7 +3395,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if owner['value']%4 or owner['size']%4 or references[0]['offset']%4:
                 raise Core0Error('jump table owner/address reference has invalid instruction alignment')
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
-            spec=BACKEND_JUMP_TABLES.get(source)
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and source in LEMMASIM_BACKEND_JUMP_TABLES
+            spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
                 raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
                     table=name, source=source, role=unit['role'], count=len(targets),
@@ -2902,7 +3405,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                     configuration=unit.get('configuration'))))
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
-            if unit['role']=='user' and (source not in BACKEND_JUMP_TABLE_USER_IMAGES or unit.get('image_key') not in BACKEND_JUMP_TABLE_USER_IMAGES[source]):
+            image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
+            if unit['role']=='user' and (source not in image_authority or unit.get('image_key') not in image_authority[source]):
                 raise Core0Error('User backend table escapes its exact selected image: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
             if switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
@@ -2910,7 +3414,13 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                                            owner['name'], targets, spec[4])
                        if source == 'Lemma.Kernel.Development.FramesEntry.operation' else
                        _jump_service_default(optimized_ir,assembly,owner['name'],targets,spec[4],unit)
-                       if source == 'Lemma.Kernel.Development.ServiceEntry.command' else None)
+                       if source == 'Lemma.Kernel.Development.ServiceEntry.command' else
+                       _jump_status_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
+                                            owner['name'],targets,spec[4])
+                       if source == 'Lemma.Applications.Notebook.statusCharacter' else
+                       _jump_save_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
+                                          owner['name'],targets,spec[4])
+                       if source == 'Lemma.Applications.Notebook.pumpSave' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
             rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
@@ -2984,7 +3494,8 @@ def _kernel_access_op(line: str, unit: dict, *, optimized: bool = False) -> str 
     ordinary = _access_op(line, optimized=optimized)
     if ordinary is not None:
         return ordinary
-    if unit.get("role") != "kernel" or unit.get("contract_version") != "core0-kernel-v0.2":
+    if unit.get("role") != "kernel" or not (unit.get("contract_version") == "core0-kernel-v0.2" or
+            unit.get("configuration") in LEMMASIM_CONFIGURATIONS and unit.get("contract_version") == "core0-kernel-v0.3"):
         return None
     value = r"(?:199|-57)" if optimized else "199"
     store = re.fullmatch(r"store volatile i8 " + value +
@@ -3003,6 +3514,9 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     initialize = by_source.get("Lemma.Platform.LemmaVM.ConsoleDevice.initialize14")
     factored_boot = by_source.get("Lemma.Kernel.BootServices.bootServices")
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
+    if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
+        normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
+        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.boot")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -3028,13 +3542,15 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             raise Core0Error("compiled boot closure contains an additional FIFO reset")
 
 
-def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
+def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
+    if optimization is not None and optimization not in OPT_PASSES:
+        raise Core0Error("IR audit optimization level differs from closed pipeline")
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
     primitives = {row["primitive_symbol"] for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
     if unit["role"] != "user":
         primitives.add("core0_io_fence")
-    intrinsic = OPTIMIZER_INTRINSICS if optimized else set()
+    intrinsic = optimizer_intrinsics(unit) if optimized else set()
     if (not definitions or (definitions != functions if not optimized else not definitions <= functions)
             or not declarations <= primitives | intrinsic or not calls <= functions | primitives | intrinsic):
         raise Core0Error("LLVM definitions/declarations/calls escape the closed unit catalog")
@@ -3070,7 +3586,14 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
         raise Core0Error("LLVM IO fence calling convention differs")
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
-    readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit, optimized=optimized)
+    # A post-pipeline O0 file still contains the untransformed genuine bodies.
+    # Preserve historical validators and classify only new LemmaSim lowering
+    # by the actual recorded optimization command, not its filename.
+    sim_transformed = optimized and optimization != "O0"
+    readonly_load_sites, readonly_tables = validate_readonly_pmp_lookup(ir, unit,
+        optimized=sim_transformed if unit.get('configuration') in LEMMASIM_CONFIGURATIONS else optimized)
+    from lemmasim_readonly import validate_devices
+    sim_device_sites, sim_devices = validate_devices(ir, unit, sim_transformed)
     line_functions = _line_functions(lines)
     expected_sites = {(site["site"], site["symbol"], operation["lowering_id"])
                       for operation in unit["used_device_ops"] for site in operation["sites"]}
@@ -3099,7 +3622,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
                 raise Core0Error("U-mode unit has physical MMIO")
             actual_device_operations.append(operation)
         elif re.match(r"^\s*(?:%[-A-Za-z0-9_.$]+\s*=\s*)?(?:load|store)\b", line):
-            if index in readonly_load_sites:
+            if index in readonly_load_sites or index in sim_device_sites:
                 continue
             match = re.search(r"\b(load|store) volatile i(8|64)\b", line)
             if not match:
@@ -3116,7 +3639,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool) -> dict:
         raise Core0Error("LLVM removed/duplicated/unaccounted compiled UART operation")
     return {"definitions": sorted(definitions), "calls": sorted(calls), "declarations": sorted(declarations),
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
-            "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables}
+            "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
+            **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 
 def _primitive_declaration_matches(ir: str, expected: str) -> bool:
@@ -3153,7 +3677,7 @@ def function_ranges(symbol_text: str) -> dict[str, tuple[int, int]]:
 
 def validate_machine(text: str, *, user: bool = False,
                      ranges: dict[str, tuple[int, int]] | None = None, user_csr_pc: int | None = None,
-                     user_attack: dict | None = None) -> None:
+                     user_attack: dict | None = None, configuration: str = "normal") -> None:
     if user_csr_pc is not None and (not user or type(user_csr_pc) is not int):
         raise Core0Error("CSR exception lacks exact user instruction address")
     return_site, zero_window = None, None
@@ -3207,7 +3731,8 @@ def validate_machine(text: str, *, user: bool = False,
             raise Core0Error("ordinary user image contains privileged machine instructions")
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
-            if not names or not set(names) <= KNOWN_CSRS:
+            allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
+            if not names or not set(names) <= allowed:
                 raise Core0Error("unknown CSR in platform code")
     if not found:
         raise Core0Error("empty machine instruction corpus")
@@ -3259,10 +3784,11 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
         raise Core0Error(f"{name} executable symbol provenance differs: missing {sorted(expected-symbols)}; unexpected {sorted(symbols-expected)}")
     addresses = numeric_symbols(inspect("llvm-nm", ["--defined-only", image], name + "-addresses"))
     segments = parse_load_segments(inspect("llvm-readelf", ["-l", "--wide", image], name + "-segments"))
-    intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(0x10000, 0x1f000), (0x20000, 0x21000)]
+    text_base, text_limit = layout["user"]["text_base"], layout["user"]["text_limit"]
+    intervals = [(row["base"], row["limit"]) for row in layout["intervals"]] if not user else [(text_base, text_limit), (0x20000, 0x21000)]
     if not segments:
         raise Core0Error("ELF load segment corpus is empty")
-    if user and (len(segments) != 2 or segments[0]["virtual_address"] != 0x10000 or segments[0]["flags"] != "RE"
+    if user and (len(segments) != 2 or segments[0]["virtual_address"] != text_base or segments[0]["flags"] != "RE"
                  or segments[0]["memory_size"] != segments[0]["file_size"]
                  or segments[1]["virtual_address"] != 0x20000 or segments[1]["flags"] != "RW"
                  or segments[1]["file_size"] != 16 or segments[1]["memory_size"] != 4096):
@@ -3273,12 +3799,12 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
                 or not any(lo <= begin and begin + size <= hi for lo, hi in intervals) or segment["physical_address"] != begin):
             raise Core0Error("ELF PT_LOAD permissions or declared range differs")
     entry = re.search(r"Entry point address:\s*(0x[0-9a-fA-F]+)", header)
-    required = 0x10000 if user else 0x80000000
+    required = text_base if user else 0x80000000
     if not entry or int(entry[1], 16) != required:
         raise Core0Error("ELF entry point differs")
     for symbol in symbols:
         privilege = "U" if user else ("M" if symbol.startswith("lemma_firmware_") or symbol in M_SYMBOLS else "S")
-        low, high = ((0x10000, 0x1f000) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
+        low, high = ((text_base, text_limit) if user else (0x80000000, 0x80010000) if privilege == "M" else (0x80200000, 0x80300000))
         if symbol not in addresses or not low <= addresses[symbol] < high:
             raise Core0Error(f"{symbol} lies outside its source privilege range")
     machine = inspect("llvm-objdump", ["-d", "--no-show-raw-insn", image], name + "-disassembly")
@@ -3299,9 +3825,11 @@ def inspect_linked_elf(inspect, *, name: str, image: str, expected: set[str], la
                                          configuration=layout["configuration"], image_key=unit.get("image_key") if unit else None,
                                          unit=unit) if user else None
     validate_machine(machine, user=user, ranges=ranges, user_csr_pc=attack["base"] if user and user_case == "supervisor-csr" else None,
-                     user_attack=attack if user and user_case in INSTRUCTION_CASES else None)
+                     user_attack=attack if user and user_case in INSTRUCTION_CASES else None, configuration=layout["configuration"])
     record = {"entry": required, "segments": segments, "function_symbols": sorted(symbols),
               "function_ranges": {symbol: {"base": address, "bytes": size} for symbol, (address, size) in ranges.items()}}
+    if not user:
+        record['boot_metadata_clear'] = validate_boot_metadata_clear(layout, addresses, segments, raw_machine, ranges)
     if user:
         begin, size = ranges["_user_start"]
         pcs = [int(match[1], 16) for line in machine.splitlines()
@@ -3329,7 +3857,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
     layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration, image_key=image_key)
     validate_user_primitive_catalog(load_json(output_dir / "primitive-catalog.json"), image, configuration=configuration)
     unit = validate_unit(load_json(output_dir / "unit.json"), "user", configuration=configuration, image_key=image_key)
-    ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized")
+    ir = {kind: validate_ir((output_dir / file).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
           for kind, file in (("pre", "program.ll"), ("optimized", "program.opt.ll"))}
     assembly = (output_dir / "startup.S").read_text()
     validate_user_entry_source(assembly, unit["roots"][0]["symbol"], user_case)
@@ -3355,9 +3883,20 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
             if not constant or int(constant[1], 16) == 0 or int(constant[1], 16) % 8:
                 raise Core0Error("user constant pool flags/entry size/alignment differ")
         if obj == "program.o":
+            literal_tables = []
+            if configuration in LEMMASIM_CONFIGURATIONS:
+                from lemmasim_readonly import validate_object
+                section_bytes={}
+                for name in (".rodata", ".rodata.cst32"):
+                    if name in sections:
+                        filename="audit-" + name.removeprefix(".") + "-literals.bin"
+                        inspect("llvm-objcopy", ["-O", "binary", "--only-section="+name, obj, filename], "literal-"+name)
+                        section_bytes[name]=(output_dir/filename).read_bytes()
+                literal_tables=validate_object(section_text,symbols,relocation_text,section_bytes,
+                    ir["optimized"]["readonly_optimizer_tables"],image["directory"]+"/"+obj)["readonly_tables"]
             backend_objects.append(inspect_backend_jump_tables(inspect, output_dir, object_file=obj,
                                   section_text=section_text, symbol_text=symbols, relocation_text=relocation_text,
-                                  unit=unit, optimization=optimization, readonly_tables=[]))
+                                  unit=unit, optimization=optimization, readonly_tables=literal_tables))
         if obj == "startup.o":
             attack_bytes = b""
             if user_case != "none":
@@ -3368,7 +3907,7 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
                                                         relocation_text=relocation_text)
             inspect("llvm-objcopy", ["-O", "binary", "--only-section=.data.user_abi", obj, "audit-abi-object.bin"], "abi-object-extract")
             initializer = validate_user_abi_data(section_text, (output_dir / "audit-abi-object.bin").read_bytes(), symbols, assembly,
-                                                object_file=image["directory"] + "/startup.o")
+                                                object_file=image["directory"] + "/startup.o", configuration=configuration)
     expected_objects = {image["directory"] + "/" + obj for obj in ("startup.o", "program.o")}
     linked_objects = set(re.findall(r"([^\s()]+\.o)(?=[:(\s])", (output_dir / "image.map").read_text()))
     if linked_objects != expected_objects:
@@ -3387,11 +3926,13 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
         raise Core0Error("per-image object contains an unaccounted stack/runtime symbol")
     post = (output_dir / "program.opt.ll").read_text()
     _defs, _decls, calls = parse_definitions_and_calls(post)
-    primitives.update({symbol: 0 for symbol in calls & OPTIMIZER_INTRINSICS})
+    primitives.update({symbol: 0 for symbol in calls & optimizer_intrinsics(unit)})
     graph = weighted_stack_graph(post, frames, primitives)
     capacities = {"machine": 65536, "boot": 61440, "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
     graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
                  function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined), maximum_compiled_frame_bytes=max(frames.values()))
+    if configuration in LEMMASIM_CONFIGURATIONS and any(row['margin_bytes'] * 4 < row['capacity_bytes'] for row in graph['entries']):
+        raise Core0Error('Lemmasim compiled User stack has less than 25percent headroom')
     lease_scan = None
     if configuration in SERVICE_CONFIGURATIONS and image_key == 'server':
         source_symbols={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
@@ -3418,18 +3959,24 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
         if (output_dir / actual).read_bytes() != (output_dir / target).read_bytes():
             raise Core0Error("per-image packaged payload differs from its independently extracted ELF section")
     text, data = (output_dir / "text.bin").read_bytes(), (output_dir / "data.bin").read_bytes()
-    if not 0 < len(text) <= 0xf000 or len(data) != 16:
+    if not 0 < len(text) <= layout["user"]["text_limit"] - layout["user"]["text_base"] or len(data) != 16:
         raise Core0Error("per-image user text/initialized-data extent differs")
     service_quota = None
     if configuration in SERVICE_CONFIGURATIONS:
         text_pages = (len(text) + 4095) // 4096
         arena_pages = 4 if image_key == "server" else 0
-        if 16 + text_pages + arena_pages > 32:
+        if 18 + text_pages + arena_pages > 32:
             raise Core0Error("service image exceeds owned-page quota with its reserved backing pages")
-        service_quota = {"base_owned_task_frames":16,"base_global_task_frames":17,
+        service_quota = {"base_owned_task_frames":18,"base_global_task_frames":19,
                          "text_pages":text_pages,"reserved_arena_pages":arena_pages,"owner_quota":32}
-    initialized = validate_user_abi_data(inspect("llvm-readelf", ["-S", "--wide", "image.elf"], "user-sections"), data, symbols, assembly,
-                                       object_file=image["directory"] + "/image.elf")
+    linked_sections=inspect("llvm-readelf", ["-S", "--wide", "image.elf"], "user-sections")
+    initializer_symbols=symbols
+    if configuration in LEMMASIM_CONFIGURATIONS:
+        from lemmasim_readonly import validate_linked_literals
+        elf['readonly_literals']=validate_linked_literals(linked_sections,symbols,text,layout['user']['text_base'],literal_tables)
+        initializer_symbols='\n'.join(line for line in symbols.splitlines() if not (len(line.split())==8 and line.split()[3]=='OBJECT' and line.split()[6]!='UND'))
+    initialized = validate_user_abi_data(linked_sections, data, initializer_symbols, assembly,
+                                         object_file=image["directory"] + "/image.elf", configuration=configuration)
     if initializer is None or initialized["sha256"] != initializer["sha256"]:
         raise Core0Error("per-image linked initializer differs from its declared startup object")
     elf["initialized_data"] = initialized
@@ -3655,7 +4202,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         generated = (["startup.S", "link.ld", "layout.json", "primitive-catalog.json", "boot-package.S", "package-contract.json", "user-image-catalog.json"]
                      + [image["directory"] + "/" + name for image in images for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json")]) if multi else list(BOOT_FILES)
         linked = {"boot": list(BOOT_OBJECTS), **({"users": {image["key"]: [image["directory"] + "/startup.o", image["directory"] + "/program.o"] for image in images}} if multi else {"user": list(USER_OBJECTS)})}
-        contracts = {role: CONTRACTS[role] for role in roles}
+        contracts = {role: "core0-kernel-v0.3" if role == "kernel" and configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS[role] for role in roles}
         if multi:
             contracts["users"] = {image["key"]: CONTRACTS["user"] for image in images}
         if provenance.get("unit_contracts") != contracts:
@@ -3754,7 +4301,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
-        ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized")
+        ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
@@ -3812,7 +4359,20 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             tables = ir["kernel"]["optimized"]["readonly_optimizer_tables"] if object_file == "kernel/program.o" else []
             if object_file == "kernel/program.o" and bool(tables) != (".rodata.cst32" in sections):
                 raise Core0Error("kernel PMP IR table/object constant section presence differs")
-            if ".rodata.cst32" in sections:
+            if object_file == "kernel/program.o" and configuration in LEMMASIM_CONFIGURATIONS:
+                from lemmasim_readonly import validate_object
+                section_bytes={}
+                for name in (".rodata", ".rodata.cst32"):
+                    if name in sections:
+                        filename="audit-kernel-" + name.removeprefix(".") + "-literals.bin"
+                        inspect("llvm-objcopy", ["-O", "binary", "--only-section="+name, object_file, filename], "kernel-literal-"+name)
+                        section_bytes[name]=(output_dir/filename).read_bytes()
+                table_report=validate_object(object_section_text,object_symbols,object_relocation_text,
+                    section_bytes,tables,object_file)
+                readonly_objects.append(table_report)
+                literal_tables=table_report["readonly_tables"]
+                allowed_sections.add(".rodata.cst32")
+            elif ".rodata.cst32" in sections:
                 inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata.cst32", object_file, "audit-kernel-pmp-table.bin"], "pmp-table-extract")
                 if len(tables) > 1:
                     inspect("llvm-objcopy", ["-O", "binary", "--only-section=.rodata", object_file, "audit-kernel-h-rodata.bin"], "h-rodata-extract")
@@ -3853,8 +4413,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         intervals = {row["name"]: row for row in layout["intervals"]}
         capacities = {"machine": intervals["firmware-private"]["limit"] - intervals["firmware-private"]["base"],
                       "boot": intervals["supervisor-stack"]["limit"] - layout["context"]["boot_stack_floor"],
-                      "kernel-trap": layout["task_kernel_stack_bytes"], "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
-        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 8192, "user": 8192}:
+                      "kernel-trap": layout["task_kernel_stack_bytes"] - 32, "user": layout["user"]["stack_pages"] * layout["frame_bytes"]}
+        if capacities != {"machine": 65536, "boot": 61440, "kernel-trap": 16352, "user": 16384 if configuration in LEMMASIM_CONFIGURATIONS else 8192}:
             raise Core0Error("authoritative stack capacities differ")
         startup = (output_dir / "startup.S").read_text()
         user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
@@ -3879,19 +4439,21 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             primitive_source = user_startup if role == "user" else startup
             primitives = {row["primitive_symbol"]: machine_frame(primitive_source, row["primitive_symbol"])
                           for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
-            if unit["used_device_ops"]:
+            if unit["used_device_ops"] or configuration in LEMMASIM_CONFIGURATIONS and any(row["stable_id"].startswith("lemmasim.device-") for row in unit["used_execution_ops"]):
                 primitives["core0_io_fence"] = machine_frame(primitive_source, "core0_io_fence")
             undefined = {line.split()[-1] for line in inspect("llvm-nm", ["--undefined-only", object_file], role + "-stack-undefined").splitlines() if line.split()}
             if not undefined <= set(primitives):
                 raise Core0Error(f"object has an unaccounted external stack/runtime symbol: {sorted(undefined - set(primitives))}")
             post_ir = (output_dir / role / "program.opt.ll").read_text()
             _definitions, _declarations, called = parse_definitions_and_calls(post_ir)
-            for intrinsic in called & OPTIMIZER_INTRINSICS:
+            for intrinsic in called & optimizer_intrinsics(unit):
                 primitives[intrinsic] = 0
             graph = weighted_stack_graph(post_ir, frames, primitives)
             graph.update(entries=validate_stack_entries(unit, graph, capacities=capacities, vector_bytes=288),
                          function_bytes=dict(sorted(frames.items())), object_undefined_symbols=sorted(undefined),
                          maximum_compiled_frame_bytes=max(frames.values()))
+            if any(row['margin_bytes'] * 4 < row['capacity_bytes'] for row in graph['entries']):
+                raise Core0Error('current compiled privileged stack has less than 25percent headroom')
             stacks[role] = graph
         inspections = {}
         specs = [("boot", "image.elf", expected_machine | {row["symbol"] for role in ("firmware", "kernel") for row in units[role]["functions"]}, False)]
@@ -3965,6 +4527,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if configuration in MANAGED_POLICIES:
                 record.update(managed_policy=MANAGED_POLICIES[configuration], boot_roles={image["key"]: image["boot_role"] for image in images})
                 record.update({'managed_capabilities':managed_capabilities} if configuration=='capabilities-development' else
+                              {'notebook_authority_observations':'NOT_ESTABLISHED_BY_ARTIFACT_AUDIT'} if configuration in LEMMASIM_CONFIGURATIONS else
                               {'managed_service':managed_service} if configuration in SERVICE_CONFIGURATIONS else {'managed_ipc':managed_ipc})
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")

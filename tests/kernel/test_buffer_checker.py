@@ -62,7 +62,7 @@ class BufferCheckerFailures(unittest.TestCase):
         for id,kind,rights in [(512,1,2),(512,2,8),(1024,1,3),(1024,4,1024),(1536,1,2),(1536,4,1024)]:
             slot=len(trace.grants.get(id,[]));serial=len(trace.serials)+1
             trace.observe((0xb1,id,(serial<<4)|slot,kind,rights))
-        trace.observe((0xb4,512,51,424,0))
+        trace.observe((0xb4,512,51,416,0))
         for id,index,nonce,root in [(1024,1,1,0x82001000),(1536,2,2,0x82002000),(2048,3,3,0x82003000),(512,0,1,0x82004000)]:
             trace.observe((0xf1,id,index,nonce,root))
         trace.observe((0x300,512,51,1,1024))
@@ -104,49 +104,94 @@ class BufferCheckerFailures(unittest.TestCase):
         trace.observe((0x323,trace.server,request,app,payload))
         trace.current=caller
 
-    def premature_fault_create(self, trace, fault):
-        self.actor_response(trace,fault,1,allocation=0x40000)
+    def held_fault_create(self, trace, fault, request=1):
+        self.actor_response(trace,fault,request,allocation=0x40000)
         trace.observe((0x341,fault,4,64,1))
 
-    def test_premature_fault_create_destroy_retry_needs_own_real_denial(self):
+    def held_fault_denial(self, trace, fault, request=3):
+        # Host failure fixtures supply literal other-owner backing facts;
+        # the denial still requires the authenticated real response shape.
+        trace.backings[trace.server]={0x40000,0x41000,0x42000,0x43000}
+        self.actor_response(trace,fault,request,app=204)
+        trace.observe((0x343,fault,request,204,4))
+
+    def held_fault_release(self, trace, fault, request=4):
+        self.actor_response(trace,fault,request,release=0x40000)
+        trace.observe((0x345,fault,4,1,request))
+
+    def test_held_fault_denial_release_and_fresh_generation_are_required(self):
         with tempfile.TemporaryDirectory() as tmp:
             trace,_,fault=self.fault_fixture(Path(tmp))
-            self.premature_fault_create(trace,fault)
+            trace.backings[trace.server]={0x40000,0x41000,0x42000,0x43000}
+            self.actor_response(trace,fault,1,app=204)
+            trace.observe((0x346,fault,1,204,0))
+            self.assertFalse(trace.peer_state[fault].get('seen_global_denial',False))
+            trace.backings[trace.server].remove(0x40000)
+            self.held_fault_create(trace,fault,3)
             binary=checker.digest(checker.pattern(7,fault,16))
             with self.assertRaisesRegex(Core0Error,'own actual global denial'):
                 trace.observe((0x342,fault,4,binary,16))
-            self.actor_response(trace,fault,2,release=0x40000)
-            trace.observe((0x345,fault,4,1,2))
+            self.held_fault_denial(trace,fault,5)
+            self.held_fault_release(trace,fault,6)
             self.assertNotIn(4,trace.foreign)
             self.assertEqual(trace.peer_state[fault]['temporary'],0)
-            self.assertEqual(trace.peer_state[fault]['next_create'],3)
+            self.assertEqual(trace.peer_state[fault]['next_create'],7)
             self.assertTrue(trace.actual_buffer_releases[0]['confirmed'])
-            # Synthetic host fixture supplies the four prior allocation facts;
-            # only the authenticated actual response may establish the denial.
-            trace.backings[trace.server]={0x40000,0x41000,0x42000,0x43000}
-            self.actor_response(trace,fault,3,app=204)
-            trace.observe((0x343,fault,3,204,0))
-            trace.backings[trace.server]=set()
-            self.actor_response(trace,fault,5,allocation=0x40000)
+            # Replacement can also meet a true full-device denial while Peer
+            # holds the freed slot. It does not become the designated witness.
+            trace.backings[trace.server].add(0x40000)
+            self.actor_response(trace,fault,7,app=204)
+            trace.observe((0x346,fault,7,204,2))
+            trace.backings[trace.server].remove(0x40000)
+            self.actor_response(trace,fault,9,allocation=0x40000)
             trace.observe((0x341,fault,8,64,1))
             self.actor_response(trace,fault,257)
             self.actor_response(trace,fault,258,payload=80)
             trace.observe((0x342,fault,8,binary,16))
             trace.observe((0x344,fault,8,1,7))
-            self.assertEqual([r[0] for r in trace.actor_events],[0x340,0x341,0x345,0x343,0x341,0x342,0x344])
+            self.assertEqual([r[0] for r in trace.actor_events],
+                             [0x340,0x346,0x341,0x343,0x345,0x346,0x341,0x342,0x344])
 
-    def test_fault_retry_destroy_rejects_unbacked_wrong_request_owner_or_release(self):
-        for variant in ('unbacked','wrong-request','other-owner','missing-release','unaccepted-response','release-request'):
+    def test_fault_denial_rejects_absent_held_buffer_and_incomplete_or_foreign_facts(self):
+        for variant in ('unheld','three-backings','wrong-owner','wrong-request','wrong-held','wrong-status','unaccepted-response'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_,fault=self.fault_fixture(Path(tmp))
+                if variant!='unheld': self.held_fault_create(trace,fault)
+                trace.backings[trace.server]={0x40000,0x41000,0x42000,0x43000}
+                if variant=='three-backings':trace.backings[trace.server].remove(0x43000)
+                request=5 if variant=='wrong-request' else 3
+                self.actor_response(trace,fault,request,app=203 if variant=='wrong-status' else 204)
+                if variant=='unaccepted-response':trace.active_accept[trace.server]['response']=None
+                row=(0x343,1536 if variant=='wrong-owner' else fault,request,204,8 if variant=='wrong-held' else 4)
+                with self.assertRaises(Core0Error):trace.observe(row)
+                self.assertFalse(trace.peer_state[fault].get('seen_global_denial',False))
+
+    def test_fault_destroy_requires_actual_held_denial_and_matching_release(self):
+        for variant in ('unbacked','before-denial','wrong-request','other-owner','missing-release','unaccepted-response','release-request'):
             with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
                 trace,_,fault=self.fault_fixture(Path(tmp))
                 if variant!='unbacked':
-                    self.premature_fault_create(trace,fault)
-                    self.actor_response(trace,fault,2,release=None if variant=='missing-release' else 0x40000)
+                    self.held_fault_create(trace,fault)
+                    if variant!='before-denial':self.held_fault_denial(trace,fault)
+                    self.actor_response(trace,fault,4,release=None if variant=='missing-release' else 0x40000)
                 if variant=='unaccepted-response':trace.active_accept[trace.server]['response']=None
-                if variant=='release-request':trace.actual_buffer_releases[-1]['request']=4
-                row=(0x345,1536 if variant=='other-owner' else fault,4,1,4 if variant=='wrong-request' else 2)
+                if variant=='release-request':trace.actual_buffer_releases[-1]['request']=6
+                row=(0x345,1536 if variant=='other-owner' else fault,4,1,6 if variant=='wrong-request' else 4)
                 with self.assertRaises(Core0Error):trace.observe(row)
                 self.assertFalse(any(r['confirmed'] for r in trace.actual_buffer_releases))
+
+    def test_fault_replacement_requires_later_generation_of_released_slot(self):
+        for variant in ('same-generation','other-slot','without-denial','without-release'):
+            with self.subTest(variant=variant),tempfile.TemporaryDirectory() as tmp:
+                trace,_,fault=self.fault_fixture(Path(tmp))
+                self.held_fault_create(trace,fault)
+                if variant!='without-denial':self.held_fault_denial(trace,fault)
+                if variant not in {'without-denial','without-release'}:self.held_fault_release(trace,fault)
+                slot=1 if variant=='other-slot' else 0
+                handle=4 if variant=='same-generation' else 8|slot
+                if 0x40000+slot*4096 in trace.backings[trace.server]:trace.backings[trace.server].remove(0x40000+slot*4096)
+                self.actor_response(trace,fault,5,allocation=0x40000+slot*4096)
+                with self.assertRaises(Core0Error):trace.observe((0x341,fault,handle,64,1))
 
     def test_fault_create_and_final_binary_requests_are_exact_and_bounded(self):
         for request in (2,3,257):
@@ -157,12 +202,10 @@ class BufferCheckerFailures(unittest.TestCase):
                     trace.observe((0x341,fault,4,64,1))
         with tempfile.TemporaryDirectory() as tmp:
             trace,_,fault=self.fault_fixture(Path(tmp))
-            trace.backings[trace.server]={0x40000,0x41000,0x42000,0x43000}
-            self.actor_response(trace,fault,1,app=204);trace.observe((0x343,fault,1,204,0))
-            trace.backings[trace.server]=set()
-            self.actor_response(trace,fault,3,allocation=0x40000);trace.observe((0x341,fault,4,64,1))
+            self.held_fault_create(trace,fault);self.held_fault_denial(trace,fault);self.held_fault_release(trace,fault)
+            self.actor_response(trace,fault,5,allocation=0x40000);trace.observe((0x341,fault,8,64,1))
             with self.assertRaisesRegex(Core0Error,'actual final Write/Read'):
-                trace.observe((0x342,fault,4,checker.digest(checker.pattern(7,fault,16)),16))
+                trace.observe((0x342,fault,8,checker.digest(checker.pattern(7,fault,16)),16))
 
     def test_missing_or_foreign_server_acceptance_cannot_validate_cli(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -387,7 +430,7 @@ class BufferCheckerFailures(unittest.TestCase):
                 emit(query)
                 if variant=='unrelated-frame-effect':
                     with self.assertRaisesRegex(Core0Error,'unrelated frame effect'):
-                        emit((0xf6,2048,trace.remaining,trace.remaining+18,0))
+                        emit((0xf6,2048,trace.remaining,trace.remaining+20,0))
                 else:
                     emit((0xf3,512,0x82004000,2,120))
                     if variant=='wrong-full-caller':trace.active_accept[512]['key']=(512,99,1024)
@@ -464,7 +507,7 @@ class BufferCheckerFailures(unittest.TestCase):
                      (0xc1,2,3,1,0),(0xc2,17,22,22,123),(0xd3,0x82000000,0x8000000000082000,500,0),
                      (0xf0,1,8,512,10000),(0xb0,1,16,16,497)]
             controls=initial+[r for rows in trace.grants.values() for r in rows]
-            controls += [(0xb4,512,51,424,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
+            controls += [(0xb4,512,51,416,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
                          (0xf1,2048,3,3,0x82003000),(0xf1,512,0,1,0x82004000),(0x300,512,51,1,1024),
                          (0xf3,1024,0x82001000,1,100),(0x310,1024,1,trace.grants[1024][0][2],trace.grants[1024][1][2])]
             raw=b''.join(('K1'+''.join(f' {w:016x}' for w in row)+'\n').encode() for row in controls)
@@ -492,7 +535,7 @@ class BufferCheckerFailures(unittest.TestCase):
                      (0xc1,2,3,1,0),(0xc2,17,22,22,123),(0xd3,0x82000000,0x8000000000082000,500,0),
                      (0xf0,1,8,512,10000),(0xb0,1,16,16,497)]
             records=initial+[r for rows in base.grants.values() for r in rows]
-            records += [(0xb4,512,51,424,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
+            records += [(0xb4,512,51,416,0),(0xf1,1024,1,1,0x82001000),(0xf1,1536,2,2,0x82002000),
                         (0xf1,2048,3,3,0x82003000),(0xf1,512,0,1,0x82004000),(0x300,512,51,1,1024),
                         (0xf3,512,0x82004000,1,100),(0x320,512,1,base.grants[512][1][2],base.grants[512][0][2]),
                         (0xf2,512,6,0,0x10020),(0xf3,1024,0x82001000,1,110),

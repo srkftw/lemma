@@ -37,11 +37,11 @@ def mix(argument: int) -> int:
 
 def task_frame_overhead(session: Session) -> int:
     stack = session.binding.get("task_kernel_stack", {})
-    if (not isinstance(stack, dict) or type(stack.get("pages")) is not int or stack["pages"] != 2
+    if (not isinstance(stack, dict) or type(stack.get("pages")) is not int or stack["pages"] != 4
             or type(stack.get("bytes")) is not int or stack["bytes"] != 4096 * stack["pages"]
-            or stack.get("construction") != "owned-physically-contiguous-pair"
+            or stack.get("construction") != "owned-physically-contiguous-four"
             or stack.get("base_owned_task_frames") != 15 + stack["pages"]):
-        raise Core0Error("task accounting lacks audited owned two-page kernel stack construction")
+        raise Core0Error("task accounting lacks audited owned four-page kernel stack construction")
     return stack["base_owned_task_frames"]
 
 

@@ -105,14 +105,14 @@ class ServiceBuildBoundaries(unittest.TestCase):
                 with self.assertRaises(Core0Error):
                     user_module_closure(root, image, "service-development")
 
-    def test_server_reserves_four_pages_with_owned_base16_and_separate_global_descriptor(self):
+    def test_server_reserves_four_pages_with_owned_base18_and_separate_global_descriptor(self):
         layout = {"configuration": "service-normal", "frame_bytes": 4096}
         image = image_specs("service-normal")[0]
-        budget = validate_service_user_quota(layout, image, 12 * 4096)
-        self.assertEqual(budget, {"base_owned_task_frames": 16, "base_global_task_frames": 17,
-                                 "text_pages": 12, "reserved_arena_pages": 4, "owner_quota": 32})
+        budget = validate_service_user_quota(layout, image, 10 * 4096)
+        self.assertEqual(budget, {"base_owned_task_frames": 18, "base_global_task_frames": 19,
+                                 "text_pages": 10, "reserved_arena_pages": 4, "owner_quota": 32})
         with self.assertRaises(Core0Error):
-            validate_service_user_quota(layout, image, 12 * 4096 + 1)
+            validate_service_user_quota(layout, image, 10 * 4096 + 1)
         with self.assertRaises(Core0Error):
             validate_service_user_quota(layout, image, 0)
         self.assertIsNone(validate_service_user_quota({"configuration": "ipc-development"}, {"key": "server"}, 13 * 4096))

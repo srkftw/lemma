@@ -30,6 +30,8 @@ def bootServices : Action :=
   if s = 0 then
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ =>
   if s = 0 then
+    .bind (Lemma.Kernel.Memory.Frames.configure 512 32 4) fun s _ =>
+    if s = 0 then
     .bind Lemma.Kernel.BootInfo.validate fun s dtb =>
     if s = 0 then
       .bind Lemma.Kernel.Memory.Frames.init fun s frames =>
@@ -44,6 +46,7 @@ def bootServices : Action :=
         else .done s 0
       else .done s 0
     else bootFailure s
+    else .done s 0
   else .done s 0
   else .done s 0
 

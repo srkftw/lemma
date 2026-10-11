@@ -13,12 +13,22 @@ def failed (s : UInt8) : Bool := if s = 0 then false else true
 def fatal : Action := .done 50 0
 def quantum : UInt64 := 10000 -- 1ms on the pinned 10MHz machine timer
 
+/-- The historical qualification profile records every transition. The
+expanded notebook profile keeps fault/boot/commit records and device traces,
+but does not synchronously transmit 88 UART bytes on every scheduling event.
+This selects diagnostics from validated kernel boot state, never a user flag. -/
+private def schedulingRecord (kind a b c d : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s count =>
+  if failed s = true then fatal else
+  if count = 8192 then .done 0 0 else
+  Lemma.Kernel.Console.record kind a b c d
+
 /-- No mapping mutation may follow the final active-root update before typed
 restoration. This does not reclaim anything on the outgoing owned task stack. -/
 def returnKernel (descriptor reason pc : UInt64) : Action :=
   .bind MachineServices.interruptCount fun s interrupts =>
   if failed s = true then fatal else
-  .bind (Lemma.Kernel.Console.record 0xf2 descriptor reason interrupts pc) fun s _ =>
+  .bind (schedulingRecord 0xf2 descriptor reason interrupts pc) fun s _ =>
   if failed s = true then fatal else
   .bind (Access.read64 (Process.control + 8)) fun s root =>
   if failed s = true then fatal else
@@ -54,6 +64,45 @@ def sleepTask (descriptor context pc ticks : UInt64) : Action :=
   .bind (Task.sleep descriptor deadline pc) fun s _ =>
   if failed s = true then fatal else returnKernel descriptor 3 pc
 
+def callWithIPCLimit (maximum descriptor context pc : UInt64) : Action :=
+  .bind (Access.read64 (context + 136)) fun s number =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 80)) fun s a =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 88)) fun s b =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 96)) fun s c =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 104)) fun s d =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (context + 112)) fun s e =>
+  if failed s = true then fatal else
+  if number = Lemma.User.ABI.exit then
+    if b ||| c ||| d ||| e = 0 then finish descriptor 8 a pc 0
+    else Process.syscallReply context pc 16 0
+  else if number = Lemma.User.ABI.yield then
+    if a ||| b ||| c ||| d ||| e = 0 then yieldTask descriptor context pc
+    else Process.syscallReply context pc 16 0
+  else if number = Lemma.User.ABI.sleep then
+    if b ||| c ||| d ||| e = 0 then sleepTask descriptor context pc a
+    else Process.syscallReply context pc 16 0
+  else
+    .bind (Lemma.Kernel.Syscall.dispatchWithIPCLimit maximum descriptor number a b c d e) fun status value =>
+    if status = 255 then fatal else
+    if status = IPC.blockedStatus then
+      .bind (IPC.waitInfo descriptor value) fun s metadata =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.operationOffset)) fun s kind =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (metadata + IPCStorage.deadlineOffset)) fun s expires =>
+      if failed s = true then fatal else
+      .bind (Process.syscallReply context pc 0 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Task.block descriptor value kind expires pc) fun s _ =>
+      if failed s = true then fatal else returnKernel descriptor 6 pc
+    else Process.syscallReply context pc status value
+
+/-- Legacy deployments keep the original IPC deadline policy. -/
 def call (descriptor context pc : UInt64) : Action :=
   .bind (Access.read64 (context + 136)) fun s number =>
   if failed s = true then fatal else
@@ -145,7 +194,7 @@ private def idle (now : UInt64) : Action :=
     if failed s = true then fatal else
     .bind MachineServices.interruptCount fun s count =>
     if failed s = true then fatal else
-    .bind (Lemma.Kernel.Console.record 0xfd now count observed deadline) fun s _ =>
+    .bind (schedulingRecord 0xfd now count observed deadline) fun s _ =>
     if failed s = true then fatal else .done 0 0
   else if pending = 1 then .done 0 0 else fatal
 
@@ -158,7 +207,7 @@ private def enter (descriptor now : UInt64) : Action :=
   if failed s = true then fatal else
   .bind (Access.read64 (record + Task.dispatchOffset)) fun s dispatches =>
   if failed s = true then fatal else
-  .bind (Lemma.Kernel.Console.record 0xf3 descriptor root dispatches now) fun s _ =>
+  .bind (schedulingRecord 0xf3 descriptor root dispatches now) fun s _ =>
   if failed s = true then fatal else
   .bind (arm now) fun s _ =>
   if failed s = true then fatal else
