@@ -164,6 +164,35 @@ def panel_point_history(path: Path, x: int, y: int):
         raise ValueError('controller capture ends with an incomplete accepted update')
     return completed
 
+def contact_ink(path: Path, sample: tuple, width: int, height: int, pixels: bytes,
+                session: str='brush-width'):
+    """Observe one contact's bounded optical neighborhood, never draw a brush.
+
+    The native notebook oracle uses this same fixed +/-2px neighborhood because
+    raw/display/page Q24 transforms quantize contact centers. The selected point
+    must be dark in final optics and in actual completed controller output; an
+    undo/redo observation must use that exact same point throughout.
+    """
+    session_spec(session)
+    x,y=sample[2]*(width-1)//65535,sample[3]*(height-1)//65535
+    observed=False
+    for py in range(max(160,y-2),min(height,y+3)):
+        for px in range(max(0,x-2),min(width,x+3)):
+            if pixels[py*width+px]>=128:continue
+            history=panel_point_history(path,px,py)
+            phases=[]
+            for _,_,gray in history:
+                phase='ink' if gray<8 else 'white'
+                if not phases or phase!=phases[-1]:phases.append(phase)
+            if 'ink' not in phases or history[-1][2]>=8 or pixels[py*width+px]!=history[-1][2]*17:continue
+            observed=True
+            if session=='undo-redo' and ['ink','white','ink'] not in [phases[i:i+3] for i in range(len(phases)-2)]:
+                continue
+            return px,py,history,phases
+    if observed and session=='undo-redo':
+        raise ValueError('actual controller output did not show same-point stroke/undo/redo')
+    raise ValueError('actual completed controller output did not show the retained stroke')
+
 def document_payloads(records: dict, expected: list, session: str, sequence: int) -> dict:
     """Literal document-v1/page-v2 observations independent of the guest codecs."""
     _,_,brush=session_spec(session)
@@ -237,24 +266,14 @@ def short_session(disk: Path, capture: Path, fixture_file: Path, session: str='u
     width,height,pixels=pgm(capture/'panel')
     rgb=bytes(value for pixel in pixels for value in (pixel,pixel,pixel))
     check_toolbar_pixels(width,height,rgb)
-    x,y=expected[0][2]*511//65535,expected[0][3]*639//65535
-    history=panel_point_history(capture/'panel.events',x,y)
-    # The controller must visibly apply the stroke, undo it, then restore it.
-    phases=[]
-    for _,_,gray in history:
-        phase='ink' if gray<8 else 'white'
-        if not phases or phase!=phases[-1]:phases.append(phase)
-    if pixels[y*width+x]>=128 or 'ink' not in phases:
-        raise ValueError('actual completed controller output did not show the retained stroke')
-    if session=='undo-redo' and ['ink','white','ink'] not in [phases[i:i+3] for i in range(len(phases)-2)]:
-        raise ValueError('actual controller output did not show stroke/undo/redo')
+    x,y,history,phases=contact_ink(capture/'panel.events',expected[0],width,height,pixels,session)
     if stats['pen_ingress']!=len(samples) or stats['flushes']<3 or stats['panel_completed']<=0 or \
        stats['privilege_cycles'][0]<=0 or stats['privilege_cycles'][1]<=0:
         raise ValueError('raw ingress, medium FLUSH or genuine S/U execution absent')
     return {'status':'PASS','store_generation':root.generation,'committed_sequence':sequence,
             'session':session,**document,'retained_raw_samples':len(expected),'saved_observations':saved,
             'explicit_save_confirmation':confirmation,
-            'controller_point_history':history,'controller_phases':phases,
+            'controller_ink_point':[x,y],'controller_point_history':history,'controller_phases':phases,
             'scope':'observed existing Lean notebook stroke/'+session+'/save through RTL; cold reopen separate'}
 
 def cold(before_disk: Path, after_disk: Path, before: Path, after: Path) -> dict:
