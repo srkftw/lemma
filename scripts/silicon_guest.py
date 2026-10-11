@@ -153,12 +153,13 @@ def build(args):
     guest=Path(guest).resolve()
     verify_guest_build(guest,CONFIGURATIONS[workload],args.opt_level)
     if workload=='notebook':
+        capacity_path=directory/'guest-capacity.json'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_lemmasim_capacity.py',
-                     '--build',guest,'--output',guest/'capacity.json'],timeout=120,log=directory/'guest-capacity.log')
-        capacity=json.loads((guest/'capacity.json').read_text())
+                     '--build',guest,'--output',capacity_path],timeout=120,log=directory/'guest-capacity.log')
+        capacity=json.loads(capacity_path.read_text())
         if capacity.get('status')!='PASS':raise ValueError('RTL notebook selected capacity audit did not pass')
     entry={key:identified(guest/name) for key,name in [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
-    if workload=='notebook':entry['capacity']=identified(guest/'capacity.json')
+    if workload=='notebook':entry['capacity']=identified(capacity_path)
     previous=None
     try:
         previous=json.loads(PREPARED.read_text())

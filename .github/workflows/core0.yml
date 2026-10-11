@@ -734,7 +734,7 @@ jobs:
           import sys
           sys.path.insert(0, 'scripts')
           from check_silicon import host_deadline_options
-          if lanes['host_deadline_options'] != host_deadline_options(host/'obj/lemma-rtl'):
+          if lanes['host_deadline_options'] != host_deadline_options((host/'obj/lemma-rtl').resolve()):
               raise RuntimeError('Compiled deadline agreement was not reproduced')
           for path, digest in lanes['source_inputs'].items():
               if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
