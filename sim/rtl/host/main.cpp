@@ -106,6 +106,7 @@ int main(int argc,char**argv)try{
  unsigned old_privilege=3;uint64_t transitions=0,reset_until=8,actual_cycles=0;bool finished=false,stopped=false;uint32_t finish=0;std::string uart_text;
  soc.clk=0;soc.reset=1;soc.preload_valid=0;soc.preload_index=0;soc.preload_data=0;soc.eval();
  if(soc.register_memory_enabled&&!dump.path.empty())throw std::runtime_error("RAM dump requires the external-memory configuration");
+ if(soc.register_memory_enabled&&block_trace.is_open())throw std::runtime_error("Block tracing requires the external-memory configuration");
  if(soc.register_memory_enabled)reset_until=520;soc.mem_ready=1;soc.mem_error=0;soc.uart_rx_valid=0;soc.uart_rx_data=0;
  soc.sample_valid=0;soc.sample_time=0;soc.sample_x=0;soc.sample_y=0;soc.sample_pressure=0;soc.sample_flags=0;soc.sample_tool=0;soc.sample_buttons=0;
  soc.fb_ready=1;soc.fb_error=0;soc.fb_rdata=15;soc.panel_ready=1;soc.media_ready=1;soc.media_error=0;
@@ -140,7 +141,10 @@ int main(int argc,char**argv)try{
     if(r->lemma_soc__DOT____Vcellinp__blockdev__valid&&r->lemma_soc__DOT__compute__DOT__hready)
      block_row(c,"mmio",r->lemma_soc__DOT__compute__DOT__write_d,r->lemma_soc__DOT__compute__DOT__size_d,r->lemma_soc__DOT__compute__DOT__addr_d,r->lemma_soc__DOT__compute__DOT__core__DOT__LSUHWDATA,r->lemma_soc__DOT____Vcellinp__blockdev__wdata,r->lemma_soc__DOT__compute__DOT__hrdata,r->lemma_soc__DOT__compute__DOT__hresp);
     if(r->lemma_soc__DOT__dma_valid&&r->lemma_soc__DOT__dma_ready)
-     block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__dma_size,r->lemma_soc__DOT__dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__dma_addr&7)),r->lemma_soc__DOT__dma_rdata,!r->lemma_soc__DOT__dma_alignment||!r->lemma_soc__DOT__dma_span||soc.mem_error);
+     // This observer is limited to the external-memory configuration: its
+     // response error is the actual host input. selected_fault is the retained
+     // RTL rejection for the active beat, including held-owner semantics.
+     block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__dma_size,r->lemma_soc__DOT__dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__dma_addr&7)),r->lemma_soc__DOT__dma_rdata,r->lemma_soc__DOT__selected_fault||soc.mem_error);
    }
    if(!soc.register_memory_enabled&&soc.mem_valid&&soc.mem_ready&&soc.mem_write&&!soc.mem_error&&ram_pointer)for(int j=0;j<8;j++)if(soc.mem_strb&(1<<j))ram_pointer[j]=soc.mem_wdata>>(j*8);
    if(soc.fb_valid&&soc.fb_ready&&!soc.fb_error){
