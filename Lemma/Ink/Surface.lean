@@ -82,20 +82,53 @@ private def backgroundStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : Acti
   let low := if width ≤ x + 1 then 15 else backgroundPixel (x + 1) y width height
   .bind (Memory.write8 (framebuffer + i.toUInt64) ((high <<< 4) ||| low)) fun s _ => .done s acc
 
+/-- Replace one Gray4 pixel in a little-endian aligned word. -/
+private def wordPixel (value x pixel color : UInt64) : UInt64 :=
+  if pixel < x then value else if x + 16 ≤ pixel then value else
+  let offset := pixel - x
+  let shift := offset / 2 * 8 + (if offset % 2 = 0 then 4 else 0)
+  (value &&& ((0xffffffffffffffff : UInt64) ^^^ (15 <<< shift))) ||| (color <<< shift)
+
+/-- The lower canvas consists of horizontal rules and two vertical margins.
+This is the same Gray4 image as backgroundPixel, packed by guest Lean code. -/
+def backgroundCanvasWord (x y width : UInt64) : UInt64 :=
+  let color := if y = 148 then 0 else
+    if 180 ≤ y then if (y - 180) % 96 = 0 then 13 else 15 else 15
+  let initial := color * 0x1111111111111111
+  let margins := if y = 148 then initial else
+    wordPixel (wordPixel initial x 24 12) x (width - 25) 12
+  if width % 2 = 1 then wordPixel margins x width 15 else margins
+
+private def backgroundOffsetStep (i _ : UInt32) (acc dimensions offset _ _ : UInt64) : Action :=
+  backgroundStep (i + offset.toUInt32) 0 acc dimensions 0 0 0
+
+private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let stride := (width + 1) / 2
+  let offset := i.toUInt64 * 8
+  let x := (offset % stride) * 2
+  let y := offset / stride
+  if y < 128 then
+    .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
+  else
+    .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
+
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
-intersecting tiles and coalesces their bounding refresh rectangle. -/
+intersecting tiles and coalesces their bounding refresh rectangle. Aligned rows
+use word writes on the simple lower canvas; toolbar and other row shapes retain
+the pixel routine. No host rendering or platform-specific image is involved. -/
 def background (width height : UInt64) : Action :=
   let bytes := ((width + 1) / 2) * height
   if 2000000 < bytes then .done 16 0 else
-  -- Two bounded halves keep each fold under the profile's1000000 budget.
-  let first := if bytes < 1000000 then bytes else 1000000
-  .boundedFoldU64 1000000 backgroundStep first.toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
-  if s = 0 then
-  .boundedFoldU64 1000000 backgroundTail (bytes - first).toUInt32 0 (width ||| (height <<< 16)) first 0 0 fun s _ => .done s bytes
-  else .done s 0
-where
-  backgroundTail (i _ : UInt32) (acc dimensions offset _ _ : UInt64) : Action :=
-    backgroundStep (i + offset.toUInt32) 0 acc dimensions 0 0 0
+  if (width + 1) / 2 % 8 = 0 then
+    .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ => .done s bytes
+  else
+    -- Two bounded halves keep each fold under the profile's1000000 budget.
+    let first := if bytes < 1000000 then bytes else 1000000
+    .boundedFoldU64 1000000 backgroundStep first.toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
+    if s = 0 then
+    .boundedFoldU64 1000000 backgroundOffsetStep (bytes - first).toUInt32 0 (width ||| (height <<< 16)) first 0 0 fun s _ => .done s bytes
+    else .done s 0
 
 private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=
   let width := dimensions &&& 0xffff
@@ -107,8 +140,25 @@ private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : A
   .bind (Memory.read8 (framebuffer + y * ((width + 1) / 2) + x / 2)) fun s byte =>
   if s = 0 then .bind (Memory.write8 (tile + i.toUInt64) byte) fun s _ => .done s acc else .done s 0
 
+private def fullAlignedTile (x y width height : UInt64) : Bool :=
+  if width = 0 then false else if 4096 < width then false else
+  if height = 0 then false else if 4096 < height then false else
+  if width < x then false else if width - x < 32 then false else
+  if height < y then false else if height - y < 32 then false else
+  if x % 16 = 0 then (width + 1) / 2 % 8 = 0 else false
+
+private def tileLoadWordStep (i _ : UInt32) (acc stride origin _ _ : UInt64) : Action :=
+  let x := origin &&& 0xffff
+  let y := (origin >>> 16) + i.toUInt64 / 2
+  let offset := i.toUInt64 % 2 * 8
+  .bind (Memory.read64 (framebuffer + y * stride + x / 2 + offset)) fun s word =>
+  if s = 0 then .bind (Memory.write64 (tile + i.toUInt64 * 8) word) fun s _ => .done s acc else .done s 0
+
 def loadTile (x y width height : UInt64) : Action :=
-  .boundedFoldU64 512 tileLoadStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
+  if fullAlignedTile x y width height then
+    .boundedFoldU64 64 tileLoadWordStep 64 0 ((width + 1) / 2) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
+  else
+    .boundedFoldU64 512 tileLoadStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
 
 private def tileStoreStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=
   let width := dimensions &&& 0xffff
@@ -120,8 +170,19 @@ private def tileStoreStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : 
   .bind (Memory.write8 (framebuffer + y * ((width + 1) / 2) + x / 2) byte) fun s _ => .done s acc
   else .done s 0
 
+private def tileStoreWordStep (i _ : UInt32) (acc stride origin _ _ : UInt64) : Action :=
+  let x := origin &&& 0xffff
+  let y := (origin >>> 16) + i.toUInt64 / 2
+  let offset := i.toUInt64 % 2 * 8
+  .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Memory.write64 (framebuffer + y * stride + x / 2 + offset) word) fun s _ => .done s acc
+  else .done s 0
+
 def storeTile (x y width height : UInt64) : Action :=
-  .boundedFoldU64 512 tileStoreStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
+  if fullAlignedTile x y width height then
+    .boundedFoldU64 64 tileStoreWordStep 64 0 ((width + 1) / 2) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
+  else
+    .boundedFoldU64 512 tileStoreStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
 
 private def compactStep (i _ : UInt32) (acc stride _ _ _ : UInt64) : Action :=
   .bind (Memory.read8 (tile + (i.toUInt64 / stride) * 16 + i.toUInt64 % stride)) fun s byte =>

@@ -314,7 +314,7 @@ def main():
         require_pass(out / 'store-cache/result.json')
         command(['lake', 'env', 'lean', 'tests/store/CheckpointEndpoint.lean'],
                 out / 'CheckpointEndpoint.log', 300)
-        for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
+        for fixture in ('NotebookReads', 'NotebookGlyphs', 'SurfaceWords', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
                         'PaperRecovery', 'RasterizerReference', 'PacketCopies', 'InkHeaders', 'NotebookCheckpoint'):
             command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
                     out / f'{fixture}.log', 180)
