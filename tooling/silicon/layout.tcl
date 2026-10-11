@@ -7,6 +7,20 @@ read_lef $pdk/lef/sg13g2_stdcell.lef
 read_liberty $pdk/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 read_verilog $out/mapped.v
 link_design $top
+# OpenSTA creates logical one_/zero_ nets for unused Verilog don't-care
+# aliases. TritonRoute rejects these POWER/GROUND nets even with no pins.
+# Remove only proven unconnected aliases; a connected constant needs a real
+# tie-cell implementation and must fail instead of being silently deleted.
+foreach name {zero_ one_} {
+    set net [[ord::get_db_block] findNet $name]
+    if {$net != "NULL" && [$net getSigType] in {POWER GROUND}} {
+        if {[llength [$net getITerms]] || [llength [$net getBTerms]]} {
+            error "Connected logical constant $name requires a physical tie cell"
+        }
+        puts "Removing unconnected logical constant alias $name"
+        odb::dbNet_destroy $net
+    }
+}
 initialize_floorplan -utilization 25 -aspect_ratio 1 -core_space 5 -site CoreSite
 foreach layer {Metal1 Metal2 Metal3 Metal4 Metal5} {
     make_tracks $layer -x_offset 0.0 -x_pitch 0.48 -y_offset 0.0 -y_pitch 0.42
