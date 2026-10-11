@@ -6,6 +6,7 @@ This code only reads evidence. It never supplies records, recovery results,
 pixels or MMIO responses to the running system.
 """
 from __future__ import annotations
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -264,6 +265,7 @@ def cold(before_disk: Path, after_disk: Path, before: Path, after: Path) -> dict
         raise ValueError('cold boot changed/lost exact acknowledged records')
     if pgm(before/'panel')!=pgm(after/'panel'):
         raise ValueError('cold guest redraw differs from acknowledged controller output')
+    panel_point_history(after/'panel.events',0,0)
     observations=guest_events(after/'uart.bin')
     if not any(row[0]==0x420 for row in observations):raise ValueError('cold page ready missing')
     if not stats['media_requests'] or not stats['panel_completed'] or not stats['privilege_cycles'][0]:
@@ -271,17 +273,119 @@ def cold(before_disk: Path, after_disk: Path, before: Path, after: Path) -> dict
     return {'status':'PASS','exact_committed_payloads':True,'exact_controller_pixels':True,
             'scope':'new CPU reset process, retained medium only, genuine guest recovery/redraw'}
 
+FIELDS=['cycle','event','write','size','address','raw_wdata','wdata','rdata','error',
+        'state','status','queue_num','queue_ready','interrupt_status','result']
+FAILED_ROWS={
+    'F':('111','100','110','100','100'),
+    'A':('010','101','111','101','101'),
+    'I':('111','010','010','010','111'),
+    'L':('100','100','100','100','111'),
+    'E':('111','100','110','100','111'),
+    'D':('110','101','101','101','110'),
+}
+
+def failed_barrier(path,stats):
+    """Read literal port observations, never execute a descriptor or request."""
+    if any(type(stats.get(k)) is not int or stats[k]<0 for k in ('block_rows','block_omitted')):
+        raise ValueError('missing bounded block observation counts')
+    with Path(path).open() as stream:
+        reader=csv.DictReader(stream)
+        if reader.fieldnames!=FIELDS:raise ValueError('block CSV schema differs')
+        rows=[]
+        for entry in reader:
+            if set(entry)!=set(FIELDS) or any(value is None for value in entry.values()):
+                raise ValueError('malformed block observation row')
+            row={'event':entry['event']}
+            for key in FIELDS:
+                if key=='event':continue
+                try:row[key]=int(entry[key],0)
+                except ValueError as error:raise ValueError('malformed numeric block observation') from error
+                if row[key]<0:raise ValueError('negative block observation')
+            rows.append(row)
+    if len(rows)!=stats['block_rows'] or not 0<len(rows)<=4096 or \
+       (stats['block_omitted'] and len(rows)!=4096) or \
+       any(b['cycle']<a['cycle'] for a,b in zip(rows,rows[1:])):
+        raise ValueError('block rows/omissions/order contradict hardware counts')
+    flushes=[r for r in rows if r['event']=='media-flush']
+    if len(flushes)!=1 or flushes[0]['error']!=1:
+        raise ValueError('actual first failed medium barrier missing')
+    flush=flushes[0]
+    if any(r['error']!=0 for r in rows if r is not flush) or \
+       not any(r['event']=='media-write' and r['cycle']<flush['cycle'] for r in rows):
+        raise ValueError('unrelated transport error or no preceding volatile write')
+    # Literal diagnostic state IDs10/13 are STATUS_BYTE/USED_INDEX in this
+    # pinned circuit. They supplement actual successful DMA handshakes; no
+    # virtual interrupt or guest queue interpretation is supplied by this code.
+    status=[r for r in rows if r['cycle']>flush['cycle'] and r['event']=='dma' and
+            r['write']==1 and r['size']==0 and r['wdata']==1 and r['error']==0 and
+            r['state']==10 and r['result']==1]
+    if len(status)!=1:raise ValueError('actual IOERR status-byte DMA completion absent')
+    used=[r for r in rows if r['cycle']>status[0]['cycle'] and r['event']=='dma' and
+          r['write']==1 and r['size']==1 and r['wdata']>0 and r['error']==0 and
+          r['state']==13 and r['result']==1]
+    if len(used)!=1:raise ValueError('actual error used-index publication absent')
+    acknowledgements=[r for r in rows if r['cycle']>used[0]['cycle'] and r['event']=='mmio' and
+          r['write']==1 and r['address']==0x10001064 and r['wdata']==1 and
+          r['error']==0 and r['result']==1]
+    if not acknowledgements:raise ValueError('guest did not acknowledge actual block error IRQ')
+    return {'failed_flush_cycle':flush['cycle'],'ioerr_dma_cycle':status[0]['cycle'],
+            'used_index_cycle':used[0]['cycle'],'irq_ack_cycle':acknowledgements[0]['cycle'],
+            'captured_rows':len(rows),'omitted_rows':stats['block_omitted']}
+
+def failed_label(path):
+    width,height,pixels=pgm(path)
+    if (width,height)!=(512,640):raise ValueError('failed barrier panel geometry differs')
+    for index,char in enumerate('FAILED'):
+        for y in range(15):
+            for x in range(12):
+                black=x<9 and FAILED_ROWS[char][y//3][x//3]=='1'
+                if pixels[(132+y)*width+24+index*12+x]!=(0 if black else 255):
+                    raise ValueError('completed controller pixels do not show guest FAILED')
+
 def failed_flush(before_disk: Path, failed_disk: Path, capture: Path) -> dict:
     stats=completed_capture(capture)
-    if committed_bytes(before_disk)!=committed_bytes(failed_disk):
-        raise ValueError('failed flush altered acknowledged committed payloads')
-    rows=guest_events(capture/'uart.bin');states=[row for row in rows if row[0] in (0x421,0x423,0x424)]
-    if not states or states[-1][0]!=0x424 or not any(row[0]==0x423 for row in states):
-        raise ValueError('failed flush became Saved or lacked guest Pending/Failed observations')
-    if not stats['flushes'] or not stats['volatile_sectors_discarded']:
-        raise ValueError('failed external barrier/volatile write loss not observed')
+    identity=reset_identity(capture,'notebook',before_disk,events=capture/'input.events')
+    if identity.get('options',{}).get('fail_flush')!=1 or identity['options'].get('block_trace') is not True:
+        raise ValueError('actual execution did not declare first FLUSH failure and block trace')
+    # This short failure corpus carries a release and six pressure-varying raw
+    # samples. Only actual input bytes and hardware handshakes establish ingress.
+    raw=[]
+    for line in (capture/'input.events').read_text().splitlines():
+        fields=line.split()
+        if len(fields)!=9 or fields[1]!='pen':raise ValueError('failed barrier input is not raw pen samples')
+        try:row=[int(fields[0],0)]+[int(value,0) for value in fields[2:]]
+        except ValueError:raise ValueError('malformed failed barrier raw sample') from None
+        if any(value<0 for value in row) or row[0]!=row[1]*10 or row[2]>65535 or row[3]>65535 or row[4]>4095 or row[6:]!=[1,0]:
+            raise ValueError('failed barrier raw sample binding differs')
+        raw.append(row)
+    if len(raw)!=7 or any(b[0]<=a[0] for a,b in zip(raw,raw[1:])) or \
+       raw[0][4:6]!=[0,2] or raw[-1][4:6]!=[0,2] or \
+       any(row[5]!=3 or row[4]==0 for row in raw[1:-1]) or len({row[4] for row in raw[1:-1]})<3:
+        raise ValueError('failed barrier lacked exact new pressure-varying stroke provenance')
+    if stats.get('pen_ingress')!=len(raw) or stats.get('pen_accepted')!=len(raw) or stats['flushes']!=1 or \
+       stats['privilege_cycles'][0]<=0 or stats['privilege_cycles'][1]<=0 or \
+       type(stats.get('timer_traps')) is not int or stats['timer_traps']<1 or stats['panel_completed']<2:
+        raise ValueError('failed barrier lacked genuine S/U, timer, input or controller work')
+    outputs=json.loads((capture/'output.json').read_text())['outputs']
+    if 'block.csv' not in outputs:raise ValueError('actual block observations are not inventoried')
+    barrier=failed_barrier(capture/'block.csv',stats)
+    if committed_bytes(before_disk)!=committed_bytes(failed_disk) or \
+       hashlib.sha256(before_disk.read_bytes()).digest()!=hashlib.sha256(failed_disk.read_bytes()).digest():
+        raise ValueError('failed first FLUSH altered acknowledged medium bytes')
+    _,sequence,_=recover(before_disk.read_bytes())
+    if sequence<=0:raise ValueError('failed barrier requires prior acknowledged notebook records')
+    states=[row for row in guest_events(capture/'uart.bin') if row[0] in (0x421,0x423,0x424)]
+    object=0x10001+sequence
+    if states!=[(0x423,sequence+1,1,1,object),(0x424,227,1,1,object)]:
+        raise ValueError('new append did not report exact Pending -> transportFailed without Saved')
+    if not stats['volatile_sectors_discarded']:
+        raise ValueError('failed external barrier volatile writes were not discarded')
+    failed_label(capture/'panel')
+    panel_point_history(capture/'panel.events',0,0)
     return {'status':'PASS','acknowledged_records_retained':True,'failed_work_not_saved':True,
-            'scope':'one failed medium FLUSH; volatile writes discarded at process power-off'}
+            'exact_acknowledged_medium_bytes':True,'new_raw_samples':len(raw),'pending_failed':states,
+            'barrier':barrier,'guest_failed_controller_label':True,'baseline_sequence':sequence,
+            'scope':'first actual medium FLUSH failed; RTL published IOERR, guest Failed; volatile writes discarded at process power-off'}
 
 def initialized(disk: Path, capture: Path) -> dict:
     stats=completed_capture(capture)

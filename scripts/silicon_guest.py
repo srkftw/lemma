@@ -253,10 +253,10 @@ def execute(data,workload,directory,options,inputs,medium):
         'argv':list(map(str,argv)),'status':'NOT_RUN'}
     try:
         with (directory/'run.log').open('w') as log:
-            process=subprocess.Popen(list(map(str,argv)),cwd=ROOT,start_new_session=True,stdout=log,stderr=subprocess.STDOUT)
+            process=subprocess.Popen(list(map(str,argv)),cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
             try:result['exit_code']=process.wait(timeout=options['timeout']+10)
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=5);result['exit_code']=process.returncode
+                process.kill();process.wait(timeout=5);result['exit_code']=process.returncode
                 result['status']='WALL_TIMEOUT';return result
         result['status']='STOPPED_BY_PROTOCOL' if result['exit_code']==0 else 'FAILED'
         if medium is not None:result['final_medium_sha256']=sha(medium)
@@ -264,22 +264,16 @@ def execute(data,workload,directory,options,inputs,medium):
             and (p.name in ('uart.bin','trace.csv','host-report.json','ram.bin','block.csv') or p.name.startswith('panel'))}
         return result
     finally:
-        if process is not None and process.poll() is None:os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=5)
+        if process is not None and process.poll() is None:process.kill();process.wait(timeout=5)
         (directory/'output.json').write_text(json.dumps(result,indent=2)+'\n')
 
-def run(args):
-    workload=getattr(args,'workload',None) or 'service'
-    if args.geometry and args.geometry!=f"{profile()['geometry'][0]}x{profile()['geometry'][1]}":raise ValueError('RTL geometry is fixed by lemma-silicon-dev/0.1.0')
-    if args.mode!='developer':raise ValueError('lemma-silicon-dev/0.1.0 currently supports Developer mode only')
-    if getattr(args,'raw_input',None) or getattr(args,'fault',None):
-        raise ValueError('RTL uses --events and --fail-flush; QEMU raw-input/fault options are unsupported')
-    options=bounded_options(args);data=prepared(workload)
-    directory=(args.record or ROOT/f'build/silicon/run-{time.time_ns()}').resolve();directory.mkdir(parents=True,exist_ok=False)
+def capture(data,workload,directory,options,input_paths,disk):
+    """Shared ordinary capture, including raw copies and exclusive medium lifetime."""
+    directory=directory.resolve();directory.mkdir(parents=True,exist_ok=False)
     inputs={}
-    for key,path in [('uart',args.uart_input),('events',args.events)]:
+    for key,path in input_paths.items():
         if path:
             destination=directory/('input.'+key);shutil.copyfile(path,destination);inputs[key]=identified(destination)
-    disk=args.disk.resolve() if args.disk else None
     if workload=='service' and disk is not None:raise ValueError('RTL service workload has no block medium; omit --disk')
     if workload!='service' and disk is None:raise ValueError('RTL notebook/initializer requires --disk retained raw medium')
     lock=disk.open('r+b') if disk is not None else None
@@ -296,6 +290,19 @@ def run(args):
     finally:
         if lock is not None:lock.close()
         print(f'RTL run artifacts: {directory}')
+    return result
+
+
+def run(args):
+    workload=getattr(args,'workload',None) or 'service'
+    if args.geometry and args.geometry!=f"{profile()['geometry'][0]}x{profile()['geometry'][1]}":raise ValueError('RTL geometry is fixed by lemma-silicon-dev/0.1.0')
+    if args.mode!='developer':raise ValueError('lemma-silicon-dev/0.1.0 currently supports Developer mode only')
+    if getattr(args,'raw_input',None) or getattr(args,'fault',None):
+        raise ValueError('RTL uses --events and --fail-flush; QEMU raw-input/fault options are unsupported')
+    options=bounded_options(args);data=prepared(workload)
+    directory=args.record or ROOT/f'build/silicon/run-{time.time_ns()}'
+    disk=args.disk.resolve() if args.disk else None
+    result=capture(data,workload,directory,options,{'uart':args.uart_input,'events':args.events},disk)
     if result['exit_code']!=0:raise RuntimeError(f"RTL run {result['status']} ({result['exit_code']}); {directory/'run.log'}")
 
 def replay(args):
@@ -317,14 +324,17 @@ def replay(args):
     if data['profile_sha256']!=sha(PROFILE):raise ValueError('Captured RTL binding is no longer supported by this generator')
     inputs=identity['inputs']
     for item in inputs.values():validate(item)
-    directory=ROOT/f'build/silicon/replay-{time.time_ns()}';directory.mkdir(parents=True)
+    directory=ROOT/f'build/silicon/replay-{time.time_ns()}'
     disk=None
     if identity['initial_medium'] is not None:
         initial=validate(identity['initial_medium']);disk=args.disk_copy.resolve()
         if disk.exists():raise ValueError('RTL replay --disk-copy must be new')
         disk.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(initial,disk)
     options=dict(identity['options']);options['timeout']=args.timeout
-    result=execute(data,workload,directory,options,inputs,disk)
+    # The captured immutable executable is retained; ordinary capture supplies
+    # fresh raw-input/reset identities, initial bytes and an exclusive lock.
+    result=capture(data,workload,directory,options,
+                   {key:validate(item) for key,item in inputs.items()},disk)
     compared={key:result.get(key)==original.get(key) for key in ('exit_code','outputs','final_medium_sha256')}
     (directory/'comparison.json').write_text(json.dumps({'status':'MATCH' if all(compared.values()) else 'MISMATCH',
         'compared':compared,'scope':'same RTL backend replay only; no instruction-schedule equivalence with QEMU'},indent=2)+'\n')
