@@ -1,6 +1,7 @@
 import Lemma.Kernel.BootInfo
 import Lemma.Platform.LemmaSim.IO
 import Lemma.Platform.LemmaSim.DeviceABI
+import Lemma.Platform.Silicon.Binding
 
 /-! Binding-specific guest validation of the actual handed FDT. BootInfo retains
 its historical memory/envelope semantics; this bounded second pass verifies
@@ -66,6 +67,8 @@ private def literalLength (code : UInt64) : UInt64 :=
   if code = 69 then 9 else
   if code = 70 then 20 else
   if code = 71 then 11 else
+  if code = 72 then 21 else
+  if code = 73 then 25 else
   0
 private def literalWord (code index : UInt64) : UInt64 :=
   if code = 1 then
@@ -338,6 +341,16 @@ private def literalWord (code index : UInt64) : UInt64 :=
     if index = 2 then 0x637472 else
     if index = 3 then 0x0 else
     0 else
+  if code = 72 then
+    if index = 0 then 0x69732c616d6d656c else
+    if index = 1 then 0x65642d6e6f63696c else
+    if index = 2 then 0x31762d76 else
+    0 else
+  if code = 73 then
+    if index = 0 then 0x69642c616d6d656c else
+    if index = 1 then 0x636974736f6e6761 else
+    if index = 2 then 0x31762d747261752d else
+    0 else
   if code = 71 then
     if index = 0 then 0x622d656c706d6973 else
     if index = 1 then 0x7375 else
@@ -394,6 +407,8 @@ private def expectedIRQ (role : UInt64) : UInt64 :=
 private def compatibleCode (role : UInt64) : UInt64 :=
   if role = 1 then 64 else if role = 2 then 65 else if role = 4 then 67 else
   if role = 5 then 68 else if role = 6 then 69 else if role = 7 then 70 else 66
+private def compatibleBinding (binding role : UInt64) : UInt64 :=
+  if binding = 1 then if role = 6 then 73 else compatibleCode role else compatibleCode role
 private def requiredFlags (role : UInt64) : UInt64 :=
   if role = 1 then 255 else if role = 2 then 255 else
   if role = 4 then 1011 else if role = 5 then 515 else if role = 6 then 31 else 15
@@ -471,15 +486,19 @@ private def descriptorProperty (data bytes : UInt64) : Action :=
 
 private def leafProperty (data bytes code role : UInt64) : Action :=
   if code = 32 then
-    .bind (equalLiteral data bytes (compatibleCode role)) fun s same => if s = 0 then
-    if same = 1 then mark 2 else .done invalid 0 else .done s 0
+    .bind (get 176) fun s binding => if s = 0 then
+    .bind (equalLiteral data bytes (compatibleBinding binding role)) fun s same => if s = 0 then
+    if same = 1 then mark 2 else .done invalid 0 else .done s 0 else .done s 0
   else if code = 33 then ownedReg data bytes role else
   if role = 4 then
     if code = 36 then
       if bytes = 4 then .bind (BootInfo.readBE32 data) fun s phandle => if s = 0 then
       if 0 < phandle then .bind (put 80 phandle) fun s _ => if s = 0 then mark 16 else .done s 0
       else .done invalid 0 else .done s 0 else .done invalid 0
-    else if code = 48 then fixedCell data bytes 95 32 else
+    else if code = 48 then
+      .bind (get 176) fun s binding => if s = 0 then
+      fixedCell data bytes (if binding = 1 then Lemma.Platform.Silicon.Binding.plic_sources else 95) 32 else .done s 0
+    else
     if code = 47 then fixedCell data bytes 1 64 else
     if code = 45 then fixedCell data bytes 0 128 else
     if code = 49 then if bytes = 0 then mark 256 else .done invalid 0 else
@@ -499,11 +518,22 @@ private def leafProperty (data bytes code role : UInt64) : Action :=
     if code = 42 then fixedCell data bytes 65535 64 else
     if code = 43 then dynamicCell data bytes 120 128 else .done 0 0
   else if role = 6 then
-    if code = 51 then fixedCell data bytes 3686400 16 else .done 0 0
+    if code = 51 then
+      .bind (get 176) fun s binding => if s = 0 then
+      fixedCell data bytes (if binding = 1 then Lemma.Platform.Silicon.Binding.clock_hz else 3686400) 16
+      else .done s 0 else .done 0 0
   else .done 0 0
 
 private def containerProperty (data bytes code role : UInt64) : Action :=
-  if role = 11 then
+  if role = 10 then
+    if code = 32 then
+      .bind (get 176) fun s binding => if s = 0 then
+      if binding = 1 then
+        .bind (equalLiteral data bytes 72) fun s same => if s = 0 then
+        if same = 1 then put 168 1 else .done invalid 0 else .done s 0
+      else .done 0 0 else .done s 0
+    else .done 0 0
+  else if role = 11 then
     if code = 37 then
       .bind (get 192) fun s seen => if s = 0 then
       if seen = 0 then
@@ -577,6 +607,7 @@ private def property (cursor depth limit : UInt64) : Action :=
   .bind (findCode (strings + nameOffset) (nameEnd - strings - nameOffset) 32 21) fun s code => if failed s = true then .done s 0 else
   .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
   .bind (if leaf role = 1 then leafProperty data bytes code role else
+    if role = 10 then containerProperty data bytes code role else
     if role = 11 then containerProperty data bytes code role else
     if role = 12 then containerProperty data bytes code role else
     if code = 33 then
@@ -623,39 +654,51 @@ private def actualDevices : Action :=
   else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
-/-- Descriptor consistency with the actual reset DTB. The complete historical
-FDT envelope/memory parser runs first; peripheral checks are additive for this
-binding only. Successful output is the actual validated pointer. -/
-def validate (pointer expectedBytes width height pressure : UInt64) : Action :=
-  .bind BootInfo.validate fun s actual => if s = 0 then if actual = pointer then
-  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes => if s = 0 then
-  if bytes = expectedBytes then
-  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset => if s = 0 then
-  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset => if s = 0 then
-  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes => if s = 0 then
-  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes => if s = 0 then
-  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ => if s = 0 then
-  .bind (put 0 (pointer + structureOffset)) fun s _ => if s = 0 then
-  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if s = 0 then
-  .bind (put 16 (pointer + stringsOffset)) fun s _ => if s = 0 then
-  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if s = 0 then
-  .bind (put 104 width) fun s _ => if s = 0 then
-  .bind (put 112 height) fun s _ => if s = 0 then
-  .bind (put 120 pressure) fun s _ => if s = 0 then
-  .boundedFoldU64 4096 tokenStep 4096 0 0 0 0 0 fun s _ => if s = 0 then
-  .bind (get 40) fun s ended => if s = 0 then
-  .bind (get 48) fun s seen => if s = 0 then
-  .bind (get 72) fun s parent => if s = 0 then
-  .bind (get 80) fun s plic => if s = 0 then
-  .bind (get 184) fun s socFlags => if s = 0 then
-  .bind (get 192) fun s timebase => if s = 0 then
-  if ended = 1 then if seen = 0x0fe01cfe then if parent = plic then if 0 < plic then
-  if socFlags = 15 then if timebase = 1 then
+/-- Descriptor consistency with the actual reset DTB; exact inventories remain
+separate. A silicon device list cannot certify the inherited QEMU devices. -/
+def validateBinding (binding pointer expectedBytes width height pressure : UInt64) : Action :=
+  .bind BootInfo.validate fun s actual =>
+  if failed s = true then .done s 0 else if actual = pointer then
+  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes =>
+  if failed s = true then .done s 0 else if bytes = expectedBytes then
+  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put 0 (pointer + structureOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 16 (pointer + stringsOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 104 width) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 112 height) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 120 pressure) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 176 binding) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 4096 tokenStep 4096 0 0 0 0 0 fun s _ => if failed s = true then .done s 0 else
+  .bind (get 40) fun s ended => if failed s = true then .done s 0 else
+  .bind (get 48) fun s seen => if failed s = true then .done s 0 else
+  .bind (get 72) fun s parent => if failed s = true then .done s 0 else
+  .bind (get 80) fun s plic => if failed s = true then .done s 0 else
+  .bind (get 184) fun s socFlags => if failed s = true then .done s 0 else
+  .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
+  .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
+  if (if binding = 1 then if rootIdentity = 1 then true else false else true) = true then
+  if ended = 1 then if seen = (if binding = 1 then 0x1c7e else 0x0fe01cfe) then
+  if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
   .bind actualDevices fun s _ => .done s pointer
-  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done invalid 0 else .done s 0 else .done invalid 0 else .done s 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0
+
+def validate (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBinding 0 pointer expectedBytes width height pressure
+
+def validateSilicon (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBinding 1 pointer expectedBytes width height pressure
 
 end Lemma.Platform.LemmaSim.DescriptorDTB

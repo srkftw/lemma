@@ -61,8 +61,8 @@ private def validateDescriptor (record header total : UInt64) : Action :=
   .bind (get record 8) fun s entry => if failed s = true then .done s 0 else
   .bind (get record 16) fun s textVA => if failed s = true then .done s 0 else
   .bind Frames.runtimeCount fun s frameCount => if failed s = true then .done s 0 else
-  let textBase := if frameCount = 8192 then 0x1000000 else 0x10000
-  let textCapacity := if frameCount = 8192 then 0x80000 else 0xf000
+  let textBase := if Frames.expanded frameCount = true then 0x1000000 else 0x10000
+  let textCapacity := if Frames.expanded frameCount = true then 0x80000 else 0xf000
   if (if textVA = textBase then false else true) = true then .done invalidImage 0 else
   .bind (get record 24) fun s textOffset => if failed s = true then .done s 0 else
   .bind (get record 32) fun s textBytes => if failed s = true then .done s 0 else
@@ -85,8 +85,8 @@ private def validateDescriptor (record header total : UInt64) : Action :=
   -- last partial text page and the stack's two surrounding unmapped pages.
   if textCapacity < ((textBytes + 4095) / 4096) * 4096 then .done invalidBounds 0 else
   if disjoint textVA (((textBytes + 4095) / 4096) * 4096) dataVA dataMemoryBytes = false then .done invalidBounds 0 else
-  let stackBase := if frameCount = 8192 then 0x3fffa000 else 0x3fffc000
-  let stackCount := if frameCount = 8192 then 4 else 2
+  let stackBase := if Frames.expanded frameCount = true then 0x3fffa000 else 0x3fffc000
+  let stackCount := if Frames.expanded frameCount = true then 4 else 2
   if stackBase - 4096 < dataVA + dataMemoryBytes then .done invalidBounds 0 else
   .bind (get record 72) fun s stackVA => if failed s = true then .done s 0 else
   if (if stackVA = stackBase then false else true) = true then .done invalidImage 0 else
@@ -134,7 +134,7 @@ private def validateView (storageBase storageBytes imageIndex : UInt64) : Action
   if (if magic = packageMagic then false else true) = true then .done invalidPackage 0 else
   .bind (get storageBase 8) fun s version => if failed s = true then .done s 0 else
   .bind Frames.runtimeCount fun s frameCount => if failed s = true then .done s 0 else
-  let expectedVersion := if frameCount = 8192 then 2 else 1
+  let expectedVersion := if Frames.expanded frameCount = true then 2 else 1
   if (if version = expectedVersion then false else true) = true then .done invalidPackage 0 else
   .bind (get storageBase 16) fun s count => if failed s = true then .done s 0 else
   if count = 0 then .done invalidPackage 0 else

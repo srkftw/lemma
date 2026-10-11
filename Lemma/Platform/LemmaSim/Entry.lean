@@ -65,7 +65,7 @@ def step : Action :=
     else .done 0 0 else .done 0 0) fun s _ =>
   if failed s = true then fatal else Scheduler.step
 
-private def start : Action :=
+def start : Action :=
   .bind (put 0 0) fun s _ => if failed s = true then fatal else
   .bind (put 16 0) fun s _ => if failed s = true then fatal else
   .bind (put 24 0) fun s _ => if failed s = true then fatal else
@@ -79,18 +79,21 @@ private def start : Action :=
   .bind (Lemma.Drivers.VirtIOBlock.submit 0 0) fun s _ =>
   if failed s = true then .done s 0 else .loop step
 
-def boot : Action :=
+def initializeBinding (binding : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ =>
   if failed s = true then .done s 0 else
   .bind Lemma.Kernel.BootInfo.validate fun s _ => if failed s = true then .done s 0 else
-  .bind Descriptor.validate fun s _ => if failed s = true then .done s 0 else
+  .bind (if binding = 1 then Descriptor.validateSilicon else Descriptor.validate) fun s _ => if failed s = true then .done s 0 else
   .bind Frames.init fun s _ => if failed s = true then .done s 0 else
   .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if failed s = true then .done s 0 else
   .bind Lemma.Drivers.Paper.initialize fun s geometry => if failed s = true then .done s 0 else
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if failed s = true then .done s 0 else
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ =>
   if failed s = true then fatal else
-  .bind Lemma.Drivers.PLIC.initialize fun s _ => if failed s = true then .done s 0 else start
+  Lemma.Drivers.PLIC.initialize
+
+def boot : Action :=
+  .bind (initializeBinding 0) fun s _ => if failed s = true then .done s 0 else start
 
 /-- Real SEIP handling. A client cannot manufacture the trap frame, IRQ number,
 or DMA pointers. Expensive device handling is deferred until returnKernel. -/

@@ -23,6 +23,25 @@ def response(op=3, epoch=1, handle=4, length=128, count=128, data=bytes(128), st
 
 
 class BufferCheckerFailures(unittest.TestCase):
+    def test_silicon_startup_is_a_distinct_strict_binding(self):
+        root=0x82001000
+        rows=[(0xa,0x87e00000,1,512,0x82000000),
+              (0xc0,0x534543414c4c0001,0x1b1b1f1818,0xb1ff,2),
+              (0xc1,2,3,1,0),(0xc2,17,22,22,123456),
+              (0xd3,root,(8<<60)|(root>>12),500,0),
+              (0xf0,1,8,512,10000),(0xb0,1,16,16,497)]
+        events=[{'kind':'kernel','value':list(row)} for row in rows]
+        facts=checker.startup(events,configuration='silicon-service-development')
+        self.assertEqual(facts['supervisor']['firmware_witness_and_csrs'][-1],2)
+        with self.assertRaises(Core0Error):checker.startup(events)
+        for row,column,value in ((0,1,0x87e01000),(1,4,0x1446),(2,2,2),(3,4,0),(0,2,True)):
+            bad=deepcopy(events);bad[row]['value'][column]=value
+            with self.subTest(row=row,column=column),self.assertRaises(Core0Error):
+                checker.startup(bad,configuration='silicon-service-development')
+        with tempfile.TemporaryDirectory() as tmp:
+            trace,_=self.fixture(Path(tmp),'silicon-service-development')
+            self.assertIn('fault',trace.keys)
+
     def test_timeout_ceiling_rejects_invalid_values_before_guest_setup(self):
         for timeout in (True, False, 0, -1, 300.01, float('inf'), float('-inf'), float('nan'), None, '300'):
             with self.subTest(timeout=timeout), self.assertRaises(Core0Error):
@@ -38,11 +57,15 @@ class BufferCheckerFailures(unittest.TestCase):
                 self.assertEqual(checker.main(), 1)
                 root.assert_not_called()
                 session.assert_not_called()
+        for timeout in (True, 0, -1, 3600.01, float('inf'), float('nan')):
+            with self.subTest(rtl_timeout=timeout), self.assertRaises(Core0Error):
+                checker.validate_rtl_timeout(timeout)
+        self.assertEqual(checker.validate_rtl_timeout(3600), 3600)
 
     def fixture(self, directory, configuration='service-normal'):
         users={k:{'exit_ecall_pc':0x10020,'syscall_bridge':{'ecall_pc':0x10020},
                   'function_ranges':{'tick':{'base':0x10000,'bytes':0x400}}}
-               for k in ('server','cli','peer','busy')+(('fault',) if configuration=='service-development' else ())}
+               for k in ('server','cli','peer','busy')+(('fault',) if configuration in checker.ServiceTrace.development_configurations else ())}
         edges=[['Lemma.Kernel.Objects.'+name,'Lemma.Kernel.Objects.withdrawService'] for name in ('destroy','beginRevoke')]
         edges += [['Lemma.Kernel.Directory.discover','Lemma.Kernel.Capability.grantDiscovered']]
         # Explicit two read obligations, rather than a broad UserCopy prefix.

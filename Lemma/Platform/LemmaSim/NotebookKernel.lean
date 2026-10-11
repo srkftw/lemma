@@ -90,7 +90,7 @@ private def observeFault (cause : UInt64) : Action :=
   else .done 0 0 else fatal else fatal
   else .done 0 0
 
-private def construct (initialization isolation : UInt64) : Action :=
+private def construct (initialization isolation binding : UInt64) : Action :=
   .bind Process.init fun s _ => if s = 0 then
   .bind Task.init fun s _ => if s = 0 then
   .bind Objects.init fun s _ => if s = 0 then
@@ -110,7 +110,7 @@ private def construct (initialization isolation : UInt64) : Action :=
   .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
   .bind (Task.activateManaged store) fun s _ => if s = 0 then
   .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
-  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents 8192) fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x410 store notebook documents (if binding = 1 then Lemma.Platform.Silicon.Binding.frame_count else 8192)) fun s _ => if s = 0 then
   configureIsolation isolation documents
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
@@ -136,13 +136,13 @@ private def observedStage (stage : UInt64) (status : UInt8) (value : UInt64) : A
   .bind (Lemma.Kernel.Console.record 0x407 stage status.toUInt64 value 0) fun s _ =>
   if s = 0 then .done status value else .done s 0
 
-private def bootSelected (initialization isolation : UInt64) : Action :=
+private def bootSelected (initialization isolation binding : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
   .bind (observedStage 1 status value) fun s _ => if s = 0 then
-  .bind Descriptor.validate fun status value =>
+  .bind (if binding = 1 then Descriptor.validateSilicon else Descriptor.validate) fun status value =>
   .bind (observedStage 2 status value) fun s _ => if s = 0 then
-  .bind Lemma.Platform.LemmaSim.MachineServices.validate fun status value =>
+  .bind (if binding = 1 then Lemma.Platform.LemmaSim.MachineServices.validateSilicon else Lemma.Platform.LemmaSim.MachineServices.validate) fun status value =>
   .bind (observedStage 3 status value) fun s _ => if s = 0 then
   .bind Frames.init fun s _ => if s = 0 then
   .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
@@ -150,16 +150,20 @@ private def bootSelected (initialization isolation : UInt64) : Action :=
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
   .bind Lemma.Drivers.PLIC.initialize fun s _ => if s = 0 then
-  .bind (construct initialization isolation) fun s _ => if s = 0 then .loop step else .done s 0
+  .bind (construct initialization isolation binding) fun s _ => if s = 0 then .loop step else .done s 0
   else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
-def boot : Action := bootSelected 0 0
+def boot : Action := bootSelected 0 0 0
 /-- Selected only by the explicit initialize deployment on a newly created raw image. -/
-def initializeMedium : Action := bootSelected 1 0
+def initializeMedium : Action := bootSelected 1 0 0
 
 /-- The only deployment that admits the third isolated ordinary-client fixture. -/
-def isolationBoot : Action := bootSelected 0 1
+def isolationBoot : Action := bootSelected 0 1 0
+
+/-- Silicon selects the declared discovery, bounded frame supply and CSR WARL expectations. -/
+def siliconBoot : Action := bootSelected 0 0 1
+def siliconInitializeMedium : Action := bootSelected 1 0 1
 
 private def deviceCall (descriptor context pc number : UInt64) : Action :=
   .bind (Access.read64 (context + 80)) fun s a => if s = 0 then

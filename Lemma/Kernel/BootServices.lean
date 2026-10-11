@@ -24,7 +24,7 @@ def bootFailure (status : UInt8) : Action :=
     else .done s 0
   else .done s 0
 
-def bootServices : Action :=
+def bootServicesFor (expectedInterrupts probeTicks : UInt64) : Action :=
   .bind (Lemma.Kernel.Memory.Access.write64 Lemma.Platform.LemmaVM.Layout.inputControlValue 0)
     fun s _ =>
   if s = 0 then
@@ -40,7 +40,7 @@ def bootServices : Action :=
         if s = 0 then
           .bind (Lemma.Kernel.Console.record 0x0a dtb stage frames 0x82000000) fun s _ =>
           if s = 0 then
-            if stage = 1 then Lemma.Kernel.MachineServices.init
+            if stage = 1 then Lemma.Kernel.MachineServices.initFor expectedInterrupts probeTicks
             else if stage = 0 then .done 0 0 else .done 51 0
           else .done s 0
         else .done s 0
@@ -49,5 +49,7 @@ def bootServices : Action :=
     else .done s 0
   else .done s 0
   else .done s 0
+
+def bootServices : Action := bootServicesFor 0x1446 Lemma.Kernel.MachineServices.quantum
 
 end Lemma.Kernel.BootServices

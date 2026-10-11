@@ -25,7 +25,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           SERVICE_CONFIGURATIONS, USER_INSTRUCTION_CONFIGURATIONS, SERVICE_INSTRUCTION_CONFIGURATIONS,
                           service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
-                          LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256)
+                          LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -149,6 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
+MANAGED_POLICIES.update({"silicon-service-development": BUFFER_POLICY, "lemmasim-silicon-notebook": "lemma-notebook-v1", "lemmasim-silicon-initialize": "lemma-notebook-v1"})
 MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1", "lemmasim-isolation-development": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
@@ -170,8 +171,10 @@ NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3
     "directory": "users/isolation", "boot_role": "notebook-isolation-client"})
 MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES,
                                  "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
-LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+MULTI_USER_CONFIGURATIONS.update({"silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
+                                 "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-devices","lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -228,6 +231,8 @@ def development_modules(configuration: str, role: str) -> tuple[str, ...]:
                 if (configuration, role) == ("capabilities-development", "kernel") else
                 ("Lemma.Kernel.Development.IPCEntry","Lemma.Kernel.Development.TasksEntry")
                 if (configuration, role) == ("ipc-development", "kernel") else
+                ("Lemma.Platform.Silicon.Development.DeviceEntry", "Lemma.Platform.Silicon.Development.DeviceProbe")
+                if (configuration, role) == ("lemmasim-silicon-devices", "kernel") else
                 (configuration_modules(configuration)[role],) if development_role(configuration, role) else ())
     if configuration_development_modules(configuration, role) != expected:
         raise Core0Error("selected role Development authority differs from its exact audited module catalog")
@@ -405,7 +410,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                'tasks-fault-development':p+'Development.FaultEntry.dispatch',
                'capabilities-development':p+'Development.CapsEntry.dispatch',
                'ipc-development':p+'Development.IPCEntry.dispatch',
-               'service-normal':p+'ServiceEntry.dispatch','service-development':p+'Development.ServiceEntry.dispatch'}
+               'service-normal':p+'ServiceEntry.dispatch','service-development':p+'Development.ServiceEntry.dispatch',
+               'silicon-service-development':p+'Development.ServiceEntry.dispatch'}
         entry.update({cfg:p+'Development.ServiceEntry.dispatch' for cfg in SERVICE_INSTRUCTION_CONFIGURATIONS})
         dispatch=entry.get(unit.get('configuration'))
         edges=({dispatch:[p+'Scheduler.dispatch'],p+'Scheduler.dispatch':[p+'Task.capture'],
@@ -413,12 +419,12 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                if dispatch else {p+'Process.dispatch':[p+'Process.validateFrame']})
         edges[p+'Process.validateFrame']=[p+'Process.validateStackAt']
         required=set(edges)|{callee for callees in edges.values() for callee in callees}
-        required|={p+'BootServices.bootServices',p+'Memory.Frames.configure',p+'Memory.Frames.init'}
+        required|={p+'BootServices.bootServicesFor',p+'Memory.Frames.configure',p+'Memory.Frames.init'}
         if not required<=all_names.keys(): raise Core0Error('four-page stack lacks its checked trap dispatch closure')
         for caller,callees in edges.items():
             if not {all_names[callee] for callee in callees}<=parse_definitions_and_calls(_ir_definition_body(pre_ir,all_names[caller]))[2]:
                 raise Core0Error('four-page stack omits a checked trap validation edge')
-        boot=_ir_definition_body(pre_ir,all_names[p+'BootServices.bootServices'])
+        boot=_ir_definition_body(pre_ir,all_names[p+'BootServices.bootServicesFor'])
         configurations=re.findall(r'call \{ i64, i64 \} @'+re.escape(all_names[p+'Memory.Frames.configure'])+r'\(([^\n]*)\)',boot)
         if configurations!=['i64 512, i64 32, i64 4']:
             raise Core0Error('ordinary current boot does not select its actual four-page owned stack')
@@ -447,7 +453,8 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                      "capabilities-development": "Lemma.Kernel.Development.CapsEntry.dispatch",
                      "ipc-development":"Lemma.Kernel.Development.IPCEntry.dispatch",
                      "service-normal":"Lemma.Kernel.ServiceEntry.dispatch",
-                     "service-development":"Lemma.Kernel.Development.ServiceEntry.dispatch"}
+                     "service-development":"Lemma.Kernel.Development.ServiceEntry.dispatch",
+                     "silicon-service-development":"Lemma.Kernel.Development.ServiceEntry.dispatch"}
     task_dispatch.update({configuration: "Lemma.Kernel.Development.ServiceEntry.dispatch"
                           for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
     dispatch_edges = ({task_dispatch[unit["configuration"]]: ["Lemma.Kernel.Scheduler.dispatch"],
@@ -1827,8 +1834,9 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
     x='Lemma.Kernel.Memory.Access.';q='Lemma.Kernel.Scheduler.';v='Lemma.User.CapabilityABI.'
     selected=e if configuration=='service-normal' else 'Lemma.Kernel.Development.ServiceEntry.'
     edges={
-      selected+'boot':[e+'initialize',e+'construct'],selected+'dispatch':[q+'dispatch'],
-      e+'initialize':['Lemma.Kernel.BootServices.bootServices',o+'init',o+'serviceInitialize',n+'init'],
+      selected+('siliconBoot' if configuration=='silicon-service-development' else 'boot'):
+          [e+('initializeFor' if configuration=='silicon-service-development' else 'initialize'),e+'construct'],selected+'dispatch':[q+'dispatch'],
+      e+'initializeFor':['Lemma.Kernel.BootServices.bootServicesFor',o+'init',o+'serviceInitialize',n+'init'],
       e+'construct':[e+'serverBudget',d+'nextEpoch',t+'prepareManaged',e+'configure'],
       e+'serverBudget':['Lemma.Kernel.Loader.validate',x+'read64'],
       e+'configure':[e+'createEndpoint',e+'grants',d+'preflightPublish',n+'bindReader',t+'activateManaged',e+'activatePublished'],
@@ -1870,6 +1878,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
         edges[selected+'replacement']=[selected+'stableKernel',d+'nextEpoch',t+'prepareManaged',e+'createEndpoint',e+'grant',d+'preflightPublish',e+'activatePublished']
         edges[selected+'stopServer']=[selected+'stableKernel',d+'server',t+'lookup',t+'terminate',t+'reap']
         edges[selected+'intercept']=[o+'replyFields', 'Lemma.Kernel.IPCStorage.pending',t+'lookup',c+'requireActive','Lemma.Kernel.MachineServices.time',t+'terminate',q+'returnKernel']
+    if configuration!='silicon-service-development': edges[e+'initialize']=[e+'initializeFor']
     constants={o+'serviceMagic':0x31565253414d454c,o+'serviceOffset':224,o+'serviceEpochOffset':232,o+'serviceKeyOffset':240,o+'serviceOwnerOffset':248,
        n+'control':0x80400660,n+'magic':0x31504e49414d454c,n+'frameVersion':1,
        n+'ringOffset':128,n+'ringCapacity':512,n+'pendingOffset':640,n+'pendingCapacity':168,
@@ -1877,6 +1886,8 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
        n+'readerOffset':32,n+'headOffset':40,n+'countOffset':48,n+'stateOffset':56,n+'headerOffset':64,n+'headerCountOffset':72,
        n+'classOffset':80,n+'lengthOffset':88,n+'receivedOffset':96,n+'diagnosticReadyOffset':104,
        n+'headerState':0,n+'bodyState':1,n+'pendingState':2,d+'serviceID':1,v+'endpointCall':16,v+'directoryType':4,v+'directoryDiscover':1024}
+    if configuration=='silicon-service-development':
+        constants['Lemma.Platform.Silicon.Binding.boot_timer_probe_ticks']=10000
     required=set(constants)|set(edges)|{callee for callees in edges.values() for callee in callees}
     if not required<=by.keys():
         raise Core0Error('service genuine closure missing: '+str(sorted(required-by.keys())))
@@ -1901,7 +1912,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
             observed.append([caller,callee])
     ordered=[]
     for caller,before,after in [
-      (e+'initialize','Lemma.Kernel.BootServices.bootServices',n+'init'),(e+'initialize',o+'serviceInitialize',n+'init'),
+      (e+'initializeFor','Lemma.Kernel.BootServices.bootServicesFor',n+'init'),(e+'initializeFor',o+'serviceInitialize',n+'init'),
       (e+'construct',e+'serverBudget',t+'prepareManaged'),(e+'configure',e+'grants',d+'preflightPublish'),
       (e+'configure',d+'preflightPublish',n+'bindReader'),(e+'configure',n+'bindReader',t+'activateManaged'),
       (e+'configure',t+'activateManaged',e+'activatePublished'),(e+'activatePublished',t+'activateManaged',d+'publish'),
@@ -1957,7 +1968,7 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
     # The only source-level getters of this authoritative control constant are
     # validation, mode, one-time initialization, and common boot clearing.
     # Indirect computed address semantics remain a separate source/ELF obligation.
-    control_sources={n+'table',n+'mode',n+'init','Lemma.Kernel.BootServices.bootServices'}
+    control_sources={n+'table',n+'mode',n+'init','Lemma.Kernel.BootServices.bootServicesFor'}
     control_symbols={by[n+'control'],by['Lemma.Platform.LemmaVM.Layout.inputControlValue']}
     all_bodies={match[1]:match[2] for match in re.finditer(r'(?ms)^define[^\n]*@([^( ]+)\([^\n]*\)[^\n]*\{\n(.*?)^\}',pre_ir)}
     if not set(by.values())<=all_bodies.keys():
@@ -2044,9 +2055,19 @@ def validate_service_graph(unit: dict, pre_ir: str) -> dict:
        r'call \{ i64, i64 \} @'+re.escape(by[e+'grant'])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',bodies[e+'grants'])]
     if grants!=[('%arg0',16,1,2),('%arg0','%arg3',2,8),('%arg1',16,1,3),('%arg1',18,4,1024),('%arg2',16,1,2),('%arg2',18,4,1024)]:
         raise Core0Error('service exact role grants/attenuation/order differ')
-    mode_call=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[e+'initialize'])+r'\(i64 ([0-9]+)\)',bodies[selected+'boot'])
-    if mode_call!=['1' if configuration=='service-normal' else '2']:
-        raise Core0Error('service input mode is not selected solely by exact boot root')
+    selected_initializer = e+('initializeFor' if configuration=='silicon-service-development' else 'initialize')
+    entry_body=bodies[selected+('siliconBoot' if configuration=='silicon-service-development' else 'boot')]
+    if configuration=='silicon-service-development':
+        probe='Lemma.Platform.Silicon.Binding.boot_timer_probe_ticks'
+        operands=_ipc_scalar_operands(entry_body,{by[probe]:10000})
+        calls=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[selected_initializer])+r'\(i64 ([^,]+), i64 ([^,]+), i64 ([^)]+)\)',entry_body)
+        actual=[tuple(operands.get(value,int(value) if value.isdecimal() else value) for value in row) for row in calls]
+        if actual!=[(2,2,10000)]:
+            raise Core0Error('silicon service boot mode/delegation/probe interval differ from exact binding')
+    else:
+        mode_call=re.findall(r'call \{ i64, i64 \} @'+re.escape(by[selected_initializer])+r'\(i64 ([0-9]+)\)',entry_body)
+        if mode_call!=['1' if configuration=='service-normal' else '2']:
+            raise Core0Error('service input mode is not selected solely by exact boot root')
     return {'managed_policy':BUFFER_POLICY,'common_ipc':common,'source_call_edges':observed,
        'source_constants':{source:{'symbol':by[source],'value':value} for source,value in sorted(constants.items())},
        'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'input_copy_count_gate':count_gate,'input_reader_gate':reader_gate,
@@ -2286,11 +2307,17 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     if type(layout.get("schema_version")) is not int or layout.get("schema_version") != 1 or layout.get("contract_version") != "lemma-kernel-layout-v2" or layout.get("configuration") != configuration or layout.get("startup_case") != startup_case(configuration) or layout.get("user_startup_case") != selected_case:
         raise Core0Error("unknown kernel layout version")
     expanded = configuration in LEMMASIM_CONFIGURATIONS
+    silicon = configuration.startswith("lemmasim-silicon-")
+    if silicon:
+        from silicon_profile import profile
+        binding = profile()
+    frame_count = binding["frame_count"] if silicon else 8192 if expanded else 512
+    frame_limit = binding["frame_pool_base"] + binding["frame_pool_bytes"] if silicon else 0x84000000 if expanded else 0x82200000
     if expanded and layout.get('boot_clear') != {
             'contract_version': 'lemma-boot-clear-v1', 'base': 0x80400000,
             'limit': 0x80500000, 'stride_bytes': 8, 'phase': 'M-startup-before-boot-handoff'}:
         raise Core0Error('Lemmasim boot metadata clear interval differs')
-    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, 8192 if expanded else 512):
+    if (layout.get("ram_base"), layout.get("ram_limit"), layout.get("frame_bytes"), layout.get("frame_count")) != (0x80000000, 0x88000000, 4096, frame_count):
         raise Core0Error("pinned RAM/frame contract differs")
     if (type(layout.get("task_kernel_stack_pages")) is not int or type(layout.get("task_kernel_stack_bytes")) is not int
             or layout["task_kernel_stack_pages"] != 4 or layout["task_kernel_stack_bytes"] != layout["frame_bytes"] * layout["task_kernel_stack_pages"]):
@@ -2300,7 +2327,7 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     expected = {"firmware": (0x80000000, 0x80010000), "firmware-private": (0x80100000, 0x80110000),
                 "supervisor": (0x80200000, 0x80300000), "metadata": (0x80400000, 0x80500000),
                 "supervisor-stack": (0x80500000, 0x80510000), "boot-package": (0x80600000, 0x80700000),
-                "frame-pool": (0x82000000, 0x84000000 if expanded else 0x82200000), "dtb-reserve": (0x87e00000, 0x88000000)}
+                "frame-pool": (0x82000000, frame_limit), "dtb-reserve": (0x87e00000, 0x88000000)}
     rows = _array(layout.get("intervals"), "layout intervals")
     observed = {}
     for raw in rows:
@@ -2979,7 +3006,7 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
-    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',70,['u64','u64'],[],[*range(2,18),*range(32,53),*range(64,72)]),
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',72,['u64','u64'],[],[*range(2,18),*range(32,53),*range(64,74)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
@@ -3512,11 +3539,11 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
         return
     by_source = {row["source"]: row["symbol"] for row in unit["functions"]}
     initialize = by_source.get("Lemma.Platform.LemmaVM.ConsoleDevice.initialize14")
-    factored_boot = by_source.get("Lemma.Kernel.BootServices.bootServices")
+    factored_boot = by_source.get("Lemma.Kernel.BootServices.bootServicesFor")
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.boot")
+        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -4300,7 +4327,11 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         units = {role: validate_unit(load_json(output_dir / role / "unit.json"), role, configuration=configuration) for role in roles}
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
-        validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
+        if configuration in SILICON_CONFIGURATIONS:
+            from silicon_profile import validate_evidence
+            validate_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
+        else:
+            validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())

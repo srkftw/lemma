@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "profile": "lemma-silicon-dev/0.1.0",
+  "canonical": "lemma-one-core/0.1.0",
+  "physical_conformance": "UNVERIFIED",
+  "reset_vector": 4096,
+  "rom_bytes": 4096,
+  "entry": 2147483648,
+  "hart_count": 1,
+  "ram_base": 2147483648,
+  "ram_bytes": 134217728,
+  "ram_implementation": "simulation-external-memory-port; not on-chip SRAM",
+  "dtb_base": 2279604224,
+  "dtb_reserve_bytes": 2097152,
+  "timebase_hz": 10000000,
+  "clock_hz": 100000000,
+  "boot_timer_probe_ticks": 10000,
+  "geometry": [
+    512,
+    640
+  ],
+  "pressure_max": 4095,
+  "frame_pool_base": 2181038080,
+  "frame_pool_bytes": 4194304,
+  "plic_sources": 13,
+  "devices": {
+    "uart": {
+      "base": 268435456,
+      "span": 256,
+      "irq": 10
+    },
+    "finisher": {
+      "base": 1048576,
+      "span": 4096
+    },
+    "timer": {
+      "base": 33554432,
+      "span": 65536,
+      "mtime": 33603576,
+      "mtimecmp": 33570816
+    },
+    "plic": {
+      "base": 201326592,
+      "span": 6291456
+    },
+    "block": {
+      "base": 268439552,
+      "span": 4096,
+      "irq": 1,
+      "sector_bytes": 512
+    },
+    "paper": {
+      "base": 268500992,
+      "span": 4096,
+      "irq": 12
+    },
+    "pen": {
+      "base": 268505088,
+      "span": 4096,
+      "irq": 13,
+      "fifo": 256
+    }
+  },
+  "descriptor": {
+    "base": 268502016,
+    "bytes": 256,
+    "magic": 1280132179,
+    "abi": 2
+  },
+  "absent": [
+    "RTC",
+    "seven unused VirtIO slots",
+    "PCIe",
+    "CFI flash",
+    "fw_cfg",
+    "platform bus"
+  ],
+  "dma_policy": "CVW 4 KiB instruction cache with guest fence.i; data cache disabled; controller DMA restricted to checked frame-pool physical window; one request outstanding",
+  "panel_model": "external visible state driven only by RTL controller output; synthetic refresh timing",
+  "frame_count": 1024,
+  "frame_quota": 128,
+  "development_memory_scope": "4 MiB allocator frame pool / 128-frame per-user quota / four-page stacks; expanded guest layout; canonical 32 MiB floor not claimed"
+}

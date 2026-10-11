@@ -85,6 +85,27 @@ requires a usable persistent notebook, not devices or a bring-up demonstration.
 Publish a draft PR against current main; do not merge or inherit Task 003 merge
 authorization. Keep physical conformance UNVERIFIED and USGCE untouched.
 
+## Fifth task's scope
+
+Task005 is authorized by `codex/prompts/005-open-silicon-bringup.md`.
+Use `task/005-open-silicon-bringup`; preserve the exact PR#6 specification
+dependency and its attribution. Implement `lemma-silicon-dev/0.1.0` as a
+development backend of first-class LemmaSim. Synthesizable RTL is circuitry;
+all target software and compiler policy remain genuinely elaborated Lean.
+Host adapters and generated Verilator C++ supply clocks, reset, external memory,
+raw input, medium bytes and panel effects only. They never execute instructions,
+construct documents or recover journals. QEMU remains the default native
+notebook backend. Read the Task005 checkpoint before resuming.
+
+The sequence is RTL compute/reset -> existing isolated services -> actual
+pen/paper/block controllers -> short durable notebook -> scoped open-flow
+feasibility. External simulation RAM is not on-chip SRAM. Track exact core,
+tool, library and source identities, unresolved cells and failed observations.
+Synthesis, routed-controller feasibility, DRC/LVS and physical conformance
+have separate results. No managed-runtime rewrite, radio, browser rewrite,
+fabrication submission, paid infrastructure, supplier outreach or proprietary
+closure. Publish one draft PR against main; do not merge. USGCE is untouched.
+
 ## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and

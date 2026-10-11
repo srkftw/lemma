@@ -20,6 +20,10 @@ mathematics and tutor rows remain naming guidance, not implemented subsystems.
 | `Lemma/Documents/Ink.lean` | Versioned raw provenance, page indices and stable-ID edits |
 | `Lemma/Applications/Notebook.lean` | Guest toolbar, streamed pages, live ink and asynchronous commit state |
 | `sim/host/` | Host-only QEMU hardware models/adapters; no guest notebook or recovery algorithms |
+| `sim/rtl/` | Synthesizable CVW compute/fabric and pen/paper/block controller circuits; `host/` supplies clocks and external bytes only |
+| `Lemma/Platform/Silicon/` | Lean-authored reset ROM and narrow silicon binding validation; shared kernel/service/application policy |
+| `tooling/silicon/` | Exact open core/EDA/PDK inputs, limited hardware notices, synthesis and physical-flow recipes |
+| `conformance/silicon/` | Literal RTL device stimuli and independent RTL workload observations |
 | `sim/profiles/` | Versioned machine-readable reference binding |
 | `conformance/lemmasim/` | Independent offline observations/oracles and raw input fixtures |
 | `Lemma/Verify/` | Exact checkers, proof checking and evidence |

@@ -94,7 +94,7 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development'} or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
+    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-devices', 'lemmasim-silicon-notebook', 'lemmasim-silicon-initialize'} or unit.get('role') != 'kernel' or unit.get('contract_version') != 'core0-kernel-v0.3':
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

@@ -9,7 +9,7 @@ from audit_kernel import _jump_assembly_guard, _jump_service_default, BACKEND_JU
 from core0_common import Core0Error
 
 SERVICE_CASE_CONFIGURATIONS = {
-    "service-normal", "service-development", "service-halfword-ecall-development",
+    "service-normal", "service-development", "silicon-service-development", "service-halfword-ecall-development",
     "service-return-supervisor-development", "service-return-machine-development",
 }
 

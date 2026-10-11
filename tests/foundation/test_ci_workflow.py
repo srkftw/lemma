@@ -12,7 +12,7 @@ WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
-        "kernel-architecture-rv64")
+        "kernel-architecture-rv64", "silicon-devices-rtl")
 
 
 def job_block(source: str, job: str) -> str:
@@ -42,12 +42,19 @@ class CiWorkflowTests(unittest.TestCase):
         cls.kernel = cls.blocks["kernel-rv64"]
         cls.task002 = cls.metadata + cls.legacy + cls.foundation
 
+    def test_pr_campaign_does_not_duplicate_task_branch_push(self):
+        triggers = self.source.split("permissions:\n", 1)[0]
+        self.assertRegex(triggers, r"push:\n\s+branches:\n\s+- main\n")
+        self.assertNotIn('"task/**"', triggers)
+        self.assertIn("  pull_request:\n", triggers)
+        self.assertIn("  workflow_dispatch:\n", triggers)
+
     def test_separate_jobs_keep_host_metadata_away_from_qemu(self):
         jobs = re.findall(
             r"^  ([a-z0-9-]+):$", self.source.split("jobs:\n", 1)[1], re.MULTILINE
         )
         self.assertEqual(jobs, list(JOBS))
-        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel"):
+        for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build", self.metadata)
@@ -95,7 +102,8 @@ class CiWorkflowTests(unittest.TestCase):
             "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
-                         "metadata/foundation-host-unittest.log", "metadata/kernel-host-unittest.log"),
+                         "metadata/foundation-host-unittest.log", "metadata/kernel-host-unittest.log",
+                         "metadata/silicon-host-unittest.log"),
             "legacy-rv64": ("legacy-rv64.log",),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
             "kernel-managed-rv64": ("kernel-managed-rv64.log",),
@@ -103,6 +111,7 @@ class CiWorkflowTests(unittest.TestCase):
             "kernel-rv64": ("kernel-rv64.log",),
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
+            "silicon-devices-rtl": ("silicon-devices-rtl.log",),
         }
         for job, names in expected.items():
             with self.subTest(job=job):
@@ -128,6 +137,19 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertEqual(job_block(source, "metadata"), "  metadata:\n    run: host-only\n")
         self.assertEqual(job_block(source, "new-job"), "  new-job:\n    run: qemu\n")
         with self.assertRaises(ValueError): job_block(source, "missing")
+
+    def test_literal_rtl_lane_is_bounded_exact_source_and_retains_failures(self):
+        lane = self.blocks['silicon-devices-rtl']
+        for required in ('timeout-minutes: 20', 'literal host stimuli',
+                         'timeout --foreground --signal=TERM --kill-after=30s 15m',
+                         'python3 scripts/check_silicon.py --lane devices',
+                         '--work-dir build/silicon/ci-devices --timeout 600 --jobs 2',
+                         "value['source_commit'] != head", "value['observations'] != expected",
+                         "len(value['commands']) != 2", "value['source_inputs'].items()",
+                         "command['log_sha256']", "command['exit_code'] != 0",
+                         'if: ${{ always() }}', 'if-no-files-found: error'):
+            self.assertIn(required, lane)
+        self.assertNotIn('continue-on-error', lane)
 
     def test_kernel_lane_requires_bounded_clean_source_and_complete_evidence(self):
         self.assertIn("timeout-minutes: 45", self.kernel)

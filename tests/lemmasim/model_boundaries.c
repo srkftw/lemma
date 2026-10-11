@@ -36,6 +36,8 @@ int main(void) {
      * the interrupted-region condition after reset. */
     assert(lemma_paper_init(&p,32,32));tile(&p,0x37);
     refresh(&p,1);lemma_paper_reset(&p);assert(p.status==8);
+    lemma_paper_reset(&p);assert(p.status==8 && p.error==6);
+    write8(&p,LEMMA_PAPER_ACK,0);assert(p.status==8 && p.error==0);
     tile(&p,0x37);write8(&p,LEMMA_PAPER_RECT_W,32);write8(&p,LEMMA_PAPER_RECT_H,32);
     write8(&p,LEMMA_PAPER_MODE,2);write8(&p,LEMMA_PAPER_SEQUENCE,2);write8(&p,LEMMA_PAPER_COMMAND,2);
     assert(p.deadline_ns==25000100 && p.status==9);

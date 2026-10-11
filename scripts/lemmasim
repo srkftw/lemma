@@ -777,15 +777,32 @@ def archive_acceptance(args):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build');p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.set_defaults(function=build)
+    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','devices'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--rtl-build',type=Path);p.set_defaults(function=build)
     p=sub.add_parser('init');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.set_defaults(function=initialize)
-    p=sub.add_parser('run');p.add_argument('--disk',type=Path,required=True);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry',default='1650x2200');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
-    p=sub.add_parser('replay');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
+    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','devices'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
+    p=sub.add_parser('replay');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
     p=sub.add_parser('copy');p.add_argument('--disk',type=Path,required=True);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=copy_image)
     args=parser.parse_args()
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=3600:parser.error('timeout must be1..3600 seconds')
-    try:args.function(args);return 0
-    except (Failure,OSError,ValueError,KeyError,subprocess.TimeoutExpired) as error:print(f'FAIL: {error}',file=sys.stderr);return 1
+    try:
+        if getattr(args,'backend','qemu')=='rtl':
+            import silicon_guest
+            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0'):raise Failure('RTL backend requires profile lemma-silicon-dev/0.1.0')
+            if args.command=='build':silicon_guest.build(args)
+            elif args.command=='run':silicon_guest.run(args)
+            elif args.command=='replay':silicon_guest.replay(args)
+            else:raise Failure('Unsupported RTL command')
+        else:
+            if any(getattr(args,key,None) is not None for key in ('guest_build','rtl_build')):raise Failure('RTL prepared artifact options require --backend rtl')
+            if getattr(args,'profile',None) not in (None,'lemmasim-virt/0.1.0'):raise Failure('QEMU backend requires profile lemmasim-virt/0.1.0')
+            if getattr(args,'workload',None) not in (None,'notebook'):raise Failure('QEMU native launcher supports notebook workload')
+            if args.command=='run':
+                if any(getattr(args,key,None) is not None for key in ('uart_input','events','uart_stop','uart_stop_hex','stop_after_panel','fail_flush','observer_cycle')):raise Failure('RTL transport options require --backend rtl')
+                args.geometry=args.geometry or '1650x2200'
+            if args.command=='run' and args.disk is None:raise Failure('QEMU notebook requires --disk')
+            args.function(args)
+        return 0
+    except (Failure,RuntimeError,OSError,ValueError,KeyError,subprocess.TimeoutExpired) as error:print(f'FAIL: {error}',file=sys.stderr);return 1
 if __name__=='__main__':raise SystemExit(main())

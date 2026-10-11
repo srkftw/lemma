@@ -119,8 +119,8 @@ def construct : Action :=
 
 /-- Mode is trusted entry policy:1 for ordinary boot,2 for the separate
 development Entry. It is never selected by an input command or user syscall. -/
-def «initialize» (mode : UInt64) : Action :=
-  .bind BootServices.bootServices fun s _ =>
+def initializeFor (mode expectedInterrupts probeTicks : UInt64) : Action :=
+  .bind (BootServices.bootServicesFor expectedInterrupts probeTicks) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (Access.read64 0x80400010) fun s stage =>
   if failed s = true then fatal else
@@ -142,6 +142,9 @@ def «initialize» (mode : UInt64) : Action :=
   .bind (Lemma.Kernel.Console.record 0xb0 1 Capability.capacity Objects.capacity remaining) fun s _ =>
   if failed s = true then fatal else .done 0 remaining
   else .done 51 0
+
+def «initialize» (mode : UInt64) : Action :=
+  initializeFor mode 0x1446 MachineServices.quantum
 
 def step : Action :=
   .bind KernelInput.poll fun s _ =>

@@ -1,0 +1,40 @@
+{
+  "schema": "lemma-silicon-physical-inputs/0.1.0",
+  "nixpkgs_revision": "7dd199b0e2993e37b4775ed66b1c291699608c9f",
+  "tools": {
+    "verilator": "5.052",
+    "yosys": "0.69",
+    "systemverilog_frontend": "Yosys integrated sv-elab (read_slang)",
+    "openroad": "26Q2",
+    "magic": "8.3.681",
+    "netgen": "1.5.323"
+  },
+  "pdk": {
+    "repository": "https://github.com/IHP-GmbH/IHP-Open-PDK.git",
+    "revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "license": "Apache-2.0; inspect per-file notices; no whole-PDK signoff claim",
+    "standard_cells": "ihp-sg13g2/libs.ref/sg13g2_stdcell",
+    "mapping_corner": "sg13g2_stdcell_typ_1p20V_25C.lib",
+    "status": "PROVISIONAL_PUBLIC_INPUTS",
+    "memories": "No macro substituted implicitly. RTL register memories are mapped explicitly. Public sg13g2_sram collateral exists but is not qualified or integrated by this recipe."
+  },
+  "tool_sources": {
+    "openroad": {
+      "repository": "https://github.com/The-OpenROAD-Project/OpenROAD.git",
+      "tag": "26Q2",
+      "revision": "553ed63bc9f65277418adc82dffe1762c20aec9f",
+      "source_hash": "sha256-dB9PfPlp6vZ9+Th8LJE65BW9YeuUL0G4JtjzQxg6UpQ=",
+      "license": "OpenROAD main BSD-3-Clause; OpenSTA GPL-3.0-or-later; ABC component notices retained; no whole-tool relicensing",
+      "build_flags": [
+        "ENABLE_TESTS=OFF",
+        "BUILD_GUI=OFF",
+        "LINK_TIME_OPTIMIZATION=OFF"
+      ],
+      "upstream_tool_selftests": "NOT_RUN in headless development derivation; own design/layout checks remain required",
+      "submodules": {
+        "src/sta": "43177bba8f5f88dfb7dc35795242080a4fe2e986",
+        "third-party/abc": "17cadca080b33edc5a13c8e6e8e8092f8c350b25"
+      }
+    }
+  }
+}

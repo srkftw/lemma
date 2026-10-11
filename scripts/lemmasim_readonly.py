@@ -9,7 +9,7 @@ import struct
 import hashlib
 from core0_common import Core0Error
 
-CONFIGURATIONS = {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development'}
+CONFIGURATIONS = {'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-notebook', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
     1: '', 2: 'cpus', 3: 'soc', 4: 'lemma-paper@10010000', 5: 'lemma-pen@10011000',
     6: 'virtio_mmio@10001000', 7: 'interrupt-controller@c000000', 8: 'clint@2000000',
@@ -23,10 +23,10 @@ DTB_LITERALS = {
     49: 'interrupt-controller', 50: 'interrupts-extended', 51: 'clock-frequency',
     52: 'ranges', 64: 'lemma,paper-v1', 65: 'lemma,pen-v1', 66: 'virtio,mmio',
     67: 'sifive,plic-1.0.0\0riscv,plic0', 68: 'sifive,clint0\0riscv,clint0',
-    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus',
+    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus', 72: 'lemma,silicon-dev-v1', 73: 'lemma,diagnostic-uart-v1',
 }
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
-WORD_CODES = [4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70]
+WORD_CODES = [4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
 PREFIX = 'Lemma.Platform.LemmaSim.'
 # Independent visible rows for the guest-authored bounded font. These are
 # packed here rather than imported from the production Lean lookup.
@@ -43,10 +43,13 @@ FONT_ROWS = {
 }
 
 def canonical_specs():
-    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,72)]
+    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,74)]
     words = [list(struct.unpack('<' + str((len(DTB_BYTES[code])+7)//8) + 'Q',
                                DTB_BYTES[code].ljust((len(DTB_BYTES[code])+7)//8*8,b'\0')))
              for code in WORD_CODES]
+    # Code73's terminating NUL occupies a fourth all-zero word. LLVM uses the
+    # independently checked scalar-zero default for that word, not a table row.
+    words[WORD_CODES.index(73)] = words[WORD_CODES.index(73)][:3]
     fields = [0]*32
     for key,value in {0:1280132179,1:1,2:256,4:0x80000000,5:0x8000000,
        6:0x82000000,7:0x2000000,8:10000000,9:0x10010000,10:4096,11:12,

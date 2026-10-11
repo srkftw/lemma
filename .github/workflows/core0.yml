@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - "task/**"
   pull_request:
   workflow_dispatch:
 
@@ -164,6 +163,22 @@ jobs:
           count = re.search(r"Ran ([0-9]+) tests?", value)
           if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
               raise RuntimeError("Kernel host suite is missing, empty or failing")
+          PY
+
+      - name: Run silicon host orchestration and observation suite
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/silicon -v \
+            2>&1 | tee build/ci/metadata/silicon-host-unittest.log
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          value = Path("build/ci/metadata/silicon-host-unittest.log").read_text()
+          count = re.search(r"Ran ([0-9]+) tests?", value)
+          if not count or int(count[1]) <= 0 or not re.search(r"^OK$", value, re.M):
+              raise RuntimeError("Silicon host suite is missing, empty or failing")
           PY
 
       - name: Retain host-suite logs
@@ -621,6 +636,75 @@ jobs:
           path: |
             build/kernel/ci-architecture/
             build/ci/kernel-architecture-rv64.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
+
+  silicon-devices-rtl:
+    name: Task 005 RTL device bus conformance with literal host stimuli
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Prepare RTL device logs
+        run: mkdir -p build/ci
+
+      - name: Build and execute real RTL device bus checks
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 15m \
+            python3 scripts/check_silicon.py --lane devices \
+              --work-dir build/silicon/ci-devices --timeout 600 --jobs 2 \
+            2>&1 | tee build/ci/silicon-devices-rtl.log
+
+      - name: Require exact-source nonempty literal RTL observations
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          value = json.loads(Path('build/silicon/ci-devices/result.json').read_text())
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
+                      'PAPER latch Busy invalid-command bounds interrupted-reset PASS',
+                      'BLOCK descriptors DMA payload used-ring flush error bounds reset PASS',
+                      'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS']
+          inputs = {'sim/rtl/lemma_pen.sv', 'sim/rtl/lemma_paper.sv', 'sim/rtl/lemma_block.sv',
+                    'sim/rtl/lemma_register_ram.sv', 'conformance/silicon/Devices.sv',
+                    'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock'}
+          if value['status'] != 'PASS' or value['lane'] != 'devices' or value['source_commit'] != head:
+              raise RuntimeError('Missing exact-candidate RTL device result')
+          if value['observations'] != expected or set(value['source_inputs']) != inputs or len(value['commands']) != 2:
+              raise RuntimeError('Missing independent literal bus observations')
+          if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
+              raise RuntimeError('RTL device source checkout changed')
+          for path, digest in value['source_inputs'].items():
+              if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('RTL device input changed')
+          for command in value['commands']:
+              log = Path(command['log'])
+              if command['exit_code'] != 0 or not log.stat().st_size or hashlib.sha256(log.read_bytes()).hexdigest() != command['log_sha256']:
+                  raise RuntimeError('Missing or changed actual RTL command output')
+          PY
+
+      - name: Retain RTL device observations and failure logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: silicon-devices-rtl-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/silicon/ci-devices/
+            build/ci/silicon-devices-rtl.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6
