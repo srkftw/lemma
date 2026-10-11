@@ -79,9 +79,11 @@ allocator supply. No physical SRAM capacity follows from this binding.
 
 MMIO UART registers use byte accesses; timer msip uses 32 bits and
 mtime/mtimecmp use 64 bits; PLIC and VirtIO transport registers use 32 bits;
-pen and paper control registers use aligned 64 bits; the paper staging aperture
-accepts byte, halfword, word and doubleword accesses, including unaligned
-accesses wholly within its 512-byte boundary. The UART is a diagnostic
+pen and paper control registers use aligned 64 bits. The integrated CPU binding
+requires natural alignment for every multi-byte access, including the paper
+staging aperture; unaligned CPU beats fault before device selection. The
+standalone paper module accepts contained unaligned aperture beats, but that
+does not extend this CPU binding. Byte staging accesses remain supported. The UART is a diagnostic
 byte transport at the existing driver offsets, with IER receive/transmit bits,
 IIR causes 4/2/1, and LSR transmit-ready plus receive-present. Its FDT
 `lemma,diagnostic-uart-v1` compatible identifies this exact register subset;

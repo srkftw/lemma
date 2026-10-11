@@ -95,7 +95,7 @@ all target software and compiler policy remain genuinely elaborated Lean.
 Host adapters and generated Verilator C++ supply clocks, reset, external memory,
 raw input, medium bytes and panel effects only. They never execute instructions,
 construct documents or recover journals. QEMU remains the default native
-notebook backend. Read the Task005 checkpoint before resuming.
+notebook backend. Read `docs/plan/005-session-state.md` before resuming.
 
 The sequence is RTL compute/reset -> existing isolated services -> actual
 pen/paper/block controllers -> short durable notebook -> scoped open-flow
@@ -107,6 +107,27 @@ source/tool identities; distinguish literal RTL tests, real guest execution and
 physical-flow results. No managed-runtime rewrite, radio, browser rewrite,
 fabrication submission, paid infrastructure, supplier outreach or proprietary
 closure. Publish one draft PR against main; do not merge. USGCE is untouched.
+
+Task 005 acceptance uses short source-bound RTL workloads and independent
+observations. Current A/B/C, durable write/edit/Save/cold, exact RTL replay and
+failed-FLUSH/cold have separate closed observed evidence. Preserve original
+FAIL reports when an independently tested host oracle correction produces a new
+observation; do not relabel guest compilation or hardware execution. The
+checkpoint retains synthesis, global-route timing, incomplete detailed routing
+and cell-only process checks separately. A slower hypothetical STA clock does
+not change the development binding or establish physical signoff.
+
+Use unused outputs for the short literal RTL protocol check:
+
+```sh
+python3 scripts/check_silicon.py --lane devices \
+  --work-dir build/silicon/devices-agent-new --timeout 600 --jobs 2
+```
+
+Real isolated-service and notebook acceptance use the existing launcher/checkers
+listed in the checkpoint. Literal device tests, host tests and CI passes are
+separate from those guest claims. Reuse unchanged artifacts only after exact
+consumed-input validation; do not rerun every historical lane for a report edit.
 
 ## Evidence discipline (all tasks)
 

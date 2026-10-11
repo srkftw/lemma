@@ -141,13 +141,23 @@ separate from physical memory integration, analog sensing, panel qualification
 and foundry acceptance. Earlier supplier/board/cartridge discussions remain
 historical; they do not gate this implementation.
 
-Task005 has observed Lean M/S/U execution, isolated-service fault containment,
-guest pen/paper/block access, a real notebook startup display, and full bounded
-SoC standard-cell mapping. The short RTL durable notebook workflow remains in
-progress. Paper placement/CTS/global routing produced measured area and timing;
-setup timing failed and detailed routing timed out. Physical memory and boot,
-completed controller routing, DRC/LVS and physical conformance remain separate
-open dependencies. See the [Task005 checkpoint](005-session-state.md).
+Task 005 has observed genuine Lean M/S/U execution, isolated service/IPC/fault
+containment, guest pen/paper/block access and a notebook pressure stroke,
+brush-width edit, explicit Save and retained-medium-only cold reopen with exact
+records and controller pixels. Exact RTL replay also reproduced captured outputs
+and medium. Failed-FLUSH passed with guest Failed instead of Saved and exact
+acknowledged medium bytes retained. Its fresh cold hart recovered the exact
+prior edited document and full frame; failed new work was absent. Earlier
+observer failures retain their identities. The complete bounded
+SoC has actual generic and SG13G2 standard-cell
+mapping, including explicit 4 KiB register RAM that runs only the scalar corpus.
+External simulation memory does not qualify physical working memory.
+Original paper placement/CTS/global routing produced area and timing evidence:
+100 MHz setup failed; a hypothetical 40 MHz live-RC analysis is separate and
+electrical violations remain. Detailed routing timed out; controller process
+DRC/LVS are NOT_RUN. Physical memory/nonvolatile boot, complete routing,
+power/pads and foundry acceptance remain separate open dependencies. See the
+[Task 005 checkpoint](005-session-state.md).
 
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |

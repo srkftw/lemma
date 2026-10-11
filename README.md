@@ -383,7 +383,7 @@ intentionally refuses an existing repository or `origin`; see [publishing notes]
 Task 005 adds `lemma-silicon-dev/0.1.0` to the existing launcher. The native QEMU
 notebook remains the default. RTL supports Developer mode and the explicit
 `service`, `initializer`, `devices` and `notebook` workloads; unsupported modes
-fail without a backend fallback. Its RAM, framebuffer SRAM, raw medium and
+fail without a backend fallback. Its RAM, framebuffer storage, raw medium and
 visible panel are external simulation models. The reset path, processor,
 translation, timer, interconnect and device controllers execute in RTL.
 
@@ -392,8 +392,8 @@ Prepare the selected workload once; ordinary runs reuse identified artifacts:
 ```sh
 ./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.1.0 --workload service
 ./scripts/lemmasim run --backend rtl --mode developer --workload service \
-  --cycles 400000000 --observer-cycle 300000000 --timeout 1800 \
-  --record build/silicon/developer-service --trace-limit 10000
+  --cycles 400000000 --observer-cycle 300000000 --timeout 3600 \
+  --record build/silicon/developer-service-new --trace-limit 10000
 ```
 
 The finite observer stop only bounds a Developer observation; functional
@@ -403,17 +403,38 @@ The isolated-service acceptance uses `scripts/check_kernel_buffer.py --backend r
 and its existing independent byte/frame oracles. Device bus checks are:
 
 ```sh
-python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/device-check --timeout 600
+python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/device-check-new --timeout 600 --jobs 2
 ```
 
 Notebook/initializer/device runs require an explicit 256 MiB raw `--disk`;
 `--events` supplies cycle-tagged raw pen/UART/reset input and `--fail-flush`
 selects a declared external-medium barrier failure. A blank medium is formatted
-only by the compiled Lean initializer. Use new capture/result paths: retained
-failures are never overwritten. `./scripts/lemmasim replay --backend rtl --session
-<capture>` re-executes its retained initial bytes and input, then compares actual
-outputs; it does not display saved results. Exact preparation/run commands and
-the currently demonstrated scope are recorded in
+only by the compiled Lean initializer. After the checkpoint's medium initialization
+and raw-input preparation, the ordinary notebook invocation is:
+
+```sh
+./scripts/lemmasim build --backend rtl --workload notebook --opt-level O2
+./scripts/lemmasim run --backend rtl --mode developer --workload notebook \
+  --disk build/silicon/notebook-publication-new.raw \
+  --events build/silicon/notebook-input-publication-new/events.txt \
+  --record build/silicon/notebook-developer-new --cycles 2000000000 \
+  --observer-cycle 1400000000 --timeout 7200 --trace-limit 1000 --block-trace
+```
+
+Use new capture/result paths: retained failures are never overwritten. Replay
+requires `--backend rtl --session <capture> --disk-copy <new-medium-copy>` and
+an explicit session timeout; it re-executes initial bytes and input before
+comparing actual outputs. A completed capture is required. Current observations
+include genuine Lean M/S/U execution, isolated service/IPC/fault containment,
+guest device access and a pressure stroke/brush-width edit/explicit Save.
+The full D3 write/edit/explicit Save/cold workflow passed with exact recovered
+records and full controller pixels. Exact RTL replay also passed by regenerating
+all captured outputs and retained medium. Failed-FLUSH also passed without a
+false Saved acknowledgement. A fresh cold hart recovered the exact prior
+acknowledged document and full controller frame, with failed new work absent.
+Actual bounded synthesis and original paper global-route measurements are
+retained; 100 MHz setup failed, detailed routing timed out, and controller
+process DRC/LVS remain NOT_RUN. Exact commands, identities and scoped results are in
 [the Task 005 checkpoint](docs/plan/005-session-state.md). RTL is slower than
 the native notebook and does not claim physical conformance or a nonvolatile
 physical boot solution. Open synthesis/layout recipes are in
