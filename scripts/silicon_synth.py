@@ -144,7 +144,8 @@ def layout_reports(out: Path, *, global_route: bool = False) -> dict:
     result = json.loads((out / summary).read_text())
     for kind in ("setup", "hold"):
         report = (out / f"{prefix}{kind}-summary.rpt").read_text()
-        slack = re.search(r"worst slack\s+([-+0-9.]+)", report)
+        direction = "max" if kind == "setup" else "min"
+        slack = re.fullmatch(r"worst slack " + direction + r" ([-+0-9.]+)\s*", report)
         if not slack:
             raise RuntimeError(f"Missing {prefix}{kind} timing estimate")
         value = float(slack.group(1))

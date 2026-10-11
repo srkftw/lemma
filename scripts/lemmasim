@@ -799,7 +799,12 @@ def main():
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
     p=sub.add_parser('copy');p.add_argument('--disk',type=Path,required=True);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=copy_image)
     args=parser.parse_args()
-    if getattr(args,'timeout',None) is not None and not 0<args.timeout<=3600:parser.error('timeout must be1..3600 seconds')
+    timeout_limit=3600
+    if getattr(args,'backend','qemu')=='rtl':
+        import silicon_guest
+        timeout_limit=silicon_guest.MAX_RUN_SECONDS
+    if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
+        parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
         if getattr(args,'backend','qemu')=='rtl':
             import silicon_guest

@@ -111,7 +111,7 @@ class CiWorkflowTests(unittest.TestCase):
             "kernel-rv64": ("kernel-rv64.log",),
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
-            "silicon-devices-rtl": ("silicon-devices-rtl.log",),
+            "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log"),
         }
         for job, names in expected.items():
             with self.subTest(job=job):

@@ -63,6 +63,24 @@ class SynthesisAuditTests(unittest.TestCase):
             with self.subTest(count=count), self.assertRaises(RuntimeError):
                 silicon_synth.router_drc(count)
 
+    def test_pinned_opensta_summary_retains_violated_setup_and_met_hold(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "global-route-summary.json").write_text('{"instances":90320}')
+            # Exact format observed in the retained real controller reports.
+            (out / "global-setup-summary.rpt").write_text("worst slack max -12.73\n")
+            (out / "global-hold-summary.rpt").write_text("worst slack min 0.03\n")
+            result = silicon_synth.layout_reports(out, global_route=True)
+            self.assertEqual((result["setup_timing"], result["setup_worst_slack_ns"]),
+                             ("VIOLATED", -12.73))
+            self.assertEqual((result["hold_timing"], result["hold_worst_slack_ns"]),
+                             ("MET", 0.03))
+            for report in ("worst slack min -12.73\n", "", "worst slack max nan\n",
+                           "worst slack max 0\nworst slack max -12.73\n"):
+                (out / "global-setup-summary.rpt").write_text(report)
+                with self.subTest(report=report), self.assertRaises(RuntimeError):
+                    silicon_synth.layout_reports(out, global_route=True)
+
     def test_expired_process_is_reaped_and_cannot_become_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
             log = Path(tmp) / "command.log"

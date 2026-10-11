@@ -8,6 +8,7 @@ from silicon_profile import PROFILE, profile
 
 ROOT=Path(__file__).resolve().parents[1]
 PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
+MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
 
@@ -204,7 +205,7 @@ def bounded_options(args):
     if type(options['cycles']) is not int or not 0<options['cycles']<=10000000000:raise ValueError('RTL cycles must be 1..10000000000')
     if type(options['trace_limit']) is not int or not 0<=options['trace_limit']<=1000000:raise ValueError('RTL trace limit must be 0..1000000')
     options['timeout']=options['timeout'] or 120
-    if not 1<=options['timeout']<=3600:raise ValueError('RTL timeout must be 1..3600 seconds')
+    if not 1<=options['timeout']<=MAX_RUN_SECONDS:raise ValueError(f'RTL timeout must be 1..{MAX_RUN_SECONDS} seconds')
     for key in ('stop_after_panel','fail_flush','observer_cycle'):
         value=options[key]
         if value is not None and (type(value) is not int or not 1<=value<=(options['cycles'] if key=='observer_cycle' else 1000000)):raise ValueError('Invalid RTL '+key)

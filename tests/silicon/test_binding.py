@@ -74,6 +74,25 @@ class BindingTests(unittest.TestCase):
         args.uart_stop_hex=None;args.cycles=0
         with self.assertRaisesRegex(ValueError,'cycles'):silicon_guest.bounded_options(args)
 
+    def test_backend_timeout_limits_remain_finite_and_distinct(self):
+        args=SimpleNamespace(cycles=1,trace_limit=0,timeout=silicon_guest.MAX_RUN_SECONDS)
+        self.assertEqual(silicon_guest.bounded_options(args)['timeout'],7200)
+        args.timeout=7201
+        with self.assertRaisesRegex(ValueError,'1..7200'):
+            silicon_guest.bounded_options(args)
+        loader=importlib.machinery.SourceFileLoader('silicon_timeout_launcher',str(ROOT/'scripts/lemmasim'))
+        launcher=loader.load_module()
+        for backend,seconds in (('qemu','3601'),('rtl','7201')):
+            with self.subTest(backend=backend),mock.patch.object(sys,'argv',
+                    ['lemmasim','run','--backend',backend,'--timeout',seconds]), \
+                    mock.patch.object(silicon_guest,'run') as run:
+                with self.assertRaises(SystemExit) as rejected:launcher.main()
+                self.assertEqual(rejected.exception.code,2);run.assert_not_called()
+        with mock.patch.object(sys,'argv',['lemmasim','run','--backend','rtl','--timeout','7200']), \
+                mock.patch.object(silicon_guest,'run') as run:
+            self.assertEqual(launcher.main(),0)
+            self.assertEqual(run.call_args.args[0].timeout,7200)
+
     def test_raw_ram_snapshot_rejects_outside_and_unbounded_ranges(self):
         self.assertEqual(silicon_guest.ram_dump_range('0x82000000:1048576'),(0x82000000,1048576))
         self.assertEqual(silicon_guest.ram_dump_range('0x87ffffff:1'),(0x87ffffff,1))
