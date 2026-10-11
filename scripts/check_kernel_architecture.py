@@ -62,7 +62,7 @@ CURRENT_QUAD_STACK_SOURCES = {
     *('Lemma.Kernel.Memory.AddressSpace.'+name for name in (
         'create','buildRegistry','copyRegistryStep','base','validateRegistry','destroy','rollbackRegistry',
         'registryCount','registryList','expandedCapacity')),
-    'Lemma.Kernel.Memory.Batch.allocate','Lemma.Kernel.BootServices.bootServices',
+    'Lemma.Kernel.Memory.Batch.allocate','Lemma.Kernel.BootServices.bootServicesFor',
     'Lemma.Kernel.Process.validateFrame','Lemma.Kernel.Process.validateStackAt',
     'Lemma.Kernel.Memory.Access.read64',
     'Lemma.Kernel.Development.ServiceEntry.dispatch','Lemma.Kernel.Scheduler.dispatch',
