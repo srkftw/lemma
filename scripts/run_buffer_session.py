@@ -397,7 +397,8 @@ class SiliconBufferSession(BufferSession):
     CONFIGURATIONS = ("silicon-service-development",)
     RUNNER_PATHS = (*BufferSession.RUNNER_PATHS, "scripts/silicon_guest.py")
     PROGRESS = re.compile(rb"RTL progress cycles=([0-9]+) pc=0x([0-9a-f]+) privilege=([0-3]) "
-                          rb"retired=([0-9]+) ticks=([0-9]+) timer_traps=([0-9]+) UART=([0-9]+)\n")
+                          rb"retired=([0-9]+) ticks=([0-9]+) timer_traps=([0-9]+) UART=([0-9]+) "
+                          rb"fb_reads=([0-9]+) fb_writes=([0-9]+) panel_pixels=([0-9]+) panel_completed=([0-9]+)\n")
 
     def __enter__(self):
         try:
@@ -450,4 +451,6 @@ class SiliconBufferSession(BufferSession):
             raise Core0Error("RTL service emitted unexpected diagnostics or an incomplete progress line")
         self.report["rtl_progress"] = [{"cycles":int(m[1]), "pc":int(m[2],16),
             "privilege":int(m[3]), "retired":int(m[4]), "ticks":int(m[5]),
-            "timer_traps":int(m[6]), "uart_bytes":int(m[7])} for m in matches]
+            "timer_traps":int(m[6]), "uart_bytes":int(m[7]),
+            "fb_reads":int(m[8]), "fb_writes":int(m[9]),
+            "panel_pixels":int(m[10]), "panel_completed":int(m[11])} for m in matches]

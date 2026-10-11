@@ -106,13 +106,31 @@ def devices(out, timeout, jobs):
             'scope':'literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability',
             'observations':expected+protocol_expected}
 
+def host_deadline_options(binary):
+    """Actual compiled argument handling; no guest boot or timeout-pass claim."""
+    from silicon_guest import MAX_RUN_SECONDS
+    rows=[]
+    for seconds in (1, MAX_RUN_SECONDS, 0, MAX_RUN_SECONDS+1):
+        argv=[str(binary),'--deadline',str(seconds)]
+        result=subprocess.run(argv,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
+        # Accepted deadlines reach the required-image check. Rejected deadlines
+        # fail at argument validation, before any target image can be loaded.
+        expected=('RTL adapter: --image --rom --uart-output required\n' if 1<=seconds<=MAX_RUN_SECONDS else
+                  f'RTL adapter: deadline must be1..{MAX_RUN_SECONDS}seconds\n')
+        if result.returncode!=1 or result.stdout or result.stderr.decode()!=expected:
+            raise RuntimeError('Compiled RTL deadline handling disagrees with the launcher')
+        rows.append({'argv':argv,'exit_code':result.returncode,'stdout':'','stderr':expected})
+    return rows
+
 def bus_lanes(out, timeout, jobs):
     from silicon_compute import source_manifest, prepare
     dep=ROOT/'build/silicon/deps/cvw'
     prepare(dep);manifest=source_manifest(dep)
     bench=ROOT/'conformance/silicon/BusLanes.sv'
     before={**manifest['sha256'],**manifest['configuration_includes'],
-            str(bench):sha(bench),str(Path(__file__)):sha(__file__)}
+            str(bench):sha(bench),str(Path(__file__)):sha(__file__),
+            str(ROOT/manifest['host_adapter']['path']):manifest['host_adapter']['sha256'],
+            str(ROOT/'scripts/silicon_guest.py'):sha(ROOT/'scripts/silicon_guest.py')}
     for name in ('scripts/silicon_compute.py','tooling/silicon/apply_cvw.py',
                  'tooling/silicon/sim.nix','tooling/silicon/dependencies.json','flake.lock'):
         before[str(ROOT/name)]=sha(ROOT/name)
@@ -127,8 +145,14 @@ def bus_lanes(out, timeout, jobs):
               'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS']
     if any((out/'simulation.log').read_text().count(marker)!=1 for marker in expected):
         raise RuntimeError('Missing or duplicate actual bus-lane observations')
+    host=out/'host'
+    records.append(command(['python3','scripts/silicon_compute.py','build','--output-dir',str(host),
+                            '--jobs',str(jobs)],out/'host-build.log',timeout))
+    host_options=host_deadline_options(host/'obj/lemma-rtl')
     if before!={p:sha(p) for p in before}:raise RuntimeError('Bus-lane inputs changed during observation')
     return {'status':'PASS','source_inputs':before,'commands':records,'observations':expected,
+            'host_build_sha256':sha(host/'build.json'),'host_binary_sha256':sha(host/'obj/lemma-rtl'),
+            'host_deadline_options':host_options,
             'scope':'literal data-phase/ready stimuli on actual compute/SoC/block RTL with hart reset; not guest execution'}
 
 def main():

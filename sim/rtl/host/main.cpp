@@ -63,7 +63,7 @@ int main(int argc,char**argv)try{
   else if(a=="--load"){auto v=val();auto c=v.find(':');if(c==std::string::npos)throw std::runtime_error("--load address:path");auto b=bytes(v.substr(c+1));put(number(v.substr(0,c)),b.data(),b.size());}
   else if(a=="--uart-input"){auto b=bytes(val());rx.insert(rx.end(),b.begin(),b.end());}
   else if(a=="--uart-output")uart_path=val();else if(a=="--trace")trace_path=val();else if(a=="--cycles")cycles=number(val());
-  else if(a=="--trace-limit")trace_limit=number(val());else if(a=="--deadline"){auto d=number(val());if(!d||d>3600)throw std::runtime_error("deadline must be1..3600seconds");deadline=d;}
+  else if(a=="--trace-limit")trace_limit=number(val());else if(a=="--deadline"){auto d=number(val());if(!d||d>7200)throw std::runtime_error("deadline must be1..7200seconds");deadline=d;}
   else if(a=="--quiet-uart")quiet_uart=true;
   else if(a=="--uart-stdin")uart_stdin=true;
   else if(a=="--input-capture")input_capture_path=val();

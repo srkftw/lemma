@@ -724,8 +724,18 @@ jobs:
           if lanes['observations'] != [
               'BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
               'ARB held CPU/DMA owner payload backpressure terminal errors reset quiescence PASS',
-              'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS'] or len(lanes['commands']) != 2 or len(lanes['source_inputs']) < 200:
+              'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS'] or len(lanes['commands']) != 3 or len(lanes['source_inputs']) < 200:
               raise RuntimeError('Missing actual core/fabric lane observations')
+          host = Path('build/silicon/ci-bus-lanes/host')
+          for path, digest in ((host/'build.json', lanes['host_build_sha256']),
+                               (host/'obj/lemma-rtl', lanes['host_binary_sha256'])):
+              if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('Compiled host adapter changed')
+          import sys
+          sys.path.insert(0, 'scripts')
+          from check_silicon import host_deadline_options
+          if lanes['host_deadline_options'] != host_deadline_options(host/'obj/lemma-rtl'):
+              raise RuntimeError('Compiled deadline agreement was not reproduced')
           for path, digest in lanes['source_inputs'].items():
               if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
                   raise RuntimeError('Core/fabric lane input changed')

@@ -7,6 +7,7 @@ sys.path.insert(0,str(ROOT/'scripts'))
 import silicon_profile as binding
 import silicon_guest
 import audit_kernel
+import check_silicon
 from core0_common import Core0Error
 from unittest import mock
 
@@ -92,6 +93,20 @@ class BindingTests(unittest.TestCase):
                 mock.patch.object(silicon_guest,'run') as run:
             self.assertEqual(launcher.main(),0)
             self.assertEqual(run.call_args.args[0].timeout,7200)
+
+    def test_compiled_deadline_observer_rejects_adapter_disagreement(self):
+        def actual(argv,**kwargs):
+            seconds=int(argv[-1])
+            error=(b'RTL adapter: --image --rom --uart-output required\n' if 1<=seconds<=7200 else
+                   b'RTL adapter: deadline must be1..7200seconds\n')
+            return SimpleNamespace(returncode=1,stdout=b'',stderr=error)
+        with mock.patch.object(check_silicon.subprocess,'run',side_effect=actual):
+            self.assertEqual(len(check_silicon.host_deadline_options(Path('fixture-host'))),4)
+        for failed in (SimpleNamespace(returncode=0,stdout=b'',stderr=b''),
+                       SimpleNamespace(returncode=1,stdout=b'',stderr=b'RTL adapter: deadline must be1..3600seconds\n')):
+            with self.subTest(result=failed),mock.patch.object(check_silicon.subprocess,'run',return_value=failed):
+                with self.assertRaisesRegex(RuntimeError,'disagrees'):
+                    check_silicon.host_deadline_options(Path('fixture-host'))
 
     def test_raw_ram_snapshot_rejects_outside_and_unbounded_ranges(self):
         self.assertEqual(silicon_guest.ram_dump_range('0x82000000:1048576'),(0x82000000,1048576))

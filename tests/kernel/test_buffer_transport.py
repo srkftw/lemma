@@ -35,13 +35,25 @@ class BufferTransportTests(unittest.TestCase):
         prepared["workloads"] = {"service":{"image":"fixture"}}
         capture = transport._Capture()
         context = SimpleNamespace(prepared=prepared, capture=capture, report={}, PROGRESS=SiliconBufferSession.PROGRESS)
-        line = b"RTL progress cycles=1000000 pc=0x80000100 privilege=1 retired=250000 ticks=100000 timer_traps=1 UART=176\n"
+        line = (b"RTL progress cycles=1000000 pc=0x80000100 privilege=1 retired=250000 ticks=100000 timer_traps=1 UART=176 "
+                b"fb_reads=17 fb_writes=19 panel_pixels=23 panel_completed=2\n")
         with patch("silicon_guest.prepared", return_value=prepared):
             capture.stderr.extend(line)
             SiliconBufferSession.validate_stderr(context)
             self.assertEqual(context.report["rtl_progress"][0]["timer_traps"], 1)
+            self.assertEqual({key:context.report["rtl_progress"][0][key] for key in
+                              ("fb_reads", "fb_writes", "panel_pixels", "panel_completed")},
+                             {"fb_reads":17, "fb_writes":19, "panel_pixels":23, "panel_completed":2})
             with self.assertRaises(Core0Error):Session.validate_stderr(context)
-            for bad in (line[:-1], line.replace(b"privilege=1", b"privilege=4"), line+b"unknown diagnostic\n"):
+            for bad in (line[:-1], line.replace(b"privilege=1", b"privilege=4"), line+b"unknown diagnostic\n",
+                        line.replace(b"fb_reads=17 ", b""),
+                        line.replace(b"fb_reads=17 fb_writes=19", b"fb_writes=19 fb_reads=17"),
+                        line.replace(b"panel_completed=2", b"panel_completed=2 unknown=0"),
+                        line.replace(b"fb_reads=17", b"fb_reads=17 fb_reads=17"),
+                        *(line.replace(field+b"="+value, field+b"="+bad_value)
+                          for field,value in ((b"fb_reads", b"17"), (b"fb_writes", b"19"),
+                                              (b"panel_pixels", b"23"), (b"panel_completed", b"2"))
+                          for bad_value in (b"-1", b"1x", b"", b"1.5"))):
                 capture.stderr[:] = bad
                 with self.subTest(bad=bad), self.assertRaises(Core0Error):
                     SiliconBufferSession.validate_stderr(context)
