@@ -4,7 +4,9 @@ import sys
 import unittest
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from audit_kernel import _jump_assembly_guard, _jump_status_default
+from audit_kernel import (_jump_assembly_guard, _jump_status_default,
+                          _jump_save_default, LEMMASIM_BACKEND_JUMP_TABLES,
+                          LEMMASIM_JUMP_TABLE_USER_IMAGES)
 from core0_common import Core0Error
 
 
@@ -223,6 +225,140 @@ class AuthoredFooterJump(unittest.TestCase):
             _jump_status_default(body,data['assembly'],'owner',targets,[10,11,13,14,15,17,18])
         with self.assertRaises(Core0Error):
             _jump_status_default(body,data['assembly'].replace('li a0, 32','li a0, 31'),'owner',data['targets'],[10,11,13,14,15,17,18])
+
+
+def save_fixture():
+    # Literal six-slot trace: the unlisted phase5 points at the error epilogue.
+    assembly='''owner:
+ addi sp, sp, -64
+ addi s3, s3, -1
+ li a0, 5
+ li s0, 234
+ bltu a0, s3, .LBB0_8
+ slli s3, s3, 3
+.Lpcrel_hi0:
+ auipc a0, %pcrel_hi(.LJTI0_0)
+ addi a0, a0, %pcrel_lo(.Lpcrel_hi0)
+ add a0, s3, a0
+ ld a0, 0(a0)
+ jr a0
+.LBB0_2:
+ j .LBB0_8
+.LBB0_3:
+ j .LBB0_8
+.LBB0_4:
+ j .LBB0_8
+.LBB0_5:
+ j .LBB0_8
+.LBB0_7:
+ j .LBB0_8
+.LBB0_8: # %done
+ andi a0, s0, 255
+ li a1, 0
+ ld ra, 56(sp)
+ ld s0, 48(sp)
+ ld s1, 40(sp)
+ ld s2, 32(sp)
+ ld s3, 24(sp)
+ ld s4, 16(sp)
+ ld s5, 8(sp)
+ ld s6, 0(sp)
+ addi sp, sp, 64
+ ret
+ .size owner, .-owner
+'''
+    body='''entry:
+ %record = call { i64, i64 } @get(i64 160)
+ %phase = extractvalue { i64, i64 } %record, 1
+ switch i64 %phase, label %dispatch [
+  i64 0, label %done
+  i64 5, label %wait
+ ]
+wait:
+ br label %done
+dispatch:
+ switch i64 %phase, label %done [
+  i64 1, label %first
+  i64 2, label %second
+  i64 3, label %third
+  i64 4, label %fourth
+  i64 6, label %sixth
+ ]
+first:
+ br label %done
+second:
+ br label %done
+third:
+ br label %done
+fourth:
+ br label %done
+sixth:
+ br label %done
+done:
+ %status = phi i64 [ 234, %dispatch ], [ 0, %first ]
+ %masked = and i64 %status, 255
+ %partial = insertvalue { i64, i64 } poison, i64 %masked, 0
+ %complete = insertvalue { i64, i64 } %partial, i64 0, 1
+ ret { i64, i64 } %complete
+'''
+    data=dict(assembly=assembly,symbol='owner',table='.LJTI0_0',
+        targets=['.LBB0_2','.LBB0_3','.LBB0_4','.LBB0_5','.LBB0_8','.LBB0_7'],
+        count=6,minimum=1,source='Lemma.Applications.Notebook.pumpSave',
+        configuration='lemmasim-notebook',image_key='notebook')
+    return data,body
+
+
+class AuthoredSavePhaseJump(unittest.TestCase):
+    def test_exact_phase_domain_and_local_error_hole(self):
+        source='Lemma.Applications.Notebook.pumpSave'
+        self.assertEqual(LEMMASIM_BACKEND_JUMP_TABLES[source],
+            ('user',6,[],['checked-access','io-order','virtual-read','virtual-write',
+                         'user-syscall','privilege-transition'],[1,2,3,4,6]))
+        self.assertEqual(LEMMASIM_JUMP_TABLE_USER_IMAGES[source],{'notebook'})
+        data,body=save_fixture()
+        guard=_jump_assembly_guard(**data)
+        self.assertEqual((guard['bound'],guard['minimum']),(6,1))
+        default=_jump_save_default(body,data['assembly'],'owner',data['targets'],[1,2,3,4,6])
+        self.assertEqual(default['holes'],[5])
+        self.assertEqual((default['default_status'],default['default_value']),(234,0))
+        # LLVM reuses IR block names in separately owned functions.
+        other=data['assembly']+'foreign:\n.LBB1_8: # %done\n ret\n .size foreign, .-foreign\n'
+        self.assertEqual(_jump_save_default(body,other,'owner',data['targets'],[1,2,3,4,6]),default)
+        # LLVM can split one merge into a result reload followed by its epilogue.
+        split=data['assembly'].replace(' .size owner',
+            '.LBB0_10: # %done\n mv s0, a0\n j .LBB0_8\n .size owner')
+        self.assertEqual(_jump_save_default(body,split,'owner',data['targets'],[1,2,3,4,6]),default)
+
+    def test_phase_wait_split_default_and_checked_words_cannot_change(self):
+        data,body=save_fixture()
+        for before,after in [('i64 6, label','i64 5, label'),
+                             ('i64 5, label %wait','i64 6, label %wait'),
+                             ('switch i64 %phase, label %dispatch','switch i64 %other, label %dispatch'),
+                             ('[ 234, %dispatch ]','[ 0, %dispatch ]'),
+                             ('and i64 %status, 255','and i64 %status, 254'),
+                             ('%partial, i64 0, 1','%partial, i64 1, 1')]:
+            with self.assertRaises(Core0Error):
+                _jump_save_default(body.replace(before,after),data['assembly'],'owner',data['targets'],[1,2,3,4,6])
+        targets=list(data['targets']);targets[4]='.LBB0_2'
+        with self.assertRaises(Core0Error):
+            _jump_save_default(body,data['assembly'],'owner',targets,[1,2,3,4,6])
+
+    def test_actual_error_guard_return_and_frame_are_closed(self):
+        data,body=save_fixture()
+        for before,after in [('li s0, 234','li s0, 0'),('li a0, 5','li a0, 6'),
+                             ('addi s3, s3, -1','addi s3, s3, -2'),
+                             ('bltu a0, s3, .LBB0_8','bltu a0, s3, .LBB0_2'),
+                             ('andi a0, s0, 255','andi a0, s1, 255'),
+                             ('li a1, 0','li a1, 1'),('ld ra, 56(sp)','ld ra, 64(sp)'),
+                             ('addi sp, sp, 64','addi sp, sp, 72'),
+                             ('.LBB0_8: # %done','.LBB0_8: # %first')]:
+            with self.assertRaises(Core0Error):
+                _jump_save_default(body,data['assembly'].replace(before,after),'owner',data['targets'],[1,2,3,4,6])
+        for before,after in [('bltu a0, s3','blt a0, s3'),
+                             ('ld a0, 0(a0)','ld a0, 8(a0)'),
+                             ('jr a0','jr a1')]:
+            changed=dict(data);changed['assembly']=data['assembly'].replace(before,after)
+            with self.assertRaises(Core0Error):_jump_assembly_guard(**changed)
 
 
 if __name__=='__main__':unittest.main()

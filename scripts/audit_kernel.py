@@ -2986,6 +2986,7 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Services.Store.Engine.complete': ('user',81,['u64','u8'],['checked-access','virtual-read','virtual-write'],[*range(1,6),*range(16,22),*range(32,41),*range(64,70),80,81]),
     'Lemma.Services.Store.Server.application': ('user',9,['u64']*3,['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[2,3,4,5,6,7,9,10]),
     'Lemma.Applications.Notebook.toolbar': ('user',9,['u64'],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],list(range(9))),
+    'Lemma.Applications.Notebook.pumpSave': ('user',6,[],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[1,2,3,4,6]),
     'Lemma.Ink.Surface.glyph': ('user',9,['u64'],[],list(range(9))),
     'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
 }
@@ -2994,6 +2995,7 @@ LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Engine.complete': {'store'},
     'Lemma.Services.Store.Server.application': {'store'},
     'Lemma.Applications.Notebook.toolbar': {'notebook'},
+    'Lemma.Applications.Notebook.pumpSave': {'notebook'},
     'Lemma.Ink.Surface.glyph': {'notebook'},
     'Lemma.Applications.Notebook.statusCharacter': {'notebook'},
 }
@@ -3157,6 +3159,52 @@ def _jump_status_default(optimized_body: str, assembly: str, symbol: str,
     if code[at:at+2]!=[('li',['a0','32']),('ret',[])]:
         raise Core0Error('notebook footer machine default does not return space32')
     return {'holes':holes,'llvm_default':default,'machine_default':machine_default,'default_value':32}
+
+
+def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
+                       targets: list[str], cases: list[int]) -> dict:
+    """Bind the notebook phase5 hole to its checked error234 return, not a phase."""
+    switches=re.findall(r'switch i64 (%[A-Za-z0-9_.$-]+), label %([A-Za-z0-9_.$-]+) \[([^]]+)\]',optimized_body,re.S)
+    selected=[(value,default,block) for value,default,block in switches
+              if sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==cases]
+    if cases!=[1,2,3,4,6] or len(targets)!=6 or len(selected)!=1:
+        raise Core0Error('notebook Save lacks its exact phase/default switch')
+    value,default,_=selected[0]
+    waits=[block for operand,_default,block in switches if operand==value
+           and sorted(int(case) for case in re.findall(r'i64 (-?\d+), label',block))==[0,5]]
+    if len(waits)!=1:
+        raise Core0Error('notebook Save phase0/5 wait split differs')
+    from audit_memory import _parse_blocks
+    blocks=_parse_blocks('\n'.join(line.split(';',1)[0] for line in optimized_body.splitlines()),symbol)
+    owners=[label for label,lines in blocks.items() if any(line.startswith('switch i64 '+value+', label %'+default+' [') for line in lines)]
+    returned=blocks.get(default,[])
+    phi=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = phi i64 (.+)',returned[0]) if len(returned)==5 else None
+    if (len(owners)!=1 or phi is None or
+        len(re.findall(r'\[ 234, %'+re.escape(owners[0])+r' \]',phi[2]))!=1):
+        raise Core0Error('notebook Save default lacks its checked error234 PHI')
+    masked=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = and i64 '+re.escape(phi[1])+r', 255',returned[1])
+    partial=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} poison, i64 '+re.escape(masked[1] if masked else 'NO_MASK')+r', 0',returned[2])
+    complete=re.fullmatch(r'(%[A-Za-z0-9_.$-]+) = insertvalue \{ i64, i64 \} '+re.escape(partial[1] if partial else 'NO_PARTIAL')+r', i64 0, 1',returned[3])
+    if complete is None or returned[4]!='ret { i64, i64 } '+complete[1]:
+        raise Core0Error('notebook Save default changes its checked return words')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    hole=targets[4]
+    marked=[label for label in re.findall(r'(?m)^(\.LBB\d+_\d+):[^\n]*# %'+re.escape(default)+r'\s*$',assembly)
+            if label in labels]
+    if hole not in marked or hole not in labels:
+        raise Core0Error('notebook Save phase5 is not the actual local default block')
+    at=labels[hole]
+    epilogue=[('andi',['a0','s0','255']),('li',['a1','0'])]
+    epilogue += [('ld',[register,str(offset)+'(sp)']) for register,offset in
+                 [('ra',56),('s0',48),('s1',40),('s2',32),('s3',24),('s4',16),('s5',8),('s6',0)]]
+    epilogue += [('addi',['sp','sp','64']),('ret',[])]
+    uses=[i for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
+    if (code[at:at+len(epilogue)]!=epilogue or len(uses)!=1 or uses[0]<5 or
+        code[uses[0]-5:uses[0]]!=[('addi',['s3','s3','-1']),('li',['a0','5']),
+          ('li',['s0','234']),('bltu',['a0','s3',hole]),('slli',['s3','s3','3'])]):
+        raise Core0Error('notebook Save default error/frame or phase guard differs')
+    return {'holes':[5],'llvm_default':default,'machine_default':hole,
+            'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
 
 
 def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
@@ -3369,7 +3417,10 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                        if source == 'Lemma.Kernel.Development.ServiceEntry.command' else
                        _jump_status_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
                                             owner['name'],targets,spec[4])
-                       if source == 'Lemma.Applications.Notebook.statusCharacter' else None)
+                       if source == 'Lemma.Applications.Notebook.statusCharacter' else
+                       _jump_save_default(_ir_definition_body(optimized_ir,owner['name']),assembly,
+                                          owner['name'],targets,spec[4])
+                       if source == 'Lemma.Applications.Notebook.pumpSave' else None)
             if named.get(name,{}).get('value')!=start or named.get(owner['name'],{}).get('value')!=owner['value'] or named[owner['name']]['size']!=owner['size']:
                 raise Core0Error('companion table/function extents differ from actual object')
             rows=[r for r in relocations if r['section']=='.rela.rodata' and start<=r['offset']<start+size]
