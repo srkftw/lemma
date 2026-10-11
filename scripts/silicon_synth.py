@@ -129,6 +129,15 @@ def inspect_netlist(path: Path, top: str, mapped: bool) -> dict:
             "storage_scope": "Any RTL arrays have been lowered into included register cells"}
 
 
+def lvs_matches(report: str) -> bool:
+    # Netgen can report a unique topological match and subsequently list
+    # property errors. Matching subcells also do not certify the top level.
+    # The pinned Netgen prints an optional additional period-only line.
+    final = re.split(r"(?:^|\n)Final result:\s*", report)
+    return len(final) == 2 and re.fullmatch(
+        r"Circuits match uniquely\.\s*(?:\.\s*)?", final[1]) is not None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--top")
@@ -327,7 +336,7 @@ def main() -> int:
                                    f"{{{out / 'lvs.rpt'}}} -json\n")
                     result["commands"].append(run([netgen, "-batch", "source", str(lvs)], out / "lvs.log", deadline))
                     report = (out / "lvs.rpt").read_text()
-                    match = "Circuits match uniquely." in report and "do not match" not in report.lower()
+                    match = lvs_matches(report)
                     result["lvs"] = {"status": "PASS" if match else "FAIL",
                                      "scope": "Extracted layout vs original public transistor cells + synthesized circuit"}
                     if violations or not match:

@@ -41,6 +41,20 @@ class SynthesisAuditTests(unittest.TestCase):
         self.assertEqual(result["cells"], 1)
         self.assertEqual(result["inferred_memory_bits"], 0)
 
+    def test_lvs_requires_the_final_top_level_match_without_property_errors(self):
+        for suffix in ("\n", "\n.\n"):
+            self.assertTrue(silicon_synth.lvs_matches(
+                "Netlists match uniquely.\n\nFinal result: Circuits match uniquely." + suffix))
+        for report in (
+            "Netlists match uniquely.\nFinal result: Top level cell failed pin matching.\n",
+            "Final result: Circuits match uniquely.\n.\n\nThe following cells had property errors:\n child\n",
+            "Circuits match uniquely.\n",  # Missing final result.
+            "Final result: Circuits match uniquely.\nFinal result: Circuits match uniquely.\n",
+            "",
+        ):
+            with self.subTest(report=report):
+                self.assertFalse(silicon_synth.lvs_matches(report))
+
     def test_expired_process_is_reaped_and_cannot_become_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
             log = Path(tmp) / "command.log"
