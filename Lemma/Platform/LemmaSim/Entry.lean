@@ -61,7 +61,8 @@ def step : Action :=
   .bind (if doneIO = 1 then if reported = 0 then
     .bind (put 24 1) fun s _ => if failed s = true then fatal else
     .bind Frames.remaining fun s remaining => if failed s = true then fatal else
-    Lemma.Kernel.Console.record 0x404 remaining 4 8192 0
+    .bind Frames.runtimeCount fun s amount => if failed s = true then fatal else
+    Lemma.Kernel.Console.record 0x404 remaining 4 amount 0
     else .done 0 0 else .done 0 0) fun s _ =>
   if failed s = true then fatal else Scheduler.step
 
@@ -74,7 +75,8 @@ def start : Action :=
   .bind Process.init fun s _ => if failed s = true then .done s 0 else
   .bind Task.init fun s _ => if failed s = true then .done s 0 else
   .bind (Task.create 0 0) fun s descriptor => if failed s = true then .done s 0 else
-  .bind (Lemma.Kernel.Console.record 0x400 descriptor 8192 4 0) fun s _ =>
+  .bind Frames.runtimeCount fun s amount => if failed s = true then fatal else
+  .bind (Lemma.Kernel.Console.record 0x400 descriptor amount 4 0) fun s _ =>
   if failed s = true then fatal else
   .bind (Lemma.Drivers.VirtIOBlock.submit 0 0) fun s _ =>
   if failed s = true then .done s 0 else .loop step
