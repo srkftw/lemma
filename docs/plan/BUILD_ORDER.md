@@ -154,7 +154,7 @@ mapping, including explicit 4 KiB register RAM that runs only the scalar corpus.
 External simulation memory does not qualify physical working memory.
 The integrated registered paper controller has fresh A/B/C and literal protocol
 acceptance; its current full notebook/cold/replay/failure campaign is active.
-Current bounded SoC mapping includes4KiB register RAM at13.423078mm². Paper
+Current bounded SoC mapping includes4KiB register RAM and13.423078mm² of mapped standard-cell area. Paper
 live global-route estimates meet the declared100MHz TT constraints with zero
 reported electrical violations. Detailed routing remains incomplete, and a
 separate full-FIFO pen placement/CTS flow aborted in OpenROAD setup repair.

@@ -434,7 +434,7 @@ false Saved acknowledgement. A fresh cold hart recovered the exact prior
 acknowledged document and full controller frame, with failed new work absent.
 The registered paper controller now has fresh A/B/C and literal protocol
 acceptance; its full notebook/cold/replay/failure campaign is in progress.
-Current bounded synthesis is13.423078mm² with4KiB register RAM. Current paper
+Current bounded synthesis has13.423078mm² of mapped standard-cell area with4KiB register RAM. Current paper
 live global-route estimates meet100MHz setup/hold at the declared TT corner,
 with zero reported electrical violations; detailed routing timed out incomplete.
 A separate full-FIFO pen placement/CTS attempt aborted in OpenROAD setup repair.
