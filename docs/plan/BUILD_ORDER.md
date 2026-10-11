@@ -152,10 +152,14 @@ observer failures retain their identities. The complete bounded
 SoC has actual generic and SG13G2 standard-cell
 mapping, including explicit 4 KiB register RAM that runs only the scalar corpus.
 External simulation memory does not qualify physical working memory.
-Original paper placement/CTS/global routing produced area and timing evidence:
-100 MHz setup failed; a hypothetical 40 MHz live-RC analysis is separate and
-electrical violations remain. Detailed routing timed out; controller process
-DRC/LVS are NOT_RUN. Physical memory/nonvolatile boot, complete routing,
+The integrated registered paper controller has fresh A/B/C and literal protocol
+acceptance; its current full notebook/cold/replay/failure campaign is active.
+Current bounded SoC mapping includes4KiB register RAM at13.423078mm². Paper
+live global-route estimates meet the declared100MHz TT constraints with zero
+reported electrical violations. Detailed routing remains incomplete, and a
+separate full-FIFO pen placement/CTS flow aborted in OpenROAD setup repair.
+Controller process DRC/LVS and extracted timing are NOT_RUN. Original failed
+timing, alternate-clock observations and historical execution remain separate. Physical memory/nonvolatile boot, complete routing,
 power/pads and foundry acceptance remain separate open dependencies. See the
 [Task 005 checkpoint](005-session-state.md).
 

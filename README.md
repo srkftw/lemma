@@ -427,14 +427,19 @@ an explicit session timeout; it re-executes initial bytes and input before
 comparing actual outputs. A completed capture is required. Current observations
 include genuine Lean M/S/U execution, isolated service/IPC/fault containment,
 guest device access and a pressure stroke/brush-width edit/explicit Save.
-The full D3 write/edit/explicit Save/cold workflow passed with exact recovered
+On the original controller, the full D3 write/edit/explicit Save/cold workflow passed with exact recovered
 records and full controller pixels. Exact RTL replay also passed by regenerating
 all captured outputs and retained medium. Failed-FLUSH also passed without a
 false Saved acknowledgement. A fresh cold hart recovered the exact prior
 acknowledged document and full controller frame, with failed new work absent.
-Actual bounded synthesis and original paper global-route measurements are
-retained; 100 MHz setup failed, detailed routing timed out, and controller
-process DRC/LVS remain NOT_RUN. Exact commands, identities and scoped results are in
+The registered paper controller now has fresh A/B/C and literal protocol
+acceptance; its full notebook/cold/replay/failure campaign is in progress.
+Current bounded synthesis is13.423078mm² with4KiB register RAM. Current paper
+live global-route estimates meet100MHz setup/hold at the declared TT corner,
+with zero reported electrical violations; detailed routing timed out incomplete.
+A separate full-FIFO pen placement/CTS attempt aborted in OpenROAD setup repair.
+Controller process DRC/LVS and extracted timing remain NOT_RUN; original failed
+timing and all historical execution identities are retained. Exact commands, identities and scoped results are in
 [the Task 005 checkpoint](docs/plan/005-session-state.md). RTL is slower than
 the native notebook and does not claim physical conformance or a nonvolatile
 physical boot solution. Open synthesis/layout recipes are in

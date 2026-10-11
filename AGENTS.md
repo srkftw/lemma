@@ -109,8 +109,10 @@ fabrication submission, paid infrastructure, supplier outreach or proprietary
 closure. Publish one draft PR against main; do not merge. USGCE is untouched.
 
 Task 005 acceptance uses short source-bound RTL workloads and independent
-observations. Current A/B/C, durable write/edit/Save/cold, exact RTL replay and
-failed-FLUSH/cold have separate closed observed evidence. Preserve original
+observations. Historical A/B/C, durable write/edit/Save/cold, exact RTL replay and
+failed-FLUSH/cold have separate closed observed evidence. The registered paper
+controller at a760e5f/2b6ede4 has fresh closed A/B/C and literal protocol results;
+its current D/E/cold/replay campaign must close independently before admission. Preserve original
 FAIL reports when an independently tested host oracle correction produces a new
 observation; do not relabel guest compilation or hardware execution. The
 checkpoint retains synthesis, global-route timing, incomplete detailed routing
