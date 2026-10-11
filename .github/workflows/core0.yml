@@ -686,13 +686,17 @@ jobs:
           expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
                       'PAPER latch Busy invalid-command bounds interrupted-reset PASS',
                       'BLOCK descriptors DMA payload used-ring flush error bounds reset PASS',
-                      'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS']
+                      'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS',
+                      'BLOCK-PROTOCOL DMA/media backpressure reset/error quiescence queue stability PASS',
+                      'BLOCK-PROTOCOL simultaneous completion/error IRQ ACK event precedence PASS',
+                      'BLOCK-PROTOCOL normal flush and 12 independent cases PASS']
           inputs = {'sim/rtl/lemma_pen.sv', 'sim/rtl/lemma_paper.sv', 'sim/rtl/lemma_block.sv',
                     'sim/rtl/lemma_register_ram.sv', 'conformance/silicon/Devices.sv',
+                    'conformance/silicon/BlockProtocol.sv',
                     'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock'}
           if value['status'] != 'PASS' or value['lane'] != 'devices' or value['source_commit'] != head:
               raise RuntimeError('Missing exact-candidate RTL device result')
-          if value['observations'] != expected or set(value['source_inputs']) != inputs or len(value['commands']) != 2:
+          if value['observations'] != expected or set(value['source_inputs']) != inputs or len(value['commands']) != 4:
               raise RuntimeError('Missing independent literal bus observations')
           if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
               raise RuntimeError('RTL device source checkout changed')
@@ -703,11 +707,23 @@ jobs:
               log = Path(command['log'])
               if command['exit_code'] != 0 or not log.stat().st_size or hashlib.sha256(log.read_bytes()).hexdigest() != command['log_sha256']:
                   raise RuntimeError('Missing or changed actual RTL command output')
+          if set(value['tool_inputs']) != {'verilator', 'verilator_bin', 'make', 'c++'} or len(value['compiled_binaries']) != 2:
+              raise RuntimeError('Missing actual RTL host-tool or compiled-binary identities')
+          for tool in value['tool_inputs'].values():
+              if not tool['path'].startswith('/nix/store/') or not tool['version'] or hashlib.sha256(Path(tool['path']).read_bytes()).hexdigest() != tool['sha256']:
+                  raise RuntimeError('RTL host executable changed')
+          for path, digest in value['compiled_binaries'].items():
+              if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('RTL simulation binary changed')
+          for index, top in ((0, 'Devices'), (2, 'BlockProtocol')):
+              if value['commands'][index]['effective_argv'][:8] != ['verilator', '--binary', '--timing', '-j', '2', '-Wno-fatal', '--top-module', top]:
+                  raise RuntimeError('Missing actual bounded RTL compile invocation')
           lanes = json.loads(Path('build/silicon/ci-bus-lanes/result.json').read_text())
           if lanes['status'] != 'PASS' or lanes['lane'] != 'bus-lanes' or lanes['source_commit'] != head:
               raise RuntimeError('Missing exact-candidate bus lane result')
           if lanes['observations'] != [
               'BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
+              'ARB held CPU/DMA owner payload backpressure terminal errors reset quiescence PASS',
               'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS'] or len(lanes['commands']) != 2 or len(lanes['source_inputs']) < 200:
               raise RuntimeError('Missing actual core/fabric lane observations')
           for path, digest in lanes['source_inputs'].items():

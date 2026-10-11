@@ -19,8 +19,9 @@ module BusLanes;
   logic [63:0] dma_addr=0,dma_wdata=0;
   logic [2:0] dma_size=0;
   logic [63:0] memory_word=64'ha7b6c5d4e3f20188;
-  integer memory_writes=0;
+  integer memory_writes=0,memory_beats=0;
   assign mem_rdata=memory_word;
+  always @(posedge clk) if(!reset&&mem_valid&&mem_ready) memory_beats<=memory_beats+1;
   always @(posedge clk) if(!reset&&mem_valid&&mem_ready&&mem_write&&!mem_error) begin
     for(integer i=0;i<8;i++) if(mem_strb[i]) memory_word[i*8+:8]<=mem_wdata[i*8+:8];
     memory_writes<=memory_writes+1;
@@ -77,6 +78,120 @@ module BusLanes;
     if(memory_word!==expected||memory_writes!=before_writes+1)
       $fatal(1,"DMA write corrupted adjacent lanes: observed=%h expected=%h writes=%d",memory_word,expected,memory_writes);
   endtask
+  task automatic cpu_then_dma;
+    integer beats,writes;
+    beats=memory_beats;writes=memory_writes;
+    @(negedge clk);bus_valid=1;bus_write=1;bus_size=3;
+    bus_address=56'(FRAME_POOL_BASE+256);store_value=64'h1122334455667788;
+    dma_valid=0;mem_ready=0;#1;
+    @(posedge clk);#1;@(negedge clk);
+    dma_valid=1;dma_write=1;dma_addr=FRAME_POOL_BASE+4;dma_size=2;dma_wdata=64'hdeadbeef;#1;
+    repeat(3) begin
+      if(!mem_valid||mem_addr!==56'(FRAME_POOL_BASE+256)||!mem_write||
+         mem_wdata!==64'h1122334455667788||mem_strb!==8'hff||
+         soc.dma_ready||soc.cpu_mem_ready||memory_beats!=beats||memory_writes!=writes)
+        $fatal(1,"ARB stalled CPU beat stolen by newly asserted DMA");
+      @(negedge clk);#1;
+    end
+    // An inactive master can change its next request without changing the
+    // beat already owned by the stalled CPU.
+    dma_addr=FRAME_POOL_BASE+3;dma_size=0;dma_wdata=64'haa;mem_ready=1;#1;
+    if(!soc.cpu_mem_ready||soc.dma_ready||mem_addr!==56'(FRAME_POOL_BASE+256))
+      $fatal(1,"ARB CPU owner did not receive its terminal response");
+    @(posedge clk);#1;@(negedge clk);bus_valid=0;bus_write=0;#1;
+    if(!soc.dma_ready||soc.cpu_mem_ready||mem_addr!==56'(FRAME_POOL_BASE)||
+       mem_wdata!==64'h00000000aa000000||mem_strb!==8'h08)
+      $fatal(1,"ARB pending DMA did not follow completed CPU beat");
+    @(posedge clk);#1;@(negedge clk);dma_valid=0;#1;
+    if(mem_valid||memory_beats!=beats+2||memory_writes!=writes+2||
+       memory_word!==64'h11223344aa667788)
+      $fatal(1,"ARB CPU/DMA beats duplicated or write payload changed");
+  endtask
+  task automatic dma_then_cpu;
+    integer beats,writes;
+    beats=memory_beats;writes=memory_writes;
+    @(negedge clk);dma_valid=1;dma_write=0;dma_size=1;dma_addr=FRAME_POOL_BASE+2;
+    bus_valid=0;mem_ready=0;#1;
+    @(posedge clk);#1;@(negedge clk);bus_valid=1;bus_write=1;bus_size=3;
+    bus_address=56'(FRAME_POOL_BASE+512);store_value=64'h0123456789abcdef;#1;
+    repeat(3) begin
+      if(!mem_valid||mem_write||mem_addr!==56'(FRAME_POOL_BASE)||
+         mem_strb!==8'h0c||soc.dma_ready||soc.cpu_mem_ready||memory_beats!=beats)
+        $fatal(1,"ARB stalled DMA beat changed after CPU arrival");
+      @(negedge clk);#1;
+    end
+    bus_address=56'(FRAME_POOL_BASE+768);store_value=64'hfedcba9876543210;mem_ready=1;#1;
+    if(!soc.dma_ready||soc.cpu_mem_ready||soc.dma_rdata!==64'haa66)
+      $fatal(1,"ARB held DMA lane/size/owner response changed");
+    @(posedge clk);#1;@(negedge clk);dma_valid=0;#1;
+    if(!soc.cpu_mem_ready||mem_addr!==56'(FRAME_POOL_BASE+768)||
+       !mem_write||mem_wdata!==64'hfedcba9876543210||mem_strb!==8'hff)
+      $fatal(1,"ARB pending CPU did not follow completed DMA beat");
+    @(posedge clk);#1;@(negedge clk);bus_valid=0;bus_write=0;#1;
+    if(mem_valid||memory_beats!=beats+2||memory_writes!=writes+1||memory_word!==64'hfedcba9876543210)
+      $fatal(1,"ARB DMA/CPU beats duplicated or write payload changed");
+  endtask
+  task automatic local_dma_error;
+    integer beats;
+    beats=memory_beats;
+    @(negedge clk);dma_valid=1;dma_write=0;dma_size=2;dma_addr=FRAME_POOL_BASE+1;
+    bus_valid=1;bus_write=0;bus_size=3;bus_address=56'(FRAME_POOL_BASE+1024);#1;
+    if(mem_valid||!soc.dma_ready||!soc.dma_error||soc.cpu_mem_ready)
+      $fatal(1,"ARB invalid DMA escaped bounded alignment fault");
+    @(posedge clk);#1;@(negedge clk);dma_valid=0;#1;
+    if(memory_beats!=beats||!mem_valid||!soc.cpu_mem_ready||soc.cpu_mem_error)
+      $fatal(1,"ARB local DMA fault consumed/poisoned CPU memory beat");
+    @(posedge clk);#1;@(negedge clk);bus_valid=0;#1;
+    if(memory_beats!=beats+1) $fatal(1,"ARB local fault external beat count differs");
+  endtask
+  task automatic terminal_errors;
+    integer beats,writes;
+    beats=memory_beats;writes=memory_writes;
+    @(negedge clk);bus_valid=1;bus_write=1;bus_size=3;
+    bus_address=56'(FRAME_POOL_BASE+1280);store_value=64'hffffffffffffffff;
+    dma_valid=0;mem_ready=0;mem_error=0;#1;
+    repeat(2) begin
+      if(soc.cpu_mem_ready||soc.cpu_mem_error||soc.compute.hresp||memory_beats!=beats)
+        $fatal(1,"ARB CPU consumed error before terminal external handshake");
+      @(negedge clk);#1;
+    end
+    mem_ready=1;mem_error=1;#1;
+    if(!soc.cpu_mem_ready||!soc.cpu_mem_error||!soc.compute.hresp||soc.compute.hready)
+      $fatal(1,"ARB CPU external error first AHB phase differs");
+    @(posedge clk);#1;
+    if(mem_valid||!soc.cpu_mem_ready||!soc.cpu_mem_error||!soc.compute.hresp||!soc.compute.hready)
+      $fatal(1,"ARB failed CPU beat reissued during second AHB ERROR phase");
+    @(negedge clk);dma_valid=1;dma_write=0;dma_size=2;dma_addr=FRAME_POOL_BASE+4;
+    mem_ready=0;mem_error=0;#1;
+    if(!mem_valid||mem_addr!==56'(FRAME_POOL_BASE)||
+       !soc.cpu_mem_ready||!soc.cpu_mem_error||soc.dma_ready)
+      $fatal(1,"ARB buffered CPU error changed after DMA arrival");
+    @(posedge clk);#1;@(negedge clk);bus_valid=0;bus_write=0;mem_ready=1;mem_error=1;#1;
+    if(!soc.dma_ready||!soc.dma_error||soc.cpu_mem_ready||soc.cpu_mem_error)
+      $fatal(1,"ARB DMA terminal error delivered to wrong owner");
+    @(posedge clk);#1;@(negedge clk);dma_valid=0;mem_error=0;#1;
+    if(mem_valid||memory_beats!=beats+2||memory_writes!=writes)
+      $fatal(1,"ARB error beat duplicated or failed write committed");
+  endtask
+  task automatic global_reset;
+    integer beats,writes;
+    beats=memory_beats;writes=memory_writes;
+    for(integer owner=0;owner<2;owner++) begin
+      @(negedge clk);mem_ready=0;bus_valid=(owner==0);bus_write=1;bus_size=3;
+      bus_address=56'(FRAME_POOL_BASE+1536);store_value=64'hbadbadbadbadbad0;
+      dma_valid=(owner==1);dma_write=1;dma_size=3;dma_addr=FRAME_POOL_BASE+1792;dma_wdata=64'hbadbadbadbadbad1;#1;
+      @(posedge clk);#1;@(negedge clk);reset=1;mem_ready=1;#1;
+      if(mem_valid||soc.cpu_mem_ready||soc.dma_ready)
+        $fatal(1,"ARB global reset allowed a held external transaction");
+      repeat(2) @(posedge clk);
+      @(negedge clk);bus_valid=0;bus_write=0;dma_valid=0;reset=0;#1;
+      if(mem_valid||soc.cpu_mem_error||soc.dma_error)
+        $fatal(1,"ARB held request/error survived global reset");
+      @(posedge clk);#1;
+    end
+    if(memory_beats!=beats||memory_writes!=writes)
+      $fatal(1,"ARB reset emitted deferred write/response");
+  endtask
   initial begin
     // Only the conformance bench overrides bus pins. No such hook exists in
     // the maintained simulator or executable target software.
@@ -86,13 +201,14 @@ module BusLanes;
     force soc.compute.addr_d=bus_address;
     force soc.compute.size_d=bus_size;
     force soc.compute.hwdata=replicated_store;
+    force soc.compute.hwstrb=8'hff;
     force soc.dma_valid=dma_valid;
     force soc.dma_write=dma_write;
     force soc.dma_addr=dma_addr;
     force soc.dma_size=dma_size;
     force soc.dma_wdata=dma_wdata;
     repeat(3) @(negedge clk);reset=0;#1;
-    if(!$test$plusargs("dma-only")) begin
+    if(!$test$plusargs("dma-only")&&!$test$plusargs("arbitration-only")&&!$test$plusargs("error-only")) begin
       mmio_write(36,0);mmio_write(32,512);mmio_write(36,1);mmio_write(32,1);mmio_write(112,11);
       block_status(11);mmio_write(56,8);block_status(11);
       if(soc.blockdev.queue_num!==8) $fatal(1,"QueueNum did not retain the actual SW8");
@@ -109,11 +225,16 @@ module BusLanes;
       end
       $display("BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS");
     end
-    read_dma(0,3,64'he3);read_dma(1,2,64'he3f2);read_dma(2,4,64'ha7b6c5d4);
-    write_dma(0,3,64'h5a,64'ha7b6c5d45af20188);
-    write_dma(1,2,64'h1234,64'ha7b6c5d412340188);
-    write_dma(2,4,64'hdeadbeef,64'hdeadbeef12340188);
-    read_dma(0,3,64'h12);read_dma(1,2,64'h1234);read_dma(2,4,64'hdeadbeef);
+    if(!$test$plusargs("arbitration-only")&&!$test$plusargs("error-only")) begin
+      read_dma(0,3,64'he3);read_dma(1,2,64'he3f2);read_dma(2,4,64'ha7b6c5d4);
+      write_dma(0,3,64'h5a,64'ha7b6c5d45af20188);
+      write_dma(1,2,64'h1234,64'ha7b6c5d412340188);
+      write_dma(2,4,64'hdeadbeef,64'hdeadbeef12340188);
+      read_dma(0,3,64'h12);read_dma(1,2,64'h1234);read_dma(2,4,64'hdeadbeef);
+    end
+    if(!$test$plusargs("error-only")) begin cpu_then_dma();dma_then_cpu();local_dma_error();end
+    terminal_errors();global_reset();
+    $display("ARB held CPU/DMA owner payload backpressure terminal errors reset quiescence PASS");
     $display("DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS");
     $finish;
   end

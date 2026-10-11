@@ -40,29 +40,71 @@ def command(argv, log, seconds):
         raise RuntimeError(f'command failed {code}; retained {log}')
     return record
 
+def device_build(build, tool_file, log, timeout):
+    # Resolve and hash the actual pinned host executables in the same Nix shell
+    # which executes Verilator. These host identities never enter the RV64 link.
+    query = "\n".join([
+        "import hashlib,json,os,shutil,subprocess",
+        "from pathlib import Path",
+        "tools={}",
+        "for name in ('verilator','make','c++'):",
+        "    found=shutil.which(name)",
+        "    if not found:raise RuntimeError('Missing host tool '+name)",
+        "    path=Path(found).resolve()",
+        "    tools[name]={'path':str(path),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),",
+        "                 'version':subprocess.check_output([found,'--version'],text=True).splitlines()[0]}",
+        "path=Path(tools['verilator']['path']).with_name('verilator_bin')",
+        "tools['verilator_bin']={'path':str(path),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),",
+        "                        'version':subprocess.check_output([str(path),'--version'],text=True).splitlines()[0]}",
+        f"Path({str(tool_file)!r}).write_text(json.dumps(tools,indent=2)+'\\n')",
+        f"argv={build!r}",
+        "os.execvp(argv[0],argv)"])
+    record = command(['nix-shell',str(ROOT/'tooling/silicon/sim.nix'),'--run',
+                      shlex.join(['python3','-c',query])],log,timeout)
+    tools = json.loads(tool_file.read_text())
+    if set(tools) != {'verilator','verilator_bin','make','c++'}:
+        raise RuntimeError('Incomplete RTL host-tool inventory')
+    for value in tools.values():
+        if not value['path'].startswith('/nix/store/') or not value['version'] or sha(value['path']) != value['sha256']:
+            raise RuntimeError('RTL host-tool identity changed')
+    record['effective_argv'] = build
+    return record, tools
+
 def devices(out, timeout, jobs):
     source_names = ['sim/rtl/lemma_pen.sv','sim/rtl/lemma_paper.sv','sim/rtl/lemma_block.sv','sim/rtl/lemma_register_ram.sv',
-                    'conformance/silicon/Devices.sv','scripts/check_silicon.py',
+                    'conformance/silicon/Devices.sv','conformance/silicon/BlockProtocol.sv','scripts/check_silicon.py',
                     'tooling/silicon/sim.nix','flake.lock']
     before = {p: sha(ROOT/p) for p in source_names}
     obj = out/'obj';obj.mkdir()
     build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal','--top-module','Devices',
              '--Mdir',str(obj),*(str(ROOT/p) for p in source_names if p.endswith('.sv'))]
-    records = [command(['nix-shell',str(ROOT/'tooling/silicon/sim.nix'),'--run',shlex.join(build)],
-                       out/'build.log',timeout)]
-    records.append(command([str(obj/'VDevices')],out/'simulation.log',30))
+    built, tools = device_build(build,out/'tools.json',out/'build.log',timeout)
+    records = [built,command([str(obj/'VDevices')],out/'simulation.log',30)]
+    protocol_obj = out/'protocol-obj';protocol_obj.mkdir()
+    protocol_build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal',
+                      '--top-module','BlockProtocol','--Mdir',str(protocol_obj),
+                      str(ROOT/'sim/rtl/lemma_block.sv'),str(ROOT/'conformance/silicon/BlockProtocol.sv')]
+    built, protocol_tools = device_build(protocol_build,out/'protocol-tools.json',out/'protocol-build.log',timeout)
+    records.extend([built,command([str(protocol_obj/'VBlockProtocol')],out/'protocol-simulation.log',30)])
+    if tools != protocol_tools:
+        raise RuntimeError('RTL host-tool closure changed between literal workloads')
     text = (out/'simulation.log').read_text()
     expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
                 'PAPER latch Busy invalid-command bounds interrupted-reset PASS',
                 'BLOCK descriptors DMA payload used-ring flush error bounds reset PASS',
                 'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS']
-    if any(text.count(marker)!=1 for marker in expected):
+    protocol_expected = ['BLOCK-PROTOCOL DMA/media backpressure reset/error quiescence queue stability PASS',
+                         'BLOCK-PROTOCOL simultaneous completion/error IRQ ACK event precedence PASS',
+                         'BLOCK-PROTOCOL normal flush and 12 independent cases PASS']
+    protocol_text = (out/'protocol-simulation.log').read_text()
+    if any(text.count(marker)!=1 for marker in expected) or any(protocol_text.count(marker)!=1 for marker in protocol_expected):
         raise RuntimeError('Missing or duplicate independent device observations')
     if before != {p: sha(ROOT/p) for p in source_names}:
         raise RuntimeError('RTL/device inputs changed during observation')
-    return {'status':'PASS','source_inputs':before,'commands':records,
+    binaries = {str(path.relative_to(ROOT)):sha(path) for path in (obj/'VDevices',protocol_obj/'VBlockProtocol')}
+    return {'status':'PASS','source_inputs':before,'commands':records,'tool_inputs':tools,'compiled_binaries':binaries,
             'scope':'literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability',
-            'observations':expected}
+            'observations':expected+protocol_expected}
 
 def bus_lanes(out, timeout, jobs):
     from silicon_compute import source_manifest, prepare
@@ -81,6 +123,7 @@ def bus_lanes(out, timeout, jobs):
     records=[command(['nix-shell',str(ROOT/'tooling/silicon/sim.nix'),'--run',shlex.join(build)],out/'build.log',timeout)]
     records.append(command([str(obj/'VBusLanes')],out/'simulation.log',30))
     expected=['BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
+              'ARB held CPU/DMA owner payload backpressure terminal errors reset quiescence PASS',
               'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS']
     if any((out/'simulation.log').read_text().count(marker)!=1 for marker in expected):
         raise RuntimeError('Missing or duplicate actual bus-lane observations')
@@ -101,6 +144,7 @@ def main():
     parser.add_argument('--before-capture',type=Path)
     parser.add_argument('--first-cycle',type=int,default=100000000)
     parser.add_argument('--gap-cycles',type=int,default=50000000)
+    parser.add_argument('--session',choices=['undo-redo','brush-width'],default='undo-redo')
     args=parser.parse_args();out=args.work_dir.resolve()
     if out.exists():parser.error('Use a new output path; retained failures cannot be overwritten')
     if not 1<=args.timeout<=1800:parser.error('timeout must be bounded1..1800 seconds')
@@ -131,7 +175,7 @@ def main():
             sys.path.insert(0,str(ROOT/'conformance/silicon'))
             from notebook_observations import fixture,short_session,cold,failed_flush,initialized
             if args.lane=='input':
-                fixture(out,args.first_cycle,args.gap_cycles)
+                fixture(out,args.first_cycle,args.gap_cycles,args.session)
                 report.update(status='INPUT_ONLY',scope='raw external fixture generated; no execution claim')
             else:
                 if args.disk is None or args.capture is None:
@@ -139,7 +183,7 @@ def main():
                 if args.lane=='initializer':report.update(initialized(args.disk,args.capture))
                 elif args.lane=='notebook':
                     if args.fixture is None:raise ValueError('notebook observations require --fixture')
-                    report.update(short_session(args.disk,args.capture,args.fixture))
+                    report.update(short_session(args.disk,args.capture,args.fixture,args.session))
                 else:
                     if args.before_disk is None:raise ValueError('comparison requires --before-disk')
                     if args.lane=='cold':

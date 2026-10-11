@@ -145,7 +145,8 @@ class CiWorkflowTests(unittest.TestCase):
                          'python3 scripts/check_silicon.py --lane devices',
                          '--work-dir build/silicon/ci-devices --timeout 600 --jobs 2',
                          "value['source_commit'] != head", "value['observations'] != expected",
-                         "len(value['commands']) != 2", "value['source_inputs'].items()",
+                         "len(value['commands']) != 4", "value['source_inputs'].items()",
+                         "conformance/silicon/BlockProtocol.sv", "len(value['compiled_binaries']) != 2",
                          "command['log_sha256']", "command['exit_code'] != 0",
                          'if: ${{ always() }}', 'if-no-files-found: error'):
             self.assertIn(required, lane)

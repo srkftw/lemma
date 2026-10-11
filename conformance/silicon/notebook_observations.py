@@ -44,26 +44,36 @@ def completed_capture(capture: Path) -> dict:
         raise ValueError('malformed actual privilege observations')
     return stats
 
-def reset_identity(capture: Path, workload: str, retained: Path | None=None) -> dict:
+def reset_identity(capture: Path, workload: str, retained: Path | None=None, events: Path | None=None) -> dict:
     identity=json.loads((capture/'input.json').read_text())
     initial=identity.get('initial_medium')
+    inputs={} if events is None else {'events':{'path':str(events.resolve()),
+                                               'sha256':hashlib.sha256(events.read_bytes()).hexdigest()}}
     if identity.get('transport')!='lemma-silicon-events/1' or identity.get('profile')!='lemma-silicon-dev/0.1.0' or \
        identity.get('workload')!=workload or identity.get('reset_cycles')!=8 or identity.get('clock_hz')!=100000000 or \
-       identity.get('ram_initialization')!='zero external RAM plus exact ELF and DTB loads' or identity.get('inputs')!={} or \
+       identity.get('ram_initialization')!='zero external RAM plus exact ELF and DTB loads' or identity.get('inputs')!=inputs or \
        not isinstance(initial,dict) or not isinstance(initial.get('path'),str) or \
        hashlib.sha256(Path(initial['path']).read_bytes()).hexdigest()!=initial.get('sha256') or \
        (retained is not None and initial['sha256']!=hashlib.sha256(retained.read_bytes()).hexdigest()):
         raise ValueError('execution omitted retained-medium-only architectural reset identity')
     return identity
 
-def validate_fixture(manifest: dict, events: Path) -> list:
+def session_spec(session: str):
+    if session=='undo-redo':return 13,[3,4,7],512
+    if session=='brush-width':return 11,[6,7],1024
+    raise ValueError('unknown notebook observation session')
+
+def validate_fixture(manifest: dict, events: Path, session: str='undo-redo') -> list:
+    count,buttons,_=session_spec(session)
     if not isinstance(manifest,dict) or any(manifest.get(k)!=v for k,v in {
         'schema':'lemma-silicon-notebook-input/1','profile':'lemma-silicon-dev/0.1.0',
         'geometry':[512,640],'pressure_maximum':4095,'clock_hz':100000000,
         'timebase_hz':10000000}.items()):
         raise ValueError('missing or changed external fixture binding')
+    if manifest.get('session','undo-redo')!=session:
+        raise ValueError('fixture session differs from requested observation')
     samples=manifest.get('raw_samples')
-    if not isinstance(samples,list) or len(samples)!=13 or any(
+    if not isinstance(samples,list) or len(samples)!=count or any(
         not isinstance(row,(list,tuple)) or len(row)!=9 or any(type(n) is not int or n<0 for n in row)
         or row[0]!=index+1 or row[8]!=1 for index,row in enumerate(samples)):
         raise ValueError('malformed raw sample identity')
@@ -71,21 +81,28 @@ def validate_fixture(manifest: dict, events: Path) -> list:
     if events.read_bytes()!=encoded or hashlib.sha256(encoded).hexdigest()!=manifest.get('event_sha256'):
         raise ValueError('external samples do not encode captured ingress')
     actions=manifest.get('actions')
-    if not isinstance(actions,list) or len(actions)!=4 or \
-       [row.get('kind') for row in actions]!=['stroke','tool','tool','tool'] or \
-       [row.get('button') for row in actions[1:]]!=[3,4,7]:
-        raise ValueError('fixture lacks stroke/undo/redo/save operations')
+    if not isinstance(actions,list) or len(actions)!=len(buttons)+1 or \
+       any(not isinstance(row,dict) for row in actions) or \
+       [row.get('kind') for row in actions]!=['stroke']+['tool']*len(buttons) or \
+       [row.get('button') for row in actions[1:]]!=buttons or \
+       [row.get('first_sequence') for row in actions]!=[2]+list(range(8,count+1,2)) or \
+       [row.get('last_sequence') for row in actions]!=[7]+list(range(9,count+1,2)) or \
+       any(actions[0].get(k)!=v for k,v in {'namespace':1,'page':1,'raw_samples':6,'brush_q8':512}.items()):
+        raise ValueError('fixture lacks exact stroke/edit/save operations')
     return samples
 
-def fixture(directory: Path, first_cycle: int, gap_cycles: int) -> dict:
-    """One pressure-varying stroke, undo, redo, explicit Save; raw ports only."""
+def fixture(directory: Path, first_cycle: int, gap_cycles: int, session: str='undo-redo') -> dict:
+    """One pressure-varying stroke, declared edit and explicit Save; raw ports only."""
+    _,buttons,_=session_spec(session)
     if first_cycle < 10 or gap_cycles < 10:
         raise ValueError('positive bounded cycle schedule required')
     stream = Input(512, 640, first_cycle // 10, 50000, gap_cycles // 10)
     stream.sample(256, 160, 0, False)
     stream.stroke('rtl-short', 1, 1, 6, 230)
-    stream.tool(3, 'undo')
-    stream.tool(4, 'redo')
+    if buttons[0]==6:stream.tool(6,'select width4')
+    else:
+        stream.tool(3, 'undo')
+        stream.tool(4, 'redo')
     stream.tool(7, 'save')
     events = directory / 'events.txt'
     events.write_text(''.join(f'{row[1]*10} pen '+ ' '.join(map(str,row[1:8]))+'\n'
@@ -94,7 +111,7 @@ def fixture(directory: Path, first_cycle: int, gap_cycles: int) -> dict:
             'geometry':[512,640], 'pressure_maximum':4095, 'actions':stream.actions,
             'raw_samples':stream.events, 'event_sha256':hashlib.sha256(events.read_bytes()).hexdigest(),
             'physical_input':'SYNTHETIC_RECORDED', 'clock_hz':100000000,
-            'timebase_hz':10000000}
+            'timebase_hz':10000000, 'session':session}
     (directory/'fixture.json').write_text(json.dumps(data,indent=2)+'\n')
     return data
 
@@ -146,39 +163,76 @@ def panel_point_history(path: Path, x: int, y: int):
         raise ValueError('controller capture ends with an incomplete accepted update')
     return completed
 
-def short_session(disk: Path, capture: Path, fixture_file: Path) -> dict:
+def document_payloads(records: dict, expected: list, session: str, sequence: int) -> dict:
+    """Literal document-v1/page-v2 observations independent of the guest codecs."""
+    _,_,brush=session_spec(session)
+    document=records.get((1,1));page_record=records.get((1,257))
+    if document is None or document.kind!=1 or document.payload!=struct.pack('<8Q',MAGIC,1,1,1,brush,0,0,0):
+        raise ValueError('committed document root did not retain the declared brush edit')
+    chunks=[]
+    for (namespace,object_id),record in records.items():
+        if namespace!=1 or object_id<=0x10000:continue
+        data=record.payload
+        if record.kind!=1 or len(data)!=128+6*72:
+            raise ValueError('unexpected short-session chunk kind or length')
+        words=struct.unpack_from('<16Q',data)
+        if words[:4]!=(MAGIC,1,3,1) or words[4]<=0 or \
+           words[5:]!=(0,6,512,1,65535,65535,4095,512,640,3,0):
+            raise ValueError('short-session chunk identity, lifecycle or calibration differs')
+        current=[struct.unpack_from('<9Q',data,128+i*72) for i in range(6)]
+        chunks.append((record,words,current))
+    if len(chunks)!=1 or join_chunks([(words,current) for _,words,current in chunks])!=expected:
+        raise ValueError('guest retained raw samples differ from external stroke')
+    chunk,words,_=chunks[0]
+    if set(records)!={(1,1),(1,257),(1,chunk.object_id)}:
+        raise ValueError('short session retained unexpected document objects')
+    if page_record is None or page_record.kind!=1 or len(page_record.payload)!=168:
+        raise ValueError('missing committed packed page index')
+    page=page_record.payload
+    if struct.unpack_from('<16Q',page)!=(MAGIC,2,2,1,1,1,1,0,0,0,0,0,0,0,0,0) or \
+       struct.unpack_from('<3Q',page,128)!=(chunk.object_id,words[4],1) or \
+       struct.unpack_from('<2Q',page,152)!=(1,words[4]):
+        raise ValueError('page entry/edit did not retain the exact visible stroke identity')
+    if not chunk.sequence<page_record.sequence<document.sequence==sequence:
+        raise ValueError('committed chunk/page/root ordering differs')
+    return {'brush_q8':brush,'stroke_id':words[4],'chunk_object':chunk.object_id}
+
+def explicit_save(states: list, sequence: int) -> tuple:
+    """Require the guest's final object-zero Pending -> Saved confirmation."""
+    if not states or states[-1]!=(0x421,sequence,1,1,0):
+        raise ValueError('missing final explicit Save confirmation')
+    pending=None
+    for row in states[:-1]:
+        if row[0]==0x423 and row[2:]==(1,1,0):pending=row
+        elif row[0]==0x424:pending=None
+        elif row[0]==0x421 and row[4]==0:pending=None
+    # Initial notebook creation can also report object zero. It does not
+    # substitute for the final explicitly requested Inspect acknowledgement.
+    final=states[-1]
+    if pending is None or final[1]<pending[1]:
+        raise ValueError('stale or regressed explicit Save confirmation')
+    return final
+
+def short_session(disk: Path, capture: Path, fixture_file: Path, session: str='undo-redo') -> dict:
     stats=completed_capture(capture)
-    manifest=json.loads(fixture_file.read_text());samples=validate_fixture(manifest,capture/'input.events')
+    identity=reset_identity(capture,'notebook',events=capture/'input.events')
+    initial,initial_sequence,initial_records=recover(Path(identity['initial_medium']['path']).read_bytes())
+    if initial.generation!=1 or initial_sequence!=0 or initial_records:
+        raise ValueError('short session did not start from the declared empty formatted medium')
+    manifest=json.loads(fixture_file.read_text());samples=validate_fixture(manifest,capture/'input.events',session)
     stroke=manifest['actions'][0]
     expected=[tuple(row) for row in samples[stroke['first_sequence']-1:stroke['last_sequence']]]
     if len(expected)!=6 or len({row[4] for row in expected[:-1]})<3:
         raise ValueError('missing independent pressure-varying stroke fixture')
-    root,sequence,records=recover(disk.read_bytes());chunks=[];page=None
-    for (namespace,object_id),record in records.items():
-        data=record.payload
-        if namespace!=1 or record.kind==2 or len(data)<64:continue
-        header=struct.unpack_from('<8Q',data)
-        if header[0]!=MAGIC:raise ValueError('unknown document codec')
-        if header[2]==3:
-            words=struct.unpack_from('<16Q',data)
-            if len(data)!=128+words[6]*72 or words[9:14]!=(65535,65535,4095,512,640):
-                raise ValueError('raw chunk length/calibration differs')
-            current=[struct.unpack_from('<9Q',data,128+i*72) for i in range(words[6])]
-            chunks.append((words,current))
-        elif header[2]==2 and object_id==257:page=data
-    chunks.sort(key=lambda item:item[1][0][0]);raw=join_chunks(chunks)
-    if raw!=expected:
-        raise ValueError('guest retained raw samples differ from external stroke')
-    if page is None:raise ValueError('missing committed page index')
-    words=struct.unpack_from('<16Q',page)
-    if words[1:7]!=(2,2,1,1,1,1) or len(page)!=168:
-        raise ValueError('final edit history/cursor does not contain one visible stroke')
+    root,sequence,records=recover(disk.read_bytes())
+    document=document_payloads(records,expected,session,sequence)
     events_uart=guest_events(capture/'uart.bin')
     states=[row for row in events_uart if row[0] in (0x421,0x423,0x424)]
     saved=[row for row in states if row[0]==0x421]
     if not any(row[0]==0x420 for row in events_uart) or len(saved)<3 or \
        not states or states[-1][0]!=0x421 or saved[-1][1]!=sequence:
         raise ValueError('missing final guest durability acknowledgement after edits')
+    confirmation=explicit_save(states,sequence)
     width,height,pixels=pgm(capture/'panel')
     rgb=bytes(value for pixel in pixels for value in (pixel,pixel,pixel))
     check_toolbar_pixels(width,height,rgb)
@@ -189,15 +243,18 @@ def short_session(disk: Path, capture: Path, fixture_file: Path) -> dict:
     for _,_,gray in history:
         phase='ink' if gray<8 else 'white'
         if not phases or phase!=phases[-1]:phases.append(phase)
-    if ['ink','white','ink'] not in [phases[i:i+3] for i in range(len(phases)-2)] or pixels[y*width+x]>=128:
+    if pixels[y*width+x]>=128 or 'ink' not in phases:
+        raise ValueError('actual completed controller output did not show the retained stroke')
+    if session=='undo-redo' and ['ink','white','ink'] not in [phases[i:i+3] for i in range(len(phases)-2)]:
         raise ValueError('actual controller output did not show stroke/undo/redo')
-    if stats['pen_ingress']!=len(samples) or stats['flushes']<3 or \
+    if stats['pen_ingress']!=len(samples) or stats['flushes']<3 or stats['panel_completed']<=0 or \
        stats['privilege_cycles'][0]<=0 or stats['privilege_cycles'][1]<=0:
         raise ValueError('raw ingress, medium FLUSH or genuine S/U execution absent')
     return {'status':'PASS','store_generation':root.generation,'committed_sequence':sequence,
-            'retained_raw_samples':len(raw),'saved_observations':saved,
+            'session':session,**document,'retained_raw_samples':len(expected),'saved_observations':saved,
+            'explicit_save_confirmation':confirmation,
             'controller_point_history':history,'controller_phases':phases,
-            'scope':'observed existing Lean notebook stroke/undo/redo/save through RTL; cold reopen separate'}
+            'scope':'observed existing Lean notebook stroke/'+session+'/save through RTL; cold reopen separate'}
 
 def cold(before_disk: Path, after_disk: Path, before: Path, after: Path) -> dict:
     if before.resolve()==after.resolve():raise ValueError('cold reopen requires a distinct execution capture')

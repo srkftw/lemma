@@ -64,6 +64,13 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic pen_sel,paper_sel,block_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
+ logic port_held,held_dma,held_write;
+ logic [55:0] held_addr;
+ logic [63:0] held_wdata,cpu_error_rdata;
+ logic [7:0] held_strb;
+ logic [2:0] held_lane,held_size;
+ logic cpu_error_pending,selected_valid,selected_fault;
+ logic [2:0] active_dma_lane,active_dma_size;
  assign register_memory_enabled=REGISTER_RAM;
  generate if(REGISTER_RAM) begin: small_ram
    logic small_ready,small_error;
@@ -116,24 +123,47 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
    .media_valid,.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
- // One-beat arbitration: DMA wins a ready memory beat, CPU data phase holds.
+ // DMA has priority only at an idle external port. A request which sees
+ // backpressure retains its owner and complete beat until its response;
+ // arrivals from the other master cannot replace an outstanding request.
  // D-cache is disabled; CPU data and DMA touch this one byte-coherent interface.
  // The 4KiB instruction cache remains subject to the guest's actual fence.i.
- assign dma_grant=dma_valid;
+ assign dma_grant=port_held?held_dma:dma_valid;
  assign dma_alignment=dma_size<=3&&(dma_addr&((64'd1<<dma_size)-1))==0;
  assign dma_span=dma_addr>=FRAME_POOL_BASE && dma_addr<=FRAME_POOL_BASE+FRAME_POOL_BYTES-(64'd1<<dma_size);
- assign mem_valid=dma_grant?(dma_alignment&&dma_span):cpu_mem_valid;
- assign mem_write=dma_grant?dma_write:cpu_mem_write;
- assign mem_addr=dma_grant?{dma_addr[55:3],3'b000}:cpu_mem_addr;
- assign mem_wdata=dma_grant?(dma_wdata<<(8*dma_addr[2:0])):cpu_mem_wdata;
- assign mem_strb=dma_grant?(8'((9'd1<<(1<<dma_size))-1)<<dma_addr[2:0]):cpu_mem_strb;
- assign cpu_mem_ready=!dma_grant&&external_ready;
- assign cpu_mem_error=!dma_grant&&external_error;
- assign cpu_mem_rdata=external_rdata;
- assign dma_ready=dma_grant&&((dma_alignment&&dma_span)?external_ready:1'b1);
- assign dma_error=dma_grant&&(!dma_alignment||!dma_span||external_error);
+ assign selected_valid=port_held?1'b1:dma_grant?dma_valid:(cpu_mem_valid&&!cpu_error_pending);
+ assign selected_fault=!port_held&&dma_grant&&(!dma_alignment||!dma_span);
+ assign mem_valid=!reset&&selected_valid&&!selected_fault;
+ assign mem_write=port_held?held_write:dma_grant?dma_write:cpu_mem_write;
+ assign mem_addr=port_held?held_addr:dma_grant?{dma_addr[55:3],3'b000}:cpu_mem_addr;
+ assign mem_wdata=port_held?held_wdata:dma_grant?(dma_wdata<<(8*dma_addr[2:0])):cpu_mem_wdata;
+ assign mem_strb=port_held?held_strb:dma_grant?(8'((9'd1<<(1<<dma_size))-1)<<dma_addr[2:0]):cpu_mem_strb;
+ assign cpu_mem_ready=!reset&&(cpu_error_pending||(!dma_grant&&external_ready));
+ assign cpu_mem_error=!reset&&(cpu_error_pending||(!dma_grant&&mem_valid&&external_ready&&external_error));
+ assign cpu_mem_rdata=cpu_error_pending?cpu_error_rdata:external_rdata;
+ assign dma_ready=!reset&&dma_grant&&(selected_fault||external_ready);
+ assign dma_error=!reset&&dma_grant&&(selected_fault||(external_ready&&external_error));
+ assign active_dma_lane=port_held?held_lane:dma_addr[2:0];
+ assign active_dma_size=port_held?held_size:dma_size;
  // Return a right-justified transfer, rather than unrelated bytes from the
  // remainder of the shared 64-bit memory beat.
- assign dma_rdata=(external_rdata>>(8*dma_addr[2:0])) &
-   (dma_size==0?64'hff:dma_size==1?64'hffff:dma_size==2?64'hffffffff:64'hffffffffffffffff);
+ assign dma_rdata=(external_rdata>>(8*active_dma_lane)) &
+   (active_dma_size==0?64'hff:active_dma_size==1?64'hffff:active_dma_size==2?64'hffffffff:64'hffffffffffffffff);
+ always_ff @(posedge clk) begin
+   if(reset) begin
+     port_held<=0;held_dma<=0;held_write<=0;held_addr<=0;held_wdata<=0;held_strb<=0;
+     held_lane<=0;held_size<=0;cpu_error_pending<=0;cpu_error_rdata<=0;
+   end else begin
+     if(port_held) begin
+       if(external_ready) port_held<=0;
+     end else if(mem_valid&&!external_ready) begin
+       port_held<=1;held_dma<=dma_grant;held_write<=mem_write;held_addr<=mem_addr;
+       held_wdata<=mem_wdata;held_strb<=mem_strb;held_lane<=dma_addr[2:0];held_size<=dma_size;
+     end
+     // The AHB adapter needs two cycles for ERROR. Retain its terminal
+     // response without issuing the failed external beat a second time.
+     cpu_error_pending<=mem_valid&&!dma_grant&&external_ready&&external_error;
+     if(mem_valid&&!dma_grant&&external_ready&&external_error) cpu_error_rdata<=external_rdata;
+   end
+ end
 endmodule

@@ -99,6 +99,10 @@ int main(int argc,char**argv)try{
  std::vector<uint8_t> framebuffer(2*BINDING_WIDTH*BINDING_HEIGHT,15),visible(BINDING_WIDTH*BINDING_HEIGHT,15);
  std::map<uint64_t,uint8_t> optical_pending;std::vector<Event> input=events(event_path);size_t event_index=0;std::deque<Event> samples;
  auto start=std::chrono::steady_clock::now();uint64_t retired=0,privilege_cycles[4]={0},traps=0,timer_traps=0,flushes=0,media_requests=0,pen_ingress=0,pen_accepted=0,panel_completed=0,panel_aborted=0;
+ // Successful byte transfers on the controller's external framebuffer port,
+ // and accepted pixel beats on its panel port. Counts span this execution,
+ // exclude reset cycles, and include pixels later discarded by panel_abort.
+ uint64_t fb_reads=0,fb_writes=0,panel_pixels=0;
  unsigned old_privilege=3;uint64_t transitions=0,reset_until=8,actual_cycles=0;bool finished=false,stopped=false;uint32_t finish=0;std::string uart_text;
  soc.clk=0;soc.reset=1;soc.preload_valid=0;soc.preload_index=0;soc.preload_data=0;soc.eval();
  if(soc.register_memory_enabled&&!dump.path.empty())throw std::runtime_error("RAM dump requires the external-memory configuration");
@@ -139,11 +143,14 @@ int main(int argc,char**argv)try{
      block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__dma_size,r->lemma_soc__DOT__dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__dma_addr&7)),r->lemma_soc__DOT__dma_rdata,!r->lemma_soc__DOT__dma_alignment||!r->lemma_soc__DOT__dma_span||soc.mem_error);
    }
    if(!soc.register_memory_enabled&&soc.mem_valid&&soc.mem_ready&&soc.mem_write&&!soc.mem_error&&ram_pointer)for(int j=0;j<8;j++)if(soc.mem_strb&(1<<j))ram_pointer[j]=soc.mem_wdata>>(j*8);
-   if(soc.fb_valid&&soc.fb_ready&&soc.fb_write&&!soc.fb_error)framebuffer[soc.fb_addr]=soc.fb_wdata;
+   if(soc.fb_valid&&soc.fb_ready&&!soc.fb_error){
+    if(soc.fb_write){framebuffer[soc.fb_addr]=soc.fb_wdata;fb_writes++;}
+    else fb_reads++;
+   }
    if(soc.uart_tx_valid){uart.put(soc.uart_tx_data);uart.flush();uart_text.push_back(soc.uart_tx_data);if(!quiet_uart){std::cout.put(soc.uart_tx_data);std::cout.flush();}}
    if(soc.uart_rx_ready&&!rx.empty())rx.pop_front();if(soc.sample_valid&&soc.sample_ready&&!samples.empty()){samples.pop_front();pen_ingress++;}
    if(soc.sample_accepted)pen_accepted++;
-   if(soc.panel_valid&&soc.panel_ready){if(soc.panel_x>=BINDING_WIDTH||soc.panel_y>=BINDING_HEIGHT)throw std::runtime_error("controller pixel out of bounds");optical_pending[soc.panel_y*BINDING_WIDTH+soc.panel_x]=soc.panel_gray;if(panel_log)panel_log<<c<<",pixel,"<<soc.panel_sequence<<","<<soc.panel_x<<","<<soc.panel_y<<","<<unsigned(soc.panel_gray)<<"\n";}
+   if(soc.panel_valid&&soc.panel_ready){if(soc.panel_x>=BINDING_WIDTH||soc.panel_y>=BINDING_HEIGHT)throw std::runtime_error("controller pixel out of bounds");panel_pixels++;optical_pending[soc.panel_y*BINDING_WIDTH+soc.panel_x]=soc.panel_gray;if(panel_log)panel_log<<c<<",pixel,"<<soc.panel_sequence<<","<<soc.panel_x<<","<<soc.panel_y<<","<<unsigned(soc.panel_gray)<<"\n";}
    if(soc.panel_complete){for(auto&[i,v]:optical_pending)visible[i]=v;optical_pending.clear();panel_completed++;if(panel_log)panel_log<<c<<",complete,"<<soc.panel_sequence<<",0,0,0\n";}
    if(soc.panel_abort){optical_pending.clear();panel_aborted++;if(panel_log)panel_log<<c<<",abort,"<<soc.panel_sequence<<",0,0,0\n";}
    if(soc.finish_valid){finished=true;finish=soc.finish_code;}if(soc.debug_retire)retired++;
@@ -154,14 +161,14 @@ int main(int argc,char**argv)try{
   soc.clk=1;soc.eval();
   stopped=(!stop_marker.empty()&&uart_text.find(stop_marker)!=std::string::npos)||(stop_panels&&panel_completed>=stop_panels)||(observer_cycle&&c+1>=observer_cycle);
   if(finished||stopped)break;
-  if(c&&c%1000000==0)std::cerr<<"RTL progress cycles="<<c<<" pc=0x"<<std::hex<<soc.debug_pc<<std::dec<<" privilege="<<unsigned(soc.debug_privilege)<<" retired="<<retired<<" ticks="<<soc.timer_ticks<<" timer_traps="<<timer_traps<<" UART="<<uart_text.size()<<"\n";
+  if(c&&c%1000000==0)std::cerr<<"RTL progress cycles="<<c<<" pc=0x"<<std::hex<<soc.debug_pc<<std::dec<<" privilege="<<unsigned(soc.debug_privilege)<<" retired="<<retired<<" ticks="<<soc.timer_ticks<<" timer_traps="<<timer_traps<<" UART="<<uart_text.size()<<" fb_reads="<<fb_reads<<" fb_writes="<<fb_writes<<" panel_pixels="<<panel_pixels<<" panel_completed="<<panel_completed<<"\n";
   if((c&0x3ffff)==0&&std::chrono::steady_clock::now()-start>std::chrono::seconds(deadline))throw std::runtime_error("RTL wall deadline exceeded");
  }
  if(!dump.path.empty()&&(finished||stopped)){std::ofstream f(dump.path,std::ios::binary);if(!f||!f.write(reinterpret_cast<const char*>(ram.data()+dump.address-RAM_BASE),dump.size)||!f.flush())throw std::runtime_error("external RAM snapshot write failed");}
  if(block_trace.is_open()){block_trace.flush();if(!block_trace)throw std::runtime_error("block capture write failed");}
  if(!panel_path.empty()){std::ofstream pgm(panel_path,std::ios::binary);pgm<<"P5\n"<<BINDING_WIDTH<<" "<<BINDING_HEIGHT<<"\n255\n";for(auto v:visible)pgm.put(v*17);}
  if(medium>=0)close(medium);
- if(!report_path.empty()){std::ofstream r(report_path);r<<"{\n\"block_rows\":"<<block_rows<<",\"block_omitted\":"<<block_omitted<<",\"cycles\":"<<actual_cycles<<",\"retired\":"<<retired<<",\"privilege_cycles\":["<<privilege_cycles[0]<<","<<privilege_cycles[1]<<","<<privilege_cycles[2]<<","<<privilege_cycles[3]<<"],\"privilege_transitions\":"<<transitions<<",\"traps\":"<<traps<<",\"timer_traps\":"<<timer_traps<<",\"pen_ingress\":"<<pen_ingress<<",\"pen_accepted\":"<<pen_accepted<<",\"panel_completed\":"<<panel_completed<<",\"panel_aborted\":"<<panel_aborted<<",\"media_requests\":"<<media_requests<<",\"flushes\":"<<flushes<<",\"volatile_sectors_discarded\":"<<overlay.size()<<",\"finished\":"<<(finished?"true":"false")<<",\"explicit_observer_stop\":"<<(stopped?"true":"false")<<",\"observer_cycle\":"<<observer_cycle<<",\"finish_code\":"<<finish<<"\n}\n";}
+ if(!report_path.empty()){std::ofstream r(report_path);r<<"{\n\"block_rows\":"<<block_rows<<",\"block_omitted\":"<<block_omitted<<",\"cycles\":"<<actual_cycles<<",\"retired\":"<<retired<<",\"privilege_cycles\":["<<privilege_cycles[0]<<","<<privilege_cycles[1]<<","<<privilege_cycles[2]<<","<<privilege_cycles[3]<<"],\"privilege_transitions\":"<<transitions<<",\"traps\":"<<traps<<",\"timer_traps\":"<<timer_traps<<",\"pen_ingress\":"<<pen_ingress<<",\"pen_accepted\":"<<pen_accepted<<",\"fb_reads\":"<<fb_reads<<",\"fb_writes\":"<<fb_writes<<",\"panel_pixels\":"<<panel_pixels<<",\"panel_completed\":"<<panel_completed<<",\"panel_aborted\":"<<panel_aborted<<",\"media_requests\":"<<media_requests<<",\"flushes\":"<<flushes<<",\"volatile_sectors_discarded\":"<<overlay.size()<<",\"finished\":"<<(finished?"true":"false")<<",\"explicit_observer_stop\":"<<(stopped?"true":"false")<<",\"observer_cycle\":"<<observer_cycle<<",\"finish_code\":"<<finish<<"\n}\n";}
  std::cerr<<"\nRTL cycles="<<actual_cycles<<" retired="<<retired<<" timer_traps="<<timer_traps<<" finish=0x"<<std::hex<<finish<<std::dec<<" observer_stop="<<stopped<<" block_rows="<<block_rows<<" block_omitted="<<block_omitted<<"\n";
  return finished?(finish==0x5555?0:2):stopped?0:3;
 }catch(const std::exception&e){std::cerr<<"RTL adapter: "<<e.what()<<"\n";return 1;}
