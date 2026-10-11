@@ -34,11 +34,24 @@ global routing and detailed signal routing. `layout.tcl` uses a 10 ns clock
 (the development binding's 100 MHz), 2 ns input/output delays, a declared
 6 fF output load, typical 1.20 V / 25 C cells and public PDK RC values.
 Its timing reports use global-route estimated parasitics after detailed routing,
-not extracted post-route timing. It retains router DRC output separately.
+not extracted post-route timing. The recipe repairs high-fanout nets and uses
+four CPU threads and three detailed-route refinement iterations. It saves
+global-route geometry, area and timing before that bounded detailed route, so
+a timeout retains the strongest completed stage. It reports actual router
+violations separately and fails if any remain. Timing and electrical violations
+retain their own results even when the signal-routing recipe completes.
 Power-grid closure and the pad ring are excluded. Optional `--process-checks`
 requests original standard-cell GDS import, process DRC and transistor extraction
 with Magic, followed by Netgen LVS against the original public CDL cells and
-the synthesized circuit. It requires `--layout`; failures retain the completed
+the synthesized circuit. Full-rule DRC/streamout and transistor extraction run
+in separate Magic processes: selecting `drc(full)` and then extracting causes
+the pinned Magic to segfault on an original public inverter. Fresh extraction
+reads the actual streamed GDS. The supplied `ngspice(lvs)` extraction style
+emits primitive MOS devices matching the original CDL, including width,
+length and bulk connectivity. It differs from the public PDK README's
+recommendation for its ordinary Magic/Netgen flow; an original-cell comparison
+and independent width/bulk negative cases validate this explicit CDL route.
+It requires `--layout`; failures retain the completed
 layout and separate check results. Omitting it records process DRC/LVS as
 `NOT_RUN`. Public beta PDK checks do not establish foundry signoff, and a
 peripheral-only result does not certify a complete SoC.

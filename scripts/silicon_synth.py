@@ -138,6 +138,29 @@ def lvs_matches(report: str) -> bool:
         r"Circuits match uniquely\.\s*(?:\.\s*)?", final[1]) is not None
 
 
+def layout_reports(out: Path, *, global_route: bool = False) -> dict:
+    prefix = "global-" if global_route else ""
+    summary = "global-route-summary.json" if global_route else "layout-summary.json"
+    result = json.loads((out / summary).read_text())
+    for kind in ("setup", "hold"):
+        report = (out / f"{prefix}{kind}-summary.rpt").read_text()
+        slack = re.search(r"worst slack\s+([-+0-9.]+)", report)
+        if not slack:
+            raise RuntimeError(f"Missing {prefix}{kind} timing estimate")
+        value = float(slack.group(1))
+        result[f"{kind}_worst_slack_ns"] = value
+        result[f"{kind}_timing"] = "MET" if value >= 0 else "VIOLATED"
+    return result
+
+
+def router_drc(count: str) -> dict:
+    if not re.fullmatch(r"[0-9]+\s*", count):
+        raise RuntimeError("Missing or malformed detailed-router violation count")
+    violations = int(count)
+    return {"status": "PASS" if violations == 0 else "FAIL", "violations": violations,
+            "scope": "Detailed-router geometric checks; separate from process DRC"}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--top")
@@ -188,6 +211,8 @@ def main() -> int:
     header_paths = sorted({p.resolve() for d in args.include for pattern in ("*.vh", "*.svh")
                            for p in Path(d).rglob(pattern)})
     input_paths = list(dict.fromkeys(paths + header_paths))
+    recipes = {name: (ROOT / f"tooling/silicon/{name}.tcl").read_text()
+               for name in ("layout", "process", "extract")}
     result = {"schema": "lemma-silicon-physical-result/0.1.0", "status": "FAIL",
               "top": args.top, "source_commit": subprocess.check_output(
                   ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
@@ -197,7 +222,8 @@ def main() -> int:
               "defines": args.define, "parameters": args.parameter, "includes": args.include,
               "recipe_sha256": sha(Path(__file__)),
               "eda_recipe_sha256": sha(ROOT / "tooling/silicon/eda.nix"),
-              "layout_recipe_sha256": sha(ROOT / "tooling/silicon/layout.tcl"),
+              **{f"{name}_recipe_sha256": hashlib.sha256(text.encode()).hexdigest()
+                 for name, text in recipes.items()},
               "physical_lock_sha256": sha(LOCK), "commands": [],
               "mapping_profile": "sg13g2-register-cells-ties/0.1.0" if args.map_effort == "normal"
                                  else "sg13g2-register-cells-ties-bounded/0.1.0",
@@ -295,18 +321,11 @@ def main() -> int:
                 layout = out / "layout.tcl"
                 layout.write_text(f"set pdk {{{std}}}\nset out {{{out}}}\n" +
                                   f"set top {args.top}\nset clock_port {args.clock}\nset clock_ns {args.clock_ns}\n" +
-                                  (ROOT / "tooling/silicon/layout.tcl").read_text())
+                                  recipes["layout"])
                 result["commands"].append(run([openroad, "-exit", "-no_init", str(layout)], out / "layout.log", deadline))
-                result["layout"] = json.loads((out / "layout-summary.json").read_text())
-                for kind in ("setup", "hold"):
-                    report = (out / f"{kind}-summary.rpt").read_text()
-                    slack = re.search(r"worst slack\s+([-+0-9.]+)", report)
-                    if not slack:
-                        raise RuntimeError(f"Missing {kind} timing estimate")
-                    value = float(slack.group(1))
-                    result["layout"][f"{kind}_worst_slack_ns"] = value
-                    result["layout"][f"{kind}_timing"] = "MET" if value >= 0 else "VIOLATED"
-                result["drc"] = "ROUTER_ONLY: see route.drc; process DRC NOT_RUN"
+                result["layout"] = layout_reports(out)
+                result["router_drc"] = router_drc((out / "router-drc-count.txt").read_text())
+                result["drc"] = "NOT_RUN; router checks reported separately"
                 result["lvs"] = "NOT_RUN; no GDS/extracted-transistor comparison"
                 if args.process_checks:
                     magic, netgen = shutil.which("magic"), shutil.which("netgen")
@@ -317,7 +336,7 @@ def main() -> int:
                     result["tools"]["netgen_path"] = netgen
                     check = out / "process.tcl"
                     check.write_text(f"set pdk {{{pdk / 'ihp-sg13g2'}}}\nset out {{{out}}}\nset top {args.top}\n" +
-                                     (ROOT / "tooling/silicon/process.tcl").read_text())
+                                     recipes["process"])
                     extra = [std / "gds/sg13g2_stdcell.gds", std / "cdl/sg13g2_stdcell.cdl"]
                     result["pdk"]["process_collateral"] = {str(p.relative_to(pdk)): sha(p) for p in extra}
                     result["commands"].append(run([magic, "-dnull", "-noconsole", "-rcfile", str(
@@ -325,6 +344,14 @@ def main() -> int:
                     violations = int((out / "process-drc-count.txt").read_text().strip())
                     result["drc"] = {"status": "PASS" if violations == 0 else "FAIL", "violations": violations,
                                      "scope": "Magic public beta SG13G2 process rules; not foundry signoff"}
+                    # Extract a fresh import of the actual streamed GDS. The
+                    # pinned Magic crashes if extraction follows drc(full)
+                    # selection, including on an original public inverter.
+                    extract = out / "extract.tcl"
+                    extract.write_text(f"set out {{{out}}}\nset top {args.top}\n" +
+                                       recipes["extract"])
+                    result["commands"].append(run([magic, "-dnull", "-noconsole", "-rcfile", str(
+                        pdk / "ihp-sg13g2/libs.tech/magic/ihp-sg13g2.magicrc")], out / "extract.log", deadline, extract))
                     lvs = out / "lvs.tcl"
                     # Supply original transistor cells to the Verilog reader,
                     # retaining named pin associations instead of guessing CDL order.
@@ -341,6 +368,8 @@ def main() -> int:
                                      "scope": "Extracted layout vs original public transistor cells + synthesized circuit"}
                     if violations or not match:
                         raise RuntimeError("Process checks failed; retain DRC/LVS reports separately from completed layout")
+                if result["router_drc"]["violations"]:
+                    raise RuntimeError("Detailed router reported violations; retain completed layout and separate process checks")
         for p, before in zip(input_paths, result["source_inputs"].values()):
             if sha(p) != before:
                 raise RuntimeError("RTL source changed during synthesis; rerun with stable inputs")
@@ -350,6 +379,11 @@ def main() -> int:
             result["commands"].append(exc.record)
         result["error"] = str(exc)
         print(str(exc), file=sys.stderr)
+    if (out / "global-route-summary.json").is_file():
+        try:
+            result["global_route_checkpoint"] = layout_reports(out, global_route=True)
+        except (OSError, ValueError, RuntimeError) as exc:
+            result["global_route_checkpoint_error"] = str(exc)
     result["artifacts"] = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob("*"))
                            if p.is_file() and p.name != "result.json"}
     (out / "result.json").write_text(json.dumps(result, indent=2) + "\n")

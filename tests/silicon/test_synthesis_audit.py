@@ -55,6 +55,14 @@ class SynthesisAuditTests(unittest.TestCase):
             with self.subTest(report=report):
                 self.assertFalse(silicon_synth.lvs_matches(report))
 
+    def test_router_violations_are_independent_of_process_drc_and_exit_status(self):
+        self.assertEqual(silicon_synth.router_drc("0\n")["status"], "PASS")
+        result = silicon_synth.router_drc("47\n")
+        self.assertEqual((result["status"], result["violations"]), ("FAIL", 47))
+        for count in ("", "-1", "0.0", "unknown", "0\n47\n"):
+            with self.subTest(count=count), self.assertRaises(RuntimeError):
+                silicon_synth.router_drc(count)
+
     def test_expired_process_is_reaped_and_cannot_become_pass(self):
         with tempfile.TemporaryDirectory() as tmp:
             log = Path(tmp) / "command.log"

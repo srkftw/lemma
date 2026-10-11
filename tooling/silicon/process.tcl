@@ -11,6 +11,7 @@ if {[catch {
     load $top
     select top cell
     expand
+    drc style drc(full)
     drc on
     drc check
     drc catchup
@@ -22,10 +23,6 @@ if {[catch {
     puts $file [drc listall why]
     close $file
     gds write $out/layout.gds
-    extract path $out
-    extract all
-    ext2spice lvs
-    ext2spice -o $out/extracted.spice $top
 } failure]} {
     puts stderr "Process check Tcl failure: $failure"
     exit 1
