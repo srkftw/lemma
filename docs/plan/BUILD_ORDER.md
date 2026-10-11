@@ -13,8 +13,12 @@ qualification and all eight actual push/PR CI jobs passed at implementation
 clean-worktree sources and retained failures. Final report-head CI and the
 owner-authorized merge are subsequent publication observations.
 These advance units 2.1–2.5, 2.7–2.8 and 3.1–3.3 within the declared Core0
-profile. The managed Lean runtime in 2.6, storage in 3.4–3.8 and
-the broader G1/G2/G3 finish lines remain incomplete.
+profile. Task004 subsequently observes a bounded virtual-device, block/flush,
+record-journal and notebook subset of 3.4–3.8; see its
+[evidence](../evidence/004-lemmasim-durable-ink.md). This is partial progress,
+with finite object limits and explicit Compact. General filesystems, general
+schema migration, the managed Lean runtime in 2.6 and broader G1/G2/G3 finish
+lines remain incomplete.
 
 ## G1 — Core0, LLVM lowering and LemmaVM
 
@@ -64,6 +68,12 @@ Concentration window: months 8–12. Required result: Enforced authority and rec
 ## G4 — Pen, display, ink and mathematical documents
 
 Concentration window: months 11–17. Required result: Write, edit, save, restart and replay an offline notebook.
+
+Task004 observes the bounded ink notebook subset: negotiated pen/paper, integer
+rasterization, page editing, durable autosave, cold recovery and exact virtual
+replay. G4 remains partial: mathematical document semantics, notation/layout
+corpora and managed runtime integration are unfinished. Its artifact evidence
+does not certify every G4 unit or physical behavior.
 
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |
@@ -139,4 +149,5 @@ Gate changes require explicit evidence; no percentage-complete score substitutes
 
 ## Parallel foundational workstream: LemmaSim
 
-The original G1-G7 identifiers, dependency graph and recorded evidence remain stable. In parallel with Core0 and boot work, build permanent **LemmaSim** as a first-class virtual embodiment of the finished Lemma One. A single canonical, versioned machine contract governs both embodiments; virtual motherboard, storage/power, pen/e-paper, distribution modes and cross-embodiment tests have independent exit evidence. See [LEMMASIM.md](LEMMASIM.md) and [../../LEMMA_MACHINE_CONTRACT.md](../../LEMMA_MACHINE_CONTRACT.md). Current status is architectural scaffolding, not functional equivalence achieved.
+The original G1-G7 identifiers, dependency graph and recorded evidence remain stable. In parallel with Core0 and boot work, build permanent **LemmaSim** as a first-class virtual embodiment of the finished Lemma One. A single canonical, versioned machine contract governs both embodiments; virtual motherboard, storage/power, pen/e-paper, distribution modes and cross-embodiment tests have independent exit evidence. See [LEMMASIM.md](LEMMASIM.md) and [../../LEMMA_MACHINE_CONTRACT.md](../../LEMMA_MACHINE_CONTRACT.md). Current status includes the observed Task004 bounded native notebook and real
+virtual devices; finished-machine and physical equivalence remain unverified.

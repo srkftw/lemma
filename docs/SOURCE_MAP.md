@@ -2,7 +2,8 @@
 
 Tasks001/002 implement the bounded Core0/compiler/machine foundation. Task003
 adds the tested owned-page supervisor/User kernel and volatile service. Task004
-adds the explicit LemmaSim hardware binding and durable notebook. Runtime,
+adds the explicit LemmaSim hardware binding and durable notebook, with source-
+specific results in [its evidence report](evidence/004-lemmasim-durable-ink.md). Runtime,
 mathematics and tutor rows remain naming guidance, not implemented subsystems.
 
 | Area | Intended responsibility |
@@ -12,7 +13,7 @@ mathematics and tutor rows remain naming guidance, not implemented subsystems.
 | `Lemma/Machine/` | Machine primitives, target layout, startup generation |
 | `Lemma/Runtime/` | Stage II runtime; do not stub it in task 001 |
 | `Lemma/Kernel/` | Tasks, memory, capabilities, scheduling |
-| `Lemma/Services/Store/` | Guest block-backed record engine, codecs, isolated service and client protocol |
+| `Lemma/Services/Store/` | Guest block-backed record engine/codecs, isolated service, short durable Inspect and owner-bound asynchronous Compact receipts |
 | `Lemma/Drivers/` | Lean VirtIO block, PLIC, paper and pen hardware drivers |
 | `Lemma/Platform/LemmaSim/` | Descriptor/DTB validation, bounded device mediation and isolated deployments |
 | `Lemma/Ink/` | Integer geometry, pressure-aware tile rasterization and owned Gray4 surface |

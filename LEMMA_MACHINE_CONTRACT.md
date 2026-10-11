@@ -24,9 +24,11 @@ The target is total **functional** equivalence: for every admitted guest-observa
 [descriptor and device v1 ABIs](docs/contracts/004-devices-v1.md),
 [owned-memory extension](docs/contracts/004-owned-memory-v1.md), and
 [guest record-store format](docs/contracts/004-store-v1.md) are subordinate
-contracts. Their presence does not certify an integrated notebook, deterministic
-whole-machine replay, physical conformance, or the finished canonical machine.
-Physical conformance remains UNVERIFIED. Historical profiles retain their meanings.
+contracts. [Task004 evidence](docs/evidence/004-lemmasim-durable-ink.md) records
+the implemented bounded native notebook, exact virtual replay and admitted
+crash model. These observations do not certify the finished canonical machine
+or physical equivalence. Physical conformance remains UNVERIFIED. Historical
+profiles retain their meanings.
 
 ## Required contract sections (unfrozen values must remain UNKNOWN)
 

@@ -1,0 +1,343 @@
+{
+  "schema_version": 2,
+  "status": "VERIFIED_IMPLEMENTATION_EVIDENCE",
+  "scope": "important original observed artifacts and verified offline inventories; generated report self-hashes are intentionally absent",
+  "implementation_commit": "7236f7889fb9dcee29783ccf7113ddaaa45c45d9",
+  "implementation_tree": "373730cfe37997c36977d3b0ce1b4d1aca7bf33f",
+  "offline_archive": {
+    "status": "PASS_VERIFIED",
+    "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+    "bytes": 195965460,
+    "sha256": "808cb3e7c286a3838e5561bdf960bc33e17405ebce3bf214d5ff52b7fdd08147",
+    "verified_members": 1102,
+    "primary_files": 683,
+    "supplement_unique_files": 417,
+    "supplement_aliases": 285,
+    "uncompressed_verified_bytes": 4372754703,
+    "inventory_sha256": {
+      "inventory.json": "64e9b87839109bf81fd655f711fa19e35b100a1a97fde7ed6069e0141c9e891d",
+      "supplement/inventory.json": "6c23af4a90f014ad3ca951173ab9930ccbff819fcdb47ed0d83d45549eddd3d4"
+    },
+    "source_bundle_verified": true,
+    "source_tree_verified": true,
+    "verification": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-verification2.json",
+      "bytes": 1012,
+      "sha256": "91ea22f5a920f9777f1f7964841877c72cd4381492575f54ab2b53f82684c5bd"
+    },
+    "export": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-export2.json",
+      "bytes": 443642,
+      "sha256": "5febf883166959d6dcc8d73d127db837cb0f5d876614e998f622202e450dff80"
+    },
+    "closed_process_observations": {
+      "path": "build/lemmasim/task004-7236f78-handoff/closed-export-verification.json",
+      "bytes": 1841,
+      "sha256": "c0d2043d03847cbaa1b8d9fd4e668dc4073d403828385c543364f97f232064e1"
+    },
+    "selector": {
+      "path": "build/lemmasim/task004-7236f78-handoff/select_fault_supplement.py",
+      "bytes": 29989,
+      "sha256": "c0ab9e82598c51a532c6ce67629229c1503509a97c9fb731db1d6f0f869b5a04"
+    },
+    "verifier": {
+      "path": "build/lemmasim/task004-7236f78-handoff/verify_milestone_archive.py",
+      "bytes": 5646,
+      "sha256": "0716903baaf82a93562d62ee0a24347e242ed9704f2a078110fb484eaca403e6"
+    },
+    "executed_export_argv": [
+      "python3",
+      "build/lemmasim/task004-7236f78-handoff/select_fault_supplement.py",
+      "--acceptance",
+      "build/lemmasim/task004-7236f78-full1-headless",
+      "--primary",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-base.tar.gz",
+      "--gtk-selection",
+      "build/lemmasim/task004-7236f78-handoff/native-gtk-supplement-selection.json",
+      "--ci-inventory",
+      "build/lemmasim/ci-7236f78-run38096937753/artifacts/offline-inventory.json",
+      "--cli-inventory",
+      "build/lemmasim/ordinary-cli-7236f78-smoke1/artifact-inventory.json",
+      "--screenshot-conversion",
+      "build/lemmasim/task004-7236f78-handoff/native-controller-visible-conversion.json",
+      "--to",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+      "--report",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-export2.json"
+    ],
+    "executed_verify_argv": [
+      "python3",
+      "build/lemmasim/task004-7236f78-handoff/verify_milestone_archive.py",
+      "--archive",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+      "--report",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-verification2.json"
+    ],
+    "process_wrapper": {
+      "timeout_seconds": 1800,
+      "signal": "TERM",
+      "kill_after_seconds": 10,
+      "export_tool": 1305,
+      "verification_tool": 68534,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "reaped": true
+    },
+    "primary_archive": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-base.tar.gz",
+      "bytes": 12069189,
+      "sha256": "cc48e0223965cd65267e3e280917ce1cbccea4d426472cc7f5c9754f5a9cf764"
+    },
+    "github_actions_days": 14,
+    "permanent_remote_retention": "NOT_CONFIGURED"
+  },
+  "important_files": [
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/result.json",
+      "bytes": 30842,
+      "sha256": "6ba8e737be7a7240b45f8120b99215a750d8272c7e45612ceb2cf62f29dc9aaa"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/prepared.json",
+      "bytes": 6843,
+      "sha256": "8749fced3eb2a1d6c70dff8a443a86958f35d60c58e2c67f74b473d8415f4742"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/initialization/result.json",
+      "bytes": 14635,
+      "sha256": "b92b78c7baaaa28e7781f5696821a23439bc49bc12338adff1f7fb6670f67f06"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/workflow.json",
+      "bytes": 79578,
+      "sha256": "be0aa62cbf2dee43abd72bb2c0f64c8811f5c9b42acf812d84cd889a68707439"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/cold.json",
+      "bytes": 26869,
+      "sha256": "32ef544f87ae7bf4dfd65ebde37134a4aee89985cab965ec0574cd49162f04c6"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/run/result.json",
+      "bytes": 15100,
+      "sha256": "d39d8885360cc1813da267ee62a9b682af753700ed9e2ee4d47aa8463968294a"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/cold-run/result.json",
+      "bytes": 15018,
+      "sha256": "9e58ec0863d9ae49a52fdf299e60f3770e8a4be88251443bf02c35054af16e37"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/owned-memory/result.json",
+      "bytes": 45829,
+      "sha256": "bfa684b91fafa7fcd804aa91bb5a60f8f6af93d61913f0f008e2a9b2c2977d4b"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/input.json",
+      "bytes": 7392,
+      "sha256": "e974f3e21efb57f0b249d354fb721de5e52818e4450021e24669ef3c73cb7d68"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/input.bin",
+      "bytes": 7202520,
+      "sha256": "4e92b2a93d6c530499fd3da13c7e4b46880e17a00e374dd4924283efcbe28d2f"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/faults/result.json",
+      "bytes": 9479,
+      "sha256": "5e466047653ffe0bce1958504f46b0ede122f14424b07a1676efb0a394722bd0"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/publication-negative/result.json",
+      "bytes": 1348,
+      "sha256": "9e5fbc0afafdc8b6b3ad5a4e2bf86d1240bd10fb365a214c14e04e6d94098b53"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/input-negative/result.json",
+      "bytes": 1436,
+      "sha256": "cf8c3da0c51de5f815b028371c1c8ee316e3a9007b155430d63c51bbc7b17dcb"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/isolation/observation.json",
+      "bytes": 3416,
+      "sha256": "c444e0d436fd5cc3c729f7f6c3f73000c7695398ad193c4a4cc7c645c9202fb6"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/loss-watchdog/workflow.json",
+      "bytes": 3171,
+      "sha256": "aa092d15691fa8528c1e1f9e08d54b2f79be25255ae245ca9d35af0efbc035ce"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/loss-watchdog/cold.json",
+      "bytes": 2019,
+      "sha256": "c90a52e6ed8dc8fabd945f758bdceeb68c1de583136d1755fe86471a95aea8e3"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/selected-stack-observations.json",
+      "bytes": 4256,
+      "sha256": "a416363dac6fa196615733ed5d02ed240a486f065a4ee66924aa7403d3321443"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-gtk-observations.json",
+      "bytes": 75783,
+      "sha256": "83a8b77be15d222f51c993c2a1ca6f07ec28c23f50f9d031e3320861483991b9"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-cross-frontend-comparison.json",
+      "bytes": 5451,
+      "sha256": "ebe7966856735ed657f63600e4ee34b94ba47db5a3fd1b4c1541067565111e3e"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-gtk-supplement-selection.json",
+      "bytes": 69824,
+      "sha256": "a1ddf5babc5ed2b2120b2ebbfac4fa0a075addd076930d7d5cde9a382a8a1623"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-controller-visible-conversion.json",
+      "bytes": 1281,
+      "sha256": "d64f64f2b7b8006bdf53007d44fcebca1ebcf5914565da7f1c11f04cbb17c8f1"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-controller-visible.png",
+      "bytes": 19336,
+      "sha256": "0aca4979d91b06033d507b98386c4529f86110309cd10a6017dc7a697c395c7c"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/select_fault_supplement.py",
+      "bytes": 29989,
+      "sha256": "c0ab9e82598c51a532c6ce67629229c1503509a97c9fb731db1d6f0f869b5a04"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/verify_milestone_archive.py",
+      "bytes": 5646,
+      "sha256": "0716903baaf82a93562d62ee0a24347e242ed9704f2a078110fb484eaca403e6"
+    },
+    {
+      "path": "build/lemmasim/task004-7236f78-handoff/closed-export-verification.json",
+      "bytes": 1841,
+      "sha256": "c0d2043d03847cbaa1b8d9fd4e668dc4073d403828385c543364f97f232064e1"
+    },
+    {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-verification2.json",
+      "bytes": 1012,
+      "sha256": "91ea22f5a920f9777f1f7964841877c72cd4381492575f54ab2b53f82684c5bd"
+    },
+    {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-export2.json",
+      "bytes": 443642,
+      "sha256": "5febf883166959d6dcc8d73d127db837cb0f5d876614e998f622202e450dff80"
+    },
+    {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/snapshot-terminal.json",
+      "bytes": 8206,
+      "sha256": "2638231ebc650ea5428c387ab37843234816e80cf8ae062fc5da565bfc9e7325"
+    },
+    {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/synthetic-git-commit-terminal.json",
+      "bytes": 2804,
+      "sha256": "23e11f3f9e7fa1acea6e81cd9966d3b67472a4e781083f401c44be4b62d7a24f"
+    },
+    {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/artifacts/offline-inventory.json",
+      "bytes": 14568,
+      "sha256": "f1bb7ab9c0249f8b8af63bfa62888bc7895da770d21a52f65100598a25d01962"
+    },
+    {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/artifacts/retention.json",
+      "bytes": 7467,
+      "sha256": "a55f55298078d1e2e4c32e0e2afd9d64dfcbce780b77f9d0af970350fc0fa590"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/image.elf",
+      "bytes": 754784,
+      "sha256": "c3a546eafcaafc88d190889427be447defa0edff85fc47655e90e74e855acdd3"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/audit.json",
+      "bytes": 2372448,
+      "sha256": "aa1dd6e79edd5737d8c06e05515f4622c04e5b154f96aa24d9d92a096753ed8e"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/capacity.json",
+      "bytes": 4117722,
+      "sha256": "b1e44a604656c1af28c889023264b1deffdf2f88249f9b6503993f798cc07716"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/image.elf",
+      "bytes": 415048,
+      "sha256": "b9ea5afcb4b00e5452766e5235bb113587289eb31f7ef39df60ac0a093dc5794"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/audit.json",
+      "bytes": 2368964,
+      "sha256": "3e584ea6adfd066a8d72b0c03e3ead6ec0ecee8da24e6cb82ab6469387e303a2"
+    },
+    {
+      "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/capacity.json",
+      "bytes": 1685072,
+      "sha256": "e2f6a35235f6ac108ae54a432a763f09b71e80696258cb7412331268375b5df0"
+    }
+  ],
+  "initial_media": {
+    "status": "INITIALIZED",
+    "path": "build/lemmasim/task004-7236f78-full1-headless/initial.raw",
+    "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+    "recipe": "new256MiB zero raw medium; actual compiled initializer op11+flush acknowledgement required",
+    "automatic_format_on_mount_failure": false,
+    "bytes": 268435456,
+    "initialization": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/initialization/result.json",
+      "bytes": 14635,
+      "sha256": "b92b78c7baaaa28e7781f5696821a23439bc49bc12338adff1f7fb6670f67f06"
+    }
+  },
+  "guest_images": {
+    "O2": {
+      "image_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/image.elf",
+      "sha256": "b9ea5afcb4b00e5452766e5235bb113587289eb31f7ef39df60ac0a093dc5794",
+      "audit_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/audit.json",
+      "audit_sha256": "3e584ea6adfd066a8d72b0c03e3ead6ec0ecee8da24e6cb82ab6469387e303a2",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "actual artifact/source closure; workflow result remains separate"
+    },
+    "O0": {
+      "image_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/image.elf",
+      "sha256": "c3a546eafcaafc88d190889427be447defa0edff85fc47655e90e74e855acdd3",
+      "audit_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/audit.json",
+      "audit_sha256": "aa1dd6e79edd5737d8c06e05515f4622c04e5b154f96aa24d9d92a096753ed8e",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "actual artifact/source closure; workflow result remains separate"
+    },
+    "initializer": {
+      "image_path": "/home/sreekumaar/Downloads/lemma/build/kernel/task004-7236f78-full1-headless-lemmasim-initialize-O2/image.elf",
+      "sha256": "0e65cfdb519914c0cae9c98a627d675b716a837806d1c232367522f05f44e9dc",
+      "audit_sha256": "d665a23ee399c57aee9e497d7e5103da05610f5b6c02d01df94a48c81eaf179a",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "genuine actual initializer linked/audited in clean full matrix; final media initializer ACK observed separately"
+    },
+    "isolation": null
+  },
+  "raw_workload_sha256": "4e92b2a93d6c530499fd3da13c7e4b46880e17a00e374dd4924283efcbe28d2f",
+  "guest_workload_document_sha256": "9692cef295b748c7666e6c366dfa7b5979ad41e097c18640e375a36b9b32f29f",
+  "guest_workload_pixels_sha256": "85ad7d5e9f6a0b06d1b79e192d603bf8726d65f3fbfaab7bedb3cd1fe8036bae",
+  "source_bundle_member": "source/implementation.bundle",
+  "archived_complete_inventories": {
+    "inventory.json": "64e9b87839109bf81fd655f711fa19e35b100a1a97fde7ed6069e0141c9e891d",
+    "supplement/inventory.json": "6c23af4a90f014ad3ca951173ab9930ccbff819fcdb47ed0d83d45549eddd3d4"
+  },
+  "source_bundle_and_tree_verified": true,
+  "retention_boundary": "actual independent streaming archive/alias/source-bundle validation; no additional guest execution or whole-program proof",
+  "historical_failures": "retained under original source/result identities; first duplicate-selection export remains separately retained outside archive",
+  "published_controller_image": {
+    "published_image": "docs/evidence/004-controller-visible.png",
+    "sha256": "0aca4979d91b06033d507b98386c4529f86110309cd10a6017dc7a697c395c7c",
+    "bytes": 19336,
+    "authority": "actual guest-produced controller-visible PPM losslessly converted; raw PPM and conversion provenance archived",
+    "manual_interactive_test": "NOT_RUN"
+  }
+}

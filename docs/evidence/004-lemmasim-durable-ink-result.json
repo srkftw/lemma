@@ -1,0 +1,810 @@
+{
+  "schema_version": 2,
+  "status": "READY_FOR_REVIEW",
+  "task004_primary_slice_complete": true,
+  "canonical_machine_complete": false,
+  "scope": "Task004 primary completion boundary: native Lean-authored RV64 notebook, modeled devices, durable storage/recovery, editing, deterministic virtual replay and bounded workload. Draft review boundary retained.",
+  "implementation": {
+    "commit": "7236f7889fb9dcee29783ccf7113ddaaa45c45d9",
+    "tree": "373730cfe37997c36977d3b0ce1b4d1aca7bf33f",
+    "branch": "task/004-lemmasim-durable-ink",
+    "pr": "https://github.com/srkftw/lemma/pull/5",
+    "draft": true
+  },
+  "report_publication": {
+    "kind": "later documentation-only commit referencing this tested implementation",
+    "commit": "separate publication identity recorded by Git; omitted here to prevent self-reference",
+    "required_ci": "PENDING_PUBLICATION",
+    "implementation_ci_inherited_to_report_head": false
+  },
+  "profiles": {
+    "core": "lemma-one-core/0.1.0",
+    "binding": "lemmasim-virt/0.1.0",
+    "pressure": "synthetic mouse; recorded raw varying pressure",
+    "default_geometry": [
+      1650,
+      2200
+    ],
+    "second_geometry": [
+      1404,
+      1872
+    ]
+  },
+  "backend": {
+    "qemu_source_commit": "c3d48b7d1e89604920e5b81b91140c2ad39a1943",
+    "host_build": "v17",
+    "known_binary_sha256": "0e95380d2eb582ebf95f989fc6a07eac26a50c222bbbee95dd5fa5421d2864ce",
+    "fresh_run_identity_matches": "PASS",
+    "maintained_host_boundary": "device/input/pixels/block transport only"
+  },
+  "acceptance": {
+    "path": "build/lemmasim/task004-7236f78-full1-headless/result.json",
+    "bytes": 30842,
+    "sha256": "6ba8e737be7a7240b45f8120b99215a750d8272c7e45612ceb2cf62f29dc9aaa",
+    "status": "PASS",
+    "source_matches": true,
+    "processes_reaped": true,
+    "lane": "full",
+    "with_o0": true,
+    "raw_task004_complete": false,
+    "controller": {
+      "tool_session": 2480,
+      "exit_code": 0,
+      "pid": 2203685,
+      "pid_absent": true,
+      "scope": "parent observed controller EXIT0/output consumed/reaped"
+    }
+  },
+  "required_ci": {
+    "status": "PASS",
+    "run_id": 38096937753,
+    "job_count": 9,
+    "synthetic_merge": "7c58f4faf535224f2f70e00689de248e7f7d6dc0",
+    "synthetic_tree": "373730cfe37997c36977d3b0ce1b4d1aca7bf33f",
+    "implementation_tree_equal": true,
+    "jobs": [
+      {
+        "id": 114344758217,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758278,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758289,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758297,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758314,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758321,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758335,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758345,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114344758391,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "snapshot": {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/snapshot-terminal.json",
+      "bytes": 8206,
+      "sha256": "2638231ebc650ea5428c387ab37843234816e80cf8ae062fc5da565bfc9e7325"
+    },
+    "raw_git_commit": {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/synthetic-git-commit-terminal.json",
+      "bytes": 2804,
+      "sha256": "23e11f3f9e7fa1acea6e81cd9966d3b67472a4e781083f401c44be4b62d7a24f"
+    },
+    "artifact_inventory": {
+      "path": "build/lemmasim/ci-7236f78-run38096937753/artifacts/offline-inventory.json",
+      "bytes": 14568,
+      "sha256": "f1bb7ab9c0249f8b8af63bfa62888bc7895da770d21a52f65100598a25d01962"
+    },
+    "retained_artifacts": {
+      "status": "PASS",
+      "zip_count": 9,
+      "retained_zip_bytes": 185046999,
+      "original_selected_report_bytes": 2286226,
+      "expires_at_min": "2026-10-25T00:02:43Z",
+      "expires_at_max": "2026-10-25T00:20:14Z",
+      "outside_archive_verified": true
+    }
+  },
+  "guest_images": {
+    "O2": {
+      "image_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/image.elf",
+      "sha256": "b9ea5afcb4b00e5452766e5235bb113587289eb31f7ef39df60ac0a093dc5794",
+      "audit_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/audit.json",
+      "audit_sha256": "3e584ea6adfd066a8d72b0c03e3ead6ec0ecee8da24e6cb82ab6469387e303a2",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "actual artifact/source closure; workflow result remains separate"
+    },
+    "O0": {
+      "image_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/image.elf",
+      "sha256": "c3a546eafcaafc88d190889427be447defa0edff85fc47655e90e74e855acdd3",
+      "audit_path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/audit.json",
+      "audit_sha256": "aa1dd6e79edd5737d8c06e05515f4622c04e5b154f96aa24d9d92a096753ed8e",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "actual artifact/source closure; workflow result remains separate"
+    },
+    "initializer": {
+      "image_path": "/home/sreekumaar/Downloads/lemma/build/kernel/task004-7236f78-full1-headless-lemmasim-initialize-O2/image.elf",
+      "sha256": "0e65cfdb519914c0cae9c98a627d675b716a837806d1c232367522f05f44e9dc",
+      "audit_sha256": "d665a23ee399c57aee9e497d7e5103da05610f5b6c02d01df94a48c81eaf179a",
+      "audit_status": "PASS",
+      "source_clean": true,
+      "scope": "genuine actual initializer linked/audited in clean full matrix; final media initializer ACK observed separately"
+    }
+  },
+  "initial_medium": {
+    "status": "INITIALIZED",
+    "path": "build/lemmasim/task004-7236f78-full1-headless/initial.raw",
+    "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+    "recipe": "new256MiB zero raw medium; actual compiled initializer op11+flush acknowledgement required",
+    "automatic_format_on_mount_failure": false,
+    "bytes": 268435456,
+    "initialization": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/initialization/result.json",
+      "bytes": 14635,
+      "sha256": "b92b78c7baaaa28e7781f5696821a23439bc49bc12338adff1f7fb6670f67f06"
+    }
+  },
+  "selected_stack": {
+    "scope": "actual selected compiled paths; not whole-program proof",
+    "require_margin_percent": 25,
+    "minimum_selected_margin_percent": 35.546875,
+    "observations": {
+      "O0": {
+        "status": "PASS_SELECTED_BOUNDS",
+        "bounds": [
+          {
+            "domain": "boot",
+            "capacity_bytes": 61440,
+            "total_bytes": 9072,
+            "vector_bytes": 0,
+            "margin_percent": 85.234375
+          },
+          {
+            "domain": "kernel-trap",
+            "capacity_bytes": 16352,
+            "total_bytes": 9328,
+            "vector_bytes": 288,
+            "margin_percent": 42.95499
+          },
+          {
+            "domain": "user",
+            "capacity_bytes": 16384,
+            "total_bytes": 10560,
+            "vector_bytes": 0,
+            "margin_percent": 35.546875
+          },
+          {
+            "domain": "user",
+            "capacity_bytes": 16384,
+            "total_bytes": 4304,
+            "vector_bytes": 0,
+            "margin_percent": 73.730469
+          }
+        ],
+        "audit": {
+          "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/audit.json",
+          "sha256": "aa1dd6e79edd5737d8c06e05515f4622c04e5b154f96aa24d9d92a096753ed8e"
+        },
+        "capacity": {
+          "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O0/capacity.json",
+          "sha256": "b1e44a604656c1af28c889023264b1deffdf2f88249f9b6503993f798cc07716"
+        }
+      },
+      "O2": {
+        "status": "PASS_SELECTED_BOUNDS",
+        "bounds": [
+          {
+            "domain": "boot",
+            "capacity_bytes": 61440,
+            "total_bytes": 1680,
+            "vector_bytes": 0,
+            "margin_percent": 97.265625
+          },
+          {
+            "domain": "kernel-trap",
+            "capacity_bytes": 16352,
+            "total_bytes": 1984,
+            "vector_bytes": 288,
+            "margin_percent": 87.866928
+          },
+          {
+            "domain": "user",
+            "capacity_bytes": 16384,
+            "total_bytes": 1408,
+            "vector_bytes": 0,
+            "margin_percent": 91.40625
+          },
+          {
+            "domain": "user",
+            "capacity_bytes": 16384,
+            "total_bytes": 736,
+            "vector_bytes": 0,
+            "margin_percent": 95.507812
+          }
+        ],
+        "audit": {
+          "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/audit.json",
+          "sha256": "3e584ea6adfd066a8d72b0c03e3ead6ec0ecee8da24e6cb82ab6469387e303a2"
+        },
+        "capacity": {
+          "path": "build/kernel/task004-7236f78-full1-headless-lemmasim-notebook-O2/capacity.json",
+          "sha256": "e2f6a35235f6ac108ae54a432a763f09b71e80696258cb7412331268375b5df0"
+        }
+      }
+    },
+    "s_interrupt_nesting": "disabled",
+    "kernel_canaries_are_hardware_guards": false,
+    "user_unmapped_guards": true,
+    "trusted_supervisor_writable_alias": true,
+    "detailed_review": {
+      "path": "build/lemmasim/task004-7236f78-handoff/selected-stack-observations.json",
+      "bytes": 4256,
+      "sha256": "a416363dac6fa196615733ed5d02ed240a486f065a4ee66924aa7403d3321443"
+    }
+  },
+  "workflows": {
+    "basic_O2": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/basic/workflow.json",
+        "sha256": "52a5e3eaeb8b7e642ca6dfe903a02eea4150626c09141b67141b3796a0ee45c7",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/basic/cold.json",
+        "sha256": "4af373ddd036c40378d52f95751e725a2ff08585e9efa4ad14a85f9f7bc64f0f",
+        "status": "PASS",
+        "committed_document_sha256": "9fccce0edd68482d0739f7c1dfb990af91f1b9fdf1cb801556ecaec14bc15f3a",
+        "visible_pixels_sha256": "cf20518051648f45c432af1750ccc3b8eba0fa696274f0afd2558ca48603e3d8"
+      }
+    },
+    "basic_O0": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/O0/basic/workflow.json",
+        "sha256": "0c07dfa98514faf2cb5db9194de8e3e69c0a3d35a5879b9cfad3389c42f08efb",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/O0/basic/cold.json",
+        "sha256": "c0e062d321dc5a6915d6e76fbd9dc923bb6151cf11c1e45aee1cfe6e91568b74",
+        "status": "PASS",
+        "committed_document_sha256": "9fccce0edd68482d0739f7c1dfb990af91f1b9fdf1cb801556ecaec14bc15f3a",
+        "visible_pixels_sha256": "cf20518051648f45c432af1750ccc3b8eba0fa696274f0afd2558ca48603e3d8"
+      }
+    },
+    "editing": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/editing/workflow.json",
+        "sha256": "d37f5356df284f4bc145363fe37cc8e43db91b33ba9f436db65dfda8248fd8cf",
+        "status": "PASS",
+        "committed_sequence": 25,
+        "retained_unique_raw_samples": 100
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/editing/cold.json",
+        "sha256": "37722d213a63ce8256094ff1e9a2aed9464e76a15b46079ad077af6f8a2e5d25",
+        "status": "PASS",
+        "committed_document_sha256": "e39eda1e526b71176c31538a617ab16586948ca6fe0413a2c75eacd536ffbf7a",
+        "visible_pixels_sha256": "0c67b814f88238aa9a2a70339a7c142b7a241103c7cce79cf83dc73fe872eb0c"
+      }
+    },
+    "isolation": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/isolation/observation.json",
+      "sha256": "c444e0d436fd5cc3c729f7f6c3f73000c7695398ad193c4a4cc7c645c9202fb6",
+      "status": "PASS",
+      "scope": "actual ordinary User rejection replies, User page fault/reaping during writable DMA, retained kernel DMA ownership, continued guest ink commit/pixels and unchanged second notebook"
+    },
+    "second_geometry": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/second-geometry/basic/workflow.json",
+        "sha256": "f399de320385533903ff24e19452d460fad25c495a91fc2e240e621b0d6cc522",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/second-geometry/basic/cold.json",
+        "sha256": "ff8dc0f46c80fb96ed3505a2848d856d087055f02bd736783440ff7be359c93d",
+        "status": "PASS",
+        "committed_document_sha256": "b246b499eedd7735ebe221a91e28f7d4a2b5d8c223c046b5b6010243d23f9ec0",
+        "visible_pixels_sha256": "fa3bb318b7343c759c50ef313671c12e62bd373306fe61abb21b4f07034f4340"
+      }
+    },
+    "overflow": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-overflow/workflow.json",
+        "sha256": "15022f341c265e8bb9339e94ebacc406fc7b01616c5fdbaef2dddf799c19d0a3",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-overflow/cold.json",
+        "sha256": "a5cf501f793277dd0331d02b85bfdb11b06dea9449c5ac3e7e7f405737b3e9b9",
+        "status": "PASS",
+        "committed_document_sha256": "15b0c818421b845fc8682c37f416708cbc0398b5f51d40c2bbb46543b5a6f4a4",
+        "visible_pixels_sha256": "cf20518051648f45c432af1750ccc3b8eba0fa696274f0afd2558ca48603e3d8"
+      }
+    },
+    "disconnect": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-disconnect/workflow.json",
+        "sha256": "d6c099d390ff36845a62466aa2984b22bb02ac5a29e2ab4fcd375202f74f164e",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-disconnect/cold.json",
+        "sha256": "9547722eb6280d9b4602f7d1fc4740298a7fa2d74fd6e109c3d9b507de5c23b4",
+        "status": "PASS",
+        "committed_document_sha256": "1996c714572bb64c5a2da3e48cac0c59f754113cb8a50b71ee5171e37eb33277",
+        "visible_pixels_sha256": "cf20518051648f45c432af1750ccc3b8eba0fa696274f0afd2558ca48603e3d8"
+      }
+    },
+    "loss_watchdog": {
+      "status": "PASS",
+      "workflow": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-watchdog/workflow.json",
+        "sha256": "aa092d15691fa8528c1e1f9e08d54b2f79be25255ae245ca9d35af0efbc035ce",
+        "status": "PASS",
+        "committed_sequence": 8,
+        "retained_unique_raw_samples": 50
+      },
+      "cold": {
+        "path": "build/lemmasim/task004-7236f78-full1-headless/loss-watchdog/cold.json",
+        "sha256": "c90a52e6ed8dc8fabd945f758bdceeb68c1de583136d1755fe86471a95aea8e3",
+        "status": "PASS",
+        "committed_document_sha256": "c207f6fab98bb401962ccb08b2e04ca66367abcd0e04b419be1ed773be561fed",
+        "visible_pixels_sha256": "cf20518051648f45c432af1750ccc3b8eba0fa696274f0afd2558ca48603e3d8"
+      }
+    }
+  },
+  "workload": {
+    "status": "PASS",
+    "scope": "fresh exact-candidate 16-page/100000-unique-sample ingestion, durable notebook workflow and cold recovery/navigation passed",
+    "required_pages": 16,
+    "required_unique_raw_samples": 100000,
+    "workflow": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/workflow.json",
+      "bytes": 79578,
+      "sha256": "be0aa62cbf2dee43abd72bb2c0f64c8811f5c9b42acf812d84cd889a68707439",
+      "status": "PASS",
+      "committed_sequence": 848,
+      "retained_unique_raw_samples": 100000,
+      "stroke_count": 16,
+      "page_count": 16,
+      "store_generation": 2,
+      "loss_boundary": null,
+      "rejected_ingress": [
+        1
+      ]
+    },
+    "live_process": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/run/result.json",
+      "bytes": 15100,
+      "sha256": "d39d8885360cc1813da267ee62a9b682af753700ed9e2ee4d47aa8463968294a",
+      "status": "OBSERVED_GUEST_WORKFLOW_BOUNDARY",
+      "returncode": 0,
+      "process_reaped": true,
+      "elapsed_seconds": 1821.6289401630056,
+      "final_media_sha256": "7caf184bada0a8dc4af2b84a9ee0770bd6220b0716e398681b2094f65508bd27",
+      "guest_sha256": "b9ea5afcb4b00e5452766e5235bb113587289eb31f7ef39df60ac0a093dc5794",
+      "document_status": "SAVED",
+      "acknowledged_sequence": 848,
+      "pending_sectors": 0
+    },
+    "actual_ingress": 100035,
+    "tools": "Save7 and Compact8 through ordinary guest raw input",
+    "initial_pre_enable_ingress_rejection": {
+      "sequence": 1,
+      "scope": "recorded initial before-enable policy; no ordinary input-loss boundary"
+    },
+    "memory_observations": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/owned-memory/result.json",
+      "bytes": 45829,
+      "sha256": "bfa684b91fafa7fcd804aa91bb5a60f8f6af93d61913f0f008e2a9b2c2977d4b",
+      "status": "OBSERVED",
+      "scope": "actual readonly allocator observations; observed maximum is not a whole-run high-water proof or whole-program memory proof",
+      "samples": 62,
+      "periodic_seconds": 30,
+      "maximum_read_bytes": 65536,
+      "final_before_reap_observed": true,
+      "min_observed_free_frames": 7556,
+      "max_observed_allocated_or_retired_bytes": 2605056,
+      "errors": [],
+      "pool": [
+        2181038080,
+        2214592512
+      ],
+      "normal_append_raster_review": "actual selected closures exclude page-load, full-history rendering and allocation; detailed source/IR review retained in memory result"
+    },
+    "raw_input": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/input.bin",
+      "bytes": 7202520,
+      "sha256": "4e92b2a93d6c530499fd3da13c7e4b46880e17a00e374dd4924283efcbe28d2f"
+    },
+    "raw_input_manifest": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/input.json",
+      "bytes": 7392,
+      "sha256": "e974f3e21efb57f0b249d354fb721de5e52818e4450021e24669ef3c73cb7d68"
+    },
+    "no_per_sample_full_history_scope": "selected normal raw append/raster call closures only; toolbar/page-load behavior is separate",
+    "cold_comparison": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/cold.json",
+      "bytes": 26869,
+      "sha256": "32ef544f87ae7bf4dfd65ebde37134a4aee89985cab965ec0574cd49162f04c6",
+      "status": "PASS",
+      "scope": "independent comparison of cold guest committed bytes and exact controller-visible pixels",
+      "committed_sequence": 848,
+      "committed_document_sha256": "9692cef295b748c7666e6c366dfa7b5979ad41e097c18640e375a36b9b32f29f",
+      "visible_pixels_sha256": "85ad7d5e9f6a0b06d1b79e192d603bf8726d65f3fbfaab7bedb3cd1fe8036bae",
+      "actual_paper_completions": 16,
+      "all_16_pages_redrawn": true
+    },
+    "mount_seconds": null,
+    "save_seconds": null,
+    "compact_seconds": null,
+    "visible_target_sha256": "3db62dacc6788501c95bb8516dafd1dc19d28e20284aac077ace299204756745",
+    "visible_image_sha256": "3db62dacc6788501c95bb8516dafd1dc19d28e20284aac077ace299204756745",
+    "cold_process": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/workload/cold-run/result.json",
+      "bytes": 15018,
+      "sha256": "9e58ec0863d9ae49a52fdf299e60f3770e8a4be88251443bf02c35054af16e37",
+      "status": "OBSERVED_GUEST_WORKFLOW_BOUNDARY",
+      "process_reaped": true,
+      "returncode": 0,
+      "elapsed_seconds": 974.6965567250154,
+      "final_media_sha256": "7caf184bada0a8dc4af2b84a9ee0770bd6220b0716e398681b2094f65508bd27",
+      "scheduled_navigation_gaps_seconds": 60,
+      "scope": "process duration includes planned input/navigation timing; not a mount-time measurement"
+    }
+  },
+  "native_and_controls": {
+    "ordinary_cli": {
+      "path": "build/lemmasim/ordinary-cli-7236f78-smoke1/result.json",
+      "sha256": "99328fb363d9a1867f6dbf3f734e4d25ce6d500136500371e7158d1941433bb3",
+      "status": "PASS",
+      "scope": "actual ordinary CLI build/init/run/cold/copy command-surface smoke only; full acceptance, manual interaction and physical tablet input are separate"
+    },
+    "gtk_capture_replay_cold_reset": {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-gtk-observations.json",
+      "sha256": "83a8b77be15d222f51c993c2a1ca6f07ec28c23f50f9d031e3320861483991b9",
+      "status": "PASS",
+      "scope": "separate automated GTK/native input on dedicated pinned Xvfb and maintained Developer controls; full candidate acceptance remains separate"
+    },
+    "developer_controls": {
+      "path": "build/lemmasim/developer-controls-7236f78-1/result.json",
+      "sha256": "86a05d8c3d7f1fd9bd305f798db614dbe9fa0edbf52fd9e53bbf8b9ce37defc4",
+      "status": "PASS",
+      "scope": "actual maintained Developer pause/resume/inspect commands, genuine guest Ready and normal closed/reaped lifecycle; no writing/input/replay/manual/physical claim"
+    },
+    "full_native_pointer": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/native-pointer/result.json",
+      "sha256": "17c713d241347a4d3ae1c08aeb924787fddc58f35a2853fdc58243886a7c8038",
+      "status": "PASS",
+      "scope": "automated native QEMU pointer to guest notebook; exact virtual replay and cold reopening; whole-machine reset during refresh"
+    }
+  },
+  "cross_frontend": {
+    "status": "PASS",
+    "reference": {
+      "path": "build/lemmasim/task004-7236f78-handoff/native-cross-frontend-comparison.json",
+      "bytes": 5451,
+      "sha256": "ebe7966856735ed657f63600e4ee34b94ba47db5a3fd1b4c1541067565111e3e"
+    },
+    "visible_pixels_equal": true,
+    "exact_committed_bytes_equal": false,
+    "difference": "63 original guest timestamp bytes in raw ink object65539; original times preserved",
+    "each_capture_own_exact_replay_and_cold": true
+  },
+  "replay": {
+    "path": "build/lemmasim/replay-1791678389355582343/comparison.json",
+    "sha256": "9e0e05994ec917e1d972da5b240845796d36cb878bac7f71f19cf12c4ad76cb9",
+    "status": "PASS",
+    "scope": "exact QEMU virtual replay, not physical timing equivalence"
+  },
+  "faults": {
+    "path": "build/lemmasim/task004-7236f78-full1-headless/faults/result.json",
+    "sha256": "5e466047653ffe0bce1958504f46b0ede122f14424b07a1676efb0a394722bd0",
+    "status": "PASS",
+    "scope": "actual RV64 notebook device faults and new-process cold recovery; exact candidate qualification is caller-owned",
+    "fault_count": 15
+  },
+  "behavioral_source_negatives": {
+    "status": "PASS",
+    "scope": "actual compiled positive/negative behavior, not source-hash rejection; negatives quarantined/unqualified",
+    "publication": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/publication-negative/result.json",
+      "bytes": 1348,
+      "sha256": "9e5fbc0afafdc8b6b3ad5a4e2bf86d1240bd10fb365a214c14e04e6d94098b53",
+      "status": "PASS",
+      "observed_positive": {
+        "ack": 11,
+        "stable": 11,
+        "pending": 0
+      },
+      "observed_negative": {
+        "ack": 11,
+        "stable": 10,
+        "pending": 1,
+        "checker": "FAIL"
+      }
+    },
+    "pen_loss": {
+      "path": "build/lemmasim/task004-7236f78-full1-headless/input-negative/result.json",
+      "bytes": 1436,
+      "sha256": "cf8c3da0c51de5f815b028371c1c8ee316e3a9007b155430d63c51bbc7b17dcb",
+      "status": "PASS",
+      "positive_cancelled_committed_raw": 0,
+      "negative_cancelled_committed_raw": 8,
+      "negative_checker": "FAIL: completed stroke has no original pen-up"
+    }
+  },
+  "focused_large_save_compact": {
+    "path": "build/lemmasim/task004-7236f78-large-save-compact-attempt3/result.json",
+    "sha256": "c66067f63929c4133e6804acf62e4657fd1c31318fbed371d391c30d570ce6e6",
+    "status": "PASS",
+    "scope": "genuine quick Save, explicit Compact, and cold recovery focused development; not full candidate acceptance",
+    "fresh_100000_sample_ingress_claim": false,
+    "quick_save_guest_elapsed_seconds": 0.1701557,
+    "quick_save_no_writes_or_flushes": true,
+    "checkpoint_guest_elapsed_seconds": 174.8656199,
+    "cold_mount_elapsed_seconds": 91.21146786800819,
+    "original_committed_bytes_preserved": true
+  },
+  "focused_small_O0_save_compact": {
+    "status": "PASS",
+    "result": {
+      "path": "build/lemmasim/O0-save-compact-small7236/result.json",
+      "sha256": "066efbb557dd92c20b79eb06df449cb09876ebb2d6f91cc3056910d2fe21e2e2",
+      "scope": "Closed focused exact7236 O0 quick Save and small4object/50raw Compact/cold; independent from full candidate acceptance"
+    },
+    "closed_summary": {
+      "path": "build/lemmasim/O0-save-compact-small7236/closed-summary.json",
+      "bytes": 4898,
+      "sha256": "b280c7f1717071061b328f1136549b4ef2fa77642997fe2033cc3fd474805798"
+    },
+    "large_O0_claim": false
+  },
+  "limits": {
+    "notebook_namespaces": 2,
+    "namespaces_share_authority_domain": true,
+    "pages_per_notebook": 64,
+    "chunks_per_page": 512,
+    "edits_per_page": 512,
+    "raw_samples_per_chunk": 384,
+    "raw_sample_bytes": 72,
+    "pending_buffers": 2,
+    "latest_store_keys": 1024,
+    "maximum_transaction_bytes": 32768,
+    "owned_pool_bytes": 33554432,
+    "user_leaf_capacity": 1024,
+    "working_pages": 41,
+    "framebuffer_pages_default": 444,
+    "framebuffer_pages_second_geometry": 321,
+    "erase": "latest visible whole stroke",
+    "watchdog_guest_seconds": 1
+  },
+  "storage_and_UI": {
+    "Saved": "latest guest-acknowledged durable document publication; final required flush succeeded",
+    "Save_tool7": "drain pending document publications, then short durable Inspect8; no whole-live-set copy",
+    "Compact_tool8": "owner-bound v2 Begin12/Status13 receipt for live-record replacement; acknowledge only after final root flush",
+    "after_Full": "restart to acknowledged state then Compact; otherwise Compact proactively before append space fills",
+    "default_host_assumptions": "host filesystem and storage honor QEMU fsync",
+    "Laboratory_power_cut": "discard modeled volatile device writes; separate from QMP warm reset/pause which can drain or flush"
+  },
+  "manual_interactive_test": "NOT_RUN",
+  "physical_tablet_test": "NOT_RUN",
+  "physical_conformance": "UNVERIFIED",
+  "pressure": "synthetic mouse; varying-pressure recorded raw fixtures",
+  "watchdog": "missing contact samples for one synthetic second cancel unsaved tail; lift/new contact needed; acknowledged prefixes preserved",
+  "not_completed": [
+    "general managed Lean runtime",
+    "general filesystem/POSIX",
+    "all G4 mathematical document semantics",
+    "tutor/course DSL",
+    "browser deployment",
+    "installer and whole-machine snapshots",
+    "physical equivalence"
+  ],
+  "retention": {
+    "status": "PASS_VERIFIED",
+    "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+    "bytes": 195965460,
+    "sha256": "808cb3e7c286a3838e5561bdf960bc33e17405ebce3bf214d5ff52b7fdd08147",
+    "verified_members": 1102,
+    "primary_files": 683,
+    "supplement_unique_files": 417,
+    "supplement_aliases": 285,
+    "uncompressed_verified_bytes": 4372754703,
+    "inventory_sha256": {
+      "inventory.json": "64e9b87839109bf81fd655f711fa19e35b100a1a97fde7ed6069e0141c9e891d",
+      "supplement/inventory.json": "6c23af4a90f014ad3ca951173ab9930ccbff819fcdb47ed0d83d45549eddd3d4"
+    },
+    "source_bundle_verified": true,
+    "source_tree_verified": true,
+    "verification": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-verification2.json",
+      "bytes": 1012,
+      "sha256": "91ea22f5a920f9777f1f7964841877c72cd4381492575f54ab2b53f82684c5bd"
+    },
+    "export": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-export2.json",
+      "bytes": 443642,
+      "sha256": "5febf883166959d6dcc8d73d127db837cb0f5d876614e998f622202e450dff80"
+    },
+    "closed_process_observations": {
+      "path": "build/lemmasim/task004-7236f78-handoff/closed-export-verification.json",
+      "bytes": 1841,
+      "sha256": "c0d2043d03847cbaa1b8d9fd4e668dc4073d403828385c543364f97f232064e1"
+    },
+    "selector": {
+      "path": "build/lemmasim/task004-7236f78-handoff/select_fault_supplement.py",
+      "bytes": 29989,
+      "sha256": "c0ab9e82598c51a532c6ce67629229c1503509a97c9fb731db1d6f0f869b5a04"
+    },
+    "verifier": {
+      "path": "build/lemmasim/task004-7236f78-handoff/verify_milestone_archive.py",
+      "bytes": 5646,
+      "sha256": "0716903baaf82a93562d62ee0a24347e242ed9704f2a078110fb484eaca403e6"
+    },
+    "executed_export_argv": [
+      "python3",
+      "build/lemmasim/task004-7236f78-handoff/select_fault_supplement.py",
+      "--acceptance",
+      "build/lemmasim/task004-7236f78-full1-headless",
+      "--primary",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-base.tar.gz",
+      "--gtk-selection",
+      "build/lemmasim/task004-7236f78-handoff/native-gtk-supplement-selection.json",
+      "--ci-inventory",
+      "build/lemmasim/ci-7236f78-run38096937753/artifacts/offline-inventory.json",
+      "--cli-inventory",
+      "build/lemmasim/ordinary-cli-7236f78-smoke1/artifact-inventory.json",
+      "--screenshot-conversion",
+      "build/lemmasim/task004-7236f78-handoff/native-controller-visible-conversion.json",
+      "--to",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+      "--report",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-export2.json"
+    ],
+    "executed_verify_argv": [
+      "python3",
+      "build/lemmasim/task004-7236f78-handoff/verify_milestone_archive.py",
+      "--archive",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence2.tar.gz",
+      "--report",
+      "/home/sreekumaar/Downloads/lemma-task004-7236f78-verification2.json"
+    ],
+    "process_wrapper": {
+      "timeout_seconds": 1800,
+      "signal": "TERM",
+      "kill_after_seconds": 10,
+      "export_tool": 1305,
+      "verification_tool": 68534,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "reaped": true
+    },
+    "primary_archive": {
+      "path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-base.tar.gz",
+      "bytes": 12069189,
+      "sha256": "cc48e0223965cd65267e3e280917ce1cbccea4d426472cc7f5c9754f5a9cf764"
+    },
+    "github_actions_days": 14,
+    "permanent_remote_retention": "NOT_CONFIGURED",
+    "failed_first_export_retained_separately": true
+  },
+  "retained_prior_failed_candidates": [
+    {
+      "source": "dfd5c90cc457e2e1094792453f2a040abc19a54b",
+      "path": "build/lemmasim/task004-dfd5c90-full2-headless/result.json",
+      "sha256": "eb32a2b7045b6c03ee18ad767f46e2a47e8e527a7b266fb825b83053345c3852",
+      "status": "FAIL",
+      "actual_guest_error": 93,
+      "previous_acknowledged_sequence": 848,
+      "outer_observer_failure_separate": true
+    },
+    {
+      "source": "ce4eb75d7f9f792ab1d27b009c61e33dd74c54f2",
+      "path": "build/lemmasim/task004-ce4eb75-full1-headless/result.json",
+      "sha256": "27bd74bec61b427cc69a36c7561b947fb7197803f402f1d6bd19ef13756ca915",
+      "status": "FAIL",
+      "owner_interrupted_for": "routine Save copied whole latest live set",
+      "active_disconnect_raw_bytes": 0,
+      "natural_disconnect_defect_demonstrated": false
+    },
+    {
+      "source": "700c3306a28e2236617ca7f5a32e8b76a1d8483f",
+      "path": "build/lemmasim/task004-700c330-full1-headless/result.json",
+      "sha256": "32c49effd04f88d45d358b1ff3d51e4a04510e6a2c887cf852d085a42bdf07d8",
+      "status": "FAIL",
+      "reason": "strict O2 audit rejected unaccounted Notebook pumpSave phase table before workflow",
+      "workflows_run": false
+    },
+    {
+      "source": "700c3306a28e2236617ca7f5a32e8b76a1d8483f",
+      "path": "build/kernel/lemmasim-notebook-700c3306a28e-1791676279283694723-O2/audit-failure.json",
+      "sha256": "72da2930c2d09e079a4be0d1dbebd0d796a1875caed1da43bc021212e68affdc",
+      "status": "FAIL",
+      "reason": "ordinary build strict O2 audit rejected unaccounted Notebook pumpSave phase table"
+    }
+  ],
+  "retained_first_archive_failure": {
+    "path": "build/lemmasim/task004-7236f78-handoff/archive-verification-attempt1.json",
+    "bytes": 452,
+    "sha256": "a4a15fa50857f5c2b047c7d34e8e90c1cde255dda8f843ede0e25040be7ca96e",
+    "status": "FAIL",
+    "scope": "offline archive structure verification; target acceptance unchanged",
+    "archive_path": "/home/sreekumaar/Downloads/lemma-task004-7236f78-evidence.tar.gz",
+    "archive_sha256": "7d497916dcae4563bafa2709e42521c737766b847eaaa1a15537186bd4572e09",
+    "error": "duplicate selection/alias",
+    "exit_code": 1,
+    "process_reaped": true,
+    "verifier_sha256": "0716903baaf82a93562d62ee0a24347e242ed9704f2a078110fb484eaca403e6"
+  },
+  "final_filenames": {
+    "report": "docs/evidence/004-lemmasim-durable-ink.md",
+    "result": "docs/evidence/004-lemmasim-durable-ink-result.json",
+    "manifest": "docs/evidence/004-lemmasim-durable-ink-manifest.json"
+  },
+  "presentation": {
+    "published_image": "docs/evidence/004-controller-visible.png",
+    "sha256": "0aca4979d91b06033d507b98386c4529f86110309cd10a6017dc7a697c395c7c",
+    "bytes": 19336,
+    "authority": "actual guest-produced controller-visible PPM losslessly converted; raw PPM and conversion provenance archived",
+    "manual_interactive_test": "NOT_RUN"
+  }
+}

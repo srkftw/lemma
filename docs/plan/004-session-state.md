@@ -1,102 +1,38 @@
-# Task 004 checkpoint
+# Task004 checkpoint
 
-Branch: `task/004-lemmasim-durable-ink`, based on main
-`504f6e462e502d93192ba689d16d8552ca1e68b5` after one fetch on 2026-10-10.
-Status: IMPLEMENTING; the primary completion boundary is unmet.
-[Draft PR #5](https://github.com/srkftw/lemma/pull/5) remains draft. No merge is authorized.
+The primary durable-notebook slice is complete and ready for review. Branch
+`task/004-lemmasim-durable-ink`; [draft PR #5](https://github.com/srkftw/lemma/pull/5).
+Tested implementation `7236f7889fb9dcee29783ccf7113ddaaa45c45d9`, tree
+`373730cfe37997c36977d3b0ce1b4d1aca7bf33f`. Later report-only publication/CI is a
+separate identity; this file deliberately does not hash its own commit.
 
-Latest published implementation: `ce4eb75d7f9f792ab1d27b009c61e33dd74c54f2`, tree
-`82d2195e8de92fe62f5f8a50c7cca7227e1da338`. The genuine compiled RV64 guest has
-32 MiB owned memory, 16 KiB stacks, checked discovery, PLIC pen/paper, modern
-VirtIO/flush, isolated record storage, integer ink/rasterization and page/edit
-workflows. Source existence and scoped passes do not complete Task004.
+Clean full O0/O2 campaign PASS, all owned processes reaped; result SHA
+6ba8e737be7a7240b45f8120b99215a750d8272c7e45612ceb2cf62f29dc9aaa.
+Fresh 16-page/100,000-unique-sample writing/Saved 848 and all 16 cold redraws PASS.
+Exact cold documents/pixels survive; actual sampled memory max 2,605,056 bytes,
+minimum 7556 free frames, final-before-reap observed. Selected O0 Notebook stack
+10560/16384 leaves 35.5% margin; kernel canaries are not hardware guards.
+These are selected/sampled observations, not whole-program or whole-run proofs.
 
-Its exact clean matrix `build/lemmasim/task004-ce4eb75-full1-headless` is retained
-FAIL, SHA256 `27bd74bec61b427cc69a36c7561b947fb7197803f402f1d6bd19ef13756ca915`.
-O2/O0 basic writing/cold, editing/cold, second geometry/cold, overflow/cold,
-strict production-object isolation/live DMA ownership and unknown/damaged-media
-checks completed. Production review then found that every explicit Save copied
-the entire latest-object set. The owner interrupted the controller to repair
-that scalability defect; its reason is retained separately in
-`interruption-reason.json`. The active disconnect run was interrupted and reaped,
-and the original aggregate error remains "loss-disconnect did not reach a
-quiescent guest Saved boundary". Later cases and aggregate acceptance did not
-pass. No observation is relabeled by this repair.
+Required CI 38096937753: all nine jobs PASS, synthetic 7c58f4... tree independently
+matches the implementation. Ordinary CLI, automated GTK/native own replay/cold/
+Busy reset, Developer controls, two geometries, editing/isolation, all 15 storage
+faults and both behavioral source negatives PASS. Physical/manual input NOT_RUN.
 
-The current repair separates the ninth tool Compact (C) from Save (S). Routine
-Save waits for notebook publications and uses short durable Inspect 8; it does
-not scan or copy the live set. Compact explicitly uses v2 Begin/Status 12/13,
-retaining the actual two-segment copy and final root-flush acknowledgement.
-Autosave and all stored formats remain unchanged. Reclamation retains original
-ink and cannot remove the separate object-key or per-page chunk/edit limits.
-Fresh linked Save/Compact observations, full acceptance and repaired-candidate
-CI are pending.
+Outside evidence2 archive 195,965,460 bytes, SHA
+808cb3e7c286a3838e5561bdf960bc33e17405ebce3bf214d5ff52b7fdd08147,
+independently verified 1102 members, 683 primary/417 unique supplement files, 285 aliases,
+exact clean Git bundle/tree and both inventories. CI expiry 14 days is retained;
+permanent remote NOT_CONFIGURED. Owner must preserve the outside archive.
 
-The exact dfd headless full matrix `build/lemmasim/task004-dfd5c90-full2-headless`
-is retained FAIL, SHA256 `eb32a2b7045b6c03ee18ad767f46e2a47e8e527a7b266fb825b83053345c3852`.
-Its seven workflow/cold pairs, isolation and live-DMA client death, unknown/damaged
-media refusal, all15 real storage faults/cold checks, two behavioral source
-negatives, captured native ingress and thirteen replay observations passed.
-The final100,000-sample workload reached acknowledged sequence848 across16 pages,
-then Save used a long-lived checkpoint reply and reported IPC timeout93 after
-thirty seconds. The service continued the actual root replacement. The owner
-interrupted the failed workflow; QEMU was reaped. The outer checker separately
-reported missing consistent final owned-memory observations. No workload cold
-comparison or aggregate PASS was obtained. Both failures remain original FAIL.
+Save 7 uses short durable status after pending publication; Compact 8 performs
+explicit owner-bound replacement. Full errors preserve acknowledged records;
+restart to acknowledged state before Compact after Full. Immutable object limits
+remain. Large mounts/Compact take minutes. Earlier target/observer failures and
+first duplicate-selection archive FAIL retain original identities.
 
-The ce4 repair added checkpoint-only endpoint v2 Begin/Status operations12/13,
-bound to the full kernel-stamped sender, namespace and positive ticket. Pending
-is an observation, never a durable acknowledgement; completion is latched only
-after the engine's final root flush. The v1 disk format and operations1–11,
-including legacy deferred checkpoint7, retain their meanings. The notebook
-polls short replies every100ms of monotonic guest time and waits for initial
-Mounting through the same service. It keeps the thirty-second per-RPC ceiling.
-The launcher now diagnoses an observed Save failure once all scheduled input
-has arrived, instead of waiting indefinitely for a quiescent Saved boundary.
-
-Actual dirty development observation `build/lemmasim/large-checkpoint-async-dev-attempt1/result.json`
-is PASS, not exact-candidate acceptance. It copied the retained full2 disk without
-changing the original. The guest mounted in83.7336s; Save stayed Pending for
-157.15795 guest seconds and became Saved848 after two durable flushes with zero
-pending sectors. Root generation2/segment1 became generation3/segment0. All289
-committed objects and100,000 unique raw samples were preserved byte-for-byte.
-A separate cold process mounted in84.7791s and matched document bytes and exact
-visible pixels; both processes were reaped. Audited dirty Notebook O2 image:
-`aab2e53d53f39cd216808d910c6ff9f9fb9cf09a4cdf14b6ab7016e51c414efd`.
-The ordinary build refused to publish its prepared manifest when a test fixture
-changed mid-build; that failure is retained. Explicit development metadata never
-claims ordinary CLI or clean-source qualification. Store endpoint and notebook
-literal fixtures also passed through genuine Lean elaboration/Core0 lowering.
-The clean ce4 O2 selected bounds are kernel trap 1984/16352 usable bytes,
-Notebook 1408/16384 and Store 736/16384. Its O0 bounds are kernel trap 9328/16352,
-Notebook 10368/16384 and Store 4304/16384, leaving at least 36.72% headroom on those
-entries. Both trap bounds include the 288-byte entry frame. The new receipt
-paths were included in each actual acyclic compiled graph; no dynamic stack
-allocation was admitted. These are selected call-chain checks, not whole-program
-proofs. User stacks have real unmapped guards; kernel canaries are not hardware
-guards, and the trusted writable supervisor alias remains. Changed executable
-paths require new candidate audits rather than inheritance of these bounds.
-
-Actual prior PR CI [38086018901](https://github.com/srkftw/lemma/actions/runs/38086018901)
-passed allnine jobs at synthetic merge `6f2ff0cb93bfc5d8306a500fe2735892de4a7247`
-with the exact dfd tree. Nine artifact ZIPs were downloaded and verified against
-service digest/size;14-day expiry is2026-10-24. Those checks do not pass this
-changed executable source. Exact repaired-candidate CI and final offline archive
-are pending; no permanent remote archive is configured.
-
-Prior dfd controlled native GTK/Xvfb capture, replay, cold recovery and busy-reset
-restoration passed, as did ordinary CLI init/write/cold/copy and Developer
-pause/inspect/resume. These were automated observations: manual interaction and
-physical pressure-aware tablet input are NOT_RUN. The separate ambient GTK
-attempt remains FAIL; its close actor is UNKNOWN. Historical c96 complete-object
-identity failure and earlier campaign/CI failures remain under their original
-ignored output paths. The scoped Lean exporter repair retained the strict entire
-production-object comparison; no old FAIL has been relabeled.
-
-Pinned host QEMU v17 SHA256:
-`0e95380d2eb582ebf95f989fc6a07eac26a50c222bbbee95dd5fa5421d2864ce`.
-Next: validate and commit the Save/Compact repair, run one fresh clean exact-candidate full
-matrix and required actual CI, export verified offline evidence outside ignored
-build/, write one concise report/result/manifest, and update the draft for review.
-Preserve the original failures, legacy profiles, physical UNVERIFIED status, and
-later managed-runtime/mathematics boundaries. Do not claim completion here.
+See [evidence](../evidence/004-lemmasim-durable-ink.md), matching result/manifest
+JSON, and README for launch/replay/copy/archive. Publish the report-only commit
+and its own required CI, keeping PR draft for review. No merge/settings changes;
+G4/S, managed runtime, general filesystem, tutor/browser, snapshots and physical
+conformance remain broader unfinished work.

@@ -4,14 +4,21 @@
 
 **LemmaSim is a first-class, distributable embodiment of Lemma One**, not a temporary emulator. Both virtual and physical embodiments target one versioned [canonical machine contract](LEMMA_MACHINE_CONTRACT.md), sharing the freestanding Lean-authored RV64 operating system, mathematical capabilities, and user-visible device semantics. The ambition is complete functional equivalence, **not an already established physical-hardware result**. Physical properties such as thermals and writing-surface feel remain separate. Student, Developer, and Laboratory are modes of one LemmaSim.
 
-Read the [cross-cutting LemmaSim plan](docs/plan/LEMMASIM.md) and the [simulation](sim/README.md) / [conformance](conformance/README.md) scaffolds. The existing `LemmaVM` QEMU boot-slice contract and G1-G7 implementation evidence remain unchanged and do not certify the complete virtual machine.
+Read the [cross-cutting LemmaSim plan](docs/plan/LEMMASIM.md) and the [simulation implementation](sim/README.md) / [conformance checks](conformance/README.md). The existing `LemmaVM` QEMU boot-slice contract and G1-G7 implementation evidence remain unchanged and do not certify the complete virtual machine.
 
 
 A pen-first mathematics computer, constructed from a freestanding Lean 4 foundation
 on RISC-V. The historical boot reference is **LemmaVM**; the permanent virtual embodiment is **LemmaSim**; the operating system is **LemmaOS**;
 the physical device is **Lemma One**.
 
-**Current state: tested supervisor kernel and isolated volatile buffer service.**
+**Current implementation: native durable ink notebook.** Task004 provides a
+bounded offline notebook through the real Lean-authored RV64 guest. Its
+[evidence report](docs/evidence/004-lemmasim-durable-ink.md) separates the tested
+implementation from the report head and records exact acceptance/retention
+identities. The finished mathematics machine and physical conformance remain
+incomplete.
+
+**Historical Task003 milestone: supervisor kernel and isolated volatile service.**
 Task 003 adds owned physical pages, Sv39 user address spaces, ordinary syscalls,
 preemptive tasks, capabilities, blocking IPC and separately linked U-mode
 applications. O0/O2 acceptance and legacy regressions passed at implementation
@@ -244,11 +251,12 @@ These lanes require their own observed results. The A-E controller, legacy
 Core0/foundation acceptance and final Task003 qualification remain separate
 requirements; a passing earlier checkpoint does not certify changed source.
 
-## Task004 LemmaSim implementation checkpoint
+## Task004 native durable notebook
 
 The new `task/004-lemmasim-durable-ink` branch contains a genuine compiled RV64
 notebook, isolated record service, pen/paper hardware models and a volatile/durable
-block backend. Its primary notebook acceptance is still in progress. See the
+block backend. The [evidence report](docs/evidence/004-lemmasim-durable-ink.md)
+records the bounded notebook qualification and its precise limitations. See the
 [checkpoint](docs/plan/004-session-state.md),
 [machine profile](docs/contracts/004-machine-profile-0.1.0.md),
 [device ABI](docs/contracts/004-devices-v1.md),
@@ -287,6 +295,11 @@ images unless `--force` explicitly requests destruction.
 
 Developer capture, inspection and offline copies use the same machine:
 
+`run --record` blocks while the machine is running. Run `control ... inspect`
+from a second terminal while the window and QMP connection remain live. After
+Saved, close the machine and wait for the run command to exit and reap QEMU;
+then perform replay, offline copy and archive in the first terminal.
+
 ```sh
 ./scripts/lemmasim run --disk build/lemmasim/my-notebook.raw --mode developer \
   --record build/lemmasim/writing-session
@@ -313,20 +326,25 @@ drain and flush block nodes; use `power-cut` for a modeled loss of volatile
 writes. Replay uses a fresh
 media copy and refuses changed identities. Laboratory faults act on real block
 write/flush ordinals (`--mode laboratory --fault cut-before-flush=N`, also
-`cut-after-flush`, `tear-flush`, `fail-write`, `fail-flush`). Their exact notebook
-crash acceptance is pending. Successful host flush assumes the local filesystem
+`cut-after-flush`, `tear-flush`, `fail-write`, `fail-flush`). The evidence report identifies the admitted cutpoints and actual cold-recovery
+observations; physical power-loss behavior remains unverified. Successful host flush assumes the local filesystem
 and device honor QEMU's fsync. A process power cut loses the hardware filter's
 volatile RAM writes; ordinary QEMU close is a separate clean host operation.
 
 Use `--headless` when no native display is available and `--geometry 1404x1872`
 for the second instance. Default geometry is1650×2200. The same guest queries
 runtime geometry; neither instance is a procurement or physical-conformance
-claim. Mouse pressure is synthetic; no physical pressure-aware tablet or visible
-manual workflow has been tested here. The bounded guest supports64pages per
-notebook and512chunk/edit entries per page, with explicit resource errors. The
-required16-page/100000-sample workload and complete candidate regressions remain
-unrun at this checkpoint. Actions artifacts expire after14days; the offline
-archive is the explicit owner-controlled retention path.
+claim. Mouse pressure is synthetic; automated GTK input was exercised in a
+dedicated pinned Xvfb environment. Physical pressure-aware tablet input and
+manual visible interaction are NOT_RUN. A stationary held mouse without samples
+reaches the one-synthetic-second contact watchdog: its unsaved tail is cancelled,
+and lift/new contact resumes writing. The bounded guest has two fixed notebook
+namespaces, 64 pages each, 512 immutable chunks and 512 edits per page, and
+1024 latest store keys across their shared document-service authority domain.
+Compact reclaims append space but does not remove those limits. The evidence
+report records the 16-page/100,000-sample workload, actual latency and sampled
+owned-memory scope. Actions artifacts expire after14days; verified offline
+export is the explicit owner-controlled retention path.
 
 ## GitHub and Codex
 
