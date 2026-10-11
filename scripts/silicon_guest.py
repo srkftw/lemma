@@ -55,6 +55,53 @@ def prepared(workload):
             if sha(guest/name)!=digest:raise ValueError('RTL notebook capacity artifact changed: '+name)
     return data
 
+def reset_rom_audit(data):
+    audit=json.loads(validate(data['rom_audit']).read_text())
+    words=[0x00000513,0x43f00593,0x01559593,0x00100293,0x01f29293,0x00028067]
+    if audit.get('status')!='PASS' or audit.get('instruction_words')!=words:
+        raise ValueError('Reset ROM audit inventory differs')
+    for key in ('source','assembly','object','elf','binary'):validate(audit[key])
+    if audit['source']['path']!=str((ROOT/'Lemma/Platform/Silicon/BootROM.lean').resolve()) or audit['binary']!=data['rom']:
+        raise ValueError('Reset ROM audited source/binary differs')
+    if validate(data['rom']).read_bytes()!=struct.pack('<6I',*words):
+        raise ValueError('Reset ROM actual instruction words differ')
+    return audit
+
+def reusable_reset_rom(previous,data,guest):
+    if previous is None:return None
+    for key in ('schema_version','profile','profile_sha256','binary','rtl_build','rtl_sources','memory','physical_conformance'):
+        if previous.get(key)!=data.get(key):return None
+    current_provenance=json.loads((guest/'provenance.json').read_text())
+    matching_provenance=None
+    for workload,entry in previous['workloads'].items():
+        if workload not in CONFIGURATIONS:continue
+        try:
+            old_guest=validate(entry['build']).parent
+            old_build=json.loads((old_guest/'build.json').read_text())
+            verify_guest_build(old_guest,CONFIGURATIONS[workload],old_build['optimization'])
+            candidate=json.loads(validate(entry['provenance']).read_text())
+        except (OSError,ValueError,KeyError):continue
+        if all(candidate[key]==current_provenance[key] for key in ('tools','lean_source_realization','source_inputs')):
+            matching_provenance=candidate;break
+    if matching_provenance is None:return None
+    for path,digest in previous['rtl_sources'].items():
+        if not Path(path).is_file() or sha(path)!=digest:raise ValueError('Reset ROM RTL/tool source changed: '+path)
+    for key in ('binary','rtl_build'):validate(previous[key])
+    old_audit=reset_rom_audit(previous);new_audit=reset_rom_audit(data)
+    if old_audit['scope']!=new_audit['scope'] or any(old_audit[key]['sha256']!=new_audit[key]['sha256'] for key in ('source','assembly','object','elf','binary')):
+        raise ValueError('Unchanged reset ROM generated artifacts differ')
+    return {'rom':previous['rom'],'rom_audit':previous['rom_audit']}
+
+def publish_prepared(data):
+    PREPARED.parent.mkdir(parents=True,exist_ok=True)
+    temporary=PREPARED.with_name(PREPARED.name+'.'+str(time.time_ns()))
+    try:
+        with temporary.open('xb') as stream:
+            stream.write((json.dumps(data,indent=2)+'\n').encode());stream.flush();os.fsync(stream.fileno())
+        os.replace(temporary,PREPARED)
+    finally:
+        if temporary.exists():temporary.unlink()
+
 def build(args):
     from silicon_compute import source_manifest, prepare
     out=(getattr(args,'rtl_build',None) or ROOT/'build/silicon/compute').resolve();dep=ROOT/'build/silicon/deps/cvw'
@@ -111,6 +158,7 @@ def build(args):
         if capacity.get('status')!='PASS':raise ValueError('RTL notebook selected capacity audit did not pass')
     entry={key:identified(guest/name) for key,name in [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
     if workload=='notebook':entry['capacity']=identified(guest/'capacity.json')
+    previous=None
     try:
         previous=json.loads(PREPARED.read_text())
         if previous.get('profile_sha256')==data['profile_sha256']:
@@ -126,7 +174,13 @@ def build(args):
                     data['workloads'][key]=old_entry
     except FileNotFoundError:pass
     data['workloads'][workload]=entry
-    PREPARED.parent.mkdir(parents=True,exist_ok=True);PREPARED.write_text(json.dumps(data,indent=2)+'\n')
+    reused=reusable_reset_rom(previous,data,guest)
+    if reused:
+        write={'status':'PASS','scope':'Verified immutable reset-ROM reuse; not functional acceptance',
+               'generated_rom':data['rom'],'generated_rom_audit':data['rom_audit'],'reused':reused}
+        (directory/'rom-reuse.json').write_text(json.dumps(write,indent=2)+'\n')
+        data.update(reused)
+    publish_prepared(data)
     print(f'Prepared RTL {workload}; {PREPARED}. Ordinary launch validates identities without rebuilding.')
 
 def verify_guest_build(guest,configuration,optimization):
@@ -146,7 +200,7 @@ def verify_guest_build(guest,configuration,optimization):
         if not path.is_relative_to(guest) or not path.is_file() or sha(path)!=digest:raise ValueError('RTL guest artifact changed: '+name)
 
 def bounded_options(args):
-    options={key:getattr(args,key,None) for key in ('cycles','trace_limit','timeout','uart_stop','uart_stop_hex','stop_after_panel','fail_flush','observer_cycle')}
+    options={key:getattr(args,key,None) for key in ('cycles','trace_limit','timeout','uart_stop','uart_stop_hex','stop_after_panel','fail_flush','observer_cycle','ram_dump','block_trace')}
     if type(options['cycles']) is not int or not 0<options['cycles']<=10000000000:raise ValueError('RTL cycles must be 1..10000000000')
     if type(options['trace_limit']) is not int or not 0<=options['trace_limit']<=1000000:raise ValueError('RTL trace limit must be 0..1000000')
     options['timeout']=options['timeout'] or 120
@@ -159,9 +213,25 @@ def bounded_options(args):
         if not options['uart_stop_hex'] or len(options['uart_stop_hex'])%2:raise ValueError('RTL UART stop hex must contain whole bytes')
         try:bytes.fromhex(options['uart_stop_hex'])
         except ValueError:raise ValueError('RTL UART stop hex must contain hexadecimal bytes') from None
+    if options['ram_dump'] is not None:ram_dump_range(options['ram_dump'])
+    if options['block_trace'] is None:options['block_trace']=False
+    if type(options['block_trace']) is not bool:raise ValueError('RTL block trace must be a boolean')
     return options
 
+def ram_dump_range(specification):
+    """A raw external-memory range; no guest data interpretation."""
+    import re
+    if not isinstance(specification,str) or not re.fullmatch(r'(?:0x[0-9a-fA-F]+|[0-9]+):(?:0x[0-9a-fA-F]+|[0-9]+)',specification):
+        raise ValueError('RTL RAM dump requires address:bytes')
+    address,size=(int(value,16 if value.startswith('0x') else 10) for value in specification.split(':'))
+    p=profile()
+    if not 1<=size<=1048576 or not p['ram_base']<=address<=p['ram_base']+p['ram_bytes']-size:
+        raise ValueError('RTL RAM dump must be 1..1048576 bytes inside external RAM')
+    return address,size
+
 def execute(data,workload,directory,options,inputs,medium):
+    from types import SimpleNamespace
+    options=bounded_options(SimpleNamespace(**options))
     entry=data['workloads'][workload]
     argv=[data['binary']['path'],'--image',entry['image']['path'],'--rom',data['rom']['path'],
           '--load',f"0x{profile()['dtb_base']:x}:{entry['dtb']['path']}",'--uart-output',directory/'uart.bin',
@@ -174,6 +244,9 @@ def execute(data,workload,directory,options,inputs,medium):
         argv+=['--descriptor',entry['descriptor']['path'],'--medium',medium]
     for key,flag in (('uart_stop','--uart-stop'),('uart_stop_hex','--uart-stop-hex'),('stop_after_panel','--stop-after-panel'),('fail_flush','--fail-flush'),('observer_cycle','--observer-cycle')):
         if options[key] is not None:argv += [flag,options[key]]
+    if options['ram_dump']:
+        address,size=ram_dump_range(options['ram_dump']);argv+=['--ram-dump',f'{address}:{size}:{directory/"ram.bin"}']
+    if options['block_trace']:argv+=['--block-trace',directory/'block.csv']
     process=None;result={'schema_version':1,'scope':'raw RTL transport; functional acceptance is separate',
         'argv':list(map(str,argv)),'status':'NOT_RUN'}
     try:
@@ -186,7 +259,7 @@ def execute(data,workload,directory,options,inputs,medium):
         result['status']='STOPPED_BY_PROTOCOL' if result['exit_code']==0 else 'FAILED'
         if medium is not None:result['final_medium_sha256']=sha(medium)
         result['outputs']={str(p.relative_to(directory)):sha(p) for p in sorted(directory.rglob('*')) if p.is_file()
-            and (p.name in ('uart.bin','trace.csv','host-report.json') or p.name.startswith('panel'))}
+            and (p.name in ('uart.bin','trace.csv','host-report.json','ram.bin','block.csv') or p.name.startswith('panel'))}
         return result
     finally:
         if process is not None and process.poll() is None:os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=5)

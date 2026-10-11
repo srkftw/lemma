@@ -74,4 +74,31 @@ class BindingTests(unittest.TestCase):
         args.uart_stop_hex=None;args.cycles=0
         with self.assertRaisesRegex(ValueError,'cycles'):silicon_guest.bounded_options(args)
 
+    def test_raw_ram_snapshot_rejects_outside_and_unbounded_ranges(self):
+        self.assertEqual(silicon_guest.ram_dump_range('0x82000000:1048576'),(0x82000000,1048576))
+        self.assertEqual(silicon_guest.ram_dump_range('0x87ffffff:1'),(0x87ffffff,1))
+        for spec in ('0x7fffffff:1','0x88000000:1','0x87ffffff:2','0x82000000:0',
+                     '0x82000000:1048577','0x82000000:-1','0x82000000:1:elsewhere','x:1',True):
+            with self.subTest(spec=spec),self.assertRaises(ValueError):silicon_guest.ram_dump_range(spec)
+        args=SimpleNamespace(cycles=1,trace_limit=0,timeout=5,block_trace=1)
+        with self.assertRaisesRegex(ValueError,'boolean'):silicon_guest.bounded_options(args)
+
+    def test_diagnostic_outputs_are_regenerated_and_inventoried(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory=Path(tmp);image=directory/'image';image.write_bytes(b'host fixture only')
+            data={'binary':{'path':'fixture-rtl'},'rom':{'path':'fixture-rom'},
+                  'workloads':{'service':{'image':{'path':str(image)},'dtb':{'path':'fixture-dtb'}}}}
+            def launched(argv,**kwargs):
+                self.assertIn('--block-trace',argv)
+                self.assertEqual(argv[argv.index('--ram-dump')+1],f'2181038080:4:{directory/"ram.bin"}')
+                (directory/'ram.bin').write_bytes(b'raw!');(directory/'block.csv').write_text('literal observations')
+                process=mock.Mock();process.wait.return_value=0;process.poll.return_value=0;return process
+            options=silicon_guest.bounded_options(SimpleNamespace(cycles=10,trace_limit=0,timeout=5,
+                       observer_cycle=10,ram_dump='0x82000000:4',block_trace=True))
+            with mock.patch.object(silicon_guest.subprocess,'Popen',side_effect=launched):
+                result=silicon_guest.execute(data,'service',directory,options,{},None)
+            self.assertEqual(result['status'],'STOPPED_BY_PROTOCOL')
+            self.assertEqual(result['outputs']['ram.bin'],silicon_guest.sha(directory/'ram.bin'))
+            self.assertEqual(result['outputs']['block.csv'],silicon_guest.sha(directory/'block.csv'))
+
 if __name__=='__main__':unittest.main()

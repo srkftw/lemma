@@ -668,6 +668,14 @@ jobs:
               --work-dir build/silicon/ci-devices --timeout 600 --jobs 2 \
             2>&1 | tee build/ci/silicon-devices-rtl.log
 
+      - name: Check actual core store lanes and shared DMA memory beats
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            python3 scripts/check_silicon.py --lane bus-lanes \
+              --work-dir build/silicon/ci-bus-lanes --timeout 500 --jobs 2 \
+            2>&1 | tee build/ci/silicon-bus-lanes-rtl.log
+
       - name: Require exact-source nonempty literal RTL observations
         run: |
           python3 - <<'PY'
@@ -695,6 +703,20 @@ jobs:
               log = Path(command['log'])
               if command['exit_code'] != 0 or not log.stat().st_size or hashlib.sha256(log.read_bytes()).hexdigest() != command['log_sha256']:
                   raise RuntimeError('Missing or changed actual RTL command output')
+          lanes = json.loads(Path('build/silicon/ci-bus-lanes/result.json').read_text())
+          if lanes['status'] != 'PASS' or lanes['lane'] != 'bus-lanes' or lanes['source_commit'] != head:
+              raise RuntimeError('Missing exact-candidate bus lane result')
+          if lanes['observations'] != [
+              'BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
+              'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS'] or len(lanes['commands']) != 2 or len(lanes['source_inputs']) < 200:
+              raise RuntimeError('Missing actual core/fabric lane observations')
+          for path, digest in lanes['source_inputs'].items():
+              if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('Core/fabric lane input changed')
+          for command in lanes['commands']:
+              log = Path(command['log'])
+              if command['exit_code'] != 0 or not log.stat().st_size or hashlib.sha256(log.read_bytes()).hexdigest() != command['log_sha256']:
+                  raise RuntimeError('Missing or changed bus lane command output')
           PY
 
       - name: Retain RTL device observations and failure logs
@@ -704,7 +726,9 @@ jobs:
           name: silicon-devices-rtl-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             build/silicon/ci-devices/
+            build/silicon/ci-bus-lanes/
             build/ci/silicon-devices-rtl.log
+            build/ci/silicon-bus-lanes-rtl.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6

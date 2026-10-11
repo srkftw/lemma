@@ -72,7 +72,11 @@ module lemma_compute import cvw::*; #(
   assign debug_privilege = core.PrivilegeModeW;
   assign debug_retire = core.InstrValidM && !core.StallM && !core.FlushM;
   assign timer_ticks = mtime;
-  assign write_value = hwdata >> (8*addr_d[2:0]);
+  // CVW replicates sb/sh/sw across HWDATA. Only the selected transfer's
+  // bytes belong to an MMIO register; higher replicated lanes are ignored.
+  assign write_value = (hwdata >> (8*addr_d[2:0])) &
+      (size_d == 0 ? 64'hff : size_d == 1 ? 64'hffff :
+       size_d == 2 ? 64'hffffffff : 64'hffffffffffffffff);
   assign bad_alignment = (size_d > 3) || ((addr_d & ((56'd1 << size_d)-1)) != 0);
   assign sel_mem = (addr_d >= RAM_BASE && addr_d < RAM_BASE+RAM_BYTES) ||
                    (addr_d >= RESET_VECTOR && addr_d < RESET_VECTOR+ROM_BYTES);

@@ -2,6 +2,7 @@ import Lemma.Platform.LemmaSim.IO
 import Lemma.Platform.LemmaSim.DeviceABI
 import Lemma.Drivers.Paper
 import Lemma.Drivers.Pen
+import Lemma.Drivers.PLIC
 import Lemma.Kernel.Console
 import Lemma.Kernel.Memory.Frames
 
@@ -52,5 +53,10 @@ private def pen : Action :=
   else fatal else .done s 0 else .done s 0
 
 def run : Action :=
-  .bind paper fun s _ => if s = 0 then pen else .done s 0
+  .bind paper fun s _ => if s = 0 then
+  -- Interrupted remains a real level until a full quality refresh completes.
+  -- This negative diagnostic masks that source so it can observe pen13 while
+  -- preserving the uncertain panel state; the notebook owns real recovery.
+  .bind Lemma.Drivers.PLIC.disablePaper fun s _ => if s = 0 then pen else .done s 0
+  else .done s 0
 end Lemma.Platform.Silicon.Development.DeviceProbe

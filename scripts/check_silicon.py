@@ -64,9 +64,33 @@ def devices(out, timeout, jobs):
             'scope':'literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability',
             'observations':expected}
 
+def bus_lanes(out, timeout, jobs):
+    from silicon_compute import source_manifest, prepare
+    dep=ROOT/'build/silicon/deps/cvw'
+    prepare(dep);manifest=source_manifest(dep)
+    bench=ROOT/'conformance/silicon/BusLanes.sv'
+    before={**manifest['sha256'],**manifest['configuration_includes'],
+            str(bench):sha(bench),str(Path(__file__)):sha(__file__)}
+    for name in ('scripts/silicon_compute.py','tooling/silicon/apply_cvw.py',
+                 'tooling/silicon/sim.nix','tooling/silicon/dependencies.json','flake.lock'):
+        before[str(ROOT/name)]=sha(ROOT/name)
+    (out/'sources.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    obj=out/'obj';obj.mkdir()
+    build=['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal','--top-module','BusLanes',
+           '--Mdir',str(obj),*['-I'+d for d in manifest['include_dirs']],*manifest['sources'],str(bench)]
+    records=[command(['nix-shell',str(ROOT/'tooling/silicon/sim.nix'),'--run',shlex.join(build)],out/'build.log',timeout)]
+    records.append(command([str(obj/'VBusLanes')],out/'simulation.log',30))
+    expected=['BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
+              'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS']
+    if any((out/'simulation.log').read_text().count(marker)!=1 for marker in expected):
+        raise RuntimeError('Missing or duplicate actual bus-lane observations')
+    if before!={p:sha(p) for p in before}:raise RuntimeError('Bus-lane inputs changed during observation')
+    return {'status':'PASS','source_inputs':before,'commands':records,'observations':expected,
+            'scope':'literal data-phase/ready stimuli on actual compute/SoC/block RTL with hart reset; not guest execution'}
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--lane',choices=['devices','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
+    parser.add_argument('--lane',choices=['devices','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--timeout',type=float,default=300)
     parser.add_argument('--jobs',type=int,default=2)
@@ -86,6 +110,16 @@ def main():
             'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()}
     try:
         if args.lane=='devices':report.update(devices(out,args.timeout,args.jobs))
+        elif args.lane=='bus-lanes':report.update(bus_lanes(out,args.timeout,args.jobs))
+        elif args.lane in ('guest-devices','device-input'):
+            sys.path.insert(0,str(ROOT/'conformance/silicon'))
+            from device_observations import fixture,observe
+            if args.lane=='device-input':
+                fixture(out)
+                report.update(status='INPUT_ONLY',scope='303 raw external device events; no execution claim')
+            else:
+                if args.capture is None:raise ValueError('guest device observations require --capture')
+                report.update(observe(args.capture))
         elif args.lane in ('monitor','monitor-input'):
             sys.path.insert(0,str(ROOT/'conformance/silicon'))
             from monitor_observations import fixture,observe

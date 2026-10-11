@@ -132,5 +132,8 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign cpu_mem_rdata=external_rdata;
  assign dma_ready=dma_grant&&((dma_alignment&&dma_span)?external_ready:1'b1);
  assign dma_error=dma_grant&&(!dma_alignment||!dma_span||external_error);
- assign dma_rdata=external_rdata>>(8*dma_addr[2:0]);
+ // Return a right-justified transfer, rather than unrelated bytes from the
+ // remainder of the shared 64-bit memory beat.
+ assign dma_rdata=(external_rdata>>(8*dma_addr[2:0])) &
+   (dma_size==0?64'hff:dma_size==1?64'hffff:dma_size==2?64'hffffffff:64'hffffffffffffffff);
 endmodule

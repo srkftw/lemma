@@ -16,7 +16,7 @@ The current development binding selects 1,024 owned frames, quota128 and four-pa
 stacks, with a real 4 MiB RTL DMA window. Its expanded layout supports the short
 notebook configuration; it does not claim the canonical 32 MiB capacity floor.
 
-Observed development prerequisites, not final clean-source qualification:
+Earlier observed development prerequisites (their original identities and failures are retained):
 
 | Observation | Retained output | Meaning |
 |---|---|---|
@@ -46,11 +46,48 @@ The alternate explicit host -O3 build produced identical monitor observations
 but measured slower; the canonical build remains selected. Earlier source-bound
 artifacts retain their original identities after the 1,024-frame binding change.
 
-Next work follows the assignment order: finish actual isolated User service
-execution; run the shared compiled device probe; initialize a fresh raw medium
-through Lean on RTL; then stroke/edit/save and cold reopen. The original OpenROAD
-tool preparation exceeded its actual 5,400-second bound; a changed, pinned
-headless build is running with a 3,600-second bound. Actual layout is NOT_RUN. Do not
-infer gates B–F from source existence or the table above. Physical conformance,
-SRAM/DRAM integration, nonvolatile physical boot and foundry acceptance remain
-UNVERIFIED. No merge is authorized for Task 005.
+Current integrated observation: `build/silicon/service-final2-acceptance-detached/result.json`
+is **PASS**, SHA256 `eb35e51953059f0bb935d496c57d1c3f623a52d8ee524cf046412e612f79af9c`.
+The genuine Lean service image is from clean `b6a843454fb758327a4a5e34709e69107fcd1e52`,
+SHA256 `fc6e94e212fa9d7fd697bae0920aca94f72b9734420d76070580f7a195653d2c`.
+The independent existing buffer checker verified all five actors through actual
+RTL M/S/U execution, Sv39, capability/IPC denials, generation reuse, 109 arithmetic
+preemptions, an audited read-only-text store fault (cause15, stval0x10000),
+reap/containment, and exact CLI and Peer reads after the fault. It replayed all
+1,648 complete UART frames and verified image/audit/source identity before and
+after bounded process cleanup. Elapsed2,220.609575 seconds; its frozen source lease
+has ended. Earlier short-service and interrupted runs remain FAIL.
+
+`build/silicon/scalar-register-b6a8434/result.json` passed20 fresh O0/O2
+Lean scalar cases on the real4 KiB register-memory configuration.
+`build/silicon/physical/compute-81d26d2/result.json` passed actual generic
+and SG13G2 mapping:261,179 cells,51,770 flip-flops,5,116,861.864798 µm²,
+no residual memories, latches or unresolved cells. This is the compute/fabric
+slice with real instruction cache/register file/TLB; external working RAM,
+ROM and custom peripherals are excluded. It is not full-SoC synthesis.
+
+The native regression at `build/lemmasim/native-confirmation-6e96485/result.json`
+passed fresh O0/O2 write and cold reopen with unchanged, identified `b6a8434`
+guest images. Its corrected host workflow waits for the actual explicit guest
+Save/Compact Pending-to-Saved confirmation rather than a stale Saved observation.
+The earlier local native writing failure is retained; the successful rerun does
+not relabel it. PR7 CI at `b6a8434` passed nine jobs and failed the independent
+architecture observer's stale boot-selector expectation. The closed selector
+repair has passed focused host checks; a fresh integrated architecture run is pending.
+
+The RTL initializer reached real User execution but returned the existing
+Store Format.readOnly223 status. Its unsuccessful run is retained at
+`build/silicon/initialize-b6a8434-rtl1`; no format/FLUSH acknowledgement occurred.
+Inspection found that CVW replicates SW across64-bit HWDATA and the bridge failed
+to mask the selected MMIO width, so QueueNum8 could reach the controller as
+0x0000000800000008. The bridge and narrow DMA return lane are being corrected
+and checked through literal bus tests and fresh guest traffic. The full short
+RTL notebook workflow is **not yet passed**.
+
+The pinned headless OpenROAD build completed successfully. The first real
+paper place/CTS/global-route run failed detailed routing on a disconnected
+constant alias. A guarded removal preserves connected constants; a fresh
+routed-controller attempt is running. SG13G2 process DRC/LVS and extracted
+post-route timing remain NOT_RUN. Physical conformance, implementable large
+working memory, nonvolatile physical boot and foundry acceptance remain
+UNVERIFIED. No merge is authorized for Task005.

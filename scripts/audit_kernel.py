@@ -2465,7 +2465,7 @@ def validate_package_contract(value: object, *, configuration: str, catalog: dic
 
 
 def validate_package_payloads(package: bytes, contract: dict, payloads: list[tuple[bytes, bytes]]) -> list[dict]:
-    """Bind every v1 descriptor to a separately audited image, in registry order."""
+    """Bind every declared v1/v2 descriptor to separately audited bytes, in order."""
     count = contract["image_count"]
     minimum = 32 + count * 96
     if len(payloads) != count or len(package) < minimum or struct.unpack_from("<4Q", package) != (contract["magic"], contract["version"], count, len(package)):
@@ -4516,19 +4516,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             payloads = [((output_dir / image["directory"] / "text.bin").read_bytes(), (output_dir / image["directory"] / "data.bin").read_bytes()) for image in images]
             package_images = validate_package_payloads((output_dir / "audit-package.bin").read_bytes(), package_contract, payloads)
         else:
-            package = (output_dir / "audit-package.bin").read_bytes()
-            if len(package) < 128:
-                raise Core0Error("boot package is missing header/descriptor")
-            header = struct.unpack_from("<4Q", package)
-            descriptor = struct.unpack_from("<12Q", package, 32)
-            text, data = (output_dir / "user-text.bin").read_bytes(), (output_dir / "user-data.bin").read_bytes()
-            image_id, entry, text_va, text_offset, text_bytes, data_va, data_offset, data_bytes, data_memory, stack_va, stack_pages, flags = descriptor
-            if (header != (0x31474b50414d454c, 1, 1, len(package)) or image_id != 1 or entry != 0x10000 or text_va != 0x10000
-                    or data_va != 0x20000 or data_memory != 4096 or stack_va != 0x3fffc000 or stack_pages != 2 or flags != 0
-                    or text_offset < 128 or text_bytes != len(text) or data_bytes != len(data) or data_offset < text_offset + text_bytes
-                    or data_offset + data_bytes > len(package) or package[text_offset:text_offset+text_bytes] != text
-                    or package[data_offset:data_offset+data_bytes] != data):
-                raise Core0Error("package descriptor/raw user image binding differs")
+            payloads = [((output_dir / "user-text.bin").read_bytes(), (output_dir / "user-data.bin").read_bytes())]
+            validate_package_payloads((output_dir / "audit-package.bin").read_bytes(), package_contract, payloads)
         record = {"schema_version": 2 if multi else 1, "status": "PASS", "artifact_category": category, "configuration": configuration, "startup_case": case, "user_startup_case": user_case,
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),

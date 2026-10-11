@@ -52,7 +52,10 @@ entries and does not exercise those functions. Integrated device claims require
 their own functional evidence.
 
 The core exposes one 64-bit AHB transaction path with explicit response errors
-and backpressure; the wrapper accepts one transaction at a time. Unmapped or
+and backpressure; the wrapper accepts one transaction at a time. MMIO writes
+and DMA read responses contain only the right-justified bytes selected by the
+declared transfer width. Replicated core store lanes and adjacent external RAM
+bytes are excluded from that value. Unmapped or
 unsupported-width/alignment accesses fault rather than aliasing RAM. RAM is
 little endian. The architectural RAM window is 128 MiB of **external simulation
 bytes**, including the independent FDT reservation. No MPW SRAM of that

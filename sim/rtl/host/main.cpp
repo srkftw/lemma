@@ -2,6 +2,7 @@
 // Host-only clock/reset, external RAM/SRAM/media bytes, raw input and optical
 // panel adapter. No instruction emulation, guest-PC actions, journal or drawing.
 #include "Vlemma_soc.h"
+#include "Vlemma_soc___024root.h"
 #include "verilated.h"
 #include <cstdint>
 #include <cstdio>
@@ -38,6 +39,14 @@ static void load_elf(const std::string& path){auto b=bytes(path);if(b.size()<siz
   std::vector<uint8_t>s(p->p_memsz,0);std::memcpy(s.data(),b.data()+p->p_offset,p->p_filesz);put(p->p_paddr,s.data(),s.size());}}
 struct Event{uint64_t cycle;std::string kind;std::vector<uint64_t> words;std::string payload;};
 static uint64_t number(const std::string& text){size_t used=0;if(text.empty()||text[0]=='-'||std::isspace(static_cast<unsigned char>(text[0])))throw std::runtime_error("invalid unsigned input");uint64_t value=std::stoull(text,&used,0);if(used!=text.size())throw std::runtime_error("trailing numeric input");return value;}
+struct RamDump{uint64_t address=0,size=0;std::string path;};
+static RamDump ram_dump(const std::string& text){
+ auto a=text.find(':'),b=a==std::string::npos?a:text.find(':',a+1);
+ if(a==std::string::npos||b==std::string::npos||b+1==text.size())throw std::runtime_error("--ram-dump address:bytes:path");
+ RamDump d{number(text.substr(0,a)),number(text.substr(a+1,b-a-1)),text.substr(b+1)};
+ if(!d.size||d.size>1048576||d.address<RAM_BASE||d.address>RAM_BASE+RAM_SIZE-d.size)throw std::runtime_error("RAM dump must be 1..1048576 bytes inside external RAM");
+ return d;
+}
 static std::vector<uint8_t> hexbytes(const std::string& hex){if(hex.size()%2)throw std::runtime_error("odd hex input");auto nibble=[](char c){if(c>='0'&&c<='9')return c-'0';if(c>='a'&&c<='f')return c-'a'+10;if(c>='A'&&c<='F')return c-'A'+10;throw std::runtime_error("invalid hex input");};std::vector<uint8_t>b;for(size_t i=0;i<hex.size();i+=2)b.push_back((nibble(hex[i])<<4)|nibble(hex[i+1]));return b;}
 static std::vector<Event> events(const std::string& path){std::vector<Event> out;if(path.empty())return out;std::ifstream f(path);if(!f)throw std::runtime_error("cannot read events");std::string line;
  while(std::getline(f,line)){if(line.empty()||line[0]=='#')continue;std::istringstream ss(line);Event e{};std::string cycle;if(!(ss>>cycle>>e.kind))throw std::runtime_error("invalid event header: "+line);e.cycle=number(cycle);if(e.kind=="uart"){std::string extra;if(!(ss>>e.payload)||(ss>>extra))throw std::runtime_error("invalid UART event: "+line);hexbytes(e.payload);}else{std::string w;while(ss>>w)e.words.push_back(number(w));}
@@ -46,7 +55,8 @@ static std::vector<Event> events(const std::string& path){std::vector<Event> out
 int main(int argc,char**argv)try{
  Verilated::commandArgs(argc,argv);Vlemma_soc soc;
  uint64_t cycles=20000000,trace_limit=10000,stop_panels=0,fail_flush=0,observer_cycle=0;unsigned deadline=120;
- std::string uart_path,trace_path,descriptor_path,medium_path,event_path,panel_path,report_path,stop_marker,input_capture_path;
+ std::string uart_path,trace_path,descriptor_path,medium_path,event_path,panel_path,report_path,stop_marker,input_capture_path,block_trace_path;
+ RamDump dump;
  std::deque<uint8_t> rx;bool have_elf=false,have_rom=false,quiet_uart=false,uart_stdin=false;
  for(int i=1;i<argc;i++){std::string a=argv[i];auto val=[&](){if(++i>=argc)throw std::runtime_error("missing value "+a);return std::string(argv[i]);};
   if(a=="--image"){load_elf(val());have_elf=true;}else if(a=="--rom"){auto b=bytes(val());put(ROM_BASE,b.data(),b.size());have_rom=true;}
@@ -62,10 +72,20 @@ int main(int argc,char**argv)try{
   else if(a=="--panel-output")panel_path=val();else if(a=="--report")report_path=val();else if(a=="--uart-stop")stop_marker=val();
   else if(a=="--stop-after-panel")stop_panels=number(val());else if(a=="--fail-flush")fail_flush=number(val());
   else if(a=="--observer-cycle")observer_cycle=number(val());
+  else if(a=="--ram-dump")dump=ram_dump(val());else if(a=="--block-trace")block_trace_path=val();
   else throw std::runtime_error("unknown argument "+a);}
  if(!have_elf||!have_rom||uart_path.empty())throw std::runtime_error("--image --rom --uart-output required");
  if(observer_cycle>cycles)throw std::runtime_error("observer cycle exceeds cycle budget");
- std::ofstream uart(uart_path,std::ios::binary),trace,panel_log,input_capture;if(!uart)throw std::runtime_error("cannot open UART output");
+ std::ofstream uart(uart_path,std::ios::binary),trace,panel_log,input_capture,block_trace;if(!uart)throw std::runtime_error("cannot open UART output");
+ if(!block_trace_path.empty()){block_trace.open(block_trace_path);if(!block_trace)throw std::runtime_error("cannot open block transaction capture");block_trace<<"cycle,event,write,size,address,raw_wdata,wdata,rdata,error,state,status,queue_num,queue_ready,interrupt_status,result\n";}
+ uint64_t block_rows=0,block_omitted=0;uint64_t previous_block_state=~uint64_t(0);
+ // Literal circuit transactions and state only. This observer never parses a
+ // guest queue, predicts a completion, or changes a device response.
+ auto block_row=[&](uint64_t c,const char*event,unsigned write,unsigned size,uint64_t address,uint64_t raw,uint64_t wdata,uint64_t rdata,unsigned error){
+  if(!block_trace.is_open())return;if(block_rows>=4096){block_omitted++;return;}block_rows++;auto*r=soc.rootp;
+  block_trace<<c<<','<<event<<','<<write<<','<<size<<",0x"<<std::hex<<address<<",0x"<<raw<<",0x"<<wdata<<",0x"<<rdata<<std::dec<<','<<error<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__state)<<','<<r->lemma_soc__DOT__blockdev__DOT__status<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_num<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_ready<<','<<r->lemma_soc__DOT__blockdev__DOT__interrupt_status<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__result)<<'\n';
+  block_trace.flush();if(!block_trace)throw std::runtime_error("block capture write failed");
+ };
  if(!input_capture_path.empty()){input_capture.open(input_capture_path);if(!input_capture)throw std::runtime_error("cannot open input capture");}
  if(uart_stdin){int flags=fcntl(STDIN_FILENO,F_GETFL,0);if(flags<0||fcntl(STDIN_FILENO,F_SETFL,flags|O_NONBLOCK)<0)throw std::runtime_error("cannot configure raw UART stdin");}
  auto capture_uart=[&](uint64_t cycle,const uint8_t* b,size_t n){if(input_capture){static const char*hex="0123456789abcdef";input_capture<<cycle<<" uart ";for(size_t i=0;i<n;i++)input_capture<<hex[b[i]>>4]<<hex[b[i]&15];input_capture<<"\n";input_capture.flush();}};
@@ -81,6 +101,7 @@ int main(int argc,char**argv)try{
  auto start=std::chrono::steady_clock::now();uint64_t retired=0,privilege_cycles[4]={0},traps=0,timer_traps=0,flushes=0,media_requests=0,pen_ingress=0,pen_accepted=0,panel_completed=0,panel_aborted=0;
  unsigned old_privilege=3;uint64_t transitions=0,reset_until=8,actual_cycles=0;bool finished=false,stopped=false;uint32_t finish=0;std::string uart_text;
  soc.clk=0;soc.reset=1;soc.preload_valid=0;soc.preload_index=0;soc.preload_data=0;soc.eval();
+ if(soc.register_memory_enabled&&!dump.path.empty())throw std::runtime_error("RAM dump requires the external-memory configuration");
  if(soc.register_memory_enabled)reset_until=520;soc.mem_ready=1;soc.mem_error=0;soc.uart_rx_valid=0;soc.uart_rx_data=0;
  soc.sample_valid=0;soc.sample_time=0;soc.sample_x=0;soc.sample_y=0;soc.sample_pressure=0;soc.sample_flags=0;soc.sample_tool=0;soc.sample_buttons=0;
  soc.fb_ready=1;soc.fb_error=0;soc.fb_rdata=15;soc.panel_ready=1;soc.media_ready=1;soc.media_error=0;
@@ -104,9 +125,19 @@ int main(int argc,char**argv)try{
    else if(soc.media_kind==1){std::array<uint8_t,512>b{};std::memcpy(b.data(),soc.media_wdata.data(),512);overlay[sector]=b;}
    else if(soc.media_kind==4){flushes++;if(fail_flush&&flushes==fail_flush)soc.media_error=1;else{for(auto&[s,b]:overlay)if(pwrite(medium,b.data(),512,s*512)!=512)throw std::runtime_error("short medium write");if(fsync(medium))throw std::runtime_error("medium fsync failed");overlay.clear();}}
    else soc.media_error=1;
+   block_row(c,soc.media_kind==0?"media-read":soc.media_kind==1?"media-write":soc.media_kind==4?"media-flush":"media-invalid",soc.media_kind==1,9,sector,0,0,0,soc.media_error);
   }
   soc.eval();
   if(!soc.reset){
+   auto*r=soc.rootp;
+   if(block_trace.is_open()){
+    uint64_t state=(uint64_t(r->lemma_soc__DOT__blockdev__DOT__state)<<32)|r->lemma_soc__DOT__blockdev__DOT__status;
+    if(state!=previous_block_state){block_row(c,"state",0,0,0,0,0,0,0);previous_block_state=state;}
+    if(r->lemma_soc__DOT____Vcellinp__blockdev__valid&&r->lemma_soc__DOT__compute__DOT__hready)
+     block_row(c,"mmio",r->lemma_soc__DOT__compute__DOT__write_d,r->lemma_soc__DOT__compute__DOT__size_d,r->lemma_soc__DOT__compute__DOT__addr_d,r->lemma_soc__DOT__compute__DOT__core__DOT__LSUHWDATA,r->lemma_soc__DOT____Vcellinp__blockdev__wdata,r->lemma_soc__DOT__compute__DOT__hrdata,r->lemma_soc__DOT__compute__DOT__hresp);
+    if(r->lemma_soc__DOT__dma_valid&&r->lemma_soc__DOT__dma_ready)
+     block_row(c,"dma",soc.mem_write,r->lemma_soc__DOT__dma_size,r->lemma_soc__DOT__dma_addr,soc.mem_wdata,soc.mem_wdata>>(8*(r->lemma_soc__DOT__dma_addr&7)),r->lemma_soc__DOT__dma_rdata,!r->lemma_soc__DOT__dma_alignment||!r->lemma_soc__DOT__dma_span||soc.mem_error);
+   }
    if(!soc.register_memory_enabled&&soc.mem_valid&&soc.mem_ready&&soc.mem_write&&!soc.mem_error&&ram_pointer)for(int j=0;j<8;j++)if(soc.mem_strb&(1<<j))ram_pointer[j]=soc.mem_wdata>>(j*8);
    if(soc.fb_valid&&soc.fb_ready&&soc.fb_write&&!soc.fb_error)framebuffer[soc.fb_addr]=soc.fb_wdata;
    if(soc.uart_tx_valid){uart.put(soc.uart_tx_data);uart.flush();uart_text.push_back(soc.uart_tx_data);if(!quiet_uart){std::cout.put(soc.uart_tx_data);std::cout.flush();}}
@@ -126,9 +157,11 @@ int main(int argc,char**argv)try{
   if(c&&c%1000000==0)std::cerr<<"RTL progress cycles="<<c<<" pc=0x"<<std::hex<<soc.debug_pc<<std::dec<<" privilege="<<unsigned(soc.debug_privilege)<<" retired="<<retired<<" ticks="<<soc.timer_ticks<<" timer_traps="<<timer_traps<<" UART="<<uart_text.size()<<"\n";
   if((c&0x3ffff)==0&&std::chrono::steady_clock::now()-start>std::chrono::seconds(deadline))throw std::runtime_error("RTL wall deadline exceeded");
  }
+ if(!dump.path.empty()&&(finished||stopped)){std::ofstream f(dump.path,std::ios::binary);if(!f||!f.write(reinterpret_cast<const char*>(ram.data()+dump.address-RAM_BASE),dump.size)||!f.flush())throw std::runtime_error("external RAM snapshot write failed");}
+ if(block_trace.is_open()){block_trace.flush();if(!block_trace)throw std::runtime_error("block capture write failed");}
  if(!panel_path.empty()){std::ofstream pgm(panel_path,std::ios::binary);pgm<<"P5\n"<<BINDING_WIDTH<<" "<<BINDING_HEIGHT<<"\n255\n";for(auto v:visible)pgm.put(v*17);}
  if(medium>=0)close(medium);
- if(!report_path.empty()){std::ofstream r(report_path);r<<"{\n\"cycles\":"<<actual_cycles<<",\"retired\":"<<retired<<",\"privilege_cycles\":["<<privilege_cycles[0]<<","<<privilege_cycles[1]<<","<<privilege_cycles[2]<<","<<privilege_cycles[3]<<"],\"privilege_transitions\":"<<transitions<<",\"traps\":"<<traps<<",\"timer_traps\":"<<timer_traps<<",\"pen_ingress\":"<<pen_ingress<<",\"pen_accepted\":"<<pen_accepted<<",\"panel_completed\":"<<panel_completed<<",\"panel_aborted\":"<<panel_aborted<<",\"media_requests\":"<<media_requests<<",\"flushes\":"<<flushes<<",\"volatile_sectors_discarded\":"<<overlay.size()<<",\"finished\":"<<(finished?"true":"false")<<",\"explicit_observer_stop\":"<<(stopped?"true":"false")<<",\"observer_cycle\":"<<observer_cycle<<",\"finish_code\":"<<finish<<"\n}\n";}
- std::cerr<<"\nRTL cycles="<<actual_cycles<<" retired="<<retired<<" timer_traps="<<timer_traps<<" finish=0x"<<std::hex<<finish<<std::dec<<" observer_stop="<<stopped<<"\n";
+ if(!report_path.empty()){std::ofstream r(report_path);r<<"{\n\"block_rows\":"<<block_rows<<",\"block_omitted\":"<<block_omitted<<",\"cycles\":"<<actual_cycles<<",\"retired\":"<<retired<<",\"privilege_cycles\":["<<privilege_cycles[0]<<","<<privilege_cycles[1]<<","<<privilege_cycles[2]<<","<<privilege_cycles[3]<<"],\"privilege_transitions\":"<<transitions<<",\"traps\":"<<traps<<",\"timer_traps\":"<<timer_traps<<",\"pen_ingress\":"<<pen_ingress<<",\"pen_accepted\":"<<pen_accepted<<",\"panel_completed\":"<<panel_completed<<",\"panel_aborted\":"<<panel_aborted<<",\"media_requests\":"<<media_requests<<",\"flushes\":"<<flushes<<",\"volatile_sectors_discarded\":"<<overlay.size()<<",\"finished\":"<<(finished?"true":"false")<<",\"explicit_observer_stop\":"<<(stopped?"true":"false")<<",\"observer_cycle\":"<<observer_cycle<<",\"finish_code\":"<<finish<<"\n}\n";}
+ std::cerr<<"\nRTL cycles="<<actual_cycles<<" retired="<<retired<<" timer_traps="<<timer_traps<<" finish=0x"<<std::hex<<finish<<std::dec<<" observer_stop="<<stopped<<" block_rows="<<block_rows<<" block_omitted="<<block_omitted<<"\n";
  return finished?(finish==0x5555?0:2):stopped?0:3;
 }catch(const std::exception&e){std::cerr<<"RTL adapter: "<<e.what()<<"\n";return 1;}
