@@ -48,23 +48,41 @@ estimate_parasitics -placement
 repair_design
 detailed_placement
 check_placement -verbose
-clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2}
+clock_tree_synthesis -root_buf sg13g2_buf_16 -buf_list {sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2} -sink_clustering_enable -sink_clustering_size 8 -repair_clock_nets
 set_propagated_clock [get_clocks core]
+# Bound cell/buffer repair, retaining the declared clock and I/O constraints.
+estimate_parasitics -placement
+repair_design -slew_margin 5 -cap_margin 5
+repair_timing -setup -max_passes 2 -max_iterations 20 -max_buffer_percent 20
+repair_timing -hold -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
 set_routing_layers -signal Metal2-Metal5 -clock Metal2-Metal5
 global_route -guide_file $out/route.guide -congestion_iterations 50
+# Placement estimates differ from actual global RC. Repair once against live
+# routed parasitics, then regenerate guides and RC after all changed cells.
+estimate_parasitics -global_routing
+report_worst_slack -max -digits 6 > $out/pre-repair-setup-summary.rpt
+report_worst_slack -min -digits 6 > $out/pre-repair-hold-summary.rpt
+report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/pre-repair-electrical.rpt
+global_route -start_incremental
+repair_design -slew_margin 5 -cap_margin 5
+repair_timing -setup -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
+repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
+detailed_placement
+check_placement -verbose
+global_route -end_incremental -guide_file $out/route.guide -congestion_iterations 50
 # Persist completed global routing before bounded detailed-route refinement.
 write_db $out/global-route.odb
 write_def $out/global-route.def
-estimate_parasitics -global_routing
-report_checks -path_delay max -group_path_count 10 > $out/global-setup.rpt
-report_checks -path_delay min -group_path_count 10 > $out/global-hold.rpt
-report_checks -unconstrained > $out/global-unconstrained.rpt
-report_worst_slack -max > $out/global-setup-summary.rpt
-report_worst_slack -min > $out/global-hold-summary.rpt
+estimate_parasitics -global_routing -spef_file $out/global-route-estimated.spef
+report_checks -path_delay max -group_path_count 10 -digits 6 > $out/global-setup.rpt
+report_checks -path_delay min -group_path_count 10 -digits 6 > $out/global-hold.rpt
+report_checks -unconstrained -digits 6 > $out/global-unconstrained.rpt
+report_worst_slack -max -digits 6 > $out/global-setup-summary.rpt
+report_worst_slack -min -digits 6 > $out/global-hold-summary.rpt
 check_setup -verbose > $out/global-constraints.rpt
-report_check_types -max_slew -max_capacitance -max_fanout -violators > $out/global-electrical.rpt
+report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/global-electrical.rpt
 set block [ord::get_db_block]
 set cell_area 0.0
 foreach inst [$block getInsts] {
@@ -86,13 +104,13 @@ close $drv_file
 estimate_parasitics -global_routing
 # These are global-route RC timing estimates after detailed signal routing,
 # not extracted post-route timing or foundry signoff.
-report_checks -path_delay max -group_path_count 10 > $out/setup.rpt
-report_checks -path_delay min -group_path_count 10 > $out/hold.rpt
-report_checks -unconstrained > $out/unconstrained.rpt
+report_checks -path_delay max -group_path_count 10 -digits 6 > $out/setup.rpt
+report_checks -path_delay min -group_path_count 10 -digits 6 > $out/hold.rpt
+report_checks -unconstrained -digits 6 > $out/unconstrained.rpt
 check_setup -verbose > $out/constraints.rpt
-report_worst_slack -max > $out/setup-summary.rpt
-report_worst_slack -min > $out/hold-summary.rpt
-report_check_types -max_slew -max_capacitance -max_fanout -violators > $out/electrical.rpt
+report_worst_slack -max -digits 6 > $out/setup-summary.rpt
+report_worst_slack -min -digits 6 > $out/hold-summary.rpt
+report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/electrical.rpt
 write_db $out/routed.odb
 write_def $out/routed.def
 write_verilog $out/routed.v

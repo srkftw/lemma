@@ -90,6 +90,7 @@ def devices(out, timeout, jobs):
         raise RuntimeError('RTL host-tool closure changed between literal workloads')
     text = (out/'simulation.log').read_text()
     expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
+                'PAPER banked aperture 32 lane-width cases and 4 boundary rejections PASS',
                 'PAPER latch Busy invalid-command bounds interrupted-reset PASS',
                 'BLOCK descriptors DMA payload used-ring flush error bounds reset PASS',
                 'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS']
@@ -141,6 +142,7 @@ def bus_lanes(out, timeout, jobs):
     records=[command(['nix-shell',str(ROOT/'tooling/silicon/sim.nix'),'--run',shlex.join(build)],out/'build.log',timeout)]
     records.append(command([str(obj/'VBusLanes')],out/'simulation.log',30))
     expected=['BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS',
+              'PAPER registered MMIO AHB error retention single completion reset cancellation PASS',
               'ARB held CPU/DMA owner payload backpressure terminal errors reset quiescence PASS',
               'DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS']
     if any((out/'simulation.log').read_text().count(marker)!=1 for marker in expected):

@@ -55,6 +55,8 @@ module lemma_compute import cvw::*; #(
   logic [4:0] claim_m, claim_s;
   logic [63:0] write_value;
   logic bad_alignment, raw_error, response_ready, error_phase;
+  logic dev_error_pending;
+  logic [63:0] dev_error_data;
   logic timer_register, plic_register;
   integer i;
 
@@ -92,7 +94,10 @@ module lemma_compute import cvw::*; #(
   assign mem_addr = {addr_d[55:3],3'b000};
   assign mem_wdata = hwdata;
   assign mem_strb = hwstrb;
-  assign dev_valid = valid_d && sel_dev && !bad_alignment;
+  // A peripheral completes its transaction at its own ready handshake.
+  // Keep a terminal error for AHB's second ERROR cycle, suppressing a repeat
+  // of the already-consumed MMIO request while HREADY is low.
+  assign dev_valid = valid_d && sel_dev && !bad_alignment && !dev_error_pending;
   assign dev_write = write_d;
   assign dev_addr = addr_d[31:0];
   assign dev_size = size_d;
@@ -149,14 +154,14 @@ module lemma_compute import cvw::*; #(
         26'h201004: mmio_data = {59'd0,claim_s};
         default: mmio_data = 0;
       endcase
-    end else if (sel_dev) mmio_data = dev_rdata;
+    end else if (sel_dev) mmio_data = dev_error_pending ? dev_error_data : dev_rdata;
     hrdata = sel_mem ? mem_rdata : (mmio_data << (8*addr_d[2:0]));
-    response_ready = !valid_d || bad_alignment || (sel_mem ? mem_ready : sel_dev ? dev_ready : 1'b1);
+    response_ready = !valid_d || bad_alignment || (sel_mem ? mem_ready : sel_dev ? (dev_error_pending || dev_ready) : 1'b1);
     raw_error = valid_d && (bad_alignment || (sel_uart && (addr_d[7:0]>=8 || size_d!=0)) ||
       (sel_timer && !timer_register) || (sel_plic && (!plic_register || size_d!=2)) ||
       (sel_finish && size_d!=2) ||
       !(sel_mem || sel_timer || sel_uart || sel_plic || sel_finish || sel_dev) ||
-      (sel_mem && mem_error) || (sel_dev && dev_error));
+      (sel_mem && mem_error) || (sel_dev && (dev_error_pending || (dev_ready && dev_error))));
     // AHB-Lite requires a two-cycle ERROR response, holding the transaction.
     hready = raw_error ? error_phase : response_ready;
     hresp = raw_error;
@@ -165,12 +170,17 @@ module lemma_compute import cvw::*; #(
   always_ff @(posedge clk) begin
     if (reset) begin
       error_phase <= 0;
+      dev_error_pending <= 0; dev_error_data <= 0;
       valid_d <= 0; addr_d <= 0; write_d <= 0; size_d <= 0;
       uart_ier <= 0;
       mtime <= 0; timer_phase <= 0; mtimecmp <= 64'hffffffffffffffff; msip<=0;
       enables_m<=0; enables_s<=0; threshold_m<=0; threshold_s<=0; inflight<=0;
       for(i=0;i<32;i=i+1) priorities[i]<=0;
     end else begin
+      if(dev_valid && dev_ready && dev_error) begin
+        dev_error_pending <= 1;
+        dev_error_data <= dev_rdata;
+      end else if(hready) dev_error_pending <= 0;
       if(raw_error && response_ready && !error_phase) error_phase<=1;
       else if(hready) error_phase<=0;
       if (timer_phase == TIMER_DIV-1) begin timer_phase<=0; mtime<=mtime+1; end

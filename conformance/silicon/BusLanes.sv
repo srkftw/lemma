@@ -20,8 +20,11 @@ module BusLanes;
   logic [2:0] dma_size=0;
   logic [63:0] memory_word=64'ha7b6c5d4e3f20188;
   integer memory_writes=0,memory_beats=0;
+  integer paper_beats=0;
   assign mem_rdata=memory_word;
   always @(posedge clk) if(!reset&&mem_valid&&mem_ready) memory_beats<=memory_beats+1;
+  always @(posedge clk) if(!reset&&soc.dev_valid&&soc.paper_sel&&soc.paper_ready)
+    paper_beats<=paper_beats+1;
   always @(posedge clk) if(!reset&&mem_valid&&mem_ready&&mem_write&&!mem_error) begin
     for(integer i=0;i<8;i++) if(mem_strb[i]) memory_word[i*8+:8]<=mem_wdata[i*8+:8];
     memory_writes<=memory_writes+1;
@@ -46,6 +49,62 @@ module BusLanes;
       $fatal(1,"QueueNum AHB SW rejected: status=%h expected=%h actual replicated HWDATA=%h",
         soc.block_rdata,expected,replicated_store);
     @(negedge clk);bus_valid=0;#1;
+  endtask
+  task automatic paper_transfer(input bit writing,input logic[11:0] offset,
+      input logic[2:0] size,input logic[63:0] value,input logic[63:0] expected,
+      input bit rejected=0);
+    integer beats,waits,error_waits;
+    beats=paper_beats;waits=0;error_waits=0;
+    @(negedge clk);bus_valid=1;bus_write=writing;bus_address=56'(PAPER_BASE)+offset;
+    bus_size=size;store_value=value;#1;
+    if(soc.compute.hready||soc.compute.hresp)
+      $fatal(1,"PAPER registered request acknowledged before capture");
+    while(!soc.compute.hready) begin
+      if(soc.compute.hresp)error_waits++;
+      @(posedge clk);#1;waits++;
+      if(waits>64)$fatal(1,"PAPER bounded AHB response missing");
+    end
+    if(soc.compute.hresp!==rejected||error_waits!=(rejected?1:0))
+      $fatal(1,"PAPER two-cycle AHB error response differs");
+    if(!writing&&!rejected&&soc.compute.hrdata!==expected)
+      $fatal(1,"PAPER AHB literal read differs");
+    @(posedge clk);#1;@(negedge clk);bus_valid=0;bus_write=0;#1;
+    if(paper_beats!=beats+1||soc.compute.dev_error_pending)
+      $fatal(1,"PAPER terminal AHB response repeated or retained a request");
+  endtask
+  task automatic paper_bridge;
+    integer beats;
+    // Use the actual framebuffer clearing engine, never force controller
+    // state. The hart remains reset only in this independent fabric bench.
+    repeat(327690)@(negedge clk);
+    paper_transfer(0,0,3,0,64'd1280331856);
+    paper_transfer(0,32,3,0,512);
+    paper_transfer(1,2056,3,64'h0123456789abcdef,0);
+    paper_transfer(0,2056,3,0,64'h0123456789abcdef);
+    paper_transfer(0,64,2,0,0,1);
+    paper_transfer(0,24,3,0,0);
+    paper_transfer(1,64,2,7,0,1);
+    paper_transfer(0,24,3,0,1);
+    // Reset between capture and peripheral acknowledgement cancels the
+    // pending write. Its value must never appear in the reset staging bank.
+    beats=paper_beats;
+    @(negedge clk);bus_valid=1;bus_write=1;bus_address=56'(PAPER_BASE)+2056;
+    bus_size=3;store_value=19;#1;
+    if(soc.compute.hready)$fatal(1,"PAPER reset fixture acknowledged before capture");
+    @(posedge clk);#1;@(negedge clk);reset=1;bus_valid=0;bus_write=0;
+    repeat(2)@(posedge clk);
+    @(negedge clk);reset=0;#1;
+    paper_transfer(0,2056,3,0,64'hffffffffffffffff);
+    if(paper_beats!=beats+1)$fatal(1,"PAPER captured write survived global reset");
+    // An abandoned read must not supply data/ready to its replacement.
+    beats=paper_beats;
+    @(negedge clk);bus_valid=1;bus_write=0;bus_address=56'(PAPER_BASE)+2056;bus_size=3;#1;
+    @(posedge clk);#1;
+    if(soc.compute.hready)$fatal(1,"PAPER read cancellation fixture already completed");
+    @(negedge clk);bus_valid=0;@(posedge clk);#1;
+    paper_transfer(0,0,3,0,64'd1280331856);
+    if(paper_beats!=beats+1)$fatal(1,"PAPER abandoned read supplied a terminal response");
+    $display("PAPER registered MMIO AHB error retention single completion reset cancellation PASS");
   endtask
   task automatic read_dma(input logic [2:0] size,input logic [2:0] lane,input logic [63:0] expected);
     @(negedge clk);dma_valid=1;dma_write=0;dma_size=size;dma_addr=FRAME_POOL_BASE+lane;
@@ -224,6 +283,7 @@ module BusLanes;
         endcase
       end
       $display("BUS actual CVW replicated SW QueueNum and MMIO byte/half/word/double lanes PASS");
+      paper_bridge();
     end
     if(!$test$plusargs("arbitration-only")&&!$test$plusargs("error-only")) begin
       read_dma(0,3,64'he3);read_dma(1,2,64'he3f2);read_dma(2,4,64'ha7b6c5d4);
@@ -238,5 +298,5 @@ module BusLanes;
     $display("DMA narrow reads adjacent bytes write strobes ready backpressure CPU resume PASS");
     $finish;
   end
-  initial begin #10000;$fatal(1,"bus lane bench deadline");end
+  initial begin #10000000;$fatal(1,"bus lane bench deadline");end
 endmodule
