@@ -91,6 +91,8 @@ clock-frequency is the actual 100 MHz controller clock. There is no physical
 baud generator, modem, FIFO trigger or electrical UART claim. The QEMU FDT
 retains its actual `ns16550a` identity and 3,686,400 Hz peripheral clock. Unsupported offsets/widths and unmapped accesses
 produce an actual two-cycle AHB error response and architectural access fault.
+The fabric retains a terminal device error and its read data across both AHB
+error cycles; it does not issue the completed device transaction again.
 Reset clears controller requests and IRQ state before new traffic; external
 medium/panel retention is an independently declared model.
 
@@ -128,6 +130,24 @@ existing modern VirtIO MMIO split-ring subset. RTL handles controller state,
 queue execution and bounded DMA. External host models provide only raw input,
 memory/medium bytes and visible panel state driven by controller output. Guest
 Lean remains authoritative for ink, records, recovery and save acknowledgement.
+
+The paper controller captures each MMIO request before decoding it. The master
+holds the request until `ready`; dropping `valid` or applying reset cancels a
+pending request. Reads select the aperture bank or control word, sample it at
+the registered `READ_BANKS` edge, then register the selected bytes and error
+before returning `ready`. That sampled response remains stable through the
+completion. A changing status read therefore describes its sampling edge,
+not a later response cycle. Control writes retain all 64 bits for bounds
+validation; upper bits cannot alias a valid tile or refresh command.
+
+Eight banks hold the 512-byte tile aperture. Accepted uploads isolate their
+staging bytes while a bounded row/pixel cursor drives the framebuffer port.
+The first packed byte is captured at acceptance; subsequent bytes pass through
+registered row, bank and byte selection. Cursor advancement requires a real
+framebuffer handshake, and a stalled pixel remains stable. Refresh acceptance
+and snapshot isolation retain the v1 contract. These internal pipeline stages
+change permitted transaction latency, not guest ink or storage policy.
+
 Synthetic display timings are not qualified physical waveforms. Analog pen,
 panel electrical compatibility, memory controller/macros, pads, packaging,
 RF/radios, fabrication acceptance and full-chip signoff remain unverified.

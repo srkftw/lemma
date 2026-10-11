@@ -33,11 +33,15 @@ The same command with `--layout` requests placement, clock-tree construction,
 global routing and detailed signal routing. `layout.tcl` uses a 10 ns clock
 (the development binding's 100 MHz), 2 ns input/output delays, a declared
 6 fF output load, typical 1.20 V / 25 C cells and public PDK RC values.
-Its timing reports use global-route estimated parasitics after detailed routing,
-not extracted post-route timing. The recipe repairs high-fanout nets and uses
-four CPU threads and three detailed-route refinement iterations. It saves
-global-route geometry, area and timing before that bounded detailed route, so
-a timeout retains the strongest completed stage. It reports actual router
+Its timing reports use global-route estimated parasitics, including the reports
+retained after detailed routing; they are not extracted post-route timing.
+The recipe uses clock sink clusters of at most eight and bounded cell/buffer
+repair after CTS, followed by one incremental repair against the live global
+RC estimate. It retains the clock and I/O constraints throughout. It saves the
+actual global-estimated SPEF, signed six-digit timing reports, geometry and area
+before detailed routing. Four CPU threads and three detailed-route refinement
+iterations bound that stage; a timeout retains the strongest completed stage.
+These repairs do not guarantee timing closure for every circuit. It reports actual router
 violations separately and fails if any remain. Timing and electrical violations
 retain their own results even when the signal-routing recipe completes.
 Power-grid closure and the pad ring are excluded. Optional `--process-checks`
