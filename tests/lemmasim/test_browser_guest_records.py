@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2]
 class BrowserGuestRecords(unittest.TestCase):
     def test_reset_history_partial_and_unrelated_records_cannot_claim_ready(self):
         script=r"""
-import {guestRecord} from './sim/browser/guest_records.js';
+import {guestRecord,guestRecordFields,guestPageReady} from './sim/browser/guest_records.js';
 import assert from 'node:assert/strict';
 const encode=x=>new TextEncoder().encode(x);
 const ready='K1 0000000000000420 0000000000000000 0000000000000000 0000000000000000 0000000000000000\n';
@@ -23,6 +23,23 @@ assert.equal(guestRecord(encode('prefix'+ready),0,'0000000000000420'),false);
 assert.equal(guestRecord(encode(ready.replace('0000000000000000','wrong')),0,'0000000000000420'),false);
 assert.throws(()=>guestRecord(old,old.length+1,'0000000000000420'));
 assert.throws(()=>guestRecord(old,0,'0420'));
+// A main-loop prefix and accepted display work must never report Ready.
+const opened=sequence=>'K1 0000000000000425 '+sequence+' 0000000000000001 0000000000000001 0000000000000000\n';
+const data=encode(ready+opened('0000000000000002'));
+assert.equal(guestPageReady(old,0,{completed:'1',accepted:'1'}),false);
+assert.equal(guestPageReady(data,0,{completed:'0',accepted:'2'}),false);
+assert.equal(guestPageReady(data,0,{completed:'1',accepted:'2'}),false);
+assert.equal(guestPageReady(data,0,{completed:'2',accepted:'2'}),true);
+assert.equal(guestPageReady(data,data.length,{completed:'2',accepted:'2'}),false);
+const adjacent=encode(ready+opened('0000000000000002')+opened('0000000000000003'));
+assert.equal(guestRecordFields(adjacent,0,'0000000000000425')[0],'0000000000000003');
+assert.equal(guestPageReady(adjacent,0,{completed:'2',accepted:'3'}),false);
+assert.equal(guestPageReady(adjacent,0,{completed:'3',accepted:'3'}),true);
+const large=encode(ready+opened('0020000000000001'));
+assert.equal(guestPageReady(large,0,{completed:'9007199254740992',accepted:'9007199254740993'}),false);
+assert.equal(guestPageReady(large,0,{completed:'9007199254740993',accepted:'9007199254740993'}),true);
+assert.throws(()=>guestPageReady(large,0,{completed:9007199254740993,accepted:'9007199254740993'}));
+assert.equal(guestPageReady(encode(ready+opened('0000000000000000')),0,{completed:'0',accepted:'0'}),false);
 """
         run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,
                            capture_output=True,text=True,timeout=15)

@@ -590,11 +590,15 @@ Prepare both genuinely compiled guest workloads, then build the existing RTL
 ./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.3.0 --workload notebook
 ./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
   --wasm-build build/wasm/local-new --output-dir build/browser/local-new
-python3 -m http.server 8765 --bind 127.0.0.1 --directory build/browser/local-new
+./scripts/lemmasim browser-serve --bundle build/browser/local-new --port 8765
 ```
 
 Open [the local bundle](http://127.0.0.1:8765). It needs a browser supporting
-worker OPFS synchronous access. Create a new named medium through the actual
+worker OPFS synchronous access. The loopback server validates packaged
+guest/Wasm identities and serves only inventoried bytes; changed files are
+rejected during serving. Immutable bundles execute independently of newer
+checkout edits. This admission does not establish notebook Ready or acceptance.
+Create a new named medium through the actual
 Lean initializer, or import an existing256MiB raw medium under a new name.
 Open performs cold guest boot; controller output supplies the entire display.
 WebGPU presents those pixels, with a same-byte2D fallback. Mouse pressure is

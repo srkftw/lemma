@@ -1,0 +1,123 @@
+{
+  "schema": "task006-browser-private-pending/1",
+  "status": "BUILT_WITH_SCOPED_OBSERVERS_PENDING_GUEST_QUALIFICATION",
+  "scope": "Portable external submit/poll byte boundary, private suspended fork export/rebind and explicit outcome-tape UI; actual controller-completion Ready observer",
+  "wasm": {
+    "manifest_sha256": "431ca989bd57816531dcaa27d192277b993ea4e18555cc3816c3a4a48b157167",
+    "machine_sha256": "8eb2910ccfd7870367af870b21c88312bc53c858e79fd37e3b561fb01c6799c3",
+    "snapshot_identity": "e160067dad5d9ff8d7e6646b0cc68149c01a91fc29334e5fb0166373e2b08f7e",
+    "build_seconds": 90.00514261901844,
+    "source_inputs": {
+      "sim/browser/wasm_machine.cpp": "2ee78441dd11d96dd34ce3c4efb1c9f423aff9d9784f29a87396eb32fcee198e",
+      "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+      "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+      "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+      "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+      "sim/rtl/host/machine_runtime.cpp": "f5c321d1f64b215e4b0612244a91d1f7d9bc27494ab6c8a0840f7ecb7a786421",
+      "sim/rtl/host/machine_runtime.h": "57f10b70732501854952219edf5a56687ee036b35926b018e90497761dce4f5f",
+      "tooling/silicon/wasm.nix": "a9bdc2c831fc5356acd6299a6bad29f8539bb5afde822ec461780105b41559bf",
+      "scripts/silicon_wasm.py": "cf1b869c11954b4f82f712fcfbf8f459e8b82bcc81702853f53d15bfbc29d6af"
+    }
+  },
+  "guest_bundle": {
+    "path": "build/native/task006-arithmetic-a3",
+    "manifest_sha256": "ffe588f3c33f6efacb94230fd441a7bf8e7fdd80e1ea263fed050b4cc7aa6f7e",
+    "notebook_elf_sha256": "daa11f84b189ad79bc15293fd43a8b3f2eae83ddd3b08ee8dee1b42eef748d48",
+    "initializer_elf_sha256": "32ec25485f3ab6b80a9c05c7ea8de14c38e7f2500eb18c190fe89884ee4a7cf3",
+    "meaning": "Validated unchanged genuine A5 guest closure, not fresh target compilation"
+  },
+  "static_bundle": {
+    "path": "build/browser/task006-arithmetic-a2",
+    "manifest_sha256": "4c83e90ac664e1af0e606a54b2ed3e0c3cdf2ccb02758465506d603e2fa5a1e4"
+  },
+  "observed_initialization": {
+    "status": "ACKNOWLEDGED_GUEST_INITIALIZATION",
+    "scope": "guest initialization, not host formatting",
+    "medium": "/home/sreekumaar/Downloads/lemma/build/native/task006-arithmetic-medium-a3.raw",
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "32ec25485f3ab6b80a9c05c7ea8de14c38e7f2500eb18c190fe89884ee4a7cf3",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "guest_ack": "K1 000000000000041f 0000000000000000 0000000000000000 0000000000000000 0000000000000000",
+    "cycle": 33000002,
+    "elapsed_seconds": 0.985599095991347,
+    "medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+  },
+  "checks": {
+    "ready_observer": "PASS adjacent complete UART records, fresh-open refresh sequence and actual completed/accepted RTL sequence, history/partial/zero/64-bit rejection",
+    "node_syntax": "PASS",
+    "scaffold_metadata": "PASS",
+    "scaffold_suite": "PASS18",
+    "portable_guest_pending": {
+      "status": "FAIL",
+      "scope": "actual RV64 initializer WRITE Pending, observational snapshot, private byte backing and captured applicable same-Wasm suffix",
+      "limits": {
+        "guest_cycles": "30000000",
+        "host_seconds": 600
+      },
+      "identities": {
+        "bundle": "4c83e90ac664e1af0e606a54b2ed3e0c3cdf2ccb02758465506d603e2fa5a1e4",
+        "wasm": "8eb2910ccfd7870367af870b21c88312bc53c858e79fd37e3b561fb01c6799c3",
+        "runtime": "e160067dad5d9ff8d7e6646b0cc68149c01a91fc29334e5fb0166373e2b08f7e",
+        "guest": "32ec25485f3ab6b80a9c05c7ea8de14c38e7f2500eb18c190fe89884ee4a7cf3"
+      },
+      "excluded": [
+        "canonical notebook Ready",
+        "browser OPFS acceptance",
+        "cross-backend microstate migration",
+        "USB or radio conformance",
+        "product ROM boot/update"
+      ],
+      "error": "AssertionError [ERR_ASSERTION]: predeclared 30M guest cycle bound",
+      "hostSeconds": 169.80700521400001,
+      "hostPeakRssBytes": 259207168,
+      "observerSha256": "94b440eac6a516689719c42f9382d24962e4fb5deaf4d6851f04ceccabf2f886"
+    },
+    "local_bundle_server": {
+      "status": "PASS_LOCAL_HTTP_IDENTITIES",
+      "result": "build/browser/task006-serve-a1/result.json",
+      "scope": "Six actual HTTP artifact responses including both guest ELFs and machine.wasm; not guest execution"
+    },
+    "browser_host_suite": {
+      "status": "PASS",
+      "tests": 4,
+      "host_seconds": 0.184,
+      "log": "build/task006-browser-host-a2.log",
+      "properties": [
+        "missing/changed/unlisted/symlink identities",
+        "genuine guest and Wasm output binding",
+        "duplicate/traversal metadata rejection",
+        "loopback HTTP headers and mutation rejection",
+        "fresh guest/controller Ready observation"
+      ]
+    }
+  },
+  "retained_browser_boundary": {
+    "path": "build/browser/task006-cold-boundary-a1/result.json",
+    "status": "NOT_READY_DIAGNOSTIC_BOUNDARY",
+    "cycles": "872350000",
+    "host_seconds": 7290.122899999976,
+    "retired": "492319290",
+    "heap_bytes": 201326592,
+    "snapshot_bytes": 145424350,
+    "snapshot_sha256": "28aa921a1fefc59b5dfa9248736092320a01b141c5a85d4bc31d3f156145a5cc"
+  },
+  "limits": [
+    "The 30M portable initializer run failed before first external WRITE; it does not qualify the new guest Pending boundary. Native suspended-pending private export/rebind has separate actual receipts.",
+    "The older real-browser canonical cold prefix remains unresolved and privately retained, not Ready or Task D acceptance.",
+    "No cross-backend migration, full timing parity, product ROM boot/update, USB/radio completion or physical conformance claimed."
+  ],
+  "commands": [
+    "python3 scripts/lemmasim native-bundle-build --base-bundle build/native/task006-canonical-a1 --notebook-build build/kernel/task006-isolated-arithmetic-notebook-a5 --initializer-build build/kernel/task006-isolated-arithmetic-initialize-a2 --output-dir UNUSED_NATIVE_BUNDLE",
+    "python3 scripts/lemmasim init --native-bundle build/native/task006-arithmetic-a3 --backend qemu --profile lemma-silicon-dev/0.3.0 --disk UNUSED_MEDIUM --session-dir UNUSED_SESSION --timeout 60",
+    "python3 scripts/lemmasim browser-serve --bundle build/browser/task006-arithmetic-a2 --port 8767"
+  ]
+}

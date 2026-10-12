@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
-import {guestRecord} from './guest_records.js';
+import {guestRecord,guestPageReady} from './guest_records.js';
 let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
@@ -31,7 +31,8 @@ function step(){if(!running)return;try{
  if(loops%10===0){panel();const data=core.FS.readFile('/uart.bin');
   if(initializing&&guestRecord(data,guestOutputStart,'000000000000041f')){
    running=false;initializing=false;launchNotebook().catch(e=>postMessage({type:'error',error:String(e)}));return;}
-  if(readyAt===null&&guestRecord(data,guestOutputStart,'0000000000000420'))readyAt={cycle:state().cycle,hostSeconds:(performance.now()-started)/1000};
+  if(readyAt===null&&guestPageReady(data,guestOutputStart,JSON.parse(core.ccall('lemma_paper_inspect','string',[],[]))))
+   readyAt={cycle:state().cycle,hostSeconds:(performance.now()-started)/1000};
   sendState();}
  setTimeout(step,0);
  }catch(e){running=false;postMessage({type:'error',error:String(e)});}}
@@ -75,12 +76,15 @@ async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[]
 async function bindPrivate(){
  // Copy opaque backing bytes, including observed unacknowledged changes.
  // No guest journal is interpreted by this transport.
- const path='/private-'+loops+'.raw';check('lemma_export',['string'],[path]);
- const b=core.FS.readFile(path);core.FS.unlink(path);
- let next;try{next=await openMedium('fork_'+crypto.randomUUID().replaceAll('-',''),true);
-  for(let i=0;i<b.length;i+=1048576)if(next.write(b.subarray(i,i+1048576),{at:i})!==Math.min(1048576,b.length-i))throw Error('Private medium copy failed');
+ const path='/private-'+loops+'.raw';check('lemma_export_private',['string'],[path]);
+ let next,stream;try{next=await openMedium('fork_'+crypto.randomUUID().replaceAll('-',''),true);
+  const size=core.FS.stat(path).size;if(size!==268435456)throw Error('Invalid private backing capacity');
+  stream=core.FS.open(path,'r');const chunk=new Uint8Array(1048576);
+  for(let i=0;i<size;i+=chunk.length){const length=Math.min(chunk.length,size-i);
+   if(core.FS.read(stream,chunk,0,length,i)!==length||next.write(chunk.subarray(0,length),{at:i})!==length)
+    throw Error('Private medium copy failed');}
   next.flush();core.backing=next;check('lemma_rebind_private');const old=handle;handle=next;next=null;backingReady=true;old.close();
- }finally{next?.close();if(!backingReady)core.backing=handle;}
+ }finally{if(stream)core.FS.close(stream);core.FS.unlink(path);next?.close();if(!backingReady)core.backing=handle;}
 }
 async function restore(bytes){
  core.FS.writeFile('/incoming.bin',new Uint8Array(bytes));
@@ -114,6 +118,10 @@ onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage 
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='restore'){running=false;await restore(m.bytes);guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;sendState();panel(true);}
  else if(m.action==='bind'){running=false;if(backingReady)throw Error('Private backing is already bound');await bindPrivate();sendState();}
+ else if(m.action==='outcomes'){running=false;if(!backingReady)throw Error('Private origin backing is incomplete');
+  if(!(m.bytes instanceof ArrayBuffer)||m.bytes.byteLength>268435456)throw Error('Outcome tape exceeds its bound');
+  const path='/inherited-outcomes.io';core.FS.writeFile(path,new Uint8Array(m.bytes));
+  try{check('lemma_backing_outcomes',['string'],[path]);}finally{core.FS.unlink(path);}sendState();}
  else if(m.action==='capture'){running=false;const path=core.ccall('lemma_capture_path','string',[],[]);if(!path)throw Error('This replay instance does not capture live outcomes');
   const b=core.FS.readFile(path);postMessage({type:'export',name:'lemma-backing.io',bytes:b},[b.buffer]);
   const log={schema:'lemmasim-browser-raw-capture/1',events:capture.slice(),checkpoints,until:state().cycle};

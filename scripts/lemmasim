@@ -800,6 +800,8 @@ def main():
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
+    p=sub.add_parser('browser-serve',help='Validate and serve an immutable local browser machine on loopback')
+    p.add_argument('--bundle',type=Path,required=True);p.add_argument('--port',type=int,default=8767)
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
     p.add_argument('--base-bundle',type=Path,help='Validate and retain these immutable backends with freshly audited replacement guests')
@@ -857,6 +859,10 @@ def main():
         if args.command=='browser-build':
             import lemmasim_browser
             (lemmasim_browser.bundle if args.reuse_wasm else lemmasim_browser.build)(args)
+            return 0
+        if args.command=='browser-serve':
+            import lemmasim_browser
+            lemmasim_browser.serve(args)
             return 0
         if args.command=='init' and (args.backend=='rtl' or args.profile in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0')):
             import lemmasim_session

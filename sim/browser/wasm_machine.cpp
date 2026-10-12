@@ -3,6 +3,7 @@
 #include "machine_runtime.h"
 #include "backing_io.h"
 #include "lemma_silicon_binding.h"
+#include "Vlemma_soc___024root.h"
 #include <emscripten.h>
 #include <algorithm>
 #include <memory>
@@ -21,12 +22,35 @@ EM_JS(int, backing_barrier, (), {
  catch(e) { Module.backingError=String(e); Module.backingFailure=e; return ({QuotaExceededError:28,NotAllowedError:13,SecurityError:13,InvalidStateError:9,AbortError:125,NotFoundError:2}[e.name]||5); }
 });
 EM_JS(double, backing_capacity, (), { return Module.backing.getSize(); });
+// Optional external transport. IDs and virtual boundaries cross the JS ABI as
+// decimal strings; offsets/lengths are independently bounded below 2^53.
+EM_JS(int, backing_async_mode, (), {
+ const submit=typeof Module.backing.submit==='function',poll=typeof Module.backing.poll==='function';
+ return submit===poll?(submit?1:0):-1;
+});
+EM_JS(int, backing_submit, (const char* request,const uint8_t* p,unsigned n), {
+ try { Module.backing.submit(JSON.parse(UTF8ToString(request)),HEAPU8.slice(p,p+n));return 0; }
+ catch(e){Module.backingError=String(e);return -1;}
+});
+EM_JS(int, backing_poll, (uint8_t* p,unsigned capacity,uint32_t* metadata), {
+ try {
+  const o=Module.backing.poll();if(o===null||o===undefined)return 0;
+  if(!Number.isSafeInteger(o.transferred)||o.transferred<0||o.transferred>capacity||
+     !Number.isSafeInteger(o.error)||o.error<0||o.error>0xffffffff||
+     !(o.bytes instanceof Uint8Array)||o.bytes.length!==o.transferred)throw Error('Invalid bounded backing outcome');
+  HEAPU8.set(o.bytes,p);HEAPU32[metadata>>>2]=o.transferred;HEAPU32[(metadata>>>2)+1]=o.error;return 1;
+ }catch(e){Module.backingError=String(e);return -1;}
+});
 
 namespace {
 class BrowserBacking final : public lemma::BackingPlatform {
  uint64_t bytes_;
+ bool asynchronous_;
+ std::optional<lemma::BackingRequest> pending_;
 public:
- BrowserBacking():bytes_(backing_capacity()){}
+ BrowserBacking():bytes_(backing_capacity()),asynchronous_(backing_async_mode()==1){
+  if(backing_async_mode()<0)throw std::runtime_error("external backing requires both submit and poll");
+ }
  uint64_t capacity() const override { return bytes_; }
  void passive_read(uint64_t offset,uint8_t* p,uint64_t n) const override {
   if(offset>capacity()||n>capacity()-offset||n>lemma::BACKING_MAX_TRANSFER)
@@ -34,6 +58,7 @@ public:
   if(backing_read(p,n,offset)!=int(n))throw std::runtime_error("browser backing observational read failed");
  }
  lemma::BackingOutcome execute(const lemma::BackingRequest& r) override {
+  if(asynchronous_)throw std::runtime_error("asynchronous backing must use request admission");
   lemma::BackingOutcome o;
   if(r.kind==lemma::BackingKind::Barrier){o.error=backing_barrier();return o;}
   if(r.kind==lemma::BackingKind::Read){o.bytes.resize(r.length);int n=backing_read(o.bytes.data(),r.length,r.offset);
@@ -57,6 +82,25 @@ public:
     throw std::runtime_error("browser write failure has unsupported non-prefix mutation");
   }
   o.bytes.assign(r.bytes.begin(),r.bytes.begin()+o.transferred);return o;
+ }
+ void submit(const lemma::BackingRequest& r) override {
+  if(!asynchronous_){BackingPlatform::submit(r);return;}
+  if(pending_)throw std::runtime_error("external backing already has a pending request");
+  lemma::validate_backing_request(r);pending_=r;
+  auto wire="{\"id\":\""+std::to_string(r.id)+"\",\"boundary\":\""+std::to_string(r.boundary)+
+   "\",\"kind\":"+std::to_string(uint64_t(r.kind))+",\"offset\":"+std::to_string(r.offset)+
+   ",\"length\":"+std::to_string(r.length)+"}";
+  if(backing_submit(wire.c_str(),r.bytes.data(),r.bytes.size()))
+   throw std::runtime_error("external backing submit failed with unknown outcome");
+ }
+ std::optional<lemma::BackingOutcome> poll() override {
+  if(!asynchronous_)return BackingPlatform::poll();
+  if(!pending_)throw std::runtime_error("external backing polled without a request");
+  lemma::BackingOutcome o;o.bytes.resize(pending_->length);uint32_t metadata[2]={0,0};
+  int state=backing_poll(o.bytes.data(),o.bytes.size(),metadata);
+  if(state<0)throw std::runtime_error("external backing completion failed with unknown outcome");
+  if(!state)return std::nullopt;
+  o.transferred=metadata[0];o.error=metadata[1];o.bytes.resize(o.transferred);pending_.reset();return o;
  }
  void apply_recorded(const lemma::BackingRequest&r,const lemma::BackingOutcome&o) override {
   if(r.kind==lemma::BackingKind::Write&&o.transferred){int n=backing_write(o.bytes.data(),o.transferred,r.offset);
@@ -83,12 +127,22 @@ EMSCRIPTEN_KEEPALIVE int lemma_create_mode(unsigned replay){return checked([=]{
 EMSCRIPTEN_KEEPALIVE int lemma_create(){return lemma_create_mode(0);}
 EMSCRIPTEN_KEEPALIVE int lemma_run(unsigned cycles){return checked([=]{if(!machine||cycles>1000000)throw std::runtime_error("invalid bounded browser run");machine->run(cycles);});}
 EMSCRIPTEN_KEEPALIVE const char* lemma_inspect(){if(!machine)return "{}";result=machine->inspect();return result.c_str();}
+// Presentation reads the actual controller's completed sequence. An accepted
+// refresh or a boot UART prefix does not establish displayed-page readiness.
+EMSCRIPTEN_KEEPALIVE const char* lemma_paper_inspect(){if(!machine)return "{}";
+ auto*r=machine->soc().rootp;
+ result="{\"completed\":\""+std::to_string(r->lemma_soc__DOT__paper__DOT__completed)+
+   "\",\"accepted\":\""+std::to_string(machine->soc().panel_sequence)+
+   "\",\"busy\":"+std::to_string(r->lemma_soc__DOT__paper__DOT__busy)+"}";
+ return result.c_str();}
 EMSCRIPTEN_KEEPALIVE int lemma_event(const char*event){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->schedule(lemma::parse_event(event));});}
 EMSCRIPTEN_KEEPALIVE const uint8_t* lemma_pixels(){return machine?machine->state().visible.data():nullptr;}
 EMSCRIPTEN_KEEPALIVE unsigned lemma_pixel_count(){return machine?machine->state().visible.size():0;}
 EMSCRIPTEN_KEEPALIVE int lemma_snapshot(const char*path){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->snapshot(path);});}
 EMSCRIPTEN_KEEPALIVE int lemma_restore(const char*path){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->restore(path);});}
 EMSCRIPTEN_KEEPALIVE int lemma_export(const char*path){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->export_medium(path);});}
+EMSCRIPTEN_KEEPALIVE int lemma_export_private(const char*path){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->export_private_medium(path);});}
+EMSCRIPTEN_KEEPALIVE int lemma_backing_outcomes(const char*path){return checked([=]{if(!machine)throw std::runtime_error("no machine");machine->bind_backing_replay(path);});}
 EMSCRIPTEN_KEEPALIVE int lemma_rebind_private(){return checked([]{if(!machine)throw std::runtime_error("no machine");machine->rebind_private_backing(std::make_shared<BrowserBacking>());});}
 EMSCRIPTEN_KEEPALIVE int lemma_reset(unsigned cold){return checked([=]{if(!machine)throw std::runtime_error("no machine");if(cold)machine->cold_cycle();else machine->warm_reset();});}
 EMSCRIPTEN_KEEPALIVE void lemma_destroy(){machine.reset();}

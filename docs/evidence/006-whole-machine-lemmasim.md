@@ -227,3 +227,36 @@ unqualified. The canonical RTL campaign and changed-source hot-path work are
 still active. See [browser source/tool/observation identities](006-browser-machine.json).
 These results do not fix the QEMU cached-state hole, complete digital radios,
 establish production boot/update or close physical implementation.
+
+`8137ee7` adds durable ordered learner events, explicit uncertain estimates and
+an overridable/disableable review baseline. Actual v1 record migration,
+assisted mathematics, policy changes, independent cold full record/pixels and
+unsuccessful Save passed in `build/task006-review-course-a3/result.json`.
+`cb10b29` connects the same backing interface to QEMU and the actual guest
+Store/notebook. The independent peer persisted barrier transaction78 but lost
+its ACK; no guest Saved acknowledgment followed. Both restarts reconciled that
+same transaction without another peer append, then a new cold CPU recovered
+all objects and complete display. See [the guest receipt](006-companion-guest.json).
+These are separately observed connected guest workflows; they do not implement
+USB or transfer guest document recovery into the peer.
+
+`e312758` adds an immutable native development bundle containing audited
+genuine guest artifacts, complete consumed source closure and identified native/
+QEMU implementations. Actual guest initialization and archived RTL clock0 launch
+passed after newer target edits invalidated ordinary current-source preparation.
+Reusing that guest is explicit archived-source execution, not fresh compilation.
+Pinned external Linux dependencies and unresolved project redistribution terms
+remain visible. See [the package evidence](006-native-bundle.md).
+
+`54763c8` adds the separately linked Arithmetic service and async notebook client.
+Normal A5 checks, edited and unsupported cases, actual OOM/fault isolation, and
+finite-stall cancellation have independent receipts; the original stalled Save
+failure remains retained. This is connected guest mathematics, not proof-kernel
+completion. See [isolated arithmetic](006-isolated-arithmetic.json).
+
+Portable a11 builds the shared private-Pending boundary and an explicit outcome
+tape control. Actual guest qualification failed at its30M-cycle bound before
+first WRITE. The loopback browser launch now validates immutable bundle/guest/
+Wasm identities; six real HTTP responses and four focused host tests passed.
+The retained older browser canonical boundary remains not Ready. See
+[portable backing and local launch](006-browser-private-pending.json).

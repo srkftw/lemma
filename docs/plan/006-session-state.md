@@ -98,7 +98,13 @@ QEMU's RISC-V reservation fields are nevertheless explicitly serialized.
 
 October12 continuation milestones are `aa49491` (captured backing outcomes),
 `e0e325c` (frame cursor/owner accounting), `3704441` (hosted-Lean durable opaque
-peer) and `84c5dcd` (real guest exact mathematics/course/Save/cold recovery).
+peer), `84c5dcd` (real guest exact mathematics/course/Save/cold recovery),
+`5b9fff3` (same-core local RTL/Wasm worker and origin persistence),
+`d34e345` (checked kernel hot paths and packed toolbar),
+`8137ee7` (durable learner events, exact v1 migration and explainable review),
+`cb10b29` (QEMU shared backing and actual guest lost-ACK/cold acceptance),
+`e312758` (immutable native development bundle), and `25e2ab0` (fresh
+Capability validation reuse and canonical audit guard).
 Their separate receipts are linked from the continuation section in the
 [evidence report](../evidence/006-whole-machine-lemmasim.md#october12-implementation-continuation).
 The canonical RTL cold campaign at
@@ -109,9 +115,42 @@ It measures actual supervisor allocation validation and later guest toolbar
 construction; it has not yet qualified Ready or a complete display.
 Root's local browser a1 is paused at62.1M cycles in an isolated OPFS fork after
 actual initializer/cold-prefix execution and exact8.15M-cycle continuation.
-No browser Ready or complete product claim follows. The next joint target
-build must include the current mathematical save-copy correction and measured
-kernel/surface optimizations; preserve every old image, source closure and FAIL.
+No browser Ready or complete product claim follows. The joint changed-algorithm
+image `b79b020d` passed strict audit and is running in
+`build/silicon/task006-hotpath-canonical-a1/` with native `44442fc1`.
+The allocator-only campaign ended FAIL at1.681B cycles/7204.94s; the joint
+algorithm campaign ended FAIL at1.383B cycles/7202.55s with1,722,368 upload
+writes after reset clearing. Neither reached Ready. Both failures and final
+in-flight checkpoints are retained. Guarded owned-arena acceptance subsequently
+passed with its own actual guest/cold/failure receipt. The newer A4 canonical
+campaign remains separate; the optimized literal/guarded-wrapper build has
+not yet established performance acceptance.
+
+- Real companion guest acceptance `build/task006-companion-guest-a3/result.json`:
+  **PASS**,235.011s host, guest `b79b020d`, QEMU `2874932d`. Raw ink and guest
+  Store saves reach the independent hosted-Lean peer. Barrier transaction78
+  persisted while its ACK was lost; the guest did not report Saved, and an
+  ambiguous snapshot rejected. Both restarted; the same outbox transaction
+  reconciled without appending another peer record. An independent cold CPU
+  recovered every object and the complete1650×2200 display at sequence12.
+  The earlier clean-Save fault selector and slow passive-export failures remain
+  retained. This development transport is beneath the real block controller;
+  USB enumeration and a target companion service remain absent. See
+  [the receipt](../evidence/006-companion-guest.json).
+- Real review/course acceptance `build/task006-review-course-a3/result.json`:
+  **PASS**,182.38s host/maxRSS285552KiB. Actual v1→v2 record migration,
+  assistance, manual/disabled/automatic policy, independent cold1856-byte
+  record/full pixels and failed FLUSH/no Saved passed. The estimate remains
+  explicitly uncertain; no learning gain, live tutor or proof-kernel claim.
+- Immutable package `build/native/task006-canonical-a1/`:587 files,
+  44734902 bytes, manifest SHA256
+  `e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f`.
+  Its archived genuine guest and exact backend/tool/source closure validate
+  after current target sources change. A real initializer acknowledged at
+  30000001 fast counts/1.049s host, and archived RTL launched at clock0.
+  This is local development packaging with external pinned Linux libraries,
+  not production boot or a standalone redistributable installer. See
+  [the bundle evidence](../evidence/006-native-bundle.md).
 
 - Final canonical power workflow `build/l6-power-final-a1/result.json`: **PASS**,
   133.37s, fresh Loader notebook on final927. Busy rejection, held-contact suspend,
@@ -166,12 +205,20 @@ and manual physical tablet checks remain unfinished.
 
 Continue canonical RTL kernel/memory/IPC performance and whole-profile timing,
 CSR and paper warm-state mapping, plus fast cached-translation checkpoint coverage;
-then production boot/update and a real bounded
-Lean companion controller/protocol with an independently durable peer. No companion
-command exists. Unexpected live backing-I/O fault decisions are not all recorded
-for replay. USB enumeration, Wi-Fi6/BT5.4 digital MAC/baseband/PHY, electrical
-power/watchdog/brownout, local Wasm worker/browser barriers, G2 managed runtime
-and G5–G7 mathematics/courses/learner/tutor are required unfinished work.
+then production boot/update and a real bounded target companion controller and
+USB protocol. `scripts/lemmasim companion` now builds/initializes/serves a durable
+hosted-Lean opaque peer, and ordinary guest Store/Save/cold workflows use it.
+Nonblocking peer transport and accepted completion-boundary capture have
+separate actual receipts. Native Pending snapshots suspend isolated forks until
+an identity-checked captured outcome tape is bound; they never resubmit an
+external action. Browser guest Pending qualification remains unfinished. Native
+and browser ports share the backing boundary, including actual partial-change
+and barrier failures; QEMU arbitrary cached-state continuation remains open.
+USB enumeration, Wi-Fi6/BT5.4 digital MAC/baseband/PHY, electrical power/watchdog/
+brownout, complete browser Ready/Save/courses, G2 managed-language lowering,
+isolated verifier/proof kernel, installable packages and permissioned tutor
+remain required work. Exact guest arithmetic, durable reference course and
+uncertain explainable review are actual connected partial increments.
 
 [Physical evidence](../evidence/006-controller-physical.md) is separate: full pen
 mapping passes, actual OpenROAD assertion is reproduced and WNS_PATH repair
@@ -180,3 +227,37 @@ FAIL. Paper timeout and SG13G2 LEF58 enclosure/CUTCLASS coverage remain unresolv
 Process DRC/LVS, routed extraction/post-route timing, large memories, compute/full
 SoC, pads/analog/RF and physical panel qualification are not closed. Power-v1
 physical flow is NOT_RUN. Do not rerun unchanged blocked flows for report updates.
+
+## October12 isolated arithmetic and portable backing continuation
+
+`54763c8` integrates a separately linked, receive-only Arithmetic process with
+revision-bound exact course checking. The corrected A5 normal scenario and
+finite-stall cancellation scenario passed actual guest Save and independent
+cold complete records/pixels; the earlier outstanding-IPC Save failure remains
+retained. See [the isolated receipt](../evidence/006-isolated-arithmetic.json).
+This is a bounded scalar/owned-arena service, not the finished managed language
+or proof kernel. Ordinary managed-record lowering has separately reached
+genuine elaboration and LLVM objects; RV64 service integration is pending.
+
+Native suspended external operations now have observational snapshots and
+isolated captured-outcome continuation; the original peer can be stopped before
+replay. Private export/rebind accepts only an isolated fork and validates every
+opaque byte. These exact same-backend receipts are distinct from the QEMU
+cached-translation hole. See [pending continuation](../evidence/006-native-pending-checkpoint.json)
+and [private rebind](../evidence/006-native-pending-rebind.json).
+
+The portable adapter now exposes submit/poll and private Pending-fork rebind,
+and the browser has explicit outcome-tape loading. Wasm a11 built in90.005s.
+The actual guest initializer qualification hit its predeclared30M-cycle limit
+before first WRITE and remains **FAIL**; no portable Pending or browser Ready
+claim follows. The older real-browser cold prefix is paused at872.35M cycles
+with a145424350-byte privately retained checkpoint, still **NOT_READY**. The
+new `browser-serve` command validates immutable source-bound bundles and serves
+only their artifacts on loopback. Actual HTTP delivery and four focused host
+checks passed. [Exact identities and commands](../evidence/006-browser-private-pending.json).
+
+The optimized canonical guest build is active with independently audited closed
+literals and complete guarded primitive wrappers; performance acceptance has
+not passed. Power-v2 safety and BLE packet circuitry have separate changed-source
+qualifications in progress. Do not infer their guest/profile/distribution results
+from library or literal-controller tests.

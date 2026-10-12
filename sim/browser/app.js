@@ -21,6 +21,7 @@ document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>send(b.datas
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#warm').onclick=()=>send('reset',{cold:false});document.querySelector('#cold').onclick=()=>send('reset',{cold:true});
 document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
+document.querySelector('#pending-outcomes').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
 document.querySelector('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,bytes},[bytes]);};
 document.querySelector('#replay').onclick=async()=>{try{
  const c=document.querySelector('#replay-checkpoint').files[0],io=document.querySelector('#replay-io').files[0],raw=document.querySelector('#replay-events').files[0];
