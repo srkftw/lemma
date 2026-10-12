@@ -147,8 +147,10 @@ Lean. Host transport/presentation must not implement guest ink, journals,
 recovery or mathematical authority. Synthetic panel sequencing is digital
 evidence, not physical panel conformance. Report each unfinished subsystem.
 
-Publish a draft PR against current main; do not merge or inherit prior merge
-authorization. Preserve historical profiles/results, durable formats, USGCE,
+The original assignment required a draft PR. The owner subsequently authorized
+merging Task006 PR8 in this session after the applicable checks pass. This is
+Task006 authorization only; preserve the task branch and repository settings.
+Preserve historical profiles/results, durable formats, USGCE,
 repository settings and unrelated branches. Same-backend exact checkpoints
 must retain in-flight work and restore into isolated durable forks. They are
 not cold recovery or QEMU/RTL microstate migration. The canonical-resolution

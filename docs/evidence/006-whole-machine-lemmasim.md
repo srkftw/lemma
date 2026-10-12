@@ -1,6 +1,6 @@
 # Task006 observed implementation increment
 
-Branch `task/006-whole-machine-lemmasim`, draft [PR8](https://github.com/srkftw/lemma/pull/8),
+Branch `task/006-whole-machine-lemmasim`, [PR8](https://github.com/srkftw/lemma/pull/8),
 based on main `abd9920d54df04ce52da9386170e99012c39bdfb`.
 **The whole-machine destination remains unfinished.** The
 [checkpoint](../plan/006-session-state.md), [capability inventory](../plan/LEMMASIM.md#task006-capability-inventory)
@@ -159,5 +159,19 @@ python3 conformance/lemmasim/check_counter_state.py --output-dir build/counters-
 python3 conformance/lemmasim/check_warm_pen_state.py --output-dir build/warm-pen-new
 ```
 
-No merge is authorized. Candidate CI is observed separately from historical/main
-passes; a timeout, absent result or unfinished physical step remains exactly that.
+The owner subsequently authorized merging PR8 after applicable checks pass.
+Candidate9812a22 [CI38245370738](https://github.com/srkftw/lemma/actions/runs/38245370738)
+passed nine target/RTL jobs and failed the metadata job's three stale foundation
+workflow assertions. The repair accounts for every logged pipeline in the new
+multi-command Lean block and preserves explicit pipefail/timeout requirements;
+the exact literal-device expectation becomes eight commands/four binaries and
+includes the new power lane. The actual workflow, guest/RTL implementation and
+historical observations are unchanged. Repaired-candidate CI is separate from
+historical/main passes; a timeout, absent result or unfinished physical step
+remains exactly that.
+Final local repair checks passed 13 focused and 456 foundation host tests,
+21.323s for the latter, on test source SHA256
+`0950dff309a3f26190c4177eb1cb65a3896c019aa59fc882479e6ff19dd67b24`;
+the command/log/result record is `build/task006-merge-ci-repair-a2/`.
+Metadata and18 scaffold tests also passed. No historical guest/physical rerun
+was needed for this host-test/documentation repair.

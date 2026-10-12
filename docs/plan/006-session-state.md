@@ -1,7 +1,8 @@
 # Task006 checkpoint
 
 Task006 remains a substantial partial increment, not a completed Lemma One.
-Resume `task/006-whole-machine-lemmasim`; publish draft PR8, never merge.
+Resume `task/006-whole-machine-lemmasim`; the owner subsequently authorized
+merging PR8 after applicable checks pass. Preserve the task branch.
 The [assignment](../../codex/prompts/006-whole-machine-lemmasim.md),
 [capability inventory](LEMMASIM.md#task006-capability-inventory) and
 [evidence](../evidence/006-whole-machine-lemmasim.md) retain the entire destination.
@@ -14,7 +15,18 @@ Main was fetched once at `abd9920d54df04ce52da9386170e99012c39bdfb`, tree
 closed the historical specification dependency. Main CI38200671355 passed;
 it is not candidate CI. The prior candidate CI38218707989 failed the obsolete
 literal-device artifact shape; `84058ad` repairs that gate to the actually
-executed banked-pen/panel outputs. Final candidate CI is a separate observation.
+executed banked-pen/panel outputs. Candidate9812a22 CI38245370738 then passed
+all nine target/RTL jobs, but failed three foundation workflow assertions:
+the expected logs omitted new Lean/power pipelines, the observer inspected only
+the first pipeline in a multi-command block, and literal-device counts still
+expected four commands/two binaries instead of the actual eight/four. The
+workflow and actual target/RTL observations are unchanged by the ensuing
+host-regression repair. The failed run remains
+[retained CI](https://github.com/srkftw/lemma/actions/runs/38245370738);
+the repaired candidate requires its own CI result before merge.
+The final pinned repair check passed 13 focused and 456 foundation host tests
+(`build/task006-merge-ci-repair-a2/`); metadata and all18 scaffold tests also passed.
+No guest, controller, workflow or physical input changed for this repair.
 
 Historical implementation `9946e7ef` introduced persistent QEMU/RTL sessions,
 exact backend-private checkpoints, isolated durable forks, native controller

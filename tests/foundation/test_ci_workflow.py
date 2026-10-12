@@ -28,7 +28,21 @@ def job_block(source: str, job: str) -> str:
 
 def logged_blocks(source: str) -> list[str]:
     blocks = re.findall(r"run: \|\n((?: {10}.*(?:\n|$))+)", source)
-    return [block for block in blocks if "| tee " in block]
+    return [block for block in blocks if re.search(r"\|\s*tee\b", block)]
+
+
+def logged_pipeline_names(source: str) -> list[str]:
+    """Check each logged run, including every pipeline in a multi-command run."""
+    names = []
+    for block in logged_blocks(source):
+        commands = [line.strip() for line in block.splitlines() if line.strip()]
+        if commands[0] != "set -euo pipefail":
+            raise ValueError("logged run lacks explicit fail-closed shell options")
+        paths = re.findall(r"\| tee build/ci/([^\s]+)", block)
+        if len(paths) != len(re.findall(r"\|\s*tee\b", block)):
+            raise ValueError("logged pipeline lacks its retained CI log path")
+        names.extend(paths)
+    return names
 
 
 class CiWorkflowTests(unittest.TestCase):
@@ -102,7 +116,10 @@ class CiWorkflowTests(unittest.TestCase):
             "lemmasim-writing-rv64": ("lemmasim-host-build.log", "lemmasim-writing.log"),
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
-                         "metadata/foundation-host-unittest.log", "metadata/kernel-host-unittest.log",
+                         "metadata/foundation-host-unittest.log", "metadata/user-copy-scans.log",
+                         "metadata/loader-copy.log", "metadata/power-authority.log",
+                         "metadata/power-object-budget.log", "metadata/power-compiler.log",
+                         "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
             "legacy-rv64": ("legacy-rv64.log",),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
@@ -111,16 +128,27 @@ class CiWorkflowTests(unittest.TestCase):
             "kernel-rv64": ("kernel-rv64.log",),
             "kernel-source-negatives-rv64": ("kernel-source-negatives-rv64.log",),
             "kernel-architecture-rv64": ("kernel-architecture-rv64.log",),
-            "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log"),
+            "silicon-devices-rtl": ("silicon-devices-rtl.log", "silicon-bus-lanes-rtl.log",
+                                    "silicon-power-rtl.log"),
         }
         for job, names in expected.items():
             with self.subTest(job=job):
-                blocks = logged_blocks(self.blocks[job])
-                self.assertEqual([re.findall(r"\| tee build/ci/([^\s]+)", block)[0] for block in blocks], list(names))
-                for block in blocks:
-                    commands = [line.strip() for line in block.splitlines() if line.strip()]
-                    self.assertEqual(commands[0], "set -euo pipefail")
-                    self.assertEqual(block.count("| tee "), 1)
+                self.assertEqual(logged_pipeline_names(self.blocks[job]), list(names))
+
+    def test_logged_pipeline_scan_covers_later_commands_and_rejects_unretained_logs(self):
+        source = """        run: |
+          set -euo pipefail
+          first 2>&1 | tee build/ci/first.log
+          second 2>&1 | tee build/ci/second.log
+        run: |
+          set -euo pipefail
+          third 2>&1 | tee build/ci/third.log
+"""
+        self.assertEqual(logged_pipeline_names(source), ["first.log", "second.log", "third.log"])
+        with self.assertRaises(ValueError):
+            logged_pipeline_names(source.replace("set -euo pipefail", "set -eu", 1))
+        with self.assertRaises(ValueError):
+            logged_pipeline_names(source.replace("build/ci/second.log", "unretained.log"))
 
     def test_lemmasim_lane_builds_pinned_host_and_checks_real_cold_guest_ink(self):
         lane = self.blocks['lemmasim-writing-rv64']
@@ -145,10 +173,28 @@ class CiWorkflowTests(unittest.TestCase):
                          'python3 scripts/check_silicon.py --lane devices',
                          '--work-dir build/silicon/ci-devices --timeout 600 --jobs 2',
                          "value['source_commit'] != head", "value['observations'] != expected",
-                         "len(value['commands']) != 4", "value['source_inputs'].items()",
-                         "conformance/silicon/BlockProtocol.sv", "len(value['compiled_binaries']) != 2",
+                         "len(value['commands']) != 8", "value['source_inputs'].items()",
+                         "conformance/silicon/BlockProtocol.sv", "len(value['compiled_binaries']) != 4",
+                         'PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
+                         'PEN-BANKS refill backpressure reset cancellation and watchdog head PASS',
+                         'PAPER-SEQUENCER immutable 3-phase row/source clocks backpressure powerdown PASS',
+                         'PAPER-SEQUENCER invalid mode reset retained panel and scan error abort PASS',
+                         'conformance/silicon/PenBanks.sv', 'conformance/silicon/PaperSequencer.sv',
+                         "((0, 'Devices'), (2, 'BlockProtocol'), (4, 'PenBanks'), (6, 'PaperSequencer'))",
                          "command['log_sha256']", "command['exit_code'] != 0",
-                         'if: ${{ always() }}', 'if-no-files-found: error'):
+                         'if: ${{ always() }}', 'if-no-files-found: error',
+                         'python3 scripts/check_silicon.py --lane power',
+                         '--work-dir build/silicon/ci-power --timeout 240 --jobs 2',
+                         'timeout --foreground --signal=TERM --kill-after=30s 5m',
+                         "power['lane'] != 'power' or power['source_commit'] != head",
+                         'POWER six independent BUSY sources malformed MMIO no false completion PASS',
+                         'POWER raw edge guest decision exact cancel wake and W1C precedence PASS',
+                         'POWER warm held-button epoch retention and cold control reset PASS',
+                         'sim/rtl/lemma_power.sv', 'conformance/silicon/PowerControl.sv',
+                         'sim/profiles/lemma-silicon-dev-0.3.0.json',
+                         "len(power['commands']) != 2", "for command in power['commands']:",
+                         "command['log_sha256']", "power['compiled_binary_sha256']",
+                         "power['generated_binding_sha256']"):
             self.assertIn(required, lane)
         self.assertNotIn('continue-on-error', lane)
 
