@@ -106,7 +106,10 @@ have separate results. Reuse artifacts only after validating their exact consume
 source/tool identities; distinguish literal RTL tests, real guest execution and
 physical-flow results. No managed-runtime rewrite, radio, browser rewrite,
 fabrication submission, paid infrastructure, supplier outreach or proprietary
-closure. Publish one draft PR against main; do not merge. USGCE is untouched.
+closure. The original assignment required a draft PR. The owner subsequently
+authorized finishing and a guarded Task 005 merge in this session after relevant
+verification and applicable CI pass. Preserve task branches and repository
+settings. This does not authorize future merges. USGCE is untouched.
 
 Task 005 acceptance uses short source-bound RTL workloads and independent
 observations. The registered controller at a760e5f/2b6ede4 has closed A/B/C,

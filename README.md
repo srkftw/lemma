@@ -363,9 +363,10 @@ The native notebook from Task 004 is merged in
 above. Task 005 now uses `task/005-open-silicon-bringup` for the open RV64
 RTL development backend, under the separate
 [silicon binding](docs/contracts/005-silicon-dev-0.1.0.md) and
-[checkpoint](docs/plan/005-session-state.md). Task 005 has a draft/review
-boundary and no merge authorization. The native QEMU notebook remains the
-default backend.
+[checkpoint](docs/plan/005-session-state.md). The original Task 005 assignment
+required a draft PR; the owner subsequently authorized finishing and a guarded
+merge after verification and applicable CI pass. The native QEMU notebook
+remains the default backend.
 The Task003 A–K implementation is
 `14cc79be8914a349b729347cc05091aba6ac7ca7`, subsequently merged through
 [PR #3](https://github.com/srkftw/lemma/pull/3). Task004 started from reviewed
