@@ -3412,6 +3412,11 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Applications.Notebook.pumpSave': ('user',6,[],['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'],[1,2,3,4,6]),
     'Lemma.Ink.Surface.glyph': ('user',9,['u64'],[],list(range(9))),
     'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
+    # Original course presentation is genuinely compiled scalar Lean. These
+    # exact pure owners/domains gain no memory, syscall or checker authority.
+    'Lemma.Courses.Arithmetic.character': ('user',19,['u64','u64'],[],list(range(19))),
+    'Lemma.Courses.Arithmetic.answerCharacter': ('user',25,['u64','u64'],[],[2,3,7,8,13,14,19,20,25,26]),
+    'Lemma.Courses.Arithmetic.panelCharacter': ('user',8,['u64']*5,[],list(range(8))),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
@@ -3421,6 +3426,9 @@ LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Applications.Notebook.pumpSave': {'notebook'},
     'Lemma.Ink.Surface.glyph': {'notebook'},
     'Lemma.Applications.Notebook.statusCharacter': {'notebook'},
+    'Lemma.Courses.Arithmetic.character': {'notebook'},
+    'Lemma.Courses.Arithmetic.answerCharacter': {'notebook'},
+    'Lemma.Courses.Arithmetic.panelCharacter': {'notebook'},
 }
 
 
@@ -3659,10 +3667,20 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     jump=jumps[0]
     reload = None
     literal = None
+    mask = None
     if jump==use+5:
         intervening=code[use+4]
         if intervening[0]=='li' and intervening[1][0]!=target:
             pass
+        elif (source=='Lemma.Courses.Arithmetic.panelCharacter'
+              and configuration in LEMMASIM_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and count==8 and minimum==0 and index==scaled==address=='a0' and base==target=='a5'
+              and code[:2]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)'])]
+              and intervening==('andi',['a0','a4','7'])):
+            # Only the course's pure row switch hoists its admitted display
+            # outcome mask here. The loaded a5 target remains untouched.
+            mask={'instruction':'andi a0,a4,7','value_register':'a0',
+                  'preserved_target_register':'a5'}
         elif (source=='Lemma.Services.Buffer.Server.existing' and configuration in SERVICE_CONFIGURATIONS and image_key=='server'
               and count==5 and minimum==2 and index==scaled==address==target=='a0' and base=='a2'
               and code[0]==('addi',['sp','sp','-112']) and intervening==('ld',['a2','112(sp)'])
@@ -3749,6 +3767,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
+                **({'target_preserving_mask':mask} if mask is not None else {}),
                 **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 
 

@@ -1,0 +1,109 @@
+{
+  "schema": "lemma-task006-exact-course-evidence/1",
+  "status": "PASS",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "source_commit_at_build": "e0e325c31ee1b28833dbbdabd29df578766ba7f7",
+  "source_input_inventory_sha256": "5c05a70dac9067f5677fbd078cea34ee1b9428e6d5bff66517d53ebc2dc5a5b5",
+  "guest_elf_sha256": "e85e8b1c55844b74419b77dbfdcec02893e13ceb4f7b5a1567ffeb973efafb69",
+  "configuration": "lemmasim-silicon-power-notebook",
+  "tool_versions": {
+    "lean": "4.34.1",
+    "llvm": "20.1.8",
+    "qemu": "11.1.1"
+  },
+  "fast_identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5",
+    "adapter": "lemmasim-fast-adapter/2",
+    "derivation": "c7d25f546472939858a4572d46a1f726895c148d49669dd0b494f290bd765361",
+    "guest": "e85e8b1c55844b74419b77dbfdcec02893e13ceb4f7b5a1567ffeb973efafb69",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "result_path": "build/task006-math-course-a4/result.json",
+  "result_sha256": "930ef3c4f224b90f4bd251f6914e8317ae23df72d29ed5abd375db5425e7e156",
+  "prefix": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/task006-math-course-a3",
+    "result_sha256": "572c86d8b9ad93136fe1ef7f2225c9f107165406e0a6371b5281356df3af5731",
+    "original_status": "FAIL",
+    "original_failure": "closing course lost original full ink display",
+    "independent_correction": "Actual original panel still showed PENDING; actual closed panel shows SAVED. All pixels outside the status text and all raw ink bytes match exactly. Verified/unsupported pixels and all immutable mathematical history are independently rechecked."
+  },
+  "cold_boot": {
+    "virtual_seconds": 12.050000008,
+    "host_seconds": 16.606683149002492,
+    "cycle": 1205000001
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "actual_new_cpu": true,
+    "math_sha256": "a9593aa979039cafd0f2af9f872c939ee3c1a0d2c5c5fb3716c6d5fd5dbdd5ed",
+    "complete_controller_pixels": true,
+    "raw_ink_preserved": true
+  },
+  "failed_save": {
+    "status": "PASS",
+    "no_false_saved": true,
+    "acknowledged_math_unchanged": true
+  },
+  "resources_suffix": {
+    "status": "PASS",
+    "exit_code": 0,
+    "host_seconds": 42.99573727598181,
+    "descendant_max_rss_kib": 285860,
+    "user_seconds": 37.645049,
+    "system_seconds": 8.145417,
+    "input_blocks": 96,
+    "output_blocks": 2685864
+  },
+  "resources_real_course_prefix": {
+    "status": "FAIL",
+    "exit_code": 1,
+    "host_seconds": 155.13979233597638,
+    "descendant_max_rss_kib": 285716,
+    "user_seconds": 132.484608,
+    "system_seconds": 27.996882,
+    "input_blocks": 1064,
+    "output_blocks": 2709440
+  },
+  "observed_history_outcomes": [
+    1,
+    2,
+    5,
+    1,
+    4
+  ],
+  "max_ui_virtual_seconds": 10.17000001,
+  "max_ui_host_seconds": 44.338672888989095,
+  "commands": [
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExactMath.lean",
+    "nix develop --no-write-lock-file --command python3 scripts/build_kernel.py --configuration lemmasim-silicon-power-notebook --stage supervisor --opt-level O2 --output-dir build/kernel/task006-math-course-copy-a1 --timeout 300",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/task006-math-course-copy-a1",
+    "python3 scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook --guest-build build/kernel/task006-math-course-copy-a1",
+    "python3 scripts/check_math_session.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-math-course-a3 --deadline 2400",
+    "python3 scripts/check_math_session.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-math-course-a4 --durable-suffix-from build/task006-math-course-a3 --deadline 2400"
+  ],
+  "original_failures": [
+    {
+      "path": "build/task006-math-course-a1/result.json",
+      "defect": "Guest passed832-byte record to512-byte transport copy; Notebook exited220 before first math save. Dedicated aligned104-word copy fixed."
+    },
+    {
+      "path": "build/task006-math-course-a2/result.json",
+      "defect": "Observer sampled transient device idle before guest upload queue drained; baseline pixels unchanged."
+    },
+    {
+      "path": "build/task006-math-course-a3/result.json",
+      "defect": "Original raw-ink baseline still showed PENDING; closed display showed SAVED. New source-bound suffix independently requires both exact glyphs and all outside-status pixels/ink bytes equal."
+    }
+  ],
+  "limits": [
+    "Exact bounded arithmetic is application-local scalar Lean, not managed runtime or isolated verifier/proof kernel.",
+    "Original compiled course is not general package installation or permissioned tutor transport.",
+    "Fast target cycles are QEMU instruction counting; no exact RTL pipeline timing parity claim.",
+    "No exact checkpoint continuation, canonical RTL cold Ready, Wasm whole-course execution or physical qualification established by this run."
+  ]
+}

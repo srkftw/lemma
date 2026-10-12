@@ -185,6 +185,10 @@ def check(disk: Path, input_file: Path, manifest_file: Path, device_file: Path,
         if len(data) < 64:
             raise ValueError('short document header')
         fields = struct.unpack_from('<8Q', data)
+        from math_oracle import MAGIC as MATH_MAGIC, inspect as inspect_math
+        if fields[0] == MATH_MAGIC:
+            inspect_math(data, namespace, object_id)
+            continue
         if fields[0] != MAGIC or (fields[1] != 1 and not (fields[1] == 2 and fields[2] == 2)):
             raise ValueError('unknown document format')
         if fields[2] == 1:

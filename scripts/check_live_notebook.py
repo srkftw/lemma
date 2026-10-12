@@ -52,6 +52,10 @@ def observe_workflow(medium, raw_output, serial, panel, stream, expected):
     for (namespace, object_id), record in records.items():
         require(record.kind == 1 and len(record.payload) >= 64, 'unexpected record kind/length')
         fields = struct.unpack_from('<8Q', record.payload)
+        from math_oracle import MAGIC as MATH_MAGIC, inspect as inspect_math
+        if fields[0] == MATH_MAGIC:
+            inspect_math(record.payload, namespace, object_id)
+            continue
         require(fields[0] == MAGIC, 'unknown document envelope')
         if fields[2] == 1:
             require(fields[1] == 1 and object_id == 1 and len(record.payload) == 64,

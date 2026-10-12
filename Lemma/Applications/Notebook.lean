@@ -3,6 +3,7 @@ import Lemma.Ink.Rasterizer
 import Lemma.Documents.Ink
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
+import Lemma.Courses.Arithmetic
 
 /-! Capability-isolated pen notebook. Pixels, input interpretation, raw ink,
 page/edit records and save publication execute in compiled User Lean. Two
@@ -27,6 +28,8 @@ def ink1 : UInt64 := 0x308000
 def pageIndex : UInt64 := 0x310000
 def loadedInk : UInt64 := 0x318000
 def rootBuffer : UInt64 := 0x320000
+def mathematics : UInt64 := 0x329000
+def mathematicsSave : UInt64 := 0x32a000
 -- Root records use the first64 bytes of their page. The remaining bounded
 -- bitmap and a separate owned queue coalesce at most16384 controller tiles.
 def dirtyBitmap : UInt64 := rootBuffer + 512
@@ -137,18 +140,26 @@ def statusCharacter (save index ns page brush : UInt64) : UInt64 :=
     if index = 15 then 48 + page % 10 else if index = 17 then 87 else
     if index = 18 then 48 + brush / 256 else 32
 
-/-- Square3-pixel glyphs in12-pixel cells, inside240×16 owned pixels. -/
+/-- The additive COURSE label is a bounded scalar presentation literal. Keep
+the historical footer's audited sparse switch unchanged. -/
+def courseCharacter (index : UInt64) : UInt64 :=
+  if 22 ≤ index then
+    if index < 28 then (0x455352554f43 >>> ((index - 22) * 8)) &&& 255 else 32
+  else 32
+
+/-- Square3-pixel glyphs in12-pixel cells, inside336×16 owned pixels. -/
 def statusPixel (x y ns page save brush : UInt64) : UInt64 :=
-  if x < 240 then if y < 15 then
+  if x < 336 then if y < 15 then
   let withinCell := x % 12
   if withinCell < 9 then
-    let code := statusCharacter save (x / 12) ns page brush
+    let index := x / 12
+    let code := if 22 ≤ index then courseCharacter index else statusCharacter save index ns page brush
     if (Surface.letter code >>> (14 - (y / 3 * 3 + withinCell / 3))) &&& 1 = 1 then 0 else 15
   else 15 else 15 else 15
 
 private def statusStep (i _ : UInt32) (acc ns page save dimensions : UInt64) : Action :=
-  let x := (i.toUInt64 % 120) * 2
-  let y := i.toUInt64 / 120
+  let x := (i.toUInt64 % 168) * 2
+  let y := i.toUInt64 / 168
   let brush := dimensions &&& 0xffff
   let width := dimensions >>> 16
   let packed := (statusPixel x y ns page save brush <<< 4) ||| statusPixel (x + 1) y ns page save brush
@@ -160,7 +171,7 @@ private def statusBar : Action :=
   .bind (get 136) fun s save => if statusFailed s = true then .done s 0 else
   .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 1920 statusStep 1920 0 ns page save (brush ||| (width <<< 16)) fun s _ => .done s 0
+  .boundedFoldU64 2688 statusStep 2688 0 ns page save (brush ||| (width <<< 16)) fun s _ => .done s 0
 
 private def dirty (x0 y0 x1 y1 : UInt64) : Action :=
   .bind (get 336) fun s oldX => if statusFailed s = true then .done s 0 else
@@ -388,6 +399,7 @@ private def redraw : Action :=
   dirty 0 0 width height
 
 private def loadPage (page : UInt64) : Action :=
+  .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (readObject (0x100 + page) loadedInk 128) fun s _ =>
   .bind (if s = 230 then Lemma.Documents.Ink.emptyPage pageIndex page else if s = 0 then
     .bind (Lemma.Documents.Ink.pageRecordBytes loadedInk) fun s bytes => if statusFailed s = true then .done s 0 else
@@ -448,8 +460,8 @@ private def publishStatus : Action :=
   .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 9 statusTileStep 9 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
-  if statusFailed s = true then .done s 0 else dirty 0 128 288 160
+  .boundedFoldU64 12 statusTileStep 12 0 surface (width ||| (height <<< 16)) 0 0 fun s _ =>
+  if statusFailed s = true then .done s 0 else dirty 0 128 384 160
 
 private def issue (operation offset count source : UInt64) : Action :=
   .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
@@ -514,6 +526,13 @@ private def finishRecord : Action :=
     .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Ink.root rootBuffer pages brush) fun s _ => if statusFailed s = true then .done s 0 else
     startSave rootBuffer 64 1 2
+  else if stage = 3 then
+    .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+    .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 136 (if rawCount = 0 then 0 else 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
+    .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
+    .bind (reportCommitState 0x421 sequence object) fun s _ => if statusFailed s = true then .done s 0 else publishStatus
   else if stage = 2 then
     .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
     .bind (put 160 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -601,6 +620,82 @@ private def pumpSave : Action :=
     if statusFailed s = true then .done s 0 else publishStatus
   else .done 234 0
 
+private def courseTileStep (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
+  .bind (markDirtyTile ((5 + i.toUInt64 / 13) * ((width + 31) / 32) + i.toUInt64 % 13)) fun s _ => .done s acc
+
+private def renderCourse : Action :=
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.Arithmetic.render mathematics width) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 65 courseTileStep 65 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  dirty 0 160 416 320
+
+private def reportCourse : Action :=
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 48) fun s goal => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 96) fun s outcome => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 104) fun s evidence => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x450 revision goal outcome evidence
+
+private def saveCourse : Action :=
+  .bind (Lemma.Documents.Mathematics.copy mathematics mathematicsSave) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (startSave mathematicsSave Lemma.Documents.Mathematics.bytes (Lemma.Documents.Mathematics.object page) 3) fun s _ =>
+  if statusFailed s = true then saveFailure s else publishStatus
+
+/-- Failed application admission leaves ink and the store available. A storage
+failure still follows the existing Failed barrier path. -/
+private def courseError (status : UInt8) : Action :=
+  .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x454 status.toUInt64 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
+
+private def allocateCourse : Action :=
+  .bind (get 520) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (if allocated = 0 then
+    .bind (Syscall.allocatePage mathematics) fun s actual => if statusFailed s = true then .done s 0 else
+    if actual = mathematics then put 520 1 else failed
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 520) fun s allocated => if statusFailed s = true then .done s 0 else
+  if allocated = 1 then
+    .bind (Syscall.allocatePage mathematicsSave) fun s actual => if statusFailed s = true then .done s 0 else
+    if actual = mathematicsSave then put 520 2 else failed
+  else if allocated = 2 then .done 0 0 else failed
+
+private def openCourse : Action :=
+  .bind allocateCourse fun s _ => if statusFailed s = true then courseError s else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes) fun readStatus _ =>
+  .bind (if readStatus = 230 then Lemma.Documents.Mathematics.create mathematics ns page else
+    if readStatus = 0 then Lemma.Documents.Mathematics.validate mathematics ns page else .done readStatus 0) fun s _ =>
+  if statusFailed s = true then courseError s else
+  .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
+  if readStatus = 230 then saveCourse else .done 0 0
+
+private def coursePress (x y : UInt64) : Action :=
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending = 0 then
+  .bind (Lemma.Courses.Arithmetic.press mathematics (x - 24) (y - 160)) fun s close =>
+  if statusFailed s = true then courseError s else
+  if close = 1 then .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
+  else if 220 ≤ y then if y < 260 then
+    .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
+    .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else saveCourse
+  else .done 0 0 else .done 0 0 else .done 0 0
+
+private def toggleCourse : Action :=
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending = 0 then
+  .bind (get 512) fun s active => if statusFailed s = true then .done s 0 else
+  if active = 1 then .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
+  else openCourse else .done 0 0
+
 private def prepareChunk (buffer stroke lifecycle : UInt64) : Action :=
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (get 272) fun s brush => if statusFailed s = true then .done s 0 else
@@ -676,6 +771,9 @@ private def toolbar (button : UInt64) : Action :=
   if different (phase ||| rawCount ||| pending) 0 = true then .done 0 0 else
   .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
   if 2 ≤ status then .done 0 0 else
+  .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+  .bind (if course = 1 then .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (get 88) fun s pages => if statusFailed s = true then .done s 0 else
   if button = 0 then
@@ -794,7 +892,13 @@ where
     let px := Geometry.pixel (Geometry.normalized x maxX) width
     let py := Geometry.pixel (Geometry.normalized y maxY) height
     if py < 128 then toolbar (minimum 8 (px / (width / 9))) else
-    if py < 160 then .done 0 0 else
+    if py < 160 then if 132 ≤ py then if 288 ≤ px then if px < 360 then toggleCourse else .done 0 0
+      else .done 0 0 else .done 0 0 else
+    .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+    if course = 1 then if py < 320 then if 24 ≤ px then if px < 408 then coursePress px py else
+      .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+      else .done 0 0 else .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+    else
     .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
 
 /-- A service turn drains at most eight queued samples. The controller read is
@@ -881,7 +985,7 @@ private def initializeMedium : Action :=
 
 def main (bootArgument : UInt64) : Action :=
   if 1 < bootArgument then failed else
-  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else

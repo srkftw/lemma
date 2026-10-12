@@ -42,6 +42,12 @@ def letter (code : UInt64) : UInt64 :=
   if code = 83 then 0x79cf else if code = 85 then 0x5b6f else
   if code = 86 then 0x5b6a else if code = 87 then 0x5b7f else
   if code = 89 then 0x5a92 else
+  if code = 66 then 0x6bae else if code = 77 then 0x5fed else
+  if code = 81 then 0x7b79 else if code = 84 then 0x7492 else
+  if code = 88 then 0x5aad else
+  if code = 43 then 0x05d0 else if code = 45 then 0x01c0 else
+  if code = 47 then 0x12a4 else if code = 42 then 0x55d5 else
+  if code = 61 then 0x0e38 else if code = 40 then 0x2922 else if code = 41 then 0x224a else
   if code = 48 then 0x7b6f else if code = 49 then 0x2c97 else
   if code = 50 then 0x73e7 else if code = 51 then 0x73cf else
   if code = 52 then 0x5bc9 else if code = 53 then 0x79cf else

@@ -12,6 +12,7 @@ import json
 import struct
 from pathlib import Path
 from store_oracle import recover
+from math_oracle import MAGIC as MATH_MAGIC, inspect as inspect_math
 
 MAGIC = 0x314B4E49414D454C
 
@@ -59,6 +60,16 @@ def inspect(image: Path, output: Path) -> dict:
         if len(payload) < 64:
             raise ValueError('notebook record is shorter than its header')
         fields = struct.unpack_from('<8Q', payload)
+        if fields[0] == MATH_MAGIC:
+            mathematical = inspect_math(payload, namespace, object_id)
+            name = f'namespace-{namespace}-object-{object_id}.bin'
+            (output / name).write_bytes(payload)
+            observations.append({'namespace': namespace, 'object': object_id,
+                'sequence': record.sequence, 'kind': fields[2], 'bytes': len(payload),
+                'format': mathematical['format'], 'mathematical': mathematical,
+                'sha256': hashlib.sha256(payload).hexdigest(), 'export': name})
+            namespaces.add(namespace)
+            continue
         if fields[0] != MAGIC:
             raise ValueError('unknown ink format/version')
         kind = fields[2]

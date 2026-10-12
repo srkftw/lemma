@@ -31,6 +31,10 @@ PREFIX = 'Lemma.Platform.LemmaSim.'
 # Independent visible rows for the guest-authored bounded font. These are
 # packed here rather than imported from the production Lean lookup.
 FONT_ROWS = {
+    '(':'010100100100010', ')':'010001001001010', '*':'101010111010101',
+    '+':'000010111010000', '-':'000000111000000', '/':'001001010100100',
+    '=':'000111000111000', 'B':'110101110101110', 'M':'101111111101101',
+    'Q':'111101101111001', 'T':'111010010010010', 'X':'101101010101101',
     'A':'010101111101101', 'C':'111100100100111', 'D':'110101101101110', 'E':'111100110100111',
     'F':'111100110100100', 'G':'111100101101111', 'H':'101101111101101',
     'I':'111010010010111', 'L':'100100100100111', 'N':'101111111111101',
@@ -58,7 +62,7 @@ def canonical_specs():
        28:0x80000000,29:0x2000000,30:0x87e00000,31:0x200000}.items():
         fields[key]=value
     letters=[int(FONT_ROWS[chr(code)],2) if chr(code) in FONT_ROWS else 0
-             for code in range(48,90)]
+             for code in range(40,90)]
     return {
       PREFIX+'DescriptorDTB.literalLength': ('kernel',['u64'],[],[lengths]),
       PREFIX+'DescriptorDTB.literalWord': ('kernel',['u64','u64'],[],words),
@@ -185,7 +189,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             PREFIX+'DescriptorDTB.nodeRole':('%arg1',-4), PREFIX+'DescriptorDTB.compatibleCode':('%arg0',-1),
             PREFIX+'DescriptorDTB.requiredFlags':('%arg0',-1), PREFIX+'DescriptorDTB.expectedIRQ':('%arg0',-1),
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
-            PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.letter':('%arg0',-48),
+            PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.letter':('%arg0',-40),
             'Lemma.Applications.Notebook.statusCharacter':('%arg1',0),
         }[source]
         if shift:
