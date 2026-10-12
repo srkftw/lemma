@@ -518,6 +518,17 @@ class Session:
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
+        if action == 'clock':
+            # Raw external samples need the observed device time, not panel
+            # hashes or a formatted register dump. Fast.clock retains its exact
+            # virtual phase and actual local MTIME; RTL's existing observer is
+            # cheap and supplies the completed rising-edge cycle and ticks.
+            fast_clock = hasattr(self.machine, 'clock')
+            state = self.machine.clock() if fast_clock else self.machine.call('inspect')
+            result = {key: state[key] for key in ('backend', 'cycle', 'ticks', 'finished')}
+            if fast_clock:
+                result.update(state)
+            return {'machine': result, 'running': self.automatic}
         if action == 'inspect':
             result = self.machine.call('inspect')
             return {'machine': result, 'running': self.automatic, 'identity': self.machine.identity,
@@ -542,7 +553,9 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
-            state = self.machine.call('inspect')
+            # Admission consumes only the exact current cycle and virtual
+            # phase. Keep the full post-injection observer returned by call.
+            state = self.machine.clock() if hasattr(self.machine, 'clock') else self.machine.call('inspect')
             command,actual=external_command(value,state['cycle'])
             if value.get('kind') not in getattr(self.machine,'input_kinds',{'pen','uart'}):
                 raise ValueError('Input is unsupported by this backend/profile')
@@ -754,6 +767,16 @@ def initialize(args):
         write_json(directory/'result.json',result)
 
 
+def _sample_pointer(directory, x, y, contact, width, height, scale):
+    state = request(directory, {'action': 'clock'})['machine']
+    # Explicitly synthetic mouse pressure; no tablet capability or gesture
+    # interpretation is added by this raw pointer transport.
+    words = [state['ticks'], max(0, min(65535, x * scale * 65535 // (width - 1))),
+             max(0, min(65535, y * scale * 65535 // (height - 1))), 2047 if contact else 0,
+             7 if contact else 6, 1, 0]
+    return request(directory, {'action': 'inject', 'kind': 'pen', 'words': words})
+
+
 def view(directory):
     """Raw synthetic pointer bridge + controller-produced pixels, no host ink."""
     import tkinter as tk
@@ -806,13 +829,7 @@ def view(directory):
         power_button.pack(side='left')
 
     def sample(event, contact):
-        state = request(directory, {'action': 'inspect'})['machine']
-        # These are explicitly synthetic mouse samples. There is no claim of
-        # physical pressure or tablet capability and no gesture interpretation.
-        words = [state['ticks'], max(0, min(65535, event.x * scale * 65535 // (width - 1))),
-                 max(0, min(65535, event.y * scale * 65535 // (height - 1))), 2047 if contact else 0,
-                 7 if contact else 6, 1, 0]
-        request(directory, {'action': 'inject', 'kind': 'pen', 'words': words})
+        _sample_pointer(directory, event.x, event.y, contact, width, height, scale)
 
     def down(event):
         nonlocal held

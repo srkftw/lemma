@@ -288,7 +288,7 @@ def session_sink(directory, rpc):
     """Literal device admission; the machine records the final admitted event."""
     def emit(packet):
         # At most four host seconds for both RPCs; pacing never supplies ticks.
-        state = rpc(directory, {'action': 'inspect', 'source': 'tablet'}, timeout=2)['machine']
+        state = rpc(directory, {'action': 'clock', 'source': 'tablet'}, timeout=2)['machine']
         rpc(directory, {'action': 'inject', 'kind': 'pen',
                         'words': packet.words(state['ticks']), 'source': 'tablet'}, timeout=2)
     return emit

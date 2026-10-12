@@ -46,6 +46,51 @@ class LifecycleFailures(unittest.TestCase):
         self.checkpoint()
         self.assertEqual(len(self.machine.commands),1)
         self.assertTrue(self.machine.commands[0].startswith('snapshot '))
+    def test_clock_reads_existing_rtl_time_without_external_admission(self):
+        original=self.machine.call
+        def observed(command):
+            return {**original(command),'backend':'rtl','devices':{'not_clock':'payload'},
+                    'cpu_registers':'full observer payload'}
+        self.machine.call=observed
+        result=self.session.dispatch({'action':'clock'})
+        self.assertEqual(result,{'machine':{'backend':'rtl','cycle':10,'ticks':1,'finished':False},'running':False})
+        self.assertEqual(self.machine.commands,['inspect'])
+        self.assertEqual((self.session.event_count,self.session.event_cursor,self.session.presentation_generation),(0,0,0))
+        self.assertEqual((self.directory/'external.jsonl').read_bytes(),b'')
+    def test_fast_clock_retains_exact_phase_and_actual_local_mtime(self):
+        clock={'backend':'qemu','cycle':13,'ticks':7,'virtual_ns':128,'local_virtual_ns':8,
+               'local_ticks':7,'time_origin_ns':120,'finished':False,'runstate':'paused'}
+        self.machine.clock=lambda:dict(clock)
+        self.machine.call=mock.Mock(side_effect=AssertionError('Clock requested full inspection'))
+        # Read-only observation remains available after uncertain admission.
+        self.session.capture_uncertain=True
+        result=self.session.dispatch({'action':'clock'})
+        self.assertEqual(result,{'machine':clock,'running':False})
+        self.machine.call.assert_not_called()
+        self.assertEqual((self.directory/'external.jsonl').read_bytes(),b'')
+        self.assertEqual((self.session.event_count,self.session.event_cursor),(0,0))
+        self.assertTrue(self.session.capture_uncertain)
+    def test_clock_missing_mandatory_fields_fails_without_admission(self):
+        self.machine.clock=lambda:{'cycle':10,'ticks':1,'finished':False}
+        with self.assertRaises(KeyError):self.session.dispatch({'action':'clock'})
+        self.assertEqual(self.machine.commands,[])
+        self.assertEqual((self.directory/'external.jsonl').read_bytes(),b'')
+    def test_pointer_clock_preserves_mtime_and_literal_contact_hover_fields(self):
+        calls=[]
+        def rpc(directory,value):
+            calls.append((directory,value))
+            return {'machine':{'ticks':0x100000005,'cycle':999,'virtual_ns':9984}} if value['action']=='clock' else {}
+        with mock.patch.object(runtime,'request',rpc):
+            runtime._sample_pointer(self.directory,-1,10000,True,1650,2200,3)
+            runtime._sample_pointer(self.directory,42,57,False,1650,2200,3)
+        self.assertEqual(calls,[(self.directory,{'action':'clock'}),
+            (self.directory,{'action':'inject','kind':'pen','words':[0x100000005,0,65535,2047,7,1,0]}),
+            (self.directory,{'action':'clock'}),
+            (self.directory,{'action':'inject','kind':'pen','words':[0x100000005,5007,5096,0,6,1,0]})])
+    def test_pointer_clock_failure_cannot_admit_a_sample(self):
+        with mock.patch.object(runtime,'request',side_effect=TimeoutError('Clock observer unavailable')) as rpc:
+            with self.assertRaises(TimeoutError):runtime._sample_pointer(self.directory,42,57,True,1650,2200,3)
+        rpc.assert_called_once_with(self.directory,{'action':'clock'})
     def test_snapshot_refuses_existing_destination(self):
         path=self.checkpoint();before=(path/'machine.chk').read_bytes()
         with self.assertRaises(FileExistsError):self.session.snapshot(path)
@@ -322,8 +367,10 @@ runtime.serve(SimpleNamespace(session_dir=Path(sys.argv[2]),disk=None,backend='r
         path=self.checkpoint();self.session.restore(path)
         before=len(self.machine.commands)
         words=[2,123,456,99,3,1,2]
-        with self.assertRaises((ValueError,RuntimeError)):
-            self.session.dispatch({'action':'inject','source':'tablet','kind':'pen','words':words})
+        for value in ({'action':'clock','source':'tablet'},
+                      {'action':'inject','source':'tablet','kind':'pen','words':words}):
+            with self.subTest(value=value),self.assertRaises((ValueError,RuntimeError)):
+                self.session.dispatch(value)
         self.assertEqual(len(self.machine.commands),before,'pending live tablet crossed restored boundary')
         capture=self.root/'closed-tablet.jsonl'
         capture.write_text(json.dumps({'ordinal':0,'cursor':0,'cycle':20,
@@ -384,6 +431,50 @@ class FastClockPhaseFailures(unittest.TestCase):
         self.capture=self.root/'external.jsonl'
         self.row={'ordinal':0,'cursor':0,'cycle':11,'virtual_ns':104,
                   'request':{'action':'inject','kind':'pen','cycle':12,'words':[4,5,6,7,7,1,0]}}
+    def test_live_raw_admission_uses_exact_phase_and_keeps_full_post_state(self):
+        self.machine.ns=104
+        original=self.machine.call
+        capture_path=self.session.directory/'external.jsonl'
+        def post_state(command):
+            if command=='inspect':raise AssertionError('Admission requested a full inspection')
+            self.assertEqual(json.loads(capture_path.read_text())['admission'],'pending')
+            return {**original(command),'devices':{'pen_queued':1},'cpu_registers':'post-injection observations'}
+        self.machine.call=post_state
+        value={'action':'inject','kind':'pen','cycle':12,'words':[4,5,6,7,7,1,0]}
+        result=self.session.dispatch(value)
+        row=json.loads(capture_path.read_text())
+        self.assertEqual(row,{'admission':'applied',**self.row})
+        self.assertEqual(self.machine.commands[-1],'inject 12 pen 4 5 6 7 7 1 0')
+        self.assertEqual(result['devices'],{'pen_queued':1})
+        self.assertEqual(result['cpu_registers'],'post-injection observations')
+        self.assertEqual((self.session.event_count,self.session.event_cursor),(1,1))
+    def test_live_stale_delivery_rejects_without_capture_or_mutation(self):
+        self.machine.ns=104
+        before=list(self.machine.commands)
+        with self.assertRaises(ValueError):
+            self.session.dispatch({'action':'inject','kind':'pen','cycle':10,'words':[4,5,6,7,7,1,0]})
+        self.assertEqual(self.machine.commands,before)
+        self.assertEqual((self.session.directory/'external.jsonl').read_bytes(),b'')
+        self.assertEqual((self.session.event_count,self.session.event_cursor),(0,0))
+    def test_live_uncertain_admission_blocks_clock_and_all_new_delivery(self):
+        self.session.capture_uncertain=True
+        self.machine.clock=mock.Mock(side_effect=AssertionError('Uncertain input read a new clock'))
+        before=list(self.machine.commands)
+        with self.assertRaises(RuntimeError):
+            self.session.dispatch({'action':'inject','kind':'pen','words':[4,5,6,7,7,1,0]})
+        self.machine.clock.assert_not_called()
+        self.assertEqual(self.machine.commands,before)
+        self.assertEqual((self.session.directory/'external.jsonl').read_bytes(),b'')
+    def test_live_lost_delivery_reply_retains_pending_exact_phase(self):
+        self.machine.ns=104
+        self.machine.call=mock.Mock(side_effect=TimeoutError('Lost device reply after possible admission'))
+        value={'action':'inject','kind':'pen','cycle':12,'words':[4,5,6,7,7,1,0]}
+        with self.assertRaises(TimeoutError):self.session.dispatch(value)
+        self.machine.call.assert_called_once_with('inject 12 pen 4 5 6 7 7 1 0')
+        self.assertEqual(json.loads((self.session.directory/'external.jsonl').read_text()),
+                         {'admission':'pending',**self.row})
+        self.assertTrue(self.session.capture_uncertain)
+        self.assertEqual((self.session.event_count,self.session.event_cursor),(0,0))
     def test_nonintegral_controller_phase_replays_exactly(self):
         self.capture.write_text(json.dumps(self.row)+'\n')
         result=self.session.replay(self.source,self.capture,None,144)

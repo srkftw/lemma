@@ -96,11 +96,23 @@ class TabletTransport(unittest.TestCase):
         calls=[]
         def rpc(directory,value,timeout):
             calls.append((directory,value,timeout))
-            return {'machine':{'ticks':0x100000005}} if value['action']=='inspect' else {}
+            return {'machine':{'ticks':0x100000005,'cycle':999,'virtual_ns':9984}} if value['action']=='clock' else {}
         tablet.session_sink(Path('/session'),rpc)(tablet.Packet(17,23,99,3,1,2))
-        self.assertEqual(calls,[(Path('/session'),{'action':'inspect','source':'tablet'},2),
+        self.assertEqual(calls,[(Path('/session'),{'action':'clock','source':'tablet'},2),
             (Path('/session'),{'action':'inject','kind':'pen',
              'words':[0x100000005,17,23,99,3,1,2],'source':'tablet'},2)])
+
+    def test_clock_failure_and_invalid_ticks_do_not_admit_tablet_sample(self):
+        for clock in (TimeoutError('Clock unavailable'),{'machine':{'ticks':True}},
+                      {'machine':{'ticks':1<<64}}):
+            calls=[]
+            def rpc(directory,value,timeout):
+                calls.append(value)
+                if isinstance(clock,Exception):raise clock
+                return clock
+            with self.subTest(clock=clock),self.assertRaises((TimeoutError,ValueError)):
+                tablet.session_sink(Path('/session'),rpc)(tablet.Packet(17,23,99,3,1,2))
+            self.assertEqual(calls,[{'action':'clock','source':'tablet'}])
 
     def test_cli_sigterm_stops_real_input_pipe_and_records_explicit_loss(self):
         # Kernel capability queries are a fixture; actual pipe bytes, process,
@@ -119,7 +131,7 @@ tablet.current_state=lambda fd,c:({0:0,1:0,24:0},set())
 admission_path=Path(sys.argv[2])
 def rpc(directory,value,timeout):
     with admission_path.open('a') as output:output.write(json.dumps(value)+'\\n')
-    return {'machine':{'ticks':987}} if value['action']=='inspect' else {}
+    return {'machine':{'ticks':987}} if value['action']=='clock' else {}
 session.request=rpc
 sys.argv=['tablet','--device',sys.argv[3],'--session-dir',sys.argv[4],'--record',sys.argv[5]]
 tablet.main()

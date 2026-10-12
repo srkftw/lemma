@@ -19,12 +19,25 @@ specified in `006-synthetic-panel-v1.md`.
 
 `scripts/lemmasim session` owns one long-lived machine. A single owner advances
 bounded virtual intervals and admits raw external samples between them. The
-Unix socket exposes inspect, pause/resume, run, inject, snapshot/restore,
+Unix socket exposes clock, inspect, pause/resume, run, inject, snapshot/restore,
 recorded-suffix replay, warm reset, cold cycle, panel export, durable-base export
 and destroy. Queues, request lengths, files, clients and interval resource
 deadlines are bounded. A failed automatic interval pauses and retains an
 inspectable error. Host time controls pacing/resource failure only.
 Pause/resume are simulator controls, not a guest suspend service.
+
+The read-only public `clock` action returns `machine` timing and the owner's
+`running` pacing flag. RTL timing contains mandatory `backend`, `cycle`, `ticks`
+and `finished` fields from its existing completed-edge observer. QEMU adds its
+actual `virtual_ns`, `local_virtual_ns`, `local_ticks`, `time_origin_ns` and
+`runstate`; it reads actual local MTIME rather than deriving it from elapsed
+session time. Fractional nanosecond phase and warm-reset timer behavior are
+preserved. The request performs no run, pause, reset, admission or storage
+barrier, and does not request panel hashes or formatted CPU registers. Full
+Developer inspection retains its existing device, storage and CSR observations.
+Raw pointer and tablet adapters use this clock for the sample timestamp. Fast
+input admission reads the same lightweight clock for its exact current phase;
+the owner records every raw field and still returns full post-injection state.
 
 The native Tk presentation reads only device-produced pixels. Its mouse is an
 explicit synthetic pressure source. `--tablet` replaces it with Linux evdev
