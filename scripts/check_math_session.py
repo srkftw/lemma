@@ -269,12 +269,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--disk',type=Path,required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
+    parser.add_argument('--native-bundle',help='Validated immutable native runtime bundle for every public session')
+    parser.add_argument('--guest-build',help='Current genuinely compiled and audited notebook guest; requires native bundle')
     parser.add_argument('--durable-suffix-from',type=Path,help='Reuse independently rechecked actual acknowledged course workflow; run only new cold/failure CPUs')
     parser.add_argument('--timeout',type=int,default=300)
     parser.add_argument('--boot-seconds',type=int,default=60)
     parser.add_argument('--action-seconds',type=int,default=30)
     parser.add_argument('--deadline',type=int,default=2400)
     args=parser.parse_args();args.checkpoint_relation='not-exercised'
+    require(not args.guest_build or args.native_bundle,'guest-build requires native-bundle')
     require(1<=args.timeout<=3600 and 1<=args.boot_seconds<=600 and 1<=args.action_seconds<=600
             and 1<=args.deadline<=7200,'invalid declared resource bounds')
     checker=MathChecker(args)

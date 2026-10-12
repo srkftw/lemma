@@ -20,6 +20,8 @@ def polynomialProbe (a b c d p0 p1 p2 budget : UInt64) : Action :=
 
 structure State where
   words : Std.HashMap UInt64 UInt64 := {}
+  ownedArena : Bool := false
+  arenaAllocations : UInt64 := 0
 
 def value (state : State) (address : UInt64) : UInt64 := state.words.getD address 0
 
@@ -39,12 +41,28 @@ partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt
         status := pair.1
         result := pair.2
     execute state (next status result)
-  | .platform op a b _ _ _ _ next =>
+  | .platform op a b c _ _ _ next =>
     match op with
     | .virtualRead64 => execute state (next 0 (value (← state.get) a))
     | .virtualWrite64 =>
-      state.modify fun s => { words := s.words.insert a b }
+      state.modify fun s => { s with words := s.words.insert a b }
       execute state (next 0 0)
+    | .syscall =>
+      unless b = Lemma.User.Runtime.Arena.page && c = 1 do
+        throw <| IO.userError "record fixture attempted undeclared page arguments"
+      let current ← state.get
+      if a = Lemma.User.ABI.allocatePages then
+        if current.ownedArena then execute state (next Lemma.User.ABI.duplicateMapping 0) else
+        let mut words := current.words
+        for i in [:512] do words := words.insert (b+i.toUInt64*8) 0
+        state.set {current with words := words, ownedArena := true, arenaAllocations := current.arenaAllocations+1}
+        execute state (next 0 b)
+      else if a = Lemma.User.ABI.releasePages then
+        if current.ownedArena then
+          state.set {current with ownedArena := false}
+          execute state (next 0 b)
+        else execute state (next Lemma.User.ABI.missingMapping 0)
+      else throw <| IO.userError "record fixture attempted undeclared syscall"
     | _ => throw <| IO.userError "record fixture attempted a nonmemory effect"
   | _ => throw <| IO.userError "record fixture attempted unsupported syntax"
 
@@ -101,26 +119,46 @@ def records : IO Unit := do
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "ordered learner event validation"
   -- An unknown policy ID/event payload cannot silently alter the baseline.
   let valid ← state.get
-  state.modify fun s => { words := s.words.insert (buffer+176) 2 }
+  state.modify fun s => { s with words := s.words.insert (buffer+176) 2 }
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 234) "unknown policy accepted"
   state.set valid
-  state.modify fun s => { words := s.words.insert (buffer+192) 64 }
+  state.modify fun s => { s with words := s.words.insert (buffer+192) 64 }
   must ((← execute state (Mathematics.reviewMode buffer)).1 = 235 &&
     (← execute state (Mathematics.hint buffer)).1 = 235 &&
     (← execute state (Mathematics.submit buffer)).1 = 235) "event bound did not stop before mutation"
   must (value (← state.get) (buffer+184) = 4 && value (← state.get) (buffer+96) = 4 &&
     value (← state.get) (buffer+152) = 1) "exhaustion changed original evidence/policy/assistance"
   state.set valid
+  -- Actual bounded object allocation fills the independent modeled owned
+  -- page. A routine heap OOM returns before any submission/event mutation.
+  let mut handles : Array UInt64 := #[]
+  for i in [:31] do
+    let (status,handle) ← execute state (Lemma.User.Runtime.Arena.newBox i.toUInt64)
+    must (status = 0) "allocate actual pressure objects"
+    handles := handles.push handle
+  let beforeOOM ← state.get
+  must ((← execute state (Mathematics.submit buffer)).1 = Lemma.User.Runtime.Arena.exhausted) "heap OOM produced a mathematical result"
+  for i in [:232] do
+    must (value (← state.get) (buffer+i.toUInt64*8) = value beforeOOM (buffer+i.toUInt64*8)) "heap OOM changed evidence/history/policy"
+  let lastPressure := handles[30]!
+  must ((← execute state (Lemma.User.Runtime.Arena.release lastPressure)).1 = 0) "free one pressure slot"
+  must ((← execute state (Mathematics.submit buffer)).1 = Lemma.User.Runtime.Arena.exhausted &&
+    value (← state.get) (Lemma.User.Runtime.Arena.control+16) = 30) "second object OOM leaked its first allocation"
+  for i in [:232] do
+    must (value (← state.get) (buffer+i.toUInt64*8) = value beforeOOM (buffer+i.toUInt64*8)) "second object OOM changed evidence/history/policy"
+  for i in [:30] do
+    must ((← execute state (Lemma.User.Runtime.Arena.release handles[i]!)).1 = 0) "reclaim actual pressure object"
+  must (value (← state.get) (Lemma.User.Runtime.Arena.control+16) = 0 && (← state.get).arenaAllocations = 1) "owned submission arena leaked or duplicated its page"
   -- A real version1 record keeps all answers/evidence and migrates old hints
   -- as an explicitly unanchored aggregate rather than invented hint events.
-  state.modify fun s => { words := s.words.insert (buffer+8) 1 }
-  for i in [:10] do state.modify fun s => { words := s.words.insert (buffer+176+i.toUInt64*8) 0 }
+  state.modify fun s => { s with words := s.words.insert (buffer+8) 1 }
+  for i in [:10] do state.modify fun s => { s with words := s.words.insert (buffer+176+i.toUInt64*8) 0 }
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "legacy validation"
   must ((← execute state (Mathematics.upgrade buffer)).2 = 1) "guest migration"
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "migrated ordered event validation"
   must (value (← state.get) (buffer+96) = 4 && value (← state.get) (buffer+152) = 1 &&
     value (← state.get) (buffer+192) = 5) "migration lost actual evidence/assistance/history"
-  state.modify fun s => { words := s.words.insert (buffer+96) 1 }
+  state.modify fun s => { s with words := s.words.insert (buffer+96) 1 }
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 234) "forged Verified accepted"
 
 run_cmd do

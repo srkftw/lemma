@@ -1,5 +1,5 @@
 import Lemma.User.Memory
-import Lemma.Mathematics.Exact
+import Lemma.Mathematics.OwnedSubmission
 
 /-! `lemma-mathematical-submission/2`: typed answers and evidence are separate
 from immutable raw ink. The ordinary store retains an exact1856-byte record
@@ -86,8 +86,7 @@ def create (buffer ns page : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0
 
 def result (goal n d p0 p1 p2 budget : UInt64) : UInt64 :=
-  if goal = 1 then Exact.rational 1 2 1 3 n d budget else
-  if goal = 2 then Exact.polynomial 1 1 1 1 p0 p1 p2 budget else Exact.unsupported
+  OwnedSubmission.result goal n d p0 p1 p2 budget
 
 /-- Each edit invalidates current applicability while retaining attempt history.
 The bounded UI uses nonnegative integer coefficients 0..99, a proper subset of
@@ -130,7 +129,7 @@ def submit (buffer : UInt64) : Action :=
   .bind (field buffer 136) fun s budget => if s = 0 then
   .bind (field buffer 144) fun s attempts => if s = 0 then
   .bind (field buffer 40) fun s revision => if s = 0 then
-  let outcome := if attempts < 8 then result goal n d p0 p1 p2 budget else Exact.indeterminate
+  .bind (if attempts < 8 then OwnedSubmission.check goal n d p0 p1 p2 budget else .done 0 Exact.indeterminate) fun s outcome => if s = 0 then
   .bind (put buffer 96 outcome) fun s _ => if s = 0 then
   .bind (put buffer 104 revision) fun s _ => if s = 0 then
   .bind (put buffer 168 (if outcome = Exact.verified then 2 else if outcome = Exact.invalid then 1 else 3)) fun s _ => if s = 0 then
@@ -142,7 +141,7 @@ def submit (buffer : UInt64) : Action :=
   else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 /-- Assistance is explicit and durable. This is an authored local course hint,
 not a model response or a trusted mathematical result. -/

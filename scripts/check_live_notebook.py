@@ -151,6 +151,10 @@ class PublicSession:
                 '--workload', 'notebook', '--headless', '--paused', '--mode', 'laboratory',
                 '--session-dir', str(self.directory), '--disk', str(disk),
                 '--timeout', str(checker.args.timeout)]
+        if getattr(checker.args, 'native_bundle', None):
+            args += ['--native-bundle', checker.args.native_bundle]
+        if getattr(checker.args, 'guest_build', None):
+            args += ['--guest-build', checker.args.guest_build]
         if fail_flush:
             args += ['--fail-flush', str(fail_flush), '--trace-limit', '1000']
         self.log = (checker.directory / (name + '.log')).open('xb')

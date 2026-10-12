@@ -1,0 +1,109 @@
+{
+  "schema": "lemma-task006-owned-arena-evidence/1",
+  "status": "PASS",
+  "scope": "real owned-page scalar boxes/byte arrays with retain/release on every successful notebook arithmetic CHECK; ordinary managed-Lean language, isolated verifier and proof-kernel remain unfinished",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "configuration": "lemmasim-silicon-power-notebook",
+  "source_commit_at_build": "25e2ab0179236702b250c86a8e868f7321d5ab00",
+  "source_inputs_sha256": "03cc3b6969819c342dd59e09ba05189b3a3b0b5581e6d101a0bfd64e5a5f8ab4",
+  "guest_build": "build/kernel/task006-owned-arena-notebook-a2",
+  "guest_elf_sha256": "ef898c1872d91e4feea3ff72aeb04cad6c70fb86670974a0e7db36af930e6bb2",
+  "audit_sha256": "703fab6668570513ead64cbef58b98d41937df7039e3bbc11108264251c10b94",
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "ef898c1872d91e4feea3ff72aeb04cad6c70fb86670974a0e7db36af930e6bb2",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "runtime_source": "validated immutable native bundle build/native/task006-canonical-a1; current guest independently source/audit/capacity validated at each public startup",
+  "result_path": "build/task006-owned-arena-math-a2/result.json",
+  "result_sha256": "44ee6567463ff32ff331108f24a821dd0ec3ab2128564467873a9a902fc02631",
+  "boot": {
+    "virtual_seconds": 10.900000022,
+    "host_seconds": 22.510668439033907,
+    "cycle": 1090000003
+  },
+  "cold_boot": {
+    "virtual_seconds": 12.000000004,
+    "host_seconds": 27.37986520398408,
+    "cycle": 1200000001
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "actual_new_cpu": true,
+    "math_sha256": "13e52b41d5cd44c33bec97c8127e0078466098c120f6a41ae1644087cfe706d5",
+    "complete_controller_pixels": true,
+    "raw_ink_preserved": true
+  },
+  "failed_save": {
+    "status": "PASS",
+    "no_false_saved": true,
+    "acknowledged_math_unchanged": true
+  },
+  "resources": {
+    "status": 0,
+    "command": [
+      "python3",
+      "scripts/check_math_session.py",
+      "--disk",
+      "build/silicon/task006-canonical-cold-a2/medium.raw",
+      "--work-dir",
+      "build/task006-owned-arena-math-a2",
+      "--native-bundle",
+      "build/native/task006-canonical-a1",
+      "--guest-build",
+      "build/kernel/task006-owned-arena-notebook-a2",
+      "--deadline",
+      "2400"
+    ],
+    "host_seconds": 333.66033543401863,
+    "max_rss_kib": 407076,
+    "user_seconds": 293.067003,
+    "system_seconds": 58.57754
+  },
+  "raw_actions": 33,
+  "maximum_action_virtual_seconds": 9.900000014,
+  "authority": {
+    "control_ram": "0x20e00..0x20e17",
+    "owned_page_va": "0x400000",
+    "objects": 31,
+    "object_bytes": 128,
+    "byte_array_capacity": 64,
+    "reference_limit": 65535,
+    "actual_syscalls": "allocatePage7 and releasePage8; no no-op runtime helper",
+    "durable_format": "unchanged1856-byte mathematical-submission/2; handles never stored"
+  },
+  "checks": [
+    "nix develop --no-write-lock-file --command lake env lean tests/runtime/OwnedArena.lean: PASS genuine elaboration/checkedLLVM of all runtime APIs + explicitly modeled OS lifetime/refcount/generation/cancellation/OOM tests",
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExactMath.lean: PASS378 independent arithmetic comparisons + first/second allocation OOM leaves all232recordwords unchanged with actual object cleanup in modeled OS",
+    "fresh a2 complete target build and strict canonical fresh-base guard audit PASS",
+    "public live/cold/failed startup currentguest provenance/audit/independent canonicalcapacity audit each PASS"
+  ],
+  "retained_observations": [
+    {
+      "path": "build/task006-owned-arena-notebook-a1-original-audit",
+      "status": "PASS_WITH_NARROWER_SCOPE",
+      "reason": "original successful audit omitted new Capability header guard in canonical hook; genuine focused guard passed separately; a2 fresh whole image qualifies corrected hook, ELF unchanged"
+    },
+    {
+      "path": "build/task006-owned-arena-math-a1/result.json",
+      "status": "FAIL",
+      "reason": "cleanly interrupted and reaped after16real raw actions, including Verified5/6 and Invalid5/7; no target fault, no cold recovery claim. interruption.json preserves reason"
+    }
+  ],
+  "archive": "build/task006-owned-arena-a2-consumed-sources/manifest.json",
+  "timing_scope": "QEMU instruction-count cycles/virtual time; no exact canonicalRTL parity or omitted-cache-free checkpoint claim",
+  "remaining": [
+    "ordinary managed-Lean constructors/inductives/arrays/strings/closures/recursion lowering",
+    "actual RV64 arena exhaustion/cancellation/destroy/maxgeneration edge fixtures (current fault coverage explicitly OS model)",
+    "separately linked verifier and death/timeout containment",
+    "proof kernel and pinned theorem environment",
+    "full canonicalRTL/Wasm course acceptance"
+  ]
+}
