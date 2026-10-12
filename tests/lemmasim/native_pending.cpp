@@ -3,6 +3,9 @@
 // held medium request directly; it does not claim guest-driver execution.
 #include "machine_runtime.h"
 #include "Vlemma_soc___024root.h"
+#include "../../sim/host/backing_io_posix.h"
+#include <fcntl.h>
+#include <unistd.h>
 #include <algorithm>
 #include <cassert>
 #include <fstream>
@@ -42,7 +45,8 @@ int main(int argc,char**argv){assert(argc==7);std::string dir=argv[1];auto o=opt
  original.run(3000);assert(original.state().backing.phase==BackingPhase::Pending&&!original.state().backing.poisoned);
  assert(original.state().retired>retired_before);
  assert(medium->submissions==1&&medium->polls==3);assert(original.state().pen_accepted==1);assert(original.soc().external_media_busy);
- auto polls=medium->polls;original.snapshot(dir+"/pending.snap");assert(medium->polls==polls&&medium->submissions==1);Machine pending(opts(dir,"pending-fork"));pending.restore(dir+"/pending.snap");auto frozen=pending.state().cycle;rejects([&]{pending.run(1);});assert(pending.state().cycle==frozen);rejects([&]{original.restore(dir+"/start.snap");});rejects([&]{original.export_medium(dir+"/pending.medium");});
+ auto polls=medium->polls;original.snapshot(dir+"/pending.snap");assert(medium->polls==polls&&medium->submissions==1);Machine pending(opts(dir,"pending-fork"));pending.restore(dir+"/pending.snap");auto frozen=pending.state().cycle;rejects([&]{pending.run(1);});assert(pending.state().cycle==frozen);rejects([&]{original.restore(dir+"/start.snap");});rejects([&]{original.export_medium(dir+"/pending.medium");});rejects([&]{original.export_private_medium(dir+"/original-private.medium");});
+ pending.export_private_medium(dir+"/fork-private.medium");int private_fd=open((dir+"/fork-private.medium").c_str(),O_RDWR);assert(private_fd>=0);auto id=pending.state().backing.next_id;pending.rebind_private_backing(std::make_shared<PosixBacking>(private_fd));assert(pending.state().cycle==frozen&&pending.state().backing.next_id==id);pending.snapshot(dir+"/rebound-pending.snap");assert(bytes(dir+"/pending.snap")==bytes(dir+"/rebound-pending.snap"));assert(medium->polls==polls&&medium->submissions==1);
  medium->released=true;original.run(2000);assert(original.state().backing.completed==1&&original.state().backing.next_id==2);
  assert(!original.soc().external_media_busy);original.snapshot(dir+"/complete.snap");
  auto replay_o=opts(dir,"replay");replay_o.backing_replay_path=dir+"/actual.io";Machine replay(replay_o);replay.restore(dir+"/start.snap");replay.run(5000);replay.snapshot(dir+"/replay.snap");
@@ -52,5 +56,5 @@ int main(int argc,char**argv){assert(argc==7);std::string dir=argv[1];auto o=opt
  assert(reset.soc().external_media_busy&&!reset.state().backing.poisoned);assert(reset.state().media_active==0);
  reset_medium->released=true;reset.run(1500);assert(reset.state().backing.completed==1&&!reset.soc().external_media_busy);
  assert(reset.state().overlay.empty());assert(std::all_of(reset.state().ram.begin()+0x2001000,reset.state().ram.begin()+0x2001200,[](uint8_t v){return !v;}));
- std::cout<<"PASS held request raw pen ingress, observational pending snapshot and suspended fork binding, exact timed private replay, reset orphan without DMA\n";
+ close(private_fd);std::cout<<"PASS held request raw pen ingress, observational pending snapshot, private export/rebind and suspended fork binding, exact timed private replay, reset orphan without DMA\n";
 }

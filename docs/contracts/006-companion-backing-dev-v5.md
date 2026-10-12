@@ -41,8 +41,15 @@ medium. If the saved operation is Pending and no complete outcome tape is
 already bound, the fork is explicitly suspended. `run` rejects before advancing
 its virtual clock. The original operation continues in its original owner;
 restoring a fork never resubmits it. Inspect and further observational snapshots
-remain available. Pending export/rebind still rejects, including the browser
-OPFS rebind helper: this increment does not claim usable browser Pending forks.
+remain available. Live Pending export still rejects. The separate `export_private_medium` method
+exports already-isolated accepted backing bytes, including a suspended or
+outcome-bound Pending fork. It never contacts the original adapter. A private
+rebind compares every old/new byte before adopting the replacement and preserves
+all serialized operation fields. It accepts Pending only when that work is
+inherited and suspended or bound to recorded replay, without owned live external
+execution. A browser may materialize this view in fresh private OPFS storage,
+complete its origin barrier, rebind, then bind its outcome tape. Browser Pending
+qualification remains separate from this native property.
 
 `Machine.bind_backing_replay` / native `backing-outcomes PATH` validates a bounded,
 complete LMIOLOG2 tape, exact implementation identity, checksums, ordering,
@@ -121,3 +128,24 @@ checks that the actual fixture binary reproduces exactly from the validated
 objects. It neither reruns peer initialization nor converts the original FAIL.
 The exact measurements and original failures are in
 [the compact receipt](../evidence/006-native-pending-checkpoint.json).
+
+## Private platform rebinding qualification
+
+The subsequent native a7 increment keeps container version 2 and gives the
+new helper its own implementation identity. The a6 real-peer and actual-OS
+receipts remain unchanged. The a7 literal property exports a suspended fork,
+rebinds its private bytes and compares its entire pending checkpoint unchanged.
+It also confirms zero additional original platform polls/submissions, continued
+live Pending export rejection and exact admitted completed suffixes. Its
+[separate receipt](../evidence/006-native-pending-rebind.json) records the exact
+identity. Low-level native `export-private-medium PATH` exposes the same helper.
+
+```sh
+python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.3.0 \
+  --jobs 2 --output-dir build/silicon/task006-backing-runtime-a7
+nix-shell tooling/silicon/sim.nix --run \
+  'python3 scripts/check_native_backing.py \
+    --rtl-build build/silicon/task006-backing-runtime-a7 \
+    --guest-bundle build/native/task006-canonical-a1 \
+    --work-dir build/silicon/native-pending-rebind-a1'
+```

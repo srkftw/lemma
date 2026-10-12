@@ -1,0 +1,58 @@
+{
+  "schema": "lemmasim-native-pending-private-rebind/1",
+  "status": "PASS",
+  "scope": "Native inherited Pending fork export and exact byte-validated private platform rebind; no browser/guest-driver or Ready qualification",
+  "native_sha256": "53fc63a4f19b3a1d2d6f73b029fdf10a81255e00ea99bd0dc382f19f3b475cf7",
+  "snapshot_identity": "1f955778d1c79b7db9ceb55de1703d390fa692996139b01054f0b80b953d4b2d",
+  "container_version": 2,
+  "host_seconds": 15.099670204974245,
+  "build_wall_seconds": 53.135,
+  "report": {
+    "path": "build/silicon/native-pending-rebind-a1/result.json",
+    "sha256": "fde2c5fd3f447714aeede91fa5fc98c9cb40065ba83346f3bb65029ea5ca4ba9"
+  },
+  "build": {
+    "path": "build/silicon/task006-backing-runtime-a7/build.json",
+    "sha256": "dda121fe0255c98e86dffbf81ad2872198d45ee8304f0b0b823503fc8038d80f"
+  },
+  "sources": {
+    "sim/rtl/host/machine_runtime.h": "57f10b70732501854952219edf5a56687ee036b35926b018e90497761dce4f5f",
+    "sim/rtl/host/machine_runtime.cpp": "f5c321d1f64b215e4b0612244a91d1f7d9bc27494ab6c8a0840f7ecb7a786421",
+    "sim/rtl/host/main.cpp": "a76690f0d68ab125c00b1e53338a9741ae95c2f5e1e3874d446785f831aba5a2",
+    "tests/lemmasim/native_pending.cpp": "8e54ad2c08de14144c6faff22ba89f2e05c9a2cbbfe218420257fef642239c74",
+    "scripts/check_native_backing.py": "f948b172d5a535d83b7820125418709eae726f2580db026ab89c41975d3258c0"
+  },
+  "observations": {
+    "pending_checkpoint_before_after_private_rebind_sha256": "094238e33ab2c5a1ffed586dcacbe0481d5a787dbe9c8e6c3835d3c6810f67b6",
+    "rebound_checkpoint_sha256": "094238e33ab2c5a1ffed586dcacbe0481d5a787dbe9c8e6c3835d3c6810f67b6",
+    "completed_checkpoint_sha256": "804e4f7d692a185e05841ea8058e528533748c6a7d4e59f82eeff5e6e4c1f64c",
+    "pending_replay_checkpoint_sha256": "804e4f7d692a185e05841ea8058e528533748c6a7d4e59f82eeff5e6e4c1f64c",
+    "original_platform_poll_and_submission_counts_unchanged": true,
+    "inherited_operation_ids_and_cycle_unchanged": true,
+    "live_pending_private_export_rejected": true
+  },
+  "archived_genuine_guest": {
+    "image": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf",
+      "sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7"
+    },
+    "rom": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/runtime/rtl/boot.bin",
+      "sha256": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2"
+    },
+    "archive": {
+      "schema": "lemmasim-native-bundle/1",
+      "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+      "source_commit": "8137ee78e82dcb467889f31195571d5bb72cdcc9",
+      "scope": "validated archived inputs; not current compilation"
+    },
+    "scope": "Real guest instructions run while literal initialized controller request is held; no guest-driver or Ready claim"
+  },
+  "historical_a6_implementation_commit": "b91ed97",
+  "remaining": [
+    "Portable browser OPFS callback/export/rebind qualification is separate",
+    "Outcome tape required for resumed inherited external work; absent tape stays suspended",
+    "Arbitrary future retry-ready transitions/raw transport buffers not captured by LMIOLOG2",
+    "QEMU Pending migration and cached-state gap remain open"
+  ]
+}

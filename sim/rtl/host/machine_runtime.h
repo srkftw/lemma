@@ -82,6 +82,7 @@ class Machine {
  void tick();
  void block_row(uint64_t,const char*,unsigned,unsigned,uint64_t,uint64_t,uint64_t,uint64_t,unsigned);
  void model_save(const std::string&);
+ void export_backing(const std::string&) const;
 public:
  explicit Machine(const Options&);
  ~Machine();
@@ -109,6 +110,9 @@ public:
  void bind_backing_replay(const std::string&);
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;
+ // Export already-private accepted bytes for a platform rebind. Never reads
+ // the original Pending adapter or manufactures guest durability.
+ void export_private_medium(const std::string&) const;
  void ram_dump(uint64_t,uint64_t,const std::string&) const;
  std::string inspect() const;
  void report(const std::string&) const;
