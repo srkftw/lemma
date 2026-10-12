@@ -16,6 +16,7 @@ RUNTIME_SHA256 = '87d7282df1de259a3560fee369ef1f303a644654793726fc9da12009d639d4
 REVIEWED_RUNTIMES = {RUNTIME_SHA256: ('lemma-silicon-dev/0.1.0', 'lemma-silicon-dev/0.2.0')}
 REVIEWED_RUNTIMES['80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a'] = ('lemma-silicon-dev/0.3.0',)
 REVIEWED_RUNTIMES['6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8'] = ('lemma-silicon-dev/0.3.0',)
+REVIEWED_RUNTIMES['927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5'] = ('lemma-silicon-dev/0.3.0',)
 ADAPTER = 'lemmasim-fast-adapter/2'
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 MAX_STATE = 256 * 1024 * 1024
@@ -197,7 +198,8 @@ def mutation_checks(data):
               ('RAM.first_page.byte[0]', ram_mutation_offset(data), 'FAIL')]
     power = power_offsets(data)
     if power is not None:
-        sites += [('power.' + name, offset, 'FAIL') for name, offset in power.items()]
+        sites += [(name if name.startswith('private.') else 'power.' + name, offset, 'FAIL')
+                  for name, offset in power.items()]
     for name, offset, expected in sites:
         altered = data[:offset] + bytes([data[offset] ^ 1]) + data[offset + 1:]
         observed = compare(data, altered)
@@ -209,7 +211,9 @@ def mutation_checks(data):
 
 
 def power_offsets(data):
-    """Locate all seven fixed Power-v1 words; none is an allowed difference.
+    """Locate fixed Power-v1 words and the v3 private pen clock origin.
+
+    Every located byte remains mandatory exact continuation state.
 
     This is an independent wire-layout decoder, not a controller state checker.
     The reviewed device prefix has no conditional or variable-size fields.
@@ -220,7 +224,7 @@ def power_offsets(data):
     devices = [d for d in metadata['devices'] if d.get('name') == 'lemma-paper-pen/1']
     if not devices or (len(devices) == 1 and devices[0].get('version') == 1):
         return None
-    if len(devices) != 1 or devices[0].get('version') != 2:
+    if len(devices) != 1 or devices[0].get('version') not in (2, 3):
         raise ValueError('Unsupported power device serialization')
     fields = devices[0].get('fields', [])
     expected = [('width', 'uint32 equal', 4), ('height', 'uint32 equal', 4),
@@ -233,11 +237,27 @@ def power_offsets(data):
     if fields[7].get('struct') != {'vmsd_name': 'lemma-power/1', 'version': 1,
             'fields': [{'name': name, 'type': 'uint64', 'size': 8} for name in names]}:
         raise ValueError('Unsupported Power-v1 serialization schema')
-    payload, _ = section_payload(data, b'lemma-paper-pen/1', 2)
+    version = devices[0]['version']
+    if version == 3 and (len(fields) < 9 or fields[8] != {
+            'name': 'pen_clock_origin_ns', 'type': 'uint64', 'size': 8}):
+        raise ValueError('Unsupported private pen clock serialization schema')
+    payload, _ = section_payload(data, b'lemma-paper-pen/1', version)
     start = payload + sum(item[2] for item in expected[:7])
     if start + 56 > info['metadata_start']:
         raise ValueError('Truncated Power-v1 state')
-    return {name: start + index * 8 for index, name in enumerate(names)}
+    result = {name: start + index * 8 for index, name in enumerate(names)}
+    if version == 3:
+        origin_offset = start + 56
+        if origin_offset + 8 > info['metadata_start']:
+            raise ValueError('Truncated private pen clock origin')
+        origin = struct.unpack('>Q', data[origin_offset:origin_offset + 8])[0]
+        bias = struct.unpack('>q', data[info['icount']:info['icount'] + 8])[0]
+        count = struct.unpack('>q', data[info['icount'] + 8:info['icount'] + 16])[0]
+        virtual_ns = bias + (count << 3)
+        if not 0 <= origin <= virtual_ns <= (1 << 63) - 1 or origin % 100:
+            raise ValueError('Invalid private pen clock origin or phase')
+        result['private.pen_clock_origin_ns'] = origin_offset
+    return result
 
 
 def load(path):
@@ -286,6 +306,7 @@ def load(path):
                value.get('schema') != 'lemmasim-fast-clock/1' or type(origin) is not int or \
                not 0 <= origin <= manifest['virtual_ns'] <= (1 << 63) - 1:
                 raise ValueError('Unsupported or invalid wrapper clock state')
+    power_offsets(data)  # Validate the fixed device prefix and successor clock phase.
     return data, manifest, clock
 
 

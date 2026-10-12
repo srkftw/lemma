@@ -55,15 +55,25 @@ Without that binary, only the historical comparison is `NOT_RUN`; current
 clock and state checks remain mandatory. The reference SHA is
 `80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a`.
 The reviewed current SHA is
-`6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8`.
+`927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5`.
+This successor also carries the separately checked [pen reset clock state](WARM_PEN_STATE.md).
 
-Actual maintained runs passed at
+Actual maintained runs of the preceding `6dc0c7f…` binary passed at
 `build/lemmasim/task006-counter-current-a1/result.json` and
 `build/lemmasim/task006-counter-reference-a1/result.json`. At 100,000,000 ns,
-the current cycle counter was 10,000,000, while the historical reference was
+its cycle counter was 10,000,000, while the historical reference was
 100,000,000; both retained 12,499,999 instructions and MTIME 1,000,000 for the
-identical probe. Warm restored UART FCR/IIR were 0/1. The current run also
-rejected a removed counter subsection.
+identical probe. Warm restored UART FCR/IIR were 0/1. That run also
+rejected a removed counter subsection. The successor reran the same counter/UART
+checks under `build/task006-warm-pen-plan/counter-a1`; all processes were reaped.
+Current prepared execution passed separately at
+`build/lemmasim/task006-counter-pen-a1/result.json`, using the fresh audited
+Loader probe and explicit historical reference. It does not inherit the earlier run.
+The documented current-only command passed independently at
+`build/lemmasim/counter-pen-current-only-a1/result.json` (SHA256
+`c9320ccb8005d8f3add12baa533fa219e14e83086d665fb8afd259006c3b90e6`).
+All mandatory checks passed and processes were reaped; only the optional historical
+comparison was `NOT_RUN`.
 
 Counter writes use the pinned debugger's real CSR handlers. The current Lean
 primitive catalog does not admit guest-issued `mcycle`, `minstret` or

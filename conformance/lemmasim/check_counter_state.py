@@ -19,7 +19,7 @@ from silicon_guest import verify_guest_build
 from check_fast_state_equivalence import compare, layout, parse_json, section_payload
 
 PROFILE = 'lemma-silicon-dev/0.3.0'
-REVIEWED_CURRENT = '6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8'
+REVIEWED_CURRENT = '927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5'
 REVIEWED_REFERENCE = '80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a'
 RELATION = {
  'cycles': '100MHz; floor(T1ns/10)-floor(T0ns/10), absolute fractional phase retained',

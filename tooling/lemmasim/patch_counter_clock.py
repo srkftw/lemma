@@ -194,3 +194,55 @@ replace('hw/char/serial.c','    s->iir = UART_IIR_NO_INT;',
         s->fcr = s->fcr_vmstate = 0;
         s->recv_fifo_itl = 1;
     }''')
+
+# Selected profile0.3 pen clock and hardware reset. Historical derivations do
+# not consume this script. Keep software RESET1's loss/resync transition intact.
+name = 'hw/riscv/lemma_qemu.c'
+if hashlib.sha256((root/name).read_bytes()).hexdigest() != '82358469ea6f6a0378e983c4e923ab651c42c71a06a0daa227a993c1c3c83c33':
+ raise SystemExit('unsupported pen adapter source identity: '+name)
+replace(name,'    uint64_t ingress_sequence;',
+ '''    uint64_t ingress_sequence;
+    /* Aligned ACLINT reset epoch. Fractional virtual phase remains icount
+     * state: ticks=floor(absolute_ns/100)-floor(reset_ns/100). */
+    uint64_t pen_clock_origin_ns;''')
+replace(name,'static void lemma_watchdog(void *opaque)',
+ '''static uint64_t lemma_pen_clock_ticks(LemmaDevices *s)
+{
+    uint64_t now=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    return (now-(s->power_enabled?s->pen_clock_origin_ns:0))/100;
+}
+static void lemma_watchdog(void *opaque)''')
+replace(name,'    lemma_pen_advance(&s->pen,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/100);',
+ '    lemma_pen_advance(&s->pen,lemma_pen_clock_ticks(s));')
+replace(name,'    if(s->pen.contact_deadline)timer_mod_ns(s->pen_timer,s->pen.contact_deadline*100);',
+ '''    if(s->pen.contact_deadline) {
+        uint64_t origin=s->power_enabled?s->pen_clock_origin_ns:0;
+        uint64_t limit=(INT64_MAX-origin)/100;
+        /* An admitted u64 timestamp may exceed the bounded signed virtual
+         * clock. Saturate the host deadline without wrapping it into now. */
+        uint64_t deadline=s->pen.contact_deadline>limit?INT64_MAX:
+                          origin+s->pen.contact_deadline*100;
+        timer_mod_ns(s->pen_timer,deadline);
+    }''')
+replace(name,'    LemmaSample sample={.time=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/100,',
+ '    LemmaSample sample={.time=lemma_pen_clock_ticks(s),')
+replace(name,'    if(!initial_fast)lemma_pen_write(&s->pen,LEMMA_PEN_RESET,1);',
+ '''    if(s->power_enabled) {
+        lemma_pen_init(&s->pen,65535,65535,s->pressure_max);
+        s->pen_clock_origin_ns=(uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)/100*100;
+    } else if(!initial_fast)lemma_pen_write(&s->pen,LEMMA_PEN_RESET,1);''')
+replace(name,'    s->dirty=true;lemma_update_irqs(s);return 0;',
+ '''    uint64_t now=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    /* The pinned migration stream restores timer/icount before this device.
+     * Reject missing/wrapped epochs and retain the actual 100ns grid phase. */
+    if(s->pen_clock_origin_ns>INT64_MAX || s->pen_clock_origin_ns%100 ||
+       s->pen_clock_origin_ns>now || (!s->power_enabled && s->pen_clock_origin_ns) ||
+       s->pen.last_time>UINT64_MAX-10000000 ||
+       (s->pen.contact_deadline &&
+        (s->pen.contact_deadline!=s->pen.last_time+10000000 || s->pen.loss)))return -EINVAL;
+    s->dirty=true;lemma_update_irqs(s);return 0;''')
+replace(name,'.name="lemma-paper-pen/1",.version_id=2,.minimum_version_id=2,',
+ '.name="lemma-paper-pen/1",.version_id=3,.minimum_version_id=3,')
+replace(name,'        VMSTATE_BOOL(power_enabled,LemmaDevices),VMSTATE_STRUCT(power,LemmaDevices,0,lemma_power_vmstate,LemmaPower),',
+ '''        VMSTATE_BOOL(power_enabled,LemmaDevices),VMSTATE_STRUCT(power,LemmaDevices,0,lemma_power_vmstate,LemmaPower),
+        VMSTATE_UINT64(pen_clock_origin_ns,LemmaDevices),''')
