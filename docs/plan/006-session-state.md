@@ -50,7 +50,8 @@ Core0 target acceptance pass; candidate CI must be observed separately.
   volatile sector overlays and actual `fdatasync` before durable acknowledgement.
   Fast adapter2 stores the global clock origin separately from guest-local time.
   Actual warm RESET and MTIME reset work; mcycle/minstret reset parity remains
-  unqualified. No time/counter fields are discarded to claim equivalence.
+  unqualified. No guest architectural time/counter or private icount fields
+  are discarded to claim equivalence.
 
 ## Observed results and limits
 
