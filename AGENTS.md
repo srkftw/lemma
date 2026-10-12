@@ -109,15 +109,16 @@ fabrication submission, paid infrastructure, supplier outreach or proprietary
 closure. Publish one draft PR against main; do not merge. USGCE is untouched.
 
 Task 005 acceptance uses short source-bound RTL workloads and independent
-observations. Historical A/B/C, durable write/edit/Save/cold, exact RTL replay and
-failed-FLUSH/cold have separate closed observed evidence. The registered paper
-controller at a760e5f/2b6ede4 has fresh closed A/B/C and literal protocol results;
-its current D/E/cold/replay campaign must close independently before admission. Preserve original
-FAIL reports when an independently tested host oracle correction produces a new
-observation; do not relabel guest compilation or hardware execution. The
-checkpoint retains synthesis, global-route timing, incomplete detailed routing
-and cell-only process checks separately. A slower hypothetical STA clock does
-not change the development binding or establish physical signoff.
+observations. The registered controller at a760e5f/2b6ede4 has closed A/B/C,
+literal protocols, durable write/edit/Save/cold and failed-FLUSH/cold evidence.
+Exact current-controller RTL replay has its own closed PASS receipt. Historical
+runs retain their original identities.
+Fresh hardware execution using validated unchanged guest ELF sources is not
+fresh target compilation. Preserve original FAIL reports when an independently
+tested host oracle correction produces a new observation. The checkpoint keeps
+synthesis, live global-route timing, incomplete detailed routing, rule-coverage
+assessment and cell-only process checks separate. A slower hypothetical STA
+clock does not change the development binding or establish physical signoff.
 
 Use unused outputs for the short literal RTL protocol check:
 

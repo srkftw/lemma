@@ -26,7 +26,7 @@ mathematics and tutor rows remain naming guidance, not implemented subsystems.
 | `conformance/silicon/` | Literal RTL device/bus, banked paper and block-quiescence stimuli; independent guest/notebook observations with optical-contact negative sensitivity |
 | `scripts/silicon_compute.py`, `scripts/silicon_guest.py`, `scripts/check_silicon.py` | Pinned RTL build, existing LemmaSim preparation/capture/replay and short independent acceptance; no guest execution or document/recovery policy in host adapters |
 | `scripts/silicon_synth.py` | Actual bounded synthesis and separately scoped open physical-flow recipes/results |
-| `docs/plan/005-session-state.md` | Exact A/B/C and durable write/edit/Save/cold and exact RTL replay observations plus failed-FLUSH/cold, preserved failures and measured synthesis/global-route scope |
+| `docs/plan/005-session-state.md` | Current registered-controller A/B/C, durable write/edit/Save/cold, exact RTL replay and failed-FLUSH/cold receipts; separate historical failures, synthesis/global-route results and rule-coverage assessment |
 | `sim/profiles/` | Versioned machine-readable reference binding |
 | `conformance/lemmasim/` | Independent offline observations/oracles and raw input fixtures |
 | `Lemma/Verify/` | Exact checkers, proof checking and evidence |

@@ -141,26 +141,26 @@ separate from physical memory integration, analog sensing, panel qualification
 and foundry acceptance. Earlier supplier/board/cartridge discussions remain
 historical; they do not gate this implementation.
 
-Task 005 has observed genuine Lean M/S/U execution, isolated service/IPC/fault
-containment, guest pen/paper/block access and a notebook pressure stroke,
-brush-width edit, explicit Save and retained-medium-only cold reopen with exact
-records and controller pixels. Exact RTL replay also reproduced captured outputs
-and medium. Failed-FLUSH passed with guest Failed instead of Saved and exact
-acknowledged medium bytes retained. Its fresh cold hart recovered the exact
-prior edited document and full frame; failed new work was absent. Earlier
-observer failures retain their identities. The complete bounded
-SoC has actual generic and SG13G2 standard-cell
-mapping, including explicit 4 KiB register RAM that runs only the scalar corpus.
-External simulation memory does not qualify physical working memory.
-The integrated registered paper controller has fresh A/B/C and literal protocol
-acceptance; its current full notebook/cold/replay/failure campaign is active.
-Current bounded SoC mapping includes4KiB register RAM and13.423078mm² of mapped standard-cell area. Paper
-live global-route estimates meet the declared100MHz TT constraints with zero
-reported electrical violations. Detailed routing remains incomplete, and a
-separate full-FIFO pen placement/CTS flow aborted in OpenROAD setup repair.
-Controller process DRC/LVS and extracted timing are NOT_RUN. Original failed
-timing, alternate-clock observations and historical execution remain separate. Physical memory/nonvolatile boot, complete routing,
-power/pads and foundry acceptance remain separate open dependencies. See the
+Task 005's current registered controller has closed genuine Lean M/S/U,
+isolated service/IPC/fault-containment and guest pen/paper/block acceptance.
+Its pressure stroke, brush-width edit, explicit Save and retained-medium-only
+cold reopen passed with exact records and controller pixels. Failed-FLUSH
+passed with guest Failed instead of Saved and exact acknowledged medium bytes;
+a separate cold hart recovered that edited document and full frame, with failed
+new work absent. Exact RTL replay regenerated all captured outputs and the
+medium. Original failures and historical execution identities remain retained; fresh hardware runs reuse unchanged,
+strictly audited guest images after consumed-input validation.
+
+Bounded SoC mapping reports 13.423078 mm² of standard-cell area, including
+explicit 4 KiB register RAM that runs only the scalar corpus. External simulation
+memory does not qualify physical working memory. Paper live global-route
+estimates meet declared 100 MHz TT constraints with zero reported electrical
+violations; detailed routing is incomplete. Full-FIFO pen placement/CTS aborted
+in OpenROAD setup repair. Controller process DRC/LVS and extracted timing are
+NOT_RUN. The next implementation bottleneck is complete paper detailed routing
+with validated SG13G2 enclosure-rule coverage, followed by controller process
+checks and extracted timing. Physical memory/nonvolatile boot, power/pads and
+foundry acceptance remain separate open dependencies. See the
 [Task 005 checkpoint](005-session-state.md).
 
 | Unit | Construction | Direct dependencies | Required evidence |

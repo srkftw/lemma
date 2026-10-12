@@ -427,22 +427,26 @@ an explicit session timeout; it re-executes initial bytes and input before
 comparing actual outputs. A completed capture is required. Current observations
 include genuine Lean M/S/U execution, isolated service/IPC/fault containment,
 guest device access and a pressure stroke/brush-width edit/explicit Save.
-On the original controller, the full D3 write/edit/explicit Save/cold workflow passed with exact recovered
-records and full controller pixels. Exact RTL replay also passed by regenerating
-all captured outputs and retained medium. Failed-FLUSH also passed without a
-false Saved acknowledgement. A fresh cold hart recovered the exact prior
-acknowledged document and full controller frame, with failed new work absent.
-The registered paper controller now has fresh A/B/C and literal protocol
-acceptance; its full notebook/cold/replay/failure campaign is in progress.
-Current bounded synthesis has13.423078mm² of mapped standard-cell area with4KiB register RAM. Current paper
-live global-route estimates meet100MHz setup/hold at the declared TT corner,
-with zero reported electrical violations; detailed routing timed out incomplete.
-A separate full-FIFO pen placement/CTS attempt aborted in OpenROAD setup repair.
-Controller process DRC/LVS and extracted timing remain NOT_RUN; original failed
-timing and all historical execution identities are retained. Exact commands, identities and scoped results are in
-[the Task 005 checkpoint](docs/plan/005-session-state.md). RTL is slower than
-the native notebook and does not claim physical conformance or a nonvolatile
-physical boot solution. Open synthesis/layout recipes are in
+The current registered paper controller has closed A/B/C and literal protocol
+checks, plus a complete write/edit/Save/cold workflow with exact recovered
+records and full controller pixels. Failed-FLUSH passed without a false Saved
+acknowledgement; a fresh cold hart recovered the acknowledged edited document
+and full frame, with failed new work absent. Exact RTL replay passed by
+regenerating all six captured outputs and the medium.
+Each fresh hardware run retains its source/observer identities and validated
+historical guest ELF reuse; earlier failures and results remain separate.
+
+Bounded SoC synthesis reports 13.423078 mm² of mapped standard-cell area,
+including 4 KiB register RAM which runs the scalar corpus. The notebook uses
+external simulation RAM. Paper live global-route estimates meet 100 MHz
+setup/hold at the declared TT corner, with zero reported electrical violations;
+detailed routing timed out incomplete. A full-FIFO pen placement/CTS attempt
+aborted in OpenROAD setup repair. SG13G2 enclosure-rule coverage requires
+validation; its contribution to the route timeout is unmeasured. Controller
+process DRC/LVS and extracted timing remain NOT_RUN. Exact commands, identities
+and scoped results are in [the Task 005 checkpoint](docs/plan/005-session-state.md).
+RTL is slower than the native notebook and does not claim physical conformance
+or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
 [tooling/silicon](tooling/silicon/README.md).
 
 ## License and private material
