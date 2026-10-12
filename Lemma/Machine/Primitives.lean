@@ -60,6 +60,7 @@ inductive CSR where
   | medeleg | mideleg | pmpcfg0 | pmpaddr0 | pmpaddr1 | pmpaddr2 | pmpaddr3 | pmpaddr4 | pmpaddr5 | pmpaddr6 | pmpaddr7
   | mcounteren | scounteren
   | sstatus | sie | stvec | sscratch | sepc | scause | stval | sip | satp
+  | misa | mcycle | minstret | mcountinhibit
   deriving Repr, BEq, DecidableEq
 
 def CSR.render : CSR → String
@@ -93,6 +94,10 @@ def CSR.render : CSR → String
   | .stval => "stval"
   | .sip => "sip"
   | .satp => "satp"
+  | .misa => "misa"
+  | .mcycle => "mcycle"
+  | .minstret => "minstret"
+  | .mcountinhibit => "mcountinhibit"
 
 inductive Instruction where
   | loadAddress (dst : Register) (symbol : String)

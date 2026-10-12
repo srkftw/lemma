@@ -218,6 +218,7 @@ mutual
             program.contractVersion == Profile.v0_6.contractVersion ||
             program.contractVersion == Profile.v0_7.contractVersion ||
             program.contractVersion == Profile.firmware_v0_1.contractVersion ||
+            program.contractVersion == Profile.firmware_v0_2.contractVersion ||
             program.contractVersion == Profile.kernel_v0_1.contractVersion ||
             program.contractVersion == Profile.kernel_v0_2.contractVersion ||
             program.contractVersion == Profile.kernel_v0_3.contractVersion ||

@@ -29,6 +29,7 @@ inductive Profile where
   | kernel_v0_3
   | kernel_v0_4
   | user_v0_1
+  | firmware_v0_2
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Profile
@@ -47,6 +48,7 @@ def contractVersion : Profile → String
   | .kernel_v0_3 => "core0-kernel-v0.3"
   | .kernel_v0_4 => "core0-kernel-v0.4"
   | .user_v0_1 => "core0-user-v0.1"
+  | .firmware_v0_2 => "core0-firmware-v0.2"
 
 def ofContractVersion? : String → Option Profile
   | "core0-v0.1" => some .v0_1
@@ -62,15 +64,21 @@ def ofContractVersion? : String → Option Profile
   | "core0-kernel-v0.3" => some .kernel_v0_3
   | "core0-kernel-v0.4" => some .kernel_v0_4
   | "core0-user-v0.1" => some .user_v0_1
+  | "core0-firmware-v0.2" => some .firmware_v0_2
   | _ => none
 
 /-- Production execution profiles have separate authority from the diagnostic profiles. -/
 def isExecution : Profile → Bool
-  | .firmware_v0_1 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 => true
+  | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 => true
   | _ => false
 
 def isKernel : Profile → Bool
   | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 => true
+  | _ => false
+
+/-- An additive firmware successor inherits exactly the existing firmware authority. -/
+def isFirmware : Profile → Bool
+  | .firmware_v0_1 | .firmware_v0_2 => true
   | _ => false
 
 end Profile

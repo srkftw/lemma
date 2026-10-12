@@ -14,6 +14,8 @@ inductive Op where
   | firmwareCall | syscall | installSatp | fenceInstruction | enterUser | waitInterrupt
   | readSupervisorPending
   | deviceRead32 | deviceWrite32 | deviceRead64 | deviceWrite64
+
+  | readMisa | readMachineCycle | writeMachineCycle | readMachineRetired | writeMachineRetired | readMachineInhibit | writeMachineInhibit | readMachineCounterEnable | writeMachineCounterEnable
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Op
@@ -23,7 +25,8 @@ def all : Array Op := #[
   .virtualRead8, .virtualRead64, .virtualWrite8, .virtualWrite64,
   .readTime, .setMachineCompare, .forwardSupervisor, .firmwareCall, .syscall,
   .installSatp, .fenceInstruction, .enterUser, .waitInterrupt, .readSupervisorPending,
-  .deviceRead32, .deviceWrite32, .deviceRead64, .deviceWrite64]
+  .deviceRead32, .deviceWrite32, .deviceRead64, .deviceWrite64,
+  .readMisa, .readMachineCycle, .writeMachineCycle, .readMachineRetired, .writeMachineRetired, .readMachineInhibit, .writeMachineInhibit, .readMachineCounterEnable, .writeMachineCounterEnable]
 
 def stableId : Op → String
   | .physicalRead8 => "execution.physical-read8"
@@ -48,6 +51,15 @@ def stableId : Op → String
   | .deviceWrite32 => "lemmasim.device-write32"
   | .deviceRead64 => "lemmasim.device-read64"
   | .deviceWrite64 => "lemmasim.device-write64"
+  | .readMisa => "execution.read-misa"
+  | .readMachineCycle => "execution.read-machine-cycle"
+  | .writeMachineCycle => "execution.write-machine-cycle"
+  | .readMachineRetired => "execution.read-machine-retired"
+  | .writeMachineRetired => "execution.write-machine-retired"
+  | .readMachineInhibit => "execution.read-machine-inhibit"
+  | .writeMachineInhibit => "execution.write-machine-inhibit"
+  | .readMachineCounterEnable => "execution.read-machine-counter-enable"
+  | .writeMachineCounterEnable => "execution.write-machine-counter-enable"
 
 def sourceIdentity : Op → Lean.Name
   | .physicalRead8 => ``Op.physicalRead8
@@ -72,6 +84,15 @@ def sourceIdentity : Op → Lean.Name
   | .deviceWrite32 => ``Op.deviceWrite32
   | .deviceRead64 => ``Op.deviceRead64
   | .deviceWrite64 => ``Op.deviceWrite64
+  | .readMisa => ``Op.readMisa
+  | .readMachineCycle => ``Op.readMachineCycle
+  | .writeMachineCycle => ``Op.writeMachineCycle
+  | .readMachineRetired => ``Op.readMachineRetired
+  | .writeMachineRetired => ``Op.writeMachineRetired
+  | .readMachineInhibit => ``Op.readMachineInhibit
+  | .writeMachineInhibit => ``Op.writeMachineInhibit
+  | .readMachineCounterEnable => ``Op.readMachineCounterEnable
+  | .writeMachineCounterEnable => ``Op.writeMachineCounterEnable
 
 def ofSourceIdentity? (name : Lean.Name) : Option Op :=
   all.find? fun operation => operation.sourceIdentity == name
@@ -86,6 +107,7 @@ def widthBytes? : Op → Option Nat
 def isWrite : Op → Bool
   | .physicalWrite8 | .physicalWrite64 | .virtualWrite8 | .virtualWrite64 => true
   | .deviceWrite32 | .deviceWrite64 => true
+  | .writeMachineCycle | .writeMachineRetired | .writeMachineInhibit | .writeMachineCounterEnable => true
   | _ => false
 
 def isPhysical : Op → Bool
@@ -95,15 +117,17 @@ def isPhysical : Op → Bool
 def admits (profile : Profile) (operation : Op) : Bool :=
   match operation with
   | .physicalRead8 | .physicalRead64 | .physicalWrite8 | .physicalWrite64 =>
-      profile == .firmware_v0_1 || profile.isKernel
+      profile.isFirmware || profile.isKernel
   | .virtualRead8 | .virtualRead64 | .virtualWrite8 | .virtualWrite64 | .syscall =>
       profile == .user_v0_1
-  | .readTime | .setMachineCompare | .forwardSupervisor => profile == .firmware_v0_1
+  | .readTime | .setMachineCompare | .forwardSupervisor => profile.isFirmware
   | .firmwareCall | .installSatp | .fenceInstruction | .enterUser | .waitInterrupt |
       .readSupervisorPending =>
       profile.isKernel
   | .deviceRead32 | .deviceWrite32 | .deviceRead64 | .deviceWrite64 =>
       profile == .kernel_v0_3 || profile == .kernel_v0_4
+
+  | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2
 
 /-- Number of meaningful source operands; the remaining six-word slots must be
 literal zero. Firmware/syscall operands are number followed by five payloads. -/
@@ -114,6 +138,7 @@ def argumentCount : Op → Nat
   | .physicalRead8 | .physicalRead64 | .virtualRead8 | .virtualRead64 |
       .setMachineCompare | .installSatp | .enterUser => 1
   | .forwardSupervisor => 1
+  | .writeMachineCycle | .writeMachineRetired | .writeMachineInhibit | .writeMachineCounterEnable => 1
   | .firmwareCall | .syscall => 6
   | _ => 0
 
@@ -128,6 +153,15 @@ def primitiveSymbol? : Op → Option String
   | .enterUser => some "lemma_exec_enter_user"
   | .waitInterrupt => some "lemma_exec_wait_interrupt"
   | .readSupervisorPending => some "lemma_exec_supervisor_pending"
+  | .readMisa => some "lemma_exec_read_misa"
+  | .readMachineCycle => some "lemma_exec_read_machine_cycle"
+  | .writeMachineCycle => some "lemma_exec_write_machine_cycle"
+  | .readMachineRetired => some "lemma_exec_read_machine_retired"
+  | .writeMachineRetired => some "lemma_exec_write_machine_retired"
+  | .readMachineInhibit => some "lemma_exec_read_machine_inhibit"
+  | .writeMachineInhibit => some "lemma_exec_write_machine_inhibit"
+  | .readMachineCounterEnable => some "lemma_exec_read_machine_counter_enable"
+  | .writeMachineCounterEnable => some "lemma_exec_write_machine_counter_enable"
   | _ => none
 
 end Op
@@ -227,7 +261,7 @@ def kernelMemoryRegions : Array MemoryRegion := #[
         Lemma.Platform.LemmaVM.Layout.dtbReserveLimit, false⟩]
 
 def memoryRegions : Profile → Array MemoryRegion
-  | .firmware_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
+  | .firmware_v0_1 | .firmware_v0_2 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
   | .kernel_v0_3 | .kernel_v0_4 => kernelMemoryRegions.map fun region =>

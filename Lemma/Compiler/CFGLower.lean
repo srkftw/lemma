@@ -1382,7 +1382,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadStatus status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel do
         throw s!"UART status reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART status read has an inconsistent continuation type"
@@ -1396,7 +1396,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartReadByte status value next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel do
         throw s!"UART byte reads require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 && value.ty == .u64 do
         throw "checked UART byte read has an inconsistent continuation type"
@@ -1410,7 +1410,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
           lowerActionExpr profile suite symbols next
   | .uartWriteByte value status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel do
         throw s!"UART byte writes require `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless value.type == .u8 && status.ty == .u8 do
         throw "checked UART byte write has an inconsistent type"
@@ -1421,7 +1421,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo status next => do
       unless profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-          profile == .firmware_v0_1 || profile.isKernel do
+          profile.isFirmware || profile.isKernel do
         throw s!"UART FIFO control requires `{Lemma.Core0.Profile.v0_5.contractVersion}`"
       unless status.ty == .u8 do
         throw "checked UART FIFO control has an inconsistent continuation type"
@@ -1714,7 +1714,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   if profile != .v0_7 && !actualTimerOps.isEmpty then
     throw s!"timer operations require `{Lemma.Core0.Profile.v0_7.contractVersion}`"
   if profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-      profile == .firmware_v0_1 || profile.isKernel then
+      profile.isFirmware || profile.isKernel then
     unless Lemma.Core0.Device.catalogValid && deviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.base.toNat == LLVM.UARTReadRegister.rbr.address &&
         Lemma.Core0.Device.UART.base.toNat + Lemma.Core0.Device.UART.lsrOffset.toNat ==

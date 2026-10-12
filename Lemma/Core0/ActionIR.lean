@@ -169,6 +169,8 @@ def executionEffects : Execution.Op → EffectSet
   | .deviceRead32 | .deviceRead64 => { checkedAccess := true, mmioRead := true, ioOrder := true }
   | .deviceWrite32 | .deviceWrite64 => { checkedAccess := true, mmioWrite := true, ioOrder := true }
 
+  | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => { machineState := true }
+
 structure ActionSignature where
   args : Array Ty
   deriving BEq, Inhabited, Repr
