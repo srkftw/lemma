@@ -3,7 +3,10 @@
 `timescale 1ns/1ps
 module PowerControl;
   logic clk=0,reset=1,raw_button_level=0,valid=0,write=0;
-  logic [1:0] reset_cause=1,cause,events;
+  logic [2:0] reset_cause=1,cause;
+  logic[1:0] events;
+  logic raw_power_good=1,raw_brownout=0,domain_reset,power_loss,watchdog_armed;
+  logic[63:0]watchdog_timeout,watchdog_remaining,reset_remaining,reset_epoch;
   logic [5:0] busy_sources=0;
   logic [7:0] addr=0;
   logic [2:0] size=3;

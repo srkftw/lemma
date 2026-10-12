@@ -13,12 +13,13 @@ CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-si
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
 POWER_CONFIGURATIONS={'notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
+SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
 def configurations(name=None):
     profile(name)
-    return POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+    return SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     profile(name)
-    return ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
+    return ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()

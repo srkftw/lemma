@@ -44,6 +44,7 @@ struct State {
  std::deque<uint8_t> rx;
  uint64_t event_index=0,cycle=0,reset_until=8,boot_cycle=0;
  uint64_t button_level=0,power_reset_cause=1;
+ uint64_t power_good=1,brownout=0,power_domain_seen=0;
  uint64_t retired=0,traps=0,timer_traps=0,flushes=0,media_requests=0,pen_ingress=0,pen_accepted=0,panel_completed=0,panel_aborted=0;
  uint64_t drive_clocks=0,drive_pixels=0,drive_hash=14695981039346656037ULL;
  std::array<uint64_t,3> drive_phases{};

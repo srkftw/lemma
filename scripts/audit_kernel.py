@@ -178,9 +178,9 @@ MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "le
                                  "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
 MULTI_USER_CONFIGURATIONS.update({"lemmasim-silicon-power-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-power-initialize": NOTEBOOK_USER_IMAGES, "silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
                                  "lemmasim-silicon-full-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-full-initialize": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-safety-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
 LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
-POWER_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize"})
+POWER_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-safety-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize"})
 
 # Explicit software deployment successor, preserving every legacy registry.
 MANAGED_POLICIES.update({configuration: "lemma-notebook-arithmetic-v1" for configuration in ARITHMETIC_CONFIGURATIONS})
@@ -406,7 +406,7 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
 
 
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
-    if unit.get('configuration') == 'lemmasim-silicon-power-probe':
+    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe'):
         # This selected S-mode probe links the ordinary dispatch boundary but
         # never constructs/enters a User task. Do not claim an allocation test
         # for absent construction; bind the actual boot call graph instead.
@@ -421,6 +421,13 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             'Lemma.Drivers.PLIC.initializePower', 'Lemma.Kernel.Console.record',
             'Lemma.Platform.LemmaSim.PowerControl.step',
             'Lemma.Platform.LemmaSim.NotebookKernel.fatal'}
+        if unit['configuration']=='lemmasim-silicon-power-safety-probe':
+            root='Lemma.Platform.Silicon.Development.PowerSafety.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateSiliconSafety','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Drivers.PowerSafety.initialize','Lemma.Drivers.PowerSafety.resetEpoch','Lemma.Drivers.PowerSafety.arm',
+                'Lemma.Kernel.Console.record','Lemma.Platform.Silicon.Development.PowerSafety.waitStep',
+                'Lemma.Platform.Silicon.Development.PowerSafety.fatal'}
         if root not in normalized or not expected <= normalized.keys():
             raise Core0Error('Power probe genuine boot/policy source closure missing')
         calls = {symbol: parse_definitions_and_calls(_ir_definition_body(pre_ir, symbol))[2]
@@ -3769,9 +3776,10 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
     # The maintained discovery parser contains the additive Power node18 and
-    # compatible74 literals. Legacy bindings still reject that device role;
-    # this is literal provenance, not an MMIO authority extension.
-    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',73,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,75)]),
+    # compatible74/v2-compatible75 literals. Legacy bindings still reject
+    # undeclared device roles; this is exact literal provenance, not an MMIO
+    # authority extension. Older immutable artifacts retain their prior audit.
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
@@ -4332,7 +4340,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:

@@ -71,6 +71,7 @@ private def literalLength (code : UInt64) : UInt64 :=
   if code = 71 then 11 else
   if code = 72 then 21 else
   if code = 73 then 25 else
+  if code = 75 then 15 else
   if code = 74 then 15 else
   0
 private def literalWord (code index : UInt64) : UInt64 :=
@@ -80,6 +81,9 @@ private def literalWord (code index : UInt64) : UInt64 :=
     if index = 2 then 0x30303530 else
     if index = 3 then 0x0 else
     0 else
+  if code = 75 then
+    if index = 0 then 0x6f702c616d6d656c else
+    if index = 1 then 0x32762d726577 else 0 else
   if code = 74 then
     if index = 0 then 0x6f702c616d6d656c else
     if index = 1 then 0x31762d726577 else
@@ -423,6 +427,7 @@ private def compatibleCode (role : UInt64) : UInt64 :=
   if role = 1 then 64 else if role = 2 then 65 else if role = 4 then 67 else
   if role = 8 then 74 else if role = 5 then 68 else if role = 6 then 69 else if role = 7 then 70 else 66
 private def compatibleBinding (binding role : UInt64) : UInt64 :=
+  if binding = 3 then if role = 8 then 75 else if role = 6 then 73 else compatibleCode role else
   if 0 < binding then if role = 6 then 73 else compatibleCode role else compatibleCode role
 private def requiredFlags (role : UInt64) : UInt64 :=
   if role = 8 then 31 else if role = 1 then 255 else if role = 2 then 255 else
@@ -512,7 +517,7 @@ private def leafProperty (data bytes code role : UInt64) : Action :=
       else .done invalid 0 else .done s 0 else .done invalid 0
     else if code = 48 then
       .bind (get 176) fun s binding => if s = 0 then
-      fixedCell data bytes (if binding = 2 then Lemma.Platform.Silicon.BindingPower.plic_sources else if binding = 1 then Lemma.Platform.Silicon.Binding.plic_sources else 95) 32 else .done s 0
+      fixedCell data bytes (if 2 ≤ binding then Lemma.Platform.Silicon.BindingPower.plic_sources else if binding = 1 then Lemma.Platform.Silicon.Binding.plic_sources else 95) 32 else .done s 0
     else
     if code = 47 then fixedCell data bytes 1 64 else
     if code = 45 then fixedCell data bytes 0 128 else
@@ -522,7 +527,9 @@ private def leafProperty (data bytes code role : UInt64) : Action :=
     if code = 50 then interruptContext data bytes role else .done 0 0
   else if code = 34 then fixedCell data bytes (expectedIRQ role) 4 else
   if code = 35 then parentCell data bytes else
-  if role = 8 then if code = 38 then fixedCell data bytes 1 16 else .done 0 0 else
+  if role = 8 then if code = 38 then
+    .bind (get 176) fun s binding => if s = 0 then
+    fixedCell data bytes (if binding = 3 then 2 else 1) 16 else .done s 0 else .done 0 0 else
   if role = 1 then
     if code = 38 then fixedCell data bytes 1 16 else
     if code = 39 then dynamicCell data bytes 104 32 else
@@ -704,7 +711,7 @@ def validateBinding (binding pointer expectedBytes width height pressure : UInt6
   .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
   .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
   if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
-  if ended = 1 then if seen = (if binding = 2 then 0x1d7e else if binding = 1 then 0x1c7e else 0x0fe01cfe) then
+  if ended = 1 then if seen = (if 2 ≤ binding then 0x1d7e else if binding = 1 then 0x1c7e else 0x0fe01cfe) then
   if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
   .bind actualDevices fun s _ => .done s pointer
   else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
@@ -719,5 +726,8 @@ def validateSilicon (pointer expectedBytes width height pressure : UInt64) : Act
 
 def validateSiliconPower (pointer expectedBytes width height pressure : UInt64) : Action :=
   validateBinding 2 pointer expectedBytes width height pressure
+
+def validateSiliconSafety (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBinding 3 pointer expectedBytes width height pressure
 
 end Lemma.Platform.LemmaSim.DescriptorDTB

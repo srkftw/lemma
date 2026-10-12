@@ -9,7 +9,7 @@ import struct
 import hashlib
 from core0_common import Core0Error
 
-CONFIGURATIONS = {'lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
+CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
     1: '', 2: 'cpus', 3: 'soc', 4: 'lemma-paper@10010000', 5: 'lemma-pen@10011000',
     6: 'virtio_mmio@10001000', 7: 'interrupt-controller@c000000', 8: 'clint@2000000',
@@ -23,7 +23,7 @@ DTB_LITERALS = {
     49: 'interrupt-controller', 50: 'interrupts-extended', 51: 'clock-frequency',
     52: 'ranges', 64: 'lemma,paper-v1', 65: 'lemma,pen-v1', 66: 'virtio,mmio',
     67: 'sifive,plic-1.0.0\0riscv,plic0', 68: 'sifive,clint0\0riscv,clint0',
-    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus', 72: 'lemma,silicon-dev-v1', 73: 'lemma,diagnostic-uart-v1', 74: 'lemma,power-v1',
+    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus', 72: 'lemma,silicon-dev-v1', 73: 'lemma,diagnostic-uart-v1', 74: 'lemma,power-v1', 75: 'lemma,power-v2',
 }
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
 WORD_CODES = [18,4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
@@ -47,7 +47,7 @@ FONT_ROWS = {
 }
 
 def canonical_specs():
-    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,75)]
+    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,76)]
     words = [list(struct.unpack('<' + str((len(DTB_BYTES[code])+7)//8) + 'Q',
                                DTB_BYTES[code].ljust((len(DTB_BYTES[code])+7)//8*8,b'\0')))
              for code in WORD_CODES]
@@ -87,7 +87,7 @@ DEVICE_BODY_DIGESTS = {
  'write32': ('a9c450a0bbdc45f0dafe60fec3e5a9bb0133ad2ed3f138569115f09e8c3814ba', '7ca1f1478a316664648ce52b96ddb6cf681e578c99930006cf0ae5501a66ff75'),
  'write64': ('f80d937bfcae448dba30e2ec6b51eaa9d76db6b2ff8544366f91ed798cd2f6dc', 'cc11d117f7e5d9a281b2091def205363f37ea2de68e8ead8475c67d098da4229'),
 }
-POWER_CONFIGURATIONS = {'lemmasim-silicon-power-probe',
+POWER_CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe',
     'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'}
 POWER_DEVICE_BODY_DIGESTS = {**DEVICE_BODY_DIGESTS,
  'read32': ('f177cfe6f4ec9fa88914aa3b7c66a3f47ecab6cca81150aed66a1e0c56af5731',

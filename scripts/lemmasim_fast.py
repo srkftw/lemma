@@ -61,6 +61,7 @@ def sources(name):
 
 def build(args):
     name = profile(args.profile)['profile']
+    if name=='lemma-silicon-dev/0.4.0':raise ValueError('Power-v2 fast reset/time/supply integration remains unqualified; use exact RTL')
     selected = guest.configurations(name)
     workload = args.workload or 'notebook'
     if workload not in selected:

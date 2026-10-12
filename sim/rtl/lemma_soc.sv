@@ -3,11 +3,14 @@
 // external working-memory port, external framebuffer SRAM, raw medium and panel ports.
 module lemma_soc #(parameter bit REGISTER_RAM=0) (
  input logic clk, reset,
- input logic [1:0] power_reset_cause,
+ input logic [2:0] power_reset_cause,
+ input logic raw_power_good,raw_brownout,
  input logic raw_button_level,
  output logic power_suspended,power_cancel_pen,
  output logic [63:0] power_error,power_epoch,power_events,power_wake_cause,
- output logic [1:0] power_cause,
+ output logic [2:0] power_cause,
+ output logic power_domain_reset,power_loss,power_watchdog_armed,
+ output logic [63:0] power_watchdog_timeout,power_watchdog_remaining,power_reset_remaining,power_reset_epoch,
  input logic preload_valid,
  input logic [8:0] preload_index,
  input logic [63:0] preload_data,
@@ -55,6 +58,26 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
 );
  import lemma_silicon_binding::*;
  logic dev_valid,dev_write,dev_ready,dev_error;
+ logic domain_reset,controller_fb_valid,controller_panel_valid,controller_media_valid;
+ logic power_cancel_device,safety_pen_resync;
+ // A safety-domain reset discards queued/contact state. On release force the
+ // existing loss/resynchronization handshake before admitting held contact.
+ // The legacy branch retains its exact cooperative cancellation behavior.
+ generate if(POWER_SAFETY!=0) begin: safety_pen_boundary
+   always @(posedge clk) begin
+     if(reset) safety_pen_resync<=0;
+     else if(domain_reset) safety_pen_resync<=1;
+     else safety_pen_resync<=0;
+   end
+   assign power_cancel_pen=power_cancel_device||(safety_pen_resync&&!domain_reset);
+ end else begin: legacy_pen_boundary
+   assign safety_pen_resync=0;
+   assign power_cancel_pen=power_cancel_device;
+ end endgenerate
+ assign fb_valid=controller_fb_valid&&!domain_reset;
+ assign panel_valid=controller_panel_valid&&!domain_reset;
+ assign media_valid=controller_media_valid&&!domain_reset;
+ assign domain_reset=reset||power_domain_reset;
  logic [31:0] dev_addr;
  logic [2:0] dev_size;
  logic [63:0] dev_wdata,dev_rdata;
@@ -103,7 +126,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign dev_error=power_sel?power_bus_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
  assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ);
  lemma_compute compute(
-   .clk,.reset,.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
+   .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
    .mem_ready(cpu_mem_ready),.mem_error(cpu_mem_error),.dev_valid,.dev_write,.dev_addr,.dev_size,
    .dev_wdata,.dev_rdata,.dev_ready,.dev_error,.external_irqs(irqs),.uart_rx_valid,.uart_rx_data,
@@ -111,44 +134,49 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .debug_pc,.debug_privilege,.debug_retire,.debug_trap,.debug_cause
  );
  lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX))) pen(
-   .clk,.reset_n(!reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
+   .clk,.reset_n(!domain_reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
    .addr(power_cancel_pen?12'd104:(dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
    .size(power_cancel_pen?3'd3:(dev_valid&&pen_sel)?dev_size:3'd0),.wdata(power_cancel_pen?64'd1:(dev_valid&&pen_sel)?dev_wdata:64'd0),
    .rdata(pen_rdata),.ready(pen_ready),.error(pen_error),.irq(pen_irq),
-   .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
+   .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen&&!domain_reset),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
    .sample_pressure,.sample_flags,.sample_tool,.sample_buttons,.sample_accepted
  );
  lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0)) paper(
-   .clk,.reset_n(!reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
+   .clk,.reset_n(!domain_reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
    .addr((dev_valid&&paper_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&paper_sel)?dev_size:3'd0),.wdata((dev_valid&&paper_sel)?dev_wdata:64'd0),
    .rdata(paper_rdata),.ready(paper_ready),.error(paper_error),.irq(paper_irq),.controller_busy(paper_busy),
-   .now_ticks(timer_ticks),.descriptor,.fb_valid,.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
-   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
+   .now_ticks(timer_ticks),.descriptor,.fb_valid(controller_fb_valid),.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
+   .panel_valid(controller_panel_valid),.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
    .panel_drive_valid,.panel_power_enable,.panel_gate_clock,.panel_source_clock,
    .panel_drive_phase,.panel_drive_code,.panel_drive_x,.panel_drive_y
  );
  lemma_block #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) blockdev(
-   .clk,.reset_n(!reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),
+   .clk,.reset_n(!domain_reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),
    .addr((dev_valid&&block_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&block_sel)?dev_size:3'd0),.wdata((dev_valid&&block_sel)?dev_wdata:64'd0),
    .rdata(block_rdata),.ready(block_ready),.error(block_error),.irq(block_irq),.busy(block_busy),
    .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
-   .media_valid,.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
+   .media_valid(controller_media_valid),.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
- assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen;
+ assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
  assign power_busy_sources={(media_valid||external_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
  generate if(POWER_ENABLED!=0) begin: control_domain
-   lemma_power power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,
+   lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),
      .addr(dev_addr[7:0]),.size(dev_size),.wdata(dev_wdata),.rdata(power_rdata),
      .ready(power_ready),.error(power_bus_error),.irq(power_irq),
-     .suspended(power_suspended),.cancel_pen(power_cancel_pen),.fault(power_error),
-     .epoch(power_epoch),.wake_cause(power_wake_cause),.cause(power_cause),.events(power_event_flags));
+     .suspended(power_suspended),.cancel_pen(power_cancel_device),.fault(power_error),
+     .epoch(power_epoch),.wake_cause(power_wake_cause),.cause(power_cause),.events(power_event_flags),
+     .domain_reset(power_domain_reset),.power_loss,.watchdog_armed(power_watchdog_armed),
+     .watchdog_timeout(power_watchdog_timeout),.watchdog_remaining(power_watchdog_remaining),
+     .reset_remaining(power_reset_remaining),.reset_epoch(power_reset_epoch));
    assign power_events={62'b0,power_event_flags};
  end else begin: no_control_domain
    assign power_rdata=0;assign power_ready=1;assign power_bus_error=0;assign power_irq=0;
-   assign power_suspended=0;assign power_cancel_pen=0;assign power_error=0;assign power_epoch=0;
+   assign power_suspended=0;assign power_cancel_device=0;assign power_error=0;assign power_epoch=0;
+   assign power_domain_reset=0;assign power_loss=0;assign power_watchdog_armed=0;
+   assign power_watchdog_timeout=0;assign power_watchdog_remaining=0;assign power_reset_remaining=0;assign power_reset_epoch=0;
    assign power_event_flags=0;assign power_events=0;assign power_wake_cause=0;assign power_cause=0;
  end endgenerate
  // DMA has priority only at an idle external port. A request which sees
@@ -161,16 +189,16 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign dma_span=dma_addr>=FRAME_POOL_BASE && dma_addr<=FRAME_POOL_BASE+FRAME_POOL_BYTES-(64'd1<<dma_size);
  assign selected_valid=port_held?1'b1:dma_grant?dma_valid:(cpu_mem_valid&&!cpu_error_pending);
  assign selected_fault=!port_held&&dma_grant&&(!dma_alignment||!dma_span);
- assign mem_valid=!reset&&selected_valid&&!selected_fault;
+ assign mem_valid=!domain_reset&&selected_valid&&!selected_fault;
  assign mem_write=port_held?held_write:dma_grant?dma_write:cpu_mem_write;
  assign mem_addr=port_held?held_addr:dma_grant?{dma_addr[55:3],3'b000}:cpu_mem_addr;
  assign mem_wdata=port_held?held_wdata:dma_grant?(dma_wdata<<(8*dma_addr[2:0])):cpu_mem_wdata;
  assign mem_strb=port_held?held_strb:dma_grant?(8'((9'd1<<(1<<dma_size))-1)<<dma_addr[2:0]):cpu_mem_strb;
- assign cpu_mem_ready=!reset&&(cpu_error_pending||(!dma_grant&&external_ready));
- assign cpu_mem_error=!reset&&(cpu_error_pending||(!dma_grant&&mem_valid&&external_ready&&external_error));
+ assign cpu_mem_ready=!domain_reset&&(cpu_error_pending||(!dma_grant&&external_ready));
+ assign cpu_mem_error=!domain_reset&&(cpu_error_pending||(!dma_grant&&mem_valid&&external_ready&&external_error));
  assign cpu_mem_rdata=cpu_error_pending?cpu_error_rdata:external_rdata;
- assign dma_ready=!reset&&dma_grant&&(selected_fault||external_ready);
- assign dma_error=!reset&&dma_grant&&(selected_fault||(external_ready&&external_error));
+ assign dma_ready=!domain_reset&&dma_grant&&(selected_fault||external_ready);
+ assign dma_error=!domain_reset&&dma_grant&&(selected_fault||(external_ready&&external_error));
  assign active_dma_lane=port_held?held_lane:dma_addr[2:0];
  assign active_dma_size=port_held?held_size:dma_size;
  // Return a right-justified transfer, rather than unrelated bytes from the
@@ -178,7 +206,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign dma_rdata=(external_rdata>>(8*active_dma_lane)) &
    (active_dma_size==0?64'hff:active_dma_size==1?64'hffff:active_dma_size==2?64'hffffffff:64'hffffffffffffffff);
  always_ff @(posedge clk) begin
-   if(reset) begin
+   if(domain_reset) begin
      port_held<=0;held_dma<=0;held_write<=0;held_addr<=0;held_wdata<=0;held_strb<=0;
      held_lane<=0;held_size<=0;cpu_error_pending<=0;cpu_error_rdata<=0;
    end else begin

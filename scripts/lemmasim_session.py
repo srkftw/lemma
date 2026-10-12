@@ -128,6 +128,9 @@ def external_command(value, current):
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
         command=f'inject {cycle} uart {payload}'
+    elif kind in ('pgood','brownout'):
+        level=bounded(value.get('level'),0,1,'Supply digital level')
+        command=f'inject {cycle} {kind} {level}'
     elif kind=='button':
         level=bounded(value.get('level'),0,1,'Button level')
         command=f'inject {cycle} button {level}'
@@ -221,7 +224,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
-        self.input_kinds={'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        self.input_kinds={'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -263,7 +266,7 @@ class RTL:
         with path.open('rb') as stream:
             header = stream.read(128)
         if (len(header) != 128 or header[:8] != b'LMSSRTL1' or
-                int.from_bytes(header[8:16], 'little') not in (1, 2) or
+                int.from_bytes(header[8:16], 'little') not in (1, 2, 3) or
                 header[16:80] != self.checkpoint_identity.encode('ascii')):
             raise ValueError('Unsupported RTL checkpoint boundary format or identity')
         wrapper_bytes = int.from_bytes(header[80:88], 'little')
@@ -575,6 +578,7 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
+            if value.get('kind') in ('pgood','brownout') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
             # Admission consumes only the exact current cycle and virtual
             # phase. Keep the full post-injection observer returned by call.
             state = self.machine.clock() if hasattr(self.machine, 'clock') else self.machine.call('inspect')

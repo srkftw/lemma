@@ -23,7 +23,7 @@ open DeploymentCatalog
 private def roleProfile (role : String) (configuration : String) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if configuration == "lemmasim-silicon-power-probe" ||
+  | "kernel" => .ok (if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
@@ -33,7 +33,7 @@ private def roleProfile (role : String) (configuration : String) : Except String
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+  unless configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
@@ -56,7 +56,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+  configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
     (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
@@ -70,6 +70,8 @@ private def rootIdentities (configuration role : String) : Array String :=
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
   | "kernel" => if configuration == "lemmasim-silicon-devices" then
       #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
+    else if configuration == "lemmasim-silicon-power-safety-probe" then
+      #["Lemma.Platform.Silicon.Development.PowerSafety.boot", "Lemma.Platform.Silicon.Development.PowerSafety.dispatch"]
     else if configuration == "lemmasim-silicon-power-probe" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-power-notebook" then
@@ -150,6 +152,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
     #["Lemma.Kernel.Development.ServiceEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
+  else if configuration == "lemmasim-silicon-power-safety-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.PowerSafety"]
   else if configuration == "lemmasim-silicon-devices" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.DeviceEntry", "Lemma.Platform.Silicon.Development.DeviceProbe"]
   else if configuration == "user-isolation-development" && role == "kernel" then

@@ -864,7 +864,7 @@ def main():
             import lemmasim_browser
             lemmasim_browser.serve(args)
             return 0
-        if args.command=='init' and (args.backend=='rtl' or args.profile in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0')):
+        if args.command=='init' and (args.backend=='rtl' or args.profile in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0')):
             import lemmasim_session
             lemmasim_session.initialize(args)
             return 0
@@ -872,7 +872,7 @@ def main():
             import lemmasim_session
             if args.command=='session':
                 if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
-                if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0'):raise Failure('Persistent session requires the declared silicon-development binding')
+                if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):raise Failure('Persistent session requires the declared silicon-development binding')
                 lemmasim_session.bounded(args.quantum,1,1000000,'Quantum')
                 lemmasim_session.bounded(args.trace_limit,0,1000000,'Trace limit')
                 lemmasim_session.bounded(args.memory_latency,0,1024,'Memory latency')
@@ -896,12 +896,12 @@ def main():
             return 0
         if getattr(args,'backend','qemu')=='rtl':
             import silicon_guest
-            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0'):raise Failure('RTL backend requires a supported silicon-development profile')
+            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):raise Failure('RTL backend requires a supported silicon-development profile')
             if args.command=='build':silicon_guest.build(args)
             elif args.command=='run':silicon_guest.run(args)
             elif args.command=='replay':silicon_guest.replay(args)
             else:raise Failure('Unsupported RTL command')
-        elif getattr(args,'profile',None) in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0'):
+        elif getattr(args,'profile',None) in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):
             import lemmasim_fast
             if args.command != 'build':raise Failure('Matched fast binding uses the persistent session command; batch run/replay is not yet admitted')
             if args.rtl_build is not None:raise Failure('--rtl-build requires the RTL backend')
