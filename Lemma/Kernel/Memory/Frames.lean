@@ -2,7 +2,7 @@ import Lemma.Kernel.Memory.Access
 import Lemma.Platform.LemmaVM.Layout
 
 /-! Runtime frame ownership over the boot-selected reserved frame pool. Records are in
-kernel-owned metadata, not supplied by the host. Policy, scans and zeroing are
+kernel-owned metadata, not supplied by the host. Policy, indices and zeroing are
 ordinary elaborated Lean functions lowered through checked Action CFGs. -/
 namespace Lemma.Kernel.Memory.Frames
 open Lemma.Core0.Memory
@@ -67,6 +67,21 @@ def runtimeStackPages : Action :=
 
 def records : UInt64 := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000
 def accounting : UInt64 := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x100
+/-- Lower bound on the lowest free slot. Single-frame search advances past all
+observed occupied candidates; a pair/quad advances it only when its chosen run
+begins at that bound. Release lowers it. Fragmented run searches never hide an
+earlier single-frame hole. Count means no free slot. -/
+def freeCursor : UInt64 := accounting + 8
+/-- Exact maintained counts for the ordinary kernel/task owner range. Larger
+valid owner IDs keep the complete record scan, so this index imposes no new
+owner-domain or distinct-owner lifetime limit. The cells do not overlap FDT
+scratch, construction results, records or user/DMA-authorized storage. -/
+def indexedOwnerLimit : UInt64 := 64
+def ownerCounts : UInt64 := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x41000
+private def indexTransaction : UInt64 := accounting + 16
+def ownerCountCell (owner : UInt64) : UInt64 := ownerCounts + (owner - 1) * 8
+def indexedOwner (owner : UInt64) : Bool :=
+  if 0 < owner then if owner ≤ indexedOwnerLimit then true else false else false
 def taskQuota : UInt64 := 32
 def kernelOwner : UInt64 := 1
 def kernelPurpose : UInt64 := 1
@@ -128,12 +143,19 @@ private def initStep (i : UInt32) (_count : UInt32) (acc _ _ _ _ : UInt64) : Act
   if failed s = true then .done s 0 else
   .bind (Access.write64 (record i.toUInt64 + 24) 0) fun s _ => .done s acc
 
+private def initOwnerStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (Access.write64 (ownerCounts + i.toUInt64 * 8) 0) fun s _ => .done s acc
+
 /-- Called once before publishing any task or mapping. Reinitializing a live
 allocator is deliberately not exposed as a user operation. -/
 def init : Action :=
   .bind runtimeCount fun s count =>
   if failed s = true then .done s 0 else
   .boundedFoldU64 8192 initStep count.toUInt32 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 initOwnerStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 freeCursor 0) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (Access.write64 accounting count) fun s _ => .done s count
 
@@ -145,7 +167,11 @@ private def ownedStep (i : UInt32) (_count : UInt32) (acc owner _ _ _ : UInt64) 
 def ownedCount (owner : UInt64) : Action :=
   .bind runtimeCount fun s count =>
   if failed s = true then .done s 0 else
-  .boundedFoldU64 8192 ownedStep count.toUInt32 0 owner 0 0 0 fun s v => .done s v
+  if indexedOwner owner = true then
+    .bind (Access.read64 (ownerCountCell owner)) fun s owned =>
+    if failed s = true then .done s 0 else
+    if owned ≤ count then .done 0 owned else .done invariantFailure 0
+  else .boundedFoldU64 8192 ownedStep count.toUInt32 0 owner 0 0 0 fun s v => .done s v
 
 private def quotaByOwnership (owner quota needed : UInt64) : Action :=
   .bind (ownedCount owner) fun s owned =>
@@ -155,7 +181,7 @@ private def quotaByOwnership (owner quota needed : UInt64) : Action :=
 /-- Status-only quota admission, never a fabricated owned count. The kernel is
 exempt. With quota equal to the entire pool, validated free accounting already
 establishes room for this grant. Short supply or invalid numeric accounting
-retains the ownership scan and its quota-before-OOM priority.
+retains exact ownership counting and its quota-before-OOM priority.
 A failed new accounting read rejects conservatively before ownership counting;
 unknown supply must never become an allocation through a later retry. -/
 private def checkQuota (owner amount quota needed : UInt64) : Action :=
@@ -169,24 +195,105 @@ private def checkQuota (owner amount quota needed : UInt64) : Action :=
     else .done s 0
   else quotaByOwnership owner quota needed
 
-private def findStep (i : UInt32) (_count : UInt32) (acc _ _ _ _ : UInt64) : Action :=
-  .bind (Access.read64 (record i.toUInt64)) fun s owner =>
+/-- One transaction snapshot is private to a single nonpreemptible S Action.
+No allocation can nest between preparing, publishing or rolling back it. -/
+private def prepareIndex (owner amount : UInt64) : Action :=
+  .bind (Access.read64 freeCursor) fun s cursor =>
   if failed s = true then .done s 0 else
-  if firstFree owner acc = true then .done Status.iterationStop (i.toUInt64 + 1) else .done 0 acc
+  if amount < cursor then .done invariantFailure 0 else
+  .bind (Access.write64 (indexTransaction + 8) cursor) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (if indexedOwner owner = true then ownedCount owner else .done 0 0) fun s owned =>
+  if failed s = true then .done s 0 else Access.write64 indexTransaction owned
+
+private def rollbackIndex (owner : UInt64) : Action :=
+  .bind (Access.read64 indexTransaction) fun s owned =>
+  if failed s = true then .done invariantFailure 0 else
+  .bind (if indexedOwner owner = true then Access.write64 (ownerCountCell owner) owned else .done 0 0) fun s _ =>
+  if failed s = true then .done invariantFailure 0 else
+  .bind (Access.read64 (indexTransaction + 8)) fun s cursor =>
+  if failed s = true then .done invariantFailure 0 else Access.write64 freeCursor cursor
+
+private def publishIndex (owner index width amount : UInt64) : Action :=
+  .bind (Access.read64 indexTransaction) fun s owned =>
+  if failed s = true then .done s 0 else
+  if amount - width < owned then .done invariantFailure 0 else
+  .bind (if indexedOwner owner = true then Access.write64 (ownerCountCell owner) (owned + width) else .done 0 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.read64 (indexTransaction + 8)) fun s cursor =>
+  if failed s = true then .done s 0 else
+  Access.write64 freeCursor (if width = 1 then index + 1 else if cursor = index then index + width else cursor)
+
+private def releaseIndex (owner index retired : UInt64) : Action :=
+  .bind (Access.read64 indexTransaction) fun s owned =>
+  if failed s = true then .done s 0 else
+  if indexedOwner owner = true then
+    if owned = 0 then .done invariantFailure 0 else
+    .bind (Access.write64 (ownerCountCell owner) (owned - 1)) fun s _ =>
+    if failed s = true then .done s 0 else
+    .bind (Access.read64 (indexTransaction + 8)) fun s cursor =>
+    if failed s = true then .done s 0 else
+    Access.write64 freeCursor (if retired = 0 then if index < cursor then index else cursor else cursor)
+  else
+    .bind (Access.read64 (indexTransaction + 8)) fun s cursor =>
+    if failed s = true then .done s 0 else
+    Access.write64 freeCursor (if retired = 0 then if index < cursor then index else cursor else cursor)
+
+private def findStep (i : UInt32) (_count : UInt32) (acc start _ _ _ : UInt64) : Action :=
+  let index := start + i.toUInt64
+  .bind (Access.read64 (record index)) fun s owner =>
+  if failed s = true then .done s 0 else
+  if firstFree owner acc = true then .done Status.iterationStop (index + 1) else .done 0 acc
 
 private def findFree (amount : UInt64) : Action :=
-  .boundedFoldU64 8192 findStep amount.toUInt32 0 0 0 0 0 fun s found =>
+  .bind (Access.read64 freeCursor) fun s cursor =>
+  if failed s = true then .done s 0 else
+  if amount < cursor then .done invariantFailure 0 else
+  .boundedFoldU64 8192 findStep (amount - cursor).toUInt32 0 cursor 0 0 0 fun s found =>
   if s = Status.iterationStop then .done 0 found else .done s found
 
+/-- Eight consecutive checked writes per callback retain increasing address
+and first-error order. This removes loop/callback work, never page clearing. -/
 private def zeroStep (i : UInt32) (_count : UInt32) (acc frame _ _ _ : UInt64) : Action :=
-  .bind (Access.write64 (frame + i.toUInt64 * 8) 0) fun s _ => .done s acc
+  let start := frame + i.toUInt64 * 64
+  .bind (Access.write64 (start + 0) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 8) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 16) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 24) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 32) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 40) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 48) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (start + 56) 0) fun s _ => .done s acc
 
 def zero (frame : UInt64) : Action :=
   if frameAddressValid frame = false then .done invalidFrame 0 else
   .bind runtimeCount fun s count =>
   if failed s = true then .done s 0 else
   if pool + count * bytes ≤ frame then .done invalidFrame 0 else
-  .boundedFoldU64 512 zeroStep 512 0 frame 0 0 0 fun s v => .done s v
+  .boundedFoldU64 64 zeroStep 64 0 frame 0 0 0 fun s v => .done s v
+
+private def restoreFreeRecord (index generation : UInt64) : Action :=
+  .bind (Access.write64 (record index) 0) fun s _ =>
+  if s = 0 then
+    .bind (Access.write64 (record index + 8) 0) fun s _ =>
+    if s = 0 then
+      .bind (Access.write64 (record index + 16) 0) fun s _ =>
+      if s = 0 then Access.write64 (record index + 24) generation
+      else .done s 0
+    else .done s 0
+  else .done s 0
+
+private def rollbackSingle (owner index generation available : UInt64) : Action :=
+  .bind (restoreFreeRecord index generation) fun _ _ =>
+  .bind (Access.write64 accounting available) fun _ _ =>
+  .bind (rollbackIndex owner) fun _ _ => .done invariantFailure 0
 
 /-- Returns generation*configuredCount+index after complete zeroing and ownership publication.
 Resolve the handle before using its physical base; release requires this exact
@@ -209,18 +316,23 @@ def allocate (owner purpose : UInt64) : Action :=
   .bind (Access.read64 accounting) fun s remaining =>
   if failed s = true then .done s 0 else
   if remainingValid remaining count = false then .done invariantFailure 0 else
+  .bind (prepareIndex owner count) fun s _ =>
+  if failed s = true then .done s 0 else
   .bind (zero (address index)) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (Access.write64 (record index + 8) purpose) fun s _ =>
-  if failed s = true then .done s 0 else
+  if failed s = true then rollbackSingle owner index generation remaining else
   .bind (Access.write64 (record index + 16) 0) fun s _ =>
-  if failed s = true then .done s 0 else
+  if failed s = true then rollbackSingle owner index generation remaining else
   .bind (Access.write64 (record index + 24) (generation + 1)) fun s _ =>
-  if failed s = true then .done s 0 else
+  if failed s = true then rollbackSingle owner index generation remaining else
   .bind (Access.write64 accounting (remaining - 1)) fun s _ =>
-  if failed s = true then .done s 0 else
+  if failed s = true then rollbackSingle owner index generation remaining else
+  .bind (publishIndex owner index 1 count) fun s _ =>
+  if failed s = true then rollbackSingle owner index generation remaining else
   .bind (Access.write64 (record index) owner) fun s _ =>
-  if failed s = true then .done s 0 else .done 0 ((generation + 1) * count + index)
+  if failed s = true then rollbackSingle owner index generation remaining
+  else .done 0 ((generation + 1) * count + index)
 
 def resolve (owner handle : UInt64) : Action :=
   .bind runtimeCount fun s count =>
@@ -277,6 +389,12 @@ def unpin (owner handle : UInt64) : Action :=
   if mappings = 0 then .done invariantFailure 0 else
   .bind (Access.write64 slot (mappings - 1)) fun s _ => .done s (mappings - 1)
 
+private def rollbackRelease (owner index oldPurpose available : UInt64) : Action :=
+  .bind (Access.write64 (record index + 8) oldPurpose) fun _ _ =>
+  .bind (Access.write64 (record index) owner) fun _ _ =>
+  .bind (Access.write64 accounting available) fun _ _ =>
+  .bind (rollbackIndex owner) fun _ _ => .done invariantFailure 0
+
 /-- Release requires the live owner and zero revocable mapping/tree references.
 Callers invalidate translations before removing the last pin. The permanent
 trusted S management alias neither grants U authority nor pins a live owner. -/
@@ -294,31 +412,38 @@ def release (owner handle : UInt64) : Action :=
   .bind (Access.read64 accounting) fun s remaining =>
   if failed s = true then .done s 0 else
   if count ≤ remaining then .done invariantFailure 0 else
-  .bind (Access.write64 (record index + 8) 0) fun s _ =>
+  .bind (Access.read64 (record index + 8)) fun s oldPurpose =>
+  if failed s = true then .done s 0 else
+  .bind (prepareIndex owner count) fun s _ =>
   if failed s = true then .done s 0 else
   let retired := if handle / count = 0xffffffffffffffff / count then true else false
+  .bind (Access.write64 (record index + 8) 0) fun s _ =>
+  if failed s = true then rollbackRelease owner index oldPurpose remaining else
+  .bind (Access.write64 accounting (if retired = true then remaining else remaining + 1)) fun s _ =>
+  if failed s = true then rollbackRelease owner index oldPurpose remaining else
+  .bind (releaseIndex owner index (if retired = true then 1 else 0)) fun s _ =>
+  if failed s = true then rollbackRelease owner index oldPurpose remaining else
   .bind (Access.write64 (record index) (if retired = true then retiredOwner else 0)) fun s _ =>
-  if failed s = true then .done s 0 else
-  .bind (Access.write64 accounting (if retired = true then remaining else remaining + 1)) fun s _ => .done s 0
+  if failed s = true then rollbackRelease owner index oldPurpose remaining else .done 0 0
 
 def remaining : Action := Access.read64 accounting
 
-private def pairStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
-  if acc = 0 then
-    let index := i.toUInt64
-    .bind (Access.read64 (record index)) fun s firstOwner =>
-    if s = 0 then
-      if firstOwner = 0 then
-        .bind (Access.read64 (record (index + 1))) fun s secondOwner =>
-        if s = 0 then
-          if secondOwner = 0 then .done Status.iterationStop (index + 1) else .done 0 0
-        else .done s 0
-      else .done 0 0
-    else .done s 0
+private def pairStep (i _ : UInt32) (acc start _ _ _ : UInt64) : Action :=
+  let index := start + i.toUInt64
+  .bind (Access.read64 (record index)) fun s firstOwner =>
+  if failed s = true then .done s 0 else
+  if firstOwner = 0 then
+    .bind (Access.read64 (record (index + 1))) fun s secondOwner =>
+    if failed s = true then .done s 0 else
+    if secondOwner = 0 then .done Status.iterationStop (index + 1) else .done 0 acc
   else .done 0 acc
 
 private def findPair (amount : UInt64) : Action :=
-  .boundedFoldU64 8191 pairStep (amount - 1).toUInt32 0 0 0 0 0 fun s found =>
+  .bind (Access.read64 freeCursor) fun s cursor =>
+  if failed s = true then .done s 0 else
+  if amount < cursor then .done invariantFailure 0 else
+  if amount - cursor < 2 then .done 0 0 else
+  .boundedFoldU64 8191 pairStep (amount - cursor - 1).toUInt32 0 cursor 0 0 0 fun s found =>
   if s = Status.iterationStop then .done 0 found else .done s found
 
 private def freeGeneration (index : UInt64) : Action :=
@@ -346,24 +471,14 @@ private def preparePairRecord (index purpose generation : UInt64) : Action :=
     else .done s 0
   else .done s 0
 
-private def restoreFreeRecord (index generation : UInt64) : Action :=
-  .bind (Access.write64 (record index) 0) fun s _ =>
-  if s = 0 then
-    .bind (Access.write64 (record index + 8) 0) fun s _ =>
-    if s = 0 then
-      .bind (Access.write64 (record index + 16) 0) fun s _ =>
-      if s = 0 then Access.write64 (record index + 24) generation
-      else .done s 0
-    else .done s 0
-  else .done s 0
-
 /-- Only an unpublished transaction may restore its old generations. Neither
 handle has been returned with success, so no live reference can observe them.
 A failed metadata write is an invariant failure even when cleanup succeeds. -/
-private def rollbackPair (index available firstGeneration secondGeneration : UInt64) : Action :=
+private def rollbackPair (owner index available firstGeneration secondGeneration : UInt64) : Action :=
   .bind (restoreFreeRecord index firstGeneration) fun _ _ =>
   .bind (restoreFreeRecord (index + 1) secondGeneration) fun _ _ =>
   .bind (Access.write64 accounting available) fun _ _ =>
+  .bind (rollbackIndex owner) fun _ _ =>
   .bind (Access.write64 pairResult 0) fun _ _ =>
   .bind (Access.write64 (pairResult + 8) 0) fun _ _ =>
   .done invariantFailure 0
@@ -377,6 +492,8 @@ private def publishPair (owner purpose index available firstGeneration secondGen
     if s = 0 then
       .bind (Access.write64 accounting (available - 2)) fun s _ =>
       if s = 0 then
+        .bind (publishIndex owner index 2 count) fun s _ =>
+        if failed s = true then rollbackPair owner index available firstGeneration secondGeneration else
         .bind (Access.write64 (record index) owner) fun s _ =>
         if s = 0 then
           .bind (Access.write64 (record (index + 1)) owner) fun s _ =>
@@ -385,13 +502,13 @@ private def publishPair (owner purpose index available firstGeneration secondGen
             if s = 0 then
               .bind (Access.write64 (pairResult + 8) ((secondGeneration + 1) * count + index + 1)) fun s _ =>
               if s = 0 then .done 0 pairResult
-              else rollbackPair index available firstGeneration secondGeneration
-            else rollbackPair index available firstGeneration secondGeneration
-          else rollbackPair index available firstGeneration secondGeneration
-        else rollbackPair index available firstGeneration secondGeneration
-      else rollbackPair index available firstGeneration secondGeneration
-    else rollbackPair index available firstGeneration secondGeneration
-  else rollbackPair index available firstGeneration secondGeneration
+              else rollbackPair owner index available firstGeneration secondGeneration
+            else rollbackPair owner index available firstGeneration secondGeneration
+          else rollbackPair owner index available firstGeneration secondGeneration
+        else rollbackPair owner index available firstGeneration secondGeneration
+      else rollbackPair owner index available firstGeneration secondGeneration
+    else rollbackPair owner index available firstGeneration secondGeneration
+  else rollbackPair owner index available firstGeneration secondGeneration
 
 /-- Two physically adjacent independently versioned frames. Quota, free-pair,
 global accounting and both generations are checked before zeroing or ownership
@@ -424,6 +541,8 @@ def allocateContiguous2 (owner purpose : UInt64) : Action :=
                 if s = 0 then
                   if 0xffffffffffffffff / count ≤ firstGeneration then .done generationExhausted 0 else
                   if 0xffffffffffffffff / count ≤ secondGeneration then .done generationExhausted 0 else
+                  .bind (prepareIndex owner count) fun s _ =>
+                  if failed s = true then .done invariantFailure 0 else
                   .bind (zero (address index)) fun s _ =>
                   if s = 0 then
                     .bind (zero (address (index + 1))) fun s _ =>
@@ -442,9 +561,9 @@ def allocateContiguous2 (owner purpose : UInt64) : Action :=
 def quadResult : UInt64 := 0x804005a0
 private def quadGenerations : UInt64 := quadResult + 32
 
-private def quadFindStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+private def quadFindStep (i _ : UInt32) (acc start _ _ _ : UInt64) : Action :=
   if acc = 0 then
-    let index := i.toUInt64
+    let index := start + i.toUInt64
     .bind (Access.read64 (record index)) fun s a =>
     if failed s = true then .done s 0 else
     .bind (Access.read64 (record (index + 1))) fun s b =>
@@ -457,7 +576,11 @@ private def quadFindStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   else .done 0 acc
 
 private def findQuad (amount : UInt64) : Action :=
-  .boundedFoldU64 8189 quadFindStep (amount - 3).toUInt32 0 0 0 0 0 fun s found =>
+  .bind (Access.read64 freeCursor) fun s cursor =>
+  if failed s = true then .done s 0 else
+  if amount < cursor then .done invariantFailure 0 else
+  if amount - cursor < 4 then .done 0 0 else
+  .boundedFoldU64 8189 quadFindStep (amount - cursor - 3).toUInt32 0 cursor 0 0 0 fun s found =>
   if s = Status.iterationStop then .done 0 found else .done s found
 
 private def quadPreflightStep (i _ : UInt32) (acc index amount _ _ : UInt64) : Action :=
@@ -493,9 +616,10 @@ private def quadRollbackStep (i _ : UInt32) (acc index _ _ _ : UInt64) : Action 
   .bind (Access.write64 (quadResult + i.toUInt64 * 8) 0) fun s _ =>
   if failed s = true then .done invariantFailure 0 else .done 0 (acc + 1)
 
-private def quadRollback (index available : UInt64) : Action :=
+private def quadRollback (owner index available : UInt64) : Action :=
   .boundedFoldU64 4 quadRollbackStep 4 0 index 0 0 0 fun _ _ =>
-  .bind (Access.write64 accounting available) fun _ _ => .done invariantFailure 0
+  .bind (Access.write64 accounting available) fun _ _ =>
+  .bind (rollbackIndex owner) fun _ _ => .done invariantFailure 0
 
 /-- Four owned, physically contiguous and independently versioned pages. All
 free records, quota, generations and accounting are checked before zeroing.
@@ -522,15 +646,19 @@ def allocateContiguous4 (owner purpose : UInt64) : Action :=
   .boundedFoldU64 4 quadPreflightStep 4 0 index amount 0 0 fun s checked =>
   if failed s = true then .done s 0 else
   if checked = 4 then
+    .bind (prepareIndex owner amount) fun s _ =>
+    if failed s = true then .done s 0 else
     .boundedFoldU64 4 quadZeroStep 4 0 index 0 0 0 fun s cleared =>
     if failed s = true then .done invariantFailure 0 else
     if cleared = 4 then
+      .bind (publishIndex owner index 4 amount) fun s _ =>
+      if failed s = true then quadRollback owner index available else
       .boundedFoldU64 4 quadPublishStep 4 0 index owner purpose amount fun s published =>
-      if failed s = true then quadRollback index available else
+      if failed s = true then quadRollback owner index available else
       if published = 4 then
         .bind (Access.write64 accounting (available - 4)) fun s _ =>
-        if failed s = true then quadRollback index available else .done 0 quadResult
-      else quadRollback index available
+        if failed s = true then quadRollback owner index available else .done 0 quadResult
+      else quadRollback owner index available
     else .done invariantFailure 0
   else .done invariantFailure 0
 

@@ -46,6 +46,54 @@ before release. Four-page contiguous allocation validates all four generations
 and accounting before zeroing/publication. Failed unpublished metadata commits
 roll back all four records; this rollback is not exposed as a user operation.
 
+### Task006 private allocator index v1
+
+`lemma-frame-index/1` preserves the owner domain, quota/error precedence,
+lowest-slot/lowest-contiguous-run allocation, handles, final-generation
+retirement, zero-before-publication, pinning and release rules. It changes no
+user ABI, durable format, admitted language feature or physical capacity.
+Its private lower-bound cursor is the word at `0x80400108`, and exact counts
+for owner IDs1..64 are at `[0x80441000,0x80441200)`, immediately after the
+complete8192-frame ownership array and separate from all existing device state
+in the first metadata page. The ordinary kernel/task
+owners use those maintained counts; every larger valid owner ID still uses a
+complete configured-pool record scan. Owner0 and retired-owner diagnostic counts
+also keep their historical scan meaning. There is no new owner-ID restriction,
+finite lifetime-owner table, fabricated count or host initialization.
+
+Initialization clears all configured records, the cursor and all64 count cells.
+A search starts at the cursor and still examines each candidate record in
+increasing index order. A successful single-frame search advances the cursor past its chosen slot:
+every preceding candidate since the old bound was observed occupied. A
+successful pair/quad advances it only if its chosen run begins at the cursor.
+A pair/quad found after an earlier fragmented hole therefore leaves that lower
+bound in place. A nonretired release lowers the
+cursor to the released index when necessary. Retirement removes a live owner
+count but never puts that slot back into free supply. A cursor outside0..count
+or an indexed count above count rejects with invariant status39. The index is
+kernel metadata with the same trusted-write boundary as the ownership records;
+its invariants are independently tested against the literal record array.
+
+Each nonpreemptible allocator transaction snapshots the original count and
+cursor in private words at `0x80400110/+8`. Successful single/pair/quad publication
+updates records, global free accounting and the index together before returning
+handles. An unpublished metadata failure restores original generations, free
+records, global accounting and the index, and reports invariant failure even
+when cleanup succeeds. Failed release similarly restores the live owner/purpose,
+free accounting and index. No nested allocation, scheduling boundary or borrowed
+user alias may intervene in this construction transaction. Checked metadata
+writes cannot ordinarily fail on the admitted machine; finite-RAM fault fixtures
+exercise one failed write and successful cleanup independently. Repeated cleanup
+write failures remain invariant failures, never a successful grant or release.
+
+Complete page clearing still performs512 checked64-bit writes in increasing
+address order. Eight consecutive writes share one bounded callback, reducing
+callbacks from512 to64 without removing any write, bypassing guards or changing
+first-error order. A failed zeroing operation publishes no handle or ownership;
+already cleared bytes may remain changed in the still-free page. Host Action
+read/write/callback counts are algorithm-work observations, not target CPU
+cycles, compiler proofs or canonical notebook Ready evidence.
+
 Expanded address spaces use 13 initial page-table frames, compared with 11 in
 the historical configuration. The added frames hold S-only PLIC mappings.
 The existing UART page table also maps VirtIO, paper and pen in the expanded
