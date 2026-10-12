@@ -31,11 +31,11 @@ private def zeroHeaderStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
   .bind (Objects.get (base + headerOffset + i.toUInt64 * 8)) fun s value =>
   if failed s = true then fatal else .done 0 (if value = 0 then acc else 0)
 
-/-- Does not require Objects.init for a genuinely zero legacy header. A partial
-or constructing managed header cannot be interpreted as an unmanaged caller. -/
-private def header (descriptor : UInt64) : Action :=
-  .bind (AddressSpace.base descriptor) fun s base =>
-  if failed s = true then .done CapabilityABI.invalidHandle 0 else
+/-- Kernel-only header validation borrowing a `base` result from this same
+nonpreemptible S Action. No schedule, descriptor/directory mutation, release
+or retained alias may intervene. All capability metadata and exact registered
+descriptor checks remain live; nothing is cached across syscall entry. -/
+private def headerAt (descriptor base : UInt64) : Action :=
   .bind (Objects.get (base + headerOffset)) fun s tag =>
   if failed s = true then fatal else
   if tag = magic then
@@ -66,6 +66,13 @@ private def header (descriptor : UInt64) : Action :=
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal
   else if tag = 0 then .done CapabilityABI.invalidHandle 0 else fatal
 
+private def header (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then .done CapabilityABI.invalidHandle 0 else
+  headerAt descriptor base
+
+/-- Does not require Objects.init for a genuinely zero legacy header. A partial
+or constructing managed header cannot be interpreted as an unmanaged caller. -/
 def managed (descriptor : UInt64) : Action :=
   .bind (AddressSpace.base descriptor) fun s base =>
   if failed s = true then fatal else
@@ -76,7 +83,7 @@ def managed (descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   if allZero = 1 then .done 0 0 else fatal
   else
-  .bind (header descriptor) fun s checked =>
+  .bind (headerAt descriptor base) fun s checked =>
   if failed s = true then fatal else
   .bind (Objects.get (checked + headerOffset + 24)) fun s state =>
   if failed s = true then fatal else

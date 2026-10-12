@@ -212,6 +212,108 @@ def checkTable : IO Unit := do
       status test 50 action
   IO.println "TASK_TABLE_ERROR_BOUNDARIES:PASS exactowner purpose generation zero-pins first-read errors"
 
+namespace Cap
+open Lemma.User
+open Lemma.Kernel.Capability
+open Lemma.Kernel
+private def referenceZeroHeaderStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
+  .bind (Objects.get (base + headerOffset + i.toUInt64 * 8)) fun s value =>
+  if failed s = true then fatal else .done 0 (if value = 0 then acc else 0)
+private def referenceHeader (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then .done CapabilityABI.invalidHandle 0 else
+  .bind (Objects.get (base + headerOffset)) fun s tag =>
+  if failed s = true then fatal else
+  if tag = magic then
+  .bind (Objects.get (base + headerOffset + 8)) fun s version =>
+  if failed s = true then fatal else
+  if version = 1 then
+  .bind (Objects.get (base + headerOffset + 16)) fun s self =>
+  if failed s = true then fatal else
+  if self = descriptor then
+  .bind (Objects.get (base + headerOffset + 24)) fun s state =>
+  if failed s = true then fatal else
+  if (if state = active then true else if state = constructing then true else false) = true then
+  .bind (Objects.get (base + headerOffset + 32)) fun s count =>
+  if failed s = true then fatal else
+  if count = capacity then
+  .bind (Objects.get (base + headerOffset + 40)) fun s used =>
+  if failed s = true then fatal else
+  if used ≤ capacity then
+  .bind (Objects.get (base + headerOffset + 48)) fun s registry =>
+  if failed s = true then fatal else
+  if registry < Objects.registryCapacity then
+  .bind (Objects.registryDescriptor registry) fun s registered =>
+  if failed s = true then fatal else
+  if registered = descriptor then
+  .bind (Objects.get (base + headerOffset + 56)) fun s reserved =>
+  if failed s = true then fatal else
+  if reserved = 0 then .done 0 base else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else if tag = 0 then .done CapabilityABI.invalidHandle 0 else fatal
+
+def referenceManaged (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else
+  .bind (Objects.get (base + headerOffset)) fun s tag =>
+  if failed s = true then fatal else
+  if tag = 0 then
+  .boundedFoldU64 8 referenceZeroHeaderStep 8 1 base 0 0 0 fun s allZero =>
+  if failed s = true then fatal else
+  if allZero = 1 then .done 0 0 else fatal
+  else
+  .bind (referenceHeader descriptor) fun s checked =>
+  if failed s = true then fatal else
+  .bind (Objects.get (checked + headerOffset + 24)) fun s state =>
+  if failed s = true then fatal else
+  if state = active then .done 0 1 else fatal
+
+end Cap
+
+def checkManaged (expanded : Bool) : IO Unit := do
+  let (state,descriptor,address) ← fresh expanded
+  -- A genuinely legacy zero capability header must work without Objects.init.
+  let legacy ← IO.mkRef (← state.get)
+  let legacyNew ← IO.mkRef (← state.get)
+  require ((← execute legacy (Cap.referenceManaged descriptor)) == (0,0))
+    "reference unmanaged legacy header is not zero"
+  require ((← execute legacyNew (Lemma.Kernel.Capability.managed descriptor)) == (0,0))
+    "zero legacy header now requires managed object initialization"
+  require ((← legacy.get).words == (← legacyNew.get).words)
+    "zero legacy header changed authoritative RAM"
+  discard <| success state Lemma.Kernel.Objects.init
+  discard <| success state (Lemma.Kernel.Capability.attach descriptor)
+  discard <| success state (Lemma.Kernel.Capability.activate descriptor)
+  resetCounts state
+  let original ← IO.mkRef (← state.get)
+  let current ← IO.mkRef (← state.get)
+  let expected ← execute original (Cap.referenceManaged descriptor)
+  let observed ← execute current (Lemma.Kernel.Capability.managed descriptor)
+  require (expected == observed && observed == (0,1)) "managed caller status differs"
+  let a ← original.get
+  let b ← current.get
+  require (a.words == b.words) "managed validation mutated authoritative RAM"
+  require (b.reads64 < a.reads64 && b.registryReads < a.registryReads) "managed header must reuse its freshly validated descriptor"
+  IO.println s!"CAPABILITY_LOCAL_REUSE:PASS expanded={expanded} reads64={a.reads64}→{b.reads64} ownershipreads={a.registryReads}→{b.registryReads}"
+  let saved := b
+  for (location,value) in #[(address,0),(address + 8,3),(address + 16,descriptor + 1),
+      (address + 24,0),(address + 32,0),(address + 64,0),(address + 72,0),
+      (address + 2560,0),(address + 2560,1),(address + 2568,2),
+      (address + 2576,descriptor + 1),(address + 2584,0),(address + 2584,2),
+      (address + 2592,15),(address + 2600,17),(address + 2608,8),(address + 2616,1)] do
+    let initial := put saved location value
+    let a ← IO.mkRef initial
+    let b ← IO.mkRef initial
+    require ((← execute a (Cap.referenceManaged descriptor)) ==
+      (← execute b (Lemma.Kernel.Capability.managed descriptor))) "corrupt managed metadata precedence differs"
+    require ((← a.get).words == (← b.get).words) "corrupt managed validation changed RAM"
+  for location in #[address,address + 24,address + 64,address + 2560,address + 2568,
+      address + 2576,address + 2584,address + 2592,address + 2600,address + 2608,address + 2616] do
+    let a ← IO.mkRef {saved with failRead := some location}
+    let b ← IO.mkRef {saved with failRead := some location}
+    require ((← execute a (Cap.referenceManaged descriptor)) ==
+      (← execute b (Lemma.Kernel.Capability.managed descriptor))) "managed first fault precedence differs"
+  IO.println s!"CAPABILITY_AUTHORITY_ERRORS:PASS expanded={expanded} status, complete RAM, corrupt authority and first read errors"
 end AllocationReuseFixture
 
 open Lean Elab Command
@@ -219,3 +321,7 @@ run_cmd do
   liftIO <| AllocationReuseFixture.check false
   liftIO <| AllocationReuseFixture.check true
   liftIO AllocationReuseFixture.checkTable
+
+run_cmd do
+  liftIO <| AllocationReuseFixture.checkManaged false
+  liftIO <| AllocationReuseFixture.checkManaged true

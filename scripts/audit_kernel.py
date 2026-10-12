@@ -685,6 +685,76 @@ def validate_fresh_descriptor_base_call(body: str, checked: str, protected: str,
     return {'validated_base':values[0],**gate}
 
 
+def validate_capability_base_borrow(body: str, checked: str, helper: str,
+                                     failed: str, failed_body: str,
+                                     readonly_calls: set[str]) -> dict:
+    """Closed two-argument capability helper, using this caller's fresh base.
+
+    The complete caller may only invoke the enumerated read-only helpers. This
+    rejects scheduling, writes and another descriptor, even on a success path.
+    It adds no target primitive or persisted authority cache.
+    """
+    variable=r'%[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+variable+r') = call \{ i64, i64 \} @'+re.escape(checked)+r'\(([^\n]*)\)',body)
+    if len(calls)!=1 or calls[0][1]!='i64 %arg0':
+        raise Core0Error('capability helper lacks one exact caller descriptor validation')
+    values=re.findall(r'('+variable+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0][0])+r', 1$',body,re.M)
+    arguments=re.findall(r'call \{ i64, i64 \} @'+re.escape(helper)+r'\(([^\n]*)\)',body)
+    if len(values)!=1 or arguments!=['i64 %arg0, i64 '+values[0]]:
+        raise Core0Error('capability helper does not borrow this exact descriptor/base pair')
+    actual=parse_definitions_and_calls(body)[2]
+    if not actual <= readonly_calls | {checked,helper} or re.search(r'\b(store|atomicrmw|cmpxchg|fence)\b',body):
+        raise Core0Error('capability base borrow has an intervening effect or unapproved helper')
+    return {'validated_base':values[0], 'readonly_calls':sorted(actual),
+            **validate_failed_call_gate(body,checked,helper,failed,failed_body)}
+
+
+def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
+    """Keep the private same-Action header helper closed at every compiled use."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    names={source:row['symbol'] for source,row in rows.items()}
+    c='Lemma.Kernel.Capability.';o='Lemma.Kernel.Objects.'
+    a='Lemma.Kernel.Memory.AddressSpace.base';v='Lemma.User.CapabilityABI.invalidHandle'
+    helper=c+'headerAt';callers={c+'header',c+'managed'}
+    required={helper,*callers,a,v,c+'failed',o+'get',o+'registryDescriptor',c+'headerOffset',
+              c+'zeroHeaderStep',c+'fatal',c+'active',c+'magic',c+'constructing',c+'capacity',o+'registryCapacity'}
+    if unit.get('role')!='kernel' or not required <= names.keys():
+        raise Core0Error('capability header helper lacks its closed kernel source inventory')
+    if rows[helper].get('args')!=['u64','u64'] or set(rows[helper].get('effects',[]))!={'checked-access','physical-read'}:
+        raise Core0Error('capability header helper is not a read-only descriptor/base Action')
+    body=_ir_definition_body(pre_ir,names[helper])
+    if not re.search(r'^define \{ i64, i64 \} @'+re.escape(names[helper])+r'\(i64 %arg0, i64 %arg1\) nounwind noinline "disable-tail-calls"="true" \{',pre_ir,re.M):
+        raise Core0Error('capability header helper emitted signature differs')
+    constants={names[c+'headerOffset']:2560,names[c+'magic']:0x31504143414d454c,
+               names[c+'active']:1,names[c+'constructing']:2,names[c+'capacity']:16,names[o+'registryCapacity']:8}
+    for symbol,value in constants.items():
+        if re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',_ir_definition_body(pre_ir,symbol)) is None:
+            raise Core0Error('capability helper scalar metadata constant differs')
+    operands=_ipc_scalar_operands(body,constants)
+    addresses=[operands.get(operand,operand) for operand in re.findall(
+        r'call \{ i64, i64 \} @'+re.escape(names[o+'get'])+r'\(i64 ([^\n)]+)\)',body)]
+    root=('add','%arg1',2560)
+    if addresses!=[root,*[('add',root,offset) for offset in range(8,64,8)]]:
+        raise Core0Error('capability helper changed its eight exact live header fields')
+    if len(re.findall(r'call \{ i64, i64 \} @'+re.escape(names[o+'registryDescriptor'])+r'\(',body))!=1:
+        raise Core0Error('capability helper dropped its live registered descriptor check')
+    if not parse_definitions_and_calls(body)[2] <= {names[source] for source in required-{a,*callers,c+'zeroHeaderStep',helper}}:
+        raise Core0Error('capability header helper has an unapproved effect or call')
+    failed_body=_ir_definition_body(pre_ir,names[c+'failed']);observed=set();gates=[]
+    for source,symbol in names.items():
+        caller=_ir_definition_body(pre_ir,symbol)
+        if names[helper] not in parse_definitions_and_calls(caller)[2]: continue
+        if source not in callers: raise Core0Error('capability header helper has an unapproved caller')
+        observed.add(source)
+        allowed=({v,c+'failed'} if source==c+'header' else
+                 {c+'failed',o+'get',c+'headerOffset',c+'zeroHeaderStep',c+'fatal',c+'active'})
+        gates.append({'source':source,**validate_capability_base_borrow(caller,names[a],names[helper],names[c+'failed'],failed_body,{names[item] for item in allowed})})
+    if observed!=callers: raise Core0Error('capability header helper lacks both validated entry routes')
+    return {'helper':helper,'borrowed_fields':['caller_descriptor','fresh_checked_base'],
+            'header_read_offsets':list(range(0,64,8)), 'checked_cfg_gates':gates,
+            'scope':'same nonpreemptible Action; no writes, scheduling or cross-entry cache'}
+
+
 def validate_fresh_descriptor_helpers(unit: dict, pre_ir: str) -> dict:
     """Closed kernel-only helper inventory for within-call stack validation."""
     names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
@@ -1337,8 +1407,9 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         task+"reapOne":[task+"detachManaged","Lemma.Kernel.Loader.teardown"],
         task+"detachManaged":[caps+"detach"],
         caps+"attach":[address+"base",objects+"register"],
-        caps+"header":[address+"base",objects+"registryDescriptor"],
-        caps+"managed":[address+"base",caps+"header",caps+"zeroHeaderStep"],
+        caps+"header":[address+"base",caps+"headerAt"],
+        caps+"headerAt":[objects+"get",objects+"registryDescriptor"],
+        caps+"managed":[address+"base",caps+"headerAt",caps+"zeroHeaderStep"],
         caps+"requireActive":[caps+"header"],
         caps+"lookupEntry":[caps+"requireActive",objects+"resolve"],
         caps+"lookup":[caps+"lookupEntry",objects+"resolve",userabi+"rightsSubset"],
@@ -1417,7 +1488,7 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         (entry+"configure",entry+"seedEndpoint",objects+"createEndpoint"),
         (entry+"createTamper",entry+"grant",alias+"install"),
         (entry+"createTamper",alias+"install",task+"activateManaged"),
-        (caps+"header",address+"base",objects+"get"),
+        (caps+"header",address+"base",caps+"headerAt"),
         (caps+"lookupEntry",caps+"requireActive",objects+"resolve"),
         (caps+"publish",objects+"reference",objects+"publishSerial"),
         (caps+"revokeKey",objects+"beginRevoke",objects+"destroy"),
@@ -1452,7 +1523,7 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
     pattern=r"call \{ i64, i64 \} @"+re.escape(by_source[task+"prepareManaged"])+r"\(i64 ([0-9]+),"
     if re.findall(pattern,launch_body)!=["0","1","2"] or re.findall(pattern,tamper_body)!=["3"]:
         raise Core0Error("managed image preparation differs from exact source-selected boot roles")
-    return {"selected_console_router":router_report,"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
+    return {"capability_header_borrow":validate_capability_header_helpers(unit,pre_ir),"selected_console_router":router_report,"endpoint_budget":endpoint_report,"alias":alias_report,"legacy_console_denial":denial_report,"managed_policy":MANAGED_POLICY,"storage":{"control":0x80400620,"header_offset":2560,"entries_offset":2624,"capacity":16,"entry_bytes":64,"object_capacity":16,"max_generation":0x0fffffffffffffff,"max_serial":0x0fffffffffffffff},
             "source_constants":{source:{"symbol":by_source[source],"value":value} for source,value in sorted(constants.items())},
             "source_call_edges":observed_edges,"ordered_cfg_calls":ordered,"checked_cfg_gates":gates,
             "limitations":["Compiled call/CFG/storage binding, not a proof of authority semantics or guest execution."]}
@@ -1687,8 +1758,9 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       t+"checkedActivation":[c+"managed",c+"requireActive"],
       t+"abort":[t+"inactiveDescriptor",t+"detachManaged","Lemma.Kernel.Loader.teardown"],
       t+"reapOne":[t+"detachManaged","Lemma.Kernel.Loader.teardown"],t+"detachManaged":[i+"detach",c+"detach"],
-      c+"attach":[a+"base",o+"register",s+"initialize"],c+"header":[a+"base",o+"registryDescriptor"],
-      c+"managed":[a+"base",c+"header"],c+"requireActive":[c+"header"],
+      c+"attach":[a+"base",o+"register",s+"initialize"],c+"header":[a+"base",c+"headerAt"],
+      c+"headerAt":[o+"get",o+"registryDescriptor"],
+      c+"managed":[a+"base",c+"headerAt"],c+"requireActive":[c+"header"],
       c+"lookupEntry":[c+"requireActive",o+"resolve"],c+"lookup":[c+"lookupEntry",o+"resolve",v+"rightsSubset"],
       c+"grantBoot":[c+"header",c+"grant"],c+"grant":[o+"resolve",v+"rightsValid",c+"freeSlot",o+"nextSerial",c+"publish"],
       c+"publish":[o+"reference",o+"publishSerial"],c+"grantReply":[c+"requireActive",o+"replyFields",c+"grant",o+"deliverReply"],
@@ -1965,6 +2037,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
         raise Core0Error('IPC saved context validation/wakeup mutates PC or registers unexpectedly')
     return {'managed_policy':BUFFER_POLICY if service else IPC_POLICY,'source_call_edges':observed,'source_constants':{source:{'symbol':by_source[source],'value':value} for source,value in sorted((constants|byte_constants).items())},
       'ordered_cfg_calls':ordered,'checked_cfg_gates':checked,'state_publications':publications,'loaded_field_gates':field_gates,'blocked_bridge':bridge,'initial_grants':grants,'endpoint_budget':endpoint,'reply_budget':reply_budget,'legacy_console_denial':denial,
+      'capability_header_borrow':validate_capability_header_helpers(unit,pre_ir),
       **({'current_saved_context':fresh_context} if fresh_context else {}),
       'storage':{'descriptor_metadata':3648,'descriptor_metadata_bytes':128,'packet':3776,'packet_bytes':256,'payload':3840,'payload_bytes':192,'queue_slots':4,'queue_header_bytes':128,'queue_slot_bytes':320,'reply_capacity':8},
       'limitations':['Genuine compiled source/CFG/storage binding; independent model, full ELF audit and guest execution remain separate evidence.']}
@@ -4756,6 +4829,12 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
         object_budget = validate_object_budget(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+        # Canonical notebooks use their own device/boot authority closure,
+        # rather than the historical IPC-development graph. Every kernel unit
+        # that reaches managed dispatch must still audit this local borrow.
+        capability_header_borrow = (validate_capability_header_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Capability.managed'
+                   for row in units['kernel']['functions']) else None)
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                                 if configuration == "capabilities-development" else None)
         managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
@@ -4948,6 +5027,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
                   "object_budget": object_budget,
+                  **({"capability_header_borrow":capability_header_borrow} if capability_header_borrow is not None else {}),
                   **({"architecture_diagnostics": architecture} if architecture is not None else {}),
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."

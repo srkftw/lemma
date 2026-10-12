@@ -15,6 +15,7 @@ run_cmd do
   liftIO <| IO.FS.createDirAll path
   for (label,profile,roots) in #[
       ("allocation", Profile.kernel_v0_3, #[`Lemma.Kernel.Syscall.allocate,`Lemma.Kernel.Task.table]),
+      ("capability", Profile.kernel_v0_3, #[`Lemma.Kernel.Capability.managed, `Lemma.Kernel.Capability.requireActive]),
       ("surface", Profile.user_v0_1, #[`Lemma.Ink.Surface.background])] do
     let suite ← match checkAndLowerActionSuiteForProfile env profile roots with
       | .ok suite => pure suite

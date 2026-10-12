@@ -184,3 +184,56 @@ required. The existing notebook observer now decodes actual native P5 output
 alongside QEMU P6; tests reject malformed lengths/geometry. The independent
 empty-notebook observer covers the entire background and complete footer,
 including saved/pending distinction. No expected pixel enters the machine.
+
+## Same-Action managed dispatch validation
+
+`Capability.managed` now calls the private read-only `headerAt` with the exact
+descriptor base it validated earlier in the same S Action. The second tag read
+and all eight capability-header fields, live registered-descriptor identity
+and active-state check remain. Historical zero headers keep their eight-word
+test. Source SHA256 is
+`8b0019f5413ce9b13725683701191dd8095e4042ef407d8175fee31bfcaacf29`.
+
+The independent previous/current Action fixture compares status, result and
+complete authoritative RAM, including malformed descriptor/header/registry
+fields and first-read errors. Receipt:
+`build/task006-allocation-capability-reuse-a5.log`. The latter also checks a
+genuinely zero legacy header before object-table initialization and first read
+failures on every capability-header word.
+
+| Managed validation | Previous read64 | Current read64 | Ownership reads |
+| --- | ---: | ---: | ---: |
+| Legacy |72|49|18 /12|
+| Expanded |184|105|82 /44|
+
+The genuine elaboration/profile/LLVM probe passes at
+`build/task006-capability-compile-a3`; its exact fresh-base/status/pair/read-only
+compiled guard passes separately in
+`build/task006-capability-compile-a3/borrow-audit.json`. The narrow audit
+checks both admitted callers and all eight live header-read addresses; negative
+fixtures reject different descriptors, substituted bases, reversed/ignored
+status gates, writes, scheduling and bypasses. The98 focused kernel audit
+tests pass at `build/task006-capability-borrow-kernel-host-a1.log`. These are
+structural/compiler and Action results. The combined fresh supervisor O2 image
+with the separately maintained owned-arena mathematics increment passes its
+complete strict audit at `build/kernel/task006-owned-arena-notebook-a1`;
+image SHA256 is
+`ef898c1872d91e4feea3ff72aeb04cad6c70fb86670974a0e7db36af930e6bb2`.
+That original canonical audit did not invoke the historical IPC graph and
+therefore did not run the new header-helper guard. Its original narrower PASS
+and exact observer are retained at
+`build/task006-owned-arena-notebook-a1-original-audit`. The canonical kernel
+hook is now explicit for every unit reaching managed dispatch. Applying that
+guard to a1's unchanged genuine unit passes separately at
+`build/task006-capability-canonical-gate-a1.json`; it is not a new full or
+current-source audit. A fresh source-bound image and real workflow
+qualification remain separate.
+
+The retained observational checkpoint
+`task006-frame-index-canonical-a2/profile-boundary-a3` is at997000000 cycles:
+560106454 retired instructions, U91987167/S892584189/M12428636 cycles,
+three medium reads and zero controller completions. Its4438384 framebuffer
+writes include the original3630000-pixel clear, leaving808384 actual uploaded
+pixels. This identifies upload/validation work after background construction.
+It is neither Ready nor completed full display. The declared ceilings remain
+unchanged, and no failed campaign is reclassified.

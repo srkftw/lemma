@@ -228,6 +228,19 @@ precedence against the earlier implementation, including malformed registry,
 duplicate mappings and read/write/invalidation failures. This local reuse is
 not persistent authority caching or a reduction of isolation checks.
 
+`Capability.managed` borrows its fresh descriptor base for its private
+`headerAt` call in that same nonpreemptible S Action. The zero legacy-header
+path retains all eight zero reads. A managed header still rereads its tag,
+version, descriptor identity, state, capacity, used count, registry slot and
+reserved word, validates the live registered descriptor, and requires active
+state. Only the redundant descriptor/directory validation is removed. The
+public capability API and rejection precedence are unchanged. The compiled
+audit admits only `header` and `managed` as callers, requires their exact
+successful fresh descriptor/base result, and rejects writes, scheduling and
+unapproved helpers before this call. No authority survives syscall entry.
+Finite-RAM comparisons include malformed headers/descriptors, first read
+failures and complete authoritative RAM, separate from real guest execution.
+
 The workload checker can retain read-only allocator observations using
 `conformance/lemmasim/check_owned_memory.py`. Each physical read is at most
 64 KiB. Ready and final-before-reap observations read the bounded ownership
