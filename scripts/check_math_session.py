@@ -287,10 +287,15 @@ class MathChecker(Checker):
         failed_stream.sample(24+27*12+4,225,2048,True);failed_stream.sample(24+27*12+4,225,0,False)
         failed.admit(failed_stream.events[first:])
         failed.wait(lambda state:any(row[0]==0x424 for row in self.rows(failed)) and idle(state),self.args.action_seconds)
+        # Failure publication follows its diagnostic receipt just as Saved
+        # does. Require the controller's actual Failed footer within the
+        # original bound, rather than a still-visible previous Saved frame.
+        failure_frame=self.wait_label(failed,'FAILED',24,132)
         _,failed_medium=failed.export('failed-save')
         require(self.record(failed_medium)[0]==final_bytes and
             not any(row[0]==0x421 for row in self.rows(failed)), 'failed course barrier fabricated Saved or changed acknowledged record')
-        self.report['failed_save']={'status':'PASS','no_false_saved':True,'acknowledged_math_unchanged':True}
+        self.report['failed_save']={'status':'PASS','no_false_saved':True,'acknowledged_math_unchanged':True,
+            'actual_failed_controller_label':True,'completed':failure_frame['devices']['paper']['completed']}
         failed.close();self.sessions.remove(failed)
         require(sha(self.args.disk)==original_hash,'checker mutated original user medium')
         self.report['status']='PASS'

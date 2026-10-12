@@ -1,0 +1,175 @@
+{
+  "schema": "lemma-managed-guest-course/1",
+  "status": "PASS",
+  "scope": "Actual normal isolated arithmetic uses genuinely elaborated ordinary Fraction construction/projection through additive user-v0.2; complete managed language/proof kernel/full G2 and G5-G7 remain unfinished",
+  "command": "python3 scripts/check_math_session.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-managed-math-a1 --native-bundle build/native/task006-managed-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200",
+  "result": "build/task006-managed-math-a1/result.json",
+  "result_sha256": "dcc3330243d72a4905777867949868c5b8d4395cc0ac4f9d7fa5036147d77e1d",
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "c7933624ceb0d05fdb5d56669d268b68b2d7176a46e12fab138f0809ba649fac",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "native_bundle": {
+    "path": "build/native/task006-managed-a1",
+    "manifest_sha256": "91216b9efa5814ccd3304c2db30723d18e80f34f9bd423a175d2594a5435a439"
+  },
+  "observer_sources": {
+    "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+    "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+    "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+    "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+    "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+    "scripts/check_math_session.py": "57226cca8268b62fe96bc5c1460882252e8a53564b561d139f8f094d16f7fd30",
+    "conformance/lemmasim/math_oracle.py": "e86e7fda825577dae4e0147bca8d9c9bdc34bd72b4b1d1eabb43724d5e8ebd97"
+  },
+  "bounds": {
+    "disk": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-canonical-cold-a2/medium.raw",
+    "work_dir": "/home/sreekumaar/Downloads/lemma/build/task006-managed-math-a1",
+    "native_bundle": "build/native/task006-managed-a1",
+    "guest_build": null,
+    "durable_suffix_from": null,
+    "timeout": 300,
+    "boot_seconds": 60,
+    "action_seconds": 30,
+    "deadline": 1200,
+    "checkpoint_relation": "not-exercised"
+  },
+  "boot": {
+    "virtual_seconds": 7.300000028,
+    "host_seconds": 11.943986998987384,
+    "cycle": 730000003
+  },
+  "cold_boot": {
+    "virtual_seconds": 8.250000008,
+    "host_seconds": 14.560771406977437,
+    "cycle": 825000001
+  },
+  "elapsed_seconds": 216.56198510405375,
+  "outcomes": [
+    1,
+    2,
+    5,
+    1,
+    4
+  ],
+  "actual_arithmetic_ipc_console_rows": [
+    [
+      1110,
+      0,
+      0,
+      1,
+      10000000
+    ],
+    [
+      1109,
+      231,
+      11,
+      0,
+      1
+    ],
+    [
+      1109,
+      283,
+      12,
+      0,
+      2
+    ],
+    [
+      1109,
+      318,
+      13,
+      0,
+      5
+    ],
+    [
+      1109,
+      489,
+      19,
+      0,
+      1
+    ],
+    [
+      1109,
+      524,
+      20,
+      0,
+      4
+    ]
+  ],
+  "saved_status_publication": {
+    "status": "PASS",
+    "observed_pending_after_barrier": true,
+    "before_completed": 36,
+    "after_completed": 37,
+    "virtual_ticks": 1000000,
+    "acknowledged_math_unchanged": true,
+    "original_action_seconds": 30
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "actual_new_cpu": true,
+    "math_sha256": "13e52b41d5cd44c33bec97c8127e0078466098c120f6a41ae1644087cfe706d5",
+    "complete_controller_pixels": true,
+    "raw_ink_preserved": true
+  },
+  "failed_save": {
+    "status": "PASS",
+    "no_false_saved": true,
+    "acknowledged_math_unchanged": true,
+    "actual_failed_controller_label": true,
+    "completed": 3
+  },
+  "durable_record_bytes": 1856,
+  "durable_record_version": "lemma-mathematical-submission/2",
+  "identity_limits": "The record binds exact/1 semantic checker, original goal/domain, budget and submission revision. It does not persist the managed execution/compiler/artifact identity per attempt; exact consumed implementation is bound by this immutable bundle and receipt.",
+  "resource_scope": {
+    "budget_zero": "actual semantic Indeterminate, not heap OOM",
+    "heap_OOM": "not exercised in this normal campaign; new managed Laboratory constructor-pressure image required",
+    "peak_RSS": "not measured by this observer",
+    "processor_time": "QEMU icount, not exact RTL pipeline parity"
+  },
+  "prior_receipts_preserved": [
+    "docs/evidence/006-isolated-arithmetic.json",
+    "docs/evidence/006-closed-inline-math.json"
+  ],
+  "preserved_observer_failure": "build/task006-closed-inline-math-a1/result.json",
+  "failed_label_observer": "Requires actual FAILED controller pixels within original30-second action bound; no masked cold pixel comparison, new Saved or result event after failed barrier is rejected",
+  "artifacts": {
+    "live/uart-0.bin": {
+      "bytes": 11088,
+      "sha256": "638c69fec2468a0616aa08325d68b05f91f8e630d6acbf121f52472338b339b2"
+    },
+    "verified.ppm": {
+      "bytes": 10890017,
+      "sha256": "43f6e037d10ce9b36311893468427ed340d5045eddfba95c105b5076a89f0eee"
+    },
+    "course-final.ppm": {
+      "bytes": 10890017,
+      "sha256": "051132369ab388935fae8af3173a41839ed686eb264714f43c8636b150d9c346"
+    },
+    "cold-course.ppm": {
+      "bytes": 10890017,
+      "sha256": "051132369ab388935fae8af3173a41839ed686eb264714f43c8636b150d9c346"
+    },
+    "cold-notebook.ppm": {
+      "bytes": 10890017,
+      "sha256": "c134bd1591f44c3c8cc10a70908ce2ef63dd2640a26220532b34e556604d11aa"
+    },
+    "failed-save.ppm": {
+      "bytes": 10890017,
+      "sha256": "66ccbeee50c4fd44bec74be9e0af8bd9e6f188cc569ca306efc5b510004b2265"
+    },
+    "failed/uart-0.bin": {
+      "bytes": 1496,
+      "sha256": "7c2e47bb945b50576d0de7636097a03c193371fb8f13a543d5d9ae3212f12a24"
+    }
+  }
+}
