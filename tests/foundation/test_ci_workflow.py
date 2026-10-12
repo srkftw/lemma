@@ -71,7 +71,7 @@ class CiWorkflowTests(unittest.TestCase):
         for suite in ("tests/scaffold", "tests/core0", "tests/foundation", "tests/kernel", "tests/silicon"):
             self.assertIn(suite, self.metadata)
         self.assertIn("scripts/check_scaffold.py", self.metadata)
-        self.assertIn("lake build", self.metadata)
+        self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
         self.assertLess(self.metadata.index("lake build"), self.metadata.index("tests/foundation"))
         for guest_marker in ("check-core0.sh", "check-foundation.sh", "qualify_foundation.py", "qemu"):
             self.assertNotIn(guest_marker, self.metadata.lower())

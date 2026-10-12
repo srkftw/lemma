@@ -27,6 +27,16 @@ the repaired candidate requires its own CI result before merge.
 The final pinned repair check passed 13 focused and 456 foundation host tests
 (`build/task006-merge-ci-repair-a2/`); metadata and all18 scaffold tests also passed.
 No guest, controller, workflow or physical input changed for this repair.
+The next CI run38287697012 at703ddc9 passed the repaired foundation suite,
+then failed the new Lean fixture step because the default Lake target omits
+`Lemma.Kernel.Memory.UserCopy.olean`. Explicit fixture-import build targets
+are required before executing those fixtures in an empty build cache;
+this is a CI dependency fix, not a target implementation change.
+The corrected `lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel`
+passed94 jobs in51.94s in a clean detached703ddc9 checkout with no initial
+`.lake` cache. All five exact bounded Lean/compiler fixture commands passed
+there (`build/task006-metadata-clean-a1/result.json`); the focused workflow
+suite also passed13 tests. The target/controller sources remain identical.
 
 Historical implementation `9946e7ef` introduced persistent QEMU/RTL sessions,
 exact backend-private checkpoints, isolated durable forks, native controller

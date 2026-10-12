@@ -173,5 +173,21 @@ Final local repair checks passed 13 focused and 456 foundation host tests,
 21.323s for the latter, on test source SHA256
 `0950dff309a3f26190c4177eb1cb65a3896c019aa59fc882479e6ff19dd67b24`;
 the command/log/result record is `build/task006-merge-ci-repair-a2/`.
-Metadata and18 scaffold tests also passed. No historical guest/physical rerun
+Metadata and18 scaffold tests also passed. No additional local historical guest/physical rerun
 was needed for this host-test/documentation repair.
+The subsequent [CI38287697012](https://github.com/srkftw/lemma/actions/runs/38287697012)
+at703ddc9 passed the repaired foundation suite and exposed the first Lean
+fixture's missing `Lemma.Kernel.Memory.UserCopy.olean` in a fresh checkout.
+Default `lake build` does not build all fixture imports; CI must explicitly
+build those modules before the five Lean/compiler fixture commands. This
+retained dependency failure is separate from the earlier stale assertions.
+The explicit build `lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel`
+passed94 jobs in51.936s in a clean detached703ddc9 checkout with an initially
+absent `.lake` cache. All five exact bounded CI fixture commands then passed:
+checked copy6.428s, Loader25.516s, power authority131.483s, object budget5.877s,
+and24 O0/O2 compiler guard cases1.718s. The checkout stayed clean and all
+processes were reaped. Actual result/log/input hashes are retained in
+`build/task006-metadata-clean-a1/result.json`, SHA256
+`8e612cf0df5bc601cb059b4be8b99466331f7787b963365c15b8277f78438ce4`.
+The focused workflow regression passed13 tests; target/controller inputs were
+unchanged. The repaired candidate still requires its own successful CI.

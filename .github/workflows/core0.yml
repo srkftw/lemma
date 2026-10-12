@@ -138,7 +138,7 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 20m \
             nix develop --no-write-lock-file --command \
-              lake build \
+              lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
             2>&1 | tee build/ci/metadata/lake-build.log
 
       - name: Run foundation host-harness suite
