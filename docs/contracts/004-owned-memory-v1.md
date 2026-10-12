@@ -301,3 +301,28 @@ is admitted. Full-frame admission, configured-pool bounds,512 checked writes,
 zero-before-publication, allocation choices and rollback semantics remain.
 Independent host traces exercise every status value and full-page first-error
 position; their success is separate from real guest performance and Ready.
+
+Frame resolution may select the local metadata branch only for indices below
+8192 after the unchanged runtime-count, owner, handle and generation-admission
+predicates. It performs the same live-owner and live-generation checked reads
+in that order. The explicit slot expression exposes the complete aligned
+metadata interval to LLVM; it does not cache ownership or replace a physical
+access primitive. The generic post-validation sequence remains for any index
+outside that interval, without rereading configuration. Successful configured
+counts are still exactly512,1024 and8192; invalid configuration still precedes
+owner/handle errors. Returned frame addresses, error values and attempted read
+prefixes are unchanged.
+
+An eight-row registry callback may select a local pool interval only when its
+computed modular cursor is aligned8 and lies between pool and pool-limit-minus232,
+inclusive. It still reads all eight virtual-address words in increasing row
+order, preserving duplicate detection, accumulator arithmetic and first-error
+priority. Every other physical interval or callback argument uses the original
+generic sequence. Complete descriptor/directory/owner/generation/purpose/pin,
+row/PTE/permission and duplicate validations by the surrounding address-space
+operations remain in place. LLVM can discharge each checked read's region and
+alignment branch from these local facts; no retained authority, new unchecked
+primitive or new admitted language form is involved. Independent host traces
+compare all eight-row match patterns and status values against historical source
+forms and the actual imported declarations; genuine LLVM/object qualification
+and real whole-machine timing remain distinct observations.

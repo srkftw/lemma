@@ -1,0 +1,101 @@
+{
+  "schema": "lemma-canonical-timeout-evidence-v1",
+  "status": "FAIL",
+  "error": "TimeoutError('predeclared campaign host deadline exceeded')",
+  "scope": "actual canonical RTL cold guest Ready plus completed full refresh and acknowledged initial store commit; complete independent expected-pixel and connected workflow qualification remain separate",
+  "plan": {
+    "scope": "changed-source canonical RTL cold Ready/full controller pixels followed by raw pen/edit/navigation/Save and independent cold/failure workflow; ELF-preload development boot",
+    "cycles": 2000000000,
+    "deadline_seconds": 7200,
+    "quantum": 1000000,
+    "request_timeout_seconds": 60,
+    "classification": "predeclared retained diagnostic resource ceilings, not independently proved whole-boot WCET; timeout remains FAIL",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "guest_build": "build/kernel/task006-isolated-arithmetic-notebook-a4",
+    "guest_sha256": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78",
+    "native_bundle": "build/native/task006-canonical-a1",
+    "bundle_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+    "source_medium": "build/silicon/task006-loader-cold-a1/fast-medium.raw",
+    "initial_medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+    "source_implementation_commit": "4ff907dfb5d0fb052b9807bb0d6a44d6c257b183",
+    "source_scope": "actual dirty production source closure qualified by this full build/audit; exact195consumed sources retained by Mathematics lane",
+    "fixed_work_before_run_sha256": "7ea118ab40515af33fba4c7997322398cfd9f648042a4d7666751e28ef012ea7",
+    "changed_work": {
+      "upload_444_leaf_reads64_before": 1260,
+      "upload_reads64_after": 668,
+      "upload_checked_word_stores": 68,
+      "capture_reads64_before": 427,
+      "capture_reads64_after": 239,
+      "capture_checked_word_stores": 39,
+      "additional_guest_feature": "separately linked isolated Arithmetic service; no display/pool/ownership reduction"
+    },
+    "required_ready_observation": "real0x420 guest marker, actual0x425 full request sequence, completed controller sequence, acknowledged initial creation; then independent full expected pixel oracle"
+  },
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "96cd211a1808e6601cf7f35f22997484b06f2404b77e71b20936621c9c170d78",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+  },
+  "cycle": 1624000000,
+  "wall_seconds": 7201.95717069105,
+  "retired": 906703674,
+  "ready": false,
+  "panel_completed": 0,
+  "panel_sequence": 0,
+  "media_requests": 3,
+  "flushes": 0,
+  "controller_framebuffer_writes": 5910640,
+  "reset_framebuffer_clear_pixels": 3630000,
+  "actual_upload_pixels": 2280640,
+  "source_pc_top": {
+    "Lemma.Kernel.Memory.Access.read64": 362,
+    "unresolved:pc0": 194,
+    "Lemma.Kernel.Memory.Frames.resolve": 118,
+    "_private.Lemma.Kernel.Memory.AddressSpace.0.Lemma.Kernel.Memory.AddressSpace.validateRegistryStep": 115,
+    "Lemma.Kernel.Memory.Frames.resolvePurpose": 70,
+    "_private.Lemma.Kernel.Memory.AddressSpace.0.Lemma.Kernel.Memory.AddressSpace.findRowBlockStep": 59,
+    "_private.Lemma.Kernel.Memory.AddressSpace.0.Lemma.Kernel.Memory.AddressSpace.get": 42,
+    "Lemma.Kernel.Memory.Frames.resolveValid": 35,
+    "Lemma.Kernel.Memory.Access.write64": 33,
+    "Lemma.Kernel.Memory.Frames.runtimeCount": 31,
+    "Lemma.Kernel.IPCStorage.get": 30,
+    "Lemma.Kernel.Memory.AddressSpace.base": 27
+  },
+  "resources": {
+    "114628": {
+      "VmHWM:": 148364,
+      "VmRSS:": 148304,
+      "Threads:": 14
+    }
+  },
+  "privilege_cycles": [
+    85080875,
+    1516549117,
+    0,
+    22370000
+  ],
+  "checkpoint": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-transfer-canonical-a1/failed-boundary-checkpoint",
+  "original_report_sha256": "d7b8e90c4e65d5b73693d68a353d54ff21d8fe4709bdacba055dfc724ebd4658",
+  "checkpoint_files": {
+    "snapshot.json": "bd415c4eb3810716d56514c4be94697027d15a3cf4c4431ef902d5465a9191e0"
+  },
+  "cleanup": {
+    "scope": "public destroy after retained original host timeout; only exact task-owned processes",
+    "action": {
+      "command": "python3 scripts/lemmasim session-control --session-dir build/silicon/task006-transfer-canonical-a1/session --request '{\"action\":\"destroy\"}'",
+      "result": {
+        "destroyed": true
+      }
+    },
+    "owner_pid": 114470,
+    "runtime_pids": [
+      114628
+    ],
+    "proc_absent": true
+  },
+  "meaning": "Original7200s host ceiling reached; no Ready or completed panel sequence. Failed observational checkpoint retained; this is not whole-boot qualification and the ceiling is not a WCET claim."
+}

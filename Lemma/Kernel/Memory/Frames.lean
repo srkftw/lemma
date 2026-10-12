@@ -371,19 +371,41 @@ def allocate (owner purpose : UInt64) : Action :=
   if failed s = true then rollbackSingle owner index generation remaining
   else .done 0 ((generation + 1) * count + index)
 
-def resolve (owner handle : UInt64) : Action :=
-  .bind runtimeCount fun s count =>
-  if failed s = true then .done s 0 else
-  if (if ownerValid owner = true then if 0 < handle / count then true else false else false) = false then .done invalidFrame 0 else
-  if resolveValid owner handle = false then .done invalidFrame 0 else
-  let index := handle % count
+/-- Generic post-validation reads retain the physical-access behavior for any
+future pool size outside the locally bounded metadata interval. -/
+private def resolveRecord (owner handle amount index : UInt64) : Action :=
   .bind (Access.read64 (record index)) fun s liveOwner =>
   if failed s = true then .done s 0 else
   if (if liveOwner = owner then false else true) = true then .done notOwned 0 else
   .bind (Access.read64 (record index + 24)) fun s generation =>
   if failed s = true then .done s 0 else
-  if (if generation = handle / count then false else true) = true then .done notOwned 0 else
+  if (if generation = handle / amount then false else true) = true then .done notOwned 0 else
   .done 0 (address index)
+
+/-- The same live owner/generation reads use a locally bounded metadata slot.
+The checked physical primitives remain authoritative; the explicit index bound
+lets LLVM prove their region/alignment checks for the admitted pool sizes.
+Neither ownership predicates nor the first-error read prefix are omitted. -/
+def resolve (owner handle : UInt64) : Action :=
+  .bind runtimeCount fun s count =>
+  if s = 0 then
+    if (if ownerValid owner = true then if 0 < handle / count then true else false else false) = false then .done invalidFrame 0 else
+    if resolveValid owner handle = false then .done invalidFrame 0 else
+    let index := handle % count
+    if index < maximumCount then
+      let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32
+      .bind (Access.read64 slot) fun s liveOwner =>
+      if s = 0 then
+        if liveOwner = owner then
+          .bind (Access.read64 (slot + 24)) fun s generation =>
+          if s = 0 then
+            if generation = handle / count then .done 0 (pool + index * bytes)
+            else .done notOwned 0
+          else .done s 0
+        else .done notOwned 0
+      else .done s 0
+    else resolveRecord owner handle count index
+  else .done s 0
 
 /-- Purpose and generation are revalidated before exposing kernel storage. -/
 def purpose (owner handle : UInt64) : Action :=

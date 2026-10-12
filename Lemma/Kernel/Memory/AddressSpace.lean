@@ -478,7 +478,7 @@ private def findRowWordStep (i _ : UInt32) (acc physical wanted start _ : UInt64
 
 /-- Eight live rows per callback. Reads and duplicate/error checks retain the
 original increasing row order; a tail uses the original exact one-row step. -/
-private def findRowBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
+private def findRowGenericBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
   let offset := i.toUInt64 * 8
   .bind (Access.read64 (physical + (offset + 0) * 32)) fun s va0 =>
   if failed s = true then .done s 0 else
@@ -522,6 +522,69 @@ private def findRowBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt6
   let found7 := if va7 = wanted then start + offset + 7 + 1 else found6
   .done 0 found7
 
+
+/-- Local bounds prove all eight checked reads remain within the frame pool.
+The full increasing read/duplicate/error sequence is unchanged. Other physical
+regions, boundary crossings and arbitrary modular callback inputs retain the
+generic checked path; no address-space row or ownership validation is cached. -/
+private def findRowBlockStep (i count : UInt32) (acc physical wanted start context : UInt64) : Action :=
+  let offset := i.toUInt64 * 8
+  let cursor := physical + offset * 32
+  if Frames.pool ≤ cursor then
+  if cursor ≤ Frames.expandedPoolLimit - 232 then
+  if cursor % 8 = 0 then
+  .bind (Access.read64 (cursor + 0)) fun s va0 =>
+  if s = 0 then
+  if (if va0 = wanted then if acc = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found0 := if va0 = wanted then start + offset + 0 + 1 else acc
+  .bind (Access.read64 (cursor + 32)) fun s va1 =>
+  if s = 0 then
+  if (if va1 = wanted then if found0 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found1 := if va1 = wanted then start + offset + 1 + 1 else found0
+  .bind (Access.read64 (cursor + 64)) fun s va2 =>
+  if s = 0 then
+  if (if va2 = wanted then if found1 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found2 := if va2 = wanted then start + offset + 2 + 1 else found1
+  .bind (Access.read64 (cursor + 96)) fun s va3 =>
+  if s = 0 then
+  if (if va3 = wanted then if found2 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found3 := if va3 = wanted then start + offset + 3 + 1 else found2
+  .bind (Access.read64 (cursor + 128)) fun s va4 =>
+  if s = 0 then
+  if (if va4 = wanted then if found3 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found4 := if va4 = wanted then start + offset + 4 + 1 else found3
+  .bind (Access.read64 (cursor + 160)) fun s va5 =>
+  if s = 0 then
+  if (if va5 = wanted then if found4 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found5 := if va5 = wanted then start + offset + 5 + 1 else found4
+  .bind (Access.read64 (cursor + 192)) fun s va6 =>
+  if s = 0 then
+  if (if va6 = wanted then if found5 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found6 := if va6 = wanted then start + offset + 6 + 1 else found5
+  .bind (Access.read64 (cursor + 224)) fun s va7 =>
+  if s = 0 then
+  if (if va7 = wanted then if found6 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found7 := if va7 = wanted then start + offset + 7 + 1 else found6
+  .done 0 found7
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else findRowGenericBlockStep i count acc physical wanted start context
+  else findRowGenericBlockStep i count acc physical wanted start context
+  else findRowGenericBlockStep i count acc physical wanted start context
 private def scanRows (physical wanted start amount initial : UInt64) : Action :=
   let blocks := amount / 8
   .boundedFoldU64 16 findRowBlockStep blocks.toUInt32 initial physical wanted start 0 fun s found =>
