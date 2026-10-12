@@ -1,5 +1,10 @@
 # Restricted exact mathematics and original course v1
 
+This preserves the original832-byte format and its observed milestone. The
+maintained notebook now implements [version2](006-exact-mathematics-v2.md),
+including guest migration and explicit uncertain review/override/disable.
+Tap COURSE again to close its current panel; the former CLOSE cell is REVIEW.
+
 This is an additive guest application format; historical ink, store, machine and
 Core0 profiles retain their meanings. Target declarations genuinely elaborate
 through the existing checked scalar/Action lowering and LLVM. It requires no

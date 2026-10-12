@@ -87,7 +87,8 @@ class MathChecker(Checker):
                   'U':('101','101','101','101','111'),'S':('111','100','111','001','111'),
                   'A':('010','101','111','101','101'),'P':('111','101','111','100','100'),
                   'N':('101','111','111','111','101'),'G':('111','100','101','101','111'),
-                  'T':('111','010','010','010','010')}
+                  'T':('111','010','010','010','010'),'M':('101','111','111','101','101'),
+                  'L':('100','100','100','100','111'),'W':('101','101','101','111','111')}
         for index,char in enumerate(text):
             for row,pattern in enumerate(patterns[char]):
                 for col,bit in enumerate(pattern):
@@ -215,7 +216,7 @@ class MathChecker(Checker):
         require({key:record.payload for key,record in records.items() if key[1]>0x10000}==raw_before,
                 'mathematical course changed original raw ink')
         self.report['final_record']=final
-        self.click(live,stream,'close course restores raw notebook',24+24*12+4,245,False)
+        self.click(live,stream,'close course restores raw notebook',320,140,False)
         self.wait_label(live,'SAVED',24,132)
         restored_panel,restored_medium=live.export('closed-course')
         require(visible_pixels(ink_panel)==visible_pixels(restored_panel),'closing course lost original full ink display')

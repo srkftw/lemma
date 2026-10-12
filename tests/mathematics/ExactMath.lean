@@ -68,9 +68,10 @@ def records : IO Unit := do
     value checked (buffer+96) = 1 && value checked (buffer+104) = 11 &&
     value checked (buffer+144) = 1) "5/6 was not exact revision-bound Verified"
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "Verified record validation"
+  must ((← execute state (Lemma.Courses.Review.summary buffer)).2 = 26) "unassisted exact attempt review reason"
   let save : UInt64 := 0x32a000
-  must ((← execute state (Mathematics.copy buffer save)) = (0,832)) "complete832byte transaction copy"
-  for i in [:104] do
+  must ((← execute state (Mathematics.copy buffer save)) = (0,1856)) "complete1856byte transaction copy"
+  for i in [:232] do
     must (value (← state.get) (save+i.toUInt64*8) = value checked (buffer+i.toUInt64*8)) "transaction copy lost a word"
   must ((← execute state (Mathematics.copy (buffer+1) save)).1 = 234) "unaligned copy accepted"
   must ((← execute state (Mathematics.copy buffer 0xfffffffffffffff8)).1 = 234) "wrapping copy accepted"
@@ -93,6 +94,32 @@ def records : IO Unit := do
   must ((← execute state (Mathematics.submit buffer)).2 = 4) "unsupported goal outcome"
   must ((← execute state (Mathematics.validate buffer 2 1)).1 = 234) "wrong namespace accepted"
   must ((← execute state (Mathematics.validate buffer 1 2)).1 = 234) "wrong source page accepted"
+  for mode in [1,2,3,4] do
+    must ((← execute state (Mathematics.reviewMode buffer)).1 = 0) "manual override/disable"
+    must (value (← state.get) (buffer+184) = mode && value (← state.get) (buffer+96) = 4) "override changed mathematical evidence"
+  must (((← execute state (Lemma.Courses.Review.summary buffer)).2 &&& 63) = 56) "disabled recommendation"
+  must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "ordered learner event validation"
+  -- An unknown policy ID/event payload cannot silently alter the baseline.
+  let valid ← state.get
+  state.modify fun s => { words := s.words.insert (buffer+176) 2 }
+  must ((← execute state (Mathematics.validate buffer 1 1)).1 = 234) "unknown policy accepted"
+  state.set valid
+  state.modify fun s => { words := s.words.insert (buffer+192) 64 }
+  must ((← execute state (Mathematics.reviewMode buffer)).1 = 235 &&
+    (← execute state (Mathematics.hint buffer)).1 = 235 &&
+    (← execute state (Mathematics.submit buffer)).1 = 235) "event bound did not stop before mutation"
+  must (value (← state.get) (buffer+184) = 4 && value (← state.get) (buffer+96) = 4 &&
+    value (← state.get) (buffer+152) = 1) "exhaustion changed original evidence/policy/assistance"
+  state.set valid
+  -- A real version1 record keeps all answers/evidence and migrates old hints
+  -- as an explicitly unanchored aggregate rather than invented hint events.
+  state.modify fun s => { words := s.words.insert (buffer+8) 1 }
+  for i in [:10] do state.modify fun s => { words := s.words.insert (buffer+176+i.toUInt64*8) 0 }
+  must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "legacy validation"
+  must ((← execute state (Mathematics.upgrade buffer)).2 = 1) "guest migration"
+  must ((← execute state (Mathematics.validate buffer 1 1)).1 = 0) "migrated ordered event validation"
+  must (value (← state.get) (buffer+96) = 4 && value (← state.get) (buffer+152) = 1 &&
+    value (← state.get) (buffer+192) = 5) "migration lost actual evidence/assistance/history"
   state.modify fun s => { words := s.words.insert (buffer+96) 1 }
   must ((← execute state (Mathematics.validate buffer 1 1)).1 = 234) "forged Verified accepted"
 
@@ -131,7 +158,7 @@ run_cmd do
       Exact.applicable 1 11 11 3 Exact.checkerIdentity = false do throwError "revision applicability"
   liftIO records
   let suite ← match checkAndLowerActionSuiteForProfile (← getEnv) .user_v0_1
-      #[``rationalProbe, ``polynomialProbe, ``Mathematics.copy, ``Mathematics.submit, ``Mathematics.validate, ``Arithmetic.press, ``Arithmetic.render] with
+      #[``rationalProbe, ``polynomialProbe, ``Mathematics.copy, ``Mathematics.submit, ``Mathematics.validate, ``Mathematics.upgrade, ``Lemma.Courses.Review.summary, ``Arithmetic.press, ``Arithmetic.render] with
     | .ok suite => pure suite
     | .error diagnostic => throwError diagnostic.render
   match lowerActionSuiteExecution .user_v0_1 suite with

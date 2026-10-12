@@ -1,4 +1,4 @@
-import Lemma.Documents.Mathematics
+import Lemma.Courses.Review
 import Lemma.Ink.Surface
 
 /-! Original offline arithmetic sequence, package `lemma-course-arithmetic/1`.
@@ -30,8 +30,8 @@ def character (message index : UInt64) : UInt64 :=
       if index / 8 = 0 then 0x302044203030204e else if index / 8 = 1 then 0x2030302030432030 else if index / 8 = 2 then 0x3243203030203143 else 0x2020202020303020
     else if message = 5 then -- FIELD N D C0 C1 C2  MINUS PLUS
       if index / 8 = 0 then 0x204e20444c454946 else if index / 8 = 1 then 0x2031432030432044 else if index / 8 = 2 then 0x554e494d20203243 else 0x202053554c502053
-    else if message = 6 then -- CHECK NEXT HINT LIMIT CLOSE
-      if index / 8 = 0 then 0x454e204b43454843 else if index / 8 = 1 then 0x20544e4948205458 else if index / 8 = 2 then 0x4c432054494d494c else 0x202020202045534f
+    else if message = 6 then -- CHECK NEXT HINT LIMIT REVIEW
+      if index / 8 = 0 then 0x454e204b43454843 else if index / 8 = 1 then 0x20544e4948205458 else if index / 8 = 2 then 0x45522054494d494c else 0x2020202057454956
     else if message = 7 then -- UNCHECKED
       if index / 8 = 0 then 0x454b434548434e55 else if index / 8 = 1 then 0x2020202020202044 else if index / 8 = 2 then 0x2020202020202020 else 0x2020202020202020
     else if message = 8 then -- VERIFIED Q EXACT
@@ -56,6 +56,34 @@ def character (message index : UInt64) : UInt64 :=
       if index / 8 = 0 then 0x4120303020564552 else if index / 8 = 1 then 0x205354504d455454 else if index / 8 = 2 then 0x5745495645522030 else 0x2020524554414c20
     else if message = 18 then -- REV 00 ATTEMPTS 0 NEEDS SUPPORT
       if index / 8 = 0 then 0x4120303020564552 else if index / 8 = 1 then 0x205354504d455454 else if index / 8 = 2 then 0x20534445454e2030 else 0x2054524f50505553
+    else if message = 19 then -- AUTO PRACTICE UNCERTAIN
+      if index / 8 = 0 then 0x415250204f545541 else if index / 8 = 1 then 0x4e55204543495443 else if index / 8 = 2 then 0x204e494154524543 else 0x2020202020202020
+    else if message = 20 then -- AUTO REVIEW LATER UNCERTAIN
+      if index / 8 = 0 then 0x564552204f545541 else if index / 8 = 1 then 0x4554414c20574549 else if index / 8 = 2 then 0x545245434e552052 else 0x20202020204e4941
+    else if message = 21 then -- AUTO SUPPORT UNCERTAIN
+      if index / 8 = 0 then 0x505553204f545541 else if index / 8 = 1 then 0x434e552054524f50 else if index / 8 = 2 then 0x20204e4941545245 else 0x2020202020202020
+    else if message = 22 then -- MANUAL PRACTICE UNCERTAIN
+      if index / 8 = 0 then 0x50204c41554e414d else if index / 8 = 1 then 0x2045434954434152 else if index / 8 = 2 then 0x4941545245434e55 else 0x202020202020204e
+    else if message = 23 then -- MANUAL LATER UNCERTAIN
+      if index / 8 = 0 then 0x4c204c41554e414d else if index / 8 = 1 then 0x434e552052455441 else if index / 8 = 2 then 0x20204e4941545245 else 0x2020202020202020
+    else if message = 24 then -- MANUAL SUPPORT UNCERTAIN
+      if index / 8 = 0 then 0x53204c41554e414d else if index / 8 = 1 then 0x552054524f505055 else if index / 8 = 2 then 0x4e4941545245434e else 0x2020202020202020
+    else if message = 25 then -- REVIEW DISABLED UNCERTAIN
+      if index / 8 = 0 then 0x4420574549564552 else if index / 8 = 1 then 0x2044454c42415349 else if index / 8 = 2 then 0x4941545245434e55 else 0x202020202020204e
+    else if message = 26 then -- NO ATTEMPT UNDERSTANDING UNKNOWN
+      if index / 8 = 0 then 0x4d45545441204f4e else if index / 8 = 1 then 0x5245444e55205450 else if index / 8 = 2 then 0x474e49444e415453 else 0x4e574f4e4b4e5520
+    else if message = 27 then -- ASSISTED ATTEMPT PRACTICE
+      if index / 8 = 0 then 0x4445545349535341 else if index / 8 = 1 then 0x54504d4554544120 else if index / 8 = 2 then 0x4349544341525020 else 0x2020202020202045
+    else if message = 28 then -- EXACT ATTEMPT REVIEW LATER
+      if index / 8 = 0 then 0x5441205443415845 else if index / 8 = 1 then 0x45522054504d4554 else if index / 8 = 2 then 0x54414c2057454956 else 0x2020202020205245
+    else if message = 29 then -- INVALID ATTEMPT PRACTICE
+      if index / 8 = 0 then 0x2044494c41564e49 else if index / 8 = 1 then 0x2054504d45545441 else if index / 8 = 2 then 0x4543495443415250 else 0x2020202020202020
+    else if message = 30 then -- LIMIT OR UNSUPPORTED SUPPORT
+      if index / 8 = 0 then 0x524f2054494d494c else if index / 8 = 1 then 0x4f505055534e5520 else if index / 8 = 2 then 0x5055532044455452 else 0x2020202054524f50
+    else if message = 31 then -- YOUR MANUAL OVERRIDE
+      if index / 8 = 0 then 0x4e414d2052554f59 else if index / 8 = 1 then 0x5245564f204c4155 else if index / 8 = 2 then 0x2020202045444952 else 0x2020202020202020
+    else if message = 32 then -- POLICY DISABLED YOUR CHOICE
+      if index / 8 = 0 then 0x44205943494c4f50 else if index / 8 = 1 then 0x2044454c42415349 else if index / 8 = 2 then 0x4f48432052554f59 else 0x2020202020454349
     else 0x2020202020202020
   (word >>> (index % 8 * 8)) &&& 255
 
@@ -75,21 +103,22 @@ def answerCharacter (column values : UInt64) : UInt64 :=
 def panelCharacter (row column goal values displayState : UInt64) : UInt64 :=
   let outcome := displayState &&& 7
   let hints := (displayState >>> 3) &&& 63
-  let revision := (displayState >>> 9) &&& 127
-  let attempts := (displayState >>> 16) &&& 15
+  let review := displayState >>> 24
+  let mode := (review >>> 6) &&& 7
+  let recommendation := review &&& 7
+  let reason := (review >>> 3) &&& 7
+  let showReason := review >>> 9
   if row = 0 then character 0 column else
   if row = 1 then character (if goal = 1 then 1 else if goal = 2 then 2 else 3) column else
   if row = 2 then answerCharacter column values
   else if row = 3 then character 5 column else
   if row = 4 then character 6 column else
   if row = 5 then character (7 + outcome) column else
-  if row = 6 then if hints = 0 then character 13 column else
+  if row = 6 then if showReason = 1 then character (25 + reason) column else
+    if hints = 0 then character 13 column else
     character (if goal = 1 then 14 else 15) column else
   if row = 7 then
-    let recommendation := if outcome < 3 then 16 + (outcome &&& 1) else 18
-    if column = 4 then digit (revision % 100) 0 else
-    if column = 5 then digit (revision % 100) 1 else
-    if column = 15 then 48 + attempts else character recommendation column
+    character (if mode = 4 then 25 else if mode = 0 then 18 + recommendation else 21 + mode) column
   else 32
 
 def panelPixel (x y goal values displayState : UInt64) : UInt64 :=
@@ -119,18 +148,21 @@ def render (buffer width : UInt64) : Action :=
   .bind (Mathematics.field buffer 152) fun s hints => if bad s = true then .done s 0 else
   .bind (Mathematics.field buffer 40) fun s revision => if bad s = true then .done s 0 else
   .bind (Mathematics.field buffer 144) fun s attempts => if bad s = true then .done s 0 else
+  .bind (Review.summary buffer) fun s review => if bad s = true then .done s 0 else
   .boundedFoldU64 30720 renderStep 30720 0 width goal
     (n ||| (d <<< 7) ||| (p0 <<< 14) ||| (p1 <<< 21) ||| (p2 <<< 28))
-    (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16)) fun s _ => .done s 0
+    (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
 
 /-- First two real goals retain their own immutable identity. Goal3 is an
 explicit unsupported example, never converted into a successful answer. -/
 def next (buffer : UInt64) : Action :=
+  .bind (Mathematics.eventCapacity buffer) fun s _ => if bad s = true then .done s 0 else
   .bind (Mathematics.field buffer 48) fun s goal => if bad s = true then .done s 0 else
   .bind (Mathematics.revise buffer) fun s _ => if bad s = true then .done s 0 else
   let nextGoal := if goal < 3 then goal + 1 else 1
   .bind (Mathematics.put buffer 48 nextGoal) fun s _ => if bad s = true then .done s 0 else
-  Mathematics.put buffer 120 nextGoal
+  .bind (Mathematics.put buffer 120 nextGoal) fun s _ => if bad s = true then .done s 0 else
+  Mathematics.appendEvent buffer 4 1 0
 
 /-- UI hit testing uses rendered character cells. Contact release is handled
 by the notebook pen protocol. Values outside this panel remain ordinary ink. -/
@@ -158,7 +190,7 @@ def press (buffer x y : UInt64) : Action :=
       .bind (Mathematics.field buffer 136) fun s budget => if bad s = true then .done s 0 else
       .bind (Mathematics.revise buffer) fun s _ => if bad s = true then .done s 0 else
       Mathematics.put buffer 136 (if budget = 0 then 8 else 0)
-    else if column < 27 then .done 0 1 else .done 0 0
+    else if column < 27 then Mathematics.reviewMode buffer else .done 0 0
   else .done 0 0
 
 end Lemma.Courses.Arithmetic

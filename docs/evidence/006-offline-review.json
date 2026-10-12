@@ -1,0 +1,119 @@
+{
+  "schema": "lemma-task006-offline-review-evidence/1",
+  "status": "PASS",
+  "scope": "bounded guest v2 history, uncertain authored baseline, manual overrides and disable; no learning gain/complete learner model/tutor/runtime claim",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "configuration": "lemmasim-silicon-power-notebook",
+  "source_commit_at_build": "5b9fff31abb43e4c9d2e4a4f573ac2bde4c1e8e9",
+  "source_inputs_sha256": "bad38fe5cccd02d383018cfe1cc9d0924a1155a6c504fe54fbcc134237700f2a",
+  "guest_elf_sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7",
+  "audit_sha256": "170c5a7f0b9d2d81bd8e80027846b9c6a2deb0e14518b481c6597a673da8fd20",
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/3",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "result_path": "build/task006-review-course-a3/result.json",
+  "result_sha256": "3ad43f108430799394966e826cc8111b548fe1467cdd55d15b81a02f4449b0ee",
+  "boot": {
+    "virtual_seconds": 11.700000006,
+    "host_seconds": 16.259114240005147,
+    "cycle": 1170000001
+  },
+  "cold_boot": {
+    "virtual_seconds": 12.050000012,
+    "host_seconds": 22.2423150879913,
+    "cycle": 1205000002
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "complete_controller_pixels": true,
+    "math_sha256": "d41eeeac48bb1bc154735aff5bf7fe933dcb75fdbbcb6cd22c163c1e3696bdf4",
+    "actual_new_cpu": true
+  },
+  "failed_save": {
+    "status": "PASS",
+    "no_false_saved": true,
+    "acknowledged_record_unchanged": true
+  },
+  "resources": {
+    "command": [
+      "python3",
+      "scripts/check_review_session.py",
+      "--disk",
+      "build/task006-math-course-a3/closed-course.raw",
+      "--work-dir",
+      "build/task006-review-course-a3",
+      "--deadline",
+      "2400"
+    ],
+    "status": 0,
+    "host_seconds": 182.38137212197762,
+    "maximum_resident_kib": 285552,
+    "user_seconds": 161.113126,
+    "system_seconds": 34.524909
+  },
+  "interactions": 13,
+  "maximum_action_virtual_seconds": 9.870000006,
+  "actual_changes": [
+    "guest validates and migrates actual acknowledged832byte v1 course to1856byte v2 without losing typed answers/five attempts/hint aggregate",
+    "guest actual5/6 exact check retains conservative assisted practice recommendation",
+    "manual modes1/2/3, disabled4 and auto0 saved as ordered events without changing applicable mathematical evidence",
+    "controller pixels expose AUTO/UNCERTAIN/ASSISTED and exact full notebook ink survives close/cold",
+    "independent cold CPU recovers identical1856 bytes and complete course/controller pixels",
+    "first FLUSH failure produces nofalseSaved and retains prior acknowledged learner bytes"
+  ],
+  "retained_failures": [
+    {
+      "path": "build/task006-review-course-a1.log",
+      "status": "FAIL",
+      "reason": "environment /usr/bin/time absent; no machine launched"
+    },
+    {
+      "path": "build/task006-review-course-a2/result.json",
+      "status": "FAIL",
+      "reason": "independent observer M fourth row111 disagreed with pinned authored0x5fed row101; target/controller/actual durablemode1 correct",
+      "original_observer": "build/task006-review-course-a2/original-check_math_session.py",
+      "independent_mutation_test": "tests/lemmasim/test_review_pixels.py",
+      "target_changed": false
+    },
+    {
+      "path": "build/task006-canonical-hotpath-notebook-a2-original-audit",
+      "status": "FAIL",
+      "reason": "strict observer had no exact5-entry read-only validateEventStep table; narrow successor inventory rejects altered owner/role/args/effects/domain/bound/load",
+      "successor": "joint fresha3 full strict auditPASS"
+    }
+  ],
+  "checks": [
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExactMath.lean: PASS378 independent comparisons +policy/migration/full-capacity; genuinefrontend/LLVM lowering, RV64execution separate",
+    "python3 -m unittest discover -s tests/foundation -p test_math_records.py -v: PASS5",
+    "python3 -m unittest discover -s tests/lemmasim -p test_course_artifact.py -v: PASS3",
+    "python3 -m unittest discover -s tests/lemmasim -p test_review_pixels.py -v: PASS1"
+  ],
+  "commands": {
+    "build": "nix develop --no-write-lock-file --command python3 scripts/build_kernel.py --stage supervisor --configuration lemmasim-silicon-power-notebook --output-dir build/kernel/MY-UNUSED-NOTEBOOK --opt-level O2 --timeout 300",
+    "audit": "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/MY-UNUSED-NOTEBOOK --timeout 300",
+    "prepare": "./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook --guest-build build/kernel/MY-UNUSED-NOTEBOOK",
+    "launch": "./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook --mode student --disk MY-GUEST-INITIALIZED.raw --session-dir build/MY-UNUSED-SESSION",
+    "review": "python3 scripts/check_review_session.py --disk build/task006-math-course-a3/closed-course.raw --work-dir build/task006-review-course-a3 --deadline 2400"
+  },
+  "archive": "build/task006-hotpath-a3-consumed-sources/manifest.json",
+  "timing_scope": "QEMU instruction counting is not exact canonical RTL cycle parity; separate live native RTL cold campaign pending",
+  "remaining": [
+    "ordinary managedLean frontend/runtime",
+    "separately linked checker and verifier-death isolation",
+    "proof kernel/pinned theorem environment",
+    "immutable reusable package installer",
+    "calibrated learner estimate/delayed-transfer-heldout assessment",
+    "permissioned tutor transport/live provider",
+    "learning-policy action/reward/evaluation contract",
+    "Wasm/canonicalRTL full course acceptance"
+  ]
+}

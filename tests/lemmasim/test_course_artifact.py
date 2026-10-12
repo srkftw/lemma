@@ -72,8 +72,36 @@ def panel_mask_fixture():
 
 
 class CourseArtifactBoundaries(unittest.TestCase):
+    def test_learner_event_kind_dispatch_has_only_exact_read_authority(self):
+        data=course_fixture('Lemma.Documents.Mathematics.validateEventStep')
+        # This independent declaration is deliberately not derived from the
+        # production observer's signature/effect row.
+        data['unit']['functions']=[dict(source='Lemma.Documents.Mathematics.validateEventStep',
+            symbol='fw',args=['u32','u32','u64','u64','u64','u64','u64'],
+            effects=['checked-access','virtual-read'])]
+        report=validate_backend_jump_tables(**data)
+        self.assertEqual(report['jump_table_bytes'],40)
+        self.assertEqual(report['jump_tables'][0]['guard']['bound'],5)
+        self.assertEqual(report['jump_tables'][0]['guard']['minimum'],2)
+        for key,value in [('source','Lemma.Documents.Mathematics.submit'),
+                          ('args',['u64']*7),('effects',[]),
+                          ('effects',['checked-access','virtual-read','virtual-write'])]:
+            bad=copy.deepcopy(data);bad['unit']['functions'][0][key]=value
+            with self.assertRaises(Core0Error):validate_backend_jump_tables(**bad)
+        for key,value in [('role','kernel'),('image_key','store'),('configuration','normal')]:
+            bad=copy.deepcopy(data);bad['unit'][key]=value
+            with self.assertRaises(Core0Error):validate_backend_jump_tables(**bad)
+        for before,after in [('i64 6, label','i64 7, label'),
+                              ('i64 2, label','i64 1, label')]:
+            bad=copy.deepcopy(data);bad['optimized_ir']=data['optimized_ir'].replace(before,after)
+            with self.assertRaises(Core0Error):validate_backend_jump_tables(**bad)
+        for before,after in [('li a2, 4','li a2, 5'),('addi a1, a1, -2','addi a1, a1, -1'),
+                              ('ld a1, 0(a1)','ld a1, 8(a1)')]:
+            bad=copy.deepcopy(data);bad['assembly']=data['assembly'].replace(before,after)
+            with self.assertRaises(Core0Error):validate_backend_jump_tables(**bad)
+
     def test_only_exact_pure_owners_domains_and_notebook_image(self):
-        for name, count in [('character',19), ('answerCharacter',25), ('panelCharacter',8)]:
+        for name, count in [('character',33), ('answerCharacter',25), ('panelCharacter',8)]:
             data = course_fixture('Lemma.Courses.Arithmetic.'+name)
             report = validate_backend_jump_tables(**data)
             self.assertEqual(report['jump_table_bytes'], count*8)

@@ -3414,9 +3414,13 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Applications.Notebook.statusCharacter': ('user',9,['u64']*5,[],[10,11,13,14,15,17,18]),
     # Original course presentation is genuinely compiled scalar Lean. These
     # exact pure owners/domains gain no memory, syscall or checker authority.
-    'Lemma.Courses.Arithmetic.character': ('user',19,['u64','u64'],[],list(range(19))),
+    'Lemma.Courses.Arithmetic.character': ('user',33,['u64','u64'],[],list(range(33))),
     'Lemma.Courses.Arithmetic.answerCharacter': ('user',25,['u64','u64'],[],[2,3,7,8,13,14,19,20,25,26]),
     'Lemma.Courses.Arithmetic.panelCharacter': ('user',8,['u64']*5,[],list(range(8))),
+    # The v2 learner-event validator performs checked reads only. This is its
+    # exact kind2..6 dispatch; kind1 follows its separately checked attempt
+    # reference path. It cannot gain write/syscall or another image authority.
+    'Lemma.Documents.Mathematics.validateEventStep': ('user',5,['u32','u32',*(['u64']*5)],['checked-access','virtual-read'],[2,3,4,5,6]),
 }
 LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Store.Protocol.shape': {'store','notebook','isolation'},
@@ -3429,6 +3433,7 @@ LEMMASIM_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Courses.Arithmetic.character': {'notebook'},
     'Lemma.Courses.Arithmetic.answerCharacter': {'notebook'},
     'Lemma.Courses.Arithmetic.panelCharacter': {'notebook'},
+    'Lemma.Documents.Mathematics.validateEventStep': {'notebook'},
 }
 
 

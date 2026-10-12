@@ -17,7 +17,22 @@ class MathematicsEvidenceTests(unittest.TestCase):
         return words
 
     def inspect(self, words):
-        return math_oracle.inspect(struct.pack('<104Q',*words),1,0x8001)
+        return math_oracle.inspect(struct.pack('<'+str(len(words))+'Q',*words),1,0x8001)
+
+    def test_uncertain_baseline_uses_events_and_explicit_disable(self):
+        words=self.record()+[0]*128
+        words[1]=2;words[22:28]=[math_oracle.IDENTITY,0,1,1,1,0]
+        words[104:106]=[11,1|(1<<8)|(1<<16)]
+        observed=self.inspect(words)['learner']
+        self.assertEqual((observed['recommendation'],observed['reason'],observed['understanding']),
+                         ('later','exact-attempt','uncertain'))
+        words[19]=1;words[24]=2;words[106:108]=[11,2|(1<<8)|(1<<16)]
+        self.assertEqual(self.inspect(words)['learner']['reason'],'assisted')
+        words[23]=4;words[24]=3;words[27]=1;words[108:110]=[11,3|(1<<8)|(4<<16)]
+        self.assertEqual(self.inspect(words)['learner']['recommendation'],'disabled')
+        for index,value in [(22,2),(23,0),(25,0),(105,1|(2<<8)|(1<<16)),(109,3|(1<<8)|(5<<16)),(111,1)]:
+            changed=list(words);changed[index]=value
+            with self.assertRaises(ValueError):self.inspect(changed)
 
     def test_actual_rational_values_and_revision_are_load_bearing(self):
         words=self.record()

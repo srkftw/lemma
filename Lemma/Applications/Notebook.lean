@@ -665,14 +665,20 @@ private def openCourse : Action :=
   .bind allocateCourse fun s _ => if statusFailed s = true then courseError s else
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes) fun readStatus _ =>
+  .bind (readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.legacyBytes) fun readStatus _ =>
   .bind (if readStatus = 230 then Lemma.Documents.Mathematics.create mathematics ns page else
-    if readStatus = 0 then Lemma.Documents.Mathematics.validate mathematics ns page else .done readStatus 0) fun s _ =>
+    if readStatus = 0 then
+    .bind (Lemma.Documents.Mathematics.field mathematics 8) fun s version => if statusFailed s = true then .done s 0 else
+    .bind (if version = 2 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes
+      else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Documents.Mathematics.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+    Lemma.Documents.Mathematics.upgrade mathematics
+    else .done readStatus 0) fun s upgraded =>
   if statusFailed s = true then courseError s else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
-  if readStatus = 230 then saveCourse else .done 0 0
+  if readStatus = 230 then saveCourse else if upgraded = 1 then saveCourse else .done 0 0
 
 private def coursePress (x y : UInt64) : Action :=
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
