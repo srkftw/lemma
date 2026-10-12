@@ -158,6 +158,10 @@ jobs:
             2>&1 | tee build/ci/metadata/user-copy-scans.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/LoaderCopy.lean \
+            2>&1 | tee build/ci/metadata/loader-copy.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
               lake env lean tests/lemmasim/PowerControl.lean \
             2>&1 | tee build/ci/metadata/power-authority.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \

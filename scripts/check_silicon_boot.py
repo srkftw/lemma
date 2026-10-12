@@ -173,9 +173,22 @@ def observe(args):
                       ready=observed_ready, uart_sha256=sha(read_bounded(serial, 2 << 20)),
                       wall_seconds=time.monotonic() - started)
         result['status'] = ('PASS' if observed_ready else 'FAIL_NOT_READY') if args.require_ready else 'OBSERVED_PREFIX'
+        if args.snapshot_final is not None:
+            # Preserve the observed boundary for a later bounded suffix. The
+            # ordinary machine API saves in-flight state without boot, drain,
+            # flush or reset; a readiness failure remains a readiness failure.
+            saved = request(args.session_dir, {'action': 'snapshot',
+                            'path': str(args.snapshot_final.resolve())}, args.timeout)
+            require(saved['machine'] == state, 'Snapshot changed the observed RTL boundary')
+            manifest = read_bounded(args.snapshot_final / 'snapshot.json', 32768)
+            result['final_checkpoint'] = {'path': saved['snapshot'],
+                'manifest_sha256': sha(manifest), 'cycle': state['cycle'],
+                'boundary_unchanged': True}
         if args.require_ready:
             require(observed_ready, 'Real guest READY and idle controllers were not observed within the declared bound')
     except (OSError, ValueError, RuntimeError, KeyError, subprocess.TimeoutExpired) as error:
+        if not result['status'].startswith('FAIL'):
+            result['status'] = 'FAIL'
         result['error'] = str(error)
     finally:
         result['wall_seconds'] = time.monotonic() - started
@@ -195,6 +208,8 @@ def main():
     parser.add_argument('--timeout', type=int, default=30)
     parser.add_argument('--readelf', default='llvm-readelf')
     parser.add_argument('--require-ready', action='store_true')
+    parser.add_argument('--snapshot-final', type=Path,
+                        help='save this exact paused boundary to a new checkpoint directory, including when READY is absent')
     args = parser.parse_args()
     require(0 < args.cycles <= 1000000000 and 100000 <= args.quantum <= 10000000,
             'Cycles/quantum outside bounded diagnostic range')

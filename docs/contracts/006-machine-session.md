@@ -75,9 +75,12 @@ Timestamped delivery is translated once into the local clock. Restore
 validates and restores the origin before applying a recorded suffix. Earlier
 development adapter checkpoints are unsupported by this version. Warm reset
 waits for the actual QEMU RESET event and observes MTIME through MMIO; both
-backends reset MTIME. QEMU's instruction-count mcycle/minstret reset behavior
-differs from RTL and remains an explicit architectural comparison gap. These
-counters are retained in the observations and are never filtered to claim parity.
+backends reset MTIME. The selected profile0.3 fast successor binds mcycle to the
+declared100MHz clock and resets fixed counters at completed paused RESET.
+Historical executables retain their original behavior. Actual QEMU retirement
+and its immediate reset boundary differ from RTL retirement and eight reset
+edges; full architectural parity remains unqualified. All counters and private
+baselines remain exact checkpoint state and are never filtered to claim parity.
 
 The QEMU fast binding uses the same selected Lean ELF and supplied DTB, a
 RV64IM/MSU/Sv39/PMP scalar configuration, CLINT 10 MHz, and the selected machine
