@@ -40,13 +40,19 @@ def guest_events(path: Path) -> list[tuple[int, int, int, int, int]]:
 
 def visible_pixels(path: Path) -> tuple[int, int, bytes]:
     ppm = path.read_bytes()
-    header = re.match(rb'P6\s+(\d+)\s+(\d+)\s+255\s', ppm)
+    header = re.match(rb'(P[56])\s+(\d+)\s+(\d+)\s+255\s', ppm)
     if not header:
         raise ValueError('missing real controller visible output')
-    width, height = map(int, header.groups())
+    kind, raw_width, raw_height = header.groups()
+    width, height = int(raw_width), int(raw_height)
     pixels = ppm[header.end():]
-    if not width or not height or len(pixels) != width * height * 3:
+    channels = 1 if kind == b'P5' else 3
+    if not width or not height or len(pixels) != width * height * channels:
         raise ValueError('visible geometry/byte length differs')
+    if channels == 1:
+        # Native RTL publishes actual controller-produced grayscale pixels.
+        # Normalize only the observation representation; no pixel is invented.
+        pixels = bytes(channel for gray in pixels for channel in (gray, gray, gray))
     return width, height, pixels
 
 

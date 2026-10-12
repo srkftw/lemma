@@ -60,6 +60,15 @@ latched paper ABI; target uploads never substitute for refresh completion.
 Page reload and edit redraw clear the dirty queue and upload the whole newly
 guest-produced surface before its full refresh.
 
+Background generation packs sixteen toolbar pixels into each checked 64-bit
+store when the word lies within one row and button width is at least sixteen
+pixels. The packed constructor preserves each literal glyph, three-pixel
+button border, clipping and Gray4 nibble order. Row crossings, smaller button
+widths and incomplete tails retain the scalar construction. Below the toolbar,
+the existing packed canvas constructor remains in use. Odd-width unused low
+nibbles stay white. This changes guest work, without changing resolution,
+framebuffer capacity, upload coverage or controller refresh requirements.
+
 Each service turn advances one bounded save operation, then display work, then
 drains at most eight queued pen records through nonblocking input operation1.
 Empty is checked once. A full384-sample raw buffer is checked before another

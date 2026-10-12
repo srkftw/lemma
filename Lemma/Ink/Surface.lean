@@ -36,7 +36,7 @@ def letter (code : UInt64) : UInt64 :=
   if code = 68 then 0x6b6e else
   if code = 69 then 0x79a7 else if code = 70 then 0x79a4 else
   if code = 71 then 0x796f else if code = 72 then 0x5bed else
-  if code = 73 then 0x7497 else if code = 76 then 0x4927 else
+  if code = 73 then 0x7497 else if code = 75 then 0x5bad else if code = 76 then 0x4927 else
   if code = 78 then 0x5ffd else if code = 79 then 0x7b6f else
   if code = 80 then 0x7be4 else if code = 82 then 0x6bad else
   if code = 83 then 0x79cf else if code = 85 then 0x5b6f else
@@ -105,6 +105,48 @@ def backgroundCanvasWord (x y width : UInt64) : UInt64 :=
     wordPixel (wordPixel initial x 24 12) x (width - 25) 12
   if width % 2 = 1 then wordPixel margins x width 15 else margins
 
+/-- Clear the intersection of one half-open black pixel span and a packed
+16-pixel word. Nibble swapping matches Gray4's high-nibble-first byte order.
+The clipped nonempty span gives shifts0..60; no shift by64 is formed. -/
+private def blackWordSpan (value x first past : UInt64) : UInt64 :=
+  if past ≤ first then value else if past ≤ x then value else
+  if x + 16 ≤ first then value else
+  let low := if first < x then 0 else first - x
+  let high := if x + 16 < past then 16 else past - x
+  let mask := ((0xffffffffffffffff : UInt64) <<< (low * 4)) &&&
+    ((0xffffffffffffffff : UInt64) >>> ((16 - high) * 4))
+  let swapped := ((mask &&& 0x0f0f0f0f0f0f0f0f) <<< 4) |||
+    ((mask &&& 0xf0f0f0f0f0f0f0f0) >>> 4)
+  value &&& ((0xffffffffffffffff : UInt64) ^^^ swapped)
+
+private def toolbarColumn (value x first past endAt : UInt64) : UInt64 :=
+  blackWordSpan value x first (if endAt < past then endAt else past)
+
+private def toolbarButtonWord (value x y buttonWidth number : UInt64) : UInt64 :=
+  let first := number * buttonWidth
+  let past := first + buttonWidth
+  let borders := blackWordSpan (blackWordSpan value x first (first + 3)) x (past - 3) past
+  if 36 ≤ y then if y < 96 then
+    let bits := (glyph number >>> ((4 - (y - 36) / 12) * 3)) &&& 7
+    let a := if bits &&& 4 = 4 then toolbarColumn borders x (first + 24) (first + 36) past else borders
+    let b := if bits &&& 2 = 2 then toolbarColumn a x (first + 36) (first + 48) past else a
+    if bits &&& 1 = 1 then toolbarColumn b x (first + 48) (first + 60) past else b
+  else borders else borders
+
+/-- Within a toolbar row, a16-pixel span intersects at most two buttons when
+buttonWidth≥16. Borders and the three authored glyph columns become bounded
+black spans rather than sixteen repeated scalar pixel/font calculations.
+Odd-width padding stays white. The caller retains the scalar path below144px
+and at row crossings; no geometry or glyph asset changes. -/
+def backgroundToolbarWord (x y width : UInt64) : UInt64 :=
+  let buttonWidth := width / 9
+  let initial := if y < 3 then 0 else if 125 ≤ y then 0 else
+    let number := x / buttonWidth
+    toolbarButtonWord
+      (toolbarButtonWord 0xffffffffffffffff x y buttonWidth number)
+      x y buttonWidth (number + 1)
+  if width % 2 = 1 then wordPixel initial x width 15 else initial
+
 private def backgroundOffsetStep (i _ : UInt32) (acc dimensions offset _ _ : UInt64) : Action :=
   backgroundStep (i + offset.toUInt32) 0 acc dimensions 0 0 0
 
@@ -114,16 +156,19 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
   let offset := i.toUInt64 * 8
   let x := (offset % stride) * 2
   let y := offset / stride
-  let scalar := if y < 128 then true else if stride < offset % stride + 8 then true else false
+  let scalar := if stride < offset % stride + 8 then true else
+    if y < 128 then if width < 144 then true else false else false
   if scalar then
     .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
   else
-    .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
+    let packed := if y < 128 then backgroundToolbarWord x y width else backgroundCanvasWord x y width
+    .bind (Memory.write64 (framebuffer + offset) packed) fun s _ => .done s acc
 
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
 intersecting tiles and coalesces their bounding refresh rectangle. Globally
-aligned words wholly within a canvas row use packed writes, including odd byte
-strides. Toolbar, row crossings and final partial words use scalar pixels. -/
+aligned words wholly within a row use packed writes, including odd byte
+strides and toolbar glyphs. Tiny toolbars, row crossings and final partial words
+use scalar pixels. -/
 def background (width height : UInt64) : Action :=
   let bytes := ((width + 1) / 2) * height
   if 2000000 < bytes then .done 16 0 else

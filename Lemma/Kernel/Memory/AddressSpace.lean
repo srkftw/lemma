@@ -656,11 +656,14 @@ private def commitLeaf (address va oldTables index owner handle slot pte permiss
   .bind (put address 48 (index + 1)) fun s _ =>
   if failed s = true then abortLeaf address va oldTables index owner handle slot s else .done 0 handle
 
-def mapUser (descriptor va handle permissions : UInt64) : Action :=
+/-- Kernel-only mapping using the `base` result from this same nonpreemptible
+S Action. No scheduling, descriptor/table mutation, release or borrowed alias
+may intervene. Allocating a fresh owned frame cannot change an already owned
+descriptor or its directory. Every duplicate row and selected grant/PTE check,
+pinning, invalidation, publication and rollback still runs below. -/
+def mapUserAt (address va handle permissions : UInt64) : Action :=
   if alignedAddress va = false then .done invalidAddress 0 else
   if permissionsValid permissions = false then .done invalidPermission 0 else
-  .bind (base descriptor) fun s address =>
-  if failed s = true then .done s 0 else
   .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if bindingAddressValid va maximum = false then .done invalidAddress 0 else
   .bind (get address 24) fun s owner =>
@@ -689,6 +692,12 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   .bind (Frames.pin owner handle) fun s _ =>
   if failed s = true then rollbackLastTable address va oldTables s else
   commitLeaf address va oldTables index owner handle slot (leafEntry physical permissions) permissions
+
+def mapUser (descriptor va handle permissions : UInt64) : Action :=
+  if alignedAddress va = false then .done invalidAddress 0 else
+  if permissionsValid permissions = false then .done invalidPermission 0 else
+  .bind (base descriptor) fun s address =>
+  if failed s = true then .done s 0 else mapUserAt address va handle permissions
 
 /-- Kernel-only lookup within the same nonpreemptible S Action that obtained
 `address` from `base`. No descriptor mutation, scheduling boundary or borrowed

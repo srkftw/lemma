@@ -47,7 +47,9 @@ def table : Action :=
   if failed s = true then fatal else
   .bind (Frames.resolvePurpose 1 handle 1) fun s address =>
   if failed s = true then fatal else
-  .bind (Frames.mappingCount 1 handle) fun s pins =>
+  -- Owner, generation and purpose were just resolved in this same S Action.
+  -- Read pins through that exact slot, retaining the zero-pins requirement.
+  .bind (Access.read64 (Frames.record ((address - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
   if failed s = true then fatal else
   if pins = 0 then .done 0 address else fatal
 

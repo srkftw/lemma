@@ -45,11 +45,16 @@ def allocate (descriptor va count : UInt64) : Action :=
   if count = 1 then
     .bind (ownedArenaAddress va) fun s _ =>
     if s = 0 then
-      .bind (AddressSpace.owner descriptor) fun s owner =>
+      -- Borrow one checked descriptor only through this nonpreemptible
+      -- allocation/mapping transaction. A newly granted frame is disjoint
+      -- from all live descriptor/table frames; no authority crosses the call.
+      .bind (AddressSpace.base descriptor) fun s address =>
+      if failed s = true then fatal else
+      .bind (Access.read64 (address + 24)) fun s owner =>
       if failed s = true then fatal else
       .bind (Frames.allocate owner 4) fun s handle =>
       if failed s = true then .done (memoryStatus s) 0 else
-      .bind (AddressSpace.mapUser descriptor va handle 3) fun s _ =>
+      .bind (AddressSpace.mapUserAt address va handle 3) fun s _ =>
       if failed s = true then releaseProvisional owner handle s else .done 0 va
     else .done s 0
   else .done 16 0

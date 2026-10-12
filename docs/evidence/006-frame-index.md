@@ -90,3 +90,97 @@ nix develop --no-write-lock-file --command python3 scripts/check_kernel_frames.p
   --image build/kernel/frame-index-new/image.elf \
   --output-dir build/kernel/frame-index-run-new --timeout 120
 ```
+
+## Local allocation authority and packed toolbar
+
+The next maintained increment reuses a freshly validated descriptor only within
+one nonpreemptible allocation Action, and reads task-table pins from the grant
+which that same Action just resolved. `mapUserAt` retains all live duplicate-row
+reads, ownership, generation, purpose, permission, actual PTE, pinning and
+publication/rollback checks. It does not cache authority between syscalls.
+
+The literal finite-RAM fixture executes the previous algorithm and current
+production Actions, comparing complete authoritative memory after success and
+rejection. Receipt: `build/task006-allocation-reuse-after-change-a1.log`.
+
+| Operation | Previous read64 calls | Current read64 calls | Previous/current ownership reads |
+| --- | ---: | ---: | ---: |
+| Legacy allocation |106|83|32 /26|
+| Expanded allocation |230|151|102 /64|
+| Task table |9|6|6 /4|
+
+These are host Action counts. The fixture also checks malformed descriptor and
+registry bindings, duplicate rows, incorrect live grants, pins/generations,
+read/write/invalidation failures, exact rejection precedence and provisional
+allocation rollback. Existing two-page bulk-copy/deadline/context boundary tests
+pass at `build/task006-local-authority-boundaries-a1.log`.
+
+The guest background packs full toolbar words while preserving scalar row
+crossings, small geometry, odd-width padding and partial tails. The independent
+toolbar test compares1,725,440 literal pixels across twelve widths, then checks
+every1,815,000 Gray4 byte at1650×2200 against the scalar construction. Receipt:
+`build/task006-toolbar-words-a2.log`.
+
+| Complete canonical background | Checked word writes | Checked byte writes |
+| --- | ---: | ---: |
+| Prior construction |211862|120104|
+| Packed toolbar |224950|15400|
+
+All display pixels, the444 framebuffer frames and every full upload remain.
+The complete image still has3,630,000 pixels and3588 tiles:3468 full tiles and
+120 edge tiles. These exact work counts explain the changed algorithm; they
+do not independently establish a worst-case processor-cycle bound.
+
+`tests/kernel/LocalAuthorityCompile.lean` passes genuine elaboration, profile
+checking and maintained LLVM lowering for allocation/task and surface Actions
+in `build/task006-local-authority-compile-a2`. The complete fresh supervisor O2
+notebook build and strict audit pass separately at
+`build/kernel/task006-canonical-hotpath-notebook-a3`. Its image SHA256 is
+`b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7`;
+build/audit logs are `build/task006-canonical-hotpath-notebook-build-a3.log`
+and `build/task006-canonical-hotpath-notebook-audit-a3.log`. This image also
+contains the separately owned mathematical-course/review increment, so a cold
+boot comparison must account for its additional code/loading work.
+
+The first hotpath build invocation selected the wrong bootstrap stage and
+failed before compilation. The corrected a2 build compiled, but its original
+strict audit rejected the new `Mathematics.validateEventStep` five-entry LLVM
+table. Its exact failed observer, manifest and failure/log remain at
+`build/task006-canonical-hotpath-notebook-a2-original-audit`. After independent
+metadata/domain/bound/load mutation tests qualified that narrow observer, a
+fresh source-valid a3 build emitted exactly the same target ELF bytes and
+passed the complete audit. The earlier a2 result stays failed.
+
+## Actual canonical campaigns remain separate
+
+`task006-frame-index-canonical-a2` continues its original immutable guest
+`186e8370b36152344b1a19339d5430e68358102640879fa2736fe55fe7f471e0`.
+At the observational100M-cycle checkpoint, actual privileged-cycle counters
+were519357 U,97495547 S and1985088 M. At213M they were598136 U,
+209112068 S and3289788 M; the notebook owned405 frames, versus158 at100M.
+Only three backing reads had occurred, with no display refresh. These real
+counters locate substantial work in supervisor allocation/validation; fixed
+PC samples alone are not cycle attribution. Later samples advance through the
+actual user background and `Surface.gatherWord` upload path. `gatherWord`
+already uses aligned word reads and is not a newly delivered optimization.
+
+The changed hotpath guest starts once from actual reset in
+`build/silicon/task006-hotpath-canonical-a1/session`, after strict audit and
+public preparation validate consumed identities. Its exact native binary is
+`build/silicon/task006-backing-runtime-a3/obj/lemma-rtl`, SHA256
+`44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9`.
+Runtime identity is
+`255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e`.
+Each campaign has its own privately copied initialized medium, source-bound
+symbols, PC samples, plan, result and owner. Source medium SHA256 is
+`c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46`.
+
+Both retain the original2B-cycle/7200-second diagnostic ceilings. There is no
+independently proved pipeline workload bound; a timeout remains a failure.
+The new observer records guest Ready separately and continues to a real
+completed full refresh and acknowledged initial commit. Complete independent
+expected pixels and raw pen/edit/navigation/Save/cold recovery are still
+required. The existing notebook observer now decodes actual native P5 output
+alongside QEMU P6; tests reject malformed lengths/geometry. The independent
+empty-notebook observer covers the entire background and complete footer,
+including saved/pending distinction. No expected pixel enters the machine.

@@ -213,6 +213,21 @@ all live-row read addresses, loop callbacks and complete two-page bytes against
 independent finite RAM; its literal duplicates/read errors span block, page and
 partial-tail cutpoints. These host Action counts do not establish CPU timing.
 
+`AddressSpace.mapUserAt` likewise borrows a freshly checked `base` only within
+the same nonpreemptible supervisor allocation transaction. Its caller cannot
+schedule, mutate a descriptor/directory, release authority, or retain that
+address across the transaction. `Syscall.allocate` allocates a new disjoint
+owned frame between validation and mapping; every mapping duplicate, live
+ownership/generation/purpose, permission, table, actual PTE, pin, publication,
+invalidation and rollback check still executes. Public `mapUser` retains its
+early argument checks and performs `base` before using this internal helper.
+`Task.table` reads pins from the ownership slot whose owner, purpose and
+generation it has just resolved, without resolving that same grant again.
+Literal finite-RAM tests compare complete final authority state and rejection
+precedence against the earlier implementation, including malformed registry,
+duplicate mappings and read/write/invalidation failures. This local reuse is
+not persistent authority caching or a reduction of isolation checks.
+
 The workload checker can retain read-only allocator observations using
 `conformance/lemmasim/check_owned_memory.py`. Each physical read is at most
 64 KiB. Ready and final-before-reap observations read the bounded ownership

@@ -87,8 +87,44 @@ def checkBackground (width height : UInt64) (words : Bool) : IO Unit := do
     let low := if width ≤ x+1 then 15 else Surface.backgroundPixel (x+1) y width height
     require (state.bytes[(Surface.framebuffer-origin).toNat+offset]! = ((high <<< 4) ||| low).toUInt8)
       s!"background byte differs at {width}/{height}/{offset}"
+  IO.println s!"SURFACE_BACKGROUND:{width}/{height} word-writes={state.wordWrites} byte-writes={state.byteWrites}"
   require (state.bytes[(Surface.framebuffer-origin+stride*height).toNat]! = 0xa5)
     "background changed its following byte"
+
+/-- Literal toolbar oracle independent of the optimized span construction and
+of the production glyph/pixel routines. Unknown buttons stay blank. -/
+def toolbarPixel (x y width : UInt64) : UInt64 :=
+  if width ≤ x then 15 else
+  let buttonWidth := width / 9
+  let buttonX := x % buttonWidth
+  if y < 3 || 125 ≤ y || buttonX < 3 || buttonWidth - 3 ≤ buttonX then 0 else
+  if 36 ≤ y && y < 96 && 24 ≤ buttonX && buttonX < 60 then
+    let buttons := #[(0x5bed : UInt64),0x29e2,0x23ca,0x5b6f,0x6bad,0x79a7,0x5b7f,0x79cf,0x7927]
+    let index := (x / buttonWidth).toNat
+    let glyph := if index < buttons.size then buttons[index]! else 0
+    let bit := (y - 36) / 12 * 3 + (buttonX - 24) / 12
+    if (glyph >>> (14 - bit)) &&& 1 = 1 then 0 else 15
+  else 15
+
+def checkToolbar : IO Unit := do
+  let mut observed : Nat := 0
+  for width in #[(144 : UInt64),145,152,153,160,512,513,527,1404,1650,4095,4096] do
+    let stride := (width + 1) / 2
+    for y in [:128] do
+      for column in [:stride.toNat] do
+        let offset := y.toUInt64 * stride + column.toUInt64
+        if offset % 8 = 0 && column.toUInt64 + 8 ≤ stride then
+          let x := column.toUInt64 * 2
+          let actual := Surface.backgroundToolbarWord x y.toUInt64 width
+          let mut expected : UInt64 := 0
+          for byte in [:8] do
+            let pixel := x + byte.toUInt64 * 2
+            let high := toolbarPixel pixel y.toUInt64 width
+            let low := toolbarPixel (pixel + 1) y.toUInt64 width
+            expected := expected ||| (((high <<< 4) ||| low) <<< (byte.toUInt64 * 8))
+          require (actual == expected) s!"literal packed toolbar differs at{width}/{x}/{y} actual{actual} expected{expected}"
+          observed := observed + 16
+  IO.println s!"SURFACE_TOOLBAR:PASS independent literal glyph/border/padding pixels={observed} widths144..4096"
 
 def checkTile (width height x y : UInt64) (words : Bool) : IO Unit := do
   let stride := (width+1)/2
@@ -151,12 +187,13 @@ def checkReadFailure : IO Unit := do
   require ((← memory.get).bytes = initial.bytes) "scatter wrote before reading both neighbor words"
 
 def check : IO Unit := do
+  checkToolbar
   -- Literal margins, horizontal rules, and odd-width final padding.
   require (Surface.backgroundCanvasWord 16 180 512 = 0xddddddcddddddddd) "literal left margin/rule"
   require (Surface.backgroundCanvasWord 496 180 511 = 0xdfdddddddddddddd) "literal odd padding/rule"
   require (Surface.backgroundCanvasWord 496 148 511 = 0x0f00000000000000) "separator precedes margins"
   for (width,height,words) in #[(512,640,true),(527,321,true),(513,320,true),
-                              (1650,193,true),(17,191,true),(7,191,false),(25,129,true)] do
+                              (1650,2200,true),(1650,193,true),(144,129,true),(145,129,true),(17,191,true),(7,191,false),(25,129,true)] do
     checkBackground width height words
   for (w,h,x,y,words) in #[(512,640,32,32,true),(527,321,480,288,true),
                           (513,320,32,32,true),(1650,2200,32,32,true),
