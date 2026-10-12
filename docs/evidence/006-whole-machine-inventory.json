@@ -1,5 +1,5 @@
 {
-  "implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
+  "implementation_commit": "d8d7b0cc306a91a113b5a95e964a2a19313f457d",
   "merged_baseline": "abd9920d54df04ce52da9386170e99012c39bdfb",
   "baseline_tree": "7c30f469592f2c2a1bef6aab11f31d30a8a3ee28",
   "scope": "compact inventory of actual local artifacts; original execution/source identities and failures remain distinct; not a completion certificate",
@@ -311,6 +311,228 @@
       "bytes": 2946,
       "sha256": "3ac67223ce2de1147c4e03e19c1e87854b734f6cf656c5f4e53d3a8f3b4a3cef",
       "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-compiler-a1/result.json",
+      "bytes": 5867,
+      "sha256": "2dd6d125839694d187e18ac8ae91efe5e5c3eb690379baee5a95adb602dde47a",
+      "scope": "genuine elaboration/checked lowering/O0-O2 power guard compilation; accepted Core0 language unchanged",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-quota-a1/objects-result.json",
+      "bytes": 1052,
+      "sha256": "bd8118f76538f88effc8604c08eec74cd075dc7ccbefb27c3d618ea720a227f3",
+      "scope": "real Lean object-table v2 fifth endpoint admission, legacy v1, lifetime and OOM/error observations",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-quota-a1/authority-result.json",
+      "bytes": 851,
+      "sha256": "3ca2ddc52913bbfd4d11a75e8d58a6ed3f69eb52570f250fd410e795cb670a06",
+      "scope": "real Lean kernel power authority/decision fixture; no whole hardware qualification",
+      "status": "PASS"
+    },
+    {
+      "path": "build/silicon/task006-power-control-a1/result.json",
+      "bytes": 5431,
+      "sha256": "15b13006c83c5bdf6717ae927a0c5e1fc8125681862a8dda6fb69fc5c5acac28",
+      "scope": "literal Power-v1 RTL, busy sources/W1C/reset; separate from guest acceptance",
+      "status": "PASS",
+      "source_commit": "84058ad2df2d987ae7cdb8c726129bc4aba37cea"
+    },
+    {
+      "path": "build/silicon/task006-power-devices-a1/result.json",
+      "bytes": 285,
+      "sha256": "18ba5501b3560a7ca61c8282d03e10fcf0871b0880953692654e515e09ef46de",
+      "scope": "retained missing testbench busy port failure",
+      "status": "FAIL",
+      "source_commit": "97e4dcbde40387a5f3f7152aec5b5beb86f73531"
+    },
+    {
+      "path": "build/silicon/task006-power-devices-a2/result.json",
+      "bytes": 15877,
+      "sha256": "2328e23435263aa3490f57fcde794d71fa540f7779a3c396022f31275db3c475",
+      "scope": "actual final literal devices/controllers, not canonical guest readiness",
+      "status": "PASS",
+      "source_commit": "97e4dcbde40387a5f3f7152aec5b5beb86f73531"
+    },
+    {
+      "path": "build/silicon/task006-runtime-power-a1/build.json",
+      "bytes": 73135,
+      "sha256": "ec4f39645396f79d3e8bfaf60323713a6a6133cc9030b52d0e4a1ac6d3c8c61a",
+      "scope": "actual source-bound RTL profile0.3 runtime build/identity"
+    },
+    {
+      "path": "build/task006-loader-plan/maintained-result.json",
+      "bytes": 5092,
+      "sha256": "cc87447063e890310c8ba40682f7ce68d2cfae1cd54b994259b1231aafe9d20d",
+      "scope": "real Lean aligned Loader fixture, genuine full initializer/notebook/probe builds and strict audits; dirty-at-start source identities preserved",
+      "status": "PASS_IMPLEMENTATION_AND_FULL_BUILDS"
+    },
+    {
+      "path": "build/silicon/task006-canonical-cold-a2/result.json",
+      "bytes": 7536,
+      "sha256": "709867891edc9c35f664e026d08a57ae682b78a4b17e868d1def6621c90e6709",
+      "scope": "retained pre-Loader 242M canonical RTL cold deadline failure",
+      "status": "FAIL_CANONICAL_RTL_NOT_READY"
+    },
+    {
+      "path": "build/silicon/task006-loader-cold-a1/result.json",
+      "bytes": 10266,
+      "sha256": "8e345e41e75dc6d9059370d3e12c750a46923d9ec03b59e82c4f4b6aa5f1b555",
+      "scope": "changed Loader fixed100M canonical RTL prefix; first sampled U38M, no Ready",
+      "status": "OBSERVED_PREFIX_NOT_READY"
+    },
+    {
+      "path": "build/silicon/task006-boot-checkpoint-a2/result.json",
+      "bytes": 4382,
+      "sha256": "7e809d8f9fc3ddbd51b91c21f0cce19b800562facfc5faeac34df1fadaea40b3",
+      "scope": "actual bounded probe checkpoint/unchanged boundary/negative destination/145270622-byte suffix; no notebook Ready claim",
+      "status": "PASS"
+    },
+    {
+      "path": "build/l6-power1/result.json",
+      "bytes": 4043,
+      "sha256": "eb43c37ff884d8d413682adf853a1bf6a876fe014f6e38166ee915387de49e2e",
+      "scope": "retained actual fifth endpoint quota failure before guest input",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-power2/result.json",
+      "bytes": 4148,
+      "sha256": "21e45c77e5e80bf3527c0d6dae3a82444ce7ac1a8e8b47589cad7de2af093a40",
+      "scope": "retained interrupted costly CLI-polling campaign; no PASS",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-power3/result.json",
+      "bytes": 4150,
+      "sha256": "2afe4a6d9f6de2771c80b84d57007b09f227e64c3a939f15f474e66a66d53586",
+      "scope": "retained interrupted costly polling campaign; no PASS",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-power4/result.json",
+      "bytes": 59219,
+      "sha256": "08d6b72c0f4e3f533ede6da55ecd48ab3782cbba28eeb348f12723a5e582fdb6",
+      "scope": "retained display/durable-ack observer mismatch; no relaxed final pixel relation",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-power4-recovery-correction-a1/result.json",
+      "bytes": 4017,
+      "sha256": "6f889ad063ff6e23de441931c89c0d3abb219f31e1d4a70c8900b358ad27475e",
+      "scope": "retained failed focused display observation before correct new-ink/completion predicate",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-power5/result.json",
+      "bytes": 71341,
+      "sha256": "d0a4a7af9454a8b4cf785cdd78b21b675ade2a639da0bd0d88c6075dc84441ad",
+      "scope": "actual previous6dc/full notebook power workflow; historical execution identity distinct from final927/Loader",
+      "status": "PASS"
+    },
+    {
+      "path": "build/l6-power-final-a1/result.json",
+      "bytes": 71521,
+      "sha256": "fd9fad55e7b1434644a5c5b76e25ca69a773140a4a8f0c62ab01bea38bcc8743",
+      "scope": "final927/genuine Loader canonical suspend/wake/exact fork/new ink/Save/cold/failed-FLUSH/cold workflow",
+      "status": "PASS"
+    },
+    {
+      "path": "build/task006-warm-pen-a1/result.json",
+      "bytes": 67604,
+      "sha256": "0d2c4285b34ead4abeca5fa4f9cb49bedcbdfa5b5688e783816b5e4488bcdb01",
+      "scope": "original actual6dc warm pen reset/watchdog mismatches, not a passing qualification",
+      "status": "OBSERVED_MISMATCH"
+    },
+    {
+      "path": "build/l6-warm-prepatch-a3/result.json",
+      "bytes": 68902,
+      "sha256": "dd9ff20ed813e23a3f95c25f79430e887319a2a663aba753af9ab1f277252f6a",
+      "scope": "original6dc canonical warm Ready but new raw-MTIME ink failed, same frozen final stimulus",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/l6-warm-final-a1/result.json",
+      "bytes": 98535,
+      "sha256": "c7d48436fe57fe80e5899668bf7eff2c6344ae21049db8eec3621d71b0be5bf7",
+      "scope": "final927 genuine warm notebook/new raw-MTIME ink/Save31/new cold exact pixels and durable bytes",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/counter-pen-current-only-a1/result.json",
+      "bytes": 137599,
+      "sha256": "c9320ccb8005d8f3add12baa533fa219e14e83086d665fb8afd259006c3b90e6",
+      "scope": "current prepared927/genuine fresh audited probe; no historical binary argument; actual counter/UART/private state checks",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-warm-pen-current-a1/result.json",
+      "bytes": 65848,
+      "sha256": "1690a1a3f14843ebd8314c3be2e72a526692b35525f0b4c6fd0cfbc54be0a4fa",
+      "scope": "current927 actual pen hardware/software reset, fractional watchdog/private forks/malformed state; debugger MMIO not guest instruction qualification",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-final-rtl-a1/rtl/result.json",
+      "bytes": 11266,
+      "sha256": "0bceeea2e915233c1ffb67618b1226b327659da4143852c791d0578e5e109132",
+      "scope": "actual source-bound current RTL cold/wake/pending-suffix guest probe, no notebook/Save claim",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-final-fast-a2/qemu/result.json",
+      "bytes": 72017,
+      "sha256": "7ecd6734ea7c9ac3a7d93a7aa005aa449adadfbdc6971724e7c74b00a781fa52",
+      "scope": "final927 source-qualified probe cold/wake/exact serialized suffix, no whole architecture claim",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-power-final-pair-a2/result.json",
+      "bytes": 1693,
+      "sha256": "a764bccbc413a3c357e702db21a3de6ef6a9d8c3285e46a194e6949340105c7d",
+      "scope": "predefined partial relation and100000-tick wake bound; no post-hoc masks or RTL rerun",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/task006-input-clock-a1/result.json",
+      "bytes": 3675,
+      "sha256": "8f1d43a3aba4a61f7f55dea2fed5ae91faf6e864177101742055c99d622bf66a",
+      "scope": "retained observer CLI-directory invocation failure",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/lemmasim/task006-input-clock-a2/result.json",
+      "bytes": 5844,
+      "sha256": "22223ffcd0806726dce4d155b6d820bf1b4ff1e39bcd5afc3f44e66c48493187",
+      "scope": "retained incorrect literal-coordinate oracle failure; valid raw checkpoint/performance observations remain distinct",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/lemmasim/task006-input-clock-a3/result.json",
+      "bytes": 12300,
+      "sha256": "29c938d640d7e5295619dc879803160de605a108ee1f21a66f1b11d9738197cb",
+      "scope": "corrected independent raw-field/cursor/phase and queued/cold/warm exact serialized checks, actual20RPC measurements; no arbitrary TLB claim",
+      "status": "PASS"
+    },
+    {
+      "path": "build/task006-fast-cache-audit-a1/result.json",
+      "bytes": 8127,
+      "sha256": "cda2fac10e9fb585d3818e5aee64737693dad8479be850ec5646be86c7014013",
+      "scope": "actual pinned-source cache/reservation/fence audit; GAP_CONFIRMED, not guest execution/proof",
+      "status": "GAP_CONFIRMED"
+    },
+    {
+      "path": "build/task006-current-host-a1/result.json",
+      "bytes": 2599,
+      "sha256": "c0951be1700284a3dd423d2c3457ffffedf9ff70581cd07ae127d4fc8bb1a673",
+      "scope": "final frozen code616 relevant pinned host tests+metadata,613 inputs unchanged; not target/physical acceptance",
+      "status": "PASS",
+      "source_commit": "de21f0c5ccc5e21a7c68082903dd7b585396a78d"
     }
-  ]
+  ],
+  "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
+  "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation"
 }

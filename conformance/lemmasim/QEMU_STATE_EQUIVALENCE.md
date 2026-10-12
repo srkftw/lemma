@@ -59,6 +59,19 @@ counter CSR instruction/privilege qualification is absent. QEMU's completed
 paused RESET and RTL's eight reset edges have explicitly different boundaries;
 these checks do not establish whole-machine architectural equivalence.
 
+The selected pen/reset successor has SHA256
+`927bef771d31134b73b76a2c219d1717144feec6986b07df5c58ef85d08ad6e5`.
+It retains the counter/UART repairs and resets the complete pen controller on
+hardware reset. Software RESET1 still enters loss/resynchronization. Device
+VMState version3 adds a mandatory aligned `pen_clock_origin_ns`, mapping the
+watchdog and mouse timestamps onto actual reset-local MTIME without changing
+the fractional instruction-clock phase. Missing, stale version2, misaligned,
+future and inconsistent deadline state reject. The independent wire decoder
+and mutation check include the origin; no new field exemptions exist. Ordinary
+warm notebook writing/Save/new cold recovery passed using identical old/new
+raw stimulus. See [the focused boundary](WARM_PEN_STATE.md). Paper warm reset
+state parity and full processor/reset-duration equivalence remain unqualified.
+
 All seven power words, enable flag and queued button state are exact comparison
 bytes. The additional independent mutation checks change each power word and
 require failure. The wire decoder requires the fixed device prefix and the
@@ -85,6 +98,20 @@ The final seven nanoseconds of the signed clock range are reserved before
 run/event admission so the next instruction boundary cannot overflow it.
 The historical executions do not qualify cycle/instret reset semantics. The
 reviewed counter successor qualifies the narrower selected behavior above.
+
+## Unserialized cached state
+
+QEMU11.1.1 `hw/core/cpu-system.c:cpu_common_post_load` calls `tlb_flush(cpu)`.
+Cached Sv39 software translations and TCG translation blocks are not in the
+CPU migration stream. This observer compares every serialized guest byte,
+but cannot detect an omitted cache entry. Actual supported guest suffixes
+passed; arbitrary cached-translation continuation remains unfinished.
+`target/riscv/machine.c` explicitly serializes `env.load_res`/`env.load_val`;
+selected RV64IM excludes A and does not exercise LR/SC. The Lean address-space
+operations issue declared SFence primitives, but that source observation is
+not a proof covering every possible processor/memory state. RTL's savable
+model captures its cache/TLB circuits. Cross-backend microstate migration and
+a portable architectural checkpoint boundary remain absent.
 
 ## Source reason for the two fields
 

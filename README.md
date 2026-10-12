@@ -459,9 +459,10 @@ or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
 The `lemma-silicon-dev/0.3.0` successor retains the canonical 1650×2200 notebook
 binding and adds guest-controlled digital suspend, wake and reset-cause reporting
 on matched QEMU and RTL controllers. Historical 0.1/0.2 profiles remain available.
-The earlier canonical QEMU notebook workflow passed; canonical RTL cold readiness
-is tracked separately in the checkpoint. The binding has
-128 MiB external simulation RAM, a checked 32 MiB frame pool, exact
+Canonical QEMU writing, suspend/wake, warm reset, Save and new cold recovery
+have separate observed workflows; canonical RTL cold readiness remains unqualified.
+The binding has
+128 MiB external simulation RAM, a checked 32 MiB frame pool,
 backend-specific checkpoints, an isolated durable backing for restored forks,
 and a synthetic digital panel sequencer. The original profiles remain supported.
 This is a larger running subset, not a completed Lemma One or physical signoff.
@@ -507,6 +508,7 @@ Use the same live session from another terminal:
 ```sh
 ./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"pause"}'
 ./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"inspect"}'
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"clock"}'
 ./scripts/lemmasim snapshot --session-dir build/user-session --to build/user-checkpoint
 ./scripts/lemmasim restore --session-dir build/user-session --from build/user-checkpoint
 ./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"resume"}'
@@ -527,6 +529,10 @@ Repeat the sequence to wake. `button --cycle N` schedules an explicit future
 controller cycle. Both levels at one cycle are sampled together, producing no
 rising edge. A raw press during display/storage work can return guest BUSY.
 Inspect `devices.power`, queues and guest UART to retain the actual decision.
+Warm reset uses `session-control --request '{"action":"warm-reset"}'`; a new
+cold process uses `'{"action":"cold-cycle"}'`. Both retain the permitted durable
+backing. Warm reset clears the pen FIFO and its timestamp domain; cooperative
+suspend instead follows the explicit loss/resynchronization protocol.
 
 Restore creates a private durable fork and disconnects live input adapters.
 It neither overwrites the original notebook nor flushes pending work. To start
@@ -556,6 +562,10 @@ of 100 MHz controller clocks. RTL replay uses `--until-cycle` instead. There is
 no exact QEMU/RTL microstate migration. `--trace-limit N` selects bounded detailed
 tracing; ordinary sessions avoid it. Laboratory sessions may select an actual
 failed barrier with `--fail-flush 1`; inspection retains failed operations.
+RTL model serialization includes its caches/TLBs. QEMU migration flushes its
+software TLB; cached Sv39 mappings and TCG translation blocks are not serialized.
+The tested fast guest suffixes continue identically, but arbitrary cached-state
+continuation remains unfinished. See the source audit in the checkpoint/evidence.
 
 For RTL development, prepare the initializer and notebook with `build --backend rtl`
 and the same profile, then select `--backend rtl` on the lifecycle commands. The

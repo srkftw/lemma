@@ -62,6 +62,14 @@ Subsequent guest barriers persist that file, not an ephemeral RAM-only base.
 Fast restore validates a paused candidate process before replacing the current
 machine. Export is exclusive creation of durable bytes, excluding volatile work.
 Different backend implementations cannot exchange exact checkpoints.
+The RTL savable model includes its cache/TLB circuitry. QEMU11.1.1's common
+CPU post-load explicitly flushes the software TLB; cached Sv39 translations
+and TCG translation blocks are not serialized. The listed fast guest suffixes
+have observed identical continuation, but arbitrary cached-translation state
+is not yet covered by an exact fast checkpoint. RISC-V reservation fields are
+serialized, although selected RV64IM excludes A. A complete fast cache-state
+mapping or separately specified architectural boundary remains required;
+checkpoint-byte equality alone cannot establish that missing coverage.
 
 Captured input includes the actual admission nanosecond phase on QEMU, as well
 as the independent delivery cycle and all seven raw pen fields. Replay validates

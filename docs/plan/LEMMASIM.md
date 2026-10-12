@@ -1,6 +1,6 @@
 # LemmaSim first-class construction workstream
 
-Status: partial — Task006 adds persistent native sessions, backend-private checkpoints, a canonical-capacity fast binding and synthetic digital panel sequencing to the earlier notebook. Canonical RTL cold notebook acceptance remains blocked by its ready deadline. Finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
+Status: partial — Task006 adds persistent native sessions, backend-private checkpoints, a canonical-capacity fast binding, synthetic digital panel sequencing and Lean-controlled cooperative power to the earlier notebook. Canonical RTL cold notebook acceptance remains blocked by its ready deadline. Finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
 
 | ID | Deliverable | Depends on | Required exit evidence | Status |
 | --- | --- | --- | --- | --- |
@@ -48,14 +48,14 @@ model or an interface specification cannot close a later column.
 
 | Subsystem | Specified behavior | Functional model | RTL | Lean guest integration | Physical qualification |
 | --- | --- | --- | --- | --- | --- |
-| Scalar CPU, M/S/U, Sv39, PMP | Development RV64IM binding | QEMU configured scalar CPU | Existing open processor | Kernel and isolated services | Not closed |
+| Scalar CPU, M/S/U, Sv39, PMP | Development RV64IM binding, declared clock/counters | QEMU scalar CPU; fixed clock/reset state qualified separately | Existing open processor | Kernel and isolated services; full ISA/CSR parity unfinished | Not closed |
 | RAM, fabric, DMA ownership | Checked pool, byte enables, bounded pending beats | External 128MiB RAM; configurable latency | Fabric and controller boundary | Real allocation, zeroing, pinning and isolation | Large physical RAM absent |
 | Boot and image update | Development preload explicit; recoverable update required | ELF/DTB preload | Lean-authored reset ROM | Current Lean kernel boot | Nonvolatile update/recovery absent |
-| Exact machine checkpoints | Versioned backend-private state | Matched fast serialization | Verilator plus wrapper state | Guest state preserved in flight | Not a physical claim |
-| Pen | Full 256 samples, 64-bit sequence/time, loss/resync | FIFO and raw tablet transport | Synchronous banks and cached head | Existing driver and immutable ink | Tablet/manual conformance unverified |
+| Exact machine checkpoints | Versioned backend-private state | CPU/RAM/controllers/private clock; soft TLB is flushed on restore, arbitrary cache-state continuation unfinished | Verilator caches/TLBs plus wrapper state | Listed in-flight guest suffixes observed exact | Not a physical claim |
+| Pen | Full 256 samples, 64-bit sequence/time, loss/resync | FIFO, raw tablet transport, warm reset and MTIME-based watchdog | Synchronous banks and cached head | Driver, immutable ink, warm writing/Save/cold workflow | Tablet/manual conformance unverified |
 | Paper/panel digital control | Accepted updates, three synthetic phases and scan clocks | Functional sequencer | Versioned sequencer circuitry | Existing paper driver, regional updates | Synthetic program; panel unqualified |
 | Local durable block medium | Checked DMA and acknowledged barrier | Explicit queue/overlay and real host barrier | Existing block controller | Store/recovery and notebook | Physical storage absent |
-| Power/reset/controls | Versioned cooperative suspend/wake and reset causes; electrical sequencing/watchdog/brownout still required | Power-v1 state, raw button queue and exact checkpoint | Power-v1 controller and existing reset boundary | Lean kernel policy, separately authorized syscall68; paired cold/wake probe observed | New controller physical flow not run |
+| Power/reset/controls | Versioned cooperative suspend/wake and reset causes; electrical sequencing/watchdog/brownout still required | Power-v1 state, raw button queue and exact checkpoint | Power-v1 controller and existing reset boundary | Lean kernel policy, separately authorized syscall68; canonical suspend and failed-save recovery, paired cold/wake probe | New controller physical flow not run |
 | Companion/USB | Enumeration, bounded framing, reconnect and durable peer required | Not built | Not built | Not built | Not closed |
 | Wi-Fi 6 / Bluetooth 5.4 | Complete digital controllers/MAC/baseband/PHY required | Not built | Not built | Not built | Analog/RF separate; digital unfinished |
 | Native/browser distribution | One core and controller-produced display | Native persistent session; browser absent | Same native RTL core | Notebook application | Manual interaction unverified |
