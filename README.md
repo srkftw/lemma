@@ -643,3 +643,20 @@ output path. `--lane writing` is a scoped development check. Required inherited
 CI, client-isolation and source-negative qualification remain separate until
 the Task004 report records their actual candidate results. The dependency map is
 [recorded here](docs/plan/004-dependencies.md).
+
+A local immutable native development bundle retains the exact audited guest and
+backend inputs while implementation continues. It uses ELF preload and requires
+the pinned external Linux/Nix host libraries listed in its manifest:
+
+```sh
+./scripts/lemmasim native-bundle-build --output-dir build/native/my-bundle
+./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/my-bundle --disk build/native/my-medium.raw
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/my-bundle --disk build/native/my-medium.raw \
+  --session-dir build/native/my-session
+```
+
+Use `--backend rtl` for exact RTL execution of the same prepared guest.
+[The native bundle contract](docs/contracts/006-native-bundle-v1.md) records
+validation, host dependencies and unresolved redistribution limits.

@@ -163,7 +163,10 @@ class RTL:
     """Machine owner; only byte/sample/lifecycle operations cross this boundary."""
     def __init__(self, args, directory):
         import silicon_guest
-        self.data = silicon_guest.prepared(args.workload, args.profile)
+        if getattr(args,'native_bundle',None):
+            import silicon_guest_bundle
+            self.data = silicon_guest_bundle.prepared(args.native_bundle,'rtl',args.workload,args.profile)
+        else:self.data = silicon_guest.prepared(args.workload, args.profile)
         self.identity = {'backend': 'rtl', 'profile': self.data['profile'],
                          'runtime': self.data['binary']['sha256'],
                          'rom': self.data['rom']['sha256'],
@@ -733,10 +736,14 @@ def serve(args):
 def initialize(args):
     """Ordinary initialization utility through the same real guest runtime."""
     import silicon_guest
+    if args.backend=='qemu':import lemmasim_fast
     if args.force:raise ValueError('Matched initialization exclusively creates a new medium; --force is unsupported')
     if args.size_mib!=256:raise ValueError('The admitted development medium is exactly256MiB')
     # Fail before creating user data when preparation is stale or missing.
-    if args.backend=='rtl':silicon_guest.prepared('initializer',args.profile)
+    if getattr(args,'native_bundle',None):
+        import silicon_guest_bundle
+        silicon_guest_bundle.prepared(args.native_bundle,args.backend,'initializer',args.profile)
+    elif args.backend=='rtl':silicon_guest.prepared('initializer',args.profile)
     else:
         import lemmasim_fast
         lemmasim_fast.prepared('initializer',args.profile)
@@ -745,7 +752,8 @@ def initialize(args):
     disk=args.disk.resolve();disk.parent.mkdir(parents=True,exist_ok=True)
     options=argparse.Namespace(backend=args.backend,profile=args.profile,workload='initializer',
         mode='developer',paused=True,quantum=1000000,timeout=min(args.timeout,120),
-        disk=disk,memory_latency=0,fail_flush=None,events=None,trace_limit=0)
+        disk=disk,memory_latency=0,fail_flush=None,events=None,trace_limit=0,
+        native_bundle=getattr(args,'native_bundle',None))
     machine=session=lock=None
     result={'status':'FAIL','scope':'guest initialization, not host formatting','medium':str(disk)}
     started=time.monotonic()

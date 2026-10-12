@@ -204,7 +204,7 @@ def build(args):
     publish_prepared(data)
     print(f'Prepared RTL {workload}; {prepared_path(name)}. Ordinary launch validates identities without rebuilding.')
 
-def verify_guest_build(guest,configuration,optimization):
+def verify_guest_build(guest,configuration,optimization,*,source_root=ROOT):
     from build_kernel import source_inputs
     build=json.loads((guest/'build.json').read_text());provenance=json.loads((guest/'provenance.json').read_text())
     audit=json.loads((guest/'audit.json').read_text())
@@ -213,7 +213,9 @@ def verify_guest_build(guest,configuration,optimization):
     for report in (build,provenance,audit):
         if (report.get('configuration'),report.get('stage'),report.get('optimization'))!=(configuration,'supervisor',optimization):
             raise ValueError('RTL guest build/audit configuration differs')
-    if provenance.get('source_inputs')!=source_inputs(ROOT):raise ValueError('RTL guest source snapshot differs from current exact inputs')
+    # Normal preparation always uses ROOT. A native bundle uses its complete,
+    # hash-validated archived source tree, never an unchecked expected digest.
+    if provenance.get('source_inputs')!=source_inputs(source_root):raise ValueError('RTL guest source snapshot differs from exact inputs')
     if build.get('provenance_sha256')!=sha(guest/'provenance.json') or audit.get('image_sha256')!=sha(guest/'image.elf'):
         raise ValueError('RTL guest build/audit identities differ')
     for name,digest in provenance['artifacts'].items():

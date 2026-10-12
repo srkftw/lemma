@@ -181,7 +181,10 @@ class Fast:
     def __init__(self,args,directory):
         self.args,self.directory=copy.copy(args),directory
         self.session_directory=directory
-        self.data=prepared(args.workload,args.profile)
+        if getattr(args,'native_bundle',None):
+            import silicon_guest_bundle
+            self.data=silicon_guest_bundle.prepared(args.native_bundle,'qemu',args.workload,args.profile)
+        else:self.data=prepared(args.workload,args.profile)
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,
                        'derivation':self.data['derivation']['sha256'],'guest':self.data['workloads'][args.workload]['image']['sha256'],
