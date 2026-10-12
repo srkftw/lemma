@@ -84,6 +84,13 @@ another registry page, rejects the descriptor. There is no stale mapping cache.
 The selected row still undergoes exact owner, generation, purpose, permission,
 tracked-PTE and real page-table validation. Single-hart supervisor critical
 sections prevent a registry mutation between directory validation and scanning.
+A scan callback reads eight consecutive live VA words in their original order,
+checking read errors and duplicates after each word. Complete blocks use the
+same bounded page envelope; a partial tail reads only its remaining live rows.
+No successful match skips later rows, and a duplicate retains priority over a
+later read error. The selected frame's purpose is read through the ownership
+record whose exact owner and generation were just resolved in that critical
+section, without resolving the same grant a second time.
 
 Expanded user allocation accepts aligned pages in `[0x40000,0x800000)`, except the
 reserved finisher page at `0x100000`. Legacy allocation keeps the old upper bound
@@ -131,12 +138,23 @@ When both physical user aliases, the scratch address, page split and byte length
 are eight-byte aligned, copying uses at most512 checked64-bit transfers. Each
 word stays wholly within a preflighted user page and the owned scratch span.
 Unaligned spans and partial-word tails use the original bounded byte path.
-Neither path writes anything until full destination validation succeeds. The
+Neither path writes anything until full destination validation succeeds.
+A two-page copy or validation borrows one freshly validated descriptor base for
+that Action, then independently checks each page's complete duplicate scan,
+exact ownership/generation/purpose, tracked/actual PTE and requested permission.
+`AddressSpace.lookupAt` is a kernel-only helper requiring that same-call `base`
+result; no syscall exposes it and no alias/validation result survives the
+nonpreemptible Action. Invalid first addresses keep priority over descriptor
+reads, scratch failures keep their existing priority for copies, and first-page
+errors precede second-page errors. The
 host-only literal Action fixture `tests/kernel/BulkCopyAndDeadline.lean` checks
 4096 bytes across two pages, a13-byte unaligned crossing, read-only/missing
 second-page rejection without partial writes, stale/wrong scratch handles and
 duplicate rows in both registry layouts. CPU timing and stack bounds are
-separate artifact/boot observations.
+separate artifact/boot observations. `tests/kernel/UserCopyScans.lean` observes
+all live-row read addresses, loop callbacks and complete two-page bytes against
+independent finite RAM; its literal duplicates/read errors span block, page and
+partial-tail cutpoints. These host Action counts do not establish CPU timing.
 
 The workload checker can retain read-only allocator observations using
 `conformance/lemmasim/check_owned_memory.py`. Each physical read is at most

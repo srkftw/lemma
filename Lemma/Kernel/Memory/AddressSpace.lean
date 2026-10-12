@@ -460,6 +460,59 @@ private def findRowWordStep (i _ : UInt32) (acc physical wanted start _ : UInt64
     if acc = 0 then .done 0 (start + i.toUInt64 + 1) else .done invalidDescriptor 0
   else .done 0 acc
 
+/-- Eight live rows per callback. Reads and duplicate/error checks retain the
+original increasing row order; a tail uses the original exact one-row step. -/
+private def findRowBlockStep (i _ : UInt32) (acc physical wanted start _ : UInt64) : Action :=
+  let offset := i.toUInt64 * 8
+  .bind (Access.read64 (physical + (offset + 0) * 32)) fun s va0 =>
+  if failed s = true then .done s 0 else
+  if (if va0 = wanted then if acc = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found0 := if va0 = wanted then start + offset + 0 + 1 else acc
+  .bind (Access.read64 (physical + (offset + 1) * 32)) fun s va1 =>
+  if failed s = true then .done s 0 else
+  if (if va1 = wanted then if found0 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found1 := if va1 = wanted then start + offset + 1 + 1 else found0
+  .bind (Access.read64 (physical + (offset + 2) * 32)) fun s va2 =>
+  if failed s = true then .done s 0 else
+  if (if va2 = wanted then if found1 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found2 := if va2 = wanted then start + offset + 2 + 1 else found1
+  .bind (Access.read64 (physical + (offset + 3) * 32)) fun s va3 =>
+  if failed s = true then .done s 0 else
+  if (if va3 = wanted then if found2 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found3 := if va3 = wanted then start + offset + 3 + 1 else found2
+  .bind (Access.read64 (physical + (offset + 4) * 32)) fun s va4 =>
+  if failed s = true then .done s 0 else
+  if (if va4 = wanted then if found3 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found4 := if va4 = wanted then start + offset + 4 + 1 else found3
+  .bind (Access.read64 (physical + (offset + 5) * 32)) fun s va5 =>
+  if failed s = true then .done s 0 else
+  if (if va5 = wanted then if found4 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found5 := if va5 = wanted then start + offset + 5 + 1 else found4
+  .bind (Access.read64 (physical + (offset + 6) * 32)) fun s va6 =>
+  if failed s = true then .done s 0 else
+  if (if va6 = wanted then if found5 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found6 := if va6 = wanted then start + offset + 6 + 1 else found5
+  .bind (Access.read64 (physical + (offset + 7) * 32)) fun s va7 =>
+  if failed s = true then .done s 0 else
+  if (if va7 = wanted then if found6 = 0 then false else true else false) = true then
+    .done invalidDescriptor 0 else
+  let found7 := if va7 = wanted then start + offset + 7 + 1 else found6
+  .done 0 found7
+
+private def scanRows (physical wanted start amount initial : UInt64) : Action :=
+  let blocks := amount / 8
+  .boundedFoldU64 16 findRowBlockStep blocks.toUInt32 initial physical wanted start 0 fun s found =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 8 findRowWordStep (amount % 8).toUInt32 found (physical + blocks * 256)
+    wanted (start + blocks * 8) 0 fun s found => .done s found
+
 private def findRowPageStep (i _ : UInt32) (acc address wanted amount _ : UInt64) : Action :=
   let start := i.toUInt64 * 128
   .bind (get address (registryList + i.toUInt64 * 16 + 8)) fun s physical =>
@@ -467,7 +520,7 @@ private def findRowPageStep (i _ : UInt32) (acc address wanted amount _ : UInt64
   if Frames.frameAddressValid physical = false then .done invalidDescriptor 0 else
   let remaining := amount - start
   let rows := if remaining < 128 then remaining else 128
-  .boundedFoldU64 128 findRowWordStep rows.toUInt32 acc physical wanted start 0 fun s found => .done s found
+  scanRows physical wanted start rows acc
 
 /-- The directory is already validated by `base`. Resolve each physical page
 once, then read every live VA word, retaining duplicate detection across pages.
@@ -478,7 +531,7 @@ private def findRow (address va : UInt64) : Action :=
   .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if amount ≤ maximum then
     if maximum = 32 then
-      .boundedFoldU64 128 findRowWordStep amount.toUInt32 0 (address + leafList) (page va) 0 0 fun s v => .done s v
+      scanRows (address + leafList) (page va) 0 amount 0
     else if maximum = expandedCapacity then
       .boundedFoldU64 8 findRowPageStep ((amount + 127) / 128).toUInt32 0 address (page va) amount 0 fun s v => .done s v
     else .done invalidDescriptor 0
@@ -599,7 +652,8 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   if owner = 1 then .done invalidPermission 0 else
   .bind (Frames.resolve owner handle) fun s physical =>
   if failed s = true then .done s 0 else
-  .bind (Frames.purpose owner handle) fun s purpose =>
+  -- This grant was just resolved in the same nonpreemptible S Action.
+  .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 8)) fun s purpose =>
   if failed s = true then .done s 0 else
   if purposePermits purpose permissions = false then .done invalidPermission 0 else
   .bind (findRow address va) fun s found =>
@@ -620,13 +674,13 @@ def mapUser (descriptor va handle permissions : UInt64) : Action :=
   if failed s = true then rollbackLastTable address va oldTables s else
   commitLeaf address va oldTables index owner handle slot (leafEntry physical permissions) permissions
 
-/-- Returns a management-alias physical byte address only after the actual
-walk, tracked exact PTE, live generation, owner, purpose and permissions agree. -/
-def lookup (descriptor va permission : UInt64) : Action :=
+/-- Kernel-only lookup within the same nonpreemptible S Action that obtained
+`address` from `base`. No descriptor mutation, scheduling boundary or borrowed
+alias may intervene. The complete live-row duplicate scan and selected exact
+PTE/generation/owner/purpose/permission checks still run for each page. -/
+def lookupAt (address va permission : UInt64) : Action :=
   if addressValid va = false then .done invalidAddress 0 else
   if requestValid permission = false then .done invalidPermission 0 else
-  .bind (base descriptor) fun s address =>
-  if failed s = true then .done s 0 else
   .bind (get address 80) fun s maximum => if failed s = true then .done s 0 else
   if bindingAddressValid va maximum = false then .done invalidAddress 0 else
   .bind (findRow address va) fun s found =>
@@ -646,7 +700,8 @@ def lookup (descriptor va permission : UInt64) : Action :=
   if permissionsValid permissions = false then .done invalidPte 0 else
   .bind (Frames.resolve owner handle) fun s physical =>
   if failed s = true then .done s 0 else
-  .bind (Frames.purpose owner handle) fun s purpose =>
+  -- This grant was just resolved in the same nonpreemptible S Action.
+  .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 8)) fun s purpose =>
   if failed s = true then .done s 0 else
   if purposePermits purpose permissions = false then .done invalidPte 0 else
   if (if trackedPte = leafEntry physical permissions then false else true) = true then .done invalidPte 0 else
@@ -657,6 +712,14 @@ def lookup (descriptor va permission : UInt64) : Action :=
   if (if actualPte = trackedPte then false else true) = true then .done invalidPte 0 else
   if permissions &&& permission = permission then .done 0 (physical + va % 4096)
   else .done invalidPermission 0
+
+/-- Returns a management-alias physical byte address only after the actual
+walk, tracked exact PTE, live generation, owner, purpose and permissions agree. -/
+def lookup (descriptor va permission : UInt64) : Action :=
+  if addressValid va = false then .done invalidAddress 0 else
+  if requestValid permission = false then .done invalidPermission 0 else
+  .bind (base descriptor) fun s address =>
+  if failed s = true then .done s 0 else lookupAt address va permission
 
 private def moveLastRow (address index last : UInt64) : Action :=
   .bind (row address last) fun s source => if failed s = true then .done s 0 else

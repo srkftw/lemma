@@ -34,20 +34,31 @@ private def firstLength (pointer length : UInt64) : UInt64 :=
   let available := 4096 - pointer % 4096
   if length ≤ available then length else available
 
-private def checkedLookup (descriptor pointer permission : UInt64) : Action :=
-  .bind (AddressSpace.lookup descriptor pointer permission) fun s physical =>
+/-- The low-address/request rejection retains priority over descriptor reads.
+The validated base is borrowed only within this nonpreemptible Action. -/
+private def checkedBase (descriptor pointer permission : UInt64) : Action :=
+  if AddressSpace.addressValid pointer = false then .done Lemma.User.ABI.invalidRange 0 else
+  if AddressSpace.requestValid permission = false then .done Lemma.User.ABI.permissionDenied 0 else
+  .bind (AddressSpace.base descriptor) fun s address =>
+  if s = 0 then .done 0 address else .done (failure s) 0
+
+private def checkedLookupAt (address pointer permission : UInt64) : Action :=
+  .bind (AddressSpace.lookupAt address pointer permission) fun s physical =>
   if s = 0 then .done 0 physical else .done (failure s) 0
 
 private def validate (descriptor pointer length permission : UInt64) : Action :=
   if length = 0 then .done 0 0 else
   if maximumLength < length then .done Lemma.User.ABI.invalidArgument 0 else
   if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
-  .bind (checkedLookup descriptor pointer permission) fun s _ =>
+  .bind (checkedBase descriptor pointer permission) fun s address =>
+  if s = 0 then
+  .bind (checkedLookupAt address pointer permission) fun s _ =>
   if s = 0 then
     let split := firstLength pointer length
     if length ≤ split then .done 0 length else
-    .bind (checkedLookup descriptor (pointer + split) permission) fun s _ =>
+    .bind (checkedLookupAt address (pointer + split) permission) fun s _ =>
     if s = 0 then .done 0 length else .done s 0
+  else .done s 0
   else .done s 0
 
 def validateRead (descriptor pointer length : UInt64) : Action :=
@@ -112,10 +123,12 @@ def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Acti
   .bind (scratch kernelHandle offset length) fun s destination =>
   if s = 0 then
     if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
-    .bind (checkedLookup descriptor pointer 1) fun s first =>
+    .bind (checkedBase descriptor pointer 1) fun s address =>
+    if s = 0 then
+    .bind (checkedLookupAt address pointer 1) fun s first =>
     if s = 0 then
       let split := firstLength pointer length
-      .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 1) fun s second =>
+      .bind (if length ≤ split then .done 0 0 else checkedLookupAt address (pointer + split) 1) fun s second =>
       if s = 0 then
         if wordsAligned first second destination split length = true then
           .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 first second destination split fun s copied =>
@@ -124,6 +137,7 @@ def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Acti
           .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
           if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
+    else .done s 0
     else .done s 0
   else .done s 0
 
@@ -135,10 +149,12 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
   .bind (scratch kernelHandle offset length) fun s source =>
   if s = 0 then
     if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
-    .bind (checkedLookup descriptor pointer 2) fun s first =>
+    .bind (checkedBase descriptor pointer 2) fun s address =>
+    if s = 0 then
+    .bind (checkedLookupAt address pointer 2) fun s first =>
     if s = 0 then
       let split := firstLength pointer length
-      .bind (if length ≤ split then .done 0 0 else checkedLookup descriptor (pointer + split) 2) fun s second =>
+      .bind (if length ≤ split then .done 0 0 else checkedLookupAt address (pointer + split) 2) fun s second =>
       if s = 0 then
         if wordsAligned first second source split length = true then
           .boundedFoldU64 512 toWordStep (length / 8).toUInt32 0 first second source split fun s copied =>
@@ -147,6 +163,7 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
           .boundedFoldU64 4096 toStep length.toUInt32 0 first second source split fun s copied =>
           if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
+    else .done s 0
     else .done s 0
   else .done s 0
 
