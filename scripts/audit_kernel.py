@@ -149,7 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
-MANAGED_POLICIES.update({"silicon-service-development": BUFFER_POLICY, "lemmasim-silicon-notebook": "lemma-notebook-v1", "lemmasim-silicon-initialize": "lemma-notebook-v1"})
+MANAGED_POLICIES.update({"silicon-service-development": BUFFER_POLICY, "lemmasim-silicon-full-notebook": "lemma-notebook-v1", "lemmasim-silicon-notebook": "lemma-notebook-v1", "lemmasim-silicon-full-initialize": "lemma-notebook-v1", "lemmasim-silicon-initialize": "lemma-notebook-v1"})
 MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1", "lemmasim-isolation-development": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
@@ -172,9 +172,9 @@ NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3
 MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES,
                                  "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
 MULTI_USER_CONFIGURATIONS.update({"silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
-                                 "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-devices","lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
-LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+                                 "lemmasim-silicon-full-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-full-initialize": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -2309,8 +2309,8 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     expanded = configuration in LEMMASIM_CONFIGURATIONS
     silicon = configuration.startswith("lemmasim-silicon-")
     if silicon:
-        from silicon_profile import profile
-        binding = profile()
+        from silicon_profile import profile, configuration_profile
+        binding = profile(configuration_profile(configuration))
     frame_count = binding["frame_count"] if silicon else 8192 if expanded else 512
     frame_limit = binding["frame_pool_base"] + binding["frame_pool_bytes"] if silicon else 0x84000000 if expanded else 0x82200000
     if expanded and layout.get('boot_clear') != {
@@ -4328,8 +4328,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         if configuration in SILICON_CONFIGURATIONS:
-            from silicon_profile import validate_evidence
-            validate_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
+            from silicon_profile import configuration_profile, validate_evidence
+            validate_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text(), configuration_profile(configuration))
         else:
             validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized", optimization=optimization)

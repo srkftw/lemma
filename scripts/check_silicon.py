@@ -72,7 +72,8 @@ def device_build(build, tool_file, log, timeout):
 
 def devices(out, timeout, jobs):
     source_names = ['sim/rtl/lemma_pen.sv','sim/rtl/lemma_paper.sv','sim/rtl/lemma_block.sv','sim/rtl/lemma_register_ram.sv',
-                    'conformance/silicon/Devices.sv','conformance/silicon/BlockProtocol.sv','scripts/check_silicon.py',
+                    'conformance/silicon/Devices.sv','conformance/silicon/BlockProtocol.sv',
+                    'conformance/silicon/PenBanks.sv','conformance/silicon/PaperSequencer.sv','scripts/check_silicon.py',
                     'tooling/silicon/sim.nix','flake.lock']
     before = {p: sha(ROOT/p) for p in source_names}
     obj = out/'obj';obj.mkdir()
@@ -88,6 +89,22 @@ def devices(out, timeout, jobs):
     records.extend([built,command([str(protocol_obj/'VBlockProtocol')],out/'protocol-simulation.log',30)])
     if tools != protocol_tools:
         raise RuntimeError('RTL host-tool closure changed between literal workloads')
+    pen_obj = out/'pen-obj';pen_obj.mkdir()
+    pen_build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal',
+                 '--top-module','PenBanks','--Mdir',str(pen_obj),
+                 str(ROOT/'sim/rtl/lemma_pen.sv'),str(ROOT/'conformance/silicon/PenBanks.sv')]
+    built, pen_tools = device_build(pen_build,out/'pen-tools.json',out/'pen-build.log',timeout)
+    records.extend([built,command([str(pen_obj/'VPenBanks')],out/'pen-simulation.log',30)])
+    if tools != pen_tools:
+        raise RuntimeError('RTL host-tool closure changed for banked FIFO workload')
+    paper_obj = out/'paper-obj';paper_obj.mkdir()
+    paper_build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal',
+                   '--top-module','PaperSequencer','--Mdir',str(paper_obj),
+                   str(ROOT/'sim/rtl/lemma_paper.sv'),str(ROOT/'conformance/silicon/PaperSequencer.sv')]
+    built, paper_tools = device_build(paper_build,out/'paper-tools.json',out/'paper-build.log',timeout)
+    records.extend([built,command([str(paper_obj/'VPaperSequencer')],out/'paper-simulation.log',30)])
+    if tools != paper_tools:
+        raise RuntimeError('RTL host-tool closure changed for digital paper workload')
     text = (out/'simulation.log').read_text()
     expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
                 'PAPER banked aperture 32 lane-width cases and 4 boundary rejections PASS',
@@ -98,14 +115,23 @@ def devices(out, timeout, jobs):
                          'BLOCK-PROTOCOL simultaneous completion/error IRQ ACK event precedence PASS',
                          'BLOCK-PROTOCOL normal flush and 12 independent cases PASS']
     protocol_text = (out/'protocol-simulation.log').read_text()
-    if any(text.count(marker)!=1 for marker in expected) or any(protocol_text.count(marker)!=1 for marker in protocol_expected):
+    pen_expected = ['PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
+                    'PEN-BANKS refill backpressure reset cancellation and watchdog head PASS']
+    pen_text = (out/'pen-simulation.log').read_text()
+    paper_expected = ['PAPER-SEQUENCER immutable 3-phase row/source clocks backpressure powerdown PASS',
+                      'PAPER-SEQUENCER invalid mode reset retained panel and scan error abort PASS']
+    paper_text = (out/'paper-simulation.log').read_text()
+    if (any(text.count(marker)!=1 for marker in expected)
+            or any(protocol_text.count(marker)!=1 for marker in protocol_expected)
+            or any(pen_text.count(marker)!=1 for marker in pen_expected)
+            or any(paper_text.count(marker)!=1 for marker in paper_expected)):
         raise RuntimeError('Missing or duplicate independent device observations')
     if before != {p: sha(ROOT/p) for p in source_names}:
         raise RuntimeError('RTL/device inputs changed during observation')
-    binaries = {str(path.relative_to(ROOT)):sha(path) for path in (obj/'VDevices',protocol_obj/'VBlockProtocol')}
+    binaries = {str(path.relative_to(ROOT)):sha(path) for path in (obj/'VDevices',protocol_obj/'VBlockProtocol',pen_obj/'VPenBanks',paper_obj/'VPaperSequencer')}
     return {'status':'PASS','source_inputs':before,'commands':records,'tool_inputs':tools,'compiled_binaries':binaries,
             'scope':'literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability',
-            'observations':expected+protocol_expected}
+            'observations':expected+protocol_expected+pen_expected+paper_expected}
 
 def host_deadline_options(binary):
     """Actual compiled argument handling; no guest boot or timeout-pass claim."""

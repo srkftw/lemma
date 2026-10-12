@@ -108,27 +108,22 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
   let offset := i.toUInt64 * 8
   let x := (offset % stride) * 2
   let y := offset / stride
-  if y < 128 then
+  if y < 128 || stride < offset % stride + 8 then
     .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
   else
     .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
 
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
-intersecting tiles and coalesces their bounding refresh rectangle. Aligned rows
-use word writes on the simple lower canvas; toolbar and other row shapes retain
-the pixel routine. No host rendering or platform-specific image is involved. -/
+intersecting tiles and coalesces their bounding refresh rectangle. Globally
+aligned words wholly within a canvas row use packed writes, including odd byte
+strides. Toolbar, row crossings and final partial words use scalar pixels. -/
 def background (width height : UInt64) : Action :=
   let bytes := ((width + 1) / 2) * height
   if 2000000 < bytes then .done 16 0 else
-  if (width + 1) / 2 % 8 = 0 then
-    .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ => .done s bytes
-  else
-    -- Two bounded halves keep each fold under the profile's1000000 budget.
-    let first := if bytes < 1000000 then bytes else 1000000
-    .boundedFoldU64 1000000 backgroundStep first.toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
-    if s = 0 then
-    .boundedFoldU64 1000000 backgroundOffsetStep (bytes - first).toUInt32 0 (width ||| (height <<< 16)) first 0 0 fun s _ => .done s bytes
-    else .done s 0
+  .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
+  if s = 0 then
+  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 (width ||| (height <<< 16)) (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
+  else .done s 0
 
 private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=
   let width := dimensions &&& 0xffff

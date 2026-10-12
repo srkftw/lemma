@@ -140,9 +140,9 @@ private def bootSelected (initialization isolation binding : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
   .bind (observedStage 1 status value) fun s _ => if s = 0 then
-  .bind (if binding = 1 then Descriptor.validateSilicon else Descriptor.validate) fun status value =>
+  .bind (if binding = 1 then Descriptor.validateSilicon else if binding = 2 then Descriptor.validateSiliconFull else Descriptor.validate) fun status value =>
   .bind (observedStage 2 status value) fun s _ => if s = 0 then
-  .bind (if binding = 1 then Lemma.Platform.LemmaSim.MachineServices.validateSilicon else Lemma.Platform.LemmaSim.MachineServices.validate) fun status value =>
+  .bind (if binding = 0 then Lemma.Platform.LemmaSim.MachineServices.validate else Lemma.Platform.LemmaSim.MachineServices.validateSilicon) fun status value =>
   .bind (observedStage 3 status value) fun s _ => if s = 0 then
   .bind Frames.init fun s _ => if s = 0 then
   .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
@@ -164,6 +164,8 @@ def isolationBoot : Action := bootSelected 0 1 0
 /-- Silicon selects the declared discovery, bounded frame supply and CSR WARL expectations. -/
 def siliconBoot : Action := bootSelected 0 0 1
 def siliconInitializeMedium : Action := bootSelected 1 0 1
+def siliconFullBoot : Action := bootSelected 0 0 2
+def siliconFullInitializeMedium : Action := bootSelected 1 0 2
 
 private def deviceCall (descriptor context pc number : UInt64) : Action :=
   .bind (Access.read64 (context + 80)) fun s a => if s = 0 then

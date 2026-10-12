@@ -38,6 +38,9 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [3:0] panel_gray,
  output logic panel_complete,panel_abort,
  output logic [63:0] panel_sequence,
+ output logic panel_drive_valid,panel_power_enable,panel_gate_clock,panel_source_clock,
+ output logic [1:0] panel_drive_phase,panel_drive_code,
+ output logic [31:0] panel_drive_x,panel_drive_y,
  output logic media_valid,
  output logic [2:0] media_kind,
  output logic [63:0] media_sector,
@@ -107,13 +110,15 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .now_ticks(timer_ticks),.sample_valid,.sample_ready,.sample_time,.sample_x,.sample_y,
    .sample_pressure,.sample_flags,.sample_tool,.sample_buttons,.sample_accepted
  );
- lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT))) paper(
+ lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0)) paper(
    .clk,.reset_n(!reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
    .addr((dev_valid&&paper_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&paper_sel)?dev_size:3'd0),.wdata((dev_valid&&paper_sel)?dev_wdata:64'd0),
    .rdata(paper_rdata),.ready(paper_ready),.error(paper_error),.irq(paper_irq),
    .now_ticks(timer_ticks),.descriptor,.fb_valid,.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
-   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence
+   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
+   .panel_drive_valid,.panel_power_enable,.panel_gate_clock,.panel_source_clock,
+   .panel_drive_phase,.panel_drive_code,.panel_drive_x,.panel_drive_y
  );
  lemma_block #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) blockdev(
    .clk,.reset_n(!reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),

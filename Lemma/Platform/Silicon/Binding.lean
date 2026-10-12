@@ -19,6 +19,7 @@ def frame_quota : UInt64 := 128
 def plic_sources : UInt64 := 13
 def width : UInt64 := 512
 def height : UInt64 := 640
+def paper_sequencer : UInt64 := 0
 def uart_base : UInt64 := 268435456
 def uart_span : UInt64 := 256
 def uart_irq : UInt64 := 10

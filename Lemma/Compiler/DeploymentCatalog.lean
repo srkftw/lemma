@@ -60,7 +60,7 @@ def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
-      configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-initialize" ||
+      configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
       configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
   else if configuration == "capabilities-development" then some capabilityManagedPolicy
   else if configuration == "ipc-development" then some ipcManagedPolicy
@@ -156,7 +156,7 @@ def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
 
 def isMultiImageConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
-      configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-initialize" ||
+      configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
   configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
     configuration == "capabilities-development" || configuration == "ipc-development" ||
     isServiceConfiguration configuration
@@ -164,7 +164,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
-      configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-initialize" then .ok notebookImages
+      configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" then .ok notebookImages
   else if configuration == "lemmasim-isolation-development" then .ok notebookIsolationImages
   else if configuration == "tasks-development" then .ok taskImages
   else if configuration == "tasks-fault-development" then .ok taskFaultImages

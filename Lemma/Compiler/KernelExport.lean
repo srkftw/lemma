@@ -4,6 +4,7 @@ import Lemma.Compiler.Format
 import Lemma.Compiler.DeploymentCatalog
 import Lemma.Platform.RiscV.ExecutionPrimitives
 import Lemma.Platform.Silicon.Binding
+import Lemma.Platform.Silicon.BindingFull
 
 /-! Production export commands. Each unit comes from genuine elaborated Lean
 roots under an explicit privilege profile; no test harness is appended. Boot
@@ -65,6 +66,10 @@ private def rootIdentities (configuration role : String) : Array String :=
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
   | "kernel" => if configuration == "lemmasim-silicon-devices" then
       #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
+    else if configuration == "lemmasim-silicon-full-notebook" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconFullBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-full-initialize" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconFullInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-initialize" then
@@ -312,7 +317,12 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && (configuration == "lemmasim-silicon-notebook" ||
+  if role == "user" && (configuration == "lemmasim-silicon-full-notebook" ||
+      configuration == "lemmasim-silicon-full-initialize") then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.2.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && (configuration == "lemmasim-silicon-notebook" ||
       configuration == "lemmasim-silicon-initialize") then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.1.0 user " ++ image.root.toString
@@ -405,10 +415,13 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
 private def frameCountFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
+  if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
+  else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-" then
+  if configuration.startsWith "lemmasim-silicon-full-" then
+    (Lemma.Platform.Silicon.BindingFull.frame_pool_base + Lemma.Platform.Silicon.BindingFull.frame_pool_bytes).toNat
+  else if configuration.startsWith "lemmasim-silicon-" then
     (Lemma.Platform.Silicon.Binding.frame_pool_base + Lemma.Platform.Silicon.Binding.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-" then 0x84000000 else Layout.poolLimit
 

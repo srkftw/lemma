@@ -66,7 +66,7 @@ def checkBackground (width height : UInt64) (words : Bool) : IO Unit := do
   let stride := (width+1)/2
   require (result = (0,stride*height)) "background status/length differs"
   let state ← memory.get
-  require ((state.wordWrites > 0) = words) "aligned/fallback path differs"
+  require ((state.wordWrites > 0) = words) "packed/scalar path differs"
   for offset in [:(stride*height).toNat] do
     let x := (offset.toUInt64 % stride)*2
     let y := offset.toUInt64/stride
@@ -103,7 +103,8 @@ def check : IO Unit := do
   require (Surface.backgroundCanvasWord 16 180 512 = 0xddddddcddddddddd) "literal left margin/rule"
   require (Surface.backgroundCanvasWord 496 180 511 = 0xdfdddddddddddddd) "literal odd padding/rule"
   require (Surface.backgroundCanvasWord 496 148 511 = 0x0f00000000000000) "separator precedes margins"
-  for (width,height,words) in #[(512,640,true),(527,321,true),(513,320,false)] do
+  for (width,height,words) in #[(512,640,true),(527,321,true),(513,320,true),
+                              (1650,193,true),(17,191,true),(7,191,false),(25,129,true)] do
     checkBackground width height words
   for (w,h,x,y,words) in #[(512,640,32,32,true),(527,321,480,288,true),
                           (513,320,32,32,false),(512,640,496,624,false),
