@@ -13,6 +13,10 @@ let
     minimal = true; gtkSupport = true; sdlSupport = false; vncSupport = true;
     enableDocs = false; enableTools = false; guestAgentSupport = false;
   };
+  selectedProfile = builtins.fromJSON (builtins.readFile siliconProfile);
+  counterPatch = if selectedProfile.profile == "lemma-silicon-dev/0.3.0" then ''
+    ${pkgs.python3}/bin/python3 ${./patch_counter_clock.py} .
+  '' else "";
   hardwareSources = builtins.path {
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
@@ -43,5 +47,5 @@ in base.overrideAttrs (old: {
   '';
   postPatch = (old.postPatch or "") + ''
     ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --silicon-profile ${siliconProfile}
-  '';
+  '' + counterPatch;
 })

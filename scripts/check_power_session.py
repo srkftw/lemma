@@ -226,8 +226,27 @@ class PowerChecker(Checker):
         writing.tool(7, 'explicit Save after wake')
         live.admit(writing.events)
         uart = fork/'uart-1.bin'
-        live.wait(lambda state: idle(state) and state['ticks'] > writing.events[-1][1]+2000000 and
-                  any(row[0] == 0x421 for row in guest_events(uart)), self.args.action_seconds)
+        first = writing.events[1]
+        contact_x, contact_y = first[2]*1649//65535, first[3]*2199//65535
+        contact_panel = self.directory/'post-wake-contact.ppm'
+        def contact_visible(state):
+            if not idle(state) or state['devices']['paper']['completed'] <= state_before_writing_completed:
+                return False
+            if state['ticks'] <= writing.events[-1][1]+2000000:
+                return False
+            if not any(row[0] == 0x421 for row in guest_events(uart)):
+                return False
+            live.control({'action': 'panel', 'path': str(contact_panel)})
+            width, height, pixels = visible_pixels(contact_panel)
+            require((width, height) == (1650, 2200), 'post-wake controller geometry differs')
+            return any(pixels[(y*width+x)*3:(y*width+x)*3+3] == bytes(3)
+                       for y in range(contact_y-2, contact_y+3)
+                       for x in range(contact_x-2, contact_x+3))
+        state_before_writing_completed = state['devices']['paper']['completed']
+        # Durable ACK and visible display completion are independent. Require
+        # actual output at the admitted contact before taking the saved image;
+        # the subsequent cold comparison still covers every controller pixel.
+        rendered = live.wait(contact_visible, self.args.action_seconds)
         saved_panel, saved_medium = live.export('saved-after-wake')
         states = [row for row in guest_events(uart) if row[0] in (0x421, 0x423, 0x424)]
         require(states and states[-1][0] == 0x421 and any(row[0] == 0x423 for row in states),
@@ -261,6 +280,8 @@ class PowerChecker(Checker):
                 'power workflow overwrote source user data')
         self.report['resumed_save_cold'] = {'status': 'PASS', 'guest_states': states,
             'durable_sha256': sha(saved_medium), 'recovered_page_pixels_exact': True,
+            'post_wake_contact_pixel': [contact_x, contact_y],
+            'post_wake_rendered_paper_completed': rendered['devices']['paper']['completed'],
             'paper_completed_before_navigation': completed_before,
             'paper_completed_after_navigation': recovered['devices']['paper']['completed']}
         self.failed_barrier(saved_medium, cold_panel)

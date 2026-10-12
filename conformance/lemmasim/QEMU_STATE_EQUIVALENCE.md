@@ -30,7 +30,34 @@ and passive panel inspection/saving.
 Controller and input timers continue to use `QEMU_CLOCK_VIRTUAL`; none of those
 changes consumes the two host clock statistics. The older binary/profile
 admissions retain their original meanings. The selected executable must match
-the checkpoint's exact runtime hash. No other binary is admitted.
+the checkpoint's exact runtime hash. The counter-clock successor below is also
+reviewed; no arbitrary binary is admitted.
+
+The profile0.3 counter-clock successor has SHA256
+`6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8`.
+The immutable-source-guarded host patch
+`tooling/lemmasim/patch_counter_clock.py` consumes the declared100MHz clock.
+It scales absolute precise instruction-clock nanoseconds before subtracting
+counter baselines, preserving fractional phase, writes and inhibit behavior.
+Selected warm reset zeros fixed counters and their baselines at the current
+clock. Existing PMU counter state and the added version1
+`cpu/lemma-counter-clock` subsection retain the frequency marker, configuration
+words and all fixed-counter private arrays. Missing/wrong-frequency state rejects;
+the public session separately rejects a different implementation identity.
+Every added byte participates in exact comparison. No counter exemption exists.
+
+The same narrowly selected patch resets the UART FIFO control to zero. The
+upstream reset cleared IIR but left the previous FCR; restore then derived a
+different IIR from that stale FCR. Actual warm-reset/restore caught that mismatch;
+the corrected machine preserves both actual UART state and its complete suffix.
+Historical profile0.1/0.2 derivations and executables are unchanged.
+
+`check_counter_state.py` executes actual cold/warm, fractional-phase,
+write/inhibit/wrap and private-state continuation checks with a genuine audited
+Lean probe. Its writes invoke QEMU's real debugger CSR handlers. Guest-issued
+counter CSR instruction/privilege qualification is absent. QEMU's completed
+paused RESET and RTL's eight reset edges have explicitly different boundaries;
+these checks do not establish whole-machine architectural equivalence.
 
 All seven power words, enable flag and queued button state are exact comparison
 bytes. The additional independent mutation checks change each power word and
@@ -56,7 +83,8 @@ the real RESET event. The old `-no-reboot` option previously converted even
 QMP reset requests to shutdown; the retained warm probe records that defect.
 The final seven nanoseconds of the signed clock range are reserved before
 run/event admission so the next instruction boundary cannot overflow it.
-This says nothing about equal RTL/QEMU cycle/instret reset semantics.
+The historical executions do not qualify cycle/instret reset semantics. The
+reviewed counter successor qualifies the narrower selected behavior above.
 
 ## Source reason for the two fields
 

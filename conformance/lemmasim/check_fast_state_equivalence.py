@@ -15,6 +15,7 @@ import subprocess
 RUNTIME_SHA256 = '87d7282df1de259a3560fee369ef1f303a644654793726fc9da12009d639d467'
 REVIEWED_RUNTIMES = {RUNTIME_SHA256: ('lemma-silicon-dev/0.1.0', 'lemma-silicon-dev/0.2.0')}
 REVIEWED_RUNTIMES['80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a'] = ('lemma-silicon-dev/0.3.0',)
+REVIEWED_RUNTIMES['6dc0c7f66bbf3c118da5486c6b000772f1854cda0e235dca57941b4d48b3f6a8'] = ('lemma-silicon-dev/0.3.0',)
 ADAPTER = 'lemmasim-fast-adapter/2'
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 MAX_STATE = 256 * 1024 * 1024

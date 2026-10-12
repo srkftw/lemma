@@ -52,6 +52,8 @@ def prepared_path(name=None):
 def sources(name):
     paths = [ROOT/'tooling/lemmasim/qemu.nix', ROOT/'tooling/lemmasim/apply_qemu.py',
              ROOT/'flake.lock', profile_path(name)]
+    if profile(name)['profile'] == 'lemma-silicon-dev/0.3.0':
+        paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
 
