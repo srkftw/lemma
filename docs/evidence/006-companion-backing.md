@@ -198,3 +198,30 @@ scaffold tests and metadata checks passed separately. Native RTL execution is
 still synchronous in this increment. The USB/controller/guest-driver, complete
 disconnected product policy, pending private fork continuation, fast timed-outcome
 replay consumer and QEMU cached-state continuation obligations remain open.
+
+
+## Shared native asynchronous boundary and exact timed outcome replay
+
+Native RTL now consumes submit/poll through the same BackingPlatform. Immediate
+POSIX/OPFS operations preserve submission-cycle handshakes; peer polls use the
+declared1000-cycle cadence. The wrapper retains medium ownership and flush
+cursor; issued work survives reset as an orphan until its actual outcome, with
+no canceled DMA completion. A modeled external-media busy input reaches the
+existing Power-v1 guard. Native capture/replay uses LMIOLOG2 target-cycle
+boundaries, distinct from fast virtual nanoseconds.
+
+`006-native-backing-pending.json` retains the actual literal RTL/runtime PASS
+from`build/companion/native-pending-a5/result.json`: held external medium work
+continued alongside genuine instruction retirement and raw pen ingress, pending snapshot/restore/export rejected
+observationally, private timed replay reproduced the complete checkpoint bytes,
+and a global-reset orphan completed without DMA. The fixture initializes the
+controller's held state directly, so this is not a guest-driver/notebook claim.
+Two compile setup failures and a failed retirement assertion without boot
+artifacts remain retained. The assertion was kept; the corrected fixture loads
+the full validated archived reset ROM/guest artifacts before clocking. The new native build took
+54.184s; its binary SHA256 is
+`ac95c4abcf0a474e0e4ab545ce2b6b01d16d98b7a42719ca1c11b8304a60b4c2`.
+The exact source-bound fixture completed in8.082s. The168 silicon host tests,18
+scaffold tests and metadata check passed separately. Pending external forks,
+native notebook/peer cold acceptance, complete power domains and QEMU cached
+state remain separate unfinished obligations.

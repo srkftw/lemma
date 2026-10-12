@@ -50,7 +50,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [2:0] media_kind,
  output logic [63:0] media_sector,
  output logic [4095:0] media_wdata,
- input logic media_ready,media_error,
+ input logic media_ready,media_error,external_media_busy,
  input logic [4095:0] media_rdata
 );
  import lemma_silicon_binding::*;
@@ -137,7 +137,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .media_valid,.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
  assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen;
- assign power_busy_sources={media_valid,(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
+ assign power_busy_sources={(media_valid||external_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
  generate if(POWER_ENABLED!=0) begin: control_domain
    lemma_power power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),

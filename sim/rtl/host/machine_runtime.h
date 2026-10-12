@@ -51,6 +51,7 @@ struct State {
  std::string uart_text,stop_marker;
  uint64_t fail_flush=0,stop_panels=0,observer_cycle=0;
  uint64_t memory_latency=0,memory_pending=0,memory_wait=0,memory_addr=0,memory_write=0,memory_wdata=0,memory_strb=0;
+ uint64_t media_active=0,media_kind=0,media_sector=0,flush_active=0,flush_cursor=0;
 };
 class Machine {
  std::unique_ptr<VerilatedContext> context;
@@ -59,10 +60,16 @@ class Machine {
  Options options;
  int medium=-1,backing_capture=-1;
  std::shared_ptr<BackingPlatform> backing;
- std::vector<BackingRecord> backing_replay;
+ std::vector<TimedBackingRecord> backing_replay;
+ std::optional<BackingRequest> backing_pending;
+ uint64_t backing_poll_cycle=0;
+ bool backing_orphan=false;
  uint64_t backing_capture_bytes=0,backing_replay_cursor=0,backing_capture_branch=0;
  std::string active_backing_capture;
- BackingOutcome backing_operation(BackingKind,uint64_t,uint64_t,const uint8_t* = nullptr);
+ std::optional<BackingOutcome> backing_operation(BackingKind,uint64_t,uint64_t,const uint8_t* = nullptr);
+ std::optional<BackingOutcome> poll_backing();
+ void capture_backing(uint64_t,const std::vector<uint8_t>&);
+ void abandon_media();
  // File handles and private paths are external ownership, never checkpoint
  // state. A restored session has its own persistent backing and lock.
  std::string private_medium_path;
@@ -70,7 +77,6 @@ class Machine {
  bool prepared=false;
  void tick();
  void block_row(uint64_t,const char*,unsigned,unsigned,uint64_t,uint64_t,uint64_t,uint64_t,unsigned);
- std::array<uint8_t,512> read_sector(uint64_t,bool&);
  void model_save(const std::string&);
 public:
  explicit Machine(const Options&);
@@ -93,6 +99,7 @@ public:
  void restore(const std::string&);
  void warm_reset(uint64_t=8);
  void cold_cycle();
+ void retry_backing();
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;
  void ram_dump(uint64_t,uint64_t,const std::string&) const;

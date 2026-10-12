@@ -1,0 +1,97 @@
+{
+  "status": "PASS",
+  "scope": "Literal RTL/runtime pending I/O qualification; no guest-driver claim.",
+  "build": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5",
+  "snapshot_identity": "80eebe480afc2a7d96c2f05fbcd8cd2689166881a679a2d5aa96158a558925a9",
+  "native_sha256": "ac95c4abcf0a474e0e4ab545ce2b6b01d16d98b7a42719ca1c11b8304a60b4c2",
+  "fixture_sha256": "770618b77e98897aa9548effe3b693e0592b23cae4f34c005f473f70b8ffb93a",
+  "test_binary_sha256": "9eed4b0dc21b32ccbc71f3787054cc4b2284c4a4b59937191013a096d33b3e50",
+  "compiled_inputs": {
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/machine_runtime.o": "e92c79c6924731d4e677c4dc2ca3ac28606fe618ae34a7a13d64053cbafa529b",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/backing_io.o": "84c4d7250b1753f5b47af10ee4a110be20f05443d84542080f3d19a0c28e47f2",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/backing_io_posix.o": "a5ea2984ea90d21a9bebf55c6e83a3c0819dfd24c5d0af329e642edf2a4ea124",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated.o": "41399ce551f78a9039bcc2d634932d36925429d12c93220f938c892b992d626a",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_save.o": "4dc50375aa217ccdd10b2331e2d45f6729f32e9717a38fd909303023c2b16c37",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_threads.o": "03f96c455b334c77e3b36feb428fe000312ace385e8789b63ab1a84f8c49f5fb",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/verilated_dpi.o": "891361ebc9fd85978fdf7984294e4206dd35ae5935bdae6f794327e80ccdd016",
+    "/home/sreekumaar/Downloads/lemma/build/silicon/task006-backing-runtime-a5/obj/Vlemma_soc__ALL.a": "5e7f9db5b768dc73ccbfe8402105623a6b2a8671d0835a62ec78ad2d98ff7f25"
+  },
+  "authoritative_suffix_bytes_equal": true,
+  "pending_external_snapshot_admitted": false,
+  "files": {
+    "start.snap": "64f0e94321f9483f4f9b79e1c1abdbc8fe8cf3900453cd5a00ff4f4252cd1e7b",
+    "complete.snap": "31428dfec2db3498db8b226e517b06f5e12b5cfe57e8a0644ab201d8f412348d",
+    "replay.snap": "31428dfec2db3498db8b226e517b06f5e12b5cfe57e8a0644ab201d8f412348d",
+    "actual.io": "ae3eb0c85a7be5b706b7c582dd2fe10ba7f2f04ba8db0a5150e7167082776bcf",
+    "reset.io": "dfe366b4e3918cd799cf85336b8b2aa2662e545f8602a5bcdac0b2894c0dbe08",
+    "run.log": "96919853d5113786f0f1cc352d2aca8199860598ab4051d6b8abf2f860b9b892"
+  },
+  "archived_genuine_guest": {
+    "image": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf",
+      "sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7"
+    },
+    "rom": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/runtime/rtl/boot.bin",
+      "sha256": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2"
+    },
+    "archive": {
+      "schema": "lemmasim-native-bundle/1",
+      "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+      "source_commit": "8137ee78e82dcb467889f31195571d5bb72cdcc9",
+      "scope": "validated archived inputs; not current compilation"
+    },
+    "scope": "Real guest instructions run while literal initialized controller request is held; no guest-driver or Ready claim"
+  },
+  "host_seconds": 8.0823836849886,
+  "retained_report": {
+    "path": "build/companion/native-pending-a5/result.json",
+    "sha256": "e8e52801965f596e227df541e74e72e859be2dbbf25e72e604f9dc686cea3b1f"
+  },
+  "build_report": {
+    "path": "build/silicon/task006-backing-runtime-a5/build.json",
+    "sha256": "a301fd67304e10d53a5e955d0753ede5d40e3451f29d6697b4cc41c02ed75230"
+  },
+  "consumed_host_sources": {
+    "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+    "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb",
+    "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+    "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+    "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+    "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+    "sim/rtl/host/machine_runtime.cpp": "adf5c4fd87f7a767af1be8948f271f6cafc9701e741eac2d3f8a4512ed6fa8bd",
+    "sim/rtl/host/machine_runtime.h": "c47c5c61a18d4b20fad8ad2d6c6e8804c753ff0a309bc47ee108e2bad8d51ea0"
+  },
+  "profile": "lemma-silicon-dev/0.3.0",
+  "profile_sha256": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688",
+  "build_seconds": 54.184,
+  "host_checks": {
+    "silicon_host_tests": 168,
+    "scaffold_tests": 18,
+    "metadata": "PASS"
+  },
+  "bounds": {
+    "fixture_compile_seconds": 60,
+    "fixture_execution_seconds": 60,
+    "snapshot_container_bytes_max": 805306368,
+    "backing_capture_bytes_max": 67108864
+  },
+  "allocated_fixture_bytes": 437518336,
+  "original_failures": {
+    "native-pending-a1": "Missing Verilator include path; no fixture execution",
+    "native-pending-a2": "Missing svdpi include path; retained FAIL before execution",
+    "native-pending-a4": "Added retirement assertion exposed missing reset ROM/guest preload in literal fixture; retained FAIL, assertion kept; a5 initializes full validated immutable guest artifacts"
+  },
+  "historical_basic_fixture": {
+    "path": "build/companion/native-pending-a3/result.json",
+    "status": "PASS",
+    "scope": "Literal state/runtime test without a retirement assertion or boot artifacts; no genuine guest execution claim"
+  },
+  "limits": [
+    "Literal initialized controller-state transaction, not guest-driver execution",
+    "No native notebook Ready or native peer cold recovery claim",
+    "Pending external snapshots/forks remain rejected",
+    "QEMU cached-state continuation and fast timed-I/O replay remain open",
+    "Power-v1 busy input wired; no full watchdog/brownout/reset-domain acceptance"
+  ]
+}
