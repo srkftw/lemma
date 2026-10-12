@@ -288,5 +288,15 @@
         }
       ]
     }
+  },
+  "observer_label_correction": {
+    "initial_brush_q8": 512,
+    "four_actual_brush_settings": [
+      1024,
+      2048,
+      256,
+      512
+    ],
+    "reason": "Original report action names assumed initial256; independent acknowledged root bytes establish512. Four-cycle exact bytes/pixels checks remain valid; original report unchanged, future action labels made neutral."
   }
 }

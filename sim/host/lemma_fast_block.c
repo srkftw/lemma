@@ -46,6 +46,8 @@ struct LemmaFastBlock {
     uint64_t fail_write,fail_flush,cut_before_flush,cut_after_flush;
     uint64_t delay_after_ns,delay_write_ns;
     bool delay_used,media_started;
+    bool external_started,external_orphan,notify_pending,flush_active;
+    uint32_t flush_cursor,flush_order[OVERLAY_SECTORS];
     uint32_t pending_count,medium_present;
     uint64_t pending_number[OVERLAY_SECTORS];
     uint8_t pending_bytes[OVERLAY_SECTORS*SECTOR_BYTES];
@@ -55,7 +57,7 @@ struct LemmaFastBlock {
 };
 static LemmaFastBlock *active_fast_block;
 bool lemma_fast_block_busy(void)
-{ return active_fast_block && (active_fast_block->phase!=IDLE || active_fast_block->interrupt_status || (active_fast_block->status&64)); }
+{ return active_fast_block && (active_fast_block->phase!=IDLE || active_fast_block->external_started || active_fast_block->external_orphan || active_fast_block->interrupt_status || (active_fast_block->status&64)); }
 
 static void block_irq(LemmaFastBlock *s) { qemu_set_irq(s->irq,s->interrupt_status!=0); }
 static void block_trace(LemmaFastBlock *s,const char *event,uint64_t a,uint64_t b) {
@@ -89,20 +91,30 @@ static bool dma_write(uint64_t address,unsigned bytes,uint64_t value) {
 }
 static void reject_queue(LemmaFastBlock *s) {
     s->status|=64;s->interrupt_status|=2;s->phase=IDLE;s->media_started=false;
-    timer_del(s->timer);block_trace(s,"queue-rejected",s->status,0);block_irq(s);
+    s->flush_active=false;s->flush_cursor=0;s->notify_pending=false;
+    timer_del(s->timer);if(s->external_started){s->external_orphan=true;s->next_ns=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)+1000000;timer_mod_ns(s->timer,s->next_ns);}
+    block_trace(s,"queue-rejected",s->status,0);block_irq(s);
 }
 static uint64_t buffer_word(const uint8_t *b) {
     uint64_t v=0;for(unsigned i=0;i<8;i++)v|=(uint64_t)b[i]<<(8*i);return v;
 }
 static void buffer_put(uint8_t *b,uint64_t v) { for(unsigned i=0;i<8;i++)b[i]=v>>(8*i); }
-static bool backing_operation(LemmaFastBlock *s,uint64_t kind,uint64_t offset,uint64_t length,uint8_t *bytes) {
-    LemmaBackingOutcome outcome;char error[256];
-    if(lemma_backing_execute(s->backing,kind,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),offset,length,bytes,&outcome,error,sizeof error)) {
+/* -1 actual IOERR,0 Pending,1 actual successful completion. */
+static int backing_operation(LemmaFastBlock *s,uint64_t kind,uint64_t offset,uint64_t length,uint8_t *bytes) {
+    LemmaBackingOutcome outcome;char error[256];int result;
+    if(!s->external_started) {
+        if(lemma_backing_submit(s->backing,kind,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),offset,length,bytes,error,sizeof error))goto unknown;
+        s->external_started=true;
+    }
+    result=lemma_backing_poll(s->backing,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),bytes,&outcome,error,sizeof error);
+    if(result>0)return 0;
+    if(result<0) {
+unknown:
         lemma_backing_get_state(s->backing,&s->backing_state);
         error_report("LemmaSim backing persistence unresolved: %s",error);
-        vm_stop(RUN_STATE_IO_ERROR);return false;
+        vm_stop(RUN_STATE_IO_ERROR);return -1;
     }
-    return !outcome.error && outcome.transferred==length;
+    s->external_started=false;return !outcome.error && outcome.transferred==length?1:-1;
 }
 static bool medium_hash(LemmaFastBlock *s,uint8_t digest[32]) {
     GChecksum *sum=g_checksum_new(G_CHECKSUM_SHA256);g_autofree uint8_t *b=g_malloc(1048576);gsize n=32;char error[256];
@@ -119,46 +131,64 @@ static void medium_cut(LemmaFastBlock *s,const char *reason) {
 static gint medium_sector_order(gconstpointer a,gconstpointer b,gpointer opaque) {
     LemmaFastBlock *s=opaque;uint64_t x=s->pending_number[*(const uint32_t *)a],y=s->pending_number[*(const uint32_t *)b];return x<y?-1:x>y?1:0;
 }
-static bool medium_operation(LemmaFastBlock *s) {
-    if(!s->backing)return false;
+static int medium_operation(LemmaFastBlock *s) {
+    if(!s->backing)return -1;
     if(s->kind==0) {
         gpointer slot=g_hash_table_lookup(s->pending_index,&s->sector);
-        if(slot) {memcpy(s->sector_buffer,s->pending_bytes+(GPOINTER_TO_UINT(slot)-1)*512,512);return true;}
+        if(slot) {memcpy(s->sector_buffer,s->pending_bytes+(GPOINTER_TO_UINT(slot)-1)*512,512);return 1;}
         return backing_operation(s,0,s->sector*512,512,s->sector_buffer);
     }
     if(s->kind==1) {
-        if(s->writes==UINT64_MAX)return false;
+        if(s->writes==UINT64_MAX)return -1;
         s->writes++;
-        if(s->writes==s->fail_write) {block_trace(s,"write-failed",s->sector*512,512);return false;}
+        if(s->writes==s->fail_write) {block_trace(s,"write-failed",s->sector*512,512);return -1;}
         gpointer slot=g_hash_table_lookup(s->pending_index,&s->sector);uint32_t i;
         if(slot)i=GPOINTER_TO_UINT(slot)-1;
         else {
-            if(s->pending_count==OVERLAY_SECTORS) {block_trace(s,"pending-full",s->sector*512,512);return false;}
+            if(s->pending_count==OVERLAY_SECTORS) {block_trace(s,"pending-full",s->sector*512,512);return -1;}
             i=s->pending_count++;s->pending_number[i]=s->sector;
             g_hash_table_insert(s->pending_index,&s->pending_number[i],GUINT_TO_POINTER(i+1));
         }
         memcpy(s->pending_bytes+i*512,s->sector_buffer,512);
-        block_trace(s,"write-volatile",s->sector*512,512);return true;
+        block_trace(s,"write-volatile",s->sector*512,512);return 1;
     }
-    if(s->flushes==UINT64_MAX)return false;
+    if(!s->flush_active) {
+    if(s->flushes==UINT64_MAX)return -1;
     s->flushes++;block_trace(s,"flush-begin",s->flushes,s->durable_flush);
     if(s->flushes==s->cut_before_flush)medium_cut(s,"power-cut-before-flush");
-    if(s->flushes==s->fail_flush) {block_trace(s,"flush-failed",s->flushes,0);return false;}
+    if(s->flushes==s->fail_flush) {block_trace(s,"flush-failed",s->flushes,0);return -1;}
     /* Stable bytes are a separate external backing. The host barrier must
      * complete before status DMA. Pending bytes survive a failed barrier. */
-    g_autofree uint32_t *order=g_new(uint32_t,s->pending_count);
-    for(uint32_t i=0;i<s->pending_count;i++)order[i]=i;
-    g_qsort_with_data(order,s->pending_count,sizeof(*order),medium_sector_order,s);
-    for(uint32_t i=0;i<s->pending_count;i++)
-        if(!backing_operation(s,1,s->pending_number[order[i]]*512,512,s->pending_bytes+order[i]*512))return false;
-    if(!backing_operation(s,2,0,0,NULL))return false;
+    for(uint32_t i=0;i<s->pending_count;i++)s->flush_order[i]=i;
+    g_qsort_with_data(s->flush_order,s->pending_count,sizeof(s->flush_order[0]),medium_sector_order,s);
+    s->flush_cursor=0;s->flush_active=true;
+    }
+    while(s->flush_cursor<s->pending_count) {
+        uint32_t i=s->flush_order[s->flush_cursor];
+        int result=backing_operation(s,1,s->pending_number[i]*512,512,s->pending_bytes+i*512);
+        if(!result)return 0;
+        if(result<0){s->flush_active=false;s->flush_cursor=0;return -1;}
+        s->flush_cursor++;
+    }
+    int result=backing_operation(s,2,0,0,NULL);
+    if(!result)return 0;
+    s->flush_active=false;s->flush_cursor=0;if(result<0)return -1;
     s->durable_flush=s->flushes;s->pending_count=0;g_hash_table_remove_all(s->pending_index);
     block_trace(s,"flush-durable",s->flushes,0);
     if(s->flushes==s->cut_after_flush)medium_cut(s,"power-cut-after-flush");
-    return true;
+    return 1;
 }
 static void block_step(void *opaque) {
     LemmaFastBlock *s=opaque;uint64_t v=0;uint32_t length,flags,next;bool ok=true;
+    if(s->external_orphan) {
+        LemmaBackingOutcome out;char error[256];
+        int result=lemma_backing_poll(s->backing,qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL),s->sector_buffer,&out,error,sizeof error);
+        if(result<0){lemma_backing_get_state(s->backing,&s->backing_state);error_report("cancelled backing persistence unresolved: %s",error);vm_stop(RUN_STATE_IO_ERROR);return;}
+        if(result>0)goto external_wait;
+        s->external_started=s->external_orphan=false;
+        if(!s->notify_pending)return;
+        s->notify_pending=false;s->phase=AVAIL_INDEX;
+    }
     switch(s->phase) {
     case IDLE:return;
     case AVAIL_INDEX:
@@ -211,7 +241,7 @@ static void block_step(void *opaque) {
         if((uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)<s->media_deadline) {
             s->next_ns=s->media_deadline;timer_mod_ns(s->timer,s->next_ns);return;
         }
-        s->result=medium_operation(s)?0:1;s->word_index=0;
+        {int result=medium_operation(s);if(!result)goto external_wait;s->result=result>0?0:1;}s->word_index=0;
         if(s->backing_state.poisoned) {timer_del(s->timer);return;}
         s->phase=s->kind==0 && !s->result?READ_BUFFER:STATUS_BYTE;break;
     case READ_BUFFER:
@@ -227,6 +257,11 @@ static void block_step(void *opaque) {
     }
     if(!ok) {reject_queue(s);return;}
     s->next_ns=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)+s->step_ns;timer_mod_ns(s->timer,s->next_ns);
+    return;
+external_wait:
+    /* Declared acceptance polling cadence, independent of animation/host wall
+     * clocks. Captures bind the actual accepted virtual boundary. */
+    s->next_ns=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)+1000000;timer_mod_ns(s->timer,s->next_ns);
 }
 static uint64_t block_read(void *opaque,hwaddr a,unsigned size) {
     LemmaFastBlock *s=opaque;
@@ -243,6 +278,8 @@ static uint64_t block_read(void *opaque,hwaddr a,unsigned size) {
 static void block_reset_state(LemmaFastBlock *s) {
     timer_del(s->timer);s->phase=IDLE;s->status=s->queue_ready=s->interrupt_status=0;
     s->driver_low=s->driver_high=s->last_avail=s->used_index=0;s->media_started=false;block_irq(s);
+    s->flush_active=false;s->flush_cursor=0;s->notify_pending=false;
+    if(s->external_started){s->external_orphan=true;s->next_ns=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)+1000000;timer_mod_ns(s->timer,s->next_ns);}
     /* Reset cancels in-flight DMA and preserves volatile external medium. */
 }
 static void block_write(void *opaque,hwaddr a,uint64_t v,unsigned size) {
@@ -263,6 +300,7 @@ static void block_write(void *opaque,hwaddr a,uint64_t v,unsigned size) {
         if(v || !idle || s->status!=15 || s->queue_ready!=1 || s->queue_num!=8 ||
             (s->desc_base&15) || (s->avail_base&1) || (s->used_base&3) ||
             !span_ok(s->desc_base,128) || !span_ok(s->avail_base,20) || !span_ok(s->used_base,68)) {reject_queue(s);return;}
+        if(s->external_orphan){s->notify_pending=true;return;}
         s->phase=AVAIL_INDEX;s->next_ns=qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL)+s->step_ns;timer_mod_ns(s->timer,s->next_ns);return;
     case 128:case 132:case 144:case 148:case 160:case 164: {
         if(!idle || s->queue_ready) {reject_queue(s);return;}
@@ -285,18 +323,21 @@ static int block_post_load(void *opaque,int version) {
     LemmaFastBlock *s=opaque;uint8_t hash[32];char error[256];
     if(s->backing && lemma_backing_set_state(s->backing,&s->backing_state,error,sizeof error))return -EINVAL;
     if(s->phase>USED_INDEX || s->chain>2 || s->word_index>63 || s->head_id>=8 || s->desc_id>=8 ||
-       s->pending_count>OVERLAY_SECTORS || s->step_ns!=100 ||
+       s->pending_count>OVERLAY_SECTORS || s->step_ns!=100 || s->external_started || s->external_orphan || s->notify_pending ||
+       s->flush_cursor>s->pending_count || (!s->flush_active&&s->flush_cursor) ||
        (s->backing && (!medium_hash(s,hash) || memcmp(hash,s->medium_digest,32))))return -EINVAL;
     g_hash_table_remove_all(s->pending_index);
     for(uint32_t i=0;i<s->pending_count;i++) {
         if(s->pending_number[i]>=s->capacity_bytes/512 || g_hash_table_contains(s->pending_index,&s->pending_number[i]))return -EINVAL;
         g_hash_table_insert(s->pending_index,&s->pending_number[i],GUINT_TO_POINTER(i+1));
+        if(s->flush_active&&(s->flush_order[i]>=s->pending_count ||
+           (i&&s->pending_number[s->flush_order[i-1]]>=s->pending_number[s->flush_order[i]])))return -EINVAL;
     }
     block_irq(s);return 0;
 }
 #define B32(f) VMSTATE_UINT32(f,LemmaFastBlock)
 #define B64(f) VMSTATE_UINT64(f,LemmaFastBlock)
-static const VMStateDescription block_vmstate={.name="lemma-fast-block/2",.version_id=2,.minimum_version_id=2,
+static const VMStateDescription block_vmstate={.name="lemma-fast-block/3",.version_id=3,.minimum_version_id=3,
     .pre_save=block_pre_save,.post_load=block_post_load,.fields=(const VMStateField[]){
         VMSTATE_UINT64_EQUAL(capacity_bytes,LemmaFastBlock),VMSTATE_UINT32_EQUAL(medium_present,LemmaFastBlock),B64(step_ns),
         B32(phase),B32(status),B32(feature_sel),B32(driver_sel),B32(driver_low),B32(driver_high),B32(queue_sel),B32(queue_num),B32(queue_ready),B32(interrupt_status),
@@ -308,6 +349,8 @@ static const VMStateDescription block_vmstate={.name="lemma-fast-block/2",.versi
         VMSTATE_UINT64_ARRAY(pending_number,LemmaFastBlock,OVERLAY_SECTORS),VMSTATE_BUFFER(pending_bytes,LemmaFastBlock),VMSTATE_BUFFER(medium_digest,LemmaFastBlock),
         B64(backing_state.next_id),B64(backing_state.completed),B64(backing_state.durable_barrier),
         B64(backing_state.observed_write),B64(backing_state.phase),B64(backing_state.poisoned),
+        VMSTATE_BOOL(external_started,LemmaFastBlock),VMSTATE_BOOL(external_orphan,LemmaFastBlock),VMSTATE_BOOL(notify_pending,LemmaFastBlock),VMSTATE_BOOL(flush_active,LemmaFastBlock),
+        B32(flush_cursor),VMSTATE_UINT32_ARRAY(flush_order,LemmaFastBlock,OVERLAY_SECTORS),
         VMSTATE_TIMER_PTR(timer,LemmaFastBlock),VMSTATE_END_OF_LIST() }};
 #undef B32
 #undef B64
@@ -331,7 +374,7 @@ static void block_realize(DeviceState *dev,Error **errp) {
     }
     if(s->fd>=0 || s->peer_client) {
         char error[256];
-        s->backing=lemma_backing_create(s->fd,s->peer_client,s->peer_socket,s->peer_state,s->peer_writer,s->peer_helper,
+        s->backing=lemma_backing_create_async(s->fd,s->peer_client,s->peer_socket,s->peer_state,s->peer_writer,s->peer_helper,
             s->capture_path,s->capture_identity,error,sizeof error);
         if(!s->backing) {error_setg(errp,"backing initialization: %s",error);return;}
         lemma_backing_get_state(s->backing,&s->backing_state);
@@ -356,14 +399,19 @@ static void block_finalize(Object *obj) {
 static char *block_state(Object *obj,Error **errp) {
     LemmaFastBlock *s=LEMMA_FAST_BLOCK(obj);
     if(s->backing)lemma_backing_get_state(s->backing,&s->backing_state);
-    return g_strdup_printf("{\"backend\":\"lemma-fast-block/2\",\"phase\":%u,\"kind\":%u,\"word_index\":%u,\"status\":%u,\"irq\":%u,\"pending_sectors\":%u,\"writes\":%"PRIu64",\"flushes\":%"PRIu64",\"durable_flush\":%"PRIu64",\"deadline_ns\":%"PRIu64",\"media_deadline_ns\":%"PRIu64",\"backing_next_id\":%"PRIu64",\"backing_completed\":%"PRIu64",\"backing_durable_barrier\":%"PRIu64",\"backing_observed_write\":%"PRIu64",\"backing_phase\":%"PRIu64",\"backing_poisoned\":%"PRIu64"}",
+    return g_strdup_printf("{\"backend\":\"lemma-fast-block/3\",\"phase\":%u,\"kind\":%u,\"word_index\":%u,\"status\":%u,\"irq\":%u,\"pending_sectors\":%u,\"writes\":%"PRIu64",\"flushes\":%"PRIu64",\"durable_flush\":%"PRIu64",\"deadline_ns\":%"PRIu64",\"media_deadline_ns\":%"PRIu64",\"backing_next_id\":%"PRIu64",\"backing_completed\":%"PRIu64",\"backing_durable_barrier\":%"PRIu64",\"backing_observed_write\":%"PRIu64",\"backing_phase\":%"PRIu64",\"backing_poisoned\":%"PRIu64",\"retry_ready\":%u,\"flush_cursor\":%u,\"external_orphan\":%u}",
         s->phase,s->kind,s->word_index,s->status,s->interrupt_status,s->pending_count,s->writes,s->flushes,s->durable_flush,s->next_ns,s->media_deadline,
-        s->backing_state.next_id,s->backing_state.completed,s->backing_state.durable_barrier,s->backing_state.observed_write,s->backing_state.phase,s->backing_state.poisoned);
+        s->backing_state.next_id,s->backing_state.completed,s->backing_state.durable_barrier,s->backing_state.observed_write,s->backing_state.phase,s->backing_state.poisoned,s->backing?lemma_backing_retry_ready(s->backing):0,s->flush_cursor,s->external_orphan);
 }
 static void block_export(Object *obj,const char *path,Error **errp) {
     LemmaFastBlock *s=LEMMA_FAST_BLOCK(obj);char error[256];
     if(runstate_is_running()) {error_setg(errp,"medium export requires paused execution");return;}
     if(lemma_backing_export(s->backing,path,error,sizeof error))error_setg(errp,"medium export: %s",error);
+}
+static void block_retry(Object *obj,const char *value,Error **errp) {
+    LemmaFastBlock *s=LEMMA_FAST_BLOCK(obj);char error[256];
+    if(runstate_is_running()||strcmp(value,"retry")){error_setg(errp,"explicit backing retry requires paused execution and retry command");return;}
+    if(lemma_backing_retry(s->backing,error,sizeof error))error_setg(errp,"backing retry: %s",error);
 }
 static char *block_trace_state(Object *obj,Error **errp) {
     LemmaFastBlock *s=LEMMA_FAST_BLOCK(obj);
@@ -388,6 +436,7 @@ static void block_class(ObjectClass *klass,const void *data) {
     device_class_set_props(dc,block_properties);object_class_property_add_str(klass,"storage-state",block_state,NULL);
     object_class_property_add_str(klass,"trace-state",block_trace_state,NULL);
     object_class_property_add_str(klass,"export-medium",NULL,block_export);
+    object_class_property_add_str(klass,"retry-backing",NULL,block_retry);
 }
 static void fast_block_instance_init(Object *obj) {LEMMA_FAST_BLOCK(obj)->fd=-1;}
 static const TypeInfo block_type={.name=TYPE_LEMMA_FAST_BLOCK,.parent=TYPE_SYS_BUS_DEVICE,.instance_size=sizeof(LemmaFastBlock),

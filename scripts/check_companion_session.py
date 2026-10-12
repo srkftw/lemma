@@ -149,8 +149,8 @@ class CompanionChecker(Checker):
         self.report['workflow']=observe_workflow(medium,live.directory/'input-0.bin',live.directory/'uart-0.bin',panel,stream,fixture['expected'])
         # Clean explicit Save may correctly have no medium work. A brush edit
         # always publishes a new equal-size root through the actual guest store.
-        # Four edits cycle 256 -> 512 -> 1024 -> 2048 -> 256; the final edit
-        # therefore restores exactly the original expected bytes and pixels.
+        # Four edits cycle all admitted widths; the final edit restores exactly
+        # the original setting, expected bytes and pixels.
         save_start=live.inspect()['machine']['storage']['backing_next_id']
         self.action(live,stream,{'kind':'tool','button':6,'name':'calibrate brush root publication'})
         rows,_=backing_records(live.directory/'backing-0.io')
@@ -158,15 +158,15 @@ class CompanionChecker(Checker):
         require(pattern and pattern[-1][2]==2 and all(row[6]==0 for row in pattern),'completed root edit does not end with actual barrier')
         require(all(row[2] in (1,2) for row in pattern),'root edit has unaccounted transport operations')
         self.report['predeclared_lost_reply']={'ordinal':len(pattern),'prior_equal_size_root_operations':[list(row) for row in pattern]}
-        for width in (1024,2048):
+        for step in (2,3):
             start=live.inspect()['machine']['storage']['backing_next_id']
-            self.action(live,stream,{'kind':'tool','button':6,'name':f'brush root {width}'})
+            self.action(live,stream,{'kind':'tool','button':6,'name':f'brush root cycle step {step}'})
             current=[row for row in backing_records(live.directory/'backing-0.io')[0] if row[0]>=start]
             require([(row[2],row[4],row[5],row[6]) for row in current]==[(row[2],row[4],row[5],row[6]) for row in pattern],
                     'equal-size root edits have different predeclared operation shapes')
         before=live.inspect()['machine'];saved_before=sum(row[0]==0x421 for row in guest_events(live.directory/'uart-0.bin'))
         self.stop_peer();self.start_peer(drop=len(pattern))
-        stream.tick=before['ticks']+10000;first=len(stream.events);stream.tool(6,'brush root 256 with final durable receipt lost')
+        stream.tick=before['ticks']+10000;first=len(stream.events);stream.tool(6,'brush root cycle step4 with final durable receipt lost')
         live.admit(stream.events[first:])
         failure=None;started=time.monotonic()
         while live.inspect()['machine']['cycle']-before['cycle']<self.args.action_seconds*100000000:

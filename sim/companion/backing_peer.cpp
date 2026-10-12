@@ -42,6 +42,8 @@ class PeerBacking final : public BackingPlatform {
   mutable int input_ = -1, output_ = -1;
   pid_t child_ = -1;
   mutable std::string buffered_;
+  std::optional<BackingRequest> active_;
+  bool asynchronous_=false,waiting_retry_=false;
   void stop() noexcept {
     if (input_ >= 0) { close(input_); input_ = -1; }
     if (output_ >= 0) { close(output_); output_ = -1; }
@@ -65,7 +67,7 @@ class PeerBacking final : public BackingPlatform {
       auto left=std::chrono::duration_cast<std::chrono::milliseconds>(deadline-std::chrono::steady_clock::now()).count();
       if (left<=0) throw std::runtime_error("peer raw reply timeout; persistence unresolved");
       pollfd fd{output_,POLLIN,0};
-      int ready=poll(&fd,1,static_cast<int>(left));
+      int ready=::poll(&fd,1,static_cast<int>(left));
       if (ready<0 && errno==EINTR) continue;
       if (ready<=0) throw std::runtime_error("peer raw reply unavailable; persistence unresolved");
       char data[8192];
@@ -75,17 +77,18 @@ class PeerBacking final : public BackingPlatform {
       buffered_.append(data,static_cast<size_t>(n));
     }
   }
-  BackingOutcome exchange(const BackingRequest& request) const {
+  void send_request(const BackingRequest& request) const {
     auto message=std::to_string(static_cast<unsigned>(request.kind))+" "+std::to_string(request.id)+" "+
       std::to_string(request.boundary)+" "+std::to_string(request.offset)+" "+std::to_string(request.length)+" "+hex(request.bytes)+"\n";
     size_t sent=0;
     while (sent<message.size()) {
-      auto n=send(input_,message.data()+sent,message.size()-sent,MSG_NOSIGNAL);
+      auto n=send(input_,message.data()+sent,message.size()-sent,MSG_NOSIGNAL|(asynchronous_?MSG_DONTWAIT:0));
       if (n<0 && errno==EINTR) continue;
       if (n<=0) throw std::runtime_error("hosted Lean client raw request failure");
       sent+=static_cast<size_t>(n);
     }
-    auto raw=line();
+  }
+  BackingOutcome response(const BackingRequest& request,const std::string& raw) const {
     if (raw=="PENDING") throw std::runtime_error("companion persistence unresolved; durable outbox must reconcile before restart");
     std::istringstream response(raw);
     BackingOutcome out;
@@ -95,8 +98,12 @@ class PeerBacking final : public BackingPlatform {
     validate_backing_record({request,out});
     return out;
   }
+  BackingOutcome exchange(const BackingRequest& request) const {
+    if(active_)throw std::runtime_error("pending peer cannot perform a passive or second synchronous exchange");
+    send_request(request);return response(request,line());
+  }
 public:
-  explicit PeerBacking(const PeerOptions& options) {
+  explicit PeerBacking(const PeerOptions& options):asynchronous_(options.asynchronous) {
     if (options.client.empty() || options.socket.empty() || options.state.empty() || options.writer.empty() || options.helper.empty())
       throw std::runtime_error("companion raw adapter requires all prepared client paths");
     int to_child[2],from_child[2];
@@ -110,7 +117,9 @@ public:
       if (syscall(SYS_close_range,3,~0u,0)<0)
 #endif
         for (int fd=3;fd<65536;++fd) close(fd);
-      execl(options.client.c_str(),options.client.c_str(),options.socket.c_str(),options.state.c_str(),options.writer.c_str(),options.helper.c_str(),static_cast<char*>(nullptr));
+      if(options.asynchronous)
+        execl(options.client.c_str(),options.client.c_str(),options.socket.c_str(),options.state.c_str(),options.writer.c_str(),options.helper.c_str(),"--pending",static_cast<char*>(nullptr));
+      else execl(options.client.c_str(),options.client.c_str(),options.socket.c_str(),options.state.c_str(),options.writer.c_str(),options.helper.c_str(),static_cast<char*>(nullptr));
       _exit(127);
     }
     close(to_child[0]);close(from_child[1]); input_=to_child[1];output_=from_child[0];
@@ -138,6 +147,39 @@ public:
     validate_backing_request(request);
     if (request.offset>medium_bytes || request.length>medium_bytes-request.offset) throw std::runtime_error("peer request medium bounds");
     return exchange(request);
+  }
+  void submit(const BackingRequest& request) override {
+    if(!asynchronous_) { BackingPlatform::submit(request);return; }
+    validate_backing_request(request);
+    if(active_ || request.offset>medium_bytes || request.length>medium_bytes-request.offset ||
+       (request.kind==BackingKind::Write && request.length!=512))throw std::runtime_error("peer async submission bounds/state");
+    active_=request;waiting_retry_=false;send_request(request);
+  }
+  std::optional<BackingOutcome> poll() override {
+    if(!asynchronous_)return BackingPlatform::poll();
+    if(!active_)throw std::runtime_error("peer poll without submission");
+    for(;;) {
+      auto end=buffered_.find('\n');
+      if(end!=std::string::npos) {
+        auto raw=buffered_.substr(0,end);buffered_.erase(0,end+1);
+        if(raw=="PENDING") {waiting_retry_=true;return std::nullopt;}
+        auto outcome=response(*active_,raw);active_.reset();waiting_retry_=false;return outcome;
+      }
+      if(buffered_.size()>line_bound)throw std::runtime_error("peer async raw output bound");
+      char bytes[8192];auto n=recv(output_,bytes,sizeof bytes,MSG_DONTWAIT);
+      if(n<0 && errno==EINTR)continue;
+      if(n<0 && (errno==EAGAIN||errno==EWOULDBLOCK))return std::nullopt;
+      if(n<=0)throw std::runtime_error("hosted Lean async client disconnected; persistence unresolved");
+      buffered_.append(bytes,static_cast<size_t>(n));
+    }
+  }
+  bool retry_ready() const override {return asynchronous_&&active_&&waiting_retry_;}
+  bool retry_pending() override {
+    if(!retry_ready())return false;
+    const char command[]="RETRY\n";
+    if(send(input_,command,sizeof(command)-1,MSG_NOSIGNAL|MSG_DONTWAIT)!=ssize_t(sizeof(command)-1))
+      throw std::runtime_error("peer explicit retry raw admission failed");
+    waiting_retry_=false;return true;
   }
   void apply_recorded(const BackingRequest&,const BackingOutcome&) override {
     throw std::runtime_error("external companion cannot be a replay fork; restore privately first");

@@ -70,4 +70,30 @@ BackingRecord decode_backing_record(const uint8_t*p,uint64_t n){
  if(get(p,end)!=checksum(first,n-8))throw std::runtime_error("backing record checksum mismatch");
  validate_backing_record(r);return r;
 }
+std::vector<uint8_t> encode_backing_request(const BackingRequest&r){
+ validate_backing_request(r);std::vector<uint8_t>b;
+ for(auto v:{r.id,r.boundary,uint64_t(r.kind),r.offset,r.length})put(b,v);
+ b.insert(b.end(),r.bytes.begin(),r.bytes.end());put(b,checksum(b.data(),b.size()));return b;
+}
+BackingRequest decode_backing_request(const uint8_t*p,uint64_t n){
+ if(n<48||n>48+BACKING_MAX_TRANSFER)throw std::runtime_error("invalid backing submission length");
+ auto*first=p;auto*end=p+n;BackingRequest r;
+ r.id=get(p,end);r.boundary=get(p,end);r.kind=BackingKind(get(p,end));r.offset=get(p,end);r.length=get(p,end);
+ auto bytes=r.kind==BackingKind::Write?r.length:0;
+ if(r.length>BACKING_MAX_TRANSFER||bytes!=n-48)throw std::runtime_error("backing submission payload bound");
+ r.bytes.assign(p,p+bytes);p+=bytes;
+ if(get(p,end)!=checksum(first,n-8))throw std::runtime_error("backing submission checksum");
+ validate_backing_request(r);return r;
+}
+std::vector<uint8_t> encode_timed_backing_record(const TimedBackingRecord&r){
+ if(r.accepted_boundary<r.record.request.boundary)throw std::runtime_error("backing completion precedes submission");
+ auto b=encode_backing_record(r.record);put(b,r.accepted_boundary);put(b,checksum(b.data(),b.size()));return b;
+}
+TimedBackingRecord decode_timed_backing_record(const uint8_t*p,uint64_t n){
+ if(n<80||n>80+2*BACKING_MAX_TRANSFER)throw std::runtime_error("invalid timed backing completion length");
+ TimedBackingRecord r{decode_backing_record(p,n-16),0};auto*end=p+n;auto*tail=end-16;
+ r.accepted_boundary=get(tail,end);
+ if(get(tail,end)!=checksum(p,n-8)||r.accepted_boundary<r.record.request.boundary)throw std::runtime_error("backing completion boundary/checksum");
+ return r;
+}
 }

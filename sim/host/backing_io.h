@@ -2,6 +2,8 @@
 // Host-only byte I/O boundary. No device, journal or document policy lives here.
 #pragma once
 #include <cstdint>
+#include <optional>
+#include <stdexcept>
 #include <vector>
 
 namespace lemma {
@@ -20,18 +22,34 @@ struct BackingOutcome {
  std::vector<uint8_t> bytes;
 };
 struct BackingRecord { BackingRequest request; BackingOutcome outcome; };
+struct TimedBackingRecord { BackingRecord record; uint64_t accepted_boundary=0; };
 struct BackingState {
  uint64_t next_id=1, completed=0, durable_barrier=0, observed_write=0;
  BackingPhase phase=BackingPhase::Idle;
  bool poisoned=false;
 };
 struct BackingPlatform {
+private:
+ std::optional<BackingOutcome> immediate;
+public:
  virtual ~BackingPlatform()=default;
  virtual uint64_t capacity() const=0;
  // Observational snapshot/export read. It neither changes operation IDs nor
  // executes a barrier; it cannot complete or cancel guest device work.
  virtual void passive_read(uint64_t offset,uint8_t*,uint64_t length) const=0;
  virtual BackingOutcome execute(const BackingRequest&)=0;
+ // Optional nonblocking boundary. Synchronous platforms return their actual
+ // result immediately; external adapters override admission and polling.
+ // A missing result means Pending, never error or durable success.
+ virtual void submit(const BackingRequest& request) {
+  if(immediate)throw std::runtime_error("backing platform already submitted");
+  immediate=execute(request);
+ }
+ virtual std::optional<BackingOutcome> poll() {
+  auto result=std::move(immediate);immediate.reset();return result;
+ }
+ virtual bool retry_pending() { return false; }
+ virtual bool retry_ready() const { return false; }
  // Replay materializes a captured write prefix in a private backing only.
  // It must not contact the original file, network or peer. A replayed barrier
  // establishes local fork persistence, then returns the recorded outcome.
@@ -49,4 +67,8 @@ void complete_backing(BackingState&,const BackingRecord&);
 void cancel_backing(BackingState&,const BackingRequest&);
 std::vector<uint8_t> encode_backing_record(const BackingRecord&);
 BackingRecord decode_backing_record(const uint8_t*,uint64_t);
+std::vector<uint8_t> encode_backing_request(const BackingRequest&);
+BackingRequest decode_backing_request(const uint8_t*,uint64_t);
+std::vector<uint8_t> encode_timed_backing_record(const TimedBackingRecord&);
+TimedBackingRecord decode_timed_backing_record(const uint8_t*,uint64_t);
 }

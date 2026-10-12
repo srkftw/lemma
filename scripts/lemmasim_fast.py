@@ -19,7 +19,7 @@ import silicon_guest as guest
 from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST
 
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
-ADAPTER = 'lemmasim-fast-adapter/3'
+ADAPTER = 'lemmasim-fast-adapter/4'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 
@@ -65,6 +65,14 @@ def build(args):
     workload = args.workload or 'notebook'
     if workload not in selected:
         raise ValueError('Workload is not admitted by this binding')
+    archived=None
+    archive_path=getattr(args,'guest_bundle',None)
+    if archive_path is not None:
+        if args.guest_build is not None or name!='lemma-silicon-dev/0.3.0':raise ValueError('Archived guest requires canonical binding without --guest-build')
+        import silicon_guest_bundle
+        archived=silicon_guest_bundle.prepared(archive_path,'qemu',workload,name)
+        archived_build=json.loads(Path(archived['workloads'][workload]['build']['path']).read_text())
+        if archived_build['optimization']!=args.opt_level:raise ValueError('Archived guest optimization differs')
     link = ROOT / ('build/lemmasim/qemu-fast-' + name.split('/')[1])
     guest.run_command(['nix-build', 'tooling/lemmasim/qemu.nix', '--arg', 'siliconProfile',
                        profile_path(name), '-o', link], timeout=2400)
@@ -77,37 +85,57 @@ def build(args):
     if binary != Path(closure['output'])/'bin/qemu-system-riscv64' or sources(name) != before:
         raise ValueError('Fast backend sources/output changed during preparation')
     directory = ROOT / ('build/kernel/fast-' + workload + '-' + str(time.time_ns()))
-    if args.guest_build:
+    if archived is not None:
+        entry=copy.deepcopy(archived['workloads'][workload])
+    elif args.guest_build:
         directory = args.guest_build.resolve()
     else:
         guest.run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
                            '--configuration',selected[workload],'--stage','supervisor','--opt-level',args.opt_level,
                            '--output-dir',directory,'--timeout','300'], timeout=1500)
         guest.run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',directory],timeout=600)
-    guest.verify_guest_build(directory, selected[workload], args.opt_level)
-    entry = {k: guest.identified(directory/p) for k,p in
-             [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),
-              ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
+    if archived is None:
+        guest.verify_guest_build(directory, selected[workload], args.opt_level)
+        entry = {k: guest.identified(directory/p) for k,p in
+                 [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),
+                  ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
     data = {'schema':'lemmasim-fast-prepared/1','profile':name,'profile_sha256':digest(profile_path(name)),
             'qemu':guest.identified(binary),'derivation':guest.identified(closure['derivation']),
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
+    if archived is not None:
+        data['guest_archive']={'path':str(Path(archive_path).resolve()),'manifest_sha256':digest(Path(archive_path)/'bundle.json'),
+                               'scope':'unchanged archived genuine guest; new backend, not fresh target compilation'}
+        validate_archived_entry(data,workload)
     path = prepared_path(name)
     try:
         previous = json.loads(path.read_text())
-        if all(previous[k] == data[k] for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
+        if previous.get('guest_archive')==data.get('guest_archive') and all(previous[k] == data[k] for k in ('schema','profile','profile_sha256','qemu','derivation','sources','cpu','icount_shift')):
             for key, old in previous['workloads'].items():
                 if key == workload or key not in selected: continue
                 try:
                     for item in old.values(): guest.validate(item)
-                    old_dir = Path(old['build']['path']).parent
-                    guest.verify_guest_build(old_dir,selected[key],json.loads((old_dir/'build.json').read_text())['optimization'])
+                    if archived is not None:validate_archived_entry(previous,key)
+                    else:
+                        old_dir = Path(old['build']['path']).parent
+                        guest.verify_guest_build(old_dir,selected[key],json.loads((old_dir/'build.json').read_text())['optimization'])
                     data['workloads'][key] = old
                 except (ValueError,KeyError,OSError): pass
     except FileNotFoundError: pass
     path.parent.mkdir(parents=True,exist_ok=True)
     write_json(path,data)
     print(f'Prepared matched fast {workload}: {path}')
+
+
+def validate_archived_entry(data,workload):
+    archive=data.get('guest_archive')
+    if not isinstance(archive,dict) or set(archive)!={'path','manifest_sha256','scope'} or archive['scope']!='unchanged archived genuine guest; new backend, not fresh target compilation':
+        raise ValueError('Malformed archived guest preparation')
+    path=Path(archive['path']).resolve()
+    if digest(path/'bundle.json')!=archive['manifest_sha256']:raise ValueError('Archived guest manifest changed')
+    import silicon_guest_bundle
+    archived=silicon_guest_bundle.prepared(path,'qemu',workload,data['profile'])
+    if data['workloads'][workload]!=archived['workloads'][workload]:raise ValueError('Guest artifacts differ from validated archived closure')
 
 
 def prepared(workload,name=None):
@@ -120,8 +148,10 @@ def prepared(workload,name=None):
     guest.validate(data['qemu']); guest.validate(data['derivation'])
     entry = data['workloads'][workload]
     for item in entry.values(): guest.validate(item)
-    directory = Path(entry['build']['path']).parent
-    guest.verify_guest_build(directory,guest.configurations(name)[workload],json.loads((directory/'build.json').read_text())['optimization'])
+    if 'guest_archive' in data:validate_archived_entry(data,workload)
+    else:
+        directory = Path(entry['build']['path']).parent
+        guest.verify_guest_build(directory,guest.configurations(name)[workload],json.loads((directory/'build.json').read_text())['optimization'])
     return data
 
 
@@ -360,6 +390,10 @@ class Fast:
         if action=='inspect':return self.inspect()
         if action=='pause':
             if self.qmp.execute('query-status')['running']:self.qmp.execute('stop')
+            return self.inspect()
+        if action=='companion-retry':
+            if self.qmp.execute('query-status')['running']:raise ValueError('Backing retry requires paused execution')
+            self.qmp.execute('qom-set',{'path':'/machine/lemma-block','property':'retry-backing','value':'retry'})
             return self.inspect()
         if action=='run':
             ns=self.time_origin_ns+int(self.get('virtual-time'))+int(text)*1000000000//self.clock_hz

@@ -13,6 +13,17 @@ void *lemma_backing_create(int borrowed_fd,const char *client,const char *socket
   const char *state,const char *writer,const char *helper,const char *capture,
   const char *identity,char *error,size_t error_bytes);
 void lemma_backing_destroy(void *backing);
+void *lemma_backing_create_async(int borrowed_fd,const char *client,const char *socket,
+  const char *state,const char *writer,const char *helper,const char *capture,
+  const char *identity,char *error,size_t error_bytes);
+// submit returns0 after admission; poll returns1 Pending,0 actual completion,
+// -1 unknown/corrupt outcome. Neither Pending nor retry manufactures a receipt.
+int lemma_backing_submit(void *backing,uint64_t kind,uint64_t boundary,
+  uint64_t offset,uint64_t length,const uint8_t *bytes,char *error,size_t error_bytes);
+int lemma_backing_poll(void *backing,uint64_t accepted_boundary,uint8_t *bytes,
+  LemmaBackingOutcome *out,char *error,size_t error_bytes);
+int lemma_backing_retry_ready(void *backing);
+int lemma_backing_retry(void *backing,char *error,size_t error_bytes);
 int lemma_backing_execute(void *backing,uint64_t kind,uint64_t boundary,
   uint64_t offset,uint64_t length,uint8_t *bytes,LemmaBackingOutcome *out,
   char *error,size_t error_bytes);

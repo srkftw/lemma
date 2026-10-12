@@ -17,6 +17,8 @@ struct Owner {
   lemma::BackingState state;
   int capture=-1;
   uint64_t captured=72;
+  bool asynchronous=false;
+  std::optional<lemma::BackingRequest> pending;
   ~Owner() { if(capture>=0)close(capture); }
 };
 std::string text(const char *value) { return value?value:""; }
@@ -27,15 +29,24 @@ void write_exact(int fd,const void *raw,uint64_t n,uint64_t offset) {
   auto data=static_cast<const uint8_t*>(raw);
   while(n) { auto size=pwrite(fd,data,n,offset);if(size<=0)throw std::runtime_error("backing capture actual write failure");data+=size;offset+=size;n-=size; }
 }
+void capture_entry(Owner& owner,uint64_t tag,const std::vector<uint8_t>& wire) {
+  if(owner.capture<0)return;
+  if(wire.size()+16>capture_bound-owner.captured)throw std::runtime_error("backing capture entry bound");
+  uint8_t header[16];for(unsigned i=0;i<8;++i) {header[i]=tag>>(8*i);header[8+i]=wire.size()>>(8*i);}
+  write_exact(owner.capture,header,sizeof header,owner.captured);
+  write_exact(owner.capture,wire.data(),wire.size(),owner.captured+16);
+  owner.captured+=wire.size()+16;
 }
-extern "C" void *lemma_backing_create(int fd,const char *client,const char *socket,
+}
+static void *create_backing(bool asynchronous,int fd,const char *client,const char *socket,
   const char *state,const char *writer,const char *helper,const char *capture,
   const char *identity,char *error,size_t size) {
   try {
     auto owner=std::make_unique<Owner>();
+    owner->asynchronous=asynchronous;
     if(!text(client).empty()) {
       if(fd>=0)throw std::runtime_error("companion and POSIX backing are mutually exclusive");
-      owner->platform=lemma::make_peer_backing({text(client),text(socket),text(state),text(writer),text(helper)});
+      owner->platform=lemma::make_peer_backing({text(client),text(socket),text(state),text(writer),text(helper),asynchronous});
     } else {
       if(fd<0)throw std::runtime_error("missing backing descriptor");
       owner->platform=std::make_shared<lemma::PosixBacking>(fd);
@@ -46,17 +57,25 @@ extern "C" void *lemma_backing_create(int fd,const char *client,const char *sock
       if(binding.size()!=64 || binding.find_first_not_of("0123456789abcdef")!=std::string::npos)throw std::runtime_error("backing capture lacks exact backend identity");
       owner->capture=open(capture,O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC,0600);
       if(owner->capture<0)throw std::runtime_error("backing capture requires a new file");
-      auto header=std::string("LMIOLOG1")+binding;write_exact(owner->capture,header.data(),header.size(),0);
+      auto header=std::string(asynchronous?"LMIOLOG2":"LMIOLOG1")+binding;write_exact(owner->capture,header.data(),header.size(),0);
     }
     return owner.release();
   } catch(const std::exception&e) { failed(error,size,e);return nullptr; }
+}
+extern "C" void *lemma_backing_create(int fd,const char *client,const char *socket,
+ const char *state,const char *writer,const char *helper,const char *capture,const char *identity,char *error,size_t size) {
+ return create_backing(false,fd,client,socket,state,writer,helper,capture,identity,error,size);
+}
+extern "C" void *lemma_backing_create_async(int fd,const char *client,const char *socket,
+ const char *state,const char *writer,const char *helper,const char *capture,const char *identity,char *error,size_t size) {
+ return create_backing(true,fd,client,socket,state,writer,helper,capture,identity,error,size);
 }
 extern "C" void lemma_backing_destroy(void *raw) { delete static_cast<Owner*>(raw); }
 extern "C" int lemma_backing_execute(void *raw,uint64_t kind,uint64_t boundary,
   uint64_t offset,uint64_t length,uint8_t *bytes,LemmaBackingOutcome *out,char *error,size_t size) {
   auto owner=static_cast<Owner*>(raw);
   try {
-    if(!owner || kind>2 || !out || (kind!=2 && !bytes))throw std::runtime_error("invalid backing C invocation");
+    if(!owner || owner->asynchronous || kind>2 || !out || (kind!=2 && !bytes))throw std::runtime_error("invalid backing C invocation");
     uint64_t slot=owner->captured;
     if(owner->capture>=0) {
       if(length>lemma::BACKING_MAX_TRANSFER || 72+2*length>capture_bound-slot)throw std::runtime_error("backing capture resource bound");
@@ -76,6 +95,43 @@ extern "C" int lemma_backing_execute(void *raw,uint64_t kind,uint64_t boundary,
     if(kind==0 && out->transferred)std::memcpy(bytes,record.outcome.bytes.data(),out->transferred);
     return 0;
   } catch(const std::exception&e) { if(owner)owner->state.poisoned=true;failed(error,size,e);return -1; }
+}
+extern "C" int lemma_backing_submit(void *raw,uint64_t kind,uint64_t boundary,
+ uint64_t offset,uint64_t length,const uint8_t *bytes,char *error,size_t size) {
+ auto owner=static_cast<Owner*>(raw);
+ try {
+  if(!owner||!owner->asynchronous||owner->pending||kind>2||(kind==1&&!bytes))throw std::runtime_error("invalid backing async admission");
+  if(owner->capture>=0&&(length>lemma::BACKING_MAX_TRANSFER||160+3*length>capture_bound-owner->captured))throw std::runtime_error("backing capture admission resource bound");
+  auto request=lemma::begin_backing(owner->state,lemma::BackingKind(kind),boundary,offset,length,bytes);
+  owner->pending=request;capture_entry(*owner,0,lemma::encode_backing_request(request));
+  owner->platform->submit(request);return 0;
+ }catch(const std::exception&e){if(owner)owner->state.poisoned=true;failed(error,size,e);return -1;}
+}
+extern "C" int lemma_backing_poll(void *raw,uint64_t boundary,uint8_t *bytes,
+ LemmaBackingOutcome *out,char *error,size_t size) {
+ auto owner=static_cast<Owner*>(raw);
+ try {
+  if(!owner||!owner->asynchronous||!owner->pending||owner->state.poisoned||!out||
+     (owner->pending->kind==lemma::BackingKind::Read&&!bytes)||boundary<owner->pending->boundary)
+    throw std::runtime_error("invalid backing async acceptance");
+  auto result=owner->platform->poll();if(!result)return 1;
+  lemma::BackingRecord record{*owner->pending,std::move(*result)};lemma::validate_backing_record(record);
+  capture_entry(*owner,1,lemma::encode_timed_backing_record({record,boundary}));
+  lemma::complete_backing(owner->state,record);
+  out->transferred=record.outcome.transferred;out->error=record.outcome.error;
+  if(record.request.kind==lemma::BackingKind::Read&&out->transferred)std::memcpy(bytes,record.outcome.bytes.data(),out->transferred);
+  owner->pending.reset();return 0;
+ }catch(const std::exception&e){if(owner)owner->state.poisoned=true;failed(error,size,e);return -1;}
+}
+extern "C" int lemma_backing_retry_ready(void *raw) {
+ auto owner=static_cast<Owner*>(raw);return owner&&owner->pending&&!owner->state.poisoned&&owner->platform->retry_ready();
+}
+extern "C" int lemma_backing_retry(void *raw,char *error,size_t size) {
+ auto owner=static_cast<Owner*>(raw);
+ try {
+  if(!owner||!owner->pending||owner->state.poisoned||!owner->platform->retry_pending())throw std::runtime_error("backing retry is not admitted at this pending boundary");
+  return 0;
+ }catch(const std::exception&e){failed(error,size,e);return -1;}
 }
 extern "C" int lemma_backing_passive(void *raw,uint64_t offset,uint64_t length,
   uint8_t *bytes,char *error,size_t size) {
@@ -120,7 +176,7 @@ extern "C" int lemma_backing_export(void *raw,const char *path,char *error,size_
 }
 extern "C" int lemma_backing_set_state(void *raw,const LemmaBackingState *state,char *error,size_t size) {
   try {
-    auto owner=static_cast<Owner*>(raw);if(!owner || !state || state->phase>3 || state->poisoned>1)throw std::runtime_error("invalid backing restore");
+    auto owner=static_cast<Owner*>(raw);if(!owner || owner->pending || !state || state->phase>3 || state->poisoned>1)throw std::runtime_error("invalid backing restore");
     lemma::BackingState replacement{state->next_id,state->completed,state->durable_barrier,state->observed_write,lemma::BackingPhase(state->phase),bool(state->poisoned)};
     lemma::validate_backing_state(replacement);
     if(replacement.poisoned || replacement.phase==lemma::BackingPhase::Pending)throw std::runtime_error("ambiguous external operation cannot restore");

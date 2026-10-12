@@ -8,6 +8,7 @@ namespace lemma {
 // in the separately compiled hosted-Lean client, never in the RV64 image.
 struct PeerOptions {
   std::string client, socket, state, writer, helper;
+  bool asynchronous=false;
 };
 std::shared_ptr<BackingPlatform> make_peer_backing(const PeerOptions& options);
 }

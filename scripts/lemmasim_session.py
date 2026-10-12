@@ -113,7 +113,7 @@ def startup_restore_medium(args):
 
 def external_command(value, current):
     if not isinstance(value,dict):raise ValueError('External request must be an object')
-    if value.get('action') in ('warm-reset','cold-cycle'):return value['action'],dict(value)
+    if value.get('action') in ('warm-reset','cold-cycle','companion-retry'):return value['action'],dict(value)
     if value.get('action')!='inject':raise ValueError('Unsupported external action')
     cycle=bounded(value.get('cycle',current),current,(1<<64)-1,'Event cycle')
     kind=value.get('kind')
@@ -534,7 +534,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -585,6 +585,10 @@ class Session:
             result = self.external(value, state, action)
             self.presentation_generation += 1
             return result
+        if action=='companion-retry':
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='qemu':raise ValueError('Explicit pending retry requires the fast development transport')
+            state=self.machine.call('inspect')
+            return self.external(value,state,'companion-retry')
         if action == 'panel':
             return self.machine.call('panel ' + str(Path(value['path']).resolve()))
         if action == 'export-medium':

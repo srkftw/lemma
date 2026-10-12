@@ -1,0 +1,312 @@
+{
+  "schema": "lemmasim-guest-companion-pending-observations/1",
+  "status": "PASS",
+  "scope": "actual RV64 raw ink while same-ID opaque backing receipt remains pending; explicit development retry, not USB",
+  "command": "python3 scripts/check_companion_pending.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --peer-prepared build/companion/task006-peer-a7/prepared.json --work-dir build/companion/task006-guest-pending-a1 --timeout 120 --boot-seconds 40 --action-seconds 20 --deadline 900",
+  "retained_report": {
+    "path": "build/companion/task006-guest-pending-a1/result.json",
+    "sha256": "c617c13a3e85d53737ea9276562650171b76844cfc33a39a165747a4ad507a56"
+  },
+  "bounds": {
+    "control_seconds": 120,
+    "boot_virtual_seconds": 40,
+    "action_virtual_seconds": 20,
+    "campaign_host_seconds": 900,
+    "medium_bytes": 268435456,
+    "capture_bytes_max": 67108864,
+    "peer_receipts_max": 100000
+  },
+  "prepared_backend": {
+    "schema": "lemmasim-fast-prepared/1",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "profile_sha256": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688",
+    "qemu": {
+      "path": "/nix/store/xw3ai3zqxv272kjggsz4j8dm49clwdq9-lemmasim-qemu-11.1.1/bin/qemu-system-riscv64",
+      "sha256": "5800c55dd37e6245ee74b0bbd2806cea0cca68d3e0ac2d4d562f75b204fcc9dd"
+    },
+    "derivation": {
+      "path": "/nix/store/7iqlc45s53964wrljfvamkfa04k0w5sg-lemmasim-qemu-11.1.1.drv",
+      "sha256": "24a15549ac0f5ec00cf233740f4c5d9e4b21c6ac9c4ac1fff833a057f70e97f8"
+    },
+    "sources": {
+      "tooling/lemmasim/qemu.nix": "b4c69b52949600856806c56fc4858eb11ca40443e17fc9b8deaf5fbbe988e6a0",
+      "tooling/lemmasim/apply_qemu.py": "496848e8751a2ae2ce24033d66f222254a9fdb594206c40e64fdb13efa7edd2b",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+      "sim/profiles/lemma-silicon-dev-0.3.0.json": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688",
+      "tooling/lemmasim/patch_counter_clock.py": "a7f7978a25879dbeeb3d96773f236b3fd897fd342450a36864eb9241c8477a2f",
+      "sim/host/README.md": "94142e8ae9d2e7e94524fd6847e9f291f6ec158062d0f0ece1b9bfd6d215187b",
+      "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+      "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+      "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+      "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+      "sim/host/check_fast_block.py": "7a22fe0000f1672ccc0417bfb47d94a86c805e67096ec87290ac5be47b57ecff",
+      "sim/host/check_fast_checkpoint.py": "872c24dd3573d4a5911036895650aa9bb726fc93379461dbdcea6fc5905c1e8d",
+      "sim/host/check_qemu_devices.py": "a180b11d4ef9b9aac9f2b2169d031f505dbe9c384e5426e26a8ed720579ffa54",
+      "sim/host/check_qemu_medium.py": "c5ab63c7a89ae8a4db8fcc49708f446ce75f530d4cc157877bb3767aed672907",
+      "sim/host/check_qemu_replay.py": "771bf9e222c66a87b0be47d9efa1c487bfb5535708864f5f7a66f0546ad85b99",
+      "sim/host/generate_constants.py": "1d4c608e18cab21e72dd4b062e4ad0580fd20e8102676a65b7bc025d48f37608",
+      "sim/host/lemma_device_abi.h": "ca96d153bed0acac81e4db76a2645bf9cfc78293d0266bd353a06e4bb77ce655",
+      "sim/host/lemma_durable.c": "cb04554d4488ee2c9968784a9d45896178d58372012c89f03f5f7a78113c7435",
+      "sim/host/lemma_fast_block.c": "6d903da40dc472e3bdd6ce36e329a3fcf19d467678173998c461460e84a05aaa",
+      "sim/host/lemma_model.c": "8eb19f45e07949abea192d20c3b08e364c36eab9e4f257c6bb0b970dec384e56",
+      "sim/host/lemma_model.h": "51daa300f3d05caea540806cd6ade2035379d8375ebe21ed5902b87886e7e9d9",
+      "sim/host/lemma_power_abi.h": "57231e6ef940c8b597daed5fb5ccb4179a83e50d860308488e0aac4f74d963e9",
+      "sim/host/lemma_qemu.c": "82358469ea6f6a0378e983c4e923ab651c42c71a06a0daa227a993c1c3c83c33",
+      "sim/companion/backing_c.cpp": "82b9aac81281ce0cd7d1d2c9896157c85f8821c0d90ae2f6cbb26afcec0041ae",
+      "sim/companion/backing_c.h": "e415e15006a13e736e5d8cf38b8b7ea092704f93841e28be179691622224282d",
+      "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+      "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb"
+    },
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3,
+    "workloads": {
+      "notebook": {
+        "image": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/image.elf",
+          "sha256": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7"
+        },
+        "build": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/build.json",
+          "sha256": "d41833604d966986e10acdd981ac1a442f6f44f29a9906faa866ccef5db78b69"
+        },
+        "provenance": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/provenance.json",
+          "sha256": "d6c17fba8226b8a5c213c5eda1176ef3c0e32260bd0e2c0dcb5861de8519ab3e"
+        },
+        "audit": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/audit.json",
+          "sha256": "170c5a7f0b9d2d81bd8e80027846b9c6a2deb0e14518b481c6597a673da8fd20"
+        },
+        "dtb": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/platform.dtb",
+          "sha256": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da"
+        },
+        "descriptor": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/descriptor.bin",
+          "sha256": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+        },
+        "capacity": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1/workloads/notebook/guest-capacity.json",
+          "sha256": "25de1b1b101b656637f5107bfdb0a71c47801e6fe300623252cb2e89308015c4"
+        }
+      }
+    },
+    "boot": "ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB",
+    "guest_archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-canonical-a1",
+      "manifest_sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f",
+      "scope": "unchanged archived genuine guest; new backend, not fresh target compilation"
+    }
+  },
+  "peer_preparation": {
+    "schema": "lemma-companion-backing-dev/1",
+    "scope": "hosted Lean opaque backing protocol; same-owner Unix raw transport; not USB",
+    "source_commit": "e312758787d0798af27bf316fffe6f8b6dcc6dba",
+    "sources": {
+      "sim/companion/Protocol.lean": "c1e4079d9c1a4d3d83d44bd217269872dcda2d305c8b674411d5cce32735196f",
+      "sim/companion/HostIO.lean": "c74540364285c0e34cc9b63e671ba136c199381186a8a6d7b4bed10155508ae0",
+      "sim/companion/Peer.lean": "66d63db8b2c257523cf37c6ceeb4a5f87a6306cd7582f9e9f284d6b74b5ef19b",
+      "sim/companion/Client.lean": "75b0a657489b6cdcc71f43618679fcc0e68fb0e6caa36d0327d295fb61bc2b0b",
+      "sim/companion/os_io.py": "cf0bbc7e8e61db59d3e9e2666b2b719248118963a27b91bf85aa53918f9d8659",
+      "sim/companion/server.py": "6ed317fd847338f8552043ba09319041af91bd3e3f8a5527330d9550af95cc49",
+      "scripts/lemmasim_companion.py": "11558ccdc4c21f429284d578da2a1583af03a2007e167b3e3d6ed595e8e6cb16",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+    },
+    "lean_version": "Lean (version 4.34.1, Release)",
+    "lean_revision": null,
+    "hosted_lean_prefix": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1",
+    "host_tools": {
+      "lean": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863"
+      },
+      "leanc": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/leanc",
+        "sha256": "8230f2a3fc1f8e8960066d5289168178a39850d027b46cc20affb3fbfc4c5966"
+      },
+      "cc": {
+        "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/gcc",
+        "sha256": "79770329fa1c8d56f5d70222d22b04b2b74cc74254da74b16205ba8da4e7b4b5"
+      }
+    },
+    "generated_host_objects": {
+      "Protocol.c": "84b169d6a1627aec88e907c187d61ce82e0301e11a294995b2de3febad19a56b",
+      "HostIO.c": "13939dc44cde6148672adb5fdb936e0549feb564cb469c7718b07d20dec1758f",
+      "Peer.c": "75858d62c3621ce9575ad48d55dbb3cfc9300d3099eb07674f2498e0b4b6cdaf",
+      "Client.c": "675f225925a400e22e2d6ee0707a2e5f69b22bf84c4bc52a5fe2fa0dee0bed5e",
+      "Protocol.o": "3eb2b7b04c5eeaa286fe8df32650a4f3fed7ab16108a909b1b6a3b2c84ad3367",
+      "HostIO.o": "4810e1ee4444f4fdf92957366c275c9f53f22acf3743cdeb62ac4174892d369d",
+      "Peer.o": "6b12749d9969efa29a96f03aa29d0b97d8e0d279209750321c58a07f9c0fd4cf",
+      "Client.o": "e1c09cc6ed59ffb9122cad7620cb77e234f2cbd30754e1c654f818a715722685"
+    },
+    "target_objects_added": [],
+    "binaries": {
+      "companion-peer": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/companion/task006-peer-a7/companion-peer",
+        "sha256": "237857521d258f70b3e89e50ce3918dcc79a04979b7fead8de025564deb231de"
+      },
+      "companion-client": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/companion/task006-peer-a7/companion-client",
+        "sha256": "873a6588c40922b26cdfc4c3a4a8e1975679b878d5bd9ff3f40421927c01c94e"
+      }
+    },
+    "medium_bytes": 268435456,
+    "max_wire_bytes": 1048648,
+    "max_journal_bytes": 67108864,
+    "max_receipts": 100000
+  },
+  "observer_sources": {
+    "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+    "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+    "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+    "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+    "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+    "scripts/check_companion_session.py": "b1429c55b166b65993f931b368738eb04fd2cb32cb8aaba26341289982e9fb0b",
+    "scripts/check_companion_pending.py": "0c44c40839f89a7286217ffdd30020fdd373faf223c2c502b49a5f4ad81d9c8e"
+  },
+  "source_medium": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-canonical-cold-a2/medium.raw",
+    "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+  },
+  "boot": {
+    "virtual_seconds": 11.600000016,
+    "host_seconds": 21.147184768982697,
+    "cycle": 1160000002
+  },
+  "predeclared_lost_reply": {
+    "ordinal": 6,
+    "operation_shape": [
+      [
+        1,
+        512
+      ],
+      [
+        1,
+        512
+      ],
+      [
+        1,
+        512
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        1,
+        512
+      ],
+      [
+        2,
+        0
+      ]
+    ]
+  },
+  "pending_ink": {
+    "status": "PASS",
+    "host_seconds": 10.455434570030775,
+    "initial_cycle": 2305000006,
+    "final_cycle": 2350000006,
+    "raw_samples": 25,
+    "controller_contact_dark": true,
+    "guest_saved": false,
+    "writer": 17,
+    "transaction": 78,
+    "peer_bytes": 33896
+  },
+  "pending_snapshot_rejected": "public command failed: FAIL: {'class': 'GenericError', 'desc': 'pre-save failed: lemma-fast-block/3'}\n",
+  "workflow": {
+    "status": "PASS",
+    "sequence": 15,
+    "generation": 1,
+    "raw_samples": 75,
+    "strokes": 3,
+    "pages": 1,
+    "documents": [
+      1
+    ],
+    "contact_points": [
+      [
+        "a",
+        330,
+        733,
+        true
+      ],
+      [
+        "b",
+        330,
+        1100,
+        true
+      ],
+      [
+        "offline",
+        330,
+        1600,
+        true
+      ]
+    ],
+    "explicit_save": [
+      1057,
+      15,
+      1,
+      1,
+      0
+    ],
+    "committed_objects": 5
+  },
+  "cold_boot": {
+    "virtual_seconds": 16.900000164,
+    "host_seconds": 31.308616094989702,
+    "cycle": 1690000017
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "exact_acknowledged_bytes": true,
+    "complete_controller_pixels_equal": true,
+    "new_cpu": true
+  },
+  "host_seconds": 275.0243175099604,
+  "captures": {
+    "live": {
+      "path": "build/companion/task006-guest-pending-a1/live/backing-0.io",
+      "sha256": "6b5d2c9b82ca3900109b50e783ec48f377d457c29f6161a5f0eee538f62a2b27",
+      "actual_completions": 102,
+      "pending": false
+    },
+    "cold": {
+      "path": "build/companion/task006-guest-pending-a1/cold/backing-0.io",
+      "sha256": "c4f26c791e694c58b7003bd90b85d952ec3d36b449ebd1fb34b1a520fa803b05",
+      "actual_completions": 76,
+      "pending": false
+    }
+  },
+  "artifacts": {
+    "build/companion/task006-guest-pending-a1/acknowledged.ppm": "38929a7f169f995c83690cdd7e7f1e938b307de4e7a913c0ba38b6d5a40408bf",
+    "build/companion/task006-guest-pending-a1/acknowledged.raw": "d3dd357b62041d9e779c3b9bc87a985f09019c90f1e83d043e13ba8e1973e9d2",
+    "build/companion/task006-guest-pending-a1/cold.ppm": "38929a7f169f995c83690cdd7e7f1e938b307de4e7a913c0ba38b6d5a40408bf",
+    "build/companion/task006-guest-pending-a1/cold.raw": "d3dd357b62041d9e779c3b9bc87a985f09019c90f1e83d043e13ba8e1973e9d2",
+    "build/companion/task006-guest-pending-a1/commands.jsonl": "d5cf4d35ea181d6ce39a87c850041ac600851d4132b0d7621104acaa373f6241",
+    "build/companion/task006-guest-pending-a1/peer/opaque.log": "fcd9c6381504613f5ea98f14f9b6d614d398bc8f0a6df488d65a412cd3dfeab9"
+  },
+  "allocated_campaign_bytes": 56086528,
+  "sampled_live_qemu_rss_kib": 105120,
+  "rss_scope": "one observed live-process sample; not peak RSS",
+  "host_checks": {
+    "compiled_lean_peer_and_c_boundary_tests": 9,
+    "actual_posix_boundary_tests": 2,
+    "silicon_host_tests": 168,
+    "scaffold_tests": 18,
+    "metadata": "PASS"
+  },
+  "limitations": [
+    "ELF-preload development boot",
+    "Opaque host backing development adapter; no guest USB/companion controller or authentication",
+    "Pending external snapshot/fork continuation remains rejected; no exact arbitrary-boundary claim",
+    "QEMU translation/instruction visibility cache checkpoint hole remains open",
+    "Recorded timed fast outcome replay consumer unfinished",
+    "Native RTL remains synchronous for this increment",
+    "Archived genuine guest reused; no fresh target compilation claim",
+    "No RTL timing parity or complete disconnected product policy claim"
+  ],
+  "source_identity": "Scoped async source closure was uncommitted at build/run; prepared backend and peer manifests retain exact consumed hashes."
+}

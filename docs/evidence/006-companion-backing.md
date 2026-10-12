@@ -110,7 +110,11 @@ The original guest-initialized medium was only copied; ordinary raw pen input
 made50 actual samples/two strokes. Guest journal recovery and controller pixels
 passed the independent workflow observer, with explicit Saved at sequence8.
 Four real brush-root edits cycle back to the original setting, providing exact
-expected cold bytes and complete pixels. An earlier completed equal-size root
+expected cold bytes and complete pixels. The original action labels assumed
+initial256; an independent root-byte observation establishes initial512 and
+actual settings1024/2048/256/512. Future labels are neutral; the original report
+is retained and its exact four-cycle byte/pixel checks remain valid.
+An earlier completed equal-size root
 edit predeclared response ordinal6: its final Barrier. On the fourth edit the
 peer synced that transaction78, its actual response was lost and the peer exited.
 The guest emitted no Saved after the loss. The live capture retained80 complete
@@ -154,3 +158,43 @@ This usable development backing path still pauses the whole synchronous machine
 on unknown persistence. Offline ink while external work remains pending,
 fork-safe pending continuation, guest companion driver/controller, USB,
 authentication and complete companion storage remain unfinished.
+
+
+## Asynchronous pending ink and reconciliation
+
+The connected fast development path now consumes the shared submit/poll boundary.
+The hosted Lean client retains its durable outbox and receipt policy while the
+raw adapter polls without blocking virtual CPU, pen or panel execution.
+`006-companion-pending.json` records the actual PASS from
+`build/companion/task006-guest-pending-a1/result.json`: a preselected final
+barrier reply was lost after peer persistence; writer17/transaction78 remained
+Pending without poison or Saved. During that disconnect the real guest consumed
+25 more raw samples and produced controller ink, advancing cycle coordinates
+2305000006→2350000006. Explicit same-ID reconciliation after peer restart retained
+one receipt, then the guest acknowledged sequence15 with all75 exact samples
+and3 strokes. An independent cold CPU recovered the exact acknowledged object
+bytes and complete1650×2200 controller display. No host document recovery entered
+the machine.
+
+The campaign used the declared120s control,40s boot,20s action and900s host
+bounds, completing in275.024s. Initial cold Ready took11.600000016 virtual seconds
+/21.147 host seconds; recovered Ready took16.900000164 virtual seconds/31.309 host
+seconds. These are QEMU execution coordinates, not RTL timing. The receipt keeps
+allocated disk bytes and a sampled105120KiB live QEMU RSS observation distinct
+from a peak-memory measurement. Timed capture records both immutable submissions
+and actual completion acceptance; snapshots of unresolved external work reject
+without a hidden retry/barrier. Reset orphan and Power-v1 busy handling are
+implemented but have no new guest-issued reset/watchdog acceptance in this run.
+
+The actual backend SHA256 is
+`5800c55dd37e6245ee74b0bbd2806cea0cca68d3e0ac2d4d562f75b204fcc9dd`.
+`build --guest-bundle` fully revalidates the immutable archived compiler, audit
+and workload closure at preparation and launch while binding current backend
+sources/output. The unchanged genuinely elaborated guest remains
+`b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7`; this is
+new backend execution, not fresh target compilation. Nine compiled hosted-Lean
+peer/C-boundary tests, two actual POSIX error tests,168 silicon host tests,18
+scaffold tests and metadata checks passed separately. Native RTL execution is
+still synchronous in this increment. The USB/controller/guest-driver, complete
+disconnected product policy, pending private fork continuation, fast timed-outcome
+replay consumer and QEMU cached-state continuation obligations remain open.

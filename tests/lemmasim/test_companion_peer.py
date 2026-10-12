@@ -71,6 +71,10 @@ class CompanionPeerTests(unittest.TestCase):
         module.validate(path)
         cls.adapter=Path(cls.build_temp.name)/'adapter'
         subprocess.run(['g++','-O2','-std=c++17','-Wall','-Wextra','-Werror',str(ROOT/'tests/lemmasim/companion_adapter.cpp'),str(ROOT/'sim/companion/backing_peer.cpp'),str(ROOT/'sim/host/backing_io.cpp'),'-o',str(cls.adapter)],check=True,timeout=90)
+        cls.async_adapter=Path(cls.build_temp.name)/'async-adapter'
+        subprocess.run(['g++','-O2','-std=c++17','-Wall','-Wextra','-Werror',str(ROOT/'tests/lemmasim/companion_async_adapter.cpp'),
+                        str(ROOT/'sim/companion/backing_peer.cpp'),str(ROOT/'sim/companion/backing_c.cpp'),
+                        str(ROOT/'sim/host/backing_io.cpp'),str(ROOT/'sim/host/backing_io_posix.cpp'),'-o',str(cls.async_adapter)],check=True,timeout=90)
     @classmethod
     def tearDownClass(cls):cls.build_temp.cleanup()
     def setUp(self):
@@ -95,8 +99,8 @@ class CompanionPeerTests(unittest.TestCase):
         process=subprocess.Popen(['python3',str(ROOT/'sim/companion/server.py'),'--binary',self.peer,'--directory',str(self.directory),'--base',str(self.base),'--writer','17','--helper',str(helper),'--socket',str(self.socket),'--drop-reply',str(drop),'--exit-after-reply',str(exit_after)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,bufsize=0)
         self.processes.append(process)
         self.assertTrue(line(process).startswith('RAW_PEER_READY '));return process
-    def client_process(self):
-        process=subprocess.Popen([self.client,str(self.socket),str(Path(self.temp.name)/'client'),'17',str(HELPER)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,bufsize=0)
+    def client_process(self,pending=False):
+        process=subprocess.Popen([self.client,str(self.socket),str(Path(self.temp.name)/'client'),'17',str(HELPER)]+(['--pending'] if pending else []),stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,bufsize=0)
         self.processes.append(process)
         self.assertTrue(line(process).startswith('READY 268435456 17 '));return process
     def client_request(self,client,kind,offset=0,length=0,payload=b''):
@@ -147,6 +151,20 @@ class CompanionPeerTests(unittest.TestCase):
         fields,raw=self.exchange(peer,frame(0,offset=offset,length=len(data)))
         self.assertEqual((fields[7],raw),(0,data))
         self.assertEqual(self.journal.stat().st_size,8)
+    def test_pending_client_same_frame_retry_without_client_restart(self):
+        server=self.server(drop=2,exit_after=2);client=self.client_process(pending=True)
+        data=b'\x9a'*512
+        self.assertEqual(self.client_request(client,1,0,512,data),'PENDING')
+        self.assertIsNone(client.poll());server.wait(timeout=4)
+        self.assertEqual(self.journal.stat().st_size,600)
+        outbox=Path(self.temp.name)/'client/outbox';before=outbox.read_bytes()
+        self.server();client.stdin.write(b'RETRY\n');client.stdin.flush()
+        receipt=line(client).split(' ')
+        self.assertEqual((receipt[:2],bytes.fromhex(receipt[2])),(['512','0'],data))
+        self.assertEqual(self.journal.stat().st_size,600)
+        self.assertNotEqual(outbox.read_bytes(),before)
+        self.assertEqual(struct.unpack_from('<2Q',outbox.read_bytes(),16),(2,0))
+        self.assertEqual(self.client_request(client,2),'0 0 -');self.assertEqual(self.journal.stat().st_size,680)
     def test_actual_fsync_failure_preserves_observed_bytes(self):
         helper=Path(self.temp.name)/'closed_fd.py'
         helper.write_text('import os,sys,subprocess\nif sys.argv[1]=="sync":\n fd=os.open(sys.argv[2],os.O_RDONLY);os.close(fd);os.fsync(fd)\nelse:\n raise SystemExit(subprocess.call([sys.executable,'+repr(str(HELPER))+']+sys.argv[1:]))\n')
@@ -181,5 +199,23 @@ class CompanionPeerTests(unittest.TestCase):
         result=subprocess.run([str(self.adapter),self.client,str(self.socket),str(Path(self.temp.name)/'adapter-client'),'17',str(HELPER)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,timeout=20)
         self.assertEqual(result.returncode,0,result.stderr);self.assertIn('PASS',result.stdout)
         self.assertEqual(self.journal.stat().st_size,680)
+    def test_async_c_boundary_pending_and_selected_completion_capture(self):
+        server=self.server(drop=2,exit_after=2);capture=Path(self.temp.name)/'actual.io'
+        process=subprocess.Popen([str(self.async_adapter),self.client,str(self.socket),str(Path(self.temp.name)/'async-client'),'17',str(HELPER),str(capture)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,bufsize=8192)
+        self.processes.append(process)
+        self.assertEqual(line(process),'PENDING_NO_SUCCESS');server.wait(timeout=4)
+        self.assertEqual(self.journal.stat().st_size,600)
+        self.server();process.stdin.write(b'retry\n');process.stdin.flush()
+        self.assertTrue(line(process).startswith('PASS same-ID'))
+        self.assertEqual(process.wait(timeout=4),0);self.assertEqual(self.journal.stat().st_size,680)
+        wire=capture.read_bytes();self.assertEqual(wire[:8],b'LMIOLOG2');position=72;rows=[]
+        while position<len(wire):
+            tag,n=struct.unpack_from('<2Q',wire,position);position+=16;raw=wire[position:position+n];position+=n
+            self.assertEqual(struct.unpack_from('<Q',raw,n-8)[0],crc64(raw[:-8]))
+            if tag==1:
+                self.assertEqual(struct.unpack_from('<Q',raw,n-24)[0],crc64(raw[:-24]))
+                fields=struct.unpack_from('<7Q',raw);completed=struct.unpack_from('<Q',raw,n-16)[0]
+                rows.append((fields[0],fields[1],completed,fields[2],fields[5],fields[6]))
+        self.assertEqual(rows,[(1,17,41,1,512,0),(2,50,51,2,0,0)])
 
 if __name__=='__main__':unittest.main()

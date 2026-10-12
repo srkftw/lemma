@@ -91,33 +91,42 @@ def rawRequest (c : Client) (line : String) : Except String Frame := do
   if kind > 2 then throw "request kind"
   decode (encode f)
 
-def clientExchange (c : Client) (f : Frame) : IO (Client × Option Frame) := do
+def acceptReceipt (c : Client) (request reply : Frame) : IO Client := do
+  if request.kind != 0 && reply.error = 0 then
+    if c.next = 0xffffffffffffffff then throw (IO.userError "writer sequence exhausted")
+    let c := {c with next := c.next+1,pending := none}
+    storeOutbox c
+    return c
+  return c
+
+/-- The third result records the exact frame actually submitted. `none` means
+the request is still blocked on an older outbox, so its reply cannot be reused
+as the new request's completion. -/
+def clientExchange (c : Client) (f : Frame) : IO (Client × Option Frame × Option Frame) := do
   -- Reads, including snapshot/export passive reads, never reconcile an outbox
   -- or execute a hidden durability barrier. Only explicit mutating requests and
   -- an explicit restarted client may advance a pending transaction.
-  if f.kind = 0 then return (c,← sendFrame c f)
+  if f.kind = 0 then return (c,← sendFrame c f,some f)
   let (c,ready) ← reconcile c
-  if !ready then return (c,none)
+  if !ready then return (c,none,none)
   let f := {f with sequence := c.next}
   let c := {c with pending := some f}
   storeOutbox c
   let reply ← sendFrame c f
   if let some reply := reply then
     if reply.error = 0 then
-      if c.next = 0xffffffffffffffff then throw (IO.userError "writer sequence exhausted")
-      let c := {c with next := c.next+1,pending := none}
-      storeOutbox c
-      return (c,some reply)
+      return (← acceptReceipt c f reply,some reply,some f)
     -- Error receipts preserve observed byte prefixes. Retaining the outbox
     -- allows a later same-ID retry to establish durability without duplication.
-    return (c,some reply)
-  return (c,none)
+    return (c,some reply,some f)
+  return (c,none,some f)
 
 end LemmaSim.Companion
 open LemmaSim.Companion
 
 def main (args : List String) : IO UInt32 := do
-  let [socket,directory,writerText,helper] := args | throw (IO.userError "Client SOCKET DIR WRITER OS_HELPER")
+  let asynchronous := args.length = 5 && args[4]? = some "--pending"
+  let [socket,directory,writerText,helper] := if asynchronous then args.take 4 else args | throw (IO.userError "Client SOCKET DIR WRITER OS_HELPER [--pending]")
   let some writer := writerText.toNat? | throw (IO.userError "invalid writer")
   if writer = 0 || writer > 18446744073709551615 then throw (IO.userError "writer bound")
   let directory := System.FilePath.mk directory
@@ -141,15 +150,27 @@ def main (args : List String) : IO UInt32 := do
     let frame ← match rawRequest client line.trimAscii.toString with
       | .ok f => pure f
       | .error e => throw (IO.userError e)
-    let (next,reply) ← clientExchange client frame
+    let (next,reply,submitted) ← clientExchange client frame
     client := next
-    if let some reply := reply then
-      output.putStrLn s!"{reply.length} {reply.error} {if reply.payload.isEmpty then "-" else hex reply.payload}"
-      output.flush
-    else
+    let mut reply := reply
+    let mut submitted := submitted
+    let mut retries := 0
+    while reply.isNone do
       output.putStrLn "PENDING"
       output.flush
-      -- Unknown remote persistence cannot be represented as a fabricated prefix.
-      -- Stop this raw adapter; the durable outbox remains for explicit restart.
-      return 2
+      -- The historical synchronous adapter exits; the optional pending adapter
+      -- waits for an explicit bounded same-frame retry, never a fabricated ACK.
+      if !asynchronous then return 2
+      let command ← input.getLine
+      if command.trimAscii.toString != "RETRY" || retries >= 16 then return 2
+      retries := retries+1
+      if let some actual := submitted then
+        reply ← sendFrame client actual
+        if let some receipt := reply then client ← acceptReceipt client actual receipt
+      else
+        let (next,received,actual) ← clientExchange client frame
+        client := next;reply := received;submitted := actual
+    if let some receipt := reply then
+      output.putStrLn s!"{receipt.length} {receipt.error} {if receipt.payload.isEmpty then "-" else hex receipt.payload}"
+      output.flush
   return 0
