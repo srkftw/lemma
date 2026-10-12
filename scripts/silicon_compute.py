@@ -70,7 +70,7 @@ def source_manifest(dep, profile_name=None):
             'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'scripts/silicon_profile.py',POWER_PROFILE)},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
-            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*')])},
+            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*')])},
             'configuration_includes':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((dep/'config/shared').glob('*.vh'))}}
 
 def snapshot_inputs(manifest, dep):
@@ -121,7 +121,7 @@ def main():
           '-MAKEFLAGS',manifest['build_options']['make_flags'],
           '-CFLAGS',manifest['build_options']['host_cflags']+' -I'+str(identity_dir)+' -I'+manifest['host_include_dir']]
     if a.register_ram: args+=['-GREGISTER_RAM=1']
-    args += ['-I'+d for d in manifest['include_dirs']]+manifest['sources']+[str(ROOT/'sim/rtl/host/main.cpp'),str(ROOT/'sim/rtl/host/machine_runtime.cpp'),str(ROOT/'sim/host/backing_io.cpp'),str(ROOT/'sim/host/backing_io_posix.cpp')]
+    args += ['-I'+d for d in manifest['include_dirs']]+manifest['sources']+[str(ROOT/'sim/rtl/host/main.cpp'),str(ROOT/'sim/rtl/host/machine_runtime.cpp'),str(ROOT/'sim/host/backing_io.cpp'),str(ROOT/'sim/host/backing_io_posix.cpp'),str(ROOT/'sim/companion/backing_peer.cpp')]
     args=['nix-shell',str(SIM_SHELL),'--run',shlex.join(args)]
     manifest['build_argv']=args
     manifest['build_jobs']=a.jobs

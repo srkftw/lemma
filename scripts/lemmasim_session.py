@@ -190,9 +190,19 @@ class RTL:
             command += ['--memory-latency', str(args.memory_latency)]
         if args.fail_flush:
             command += ['--fail-flush', str(args.fail_flush)]
+        companion = getattr(args, 'companion', None)
+        if companion is not None:
+            import lemmasim_companion
+            peer = lemmasim_companion.peer_info(companion)
+            prepared = lemmasim_companion.validate(args.companion_prepared)
+            command += ['--companion-client', prepared['binaries']['companion-client']['path'],
+                        '--companion-socket', str(args.companion_socket.resolve()),
+                        '--companion-state', str(args.companion_state.resolve()),
+                        '--companion-writer', str(peer['writer']),
+                        '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and args.workload != 'power':
-                raise ValueError('This workload requires an existing --disk')
+            if args.disk is None and companion is None and args.workload != 'power':
+                raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
                 command += ['--medium', str(args.disk.resolve())]
