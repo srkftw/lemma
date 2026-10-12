@@ -1,0 +1,316 @@
+{
+  "implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
+  "merged_baseline": "abd9920d54df04ce52da9386170e99012c39bdfb",
+  "baseline_tree": "7c30f469592f2c2a1bef6aab11f31d30a8a3ee28",
+  "scope": "compact inventory of actual local artifacts; original execution/source identities and failures remain distinct; not a completion certificate",
+  "artifacts": [
+    {
+      "path": "build/l6-native3/result.json",
+      "bytes": 36671,
+      "sha256": "4dda019d9871f0cd0cfc856e7f320adf7af366ff8bde10c11fe294a457258768",
+      "status": "PASS",
+      "scope": "real native selected-profile subset; total digital machine and physical closure remain unfinished"
+    },
+    {
+      "path": "build/l6-upgrade1/result.json",
+      "bytes": 4962,
+      "sha256": "a1cea72292ef51c4ebfb9d667960907a0dbbb9ab537a21d2b28564fab9dbbe0b",
+      "status": "PASS",
+      "scope": "New source9366387 cold guest reopens source3101 actual acknowledged byte medium; no old snapshot or target changes"
+    },
+    {
+      "path": "build/silicon/task006-native-product-performance.json",
+      "bytes": 4464,
+      "sha256": "bab9ecf5c509fd6eb37f773cad573fff462c0169a29dcb8d21707a8e3e202a8a",
+      "status": "PASS",
+      "scope": "Observed same canonical1650x2200 editing envelope; shared host, no realtime claim and no attribution of all host change to one optimization"
+    },
+    {
+      "path": "build/task006-native-view3-result.json",
+      "bytes": 1812,
+      "sha256": "c8633602142b0a174c8db256799f2f5ace4242f6ebd2cc668b577e7ef0d09af6",
+      "status": "PASS",
+      "scope": "real Tk/Xvfb widget/render/input check, no manual or physical tablet claim"
+    },
+    {
+      "path": "build/rtl-atomic1/result.json",
+      "bytes": 15052,
+      "sha256": "7b0a73fe413801f382b95035dc3b70e1ebf45d9c66fcd11509cf6c4d3e85f52a",
+      "status": "PASS",
+      "scope": "real paused RTL guest boundary; stale sidecar rejection before live state replacement; not cold notebook readiness"
+    },
+    {
+      "path": "build/lemmasim/fast-lifecycle-clock-a3/result.json",
+      "bytes": 26674,
+      "sha256": "3f031fed9f87b8aeefa27a86d7bb91827e310b659ad91534975f1a2e06412f8e",
+      "status": "PASS",
+      "scope": "genuine Lean notebook image executing a bounded boot prefix; no notebook readiness claim"
+    },
+    {
+      "path": "build/lemmasim/fast-lifecycle-clock-a3/state-equivalence.json",
+      "bytes": 2206,
+      "sha256": "4d8a97e731e96ae7f65ac5a5521ac1950c3cf326c4904e592f1ed74f246658f9",
+      "status": "PASS"
+    },
+    {
+      "path": "build/lemmasim/fast-full-checkpoint-a4/result.json",
+      "bytes": 20068,
+      "sha256": "a09d716d953d721e5810ac43c32f23bd154199ea29447c4b54e7f85566a03517",
+      "status": "PASS",
+      "scope": "real TCG Lean guest; same-backend exact continuation only"
+    },
+    {
+      "path": "build/lemmasim/fast-full-block-a4/result.json",
+      "bytes": 43657,
+      "sha256": "78509746e6e2eaaab436b08dc2cb28166149913b7860193952643141e4ae21a2",
+      "status": "PASS",
+      "scope": "literal timer-driven DMA/media only; qtest executes no guest"
+    },
+    {
+      "path": "build/lemmasim/task006-legacy-devices-a3/result.json",
+      "bytes": 15490,
+      "sha256": "575f4b9633a89cb4108d18217ca3401eb4398b056d8c41624960a1b8d114b014",
+      "status": "PASS",
+      "scope": "actual QEMU device/PLIC boundary and synthetic pointer ingress observations only; no guest notebook/manual GUI claim"
+    },
+    {
+      "path": "build/lemmasim/task006-legacy-medium-a2/result.json",
+      "bytes": 760,
+      "sha256": "3217dbff2be9043d1c6c67a738d7da55001934a659b68229c60c21bc114dec63",
+      "status": "PASS",
+      "scope": "actual device-only medium/VirtIO observations; no guest journal/notebook claim"
+    },
+    {
+      "path": "build/silicon/task006-runtime-final-summary.json",
+      "bytes": 5251,
+      "sha256": "cf7c7a5f7ad047b40c58ec5e3172ba9dadc5223082cd9ba0715e602795be9cfd",
+      "scope": "implemented reusable RTL-backed digital subset; total Lemma One remains incomplete"
+    },
+    {
+      "path": "build/silicon/task006-runtime-final-v4e-01/build.json",
+      "bytes": 72542,
+      "sha256": "7ddfe8c982124dc2e05db2468cbf5bc13a5ef95974c7c91d87b6c7d7bf468d7b",
+      "snapshot_identity": "e5778f95739c5768c6be209d010e66a45cf12eeae6fa2666796b379312ad05c5"
+    },
+    {
+      "path": "build/silicon/task006-runtime-final-v4e-02/build.json",
+      "bytes": 72642,
+      "sha256": "17fac7edf6eea10829c48b53d0023f7f272908a61011d8f1c927bcbe9c3ee25a",
+      "snapshot_identity": "d8e6c736df3bf6b0de9ea887be2cf79dc8f3483255e6145852092357e4fa46f1"
+    },
+    {
+      "path": "build/silicon/task006-runtime-final-v4e-acceptance01/result.json",
+      "bytes": 41656,
+      "sha256": "8660da3a4d03d67b7a7f9658ae2548782420b2f27cbc8d94a5cab5ab16f44239",
+      "status": "PASS",
+      "scope": "same-backend exact current digital subset; no cross-backend or cold-recovery claim",
+      "implementation_identity": "e5778f95739c5768c6be209d010e66a45cf12eeae6fa2666796b379312ad05c5"
+    },
+    {
+      "path": "build/silicon/task006-runtime-final-v4e-acceptance02/result.json",
+      "bytes": 19881,
+      "sha256": "9dca2638b9712d155dde2ba2a8f34d6f215ebc05b98cacb5b3c24c95bb57036e",
+      "status": "PASS",
+      "scope": "same-backend exact current digital subset; no cross-backend or cold-recovery claim",
+      "implementation_identity": "d8e6c736df3bf6b0de9ea887be2cf79dc8f3483255e6145852092357e4fa46f1"
+    },
+    {
+      "path": "build/silicon/task006-runtime-input-bounds05/result.json",
+      "bytes": 21831,
+      "sha256": "7874fa3c67b3b7ccd1ffc9b0ed1717aceccbbdc05576422c368f6c72cef68258",
+      "status": "PASS",
+      "scope": "paused RTL external event admission; no guest workload verdict"
+    },
+    {
+      "path": "build/silicon/task006-runtime-input-bounds06/result.json",
+      "bytes": 21834,
+      "sha256": "bbc11f7dff6ed8cd453bc8ef692bad7c057d2bb2291d7db5cd122631cbe7ce9d",
+      "status": "PASS",
+      "scope": "paused RTL external event admission; no guest workload verdict"
+    },
+    {
+      "path": "build/silicon/task006-runtime-performance-final/result.json",
+      "bytes": 21663,
+      "sha256": "2b84489aab9bdba750d1bff5ebae0e8a6dd848d50c0898b24154f28f62d18727",
+      "status": "PASS",
+      "scope": "bounded monitor workload; host-paced RTL, no realtime claim"
+    },
+    {
+      "path": "build/silicon/devices-task006-panel-sequencer/result.json",
+      "bytes": 16075,
+      "sha256": "3ade71ad45e101c5b2a784393cc5cefd690a9bf16863bcf75861acfac790ed6b",
+      "status": "PASS",
+      "scope": "literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability",
+      "source_commit": "abd9920d54df04ce52da9386170e99012c39bdfb"
+    },
+    {
+      "path": "build/kernel/task006-full-initialize-a8/build.json",
+      "bytes": 7238,
+      "sha256": "6aa539157afae8373f00da31efb482b9ad35ee0b05a678189204da8afdcec96f",
+      "status": "BUILT"
+    },
+    {
+      "path": "build/kernel/task006-full-initialize-a8/audit.json",
+      "bytes": 2416344,
+      "sha256": "1ace76af1467374fc80da9383cb9f08c6fbfb71f4087f29db1ea3b40a2e21e57",
+      "status": "PASS",
+      "source_commit": "93663878f46542dcaea77cd1b4b46f1153d1a3b8"
+    },
+    {
+      "path": "build/kernel/task006-full-notebook-a7/build.json",
+      "bytes": 7236,
+      "sha256": "f3e14b319bc422ee2cd5ac43db6ce0fbc733a4e386f1305c6c34a64ef3d3ae8e",
+      "status": "BUILT"
+    },
+    {
+      "path": "build/kernel/task006-full-notebook-a7/audit.json",
+      "bytes": 2416267,
+      "sha256": "fe6778bec1681aa59aea51cf787833bbac39c8b1fbc250b775969b78c171a786",
+      "status": "PASS",
+      "source_commit": "93663878f46542dcaea77cd1b4b46f1153d1a3b8"
+    },
+    {
+      "path": "build/lemmasim/fast-prepared-0.2.0.json",
+      "bytes": 5243,
+      "sha256": "52a9596b73de5361bbe75f43da1c8f24a41068ea8636a2fb3488f195eff4464d"
+    },
+    {
+      "path": "build/lemmasim/rtl-prepared-0.2.0.json",
+      "bytes": 39185,
+      "sha256": "2f817d63937758a76e89ae9cf1d6cf5d018c719d25ed2b00df1c980c511dc640"
+    },
+    {
+      "path": "build/task006-consolidated-final/result.json",
+      "bytes": 2512,
+      "sha256": "04da87e6abaedb17d4cf93e34fe8e901488c55150d270235e6b8c9a6e970808b",
+      "status": "PASS"
+    },
+    {
+      "path": "build/task006-final-silicon-recovery.log",
+      "bytes": 25000,
+      "sha256": "e9a1ae85797757a0860c3b5afb3ca465d5014c1cd6664e706ec4ea48718f2d4a"
+    },
+    {
+      "path": "build/task006-release-lean/result.json",
+      "bytes": 1146,
+      "sha256": "737b45db41043c28e703cd6566fbd1b4ae630a1dbc51cf6e54de0f6008f8b8fc",
+      "status": "PASS",
+      "source_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab"
+    },
+    {
+      "path": "build/core0/task006-release-legacy/check-results.json",
+      "bytes": 58864,
+      "sha256": "bfde081b34aba83761937f169b212d9649a898408b4e5ce378e24631ed7f0e65",
+      "status": "pass",
+      "scope": "Task 001 scalar Core0 freestanding slice; not all of G1"
+    },
+    {
+      "path": "build/task006-release-scaffold.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/silicon/task006-frames-observations.json",
+      "bytes": 3110,
+      "sha256": "8ed9738cc1392e70588b818751734a4bbbd9efd6023bc96c74d254a5b2c860db",
+      "status": "PASS",
+      "scope": "genuine Lean allocator Action interpretation against independent finite host RAM; no CPU throughput/boot claim"
+    },
+    {
+      "path": "build/silicon/task006-surface-observations.json",
+      "bytes": 2031,
+      "sha256": "37ac5d696ee6a7a3288d6fe1fbf2437ad33c84be68bae49dce48162c031c0656",
+      "status": "PASS",
+      "scope": "genuine Lean hostAction transfer counts and independent tile/neighbor bytes; not CPU throughput or freestanding acceptance"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-separate-banks-map/result.json",
+      "bytes": 5806,
+      "sha256": "55bee387766e60f4826e9a30f361e779d609f8868fb00d7f230b17c3fb0d2aee",
+      "status": "PASS",
+      "scope": "RTL slice only; no external memory/media/panel model synthesized",
+      "source_commit": "abd9920d54df04ce52da9386170e99012c39bdfb"
+    },
+    {
+      "path": "build/silicon/physical/task006-journal-source-bound/result.json",
+      "bytes": 2697,
+      "sha256": "eb38ca258010e55966d7e8b0b00f410ae1dfa2e1de874827c009f7df54d56a47",
+      "status": "PASS",
+      "scope": "34-cell tool-control-flow reproducer; no controller timing or physical closure"
+    },
+    {
+      "path": "build/silicon/physical/pen-task006-banked-wns-path-layout/result.json",
+      "bytes": 8322,
+      "sha256": "6a05ef84130ec42372529fb854fd6492840fe99c590164b686db137ff89468a1",
+      "status": "FAIL",
+      "scope": "RTL slice only; no external memory/media/panel model synthesized",
+      "source_commit": "abd9920d54df04ce52da9386170e99012c39bdfb"
+    },
+    {
+      "path": "build/silicon/physical/task006-controller-inventory/inventory.json",
+      "bytes": 3001,
+      "sha256": "101c2cdf13ac9b1d242f1e414043853eb08519232a15907f0183491499bef081"
+    },
+    {
+      "path": "build/silicon/f8/result.json",
+      "bytes": 10530,
+      "sha256": "de0953cbe0fc7040009e4e3b0345f411f364cb48d8fe71c72352ff7338c2b03b",
+      "status": "FAIL",
+      "scope": "real compiled Lean canonical1650x2200 RTL initializer/privatefile/coldnotebook; synthetic pen inputs only",
+      "source_commit": "3101cc6123efe2aa039ca604f86961ce387e5234"
+    },
+    {
+      "path": "build/silicon/f7/result.json",
+      "bytes": 4037,
+      "sha256": "9d293796339737c2e9ccf4e5921d2e47b9a22f93cd365cc8a3683e78b51cfed9",
+      "status": "FAIL",
+      "scope": "real compiled Lean canonical1650x2200 RTL initializer/privatefile/coldnotebook; synthetic pen inputs only",
+      "source_commit": "3101cc6123efe2aa039ca604f86961ce387e5234"
+    },
+    {
+      "path": "build/silicon/f5/initializer.json",
+      "bytes": 64362,
+      "sha256": "786f3e880c9300c5a7707625fec8eb32a74b1ac22aa8e9eba1be2ab42990e790",
+      "status": "FAIL",
+      "source_commit": "4d18b9343f3684e690e5dca827b62d423ec1361b"
+    },
+    {
+      "path": "build/l6-native1/result.json",
+      "bytes": 18768,
+      "sha256": "9dbc73cebf35ffb06494f8df0cfca2eca7e997695283c7526fb7730732751a0e",
+      "status": "FAIL",
+      "scope": "real native selected-profile subset; total digital machine and physical closure remain unfinished"
+    },
+    {
+      "path": "build/l6-cold1/result.json",
+      "bytes": 6082,
+      "sha256": "49d4e2f4bb1682f076aaee4fa362722c9ebd2e7c26eb29d1e9f17117413b7ea1",
+      "status": "FAIL",
+      "scope": "real native selected-profile subset; total digital machine and physical closure remain unfinished"
+    },
+    {
+      "path": "build/l6-native2/result.json",
+      "bytes": 5329,
+      "sha256": "719571cf6a6142a479aeeb6f893640888bde82d0b6f8a52d0f08c1484fb32bbb",
+      "status": "FAIL",
+      "scope": "real native selected-profile subset; total digital machine and physical closure remain unfinished"
+    },
+    {
+      "path": "build/lemmasim/fast-clock-warm-probe-a1/result.json",
+      "bytes": 2249,
+      "sha256": "84611c73ad4dfa7e1cd11a299827701f9b074cad1de3853bfdf9ff42b8c702b8",
+      "status": "OBSERVED"
+    },
+    {
+      "path": "build/l6-native1-state-equivalence-a1/archive-timer-decoder.json",
+      "bytes": 1224,
+      "sha256": "a339c57a7dee291af0b34b4bd9c0dfb4cda447a37acc3923fddca202a9f3f195"
+    },
+    {
+      "path": "build/l6-native1-state-equivalence-a2/result.json",
+      "bytes": 2946,
+      "sha256": "3ac67223ce2de1147c4e03e19c1e87854b734f6cf656c5f4e53d3a8f3b4a3cef",
+      "status": "PASS"
+    }
+  ]
+}

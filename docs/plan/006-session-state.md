@@ -24,6 +24,11 @@ The final reusable runtime and native session implementation use the contracts
 [machine sessions](../contracts/006-machine-session.md),
 [RTL checkpoint format](../contracts/006-rtl-runtime-v1.md), and
 [synthetic panel program](../contracts/006-synthetic-panel-v1.md).
+Their committed source is `9946e7ef75486f328d4e71e1ea34e9412a3bd0ab`;
+the report-bearing head is separate. Actual execution identities, limits and
+artifact hashes are in [the final evidence](../evidence/006-whole-machine-lemmasim.md)
+and its compact inventory. Local relevant host union1075 and final committed
+Core0 target acceptance pass; candidate CI must be observed separately.
 
 - One persistent command surface owns QEMU or RTL execution, bounded input,
   virtual-time run/pause/inspect, snapshot/restore, replay, warm/cold reset,
