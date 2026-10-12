@@ -281,6 +281,25 @@ private def deviceJson (lowered : LoweredActionSuite) (operation : Device.Op) : 
     ("volatile", .bool true), ("fence_before", .bool spec.fenceBefore),
     ("fence_after", .bool spec.fenceAfter), ("sites", .arr (deviceSites lowered operation))]
 
+private def closedInlineFor (configuration : String) : Bool :=
+  #["lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize",
+    "lemmasim-silicon-power-arithmetic-oom-development",
+    "lemmasim-silicon-power-arithmetic-fault-development",
+    "lemmasim-silicon-power-arithmetic-stall-development"].contains configuration
+
+private def closedInlineFields (configuration : String) (lowered : LoweredActionSuite) :
+    List (String × Json) :=
+  if !closedInlineFor configuration then [] else
+  [("checked_inline", Json.mkObj [
+    ("literal_contract", .str "lemma-closed-literals-v1"),
+    ("wrapper_contract", .str "lemma-checked-primitive-wrapper-v1"),
+    ("literals", .arr (lowered.inlineLiterals.map fun row => Json.mkObj [
+      ("source", .str row.source.toString), ("symbol", .str row.symbol),
+      ("type", .str row.ty.render), ("value", toJson row.value)])),
+    ("wrappers", .arr (lowered.inlineWrappers.map fun row => Json.mkObj [
+      ("source", .str row.source.toString), ("symbol", .str row.symbol),
+      ("operation", .str row.operation.stableId)]))])]
+
 private def unitManifest (configuration role : String) (suite : CheckedActionSuite)
     (lowered : LoweredActionSuite) (image? : Option UserImageSpec := none) : Except String Json := do
   let mut roots := #[]
@@ -308,7 +327,7 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration)
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ closedInlineFields configuration lowered)
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
@@ -394,7 +413,9 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
-    preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_") }
+    preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
+    inlineLiteralConstants := closedInlineFor configuration,
+    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" }
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then

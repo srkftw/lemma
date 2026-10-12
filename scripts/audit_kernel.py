@@ -2923,7 +2923,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             "used_execution_ops", "used_device_ops", "used_loops"}
     case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed), "unit")
+    from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
@@ -2978,6 +2979,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         effects = _array(row.get("effects"), "function effects")
         if any(not isinstance(effect, str) for effect in effects) or len(effects) != len(set(effects)) or not set(effects) <= ROLE_EFFECTS[role]:
             raise Core0Error("function effect catalog escapes role authority")
+    inline_catalog(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -4408,6 +4410,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             raise Core0Error("LLVM execution primitive calling convention differs")
     if "core0_io_fence" in declarations and not _primitive_declaration_matches(ir, "declare void @core0_io_fence()"):
         raise Core0Error("LLVM IO fence calling convention differs")
+    from closed_inline import validate as validate_closed_inline
+    inline_report = validate_closed_inline(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4464,6 +4468,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     return {"definitions": sorted(definitions), "calls": sorted(calls), "declarations": sorted(declarations),
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
+            "checked_inline": inline_report,
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 

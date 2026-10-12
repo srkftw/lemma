@@ -434,10 +434,59 @@ structure LoweredActionRoot where
   signature : Lemma.Core0.ActionSignature
   deriving Repr, BEq
 
+/-- A literal catalog describes the checked source body, not an optimizer guess. -/
+structure ClosedLiteral where
+  source : Lean.Name
+  symbol : String
+  ty : Lemma.Core0.Ty
+  value : Nat
+  deriving Repr, BEq
+
+/-- No foreign implementation is introduced: the complete existing checked
+physical-memory lowering remains in this function before selective inlining. -/
+structure CheckedPrimitiveWrapper where
+  source : Lean.Name
+  symbol : String
+  operation : Lemma.Core0.Execution.Op
+  effects : Lemma.Core0.EffectSet
+  deriving Repr, BEq
+
+private def closedLiteral? (function : Lemma.Core0.Function) :
+    Option (Lemma.Core0.Ty × Nat) :=
+  if !function.params.isEmpty || !function.signature.args.isEmpty ||
+      !function.dependencies.isEmpty then none else
+  match function.body with
+  | .lit ty value =>
+      if ty != .bool && ty == function.signature.result then some (ty, value % (2 ^ ty.width)) else none
+  | _ => none
+
+private def checkedPrimitiveWrapper? (function : Lemma.Core0.ActionFunction) :
+    Option Lemma.Core0.Execution.Op := do
+  let .platform operation arguments status value (.done returnedStatus returnedValue) := function.body
+    | none
+  unless operation.isPhysical && operation.widthBytes?.isSome && arguments.size == 6 &&
+      function.params.size == operation.argumentCount &&
+      function.signature.args == Array.replicate operation.argumentCount .u64 &&
+      function.scalarDependencies.isEmpty && function.actionDependencies.isEmpty &&
+      function.directEffects == Lemma.Core0.executionEffects operation &&
+      function.effects == Lemma.Core0.executionEffects operation &&
+      status.ty == .u8 && value.ty == .u64 && status.id != value.id &&
+      returnedStatus == .var status.id .u8 && returnedValue == .var value.id .u64 do none
+  for index in [:arguments.size] do
+    if index < operation.argumentCount then
+      let param := function.params[index]!
+      unless param.ty == .u64 && param.id != status.id && param.id != value.id &&
+          arguments[index]! == .var param.id .u64 do none
+    else
+      unless arguments[index]! == .lit .u64 0 do none
+  some operation
+
 structure LoweredActionSuite where
   functions : Array LLVM.Function
   symbols : Array Symbol
   roots : Array LoweredActionRoot
+  inlineLiterals : Array ClosedLiteral := #[]
+  inlineWrappers : Array CheckedPrimitiveWrapper := #[]
   deriving Repr
 
 def LoweredActionSuite.renderSymbolManifest (lowered : LoweredActionSuite) : String :=
@@ -1557,7 +1606,9 @@ private def lowerScalarActionFunction (profile : Lemma.Core0.Profile)
     parameters
     parameterExtensions
     linkage := if isPreserved then none else some "internal"
-    attributes := if isPreserved then
+    attributes := if options.inlineLiteralConstants && (closedLiteral? function).isSome then
+      #["nounwind", "alwaysinline"]
+    else if isPreserved then
       #["nounwind", "noinline", "\"disable-tail-calls\"=\"true\""]
     else #["nounwind"]
     blocks := finalState.blocks
@@ -1599,7 +1650,9 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
     parameters
     parameterExtensions
     linkage := if isRoot || isPreserved then none else some "internal"
-    attributes := if isPreserved then
+    attributes := if options.inlinePrimitiveWrappers && (checkedPrimitiveWrapper? function).isSome then
+      #["nounwind", "alwaysinline"]
+    else if isPreserved then
       #["nounwind", "noinline", "\"disable-tail-calls\"=\"true\""]
     else #["nounwind"]
     blocks := finalState.blocks
@@ -1840,7 +1893,20 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
       llvm := ← lookupSymbol symbols root.source
       signature := root.signature
     }
-  pure { functions, symbols, roots }
+  let mut inlineLiterals : Array ClosedLiteral := #[]
+  if options.inlineLiteralConstants then
+    for function in suite.scalarFunctions do
+      if let some (ty, value) := closedLiteral? function then
+        inlineLiterals := inlineLiterals.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name, ty, value }
+  let mut inlineWrappers : Array CheckedPrimitiveWrapper := #[]
+  if options.inlinePrimitiveWrappers then
+    for function in suite.actionFunctions do
+      if let some operation := checkedPrimitiveWrapper? function then
+        inlineWrappers := inlineWrappers.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name,
+          operation, effects := function.effects }
+  pure { functions, symbols, roots, inlineLiterals, inlineWrappers }
 
 /-- Lower a complete checked `core0-v0.4` fixed-region Action suite.  Device
 constructors remain rejected by both the v0.4 checker and this backend entry. -/

@@ -258,6 +258,10 @@ def source_inputs(root: Path) -> dict[str, str]:
                                      "scripts/audit_memory.py", "scripts/audit_monitor.py", "scripts/audit_timer.py", "scripts/audit_trap.py",
                                      "scripts/build-kernel.sh", "scripts/audit-kernel.sh",
                                      "scripts/build_kernel.py", "scripts/audit_kernel.py", "scripts/lemmasim_readonly.py", "scripts/audit_lemmasim_capacity.py", "scripts/build_user.py", "scripts/build-user.sh")]
+    # Old immutable source archives predate this additive audit helper. Current
+    # selected optimization builds import it and fail if unavailable.
+    closed_inline = root / "scripts/closed_inline.py"
+    if closed_inline.is_file():inputs.append(closed_inline)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
     # Historical immutable source archives predate additive Power-v2. Their
     # complete old inventories remain exact; selected 0.4 builds separately

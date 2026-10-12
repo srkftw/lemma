@@ -309,8 +309,11 @@ requires 3,588 tiles: 3,468 full 32x32 tiles, 68 right 18x32 tiles, 51 bottom
 32x24 tiles and one 18x24 corner. That gives 114,816 metadata bytes and at most
 243,984 checked copy-word stores and 229,632 PIO words. A port-ready full quality
 snapshot takes 7,260,000 clocks; its synthetic sequencer takes 39,930,007 clocks.
-The actual controller quality deadline is 250,000 MTIME ticks (2,500,000 machine
-cycles). Startup retains 131,072 metadata clear-word stores, 32,768 frame-record
+The controller's quality activation deadline is 250,000 MTIME ticks (2,500,000
+machine cycles). Actual `WAIT_TIME` checks it after snapshot copying and before
+the sequencer: it is a minimum activation time, not an abort or completion upper
+bound. It has already elapsed during a port-ready full snapshot. Startup retains
+131,072 metadata clear-word stores, 32,768 frame-record
 initialization stores and 512 zero-before-publication stores per allocated
 frame. Normal boot owners 1 through 4 use the maintained owner index; the
 8,192-record owner fallback is absent from that successful allocation path,
@@ -319,3 +322,24 @@ controller bounds, **not a whole-guest worst-case cycle bound**. The CPU,
 interrupt, IPC and backing waits still lack that independent bound. The
 retained 2B-cycle/7200-second campaign ceilings remain diagnostic resource
 ceilings; any terminal timeout remains a failure.
+
+The joint indexed-allocation/packed-background campaign
+`task006-hotpath-canonical-a1` also terminated with its original **FAIL** at
+1,383,000,000 target cycles under the predeclared 7200-second host ceiling
+(7202.55 seconds including boundary capture). It never reported qualified Ready
+or completed a controller refresh. Its unchanged guest ELF is
+`b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7`, and native
+runtime is `44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9`
+with state identity `255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e`.
+The original FAIL and exact failed-boundary checkpoint remain untouched.
+Offline checkpoint counters retain 785,915,707 retired instructions,
+U77,622,629 / S1,289,571,868 / M15,805,495 cycles, 20,061 traps and 2,946 timer
+traps. The 5,352,368 framebuffer writes include the 3,630,000-pixel reset clear
+and 1,722,368 actual uploaded pixels; panel pixels/completions remain zero.
+Three medium reads occurred, with no durability acknowledgment. Last recorded
+native HWM was 148,084 KiB; 14 threads were reported. `terminal-observation.json`
+records the source-bound statistics and original result hash. Ordinary public
+destroy reaped only the campaign's owner/runtime PIDs; `terminal-cleanup.json`
+retains that result. The separately running paired-transfer/Arithmetic A4
+campaign is unaffected. Partial upload is not scenario A or an independently
+proved whole-boot bound.
