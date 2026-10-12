@@ -1289,7 +1289,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       emit (.extractResultValue value (.local aggregate))
       pure { status := .local status, value := .local value }
   | .loop callback => do
-      unless profile.isKernel || profile == .user_v0_1 do
+      unless profile.isKernel || profile.isUser do
         throw "checked Action.loop requires a kernel/user execution profile"
       let function ← match lookupActionFunction suite.actionFunctions callback with
         | .ok function => pure function
@@ -1751,14 +1751,14 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
   unless actualLoops.size == suite.usedLoops.size && actualLoops.all suite.usedLoops.contains &&
       suite.usedLoops.all actualLoops.contains do
     throw "checked Action suite has stale loop metadata"
-  unless actualLoops.isEmpty || profile.isKernel || profile == .user_v0_1 do
+  unless actualLoops.isEmpty || profile.isKernel || profile.isUser do
     throw "checked Action.loop is denied outside kernel/user execution profiles"
   if profile.isExecution then
     unless Lemma.Core0.Execution.catalogValid && Lemma.Core0.Execution.memoryRegionsValid profile do
       throw "production execution catalog or authority intervals are invalid"
     unless suite.usedMemoryOps.isEmpty && suite.usedTrapOps.isEmpty && suite.usedTimerOps.isEmpty do
       throw "production profiles reject diagnostic memory/trap/timer metadata"
-  if profile == .user_v0_1 && !actualDeviceOps.isEmpty then
+  if profile.isUser && !actualDeviceOps.isEmpty then
     throw "user profile rejects direct MMIO operations"
   if profile == .v0_4 && !actualDeviceOps.isEmpty then
     throw s!"device operations require `{Lemma.Core0.Profile.v0_5.contractVersion}`"

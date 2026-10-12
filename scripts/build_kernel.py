@@ -262,6 +262,8 @@ def source_inputs(root: Path) -> dict[str, str]:
     # selected optimization builds import it and fail if unavailable.
     closed_inline = root / "scripts/closed_inline.py"
     if closed_inline.is_file():inputs.append(closed_inline)
+    records = root / "scripts/managed_records.py"
+    if records.is_file():inputs.append(records)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
     # Historical immutable source archives predate additive Power-v2. Their
     # complete old inventories remain exact; selected 0.4 builds separately

@@ -76,7 +76,7 @@ def build(*, root: Path, output_dir: Path, image_key: str, opt_level: str,
 def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--configuration", choices=MULTI_CONFIGURATIONS, default="tasks-development")
-    parser.add_argument("--image-key", choices=("compute", "sleeper", "busy", "fault", "capabilities", "peer", "tamper", "server", "clienta", "clientb", "cli"), required=True)
+    parser.add_argument("--image-key", choices=sorted(set().union(*INDEPENDENT_IMAGE_KEYS.values())), required=True)
     parser.add_argument("--opt-level", choices=("O0", "O2"), required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--clean", action="store_true")

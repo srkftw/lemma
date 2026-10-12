@@ -1,0 +1,25 @@
+import Lemma.Mathematics.ManagedRational
+import Lemma.Mathematics.OwnedSubmission
+
+/-! The additive managed execution path for the isolated arithmetic service.
+The admitted exact/1 mathematical domain stays unchanged. Heap/OOM/cancellation
+statuses are actual resource failures and never create mathematical evidence. -/
+namespace Lemma.Mathematics.ManagedSubmission
+open Lemma.Core0.Memory
+
+private def positiveRational (n d budget : UInt64) : Action :=
+  if Exact.canonical n = false then .done 0 Exact.needsClarification else
+  if d = 0 then .done 0 Exact.invalid else
+  if Exact.bounded n = false then .done 0 Exact.indeterminate else
+  if Exact.limit < d then .done 0 Exact.indeterminate else
+  if budget < 8 then .done 0 Exact.indeterminate else
+  if n &&& Exact.sign = Exact.sign then .done 0 Exact.invalid else
+  .managed2 ManagedRational.compareFiveSix n d fun status difference =>
+    if status = 0 then .done 0 (if difference = 0 then Exact.verified else Exact.invalid)
+    else .done status 0
+
+def check (goal n d p0 p1 p2 budget : UInt64) : Action :=
+  if goal = 1 then positiveRational n d budget
+  else OwnedSubmission.check goal n d p0 p1 p2 budget
+
+end Lemma.Mathematics.ManagedSubmission

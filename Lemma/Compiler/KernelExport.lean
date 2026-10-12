@@ -20,14 +20,18 @@ open Lemma.Compiler
 open Lemma.Platform.LemmaVM
 open DeploymentCatalog
 
-private def roleProfile (role : String) (configuration : String) : Except String Profile :=
+private def roleProfile (role : String) (configuration : String)
+    (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
   | "kernel" => .ok (if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok .user_v0_1
+  | "user" => .ok (if image?.any (fun image => image.key == "arithmetic") &&
+      (configuration == "lemmasim-silicon-power-notebook" ||
+       configuration == "lemmasim-silicon-power-initialize" || isArithmeticDevelopmentConfiguration configuration)
+      then .user_v0_2 else .user_v0_1)
   | _ => .error "production role must be firmware, kernel, or user"
 
 private def readConfiguration : IO String := do
@@ -300,7 +304,40 @@ private def closedInlineFields (configuration : String) (lowered : LoweredAction
       ("source", .str row.source.toString), ("symbol", .str row.symbol),
       ("operation", .str row.operation.stableId)]))])]
 
-private def unitManifest (configuration role : String) (suite : CheckedActionSuite)
+private def managedRecordFields (env : Environment) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
+  let mut entries : Array Name := #[]
+  for function in suite.actionFunctions do
+    if let some (root, _) := ManagedIR.generatedSource? function.name then
+      unless entries.contains root do entries := entries.push root
+  if suite.contractVersion != Profile.user_v0_2.contractVersion then
+    unless entries.isEmpty do throw "Managed closure crossed a legacy User profile"
+    return []
+  unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
+    throw "Production managed record entry differs from its versioned closed catalog"
+  let program ← ManagedIR.buildProgram env entries[0]!
+  let mut functions := #[]
+  for source in program.sourceNames do
+    let some declaration := Lean.IR.findEnvDecl env source | throw "Missing genuine managed compiler IR"
+    let generated := ManagedIR.genName program.root source
+    let some checked := suite.actionFunctions.find? (·.name == generated)
+      | throw "Genuine managed closure missing from checked unit"
+    functions := functions.push <| Json.mkObj [
+      ("source", .str source.toString), ("generated_source", .str generated.toString),
+      ("symbol", .str (← rootSymbol lowered generated)),
+      ("genuine_ir", .str (Lean.IR.formatDecl declaration).pretty),
+      ("checked_action", .str checked.body.renderNormalized)]
+  return [("managed_records", Json.mkObj [
+    ("contract_version", .str "lemma-managed-records-v1"),
+    ("compiler_revision", .str "5045d0056413266e57c625dcd7c365b10e377c52"),
+    ("allocator", .str "lemma-owned-arena-v1"),
+    ("entry", .str program.root.toString),
+    ("shapes", .arr (program.shapes.map fun shape => Json.mkObj [
+      ("source", .str shape.typeName.toString), ("constructor", .str shape.constructor.toString),
+      ("id", toJson shape.id), ("bytes", toJson shape.bytes)])),
+    ("functions", .arr functions)])]
+
+private def unitManifest (env : Environment) (configuration role : String) (suite : CheckedActionSuite)
     (lowered : LoweredActionSuite) (image? : Option UserImageSpec := none) : Except String Json := do
   let mut roots := #[]
   for root in suite.roots do
@@ -327,7 +364,8 @@ private def unitManifest (configuration role : String) (suite : CheckedActionSui
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ closedInlineFields configuration lowered)
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ closedInlineFields configuration lowered ++
+      (← managedRecordFields env suite lowered))
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
@@ -386,7 +424,7 @@ private def validateRoots (configuration role : String) (suite : CheckedActionSu
 
 private def exportUnit (env : Environment) (configuration role : String) (names : Array Name)
     (directory : System.FilePath) (image? : Option UserImageSpec := none) : IO Unit := do
-  let profile ← IO.ofExcept (roleProfile role configuration)
+  let profile ← IO.ofExcept (roleProfile role configuration image?)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
     unless selectedExecutableSource configuration role imported.toString image? do
@@ -430,7 +468,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     declarations
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
-  let manifest ← IO.ofExcept <| unitManifest configuration role suite lowered image?
+  let manifest ← IO.ofExcept <| unitManifest env configuration role suite lowered image?
   IO.FS.createDirAll directory
   for (filename, contents) in #[("program.ll", module.render), ("unit.json", manifest.pretty ++ "\n"),
       ("normalized.txt", normalized configuration role suite image?), ("symbols.txt", lowered.renderSymbolManifest)] do
@@ -567,7 +605,7 @@ private def readRootSymbol (directory : System.FilePath) (configuration role : S
   let contract ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "contract_version").getStr?
   let category ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "artifact_category").getStr?
   let version ← IO.ofExcept <| (← IO.ofExcept <| manifest.getObjVal? "schema_version").getNat?
-  let profile ← IO.ofExcept <| roleProfile role configuration
+  let profile ← IO.ofExcept <| roleProfile role configuration image?
   unless actualRole == role && actualConfiguration == configuration &&
       contract == profile.contractVersion && version == (if image?.isSome then 2 else 1) &&
       category == unitCategory configuration role do
@@ -758,6 +796,10 @@ elab_rules : command
         | .error error => throwError error
       let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
         | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
+      if (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_2 then
+        -- Ordinary imported source declarations go through Lean's genuine
+        -- compiler before the checked managed IR bridge. No synthetic defs.
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedRational.compareFiveSix]
       liftIO <| exportUnit (← getEnv) configuration "user" names (System.FilePath.mk output / image.directory) (some image)
       logInfo m!"Lemma exported the genuine {configuration} user image {key}"
 

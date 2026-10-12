@@ -1,5 +1,5 @@
 import Lemma.Services.Arithmetic.Protocol
-import Lemma.Mathematics.OwnedSubmission
+import Lemma.Mathematics.ManagedSubmission
 import Lemma.User.IPC
 import Lemma.User.CapabilityConsole
 
@@ -51,7 +51,7 @@ private def process (authority request : UInt64) : Action :=
     CapabilityConsole.record console 0x45b request revision mode goal else .done s 0
     else .done 0 0) fun s _ => if s = 0 then
   .bind (if mode = 2 then Memory.read64 0x500000 else if mode = 3 then delayed else .done 0 0) fun s _ => if s = 0 then
-  .bind (Lemma.Mathematics.OwnedSubmission.check goal n d p0 p1 p2 budget) fun status outcome =>
+  .bind (Lemma.Mathematics.ManagedSubmission.check goal n d p0 p1 p2 budget) fun status outcome =>
   .bind (get 8) fun s console => if s = 0 then
   .bind (CapabilityConsole.record console 0x455 request revision status.toUInt64 outcome) fun s _ => if s = 0 then
   .bind (respond authority request ns page revision goal budget outcome status) fun actual _ =>

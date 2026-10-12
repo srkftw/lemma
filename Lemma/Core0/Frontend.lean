@@ -3,6 +3,7 @@ import Lean.Compiler.ExternAttr
 import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.InitAttr
 import Lemma.Core0.ActionIR
+import Lemma.Core0.ManagedIR
 import Lemma.Core0.Bounded
 import Lemma.Core0.Device
 import Lemma.Core0.IR
@@ -242,17 +243,17 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
-  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 => primitiveAllowlistV07
+  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
   | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 => true
+      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
   | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 => true
+      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -1263,12 +1264,12 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .user_v0_1 =>
+  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 =>
       Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 then
+  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 && ctx.profile != .kernel_v0_5 then
     fail ctx .unsupportedPrimitive "closed UART trigger14 requires core0-kernel-v0.2"
   unless op.admits ctx.profile do
     fail ctx .unsupportedPrimitive
@@ -1553,8 +1554,26 @@ mutual
       markExecutionOp operation
       pure (.platform operation arguments status value next)
 
+    else if name == ``Lemma.Core0.Memory.Action.managed2 then
+      unless ctx.profile == .user_v0_2 do
+        fail ctx .unsupportedPrimitive "Action.managed2 requires explicit core0-user-v0.2"
+      unless args.size == 4 do fail ctx .arityMismatch "malformed managed entry bridge"
+      let .const ordinary [] := stripMData args[0]!
+        | fail ctx .unsupportedDeclaration "managed entry must be a direct closed ordinary Lean definition"
+      let _ ← match ManagedIR.buildProgram ctx.env ordinary with
+        | .ok program => pure program
+        | .error message => fail ctx .unsupportedDeclaration message
+      let lhs ← lowerExpr fuel ctx args[1]!
+      let rhs ← lowerExpr fuel ctx args[2]!
+      ensureType ctx .u64 lhs
+      ensureType ctx .u64 rhs
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[3]!
+      let generated := ManagedIR.genName ordinary ordinary
+      addActionDependency generated
+      pure (.bind (.call generated [lhs, rhs]) status value next)
+
     else if name == ``Lemma.Core0.Memory.Action.loop then
-      unless ctx.profile.isKernel || ctx.profile == .user_v0_1 do
+      unless ctx.profile.isKernel || ctx.profile.isUser do
         fail ctx .unsupportedPrimitive "Action.loop requires an explicit kernel/user execution profile"
       unless args.size == 1 do fail ctx .arityMismatch "malformed Action.loop application"
       let callback ← match stripMData args[0]! with
@@ -1696,6 +1715,12 @@ private def lowerActionFunction (env : Environment) (profile : Profile) (root na
   let baseCtx : LowerContext := {
     env, profile, root, declaration := name, path, locals := #[]
   }
+  if (ManagedIR.generatedSource? name).isSome then
+    unless profile == .user_v0_2 do
+      throw <| mkDiagnostic baseCtx .unsupportedDeclaration "generated managed closure denied by legacy profile"
+    return ← match ManagedIR.generatedFunction env name with
+      | .ok function => pure function
+      | .error message => throw <| mkDiagnostic baseCtx .unsupportedDeclaration message
   let some info := env.find? name
     | throw <| mkDiagnostic baseCtx .unknownDeclaration
         s!"Action declaration `{name}` is not in the Lean environment"
@@ -1856,18 +1881,22 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
                 env, profile, root, declaration := name, path,
                 locals := function.params
               }
-              let some info := env.find? name
-                | throw <| mkDiagnostic baseCtx .unknownDeclaration s!"missing Action declaration `{name}`"
-              let value := match info with
-                | .defnInfo definition => definition.value
-                | _ => Lean.Expr.const name []
-              let mut body := stripMData value
-              for _ in [:function.params.size] do
-                match stripMData body with
-                | .lam _ _ next _ => body := next
-                | _ => pure ()
-              let initialState : LowerState := { nextVar := function.params.size }
-              let (_, state) ← lowerAction 65536 baseCtx body |>.run initialState
+              let state ← if (ManagedIR.generatedSource? name).isSome then
+                  pure ({nextVar := 0} : LowerState)
+                else do
+                  let some info := env.find? name
+                    | throw <| mkDiagnostic baseCtx .unknownDeclaration s!"missing Action declaration `{name}`"
+                  let value := match info with
+                    | .defnInfo definition => definition.value
+                    | _ => Lean.Expr.const name []
+                  let mut body := stripMData value
+                  for _ in [:function.params.size] do
+                    match stripMData body with
+                    | .lam _ _ next _ => body := next
+                    | _ => pure ()
+                  let initialState : LowerState := {nextVar := function.params.size}
+                  let (_, state) ← lowerAction 65536 baseCtx body |>.run initialState
+                  pure state
               for dependency in function.scalarDependencies do
                 let program ← checkAndLowerForProfile env profile dependency
                 closure ← mergeScalarProgram closure program

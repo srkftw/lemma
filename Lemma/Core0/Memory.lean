@@ -281,6 +281,13 @@ inductive Action where
   a direct top-level step constant. Status zero repeats; nonzero returns its
   exact status/value to the enclosing caller. No finite host model executes it. -/
   | loop (step : Action)
+  /-- Additive User-v0.2 bridge. The function must be a closed ordinary Lean
+  UInt64 entry; the frontend reads genuine compiler IR and checks every admitted
+  allocation/layout/borrow/release. The status is a real resource outcome.
+  Legacy profiles reject this constructor; finite scalar host models reject it.
+  No Action-valued implementation or fabricated AST is supplied by callers. -/
+  | managed2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

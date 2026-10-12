@@ -119,13 +119,13 @@ def admits (profile : Profile) (operation : Op) : Bool :=
   | .physicalRead8 | .physicalRead64 | .physicalWrite8 | .physicalWrite64 =>
       profile.isFirmware || profile.isKernel
   | .virtualRead8 | .virtualRead64 | .virtualWrite8 | .virtualWrite64 | .syscall =>
-      profile == .user_v0_1
+      profile.isUser
   | .readTime | .setMachineCompare | .forwardSupervisor => profile.isFirmware
   | .firmwareCall | .installSatp | .fenceInstruction | .enterUser | .waitInterrupt |
       .readSupervisorPending =>
       profile.isKernel
   | .deviceRead32 | .deviceWrite32 | .deviceRead64 | .deviceWrite64 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5
 
   | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2
 
@@ -237,11 +237,14 @@ def deviceRegions (operation : Op) : Array MemoryRegion :=
     ⟨"pen-controller", 0x10011000, 0x10012000, true⟩]
   else #[]
 
-/-- Additive Power-v1 authority: only kernel-v0.4 can address PLIC priority14.
-No other device interval or language operation changes; historical callers
-continue to use deviceRegions and the same exact exclusive priority bound. -/
+/-- Additive interrupt authority: kernel-v0.4 addresses priority14 and
+kernel-v0.5 also addresses priority15. Every other interval and operation
+retains its inherited semantics and exact exclusive bounds. -/
 def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :=
-  if profile == .kernel_v0_4 then
+  if profile == .kernel_v0_5 then
+    (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c000040 } else region
+  else if profile == .kernel_v0_4 then
     (deviceRegions operation).map fun region =>
       if region.name == "plic-priority" then { region with stop := 0x0c00003c } else region
   else deviceRegions operation
@@ -264,9 +267,9 @@ def memoryRegions : Profile → Array MemoryRegion
   | .firmware_v0_1 | .firmware_v0_2 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
-  | .kernel_v0_3 | .kernel_v0_4 => kernelMemoryRegions.map fun region =>
+  | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 => kernelMemoryRegions.map fun region =>
       if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region
-  | .user_v0_1 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
+  | .user_v0_1 | .user_v0_2 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
   | _ => #[]
 
 def memoryRegionsValid (profile : Profile) : Bool :=

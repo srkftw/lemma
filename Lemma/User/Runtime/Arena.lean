@@ -1,8 +1,9 @@
 import Lemma.User.Memory
 import Lemma.User.Syscall
 
-/-! Bounded owned-page object runtime foundation. Ordinary managed Lean
-constructors/closures are not yet admitted by the language frontend. -/
+/-! Bounded owned-page object runtime foundation. The additive managed-records
+bridge uses real generational slots for checked ordinary scalar structures.
+General inductives, closures and a general managed heap remain unsupported. -/
 namespace Lemma.User.Runtime.Arena
 open Lemma.Core0.Memory
 open Lemma.User

@@ -1,0 +1,165 @@
+{
+  "scope": "Extracted real compiled artifact admission fixture; no target success claim",
+  "unit_sha256": "641b04ba10a21f9798c9bfbfd054c503ba83214561f02665e3ee6d54d8c6ba09",
+  "ir_sha256": "3112fe6640c3ca250afe2d443ce7f0f87f95c854afe770bf1a2f0285d4c00f3e",
+  "unit": {
+    "configuration": "lemmasim-silicon-power-notebook",
+    "role": "user",
+    "image_key": "arithmetic",
+    "contract_version": "core0-user-v0.2",
+    "managed_records": {
+      "shapes": [
+        {
+          "source": "Lemma.Mathematics.ManagedRational.Fraction",
+          "id": 1,
+          "constructor": "Lemma.Mathematics.ManagedRational.Fraction.mk",
+          "bytes": 24
+        }
+      ],
+      "functions": [
+        {
+          "symbol": "lemma_user_arithmetic_core0_action_39",
+          "source": "Lemma.Mathematics.ManagedRational.differenceFromFiveSix",
+          "genuine_ir": "def Lemma.Mathematics.ManagedRational.differenceFromFiveSix (x_1 : @& obj) : u64 :=\n  let x_2 : u64 := sproj[0, 0] x_1;\n  let x_3 : u64 := sproj[0, 8] x_1;\n  let x_4 : u64 := 6;\n  let x_5 : u64 := UInt64.mul x_2 x_4;\n  let x_6 : u64 := 5;\n  let x_7 : u64 := UInt64.mul x_6 x_3;\n  let x_8 : u64 := UInt64.sub x_5 x_7;\n  ret x_8",
+          "generated_source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.differenceFromFiveSix",
+          "checked_action": "(action.bind (action.call Lemma.User.Runtime.ManagedRecords.readField [(var 1 u64) (lit u64 1) (lit u64 24) (lit u64 8)]) (status %10003) (value %10000) (action.ite (cmp eq u8 (var 10003 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Runtime.ManagedRecords.readField [(var 1 u64) (lit u64 1) (lit u64 24) (lit u64 16)]) (status %10002) (value %10001) (action.ite (cmp eq u8 (var 10002 u8) (lit u8 0)) (action.done (lit u8 0) (bin sub u64 (bin mul u64 (var 10000 u64) (lit u64 6)) (bin mul u64 (lit u64 5) (var 10001 u64)))) (action.done (var 10002 u8) (lit u64 0)))) (action.done (var 10003 u8) (lit u64 0))))"
+        },
+        {
+          "symbol": "lemma_user_arithmetic_core0_action_44",
+          "source": "Lemma.Mathematics.ManagedRational.make",
+          "genuine_ir": "def Lemma.Mathematics.ManagedRational.make (x_1 : u64) (x_2 : u64) : obj :=\n  let x_3 : obj := ctor_0.0.16[Lemma.Mathematics.ManagedRational.Fraction.mk];\n  sset x_3[0, 0] : u64 := x_1;\n  sset x_3[0, 8] : u64 := x_2;\n  ret x_3",
+          "generated_source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.make",
+          "checked_action": "(action.bind (action.call Lemma.User.Runtime.ManagedRecords.allocate [(lit u64 1) (lit u64 24)]) (status %10009) (value %10000) (action.ite (cmp eq u8 (var 10009 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Runtime.ManagedRecords.writeField [(var 10000 u64) (lit u64 1) (lit u64 24) (lit u64 8) (var 1 u64)]) (status %10006) (value %10001) (action.ite (cmp eq u8 (var 10006 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Runtime.ManagedRecords.writeField [(var 10000 u64) (lit u64 1) (lit u64 24) (lit u64 16) (var 2 u64)]) (status %10003) (value %10002) (action.ite (cmp eq u8 (var 10003 u8) (lit u8 0)) (action.done (lit u8 0) (var 10000 u64)) (action.bind (action.call Lemma.User.Runtime.Arena.release [(var 10000 u64)]) (status %10004) (value %10005) (action.done (ite u8 (cmp eq u8 (var 10003 u8) (lit u8 0)) (var 10004 u8) (var 10003 u8)) (lit u64 0))))) (action.bind (action.call Lemma.User.Runtime.Arena.release [(var 10000 u64)]) (status %10007) (value %10008) (action.done (ite u8 (cmp eq u8 (var 10006 u8) (lit u8 0)) (var 10007 u8) (var 10006 u8)) (lit u64 0))))) (action.done (var 10009 u8) (lit u64 0))))"
+        },
+        {
+          "symbol": "lemma_user_arithmetic_core0_action_45",
+          "source": "Lemma.Mathematics.ManagedRational.compareFiveSix",
+          "genuine_ir": "def Lemma.Mathematics.ManagedRational.compareFiveSix (x_1 : u64) (x_2 : u64) : u64 :=\n  let x_3 : obj := Lemma.Mathematics.ManagedRational.make x_1 x_2;\n  let x_4 : u64 := Lemma.Mathematics.ManagedRational.differenceFromFiveSix x_3;\n  dec x_3;\n  ret x_4",
+          "generated_source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.compareFiveSix",
+          "checked_action": "(action.bind (action.call Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.make [(var 1 u64) (var 2 u64)]) (status %10007) (value %10000) (action.ite (cmp eq u8 (var 10007 u8) (lit u8 0)) (action.bind (action.call Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.differenceFromFiveSix [(var 10000 u64)]) (status %10004) (value %10001) (action.ite (cmp eq u8 (var 10004 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Runtime.Arena.release [(var 10000 u64)]) (status %10003) (value %10002) (action.ite (cmp eq u8 (var 10003 u8) (lit u8 0)) (action.done (lit u8 0) (var 10001 u64)) (action.done (var 10003 u8) (lit u64 0)))) (action.bind (action.call Lemma.User.Runtime.Arena.release [(var 10000 u64)]) (status %10005) (value %10006) (action.done (ite u8 (cmp eq u8 (var 10004 u8) (lit u8 0)) (var 10005 u8) (var 10004 u8)) (lit u64 0))))) (action.done (var 10007 u8) (lit u64 0))))"
+        }
+      ],
+      "entry": "Lemma.Mathematics.ManagedRational.compareFiveSix",
+      "contract_version": "lemma-managed-records-v1",
+      "compiler_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+      "allocator": "lemma-owned-arena-v1"
+    },
+    "functions": [
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_12",
+        "source": "Lemma.User.Runtime.Arena.ensure",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": []
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_34",
+        "source": "Lemma.User.Runtime.Arena.release",
+        "effects": [
+          "checked-access",
+          "virtual-read",
+          "virtual-write"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_38",
+        "source": "Lemma.User.Runtime.ManagedRecords.readField",
+        "effects": [
+          "checked-access",
+          "virtual-read"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_39",
+        "source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.differenceFromFiveSix",
+        "effects": [
+          "checked-access",
+          "virtual-read"
+        ],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_41",
+        "source": "Lemma.User.Runtime.ManagedRecords.writeField",
+        "effects": [
+          "checked-access",
+          "virtual-read",
+          "virtual-write"
+        ],
+        "args": [
+          "u64",
+          "u64",
+          "u64",
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_43",
+        "source": "Lemma.User.Runtime.ManagedRecords.allocate",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_44",
+        "source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.make",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_user_arithmetic_core0_action_45",
+        "source": "Lemma.Mathematics.ManagedRational.compareFiveSix.__lemma_managed_v02.Lemma.Mathematics.ManagedRational.compareFiveSix",
+        "effects": [
+          "checked-access",
+          "io-order",
+          "virtual-read",
+          "virtual-write",
+          "user-syscall",
+          "privilege-transition"
+        ],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      }
+    ]
+  },
+  "ir": "define { i64, i64 } @lemma_user_arithmetic_core0_action_39(i64 %arg0) {\nentry:\n  %action.call.result0 = call { i64, i64 } @lemma_user_arithmetic_core0_action_38(i64 %arg0, i64 1, i64 24, i64 8)\n  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0\n  %action.call.status2 = trunc i64 %action.call.status-word1 to i8\n  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1\n  %cmp4 = icmp eq i8 %action.call.status2, 0\n  br i1 %cmp4, label %action.if.then.0, label %action.if.else.1\naction.if.then.0:\n  %action.call.result5 = call { i64, i64 } @lemma_user_arithmetic_core0_action_38(i64 %arg0, i64 1, i64 24, i64 16)\n  %action.call.status-word6 = extractvalue { i64, i64 } %action.call.result5, 0\n  %action.call.status7 = trunc i64 %action.call.status-word6 to i8\n  %action.call.value8 = extractvalue { i64, i64 } %action.call.result5, 1\n  %cmp9 = icmp eq i8 %action.call.status7, 0\n  br i1 %cmp9, label %action.if.then.3, label %action.if.else.4\naction.if.then.3:\n  %bin10 = mul i64 %action.call.value3, 6\n  %bin11 = mul i64 5, %action.call.value8\n  %bin12 = sub i64 %bin10, %bin11\n  br label %action.if.merge.5\naction.if.else.4:\n  br label %action.if.merge.5\naction.if.merge.5:\n  %action.if.status13 = phi i8 [ 0, %action.if.then.3 ], [ %action.call.status7, %action.if.else.4 ]\n  %action.if.value14 = phi i64 [ %bin12, %action.if.then.3 ], [ 0, %action.if.else.4 ]\n  br label %action.if.merge.2\naction.if.else.1:\n  br label %action.if.merge.2\naction.if.merge.2:\n  %action.if.status15 = phi i8 [ %action.if.status13, %action.if.merge.5 ], [ %action.call.status2, %action.if.else.1 ]\n  %action.if.value16 = phi i64 [ %action.if.value14, %action.if.merge.5 ], [ 0, %action.if.else.1 ]\n  %action.result.status-word17 = zext i8 %action.if.status15 to i64\n  %action.result.partial18 = insertvalue { i64, i64 } poison, i64 %action.result.status-word17, 0\n  %action.result.complete19 = insertvalue { i64, i64 } %action.result.partial18, i64 %action.if.value16, 1\n  ret { i64, i64 } %action.result.complete19\n\n}\ndefine { i64, i64 } @lemma_user_arithmetic_core0_action_44(i64 %arg0, i64 %arg1) {\nentry:\n  %action.call.result0 = call { i64, i64 } @lemma_user_arithmetic_core0_action_43(i64 1, i64 24)\n  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0\n  %action.call.status2 = trunc i64 %action.call.status-word1 to i8\n  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1\n  %cmp4 = icmp eq i8 %action.call.status2, 0\n  br i1 %cmp4, label %action.if.then.0, label %action.if.else.1\naction.if.then.0:\n  %action.call.result5 = call { i64, i64 } @lemma_user_arithmetic_core0_action_41(i64 %action.call.value3, i64 1, i64 24, i64 8, i64 %arg0)\n  %action.call.status-word6 = extractvalue { i64, i64 } %action.call.result5, 0\n  %action.call.status7 = trunc i64 %action.call.status-word6 to i8\n  %action.call.value8 = extractvalue { i64, i64 } %action.call.result5, 1\n  %cmp9 = icmp eq i8 %action.call.status7, 0\n  br i1 %cmp9, label %action.if.then.3, label %action.if.else.4\naction.if.then.3:\n  %action.call.result10 = call { i64, i64 } @lemma_user_arithmetic_core0_action_41(i64 %action.call.value3, i64 1, i64 24, i64 16, i64 %arg1)\n  %action.call.status-word11 = extractvalue { i64, i64 } %action.call.result10, 0\n  %action.call.status12 = trunc i64 %action.call.status-word11 to i8\n  %action.call.value13 = extractvalue { i64, i64 } %action.call.result10, 1\n  %cmp14 = icmp eq i8 %action.call.status12, 0\n  br i1 %cmp14, label %action.if.then.6, label %action.if.else.7\naction.if.then.6:\n  br label %action.if.merge.8\naction.if.else.7:\n  %action.call.result15 = call { i64, i64 } @lemma_user_arithmetic_core0_action_34(i64 %action.call.value3)\n  %action.call.status-word16 = extractvalue { i64, i64 } %action.call.result15, 0\n  %action.call.status17 = trunc i64 %action.call.status-word16 to i8\n  %action.call.value18 = extractvalue { i64, i64 } %action.call.result15, 1\n  %cmp19 = icmp eq i8 %action.call.status12, 0\n  br i1 %cmp19, label %if.then.9, label %if.else.10\nif.then.9:\n  br label %if.merge.11\nif.else.10:\n  br label %if.merge.11\nif.merge.11:\n  %if.result20 = phi i8 [ %action.call.status17, %if.then.9 ], [ %action.call.status12, %if.else.10 ]\n  br label %action.if.merge.8\naction.if.merge.8:\n  %action.if.status21 = phi i8 [ 0, %action.if.then.6 ], [ %if.result20, %if.merge.11 ]\n  %action.if.value22 = phi i64 [ %action.call.value3, %action.if.then.6 ], [ 0, %if.merge.11 ]\n  br label %action.if.merge.5\naction.if.else.4:\n  %action.call.result23 = call { i64, i64 } @lemma_user_arithmetic_core0_action_34(i64 %action.call.value3)\n  %action.call.status-word24 = extractvalue { i64, i64 } %action.call.result23, 0\n  %action.call.status25 = trunc i64 %action.call.status-word24 to i8\n  %action.call.value26 = extractvalue { i64, i64 } %action.call.result23, 1\n  %cmp27 = icmp eq i8 %action.call.status7, 0\n  br i1 %cmp27, label %if.then.12, label %if.else.13\nif.then.12:\n  br label %if.merge.14\nif.else.13:\n  br label %if.merge.14\nif.merge.14:\n  %if.result28 = phi i8 [ %action.call.status25, %if.then.12 ], [ %action.call.status7, %if.else.13 ]\n  br label %action.if.merge.5\naction.if.merge.5:\n  %action.if.status29 = phi i8 [ %action.if.status21, %action.if.merge.8 ], [ %if.result28, %if.merge.14 ]\n  %action.if.value30 = phi i64 [ %action.if.value22, %action.if.merge.8 ], [ 0, %if.merge.14 ]\n  br label %action.if.merge.2\naction.if.else.1:\n  br label %action.if.merge.2\naction.if.merge.2:\n  %action.if.status31 = phi i8 [ %action.if.status29, %action.if.merge.5 ], [ %action.call.status2, %action.if.else.1 ]\n  %action.if.value32 = phi i64 [ %action.if.value30, %action.if.merge.5 ], [ 0, %action.if.else.1 ]\n  %action.result.status-word33 = zext i8 %action.if.status31 to i64\n  %action.result.partial34 = insertvalue { i64, i64 } poison, i64 %action.result.status-word33, 0\n  %action.result.complete35 = insertvalue { i64, i64 } %action.result.partial34, i64 %action.if.value32, 1\n  ret { i64, i64 } %action.result.complete35\n\n}\ndefine { i64, i64 } @lemma_user_arithmetic_core0_action_45(i64 %arg0, i64 %arg1) {\nentry:\n  %action.call.result0 = call { i64, i64 } @lemma_user_arithmetic_core0_action_44(i64 %arg0, i64 %arg1)\n  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0\n  %action.call.status2 = trunc i64 %action.call.status-word1 to i8\n  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1\n  %cmp4 = icmp eq i8 %action.call.status2, 0\n  br i1 %cmp4, label %action.if.then.0, label %action.if.else.1\naction.if.then.0:\n  %action.call.result5 = call { i64, i64 } @lemma_user_arithmetic_core0_action_39(i64 %action.call.value3)\n  %action.call.status-word6 = extractvalue { i64, i64 } %action.call.result5, 0\n  %action.call.status7 = trunc i64 %action.call.status-word6 to i8\n  %action.call.value8 = extractvalue { i64, i64 } %action.call.result5, 1\n  %cmp9 = icmp eq i8 %action.call.status7, 0\n  br i1 %cmp9, label %action.if.then.3, label %action.if.else.4\naction.if.then.3:\n  %action.call.result10 = call { i64, i64 } @lemma_user_arithmetic_core0_action_34(i64 %action.call.value3)\n  %action.call.status-word11 = extractvalue { i64, i64 } %action.call.result10, 0\n  %action.call.status12 = trunc i64 %action.call.status-word11 to i8\n  %action.call.value13 = extractvalue { i64, i64 } %action.call.result10, 1\n  %cmp14 = icmp eq i8 %action.call.status12, 0\n  br i1 %cmp14, label %action.if.then.6, label %action.if.else.7\naction.if.then.6:\n  br label %action.if.merge.8\naction.if.else.7:\n  br label %action.if.merge.8\naction.if.merge.8:\n  %action.if.status15 = phi i8 [ 0, %action.if.then.6 ], [ %action.call.status12, %action.if.else.7 ]\n  %action.if.value16 = phi i64 [ %action.call.value8, %action.if.then.6 ], [ 0, %action.if.else.7 ]\n  br label %action.if.merge.5\naction.if.else.4:\n  %action.call.result17 = call { i64, i64 } @lemma_user_arithmetic_core0_action_34(i64 %action.call.value3)\n  %action.call.status-word18 = extractvalue { i64, i64 } %action.call.result17, 0\n  %action.call.status19 = trunc i64 %action.call.status-word18 to i8\n  %action.call.value20 = extractvalue { i64, i64 } %action.call.result17, 1\n  %cmp21 = icmp eq i8 %action.call.status7, 0\n  br i1 %cmp21, label %if.then.9, label %if.else.10\nif.then.9:\n  br label %if.merge.11\nif.else.10:\n  br label %if.merge.11\nif.merge.11:\n  %if.result22 = phi i8 [ %action.call.status19, %if.then.9 ], [ %action.call.status7, %if.else.10 ]\n  br label %action.if.merge.5\naction.if.merge.5:\n  %action.if.status23 = phi i8 [ %action.if.status15, %action.if.merge.8 ], [ %if.result22, %if.merge.11 ]\n  %action.if.value24 = phi i64 [ %action.if.value16, %action.if.merge.8 ], [ 0, %if.merge.11 ]\n  br label %action.if.merge.2\naction.if.else.1:\n  br label %action.if.merge.2\naction.if.merge.2:\n  %action.if.status25 = phi i8 [ %action.if.status23, %action.if.merge.5 ], [ %action.call.status2, %action.if.else.1 ]\n  %action.if.value26 = phi i64 [ %action.if.value24, %action.if.merge.5 ], [ 0, %action.if.else.1 ]\n  %action.result.status-word27 = zext i8 %action.if.status25 to i64\n  %action.result.partial28 = insertvalue { i64, i64 } poison, i64 %action.result.status-word27, 0\n  %action.result.complete29 = insertvalue { i64, i64 } %action.result.partial28, i64 %action.if.value26, 1\n  ret { i64, i64 } %action.result.complete29\n\n}"
+}

@@ -120,6 +120,8 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/loader-copy.log", "metadata/power-authority.log",
                          "metadata/power-object-budget.log", "metadata/power-compiler.log",
                          "metadata/frame-index.log", "metadata/exact-mathematics.log",
+                         "metadata/owned-arena.log", "metadata/arithmetic-ipc.log",
+                         "metadata/arithmetic-object-budget.log",
                          "metadata/backing-io.log", "metadata/companion-peer.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),

@@ -2924,14 +2924,16 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
     from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()), "unit")
+    from managed_records import FIELD as records_field, allowed as records_allowed, contract as records_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in expected_managed.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
-                (kernel_contract(configuration) if role == "kernel" else CONTRACTS[role])):
+                (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.2' if role == 'user' and records_allowed(unit) and records_field in unit else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -2980,6 +2982,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if any(not isinstance(effect, str) for effect in effects) or len(effects) != len(set(effects)) or not set(effects) <= ROLE_EFFECTS[role]:
             raise Core0Error("function effect catalog escapes role authority")
     inline_catalog(unit)
+    records_contract(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -4412,6 +4415,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
         raise Core0Error("LLVM IO fence calling convention differs")
     from closed_inline import validate as validate_closed_inline
     inline_report = validate_closed_inline(ir, unit, optimized=optimized)
+    from managed_records import validate as validate_managed_records
+    records_report = validate_managed_records(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4468,7 +4473,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     return {"definitions": sorted(definitions), "calls": sorted(calls), "declarations": sorted(declarations),
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
-            "checked_inline": inline_report,
+            "checked_inline": inline_report, "managed_records": records_report,
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 
@@ -4924,7 +4929,7 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         generated = ["user-image-catalog.json", *(directory + "/" + name for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json"))]
         if (provenance.get("generated_by_lean") != generated
                 or provenance.get("linked_inputs") != {"users": {key: [directory + "/startup.o", directory + "/program.o"]}}
-                or provenance.get("unit_contracts") != {"users": {key: CONTRACTS["user"]}}):
+                or provenance.get("unit_contracts") != {"users": {key: validate_unit(load_json(output_dir / directory / 'unit.json'), 'user', configuration=configuration, image_key=key)['contract_version']}}):
             raise Core0Error("independent user selected generated/linked/contract inventory differs")
         artifacts = _object(provenance.get("artifacts"), "independent user artifacts")
         mandatory = set(generated) | {"CatalogExport.lean", "UserFilesExport.lean"} | {directory + "/" + name for name in
@@ -5033,7 +5038,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         linked = {"boot": list(BOOT_OBJECTS), **({"users": {image["key"]: [image["directory"] + "/startup.o", image["directory"] + "/program.o"] for image in images}} if multi else {"user": list(USER_OBJECTS)})}
         contracts = {role: kernel_contract(configuration) if role == "kernel" else CONTRACTS[role] for role in roles}
         if multi:
-            contracts["users"] = {image["key"]: CONTRACTS["user"] for image in images}
+            contracts["users"] = {image["key"]: validate_unit(load_json(output_dir / image['directory'] / 'unit.json'), 'user', configuration=configuration, image_key=image['key'])['contract_version'] for image in images}
         if provenance.get("unit_contracts") != contracts:
             raise Core0Error("exact selected per-unit contract inventory differs")
         if provenance.get("generated_by_lean") != generated or provenance.get("linked_inputs") != linked:
