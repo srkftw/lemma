@@ -117,7 +117,7 @@ private def wordsAligned (first second scratch split length : UInt64) : Bool :=
 
 /-- A kernel scratch handle must name a live owner-1 purpose-1 frame. All
 spanned user leaves are checked before the bounded copy changes scratch. -/
-def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Action :=
+private def copyFromUserResult (aliasResult descriptor pointer kernelHandle offset length : UInt64) : Action :=
   if length = 0 then .done 0 0 else
   if maximumLength < length then .done Lemma.User.ABI.invalidArgument 0 else
   .bind (scratch kernelHandle offset length) fun s destination =>
@@ -132,14 +132,46 @@ def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Acti
       if s = 0 then
         if wordsAligned first second destination split length = true then
           .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 first second destination split fun s copied =>
-          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+          if s = 0 then .done 0 (if aliasResult = 1 then first else copied) else .done Lemma.User.ABI.kernelFatal 0
         else
           .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
-          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+          if s = 0 then .done 0 (if aliasResult = 1 then first else copied) else .done Lemma.User.ABI.kernelFatal 0
       else .done s 0
     else .done s 0
     else .done s 0
   else .done s 0
+
+def copyFromUser (descriptor pointer kernelHandle offset length : UInt64) : Action :=
+  copyFromUserResult 0 descriptor pointer kernelHandle offset length
+
+/-- Kernel-only result variant. The sole admitted caller copies surface metadata
+into a scratch frame distinct from the descriptor, then borrows this checked read
+alias for another span of the same user page within that nonpreemptible Action.
+The returned alias is not a handle, does not cross a syscall, and is never cached. -/
+def copyFromUserReadPage (descriptor pointer kernelHandle offset length : UInt64) : Action :=
+  copyFromUserResult 1 descriptor pointer kernelHandle offset length
+
+/-- The compiled caller guard binds reference/first to the successful metadata
+copy above. Both scratch ownership and the new span are checked afresh; a range
+outside the already checked page follows the ordinary complete validation path. -/
+def copyFromUserReusingReadPage (descriptor reference first pointer kernelHandle offset length : UInt64) : Action :=
+  if reference / 4096 = pointer / 4096 then
+  if length ≤ 4096 - pointer % 4096 then
+    if length = 0 then .done 0 0 else
+    if maximumLength < length then .done Lemma.User.ABI.invalidArgument 0 else
+    .bind (scratch kernelHandle offset length) fun s destination =>
+    if s = 0 then
+      if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
+      let source := first - reference % 4096 + pointer % 4096
+      if wordsAligned source 0 destination length length = true then
+        .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 source 0 destination length fun s copied =>
+        if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+      else
+        .boundedFoldU64 4096 fromStep length.toUInt32 0 source 0 destination length fun s copied =>
+        if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+    else .done s 0
+  else copyFromUser descriptor pointer kernelHandle offset length
+  else copyFromUser descriptor pointer kernelHandle offset length
 
 /-- Preflight includes write permission on both leaves before copying the
 scratch bytes. A read-only first/second page cannot produce a partial write. -/

@@ -92,15 +92,20 @@ private def findStep (i _ : UInt32) (acc address descriptor _ _ : UInt64) : Acti
     if id = descriptor then .done Status.iterationStop i.toUInt64 else .done 0 acc
   else .done 0 acc
 
-def lookup (descriptor : UInt64) : Action :=
+private def lookupRecord (descriptor : UInt64) : Action :=
   if descriptor = 0 then .done 74 0 else
   .bind table fun s address =>
   if failed s = true then fatal else
   .boundedFoldU64 8 findStep 8 8 address descriptor 0 0 fun s index =>
   if s = Status.iterationStop then
-    .bind (AddressSpace.base descriptor) fun s _ =>
-    if failed s = true then fatal else .done 0 (address + index * stride)
+    .done 0 (address + index * stride)
   else if s = 0 then .done 74 0 else fatal
+
+def lookup (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.base descriptor) fun s _ =>
+  if failed s = true then fatal else .done 0 record
 
 private def freeStep (i _ : UInt32) (acc address _ _ _ : UInt64) : Action :=
   .bind (Access.read64 (address + i.toUInt64 * stride + stateOffset)) fun s state =>
@@ -372,6 +377,31 @@ def savedContext (descriptor : UInt64) : Action :=
     else fatal else fatal else fatal
   else fatal
 
+/-- Only capture borrows this fresh descriptor base and owned-stack top. The
+original hardware-frame validation and a second fresh descriptor validation run
+before copying; that copy touches only the disjoint saved-context words. Live
+task-row state and saved translation are still checked after the copy. -/
+private def contextAt (descriptor base top : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = running then
+    let saved := base + AddressSpace.userContextOffset
+    .bind (Access.read64 (base + 72)) fun s translation =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 272)) fun s actual =>
+    if failed s = true then fatal else
+    if actual = translation then
+      .bind (Access.write64 saved 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 264) 0x200000020) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 280) top) fun s _ =>
+      if failed s = true then fatal else .done 0 saved
+    else fatal
+  else fatal
+
 private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (Access.read64 (source + i.toUInt64 * 8)) fun s value =>
   if failed s = true then fatal else
@@ -382,11 +412,12 @@ def capture (descriptor frame : UInt64) : Action :=
   .bind (Process.validateFrame frame) fun s actual =>
   if failed s = true then fatal else
   if actual = descriptor then
-    .bind (AddressSpace.context descriptor) fun s saved =>
+    .bind (AddressSpace.base descriptor) fun s base =>
     if failed s = true then fatal else
+    let saved := base + AddressSpace.userContextOffset
     .boundedFoldU64 36 copyStep 36 0 frame saved 0 0 fun s count =>
     if failed s = true then fatal else
-    if count = 36 then context descriptor else fatal
+    if count = 36 then contextAt descriptor base (frame + 288) else fatal
   else fatal
 
 def ready (descriptor reason pc : UInt64) : Action :=

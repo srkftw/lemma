@@ -709,6 +709,254 @@ def validate_capability_base_borrow(body: str, checked: str, helper: str,
             **validate_failed_call_gate(body,checked,helper,failed,failed_body)}
 
 
+def _local_checked_result(body: str, symbol: str, arguments: str) -> tuple[str,str]:
+    var=r'%[A-Za-z0-9_.$-]+'
+    calls=re.findall(r'('+var+r') = call \{ i64, i64 \} @'+re.escape(symbol)+r'\('+re.escape(arguments)+r'\)',body)
+    if len(calls)!=1: raise Core0Error('local borrow lacks one exact checked argument tuple')
+    values=re.findall(r'('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0])+r', 1$',body,re.M)
+    if len(values)!=1: raise Core0Error('local borrow lacks its exact checked value result')
+    return calls[0],values[0]
+
+
+def _local_call_arguments(body: str, symbol: str) -> list[str]:
+    return re.findall(r'call \{ i64, i64 \} @'+re.escape(symbol)+r'\(([^\n]*)\)',body)
+
+
+def _local_closed_calls(body: str, allowed: set[str]) -> None:
+    if not parse_definitions_and_calls(body)[2] <= allowed or re.search(r'\b(store|atomicrmw|cmpxchg|fence)\b',body):
+        raise Core0Error('local borrow contains an unapproved call or direct effect')
+
+
+def _local_callers(unit: dict, ir: str, helper: str, allowed: set[str], names: dict[str,str]) -> None:
+    observed={source for source,symbol in names.items() if names[helper] in
+              parse_definitions_and_calls(_ir_definition_body(ir,symbol))[2]}
+    if not observed or not observed <= allowed:
+        raise Core0Error('local borrow helper has an unapproved caller or no validated route')
+
+
+def _local_selected_failed_gate(body: str, checked: str, arguments: str, protected: str,
+                                failed: str, failed_body: str) -> dict:
+    selected=checked+'__selected_local_audit'
+    original='@'+checked+'('+arguments+')'
+    if body.count(original)!=1:raise Core0Error('local gate selected call is missing or duplicated')
+    rewritten=body.replace(original,'@'+selected+'('+arguments+')')
+    report=validate_failed_call_gate(rewritten,selected,protected,failed,failed_body)
+    report['checked']=checked;report['checked_arguments']=arguments
+    return report
+
+
+def _local_arithmetic(body: str, constants: dict[str,int]) -> dict[str,object]:
+    """Closed scalar operands for this emitted nonzero-literal arithmetic only."""
+    var=r'%[A-Za-z0-9_.$-]+';values=_ipc_scalar_operands(body,constants)
+    def value(operand):return values.get(operand,int(operand) if operand.isdecimal() else operand)
+    for line in body.splitlines():
+        m=re.fullmatch(r'\s*('+var+r') = (add|sub|mul|udiv|urem) i64 ([^,]+), ([^ ]+)',line)
+        if m:values[m[1]]=(m[2],value(m[3]),value(m[4]));continue
+        m=re.fullmatch(r'\s*('+var+r') = zext i32 ('+var+r') to i64',line)
+        if m:values[m[1]]=('zext32',m[2]);continue
+        m=re.fullmatch(r'\s*('+var+r') = phi i64 \[ ('+var+r'|[0-9]+), %[^ ]+ \], \[ ('+var+r'|[0-9]+), %[^ ]+ \]',line)
+        if m:
+            second=value(m[3])
+            if isinstance(second,tuple) and second[0] in {'udiv','urem'} and type(second[2])is int and second[2]!=0:
+                values[m[1]]=second
+    return values
+
+
+LOCAL_BORROW_SHAPES_V1 = {
+    # Closed emitted bodies for the four new/refactored local helpers. Names
+    # are rebound to their genuine source declarations before hashing, so a
+    # different reachability order cannot change authority. This is a narrow
+    # pinned lowering-shape audit, in addition to the independent CFG/operand
+    # checks below; it is not a claim of general compiler correctness.
+    'Lemma.Kernel.Task.findStep': '9670f690a926604dab388501d947d87b6b86e0d5d99792f1430f8efe5dc459a8',
+    'Lemma.Kernel.Task.lookupRecord': 'c37a6226e4724171df44737aaef87a59cbd4165048ecdaf86950dbc80628cf1e',
+    'Lemma.Kernel.Memory.UserCopy.copyFromUserResult': '76c50b4e2ef51923b87add161f46482645a01a802e40f46aaef9014c2754f1e2',
+    'Lemma.Kernel.Memory.UserCopy.copyFromUserReusingReadPage': 'e15e931ce16ea05ad270eccba2179d703a7ea647b705b2760a158f8f0884ade6',
+}
+
+
+def _local_pinned_shapes(ir: str, names: dict[str,str], sources: tuple[str,...]) -> dict:
+    reverse={symbol:source for source,symbol in names.items()};result={}
+    for source in sources:
+        body=_ir_definition_body(ir,names[source])
+        rebound=re.sub(r'@([^ (]+)',lambda m:'@'+reverse.get(m[1],m[1]),body)
+        digest=hashlib.sha256(' '.join(rebound.split()).encode()).hexdigest()
+        if digest!=LOCAL_BORROW_SHAPES_V1[source]:raise Core0Error('local helper differs from its pinned checked lowering shape: '+source)
+        result[source]=digest
+    return result
+
+
+def validate_task_capture_borrow(unit: dict, ir: str) -> dict:
+    """Closed fresh frame/descriptor/stack borrow in a single trap capture."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']}
+    n={s:r['symbol'] for s,r in rows.items()};t='Lemma.Kernel.Task.';p='Lemma.Kernel.Process.'
+    a='Lemma.Kernel.Memory.AddressSpace.';x='Lemma.Kernel.Memory.Access.'
+    required={t+s for s in ('capture','contextAt','copyStep','lookupRecord','findStep','table','failed','fatal','stride','stateOffset','running','runnable','dying')}
+    required|={p+'validateFrame',a+'base',a+'userContextOffset',x+'read64',x+'write64','Lemma.Core0.Memory.Status.iterationStop'}
+    # Status is a scalar source constant and may retain its public spelling.
+    required.discard('Lemma.Core0.Memory.Status.iterationStop')
+    if unit.get('role')!='kernel' or not required<=n.keys():raise Core0Error('task capture borrow lacks its closed kernel inventory')
+    for s,args,effects in [(t+'contextAt',['u64']*3,{'checked-access','physical-read','physical-write'}),
+                            (t+'lookupRecord',['u64'],{'checked-access','physical-read'}),
+                            (t+'copyStep',['u32','u32']+['u64']*5,{'checked-access','physical-read','physical-write'})]:
+        if rows[s].get('args')!=args or set(rows[s].get('effects',[]))!=effects:raise Core0Error('task capture helper signature/effects differ')
+    _local_callers(unit,ir,t+'contextAt',{t+'capture'},n)
+    _local_callers(unit,ir,t+'lookupRecord',{t+'lookup',t+'contextAt'},n)
+    body=_ir_definition_body(ir,n[t+'capture']);failed=_ir_definition_body(ir,n[t+'failed'])
+    _,actual=_local_checked_result(body,n[p+'validateFrame'],'i64 %arg1')
+    _,base=_local_checked_result(body,n[a+'base'],'i64 %arg0')
+    _local_closed_calls(body,{n[s] for s in (p+'validateFrame',a+'base',a+'userContextOffset',t+'failed',t+'fatal',t+'copyStep',t+'contextAt')})
+    comparisons=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 '+re.escape(actual)+r', %arg0$',body,re.M)
+    if len(comparisons)!=1:raise Core0Error('capture substitutes the validated frame descriptor')
+    gates=[validate_failed_call_gate(body,n[p+'validateFrame'],n[a+'base'],n[t+'failed'],failed),
+           validate_boolean_gate(body,comparisons[0],n[a+'base']),
+           validate_failed_call_gate(body,n[a+'base'],n[t+'copyStep'],n[t+'failed'],failed),
+           validate_failed_call_gate(body,n[a+'base'],n[t+'contextAt'],n[t+'failed'],failed)]
+    if re.fullmatch(r'\s*entry:\s*ret i64 2048\s*',_ir_definition_body(ir,n[a+'userContextOffset'])) is None:
+        raise Core0Error('capture saved-context layout differs')
+    operands=_ipc_scalar_operands(body,{n[a+'userContextOffset']:2048})
+    calls=_local_call_arguments(body,n[t+'contextAt'])
+    if len(calls)!=1:raise Core0Error('capture lacks one closed sanitization call')
+    args=calls[0].split(', ')
+    if len(args)!=3 or args[:2]!=['i64 %arg0','i64 '+base] or operands.get(args[2][4:])!=('add','%arg1',288):
+        raise Core0Error('capture does not borrow this fresh descriptor/base/owned stack top')
+    loop=_local_call_arguments(body,n[t+'copyStep'])
+    var=r'%[A-Za-z0-9_.$-]+'
+    if len(loop)!=1 or re.fullmatch(r'i32 signext '+var+r', i32 signext 36, i64 '+var+r', i64 %arg1, i64 '+var+r', i64 0, i64 0',loop[0]) is None:
+        raise Core0Error('capture no longer copies exactly the original 36-word frame')
+    if operands.get(loop[0].split(', ')[4][4:])!=('add',base,2048):raise Core0Error('capture copy overlaps authority metadata')
+    if len(re.findall(r'icmp ule i32 36, 36$',body,re.M))!=1 or len(re.findall(r'icmp ult i32 '+var+r', 36$',body,re.M))!=1:
+        raise Core0Error('capture loop lost its exact bounded word count')
+    counts=re.findall(r'('+var+r') = icmp eq i64 ('+var+r'), 36$',body,re.M)
+    if len(counts)!=1:raise Core0Error('capture lacks its complete-copy publication check')
+    gates.append(validate_boolean_gate(body,counts[0][0],n[t+'contextAt']))
+    callback=_ir_definition_body(ir,n[t+'copyStep']);_local_closed_calls(callback,{n[s] for s in (x+'read64',x+'write64',t+'failed',t+'fatal')})
+    # Preserve one checked source word then one checked saved-context word.
+    if len(_local_call_arguments(callback,n[x+'read64']))!=1 or len(_local_call_arguments(callback,n[x+'write64']))!=1:
+        raise Core0Error('capture callback changed its one-read/one-write word path')
+    gates.append(validate_failed_call_gate(callback,n[x+'read64'],n[x+'write64'],n[t+'failed'],failed))
+    operands=_local_arithmetic(callback,{})
+    readarg=_local_call_arguments(callback,n[x+'read64'])[0]
+    reads=_local_checked_result(callback,n[x+'read64'],readarg)
+    writeargs=_local_call_arguments(callback,n[x+'write64'])[0].split(', ')
+    index=('mul',('zext32','%arg0'),8)
+    if operands.get(readarg[4:])!=('add','%arg3',index) or operands.get(writeargs[0][4:])!=('add','%arg4',index) or writeargs[1]!='i64 '+reads[1]:
+        raise Core0Error('capture callback substitutes original frame or disjoint saved word/value')
+    helper=_ir_definition_body(ir,n[t+'contextAt']);_local_closed_calls(helper,{n[s] for s in (t+'lookupRecord',t+'failed',t+'fatal',t+'stateOffset',t+'running',a+'userContextOffset',x+'read64',x+'write64')})
+    _local_checked_result(helper,n[t+'lookupRecord'],'i64 %arg0')
+    values=_ipc_scalar_operands(helper,{n[a+'userContextOffset']:2048,n[t+'stateOffset']:8,n[t+'running']:3})
+    writes=[(values.get(arg.split(', ')[0][4:],arg.split(', ')[0][4:]),arg.split(', ')[1]) for arg in _local_call_arguments(helper,n[x+'write64'])]
+    saved=('add','%arg1',2048)
+    if writes!=[(saved,'i64 0'),(('add',saved,264),'i64 8589934624'),(('add',saved,280),'i64 %arg2')]:
+        raise Core0Error('capture sanitization changed its exact disjoint context writes')
+    gates.append(validate_failed_call_gate(helper,n[t+'lookupRecord'],n[x+'write64'],n[t+'failed'],failed))
+    gates.append(validate_ipc_read_guard(helper,n[x+'read64'],{n[a+'userContextOffset']:2048,n[t+'stateOffset']:8,n[t+'running']:3},
+        ('add',_local_checked_result(helper,n[t+'lookupRecord'],'i64 %arg0')[1],8),3,n[x+'write64']))
+    translation_args=[arg for arg in _local_call_arguments(helper,n[x+'read64']) if values.get(arg[4:])==('add','%arg1',72)]
+    if len(translation_args)!=1:raise Core0Error('capture helper dropped its live translation load')
+    _,translation=_local_checked_result(helper,n[x+'read64'],translation_args[0])
+    gates.append(validate_ipc_read_guard(helper,n[x+'read64'],{n[a+'userContextOffset']:2048},('add',saved,272),translation,n[x+'write64']))
+    for arg in _local_call_arguments(helper,n[x+'read64']):
+        gates.append(_local_selected_failed_gate(helper,n[x+'read64'],arg,n[x+'write64'],n[t+'failed'],failed))
+    # The live task-row scanner retains state and descriptor checks, including
+    # first malformed/failing rows. No cached task pointer is admitted.
+    record=_ir_definition_body(ir,n[t+'lookupRecord']);_local_closed_calls(record,{n[s] for s in (t+'table',t+'findStep',t+'failed',t+'fatal',t+'stride')} |
+        {symbol for source,symbol in n.items() if source.endswith('Status.iterationStop')})
+    if len(_local_call_arguments(record,n[t+'findStep']))!=1 or not re.search(r'i32 signext 8, i64 '+var+r', i64 '+var+r', i64 %arg0, i64 0, i64 0',record):
+        raise Core0Error('capture live row lookup lost its eight-row descriptor scan')
+    return {'helper':t+'contextAt','copied_words':36,'saved_context_offset':2048,'stack_top_from_original_frame':288,
+            'gates':gates,'pinned_shapes':_local_pinned_shapes(ir,n,(t+'findStep',t+'lookupRecord')),'scope':'same nonpreemptible capture; original frame/stack and fresh descriptor checks retained; live row scan after copy'}
+
+
+def validate_surface_read_page_borrow(unit: dict, ir: str) -> dict:
+    """Only the surface metadata path may borrow a checked same-page read alias."""
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']};n={s:r['symbol'] for s,r in rows.items()}
+    d='Lemma.Platform.LemmaSim.DeviceService.';u='Lemma.Kernel.Memory.UserCopy.';x='Lemma.Kernel.Memory.Access.'
+    f='Lemma.Kernel.Memory.Frames.resolvePurpose';paper='Lemma.Drivers.Paper.upload'
+    required={d+s for s in ('upload','uploadOrdinary','uploadBorrowed','get','fatal')}|{u+s for s in ('copyFromUser','copyFromUserResult','copyFromUserReadPage','copyFromUserReusingReadPage','scratch','validRange','maximumLength','wordsAligned','fromStep','fromWordStep')}|{f,paper,x+'read64'}
+    if unit.get('role')!='kernel' or not required<=n.keys():raise Core0Error('surface read-page borrow lacks its closed kernel inventory')
+    for source,count in ((u+'copyFromUserReadPage',5),(u+'copyFromUserReusingReadPage',7),(u+'copyFromUserResult',6)):
+        if rows[source].get('args')!=['u64']*count or set(rows[source].get('effects',[]))!={'checked-access','physical-read','physical-write'}:
+            raise Core0Error('read-page copy helper signature/effects differ')
+    _local_callers(unit,ir,d+'uploadBorrowed',{d+'upload'},n)
+    _local_callers(unit,ir,u+'copyFromUserReadPage',{d+'uploadBorrowed'},n)
+    _local_callers(unit,ir,u+'copyFromUserReusingReadPage',{d+'uploadBorrowed'},n)
+    _local_callers(unit,ir,u+'copyFromUserResult',{u+'copyFromUser',u+'copyFromUserReadPage'},n)
+    for source,mode in ((u+'copyFromUser',0),(u+'copyFromUserReadPage',1)):
+        body=_ir_definition_body(ir,n[source]);_local_closed_calls(body,{n[u+'copyFromUserResult']})
+        if _local_call_arguments(body,n[u+'copyFromUserResult'])!=['i64 '+str(mode)+', '+', '.join('i64 %arg'+str(i) for i in range(5))]:
+            raise Core0Error('read-page wrapper lost its fixed ordinary/alias result mode')
+    result=_ir_definition_body(ir,n[u+'copyFromUserResult'])
+    base_checked=u+'checkedBase';lookup=u+'checkedLookupAt'
+    if base_checked not in n or lookup not in n:raise Core0Error('read-page producer lacks its original address-space checks')
+    _,base=_local_checked_result(result,n[base_checked],'i64 %arg1, i64 %arg2, i64 1')
+    _,first_value=_local_checked_result(result,n[lookup],'i64 '+base+', i64 %arg2, i64 1')
+    # Both word/byte success branches return this exact first checked leaf when
+    # the fixed alias-result wrapper selected mode1. Ordinary mode0 keeps count.
+    variable=r'%[A-Za-z0-9_.$-]+'
+    modes=re.findall(r'('+variable+r') = icmp eq i64 %arg0, 1$',result,re.M)
+    alias_phis=re.findall(r'('+variable+r') = phi i64 \[ '+re.escape(first_value)+r', %[^ ]+ \], \[ ('+variable+r'), %[^ ]+ \]',result)
+    if len(modes)!=2 or len(alias_phis)!=2:raise Core0Error('read-page producer substituted the checked first-leaf result')
+    validate_checked_call_gate(result,n[base_checked],n[lookup])
+    wrapper=_ir_definition_body(ir,n[d+'upload']);_,handle=_local_checked_result(wrapper,n[d+'get'],'i64 24')
+    _local_closed_calls(wrapper,{n[d+s] for s in ('get','fatal','uploadOrdinary','uploadBorrowed')})
+    if _local_call_arguments(wrapper,n[d+'uploadBorrowed'])!=['i64 %arg0, i64 %arg1, i64 %arg2, i64 '+handle]:
+        raise Core0Error('upload lost its fresh scratch handle argument')
+    neq=re.findall(r'(%[A-Za-z0-9_.$-]+) = icmp eq i64 '+re.escape(handle)+r', %arg0$',wrapper,re.M)
+    if len(neq)!=1:raise Core0Error('upload omitted the descriptor/scratch alias fallback')
+    gates=[validate_checked_call_gate(wrapper,n[d+'get'],n[d+'uploadBorrowed']),validate_boolean_gate(wrapper,neq[0],n[d+'uploadBorrowed'],success_when_true=False)]
+    body=_ir_definition_body(ir,n[d+'uploadBorrowed']);_,first=_local_checked_result(body,n[u+'copyFromUserReadPage'],'i64 %arg0, i64 %arg1, i64 %arg3, i64 1024, i64 32')
+    _,handle=_local_checked_result(body,n[d+'get'],'i64 24')
+    arguments=_local_call_arguments(body,n[u+'copyFromUserReusingReadPage'])
+    var=r'%[A-Za-z0-9_.$-]+'
+    if len(arguments)!=1 or re.fullmatch(re.escape('i64 %arg0, i64 %arg1, i64 '+first+', i64 %arg2, i64 '+handle+', i64 0, i64 ')+var,arguments[0]) is None:
+        raise Core0Error('upload does not reuse the exact successful descriptor/read-page alias')
+    same=re.findall(r'('+var+r') = icmp eq i64 '+re.escape(handle)+r', %arg3$',body,re.M)
+    if len(same)!=1:raise Core0Error('upload lost its second live scratch-handle equality')
+    gates.extend([validate_checked_call_gate(body,n[u+'copyFromUserReadPage'],n[u+'copyFromUserReusingReadPage']),
+                  validate_checked_call_gate(body,n[d+'get'],n[u+'copyFromUserReusingReadPage']),
+                  validate_boolean_gate(body,same[0],n[u+'copyFromUserReusingReadPage'])])
+    # Enumerate every call that can reach reuse; paper/DMA work occurs afterward.
+    blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
+    sites={label for label,lines in blocks.items() if any('@'+n[u+'copyFromUserReusingReadPage']+'(' in line for line in lines)}
+    readonly={n[source] for source in (u+'copyFromUserReadPage',u+'copyFromUserReusingReadPage',d+'get',f,x+'read64')}
+    for label,lines in blocks.items():
+        if any(_structured_reachable(successors,label,site) for site in sites):
+            _local_closed_calls('\n'.join(lines),readonly)
+    reuse=_ir_definition_body(ir,n[u+'copyFromUserReusingReadPage'])
+    allowed={n[source] for source in (u+'copyFromUser',u+'scratch',u+'validRange',u+'maximumLength',u+'wordsAligned',u+'fromStep',u+'fromWordStep')}
+    allowed|={symbol for source,symbol in n.items() if source.startswith('Lemma.User.ABI.')}
+    _local_closed_calls(reuse,allowed)
+    for callback in (u+'fromStep',u+'fromWordStep'):
+        gates.append(validate_checked_call_gate(reuse,n[u+'scratch'],n[callback]))
+    if len(re.findall(r'udiv i64 %arg1, 4096$',reuse,re.M))!=1 or len(re.findall(r'udiv i64 %arg3, 4096$',reuse,re.M))!=1:
+        raise Core0Error('read-page reuse changed its exact page equality')
+    quotient=re.findall(r'('+var+r') = phi i64 \[ 0, %[^ ]+ \], \[ ('+var+r'), %[^ ]+ \]',reuse)
+    divs=dict(re.findall(r'('+var+r') = udiv i64 (%arg[13]), 4096$',reuse,re.M))
+    pages={divs[v]:result for result,v in quotient if v in divs}
+    pagecmp=re.findall(r'('+var+r') = icmp eq i64 '+re.escape(pages.get('%arg1','NO_PAGE'))+', '+re.escape(pages.get('%arg3','NO_PAGE'))+r'$',reuse,re.M)
+    remaining=re.findall(r'('+var+r') = sub i64 4096, ('+var+r')$',reuse,re.M)
+    remainder=set(re.findall(r'('+var+r') = urem i64 %arg3, 4096$',reuse,re.M))
+    remainder_phis=[result for result,v in re.findall(r'('+var+r') = phi i64 \[ %arg3, %[^ ]+ \], \[ ('+var+r'), %[^ ]+ \]',reuse) if v in remainder]
+    bounds=[result for result,right in re.findall(r'('+var+r') = icmp ule i64 %arg6, ('+var+r')$',reuse,re.M) if any(address==right and rem in remainder_phis for address,rem in remaining)]
+    if len(pagecmp)!=1 or len(bounds)!=1:raise Core0Error('read-page reuse lost its exact whole-span page bound')
+    for callback in (u+'fromStep',u+'fromWordStep'):
+        gates.extend([validate_boolean_gate(reuse,pagecmp[0],n[callback]),validate_boolean_gate(reuse,bounds[0],n[callback])])
+    operands=_local_arithmetic(reuse,{})
+    source=('add',('sub','%arg2',('urem','%arg1',4096)),('urem','%arg3',4096))
+    _,destination=_local_checked_result(reuse,n[u+'scratch'],'i64 %arg4, i64 %arg5, i64 %arg6')
+    for callback in (u+'fromStep',u+'fromWordStep'):
+        args=_local_call_arguments(reuse,n[callback])
+        if len(args)!=1:raise Core0Error('read-page reuse changed the bounded copy callback count')
+        fields=args[0].split(', ')
+        if len(fields)!=7 or operands.get(fields[3][4:])!=source or fields[4]!='i64 0' or fields[5]!='i64 '+destination or fields[6]!='i64 %arg6':
+            raise Core0Error('read-page reuse substituted checked page arithmetic or scratch span')
+    if _local_call_arguments(reuse,n[u+'copyFromUser'])!=['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5, i64 %arg6']*2:
+        raise Core0Error('read-page fallback lost complete ordinary validation')
+    return {'helper':u+'copyFromUserReusingReadPage','metadata_bytes':32,'metadata_scratch_offset':1024,'page_bytes':4096,
+            'gates':gates,'pinned_shapes':_local_pinned_shapes(ir,n,(u+'copyFromUserResult',u+'copyFromUserReusingReadPage')),'scope':'same nonpreemptible surface upload; exact checked alias, distinct descriptor scratch, freshly owned destination; ordinary path outside checked page'}
+
+
 def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
     """Keep the private same-Action header helper closed at every compiled use."""
     rows={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
@@ -3085,7 +3333,7 @@ def validate_architecture_diagnostics(unit: dict, pre_ir: str) -> dict:
     p, q, t, x, c = "Lemma.Kernel.Process.", "Lemma.Kernel.Scheduler.", "Lemma.Kernel.Task.", "Lemma.Kernel.Memory.Access.", "Lemma.Kernel.Console."
     required = {p + "validateFrame", x + "read64", c + "record"}
     required |= ({q + "dispatch", q + "reportFault", q + "failed", q + "finish", q + "returnKernel", t + "capture", t + "failed",
-                  "Lemma.Kernel.Memory.AddressSpace.context"} if managed else
+                  ("Lemma.Kernel.Memory.AddressSpace.base" if any(re.sub(r"^_private\..*?\.[0-9]+\.","",r["source"])==t+"contextAt" for r in unit["functions"]) else "Lemma.Kernel.Memory.AddressSpace.context")} if managed else
                  {p + "dispatch", p + "userTrap", p + "failed", p + "finish"})
     if not required <= by.keys(): raise Core0Error("architecture diagnostic genuine source closure is incomplete")
     body = {source: _ir_definition_body(pre_ir, by[source]) for source in required}
@@ -3102,7 +3350,7 @@ def validate_architecture_diagnostics(unit: dict, pre_ir: str) -> dict:
         gates = [{"source": dispatch, **validate_failed_call_gate(body[dispatch], by[t + "capture"], by[report], by[failed], body[failed])}]
         capture_body = _ir_definition_body(pre_ir, by[t + "capture"])
         task_failed = by.get(t + "failed")
-        context = by.get("Lemma.Kernel.Memory.AddressSpace.context")
+        context = by.get("Lemma.Kernel.Memory.AddressSpace.base" if t+"contextAt" in by else "Lemma.Kernel.Memory.AddressSpace.context")
         if task_failed is None or context is None: raise Core0Error("capture ownership proof source closure is incomplete")
         gates.append({"source": t + "capture", **validate_failed_call_gate(capture_body, by[p + "validateFrame"], context, task_failed, _ir_definition_body(pre_ir, task_failed))})
         calls = re.findall(r"call \{ i64, i64 \} @" + re.escape(by[report]) + r"\(([^)]+)\)", body[dispatch])
@@ -4835,6 +5083,12 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         capability_header_borrow = (validate_capability_header_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
             if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Capability.managed'
                    for row in units['kernel']['functions']) else None)
+        task_capture_borrow = (validate_task_capture_borrow(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Task.capture'
+                   for row in units['kernel']['functions']) else None)
+        surface_read_page_borrow = (validate_surface_read_page_borrow(units['kernel'], (output_dir/'kernel/program.ll').read_text())
+            if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Platform.LemmaSim.DeviceService.surface'
+                   for row in units['kernel']['functions']) else None)
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                                 if configuration == "capabilities-development" else None)
         managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
@@ -5028,6 +5282,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "task_kernel_stack": task_stack,
                   "object_budget": object_budget,
                   **({"capability_header_borrow":capability_header_borrow} if capability_header_borrow is not None else {}),
+                  **({"task_capture_borrow":task_capture_borrow} if task_capture_borrow is not None else {}),
+                  **({"surface_read_page_borrow":surface_read_page_borrow} if surface_read_page_borrow is not None else {}),
                   **({"architecture_diagnostics": architecture} if architecture is not None else {}),
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."

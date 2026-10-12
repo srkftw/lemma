@@ -237,3 +237,43 @@ writes include the original3630000-pixel clear, leaving808384 actual uploaded
 pixels. This identifies upload/validation work after background construction.
 It is neither Ready nor completed full display. The declared ceilings remain
 unchanged, and no failed campaign is reclassified.
+
+The next connected kernel increment removes repeated checks within a single
+surface transfer and trap capture. Its maintained finite-RAM fixtures compare
+the previous bodies with the new production paths, including complete memory,
+result/error priority, cross-page/unaligned/range fallback, corrupt descriptor,
+registry/PTE/generation/permission, scratch/descriptor alias, owned-stack and
+task-row faults, and partial write prefixes. On the actual444-leaf notebook
+address-space shape, metadata32+pixels512 reads drop1260→668 and ownership reads
+136→71; checked word writes remain68. A one-leaf shape drops356→216 and130→68.
+Trap capture drops427→239 reads and188→96 ownership reads, retaining39 checked
+word writes. Logs are `build/task006-upload-readpage-reuse-a2.log` and
+`build/task006-trap-capture-reuse-a1.log`. These are Action work counts, not RTL
+cycle or host-time claims.
+
+`tests/kernel/LocalAuthorityCompile.lean` genuinely elaborates and checked-lowers
+the maintained surface service and capture through LLVM, alongside earlier
+allocation/capability/background roots. The successful new probe is
+`build/task006-transfer-compile-a3`; the first attempt retained a diagnostic
+missing `core0_io_fence` declaration and did not produce a valid transfer module.
+The probe now declares the normal existing device-order primitive, without
+adding a target helper or changing its semantics. The closed kernel audit
+checks exact descriptor/alias/stack arguments, success gates, read-only paths,
+live row checks and disjoint word stores. Eleven mutations of the real emitted
+LLVM fail at `build/task006-transfer-compile-a3/local-borrow-mutations.json`.
+The prior UserCopyScans and BulkCopyAndDeadline Action suites pass at
+`build/task006-transfer-usercopy-legacy-a1.log` and
+`build/task006-transfer-bulk-legacy-a1.log`;328 existing kernel host checks pass
+at `build/task006-transfer-kernel-host-a1.log`, with four additional narrow host
+checks recorded separately. A fresh full guest audit and canonical cold workflow
+are still required for this increment.
+
+The slower joint packed-background campaign retains a393000000-cycle
+observational checkpoint at `task006-hotpath-canonical-a1/profile-boundary-a1`:
+218297431 retired instructions, U35498165/S351699125/M5802702 cycles,
+three medium requests,6327 traps/956 timer traps and zero completed panel
+refreshes. Its3630000 framebuffer writes are exactly the initial controller
+clear; no actual upload had occurred at that boundary. This motivates trap
+validation reuse independently of the subsequent upload work. Both ongoing
+cold campaigns retain their original2B-cycle/7200-second diagnostic ceilings;
+no independent pipeline worst-case boot bound has yet been established.

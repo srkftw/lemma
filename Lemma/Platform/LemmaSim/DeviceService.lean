@@ -53,7 +53,7 @@ private def metadata (descriptor pointer bytes : UInt64) : Action :=
   .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then .done 0 (base + 1024) else fatal
   else .done s 0 else fatal
 
-private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
+private def uploadOrdinary (descriptor fieldsPointer pixels : UInt64) : Action :=
   .bind (metadata descriptor fieldsPointer 32) fun s fields => if s = 0 then
   .bind (Access.read64 fields) fun s x => if s = 0 then
   .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
@@ -65,6 +65,32 @@ private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
   .bind (UserCopy.copyFromUser descriptor pixels handle 0 (((w + 1) / 2) * h)) fun s _ =>
   if s = 0 then Lemma.Drivers.Paper.upload handle x y w h else .done s 0
   else fatal else fatal else fatal else fatal else fatal else .done s 0
+
+/-- Both buffers may share the single preflighted read page. The caller has
+excluded the descriptor scratch alias; every remaining call before reuse is
+read-only, and the paper driver is invoked only after the pixel copy finishes. -/
+private def uploadBorrowed (descriptor fieldsPointer pixels firstHandle : UInt64) : Action :=
+  .bind (UserCopy.copyFromUserReadPage descriptor fieldsPointer firstHandle 1024 32) fun s first => if s = 0 then
+  .bind (Frames.resolvePurpose 1 firstHandle 1) fun s base => if s = 0 then
+  let fields := base + 1024
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  if w = 0 then .done 170 0 else if 32 < w then .done 170 0 else
+  if h = 0 then .done 170 0 else if 32 < h then .done 170 0 else
+  .bind (get 24) fun s handle => if s = 0 then
+  .bind (if handle = firstHandle then
+    UserCopy.copyFromUserReusingReadPage descriptor fieldsPointer first pixels handle 0 (((w + 1) / 2) * h)
+    else UserCopy.copyFromUser descriptor pixels handle 0 (((w + 1) / 2) * h)) fun s _ =>
+  if s = 0 then Lemma.Drivers.Paper.upload handle x y w h else .done s 0
+  else fatal else fatal else fatal else fatal else fatal else fatal else .done s 0
+
+private def upload (descriptor fieldsPointer pixels : UInt64) : Action :=
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then uploadOrdinary descriptor fieldsPointer pixels else
+  uploadBorrowed descriptor fieldsPointer pixels handle
+  else fatal
 
 private def refresh (descriptor fieldsPointer : UInt64) : Action :=
   .bind (metadata descriptor fieldsPointer 48) fun s fields => if s = 0 then

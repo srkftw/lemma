@@ -256,3 +256,32 @@ the maximum observed allocation is not a whole-run high-water proof. A selected
 real guest call-closure review checks that normal raw append and raster paths
 do not load complete page history or allocate pages. Toolbar/page-loading paths
 remain separate, and this review is not a whole-program memory proof.
+
+Surface upload may borrow a read-page alias only inside its one nonpreemptible
+supervisor Action. The metadata copy performs the ordinary complete descriptor,
+registry, duplicate, ownership, generation, PTE and read-permission checks,
+then returns its first checked physical alias. The pixel copy may derive a
+second alias only when its entire span is in that same 4096-byte user page;
+otherwise it runs the original validation path. The scratch frame must differ
+from the descriptor before metadata is copied, and its live generation, owner,
+purpose and bounds are checked again for the pixels. A changed scratch handle
+uses the ordinary path. No paper transaction precedes the completed pixel copy.
+The compiled audit binds both pointers, the exact checked alias result and
+handle equality; it rejects intervening authority mutation or scheduling.
+This interface is kernel-only and carries no pointer or authority across an
+entry, interrupt, process or checkpoint API.
+
+Trap capture retains the original `Process.validateFrame` checks on current
+descriptor, origin, privilege, SATP, owned stack, adjacency, pins, canaries and
+exact original frame address. It then resolves the same descriptor afresh,
+copies all36 checked words only into the disjoint saved context at+2048, and
+borrows that base plus `frame+288` for final sanitization. The live eight-row
+task scan, running-state check, translation comparison and all three checked
+sanitization stores remain after copying. The public `Task.lookup` still
+validates the descriptor after its row scan. Neither helper retains authority
+or skips a malformed live row. Canonical audits invoke the closed borrow guards
+from public `Task.capture`/surface reachability, require successful data/status
+bindings, original word addresses and exact context fields, and pin the four
+new/refactored helper lowering shapes to `local-borrow-shapes-v1`. Those shape
+checks supplement CFG/operand and independent finite-RAM checks; they do not
+establish general compiler correctness or real guest execution.
