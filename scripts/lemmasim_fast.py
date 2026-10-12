@@ -201,7 +201,12 @@ def copy_new(source,destination):
     """Copy durable bytes only. Never issue FLUSH or overwrite a destination."""
     source,destination=Path(source),Path(destination)
     with source.open('rb') as src,destination.open('xb') as dst:
-        shutil.copyfileobj(src,dst,1024*1024)
+        length=0
+        for part in iter(lambda:src.read(1024*1024),b''):
+            if part.count(0)==len(part):dst.seek(len(part),os.SEEK_CUR)
+            else:dst.write(part)
+            length+=len(part)
+        dst.truncate(length)
         dst.flush();os.fsync(dst.fileno())
 
 
@@ -240,6 +245,7 @@ class Fast:
         self.checkpoint_files={'machine.chk','clock.json','durable.raw'} if self.has_medium else {'machine.chk','clock.json'}
         self.time_origin_ns=0
         self.generation=0
+        self.replay_path=None
         self.start()
 
     def start(self):
@@ -268,6 +274,10 @@ class Fast:
         if self.has_medium:
             command+=['-global',f'lemma-fast-block.backing-capture={self.directory}/backing-{self.generation}.io',
                       '-global',f'lemma-fast-block.backing-identity={self.data["qemu"]["sha256"]}']
+        if self.replay_path is not None:
+            if self.medium is None or self.companion is not None:raise ValueError('Backing replay requires a private restored local medium')
+            command+=['-global',f'lemma-fast-block.backing-replay={self.replay_path}',
+                      '-global','lemma-fast-block.replay-private=on']
         if self.args.fail_flush:
             command+=['-global',f'lemma-fast-block.fail-flush={self.args.fail_flush}']
         trace_limit=getattr(self.args,'trace_limit',0)
@@ -371,6 +381,10 @@ class Fast:
                 candidate.medium=directory/'durable.raw'
                 copy_new(path.with_name('durable.raw'),candidate.medium)
                 candidate.companion=None
+            replay=getattr(self.args,'backing_replay',None)
+            if replay is not None:
+                if not self.has_medium:raise ValueError('Backing replay requires checkpoint durable bytes')
+                candidate.replay_path=Path(replay).resolve()
             candidate.start()
             candidate.qmp.execute('lemma-load-machine',{'filename':str(path)})
             if expected_ns is not None and candidate.clock()['virtual_ns']!=expected_ns:
@@ -434,6 +448,7 @@ class Fast:
                     time.sleep(0.001)
             return self.inspect()
         if action=='cold-cycle':
+            if self.replay_path is not None:raise ValueError('Recorded I/O suffix belongs to its restored clock; start another isolated restore')
             origin=self.clock()['virtual_ns']
             self.stop();self.time_origin_ns=origin;self.generation+=1;self.start();return self.inspect()
         if action=='panel':

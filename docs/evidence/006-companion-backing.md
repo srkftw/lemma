@@ -225,3 +225,32 @@ The exact source-bound fixture completed in8.082s. The168 silicon host tests,18
 scaffold tests and metadata check passed separately. Pending external forks,
 native notebook/peer cold acceptance, complete power domains and QEMU cached
 state remain separate unfinished obligations.
+
+# Fast private I/O replay increment
+
+`006-fast-backing-replay.json` records the new exact-identity QEMU consumer of
+LMIOLOG2 and a real notebook Save suffix. Campaign `fast-backing-replay-a2`
+passed 42 exact submitted/accepted I/O outcomes, raw input and guest UART
+suffixes, acknowledged object bytes and the complete 1650x2200 controller
+display after removing the mutable live medium. Cold Ready was observed at
+11.000000008 nominal virtual seconds /22.395 host seconds; private replay took
+7.329 seconds and the full campaign 43.245 seconds. Live/replay QEMU peak RSS
+were 100244/93616 KiB; retained artifacts allocated 53264384 bytes. Private
+restore copying preserves holes without changing logical capacity or bytes.
+
+The original `fast-backing-replay-a1` FAIL remains: the OS resource observer
+missed the pinned Nix wrapper's actual executable name. An independent actual
+wrapper probe corrected that observer, retaining every guest/replay assertion
+and predeclared deadline. Actual partial pwrite/EFBIG and failed fsync/EBADF
+replayed exact changed prefixes/errors in a private file after the original
+was removed; corruption, identity, cursor, request and timing checks reject.
+The focused three boundary tests, 126-test LemmaSim host suite and 18 scaffold
+tests passed separately from genuine guest execution.
+
+The existing adapter4 authoritative wrapper layout remains unchanged. A
+transient adapter5 edit caused a separate retained mathematics live/cold
+identity failure; it was corrected to stable adapter4 without weakening that
+check. The changed replay backend is bound by its exact runtime identity.
+See [the v4 boundary](../contracts/006-companion-backing-dev-v4.md).
+QEMU omitted cached state, pending external fork continuation, explicit peer
+retry-control replay, USB/radio and production boot remain unfinished.

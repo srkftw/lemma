@@ -30,7 +30,8 @@ struct LemmaFastBlock {
     qemu_irq irq;
     QEMUTimer *timer;
     char *medium_path,*trace_path;
-    char *peer_client,*peer_socket,*peer_state,*peer_writer,*peer_helper,*capture_path,*capture_identity;
+    char *peer_client,*peer_socket,*peer_state,*peer_writer,*peer_helper,*capture_path,*capture_identity,*replay_path;
+    bool replay_private;
     void *backing;
     LemmaBackingState backing_state;
     int fd;
@@ -366,6 +367,9 @@ static void block_realize(DeviceState *dev,Error **errp) {
         error_setg(errp,"invalid or duplicate fast block controller");return;
     }
     if(s->medium_path && s->peer_client) {error_setg(errp,"local and companion backing are mutually exclusive");return;}
+    if(s->replay_path&&(!s->medium_path||s->peer_client||!s->replay_private)) {
+        error_setg(errp,"backing replay requires an explicitly private local medium");return;
+    }
     if(s->medium_path) {
         s->fd=open(s->medium_path,O_RDWR|O_CLOEXEC);
         if(s->fd<0 || flock(s->fd,LOCK_EX|LOCK_NB) || fstat(s->fd,&st) || !S_ISREG(st.st_mode) || st.st_size!=268435456) {
@@ -377,6 +381,10 @@ static void block_realize(DeviceState *dev,Error **errp) {
         s->backing=lemma_backing_create_async(s->fd,s->peer_client,s->peer_socket,s->peer_state,s->peer_writer,s->peer_helper,
             s->capture_path,s->capture_identity,error,sizeof error);
         if(!s->backing) {error_setg(errp,"backing initialization: %s",error);return;}
+        if(s->replay_path&&lemma_backing_attach_replay(s->backing,s->replay_path,s->capture_identity,
+                                                    s->replay_private,error,sizeof error)) {
+            error_setg(errp,"backing replay initialization: %s",error);return;
+        }
         lemma_backing_get_state(s->backing,&s->backing_state);
     }
     s->capacity_bytes=268435456;s->medium_present=s->backing!=NULL;s->pending_index=g_hash_table_new(g_int64_hash,g_int64_equal);
@@ -424,6 +432,8 @@ static const Property block_properties[]={
     DEFINE_PROP_STRING("companion-state",LemmaFastBlock,peer_state),DEFINE_PROP_STRING("companion-writer",LemmaFastBlock,peer_writer),
     DEFINE_PROP_STRING("companion-helper",LemmaFastBlock,peer_helper),DEFINE_PROP_STRING("backing-capture",LemmaFastBlock,capture_path),
     DEFINE_PROP_STRING("backing-identity",LemmaFastBlock,capture_identity),
+    DEFINE_PROP_STRING("backing-replay",LemmaFastBlock,replay_path),
+    DEFINE_PROP_BOOL("replay-private",LemmaFastBlock,replay_private,false),
     DEFINE_PROP_UINT64("trace-limit",LemmaFastBlock,trace_limit,1000000),
     DEFINE_PROP_UINT64("step-ns",LemmaFastBlock,step_ns,100),
     DEFINE_PROP_UINT64("fail-write",LemmaFastBlock,fail_write,0),DEFINE_PROP_UINT64("fail-flush",LemmaFastBlock,fail_flush,0),

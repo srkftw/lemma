@@ -16,6 +16,11 @@ void lemma_backing_destroy(void *backing);
 void *lemma_backing_create_async(int borrowed_fd,const char *client,const char *socket,
   const char *state,const char *writer,const char *helper,const char *capture,
   const char *identity,char *error,size_t error_bytes);
+// Bind a complete, exact-identity LMIOLOG2 to an explicitly private POSIX
+// fork. Validation finishes before changing the owner. Replay never submits
+// an external operation and accepts each recorded outcome at its exact time.
+int lemma_backing_attach_replay(void *backing,const char *path,const char *identity,
+  int private_fork,char *error,size_t error_bytes);
 // submit returns0 after admission; poll returns1 Pending,0 actual completion,
 // -1 unknown/corrupt outcome. Neither Pending nor retry manufactures a receipt.
 int lemma_backing_submit(void *backing,uint64_t kind,uint64_t boundary,
