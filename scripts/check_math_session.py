@@ -28,7 +28,7 @@ class MathChecker(Checker):
         self.report['bounds']['disk'] = str(args.disk.resolve())
         self.report.update(schema='lemmasim-guest-exact-course-observations/1',
             scope='actual elaborated Lean RV64 bounded exact course/record/ink workflow; '
-                  'managed runtime, isolated verifier, proof kernel and complete G5–G7 remain unfinished',
+                  'managed source language, proof kernel and complete G5–G7 remain unfinished; isolated arithmetic is qualified only by an observed server path',
             medium_source={'path':str(args.disk.resolve()), 'sha256':sha(args.disk)})
         for path in (Path(__file__),ROOT/'conformance/lemmasim/math_oracle.py'):
             self.report['observer_sources'][str(path.relative_to(ROOT))] = sha(path)

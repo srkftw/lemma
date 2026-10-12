@@ -116,7 +116,32 @@ private def historyStep (i _ : UInt32) (acc buffer entry _ _ : UInt64) : Action 
   .bind (field buffer source) fun s value => if s = 0 then
   .bind (put entry offset value) fun s _ => .done s acc else .done s 0
 
-/-- A genuine check is a scalar algorithm over the user's current typed values.
+/-- Publish only a result still bound to the current original submission.
+The isolated endpoint client independently validates the checker/request and
+copied document identity before invoking this operation. -/
+def completeSubmit (buffer revision goal outcome : UInt64) : Action :=
+  if outcome = 0 then .done 234 0 else if 5 < outcome then .done 234 0 else
+  .bind (eventCapacity buffer) fun s _ => if s = 0 then
+  .bind (field buffer 40) fun s currentRevision => if s = 0 then
+  .bind (field buffer 48) fun s currentGoal => if s = 0 then
+  if currentRevision = revision then if currentGoal = goal then
+  .bind (field buffer 144) fun s attempts => if s = 0 then
+  if 8 < attempts then .done 234 0 else
+  if (if attempts = 8 then if outcome = Exact.indeterminate then true else false else true) = true then
+  .bind (put buffer 96 outcome) fun s _ => if s = 0 then
+  .bind (put buffer 104 revision) fun s _ => if s = 0 then
+  .bind (put buffer 168 (if outcome = Exact.verified then 2 else if outcome = Exact.invalid then 1 else 3)) fun s _ => if s = 0 then
+  .bind (if attempts < 8 then
+    .boundedFoldU64 9 historyStep 9 0 buffer (buffer + 256 + attempts * 72) 0 0 fun s _ =>
+      if s = 0 then put buffer 144 (attempts + 1) else .done s 0
+    else .done 0 0) fun s _ => if s = 0 then
+  .bind (appendEvent buffer (if attempts < 8 then 1 else 5) outcome (if attempts < 8 then attempts else 0)) fun s _ => .done s outcome
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done 234 0
+  else .done s 0 else .done 234 0 else .done 234 0
+  else .done s 0 else .done s 0 else .done s 0
+
+/-- Historical/local checking retains its real owned-object implementation.
+Canonical software bootargs2/3 instead use the isolated endpoint asynchronously.
 History exhaustion reports Indeterminate without replacing older entries. -/
 def submit (buffer : UInt64) : Action :=
   .bind (eventCapacity buffer) fun s _ => if s = 0 then
@@ -130,18 +155,10 @@ def submit (buffer : UInt64) : Action :=
   .bind (field buffer 144) fun s attempts => if s = 0 then
   .bind (field buffer 40) fun s revision => if s = 0 then
   .bind (if attempts < 8 then OwnedSubmission.check goal n d p0 p1 p2 budget else .done 0 Exact.indeterminate) fun s outcome => if s = 0 then
-  .bind (put buffer 96 outcome) fun s _ => if s = 0 then
-  .bind (put buffer 104 revision) fun s _ => if s = 0 then
-  .bind (put buffer 168 (if outcome = Exact.verified then 2 else if outcome = Exact.invalid then 1 else 3)) fun s _ => if s = 0 then
-  .bind (if attempts < 8 then
-    .boundedFoldU64 9 historyStep 9 0 buffer (buffer + 256 + attempts * 72) 0 0 fun s _ =>
-      if s = 0 then put buffer 144 (attempts + 1) else .done s 0
-    else .done 0 0) fun s _ => if s = 0 then
-  .bind (appendEvent buffer (if attempts < 8 then 1 else 5) outcome (if attempts < 8 then attempts else 0)) fun s _ => .done s outcome
-  else .done s 0 else .done s 0
+  completeSubmit buffer revision goal outcome
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0
 
 /-- Assistance is explicit and durable. This is an authored local course hint,
 not a model response or a trusted mathematical result. -/

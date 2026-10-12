@@ -24,7 +24,8 @@ private def roleProfile (role : String) (configuration : String) : Except String
   match role with
   | "firmware" => .ok .firmware_v0_1
   | "kernel" => .ok (if configuration == "lemmasim-silicon-power-probe" ||
-      configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize"
+      configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
   | "user" => .ok .user_v0_1
   | _ => .error "production role must be firmware, kernel, or user"
@@ -73,6 +74,12 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-power-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-arithmetic-oom-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-arithmetic-fault-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticFaultBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticStallBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-power-initialize" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-full-notebook" then
@@ -326,7 +333,8 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize") then
+  if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.3.0 user " ++ image.root.toString
     | none => "Lemma " ++ configuration ++ " " ++ role

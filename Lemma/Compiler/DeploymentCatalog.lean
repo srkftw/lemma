@@ -33,7 +33,7 @@ inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
   | bufferServer | bufferCLI | bufferPeer | bufferFaultClient
-  | storeServer | notebook | notebookIsolation
+  | storeServer | notebook | notebookIsolation | arithmeticServer
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -53,13 +53,24 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .storeServer => "store-server"
   | .notebook => "notebook"
   | .notebookIsolation => "notebook-isolation-client"
+  | .arithmeticServer => "arithmetic-server"
+
+def arithmeticDevelopmentMode? (configuration : String) : Option UInt64 :=
+  if configuration == "lemmasim-silicon-power-arithmetic-oom-development" then some 1 else
+  if configuration == "lemmasim-silicon-power-arithmetic-fault-development" then some 2 else
+  if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then some 3 else none
+
+def isArithmeticDevelopmentConfiguration (configuration : String) : Bool :=
+  (arithmeticDevelopmentMode? configuration).isSome
 
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
 def ipcManagedPolicy : String := "lemma-ipc-v1"
 def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
-  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
+  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
+  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
       configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
   else if configuration == "capabilities-development" then some capabilityManagedPolicy
@@ -148,6 +159,10 @@ def notebookImages : Array UserImageSpec := #[
   { key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
     root := `Lemma.Applications.Notebook.main, bootRole? := some .notebook }]
 
+def arithmeticNotebookImages : Array UserImageSpec := notebookImages.push {
+  key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.Server,
+  root := `Lemma.Services.Arithmetic.Server.main, bootRole? := some .arithmeticServer }
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -155,6 +170,7 @@ def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
   root := `Lemma.User.Development.NotebookIsolation.main, bootRole? := some .notebookIsolation }
 
 def isMultiImageConfiguration (configuration : String) : Bool :=
+  isArithmeticDevelopmentConfiguration configuration ||
   configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
   configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
@@ -163,7 +179,9 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
+  if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+      isArithmeticDevelopmentConfiguration configuration then .ok arithmeticNotebookImages else
+  if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" then .ok notebookImages
   else if configuration == "lemmasim-isolation-development" then .ok notebookIsolationImages
   else if configuration == "tasks-development" then .ok taskImages

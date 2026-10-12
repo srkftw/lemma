@@ -95,6 +95,11 @@ POWER_DEVICE_BODY_DIGESTS = {**DEVICE_BODY_DIGESTS,
  'write32': ('447fba5dd72534375f7250a6a6d1365d456e21b52dd7afa2816b41bca8018628',
              'cd11af39d7c16521096e8a8870841ecd5c10a591ab541598b24786066ed64554'),
 }
+ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = {'lemmasim-silicon-power-arithmetic-oom-development',
+    'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development'}
+CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+POWER_CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+
 
 def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],list[dict]]:
     from audit_kernel import _ir_definition_body, _line_functions

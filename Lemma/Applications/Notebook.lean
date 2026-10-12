@@ -4,6 +4,7 @@ import Lemma.Documents.Ink
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
 import Lemma.Courses.Arithmetic
+import Lemma.Services.Arithmetic.Client
 
 /-! Capability-isolated pen notebook. Pixels, input interpretation, raw ink,
 page/edit records and save publication execute in compiled User Lean. Two
@@ -30,6 +31,7 @@ def loadedInk : UInt64 := 0x318000
 def rootBuffer : UInt64 := 0x320000
 def mathematics : UInt64 := 0x329000
 def mathematicsSave : UInt64 := 0x32a000
+def mathematicsIO : UInt64 := 0x32b000
 -- Root records use the first64 bytes of their page. The remaining bounded
 -- bitmap and a separate owned queue coalesce at most16384 controller tiles.
 def dirtyBitmap : UInt64 := rootBuffer + 512
@@ -656,10 +658,88 @@ private def allocateCourse : Action :=
     if actual = mathematics then put 520 1 else failed
     else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 520) fun s allocated => if statusFailed s = true then .done s 0 else
-  if allocated = 1 then
+  .bind (if allocated = 1 then
     .bind (Syscall.allocatePage mathematicsSave) fun s actual => if statusFailed s = true then .done s 0 else
     if actual = mathematicsSave then put 520 2 else failed
-  else if allocated = 2 then .done 0 0 else failed
+  else if allocated = 2 then .done 0 0 else if allocated = 3 then .done 0 0 else failed) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 528) fun s endpoint => if statusFailed s = true then .done s 0 else
+  .bind (get 520) fun s allocated => if statusFailed s = true then .done s 0 else
+  if endpoint = 0 then .done 0 0 else if allocated = 3 then .done 0 0 else
+  .bind (Syscall.allocatePage mathematicsIO) fun s actual => if statusFailed s = true then .done s 0 else
+  if actual = mathematicsIO then put 520 3 else failed
+
+/-- Caller cancellation consumes the terminal transaction exactly once. A
+reply already accepted by the kernel is discarded without publishing evidence. -/
+private def cancelArithmetic : Action :=
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (if phase = 1 then
+    .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
+    .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
+    .bind (IPC.cancel transaction) fun canceled _ =>
+    if (if canceled = 0 then true else if canceled = IPCABI.alreadyCompleted then true else false) = true then
+    .bind (Lemma.Services.Arithmetic.Client.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
+    if terminal = IPCABI.wouldBlock then .done IPCABI.invalidTransaction 0 else .done 0 terminal.toUInt64
+    else .done canceled 0
+    else .done 0 0) fun s terminal => if statusFailed s = true then .done s 0 else
+  .bind (put 536 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x458 phase terminal 0 0
+
+private def beginArithmetic : Action :=
+  .bind (get 528) fun s endpoint => if statusFailed s = true then .done s 0 else
+  if endpoint = 0 then .bind (Lemma.Documents.Mathematics.submit mathematics) fun s _ => .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 144) fun s attempts => if statusFailed s = true then .done s 0 else
+  if attempts = 8 then .bind (Lemma.Documents.Mathematics.submit mathematics) fun s _ => .done s 0 else if 8 < attempts then .done 234 0 else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Arithmetic.Client.beginCall endpoint mathematicsIO mathematics request) fun s transaction =>
+  if statusFailed s = true then .done s 0 else
+  .bind (put 544 transaction) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 552 request) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 536 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 24) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 40) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.field mathematics 48) fun s goal => if statusFailed s = true then .done s 0 else
+  CapabilityConsole.record console 0x459 request revision goal transaction
+
+/-- Polling never blocks pen input. Publication and error redraw wait until
+current raw ink has reached its ordinary Store boundary, retaining the complete
+submitted identity while the independently linked checker runs. -/
+private def pumpArithmetic : Action :=
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 0 then .done 0 0 else
+  .bind (if phase = 1 then
+    .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
+    .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
+    .bind (Lemma.Services.Arithmetic.Client.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun s outcome =>
+    if s = IPCABI.wouldBlock then .done 0 0 else
+    .bind (put 560 outcome) fun stored _ => if statusFailed stored = true then .done stored 0 else
+    .bind (put 568 s.toUInt64) fun stored _ => if statusFailed stored = true then .done stored 0 else
+    put 536 (if s = 0 then 2 else 3)
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  if phase = 1 then .done 0 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s stroke => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| stroke = 0 then
+  .bind (put 536 0) fun s _ => if statusFailed s = true then .done s 0 else
+  if phase = 3 then
+    .bind (get 568) fun s error => if statusFailed s = true then .done s 0 else courseError error.toUInt8
+  else if phase = 2 then
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO + 24)) fun s submittedNS => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO + 32)) fun s submittedPage => if statusFailed s = true then .done s 0 else
+  if ns = submittedNS then if page = submittedPage then
+  .bind (Memory.read64 (mathematicsIO + 40)) fun s revision => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO + 48)) fun s goal => if statusFailed s = true then .done s 0 else
+  .bind (get 560) fun s outcome => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.completeSubmit mathematics revision goal outcome) fun s _ =>
+  if statusFailed s = true then courseError s else
+  .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else saveCourse
+  else courseError 234 else courseError 234 else courseError 234 else .done 0 0
 
 private def openCourse : Action :=
   .bind allocateCourse fun s _ => if statusFailed s = true then courseError s else
@@ -684,9 +764,15 @@ private def coursePress (x y : UInt64) : Action :=
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
-  if pending ||| rawCount ||| rawPending = 0 then
-  .bind (Lemma.Courses.Arithmetic.press mathematics (x - 24) (y - 160)) fun s close =>
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if pending ||| rawCount ||| rawPending ||| checking = 0 then
+  .bind (if 240 ≤ y then if y < 260 then if x < 84 then beginArithmetic
+      else Lemma.Courses.Arithmetic.press mathematics (x - 24) (y - 160)
+      else Lemma.Courses.Arithmetic.press mathematics (x - 24) (y - 160)
+      else Lemma.Courses.Arithmetic.press mathematics (x - 24) (y - 160)) fun s close =>
   if statusFailed s = true then courseError s else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if checking = 1 then .done 0 0 else
   if close = 1 then .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
   else if 220 ≤ y then if y < 260 then
     .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
@@ -699,7 +785,8 @@ private def toggleCourse : Action :=
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
   if pending ||| rawCount ||| rawPending = 0 then
   .bind (get 512) fun s active => if statusFailed s = true then .done s 0 else
-  if active = 1 then .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
+  if active = 1 then .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else redraw
   else openCourse else .done 0 0
 
 private def prepareChunk (buffer stroke lifecycle : UInt64) : Action :=
@@ -771,6 +858,8 @@ private def editPage (operation : UInt64) : Action :=
   if statusFailed s = true then saveFailure s else publishStatus
 
 private def toolbar (button : UInt64) : Action :=
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if checking = 0 then
   .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s pending => if statusFailed s = true then .done s 0 else
@@ -823,9 +912,14 @@ private def toolbar (button : UInt64) : Action :=
     .bind nextRequest fun s ticket => if statusFailed s = true then .done s 0 else
     .bind (put 496 ticket) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (issue 12 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
-  else .done 0 0
+  else .done 0 0 else .done 0 0
 
+/-- The scalar IPC ABI has one pending call per process. Writing takes
+priority: cancel and consume a pending check before starting an ink stroke,
+so its later Store call owns the slot without discarding raw samples. -/
 private def beginStroke : Action :=
+  .bind (get 536) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (if phase = 1 then cancelArithmetic else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (preflightChunk pageIndex 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
   .bind (get 96) fun s next => if statusFailed s = true then .done s 0 else
@@ -934,6 +1028,7 @@ where
 
 private def step : Action :=
   .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpArithmetic fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
@@ -946,7 +1041,8 @@ private def step : Action :=
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
   .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
-  if (if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false) = true then
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
     .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
     if s = 175 then cancelInput else if s = 174 then Syscall.sleep 10000 else
     if statusFailed s = true then .done s 0 else inputSample
@@ -990,7 +1086,7 @@ private def initializeMedium : Action :=
   if statusFailed s = true then .done s 0 else Syscall.exit 0
 
 def main (bootArgument : UInt64) : Action :=
-  if 1 < bootArgument then failed else
+  if 3 < bootArgument then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
@@ -1000,8 +1096,10 @@ def main (bootArgument : UInt64) : Action :=
   .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
   .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else
-  if bootArgument = 1 then initializeMedium else
+  if bootArgument % 2 = 1 then initializeMedium else
   .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
   let width := geometry &&& 0xffffffff
   let height := geometry >>> 32

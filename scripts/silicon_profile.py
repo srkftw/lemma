@@ -30,7 +30,10 @@ def profile_path(name=None):
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
-    if configuration in ('lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize','lemmasim-silicon-power-probe'):return 'lemma-silicon-dev/0.3.0'
+    if configuration in ('lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize','lemmasim-silicon-power-probe',
+        'lemmasim-silicon-power-arithmetic-oom-development',
+        'lemmasim-silicon-power-arithmetic-fault-development',
+        'lemmasim-silicon-power-arithmetic-stall-development'):return 'lemma-silicon-dev/0.3.0'
     return 'lemma-silicon-dev/0.2.0' if configuration in (
         'lemmasim-silicon-full-notebook', 'lemmasim-silicon-full-initialize') else 'lemma-silicon-dev/0.1.0'
 

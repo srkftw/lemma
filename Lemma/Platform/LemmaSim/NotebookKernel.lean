@@ -5,8 +5,9 @@ import Lemma.Platform.LemmaSim.PowerControl
 import Lemma.Platform.LemmaVM.ConsoleDevice
 import Lemma.Kernel.Scheduler
 
-/-! LemmaSim boot authority and device dispatch. User image0 is the record store,
-image1 the notebook; both are separately linked and isolated by existing Sv39.
+/-! LemmaSim boot authority and device dispatch. Images 0 and 1 are the record
+store and notebook. The canonical arithmetic deployment also links image 2 as
+an isolated checker; historical deployments retain their two-image contract.
 Only the store receives the raw-block endpoint. The kernel does not interpret
 record headers, notebook actions, strokes or display pixels. -/
 namespace Lemma.Platform.LemmaSim.NotebookKernel
@@ -91,17 +92,19 @@ private def observeFault (cause : UInt64) : Action :=
   else .done 0 0 else fatal else fatal
   else .done 0 0
 
-private def construct (initialization isolation binding : UInt64) : Action :=
+private def construct (initialization isolation binding arithmeticMode : UInt64) : Action :=
   .bind Process.init fun s _ => if s = 0 then
   .bind Task.init fun s _ => if s = 0 then
-  .bind (if binding = 3 then Objects.initPower else Objects.init) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Objects.initArithmetic else Objects.init) fun s _ => if s = 0 then
   .bind (Task.prepareManaged 0 initialization) fun s store => if s = 0 then
-  .bind (Task.prepareManaged 1 initialization) fun s notebook => if s = 0 then
+  .bind (Task.prepareManaged 1 (if binding = 3 then initialization + 2 else initialization)) fun s notebook => if s = 0 then
+  .bind (if binding = 3 then Task.prepareManaged 2 arithmeticMode else .done 0 0) fun s arithmetic => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
   .bind (Objects.createEndpoint store) fun s block => if s = 0 then
   .bind (Objects.createEndpoint store) fun s documents => if s = 0 then
   .bind (if binding = 3 then Objects.createEndpoint notebook else .done 0 0) fun s power => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint arithmetic else .done 0 0) fun s checking => if s = 0 then
   .bind (DeviceService.configure surface input block) fun s _ => if s = 0 then
   .bind (grant store block CapabilityABI.endpointCall) fun s _ => if s = 0 then
   .bind (grant store documents CapabilityABI.endpointReceive) fun s _ => if s = 0 then
@@ -111,12 +114,19 @@ private def construct (initialization isolation binding : UInt64) : Action :=
   .bind (grant notebook documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
   .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
   .bind (if binding = 3 then grant notebook power CapabilityABI.endpointCall else .done 0 0) fun s _ => if s = 0 then
+  .bind (if binding = 3 then
+    .bind (grant notebook checking CapabilityABI.endpointCall) fun s _ => if s = 0 then
+    .bind (grant arithmetic checking CapabilityABI.endpointReceive) fun s _ => if s = 0 then
+    grant arithmetic Objects.consoleKey CapabilityABI.consoleWrite else fatal else fatal
+    else .done 0 0) fun s _ => if s = 0 then
   .bind (PowerControl.configure (if binding = 3 then 1 else 0) power) fun s _ => if s = 0 then
   .bind (Task.activateManaged store) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Task.activateManaged arithmetic else .done 0 0) fun s _ => if s = 0 then
   .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x410 store notebook documents (if binding = 1 then Lemma.Platform.Silicon.Binding.frame_count else 8192)) fun s _ => if s = 0 then
   configureIsolation isolation documents
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal
 
@@ -148,7 +158,7 @@ private def observedStage (stage : UInt64) (status : UInt8) (value : UInt64) : A
   .bind (Lemma.Kernel.Console.record 0x407 stage status.toUInt64 value 0) fun s _ =>
   if s = 0 then .done status value else .done s 0
 
-private def bootSelected (initialization isolation binding : UInt64) : Action :=
+private def bootSelected (initialization isolation binding arithmeticMode : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
   .bind (observedStage 1 status value) fun s _ => if s = 0 then
@@ -162,24 +172,27 @@ private def bootSelected (initialization isolation binding : UInt64) : Action :=
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
   .bind (if binding = 3 then Lemma.Drivers.PLIC.initializePower else Lemma.Drivers.PLIC.initialize) fun s _ => if s = 0 then
-  .bind (construct initialization isolation binding) fun s _ => if s = 0 then if binding = 3 then .loop powerStep else .loop step else .done s 0
+  .bind (construct initialization isolation binding arithmeticMode) fun s _ => if s = 0 then if binding = 3 then .loop powerStep else .loop step else .done s 0
   else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
-def boot : Action := bootSelected 0 0 0
+def boot : Action := bootSelected 0 0 0 0
 /-- Selected only by the explicit initialize deployment on a newly created raw image. -/
-def initializeMedium : Action := bootSelected 1 0 0
+def initializeMedium : Action := bootSelected 1 0 0 0
 
 /-- The only deployment that admits the third isolated ordinary-client fixture. -/
-def isolationBoot : Action := bootSelected 0 1 0
+def isolationBoot : Action := bootSelected 0 1 0 0
 
 /-- Silicon selects the declared discovery, bounded frame supply and CSR WARL expectations. -/
-def siliconBoot : Action := bootSelected 0 0 1
-def siliconInitializeMedium : Action := bootSelected 1 0 1
-def siliconFullBoot : Action := bootSelected 0 0 2
-def siliconFullInitializeMedium : Action := bootSelected 1 0 2
-def siliconPowerBoot : Action := bootSelected 0 0 3
-def siliconPowerInitializeMedium : Action := bootSelected 1 0 3
+def siliconBoot : Action := bootSelected 0 0 1 0
+def siliconInitializeMedium : Action := bootSelected 1 0 1 0
+def siliconFullBoot : Action := bootSelected 0 0 2 0
+def siliconFullInitializeMedium : Action := bootSelected 1 0 2 0
+def siliconPowerBoot : Action := bootSelected 0 0 3 0
+def siliconPowerInitializeMedium : Action := bootSelected 1 0 3 0
+def arithmeticOOMBoot : Action := bootSelected 0 0 3 1
+def arithmeticFaultBoot : Action := bootSelected 0 0 3 2
+def arithmeticStallBoot : Action := bootSelected 0 0 3 3
 
 /-- Bounded development entry exercising the same compiled power policy without
 constructing notebook User images. Actual notebook authority remains separate. -/

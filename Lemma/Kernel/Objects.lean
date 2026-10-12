@@ -15,7 +15,9 @@ def magic : UInt64 := 0x314a424f414d454c
 def capacity : UInt64 := 16
 def endpointCapacity : UInt64 := 4
 def powerEndpointCapacity : UInt64 := 5
+def arithmeticEndpointCapacity : UInt64 := 6
 def replyCapacity : UInt64 := 8
+def arithmeticReplyCapacity : UInt64 := 7
 def registryCapacity : UInt64 := 8
 def rows : UInt64 := 256
 def stride : UInt64 := 128
@@ -35,10 +37,20 @@ def fatal : Action := .done CapabilityABI.fatal 0
 remain legacy; neither arbitrary versions nor arbitrary limits acquire capacity. -/
 def headerAdmitted (version endpointLimit : UInt64) : Bool :=
   if version = 1 then if endpointLimit = 0 then true else false else
-  if version = 2 then if endpointLimit = powerEndpointCapacity then true else false else false
+  if version = 2 then if endpointLimit = powerEndpointCapacity then true else false else
+  if version = 3 then if endpointLimit = arithmeticEndpointCapacity then true else false else false
 
 def endpointLimitFor (version : UInt64) : UInt64 :=
-  if version = 1 then endpointCapacity else if version = 2 then powerEndpointCapacity else 0
+  if version = 1 then endpointCapacity else if version = 2 then powerEndpointCapacity else
+  if version = 3 then arithmeticEndpointCapacity else 0
+
+/-- Header encoding remains zero for legacy v1 and exact5/6 for v2/v3. -/
+def encodedLimitFor (version : UInt64) : UInt64 :=
+  if version = 2 then powerEndpointCapacity else if version = 3 then arithmeticEndpointCapacity else 0
+
+def replyLimitFor (version : UInt64) : UInt64 :=
+  if version = 1 then replyCapacity else if version = 2 then replyCapacity else
+  if version = 3 then arithmeticReplyCapacity else 0
 
 def get (address : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
@@ -89,6 +101,14 @@ def runtimeEndpointCapacity : Action :=
   if failed s = true then fatal else
   .done 0 (endpointLimitFor version)
 
+/-- The version3 arithmetic binding admits six Endpoints and seven Replies in
+the same16-row layout. Versions1/2 retain all eight Reply slots. -/
+def runtimeReplyCapacity : Action :=
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .bind (get (address + 8)) fun s version =>
+  if failed s = true then fatal else .done 0 (replyLimitFor version)
+
 private def initStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
   let index := i.toUInt64
   let address := row base index
@@ -106,9 +126,9 @@ private def initStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
 /-- Boot-only single initialization; the allocator zeroes the whole provisional
 frame. Global publication follows all pinned object/header initialization. -/
 private def initFor (version : UInt64) : Action :=
-  if (if version = 1 then true else if version = 2 then true else false) = false then
+  if (if version = 1 then true else if version = 2 then true else if version = 3 then true else false) = false then
     .done CapabilityABI.invalidArgument 0 else
-  let endpointLimit := if version = 2 then powerEndpointCapacity else 0
+  let endpointLimit := encodedLimitFor version
   .bind (get control) fun s existing =>
   if failed s = true then fatal else
   if existing = 0 then
@@ -139,6 +159,9 @@ def init : Action := initFor 1
 /-- Boot-only successor used by the power-enabled LemmaSim binding. Object
 rows, Reply budget, key generations and all User authority remain unchanged. -/
 def initPower : Action := initFor 2
+/-- Software authority-budget successor; hardware ISA, page pool and geometry
+are unchanged. Header publication remains after all real table initialization. -/
+def initArithmetic : Action := initFor 3
 
 private def resolveState (key : UInt64) (allowRevoking : Bool) : Action :=
   if keyValid key = false then .done CapabilityABI.invalidHandle 0 else
@@ -436,15 +459,17 @@ def replyAvailable : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 16 replyCountStep 16 0 base 0 0 0 fun s replies =>
   if failed s = true then fatal else
-  if replies < replyCapacity then
+  .bind runtimeReplyCapacity fun s replyLimit =>
+  if failed s = true then fatal else
+  if replies < replyLimit then
   .bind (get (base + 32)) fun s count =>
   if failed s = true then fatal else
   if count < capacity then
   .boundedFoldU64 16 freeObjectStep 16 capacity base 0 0 0 fun s _ =>
-  if s = Status.iterationStop then .done 0 (replyCapacity - replies) else
+  if s = Status.iterationStop then .done 0 (replyLimit - replies) else
     if s = 0 then .done CapabilityABI.objectFull 0 else fatal
   else .done CapabilityABI.objectFull 0
-  else if replies = replyCapacity then .done CapabilityABI.objectFull 0 else fatal
+  else if replies = replyLimit then .done CapabilityABI.objectFull 0 else fatal
 
 def createReply (caller endpoint transaction deadline : UInt64) : Action :=
   .bind (IPCStorage.pending caller) fun s metadata =>

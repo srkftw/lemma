@@ -1,0 +1,22 @@
+{
+  "provenance": {
+    "scope": "Actual optimized LLVM fragment; no full image authority",
+    "artifact": "build/kernel/task006-isolated-arithmetic-notebook-a2/kernel",
+    "unit": "build/kernel/task006-isolated-arithmetic-notebook-a2/kernel/unit.json"
+  },
+  "unit": {
+    "role": "kernel",
+    "configuration": "normal",
+    "functions": [
+      {
+        "symbol": "lemma_kernel_core0_scalar_470",
+        "source": "Lemma.Kernel.Objects.replyLimitFor",
+        "effects": [],
+        "args": [
+          "u64"
+        ]
+      }
+    ]
+  },
+  "ir": "@switch.table.lemma_kernel_core0_scalar_470 = private unnamed_addr constant [3 x i64] [i64 8, i64 8, i64 7], align 8\ndefine range(i64 0, 9) i64 @lemma_kernel_core0_scalar_470(i64 %arg0) local_unnamed_addr #1 {\nentry:\n  %switch.tableidx = add i64 %arg0, -1\n  %0 = icmp ult i64 %switch.tableidx, 3\n  br i1 %0, label %switch.lookup, label %if.merge.2\n\nswitch.lookup:                                    ; preds = %entry\n  %switch.gep = getelementptr inbounds nuw [3 x i64], ptr @switch.table.lemma_kernel_core0_scalar_470, i64 0, i64 %switch.tableidx\n  %switch.load = load i64, ptr %switch.gep, align 8\n  br label %if.merge.2\n\nif.merge.2:                                       ; preds = %switch.lookup, %entry\n  %if.result8 = phi i64 [ 0, %entry ], [ %switch.load, %switch.lookup ]\n  ret i64 %if.result8\n\n}\n"
+}
