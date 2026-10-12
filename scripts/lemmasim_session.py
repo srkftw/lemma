@@ -179,6 +179,13 @@ class RTL:
                    '--input-capture', str(directory / 'input.events'),
                    '--fork-directory',str(directory),
                    '--trace-limit', str(args.trace_limit), '--deadline', str(args.timeout)]
+        replay = getattr(args, 'backing_replay', None)
+        if replay is not None:
+            if not args.restore:
+                raise ValueError('Backing outcome replay requires --restore into an isolated fork')
+            command += ['--backing-replay', str(replay.resolve())]
+        else:
+            command += ['--backing-capture', str(directory / 'backing.io')]
         if args.memory_latency:
             command += ['--memory-latency', str(args.memory_latency)]
         if args.fail_flush:

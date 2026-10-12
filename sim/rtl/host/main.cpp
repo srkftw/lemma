@@ -25,6 +25,7 @@ int main(int argc,char**argv)try{
   else if(a=="--trace-limit")o.trace_limit=number(val());else if(a=="--deadline"){auto d=number(val());if(!d||d>7200)throw std::runtime_error("deadline must be1..7200seconds");o.deadline=d;}
   else if(a=="--quiet-uart")o.quiet_uart=true;else if(a=="--uart-stdin")uart_stdin=true;
   else if(a=="--panel-drive-trace")o.drive_trace_path=val();
+  else if(a=="--backing-capture")o.backing_capture_path=val();else if(a=="--backing-replay")o.backing_replay_path=val();
   else if(a=="--input-capture")o.input_capture_path=val();else if(a=="--uart-stop-hex"){auto b=hexbytes(val());o.stop_marker=std::string(b.begin(),b.end());}
   else if(a=="--descriptor")descriptor_path=val();else if(a=="--medium")medium_path=val();else if(a=="--events")event_path=val();else if(a=="--fork-directory")o.fork_directory=val();
   else if(a=="--panel-output")o.panel_path=val();else if(a=="--report")report_path=val();else if(a=="--uart-stop")o.stop_marker=val();
@@ -37,6 +38,7 @@ int main(int argc,char**argv)try{
  if(o.observer_cycle>cycles&&restore_path.empty())throw std::runtime_error("observer cycle exceeds cycle budget");
  if(!restore_path.empty()&&(!event_path.empty()||!initial.empty()))throw std::runtime_error("restored checkpoint owns input; inject new events after restore");
  if(session&&uart_stdin)throw std::runtime_error("session commands and raw UART stdin need separate streams");if(session)o.quiet_uart=true;
+ if(!o.backing_replay_path.empty()&&restore_path.empty()&&!session)throw std::runtime_error("backing replay requires --restore or a session restored before running");
  Machine m(o);for(auto&[kind,path]:loads){if(kind=="--image")m.load_elf(path);else if(kind=="--rom")m.load_rom(path);else{auto c=path.find(':');if(c==std::string::npos)throw std::runtime_error("--load address:path");auto b=bytes(path.substr(c+1));m.put(number(path.substr(0,c)),b.data(),b.size());}}
  if(!descriptor_path.empty())m.descriptor(descriptor_path);if(!medium_path.empty())m.open_medium(medium_path);m.schedule_all(events(event_path));m.initial_uart(initial);m.prepare();if(!restore_path.empty())m.restore(restore_path);
  if(session){std::string line;bool oversized;while(command_line(std::cin,line,oversized)){try{if(oversized)throw std::runtime_error("command length exceeds32768bytes");std::istringstream ss(line);std::string cmd;ss>>cmd;if(cmd=="run")m.run(number(remaining(ss)));else if(cmd=="inspect"||cmd=="pause"){}else if(cmd=="inject")m.schedule(parse_event(remaining(ss)));else if(cmd=="snapshot")m.snapshot(remaining(ss));else if(cmd=="restore")m.restore(remaining(ss));else if(cmd=="warm-reset"){std::string amount;ss>>amount;m.warm_reset(amount.empty()?8:number(amount));}else if(cmd=="cold-cycle")m.cold_cycle();else if(cmd=="panel")m.panel(remaining(ss));else if(cmd=="export-medium")m.export_medium(remaining(ss));else if(cmd=="destroy"){reply(m);break;}else throw std::runtime_error("unknown session command");reply(m);}catch(const std::exception&e){std::cout<<"{\"ok\":false,\"error\":\""<<escaped(e.what())<<"\"}\n"<<std::flush;}}}

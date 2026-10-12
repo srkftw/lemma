@@ -3,6 +3,7 @@
 #pragma once
 #include "Vlemma_soc.h"
 #include "verilated.h"
+#include "../../host/backing_io.h"
 #include <array>
 #include <cstdint>
 #include <deque>
@@ -23,9 +24,10 @@ struct Options {
  unsigned deadline=120;
  uint64_t memory_latency=0;
  bool quiet_uart=false;
- std::string uart_path,trace_path,panel_path,block_trace_path,input_capture_path,stop_marker,drive_trace_path,fork_directory;
+ std::string uart_path,trace_path,panel_path,block_trace_path,input_capture_path,stop_marker,drive_trace_path,fork_directory,backing_capture_path,backing_replay_path;
 };
 struct State {
+ BackingState backing;
  std::vector<uint8_t> ram,rom,framebuffer,visible;
  std::map<uint64_t,std::array<uint8_t,4096>> boot_pages;
  std::map<uint64_t,std::array<uint8_t,512>> overlay,durable;
@@ -55,7 +57,12 @@ class Machine {
  std::unique_ptr<Vlemma_soc> model;
  State s;
  Options options;
- int medium=-1;
+ int medium=-1,backing_capture=-1;
+ std::shared_ptr<BackingPlatform> backing;
+ std::vector<BackingRecord> backing_replay;
+ uint64_t backing_capture_bytes=0,backing_replay_cursor=0,backing_capture_branch=0;
+ std::string active_backing_capture;
+ BackingOutcome backing_operation(BackingKind,uint64_t,uint64_t,const uint8_t* = nullptr);
  // File handles and private paths are external ownership, never checkpoint
  // state. A restored session has its own persistent backing and lock.
  std::string private_medium_path;
@@ -63,7 +70,7 @@ class Machine {
  bool prepared=false;
  void tick();
  void block_row(uint64_t,const char*,unsigned,unsigned,uint64_t,uint64_t,uint64_t,uint64_t,unsigned);
- std::array<uint8_t,512> read_sector(uint64_t) const;
+ std::array<uint8_t,512> read_sector(uint64_t,bool&);
  void model_save(const std::string&);
 public:
  explicit Machine(const Options&);
@@ -74,6 +81,9 @@ public:
  void load_rom(const std::string&);
  void descriptor(const std::string&);
  void open_medium(const std::string&);
+ void attach_backing(std::shared_ptr<BackingPlatform>);
+ void rebind_private_backing(std::shared_ptr<BackingPlatform>);
+ const std::string& backing_capture_path() const { return active_backing_capture; }
  void prepare();
  void schedule(Event);
  void schedule_all(const std::vector<Event>&);
