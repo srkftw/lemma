@@ -1,7 +1,7 @@
 # Companion opaque backing transport development profile v1
 
 `lemma-companion-backing-dev/1` is an independent persistent opaque block peer
-and a native `BackingPlatform` transport. It exercises real remote receipts
+and native/fast `BackingPlatform` transports. It exercises real remote receipts
 below the existing Lean RV64 block driver and notebook journal. It does **not**
 close the modeled companion controller, owned DMA, guest companion service,
 USB enumeration/endpoints, BLE link, authentication or asynchronous offline
@@ -74,8 +74,10 @@ not exactly once; retained transaction receipts deduplicate mutating effects.
 
 Machine snapshots export authoritative observed medium bytes through passive
 reads and preserve the existing backing-I/O state. Restore disconnects the
-external peer and constructs the existing private POSIX backing fork. Captured
-outcome replay operates only against that fork. The peer adapter rejects direct
+external peer and constructs the existing private POSIX backing fork. RTL
+captured outcome replay operates only against that fork. The fast adapter
+captures the same outcome format but its recorded-I/O replay consumer remains
+unfinished in this increment. The peer adapter rejects direct
 `apply_recorded`; it never contacts the original peer from replay. A native
 fork must not be rebound to the original companion outbox. Remote outbox and
 peer histories are external host state; raw host pointers are never serialized.
@@ -104,8 +106,19 @@ scripts/lemmasim companion client --prepared build/companion/peer/prepared.json 
   --state build/companion/client
 ```
 
-After a current source-bound RTL guest/runtime has been prepared through the
-ordinary `lemmasim build --backend rtl` interface, a cold machine can attach:
+After a current source-bound guest/backend has been prepared through the
+ordinary build interface, a cold machine can attach. For the fast path:
+
+```sh
+scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --workload notebook --guest-build /absolute/path/to/current-audited-guest --opt-level O2
+scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --workload notebook --mode developer --session-dir build/companion/notebook \
+  --companion build/companion/device --companion-prepared build/companion/peer/prepared.json \
+  --companion-socket /absolute/path/to/peer.sock --companion-state build/companion/client
+```
+
+For a separately prepared exact RTL backend:
 
 ```sh
 scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
@@ -121,3 +134,32 @@ Restored snapshots use their private backing fork without a companion binding.
 Raw server `--drop-reply N --exit-after-reply N` selects a completed response
 ordinal; response1 is ordinarily the client startup Read. These controls do not
 parse transactions, and only withhold an actual Lean response after its barrier.
+
+## Fast shared backing state
+
+`lemma-fast-block/2` uses the C ABI in `sim/companion/backing_c.h` to call the
+same platform and outcome codec as RTL. Actual `pread`, `pwrite` and `fsync`
+results replace the former boolean-only calls. Volatile controller writes stay
+in its sector overlay; Flush writes those sectors in sorted order and issues a
+real backing barrier before status DMA. A failed write/barrier preserves the
+overlay and any observed changed backing bytes. A partial failed Read returns
+IOERR and does not publish partial data into the guest buffer.
+
+Each generation creates an exclusive `backing-N.io`: `LMIOLOG1`, exact64-byte
+backend SHA256 text, then length-prefixed checksummed shared outcomes. Request
+boundaries are local QEMU virtual nanoseconds; RTL logs bind target cycles.
+These are distinct execution coordinates, not CPU timing parity. Zero reserved
+length means an unresolved external operation, never a complete replay record.
+IDs, completed cursor, last observed Write and last successful Barrier are
+serialized with the controller. Host descriptors, child processes, sockets,
+capture file paths and external outbox pointers are never serialized.
+
+Snapshot/export uses passive byte reads and never reconciles an outbox or
+flushes the guest medium. A restored fast candidate receives a new exclusively
+owned local file containing those observed bytes, without external peer/client
+binding. Validation failures affect only that disposable candidate. Pending or
+ambiguous external work rejects saving instead of draining it. This is an
+explicit current admission limit; arbitrary pending-operation continuation is
+unfinished. Serializing backing state does not close QEMU's omitted soft-TLB
+and translation-block/jump-cache state described in
+`conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md`.

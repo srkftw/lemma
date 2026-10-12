@@ -31,12 +31,19 @@ def get64 (b : ByteArray) (offset : Nat) : UInt64 := Id.run do
   for i in [0:8] do v := v ||| (b[offset+i]!.toUInt64 <<< (8*i).toUInt64)
   return v
 
+private def crcTable : Array UInt64 := Id.run do
+  let mut table := #[]
+  for i in [0:256] do
+    let mut c := i.toUInt64 <<< 56
+    for _ in [0:8] do
+      c := (c <<< 1) ^^^ (if c >>> 63 = 0 then 0 else 0x42f0e1eba9ea3693)
+    table := table.push c
+  return table
+
 def crc64 (b : ByteArray) : UInt64 := Id.run do
   let mut c : UInt64 := 0
   for v in b do
-    c := c ^^^ (v.toUInt64 <<< 56)
-    for _ in [0:8] do
-      c := (c <<< 1) ^^^ (if c >>> 63 = 0 then 0 else 0x42f0e1eba9ea3693)
+    c := (c <<< 8) ^^^ crcTable[((c >>> 56).toUInt8 ^^^ v).toNat]!
   return c
 
 def encode (f : Frame) : ByteArray := Id.run do
@@ -70,21 +77,21 @@ def response (request : Frame) (error : UInt64) (bytes : ByteArray := ByteArray.
     length := bytes.size.toUInt64, error := error, payload := bytes }
 
 def hex (b : ByteArray) : String := Id.run do
-  let digits := "0123456789abcdef".toList.toArray
-  let mut chars : Array Char := #[]
+  let digits := "0123456789abcdef".toUTF8
+  let mut chars := ByteArray.emptyWithCapacity (b.size * 2)
   for v in b do
     chars := chars.push digits[(v >>> 4).toNat]!
     chars := chars.push digits[(v &&& 15).toNat]!
-  return String.ofList chars.toList
+  return String.fromUTF8! chars
 
 def unhex (s : String) : Except String ByteArray := do
-  let a := s.toList.toArray
+  let a := s.toUTF8
   if a.size % 2 != 0 || a.size > 2*(maxPayload+72) then throw "hex length"
-  let digit (c : Char) : Except String UInt8 :=
-    if c >= '0' && c <= '9' then .ok (c.toNat-'0'.toNat).toUInt8
-    else if c >= 'a' && c <= 'f' then .ok (c.toNat-'a'.toNat+10).toUInt8
+  let digit (c : UInt8) : Except String UInt8 :=
+    if c >= 48 && c <= 57 then .ok (c - 48)
+    else if c >= 97 && c <= 102 then .ok (c - 97 + 10)
     else throw "hex digit"
-  let mut b := ByteArray.empty
+  let mut b := ByteArray.emptyWithCapacity (a.size / 2)
   for i in [0:a.size/2] do b := b.push (((← digit a[2*i]!) <<< 4) ||| (← digit a[2*i+1]!))
   return b
 end LemmaSim.Companion

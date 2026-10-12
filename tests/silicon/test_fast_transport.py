@@ -147,7 +147,8 @@ class FastTransport(unittest.TestCase):
         calls=[]
         class QMP:
             def execute(self,command,arguments=None):
-                calls.append((command,arguments));return {'running':False}
+                calls.append((command,arguments))
+                return '{}' if command=='qom-get' else {'running':False}
         machine.qmp=QMP()
         machine.run_until_ns(1120)
         machine.call('inject 115 pen 999 1 2 127 3 1 0')

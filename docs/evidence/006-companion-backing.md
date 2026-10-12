@@ -83,3 +83,74 @@ reconciliation/restart. This cannot qualify offline pen responsiveness or an
 arbitrary-boundary pending external checkpoint. Same-user socket checks and
 CRC are not owner authentication. Explicit queues/DMA, USB, radio, async
 completion/cancellation, multi-writer epochs and bounded compaction remain open.
+
+## Connected RV64 fast guest, actual lost receipt and cold recovery
+
+The next increment connects QEMU's existing real block controller to the same
+`BackingPlatform` through a host-only C ABI. `lemma-fast-block/2` captures actual
+POSIX or peer outcomes before controller completion; failed barriers retain
+observed bytes and volatile sectors. Passive export and private restored media
+use the platform boundary. Pending or ambiguous external work rejects snapshots.
+No host transport runtime objects enter the RV64 image. QEMU cached-translation
+and instruction-visibility continuation remains open; this is cold recovery,
+not an exact-checkpoint claim.
+
+`build/companion/task006-guest-peer-a3/result.json` passed the connected scenario.
+The small checked-in receipt is `006-companion-guest.json`. The actual command was:
+
+```sh
+python3 scripts/check_companion_session.py \
+  --disk build/silicon/task006-canonical-cold-a2/medium.raw \
+  --peer-prepared build/companion/task006-peer-a5/prepared.json \
+  --work-dir build/companion/task006-guest-peer-a3 \
+  --timeout 120 --boot-seconds 40 --action-seconds 20 --deadline 900
+```
+
+The original guest-initialized medium was only copied; ordinary raw pen input
+made50 actual samples/two strokes. Guest journal recovery and controller pixels
+passed the independent workflow observer, with explicit Saved at sequence8.
+Four real brush-root edits cycle back to the original setting, providing exact
+expected cold bytes and complete pixels. An earlier completed equal-size root
+edit predeclared response ordinal6: its final Barrier. On the fourth edit the
+peer synced that transaction78, its actual response was lost and the peer exited.
+The guest emitted no Saved after the loss. The live capture retained80 complete
+outcomes plus its pending marker, and snapshot pre-save rejected that state.
+
+Both machines restarted. The durable outbox reconciled the same writer17 /
+transaction78 before the new guest executed. Peer log size remained33896 bytes;
+no duplicate transaction was appended. The independent cold guest recovered
+sequence12, exactly the original committed object bytes and the complete expected
+1650x2200 controller display. It did not rewrite the peer log. Cold recovery used
+an independent CPU and real device reads, without a snapshot or host journal fix.
+
+Cold Ready took11.000000008 virtual seconds /25.131 host seconds; recovery Ready
+took11.65 virtual seconds /27.961 host seconds. Each25-sample raw stroke occupied
+0.85 virtual seconds /8.47 and8.23 host seconds, including ordinary save/display
+settling. The explicit clean Save took0.25 virtual seconds /0.576 host seconds.
+The full campaign, including two256MiB passive exports and independent oracles,
+took235.011 host seconds and allocated about43MiB of sparse artifacts. These are
+fast execution coordinates; they do not establish RTL pipeline timing parity.
+
+Original failures remain: a1 wrongly assumed that clean explicit Save must issue
+new medium I/O, failing before fault injection; a2 exceeded the declared120s
+passive-export operation bound. Actual hosted-Lean CRC lookup and dense ASCII
+byte-array conversion fixed the transport hot path with unchanged wire semantics
+and deadlines. Seven compiled peer tests passed, including an independent
+bitwise CRC over the maximum1MiB arbitrary-byte response. Under the same8192-byte
+raw-pipe buffer, two1MiB responses measured a4:0.664/0.249s and a5:0.245/0.148s;
+peak peer RSS decreased from127876KiB to24592KiB. Concurrent workload affects these
+host measurements; the retained receipt pins each executable and source hash.
+
+QEMU binary SHA256 is
+`2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716`;
+the genuinely elaborated/strict-audited joint RV64 guest is
+`b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7`.
+Hosted peer/client a5 hashes and exact sources/tools are in the receipt and
+`build/companion/task006-peer-a5/prepared.json`. Two shared C-boundary actual-OS
+failure tests,168 silicon host tests, metadata checks and18 scaffold tests passed
+separately. No CI result is inferred from those runs.
+
+This usable development backing path still pauses the whole synchronous machine
+on unknown persistence. Offline ink while external work remains pending,
+fork-safe pending continuation, guest companion driver/controller, USB,
+authentication and complete companion storage remain unfinished.

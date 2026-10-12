@@ -19,7 +19,7 @@ import silicon_guest as guest
 from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST
 
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
-ADAPTER = 'lemmasim-fast-adapter/2'
+ADAPTER = 'lemmasim-fast-adapter/3'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 
@@ -55,6 +55,7 @@ def sources(name):
     if profile(name)['profile'] == 'lemma-silicon-dev/0.3.0':
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
+    paths += sorted(p for p in (ROOT/'sim/companion').glob('backing_*') if p.is_file())
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
 
 
@@ -192,7 +193,16 @@ class Fast:
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
         self.input_kinds={'pen','button'} if self.power_enabled else {'pen'}
         self.medium=args.disk.resolve() if args.disk else None
-        self.checkpoint_files={'machine.chk','clock.json','durable.raw'} if self.medium else {'machine.chk','clock.json'}
+        self.companion=None
+        if getattr(args,'companion',None) is not None:
+            import lemmasim_companion
+            peer=lemmasim_companion.peer_info(args.companion)
+            compiled=lemmasim_companion.validate(args.companion_prepared)
+            self.companion={'client':compiled['binaries']['companion-client']['path'],
+                            'socket':str(args.companion_socket.resolve()),'state':str(args.companion_state.resolve()),
+                            'writer':str(peer['writer']),'helper':str(ROOT/'sim/companion/os_io.py')}
+        self.has_medium=self.medium is not None or self.companion is not None
+        self.checkpoint_files={'machine.chk','clock.json','durable.raw'} if self.has_medium else {'machine.chk','clock.json'}
         self.time_origin_ns=0
         self.generation=0
         self.start()
@@ -218,6 +228,11 @@ class Fast:
                  '-global',f'lemma-paper-pen.raw-output={self.directory}/input-{self.generation}.bin']
         if self.medium:
             command+=['-global',f'lemma-fast-block.medium={self.medium}']
+        if self.companion:
+            for key,value in self.companion.items():command+=['-global',f'lemma-fast-block.companion-{key}={value}']
+        if self.has_medium:
+            command+=['-global',f'lemma-fast-block.backing-capture={self.directory}/backing-{self.generation}.io',
+                      '-global',f'lemma-fast-block.backing-identity={self.data["qemu"]["sha256"]}']
         if self.args.fail_flush:
             command+=['-global',f'lemma-fast-block.fail-flush={self.args.fail_flush}']
         trace_limit=getattr(self.args,'trace_limit',0)
@@ -299,6 +314,9 @@ class Fast:
                 self.qmp.execute('stop')
                 raise TimeoutError('Fast virtual interval exceeded host resource deadline')
             time.sleep(0.001)
+        storage=json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'}))
+        if storage.get('backing_poisoned'):
+            raise RuntimeError('Backing persistence unresolved; machine paused without acknowledgment. Restart the companion/outbox to reconcile; this machine cannot snapshot pending work.')
         return self.clock()
 
     def restore_checkpoint(self,path,expected_ns=None):
@@ -314,9 +332,10 @@ class Fast:
         candidate.generation=self.generation+1
         candidate.time_origin_ns=origin
         try:
-            if self.medium:
+            if self.has_medium:
                 candidate.medium=directory/'durable.raw'
                 copy_new(path.with_name('durable.raw'),candidate.medium)
+                candidate.companion=None
             candidate.start()
             candidate.qmp.execute('lemma-load-machine',{'filename':str(path)})
             if expected_ns is not None and candidate.clock()['virtual_ns']!=expected_ns:
@@ -360,7 +379,8 @@ class Fast:
             with clock_path.open('x') as stream:
                 json.dump({'schema':CLOCK_SCHEMA,'time_origin_ns':self.time_origin_ns},stream)
                 stream.write('\n');stream.flush();os.fsync(stream.fileno())
-            if self.medium: copy_new(self.medium,path.with_name('durable.raw'))
+            if self.has_medium:
+                self.qmp.execute('qom-set',{'path':'/machine/lemma-block','property':'export-medium','value':str(path.with_name('durable.raw'))})
             return self.inspect()
         if action=='restore':
             return self.restore_checkpoint(text)
@@ -380,8 +400,8 @@ class Fast:
         if action=='panel':
             self.qmp.execute('screendump',{'filename':text});return self.inspect()
         if action=='export-medium':
-            if not self.medium: raise ValueError('Machine has no durable backing')
-            copy_new(self.medium,text);return self.inspect()
+            if not self.has_medium: raise ValueError('Machine has no durable backing')
+            self.qmp.execute('qom-set',{'path':'/machine/lemma-block','property':'export-medium','value':text});return self.inspect()
         if action=='destroy': self.stop();return {'destroyed':True}
         raise ValueError('Unsupported fast lifecycle operation')
 

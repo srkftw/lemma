@@ -21,7 +21,14 @@ let
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
-      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c" ];
+      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c"
+        "backing_io.h" "backing_io.cpp" "backing_io_posix.h" "backing_io_posix.cpp" ];
+  };
+  companionSources = builtins.path {
+    path = ../../sim/companion;
+    name = "lemmasim-companion-backing-adapter";
+    filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
+      [ "backing_peer.h" "backing_peer.cpp" "backing_c.h" "backing_c.cpp" ];
   };
 in base.overrideAttrs (old: {
   pname = "lemmasim-qemu";
@@ -46,6 +53,6 @@ in base.overrideAttrs (old: {
     runHook postInstall
   '';
   postPatch = (old.postPatch or "") + ''
-    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --silicon-profile ${siliconProfile}
+    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --companion-source ${companionSources} --silicon-profile ${siliconProfile}
   '' + counterPatch;
 })

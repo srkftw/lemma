@@ -1,0 +1,292 @@
+{
+  "schema": "lemmasim-guest-companion-backing-observations/1",
+  "status": "PASS",
+  "scope": "actual RV64 notebook journal through hosted Lean opaque peer; development transport, not USB or asynchronous companion controller",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "checkpoint_relation": "not exercised; QEMU omitted cached-state continuation remains open",
+  "bounds": {
+    "disk": "existing independent actual guest-initialized256MiB medium; copied privately, original unchanged",
+    "peer_prepared": "build/companion/task006-peer-a5/prepared.json",
+    "work_dir": "/home/sreekumaar/Downloads/lemma/build/companion/task006-guest-peer-a3",
+    "timeout": 120,
+    "boot_seconds": 40,
+    "action_seconds": 20,
+    "deadline": 900,
+    "durable_suffix_from": null,
+    "checkpoint_relation": "not-exercised"
+  },
+  "observer_sources": {
+    "scripts/check_live_notebook.py": "ef3ef75e0f6d3714c74f121b69c3e01f1a7e5eea28d644fe3a9d5ea30ace69b4",
+    "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+    "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+    "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+    "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+    "scripts/check_companion_session.py": "d4fbcf61eebe52f1959211b4c32e6eac2b1c07775e886a5fb6ed900f76abdf6c"
+  },
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/3",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "boot": {
+    "virtual_seconds": 11.000000008,
+    "host_seconds": 25.131369266018737,
+    "cycle": 1100000001
+  },
+  "interactions": [
+    {
+      "name": "a",
+      "host_seconds": 8.474046998017002,
+      "initial_cycle": 1125000001,
+      "final_cycle": 1210000002,
+      "virtual_seconds": 0.850000012
+    },
+    {
+      "name": "b",
+      "host_seconds": 8.232666029012762,
+      "initial_cycle": 1210000002,
+      "final_cycle": 1295000003,
+      "virtual_seconds": 0.850000008
+    },
+    {
+      "name": "save durable state",
+      "host_seconds": 0.5762812430039048,
+      "initial_cycle": 1295000003,
+      "final_cycle": 1320000003,
+      "virtual_seconds": 0.25
+    },
+    {
+      "name": "calibrate brush root publication",
+      "host_seconds": 2.3667968190275133,
+      "initial_cycle": 1320000003,
+      "final_cycle": 1345000004,
+      "virtual_seconds": 0.250000004
+    },
+    {
+      "name": "brush root 1024",
+      "host_seconds": 2.087212254991755,
+      "initial_cycle": 1345000004,
+      "final_cycle": 1370000004,
+      "virtual_seconds": 0.25
+    },
+    {
+      "name": "brush root 2048",
+      "host_seconds": 2.3810413680039346,
+      "initial_cycle": 1370000004,
+      "final_cycle": 1395000004,
+      "virtual_seconds": 0.25
+    }
+  ],
+  "workflow": {
+    "status": "PASS",
+    "sequence": 8,
+    "generation": 1,
+    "raw_samples": 50,
+    "strokes": 2,
+    "pages": 1,
+    "documents": [
+      1
+    ],
+    "contact_points": [
+      [
+        "a",
+        330,
+        733,
+        true
+      ],
+      [
+        "b",
+        330,
+        1100,
+        true
+      ]
+    ],
+    "explicit_save": [
+      1057,
+      8,
+      1,
+      1,
+      0
+    ],
+    "committed_objects": 4
+  },
+  "predeclared_lost_reply": {
+    "ordinal": 6,
+    "prior_equal_size_root_operations": [
+      [
+        58,
+        13278908512,
+        1,
+        19456,
+        512,
+        512,
+        0
+      ],
+      [
+        59,
+        13278908512,
+        1,
+        19968,
+        512,
+        512,
+        0
+      ],
+      [
+        60,
+        13278908512,
+        1,
+        20992,
+        512,
+        512,
+        0
+      ],
+      [
+        61,
+        13278908512,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        62,
+        13286498696,
+        1,
+        20480,
+        512,
+        512,
+        0
+      ],
+      [
+        63,
+        13286498696,
+        2,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "pending_snapshot_rejected": "public command failed: FAIL: {'class': 'GenericError', 'desc': 'pre-save failed: lemma-fast-block/2'}\n",
+  "cold_boot": {
+    "virtual_seconds": 11.65,
+    "host_seconds": 27.961055961961392,
+    "cycle": 1165000000
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "new_cpu": true,
+    "all_committed_objects_equal": true,
+    "prior_sequence": 8,
+    "recovered_sequence": 12,
+    "complete_controller_pixels_equal": true,
+    "medium_sha256": "85da7f7dbb0289a527736be8edc8d85040cf4b2414e1823d07f45ef4d5df30d0",
+    "peer_duplicate_effects": 0
+  },
+  "host_seconds": 235.01059899496613,
+  "original_report": {
+    "path": "build/companion/task006-guest-peer-a3/result.json",
+    "sha256": "5af8eb1522a3c768c14fc3aa55f9b805e5e22f7623048c3b7c425fac441d11d0"
+  },
+  "peer": {
+    "prepared": "build/companion/task006-peer-a5/prepared.json",
+    "manifest_sha256": "8342945059cd3bc8cb27cc0070c2643a96775af06731e54728a58d7b3548b31c",
+    "binaries": {
+      "companion-peer": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/companion/task006-peer-a5/companion-peer",
+        "sha256": "237857521d258f70b3e89e50ce3918dcc79a04979b7fead8de025564deb231de"
+      },
+      "companion-client": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/companion/task006-peer-a5/companion-client",
+        "sha256": "62346d0a2b149d205c142d3c52e2afcaabc869cc7993ed06781faa1bf19ccc3e"
+      }
+    },
+    "protocol_source": "c1e4079d9c1a4d3d83d44bd217269872dcda2d305c8b674411d5cce32735196f",
+    "lean_version": "Lean (version 4.34.1, Release)",
+    "lean_prefix": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1",
+    "target_objects_added": []
+  },
+  "lost_ack": {
+    "status": "PASS",
+    "writer": 17,
+    "transaction": 78,
+    "host_seconds": 2.3154171519563533,
+    "error": "Backing persistence unresolved; machine paused without acknowledgment. Restart the companion/outbox to reconcile; this machine cannot snapshot pending work.",
+    "guest_saved_before_reconciliation": false,
+    "peer_bytes": 33896,
+    "complete_captured_outcomes": 80,
+    "captured_pending": true,
+    "storage": {
+      "backend": "lemma-fast-block/2",
+      "phase": 8,
+      "kind": 4,
+      "word_index": 0,
+      "status": 15,
+      "irq": 0,
+      "pending_sectors": 1,
+      "writes": 54,
+      "flushes": 24,
+      "durable_flush": 23,
+      "deadline_ns": 14036502948,
+      "media_deadline_ns": 14036502952,
+      "backing_next_id": 82,
+      "backing_completed": 80,
+      "backing_durable_barrier": 79,
+      "backing_observed_write": 80,
+      "backing_phase": 1,
+      "backing_poisoned": 1
+    }
+  },
+  "retained_failures": [
+    {
+      "path": "build/companion/task006-guest-peer-a1/result.json",
+      "sha256": "bf4715e3c688a39c25867fe2bb8be90d1b9f6bd7daa7712802806ab2f8147373",
+      "reason": "observer incorrectly expected a clean explicit Save to issue new I/O; failed before fault injection"
+    },
+    {
+      "path": "build/companion/task006-guest-peer-a2/result.json",
+      "sha256": "7dfd1fee5e1355300c4d29fdfd84fd182580b3ff2fd1c0af90a228c4e3c34179",
+      "reason": "full passive export exceeded unchanged120s operation bound; fixed actual hostedLean transport allocation/CRC hotpath"
+    }
+  ],
+  "resource_observations": {
+    "campaign_allocated_disk_bytes": 44978176,
+    "opaque_peer_log_bytes": 33896,
+    "direct_1MiB_response_benchmark": {
+      "scope": "actual compiled hostedLean opaque1MiB Read with8192byte rawpipe buffer used by productionserver, samebytes/wire; not guestlatency",
+      "results": [
+        {
+          "prepared": "task006-peer-a4",
+          "binary_sha256": "d691e2724bb03d86404b258dcf7006f1d5c6c2240c7638b902f784b86480b883",
+          "source_protocol": "33bc8579ae05262c2088696acdec9a721320289593e9b14682994a3a89613ddc",
+          "same_bytes": true,
+          "reply_host_seconds": [
+            0.6637193959904835,
+            0.24917284899856895
+          ],
+          "peak_rss": "VmHWM:\t  127876 kB"
+        },
+        {
+          "prepared": "task006-peer-a5",
+          "binary_sha256": "237857521d258f70b3e89e50ce3918dcc79a04979b7fead8de025564deb231de",
+          "source_protocol": "c1e4079d9c1a4d3d83d44bd217269872dcda2d305c8b674411d5cce32735196f",
+          "same_bytes": true,
+          "reply_host_seconds": [
+            0.24521364498650655,
+            0.14805876597529277
+          ],
+          "peak_rss": "VmHWM:\t   24592 kB"
+        }
+      ]
+    }
+  }
+}

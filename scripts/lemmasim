@@ -807,7 +807,7 @@ def main():
     p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--restore',type=Path);p.add_argument('--events',type=Path)
     p.add_argument('--backing-replay',type=Path,help='RTL: actual backing outcome log; requires an isolated --restore')
-    p.add_argument('--companion',type=Path,help='RTL: independent opaque backing peer directory (development transport, not USB)')
+    p.add_argument('--companion',type=Path,help='Independent opaque backing peer directory (development transport, not USB)')
     p.add_argument('--companion-prepared',type=Path);p.add_argument('--companion-socket',type=Path)
     p.add_argument('--companion-state',type=Path,help='Durable client outbox; reuse across cold machines connected to this peer')
     p.add_argument('--quantum',type=int,default=10000,help='Bounded virtual cycles per input/control boundary')
@@ -859,7 +859,7 @@ def main():
                 lemmasim_session.bounded(args.memory_latency,0,1024,'Memory latency')
                 if args.backing_replay is not None and (args.backend != 'rtl' or args.restore is None):raise Failure('Backing outcome replay requires RTL and an isolated --restore')
                 if args.companion is not None:
-                    if args.backend!='rtl' or args.disk is not None or args.restore is not None or args.backing_replay is not None:raise Failure('Companion backing requires a cold RTL machine without local --disk, --restore or --backing-replay')
+                    if args.disk is not None or args.restore is not None or args.backing_replay is not None:raise Failure('Companion backing requires a cold machine without local --disk, --restore or --backing-replay')
                     if any(value is None for value in (args.companion_prepared,args.companion_socket,args.companion_state)):raise Failure('Companion backing requires --companion-prepared, --companion-socket and durable --companion-state')
                 elif any(value is not None for value in (args.companion_prepared,args.companion_socket,args.companion_state)):raise Failure('Companion options require --companion DIRECTORY')
                 if args.fail_flush is not None:

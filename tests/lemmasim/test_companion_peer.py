@@ -138,6 +138,15 @@ class CompanionPeerTests(unittest.TestCase):
         self.assertEqual((result[0:2],bytes.fromhex(result[2])),(['512','0'],data))
         self.assertEqual(self.client_request(client,2),'0 0 -')
         self.assertEqual(self.journal.stat().st_size,680)
+    def test_large_frame_bytes_and_independent_bitwise_crc(self):
+        # Exercises every input byte and CRC table index over the admitted
+        # transfer bound; the observer retains a separate bit-by-bit algorithm.
+        data=bytes(range(256))*4096;offset=268435456-len(data)
+        with self.base.open('r+b') as base:base.seek(offset);base.write(data)
+        peer=self.peer_process()
+        fields,raw=self.exchange(peer,frame(0,offset=offset,length=len(data)))
+        self.assertEqual((fields[7],raw),(0,data))
+        self.assertEqual(self.journal.stat().st_size,8)
     def test_actual_fsync_failure_preserves_observed_bytes(self):
         helper=Path(self.temp.name)/'closed_fd.py'
         helper.write_text('import os,sys,subprocess\nif sys.argv[1]=="sync":\n fd=os.open(sys.argv[2],os.O_RDONLY);os.close(fd);os.fsync(fd)\nelse:\n raise SystemExit(subprocess.call([sys.executable,'+repr(str(HELPER))+']+sys.argv[1:]))\n')
