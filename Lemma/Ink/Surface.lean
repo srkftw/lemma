@@ -108,27 +108,23 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
   let offset := i.toUInt64 * 8
   let x := (offset % stride) * 2
   let y := offset / stride
-  if y < 128 then
+  let scalar := if y < 128 then true else if stride < offset % stride + 8 then true else false
+  if scalar then
     .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
   else
     .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
 
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
-intersecting tiles and coalesces their bounding refresh rectangle. Aligned rows
-use word writes on the simple lower canvas; toolbar and other row shapes retain
-the pixel routine. No host rendering or platform-specific image is involved. -/
+intersecting tiles and coalesces their bounding refresh rectangle. Globally
+aligned words wholly within a canvas row use packed writes, including odd byte
+strides. Toolbar, row crossings and final partial words use scalar pixels. -/
 def background (width height : UInt64) : Action :=
   let bytes := ((width + 1) / 2) * height
   if 2000000 < bytes then .done 16 0 else
-  if (width + 1) / 2 % 8 = 0 then
-    .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ => .done s bytes
-  else
-    -- Two bounded halves keep each fold under the profile's1000000 budget.
-    let first := if bytes < 1000000 then bytes else 1000000
-    .boundedFoldU64 1000000 backgroundStep first.toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
-    if s = 0 then
-    .boundedFoldU64 1000000 backgroundOffsetStep (bytes - first).toUInt32 0 (width ||| (height <<< 16)) first 0 0 fun s _ => .done s bytes
-    else .done s 0
+  .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
+  if s = 0 then
+  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 (width ||| (height <<< 16)) (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
+  else .done s 0
 
 private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=
   let width := dimensions &&& 0xffff
@@ -140,22 +136,50 @@ private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : A
   .bind (Memory.read8 (framebuffer + y * ((width + 1) / 2) + x / 2)) fun s byte =>
   if s = 0 then .bind (Memory.write8 (tile + i.toUInt64) byte) fun s _ => .done s acc else .done s 0
 
-private def fullAlignedTile (x y width height : UInt64) : Bool :=
+private def fullPackedTile (x y width height : UInt64) : Bool :=
   if width = 0 then false else if 4096 < width then false else
   if height = 0 then false else if 4096 < height then false else
   if width < x then false else if width - x < 32 then false else
   if height < y then false else if height - y < 32 then false else
-  if x % 16 = 0 then (width + 1) / 2 % 8 = 0 else false
+  x % 16 = 0
+
+/-- Gather one packed row segment using only aligned owned-memory operations.
+The last aligned read may include final-page padding, which allocate maps. -/
+private def gatherWord (address : UInt64) : Action :=
+  let offset := address % 8
+  if offset = 0 then Memory.read64 address else
+  let aligned := address - offset
+  let shift := offset * 8
+  .bind (Memory.read64 aligned) fun s low => if s = 0 then
+  .bind (Memory.read64 (aligned + 8)) fun s high => if s = 0 then
+  .done 0 ((low >>> shift) ||| (high <<< (64 - shift))) else .done s 0
+  else .done s 0
+
+/-- Scatter one packed row segment without changing either adjacent fragment.
+Both neighboring words are read before either write. A failed operation is
+reported; the whole tile transfer does not claim atomicity. -/
+private def scatterWord (address word : UInt64) : Action :=
+  let offset := address % 8
+  if offset = 0 then Memory.write64 address word else
+  let aligned := address - offset
+  let shift := offset * 8
+  .bind (Memory.read64 aligned) fun s low => if s = 0 then
+  .bind (Memory.read64 (aligned + 8)) fun s high => if s = 0 then
+  let lowKeep := (0xffffffffffffffff : UInt64) >>> (64 - shift)
+  let highKeep := (0xffffffffffffffff : UInt64) <<< shift
+  .bind (Memory.write64 aligned ((low &&& lowKeep) ||| (word <<< shift))) fun s _ => if s = 0 then
+  Memory.write64 (aligned + 8) ((high &&& highKeep) ||| (word >>> (64 - shift)))
+  else .done s 0 else .done s 0 else .done s 0
 
 private def tileLoadWordStep (i _ : UInt32) (acc stride origin _ _ : UInt64) : Action :=
   let x := origin &&& 0xffff
   let y := (origin >>> 16) + i.toUInt64 / 2
   let offset := i.toUInt64 % 2 * 8
-  .bind (Memory.read64 (framebuffer + y * stride + x / 2 + offset)) fun s word =>
+  .bind (gatherWord (framebuffer + y * stride + x / 2 + offset)) fun s word =>
   if s = 0 then .bind (Memory.write64 (tile + i.toUInt64 * 8) word) fun s _ => .done s acc else .done s 0
 
 def loadTile (x y width height : UInt64) : Action :=
-  if fullAlignedTile x y width height then
+  if fullPackedTile x y width height then
     .boundedFoldU64 64 tileLoadWordStep 64 0 ((width + 1) / 2) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
   else
     .boundedFoldU64 512 tileLoadStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
@@ -175,11 +199,11 @@ private def tileStoreWordStep (i _ : UInt32) (acc stride origin _ _ : UInt64) : 
   let y := (origin >>> 16) + i.toUInt64 / 2
   let offset := i.toUInt64 % 2 * 8
   .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
-  .bind (Memory.write64 (framebuffer + y * stride + x / 2 + offset) word) fun s _ => .done s acc
+  .bind (scatterWord (framebuffer + y * stride + x / 2 + offset) word) fun s _ => .done s acc
   else .done s 0
 
 def storeTile (x y width height : UInt64) : Action :=
-  if fullAlignedTile x y width height then
+  if fullPackedTile x y width height then
     .boundedFoldU64 64 tileStoreWordStep 64 0 ((width + 1) / 2) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0
   else
     .boundedFoldU64 512 tileStoreStep 512 0 (width ||| (height <<< 16)) (x ||| (y <<< 16)) 0 0 fun s _ => .done s 0

@@ -35,8 +35,8 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
     "service-return-supervisor-development": "return-supervisor",
     "service-return-machine-development": "return-machine",
 }
-SILICON_MULTI_CONFIGURATIONS = ("silicon-service-development", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
-SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices")
+SILICON_MULTI_CONFIGURATIONS = ("lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
+SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
@@ -53,9 +53,9 @@ INDEPENDENT_IMAGE_KEYS = {"lemmasim-isolation-development": {"store", "notebook"
                           "ipc-development": {"server", "clienta", "clientb", "busy", "fault"},
                           "service-normal": {"server", "cli", "peer", "busy"},
                           "service-development": {"server", "cli", "peer", "busy", "fault"}}
-INDEPENDENT_IMAGE_KEYS.update({"silicon-service-development": {"server", "cli", "peer", "busy", "fault"},
-                               "lemmasim-silicon-notebook": {"store", "notebook"},
-                               "lemmasim-silicon-initialize": {"store", "notebook"}})
+INDEPENDENT_IMAGE_KEYS.update({"lemmasim-silicon-power-notebook": {"store", "notebook"}, "lemmasim-silicon-power-initialize": {"store", "notebook"}, "silicon-service-development": {"server", "cli", "peer", "busy", "fault"},
+                               "lemmasim-silicon-full-notebook": {"store", "notebook"}, "lemmasim-silicon-notebook": {"store", "notebook"},
+                               "lemmasim-silicon-full-initialize": {"store", "notebook"}, "lemmasim-silicon-initialize": {"store", "notebook"}})
 INDEPENDENT_IMAGE_KEYS.update({configuration: {"server", "cli", "peer", "busy", "fault"}
                                for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
 CONTRACTS = {role: f"core0-{role}-v0.1" for role in ROLE_ROOTS}
@@ -100,10 +100,14 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
-    if configuration in {"lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize"}:
-        entry = {"lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
+    if configuration in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
+        entry = {"lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
                  ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64")))}
+    if configuration == "lemmasim-silicon-power-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", ()),
+                 ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
     if configuration == "lemmasim-silicon-devices":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.DeviceEntry.boot", ()),
                  ("Lemma.Platform.Silicon.Development.DeviceEntry.dispatch", ("u64", "u64", "u64"))),
@@ -138,6 +142,8 @@ def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
+    if configuration == "lemmasim-silicon-power-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.LemmaSim.NotebookKernel", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-devices":
         return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.DeviceEntry", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-bringup":
@@ -176,7 +182,7 @@ def configuration_development_modules(configuration: str, role: str) -> tuple[st
 
 def managed_policy(configuration: str) -> str | None:
     configuration_roots(configuration)
-    if configuration in {"lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize"}:
+    if configuration in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
         return "lemma-notebook-v1"
     if configuration in SERVICE_CONFIGURATIONS:
         return "lemma-buffer-service-v1"
@@ -202,7 +208,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("unknown execution stage")
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
-    if configuration in {"user-isolation-development", "user-csr-development", "user-nx-development",
+    if configuration in {"lemmasim-silicon-power-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
                          "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                          *USER_INSTRUCTION_CONFIGURATIONS, *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
@@ -231,7 +237,7 @@ def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str
     """Selected target source only; exporter/compiler host imports are separate."""
     return module_closure(root, image["module"], allow_development=".Development." in image["module"],
                           forbid_user_privileged_imports=managed_policy(configuration) is not None,
-                          selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize") else None)
+                          selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize") else None)
 
 
 def source_inputs(root: Path) -> dict[str, str]:
@@ -241,7 +247,7 @@ def source_inputs(root: Path) -> dict[str, str]:
                                      "scripts/audit_memory.py", "scripts/audit_monitor.py", "scripts/audit_timer.py", "scripts/audit_trap.py",
                                      "scripts/build-kernel.sh", "scripts/audit-kernel.sh",
                                      "scripts/build_kernel.py", "scripts/audit_kernel.py", "scripts/lemmasim_readonly.py", "scripts/audit_lemmasim_capacity.py", "scripts/build_user.py", "scripts/build-user.sh")]
-    inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json"]
+    inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -349,7 +355,7 @@ def export_user_files(root: Path, output_dir: Path, configuration: str, image: d
 
 
 def configuration_lemmasim(layout: dict) -> bool:
-    return layout.get("configuration") in {"lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-silicon-devices"}
+    return layout.get("configuration") in {"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe"}
 
 
 def link_user_image(output_dir: Path, image: dict, invoke) -> None:
@@ -378,8 +384,8 @@ def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     # remain checked by the allocator; this rejects an impossible initial load.
     base_tables = 21 if configuration_lemmasim(layout) else 11
     if layout.get("configuration", "").startswith("lemmasim-silicon-"):
-        from silicon_profile import profile
-        owner_quota = profile()["frame_quota"]
+        from silicon_profile import profile, configuration_profile
+        owner_quota = profile(configuration_profile(layout["configuration"]))["frame_quota"]
     else:
         owner_quota = 8192 if configuration_lemmasim(layout) else 32
     if base_tables + math.ceil(text_bytes / layout["frame_bytes"]) + 1 + user["stack_pages"] + layout["task_kernel_stack_pages"] > owner_quota:
@@ -520,8 +526,8 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
         invoke(("clang", *STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"))
         invoke(("ld.lld", "-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"))
         if configuration in SILICON_CONFIGURATIONS:
-            from silicon_profile import generate
-            generate(output_dir, devices=configuration.startswith("lemmasim-"))
+            from silicon_profile import generate, configuration_profile
+            generate(output_dir, devices=configuration.startswith("lemmasim-"), name=configuration_profile(configuration))
         else:
             capture_platform_dtb(output_dir=output_dir, root=root, command_log=commands, timeout_seconds=timeout_seconds)
         write_json(output_dir / "commands.json", commands)

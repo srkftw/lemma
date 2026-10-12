@@ -163,6 +163,29 @@ checks and extracted timing. Physical memory/nonvolatile boot, power/pads and
 foundry acceptance remain separate open dependencies. See the
 [Task 005 checkpoint](005-session-state.md).
 
+Task 006 preserves those observations and adds full-capacity synchronous pen
+banks, a versioned synthetic digital panel sequencer, canonical-resolution
+matched native/RTL development sessions, owned-memory capacity and resumable
+machine state. Its OpenROAD journal reproducer supports a compatible repair
+phase change; the new pen physical run reaches global routing but still fails
+setup and times out during detailed routing. Complete enclosure-rule coverage,
+process DRC/LVS and extracted timing remain open. These changes do not close
+H.3, G2 or G5–G7. Resume from the [Task 006 checkpoint](006-session-state.md)
+and the existing [capability inventory](LEMMASIM.md#task006-capability-inventory).
+
+The 0.3 continuation adds an actual guest-controlled digital power controller,
+cooperative suspend/wake, reset-cause reporting and exact queued-wake state on
+both bindings. The checked-memory copy path validates ownership within each
+nonpreemptible Action. A volatile object-table successor admits the separately
+granted fifth power endpoint while preserving historical four-endpoint budgets.
+The actual Lean Loader now copies validated aligned payloads with bounded word
+transfers and a byte tail, preserving allocation/abort cleanup and RX/BSS rules.
+A fixed 100M-cycle canonical RTL prefix reached user mode at 38M but did not
+reach notebook Ready. Fast fixed counters and pen reset epochs are serialized;
+warm notebook writing, Save and durable-only cold recovery have real observations.
+These additions do not close production boot/update, electrical power/watchdog,
+companion/radio, browser or the managed mathematics/learning requirements.
+
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |
 | H.1 | Open RV64 compute, fabric and boot | 2.1 | Real RTL reset/Lean M/S/U execution, synthesis and explicit ROM/RAM implementation; eventual physical boot has separate evidence. |

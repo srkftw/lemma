@@ -1050,7 +1050,7 @@ private def lowerExecutionMemory (profile : Lemma.Core0.Profile)
     statuses := statuses.push (statusOperand Lemma.Core0.Memory.Status.invalidLength, invalidByteExit)
     values := values.push (.int .i64 0, invalidByteExit)
     startBlock byteValidLabel
-  let regions := if operation.isDevice then Lemma.Core0.Execution.deviceRegions operation
+  let regions := if operation.isDevice then Lemma.Core0.Execution.deviceRegionsFor profile operation
     else Lemma.Core0.Execution.memoryRegions profile
   for region in regions do
     unless region.start < region.stop && width ≤ region.stop - region.start do
@@ -1430,7 +1430,7 @@ private def lowerActionExpr (profile : Lemma.Core0.Profile)
       withLocal status.id (statusOperand Lemma.Core0.Memory.Status.ok) do
         lowerActionExpr profile suite symbols next
   | .uartEnableAndResetFifo14 status next => do
-      unless profile == .kernel_v0_2 || profile == .kernel_v0_3 do
+      unless profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4) do
         throw "UART FIFO trigger14 requires core0-kernel-v0.2"
       unless status.ty == .u8 do
         throw "checked kernel FIFO control has an inconsistent continuation type"
@@ -1623,7 +1623,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     actualDeviceOps := collectDeviceOps actualDeviceOps function.body
   let mut seenDeviceMetadata : Array Lemma.Core0.Device.Op := #[]
   for operation in suite.usedDeviceOps do
-    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 && profile != .kernel_v0_3 then
+    if operation == .uartEnableAndResetFifo14 && profile != .kernel_v0_2 && profile != .kernel_v0_3 && profile != .kernel_v0_4 then
       throw s!"device operation `{operation.stableId}` is denied by `{profile.contractVersion}`"
     if seenDeviceMetadata.contains operation then
       throw s!"checked Action suite repeats device metadata `{operation.stableId}`"
@@ -1726,7 +1726,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         Lemma.Core0.Device.UART.registerWidthBytes == 1 &&
         Lemma.Core0.Device.UART.fcrEnableAndReset.toNat == 0x07 do
       throw "the compiled core0-v0.5 UART catalog disagrees with the closed LLVM lowering"
-  if profile == .kernel_v0_2 || profile == .kernel_v0_3 then
+  if profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4) then
     unless Lemma.Core0.Device.kernelCatalogValid && kernelDeviceCatalogMatchesBackend &&
         Lemma.Core0.Device.UART.fcrEnableAndReset14.toNat == 0xc7 do
       throw "the compiled kernel-v0.2 UART catalog disagrees with the closed LLVM lowering"

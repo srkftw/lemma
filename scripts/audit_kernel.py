@@ -149,7 +149,7 @@ SERVICE_DEVELOPMENT_USER_IMAGES = (*SERVICE_USER_IMAGES, {
 MANAGED_POLICIES = {"capabilities-development":MANAGED_POLICY,"ipc-development":IPC_POLICY,
                     "service-normal":BUFFER_POLICY,"service-development":BUFFER_POLICY}
 MANAGED_POLICIES.update({configuration: BUFFER_POLICY for configuration in SERVICE_INSTRUCTION_CONFIGURATIONS})
-MANAGED_POLICIES.update({"silicon-service-development": BUFFER_POLICY, "lemmasim-silicon-notebook": "lemma-notebook-v1", "lemmasim-silicon-initialize": "lemma-notebook-v1"})
+MANAGED_POLICIES.update({"lemmasim-silicon-power-notebook": "lemma-notebook-v1", "lemmasim-silicon-power-initialize": "lemma-notebook-v1", "silicon-service-development": BUFFER_POLICY, "lemmasim-silicon-full-notebook": "lemma-notebook-v1", "lemmasim-silicon-notebook": "lemma-notebook-v1", "lemmasim-silicon-full-initialize": "lemma-notebook-v1", "lemmasim-silicon-initialize": "lemma-notebook-v1"})
 MANAGED_POLICIES.update({"lemmasim-notebook": "lemma-notebook-v1", "lemmasim-initialize": "lemma-notebook-v1", "lemmasim-isolation-development": "lemma-notebook-v1"})
 MULTI_USER_CONFIGURATIONS = {"tasks-development": TASK_USER_IMAGES, "tasks-fault-development": TASK_FAULT_USER_IMAGES,
                              "capabilities-development": CAPABILITY_USER_IMAGES, "ipc-development":IPC_USER_IMAGES,
@@ -171,10 +171,14 @@ NOTEBOOK_ISOLATION_IMAGES = (*NOTEBOOK_USER_IMAGES, {"key": "isolation", "id": 3
     "directory": "users/isolation", "boot_role": "notebook-isolation-client"})
 MULTI_USER_CONFIGURATIONS.update({"lemmasim-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-initialize": NOTEBOOK_USER_IMAGES,
                                  "lemmasim-isolation-development": NOTEBOOK_ISOLATION_IMAGES})
-MULTI_USER_CONFIGURATIONS.update({"silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
-                                 "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
-LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-devices","lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
-LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-notebook", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+MULTI_USER_CONFIGURATIONS.update({"lemmasim-silicon-power-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-power-initialize": NOTEBOOK_USER_IMAGES, "silicon-service-development": SERVICE_DEVELOPMENT_USER_IMAGES,
+                                 "lemmasim-silicon-full-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-notebook": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-full-initialize": NOTEBOOK_USER_IMAGES, "lemmasim-silicon-initialize": NOTEBOOK_USER_IMAGES})
+LEMMASIM_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-devices","lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-bringup", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+LEMMASIM_NOTEBOOK_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development"})
+POWER_CONFIGURATIONS = frozenset({"lemmasim-silicon-power-probe", "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize"})
+
+def kernel_contract(configuration: str) -> str:
+    return "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -390,6 +394,44 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
 
 
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
+    if unit.get('configuration') == 'lemmasim-silicon-power-probe':
+        # This selected S-mode probe links the ordinary dispatch boundary but
+        # never constructs/enters a User task. Do not claim an allocation test
+        # for absent construction; bind the actual boot call graph instead.
+        normalized = {re.sub(r'^_private\..*?\.[0-9]+\.', '', row['source']): row['symbol']
+                      for row in unit['functions']}
+        root = 'Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe'
+        expected = {'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14',
+            'Lemma.Kernel.BootInfo.validate',
+            'Lemma.Platform.LemmaSim.Descriptor.validateSiliconPower',
+            'Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+            'Lemma.Platform.LemmaSim.PowerControl.configure',
+            'Lemma.Drivers.PLIC.initializePower', 'Lemma.Kernel.Console.record',
+            'Lemma.Platform.LemmaSim.PowerControl.step',
+            'Lemma.Platform.LemmaSim.NotebookKernel.fatal'}
+        if root not in normalized or not expected <= normalized.keys():
+            raise Core0Error('Power probe genuine boot/policy source closure missing')
+        calls = {symbol: parse_definitions_and_calls(_ir_definition_body(pre_ir, symbol))[2]
+                 for symbol in normalized.values()}
+        if calls[normalized[root]] != {normalized[name] for name in expected}:
+            raise Core0Error('Power probe boot has a different direct call closure')
+        visited=set(); pending=[normalized[root]]
+        while pending:
+            symbol=pending.pop()
+            if symbol in visited: continue
+            visited.add(symbol); pending.extend(calls.get(symbol,set()) - visited)
+        forbidden = {'Lemma.Kernel.Process.construct', 'Lemma.Kernel.Process.run',
+            'Lemma.Kernel.Loader.load', 'Lemma.Kernel.Loader.allocateStack',
+            'Lemma.Kernel.Memory.AddressSpace.create', 'Lemma.Kernel.Memory.Frames.allocate',
+            'Lemma.Kernel.Memory.Batch.allocate', 'Lemma.Kernel.Task.capture'}
+        if any(normalized.get(name) in visited for name in forbidden):
+            raise Core0Error('Power probe reached User construction, allocation or dispatch')
+        if (layout['task_kernel_stack_pages'],layout['task_kernel_stack_bytes']) != (4,16384):
+            raise Core0Error('Power probe linked dispatch stack layout differs')
+        return {'scope':'S-mode power probe; linked User dispatch is unreachable from this boot',
+                'owned_task_construction':'not executed or qualified', 'allocated_pages':0,
+                'boot_source':root, 'reachable_source_functions':len(visited),
+                'linked_dispatch_stack_pages':4, 'linked_dispatch_stack_bytes':16384}
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         # The selected audit checks the genuinely elaborated construction,
         # registry, validation and cleanup closure for this larger profile.
@@ -723,7 +765,8 @@ def validate_boolean_gate(body: str, comparison: str, protected: str, *, success
 
 
 
-def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bool = False) -> dict:
+def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bool = False,
+                               pre_ir: str | None = None) -> dict:
     """Bind the compiled bounded count/limit to preallocation CFG guards."""
     objects="Lemma.Kernel.Objects.";var=r"%[A-Za-z0-9_.$-]+";label=r"[A-Za-z0-9_.$-]+"
     counter="replyCountStep" if reply else "endpointCountStep"
@@ -754,7 +797,17 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bo
         raise Core0Error("endpoint count lacks exact checked fold outcome")
     value,exhausted,stopped,done=outcomes[0]
     outcome_status=re.findall(r"("+var+r") = phi i8 \[ 9, %"+re.escape(exhausted)+r" \], \[ "+re.escape(narrowed[0])+r", %"+re.escape(stopped)+r" \], \[ 0, %"+re.escape(done)+r" \]",body)
-    limits=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[objects+capacity])+r"\(\)",body)
+    runtime = by_source.get(objects+"runtimeEndpointCapacity") if not reply else None
+    runtime_calls = [] if runtime is None else re.findall(
+        r"("+var+r") = call \{ i64, i64 \} @"+re.escape(runtime)+r"\(\)",body)
+    if runtime_calls:
+        if len(runtime_calls)!=1 or pre_ir is None:
+            raise Core0Error("versioned endpoint capacity lacks its checked source closure")
+        limits=re.findall(r"("+var+r") = extractvalue \{ i64, i64 \} "+re.escape(runtime_calls[0])+r", 1$",body,re.M)
+        if len(limits)!=1:
+            raise Core0Error("versioned endpoint capacity lacks its exact returned value")
+    else:
+        limits=re.findall(r"("+var+r") = call i64 @"+re.escape(by_source[objects+capacity])+r"\(\)",body)
     comparisons=[]
     for limit in limits:
         comparisons.extend(re.findall(r"("+var+r") = icmp ult i64 "+re.escape(value)+r", "+re.escape(limit)+r"$",body,re.M))
@@ -771,8 +824,340 @@ def validate_h_endpoint_budget(body: str, by_source: dict[str,str], *, reply: bo
     for protected in protected_sources:
         gates.append({"protected_source":protected,"limit":validate_boolean_gate(body,comparisons[0],by_source[protected]),
                       "status":validate_boolean_gate(body,status_comparisons[0],by_source[protected],success_when_true=False)})
-    return {"capacity":8 if reply else 4,"counted_rows":16,"counter_source":objects+counter,"base_operand":base,
+        if runtime_calls:
+            gates[-1]["capacity_status"]=validate_failed_call_gate(body,runtime,by_source[protected],
+                by_source[objects+"failed"],_ir_definition_body(pre_ir,by_source[objects+"failed"]))
+    return {"capacity":8 if reply else {"version1":4,"version2":5} if runtime_calls else 4,
+            "capacity_source":objects+"runtimeEndpointCapacity" if runtime_calls else objects+capacity,
+            "counted_rows":16,"counter_source":objects+counter,"base_operand":base,
             "count_result":value,"checked_outcome_status":outcome_status[0],"preallocation_gates":gates}
+
+
+def _object_scalar_cases(body: str, constants: dict[str,int], *, header: bool,
+                         version_only: bool = False, encoded: bool = False) -> list[dict]:
+    """Observe the closed equality/phi CFG over its complete input partitions.
+
+    Version comparisons may only distinguish1/2; header-limit comparisons may
+    only distinguish0/5. There is no memory, arithmetic, foreign call or other
+    predicate in this admitted observer scope. Thus these partitions cover all
+    u64 inputs, rather than treating a sampled scalar corpus as equivalence.
+    """
+    blocks=_structured_ir_blocks(body)
+    variable=r'%[A-Za-z0-9_.$-]+'
+    observations=[];visited=set()
+    for version in (0,1,2,3,(1<<64)-1):
+      for limit in ((0,4,5,6,(1<<64)-1) if header and not version_only else (0,)):
+        values={'%arg0':version,'%arg1':limit};label='entry';previous=None
+        def operand(value):
+            if value in values:return values[value]
+            if re.fullmatch(r'[0-9]+',value) and int(value) in {0,1,2,4,5}:return int(value)
+            raise Core0Error('Objects scalar guard has an unknown operand')
+        for _ in range(64):
+            if label not in blocks:raise Core0Error('Objects scalar guard has an unknown block')
+            visited.add(label);next_label=None;returned=None
+            for line in blocks[label]:
+                match=re.fullmatch('('+variable+r') = icmp eq i64 (%arg[01]), ('+variable+r'|[0-9]+)',line)
+                if match:
+                    result,arg,right=match.groups();bound=operand(right)
+                    if (arg=='%arg0' and bound not in {1,2}) or (arg=='%arg1' and (not header or version_only or bound not in {0,5})):
+                        raise Core0Error('Objects scalar guard comparison leaves its closed partitions')
+                    values[result]=int(values[arg]==bound);continue
+                match=re.fullmatch('('+variable+r') = call i64 @([A-Za-z0-9_.$-]+)\(\)',line)
+                if match:
+                    result,callee=match.groups()
+                    if callee not in constants:raise Core0Error('Objects scalar guard has an unreviewed call')
+                    values[result]=constants[callee];continue
+                match=re.fullmatch('('+variable+r') = phi (i1|i64) (.+)',line)
+                if match:
+                    result,ty,incoming=match.groups()
+                    pairs=re.findall(r'\[ ('+variable+r'|[0-9]+), %([A-Za-z0-9_.$-]+) \]',incoming)
+                    if ', '.join('[ '+v+', %'+p+' ]' for v,p in pairs)!=incoming:
+                        raise Core0Error('Objects scalar phi has an unsupported form')
+                    selected=[v for v,p in pairs if p==previous]
+                    if len(selected)!=1:raise Core0Error('Objects scalar phi has no exact predecessor')
+                    value=operand(selected[0])
+                    if ty=='i1' and value not in {0,1}:raise Core0Error('Objects scalar Boolean is malformed')
+                    values[result]=value;continue
+                match=re.fullmatch(r'br i1 ('+variable+r'), label %([A-Za-z0-9_.$-]+), label %([A-Za-z0-9_.$-]+)',line)
+                if match:
+                    condition,yes,no=match.groups();value=operand(condition)
+                    if value not in {0,1}:raise Core0Error('Objects scalar branch is malformed')
+                    next_label=yes if value else no;continue
+                match=re.fullmatch(r'br label %([A-Za-z0-9_.$-]+)',line)
+                if match:next_label=match[1];continue
+                match=re.fullmatch(r'ret '+('i1' if header else 'i64')+' ('+variable+r'|[0-9]+)',line)
+                if match:returned=operand(match[1]);continue
+                raise Core0Error('Objects scalar guard has an unsupported instruction')
+            if returned is not None:
+                expected=(int(version in {1,2}) if version_only else int((version,limit) in {(1,0),(2,5)})) if header else (5 if version==2 else 0) if encoded else 4 if version==1 else 5 if version==2 else 0
+                if returned!=expected:raise Core0Error('Objects scalar version/header quota semantics differ')
+                observations.append({'version':version,'encoded_limit':limit if header else None,'result':returned});break
+            if next_label is None:raise Core0Error('Objects scalar guard has no terminator')
+            previous,label=label,next_label
+        else:raise Core0Error('Objects scalar guard exceeds its bounded acyclic scope')
+    if visited!=set(blocks):raise Core0Error('Objects scalar guard has an unobserved block')
+    return observations
+
+
+def _object_checked_return(body: str, fatal: str, expected_value: str) -> str:
+    """Trace the paired return: one exact success, otherwise the fatal pair."""
+    var=r'%[A-Za-z0-9_.$-]+'
+    assignments={m[1]:m[2] for m in re.finditer(r'^\s*('+var+r') = (.+)$',body,re.M)}
+    returned=re.findall(r'ret \{ i64, i64 \} ('+var+r')$',body,re.M)
+    if len(returned)!=1:raise Core0Error('Objects checked return ABI differs')
+    complete=re.fullmatch(r'insertvalue \{ i64, i64 \} ('+var+r'), i64 ('+var+r'), 1',assignments.get(returned[0],''))
+    partial=None if complete is None else re.fullmatch(r'insertvalue \{ i64, i64 \} poison, i64 ('+var+r'), 0',assignments.get(complete[1],''))
+    widened=None if partial is None else re.fullmatch(r'zext i8 ('+var+r') to i64',assignments.get(partial[1],''))
+    if widened is None:raise Core0Error('Objects checked status return provenance differs')
+    pending=[(widened[1],complete[2])];visited=set();leaves=[]
+    while pending:
+        status,value=pending.pop()
+        if (status,value) in visited:continue
+        visited.add((status,value))
+        phi_s=re.fullmatch(r'phi i8 (.+)',assignments.get(status,''))
+        phi_v=re.fullmatch(r'phi i64 (.+)',assignments.get(value,''))
+        if phi_s and phi_v:
+            def pairs(text):
+                rows=re.findall(r'\[ ('+var+r'|[0-9]+), %([A-Za-z0-9_.$-]+) \]',text)
+                if ', '.join('[ '+v+', %'+p+' ]' for v,p in rows)!=text or len({p for _,p in rows})!=len(rows):
+                    raise Core0Error('Objects checked return phi differs')
+                return {p:v for v,p in rows}
+            statuses,values=pairs(phi_s[1]),pairs(phi_v[1])
+            if statuses.keys()!=values.keys():raise Core0Error('Objects checked pair lost predecessor binding')
+            for origin,s in statuses.items():
+                v=values[origin]
+                if s=='0':
+                    if v!=expected_value:raise Core0Error('Objects success returns an unvalidated value')
+                    leaves.append(origin)
+                elif s.startswith('%') and v.startswith('%'):pending.append((s,v))
+                else:raise Core0Error('Objects malformed path fabricated a checked return')
+            continue
+        narrowed=re.fullmatch(r'trunc i64 ('+var+r') to i8',assignments.get(status,''))
+        extracted=None if narrowed is None else re.fullmatch(r'extractvalue \{ i64, i64 \} ('+var+r'), 0',assignments.get(narrowed[1],''))
+        got_value=re.fullmatch(r'extractvalue \{ i64, i64 \} ('+var+r'), 1',assignments.get(value,''))
+        if extracted is None or got_value is None or extracted[1]!=got_value[1] or assignments.get(extracted[1])!='call { i64, i64 } @'+fatal+'()':
+            raise Core0Error('Objects failed checked pair is not its declared fatal result')
+    if len(leaves)!=1:raise Core0Error('Objects checked return lacks one exact success leaf')
+    return leaves[0]
+
+
+def _object_invalid_init_path(body: str, start: str, invalid: str) -> None:
+    """Follow the one rejected-version path; it returns(16,0), without effects."""
+    blocks=_structured_ir_blocks(body);values={};previous=None;label=start
+    var=r'%[A-Za-z0-9_.$-]+'
+    def value(operand):
+        if operand.isdecimal():return int(operand)
+        if operand in values:return values[operand]
+        raise Core0Error('Objects rejected initializer has an unknown value')
+    for _ in range(64):
+        target=None
+        for line in blocks.get(label,[]):
+            match=re.fullmatch('('+var+r') = call zeroext i8 @'+re.escape(invalid)+r'\(\)',line)
+            if match:values[match[1]]=16;continue
+            match=re.fullmatch('('+var+r') = phi (?:i8|i64) (.+)',line)
+            if match:
+                selected=[v for v,p in re.findall(r'\[ ('+var+r'|[0-9]+), %([A-Za-z0-9_.$-]+) \]',match[2]) if p==previous]
+                if len(selected)!=1:raise Core0Error('Objects rejected initializer phi differs')
+                values[match[1]]=value(selected[0]);continue
+            match=re.fullmatch('('+var+r') = zext i8 ('+var+r') to i64',line)
+            if match:values[match[1]]=value(match[2]);continue
+            match=re.fullmatch('('+var+r') = insertvalue \{ i64, i64 \} (poison|'+var+r'), i64 ('+var+r'|[0-9]+), ([01])',line)
+            if match:
+                result,pair,operand,index=match.groups();pair=[None,None] if pair=='poison' else list(value(pair));pair[int(index)]=value(operand);values[result]=tuple(pair);continue
+            match=re.fullmatch(r'br label %([A-Za-z0-9_.$-]+)',line)
+            if match:target=match[1];continue
+            match=re.fullmatch(r'ret \{ i64, i64 \} ('+var+')',line)
+            if match:
+                if value(match[1])!=(16,0):raise Core0Error('Objects rejected initializer fabricated success')
+                return
+            raise Core0Error('Objects rejected initializer has effects or an unsupported path')
+        if target is None:raise Core0Error('Objects rejected initializer has no return route')
+        previous,label=label,target
+    raise Core0Error('Objects rejected initializer exceeds its bounded route')
+
+
+def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]) -> dict:
+    """Bind the successor constructor to exact wrappers and header publication."""
+    o='Lemma.Kernel.Objects.';f='Lemma.Kernel.Memory.Frames.';var=r'%[A-Za-z0-9_.$-]+'
+    if o+'initFor' not in names:return {'scope':'initializer not reachable; historical direct initializer unchanged'}
+    needed={o+s for s in ('init','initFor','initStep','powerEndpointCapacity','capacity','put','get','control','magic','failed')}
+    needed|={f+'allocate',f+'resolvePurpose','Lemma.User.CapabilityABI.invalidArgument'}
+    if not needed<=names.keys():raise Core0Error('Objects versioned initializer closure missing')
+    wrappers={o+'init':1}
+    if o+'initPower' in names:wrappers[o+'initPower']=2
+    expected='''entry:
+  %action.call.result0 = call { i64, i64 } @INIT(i64 VERSION)
+  %action.call.status-word1 = extractvalue { i64, i64 } %action.call.result0, 0
+  %action.call.status2 = trunc i64 %action.call.status-word1 to i8
+  %action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1
+  %action.result.status-word4 = zext i8 %action.call.status2 to i64
+  %action.result.partial5 = insertvalue { i64, i64 } poison, i64 %action.result.status-word4, 0
+  %action.result.complete6 = insertvalue { i64, i64 } %action.result.partial5, i64 %action.call.value3, 1
+  ret { i64, i64 } %action.result.complete6'''.replace('@INIT(', '@'+names[o+'initFor']+'(')
+    for source,version in wrappers.items():
+        if _ir_definition_body(pre_ir,names[source]).split()!=expected.replace('VERSION',str(version)).split():
+            raise Core0Error('Objects initializer wrapper changed its fixed version/return')
+    invalid=names['Lemma.User.CapabilityABI.invalidArgument']
+    if re.fullmatch(r'\s*entry:\s*ret i8 16\s*',_ir_definition_body(pre_ir,invalid)) is None:
+        raise Core0Error('Objects invalid initializer status differs')
+    body=_ir_definition_body(pre_ir,names[o+'initFor']);blocks=_structured_ir_blocks(body)
+    tests=re.findall('('+var+r') = icmp eq i1 ('+var+r'), 0$',body,re.M)
+    if len(tests)!=1:raise Core0Error('Objects initializer lacks one closed version gate')
+    comparison,predicate=tests[0]
+    prefix=body[:body.index(comparison+' =')]+'ret i1 '+predicate+'\n'
+    version_cases=_object_scalar_cases(prefix,{},header=True,version_only=True)
+    gates=[validate_boolean_gate(body,comparison,names[source],success_when_true=False) for source in (f+'allocate',o+'get',o+'put')]
+    _object_invalid_init_path(body,gates[0]['failure'],invalid)
+    resolved=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[f+'resolvePurpose'])+r'\(i64 1, i64 ('+var+r'), i64 1\)',body)
+    if len(resolved)!=1:raise Core0Error('Objects initializer loses owner1/purpose1 resolution')
+    resolved_result,handle=resolved[0]
+    address_values=re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(resolved_result)+r', 1$',body,re.M)
+    if len(address_values)!=1:raise Core0Error('Objects initializer loses its resolved frame')
+    address=address_values[0];operands=_ipc_scalar_operands(body,{names[o+'control']:0x80400620,names[o+'magic']:0x314a424f414d454c})
+    puts=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[o+'put'])+r'\(i64 ([^,]+), i64 ([^)]+)\)',body)
+    locations={}
+    for field,location in (('version',('add',address,8)),('limit',('add',address,24)),('magic',address),('publish',0x80400620)):
+        matches=[(result,pointer,value) for result,pointer,value in puts if operands.get(pointer,pointer)==location]
+        if len(matches)!=1:raise Core0Error('Objects initializer lacks one exact '+field+' publication')
+        locations[field]=matches[0]
+    if locations['version'][2]!='%arg0' or operands.get(locations['magic'][2],locations['magic'][2])!=0x314a424f414d454c or locations['publish'][2]!=handle:
+        raise Core0Error('Objects initializer header/global publication lost source values')
+    encoded=locations['limit'][2]
+    phi=re.findall(re.escape(encoded)+r' = phi i64 \[ ('+var+r'), %([A-Za-z0-9_.$-]+) \], \[ 0, %([A-Za-z0-9_.$-]+) \]',body)
+    if len(phi)!=1:raise Core0Error('Objects initializer encoded limit is not version2/5 versus legacy0')
+    limit_value,yes,no=phi[0]
+    if re.findall(re.escape(limit_value)+r' = call i64 @'+re.escape(names[o+'powerEndpointCapacity'])+r'\(\)',body)!=[limit_value+' = call i64 @'+names[o+'powerEndpointCapacity']+'()']:
+        raise Core0Error('Objects initializer lost the exact successor capacity')
+    candidate=[]
+    for cmp in re.findall('('+var+r') = icmp eq i64 %arg0, 2$',body,re.M):
+        try:candidate.append(validate_boolean_gate(body,cmp,names[o+'powerEndpointCapacity']))
+        except Core0Error:pass
+    if len(candidate)!=1 or (candidate[0]['success'],candidate[0]['failure'])!=(yes,no):
+        raise Core0Error('Objects initializer limit branch is not exact version2')
+    bound=candidate[0];merge=re.findall(r'br label %([A-Za-z0-9_.$-]+)', '\n'.join(blocks[yes]))
+    if len(merge)!=1 or blocks[no]!=['br label %'+merge[0]]:
+        raise Core0Error('Objects initializer encoded-limit merge has other effects')
+    selected='entry:\n  '+bound['comparison']+' = icmp eq i64 %arg0, 2\n  br i1 '+bound['comparison']+', label %'+yes+', label %'+no+'\n'
+    selected+=yes+':\n  '+'\n  '.join(blocks[yes])+'\n'+no+':\n  '+'\n  '.join(blocks[no])+'\n'+merge[0]+':\n  '+encoded+' = phi i64 [ '+limit_value+', %'+yes+' ], [ 0, %'+no+' ]\n  ret i64 '+encoded+'\n'
+    encoded_cases=_object_scalar_cases(selected,{names[o+'powerEndpointCapacity']:5},header=False,encoded=True)
+    aliased=body
+    for field,(_,pointer,value) in locations.items():
+        aliased=aliased.replace('@'+names[o+'put']+'(i64 '+pointer+', i64 '+value+')','@objects_init_'+field+'(i64 '+pointer+', i64 '+value+')')
+    failed_body=_ir_definition_body(pre_ir,names[o+'failed'])
+    if re.findall(r'call \{ i64, i64 \} @'+re.escape(names[f+'allocate'])+r'\(([^\n]*)\)',body)!=['i64 1, i64 1']:
+        raise Core0Error('Objects initializer allocation loses owner1/purpose1')
+    for before,after in ((o+'get',f+'allocate'),(f+'allocate',f+'resolvePurpose'),
+                         (f+'resolvePurpose',o+'initStep'),(f+'resolvePurpose',o+'put')):
+        gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
+    for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
+        gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.construct';callers=[];binding_gates=[]
+    for source,symbol in names.items():
+        other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
+        if names[o+'initFor'] in calls and source not in wrappers:
+            raise Core0Error('Objects versioned initializer has a non-wrapper caller')
+        if o+'initPower' not in names or names[o+'initPower'] not in calls:continue
+        if source!=construct:raise Core0Error('Objects power initializer escapes the selected machine constructor')
+        admitted=[]
+        for cmp in re.findall('('+var+r') = icmp eq i64 %arg2, 3$',other,re.M):
+            try:admitted.append((validate_boolean_gate(other,cmp,names[o+'initPower']),validate_boolean_gate(other,cmp,names[o+'init'],success_when_true=False)))
+            except Core0Error:pass
+        if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')
+        binding_gates.extend(admitted[0]);callers.append(source)
+    if o+'initPower' in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
+    return {'wrappers':wrappers,'version_cases':version_cases,'encoded_limit_cases':encoded_cases,
+        'publication_status_gates':gates,'power_callers':callers,'binding3_gates':binding_gates}
+
+
+def validate_object_budget(unit: dict, pre_ir: str) -> dict:
+    """Independent emitted obligations for the volatile Objects-v2 successor.
+
+    Historical units with direct constant4 keep their existing H/H_I audits.
+    The successor must bind exact headers to checked table resolution, return
+    its capacity only after successful reads, and gate both slot search and
+    frame allocation on the checked capacity and count.
+    """
+    o='Lemma.Kernel.Objects.'
+    names={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row['symbol'] for row in unit['functions']}
+    if not any(source.startswith(o) for source in names):
+        return {'scope':'Objects not reachable in this unit; no quota claim'}
+    if o+'runtimeEndpointCapacity' not in names:
+        if any(o+tail in names for tail in ('headerAdmitted','endpointLimitFor','initFor','initPower','powerEndpointCapacity')):
+            raise Core0Error('Objects successor has an incomplete runtime quota closure')
+        return {'scope':'historical direct constant4; existing H/H_I obligations unchanged'}
+    if unit.get('role')!='kernel':raise Core0Error('Objects successor requires kernel authority')
+    required={o+s for s in ('headerAdmitted','endpointLimitFor','runtimeEndpointCapacity','endpointCapacity',
+        'powerEndpointCapacity','replyCapacity','capacity','table','get','failed','fatal','createEndpoint','freeObjectStep')}
+    required|={'Lemma.Kernel.Memory.Frames.allocate','Lemma.Kernel.Memory.Frames.resolvePurpose','Lemma.User.CapabilityABI.fatal'}
+    if not required<=names.keys():raise Core0Error('Objects successor source closure missing')
+    bodies={s:_ir_definition_body(pre_ir,names[s]) for s in required}
+    rows={re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']):row for row in unit['functions']}
+    for tail,value in (('endpointCapacity',4),('powerEndpointCapacity',5),('replyCapacity',8),('capacity',16)):
+        source=o+tail
+        if rows[source]['args']!=[] or rows[source]['effects']!=[] or re.fullmatch(r'\s*entry:\s*ret i64 '+str(value)+r'\s*',bodies[source]) is None:
+            raise Core0Error('Objects unchanged or successor capacity differs: '+tail)
+    for tail,args in (('headerAdmitted',['u64','u64']),('endpointLimitFor',['u64'])):
+        if rows[o+tail]['args']!=args or rows[o+tail]['effects']!=[]:
+            raise Core0Error('Objects scalar quota signature/effects differ')
+    scalar={names[o+'endpointCapacity']:4,names[o+'powerEndpointCapacity']:5}
+    header=_object_scalar_cases(bodies[o+'headerAdmitted'],{names[o+'powerEndpointCapacity']:5},header=True)
+    limits=_object_scalar_cases(bodies[o+'endpointLimitFor'],scalar,header=False)
+    if re.fullmatch(r'\s*entry:\s*ret i8 255\s*',bodies['Lemma.User.CapabilityABI.fatal']) is None:
+        raise Core0Error('Objects malformed-header failure status differs')
+    expected_fatal='''entry:
+  %call0 = call zeroext i8 @FATAL()
+  %action.result.status-word1 = zext i8 %call0 to i64
+  %action.result.partial2 = insertvalue { i64, i64 } poison, i64 %action.result.status-word1, 0
+  %action.result.complete3 = insertvalue { i64, i64 } %action.result.partial2, i64 0, 1
+  ret { i64, i64 } %action.result.complete3'''.replace('@FATAL(', '@'+names['Lemma.User.CapabilityABI.fatal']+'(')
+    if bodies[o+'fatal'].split()!=expected_fatal.split():raise Core0Error('Objects fatal pair was changed')
+    runtime=bodies[o+'runtimeEndpointCapacity'];var=r'%[A-Za-z0-9_.$-]+'
+    table_calls=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[o+'table'])+r'\(\)',runtime)
+    if len(table_calls)!=1:raise Core0Error('Objects runtime capacity lacks one checked table')
+    bases=re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(table_calls[0])+r', 1$',runtime,re.M)
+    addresses=re.findall('('+var+r') = add i64 '+re.escape(bases[0] if len(bases)==1 else '<missing>')+r', 8$',runtime,re.M)
+    reads=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[o+'get'])+r'\(i64 '+re.escape(addresses[0] if len(addresses)==1 else '<missing>')+r'\)',runtime)
+    versions=re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(reads[0] if len(reads)==1 else '<missing>')+r', 1$',runtime,re.M)
+    if len(versions)!=1 or re.findall(r'call i64 @'+re.escape(names[o+'endpointLimitFor'])+r'\(([^\n]*)\)',runtime)!=['i64 '+versions[0]]:
+        raise Core0Error('Objects runtime quota is not its validated table version')
+    runtime_gates=[validate_failed_call_gate(runtime,names[o+'table'],names[o+'get'],names[o+'failed'],bodies[o+'failed']),
+        validate_failed_call_gate(runtime,names[o+'get'],names[o+'endpointLimitFor'],names[o+'failed'],bodies[o+'failed'])]
+    scalar_result=re.findall('('+var+r') = call i64 @'+re.escape(names[o+'endpointLimitFor'])+r'\(i64 '+re.escape(versions[0])+r'\)',runtime)
+    runtime_leaf=_object_checked_return(runtime,names[o+'fatal'],scalar_result[0])
+    marked=runtime.replace(runtime_leaf+':\n',runtime_leaf+':\n  call void @objects_capacity_success()\n')
+    runtime_gates.append(validate_failed_call_gate(marked,names[o+'get'],'objects_capacity_success',names[o+'failed'],bodies[o+'failed']))
+    # The successful table return must be the actual owner1/purpose1 resolved
+    # frame, and every failed pair remains fatal rather than a forged success.
+    table=bodies[o+'table']
+    resolved=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names['Lemma.Kernel.Memory.Frames.resolvePurpose'])+r'\(i64 1, i64 '+var+r', i64 1\)',table)
+    addresses=re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(resolved[0] if len(resolved)==1 else '<missing>')+r', 1$',table,re.M)
+    if len(addresses)!=1:raise Core0Error('Objects table return lost owner1/purpose1 resolution')
+    address=addresses[0];leaf=_object_checked_return(table,names[o+'fatal'],address)
+    predicates=re.findall('('+var+r') = call zeroext i1 @'+re.escape(names[o+'headerAdmitted'])+r'\(i64 ('+var+r'), i64 ('+var+r')\)',table)
+    if len(predicates)!=1:raise Core0Error('Objects table lacks one exact header predicate')
+    predicate,version,limit=predicates[0];aliased=table
+    read_results={}
+    for field,offset,value in (('version',8,version),('encoded_limit',24,limit)):
+        locations=re.findall('('+var+r') = add i64 '+re.escape(address)+', '+str(offset)+r'$',table,re.M)
+        calls=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[o+'get'])+r'\(i64 '+re.escape(locations[0] if len(locations)==1 else '<missing>')+r'\)',table)
+        if len(calls)!=1 or re.findall('('+var+r') = extractvalue \{ i64, i64 \} '+re.escape(calls[0])+r', 1$',table,re.M)!=[value]:
+            raise Core0Error('Objects header predicate lost its actual '+field+' field')
+        alias='objects_checked_'+field
+        aliased=aliased.replace('@'+names[o+'get']+'(i64 '+locations[0]+')','@'+alias+'(i64 '+locations[0]+')')
+        read_results[field]=alias
+    comparisons=re.findall('('+var+r') = icmp eq i1 '+re.escape(predicate)+r', 1$',table,re.M)
+    if len(comparisons)!=1:raise Core0Error('Objects header predicate lacks its true gate')
+    # This host-observer marker identifies the existing returned success leaf;
+    # it is never target code, an allocation, or a replacement table algorithm.
+    needle=leaf+':\n';aliased=aliased.replace(needle,needle+'  call void @objects_table_success()\n')
+    table_gates=[validate_boolean_gate(aliased,comparisons[0],'objects_table_success')]
+    table_gates += [validate_failed_call_gate(aliased,alias,'objects_table_success',names[o+'failed'],bodies[o+'failed']) for alias in read_results.values()]
+    endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],names,pre_ir=pre_ir)
+    if endpoint['capacity']!={'version1':4,'version2':5}:raise Core0Error('Objects successor allocation bypasses runtime quota')
+    return {'scope':'volatile Objects-v2 quota; historical4, successor5, total16 and Replies8',
+        'header_cases':header,'limit_cases':limits,'runtime_status_gates':runtime_gates,
+        'table_header_gates':table_gates,'endpoint':endpoint,
+        'initialization':validate_object_initialization(unit,pre_ir,names)}
 
 
 def validate_h_alias(unit: dict, pre_ir: str, by_source: dict[str,str]) -> dict:
@@ -994,6 +1379,12 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         generation+"seedOneFree":[objects+"table",generation+"freeStep",objects+"maxGeneration"],
         generation+"advance":[objects+"nextSerial",objects+"table",objects+"maxSerial"],
     }
+    if objects+'runtimeEndpointCapacity' in by_source:
+        edges[objects+'createEndpoint']=[objects+'runtimeEndpointCapacity' if callee==objects+'endpointCapacity' else callee for callee in edges[objects+'createEndpoint']]
+        edges[objects+'runtimeEndpointCapacity']=[objects+'table',objects+'get',objects+'endpointLimitFor']
+    if objects+'initFor' in by_source:
+        edges[objects+'initFor']=edges[objects+'init']
+        edges[objects+'init']=[objects+'initFor']
     constants={caps+"magic":0x31504143414d454c,caps+"headerOffset":2560,caps+"entriesOffset":2624,
                caps+"capacity":16,caps+"stride":64,caps+"active":1,caps+"constructing":2,
                objects+"magic":0x314a424f414d454c,objects+"capacity":16,objects+"endpointCapacity":4,objects+"registryCapacity":8,
@@ -1047,7 +1438,8 @@ def validate_managed_capability_graph(unit: dict, pre_ir: str) -> dict:
         if row[0] in {by_source[source] for source in edges[syscalls+"dispatchManaged"] if source.startswith(caps)} and not row[1].startswith("i64 %arg0,"):
             raise Core0Error("managed syscall changed caller-local descriptor to a user-selected identity")
     router_report=validate_h_console_router(pre_ir,by_source)
-    endpoint_report=validate_h_endpoint_budget(_ir_definition_body(pre_ir,by_source[objects+"createEndpoint"]),by_source)
+    endpoint_report=validate_h_endpoint_budget(_ir_definition_body(pre_ir,by_source[objects+"createEndpoint"]),by_source,pre_ir=pre_ir)
+    validate_object_budget(unit,pre_ir)
     # Bind the helper's status inversion; a count callback failure must never
     # be accepted as a successful preallocation result.
     failed_body=_ir_definition_body(pre_ir,by_source[objects+"failed"])
@@ -1450,8 +1842,9 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     checked.append({'source':y+'dispatch',**validate_checked_call_gate(bodies[y+'dispatch'],by_source[c+'managed'],by_source[y+'dispatchManaged'],component='value',value=1)})
     for protected in (y+'selectedConsoleRead',y+'consoleWrite'):
         checked.append({'source':y+'capConsole',**validate_checked_call_gate(bodies[y+'capConsole'],by_source[c+'lookup'],by_source[protected])})
-    endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],by_source)
-    reply_budget=validate_h_endpoint_budget(bodies[o+'replyAvailable'],by_source,reply=True)
+    endpoint=validate_h_endpoint_budget(bodies[o+'createEndpoint'],by_source,pre_ir=pre_ir)
+    reply_budget=validate_h_endpoint_budget(bodies[o+'replyAvailable'],by_source,reply=True,pre_ir=pre_ir)
+    validate_object_budget(unit,pre_ir)
     denial=validate_h_legacy_console_denial(bodies[y+'dispatchManaged'],by_source)
     # Bind syscall arguments to the actual caller descriptor and closed operations.
     var=r'%[A-Za-z0-9_.$-]+'
@@ -2167,7 +2560,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
-                ("core0-kernel-v0.3" if role == "kernel" and configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS[role])):
+                (kernel_contract(configuration) if role == "kernel" else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -2260,7 +2653,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -2309,8 +2702,8 @@ def validate_layout(value: object, *, configuration: str = "normal", image_key: 
     expanded = configuration in LEMMASIM_CONFIGURATIONS
     silicon = configuration.startswith("lemmasim-silicon-")
     if silicon:
-        from silicon_profile import profile
-        binding = profile()
+        from silicon_profile import profile, configuration_profile
+        binding = profile(configuration_profile(configuration))
     frame_count = binding["frame_count"] if silicon else 8192 if expanded else 512
     frame_limit = binding["frame_pool_base"] + binding["frame_pool_bytes"] if silicon else 0x84000000 if expanded else 0x82200000
     if expanded and layout.get('boot_clear') != {
@@ -3006,7 +3399,10 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
-    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',72,['u64','u64'],[],[*range(2,18),*range(32,53),*range(64,74)]),
+    # The maintained discovery parser contains the additive Power node18 and
+    # compatible74 literals. Legacy bindings still reject that device role;
+    # this is literal provenance, not an MMIO authority extension.
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',73,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,75)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
@@ -3522,7 +3918,7 @@ def _kernel_access_op(line: str, unit: dict, *, optimized: bool = False) -> str 
     if ordinary is not None:
         return ordinary
     if unit.get("role") != "kernel" or not (unit.get("contract_version") == "core0-kernel-v0.2" or
-            unit.get("configuration") in LEMMASIM_CONFIGURATIONS and unit.get("contract_version") == "core0-kernel-v0.3"):
+            unit.get("configuration") in LEMMASIM_CONFIGURATIONS and unit.get("contract_version") == kernel_contract(unit.get("configuration"))):
         return None
     value = r"(?:199|-57)" if optimized else "199"
     store = re.fullmatch(r"store volatile i8 " + value +
@@ -3543,7 +3939,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -4229,7 +4625,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         generated = (["startup.S", "link.ld", "layout.json", "primitive-catalog.json", "boot-package.S", "package-contract.json", "user-image-catalog.json"]
                      + [image["directory"] + "/" + name for image in images for name in ("startup.S", "link.ld", "layout.json", "primitive-catalog.json")]) if multi else list(BOOT_FILES)
         linked = {"boot": list(BOOT_OBJECTS), **({"users": {image["key"]: [image["directory"] + "/startup.o", image["directory"] + "/program.o"] for image in images}} if multi else {"user": list(USER_OBJECTS)})}
-        contracts = {role: "core0-kernel-v0.3" if role == "kernel" and configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS[role] for role in roles}
+        contracts = {role: kernel_contract(configuration) if role == "kernel" else CONTRACTS[role] for role in roles}
         if multi:
             contracts["users"] = {image["key"]: CONTRACTS["user"] for image in images}
         if provenance.get("unit_contracts") != contracts:
@@ -4328,13 +4724,14 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         layout = validate_layout(load_json(output_dir / "layout.json"), configuration=configuration)
         expected_machine = validate_catalog(load_json(output_dir / "primitive-catalog.json"), configuration=configuration, stage=stage)
         if configuration in SILICON_CONFIGURATIONS:
-            from silicon_profile import validate_evidence
-            validate_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
+            from silicon_profile import configuration_profile, validate_evidence
+            validate_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text(), configuration_profile(configuration))
         else:
             validate_platform_evidence(sha256(output_dir / "platform.dtb"), (output_dir / "platform.dts").read_text())
         ir = {role: {kind: validate_ir((output_dir / role / filename).read_text(), unit, optimized=kind == "optimized", optimization=optimization)
                      for kind, filename in (("pre", "program.ll"), ("optimized", "program.opt.ll"))} for role, unit in units.items()}
         task_stack = validate_owned_task_stack(layout, units["kernel"], (output_dir / "kernel/program.ll").read_text())
+        object_budget = validate_object_budget(units['kernel'], (output_dir/'kernel/program.ll').read_text())
         managed_capabilities = (validate_managed_capability_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
                                 if configuration == "capabilities-development" else None)
         managed_ipc = (validate_ipc_graph(units["kernel"], (output_dir / "kernel/program.ll").read_text())
@@ -4526,6 +4923,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
+                  "object_budget": object_budget,
                   **({"architecture_diagnostics": architecture} if architecture is not None else {}),
                   "limitations": ["Artifact/source closure audit, not S/U execution or compiler-correctness proof.",
                                    ("bootstrap-m invokes maintained kernel code in M mode; separately linked user bytes are not yet a running task."

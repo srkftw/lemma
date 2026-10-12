@@ -72,7 +72,8 @@ def device_build(build, tool_file, log, timeout):
 
 def devices(out, timeout, jobs):
     source_names = ['sim/rtl/lemma_pen.sv','sim/rtl/lemma_paper.sv','sim/rtl/lemma_block.sv','sim/rtl/lemma_register_ram.sv',
-                    'conformance/silicon/Devices.sv','conformance/silicon/BlockProtocol.sv','scripts/check_silicon.py',
+                    'conformance/silicon/Devices.sv','conformance/silicon/BlockProtocol.sv',
+                    'conformance/silicon/PenBanks.sv','conformance/silicon/PaperSequencer.sv','scripts/check_silicon.py',
                     'tooling/silicon/sim.nix','flake.lock']
     before = {p: sha(ROOT/p) for p in source_names}
     obj = out/'obj';obj.mkdir()
@@ -88,6 +89,22 @@ def devices(out, timeout, jobs):
     records.extend([built,command([str(protocol_obj/'VBlockProtocol')],out/'protocol-simulation.log',30)])
     if tools != protocol_tools:
         raise RuntimeError('RTL host-tool closure changed between literal workloads')
+    pen_obj = out/'pen-obj';pen_obj.mkdir()
+    pen_build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal',
+                 '--top-module','PenBanks','--Mdir',str(pen_obj),
+                 str(ROOT/'sim/rtl/lemma_pen.sv'),str(ROOT/'conformance/silicon/PenBanks.sv')]
+    built, pen_tools = device_build(pen_build,out/'pen-tools.json',out/'pen-build.log',timeout)
+    records.extend([built,command([str(pen_obj/'VPenBanks')],out/'pen-simulation.log',30)])
+    if tools != pen_tools:
+        raise RuntimeError('RTL host-tool closure changed for banked FIFO workload')
+    paper_obj = out/'paper-obj';paper_obj.mkdir()
+    paper_build = ['verilator','--binary','--timing','-j',str(jobs),'-Wno-fatal',
+                   '--top-module','PaperSequencer','--Mdir',str(paper_obj),
+                   str(ROOT/'sim/rtl/lemma_paper.sv'),str(ROOT/'conformance/silicon/PaperSequencer.sv')]
+    built, paper_tools = device_build(paper_build,out/'paper-tools.json',out/'paper-build.log',timeout)
+    records.extend([built,command([str(paper_obj/'VPaperSequencer')],out/'paper-simulation.log',30)])
+    if tools != paper_tools:
+        raise RuntimeError('RTL host-tool closure changed for digital paper workload')
     text = (out/'simulation.log').read_text()
     expected = ['PEN stable-head overflow exact-ack resync watchdog reset PASS',
                 'PAPER banked aperture 32 lane-width cases and 4 boundary rejections PASS',
@@ -98,14 +115,23 @@ def devices(out, timeout, jobs):
                          'BLOCK-PROTOCOL simultaneous completion/error IRQ ACK event precedence PASS',
                          'BLOCK-PROTOCOL normal flush and 12 independent cases PASS']
     protocol_text = (out/'protocol-simulation.log').read_text()
-    if any(text.count(marker)!=1 for marker in expected) or any(protocol_text.count(marker)!=1 for marker in protocol_expected):
+    pen_expected = ['PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
+                    'PEN-BANKS refill backpressure reset cancellation and watchdog head PASS']
+    pen_text = (out/'pen-simulation.log').read_text()
+    paper_expected = ['PAPER-SEQUENCER immutable 3-phase row/source clocks backpressure powerdown PASS',
+                      'PAPER-SEQUENCER invalid mode reset retained panel and scan error abort PASS']
+    paper_text = (out/'paper-simulation.log').read_text()
+    if (any(text.count(marker)!=1 for marker in expected)
+            or any(protocol_text.count(marker)!=1 for marker in protocol_expected)
+            or any(pen_text.count(marker)!=1 for marker in pen_expected)
+            or any(paper_text.count(marker)!=1 for marker in paper_expected)):
         raise RuntimeError('Missing or duplicate independent device observations')
     if before != {p: sha(ROOT/p) for p in source_names}:
         raise RuntimeError('RTL/device inputs changed during observation')
-    binaries = {str(path.relative_to(ROOT)):sha(path) for path in (obj/'VDevices',protocol_obj/'VBlockProtocol')}
+    binaries = {str(path.relative_to(ROOT)):sha(path) for path in (obj/'VDevices',protocol_obj/'VBlockProtocol',pen_obj/'VPenBanks',paper_obj/'VPaperSequencer')}
     return {'status':'PASS','source_inputs':before,'commands':records,'tool_inputs':tools,'compiled_binaries':binaries,
             'scope':'literal external MMIO/DMA stimuli on real RTL; not guest acceptance C or notebook durability',
-            'observations':expected+protocol_expected}
+            'observations':expected+protocol_expected+pen_expected+paper_expected}
 
 def host_deadline_options(binary):
     """Actual compiled argument handling; no guest boot or timeout-pass claim."""
@@ -122,6 +148,35 @@ def host_deadline_options(binary):
             raise RuntimeError('Compiled RTL deadline handling disagrees with the launcher')
         rows.append({'argv':argv,'exit_code':result.returncode,'stdout':'','stderr':expected})
     return rows
+
+def power_control(out, timeout, jobs):
+    from silicon_profile import constants, profile
+    names = ('sim/rtl/lemma_power.sv', 'conformance/silicon/PowerControl.sv',
+             'sim/profiles/lemma-silicon-dev-0.3.0.json', 'scripts/silicon_profile.py',
+             'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock')
+    before = {name: sha(ROOT/name) for name in names}
+    fields = constants(profile('lemma-silicon-dev/0.3.0'))
+    binding = out/'lemma_silicon_binding.sv'
+    binding.write_text('package lemma_silicon_binding;\n'+''.join(
+        f"localparam logic [63:0] {name.upper()} = 64'h{value:016x};\n"
+        for name, value in fields.items())+'endpackage\n')
+    obj = out/'obj'; obj.mkdir()
+    argv = ['verilator', '--binary', '--timing', '-j', str(jobs), '-Wno-fatal',
+            '--top-module', 'PowerControl', '--Mdir', str(obj), str(binding),
+            str(ROOT/'sim/rtl/lemma_power.sv'), str(ROOT/'conformance/silicon/PowerControl.sv')]
+    built, tools = device_build(argv, out/'tools.json', out/'build.log', timeout)
+    executed = command([str(obj/'VPowerControl')], out/'simulation.log', 30)
+    expected = ['POWER six independent BUSY sources malformed MMIO no false completion PASS',
+                'POWER raw edge guest decision exact cancel wake and W1C precedence PASS',
+                'POWER warm held-button epoch retention and cold control reset PASS']
+    if any((out/'simulation.log').read_text().count(marker) != 1 for marker in expected):
+        raise RuntimeError('Missing or duplicate independent power observations')
+    if before != {name: sha(ROOT/name) for name in names}:
+        raise RuntimeError('Power inputs changed during execution')
+    return {'status': 'PASS', 'source_inputs': before, 'tool_inputs': tools,
+            'commands': [built, executed], 'compiled_binary_sha256': sha(obj/'VPowerControl'),
+            'generated_binding_sha256': sha(binding), 'observations': expected,
+            'scope': 'literal power circuitry; guest cooperative suspend, session checkpoints and physical power remain separate'}
 
 def bus_lanes(out, timeout, jobs):
     from silicon_compute import source_manifest, prepare
@@ -159,7 +214,7 @@ def bus_lanes(out, timeout, jobs):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--lane',choices=['devices','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
+    parser.add_argument('--lane',choices=['devices','power','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--timeout',type=float,default=300)
     parser.add_argument('--jobs',type=int,default=2)
@@ -180,6 +235,7 @@ def main():
             'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()}
     try:
         if args.lane=='devices':report.update(devices(out,args.timeout,args.jobs))
+        elif args.lane=='power':report.update(power_control(out,args.timeout,args.jobs))
         elif args.lane=='bus-lanes':report.update(bus_lanes(out,args.timeout,args.jobs))
         elif args.lane in ('guest-devices','device-input'):
             sys.path.insert(0,str(ROOT/'conformance/silicon'))

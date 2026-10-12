@@ -138,7 +138,7 @@ jobs:
           set -euo pipefail
           timeout --foreground --signal=TERM --kill-after=30s 20m \
             nix develop --no-write-lock-file --command \
-              lake build \
+              lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
             2>&1 | tee build/ci/metadata/lake-build.log
 
       - name: Run foundation host-harness suite
@@ -148,6 +148,31 @@ jobs:
             nix develop --no-write-lock-file --command \
               python3 -m unittest discover -s tests/foundation -v \
             2>&1 | tee build/ci/metadata/foundation-host-unittest.log
+
+      - name: Observe checked memory copying and power authority in Lean
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/UserCopyScans.lean \
+            2>&1 | tee build/ci/metadata/user-copy-scans.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/LoaderCopy.lean \
+            2>&1 | tee build/ci/metadata/loader-copy.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/lemmasim/PowerControl.lean \
+            2>&1 | tee build/ci/metadata/power-authority.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/lemmasim/PowerObjectBudget.lean \
+            2>&1 | tee build/ci/metadata/power-object-budget.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_power_compiler.py \
+                --work-dir build/lemmasim/compiler-power-ci \
+            2>&1 | tee build/ci/metadata/power-compiler.log
 
       - name: Run kernel host-harness suite
         run: |
@@ -186,7 +211,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: metadata-host-suites-${{ github.run_id }}-${{ github.run_attempt }}
-          path: build/ci/metadata/
+          path: |
+            build/ci/metadata/
+            build/lemmasim/compiler-power-ci/
           if-no-files-found: warn
           retention-days: 14
           compression-level: 6
@@ -641,7 +668,7 @@ jobs:
           compression-level: 6
 
   silicon-devices-rtl:
-    name: Task 005 RTL device bus conformance with literal host stimuli
+    name: RTL device and digital power conformance with literal host stimuli
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -676,6 +703,14 @@ jobs:
               --work-dir build/silicon/ci-bus-lanes --timeout 500 --jobs 2 \
             2>&1 | tee build/ci/silicon-bus-lanes-rtl.log
 
+      - name: Execute versioned digital power controller boundaries
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 5m \
+            python3 scripts/check_silicon.py --lane power \
+              --work-dir build/silicon/ci-power --timeout 240 --jobs 2 \
+            2>&1 | tee build/ci/silicon-power-rtl.log
+
       - name: Require exact-source nonempty literal RTL observations
         run: |
           python3 - <<'PY'
@@ -690,14 +725,19 @@ jobs:
                       'RAM 4096-byte register implementation distinct sparse windows strobes faults PASS',
                       'BLOCK-PROTOCOL DMA/media backpressure reset/error quiescence queue stability PASS',
                       'BLOCK-PROTOCOL simultaneous completion/error IRQ ACK event precedence PASS',
-                      'BLOCK-PROTOCOL normal flush and 12 independent cases PASS']
+                      'BLOCK-PROTOCOL normal flush and 12 independent cases PASS',
+                      'PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
+                      'PEN-BANKS refill backpressure reset cancellation and watchdog head PASS',
+                      'PAPER-SEQUENCER immutable 3-phase row/source clocks backpressure powerdown PASS',
+                      'PAPER-SEQUENCER invalid mode reset retained panel and scan error abort PASS']
           inputs = {'sim/rtl/lemma_pen.sv', 'sim/rtl/lemma_paper.sv', 'sim/rtl/lemma_block.sv',
                     'sim/rtl/lemma_register_ram.sv', 'conformance/silicon/Devices.sv',
                     'conformance/silicon/BlockProtocol.sv',
+                    'conformance/silicon/PenBanks.sv', 'conformance/silicon/PaperSequencer.sv',
                     'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock'}
           if value['status'] != 'PASS' or value['lane'] != 'devices' or value['source_commit'] != head:
               raise RuntimeError('Missing exact-candidate RTL device result')
-          if value['observations'] != expected or set(value['source_inputs']) != inputs or len(value['commands']) != 4:
+          if value['observations'] != expected or set(value['source_inputs']) != inputs or len(value['commands']) != 8:
               raise RuntimeError('Missing independent literal bus observations')
           if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
               raise RuntimeError('RTL device source checkout changed')
@@ -708,7 +748,7 @@ jobs:
               log = Path(command['log'])
               if command['exit_code'] != 0 or not log.stat().st_size or hashlib.sha256(log.read_bytes()).hexdigest() != command['log_sha256']:
                   raise RuntimeError('Missing or changed actual RTL command output')
-          if set(value['tool_inputs']) != {'verilator', 'verilator_bin', 'make', 'c++'} or len(value['compiled_binaries']) != 2:
+          if set(value['tool_inputs']) != {'verilator', 'verilator_bin', 'make', 'c++'} or len(value['compiled_binaries']) != 4:
               raise RuntimeError('Missing actual RTL host-tool or compiled-binary identities')
           for tool in value['tool_inputs'].values():
               if not tool['path'].startswith('/nix/store/') or not tool['version'] or hashlib.sha256(Path(tool['path']).read_bytes()).hexdigest() != tool['sha256']:
@@ -716,9 +756,34 @@ jobs:
           for path, digest in value['compiled_binaries'].items():
               if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
                   raise RuntimeError('RTL simulation binary changed')
-          for index, top in ((0, 'Devices'), (2, 'BlockProtocol')):
+          for index, top in ((0, 'Devices'), (2, 'BlockProtocol'), (4, 'PenBanks'), (6, 'PaperSequencer')):
               if value['commands'][index]['effective_argv'][:8] != ['verilator', '--binary', '--timing', '-j', '2', '-Wno-fatal', '--top-module', top]:
                   raise RuntimeError('Missing actual bounded RTL compile invocation')
+          power = json.loads(Path('build/silicon/ci-power/result.json').read_text())
+          if power['status'] != 'PASS' or power['lane'] != 'power' or power['source_commit'] != head:
+              raise RuntimeError('Missing exact-candidate power controller execution')
+          if power['observations'] != [
+                  'POWER six independent BUSY sources malformed MMIO no false completion PASS',
+                  'POWER raw edge guest decision exact cancel wake and W1C precedence PASS',
+                  'POWER warm held-button epoch retention and cold control reset PASS']:
+              raise RuntimeError('Missing independent power transitions')
+          if set(power['source_inputs']) != {
+                  'sim/rtl/lemma_power.sv', 'conformance/silicon/PowerControl.sv',
+                  'sim/profiles/lemma-silicon-dev-0.3.0.json', 'scripts/silicon_profile.py',
+                  'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock'}:
+              raise RuntimeError('Missing power input closure')
+          for path, digest in power['source_inputs'].items():
+              if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('Power controller source changed')
+          if len(power['commands']) != 2 or any(command['exit_code'] != 0 for command in power['commands']):
+              raise RuntimeError('Power controller execution incomplete')
+          for command in power['commands']:
+              if hashlib.sha256(Path(command['log']).read_bytes()).hexdigest() != command['log_sha256']:
+                  raise RuntimeError('Power controller log changed')
+          for path, digest in ((Path('build/silicon/ci-power/obj/VPowerControl'), power['compiled_binary_sha256']),
+                               (Path('build/silicon/ci-power/lemma_silicon_binding.sv'), power['generated_binding_sha256'])):
+              if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('Power executable/binding changed')
           lanes = json.loads(Path('build/silicon/ci-bus-lanes/result.json').read_text())
           if lanes['status'] != 'PASS' or lanes['lane'] != 'bus-lanes' or lanes['source_commit'] != head:
               raise RuntimeError('Missing exact-candidate bus lane result')
@@ -755,8 +820,10 @@ jobs:
           path: |
             build/silicon/ci-devices/
             build/silicon/ci-bus-lanes/
+            build/silicon/ci-power/
             build/ci/silicon-devices-rtl.log
             build/ci/silicon-bus-lanes-rtl.log
+            build/ci/silicon-power-rtl.log
           if-no-files-found: error
           retention-days: 14
           compression-level: 6

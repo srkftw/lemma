@@ -131,6 +131,17 @@ queue execution and bounded DMA. External host models provide only raw input,
 memory/medium bytes and visible panel state driven by controller output. Guest
 Lean remains authoritative for ink, records, recovery and save acknowledgement.
 
+Task006's compatible pen implementation retains all 256 FIFO entries and all
+64 sequence/timestamp bits. Sixteen independent synchronous storage banks and
+a registered ingress payload isolate raw validation from storage enables. The
+immutable public head is cached. An acknowledged nonfinal pop advances it once,
+then applies MMIO/input backpressure for a two-clock refill; dropping the already
+completed request does not cancel that refill. Reset cancels private pending
+ingress/refill state and leaves the FIFO empty. A watchdog reached during refill
+is handled at its next boundary, at most two controller clocks later, retaining
+the new head. No sample, ACK, loss, resynchronization or register field is
+truncated. This is permitted bus latency, with no v1 register ABI change.
+
 The paper controller captures each MMIO request before decoding it. The master
 holds the request until `ready`; dropping `valid` or applying reset cancels a
 pending request. Reads select the aperture bank or control word, sample it at

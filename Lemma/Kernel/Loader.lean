@@ -166,12 +166,34 @@ private def copyStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
   .bind (Access.read8 (source + i.toUInt64)) fun s byte =>
   if failed s = true then .done s 0 else
   .bind (Access.write8 (target + i.toUInt64) byte) fun s _ => .done s (acc + 1)
+
+private def copyWordStep (i _ : UInt32) (acc source target _ _ : UInt64) : Action :=
+  let offset := i.toUInt64 * 8
+  .bind (Access.read64 (source + offset)) fun s word =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (target + offset) word) fun s _ =>
+  if failed s = true then .done s 0 else .done 0 (acc + 8)
+
+/-- Fresh owned pages are copied only after complete package validation and
+grant resolution. Aligned words stay wholly inside the selected payload; a
+partial final word uses byte accesses. Misaligned sources or destinations keep
+the original byte path. No borrowed physical alias escapes this Action. -/
 private def copy (source target amount : UInt64) : Action :=
-  if amount ≤ 4096 then
+  if 4096 < amount then .done invalidBounds 0 else
+  if amount = 0 then .done 0 0 else
+  if 0xffffffffffffffff - (amount - 1) < source then .done invalidBounds 0 else
+  if 0xffffffffffffffff - (amount - 1) < target then .done invalidBounds 0 else
+  if (source ||| target) &&& 7 = 0 then
+    let wordBytes := amount / 8 * 8
+    .boundedFoldU64 512 copyWordStep (amount / 8).toUInt32 0 source target 0 0 fun s copied =>
+    if failed s = true then .done s 0 else
+    .boundedFoldU64 7 copyStep (amount % 8).toUInt32 copied (source + wordBytes) (target + wordBytes) 0 0 fun s copied =>
+    if failed s = true then .done s 0 else
+    if copied = amount then .done 0 0 else .done invariantFailure 0
+  else
     .boundedFoldU64 4096 copyStep amount.toUInt32 0 source target 0 0 fun s copied =>
     if failed s = true then .done s 0 else
     if copied = amount then .done 0 0 else .done invariantFailure 0
-  else .done invalidBounds 0
 
 private def releaseUnmapped (owner handle : UInt64) (original : UInt8) : Action :=
   .bind (Frames.release owner handle) fun s _ =>

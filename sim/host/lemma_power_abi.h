@@ -1,0 +1,15 @@
+// Generated from sim/profiles/lemma-silicon-dev-0.3.0.json.
+#pragma once
+#define LEMMA_POWER_MAGIC 0u
+#define LEMMA_POWER_VERSION 8u
+#define LEMMA_POWER_STATE 16u
+#define LEMMA_POWER_ERROR 24u
+#define LEMMA_POWER_RESET_CAUSE 32u
+#define LEMMA_POWER_BUTTON_LEVEL 40u
+#define LEMMA_POWER_EVENTS 48u
+#define LEMMA_POWER_EPOCH 56u
+#define LEMMA_POWER_WAKE_CAUSE 64u
+#define LEMMA_POWER_COMMAND 72u
+#define LEMMA_POWER_ACK 80u
+#define LEMMA_POWER_CLEAR_ERROR 88u
+#define LEMMA_POWER_IDENTITY 1280333650u

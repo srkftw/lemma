@@ -137,7 +137,7 @@ class CaptureLifetimeTests(unittest.TestCase):
             path=Path(temporary);script=path/'stub-host'
             script.write_text('#!'+sys.executable+'\nimport os,pathlib\npathlib.Path('+repr(str(path/'group'))+').write_text(str(os.getpgrp()))\n')
             script.chmod(0o755)
-            data={'binary':{'path':str(script)},'rom':{'path':'fixture-rom'},
+            data={'profile':'lemma-silicon-dev/0.1.0','binary':{'path':str(script)},'rom':{'path':'fixture-rom'},
                   'workloads':{'service':{'image':{'path':'fixture-image'},'dtb':{'path':'fixture-dtb'}}}}
             result=guest.execute(data,'service',path,self.options(),{},None)
             self.assertEqual(result['exit_code'],0)
@@ -148,7 +148,7 @@ class CaptureLifetimeTests(unittest.TestCase):
             path=Path(temporary);process=mock.Mock(returncode=-9)
             process.wait.side_effect=[subprocess.TimeoutExpired('fixture-hart',15),-9]
             process.poll.return_value=-9
-            data={'binary':{'path':'fixture-hart'},'rom':{'path':'fixture-rom'},
+            data={'profile':'lemma-silicon-dev/0.1.0','binary':{'path':'fixture-hart'},'rom':{'path':'fixture-rom'},
                   'workloads':{'service':{'image':{'path':'fixture-image'},'dtb':{'path':'fixture-dtb'}}}}
             with mock.patch.object(guest.subprocess,'Popen',return_value=process) as launched, \
                  mock.patch.object(guest.os,'killpg') as kill_group:
@@ -161,7 +161,7 @@ class CaptureLifetimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             path=Path(temporary);process=mock.Mock()
             process.wait.side_effect=[KeyboardInterrupt(),-9];process.poll.return_value=None
-            data={'binary':{'path':'fixture-hart'},'rom':{'path':'fixture-rom'},
+            data={'profile':'lemma-silicon-dev/0.1.0','binary':{'path':'fixture-hart'},'rom':{'path':'fixture-rom'},
                   'workloads':{'service':{'image':{'path':'fixture-image'},'dtb':{'path':'fixture-dtb'}}}}
             with mock.patch.object(guest.subprocess,'Popen',return_value=process), \
                  mock.patch.object(guest.os,'killpg') as kill_group:

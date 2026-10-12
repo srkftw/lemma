@@ -1,6 +1,7 @@
 import Lemma.Platform.LemmaSim.Descriptor
 import Lemma.Platform.LemmaSim.MachineServices
 import Lemma.Platform.LemmaSim.DeviceService
+import Lemma.Platform.LemmaSim.PowerControl
 import Lemma.Platform.LemmaVM.ConsoleDevice
 import Lemma.Kernel.Scheduler
 
@@ -93,13 +94,14 @@ private def observeFault (cause : UInt64) : Action :=
 private def construct (initialization isolation binding : UInt64) : Action :=
   .bind Process.init fun s _ => if s = 0 then
   .bind Task.init fun s _ => if s = 0 then
-  .bind Objects.init fun s _ => if s = 0 then
+  .bind (if binding = 3 then Objects.initPower else Objects.init) fun s _ => if s = 0 then
   .bind (Task.prepareManaged 0 initialization) fun s store => if s = 0 then
   .bind (Task.prepareManaged 1 initialization) fun s notebook => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
   .bind (Objects.createEndpoint store) fun s block => if s = 0 then
   .bind (Objects.createEndpoint store) fun s documents => if s = 0 then
+  .bind (if binding = 3 then Objects.createEndpoint notebook else .done 0 0) fun s power => if s = 0 then
   .bind (DeviceService.configure surface input block) fun s _ => if s = 0 then
   .bind (grant store block CapabilityABI.endpointCall) fun s _ => if s = 0 then
   .bind (grant store documents CapabilityABI.endpointReceive) fun s _ => if s = 0 then
@@ -108,13 +110,15 @@ private def construct (initialization isolation binding : UInt64) : Action :=
   .bind (grant notebook input CapabilityABI.endpointCall) fun s _ => if s = 0 then
   .bind (grant notebook documents CapabilityABI.endpointCall) fun s _ => if s = 0 then
   .bind (grant notebook Objects.consoleKey CapabilityABI.consoleWrite) fun s _ => if s = 0 then
+  .bind (if binding = 3 then grant notebook power CapabilityABI.endpointCall else .done 0 0) fun s _ => if s = 0 then
+  .bind (PowerControl.configure (if binding = 3 then 1 else 0) power) fun s _ => if s = 0 then
   .bind (Task.activateManaged store) fun s _ => if s = 0 then
   .bind (Task.activateManaged notebook) fun s _ => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x410 store notebook documents (if binding = 1 then Lemma.Platform.Silicon.Binding.frame_count else 8192)) fun s _ => if s = 0 then
   configureIsolation isolation documents
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal else fatal else fatal else fatal else fatal else fatal else fatal
-  else fatal else fatal else fatal else fatal
+  else fatal else fatal else fatal else fatal else fatal else fatal else fatal
 
 /-- S policy runs with SIE clear. WFI wakes for an enabled external source even
 before a U task is entered. Claim one real PLIC source after each wake/return so
@@ -122,8 +126,8 @@ all-blocked services can progress without a status-polling idle loop. -/
 private def acceptPending : Action :=
   .bind Lemma.Drivers.PLIC.claim fun s source => if s = 0 then
   if source = 0 then .done 0 0 else
-  .bind (DeviceService.notification source) fun s _ => if s = 0 then
-  Lemma.Drivers.PLIC.complete source else fatal else fatal
+  .bind (if source = 14 then PowerControl.notification else DeviceService.notification source) fun s _ => if s = 0 then
+  Lemma.Drivers.PLIC.completePower source else fatal else fatal
 
 private def step : Action :=
   .bind acceptPending fun s _ => if s = 0 then
@@ -131,6 +135,14 @@ private def step : Action :=
   .bind Scheduler.step fun s reason => if s = 0 then
   .bind observeReaped fun s _ => if s = 0 then .done 0 reason else fatal else fatal else fatal
   else fatal
+
+private def powerStep : Action :=
+  .bind acceptPending fun s _ => if s = 0 then
+  .bind DeviceService.deferred fun s _ => if s = 0 then
+  .bind PowerControl.step fun s suspended => if s = 0 then
+  if suspended = 1 then .done 0 0 else
+  .bind Scheduler.step fun s reason => if s = 0 then
+  .bind observeReaped fun s _ => if s = 0 then .done 0 reason else fatal else fatal else fatal else fatal else fatal
 
 private def observedStage (stage : UInt64) (status : UInt8) (value : UInt64) : Action :=
   .bind (Lemma.Kernel.Console.record 0x407 stage status.toUInt64 value 0) fun s _ =>
@@ -140,17 +152,17 @@ private def bootSelected (initialization isolation binding : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
   .bind BootInfo.validate fun status value =>
   .bind (observedStage 1 status value) fun s _ => if s = 0 then
-  .bind (if binding = 1 then Descriptor.validateSilicon else Descriptor.validate) fun status value =>
+  .bind (if binding = 3 then Descriptor.validateSiliconPower else if binding = 1 then Descriptor.validateSilicon else if binding = 2 then Descriptor.validateSiliconFull else Descriptor.validate) fun status value =>
   .bind (observedStage 2 status value) fun s _ => if s = 0 then
-  .bind (if binding = 1 then Lemma.Platform.LemmaSim.MachineServices.validateSilicon else Lemma.Platform.LemmaSim.MachineServices.validate) fun status value =>
+  .bind (if binding = 0 then Lemma.Platform.LemmaSim.MachineServices.validate else Lemma.Platform.LemmaSim.MachineServices.validateSilicon) fun status value =>
   .bind (observedStage 3 status value) fun s _ => if s = 0 then
   .bind Frames.init fun s _ => if s = 0 then
   .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
   .bind Lemma.Drivers.Paper.initialize fun s geometry => if s = 0 then
   .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
   .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
-  .bind Lemma.Drivers.PLIC.initialize fun s _ => if s = 0 then
-  .bind (construct initialization isolation binding) fun s _ => if s = 0 then .loop step else .done s 0
+  .bind (if binding = 3 then Lemma.Drivers.PLIC.initializePower else Lemma.Drivers.PLIC.initialize) fun s _ => if s = 0 then
+  .bind (construct initialization isolation binding) fun s _ => if s = 0 then if binding = 3 then .loop powerStep else .loop step else .done s 0
   else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
@@ -164,8 +176,26 @@ def isolationBoot : Action := bootSelected 0 1 0
 /-- Silicon selects the declared discovery, bounded frame supply and CSR WARL expectations. -/
 def siliconBoot : Action := bootSelected 0 0 1
 def siliconInitializeMedium : Action := bootSelected 1 0 1
+def siliconFullBoot : Action := bootSelected 0 0 2
+def siliconFullInitializeMedium : Action := bootSelected 1 0 2
+def siliconPowerBoot : Action := bootSelected 0 0 3
+def siliconPowerInitializeMedium : Action := bootSelected 1 0 3
 
-private def deviceCall (descriptor context pc number : UInt64) : Action :=
+/-- Bounded development entry exercising the same compiled power policy without
+constructing notebook User images. Actual notebook authority remains separate. -/
+def siliconPowerProbe : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun s _ => if s = 0 then
+  .bind Descriptor.validateSiliconPower fun s _ => if s = 0 then
+  .bind Lemma.Platform.LemmaSim.MachineServices.validateSilicon fun s _ => if s = 0 then
+  .bind (PowerControl.configure 1 0) fun s _ => if s = 0 then
+  .bind Lemma.Drivers.PLIC.initializePower fun s _ => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x443 1 0 0 0) fun s _ => if s = 0 then
+  .loop PowerControl.step else fatal else fatal else fatal else fatal else fatal else fatal else fatal
+
+/-- Invoked only after dispatch has captured and validated the actual User trap.
+Its named-device authority and scheduling result are also exercised independently. -/
+def deviceCall (descriptor context pc number : UInt64) : Action :=
   .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
   .bind (Access.read64 (context + 88)) fun s b => if s = 0 then
   .bind (Access.read64 (context + 96)) fun s c => if s = 0 then
@@ -174,6 +204,7 @@ private def deviceCall (descriptor context pc number : UInt64) : Action :=
   .bind (if number = 64 then DeviceService.surface descriptor a b c d e else
     if number = 65 then DeviceService.input descriptor a b c d e else
     if number = 66 then DeviceService.block descriptor a b c d e else
+    if number = 68 then PowerControl.call descriptor a b c d e else
     if d ||| e = 0 then IPC.tryCallWait descriptor a b c else .done 16 0) fun status result =>
   if status = DeviceService.waitStatus then
     .bind MachineServices.time fun s now => if s = 0 then
@@ -181,7 +212,14 @@ private def deviceCall (descriptor context pc number : UInt64) : Action :=
     .bind (Process.syscallReply context pc 174 0) fun s _ => if s = 0 then
     .bind (Task.sleep descriptor (now + 10000000) pc) fun s _ => if s = 0 then
     Scheduler.returnKernel descriptor 3 pc else fatal else fatal else fatal
-  else if status = 255 then fatal else Process.syscallReply context pc status result
+  else if status = 255 then fatal else
+  if number = 68 then if b = 1 then if status = 0 then
+    .bind (Process.syscallReply context pc status result) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 2 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 2 pc else fatal else fatal
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
   else fatal else fatal else fatal else fatal else fatal
 
 def dispatch (frame cause value : UInt64) : Action :=
@@ -190,8 +228,8 @@ def dispatch (frame cause value : UInt64) : Action :=
     .bind (Task.capture descriptor frame) fun s context => if s = 0 then
     .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
     .bind Lemma.Drivers.PLIC.claim fun s source => if s = 0 then
-    .bind (DeviceService.notification source) fun s _ => if s = 0 then
-    .bind (Lemma.Drivers.PLIC.complete source) fun s _ => if s = 0 then
+    .bind (if source = 14 then PowerControl.notification else DeviceService.notification source) fun s _ => if s = 0 then
+    .bind (Lemma.Drivers.PLIC.completePower source) fun s _ => if s = 0 then
     .bind (Task.ready descriptor 1 pc) fun s _ => if s = 0 then
     Scheduler.returnKernel descriptor 1 pc else fatal else fatal else fatal else fatal
     else fatal else fatal else fatal
@@ -202,7 +240,7 @@ def dispatch (frame cause value : UInt64) : Action :=
     if pc % 4 = 0 then
     .bind (AddressSpace.lookup descriptor pc 4) fun s _ => if s = 0 then
     .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
-    if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else false) = true then
+    if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else if number = 68 then true else false) = true then
       deviceCall descriptor context pc number
     else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
     else fatal else fatal else fatal else fatal else fatal else fatal

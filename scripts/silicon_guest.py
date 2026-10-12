@@ -4,13 +4,21 @@
 from __future__ import annotations
 import fcntl, hashlib, json, os, shutil, signal, struct, subprocess, time
 from pathlib import Path
-from silicon_profile import PROFILE, profile
+from silicon_profile import PROFILE, profile, profile_path
 
 ROOT=Path(__file__).resolve().parents[1]
 PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
+POWER_CONFIGURATIONS={'notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
+FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
+def configurations(name=None):
+    profile(name)
+    return POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+def prepared_path(name=None):
+    profile(name)
+    return ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()
@@ -35,9 +43,11 @@ def validate(item):
     if not p.is_file() or sha(p)!=item['sha256']:raise ValueError('RTL artifact changed or missing: '+str(p))
     return p
 
-def prepared(workload):
-    data=json.loads(PREPARED.read_text())
-    if data.get('schema_version')!=1 or data.get('profile')!=profile()['profile'] or data.get('profile_sha256')!=sha(PROFILE):
+def prepared(workload,name=None):
+    selected=configurations(name)
+    if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
+    data=json.loads(prepared_path(name).read_text())
+    if data.get('schema_version')!=1 or data.get('profile')!=profile(name)['profile'] or data.get('profile_sha256')!=sha(profile_path(name)):
         raise ValueError('RTL prepared binding changed; run lemmasim build --backend rtl')
     validate(data['binary']);validate(data['rom']);validate(data['rom_audit']);validate(data['rtl_build'])
     for path,digest in data['rtl_sources'].items():
@@ -47,10 +57,10 @@ def prepared(workload):
     for key in ('image','build','provenance','audit','dtb','descriptor'):
         validate(data['workloads'][workload][key])
     guest=validate(data['workloads'][workload]['build']).parent
-    verify_guest_build(guest,CONFIGURATIONS[workload],json.loads((guest/'build.json').read_text())['optimization'])
+    verify_guest_build(guest,selected[workload],json.loads((guest/'build.json').read_text())['optimization'])
     if workload=='notebook':
         capacity=json.loads(validate(data['workloads'][workload]['capacity']).read_text())
-        if capacity.get('status')!='PASS' or capacity.get('configuration')!=CONFIGURATIONS[workload]:
+        if capacity.get('status')!='PASS' or capacity.get('configuration')!=selected[workload]:
             raise ValueError('RTL notebook selected capacity evidence differs')
         for name,digest in capacity['artifacts'].items():
             if sha(guest/name)!=digest:raise ValueError('RTL notebook capacity artifact changed: '+name)
@@ -74,12 +84,13 @@ def reusable_reset_rom(previous,data,guest):
         if previous.get(key)!=data.get(key):return None
     current_provenance=json.loads((guest/'provenance.json').read_text())
     matching_provenance=None
+    selected=configurations(data['profile'])
     for workload,entry in previous['workloads'].items():
-        if workload not in CONFIGURATIONS:continue
+        if workload not in selected:continue
         try:
             old_guest=validate(entry['build']).parent
             old_build=json.loads((old_guest/'build.json').read_text())
-            verify_guest_build(old_guest,CONFIGURATIONS[workload],old_build['optimization'])
+            verify_guest_build(old_guest,selected[workload],old_build['optimization'])
             candidate=json.loads(validate(entry['provenance']).read_text())
         except (OSError,ValueError,KeyError):continue
         if all(candidate[key]==current_provenance[key] for key in ('tools','lean_source_realization','source_inputs')):
@@ -94,25 +105,30 @@ def reusable_reset_rom(previous,data,guest):
     return {'rom':previous['rom'],'rom_audit':previous['rom_audit']}
 
 def publish_prepared(data):
-    PREPARED.parent.mkdir(parents=True,exist_ok=True)
-    temporary=PREPARED.with_name(PREPARED.name+'.'+str(time.time_ns()))
+    destination=prepared_path(data['profile'])
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    temporary=destination.with_name(destination.name+'.'+str(time.time_ns()))
     try:
         with temporary.open('xb') as stream:
             stream.write((json.dumps(data,indent=2)+'\n').encode());stream.flush();os.fsync(stream.fileno())
-        os.replace(temporary,PREPARED)
+        os.replace(temporary,destination)
     finally:
         if temporary.exists():temporary.unlink()
 
 def build(args):
     from silicon_compute import source_manifest, prepare
-    out=(getattr(args,'rtl_build',None) or ROOT/'build/silicon/compute').resolve();dep=ROOT/'build/silicon/deps/cvw'
-    prepare(dep);current=source_manifest(dep)
+    name=getattr(args,'profile',None) or 'lemma-silicon-dev/0.1.0'
+    p=profile(name);selected=configurations(name)
+    workload=getattr(args,'workload',None) or 'service'
+    if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
+    out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-'+name.split('/')[1] if name!='lemma-silicon-dev/0.1.0' else 'build/silicon/compute')).resolve();dep=ROOT/'build/silicon/deps/cvw'
+    prepare(dep);current=source_manifest(dep,name)
     cached=None
     try:cached=json.loads((out/'build.json').read_text())
     except (OSError,ValueError):pass
     if cached is None or cached.get('configuration')!='external-ram-128MiB' or any(cached.get(k)!=v for k,v in current.items()) or not (out/'obj/lemma-rtl').is_file() or cached.get('binary_sha256')!=sha(out/'obj/lemma-rtl'):
         if getattr(args,'rtl_build',None):raise ValueError('Supplied RTL build differs from current exact source closure')
-        run_command(['python3','scripts/silicon_compute.py','build','--output-dir',out],timeout=1200)
+        run_command(['python3','scripts/silicon_compute.py','build','--profile',name,'--output-dir',out],timeout=1200)
         cached=json.loads((out/'build.json').read_text())
     stamp=str(time.time_ns());directory=ROOT/f'build/silicon/prepared-{stamp}'
     directory.mkdir(parents=True)
@@ -127,31 +143,34 @@ def build(args):
         run_command(['nix','develop','--no-write-lock-file','--command',*argv],timeout=300)
     # Independent instruction-word inventory for this fixed versioned binding:
     # a0=0; a1=0x43f<<21; t0=1<<31; jalr x0,t0,0. Unknown words fail closed.
-    if (profile()['dtb_base'],profile()['entry'])!=(0x87e00000,0x80000000):raise ValueError('Reset handoff audit requires a new binding inventory')
+    if (p['dtb_base'],p['entry'])!=(0x87e00000,0x80000000):raise ValueError('Reset handoff audit requires a new binding inventory')
     words=(0x00000513,0x43f00593,0x01559593,0x00100293,0x01f29293,0x00028067)
     if (rom/'boot.bin').read_bytes()!=struct.pack('<6I',*words):raise ValueError('Reset handoff instruction inventory differs')
     (rom/'audit.json').write_text(json.dumps({'status':'PASS','scope':'exact structured reset handoff words; no guest privilege initialization',
         'source':identified(ROOT/'Lemma/Platform/Silicon/BootROM.lean'),
         'assembly':identified(rom/'boot.S'),'object':identified(rom/'boot.o'),'elf':identified(rom/'boot.elf'),
         'binary':identified(rom/'boot.bin'),'instruction_words':words},indent=2)+'\n')
-    data={'schema_version':1,'profile':profile()['profile'],'profile_sha256':sha(PROFILE),
+    data={'schema_version':1,'profile':p['profile'],'profile_sha256':sha(profile_path(name)),
           'binary':identified(out/'obj/lemma-rtl'),'rom':identified(rom/'boot.bin'),'rom_audit':identified(rom/'audit.json'),
           'rtl_build':identified(out/'build.json'),'rtl_sources':{**cached['sha256'],**cached['configuration_includes'],
               str(ROOT/cached['host_adapter']['path']):cached['host_adapter']['sha256'],
               str(Path(cached['host_include_dir'])/'lemma_silicon_binding.h'):cached['host_binding_sha256'],
+              **{str(ROOT/path):digest for path,digest in cached['host_runtime'].items()},
+              **{str(ROOT/path):digest for path,digest in cached['host_toolchain_inputs'].items()},
+              **{str(ROOT/path):digest for path,digest in cached['binding_generator_inputs'].items()},
+              str(cached['runtime_identity_header']['path']):cached['runtime_identity_header']['sha256'],
               **{str(ROOT/name):sha(ROOT/name) for name in ('scripts/silicon_compute.py','scripts/silicon_profile.py',
                  'tooling/silicon/apply_cvw.py','tooling/silicon/dependencies.json','tooling/silicon/sim.nix')}},'workloads':{},
           'memory':'128 MiB external simulation bytes, not synthesized SRAM','physical_conformance':'UNVERIFIED'}
-    workload=getattr(args,'workload',None) or 'service'
     guest=getattr(args,'guest_build',None)
     if guest is None:
         guest=ROOT/f'build/kernel/silicon-{workload}-{stamp}-{args.opt_level}'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/build_kernel.py',
-            '--configuration',CONFIGURATIONS[workload],'--stage','supervisor','--opt-level',args.opt_level,
+            '--configuration',selected[workload],'--stage','supervisor','--opt-level',args.opt_level,
             '--output-dir',guest,'--timeout','300'],timeout=1500,log=directory/'guest-build.log')
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',guest],timeout=600,log=directory/'guest-audit.log')
     guest=Path(guest).resolve()
-    verify_guest_build(guest,CONFIGURATIONS[workload],args.opt_level)
+    verify_guest_build(guest,selected[workload],args.opt_level)
     if workload=='notebook':
         capacity_path=directory/'guest-capacity.json'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_lemmasim_capacity.py',
@@ -162,14 +181,14 @@ def build(args):
     if workload=='notebook':entry['capacity']=identified(capacity_path)
     previous=None
     try:
-        previous=json.loads(PREPARED.read_text())
+        previous=json.loads(prepared_path(name).read_text())
         if previous.get('profile_sha256')==data['profile_sha256']:
             for key,old_entry in previous['workloads'].items():
-                if key in CONFIGURATIONS:
+                if key in selected:
                     try:
                         for item in old_entry.values():validate(item)
                         old_build=json.loads(validate(old_entry['build']).read_text())
-                        verify_guest_build(validate(old_entry['build']).parent,CONFIGURATIONS[key],old_build['optimization'])
+                        verify_guest_build(validate(old_entry['build']).parent,selected[key],old_build['optimization'])
                         if key=='notebook':validate(old_entry['capacity'])
                     except (OSError,ValueError,KeyError):
                         continue
@@ -183,7 +202,7 @@ def build(args):
         (directory/'rom-reuse.json').write_text(json.dumps(write,indent=2)+'\n')
         data.update(reused)
     publish_prepared(data)
-    print(f'Prepared RTL {workload}; {PREPARED}. Ordinary launch validates identities without rebuilding.')
+    print(f'Prepared RTL {workload}; {prepared_path(name)}. Ordinary launch validates identities without rebuilding.')
 
 def verify_guest_build(guest,configuration,optimization):
     from build_kernel import source_inputs
@@ -236,7 +255,7 @@ def execute(data,workload,directory,options,inputs,medium):
     options=bounded_options(SimpleNamespace(**options))
     entry=data['workloads'][workload]
     argv=[data['binary']['path'],'--image',entry['image']['path'],'--rom',data['rom']['path'],
-          '--load',f"0x{profile()['dtb_base']:x}:{entry['dtb']['path']}",'--uart-output',directory/'uart.bin',
+          '--load',f"0x{profile(data['profile'])['dtb_base']:x}:{entry['dtb']['path']}",'--uart-output',directory/'uart.bin',
           '--trace',directory/'trace.csv','--trace-limit',options['trace_limit'],'--cycles',options['cycles'],
           '--deadline',int(options['timeout']),'--panel-output',directory/'panel','--report',directory/'host-report.json','--quiet-uart']
     for key,flag in (('uart','--uart-input'),('events','--events')):
@@ -283,7 +302,7 @@ def capture(data,workload,directory,options,input_paths,disk):
         if disk is not None:
             initial_path=directory/'initial-medium.raw';shutil.copyfile(disk,initial_path);initial=identified(initial_path)
         identity={'schema_version':1,'transport':'lemma-silicon-events/1','profile':data['profile'],'prepared':data,
-            'workload':workload,'options':options,'reset_cycles':8,'clock_hz':profile()['clock_hz'],'ram_initialization':'zero external RAM plus exact ELF and DTB loads',
+            'workload':workload,'options':options,'reset_cycles':8,'clock_hz':profile(data['profile'])['clock_hz'],'ram_initialization':'zero external RAM plus exact ELF and DTB loads',
             'inputs':inputs,'initial_medium':initial,'medium_path':str(disk) if disk else None}
         (directory/'input.json').write_text(json.dumps(identity,indent=2)+'\n')
         result=execute(data,workload,directory,options,inputs,disk)
@@ -295,11 +314,12 @@ def capture(data,workload,directory,options,input_paths,disk):
 
 def run(args):
     workload=getattr(args,'workload',None) or 'service'
-    if args.geometry and args.geometry!=f"{profile()['geometry'][0]}x{profile()['geometry'][1]}":raise ValueError('RTL geometry is fixed by lemma-silicon-dev/0.1.0')
+    name=getattr(args,'profile',None);p=profile(name)
+    if args.geometry and args.geometry!=f"{p['geometry'][0]}x{p['geometry'][1]}":raise ValueError('RTL geometry is fixed by the selected binding')
     if args.mode!='developer':raise ValueError('lemma-silicon-dev/0.1.0 currently supports Developer mode only')
     if getattr(args,'raw_input',None) or getattr(args,'fault',None):
         raise ValueError('RTL uses --events and --fail-flush; QEMU raw-input/fault options are unsupported')
-    options=bounded_options(args);data=prepared(workload)
+    options=bounded_options(args);data=prepared(workload,name)
     directory=args.record or ROOT/f'build/silicon/run-{time.time_ns()}'
     disk=args.disk.resolve() if args.disk else None
     result=capture(data,workload,directory,options,{'uart':args.uart_input,'events':args.events},disk)
@@ -321,7 +341,7 @@ def replay(args):
     for item in data['workloads'][workload].values():validate(item)
     for path,digest in data['rtl_sources'].items():
         if not Path(path).is_file() or sha(path)!=digest:raise ValueError('Captured RTL source/dependency changed: '+path)
-    if data['profile_sha256']!=sha(PROFILE):raise ValueError('Captured RTL binding is no longer supported by this generator')
+    if data['profile_sha256']!=sha(profile_path(data['profile'])):raise ValueError('Captured RTL binding is no longer supported by this generator')
     inputs=identity['inputs']
     for item in inputs.values():validate(item)
     directory=ROOT/f'build/silicon/replay-{time.time_ns()}'

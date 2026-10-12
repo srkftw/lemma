@@ -53,7 +53,11 @@ set_propagated_clock [get_clocks core]
 # Bound cell/buffer repair, retaining the declared clock and I/O constraints.
 estimate_parasitics -placement
 repair_design -slew_margin 5 -cap_margin 5
-repair_timing -setup -max_passes 2 -max_iterations 20 -max_buffer_percent 20
+# The pinned LEGACY setup phase double-closes its ECO journal when an improved
+# final pass also reaches max_iterations (34-cell independent reproducer in
+# journal-repro.tcl).  Use the supported path phase, retaining every sizing,
+# buffering, pin-swap, clone and split move and all timing constraints.
+repair_timing -setup -phases WNS_PATH -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 repair_timing -hold -max_passes 2 -max_iterations 20 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose
@@ -67,7 +71,7 @@ report_worst_slack -min -digits 6 > $out/pre-repair-hold-summary.rpt
 report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 6 > $out/pre-repair-electrical.rpt
 global_route -start_incremental
 repair_design -slew_margin 5 -cap_margin 5
-repair_timing -setup -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
+repair_timing -setup -phases WNS_PATH -setup_margin 0.25 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 repair_timing -hold -hold_margin 0.03 -max_passes 2 -max_iterations 50 -max_buffer_percent 20
 detailed_placement
 check_placement -verbose

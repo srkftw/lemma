@@ -31,6 +31,70 @@ cold recovery and Busy reset were exercised with dedicated Xvfb 21.1.24 from
 the pinned Nix input. Its optional recipe and executable SHA are retained in
 the evidence archive; it is a test environment, not a runtime installer.
 Manual visible interaction and physical tablet input are NOT_RUN. Physical conformance remains unverified;
-networking, managed Lean runtime, mathematics/tutor and whole-machine snapshots
-remain outside this implementation. The future machine is governed by
+networking, managed Lean runtime and mathematics/tutor remain unfinished.
+Task006 adds the same-backend machine sessions below; these do not qualify
+the complete machine. The future machine is governed by
 [LEMMASIM.md](../docs/plan/LEMMASIM.md), not completed by this bounded notebook.
+
+## Persistent machine sessions
+
+`scripts/lemmasim session` uses the reusable RTL runtime or the matched QEMU
+`lemma-silicon-fast` binding. The new `lemma-silicon-dev/0.2.0` profile uses
+1650×2200 pixels and a checked 32MiB allocator pool within external simulation
+RAM. It includes an explicitly synthetic digital panel sequencer. Historical
+profiles retain their original geometry, quotas and meaning.
+
+The command owns a long-lived machine with pause, bounded run, inspection,
+raw input, snapshot, restore, recorded-suffix replay, warm reset and cold cycle.
+The native window presents controller-produced pixels; toolbar operations,
+ink, editing, page/document changes and Save still execute in the Lean guest.
+Tk is available in the pinned host-only `tooling/lemmasim/session.nix` shell.
+See [launch and lifecycle commands](../README.md#task006-persistent-machine-sessions),
+the [state boundary](../docs/contracts/006-machine-session.md), and the
+[RTL serialization inventory](../docs/contracts/006-rtl-runtime-v1.md).
+
+Exact checkpoints are bound to their backend, implementation, guest and
+discovery bytes. Restore uses an isolated medium and never overwrites the
+source notebook. Live adapter handles disconnect on restore. Simulator
+pause/resume are distinct from the still-unimplemented guest suspend service.
+Nonvolatile recovery boot, companion transport, digital radio, browser/Wasm
+and finished mathematics applications remain part of the destination.
+
+## Native raw tablet transport
+
+`python3 scripts/lemmasim_tablet.py --list` reads Linux input-device names without
+reading their event streams. A selected real digitizer can feed an existing
+persistent session:
+
+```sh
+python3 scripts/lemmasim_tablet.py --device /dev/input/eventN --session-dir build/lemmasim/my-session --record build/lemmasim/my-session/tablet-raw.jsonl
+```
+
+The current adapter supports Linux x86_64 evdev. It requires reported absolute
+X/Y, contact and a pen/eraser tool; touchpads and ordinary mice are rejected.
+The capability report includes actual ranges, pressure support, tool/buttons,
+reported but untransported axes, and an explicit integer coordinate/pressure
+normalization. Absent pressure is reported `UNAVAILABLE` and transports zero;
+no contact pressure or tilt is invented. Pen-v1 cannot carry tilt. Full physical
+registration/calibration and physical digitizer compatibility remain unverified.
+
+Each `SYN_REPORT` transports one raw sample at the session's authoritative
+virtual time. Kernel timestamps and complete raw frame events are preserved
+separately; host wall time does not become guest time. `SYN_DROPPED` produces
+an explicit guest stream-loss boundary, discards incomplete events, and queries
+actual kernel state after the next synchronization. Disconnect/cancel also
+produces stream loss, allowing the real guest to cancel/resynchronize a stroke.
+Frames, capture size and lifetime are bounded, and capture paths are exclusive.
+The adapter performs no gesture, notebook, ink, journal or mathematical work.
+SIGTERM/SIGINT stop the input thread and attempt an explicit loss event before
+closing; bounded RPCs and teardown expose a blocked or failed sink. An operating
+system device handle is an external connection, not snapshot state. Snapshot
+creation does not drain input or inject a cancellation. Restore/replay must
+disconnect the live adapter before applying machine state; reconnection and
+loss are separately recorded external decisions.
+
+Eight independent host fixtures include a real byte-pipe with fragmented event
+records, EOF cancellation, literal session admission and real child-process
+SIGTERM teardown. A physical tablet was not present in the observed
+Linux input inventory, so manual tablet writing/registration is **NOT_RUN**.
+EOF fixtures are transport tests, not physical-input evidence.

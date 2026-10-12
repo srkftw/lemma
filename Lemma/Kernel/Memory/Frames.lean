@@ -147,10 +147,36 @@ def ownedCount (owner : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .boundedFoldU64 8192 ownedStep count.toUInt32 0 owner 0 0 0 fun s v => .done s v
 
+private def quotaByOwnership (owner quota needed : UInt64) : Action :=
+  .bind (ownedCount owner) fun s owned =>
+  if failed s = true then .done s 0 else
+  if owned ≤ quota - needed then .done 0 0 else .done quotaExceeded 0
+
+/-- Status-only quota admission, never a fabricated owned count. The kernel is
+exempt. With quota equal to the entire pool, validated free accounting already
+establishes room for this grant. Short supply or invalid numeric accounting
+retains the ownership scan and its quota-before-OOM priority.
+A failed new accounting read rejects conservatively before ownership counting;
+unknown supply must never become an allocation through a later retry. -/
+private def checkQuota (owner amount quota needed : UInt64) : Action :=
+  if owner = kernelOwner then .done 0 0 else
+  if quota = amount then
+    .bind (Access.read64 accounting) fun s available =>
+    if s = 0 then
+      if available ≤ amount then
+        if needed ≤ available then .done 0 0 else quotaByOwnership owner quota needed
+      else quotaByOwnership owner quota needed
+    else .done s 0
+  else quotaByOwnership owner quota needed
+
 private def findStep (i : UInt32) (_count : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (Access.read64 (record i.toUInt64)) fun s owner =>
   if failed s = true then .done s 0 else
-  if firstFree owner acc = true then .done 0 (i.toUInt64 + 1) else .done 0 acc
+  if firstFree owner acc = true then .done Status.iterationStop (i.toUInt64 + 1) else .done 0 acc
+
+private def findFree (amount : UInt64) : Action :=
+  .boundedFoldU64 8192 findStep amount.toUInt32 0 0 0 0 0 fun s found =>
+  if s = Status.iterationStop then .done 0 found else .done s found
 
 private def zeroStep (i : UInt32) (_count : UInt32) (acc frame _ _ _ : UInt64) : Action :=
   .bind (Access.write64 (frame + i.toUInt64 * 8) 0) fun s _ => .done s acc
@@ -171,10 +197,9 @@ def allocate (owner purpose : UInt64) : Action :=
   .bind runtimeQuota fun s quota =>
   if failed s = true then .done s 0 else
   if grantValid owner purpose = false then .done badOwner 0 else
-  .bind (ownedCount owner) fun s owned =>
+  .bind (checkQuota owner count quota 1) fun s _ =>
   if failed s = true then .done s 0 else
-  if (if owner = kernelOwner then true else if owned < quota then true else false) = false then .done quotaExceeded 0 else
-  .boundedFoldU64 8192 findStep count.toUInt32 0 0 0 0 0 fun s found =>
+  .bind (findFree count) fun s found =>
   if failed s = true then .done s 0 else
   if found = 0 then .done exhausted 0 else
   let index := found - 1
@@ -285,11 +310,16 @@ private def pairStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
     if s = 0 then
       if firstOwner = 0 then
         .bind (Access.read64 (record (index + 1))) fun s secondOwner =>
-        if s = 0 then .done 0 (if secondOwner = 0 then index + 1 else 0)
+        if s = 0 then
+          if secondOwner = 0 then .done Status.iterationStop (index + 1) else .done 0 0
         else .done s 0
       else .done 0 0
     else .done s 0
   else .done 0 acc
+
+private def findPair (amount : UInt64) : Action :=
+  .boundedFoldU64 8191 pairStep (amount - 1).toUInt32 0 0 0 0 0 fun s found =>
+  if s = Status.iterationStop then .done 0 found else .done s found
 
 private def freeGeneration (index : UInt64) : Action :=
   .bind (Access.read64 (record index)) fun s owner =>
@@ -378,14 +408,13 @@ def allocateContiguous2 (owner purpose : UInt64) : Action :=
   if s = 0 then
     .bind (Access.write64 (pairResult + 8) 0) fun s _ =>
     if s = 0 then
-      .bind (ownedCount owner) fun s owned =>
+      .bind (checkQuota owner count quota 2) fun s _ =>
       if s = 0 then
-        if (if owner = kernelOwner then true else if owned ≤ quota - 2 then true else false) = true then
           .bind (Access.read64 accounting) fun s available =>
           if s = 0 then
             if count < available then .done invariantFailure 0 else
             if available < 2 then .done exhausted 0 else
-            .boundedFoldU64 8191 pairStep (count - 1).toUInt32 0 0 0 0 0 fun s found =>
+            .bind (findPair count) fun s found =>
             if s = 0 then
               if found = 0 then .done exhausted 0 else
               let index := found - 1
@@ -405,8 +434,7 @@ def allocateContiguous2 (owner purpose : UInt64) : Action :=
               else .done invariantFailure 0
             else .done invariantFailure 0
           else .done invariantFailure 0
-        else .done quotaExceeded 0
-      else .done invariantFailure 0
+      else if s = quotaExceeded then .done quotaExceeded 0 else .done invariantFailure 0
     else .done invariantFailure 0
   else .done invariantFailure 0
 
@@ -425,8 +453,12 @@ private def quadFindStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
     if failed s = true then .done s 0 else
     .bind (Access.read64 (record (index + 3))) fun s d =>
     if failed s = true then .done s 0 else
-    .done 0 (if a ||| b ||| c ||| d = 0 then index + 1 else 0)
+    if a ||| b ||| c ||| d = 0 then .done Status.iterationStop (index + 1) else .done 0 0
   else .done 0 acc
+
+private def findQuad (amount : UInt64) : Action :=
+  .boundedFoldU64 8189 quadFindStep (amount - 3).toUInt32 0 0 0 0 0 fun s found =>
+  if s = Status.iterationStop then .done 0 found else .done s found
 
 private def quadPreflightStep (i _ : UInt32) (acc index amount _ _ : UInt64) : Action :=
   .bind (freeGeneration (index + i.toUInt64)) fun s generation =>
@@ -477,15 +509,13 @@ def allocateContiguous4 (owner purpose : UInt64) : Action :=
   .bind runtimeQuota fun s quota =>
   if failed s = true then .done s 0 else
   if grantValid owner purpose = false then .done badOwner 0 else
-  .bind (ownedCount owner) fun s owned =>
+  .bind (checkQuota owner amount quota 4) fun s _ =>
   if failed s = true then .done s 0 else
-  if (if owner = kernelOwner then true else if owned ≤ quota - 4 then true else false) = false then
-    .done quotaExceeded 0 else
   .bind remaining fun s available =>
   if failed s = true then .done s 0 else
   if amount < available then .done invariantFailure 0 else
   if available < 4 then .done exhausted 0 else
-  .boundedFoldU64 8189 quadFindStep (amount - 3).toUInt32 0 0 0 0 0 fun s found =>
+  .bind (findQuad amount) fun s found =>
   if failed s = true then .done s 0 else
   if found = 0 then .done exhausted 0 else
   let index := found - 1

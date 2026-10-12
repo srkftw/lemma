@@ -19,6 +19,11 @@ module lemma_pen #(
   output logic sample_accepted
 );
   localparam int PTR = $clog2(FIFO_DEPTH);
+  // Power-of-two FIFO storage: low pointer bits select a bank, high bits a
+  // row.  Neither capacity nor sample widths are reduced by this partition.
+  localparam int BANK_BITS = PTR < 4 ? PTR : 4;
+  localparam int BANKS = 1 << BANK_BITS;
+  localparam int ROWS = FIFO_DEPTH / BANKS;
   // Narrowing follows validated ranges; sequence/time are never truncated.
   typedef struct packed {
     logic [63:0] sequence_id, timestamp;
@@ -28,8 +33,13 @@ module lemma_pen #(
     logic [1:0] tool;
     logic [2:0] buttons;
   } entry_t;
-  entry_t fifo [FIFO_DEPTH];
-  entry_t head_entry;
+  entry_t bank_entry [BANKS];
+  entry_t head_entry, ingress_entry;
+  logic [PTR-1:0] ingress_index;
+  logic ingress_pending;
+  // A completed pop advances the public FIFO once.  The next head is fetched
+  // synchronously in two bounded stages; MMIO and ingress wait meanwhile.
+  logic [1:0] refill;
   logic [PTR-1:0] head, tail;
   logic [PTR:0] count;
   logic [63:0] epoch, head_epoch, next_sequence, losses, fault;
@@ -37,12 +47,24 @@ module lemma_pen #(
   logic loss, resync, release_seen, bad_sample;
   logic access_ok, lose;
 
-  assign ready = 1'b1;
+  // Separate bank memories give synthesis one local write and one local read
+  // port per bank instead of a flattened array with BANKS competing writers.
+  for (genvar bank = 0; bank < BANKS; bank++) begin : storage
+    entry_t rows [ROWS];
+    always @(posedge clk) begin
+      if (reset_n && ingress_pending && ingress_index[BANK_BITS-1:0] == BANK_BITS'(bank))
+        rows[ingress_index >> BANK_BITS] <= ingress_entry;
+      if (reset_n && refill == 2)
+        bank_entry[bank] <= rows[head >> BANK_BITS];
+    end
+  end
+
+  assign ready = refill == 0;
   assign access_ok = size == 3 && addr[2:0] == 0;
   assign error = valid && !access_ok;
   assign irq = count != 0 || loss || fault != 0;
   // Serialize external ingress against register mutations; reads never pop.
-  assign sample_ready = !(valid && write) &&
+  assign sample_ready = ready && !(valid && write) &&
                         !(contact_deadline != 0 && now_ticks >= contact_deadline);
   assign bad_sample = sample_time < last_time || sample_time > 64'hffffffff_ff67697f ||
     sample_x > 65535 || sample_y > 65535 || sample_pressure > PRESSURE_MAX ||
@@ -53,7 +75,6 @@ module lemma_pen #(
        (!resync && count == FIFO_DEPTH)));
 
   always_comb begin
-    head_entry = count != 0 ? fifo[head] : '0;
     rdata = 0;
     if (access_ok) case (addr)
       0: rdata = 1280331854;
@@ -95,11 +116,22 @@ module lemma_pen #(
 
   always @(posedge clk) begin
     sample_accepted <= 0;
+    // The large storage array sees only registered data/address/enable.  Raw
+    // sample bounds, loss decisions and 64-bit ACK comparisons do not drive
+    // every storage flip-flop's enable in the same cycle.
+    ingress_pending <= 0;
     if (!reset_n) begin
       head <= 0; tail <= 0; count <= 0;
+      head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
+      refill <= 0;
       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
       loss <= 0; resync <= 0; release_seen <= 0;
+    end else if (refill == 2) begin
+      refill <= 1;
+    end else if (refill == 1) begin
+      head_entry <= bank_entry[head[BANK_BITS-1:0]];
+      refill <= 0;
     end else if (lose) begin
       mark_loss();
       if (sample_valid && sample_ready && bad_sample) fault <= 1;
@@ -108,9 +140,12 @@ module lemma_pen #(
       else case (addr)
         88: if (count != 0 && head_entry.sequence_id == wdata) begin
           head <= head + 1'b1; count <= count - 1'b1;
+          if (count > 1) refill <= 2;
+          else head_entry <= '0;
         end else fault <= 2;
         96: if (loss && wdata == epoch) begin
           head <= 0; tail <= 0; count <= 0; loss <= 0; fault <= 0;
+          head_entry <= '0;
           head_epoch <= epoch;
         end else fault <= 2;
         104: if (wdata == 1) mark_loss(); else fault <= 3;
@@ -119,8 +154,12 @@ module lemma_pen #(
     end else if (sample_valid && sample_ready && !loss) begin
       if (resync && !sample_flags[0]) release_seen <= 1;
       if (!resync || (release_seen && sample_flags[0])) begin
-        fifo[tail] <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+        ingress_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
           sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
+        ingress_index <= tail; ingress_pending <= 1;
+        if (count == 0)
+          head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+            sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
         tail <= tail + 1'b1; count <= count + 1'b1;
         next_sequence <= next_sequence + 1;
         head_epoch <= epoch; last_time <= sample_time;

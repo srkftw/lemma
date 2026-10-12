@@ -9,11 +9,11 @@ import struct
 import hashlib
 from core0_common import Core0Error
 
-CONFIGURATIONS = {'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-notebook', 'lemmasim-silicon-initialize'}
+CONFIGURATIONS = {'lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
     1: '', 2: 'cpus', 3: 'soc', 4: 'lemma-paper@10010000', 5: 'lemma-pen@10011000',
     6: 'virtio_mmio@10001000', 7: 'interrupt-controller@c000000', 8: 'clint@2000000',
-    9: 'serial@10000000', 10: 'rtc@101000',
+    9: 'serial@10000000', 10: 'rtc@101000', 18: 'lemma-power@10010500',
     **{code: f'virtio_mmio@1000{code-9}000' for code in range(11,18)},
     32: 'compatible', 33: 'reg', 34: 'interrupts', 35: 'interrupt-parent',
     36: 'phandle', 37: 'timebase-frequency', 38: 'lemma,abi-version',
@@ -23,10 +23,10 @@ DTB_LITERALS = {
     49: 'interrupt-controller', 50: 'interrupts-extended', 51: 'clock-frequency',
     52: 'ranges', 64: 'lemma,paper-v1', 65: 'lemma,pen-v1', 66: 'virtio,mmio',
     67: 'sifive,plic-1.0.0\0riscv,plic0', 68: 'sifive,clint0\0riscv,clint0',
-    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus', 72: 'lemma,silicon-dev-v1', 73: 'lemma,diagnostic-uart-v1',
+    69: 'ns16550a', 70: 'google,goldfish-rtc', 71: 'simple-bus', 72: 'lemma,silicon-dev-v1', 73: 'lemma,diagnostic-uart-v1', 74: 'lemma,power-v1',
 }
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
-WORD_CODES = [4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
+WORD_CODES = [18,4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
 PREFIX = 'Lemma.Platform.LemmaSim.'
 # Independent visible rows for the guest-authored bounded font. These are
 # packed here rather than imported from the production Lean lookup.
@@ -43,7 +43,7 @@ FONT_ROWS = {
 }
 
 def canonical_specs():
-    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,74)]
+    lengths = [len(DTB_BYTES.get(code,b'')) for code in range(1,75)]
     words = [list(struct.unpack('<' + str((len(DTB_BYTES[code])+7)//8) + 'Q',
                                DTB_BYTES[code].ljust((len(DTB_BYTES[code])+7)//8*8,b'\0')))
              for code in WORD_CODES]
@@ -62,10 +62,12 @@ def canonical_specs():
     return {
       PREFIX+'DescriptorDTB.literalLength': ('kernel',['u64'],[],[lengths]),
       PREFIX+'DescriptorDTB.literalWord': ('kernel',['u64','u64'],[],words),
-      PREFIX+'DescriptorDTB.requiredFlags': ('kernel',['u64'],[],[[255,255,15,1011,515,31]]),
-      PREFIX+'DescriptorDTB.expectedIRQ': ('kernel',['u64'],[],[[12,13,1,None,None,10,11]]),
-      PREFIX+'DescriptorDTB.expectedBase': ('kernel',['u64'],[],[[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,0x10000000,0x101000]]),
-      PREFIX+'DescriptorDTB.expectedSpan': ('kernel',['u64'],[],[[0x600000,0x10000,0x100]]),
+      PREFIX+'DescriptorDTB.nodeRole': ('kernel',['u64','u64'],[],[[1,2,3,4,5,6,7,*([None]*7),8]]),
+      PREFIX+'DescriptorDTB.requiredFlags': ('kernel',['u64'],[],[[255,255,15,1011,515,31,15,31]]),
+      PREFIX+'DescriptorDTB.compatibleCode': ('kernel',['u64'],[],[[64,65,66,67,68,69,70,74]]),
+      PREFIX+'DescriptorDTB.expectedIRQ': ('kernel',['u64'],[],[[12,13,1,None,None,10,11,14]]),
+      PREFIX+'DescriptorDTB.expectedBase': ('kernel',['u64'],[],[[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,0x10000000,0x101000,0x10010500]]),
+      PREFIX+'DescriptorDTB.expectedSpan': ('kernel',['u64'],[],[[0x600000,0x10000,0x100,4096,256]]),
       PREFIX+'Descriptor.expected': ('kernel',['u64'],[],[fields]),
       'Lemma.Ink.Surface.letter': ('user',['u64'],[],[letters]),
       'Lemma.Applications.Notebook.statusCharacter': ('user',['u64']*5,[],
@@ -81,6 +83,14 @@ DEVICE_BODY_DIGESTS = {
  'write32': ('a9c450a0bbdc45f0dafe60fec3e5a9bb0133ad2ed3f138569115f09e8c3814ba', '7ca1f1478a316664648ce52b96ddb6cf681e578c99930006cf0ae5501a66ff75'),
  'write64': ('f80d937bfcae448dba30e2ec6b51eaa9d76db6b2ff8544366f91ed798cd2f6dc', 'cc11d117f7e5d9a281b2091def205363f37ea2de68e8ead8475c67d098da4229'),
 }
+POWER_CONFIGURATIONS = {'lemmasim-silicon-power-probe',
+    'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'}
+POWER_DEVICE_BODY_DIGESTS = {**DEVICE_BODY_DIGESTS,
+ 'read32': ('f177cfe6f4ec9fa88914aa3b7c66a3f47ecab6cca81150aed66a1e0c56af5731',
+            '58fdc1dbbfa4867f5ca728331bf22dfcd32b393548c9db01e0b3a47387c84a28'),
+ 'write32': ('447fba5dd72534375f7250a6a6d1365d456e21b52dd7afa2816b41bca8018628',
+             'cd11af39d7c16521096e8a8870841ecd5c10a591ab541598b24786066ed64554'),
+}
 
 def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],list[dict]]:
     from audit_kernel import _ir_definition_body, _line_functions
@@ -89,23 +99,28 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
         if any(row['stable_id'].startswith('lemmasim.device-') for row in unit['used_execution_ops']):
             raise Core0Error('Lemmasim hardware operation reached user authority')
         return set(),[]
+    power = unit['configuration'] in POWER_CONFIGURATIONS
+    expected_contract = 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
+    if unit.get('contract_version') != expected_contract:
+        raise Core0Error('Lemmasim device aperture configuration/profile differs')
+    digests = POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
     sites=set();observed=[];owners=_line_functions(ir.splitlines())
     for row in unit['functions']:
         if not row['source'].startswith(PREFIX+'IO.'): continue
         operation=row['source'].rsplit('.',1)[1]
-        if operation not in DEVICE_BODY_DIGESTS: raise Core0Error('Unknown Lemmasim hardware source')
+        if operation not in digests: raise Core0Error('Unknown Lemmasim hardware source')
         write=operation.startswith('write');bits=int(operation[-2:]);width=bits//8
         if row['args']!=(['u64','u64'] if write else ['u64']) or row['effects']!=['checked-access','mmio-write' if write else 'mmio-read','io-order']:
             raise Core0Error('Lemmasim hardware source signature/effects differs')
         body='\n'.join(line.split(';',1)[0].strip() for line in _ir_definition_body(ir,row['symbol']).splitlines() if line.split(';',1)[0].strip())
         if not optimized:
-            regions=[(0x10001000,0x10001200),(0xc000004,0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
+            regions=[(0x10001000,0x10001200),(0xc000004,0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
             lower=[int(value) for value in re.findall(r'icmp uge i64 %arg0, (\d+)',body)]
             upper=[int(value) for value in re.findall(r'icmp ule i64 %arg0, (\d+)',body)]
             if lower!=[start for start,end in regions] or upper!=[end-width for start,end in regions] or len(re.findall(r'and i64 %arg0, '+str(width-1)+r'$',body,re.M))!=1:
                 raise Core0Error('Lemmasim device primitive range/alignment authority differs')
         digest=hashlib.sha256(body.encode()).hexdigest()
-        if digest!=DEVICE_BODY_DIGESTS[operation][int(optimized)]:
+        if digest!=digests[operation][int(optimized)]:
             raise Core0Error('Lemmasim device primitive closed guard/pointer/fence/result CFG differs: '+operation)
         located={i for i,line in enumerate(ir.splitlines()) if owners[i]==row['symbol'] and re.search(r'\b(?:load|store) volatile i'+str(bits)+r'\b',line)}
         if len(located)!=(1 if optimized else 4 if width==4 else 2):
@@ -167,6 +182,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         pointer,operand=geps[0]
         argument,shift={
             PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0),
+            PREFIX+'DescriptorDTB.nodeRole':('%arg1',-4), PREFIX+'DescriptorDTB.compatibleCode':('%arg0',-1),
             PREFIX+'DescriptorDTB.requiredFlags':('%arg0',-1), PREFIX+'DescriptorDTB.expectedIRQ':('%arg0',-1),
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
             PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.letter':('%arg0',-48),
@@ -191,10 +207,15 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
                     true,false=successors[block];without={name:targets for name,targets in successors.items()};without[block]=(false,)
                     if not _structured_reachable(without,'entry',load_block) and _structured_reachable(successors,true,load_block): guards.append(block)
         if len(guards)!=1: raise Core0Error('Lemmasim table load lacks a dominating exact unsigned bound: '+source+' '+table)
-        if source.endswith('expectedIRQ'):
+        if source.endswith('expectedIRQ') or source.endswith('nodeRole'):
             hole=blocks.get('switch.hole_check')
-            if hole!=['%switch.maskindex = trunc nuw i64 %switch.tableidx to i8','%switch.shifted = lshr i8 103, %switch.maskindex','%switch.lobit = trunc i8 %switch.shifted to i1','br i1 %switch.lobit, label %switch.lookup, label %if.else.13']:
-                raise Core0Error('Lemmasim poisoned IRQ holes lack their exact exclusion mask')
+            bits,mask,fallback=(16,16511,'if.else.40') if source.endswith('nodeRole') else (8,-25,'if.else.16')
+            if hole!=[f'%switch.maskindex = trunc nuw i64 %switch.tableidx to i{bits}',f'%switch.shifted = lshr i{bits} {mask}, %switch.maskindex',f'%switch.lobit = trunc i{bits} %switch.shifted to i1',f'br i1 %switch.lobit, label %switch.lookup, label %{fallback}']:
+                raise Core0Error('Lemmasim poisoned literal holes lack their exact exclusion mask')
+        if source.endswith('nodeRole'):
+            parent=re.search(r'switch i64 %arg0, label %(\S+) \[\s*i64 0, label %(\S+)\s*i64 10, label %(\S+)\s*i64 12, label %(\S+)\s*\]',body)
+            if parent is None or not _structured_reachable(successors,parent[4],load_block) or any(_structured_reachable(successors,parent[i],load_block) for i in (1,2,3)):
+                raise Core0Error('Power node-role lookup escaped its exact soc parent12 gate')
         if source.endswith('literalWord'):
             guard=guards[0];code=WORD_CODES[index]
             if len(re.findall(r'i64 '+str(code)+r', label %'+re.escape(guard)+r'(?![A-Za-z0-9_.$-])',body))!=1:

@@ -3,6 +3,11 @@
 // external working-memory port, external framebuffer SRAM, raw medium and panel ports.
 module lemma_soc #(parameter bit REGISTER_RAM=0) (
  input logic clk, reset,
+ input logic [1:0] power_reset_cause,
+ input logic raw_button_level,
+ output logic power_suspended,power_cancel_pen,
+ output logic [63:0] power_error,power_epoch,power_events,power_wake_cause,
+ output logic [1:0] power_cause,
  input logic preload_valid,
  input logic [8:0] preload_index,
  input logic [63:0] preload_data,
@@ -38,6 +43,9 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [3:0] panel_gray,
  output logic panel_complete,panel_abort,
  output logic [63:0] panel_sequence,
+ output logic panel_drive_valid,panel_power_enable,panel_gate_clock,panel_source_clock,
+ output logic [1:0] panel_drive_phase,panel_drive_code,
+ output logic [31:0] panel_drive_x,panel_drive_y,
  output logic media_valid,
  output logic [2:0] media_kind,
  output logic [63:0] media_sector,
@@ -57,11 +65,13 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic dma_valid,dma_write,dma_ready,dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
- logic [63:0] pen_rdata,paper_rdata,block_rdata;
+ logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata;
  logic pen_ready,paper_ready,block_ready,pen_error,paper_error,block_error;
- logic pen_irq,paper_irq,block_irq;
+ logic pen_irq,paper_irq,block_irq,power_irq,power_ready,power_bus_error,paper_busy,block_busy,pen_sample_ready;
+ logic [5:0] power_busy_sources;
+ logic [1:0] power_event_flags;
  logic [31:0] irqs;
- logic pen_sel,paper_sel,block_sel,dma_grant,dma_alignment,dma_span;
+ logic pen_sel,paper_sel,block_sel,power_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
  logic port_held,held_dma,held_write;
@@ -85,12 +95,13 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign external_ready=mem_ready;assign external_error=mem_error;assign external_rdata=mem_rdata;
  end endgenerate
  assign pen_sel=dev_addr>=PEN_BASE&&dev_addr<PEN_BASE+PEN_SPAN;
- assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN;
+ assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
+ assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ);
+ assign dev_rdata=power_sel?power_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=power_sel?power_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=power_sel?power_bus_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ);
  lemma_compute compute(
    .clk,.reset,.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
@@ -100,29 +111,46 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .debug_pc,.debug_privilege,.debug_retire,.debug_trap,.debug_cause
  );
  lemma_pen #(.FIFO_DEPTH(int'(PEN_FIFO)),.PRESSURE_MAX(int'(PRESSURE_MAX))) pen(
-   .clk,.reset_n(!reset),.valid(dev_valid&&pen_sel),.write(dev_valid&&pen_sel&&dev_write),
-   .addr((dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
-   .size((dev_valid&&pen_sel)?dev_size:3'd0),.wdata((dev_valid&&pen_sel)?dev_wdata:64'd0),
+   .clk,.reset_n(!reset),.valid((dev_valid&&pen_sel)||power_cancel_pen),.write((dev_valid&&pen_sel&&dev_write)||power_cancel_pen),
+   .addr(power_cancel_pen?12'd104:(dev_valid&&pen_sel)?dev_addr[11:0]:12'd0),
+   .size(power_cancel_pen?3'd3:(dev_valid&&pen_sel)?dev_size:3'd0),.wdata(power_cancel_pen?64'd1:(dev_valid&&pen_sel)?dev_wdata:64'd0),
    .rdata(pen_rdata),.ready(pen_ready),.error(pen_error),.irq(pen_irq),
-   .now_ticks(timer_ticks),.sample_valid,.sample_ready,.sample_time,.sample_x,.sample_y,
+   .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
    .sample_pressure,.sample_flags,.sample_tool,.sample_buttons,.sample_accepted
  );
- lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT))) paper(
+ lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0)) paper(
    .clk,.reset_n(!reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
    .addr((dev_valid&&paper_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&paper_sel)?dev_size:3'd0),.wdata((dev_valid&&paper_sel)?dev_wdata:64'd0),
-   .rdata(paper_rdata),.ready(paper_ready),.error(paper_error),.irq(paper_irq),
+   .rdata(paper_rdata),.ready(paper_ready),.error(paper_error),.irq(paper_irq),.controller_busy(paper_busy),
    .now_ticks(timer_ticks),.descriptor,.fb_valid,.fb_write,.fb_addr,.fb_wdata,.fb_ready,.fb_error,.fb_rdata,
-   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence
+   .panel_valid,.panel_ready,.panel_x,.panel_y,.panel_gray,.panel_complete,.panel_abort,.panel_sequence,
+   .panel_drive_valid,.panel_power_enable,.panel_gate_clock,.panel_source_clock,
+   .panel_drive_phase,.panel_drive_code,.panel_drive_x,.panel_drive_y
  );
  lemma_block #(.DMA_BASE(FRAME_POOL_BASE),.DMA_BYTES(FRAME_POOL_BYTES)) blockdev(
    .clk,.reset_n(!reset),.valid(dev_valid&&block_sel),.write(dev_valid&&block_sel&&dev_write),
    .addr((dev_valid&&block_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&block_sel)?dev_size:3'd0),.wdata((dev_valid&&block_sel)?dev_wdata:64'd0),
-   .rdata(block_rdata),.ready(block_ready),.error(block_error),.irq(block_irq),
+   .rdata(block_rdata),.ready(block_ready),.error(block_error),.irq(block_irq),.busy(block_busy),
    .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
    .media_valid,.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
+ assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen;
+ assign power_busy_sources={media_valid,(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
+ generate if(POWER_ENABLED!=0) begin: control_domain
+   lemma_power power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,
+     .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),
+     .addr(dev_addr[7:0]),.size(dev_size),.wdata(dev_wdata),.rdata(power_rdata),
+     .ready(power_ready),.error(power_bus_error),.irq(power_irq),
+     .suspended(power_suspended),.cancel_pen(power_cancel_pen),.fault(power_error),
+     .epoch(power_epoch),.wake_cause(power_wake_cause),.cause(power_cause),.events(power_event_flags));
+   assign power_events={62'b0,power_event_flags};
+ end else begin: no_control_domain
+   assign power_rdata=0;assign power_ready=1;assign power_bus_error=0;assign power_irq=0;
+   assign power_suspended=0;assign power_cancel_pen=0;assign power_error=0;assign power_epoch=0;
+   assign power_event_flags=0;assign power_events=0;assign power_wake_cause=0;assign power_cause=0;
+ end endgenerate
  // DMA has priority only at an idle external port. A request which sees
  // backpressure retains its owner and complete beat until its response;
  // arrivals from the other master cannot replace an outstanding request.

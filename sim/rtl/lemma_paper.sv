@@ -3,7 +3,8 @@
 // Target/latch SRAM and the optical panel remain external interfaces.
 module lemma_paper #(
   parameter int WIDTH = 512,
-  parameter int HEIGHT = 640
+  parameter int HEIGHT = 640,
+  parameter bit ENABLE_SEQUENCER = 0
 ) (
   input logic clk, reset_n,
   input logic valid, write,
@@ -12,6 +13,7 @@ module lemma_paper #(
   input logic [63:0] wdata,
   output logic [63:0] rdata,
   output logic ready, error, irq,
+  output logic controller_busy,
   input logic [63:0] now_ticks,
   input logic [2047:0] descriptor,
   output logic fb_valid, fb_write,
@@ -24,7 +26,11 @@ module lemma_paper #(
   output logic [31:0] panel_x, panel_y,
   output logic [3:0] panel_gray,
   output logic panel_complete, panel_abort,
-  output logic [63:0] panel_sequence
+  output logic [63:0] panel_sequence,
+  output logic panel_drive_valid, panel_power_enable,
+  output logic panel_gate_clock, panel_source_clock,
+  output logic [1:0] panel_drive_phase, panel_drive_code,
+  output logic [31:0] panel_drive_x, panel_drive_y
 );
   localparam int PIXELS = WIDTH * HEIGHT;
   localparam int X_BITS = WIDTH > 1 ? $clog2(WIDTH) : 1;
@@ -34,13 +40,15 @@ module lemma_paper #(
   localparam int FRAME_BITS = PIXELS > 1 ? $clog2(PIXELS) : 1;
   localparam int TILE_X_END = (X_BITS > 6 ? X_BITS : 6)+1;
   localparam int TILE_Y_END = (Y_BITS > 6 ? Y_BITS : 6)+1;
-  typedef enum logic [3:0] {CLEAR,IDLE,UPLOAD,SNAPSHOT_READ,SNAPSHOT_WRITE,
-    WAIT_TIME,PANEL_READ,PANEL_SEND,UPLOAD_SELECT,UPLOAD_BANKS,UPLOAD_VALUE} state_t;
+  typedef enum logic [4:0] {CLEAR,IDLE,UPLOAD,SNAPSHOT_READ,SNAPSHOT_WRITE,
+    WAIT_TIME,PANEL_READ,PANEL_SEND,UPLOAD_SELECT,UPLOAD_BANKS,UPLOAD_VALUE,
+    POWER_UP,SCAN_READ,SCAN_DRIVE,PHASE_GAP,POWER_DOWN} state_t;
   state_t state;
   logic [63:0] tile_x,tile_y,tile_w,tile_h,tile_len;
   logic [63:0] req_sequence,rect_x,rect_y,rect_w,rect_h,mode;
   logic [63:0] last_sequence,completed,fault,deadline;
   logic busy,done_flag,interrupted;
+  assign controller_busy = busy || state != IDLE;
   logic [X_BITS-1:0] lx,ix;
   logic [Y_BITS-1:0] ly,iy;
   logic [W_BITS-1:0] lw;
@@ -55,6 +63,23 @@ module lemma_paper #(
   logic [7:0] upload_byte_latch,first_upload_byte;
   logic [1:0] lm;
   logic [3:0] pixel_latch;
+  logic [1:0] wave_phase, drive_remaining, power_remaining;
+  logic [63:0] drive_clocks, scan_beats;
+  logic sequencer_power;
+  // virtual-panel-synthetic/1 is deliberately old-pixel independent. Codes
+  // are logical symbols, not voltage levels or qualified panel waveforms:
+  // condition(3), desired dark/light(1/2), neutral(0), each held two clocks.
+  assign sequencer_power = ENABLE_SEQUENCER && (state==POWER_UP || state==SCAN_READ ||
+    state==SCAN_DRIVE || state==PHASE_GAP || state==PANEL_READ || state==PANEL_SEND || state==POWER_DOWN);
+  assign panel_power_enable = reset_n && !reset_command && sequencer_power;
+  assign panel_drive_valid = reset_n && !reset_command && ENABLE_SEQUENCER && state==SCAN_DRIVE;
+  assign panel_drive_phase = ENABLE_SEQUENCER ? wave_phase : 0;
+  assign panel_drive_x = panel_drive_valid ? 32'(lx)+32'(ix) : 0;
+  assign panel_drive_y = panel_drive_valid ? 32'(ly)+32'(iy) : 0;
+  assign panel_drive_code = !panel_drive_valid ? 0 : wave_phase==0 ? 3 :
+    wave_phase==1 ? (pixel_latch<8 ? 1 : 2) : 0;
+  assign panel_source_clock = panel_drive_valid && drive_remaining==2;
+  assign panel_gate_clock = panel_source_clock && ix==0;
 
   // A request is captured once, then acknowledged only when its operation
   // can execute. The master holds valid through ready. No raw address/data
@@ -207,6 +232,15 @@ module lemma_paper #(
         56: control_read_value=3;
         112: control_read_value=last_sequence;
         160: control_read_value=completed;
+        384: control_read_value=ENABLE_SEQUENCER ? 1 : 0;
+        392: control_read_value=ENABLE_SEQUENCER ? 64'h31504d53 : 0;
+        400: if(ENABLE_SEQUENCER) control_read_value={46'b0,drive_remaining,6'b0,wave_phase,7'b0,sequencer_power};
+        408: if(ENABLE_SEQUENCER) control_read_value=32'(lx)+32'(ix);
+        416: if(ENABLE_SEQUENCER) control_read_value=32'(ly)+32'(iy);
+        424: if(ENABLE_SEQUENCER) control_read_value={62'b0,panel_drive_code};
+        432: if(ENABLE_SEQUENCER) control_read_value=drive_clocks;
+        440: if(ENABLE_SEQUENCER) control_read_value={63'b0,panel_power_enable};
+        448: if(ENABLE_SEQUENCER) control_read_value=scan_beats;
         default: control_read_value=0;
       endcase
     end
@@ -221,7 +255,7 @@ module lemma_paper #(
       end
       SNAPSHOT_READ: begin fb_valid=1; fb_addr=32'(frame_cursor); end
       SNAPSHOT_WRITE: begin fb_valid=1; fb_write=1; fb_addr=PIXELS+32'(frame_cursor); fb_wdata={4'b0,pixel_latch}; end
-      PANEL_READ: begin fb_valid=1; fb_addr=PIXELS+32'(frame_cursor); end
+      PANEL_READ,SCAN_READ: begin fb_valid=1; fb_addr=PIXELS+32'(frame_cursor); end
       default: begin end
     endcase
   end
@@ -247,6 +281,7 @@ module lemma_paper #(
       tw<=0; th<=0; frame_cursor<=0; frame_start<=0; tile_cursor<=0;
       frame_row_step<=0; tile_row_step<=0; tile_byte_row<=0; tile_row_bytes<=0;
       upload_row_select<=0; upload_lane_select<=0; upload_byte_latch<=8'hff;
+      wave_phase<=0; drive_remaining<=0; power_remaining<=0; drive_clocks<=0; scan_beats<=0;
     end else begin
       // RESET wins the actual acknowledgement edge, including a simultaneous
       // final panel handshake; capture alone has no device side effects.
@@ -286,18 +321,47 @@ module lemma_paper #(
             if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
             else advance_pixel(SNAPSHOT_READ,WAIT_TIME);
           end
-          WAIT_TIME: if(now_ticks>=deadline) begin ix<=0; iy<=0; frame_cursor<=frame_start; state<=PANEL_READ; end
+          WAIT_TIME: if(now_ticks>=deadline) begin
+            ix<=0; iy<=0; frame_cursor<=frame_start;
+            if(ENABLE_SEQUENCER) begin state<=POWER_UP; power_remaining<=2; end
+            else state<=PANEL_READ;
+          end
+          POWER_UP: if(power_remaining>1) power_remaining<=power_remaining-1'b1;
+            else begin power_remaining<=0; state<=SCAN_READ; end
+          SCAN_READ: if(fb_ready) begin
+            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
+            else begin pixel_latch<=fb_rdata[3:0]; drive_remaining<=2; state<=SCAN_DRIVE; end
+          end
+          SCAN_DRIVE: begin
+            drive_clocks<=drive_clocks+1'b1;
+            if(drive_remaining>1) drive_remaining<=drive_remaining-1'b1;
+            else begin
+              drive_remaining<=0; scan_beats<=scan_beats+1'b1;
+              advance_pixel(SCAN_READ,PHASE_GAP);
+            end
+          end
+          PHASE_GAP: if(wave_phase<2) begin wave_phase<=wave_phase+1'b1; state<=SCAN_READ; end
+            else state<=PANEL_READ;
           PANEL_READ: if(fb_ready) begin
             if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
             else begin pixel_latch<=fb_rdata[3:0]; state<=PANEL_SEND; end
           end
           PANEL_SEND: if(panel_ready) begin
-            advance_pixel(PANEL_READ,IDLE);
+            advance_pixel(PANEL_READ,ENABLE_SEQUENCER?POWER_DOWN:IDLE);
             if(W_BITS'(ix)==(lw-1'b1) && H_BITS'(iy)==(lh-1'b1)) begin
-              busy<=0; done_flag<=1; completed<=last_sequence; panel_complete<=1;
-              if(lm==2 && lx==0 && ly==0 && lw==W_BITS'(WIDTH) && lh==H_BITS'(HEIGHT)) interrupted<=0;
+              if(ENABLE_SEQUENCER) power_remaining<=2;
+              else begin
+                busy<=0; done_flag<=1; completed<=last_sequence; panel_complete<=1;
+                if(lm==2 && lx==0 && ly==0 && lw==W_BITS'(WIDTH) && lh==H_BITS'(HEIGHT)) interrupted<=0;
+              end
             end
           end
+          POWER_DOWN: if(power_remaining>1) power_remaining<=power_remaining-1'b1;
+            else begin
+              power_remaining<=0; state<=IDLE; busy<=0; done_flag<=1;
+              completed<=last_sequence; panel_complete<=1;
+              if(lm==2 && lx==0 && ly==0 && lw==W_BITS'(WIDTH) && lh==H_BITS'(HEIGHT)) interrupted<=0;
+            end
           default: begin end
         endcase
       end
@@ -320,6 +384,7 @@ module lemma_paper #(
           176: if(op_wdata==1) begin
             if(busy || interrupted) begin interrupted<=1; fault<=6; end else fault<=0;
             busy<=0; done_flag<=0; state<=CLEAR; clear_index<=0; panel_abort<=1;
+            wave_phase<=0; drive_remaining<=0; power_remaining<=0;
             tile_x<=0; tile_y<=0; tile_w<=0; tile_h<=0; tile_len<=0;
             rect_x<=0; rect_y<=0; rect_w<=0; rect_h<=0; mode<=0; req_sequence<=0;
           end else fault<=1;
@@ -344,6 +409,7 @@ module lemma_paper #(
               frame_row_step<=(W_BITS+1)'(WIDTH)-(W_BITS+1)'(rect_w[W_BITS-1:0])+1'b1;
               last_sequence<=req_sequence; busy<=1;
               deadline<=now_ticks+(mode==1?20000:250000); state<=SNAPSHOT_READ;
+              wave_phase<=0; drive_remaining<=0; power_remaining<=0; drive_clocks<=0; scan_beats<=0;
             end
           end else fault<=1;
           default: fault<=1;
