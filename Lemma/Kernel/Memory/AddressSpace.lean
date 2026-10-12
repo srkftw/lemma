@@ -113,27 +113,43 @@ private def row (address index : UInt64) : Action :=
     else .done resourceLimit 0
   else .done invalidDescriptor 0
 
-private def registryUniqueStep (i _ : UInt32) (acc address physical _ _ : UInt64) : Action :=
-  .bind (get address (registryList + i.toUInt64 * 16 + 8)) fun s previous =>
-  if failed s = true then .done s 0 else
-  if previous = physical then .done invalidDescriptor 0 else .done 0 (acc + 1)
+/-- Four 13-bit indices fit below bit52. Each index comes only from a grant
+resolved in this same nonpreemptible Action; zero is a valid frame index. The
+explicit prefix length, rather than a sentinel, controls membership. -/
+private def packedMember (packed amount index : UInt64) : Bool :=
+  if 0 < amount then
+    if packed &&& 8191 = index then true else
+    if 1 < amount then
+      if (packed >>> 13) &&& 8191 = index then true else
+      if 2 < amount then
+        if (packed >>> 26) &&& 8191 = index then true else
+        if 3 < amount then
+          if (packed >>> 39) &&& 8191 = index then true else false
+        else false
+      else false
+    else false
+  else false
 
-private def validateRegistryStep (i _ : UInt32) (acc address owner _ _ : UInt64) : Action :=
-  .bind (get address (registryList + i.toUInt64 * 16)) fun s handle =>
+private def validateRegistryStep (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
+  let ordinal := group + i.toUInt64
+  .bind (get address (registryList + ordinal * 16)) fun s handle =>
   if failed s = true then .done s 0 else
   .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
   if failed s = true then .done s 0 else
-  .bind (get address (registryList + i.toUInt64 * 16 + 8)) fun s recorded =>
+  .bind (get address (registryList + ordinal * 16 + 8)) fun s recorded =>
   if failed s = true then .done s 0 else
   if (if physical = recorded then false else true) = true then .done invalidDescriptor 0 else
-  .boundedFoldU64 8 registryUniqueStep i 0 address physical 0 0 fun s _ =>
+  let index := (physical - Frames.pool) / Frames.bytes
+  if 8192 ≤ index then .done invalidDescriptor 0 else
+  if (if group = 4 then packedMember first 4 index else false) = true then .done invalidDescriptor 0 else
+  if packedMember packed i.toUInt64 index = true then .done invalidDescriptor 0 else
+  -- The exact owner/generation/purpose and recorded physical address have just
+  -- been checked. Prior entries are immutable in this S critical section;
+  -- inspect pins here and carry only the bounded index in the local pack.
+  .bind (Access.read64 (Frames.record index + 16)) fun s pins =>
   if failed s = true then .done s 0 else
-  -- resolvePurpose already checked this exact generation, owner and purpose.
-  -- Single-hart S policy cannot release or remap the frame between these
-  -- reads; inspect pins in that resolved slot without resolving it again.
-  .bind (Access.read64 (Frames.record ((physical - Frames.pool) / Frames.bytes) + 16)) fun s pins =>
-  if failed s = true then .done s 0 else
-  if pins = 0 then .done 0 (acc + 1) else .done invalidDescriptor 0
+  if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
+  else .done invalidDescriptor 0
 
 private def validateRegistry (address owner version leafCapacity : UInt64) : Action :=
   .bind (get address registryCount) fun s amount => if failed s = true then .done s 0 else
@@ -149,9 +165,9 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
       if amount = 8 then
         .bind Frames.runtimeCount fun s frames => if failed s = true then .done s 0 else
         if Frames.expanded frames = true then
-          .boundedFoldU64 8 validateRegistryStep 8 0 address owner 0 0 fun s checked =>
+          .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
           if failed s = true then .done s 0 else
-          if checked = 8 then .done 0 0 else .done invalidDescriptor 0
+          .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
         else .done invalidDescriptor 0
       else .done invalidDescriptor 0
     else .done invalidDescriptor 0

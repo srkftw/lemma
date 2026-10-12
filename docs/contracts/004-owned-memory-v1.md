@@ -59,7 +59,16 @@ DMA grant. The descriptor's registry count at +1408 and eight 16-byte
 handle/physical-address directory entries at +1424..+1551 fit before the saved
 user context at +2048. Every descriptor validation checks all eight live owner,
 generation, purpose, physical-address and zero-pin facts and rejects duplicate
-directory pages. Publication follows allocation/zeroing; rollback and teardown
+directory pages. Distinctness uses the resolved physical frame indices in two
+local four-entry packs, with 13 bits per index and an explicit prefix count (so
+index 0 remains valid). All eight current directory handle/owner/generation/
+purpose/recorded-physical checks precede that entry's distinctness check; its
+zero-pin check follows distinctness. The packs live only in this nonpreemptible
+Action. They replace 28 redundant rereads of previously validated physical
+address fields and their callbacks, without weakening any necessary metadata
+read. An injected failure scheduled by the ordinal of a removed redundant read
+is not an unchanged fault scenario; failures of necessary current-entry reads
+remain fail closed. Publication follows allocation/zeroing; rollback and teardown
 release all eight pages after removing user leaves. Registry rows retain exact
 generation handles and PTEs. Row access is direct; lookup scans at most the current
 mapped-leaf count, independent of document history. Allocation exhaustion leaves

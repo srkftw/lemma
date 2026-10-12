@@ -1,4 +1,5 @@
 import Lemma.Kernel.Memory.UserCopy
+import Lemma.Drivers.VirtIOBlock
 import Lean.Elab.Command
 import Std.Data.HashMap
 
@@ -104,6 +105,79 @@ def populated (saved : State) (address : UInt64) (expanded : Bool) (amount : Nat
     s := put s (rowAddress saved address expanded i) (0x800000 + i.toUInt64 * 4096)
   return reset s
 
+def checkDirectory (amount : UInt64) : IO Unit := do
+  let state ← IO.mkRef ({} : State)
+  discard <| success state (Frames.configure amount (if amount = 1024 then 128 else 8192) 4)
+  discard <| success state Frames.init
+  -- A real purpose1 owner2 grant at index0 exercises zero as a valid packed
+  -- index. Its placement before descriptor construction keeps that descriptor
+  -- in a separate owner1 frame. All eight selected grants remain real/live.
+  let spare ← success state (Frames.allocate 2 1)
+  let sparePA ← success state (Frames.resolvePurpose 2 spare 1)
+  require (sparePA == 0x82000000) "literal index-zero fixture"
+  let descriptor ← success state (AddressSpace.create 2)
+  let address ← success state (AddressSpace.base descriptor)
+  state.modify fun s => put (put s (address + 1424) spare) (address + 1432) sparePA
+  let saved := reset (← state.get)
+  state.set saved
+  require ((← success state (AddressSpace.base descriptor)) == address) "zero-index directory validation"
+  let valid ← state.get
+  require (valid.callbacks == 8) "directory validation must have eight current-entry callbacks"
+  for i in [:8] do
+    require (valid.reads.toList.count (address + 1432 + i.toUInt64 * 16) == 1)
+      "previous validated directory physical address was reread"
+    for j in [i+1:8] do
+      let changed := put (put saved (address + 1424 + j.toUInt64 * 16)
+        (word saved (address + 1424 + i.toUInt64 * 16)))
+        (address + 1432 + j.toUInt64 * 16) (word saved (address + 1432 + i.toUInt64 * 16))
+      state.set changed
+      expectNoWrite state AddressSpace.invalidDescriptor (AddressSpace.base descriptor)
+      -- Distinctness rejects the second alias before rereading its pins.
+      -- A failure at this physical pin address would occur at the earlier
+      -- entry instead, and must retain that earlier necessary-read priority.
+      -- The current recordedPA read still precedes distinctness.
+      let pa := word changed (address + 1432 + j.toUInt64 * 16)
+      let record := 0x80401000 + (pa - 0x82000000) / 4096 * 32
+      require ((← state.get).reads.toList.count (record + 16) == 1)
+        "duplicate alias reread pins after distinctness rejection"
+      state.set { changed with failRead := some (record + 16) }
+      expectNoWrite state 95 (AddressSpace.base descriptor)
+      state.set { changed with failRead := some (address + 1432 + j.toUInt64 * 16) }
+      expectNoWrite state 95 (AddressSpace.base descriptor)
+  -- Literal highest admitted index exercises every bit in a 13-bit field.
+  -- The finite RAM ownership tuple is independently populated, then the real
+  -- resolver checks its exact generation/owner/purpose and recorded address.
+  let highIndex := amount - 1
+  let highRecord : UInt64 := 0x80401000 + highIndex * 32
+  let high := put (put (put (put saved highRecord 2) (highRecord + 8) 1)
+    (highRecord + 16) 0) (highRecord + 24) 1
+  state.set (put (put high (address + 1472) (amount + highIndex))
+    (address + 1480) (0x82000000 + highIndex * 4096))
+  require ((← success state (AddressSpace.base descriptor)) == address) "highest13-bit directory index"
+  for i in [:8] do
+    let handleSlot := address + 1424 + i.toUInt64 * 16
+    let physicalSlot := handleSlot + 8
+    let handle := word saved handleSlot
+    let physical := word saved physicalSlot
+    let record := 0x80401000 + (physical - 0x82000000) / 4096 * 32
+    for (location,value,expected) in #[(handleSlot,0,Frames.invalidFrame),
+        (handleSlot,handle + amount,Frames.notOwned),
+        (record,0,Frames.notOwned),(record,3,Frames.notOwned),
+        (record + 24,0,Frames.notOwned),(record + 24,2,Frames.notOwned),
+        (record + 8,0,Frames.purposeDenied),(record + 8,2,Frames.purposeDenied),
+        (record + 16,1,AddressSpace.invalidDescriptor),
+        (physicalSlot,physical + 1,AddressSpace.invalidDescriptor),
+        (physicalSlot,physical + 4096,AddressSpace.invalidDescriptor),
+        (physicalSlot,0x84000000,AddressSpace.invalidDescriptor),
+        (physicalSlot,0,AddressSpace.invalidDescriptor)] do
+      state.set (put saved location value)
+      expectNoWrite state expected (AddressSpace.base descriptor)
+    for location in #[handleSlot,record,record + 24,record + 8,physicalSlot,record + 16] do
+      state.set { saved with failRead := some location }
+      expectNoWrite state 95 (AddressSpace.base descriptor)
+  IO.println s!"DIRECTORY_PACK_WORK frames{amount} entries8 callbacks{valid.callbacks} reads64{valid.reads.size} physical-reads8"
+  IO.println "DIRECTORY_PACK:PASS all28duplicatepairs index0 ownership generation purpose exact-PA alignment bounds pins necessary-read-failure priority no-writes"
+
 def check (expanded : Bool) : IO Unit := do
   let state ← IO.mkRef ({} : State)
   discard <| success state (Frames.configure (if expanded then 8192 else 512)
@@ -123,6 +197,30 @@ def check (expanded : Bool) : IO Unit := do
   for i in [:4096] do
     state.modify fun s => putByte s (scratchPA + i.toUInt64) ((i.toUInt64 * 13 + 19) % 256)
   let saved ← state.get
+  -- The ordinary block path uses this exact owner-1 purpose-1 frame, then
+  -- passes only its checked payload span to the device. A user grant or an
+  -- unrelated physical address must never replace that DMA frame.
+  let blockState := put (put saved 0x80400a00 scratch) 0x80400a08 scratchPA
+  state.set (reset blockState)
+  require ((← success state Lemma.Drivers.VirtIOBlock.bounce) == scratchPA + 0x600)
+    "owned block bounce address"
+  require ((← success state (UserCopy.copyFromUser descriptor 0x40080 scratch 0x600 512)) == 512)
+    "ordinary authorized block payload copy"
+  let payload ← state.get
+  for i in [:4096] do
+    require (byte payload (scratchPA + i.toUInt64) ==
+      (if 0x600 ≤ i && i < 0x800 then byte saved (firstPA + 0x80 + i.toUInt64 - 0x600)
+        else byte saved (scratchPA + i.toUInt64))) "copy escaped 512-byte block payload"
+  for (slot,value,expected) in #[(0x80400a00,first,Frames.notOwned),
+      (0x80400a00,scratch + (if expanded then 8192 else 512),Frames.notOwned),
+      (0x80400a08,firstPA,Lemma.Drivers.VirtIOBlock.corruptCompletion),
+      (0x80400a28,1,Lemma.Drivers.VirtIOBlock.busy),
+      (0x80400a38,1,Lemma.Drivers.VirtIOBlock.poisoned)] do
+    state.set (reset (put blockState slot value))
+    expectNoWrite state expected Lemma.Drivers.VirtIOBlock.bounce
+  state.set (reset saved)
+  expectNoWrite state ABI.kernelFatal (UserCopy.copyFromUser descriptor 0x40000 first 0x600 512)
+  IO.println s!"BLOCK_BOUNCE_BOUNDARY:PASS expanded={expanded} exact-owner-generation payload512 pending poison no-user-DMA-handle no-writes-on-rejection"
   let amounts := if expanded then #[2,7,8,9,127,128,129,257,1024] else #[2,7,8,9,31,32]
   for amount in amounts do
     state.set (populated saved address expanded amount)
@@ -200,5 +298,7 @@ end UserCopyScanFixture
 
 open Lean Elab Command
 run_cmd do
+  liftIO <| UserCopyScanFixture.checkDirectory 1024
+  liftIO <| UserCopyScanFixture.checkDirectory 8192
   liftIO <| UserCopyScanFixture.check false
   liftIO <| UserCopyScanFixture.check true
