@@ -18,9 +18,15 @@ is no syscall or capability exposing this constructor. -/
 def configuration : UInt64 := 0x804006a0
 def maximumCount : UInt64 := 8192
 def expandedPoolLimit : UInt64 := 0x84000000
+/-- The two expanded boot configurations share registry/text/stack semantics;
+only their bounded frame supply and exact admitted quota differ. -/
+def expanded (amount : UInt64) : Bool :=
+  if amount = 1024 then true else if amount = 8192 then true else false
+
 def configure (amount quota stackPages : UInt64) : Action :=
   if (if amount = 512 then if quota = 32 then if stackPages = 2 then true else
       if stackPages = 4 then true else false else false
+      else if amount = 1024 then if quota = 128 then if stackPages = 4 then true else false else false
       else if amount = 8192 then if 128 ≤ quota then if quota ≤ amount then if stackPages = 4 then true else false else false else false
       else false) = false then .done 39 0 else
   .bind (Access.write64 configuration amount) fun s _ =>
@@ -33,6 +39,7 @@ def runtimeCount : Action :=
   .bind (Access.read64 configuration) fun s amount =>
   if s = 0 then
     if amount = 512 then .done 0 amount else
+    if amount = 1024 then .done 0 amount else
     if amount = 8192 then .done 0 amount else .done 39 0
   else .done s 0
 
@@ -42,6 +49,7 @@ def runtimeQuota : Action :=
     .bind (Access.read64 (configuration + 8)) fun s quota =>
     if s = 0 then
       if amount = 512 then if quota = 32 then .done 0 quota else .done 39 0
+      else if amount = 1024 then if quota = 128 then .done 0 quota else .done 39 0
       else if 128 ≤ quota then if quota ≤ amount then .done 0 quota else .done 39 0 else .done 39 0
     else .done s 0
   else .done s 0

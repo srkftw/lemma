@@ -20,6 +20,13 @@ mathematics and tutor rows remain naming guidance, not implemented subsystems.
 | `Lemma/Documents/Ink.lean` | Versioned raw provenance, page indices and stable-ID edits |
 | `Lemma/Applications/Notebook.lean` | Guest toolbar, streamed pages, live ink and asynchronous commit state |
 | `sim/host/` | Host-only QEMU hardware models/adapters; no guest notebook or recovery algorithms |
+| `sim/rtl/` | Synthesizable CVW compute, held-request AHB/DMA fabric, bounded register RAM and pen/paper/block controllers; `host/` supplies clocks and external bytes only |
+| `Lemma/Platform/Silicon/` | Lean-authored reset ROM and narrow silicon binding validation; shared kernel/service/application policy |
+| `tooling/silicon/` | Exact open core/EDA/PDK inputs, limited hardware notices, synthesis and physical-flow recipes |
+| `conformance/silicon/` | Literal RTL device/bus, banked paper and block-quiescence stimuli; independent guest/notebook observations with optical-contact negative sensitivity |
+| `scripts/silicon_compute.py`, `scripts/silicon_guest.py`, `scripts/check_silicon.py` | Pinned RTL build, existing LemmaSim preparation/capture/replay and short independent acceptance; no guest execution or document/recovery policy in host adapters |
+| `scripts/silicon_synth.py` | Actual bounded synthesis and separately scoped open physical-flow recipes/results |
+| `docs/plan/005-session-state.md` | Current registered-controller A/B/C, durable write/edit/Save/cold, exact RTL replay and failed-FLUSH/cold receipts; separate historical failures, synthesis/global-route results and rule-coverage assessment |
 | `sim/profiles/` | Versioned machine-readable reference binding |
 | `conformance/lemmasim/` | Independent offline observations/oracles and raw input fixtures |
 | `Lemma/Verify/` | Exact checkers, proof checking and evidence |

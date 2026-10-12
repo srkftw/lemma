@@ -234,6 +234,61 @@ def checkCurrentLegacyStack : IO Unit := do
     (← success state (Frames.ownedCount 3)) == 0) "empty unpublished four-page constructor cleanup"
   IO.println "OWNED_CURRENT_KERNEL_STACK:PASS allocated4 usable16352 ownerbase18/global19;canaries/generation/contiguity/pins/teardown"
 
+/-- Host Action-model regression for the exact silicon development boot choice.
+The literal workload charges exercise the actual allocator and map policies;
+this is separate from execution by the RTL CPU. -/
+def checkSiliconDevelopment : IO Unit := do
+  let state ← IO.mkRef ({} : State)
+  discard <| success state (Frames.configure 1024 128 4)
+  for (amount,quota,pages) in #[(1024,127,4),(1024,129,4),(1024,128,2),(2048,128,4)] do
+    rejected state (Frames.configure amount quota pages)
+  require ((← success state Frames.runtimeCount) == 1024 &&
+    (← success state Frames.runtimeQuota) == 128 &&
+    (← success state Frames.runtimeStackPages) == 4) "exact silicon boot selection survives rejected constructors"
+  discard <| success state Frames.init
+  let descriptor ← success state (AddressSpace.create 2)
+  let address ← success state (AddressSpace.base descriptor)
+  let middleHandle := read64 (← state.get) (address + 136)
+  let middle ← success state (Frames.resolvePurpose 2 middleHandle 2)
+  require (read64 (← state.get) (middle + 17 * 8) == 0x208800c7 &&
+    read64 (← state.get) (middle + 18 * 8) == 0) "exact4MiB S-only pool map, no extra32MiB aliases"
+  require ((← success state (Frames.ownedCount 2)) == 21) "13 table + 8 registry frames"
+  let stackResult ← success state (Frames.allocateContiguous4 2 1)
+  let memory ← state.get
+  let kernelStack := (List.range 4).map fun i => read64 memory (stackResult + i.toUInt64 * 8)
+  for index in [:12] do
+    let handle ← success state (Frames.allocate 2 3)
+    discard <| success state (AddressSpace.mapUser descriptor (0x1000000 + index.toUInt64 * 4096) handle 5)
+  let data ← success state (Frames.allocate 2 4)
+  discard <| success state (AddressSpace.mapUser descriptor 0x20000 data 3)
+  for index in [:4] do
+    let handle ← success state (Frames.allocate 2 5)
+    discard <| success state (AddressSpace.mapUser descriptor (0x3fffa000 + index.toUInt64 * 4096) handle 3)
+  for index in [:41] do
+    let handle ← success state (Frames.allocate 2 4)
+    discard <| success state (AddressSpace.mapUser descriptor (0x300000 + index.toUInt64 * 4096) handle 3)
+  for index in [:40] do
+    let handle ← success state (Frames.allocate 2 4)
+    discard <| success state (AddressSpace.mapUser descriptor (0x110000 + index.toUInt64 * 4096) handle 3)
+  require ((← success state (Frames.ownedCount 2)) == 125) "literal512x640 notebook charges including two new L0 tables"
+  discard <| success state (AddressSpace.lookup descriptor 0x328000 2)
+  discard <| success state (AddressSpace.lookup descriptor 0x137000 2)
+  rejected state (AddressSpace.lookup descriptor 0x329000 2)
+  rejected state (AddressSpace.lookup descriptor 0x3fff9000 1)
+  rejected state (AddressSpace.lookup descriptor 0x3fffe000 1)
+  rejected state (Frames.resolve 3 data)
+  rejected state (Frames.resolve 2 (data + 1024))
+  let mut spare : Array UInt64 := #[]
+  for _ in [:3] do spare := spare.push (← success state (Frames.allocate 2 4))
+  rejected state (Frames.allocate 2 4)
+  for handle in spare do discard <| success state (Frames.release 2 handle)
+  for handle in kernelStack do discard <| success state (Frames.release 2 handle)
+  discard <| success state (AddressSpace.destroy descriptor)
+  require ((← success state Frames.remaining) == 1024 &&
+    (← success state (Frames.ownedCount 1)) == 0 &&
+    (← success state (Frames.ownedCount 2)) == 0) "complete silicon teardown restores exact1024 supply"
+  IO.println "OWNED_SILICON_DEVELOPMENT:PASS frames1024/quota128/stack4 notebook125 pages;pool4MiB/guards/ownership/generation/teardown"
+
 def checkInk : IO Unit := do
   let state ← IO.mkRef ({} : State)
   let context := (0x40000 : UInt64)
@@ -267,4 +322,5 @@ run_cmd do
   liftIO OwnedCapacityFixture.checkExpanded
   liftIO OwnedCapacityFixture.checkLegacy
   liftIO OwnedCapacityFixture.checkCurrentLegacyStack
+  liftIO OwnedCapacityFixture.checkSiliconDevelopment
   liftIO OwnedCapacityFixture.checkInk

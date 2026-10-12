@@ -148,7 +148,7 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
     if leafCapacity = expandedCapacity then
       if amount = 8 then
         .bind Frames.runtimeCount fun s frames => if failed s = true then .done s 0 else
-        if frames = 8192 then
+        if Frames.expanded frames = true then
           .boundedFoldU64 8 validateRegistryStep 8 0 address owner 0 0 fun s checked =>
           if failed s = true then .done s 0 else
           if checked = 8 then .done 0 0 else .done invalidDescriptor 0
@@ -285,7 +285,7 @@ private def expandedPoolStep (i _ : UInt32) (acc middle _ _ _ : UInt64) : Action
 private def mapExpandedPool (address : UInt64) : Action :=
   .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
   if amount = 512 then .done 0 0 else
-  if amount = 8192 then
+  if Frames.expanded amount = true then
     .bind (link address 7 96 11) fun s _ => if failed s = true then .done s 0 else
     .bind (link address 7 97 12) fun s _ => if failed s = true then .done s 0 else
     .bind (fillRange address 11 0x0c000000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
@@ -294,9 +294,10 @@ private def mapExpandedPool (address : UInt64) : Action :=
     .bind (fillRange address 9 0x10001000 1 0xc7) fun s _ => if failed s = true then .done s 0 else
     .bind (fillRange address 9 0x10010000 2 0xc7) fun s _ => if failed s = true then .done s 0 else
     .bind (tableAt address 1) fun s middle => if failed s = true then .done s 0 else
-    .boundedFoldU64 15 expandedPoolStep 15 0 middle 0 0 0 fun s mapped =>
+    let leaves := if amount = 1024 then 1 else 15
+    .boundedFoldU64 15 expandedPoolStep leaves 0 middle 0 0 0 fun s mapped =>
     if failed s = true then .done s 0 else
-    if mapped = 15 then .done 0 mapped else .done invariantFailure 0
+    if mapped = leaves.toUInt64 then .done 0 mapped else .done invariantFailure 0
   else .done invariantFailure 0
 
 private def buildKernel (address : UInt64) : Action :=
@@ -404,7 +405,7 @@ private def copyRegistryStep (i _ : UInt32) (acc address owner _ _ : UInt64) : A
 
 private def buildRegistry (address owner amount : UInt64) : Action :=
   if amount = 512 then put address registryCount 0 else
-  if amount = 8192 then
+  if Frames.expanded amount = true then
     .bind (Batch.allocate owner 1 8) fun s _ => if failed s = true then .done s 0 else
     .boundedFoldU64 8 copyRegistryStep 8 0 address owner 0 0 fun s copied =>
     if s = 0 then
@@ -418,7 +419,7 @@ private def buildRegistry (address owner amount : UInt64) : Action :=
 
 def create (owner : UInt64) : Action :=
   .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
-  let initialTables := if amount = 8192 then 13 else 11
+  let initialTables := if Frames.expanded amount = true then 13 else 11
   if Frames.ownerValid owner = false then .done Frames.badOwner 0 else
   .bind (Frames.allocate 1 1) fun s descriptor =>
   if failed s = true then .done s 0 else
@@ -437,12 +438,12 @@ def create (owner : UInt64) : Action :=
   if failed s = true then abortCreate descriptor address s else
   .bind (tableAt address 0) fun s rootPA =>
   if failed s = true then abortCreate descriptor address s else
-  .bind (put address 8 (if amount = 8192 then 2 else 1)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 8 (if Frames.expanded amount = true then 2 else 1)) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 16 descriptor) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 56 rootHandle) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 64 rootPA) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 72 (satpWord rootPA)) fun s _ => if failed s = true then abortCreate descriptor address s else
-  .bind (put address 80 (if amount = 8192 then expandedCapacity else 32)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 80 (if Frames.expanded amount = true then expandedCapacity else 32)) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (put address 88 32) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (buildRegistry address owner amount) fun s _ => if failed s = true then abortCreate descriptor address s else
   .bind (buildKernel address) fun s _ => if failed s = true then abortCreate descriptor address s else

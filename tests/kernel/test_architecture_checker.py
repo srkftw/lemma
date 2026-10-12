@@ -143,6 +143,27 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 with self.assertRaisesRegex(Core0Error, 'owned-stack identities'):
                     k.require_managed_task_stack(image, audit)
 
+    def test_current_stack_requires_exact_shared_boot_seam(self):
+        # Literal identities keep this regression independent of fixture
+        # inventories constructed from CURRENT_QUAD_STACK_SOURCES.
+        current = 'Lemma.Kernel.BootServices.bootServicesFor'
+        self.assertIn(current, k.CURRENT_QUAD_STACK_SOURCES)
+        for rejected in ('Lemma.Kernel.BootServices.bootServices',
+                         'Lemma.Kernel.BootServices.bootServicesOther'):
+            with self.subTest(source=rejected), tempfile.TemporaryDirectory() as tmp:
+                image, audit = self.binding(Path(tmp), managed=True)
+                self.assertTrue(k.require_case(image, audit)['managed'])
+                sources = audit['task_kernel_stack']['source_functions']
+                sources[rejected] = sources.pop(current)
+                unit_path = image.parent / 'kernel/unit.json'
+                unit = json.loads(unit_path.read_text())
+                for row in unit['functions']:
+                    if row['source'] == current:
+                        row['source'] = rejected
+                unit_path.write_text(json.dumps(unit))
+                with self.assertRaisesRegex(Core0Error, 'owned-stack identities'):
+                    k.require_managed_task_stack(image, audit)
+
     def test_original_frame_diagnostic_requires_exact_sources_gates_and_order(self):
         for managed in (False,True):
             with self.subTest(managed=managed),tempfile.TemporaryDirectory() as tmp:

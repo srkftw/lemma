@@ -28,7 +28,7 @@ def ownedArenaAddress (va : UInt64) : Action :=
       if va = 0x100000 then .done 71 0 else
       .bind Frames.runtimeCount fun s amount =>
       if failed s = true then .done 255 0 else
-      let limit := if amount = 8192 then 0x800000 else 0x100000
+      let limit := if Frames.expanded amount = true then 0x800000 else 0x100000
       if va < limit then .done 0 va else .done 71 0
     else .done 71 0
   else .done 71 0

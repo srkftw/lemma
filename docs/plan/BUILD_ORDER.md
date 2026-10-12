@@ -133,13 +133,41 @@ Concentration window: months 22–30. Required result: Permissioned connected as
 
 ## Physical branch
 
-The hardware branch joins the shared contracts; no cartridge assumptions enter G1.
+The active hardware branch targets a custom monolithic open RV64 SoC under the
+[silicon specification](../contracts/LEMMA_SILICON_v0.1.0.md). Task005 starts
+with executable digital circuitry as a LemmaSim backend, then shared Lean
+services and durable notebook execution. Open-flow module feasibility is
+separate from physical memory integration, analog sensing, panel qualification
+and foundry acceptance. Earlier supplier/board/cartridge discussions remain
+historical; they do not gate this implementation.
+
+Task 005's current registered controller has closed genuine Lean M/S/U,
+isolated service/IPC/fault-containment and guest pen/paper/block acceptance.
+Its pressure stroke, brush-width edit, explicit Save and retained-medium-only
+cold reopen passed with exact records and controller pixels. Failed-FLUSH
+passed with guest Failed instead of Saved and exact acknowledged medium bytes;
+a separate cold hart recovered that edited document and full frame, with failed
+new work absent. Exact RTL replay regenerated all captured outputs and the
+medium. Original failures and historical execution identities remain retained; fresh hardware runs reuse unchanged,
+strictly audited guest images after consumed-input validation.
+
+Bounded SoC mapping reports 13.423078 mm² of standard-cell area, including
+explicit 4 KiB register RAM that runs only the scalar corpus. External simulation
+memory does not qualify physical working memory. Paper live global-route
+estimates meet declared 100 MHz TT constraints with zero reported electrical
+violations; detailed routing is incomplete. Full-FIFO pen placement/CTS aborted
+in OpenROAD setup repair. Controller process DRC/LVS and extracted timing are
+NOT_RUN. The next implementation bottleneck is complete paper detailed routing
+with validated SG13G2 enclosure-rule coverage, followed by controller process
+checks and extracted timing. Physical memory/nonvolatile boot, power/pads and
+foundry acceptance remain separate open dependencies. See the
+[Task 005 checkpoint](005-session-state.md).
 
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |
-| H.1 | Physical board boot and firmware boundary | 2.1 | Inventory ROM/DDR/clock/firmware handoff and reach the common supervisor contract. |
-| H.2 | Physical interrupts, storage and DMA | H.1, 3.5 | Shared conformance plus physical interruption tests and explicit DMA isolation assumptions. |
-| H.3 | OEM/FPGA protocol integration | 4.1 | Actual supplier part/revision/interface package; modes/commands/reset/calibration/fault semantics frozen against it. |
+| H.1 | Open RV64 compute, fabric and boot | 2.1 | Real RTL reset/Lean M/S/U execution, synthesis and explicit ROM/RAM implementation; eventual physical boot has separate evidence. |
+| H.2 | Open interrupts, storage and DMA | H.1, 3.5 | Actual controller traffic/coherence/quiescence and shared conformance; physical interruption remains separate. |
+| H.3 | Open pen/paper controller circuits | 4.1 | RTL FIFO, accepted-update isolation, reset/error semantics and measured open-flow feasibility; physical panel/analog interface remains unverified. |
 | H.4 | Native pen input and registration | H.3, 4.3 | Full-area actual reporting, registration, pressure/tip detection, dropouts and recovery. |
 | H.5 | Physical display and networking backends | H.2, H.3, 7.1 | Shared semantic interface tests and simultaneous physical load operation. |
 | H.6 | Physical parity and visible-ink qualification | H.4, H.5, 7.8 | Actual document/evidence parity, end-to-end pen latency and physical recovery measurements. |

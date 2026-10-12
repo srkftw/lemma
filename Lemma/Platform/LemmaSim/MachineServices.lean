@@ -16,14 +16,14 @@ private def pmpStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if s = 0 then
   if value = expected i.toUInt64 then .done 0 acc else .done 51 0 else .done s 0
 
-def validate : Action :=
+def validateFor (expectedInterrupts : UInt64) : Action :=
   .bind (Access.read64 0x80400018) fun s pmp => if s = 0 then
   if pmp = 0x1b1b1b1b1b1f1818 then
   .boundedFoldU64 8 pmpStep 8 0 0 0 0 0 fun s _ => if s = 0 then
   .bind (Access.read64 0x80400048) fun s exceptions => if s = 0 then
   if exceptions = 0xb1ff then
   .bind (Access.read64 0x80400050) fun s interrupts => if s = 0 then
-  if interrupts = 0x1646 then
+  if interrupts = expectedInterrupts then
   .bind (Access.read64 0x80400058) fun s status => if s = 0 then
   if status &&& 0x1baa = 0x800 then if (status >>> 32) &&& 15 = 10 then
   .bind (Access.read64 0x80400060) fun s translation => if s = 0 then
@@ -34,5 +34,8 @@ def validate : Action :=
   else .done 51 0 else .done 51 0 else .done s 0
   else .done 51 0 else .done s 0 else .done 51 0 else .done s 0
   else .done s 0 else .done 51 0 else .done s 0
+
+def validate : Action := validateFor 0x1646
+def validateSilicon : Action := validateFor 514
 
 end Lemma.Platform.LemmaSim.MachineServices

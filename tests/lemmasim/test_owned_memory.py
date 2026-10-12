@@ -181,13 +181,15 @@ class OwnedMemory(unittest.TestCase):
         import check_owned_memory
         with tempfile.TemporaryDirectory() as tmp, \
              patch.object(check_owned_memory, 'Observation', Observation), \
-             patch.object(checker, 'generate', return_value=(b'', {'input_samples': 0})), \
-             patch.object(checker.sim, 'launch', return_value={'status': 'OBSERVED_GUEST_WORKFLOW_BOUNDARY', 'process_reaped': True}):
+             patch.object(checker, 'generate', return_value=(b'', {'input_samples': 0,
+                          'actions':[{'kind':'tool','button':7},{'kind':'tool','button':8}]})), \
+             patch.object(checker.sim, 'launch', return_value={'status': 'OBSERVED_GUEST_WORKFLOW_BOUNDARY', 'process_reaped': True}) as launch:
             root = Path(tmp); initial = root / 'initial.raw'; initial.write_bytes(bytes(512))
             with self.assertRaisesRegex(ValueError, 'contradictory memory'):
                 checker.workflow({}, initial, 'workload', '1650x2200', root, 3000, observe_owned_memory=True)
             self.assertEqual([row[0] for row in calls], ['construct', 'enter', 'exit'])
             self.assertEqual(calls[0][1:], (root / 'workload/run', root / 'workload/owned-memory'))
+            self.assertEqual(launch.call_args.kwargs['until_confirmations'],2)
             calls.clear()
             with self.assertRaisesRegex(ValueError, 'unknown raw fixture'):
                 checker.workflow({}, initial, 'basic', '1650x2200', root, 180)

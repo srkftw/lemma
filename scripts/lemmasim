@@ -231,7 +231,8 @@ def qmp(path,command,arguments=None):
 def document_observations(serial):
     if not serial.is_file():return {'status':'NO_GUEST_REPORT','commit_count':0,'acknowledged_sequence':None}
     if serial.stat().st_size>8*1024*1024:raise Failure('Guest observation stream exceeds its bounded limit.')
-    result={'status':'NO_GUEST_REPORT','commit_count':0,'acknowledged_sequence':None,'ready':False}
+    result={'status':'NO_GUEST_REPORT','commit_count':0,'confirmation_count':0,'acknowledged_sequence':None,'ready':False}
+    pending_confirmation=None
     for line in serial.read_text().splitlines():
         fields=line.split()
         if len(fields)!=6 or fields[0]!='K1':continue
@@ -240,13 +241,18 @@ def document_observations(serial):
         if kind==0x420:result['ready']=True
         if kind==0x425:result['view_request']={'sequence':a,'page':b,'namespace':c,'meaning':'guest full-page refresh accepted; controller completion observed separately'}
         if kind==0x421:
+            if d==0 and pending_confirmation is not None and (b,c)==pending_confirmation[1:] and a>=pending_confirmation[0]:
+                result['confirmation_count']+=1
+            pending_confirmation=None
             for stale in ('pending_transaction','object','failure'):result.pop(stale,None)
             result.update(status='SAVED',acknowledged_sequence=a,page=b,namespace=c,stroke=d)
             result['commit_count']+=1
         elif kind==0x423:
+            pending_confirmation=(a,b,c) if d==0 else None
             result.pop('failure',None)
             result.update(status='PENDING',pending_transaction=a,page=b,namespace=c,object=d)
         elif kind==0x424:
+            pending_confirmation=None
             if 'pending_transaction' in result:result['failed_transaction']=result.pop('pending_transaction')
             result.update(status='SAVE_FAILED',failure=a,page=b,namespace=c,object=d)
     result['authority']='compiled guest reports; not host journal interpretation'
@@ -297,8 +303,10 @@ def validate_replay_policy(identity,original,process):
                          ('actual_boot_dtb_sha256',identity.get('actual_boot_dtb_sha256'))):
         if not expected or original.get(key)!=expected:raise Failure('Replay identity contradicts its recorded '+key+'.')
 
-def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,until_view=None,mode="student",expected_initial=None):
+def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=False,record=None,replay=None,raw=None,timeout=None,faults=None,disk_locked=False,replay_boundary=None,until_commits=None,until_ready=False,until_ingress=None,until_view=None,until_confirmations=None,mode="student",expected_initial=None):
     faults=validated_faults(faults,mode)
+    if until_confirmations is not None and (type(until_confirmations) is not int or not 1<=until_confirmations<=1000000):
+        raise Failure('Invalid bounded guest Save/Compact confirmation count.')
     width,height=map(int,geometry.split('x'))
     if (width,height) not in ((1650,2200),(1404,1872)):raise Failure('Unsupported geometry instance.')
     if not headless and not (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
@@ -384,6 +392,12 @@ def launch(metadata,disk,out,*,geometry='1650x2200',headless=False,initializer=F
                         if until_ingress is not None:
                             captured=out/'raw.bin'
                             reached=reached and captured.is_file() and captured.stat().st_size==until_ingress*72
+                    if until_confirmations is not None:
+                        # Empty hardware input and an older Saved report do not
+                        # establish that the User application processed its IPC
+                        # backlog. Require its explicit Pending->Saved response
+                        # for the fixture's final Save/Compact commands as well.
+                        reached=reached and reported['confirmation_count']>=until_confirmations
                     if reached:
                         hardware=json.loads(qmp(control_socket,'qom-get',{'path':'/machine/lemma-hardware','property':'device-state'}))
                         if hardware['paper']['status']&(1|4|8)==0 and hardware['pen']['count']==0:
@@ -777,15 +791,37 @@ def archive_acceptance(args):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build');p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.set_defaults(function=build)
+    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','devices'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--rtl-build',type=Path);p.set_defaults(function=build)
     p=sub.add_parser('init');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.set_defaults(function=initialize)
-    p=sub.add_parser('run');p.add_argument('--disk',type=Path,required=True);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry',default='1650x2200');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
-    p=sub.add_parser('replay');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
+    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','devices'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
+    p=sub.add_parser('replay');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
     p=sub.add_parser('copy');p.add_argument('--disk',type=Path,required=True);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=copy_image)
     args=parser.parse_args()
-    if getattr(args,'timeout',None) is not None and not 0<args.timeout<=3600:parser.error('timeout must be1..3600 seconds')
-    try:args.function(args);return 0
-    except (Failure,OSError,ValueError,KeyError,subprocess.TimeoutExpired) as error:print(f'FAIL: {error}',file=sys.stderr);return 1
+    timeout_limit=3600
+    if getattr(args,'backend','qemu')=='rtl':
+        import silicon_guest
+        timeout_limit=silicon_guest.MAX_RUN_SECONDS
+    if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
+        parser.error(f'timeout must be1..{timeout_limit} seconds')
+    try:
+        if getattr(args,'backend','qemu')=='rtl':
+            import silicon_guest
+            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0'):raise Failure('RTL backend requires profile lemma-silicon-dev/0.1.0')
+            if args.command=='build':silicon_guest.build(args)
+            elif args.command=='run':silicon_guest.run(args)
+            elif args.command=='replay':silicon_guest.replay(args)
+            else:raise Failure('Unsupported RTL command')
+        else:
+            if any(getattr(args,key,None) is not None for key in ('guest_build','rtl_build')):raise Failure('RTL prepared artifact options require --backend rtl')
+            if getattr(args,'profile',None) not in (None,'lemmasim-virt/0.1.0'):raise Failure('QEMU backend requires profile lemmasim-virt/0.1.0')
+            if getattr(args,'workload',None) not in (None,'notebook'):raise Failure('QEMU native launcher supports notebook workload')
+            if args.command=='run':
+                if any(getattr(args,key,None) is not None for key in ('uart_input','events','uart_stop','uart_stop_hex','stop_after_panel','fail_flush','observer_cycle','ram_dump','block_trace')):raise Failure('RTL transport options require --backend rtl')
+                args.geometry=args.geometry or '1650x2200'
+            if args.command=='run' and args.disk is None:raise Failure('QEMU notebook requires --disk')
+            args.function(args)
+        return 0
+    except (Failure,RuntimeError,OSError,ValueError,KeyError,subprocess.TimeoutExpired) as error:print(f'FAIL: {error}',file=sys.stderr);return 1
 if __name__=='__main__':raise SystemExit(main())

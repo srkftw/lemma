@@ -85,6 +85,56 @@ requires a usable persistent notebook, not devices or a bring-up demonstration.
 Publish a draft PR against current main; do not merge or inherit Task 003 merge
 authorization. Keep physical conformance UNVERIFIED and USGCE untouched.
 
+## Fifth task's scope
+
+Task005 is authorized by `codex/prompts/005-open-silicon-bringup.md`.
+Use `task/005-open-silicon-bringup`; preserve the exact PR#6 specification
+dependency and its attribution. Implement `lemma-silicon-dev/0.1.0` as a
+development backend of first-class LemmaSim. Synthesizable RTL is circuitry;
+all target software and compiler policy remain genuinely elaborated Lean.
+Host adapters and generated Verilator C++ supply clocks, reset, external memory,
+raw input, medium bytes and panel effects only. They never execute instructions,
+construct documents or recover journals. QEMU remains the default native
+notebook backend. Read `docs/plan/005-session-state.md` before resuming.
+
+The sequence is RTL compute/reset -> existing isolated services -> actual
+pen/paper/block controllers -> short durable notebook -> scoped open-flow
+feasibility. External simulation RAM is not on-chip SRAM. Track exact core,
+tool, library and source identities, unresolved cells and failed observations.
+Synthesis, routed-controller feasibility, DRC/LVS and physical conformance
+have separate results. Reuse artifacts only after validating their exact consumed
+source/tool identities; distinguish literal RTL tests, real guest execution and
+physical-flow results. No managed-runtime rewrite, radio, browser rewrite,
+fabrication submission, paid infrastructure, supplier outreach or proprietary
+closure. The original assignment required a draft PR. The owner subsequently
+authorized finishing and a guarded Task 005 merge in this session after relevant
+verification and applicable CI pass. Preserve task branches and repository
+settings. This does not authorize future merges. USGCE is untouched.
+
+Task 005 acceptance uses short source-bound RTL workloads and independent
+observations. The registered controller at a760e5f/2b6ede4 has closed A/B/C,
+literal protocols, durable write/edit/Save/cold and failed-FLUSH/cold evidence.
+Exact current-controller RTL replay has its own closed PASS receipt. Historical
+runs retain their original identities.
+Fresh hardware execution using validated unchanged guest ELF sources is not
+fresh target compilation. Preserve original FAIL reports when an independently
+tested host oracle correction produces a new observation. The checkpoint keeps
+synthesis, live global-route timing, incomplete detailed routing, rule-coverage
+assessment and cell-only process checks separate. A slower hypothetical STA
+clock does not change the development binding or establish physical signoff.
+
+Use unused outputs for the short literal RTL protocol check:
+
+```sh
+python3 scripts/check_silicon.py --lane devices \
+  --work-dir build/silicon/devices-agent-new --timeout 600 --jobs 2
+```
+
+Real isolated-service and notebook acceptance use the existing launcher/checkers
+listed in the checkpoint. Literal device tests, host tests and CI passes are
+separate from those guest claims. Reuse unchanged artifacts only after exact
+consumed-input validation; do not rerun every historical lane for a report edit.
+
 ## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and

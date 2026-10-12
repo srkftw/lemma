@@ -42,6 +42,26 @@ def literal_policy():
 
 
 class LaunchIdentity(unittest.TestCase):
+    def test_stale_saved_does_not_confirm_queued_final_save(self):
+        with tempfile.TemporaryDirectory() as folder:
+            serial=Path(folder)/'serial.bin'
+            def row(kind,sequence,object_id=0,page=1,namespace=1):
+                return 'K1 '+' '.join(f'{word:016x}' for word in (kind,sequence,page,namespace,object_id))+'\n'
+            # The actual O0 failure had an older stroke Save while the kernel
+            # had emptied its FIFO into an application IPC backlog.
+            serial.write_text(row(0x423,1,257)+row(0x421,2)+row(0x423,3,65539)+row(0x421,5,1))
+            self.assertEqual(sim.document_observations(serial)['confirmation_count'],0)
+            serial.write_text(serial.read_text()+row(0x423,8))
+            self.assertEqual(sim.document_observations(serial)['confirmation_count'],0)
+            original=serial.read_text()
+            for final in (row(0x421,7),row(0x421,8,page=2),row(0x424,93)):
+                serial.write_text(original+final)
+                self.assertEqual(sim.document_observations(serial)['confirmation_count'],0)
+            serial.write_text(original+row(0x421,8))
+            self.assertEqual(sim.document_observations(serial)['confirmation_count'],1)
+            serial.write_text(serial.read_text()+row(0x423,8)+row(0x421,8))
+            self.assertEqual(sim.document_observations(serial)['confirmation_count'],2)
+
     def test_completed_input_preserves_actual_save_failure(self):
         with tempfile.TemporaryDirectory() as folder:
             serial = Path(folder) / 'serial.bin'

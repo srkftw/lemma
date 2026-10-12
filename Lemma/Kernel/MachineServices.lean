@@ -52,7 +52,7 @@ private def pmpStep (i _count : UInt32) (acc _ _ _ _ : UInt64) : Action :=
 by the typed startup before MRET; later origin is independently checked by the
 M trap policy on the S ECALL witness. H's fixed read-only mideleg mask is pinned
 to QEMU rv64; no extra enabled virtual interrupt source is admitted. -/
-def validateReadbacks : Action :=
+def validateReadbacksFor (expectedInterrupts : UInt64) : Action :=
   .bind (Access.read64 0x80400018) fun s pmp =>
   if failed s = true then .done s 0 else
   if (if pmp = 0x1b1b1f1818 then false else true) = true then .done invariantFailure 0 else
@@ -63,7 +63,7 @@ def validateReadbacks : Action :=
   if (if exceptions = 0xb1ff then false else true) = true then .done invariantFailure 0 else
   .bind (Access.read64 0x80400050) fun s interrupts =>
   if failed s = true then .done s 0 else
-  if (if interrupts = 0x1446 then false else true) = true then .done invariantFailure 0 else
+  if (if interrupts = expectedInterrupts then false else true) = true then .done invariantFailure 0 else
   .bind (Access.read64 0x80400058) fun s status =>
   if failed s = true then .done s 0 else
   if (if status &&& 0x1baa = 0x800 then false else true) = true then .done invariantFailure 0 else
@@ -71,6 +71,8 @@ def validateReadbacks : Action :=
   .bind (Access.read64 0x80400060) fun s translation =>
   if failed s = true then .done s 0 else
   if translation = 0 then .done 0 0 else .done invariantFailure 0
+
+def validateReadbacks : Action := validateReadbacksFor 0x1446
 
 private def awaitStep (_i _count : UInt32) (acc _ _ _ _ : UInt64) : Action :=
   .bind pending fun s notification =>
@@ -87,13 +89,13 @@ def awaitNotification : Action :=
   if s = Status.iterationStop then .done 0 value
   else if s = 0 then .done 23 0 else .done s 0
 
-def init : Action :=
-  .bind validateReadbacks fun s _ =>
+def initFor (expectedInterrupts probeTicks : UInt64) : Action :=
+  .bind (validateReadbacksFor expectedInterrupts) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (call 3 0) fun s witness =>
   if failed s = true then .done s 0 else
   if (if witness = 0x534543414c4c0001 then false else true) = true then .done invariantFailure 0 else
-  .bind (Lemma.Kernel.Console.record 0xc0 witness 0x1b1b1f1818 0xb1ff 0x1446) fun s _ =>
+  .bind (Lemma.Kernel.Console.record 0xc0 witness 0x1b1b1f1818 0xb1ff expectedInterrupts) fun s _ =>
   if failed s = true then .done s 0 else
   .bind interruptCount fun s before =>
   if failed s = true then .done s 0 else
@@ -106,14 +108,14 @@ def init : Action :=
   if 0xffffffffffffffff - 20000000 < now then .done 22 0 else
   .bind (call 1 (now + 20000000)) fun tooFar _ =>
   if (if tooFar = 22 then false else true) = true then .done invariantFailure 0 else
-  .bind (rearm quantum) fun s _ =>
+  .bind (rearm probeTicks) fun s _ =>
   if failed s = true then .done s 0 else
   .bind awaitNotification fun s notification =>
   if failed s = true then .done s 0 else
   .bind interruptCount fun s after =>
   if failed s = true then .done s 0 else
   if (if after = before + 1 then false else true) = true then .done invariantFailure 0 else
-  .bind (rearm quantum) fun s nextDeadline =>
+  .bind (rearm probeTicks) fun s nextDeadline =>
   if failed s = true then .done s 0 else
   .bind pending fun s acknowledged =>
   if failed s = true then .done s 0 else
@@ -121,5 +123,7 @@ def init : Action :=
   .bind (Lemma.Kernel.Console.record 0xc1 before after notification acknowledged) fun s _ =>
   if failed s = true then .done s 0 else
   Lemma.Kernel.Console.record 0xc2 unknown.toUInt64 past.toUInt64 tooFar.toUInt64 nextDeadline
+
+def init : Action := initFor 0x1446 quantum
 
 end Lemma.Kernel.MachineServices

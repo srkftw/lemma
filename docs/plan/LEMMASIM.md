@@ -11,7 +11,7 @@ Status: partial — Task004 bounded native notebook subset observed; finished-ma
 | S4 | Virtual interaction and distribution | S3, G4/G6 | installable Student mode; offline notebook; snapshot and restore | partial: native launch and offline notebook; installer and whole-machine snapshot NOT_BUILT |
 | S5 | Developer and Laboratory modes | S2-S4 | reproducible replay, fault injection, inspectable device state, no bypass of guest enforcement | partial: bounded Developer inspection/replay and Laboratory fault workflows |
 | S6 | Integrated virtual finished machine | S4/S5, G5-G7 | complete documented student workflows; proof and tutor trust boundaries checked | planned |
-| S7 | Physical/virtual conformance | S6 and physical board/cartridge | independently captured physical traces meet per-interface equivalence relations | blocked: physical hardware unavailable |
+| S7 | Physical/virtual conformance | S6 and custom open RV64 SoC embodiment | independently captured physical traces meet per-interface equivalence relations | blocked: physical hardware unavailable |
 
 ## Rules
 
@@ -21,7 +21,7 @@ Status: partial — Task004 bounded native notebook subset observed; finished-ma
 - Student, Developer and Laboratory modes are one implementation with different host controls. Lab fault injection cannot quietly broaden guest privileges.
 - Host-only implementation languages are allowed for simulation infrastructure, but target OS, kernel, runtime, mathematical code and maintained compiler logic retain Lean requirements.
 - Every phase has executable pass/fail tests and records provenance. A specification-only check is not device implementation evidence.
-- Parameter assumptions and unsourced OEM protocols remain explicitly unverified. `SIMULATED_ONLY` and `PHYSICAL_CONFIRMED` are distinct evidence states.
+- The active physical dependency is the custom monolithic open RV64 SoC. Earlier board/cartridge and OEM protocol discussions remain historical; no supplier package is assumed for the RTL development backend. Physical analog and panel inputs remain explicitly unverified. `SIMULATED_ONLY` and `PHYSICAL_CONFIRMED` are distinct evidence states.
 
 ## Relationship to established gates
 

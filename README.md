@@ -357,10 +357,16 @@ authorization. The reviewed Task002 integration is
 documents from [PR #4](https://github.com/srkftw/lemma/pull/4). Both task
 branches remain available. Check GitHub for live revision and merge status.
 
-Current notebook work uses `task/004-lemmasim-durable-ink` and draft
+The native notebook from Task 004 is merged in
 [PR #5](https://github.com/srkftw/lemma/pull/5). Its assignment is
 [Task004](codex/prompts/004-lemmasim-durable-ink.md); resume from its checkpoint
-above. This task has a draft/review boundary and no merge authorization.
+above. Task 005 now uses `task/005-open-silicon-bringup` for the open RV64
+RTL development backend, under the separate
+[silicon binding](docs/contracts/005-silicon-dev-0.1.0.md) and
+[checkpoint](docs/plan/005-session-state.md). The original Task 005 assignment
+required a draft PR; the owner subsequently authorized finishing and a guarded
+merge after verification and applicable CI pass. The native QEMU notebook
+remains the default backend.
 The Task003 A–K implementation is
 `14cc79be8914a349b729347cc05091aba6ac7ca7`, subsequently merged through
 [PR #3](https://github.com/srkftw/lemma/pull/3). Task004 started from reviewed
@@ -373,12 +379,91 @@ Task 001's original assignment remains preserved at
 empty-remote workflow. **Do not run it on this already-published repository.** It
 intentionally refuses an existing repository or `origin`; see [publishing notes](docs/PUBLISHING.md).
 
+## Silicon development backend
+
+Task 005 adds `lemma-silicon-dev/0.1.0` to the existing launcher. The native QEMU
+notebook remains the default. RTL supports Developer mode and the explicit
+`service`, `initializer`, `devices` and `notebook` workloads; unsupported modes
+fail without a backend fallback. Its RAM, framebuffer storage, raw medium and
+visible panel are external simulation models. The reset path, processor,
+translation, timer, interconnect and device controllers execute in RTL.
+
+Prepare the selected workload once; ordinary runs reuse identified artifacts:
+
+```sh
+./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.1.0 --workload service
+./scripts/lemmasim run --backend rtl --mode developer --workload service \
+  --cycles 400000000 --observer-cycle 300000000 --timeout 3600 \
+  --record build/silicon/developer-service-new --trace-limit 10000
+```
+
+The finite observer stop only bounds a Developer observation; functional
+acceptance separately checks actual guest responses. UART, trace, actual
+hardware counts, reset/input identity and logs are retained in the capture.
+The isolated-service acceptance uses `scripts/check_kernel_buffer.py --backend rtl`
+and its existing independent byte/frame oracles. Device bus checks are:
+
+```sh
+python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/device-check-new --timeout 600 --jobs 2
+```
+
+Notebook/initializer/device runs require an explicit 256 MiB raw `--disk`;
+`--events` supplies cycle-tagged raw pen/UART/reset input and `--fail-flush`
+selects a declared external-medium barrier failure. A blank medium is formatted
+only by the compiled Lean initializer. After the checkpoint's medium initialization
+and raw-input preparation, the ordinary notebook invocation is:
+
+```sh
+./scripts/lemmasim build --backend rtl --workload notebook --opt-level O2
+./scripts/lemmasim run --backend rtl --mode developer --workload notebook \
+  --disk build/silicon/notebook-publication-new.raw \
+  --events build/silicon/notebook-input-publication-new/events.txt \
+  --record build/silicon/notebook-developer-new --cycles 2000000000 \
+  --observer-cycle 1400000000 --timeout 7200 --trace-limit 1000 --block-trace
+```
+
+Use new capture/result paths: retained failures are never overwritten. Replay
+requires `--backend rtl --session <capture> --disk-copy <new-medium-copy>` and
+an explicit session timeout; it re-executes initial bytes and input before
+comparing actual outputs. A completed capture is required. Current observations
+include genuine Lean M/S/U execution, isolated service/IPC/fault containment,
+guest device access and a pressure stroke/brush-width edit/explicit Save.
+The current registered paper controller has closed A/B/C and literal protocol
+checks, plus a complete write/edit/Save/cold workflow with exact recovered
+records and full controller pixels. Failed-FLUSH passed without a false Saved
+acknowledgement; a fresh cold hart recovered the acknowledged edited document
+and full frame, with failed new work absent. Exact RTL replay passed by
+regenerating all six captured outputs and the medium.
+Each fresh hardware run retains its source/observer identities and validated
+historical guest ELF reuse; earlier failures and results remain separate.
+
+Bounded SoC synthesis reports 13.423078 mm² of mapped standard-cell area,
+including 4 KiB register RAM which runs the scalar corpus. The notebook uses
+external simulation RAM. Paper live global-route estimates meet 100 MHz
+setup/hold at the declared TT corner, with zero reported electrical violations;
+detailed routing timed out incomplete. A full-FIFO pen placement/CTS attempt
+aborted in OpenROAD setup repair. SG13G2 enclosure-rule coverage requires
+validation; its contribution to the route timeout is unmeasured. Controller
+process DRC/LVS and extracted timing remain NOT_RUN. Exact commands, identities
+and scoped results are in [the Task 005 checkpoint](docs/plan/005-session-state.md).
+RTL is slower than the native notebook and does not claim physical conformance
+or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
+[tooling/silicon](tooling/silicon/README.md).
+
 ## License and private material
 
 No project license has been selected. Do not add a license, publish the repository,
 or change visibility without the owner's decision. Preserve licenses and notices
 for any third-party code introduced later. Do not commit supplier correspondence,
 NDA documentation, panel waveforms, credentials, textbook files or personal learner data.
+
+Task 005's newly authored RTL and narrowly scoped host adapter carry explicit
+per-file Apache-2.0 notices for the authorized reusable open hardware milestone.
+The newly authored silicon build and observation scripts use the same per-file
+notices; the license text and scope are in [sim/rtl/NOTICE.md](sim/rtl/NOTICE.md).
+Those notices do not relicense existing Lean sources or the repository as a
+whole. The original project's license gap remains separate from functional
+execution; upstream CVW and inspected PDK inputs retain their own licenses.
 
 The new hardware/notebook observation matrix is maintained as:
 

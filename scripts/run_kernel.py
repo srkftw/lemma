@@ -99,14 +99,17 @@ class Session:
     def finish(self, observed: dict[str, object]):
         if not self.records or self.process.poll() is not None:
             raise Core0Error("kernel success protocol requires observed records and a live guest")
-        if self.capture.stderr:
-            raise Core0Error("QEMU produced unexpected stderr")
+        self.validate_stderr()
         if sha256(self.image) != self.digest or source_inputs(self.root) != self.sources:
             raise Core0Error("image/source changed during kernel observation")
         if self.dtb is not None and sha256(self.dtb) != self.dtb_digest:
             raise Core0Error("DTB fixture changed during kernel observation")
         self.report.update(observed=observed, guest_live_before_cleanup=True)
         self.success = True
+
+    def validate_stderr(self):
+        if self.capture.stderr:
+            raise Core0Error("QEMU produced unexpected stderr")
 
     def __exit__(self, exc_type, exc, traceback):
         if exc is not None:

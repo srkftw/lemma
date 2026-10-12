@@ -17,7 +17,7 @@ import secrets
 import struct
 
 from core0_common import Core0Error, repo_root, sha256, write_json
-from run_buffer_session import BufferSession
+from run_buffer_session import BufferSession, SiliconBufferSession
 from run_kernel import transport
 from buffer_transport import command, decode_uart, input_envelope
 from buffer_reference import BufferReference, Request, MASK, PUBLIC_ALLOCATION_ERRORS
@@ -63,8 +63,8 @@ def require_service_binding(audit):
 
 
 class ServiceTrace(Trace):
-    configurations = ("service-normal", "service-development")
-    development_configurations = ("service-development",)
+    configurations = ("service-normal", "service-development", "silicon-service-development")
+    development_configurations = ("service-development", "silicon-service-development")
     arithmetic_required = False
     busy_root = "Lemma.Applications.CPUBound.main"
     busy_callback = "Lemma.Applications.CPUBound.tick"
@@ -340,7 +340,7 @@ class ServiceTrace(Trace):
         elif 0x331 <= tag <= 0x33c or 0x340 <= tag <= 0x346:
             self.observe_actor(event)
         elif tag == 0x301:
-            if self.configuration != "service-development" or self.current is not None or (a, b, c, d) != (self.server, self.cli, 0, 0) or self.armed:
+            if self.configuration not in self.development_configurations or self.current is not None or (a, b, c, d) != (self.server, self.cli, 0, 0) or self.armed:
                 raise Core0Error("restart arm lacks idle full CLI/Server identities")
             if self.pending_ack != (0x41, self.cli):
                 raise Core0Error("restart arm lacks its actual protected input")
@@ -867,11 +867,34 @@ def input_bytes(action):
     raise Core0Error("unknown retained service action")
 
 
-def startup(events):
+def startup(events, *, configuration="service-development"):
+    if configuration not in ServiceTrace.configurations:
+        raise Core0Error("J startup requires an exact declared service configuration")
     if len(events) < 7 or any(e["kind"] != "kernel" for e in events[:7]):
         raise Core0Error("J lacks seven actual startup controls")
     records = [tuple(e["value"]) for e in events[:7]]
-    supervisor = validate_positive_records(records[:4])
+    if any(len(row)!=5 or any(type(word) is not int or not 0<=word<=MASK for word in row)
+           for row in records):
+        raise Core0Error("J startup controls must be five exact unsigned64 words")
+    if configuration == "silicon-service-development":
+        from check_kernel_supervisor import S_WITNESS, PMP_CONFIGURATION, MEDELEG
+        boot, call, irq, invalid = records[:4]
+        if boot != (0xa, 0x87e00000, 1, 512, 0x82000000):
+            raise Core0Error("silicon supervisor lacks its exact declared DTB/frame binding")
+        if call != (0xc0, S_WITNESS, PMP_CONFIGURATION, MEDELEG, 2):
+            raise Core0Error("silicon supervisor CVW firmware/CSR readbacks differ")
+        if (irq[0] != 0xc1 or irq[1] == MASK or irq[2] != irq[1]+1
+                or irq[3:] != (1, 0)):
+            raise Core0Error("silicon supervisor timer forwarding/acknowledgement differs")
+        if invalid[:4] != (0xc2, 17, 22, 22) or invalid[4] == 0:
+            raise Core0Error("silicon supervisor invalid-call/deadline/rearm differs")
+        supervisor = {"protocol": "supervisor-C-v1/silicon-dev1", "boot": list(boot),
+            "firmware_witness_and_csrs": list(call), "timer_notification_and_acknowledgement": list(irq),
+            "call_rejections_and_valid_rearm": list(invalid), "actual_irq_delta": 1,
+            "supervisor_pending_before_ack": 1, "supervisor_pending_after_ack": 0,
+            "valid_rearm_deadline": invalid[4], "user_execution": "not_run", "scheduling": "not_run"}
+    else:
+        supervisor = validate_positive_records(records[:4])
     root, ready, managed = records[4:]
     if (root[0] != 0xd3 or root[2:] != (satp(root[1]), 500, 0)
             or ready != (0xf0, 1, 8, 512, 10000) or managed != (0xb0, 1, 16, 16, 497)):
@@ -934,7 +957,7 @@ def qualification(trace):
 
 def check(session):
     initial = [session.event() for _ in range(7)]
-    initial_facts = startup(initial)
+    initial_facts = startup(initial, configuration=session.binding.get("configuration"))
     trace = ServiceTrace(session)
     try:
         trace.until(lambda: len(trace.tasks) == 4 and len(trace.publications) == 1
@@ -966,7 +989,7 @@ def check(session):
         foreign = trace.peer_state[peer]["persistent"]
         trace.rpc(5, handle=foreign)
         trace.rpc(5, epoch=MASK, handle=first)
-        if trace.configuration == "service-development":
+        if trace.configuration in trace.development_configurations:
             # The third caller is launched only after real full storage and
             # an actual temporary write, not after a guessed sleep interval.
             trace.until(lambda: len(trace.backings.get(trace.server, ())) == 4
@@ -1027,7 +1050,7 @@ def check(session):
         # Both images finish at observed receive/sleep states with no pending
         # buffer effect. Every subsequent cleanup frame is still replayed.
         trace.until(lambda: trace.service_quiescent(peer))
-        if trace.configuration == "service-development":
+        if trace.configuration in trace.development_configurations:
             for id in sorted(trace.live(), key=lambda value: trace.tasks[value]["key"] != "server"):
                 trace.diagnostic(0x32, id)
                 trace.until(lambda id=id: trace.tasks[id]["reaped"])
@@ -1047,6 +1070,88 @@ def check(session):
 
 def replay_aftercleanup(session):
     return validate_replay(session.root, session.image, session.report, session.output_dir)
+
+
+def silicon_short_qualification(trace):
+    """A distinct small RTL corpus; never the historical complete J corpus."""
+    trace.require_settled_releases()
+    if (trace.configuration != "silicon-service-development" or trace.pending_rpc is not None
+            or trace.pending_ack is not None or trace.creation_queue or trace.pending_expiry is not None
+            or len(trace.publications) != 1 or trace.epoch != 1
+            or {trace.tasks[i]["key"] for i in trace.live()} != {"server", "cli", "peer", "busy"}
+            or len(trace.faults) != 1 or not trace.tasks[trace.faults[0]["task"]]["reaped"]
+            or len(trace.busy_math) < 3):
+        raise Core0Error("short RTL service lacks isolated live actors, timer preemption or one contained fault")
+    fault = trace.faults[0]
+    positions = [i for i,e in enumerate(trace.session.events)
+                 if e["kind"] == "kernel" and e["value"] == fault["record"]]
+    if len(positions) != 1:
+        raise Core0Error("short RTL service fault lacks one exact raw frame position")
+    fault_position = positions[0]
+    rows = trace.rpc_pairs
+    payload = b"\x00\xffLMI1LMO1K1" + "λ".encode() + bytes(range(18))
+    writes = [r for r in rows if r["input"]["words"][0] == 2
+              and bytes.fromhex(r["input"]["data_hex"]) == payload
+              and r["response"]["application_status"] == r["response"]["transport_status"] == 0]
+    if len(writes) != 1:
+        raise Core0Error("short RTL service lacks its independently checked opaque byte write")
+    handle = writes[0]["response"]["handle"]
+    reads = [r for r in rows if r["input"]["words"][0] == 3
+             and r["input"]["words"][2] == handle
+             and r["response"]["data_hex"] == payload.hex()
+             and r["response"]["application_status"] == r["response"]["transport_status"] == 0]
+    if (not any(r["index"] < fault_position for r in reads)
+            or not any(r["index"] > fault_position for r in reads)
+            or not any(r[0] == 0x343 and r[1] == fault["task"] for r in trace.actor_events)
+            or not any(e["kind"] == "kernel" and e["value"][0] == 0x334
+                       for e in trace.session.events[fault_position+1:])):
+        raise Core0Error("short RTL service lacks byte retention and useful Peer work after architectural denial")
+    return {"protocol":"silicon-service-short-v1", "ordinary_commands":len(rows),
+        "opaque_payload_hex":payload.hex(), "actual_math_preemptions":len(trace.busy_math),
+        "actual_faults":len(trace.faults), "fault_cause":15,
+        "continued_cli_read_after_fault":True, "continued_peer_read_after_fault":True,
+        "scope":"short M/S/U, Sv39, capability/IPC and denial corpus; not full historical J qualification"}
+
+
+def check_silicon_short(session):
+    facts = startup([session.event() for _ in range(7)], configuration=session.binding.get("configuration"))
+    trace = ServiceTrace(session)
+    try:
+        trace.until(lambda: len(trace.tasks) == 4 and len(trace.publications) == 1
+                    and all(t["start"] for t in trace.tasks.values() if t["key"] != "busy")
+                    and any(r[0] == 0x334 for r in trace.actor_events))
+        first = trace.rpc(1, length=256)["handle"]
+        payload = b"\x00\xffLMI1LMO1K1" + "λ".encode() + bytes(range(18))
+        trace.rpc(2, handle=first, length=len(payload), data=payload)
+        trace.rpc(3, handle=first, length=len(payload))
+        # Keep a third persistent slot: Peer can finish its 100ms hold before
+        # fault startup/RPCs, so the held fault slot must ensure global denial.
+        trace.rpc(1, length=64)
+        peer = trace.role("peer")
+        trace.until(lambda: len(trace.backings.get(trace.server, ())) == 4
+                    and any(r[0] == 0x336 and r[2] == trace.peer_state[peer]["temporary"]
+                            for r in trace.actor_events))
+        fault = trace.diagnostic(0x33, 4, 0x0052544c42554646)[3]
+        trace.until(lambda: trace.tasks[fault]["reaped"])
+        trace.rpc(3, handle=first, length=len(payload))
+        peers = sum(r[0] == 0x334 for r in trace.actor_events)
+        trace.until(lambda: sum(r[0] == 0x334 for r in trace.actor_events) > peers and len(trace.busy_math) >= 3)
+        trace.until(lambda: trace.service_quiescent(peer))
+        result = {**trace.snapshot(), "startup":facts, "qualification":silicon_short_qualification(trace),
+                  "lifetime":"continuous RTL User service; explicit host stop after observed short protocol"}
+        session.report["service_progress"] = result
+        return result
+    except (Core0Error, OSError, ValueError, TypeError, KeyError) as error:
+        session.report.update(service_error_type=type(error).__name__, service_error=str(error),
+                              service_progress=trace.snapshot())
+        raise
+
+
+def replay_silicon_short(session):
+    trace, facts, events, _ = _replay(session.root, session.image, session.report, session.output_dir,
+                                    session.report.get("observed"))
+    return {**trace.snapshot(), "startup":facts, "qualification":silicon_short_qualification(trace),
+            "complete_semantic_replay":True, "replayed_wire_events":len(events)}
 
 
 def _replay(root, image, report, directory, observed, *, expected_byte_failure=False):
@@ -1078,7 +1183,7 @@ def _replay(root, image, report, directory, observed, *, expected_byte_failure=F
         raise Core0Error("actual retained input bytes differ from ordered service actions")
     binding = json.loads((image.parent / "audit.json").read_text())
     offline = SimpleNamespace(root=root, image=image, binding=binding, report={}, events=events[:7], records=[])
-    facts = startup(events)
+    facts = startup(events, configuration=binding.get("configuration"))
     trace = ServiceTrace(offline)
     cursor, reproduced = 0, None
     input_keys = {"kind", "index", "words", "data_hex", "epoch", "expected_transport", "expected_status", "raw_hex"}
@@ -1182,31 +1287,40 @@ def validate_timeout(timeout):
     return timeout
 
 
+def validate_rtl_timeout(timeout):
+    if (type(timeout) not in (int, float) or not math.isfinite(timeout)
+            or not 0 < timeout <= 3600):
+        raise Core0Error("short RTL Buffer observation requires a finite timeout at most 3600 seconds")
+    return timeout
+
+
 def main():
     parser = argparse.ArgumentParser(allow_abbrev=False, description=__doc__)
     parser.add_argument("--image", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--backend", choices=("qemu", "rtl"), default="qemu")
     args = parser.parse_args()
     session = None
     try:
-        validate_timeout(args.timeout)
+        (validate_rtl_timeout if args.backend == "rtl" else validate_timeout)(args.timeout)
         root = repo_root()
         runners = runner_inputs(root)
-        with BufferSession(root=root, image=args.image, output_dir=args.output_dir,
+        SessionClass = SiliconBufferSession if args.backend == "rtl" else BufferSession
+        with SessionClass(root=root, image=args.image, output_dir=args.output_dir,
                            timeout=args.timeout, clean=args.clean) as session:
             session.report.update(service_runner_inputs=runners, acceptance_checker_sha256=sha256(Path(__file__)))
-            observed = check(session)
+            observed = check_silicon_short(session) if args.backend == "rtl" else check(session)
             session.finish(observed)
-        replayed = replay_aftercleanup(session)
+        replayed = replay_silicon_short(session) if args.backend == "rtl" else replay_aftercleanup(session)
         after = runner_inputs(root)
         if after != runners:
             raise Core0Error("service observation/checker/reference changed through complete cleanup replay")
         session.report.update(observed=replayed, service_runner_inputs_after=after)
         temporary = session.output_dir / "result.json.tmp"
         write_json(temporary, session.report); temporary.replace(session.output_dir / "result.json")
-        print(f"PASS: {replayed['qualification']['ordinary_commands']} actual ordinary Buffer commands; complete raw semantics replayed and QEMU reaped")
+        print(f"PASS: {replayed['qualification']['ordinary_commands']} actual ordinary Buffer commands; complete raw semantics replayed and {args.backend.upper()} reaped")
         return 0
     except (Core0Error, OSError, ValueError, TypeError, KeyError) as error:
         if session is not None and session.output_dir.exists():

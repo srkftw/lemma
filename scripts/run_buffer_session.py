@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import struct
 import hashlib
+import json
 import math
 import os
 import select
 import signal
+import subprocess
+import re
 import time
 from pathlib import Path
 
@@ -342,8 +345,7 @@ class BufferSession(Session):
                         or self.report["pid"] <= 0
                         or Path("/proc", str(self.report["pid"])).exists()):
                     raise Core0Error("Buffer observation lacks actual live kill/reap cleanup")
-                if self.capture.stderr:
-                    raise Core0Error("Buffer observation retained unexpected QEMU stderr")
+                self.validate_stderr()
                 after_sources = source_inputs(self.root)
                 after_runners = {name: sha256(self.root / name) for name in self.RUNNER_PATHS}
                 self.report.update(source_inputs_after=after_sources, runner_inputs_after=after_runners,
@@ -382,3 +384,73 @@ class BufferSession(Session):
         if quiescence_failure is not None and exc is None:
             raise quiescence_failure
         return False
+
+
+class SiliconBufferSession(BufferSession):
+    """The same bounded service transport, fed by the prepared RTL hart.
+
+    The adapter supplies raw stdin bytes only. The live core executes the
+    unchanged service protocol; existing task, IPC and byte oracles consume
+    its actual output. A short success still requires a live guest and the
+    inherited observed UART-boundary stop, group kill and complete replay.
+    """
+    CONFIGURATIONS = ("silicon-service-development",)
+    RUNNER_PATHS = (*BufferSession.RUNNER_PATHS, "scripts/silicon_guest.py")
+    PROGRESS = re.compile(rb"RTL progress cycles=([0-9]+) pc=0x([0-9a-f]+) privilege=([0-3]) "
+                          rb"retired=([0-9]+) ticks=([0-9]+) timer_traps=([0-9]+) UART=([0-9]+) "
+                          rb"fb_reads=([0-9]+) fb_writes=([0-9]+) panel_pixels=([0-9]+) panel_completed=([0-9]+)\n")
+
+    def __enter__(self):
+        try:
+            from silicon_guest import prepared
+            from silicon_profile import profile
+            self.prepared = prepared("service")
+            entry = self.prepared["workloads"]["service"]
+            if Path(entry["image"]["path"]).resolve() != self.image:
+                raise Core0Error("RTL service image differs from the prepared first-class backend")
+            self.binding = json.loads(Path(entry["audit"]["path"]).read_text())
+            if self.binding.get("status") != "PASS" or self.binding.get("configuration") not in self.CONFIGURATIONS:
+                raise Core0Error("RTL service lacks its exact passing source/ELF audit")
+            self.sources = source_inputs(self.root)
+            self.runner_inputs = {name: sha256(self.root/name) for name in self.RUNNER_PATHS}
+            self.digest = sha256(self.image)
+            self.report.update(backend="rtl", profile=self.prepared["profile"],
+                image_sha256=self.digest, audit_sha256=sha256(self.image.parent/"audit.json"),
+                provenance_sha256=sha256(self.image.parent/"provenance.json"),
+                source_inputs=self.sources, runner_inputs=self.runner_inputs,
+                rtl_binary=self.prepared["binary"], rtl_build=self.prepared["rtl_build"],
+                rom=self.prepared["rom"], rom_audit=self.prepared["rom_audit"],
+                dtb_fixture=entry["dtb"], rtl_sources=self.prepared["rtl_sources"])
+            argv = (self.prepared["binary"]["path"], "--image", str(self.image),
+                "--rom", self.prepared["rom"]["path"], "--load", f"0x{profile()['dtb_base']:x}:"+entry["dtb"]["path"],
+                "--uart-output", str(self.output_dir/"rtl-uart.bin"), "--uart-stdin",
+                "--input-capture", str(self.output_dir/"input.events"),
+                "--trace", str(self.output_dir/"trace.csv"), "--trace-limit", "10000",
+                "--cycles", "1000000000", "--deadline", str(min(math.ceil(self.timeout)+5, 3600)))
+            self.process = subprocess.Popen(argv, cwd=self.root, stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True, bufsize=0)
+            self.capture.pid, self.capture.argv = self.process.pid, argv
+            for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
+                os.set_blocking(stream.fileno(), False)
+            self.deadline = time.monotonic()+self.timeout
+            return self
+        except BaseException as error:
+            self.__exit__(type(error), error, error.__traceback__)
+            raise
+
+    def validate_stderr(self):
+        from silicon_guest import prepared
+        current = prepared("service")
+        keys = ("profile", "profile_sha256", "binary", "rom", "rom_audit", "rtl_build", "rtl_sources")
+        if ({key:current[key] for key in keys} != {key:self.prepared[key] for key in keys}
+                or current["workloads"]["service"] != self.prepared["workloads"]["service"]):
+            raise Core0Error("RTL service preparation changed through observation/cleanup")
+        raw = bytes(self.capture.stderr)
+        matches = list(self.PROGRESS.finditer(raw))
+        if b"".join(match.group(0) for match in matches) != raw:
+            raise Core0Error("RTL service emitted unexpected diagnostics or an incomplete progress line")
+        self.report["rtl_progress"] = [{"cycles":int(m[1]), "pc":int(m[2],16),
+            "privilege":int(m[3]), "retired":int(m[4]), "ticks":int(m[5]),
+            "timer_traps":int(m[6]), "uart_bytes":int(m[7]),
+            "fb_reads":int(m[8]), "fb_writes":int(m[9]),
+            "panel_pixels":int(m[10]), "panel_completed":int(m[11])} for m in matches]

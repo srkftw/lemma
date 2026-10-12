@@ -101,17 +101,21 @@ def workflow(metadata, initial, name, geometry, out, timeout, *, observe_owned_m
     sim.write_json(manifest_file, manifest)
     disk = directory / 'disk.raw'
     shutil.copyfile(initial, disk)
+    confirmations=sum(action.get('kind')=='tool' and action.get('button') in (7,8)
+                      for action in manifest['actions']) or None
     memory = None
     if observe_owned_memory:
         from check_owned_memory import Observation
         memory = Observation(sim, directory / 'run', directory / 'owned-memory', metadata)
         with memory:
             result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
-                                raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
+                                raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'],
+                                until_confirmations=confirmations, mode='laboratory')
         memory.require_observed()
     else:
         result = sim.launch(metadata, disk, directory / 'run', headless=True, geometry=geometry,
-                            raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'], mode='laboratory')
+                            raw=input_file, timeout=timeout, until_ingress=manifest['input_samples'],
+                            until_confirmations=confirmations, mode='laboratory')
     if result['status'] != 'OBSERVED_GUEST_WORKFLOW_BOUNDARY' or not result['process_reaped']:
         raise ValueError(f'{name} did not reach a quiescent guest Saved boundary: '
                          f'status={result.get("status")}, returncode={result.get("returncode")}, '
@@ -310,7 +314,7 @@ def main():
         require_pass(out / 'store-cache/result.json')
         command(['lake', 'env', 'lean', 'tests/store/CheckpointEndpoint.lean'],
                 out / 'CheckpointEndpoint.log', 300)
-        for fixture in ('NotebookReads', 'NotebookGlyphs', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
+        for fixture in ('NotebookReads', 'NotebookGlyphs', 'SurfaceWords', 'NotebookCapacity', 'NotebookInputDrain', 'SurfaceStatus',
                         'PaperRecovery', 'RasterizerReference', 'PacketCopies', 'InkHeaders', 'NotebookCheckpoint'):
             command(['lake', 'env', 'lean', f'tests/ink/{fixture}.lean'],
                     out / f'{fixture}.log', 180)

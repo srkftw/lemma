@@ -18,7 +18,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from buffer_transport import APPLICATION_MAGIC, command, decode_uart, input_envelope, validate_input_envelope
 from core0_common import Core0Error, sha256
-from run_buffer_session import BufferSession, _known_complete_prefix, _quiesce_uart, validate_quiescence
+from run_buffer_session import BufferSession, SiliconBufferSession, _known_complete_prefix, _quiesce_uart, validate_quiescence
 from run_kernel import Session
 import run_device_session as transport
 
@@ -29,6 +29,39 @@ cli_spec.loader.exec_module(buffer_cli)
 
 
 class BufferTransportTests(unittest.TestCase):
+    def test_rtl_diagnostics_are_exact_and_qemu_stays_strict(self):
+        from types import SimpleNamespace
+        prepared = {key:key for key in ("profile", "profile_sha256", "binary", "rom", "rom_audit", "rtl_build", "rtl_sources")}
+        prepared["workloads"] = {"service":{"image":"fixture"}}
+        capture = transport._Capture()
+        context = SimpleNamespace(prepared=prepared, capture=capture, report={}, PROGRESS=SiliconBufferSession.PROGRESS)
+        line = (b"RTL progress cycles=1000000 pc=0x80000100 privilege=1 retired=250000 ticks=100000 timer_traps=1 UART=176 "
+                b"fb_reads=17 fb_writes=19 panel_pixels=23 panel_completed=2\n")
+        with patch("silicon_guest.prepared", return_value=prepared):
+            capture.stderr.extend(line)
+            SiliconBufferSession.validate_stderr(context)
+            self.assertEqual(context.report["rtl_progress"][0]["timer_traps"], 1)
+            self.assertEqual({key:context.report["rtl_progress"][0][key] for key in
+                              ("fb_reads", "fb_writes", "panel_pixels", "panel_completed")},
+                             {"fb_reads":17, "fb_writes":19, "panel_pixels":23, "panel_completed":2})
+            with self.assertRaises(Core0Error):Session.validate_stderr(context)
+            for bad in (line[:-1], line.replace(b"privilege=1", b"privilege=4"), line+b"unknown diagnostic\n",
+                        line.replace(b"fb_reads=17 ", b""),
+                        line.replace(b"fb_reads=17 fb_writes=19", b"fb_writes=19 fb_reads=17"),
+                        line.replace(b"panel_completed=2", b"panel_completed=2 unknown=0"),
+                        line.replace(b"fb_reads=17", b"fb_reads=17 fb_reads=17"),
+                        *(line.replace(field+b"="+value, field+b"="+bad_value)
+                          for field,value in ((b"fb_reads", b"17"), (b"fb_writes", b"19"),
+                                              (b"panel_pixels", b"23"), (b"panel_completed", b"2"))
+                          for bad_value in (b"-1", b"1x", b"", b"1.5"))):
+                capture.stderr[:] = bad
+                with self.subTest(bad=bad), self.assertRaises(Core0Error):
+                    SiliconBufferSession.validate_stderr(context)
+            capture.stderr[:] = line
+            changed = copy.deepcopy(prepared);changed["binary"] = "changed"
+            with patch("silicon_guest.prepared", return_value=changed), self.assertRaises(Core0Error):
+                SiliconBufferSession.validate_stderr(context)
+
     def output(self, *, data=b"", operation=3, application=0, transport=0, handle=5):
         payload = struct.pack("<8Q", APPLICATION_MAGIC, 1, operation, 1, handle,
                               len(data), len(data), (application << 32) | (transport << 40)) + data

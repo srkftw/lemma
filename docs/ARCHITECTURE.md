@@ -18,10 +18,14 @@ compiler is not the device runtime.
 `virt` configuration. The final privilege design is M -> S -> U with Sv39. The first
 smoke image remains in machine mode. User isolation is a Stage II claim.
 
-**Lemma One** will use a RISC-V board and a separately engineered writing cartridge /
-controller. Its physical drivers implement shared service interfaces. The cartridge
-is not assumed procured; its exact interface package is not part of this repository.
-No physical display work blocks the first compiler/VM milestone.
+**Lemma One** targets a custom monolithic open RV64 mixed-signal SoC, with
+inspectable compute, memory, pen and paper-controller boundaries. Task005's
+`lemma-silicon-dev/0.1.0` is a digital development binding within permanent
+LemmaSim; external simulation memory, medium and panel models are explicit.
+The [silicon specification](contracts/LEMMA_SILICON_v0.1.0.md) governs this
+direction. IHP SG13G2 is provisional. Historical board/cartridge and supplier
+discussions are history, not the active integration dependency. Physical
+memory, sensing, panel compatibility and whole-chip closure remain unverified.
 
 ## Target-language boundary
 

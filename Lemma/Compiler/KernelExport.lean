@@ -3,6 +3,7 @@ import Lemma.Compiler.CFGLower
 import Lemma.Compiler.Format
 import Lemma.Compiler.DeploymentCatalog
 import Lemma.Platform.RiscV.ExecutionPrimitives
+import Lemma.Platform.Silicon.Binding
 
 /-! Production export commands. Each unit comes from genuine elaborated Lean
 roots under an explicit privilege profile; no test harness is appended. Boot
@@ -27,7 +28,7 @@ private def roleProfile (role : String) (configuration : String) : Except String
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+  unless configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
@@ -50,7 +51,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
-  configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+  configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
     (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
@@ -62,7 +63,15 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "lemmasim-notebook" then
+  | "kernel" => if configuration == "lemmasim-silicon-devices" then
+      #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
+    else if configuration == "lemmasim-silicon-notebook" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "lemmasim-silicon-initialize" then
+      #["Lemma.Platform.LemmaSim.NotebookKernel.siliconInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
+    else if configuration == "silicon-service-development" then
+      #["Lemma.Kernel.Development.ServiceEntry.siliconBoot", "Lemma.Kernel.Development.ServiceEntry.dispatch"]
+    else if configuration == "lemmasim-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.boot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-isolation-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.isolationBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
@@ -120,6 +129,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
     #["Lemma.Kernel.Development.ServiceEntry"]
   else if configuration == "frames-development" && role == "kernel" then
     #["Lemma.Kernel.Development.FramesEntry"]
+  else if configuration == "lemmasim-silicon-devices" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.DeviceEntry", "Lemma.Platform.Silicon.Development.DeviceProbe"]
   else if configuration == "user-isolation-development" && role == "kernel" then
     #["Lemma.Kernel.Development.IsolationEntry"]
   else if configuration == "user-isolation-development" && role == "user" then
@@ -130,7 +141,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
 
 private def developmentName (name : Name) : Bool :=
   let source := (Lean.privateToUserName? name).getD name |>.toString
-  source.startsWith "Lemma.Kernel.Development." || source.startsWith "Lemma.User.Development."
+  source.startsWith "Lemma.Kernel.Development." || source.startsWith "Lemma.User.Development." ||
+    source.startsWith "Lemma.Platform.Silicon.Development."
 
 private def allowedDevelopmentSource (configuration role : String) (name : Name)
     (image? : Option UserImageSpec := none) : Bool :=
@@ -300,7 +312,12 @@ this name as a FILE symbol; deployment identity remains in every manifest. All
 historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
-  if role == "user" && (configuration == "lemmasim-notebook" ||
+  if role == "user" && (configuration == "lemmasim-silicon-notebook" ||
+      configuration == "lemmasim-silicon-initialize") then
+    match image? with
+    | some image => "Lemma lemma-silicon-dev/0.1.0 user " ++ image.root.toString
+    | none => "Lemma " ++ configuration ++ " " ++ role
+  else if role == "user" && (configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "lemmasim-isolation-development") then
     match image? with
     | some image => "Lemma lemmasim-virt/0.1.0 user " ++ image.root.toString
@@ -387,6 +404,14 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("limit", toJson (bootClearLimitFor configuration)), ("stride_bytes", 8),
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
+private def frameCountFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
+  else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
+private def framePoolLimitFor (configuration : String) : Nat :=
+  if configuration.startsWith "lemmasim-silicon-" then
+    (Lemma.Platform.Silicon.Binding.frame_pool_base + Lemma.Platform.Silicon.Binding.frame_pool_bytes).toNat
+  else if configuration.startsWith "lemmasim-" then 0x84000000 else Layout.poolLimit
+
 private def layoutJson (configuration : String)
     (image? : Option UserImageSpec := none) : Json := Json.mkObj ([
   ("configuration", .str configuration),
@@ -394,7 +419,7 @@ private def layoutJson (configuration : String)
   ("user_startup_case", .str (image?.map (·.startupCase) |>.getD (userStartupCase configuration)).stableId),
   ("schema_version", 1), ("contract_version", .str "lemma-kernel-layout-v2"),
   ("ram_base", toJson Layout.ramBase), ("ram_limit", toJson Layout.ramLimit),
-  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount)),
+  ("frame_bytes", toJson Layout.frameBytes), ("frame_count", toJson (frameCountFor configuration)),
   ("task_kernel_stack_pages", toJson (if configuration.startsWith "lemmasim-" then 4 else Layout.taskKernelStackPages)),
   ("task_kernel_stack_bytes", toJson (if configuration.startsWith "lemmasim-" then 16384 else Layout.taskKernelStackBytes)),
   ("context", Json.mkObj [
@@ -406,7 +431,7 @@ private def layoutJson (configuration : String)
     ("translation_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedTranslationOrEnableOffset),
     ("scratch_offset", toJson Lemma.Platform.RiscV.ExecutionPrimitives.savedKernelStackOffset)]),
   ("intervals", .arr (Layout.intervals.map fun interval => Json.mkObj [
-    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson (if configuration.startsWith "lemmasim-" && interval.name == "frame-pool" then 0x84000000 else interval.limit)),
+    ("name", .str interval.name), ("base", toJson interval.base), ("limit", toJson (if interval.name == "frame-pool" then framePoolLimitFor configuration else interval.limit)),
     ("purpose", .str interval.purpose)])),
   ("user", Json.mkObj [("text_base", toJson (userTextBaseFor configuration)), ("text_limit", toJson (userTextLimitFor configuration)),
     ("data_base", toJson Layout.userDataBase), ("data_bytes", toJson Layout.userDataBytes),

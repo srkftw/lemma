@@ -1,4 +1,5 @@
 import Lemma.Kernel.ServiceEntry
+import Lemma.Platform.Silicon.Binding
 
 /-! Trusted development-only lifecycle controls. The input is KernelInput's
 distinct diagnostic class, never the ordinary CLI byte stream. Pending restart
@@ -248,6 +249,15 @@ def step : Action :=
 
 def boot : Action :=
   .bind (Lemma.Kernel.ServiceEntry.initialize 2) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind clearControl fun s _ => if failed s = true then fatal else
+  .bind Lemma.Kernel.ServiceEntry.construct fun s _ =>
+  if failed s = true then .done s 0 else .loop step
+
+/-- CVW has no hypervisor extension: MIDELEG readback is exactly SSIP.
+All service construction, scheduling, capability and IPC policy is shared. -/
+def siliconBoot : Action :=
+  .bind (Lemma.Kernel.ServiceEntry.initializeFor 2 2 Lemma.Platform.Silicon.Binding.boot_timer_probe_ticks) fun s _ =>
   if failed s = true then .done s 0 else
   .bind clearControl fun s _ => if failed s = true then fatal else
   .bind Lemma.Kernel.ServiceEntry.construct fun s _ =>

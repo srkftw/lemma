@@ -20,7 +20,7 @@ This selects diagnostics from validated kernel boot state, never a user flag. -/
 private def schedulingRecord (kind a b c d : UInt64) : Action :=
   .bind Frames.runtimeCount fun s count =>
   if failed s = true then fatal else
-  if count = 8192 then .done 0 0 else
+  if Frames.expanded count = true then .done 0 0 else
   Lemma.Kernel.Console.record kind a b c d
 
 /-- No mapping mutation may follow the final active-root update before typed

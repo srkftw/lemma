@@ -103,7 +103,7 @@ static void paper_error(LemmaPaper *p,uint64_t e) { p->error=e;p->status|=4; }
 bool lemma_paper_irq(const LemmaPaper *p) { return (p->status & (2|4|8))!=0; }
 void lemma_paper_reset(LemmaPaper *p)
 {
-    bool interrupted=(p->status&1)!=0;
+    bool interrupted=(p->status&(1|8))!=0;
     memset(p->target,255,(size_t)p->stride*p->height);memset(p->aperture,255,512);
     p->status=interrupted?8:0;p->error=interrupted?6:0;p->deadline_ns=0;
     p->tile_x=p->tile_y=p->tile_w=p->tile_h=p->tile_len=0;
