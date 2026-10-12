@@ -1,0 +1,78 @@
+{
+  "schema": "task006-native-wasm-port-observation/1",
+  "status": "PASS_SCOPED",
+  "implementation_commit": "987142be79e5326529d1bf5fd8f0413997898cea",
+  "scope": "predeclared 1M+1M real cycles; exact wrapper bytes and native/Wasm UART/pixels; same-Wasm checkpoint suffix",
+  "commands": [
+    "python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.3.0 --output-dir build/silicon/task006-port-onehot-a4 --jobs 2",
+    "python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --output-dir build/wasm/task006-port-onehot-a9",
+    "./scripts/lemmasim browser-build --reuse-wasm --wasm-build build/wasm/task006-port-onehot-a9 --guest-bundle build/native/task006-canonical-a1 --output-dir build/browser/task006-local-onehot-a4 --profile lemma-silicon-dev/0.3.0",
+    "nix-shell tooling/silicon/wasm.nix --run 'node conformance/lemmasim/check_wasm_machine.mjs build/wasm/task006-port-onehot-a9 build/silicon/task006-port-onehot-a4/obj/lemma-rtl build/native/task006-canonical-a1/workloads/notebook build/native/task006-canonical-a1/runtime/rtl/boot.bin build/native/task006-bundle-medium-a2.raw build/wasm/task006-native-pair-onehot-a5'"
+  ],
+  "inputs": {
+    "immutable_guest_package": {
+      "path": "build/native/task006-canonical-a1/bundle.json",
+      "sha256": "e4e93d83c7d29d5b02cb1d9d22dfc9d627b58df2ac7aaf836386f88feccac21f"
+    },
+    "wasm_build": {
+      "path": "build/wasm/task006-port-onehot-a9/build.json",
+      "sha256": "447545f1cb430f04fe7681bcc9cddab6af4702a1e26b4c5648958acc85c5e6f3"
+    },
+    "native_build": {
+      "path": "build/silicon/task006-port-onehot-a4/build.json",
+      "sha256": "92656c7cd8821248a58e9a0ba35d575cd7a961c36e734d3954721da87fc26778"
+    },
+    "static_bundle": {
+      "path": "build/browser/task006-local-onehot-a4/bundle.json",
+      "sha256": "77ee843557ab4f5f91f705086a11daa32676b9d0d698b516bd297a88319283b3"
+    },
+    "observer": {
+      "path": "conformance/lemmasim/check_wasm_machine.mjs",
+      "sha256": "59b9be0c5026b9b37a03a64a00991de686aae2f1a35fc6d0c79cc6af52247674"
+    }
+  },
+  "identities": {
+    "wasm": "1aef54ffa4782ca1e03d6a7cdf1d7a0cdf33935c9bd2c31bd0c376d0763cea03",
+    "native": "97e2b786a90caa3e5dba72e70f67a7543295735653d3c1e97b22cd7b9275277f",
+    "guest": "b79b020dd52428bb2a115b5a81cb07df9ab64079cab66a0a9655ce3e38b40af7",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "initialMedium": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+  },
+  "guest_qualification": "complete immutable inventory/source/audit/capacity closure independently validated before comparison; unchanged b79b guest compilation on newly compiled machines",
+  "machine_identities": {
+    "native": "f6c94007df307c026416e9419d20ebfdd6d84b92aa5a441a3b4388e32d6c31f4",
+    "wasm": "00432ef6b412a3bac6d09d785241b7c1e4be915f0bf02fbd5fa33f56858e2d68"
+  },
+  "tool_versions": {
+    "verilator": "Verilator 5.052 2026-09-05 rev v5.052\n",
+    "em++": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.9-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "node": "v24.21.0\n"
+  },
+  "result": {
+    "path": "build/wasm/task006-native-pair-onehot-a5/result.json",
+    "sha256": "95e9ea71ca1fc4888afdeedc4a3ed2f5320ecf0c220fba713b93efc2ebf0c534"
+  },
+  "observed": {
+    "prefixCycle": "1000000",
+    "finalCycle": "2000000",
+    "snapshotBytes": 145423562,
+    "wrapperSha256": "4beec5e6a685a3e500a57bf09bba9d6895397066b780f61ceb4887854e060cf4",
+    "sameWasmModelSha256": "0eebe6f99d1efa928b762e6ad1d85bbb6badac9bdc40dc2442e850a7ba3c1c13",
+    "wasmHeapBytes": 340787200,
+    "hostPeakRssBytes": 1988112384,
+    "wallSeconds": 57.123119337,
+    "nativeExit": {
+      "code": null,
+      "signal": "SIGTERM"
+    }
+  },
+  "not_established": [
+    "canonical cold Ready, pen/edit/Save/cold scenario A",
+    "browser Ready/mathematics/course/Save/cold scenario D",
+    "all arbitrary cached-translation/instruction/device snapshot boundaries",
+    "QEMU timing or cached-state continuation",
+    "native/Wasm archive-byte identity beyond declared logical sections",
+    "product boot/update, full radio/USB or managed frontend completion",
+    "redistribution license or physical conformance"
+  ]
+}

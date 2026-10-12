@@ -19,6 +19,7 @@ from types import SimpleNamespace
 
 ROOT=Path(__file__).resolve().parents[1]
 SCHEMA='lemmasim-native-bundle/1'
+SCHEMA_WITH_SOURCE_VERSIONS='lemmasim-native-bundle/2'
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
 
@@ -32,6 +33,23 @@ def read_json(path):
         return result
     if path.stat().st_size>16*1024*1024:raise ValueError('Oversized bundle metadata')
     return json.loads(path.read_text(),object_pairs_hook=unique)
+
+
+def origin_destination(manifest,path,digest):
+    """Resolve one exact consumed version; never choose an arbitrary revision."""
+    origins=manifest.get('origins')
+    if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
+    entry=origins.get(str(Path(path).resolve()))
+    if manifest.get('schema')==SCHEMA_WITH_SOURCE_VERSIONS:
+        if not isinstance(entry,dict):raise ValueError('Missing versioned archived origin: '+str(path))
+        destination=entry.get(digest)
+    elif manifest.get('schema')==SCHEMA:
+        destination=entry
+    else:raise ValueError('Unsupported archived origin schema')
+    files=manifest.get('files')
+    if not isinstance(files,dict) or not isinstance(destination,str) or destination not in files or files[destination].get('sha256')!=digest:
+        raise ValueError('Archived consumed input differs: '+str(path))
+    return destination
 
 
 def inventory(directory,manifest):
@@ -80,16 +98,27 @@ def bundle(args):
     from build_kernel import source_inputs
     name=args.profile
     if name!='lemma-silicon-dev/0.3.0':raise ValueError('Native bundle v1 admits canonical0.3 only')
-    # Validate current consumed inputs before copying any executable.
-    rtl=guest.prepared('notebook',name)
-    initializer=guest.prepared('initializer',name)
-    if any(rtl[k]!=initializer[k] for k in ('binary','rom','rtl_build','rtl_sources')):
-        raise ValueError('Native workloads have different RTL implementations')
-    guest.reset_rom_audit(rtl)
-    qemu=fast.prepared('notebook',name)
+    base=getattr(args,'base_bundle',None)
+    replacements=(getattr(args,'notebook_build',None),getattr(args,'initializer_build',None))
+    if base is None and any(replacements) or base is not None and not all(replacements):
+        raise ValueError('Archived backend replacement requires base bundle and both current audited guest builds')
+    if base is None:
+        rtl=guest.prepared('notebook',name)
+        initializer=guest.prepared('initializer',name)
+        if any(rtl[k]!=initializer[k] for k in ('binary','rom','rtl_build','rtl_sources')):
+            raise ValueError('Native workloads have different RTL implementations')
+        guest.reset_rom_audit(rtl)
+        qemu=fast.prepared('notebook',name)
+    else:
+        base=Path(base).resolve()
+        rtl=prepared(base,'rtl','notebook',name)
+        qemu=prepared(base,'qemu','notebook',name)
+        prepared(base,'rtl','initializer',name)
+        prepared(base,'qemu','initializer',name)
     source_before=source_inputs(ROOT)
+    archive_base=base
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
-    manifest={'schema':SCHEMA,'profile':name,'boot':'ELF-preload development',
+    manifest={'schema':SCHEMA_WITH_SOURCE_VERSIONS,'profile':name,'boot':'ELF-preload development',
               'compiler':'genuine pinned native Lean/LLVM; archived consumed inputs, not fresh compilation',
               'physical_conformance':'UNVERIFIED','source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
               'sources':source_before,'origins':{},'host_dependencies':{},'backends':{}}
@@ -102,15 +131,29 @@ def bundle(args):
         else:
             dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(path,dest)
             dest.chmod(0o755 if executable else 0o644)
-        prior=manifest['origins'].setdefault(str(path),name)
+        prior=manifest['origins'].setdefault(str(path),{}).setdefault(h,name)
         if guest.sha(out/prior)!=h:raise ValueError('Conflicting bundle origin')
         return {'path':name,'sha256':h}
+    def backend_source(path,h):
+        if archive_base is None:
+            return Path(path)
+        old=read_json(archive_base/'bundle.json');dest=origin_destination(old,path,h)
+        return archive_base/dest
+    def add_backend_source(path,h):
+        item=add(backend_source(path,h),'backend-sources/'+h,h)
+        manifest['origins'].setdefault(str(Path(path).resolve()),{}).setdefault(h,item['path'])
+        return item
+    if base is not None:
+        manifest['base_bundle']={'sha256':guest.sha(base/'bundle.json'),
+            'scope':'validated unchanged archived backends; new genuine current-source guest compilation'}
+        for workload,build in zip(('notebook','initializer'),replacements):
+            override=development_guest(rtl,workload,out,build,'developer')
+            rtl['workloads'][workload]=override['workloads'][workload]
+        qemu['workloads']=copy.deepcopy(rtl['workloads'])
     for path,h in source_before.items():add(ROOT/path,'source/'+path,h)
     for path,h in rtl['rtl_sources'].items():
-        p=Path(path).resolve()
-        dest='source/'+str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else 'dependencies/'+h
-        add(p,dest,h)
-    for path,h in qemu['sources'].items():add(ROOT/path,'source/'+path,h)
+        add_backend_source(path,h)
+    for path,h in qemu['sources'].items():add_backend_source(str(ROOT/path),h)
     entries={}
     for workload in ('notebook','initializer'):
         entry=rtl['workloads'][workload];base=Path(entry['build']['path']).parent
@@ -131,8 +174,8 @@ def bundle(args):
     rom_audit=read_json(Path(rtl['rom_audit']['path']))
     for key in ('source','assembly','object','elf','binary'):
         item=rom_audit[key]
-        if str(Path(item['path']).resolve()) not in manifest['origins']:
-            add(item['path'],'runtime/rom/'+Path(item['path']).name,item['sha256'])
+        if item['sha256'] not in manifest['origins'].get(str(Path(item['path']).resolve()),{}):
+            add_backend_source(item['path'],item['sha256'])
     manifest['backends']['rtl']=relocate(rtl,'rtl')
     manifest['backends']['qemu']=relocate(qemu,'qemu')
     for key,item in (('rtl',rtl['binary']),('qemu',qemu['qemu'])):
@@ -153,7 +196,7 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
-    if m.get('schema')!=SCHEMA or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
+    if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
         raise ValueError('Unsupported/mismatched native bundle')
     if backend not in ('rtl','qemu') or workload not in ('notebook','initializer'):raise ValueError('Unsupported bundled execution')
     inventory(directory,m)
@@ -167,8 +210,7 @@ def prepared(directory,backend,workload,name=None):
     origins=m.get('origins')
     if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
     def archived(path,h):
-        dest=origins.get(str(Path(path).resolve()))
-        if dest not in m['files'] or m['files'][dest]['sha256']!=h:raise ValueError('Archived consumed input differs: '+path)
+        origin_destination(m,path,h)
     if data.get('profile')!=m['profile'] or data.get('profile_sha256')!=guest.sha(profile_path(m['profile'])):
         raise ValueError('Bundled versioned profile changed')
     archived(str(profile_path(m['profile'])),data['profile_sha256'])
@@ -204,7 +246,7 @@ def prepared(directory,backend,workload,name=None):
         from lemmasim_fast import CPU
         if data.get('schema')!='lemmasim-fast-prepared/1' or data.get('cpu')!=CPU or data.get('icount_shift')!=3:
             raise ValueError('Bundled fast execution contract differs')
-    data['native_bundle']={'schema':SCHEMA,'manifest_sha256':guest.sha(directory/'bundle.json'),
+    data['native_bundle']={'schema':m['schema'],'manifest_sha256':guest.sha(directory/'bundle.json'),
                            'source_commit':m['source_commit'],'scope':'validated archived inputs; not current compilation'}
     return data
 

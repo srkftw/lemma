@@ -674,6 +674,20 @@ Use `--backend rtl` for exact RTL execution of the same prepared guest.
 [The native bundle contract](docs/contracts/006-native-bundle-v1.md) records
 validation, host dependencies and unresolved redistribution limits.
 
+To retain a new audited notebook and matching initializer on an existing
+validated backend, the v2 packer keeps each consumed source revision explicitly:
+
+```sh
+./scripts/lemmasim native-bundle-build --base-bundle build/native/my-bundle \
+  --notebook-build build/kernel/current-notebook \
+  --initializer-build build/kernel/current-initializer \
+  --output-dir build/native/new-bundle
+```
+
+The [v2 contract](docs/contracts/006-native-bundle-v2.md) explains exact archive
+validation. This produces an immutable launch path for later independent cold
+recovery; packaging alone does not qualify a guest workflow.
+
 For an explicitly new, current-source audited development guest on the
 unchanged bundled backend, use a new session directory:
 

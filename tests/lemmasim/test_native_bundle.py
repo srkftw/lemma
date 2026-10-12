@@ -6,9 +6,25 @@ import sys
 import tempfile
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS
+from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS, origin_destination, SCHEMA, SCHEMA_WITH_SOURCE_VERSIONS
 
 class NativeBundleBoundary(unittest.TestCase):
+    def test_archived_backends_and_new_guests_keep_exact_source_versions(self):
+        path='/same/consumed/source.lean';old='a'*64;new='b'*64
+        manifest={'schema':SCHEMA_WITH_SOURCE_VERSIONS,'origins':{path:{old:'old',new:'new'}},
+                  'files':{'old':{'sha256':old},'new':{'sha256':new}}}
+        self.assertEqual(origin_destination(manifest,path,old),'old')
+        self.assertEqual(origin_destination(manifest,path,new),'new')
+        for digest in ('c'*64,'',None):
+            with self.assertRaises(ValueError):origin_destination(manifest,path,digest)
+        manifest['origins'][path]={old:'new'}
+        with self.assertRaises(ValueError):origin_destination(manifest,path,old)
+        manifest['origins'][path]='old'
+        with self.assertRaises(ValueError):origin_destination(manifest,path,old)
+        manifest['schema']=SCHEMA
+        self.assertEqual(origin_destination(manifest,path,old),'old')
+        with self.assertRaises(ValueError):origin_destination(manifest,path,new)
+
     def test_development_configuration_requires_exact_laboratory_admission(self):
         profile='lemma-silicon-dev/0.3.0'
         for configuration in ARITHMETIC_LAB_CONFIGURATIONS:

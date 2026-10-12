@@ -802,6 +802,8 @@ def main():
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
+    p.add_argument('--base-bundle',type=Path,help='Validate and retain these immutable backends with freshly audited replacement guests')
+    p.add_argument('--notebook-build',type=Path);p.add_argument('--initializer-build',type=Path)
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
     p.add_argument('--backend',choices=('qemu','rtl'),default='rtl');p.add_argument('--profile')
     p.add_argument('--workload',choices=('service','notebook','initializer','devices','power'),default='notebook')
