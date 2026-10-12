@@ -191,3 +191,39 @@ processes were reaped. Actual result/log/input hashes are retained in
 `8e612cf0df5bc601cb059b4be8b99466331f7787b963365c15b8277f78438ce4`.
 The focused workflow regression passed13 tests; target/controller inputs were
 unchanged. The repaired candidate still requires its own successful CI.
+
+## October12 implementation continuation
+
+The subsequent actual candidate CI38288756841 at `d219650` passed all10 jobs.
+PR8 was already merged when this continuation inspected it. The current owner
+instruction forbids another merge; new work stays on the preserved Task006
+branch for draft publication. The original failed CI and canonical/physical
+observations above retain their identities and meanings.
+
+`aa49491` adds shared backing read/write/barrier outcomes and isolated replay,
+including real partial-write and sync/read errors. `e0e325c` adds a deterministic
+free-frame cursor and maintained owner accounting without changing allocation
+choice, quota priority, generations, zeroing, pinning or cleanup. See the
+[frame evidence](006-frame-index.md). `3704441` adds an independently persistent
+hosted-Lean opaque peer and normal companion launch command; actual lost-ACK
+and both-restart receipt reconciliation passed, while USB and an asynchronous
+guest companion service remain unfinished. See [peer evidence](006-companion-backing.md).
+
+`84c5dcd` connects actual rational/polynomial checks, revision-bound evidence,
+an authored course and hints to the guest notebook and store. Real raw input,
+edited/unsupported/resource cases, acknowledged Save, independent cold complete
+pixels/record recovery and failed barrier passed. Three earlier source/observer
+failures are retained separately. See [the exact-course receipt](006-exact-course.json).
+This bounded arithmetic checker does not close the managed-runtime or Lean
+proof-kernel gate.
+
+The local RTL/Wasm port builds the existing generated circuitry and reusable
+Machine. Actual browser-worker OPFS initialization/cold-prefix execution,
+corrupt rejection without any archive change, private origin restore and an
+8.15M-cycle queued-input suffix passed. The browser/native-host Wasm suffix
+archive is exact, with68.316s host time,325MiB Wasm heap and1.683GiB peak host
+RSS. Browser Ready, writing, acknowledged Save and full cold recovery remain
+unqualified. The canonical RTL campaign and changed-source hot-path work are
+still active. See [browser source/tool/observation identities](006-browser-machine.json).
+These results do not fix the QEMU cached-state hole, complete digital radios,
+establish production boot/update or close physical implementation.

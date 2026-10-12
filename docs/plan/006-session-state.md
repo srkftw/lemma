@@ -1,8 +1,12 @@
 # Task006 checkpoint
 
 Task006 remains a substantial partial increment, not a completed Lemma One.
-Resume `task/006-whole-machine-lemmasim`; the owner subsequently authorized
-merging PR8 after applicable checks pass. Preserve the task branch.
+Resume `task/006-whole-machine-lemmasim`. At the start of the October12
+continuation, PR8 was already merged at `b2fe214258345f9e48ae1f836fd80b0773d933a6`;
+the preserved task branch was clean at `d219650b1cef7f3c3eff080f2ab78c2bcf21c504`.
+The current assignment requires a new draft publication and explicitly forbids
+merging it. Earlier session merge authorization does not apply. Preserve the
+task branch and every original failure.
 The [assignment](../../codex/prompts/006-whole-machine-lemmasim.md),
 [capability inventory](LEMMASIM.md#task006-capability-inventory) and
 [evidence](../evidence/006-whole-machine-lemmasim.md) retain the entire destination.
@@ -37,6 +41,14 @@ passed94 jobs in51.94s in a clean detached703ddc9 checkout with no initial
 `.lake` cache. All five exact bounded Lean/compiler fixture commands passed
 there (`build/task006-metadata-clean-a1/result.json`); the focused workflow
 suite also passed13 tests. The target/controller sources remain identical.
+
+The actual subsequent [candidate CI38288756841](https://github.com/srkftw/lemma/actions/runs/38288756841)
+at `d219650` passed all10 jobs before this continuation. That result qualifies
+its own candidate, not the new implementation. The failed38245370738 log was
+read directly; the three stale assertions and the later missing clean-cache
+Lean import were already repaired before this session. A new local continuation
+run passed all460 foundation host tests in36.165s, including new mathematical
+record negatives; metadata and scaffold checks are separate observations.
 
 Historical implementation `9946e7ef` introduced persistent QEMU/RTL sessions,
 exact backend-private checkpoints, isolated durable forks, native controller
@@ -83,6 +95,23 @@ RTL caches/TLBs are captured in the savable model. Selected RV64IM excludes A;
 QEMU's RISC-V reservation fields are nevertheless explicitly serialized.
 
 ## Actual observations
+
+October12 continuation milestones are `aa49491` (captured backing outcomes),
+`e0e325c` (frame cursor/owner accounting), `3704441` (hosted-Lean durable opaque
+peer) and `84c5dcd` (real guest exact mathematics/course/Save/cold recovery).
+Their separate receipts are linked from the continuation section in the
+[evidence report](../evidence/006-whole-machine-lemmasim.md#october12-implementation-continuation).
+The canonical RTL cold campaign at
+`build/silicon/task006-frame-index-canonical-a2/` is still running with the
+immutable audited186e8370 image and native5b8a8e18 binary. Its2B/7200s ceiling
+is diagnostic, not a proved workload bound or a timeout-to-success rule.
+It measures actual supervisor allocation validation and later guest toolbar
+construction; it has not yet qualified Ready or a complete display.
+Root's local browser a1 is paused at62.1M cycles in an isolated OPFS fork after
+actual initializer/cold-prefix execution and exact8.15M-cycle continuation.
+No browser Ready or complete product claim follows. The next joint target
+build must include the current mathematical save-copy correction and measured
+kernel/surface optimizations; preserve every old image, source closure and FAIL.
 
 - Final canonical power workflow `build/l6-power-final-a1/result.json`: **PASS**,
   133.37s, fresh Loader notebook on final927. Busy rejection, held-contact suspend,

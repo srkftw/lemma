@@ -1,0 +1,82 @@
+# Local RTL browser embodiment v1
+
+`lemmasim-browser-bundle/1` is a local development distribution of the existing
+`lemma-silicon-dev/0.3.0` machine, not a new emulator. Verilator5.052 generates
+`lemma_soc` with its actual processor, TLB/cache, fabric and device circuits.
+Emscripten6.0.9 compiles that circuitry and `Machine` to Wasm. The guest remains
+the separately audited, genuinely elaborated Lean/LLVM RV64 image. The native
+helper compiles guest images; no browser-local Lean compiler is supplied.
+ELF-preload development boot remains explicit. Production boot/update is absent.
+
+The portable build copies the pinned Verilator runtime and disables only Linux
+CPU-affinity branches for Emscripten's single evaluation thread. Its original
+and patched source hashes are recorded. No instruction execution, notebook,
+ink, recovery or mathematics moves into JavaScript. Browser code transports raw
+pointer events and presents the controller's Gray4 output with WebGPU or the
+same-byte 2D fallback. Device loss replaces the presentation canvas only.
+Mouse pressure is explicitly synthetic. Pointer cancellation supplies loss/
+resynchronization flags. Coordinate conversion has bounded integer results.
+
+## Time and observational state
+
+One worker owns the machine. A 50000-cycle run quantum yields cooperatively;
+animation frames and tab scheduling do not advance virtual time. All clocks,
+addresses and operation IDs cross the JavaScript interface as literal decimal
+strings or BigInt. Only bounded geometry, byte counts and run quanta use Number.
+New asynchronous storage/import/restore operations exclude competing controls.
+Raw input enters the actual machine event queue at the observed cycle.
+
+Snapshot exports use the unchanged `LMSSRTL1` state contract. MEMFS lacks hard
+links, so Wasm exclusively creates the artifact and copies it in bounded chunks;
+this artifact publication is separate from a medium barrier. Snapshotting does
+not flush the medium or drain guest work. Corrupt/incompatible state rejects
+before live adoption. A valid restore owns a private MEMFS backing fork. The
+browser copies its opaque bytes to an exclusively created OPFS fork, flushes
+that copy, and rebinds only after full byte equality. A storage failure after a
+valid restore leaves the machine paused; Resume cannot use MEMFS as durable
+backing. Retry private binding or export that machine's actual backing bytes.
+
+Native and Wasm implementation identities are distinct. Their archive headers
+need not match and cannot be interchanged. For this pinned little-endian port,
+the same generated Verilator serializers encode the logical signals in the
+same declared order and widths; their context-pointer overload writes context
+values, not pointer addresses. The bounded comparison therefore requires exact
+wrapper and generated-state sections, plus applicable output/event suffixes.
+The original source closures and each implementation identity remain recorded.
+This does not establish all possible architectural/cache/device boundaries or
+QEMU timing parity. QEMU's untranslated-cache checkpoint hole remains open.
+
+## Origin persistence and faults
+
+The backing interface is `lemma-backing-io/1`. A worker holds an exclusive OPFS
+SyncAccessHandle for the complete256MiB raw medium. Only its successful `flush`
+completes the guest barrier; an enqueued asynchronous operation or an in-memory
+copy cannot acknowledge Saved. Errors map explicitly: quota28, permission13,
+closed handle9, cancellation125, missing file2, otherwise I/O5. Partial returns
+are captured. A throwing write is followed by an observation of changed bytes;
+unknown/non-prefix changes poison the machine instead of inventing rollback.
+A failed preflight read happens before issuing the write and has a known empty
+changed prefix. Read and barrier errors reach the actual controller.
+
+Backing outcome logs capture before machine publication. Replay constructs a
+new instance with the exact log and restores an isolated checkpoint; its new
+OPFS file receives only recorded effects. It does not execute live I/O against
+the original medium or peer. A raw capture binds checkpoint hashes to the
+number of already admitted events, so a replay schedules only the later suffix.
+It stops at the recorded final cycle. Arbitrary reset-spanning captures are not
+advertised: explicit browser resets clear the raw checkpoint bindings. Pending
+external callbacks cannot be snapshot boundaries under this synchronous contract.
+
+Origin eviction and physical power-loss guarantees remain unqualified. An
+export contains actual backing bytes, including observed unacknowledged changes,
+not the volatile controller overlay. Cold reopen invokes actual guest journal
+recovery; restoring a checkpoint is a separate operation. Initialization and
+raw import require a new medium name and cannot format an existing medium.
+No beforeunload hook acknowledges or saves pending work.
+
+The prepared bundle is local. Existing software's project-wide redistribution
+license is unresolved. Dependency notices preserve upstream terms and do not
+relicense target sources. Native installers, teacher/package permissions,
+tutor communication, whole-machine browser acceptance and physical conformance
+remain separate required work; a successful Wasm build or boot prefix is not
+those results.

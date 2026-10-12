@@ -174,6 +174,26 @@ jobs:
                 --work-dir build/lemmasim/compiler-power-ci \
             2>&1 | tee build/ci/metadata/power-compiler.log
 
+      - name: Check indexed frames, exact mathematics and external backing outcomes
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/kernel/FramesScans.lean \
+            2>&1 | tee build/ci/metadata/frame-index.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/mathematics/ExactMath.lean \
+            2>&1 | tee build/ci/metadata/exact-mathematics.log
+          timeout --foreground --signal=TERM --kill-after=10s 2m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/lemmasim -p test_backing_io.py -v \
+            2>&1 | tee build/ci/metadata/backing-io.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              python3 -m unittest discover -s tests/lemmasim -p test_companion_peer.py -v \
+            2>&1 | tee build/ci/metadata/companion-peer.log
+
       - name: Run kernel host-harness suite
         run: |
           set -euo pipefail

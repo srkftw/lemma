@@ -796,6 +796,9 @@ def main():
         return result if isinstance(result,int) else 0
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('companion',help='Hosted Lean persistent opaque backing development transport; use companion --help')
+    p=sub.add_parser('browser-build',help='Build the same RTL Machine as a local Wasm static bundle')
+    p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
+    p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
     p.add_argument('--backend',choices=('qemu','rtl'),default='rtl');p.add_argument('--profile')
     p.add_argument('--workload',choices=('service','notebook','initializer','devices','power'),default='notebook')
@@ -839,6 +842,10 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
+        if args.command=='browser-build':
+            import lemmasim_browser
+            (lemmasim_browser.bundle if args.reuse_wasm else lemmasim_browser.build)(args)
+            return 0
         if args.command=='init' and (args.backend=='rtl' or args.profile in ('lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0')):
             import lemmasim_session
             lemmasim_session.initialize(args)

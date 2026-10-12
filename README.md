@@ -487,7 +487,8 @@ formats it. Preserve that raw file outside `build/`. Session directories and
 checkpoint destinations must be new. Later launches reuse the existing medium
 and prepared images without formatting or rebuilding. Preparation rejects stale
 source/artifact identities. The native host presentation environment is pinned
-for Linux x86-64; a portable installer and local browser build remain unfinished.
+for Linux x86-64. A local RTL/Wasm development bundle is available below;
+installers and complete browser product acceptance remain unfinished.
 
 Write with the pointer in the notebook canvas. The guest toolbar supplies Home,
 previous/next page, Undo, Redo, Erase, brush Width, explicit Save and Compact.
@@ -573,10 +574,47 @@ processor runs every hardware cycle; report its observed speed without a
 real-time claim. `--memory-latency N` adds admitted external-memory backpressure.
 The larger RTL notebook cold path remains a performance blocker; the original
 Task005 notebook evidence retains its different binding and execution identity.
-Both backends still use explicitly named ELF-preload development boot. Companion
-transport, USB enumeration, digital Wi-Fi/Bluetooth, production power/recovery,
-browser/Wasm and the managed mathematical/learning stack are not implemented by
-these commands and remain in the [capability inventory](docs/plan/LEMMASIM.md).
+Both backends still use explicitly named ELF-preload development boot. USB
+enumeration, digital Wi-Fi/Bluetooth, production power/recovery and a managed
+mathematical runtime remain unfinished in the
+[capability inventory](docs/plan/LEMMASIM.md). The backing peer and local browser
+embodiment have their own commands and narrower qualification scopes.
+
+### Local RTL browser development bundle
+
+Prepare both genuinely compiled guest workloads, then build the existing RTL
+`Machine` for a local Wasm worker. Each output directory must be new:
+
+```sh
+./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.3.0 --workload initializer
+./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.3.0 --workload notebook
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --wasm-build build/wasm/local-new --output-dir build/browser/local-new
+python3 -m http.server 8765 --bind 127.0.0.1 --directory build/browser/local-new
+```
+
+Open [the local bundle](http://127.0.0.1:8765). It needs a browser supporting
+worker OPFS synchronous access. Create a new named medium through the actual
+Lean initializer, or import an existing256MiB raw medium under a new name.
+Open performs cold guest boot; controller output supplies the entire display.
+WebGPU presents those pixels, with a same-byte2D fallback. Mouse pressure is
+synthetic. The Laboratory raw-input control uses the native pen/button/UART
+event contract; `now` selects the current exact virtual cycle/device time.
+
+Pause, checkpoint export, private-fork restore, backing export, cold/warm reset
+and recorded-suffix replay operate on the same machine. Restore cannot resume
+until its isolated origin backing has been copied, flushed and byte-validated.
+Browser `flush` qualifies the origin storage barrier; eviction and physical
+power-loss guarantees remain unqualified. Initialization/import refuse existing
+names. Export includes observed unacknowledged backing changes; it is not an
+implicit Save. No beforeunload save is promised.
+
+The compiler is the native pinned build helper. This is explicit development
+preload, without a production boot/update path or an in-browser Lean compiler.
+Local bundle creation does not select a redistribution license. See the
+[browser/state contract](docs/contracts/006-browser-machine-v1.md) and the
+checkpoint for actual Ready, persistence and native/Wasm observation status;
+building Wasm alone does not establish a usable complete browser machine.
 
 ## License and private material
 

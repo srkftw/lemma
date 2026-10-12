@@ -119,6 +119,8 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/foundation-host-unittest.log", "metadata/user-copy-scans.log",
                          "metadata/loader-copy.log", "metadata/power-authority.log",
                          "metadata/power-object-budget.log", "metadata/power-compiler.log",
+                         "metadata/frame-index.log", "metadata/exact-mathematics.log",
+                         "metadata/backing-io.log", "metadata/companion-peer.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
             "legacy-rv64": ("legacy-rv64.log",),

@@ -1,0 +1,98 @@
+{
+  "schema": "lemma-task006-browser-evidence/1",
+  "status": "PARTIAL",
+  "implementation_parent": "84c5dcd",
+  "scope": "real reusable RTL Machine compiled to Wasm; local IAB worker and OPFS; no complete browser notebook/Ready acceptance",
+  "wasm_build": {
+    "path": "build/wasm/task006-port-a8/build.json",
+    "sha256": "c9c12a1cc68828166d0d0b7abb8e86c0db1bc38e94875334ceae508ad19beaa9",
+    "implementation_identity": "df12617b4facaf6edbc8d42cf9b5310c01327cb0fced172afc02953a09fa0e7b",
+    "machine_wasm_sha256": "d740eb96244867e7f7207f413a104a3541fd40be0897ab1793b9633045aa7cb1",
+    "tools": {
+      "verilator": "Verilator 5.052 2026-09-05 rev v5.052\n",
+      "em++": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.9-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "node": "v24.21.0\n"
+    },
+    "consumed_portable_inputs": {
+      "sim/browser/wasm_machine.cpp": "dba81d54bf39ce76349d8c4491ecc5105ec490e25f86f0ff267d15df3224756a",
+      "sim/host/backing_io.h": "9e3560b56620b839afadb7ec7417f15b7e1837fa05efc96f91bc3cb6abe23811",
+      "sim/host/backing_io.cpp": "999096408392b64f2ec8771303a283a1d6c515e3abd1009fba18b6aa0ef06442",
+      "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+      "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+      "sim/rtl/host/machine_runtime.cpp": "4aa2084633e824f06ca11101cb59f377bb180cb85291e9a4ca8c322409fd1bdd",
+      "sim/rtl/host/machine_runtime.h": "083658852c86c198da623bda4eccea3bc1b33f77cad32623f3f7bc92869e0ae7",
+      "tooling/silicon/wasm.nix": "a9bdc2c831fc5356acd6299a6bad29f8539bb5afde822ec461780105b41559bf",
+      "scripts/silicon_wasm.py": "cf1b869c11954b4f82f712fcfbf8f459e8b82bcc81702853f53d15bfbc29d6af"
+    }
+  },
+  "actual_browser": {
+    "status": "PASS_SCOPED",
+    "scope": "real IAB worker initialization, cold notebook prefix, corrupt rejection, private OPFS restore and exact selected queued-pen suffix; Ready/Save/full browser workflow NOT_RUN",
+    "bundle_sha256": "e89f040e33d0e12fce3c302f01ffad2e426eb52307fa40d56f08edcaa6e21f26",
+    "checkpoint_sha256": "d5f6f7153929985e3b0d93c9754d0d5ad5e3a4f7d12af788f3674409f9abc961",
+    "checkpoint_bytes": 145416324,
+    "checkpoint_cycle": "53950000",
+    "queued_raw_events": 2,
+    "ready": false,
+    "observed_heap_bytes": 201326592,
+    "browser_reported_notebook_host_seconds": 360.39,
+    "corrupt_rejection": {
+      "error": "checkpoint checksum mismatch",
+      "unchanged_archive": true,
+      "after_sha256": "d5f6f7153929985e3b0d93c9754d0d5ad5e3a4f7d12af788f3674409f9abc961"
+    },
+    "private_restore": {
+      "isolated_medium": true,
+      "unchanged_archive": true,
+      "after_sha256": "d5f6f7153929985e3b0d93c9754d0d5ad5e3a4f7d12af788f3674409f9abc961",
+      "wasm_heap_bytes": 340787200,
+      "origin_rebind": "actual OPFS copy, flush and complete-byte validation"
+    },
+    "suffix_receipt": "build/browser/task006-ui-suffix-a1/result.json",
+    "suffix_cycles": "8150000",
+    "final_cycle": "62100000"
+  },
+  "selected_browser_native_host_suffix": {
+    "status": "PASS",
+    "scope": "same Wasm implementation: real browser arbitrary-boundary archive and exact applicable suffix; not cold recovery or C++/Wasm microstate migration",
+    "observerSha256": "b29a27810eaa58fd316e5b7f931e748ca2e0c18afbccf205c72aadd50b8a1d56",
+    "input": {
+      "bundleSha256": "e89f040e33d0e12fce3c302f01ffad2e426eb52307fa40d56f08edcaa6e21f26",
+      "prefixSha256": "d5f6f7153929985e3b0d93c9754d0d5ad5e3a4f7d12af788f3674409f9abc961",
+      "suffixSha256": "ed7bc9d37f6cd79235cc3c6b06a99b1cf341edf968ff7f5235ce1746e95a0267",
+      "firstCycle": "53950000",
+      "lastCycle": "62100000",
+      "cycles": "8150000"
+    },
+    "exactArchiveSha256": "ed7bc9d37f6cd79235cc3c6b06a99b1cf341edf968ff7f5235ce1746e95a0267",
+    "wasmHeapBytes": 340787200,
+    "hostPeakRssBytes": 1806565376,
+    "hostSeconds": 68.31566049300001
+  },
+  "earlier_native_cpp_wasm_prefix": {
+    "path": "build/wasm/task006-native-pair-a4/result.json",
+    "status": "PASS",
+    "scope": "predeclared1M+1M; actual generated circuitry and exact sections; guest image had a retained readonly inventory audit failure, so this is backend-prefix evidence only",
+    "host_seconds": 29.267107193,
+    "heap_bytes": 340787200,
+    "host_peak_rss_bytes": 1980014592
+  },
+  "retained_failures": [
+    "build/wasm/task006-native-pair-a1/result.json: MEMFS hard-link publication failure",
+    "build/wasm/task006-native-pair-a2/incomplete-harness.json: missing HEAPU8 export/cleanup observer",
+    "build/wasm/task006-native-pair-a3/incomplete-harness.json: cleanup observer did not recognize SIGTERM"
+  ],
+  "commands": [
+    "./scripts/lemmasim browser-build --reuse-wasm --wasm-build build/wasm/task006-port-a8 --output-dir build/browser/task006-local-a1 --profile lemma-silicon-dev/0.3.0",
+    "python3 -m http.server 8765 --bind 127.0.0.1 --directory build/browser/task006-local-a1",
+    "node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-local-a1 build/browser/task006-ui-a1/checkpoint.bin build/browser/task006-ui-a1/browser-suffix.bin build/browser/task006-ui-suffix-a1"
+  ],
+  "unfinished": [
+    "Canonical RTL/browser Ready, writing, Save, failed Save and independent cold full-display recovery",
+    "Full native/Wasm architectural/cache/device boundary campaign and asynchronous pending external I/O",
+    "QEMU logical translation/TB checkpoint preservation and processor timing parity",
+    "Product boot/update, watchdog/brownout, USB/radio, managed runtime and proof kernel",
+    "Distribution installers, permission modes, browser-local compiler and redistribution license",
+    "All physical qualifications remain separate and incomplete"
+  ]
+}
