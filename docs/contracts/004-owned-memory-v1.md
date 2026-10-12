@@ -285,3 +285,19 @@ bindings, original word addresses and exact context fields, and pin the four
 new/refactored helper lowering shapes to `local-borrow-shapes-v1`. Those shape
 checks supplement CFG/operand and independent finite-RAM checks; they do not
 establish general compiler correctness or real guest execution.
+
+The frame zero callback may select a local complete64-byte interval branch only
+when its computed modular start is aligned8 and lies between pool and
+pool-limit-minus64, inclusive. It still issues all eight ordinary checked
+physical word writes in increasing order, stopping at the same first error.
+Its last write retains the original returned accumulator even on failure.
+Direct status-zero tests replace equivalent predicate calls in this branch.
+LLVM may use the dominating source facts to discharge individual guards; the
+checked primitive lowering itself is unchanged. All other callback inputs use
+the original generic sequence, including arbitrary indices, wrapping arithmetic,
+read-only or unmapped intervals and cross-boundary partial writes. No new
+unchecked primitive, cached grant, pointer publication or heap capacity change
+is admitted. Full-frame admission, configured-pool bounds,512 checked writes,
+zero-before-publication, allocation choices and rollback semantics remain.
+Independent host traces exercise every status value and full-page first-error
+position; their success is separate from real guest performance and Ready.

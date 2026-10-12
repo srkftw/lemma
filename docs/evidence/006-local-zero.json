@@ -1,0 +1,80 @@
+{
+  "schema": "lemma-local-zero-evidence-v1",
+  "result": "PASS_SOURCE_ACTIONS_AND_CHECKED_LLVM",
+  "scope": "maintained Lean source local bounds; independent host Action fault/request qualification and genuine checked LLVM; no new full-target or cycle-performance claim",
+  "source_context": "92c0844 plus this scoped source increment; simultaneous Managed changes excluded from this scope",
+  "contract": "004-owned-memory-v1 unchanged functional semantics",
+  "capacity": {
+    "pool_frames": 8192,
+    "bytes_per_frame": 4096,
+    "checked_zero_word_stores_per_frame": 512,
+    "callbacks_per_frame": 64
+  },
+  "qualification": {
+    "independent_regions": 6,
+    "callback_boundaries": 29,
+    "callback_indices": [
+      0,
+      1,
+      63,
+      64,
+      4294967295
+    ],
+    "complete_callback_status_domain": 256,
+    "full_page_first_error_positions_including_success": 513,
+    "compared": [
+      "status",
+      "returned accumulator",
+      "exact ordered attempted operations/address/value/status",
+      "successful partial write count"
+    ],
+    "alias": "host fixture refers to actual imported private zeroStep declaration; independent historical source form is separate"
+  },
+  "llvm": {
+    "before_callback_lines": 459,
+    "before_static_calls": 11,
+    "after_callback_lines": 69,
+    "after_static_calls": 3,
+    "after_calls_scope": "generic fallback branches only; successful pool path has no calls",
+    "fast_path_volatile_word_stores": 8,
+    "per_store_bounds": "all checked physical primitive guards emitted before LLVM; eliminated after LLVM proves local interval facts",
+    "whole_guest_cycle_speedup": null
+  },
+  "checks": [
+    {
+      "command": "nix develop --no-write-lock-file --command lake build Lemma.Kernel.Memory.Frames",
+      "log": "build/task006-zero-local-production-a1.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command env LEMMA_ZERO_LOCAL_OUT=build/task006-zero-local-maintained-a3 lake env lean tests/kernel/ZeroLocal.lean",
+      "log": "build/task006-zero-local-maintained-a3.log",
+      "result": "PASS"
+    },
+    {
+      "command": "nix develop --no-write-lock-file --command lake env lean tests/kernel/FramesScans.lean",
+      "log": "build/task006-zero-local-allocator-regression-a1.log",
+      "result": "PASS"
+    }
+  ],
+  "retained_failures": {
+    "build/task006-zero-local-a1/compile.log": "missing MemoryModel build artifact; no elaboration occurred",
+    "build/task006-zero-local-maintained-a1.log": "test-only operation namespace, keyword, declaration quotation and record-layout mistakes rejected",
+    "build/task006-zero-local-maintained-a2.log": "test-only record field indentation and wrong log monad rejected; genuine lowering passed but suite remains FAIL"
+  },
+  "tools": {
+    "Lean": "4.34.1",
+    "Lean_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "LLVM": "20.1.8"
+  },
+  "sources": {
+    "Lemma/Kernel/Memory/Frames.lean": "bfce0d8c9d64d0b76bfa2a3a0b4139f25e544945e9f7e81b888f64af9d28337b",
+    "tests/kernel/ZeroLocal.lean": "ed3caaf35a696940ebdb2ec154b056d54f5ff9d4a3f767b3313367e944a5d26f"
+  },
+  "artifacts": {
+    "build/task006-zero-local-maintained-a3/program.ll": "46a97bbc30dee024e7ecd1ffb997a43e6a6a3af46e27503c170d0e9af3eec99e",
+    "build/task006-zero-local-maintained-a3/program.opt.ll": "3586c0e80208a1e752158207a06b635c3b49d92884139ea994de3869a1715a2b",
+    "build/task006-zero-local-maintained-a3/program.s": "4fcca0052ca718580b458d760ab27ea7fd6a9011c869cdb52cb6cf97304f01b7"
+  },
+  "canonical_campaign": "Existing optimized a3 remains immutable and running under original2Bcycle/7200s diagnostic ceilings; Ready/full pixels and connected RTL workflow remain required."
+}

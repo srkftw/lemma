@@ -254,7 +254,7 @@ private def findFree (amount : UInt64) : Action :=
 
 /-- Eight consecutive checked writes per callback retain increasing address
 and first-error order. This removes loop/callback work, never page clearing. -/
-private def zeroStep (i : UInt32) (_count : UInt32) (acc frame _ _ _ : UInt64) : Action :=
+private def zeroGenericStep (i : UInt32) (_count : UInt32) (acc frame _ _ _ : UInt64) : Action :=
   let start := frame + i.toUInt64 * 64
   .bind (Access.write64 (start + 0) 0) fun s _ =>
   if failed s = true then .done s 0 else
@@ -271,6 +271,43 @@ private def zeroStep (i : UInt32) (_count : UInt32) (acc frame _ _ _ : UInt64) :
   .bind (Access.write64 (start + 48) 0) fun s _ =>
   if failed s = true then .done s 0 else
   .bind (Access.write64 (start + 56) 0) fun s _ => .done s acc
+
+/-- This local branch proves only the complete next64-byte writable interval.
+Every store still uses the checked primitive, in increasing order. LLVM may
+prove its per-store guards from these facts. The exact generic fallback retains
+arbitrary callback inputs, wrapping arithmetic, cross-region partial writes and
+first-error/status/value semantics; it is never an unchecked storage path. -/
+private def zeroStep (i count : UInt32) (acc frame a b c : UInt64) : Action :=
+  let start := frame + i.toUInt64 * 64
+  if pool ≤ start then
+  if start ≤ expandedPoolLimit - 64 then
+  if start % 8 = 0 then
+
+  .bind (Access.write64 (start + 0) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 8) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 16) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 24) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 32) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 40) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 48) 0) fun s _ =>
+  if s = 0 then
+  .bind (Access.write64 (start + 56) 0) fun s _ => .done s acc
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else zeroGenericStep i count acc frame a b c
+  else zeroGenericStep i count acc frame a b c
+  else zeroGenericStep i count acc frame a b c
 
 def zero (frame : UInt64) : Action :=
   if frameAddressValid frame = false then .done invalidFrame 0 else
