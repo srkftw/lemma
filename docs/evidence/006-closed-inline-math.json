@@ -1,0 +1,96 @@
+{
+  "schema": "lemma-optimized-arithmetic-regression/1",
+  "status": "SCOPED_PASS",
+  "scope": "Actual Lean RV64 course/check/hint/history/save, independent cold bytes and every controller pixel, failed barrier. QEMU icount performance, not RTL timing parity or full mathematical/runtime closure.",
+  "command": "python3 scripts/check_math_session.py --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-closed-inline-math-a2 --native-bundle build/native/task006-canonical-a1 --guest-build build/kernel/task006-closed-inline-notebook-a3 --deadline 1200",
+  "identity": {
+    "backend": "qemu",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "adapter": "lemmasim-fast-adapter/4",
+    "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+    "guest": "7c30b8af07ab9a6bc937c8a7caf5891abaa1259379ad6897d51f713f48f011e4",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+    "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount_shift": 3
+  },
+  "result": {
+    "path": "build/task006-closed-inline-math-a2/result.json",
+    "sha256": "69267b2057a8cd43f476fc2c584119d60a2e6d6652c179c2605e94df99b8f5ae"
+  },
+  "original_failure": {
+    "path": "build/task006-closed-inline-math-a1/result.json",
+    "sha256": "d2b86587a57253e62cc1aae78da510a37c2a520d4f7e74aa1fe08fcd027715b8",
+    "status": "FAIL",
+    "error": "cold recovered course bytes or complete controller display differs",
+    "original_observer_sha256": "b9021b2498cd02d3198eaef076642d69e1701a69531225c9f5d1d6f82e022f93",
+    "diagnosis": "Actual acknowledged 1856-byte mathematical record matched. Live PENDING versus cold SAVED differed at 522 pixels in x24..104/y132..146; entire remaining controller display and closed notebook matched.",
+    "repair": "Observe actual SAVED and a newer completed controller refresh within original 30-second bound; retain byte equality before/after status publication, every pixel outside the defined status cells, and the original entire cold-display comparison. No target bytes, deadline or tolerance changed."
+  },
+  "saved_status_publication": {
+    "status": "PASS",
+    "observed_pending_after_barrier": true,
+    "before_completed": 36,
+    "after_completed": 37,
+    "virtual_ticks": 1000000,
+    "acknowledged_math_unchanged": true,
+    "original_action_seconds": 30
+  },
+  "boot": {
+    "virtual_seconds": 7.450000012,
+    "host_seconds": 13.276707839977462,
+    "cycle": 745000002
+  },
+  "cold_boot": {
+    "virtual_seconds": 8.400000008,
+    "host_seconds": 14.286726286984049,
+    "cycle": 840000001
+  },
+  "cold_recovery": {
+    "status": "PASS",
+    "actual_new_cpu": true,
+    "math_sha256": "13e52b41d5cd44c33bec97c8127e0078466098c120f6a41ae1644087cfe706d5",
+    "complete_controller_pixels": true,
+    "raw_ink_preserved": true
+  },
+  "failed_save": {
+    "status": "PASS",
+    "no_false_saved": true,
+    "acknowledged_math_unchanged": true
+  },
+  "outcomes": [
+    1,
+    2,
+    5,
+    1,
+    4
+  ],
+  "learner": {
+    "hints": 1,
+    "understanding": "uncertain",
+    "recommendation": "support"
+  },
+  "elapsed_seconds": 232.8541532960371,
+  "comparable_previous_guest": {
+    "image_sha256": "daa11f84b189ad79bc15293fd43a8b3f2eae83ddd3b08ee8dee1b42eef748d48",
+    "boot": {
+      "virtual_seconds": 10.000000024,
+      "host_seconds": 21.864119911042508,
+      "cycle": 1000000003
+    },
+    "cold_boot": {
+      "virtual_seconds": 11.150000012,
+      "host_seconds": 23.58770904201083,
+      "cycle": 1115000002
+    },
+    "qualification": "Same course/input and canonical dimensions/pool, same QEMU icount backend; source differs only as tracked by separate build receipts. Host concurrent load was uncontrolled, so no normalized host speedup claim."
+  },
+  "unfinished": [
+    "Managed ordinary-Lean mathematics integration",
+    "Pinned proof-kernel/environment closure",
+    "Complete courses, tutor transport and learning-policy evaluation",
+    "Exact fast/RTL timing relation",
+    "Canonical RTL Ready and physical closure"
+  ]
+}

@@ -209,8 +209,39 @@ class MathChecker(Checker):
         self.press(live,stream,'next unsupported goal',7,4)
         unsupported=self.press(live,stream,'check Unsupported',1,4)
         require(unsupported[2]==3 and unsupported[3]==4,'unsupported goal was fabricated successful')
+        # The guest emits its barrier receipt before publishing the Saved
+        # footer. An older completed course refresh is insufficient: require
+        # the actual controller-produced Saved frame within the same bound.
+        before_saved=live.inspect()['machine']
+        provisional_panel,provisional_medium=live.export('course-before-saved')
+        provisional_bytes=self.record(provisional_medium)[0]
+        already_saved=True
+        try:self.label(provisional_panel,'SAVED',24,132)
+        except ValueError:
+            already_saved=False
+            self.label(provisional_panel,'PENDING',24,132)
+        after_saved=self.wait_label(live,'SAVED',24,132)
+        if not already_saved:
+            require(after_saved['devices']['paper']['completed']>before_saved['devices']['paper']['completed'],
+                    'Saved footer did not complete a new controller refresh')
         active_panel,medium=live.export('course-final')
         final_bytes,final,records,sequence=self.record(medium)
+        require(final_bytes==provisional_bytes,'Saved status publication changed acknowledged mathematical bytes')
+        if not already_saved:
+            w,h,before_pixels=visible_pixels(provisional_panel)
+            aw,ah,after_pixels=visible_pixels(active_panel)
+            require((w,h)==(aw,ah),'status publication changed controller dimensions')
+            for y in range(h):
+                for x in range(w):
+                    if 24<=x<132 and 132<=y<148:continue
+                    at=(y*w+x)*3
+                    require(before_pixels[at:at+3]==after_pixels[at:at+3],
+                            'status publication changed course or ink controller pixels')
+        self.report['saved_status_publication']={'status':'PASS','observed_pending_after_barrier':not already_saved,
+            'before_completed':before_saved['devices']['paper']['completed'],
+            'after_completed':after_saved['devices']['paper']['completed'],
+            'virtual_ticks':after_saved['ticks']-before_saved['ticks'],
+            'acknowledged_math_unchanged':True,'original_action_seconds':self.args.action_seconds}
         require([entry['outcome'] for entry in final['history']]==[1,2,5,1,4] and final['hints']==1,
                 'verified/invalid/limited/unsupported history or assistance differs')
         require({key:record.payload for key,record in records.items() if key[1]>0x10000}==raw_before,
