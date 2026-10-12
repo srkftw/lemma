@@ -81,6 +81,36 @@ closure still requires setup improvement, detailed routing, complete rule
 coverage, process DRC/LVS and actual extracted timing; power/pads, memories,
 compute/full-SoC closure and physical panel conformance remain separate.
 
+The October12 continuation replaces the second refill edge's wide binary bank
+multiplexer with a registered one-hot bank selection and parallel mask/OR.
+Its decode is latched on the existing first refill edge; no public edge,
+capacity, field width, queue order or reset behavior changes. The actual
+full-depth literal device workload passed at
+`build/silicon/devices-task006-onehot-a1/result.json` on pen source SHA256
+`f73a3c556e1444cfdcb380a902496af041f64d99d880507020b54ff0a5fbf2e4`.
+That test includes both traversals of all256 entries, high timestamp bits and
+refill/reset/watchdog cutpoints; it is separate from guest notebook acceptance.
+
+One changed-source, unchanged-constraint physical attempt mapped227520 cells,
+50038 flip-flops,4275630.953999µm² area (0.417273% below the earlier banked map),
+without unresolved cells, residual memory or latches. Actual100MHz global-route
+setup WNS improved by0.135892ns to **−3.406316ns**, still **FAIL**. Hold WNS is
+**+0.031082ns**. The currently critical reported path starts at `sample_y[43]`
+and reaches `_351090_`,15.220151ns arrival against11.813835ns required;
+the earlier binary-select-to-head path is no longer the worst reported path.
+Global geometry is286697 instances,5019481.3536µm² cells and29.379903% utilization.
+Unlike the previous run, the electrical report contains128 clock-buffer fanout
+violations; none is waived. These remain estimated global-route parasitics.
+
+The900s overall flow bound expired during detailed-routing pin access after
+30000 groups. OpenROAD was terminated/reaped and the actual result is **FAIL**
+with a timed-out command. Process checks were requested but never reached;
+DRC, LVS, routed extraction and post-route timing are **NOT_RUN**. No complete
+layout or signoff follows. The original failures remain unchanged, and the
+SG13G2 enclosure/CUTCLASS gap is still not established as the timeout's cause.
+[The compact source/tool/result receipt](006-pen-onehot.json) retains this
+attempt separately. It used `--process-checks` in addition to the command below.
+
 Reproduce with unused output paths:
 
 ```sh

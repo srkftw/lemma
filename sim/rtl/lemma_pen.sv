@@ -35,6 +35,11 @@ module lemma_pen #(
   } entry_t;
   entry_t bank_entry [BANKS];
   entry_t head_entry, ingress_entry;
+  // Decode the bank before the existing second refill edge. A registered
+  // one-hot choice drives a parallel mask/OR rather than broadcasting four
+  // binary select bits across every bit of the181-bit sixteen-bank mux.
+  logic [BANKS-1:0] refill_select;
+  entry_t selected_head;
   logic [PTR-1:0] ingress_index;
   logic ingress_pending;
   // A completed pop advances the public FIFO once.  The next head is fetched
@@ -57,6 +62,12 @@ module lemma_pen #(
       if (reset_n && refill == 2)
         bank_entry[bank] <= rows[head >> BANK_BITS];
     end
+  end
+
+  always_comb begin
+    selected_head = '0;
+    for (int bank = 0; bank < BANKS; bank++)
+      selected_head |= bank_entry[bank] & {$bits(entry_t){refill_select[bank]}};
   end
 
   assign ready = refill == 0;
@@ -123,14 +134,15 @@ module lemma_pen #(
     if (!reset_n) begin
       head <= 0; tail <= 0; count <= 0;
       head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
-      refill <= 0;
+      refill <= 0; refill_select <= '0;
       epoch <= 1; head_epoch <= 1; next_sequence <= 1;
       losses <= 0; fault <= 0; last_time <= 0; contact_deadline <= 0;
       loss <= 0; resync <= 0; release_seen <= 0;
     end else if (refill == 2) begin
+      refill_select <= {{(BANKS-1){1'b0}},1'b1} << head[BANK_BITS-1:0];
       refill <= 1;
     end else if (refill == 1) begin
-      head_entry <= bank_entry[head[BANK_BITS-1:0]];
+      head_entry <= selected_head;
       refill <= 0;
     end else if (lose) begin
       mark_loss();

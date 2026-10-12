@@ -1,0 +1,126 @@
+{
+  "schema": "lemma-task006-pen-onehot-evidence/1",
+  "status": "PARTIAL_IMPLEMENTATION_PHYSICAL_FAIL",
+  "scope": "full-depth banked pen unchanged interface/refill clocks; one-hot second-stage selection; literal RTL and standalone physical flow are separate",
+  "source_commit_at_physical_run": "e312758787d0798af27bf316fffe6f8b6dcc6dba",
+  "source_inputs": {
+    "sim/rtl/lemma_pen.sv": "f73a3c556e1444cfdcb380a902496af041f64d99d880507020b54ff0a5fbf2e4"
+  },
+  "literal": {
+    "path": "build/silicon/devices-task006-onehot-a1/result.json",
+    "sha256": "ede9c8283a82991ed8001c812bcf7ce1aed4a0b01da3c78170ef38c105100fef",
+    "status": "PASS"
+  },
+  "physical": {
+    "path": "build/silicon/physical/pen-task006-onehot-a1/result.json",
+    "sha256": "9882c530a7a0c377f47d9fed03a5b6946d93732602a51f04591ed19a69ee624f",
+    "status": "FAIL",
+    "commands": [
+      {
+        "argv": [
+          "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+          "-s",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/generic.ys"
+        ],
+        "exit_code": 0,
+        "seconds": 7.636,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/generic.log",
+        "log_sha256": "fc761f9680dfce4343b6770cee0f5198040a56f25a1b2224a079fd0c1088a0c4",
+        "timed_out": false
+      },
+      {
+        "argv": [
+          "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+          "-s",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/mapping.ys"
+        ],
+        "exit_code": 0,
+        "seconds": 45.942,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/mapping.log",
+        "log_sha256": "60917d65444e3e5b35a8ce5244d3824beafe627c25f110579d04ce8e429da28a",
+        "timed_out": false
+      },
+      {
+        "argv": [
+          "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+          "-exit",
+          "-no_init",
+          "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/layout.tcl"
+        ],
+        "exit_code": -15,
+        "seconds": 844.33,
+        "log": "/home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-task006-onehot-a1/layout.log",
+        "log_sha256": "ede7dbf0f5c9c045bdb3d8d1cca9b09ae08b2c90dd4262bb14a32624881e9c28",
+        "timed_out": true
+      }
+    ],
+    "tools": {
+      "yosys_path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+      "yosys_version": "Yosys 0.69+post (git sha1 v0.69, Release, GNU /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++ 16.2.0)",
+      "openroad_path": "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+      "openroad_version": "26Q2"
+    },
+    "pdk": {
+      "revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+      "collateral": {
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+        "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0"
+      },
+      "corner": "typical 1.20 V 25 C"
+    },
+    "recipes": {
+      "recipe_sha256": "dcfe5afb5e702ae9db970541b145f94af7d9cc58a75a2f6e5776e1ce1d37f330",
+      "eda_recipe_sha256": "0158c908ff067cf45a90c40ce8fb6a6616b846a7a8059b4d0a6446f6afcac8ca",
+      "layout_recipe_sha256": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+      "physical_lock_sha256": "13275a90aaf90b4d208125eb53f36be4c4a9920aaf4aa7d8893326432ff50a28"
+    },
+    "mapped_cells": 227520,
+    "flip_flops": 50038,
+    "unresolved_cells": [],
+    "latches": 0,
+    "mapped_cell_area_um2": 4275630.953999,
+    "historical_mapped_cell_area_um2": 4293546.755399,
+    "mapped_area_change_percent": -0.41727276819500947,
+    "global_route": {
+      "cell_area_um2": 5019481.3536,
+      "core_area_um2": 17084744.208,
+      "utilization_percent": 29.379903453571213,
+      "instances": 286697,
+      "clock_period_ns": 10,
+      "timing_model": "global-route RC estimate before detailed signal routing",
+      "power_grid": "NOT_IMPLEMENTED",
+      "process_drc": "NOT_RUN",
+      "lvs": "NOT_RUN",
+      "setup_worst_slack_ns": -3.406316,
+      "setup_timing": "VIOLATED",
+      "hold_worst_slack_ns": 0.031082,
+      "hold_timing": "MET"
+    },
+    "historical_global_setup_wns_ns": -3.542208,
+    "global_setup_wns_change_ns": 0.13589200000000012,
+    "reported_electrical_violations": 128,
+    "electrical_report_sha256": "cdfb92c60ad391e9aebf6264bb8f7555af1150e816004818299a0cd716c7af9e",
+    "critical_path": {
+      "start": "sample_y[43] input",
+      "endpoint": "_351090_",
+      "arrival_ns": 15.220151,
+      "required_ns": 11.813835,
+      "scope": "literal global setup report; not routed extracted timing"
+    },
+    "detailed_routing": "900-second overall deadline; SIGTERM/reaped during pin access after30000groups; no completed route",
+    "process_drc": "NOT_RUN",
+    "lvs": "NOT_RUN",
+    "parasitic_extraction": "NOT_RUN",
+    "post_route_timing": "NOT_RUN",
+    "foundry_signoff": "UNVERIFIED"
+  },
+  "remaining": [
+    "100MHz setup violation",
+    "reported clock-tree fanout violations",
+    "detailed routing and layout export",
+    "complete SG13G2 enclosure/CUTCLASS coverage (not established as timeout cause)",
+    "controller process DRC/LVS and routed extraction/timing",
+    "paper/compute/full-SoC/memories/pads/CDC/power/analog/RF and physical panel qualification"
+  ]
+}
