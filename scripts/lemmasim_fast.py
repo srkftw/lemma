@@ -214,6 +214,8 @@ class Fast:
         if getattr(args,'native_bundle',None):
             import silicon_guest_bundle
             self.data=silicon_guest_bundle.prepared(args.native_bundle,'qemu',args.workload,args.profile)
+            if getattr(args,'guest_build',None):
+                self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
         else:self.data=prepared(args.workload,args.profile)
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,

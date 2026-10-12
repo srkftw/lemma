@@ -166,6 +166,8 @@ class RTL:
         if getattr(args,'native_bundle',None):
             import silicon_guest_bundle
             self.data = silicon_guest_bundle.prepared(args.native_bundle,'rtl',args.workload,args.profile)
+            if getattr(args,'guest_build',None):
+                self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
         else:self.data = silicon_guest.prepared(args.workload, args.profile)
         self.identity = {'backend': 'rtl', 'profile': self.data['profile'],
                          'runtime': self.data['binary']['sha256'],
@@ -586,7 +588,7 @@ class Session:
             self.presentation_generation += 1
             return result
         if action=='companion-retry':
-            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='qemu':raise ValueError('Explicit pending retry requires the fast development transport')
+            if self.mode not in ('developer','laboratory'):raise ValueError('Explicit pending retry requires Developer or Laboratory mode')
             state=self.machine.call('inspect')
             return self.external(value,state,'companion-retry')
         if action == 'panel':

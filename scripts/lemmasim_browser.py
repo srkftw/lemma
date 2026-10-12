@@ -28,7 +28,13 @@ def bundle(args):
         raise ValueError('Pinned portable tool inputs changed')
     for p,h in m['outputs'].items():
         if sha(source/p)!=h:raise ValueError('Wasm output changed: '+p)
-    prepared={w:silicon_guest.prepared(w,args.profile) for w in ('notebook','initializer')}
+    guest_archive=getattr(args,'guest_bundle',None)
+    if guest_archive is None:
+        prepared={w:silicon_guest.prepared(w,args.profile) for w in ('notebook','initializer')}
+    else:
+        import silicon_guest_bundle
+        prepared={w:silicon_guest_bundle.prepared(guest_archive,'rtl',w,args.profile)
+                  for w in ('notebook','initializer')}
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     def artifact(item,name):
         path=Path(item['path'])
@@ -39,14 +45,20 @@ def bundle(args):
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
             'wasm_build_sha256':sha(source/'build.json'),'workloads':{}}
+    if guest_archive is not None:
+        result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),
+            'source_commit':prepared['notebook']['native_bundle']['source_commit'],
+            'scope':'unchanged validated archived genuine guest on current source-bound RTL/Wasm; not fresh target compilation'}
     result['rom']=artifact(prepared['notebook']['rom'],'boot.bin')
     for w,data in prepared.items():
         entry=data['workloads'][w]
         result['workloads'][w]={k:artifact(entry[k],w+'/'+k+('.elf' if k=='image' else '.bin')) for k in ('image','dtb','descriptor')}
+        result['workloads'][w]['qualification']={k:artifact(entry[k],w+'/'+k+'.json')
+            for k in ('build','provenance','audit','capacity') if k in entry}
     for name in ('machine.mjs','machine.wasm'):shutil.copyfile(source/name,out/name)
     for p in (ROOT/'sim/browser').glob('*'):
         if p.suffix in ('.js','.html','.css'):shutil.copyfile(p,out/p.name)
-    result['files']={p.name:sha(p) for p in sorted(out.iterdir()) if p.is_file()}
+    result['files']={p.relative_to(out).as_posix():sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     (out/'bundle.json').write_text(json.dumps(result,indent=2)+'\n')
     notice='Local development bundle. Existing Lean/compiler/application sources have no selected project-wide redistribution license. Do not infer permission to redistribute from this local build.\nWasm host adapter: Apache-2.0 per source notices; no repository-wide relicensing.\nCVW pinned '+m['core_revision']+': Apache-2.0 WITH SHL-2.1 and preserved MIT notices.\nVerilator5.052: LGPL-3.0-only OR Artistic-2.0; generated model licensing follows its upstream terms. Emscripten6.0.9: MIT; generated runtime dependencies retain their upstream notices.\nSource/tool input closure is retained in wasm-build.json. Physical conformance UNVERIFIED.\n'
     (out/'DEPENDENCIES.txt').write_text(notice);shutil.copyfile(source/'build.json',out/'wasm-build.json')

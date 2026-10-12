@@ -17,6 +17,17 @@ from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
 
 CAPACITY = 16352
+ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-power-arithmetic-oom-development',
+    'lemmasim-silicon-power-arithmetic-fault-development',
+    'lemmasim-silicon-power-arithmetic-stall-development',
+})
+POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-power-notebook',
+                              'lemmasim-silicon-power-initialize'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
+    'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',
+    'lemmasim-silicon-full-notebook','lemmasim-silicon-notebook',
+    'lemmasim-silicon-full-initialize','lemmasim-silicon-initialize'})|POWER_CONFIGURATIONS
 
 
 def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
@@ -94,7 +105,7 @@ def construction(unit: dict, pre_ir: str, *, expanded: bool = True) -> dict:
 def audit(build: Path, output: Path, timeout: float) -> dict:
     require_tools(['llvm-readelf', 'llvm-objdump'])
     unit = load_json(build / 'kernel/unit.json')
-    if unit.get('configuration') not in {'lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-devices', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'} or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.4' if unit.get('configuration') in {'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize'} else 'core0-kernel-v0.3'):
+    if unit.get('configuration') not in ADMITTED_CONFIGURATIONS or unit.get('role') != 'kernel' or unit.get('contract_version') != ('core0-kernel-v0.4' if unit.get('configuration') in POWER_CONFIGURATIONS else 'core0-kernel-v0.3'):
         raise Core0Error('selected capacity audit requires exact LemmaSim kernel configuration/profile')
     commands=[]
     def invoke(argv):

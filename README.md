@@ -616,6 +616,19 @@ Local bundle creation does not select a redistribution license. See the
 checkpoint for actual Ready, persistence and native/Wasm observation status;
 building Wasm alone does not establish a usable complete browser machine.
 
+An existing fully validated immutable native bundle can supply the unchanged
+guest artifacts when rebuilding the current Wasm machine. This avoids falsely
+claiming another target compilation:
+
+```sh
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --wasm-build build/wasm/current-new --output-dir build/browser/current-new \
+  --guest-bundle build/native/my-bundle
+```
+
+Add `--reuse-wasm` only for a previously built machine whose exact current
+consumed sources/tools and outputs still validate.
+
 ## License and private material
 
 No project license has been selected. Do not add a license, publish the repository,
@@ -660,3 +673,17 @@ the pinned external Linux/Nix host libraries listed in its manifest:
 Use `--backend rtl` for exact RTL execution of the same prepared guest.
 [The native bundle contract](docs/contracts/006-native-bundle-v1.md) records
 validation, host dependencies and unresolved redistribution limits.
+
+For an explicitly new, current-source audited development guest on the
+unchanged bundled backend, use a new session directory:
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/my-bundle --guest-build build/kernel/current-notebook \
+  --disk build/native/my-medium.raw --session-dir build/native/current-session
+```
+
+The launcher independently generates a capacity audit and checks current guest
+provenance before execution. This option supplies no production update policy.
+The exact Arithmetic OOM/fault/stall guest configurations additionally require
+`--mode laboratory`; they cannot launch in Student or Developer mode.

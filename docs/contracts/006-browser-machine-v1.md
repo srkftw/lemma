@@ -25,6 +25,11 @@ addresses and operation IDs cross the JavaScript interface as literal decimal
 strings or BigInt. Only bounded geometry, byte counts and run quanta use Number.
 New asynchronous storage/import/restore operations exclude competing controls.
 Raw input enters the actual machine event queue at the observed cycle.
+Presentation reports running/paused independently of observed guest Ready.
+Only a complete newly emitted K1 record can establish Ready for a boot; warm
+and cold reset retain UART history, whose previous Ready is excluded. Restoring
+a continuation does not infer readiness from that retained history. These
+presentation observations never create a guest milestone or advance time.
 
 Snapshot exports use the unchanged `LMSSRTL1` state contract. MEMFS lacks hard
 links, so Wasm exclusively creates the artifact and copies it in bounded chunks;

@@ -207,3 +207,53 @@ def prepared(directory,backend,workload,name=None):
     data['native_bundle']={'schema':SCHEMA,'manifest_sha256':guest.sha(directory/'bundle.json'),
                            'source_commit':m['source_commit'],'scope':'validated archived inputs; not current compilation'}
     return data
+
+
+ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-power-arithmetic-oom-development',
+    'lemmasim-silicon-power-arithmetic-fault-development',
+    'lemmasim-silicon-power-arithmetic-stall-development',
+})
+
+
+def development_configuration(profile,workload,configuration,mode):
+    import silicon_guest as guest
+    ordinary=guest.configurations(profile)[workload]
+    if configuration==ordinary:return ordinary
+    if profile=='lemma-silicon-dev/0.3.0' and workload=='notebook' and mode=='laboratory' and configuration in ARITHMETIC_LAB_CONFIGURATIONS:
+        return configuration
+    raise ValueError('Development guest configuration is not admitted for this profile/workload/mode')
+
+
+def development_guest(data,workload,directory,guest_build,mode=None):
+    """A new current-source guest on an unchanged archived hardware binding.
+
+    This explicit development option does not modify the immutable package.
+    Its current-source strict audit is required even if bytes match an older
+    image. A new capacity receipt is generated before a notebook can launch.
+    """
+    import silicon_guest as guest
+    base=Path(guest_build).resolve();build=read_json(base/'build.json')
+    configuration=development_configuration(data['profile'],workload,build['configuration'],mode)
+    guest.verify_guest_build(base,configuration,build['optimization'])
+    result=copy.deepcopy(data)
+    entry={key:guest.identified(base/name) for key,name in (
+        ('image','image.elf'),('build','build.json'),('provenance','provenance.json'),
+        ('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin'))}
+    if workload=='notebook':
+        capacity=directory/'guest-override-capacity.json'
+        guest.run_command(['nix','develop','--no-write-lock-file','--command','python3',
+            'scripts/audit_lemmasim_capacity.py','--build',base,'--output',capacity],
+            timeout=120,log=directory/'guest-override-capacity.log')
+        receipt=read_json(capacity)
+        if receipt.get('status')!='PASS' or receipt.get('configuration')!=build['configuration']:
+            raise ValueError('Development guest capacity audit failed')
+        for name,h in receipt['artifacts'].items():
+            if guest.sha(base/name)!=h:raise ValueError('Development guest capacity input changed')
+        entry['capacity']=guest.identified(capacity)
+    guest.verify_guest_build(base,configuration,build['optimization'])
+    result['workloads'][workload]=entry
+    result['guest_override']={'scope':'new strict current-source audited development guest on unchanged archived backend',
+                              'configuration':configuration,'mode':mode,
+                              'build':entry['build'],'provenance':entry['provenance']}
+    return result

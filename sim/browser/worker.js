@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
+import {guestRecord} from './guest_records.js';
 let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
+let guestOutputStart=0;
+let guestObservation='boot';
 const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',b)),x=>x.toString(16).padStart(2,'0')).join('');
 // Preserve every 64-bit JSON integer literally. Number is used only for
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000});return s;}
+function sendState(){const s=state();postMessage({type:'state',state:s,running,guestObservation,heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000});return s;}
 function panel(force=false){const s=state();if(force||s.panel_completed!==panelSequence){panelSequence=s.panel_completed;
  const p=core.ccall('lemma_pixels','number',[],[]),n=core.ccall('lemma_pixel_count','number',[],[]);
  const pixels=core.HEAPU8.slice(p,p+n);postMessage({type:'panel',pixels,width:manifest.width,height:manifest.height},[pixels.buffer]);}}
@@ -26,9 +29,9 @@ function step(){if(!running)return;try{
  if(left<=0n){running=false;panel(true);sendState();return;}
  check('lemma_run',['number'],[Number(left<50000n?left:50000n)]);loops++;
  if(loops%10===0){panel();const data=core.FS.readFile('/uart.bin');
-  if(initializing&&new TextDecoder().decode(data).includes('K1 000000000000041f ')){
+  if(initializing&&guestRecord(data,guestOutputStart,'000000000000041f')){
    running=false;initializing=false;launchNotebook().catch(e=>postMessage({type:'error',error:String(e)}));return;}
-  if(readyAt===null&&new TextDecoder().decode(data).includes('K1 0000000000000420 '))readyAt={cycle:state().cycle,hostSeconds:(performance.now()-started)/1000};
+  if(readyAt===null&&guestRecord(data,guestOutputStart,'0000000000000420'))readyAt={cycle:state().cycle,hostSeconds:(performance.now()-started)/1000};
   sendState();}
  setTimeout(step,0);
  }catch(e){running=false;postMessage({type:'error',error:String(e)});}}
@@ -62,12 +65,12 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');loaded=true;initializing=!!message.initialize&&!message.replay;started=performance.now();sendState();panel(true);running=true;step();
+  }else check('lemma_create');loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();sendState();panel(true);running=true;step();
  }catch(e){running=false;core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
  for(const [path,item]of [['/image.elf',w.image],['/machine.dtb',w.dtb],['/descriptor.bin',w.descriptor]])core.FS.writeFile(path,await getBytes(item));
- check('lemma_create');loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;step();
+ check('lemma_create');guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';loops=0;capture=[];checkpoints={};readyAt=null;started=performance.now();sendState();panel(true);running=true;step();
  }finally{busy=false;}}
 async function bindPrivate(){
  // Copy opaque backing bytes, including observed unacknowledged changes.
@@ -103,13 +106,13 @@ onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage 
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
- else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');running=false;check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
+ else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');running=false;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){running=false;const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);checkpoints[await hash(b)]={eventCount:capture.length,cycle:state().cycle};
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='export'){running=false;const path='/durable-'+loops+'.raw';check('lemma_export',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
- else if(m.action==='restore'){running=false;await restore(m.bytes);capture=[];checkpoints={};replayUntil=null;readyAt=null;sendState();panel(true);}
+ else if(m.action==='restore'){running=false;await restore(m.bytes);guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;sendState();panel(true);}
  else if(m.action==='bind'){running=false;if(backingReady)throw Error('Private backing is already bound');await bindPrivate();sendState();}
  else if(m.action==='capture'){running=false;const path=core.ccall('lemma_capture_path','string',[],[]);if(!path)throw Error('This replay instance does not capture live outcomes');
   const b=core.FS.readFile(path);postMessage({type:'export',name:'lemma-backing.io',bytes:b},[b.buffer]);

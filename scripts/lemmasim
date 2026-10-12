@@ -799,6 +799,7 @@ def main():
     p=sub.add_parser('browser-build',help='Build the same RTL Machine as a local Wasm static bundle')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
+    p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--output-dir',type=Path,required=True)
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
@@ -807,6 +808,7 @@ def main():
     p.add_argument('--mode',choices=('student','developer','laboratory'),default='developer')
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--disk',type=Path)
     p.add_argument('--native-bundle',type=Path,help='Validate and execute an immutable native development bundle')
+    p.add_argument('--guest-build',type=Path,help='Explicit current-source audited guest override; requires --native-bundle')
     p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--restore',type=Path);p.add_argument('--events',type=Path)
     p.add_argument('--backing-replay',type=Path,help='RTL: actual backing outcome log; requires an isolated --restore')
@@ -861,6 +863,7 @@ def main():
         if args.command in ('session','session-control','snapshot','restore','session-replay','button'):
             import lemmasim_session
             if args.command=='session':
+                if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
                 if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0'):raise Failure('Persistent session requires the declared silicon-development binding')
                 lemmasim_session.bounded(args.quantum,1,1000000,'Quantum')
                 lemmasim_session.bounded(args.trace_limit,0,1000000,'Trace limit')

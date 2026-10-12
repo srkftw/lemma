@@ -6,9 +6,19 @@ import sys
 import tempfile
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from silicon_guest_bundle import inventory, read_json
+from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS
 
 class NativeBundleBoundary(unittest.TestCase):
+    def test_development_configuration_requires_exact_laboratory_admission(self):
+        profile='lemma-silicon-dev/0.3.0'
+        for configuration in ARITHMETIC_LAB_CONFIGURATIONS:
+            self.assertEqual(development_configuration(profile,'notebook',configuration,'laboratory'),configuration)
+            for mode in (None,'student','developer'):
+                with self.assertRaises(ValueError):development_configuration(profile,'notebook',configuration,mode)
+            with self.assertRaises(ValueError):development_configuration(profile,'initializer',configuration,'laboratory')
+            with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.2.0','notebook',configuration,'laboratory')
+        with self.assertRaises(ValueError):development_configuration(profile,'notebook','lemmasim-silicon-power-arithmetic-invented-development','laboratory')
+        self.assertEqual(development_configuration(profile,'notebook','lemmasim-silicon-power-notebook','student'),'lemmasim-silicon-power-notebook')
     def test_inventory_rejects_missing_changed_unlisted_and_symlinked_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);p=root/'opaque.bin';p.write_bytes(b'actual bytes')

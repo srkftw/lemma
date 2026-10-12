@@ -47,9 +47,9 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  }else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed')status.textContent='Machine closed. Only acknowledged backing bytes reopen durably.';
+ if(m.type==='closed')status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
- if(m.type==='state'){status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready at '+m.readyAt.cycle:'Booting / paused'} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.hostSeconds.toFixed(1)} s host`;
+ if(m.type==='state'){status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.hostSeconds.toFixed(1)} s host`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
  if(m.type==='panel')present(m);
  if(m.type==='uart')document.querySelector('#uart').textContent=m.text;

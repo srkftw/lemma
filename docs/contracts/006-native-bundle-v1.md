@@ -14,6 +14,22 @@ An earlier bundle is earlier compilation even when its guest runs freshly.
 No user medium or initialized application state is packed. Initialization
 exclusively creates new backing and runs the real guest utility/barrier.
 
+`session --native-bundle B --guest-build G` explicitly runs a newly compiled
+development guest on B's unchanged hardware/backend. It does not rewrite B.
+G must pass the ordinary strict current-source provenance/audit check twice,
+including after a newly generated canonical-capacity audit. The ordinary
+configuration must match the workload and profile. Only the three exact
+Arithmetic OOM/fault/stall development configurations are additional admissions,
+and only for the canonical notebook in Laboratory mode. Student/Developer
+mode, another profile/workload, and invented names reject these configurations.
+This is developer testing, not authenticated image installation or product boot.
+
+`build --guest-bundle B` and `browser-build --guest-bundle B` may reuse B's
+unchanged audited guest compilation while building a new current machine.
+The complete immutable inventory/source/audit closure is still validated;
+the new machine has its own exact consumed inputs and output identities.
+Fresh hardware execution of these artifacts is not fresh target compilation.
+
 Files are bounded to2048/1GiB. Traversal, duplicate JSON keys, symlinked,
 missing, changed or unlisted files fail closed. This inventory is integrity
 metadata for a locally trusted build, not owner authentication. An unfamiliar
