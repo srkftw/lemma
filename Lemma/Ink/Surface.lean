@@ -108,7 +108,8 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
   let offset := i.toUInt64 * 8
   let x := (offset % stride) * 2
   let y := offset / stride
-  if y < 128 || stride < offset % stride + 8 then
+  let scalar := if y < 128 then true else if stride < offset % stride + 8 then true else false
+  if scalar then
     .boundedFoldU64 8 backgroundOffsetStep 8 acc dimensions offset 0 0 fun s n => .done s n
   else
     .bind (Memory.write64 (framebuffer + offset) (backgroundCanvasWord x y width)) fun s _ => .done s acc
