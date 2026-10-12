@@ -6,10 +6,11 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import urlopen
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from lemmasim_browser import validated_bundle, local_server
+from lemmasim_browser import validated_bundle, local_server, validate_wasm_inputs
 
 def fixture(root):
     names=['index.html','worker.js','app.js','machine.mjs','machine.wasm','boot.bin']
@@ -30,6 +31,38 @@ def fixture(root):
     return m
 
 class BrowserBundleBoundary(unittest.TestCase):
+    def test_reuse_checks_generator_policy_and_portable_runtime_not_only_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source=root/'built';source.mkdir()
+            def item(name):
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(name)
+                return hashlib.sha256(path.read_bytes()).hexdigest()
+            profile='sim/profiles/lemma-silicon-dev-0.3.0.json'
+            m={'profile':'lemma-silicon-dev/0.3.0',
+               'portable_inputs':{'adapter.cpp':item('adapter.cpp')},
+               'binding_generator_inputs':{'generator.py':item('generator.py'),profile:item(profile)},
+               'host_toolchain_inputs':{'flake.lock':item('flake.lock')},
+               'sha256':{str(root/'model.sv'):item('model.sv')},
+               'configuration_includes':{str(root/'config.vh'):item('config.vh')},
+               'verilator_runtime_inputs':{str(root/'tool/runtime.h'):item('tool/runtime.h')},
+               'host_include_dir':str(root/'binding'),
+               'host_binding_sha256':item('binding/lemma_silicon_binding.h'),
+               'profile_sha256':item(profile),
+               'portable_verilator_patch':{n:item('built/verilator-portable/'+n)
+                   for n in ('verilatedos_c.h','verilated_threads.cpp')},
+               'outputs':{n:item('built/'+n) for n in ('machine.mjs','machine.wasm')}}
+            for key,name in [('build_driver','driver.py'),('upstream_patch','patch.py')]:
+                m[key]={'path':name,'sha256':item(name)}
+            with patch('lemmasim_browser.ROOT',root):
+                validate_wasm_inputs(source,m)
+                for name in ('generator.py','driver.py','patch.py','tool/runtime.h',
+                             'built/verilator-portable/verilated_threads.cpp'):
+                    p=root/name;before=p.read_bytes();p.write_bytes(b'changed policy/runtime')
+                    with self.subTest(input=name),self.assertRaises(ValueError):validate_wasm_inputs(source,m)
+                    p.write_bytes(before)
+                del m['binding_generator_inputs']
+                with self.assertRaises(ValueError):validate_wasm_inputs(source,m)
+
     def test_missing_changed_unlisted_and_symlinked_files_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);fixture(root);validated_bundle(root)

@@ -15,23 +15,60 @@ sys.path.insert(0,str(ROOT/'scripts'))
 
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
+def validate_wasm_inputs(source,m):
+    """Check the complete recorded portable build/generation closure on reuse.
+
+    Generated binding bytes alone cannot certify unchanged generator policy.
+    This checks actual files before packaging, without rebuilding the machine.
+    The immutable packaged launch validator remains independent of checkout.
+    """
+    def inputs(key,relative):
+        values=m.get(key)
+        if not isinstance(values,dict) or not values:raise ValueError('Missing Wasm inputs: '+key)
+        for name,want in values.items():
+            if not isinstance(name,str) or not isinstance(want,str) or not re.fullmatch('[a-f0-9]{64}',want):
+                raise ValueError('Malformed Wasm input: '+key)
+            path=Path(name)
+            if relative:
+                if path.is_absolute() or '..' in path.parts:raise ValueError('Escaping Wasm input: '+name)
+                path=ROOT/path
+            elif not path.is_absolute():raise ValueError('Nonabsolute Wasm generated/tool input: '+name)
+            if sha(path)!=want:raise ValueError('Wasm input changed: '+name)
+    for key in ('portable_inputs','binding_generator_inputs','host_toolchain_inputs'):
+        inputs(key,True)
+    for key in ('sha256','configuration_includes','verilator_runtime_inputs'):
+        inputs(key,False)
+    for key in ('build_driver','upstream_patch'):
+        item=m.get(key)
+        if not isinstance(item,dict) or not isinstance(item.get('path'),str) or not isinstance(item.get('sha256'),str):
+            raise ValueError('Missing Wasm generation identity: '+key)
+        path=Path(item['path'])
+        if path.is_absolute() or '..' in path.parts or not re.fullmatch('[a-f0-9]{64}',item['sha256']):
+            raise ValueError('Malformed Wasm generation identity: '+key)
+        if sha(ROOT/path)!=item['sha256']:raise ValueError('Wasm generation input changed: '+key)
+    profile='sim/profiles/'+m['profile'].replace('/','-')+'.json'
+    if m['binding_generator_inputs'].get(profile)!=m.get('profile_sha256'):
+        raise ValueError('Wasm binding profile is not source bound')
+    if sha(Path(m['host_include_dir'])/'lemma_silicon_binding.h')!=m['host_binding_sha256']:
+        raise ValueError('Portable host binding changed')
+    patched=m.get('portable_verilator_patch')
+    if not isinstance(patched,dict) or set(patched)!={'verilatedos_c.h','verilated_threads.cpp'}:
+        raise ValueError('Missing portable Verilator adaptation identity')
+    for name,want in patched.items():
+        if sha(source/'verilator-portable'/name)!=want:raise ValueError('Portable Verilator adaptation changed: '+name)
+    outputs=m.get('outputs')
+    if not isinstance(outputs,dict) or set(outputs)!={'machine.mjs','machine.wasm'}:
+        raise ValueError('Incomplete Wasm output inventory')
+    for name,want in outputs.items():
+        if sha(source/name)!=want:raise ValueError('Wasm output changed: '+name)
+
 def bundle(args):
     import silicon_guest
     if args.profile!='lemma-silicon-dev/0.3.0':raise ValueError('The local browser bundle currently admits profile0.3 only')
-    source=args.wasm_build.resolve();m=json.loads((source/'build.json').read_text())
+    from silicon_guest_bundle import read_json
+    source=args.wasm_build.resolve();m=read_json(source/'build.json')
     if m.get('status')!='BUILT' or m.get('profile')!=args.profile:raise ValueError('Missing compatible Wasm build')
-    for p,h in m['portable_inputs'].items():
-        if sha(ROOT/p)!=h:raise ValueError('Wasm source changed: '+p)
-    for p,h in m['sha256'].items():
-        if sha(p)!=h:raise ValueError('RTL source changed: '+p)
-    for p,h in m['configuration_includes'].items():
-        if sha(p)!=h:raise ValueError('RTL configuration changed: '+p)
-    if sha(Path(m['host_include_dir'])/'lemma_silicon_binding.h')!=m['host_binding_sha256']:
-        raise ValueError('Portable host binding changed')
-    if sha(ROOT/'flake.lock')!=m['host_toolchain_inputs']['flake.lock']:
-        raise ValueError('Pinned portable tool inputs changed')
-    for p,h in m['outputs'].items():
-        if sha(source/p)!=h:raise ValueError('Wasm output changed: '+p)
+    validate_wasm_inputs(source,m)
     guest_archive=getattr(args,'guest_bundle',None)
     if guest_archive is None:
         prepared={w:silicon_guest.prepared(w,args.profile) for w in ('notebook','initializer')}
