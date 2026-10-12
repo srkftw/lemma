@@ -24,7 +24,7 @@ def main():
     a=p.parse_args();out=a.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     dep=a.deps.resolve();prepare(dep)
     m=source_manifest(dep,a.profile)
-    portable=[ROOT/'sim/browser/wasm_machine.cpp',ROOT/'sim/host/backing_io.h',
+    portable=[ROOT/'sim/host/panel_pending.h',ROOT/'sim/browser/wasm_machine.cpp',ROOT/'sim/host/backing_io.h',
               ROOT/'sim/host/backing_io.cpp',ROOT/'sim/host/backing_io_posix.h',ROOT/'sim/host/backing_io_posix.cpp',
               ROOT/'sim/rtl/host/machine_runtime.cpp',ROOT/'sim/rtl/host/machine_runtime.h',
               ROOT/'tooling/silicon/wasm.nix',Path(__file__).resolve()]

@@ -4,6 +4,7 @@
 #include "Vlemma_soc.h"
 #include "verilated.h"
 #include "../../host/backing_io.h"
+#include "../../host/panel_pending.h"
 #include <array>
 #include <cstdint>
 #include <deque>
@@ -35,7 +36,7 @@ struct State {
  std::optional<BackingRequest> backing_pending;
  uint64_t backing_poll_cycle=0;
  uint64_t backing_orphan=0,backing_retry_ready=0;
- std::map<uint64_t,uint8_t> optical_pending;
+ PanelPending optical_pending;
  std::vector<Event> input;
  // Derived from retained event payloads; reconstructed on restore and omitted
  // from the wire format, which continues to serialize every event exactly.

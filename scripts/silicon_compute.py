@@ -70,7 +70,7 @@ def source_manifest(dep, profile_name=None):
             'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'scripts/silicon_profile.py',POWER_PROFILE)},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
-            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*')])},
+            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([ROOT/'sim/host/panel_pending.h',*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*')])},
             'configuration_includes':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((dep/'config/shared').glob('*.vh'))}}
 
 def snapshot_inputs(manifest, dep):

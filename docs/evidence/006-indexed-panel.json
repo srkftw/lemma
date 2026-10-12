@@ -1,0 +1,140 @@
+{
+  "schema": "lemma-indexed-panel-evidence/1",
+  "scope": "Host controller-output staging; literal pixels and genuine RV64 pipeline suffix. No notebook Ready or physical panel claim.",
+  "host_benchmark": {
+    "status": "PASS_HOST_STAGING_ONLY",
+    "scope": "Independent ordered-map property and equivalent full canonical pixel staging; not guest or Machine integration",
+    "sources": {
+      "sim/host/panel_pending.h": "71aedfe22395fdb2c6b398ca506e49cdccb6e386678574934f769154317d9613",
+      "tests/lemmasim/panel_pending.cpp": "7534e4277cf2e0876a9c2f5faf4801cd3f3db2be63315c4258da42b7cba5da7e"
+    },
+    "compiler": "g++ (GCC) 16.2.0",
+    "command": [
+      "c++",
+      "-std=c++20",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "/home/sreekumaar/Downloads/lemma/tests/lemmasim/panel_pending.cpp",
+      "-o",
+      "/home/sreekumaar/Downloads/lemma/build/host/task006-panel-buffer-a3/panel-pending"
+    ],
+    "records": {
+      "property": {
+        "output": "PASS ordered sparse/overwrite/clear/copy/edge/rejection; host staging only\nchecksum=0 host_seconds=0.0600835",
+        "checksum": "0",
+        "host_seconds": 0.0600835,
+        "max_rss_kib": 17988
+      },
+      "map": {
+        "output": "checksum=9294205882790786727 host_seconds=1.71352",
+        "checksum": "9294205882790786727",
+        "host_seconds": 1.71352,
+        "max_rss_kib": 230460
+      },
+      "indexed": {
+        "output": "storage_bytes=4083752 checksum=9294205882790786727 host_seconds=0.015082",
+        "checksum": "9294205882790786727",
+        "host_seconds": 0.015082,
+        "max_rss_kib": 14580
+      }
+    },
+    "host_seconds": 3.4120089049683884
+  },
+  "native_property": {
+    "status": "PASS",
+    "scope": "Literal pixel staging, observational snapshot and actual RV64 pipeline suffix. Not guest paper/ink/Ready acceptance.",
+    "snapshot_identity": "d452eb5f831faa30ae1ac87c916465a2009e9377aaa17c9e6ebc1a5b3c16842b",
+    "native_sha256": "ba4f461e02fb460937e198456c6128503a70f198d4310b6b7a8bf7a5a1adf257",
+    "guest": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-closed-inline-a1/workloads/notebook/image.elf",
+      "sha256": "7c30b8af07ab9a6bc937c8a7caf5891abaa1259379ad6897d51f713f48f011e4"
+    },
+    "guest_archive": {
+      "schema": "lemmasim-native-bundle/2",
+      "manifest_sha256": "8356586b1b759f054b15466ab51f2368098ae395ed9ca27302810b8c890ba740",
+      "source_commit": "bb71c853606ebb88f5c8b62c7cd4978798fdb179",
+      "scope": "validated archived inputs; not current compilation"
+    },
+    "fixture_sha256": "56e8a3104cae477e8052a87f2480b6cd8689bdd692c03ae3dbdc890b775dce90",
+    "compiled_inputs": {
+      "machine_runtime.o": "b68fbbfddbd9b8d12365c166e5d46a3d59559547b6f3e7028c57a1dcfb4b82da",
+      "backing_io.o": "84c4d7250b1753f5b47af10ee4a110be20f05443d84542080f3d19a0c28e47f2",
+      "backing_io_posix.o": "a5ea2984ea90d21a9bebf55c6e83a3c0819dfd24c5d0af329e642edf2a4ea124",
+      "verilated.o": "41399ce551f78a9039bcc2d634932d36925429d12c93220f938c892b992d626a",
+      "verilated_save.o": "4dc50375aa217ccdd10b2331e2d45f6729f32e9717a38fd909303023c2b16c37",
+      "verilated_threads.o": "03f96c455b334c77e3b36feb428fe000312ace385e8789b63ab1a84f8c49f5fb",
+      "verilated_dpi.o": "891361ebc9fd85978fdf7984294e4206dd35ae5935bdae6f794327e80ccdd016",
+      "Vlemma_soc__ALL.a": "ee46ad677115b0194bddfeac657086f3aab4af2b8381cb8158105a8bf27952ad"
+    },
+    "files": {
+      "compile.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fork-complete.snap": {
+        "bytes": 146318680,
+        "sha256": "af0e724f89c5ffe0e5634a9a12347b06ffa4ccf8a8f621b9fd94492120744c94"
+      },
+      "fork-reset.snap": {
+        "bytes": 145500616,
+        "sha256": "c9cba8e448bc59208d9554e2952d0ec4984618d40e963e14a528461f4cc20edc"
+      },
+      "live-complete.snap": {
+        "bytes": 146318680,
+        "sha256": "af0e724f89c5ffe0e5634a9a12347b06ffa4ccf8a8f621b9fd94492120744c94"
+      },
+      "live-reset.snap": {
+        "bytes": 145500616,
+        "sha256": "c9cba8e448bc59208d9554e2952d0ec4984618d40e963e14a528461f4cc20edc"
+      },
+      "pending.snap": {
+        "bytes": 146318664,
+        "sha256": "b818843f5f2af6ac0834a2ac1fc1ffae594f584f2eb4c848601611d70a386889"
+      },
+      "restored.snap": {
+        "bytes": 146318664,
+        "sha256": "b818843f5f2af6ac0834a2ac1fc1ffae594f584f2eb4c848601611d70a386889"
+      },
+      "run.log": {
+        "bytes": 136,
+        "sha256": "9353fc3f201154e7ab8cd731eeaa07bb82c29df0819cec447d04a081fe60adb5"
+      }
+    },
+    "host_seconds": 12.656711505027488
+  },
+  "wasm_build": {
+    "manifest": "build/wasm/task006-indexed-panel-a12/build.json",
+    "manifest_sha256": "2572125d403138d2015e372195fcaf52f4c2665195dff04742509342c7f2bbd0",
+    "snapshot_identity": "9a30ab343f5df6b8fd353659a9bd895e4094c91a1d7cfae4fbc2b00239e2fe29",
+    "host_seconds": null,
+    "outputs": {
+      "machine.mjs": "0c554d6e628a8449810c3d76d56d6982209d59ffec9003643e8391ca473f2ec9",
+      "machine.wasm": "c8336a87263871e0b41a0a16d7be8cb65c155861f6b321a66663ecbde7482132"
+    }
+  },
+  "commands": [
+    "nix develop --no-write-lock-file --command python3 scripts/check_panel_pending.py --work-dir build/host/UNUSED",
+    "nix-shell tooling/silicon/sim.nix --run \"python3 scripts/check_native_panel.py --rtl-build build/silicon/task006-indexed-panel-a1 --guest-bundle build/native/task006-closed-inline-a1 --work-dir build/host/UNUSED\""
+  ],
+  "retained_failures": [
+    {
+      "path": "build/host/task006-panel-buffer-a1/result.json",
+      "reason": "g++ absent outside pinned environment"
+    },
+    {
+      "path": "build/host/task006-panel-buffer-a2/result.json",
+      "reason": "Werror misleading indentation in new fixture; brace correction followed"
+    },
+    {
+      "path": "build/host/task006-native-panel-a1/result.json",
+      "reason": "Verilator absent in default develop environment; unchanged property ran in pinned silicon shell"
+    }
+  ],
+  "limitations": [
+    "Host benchmark predates only the Slot assignment proxy addition; original consumed header hash retained. Native property binds the current header.",
+    "No guest cycle reduction, full-frame guest paper execution, browser Ready, or optical/physical qualification is established.",
+    "Old model/archive identities are preserved; this is a new native/Wasm runtime build."
+  ]
+}
