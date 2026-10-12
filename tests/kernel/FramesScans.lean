@@ -1,0 +1,196 @@
+import Lemma.Kernel.Memory.Frames
+import Lean.Elab.Command
+import Std.Data.HashMap
+
+/-! Host-only execution of genuine allocator Actions against independent sparse
+RAM. Counts are actual metadata reads and fold callbacks, not simulated CPU
+cycles. Literal full-pool initial states test error precedence separately from
+ordinary allocations, holes, ownership, zeroing and generation transitions.
+Never imported by a target. -/
+namespace FramesScans
+open Lemma.Core0.Memory Lemma.Kernel.Memory
+
+def require (ok : Bool) (message : String) : IO Unit :=
+  if ok then pure () else throw <| IO.userError message
+
+structure State where
+  words : Std.HashMap UInt64 UInt64 := {}
+  metadataReads : Nat := 0
+  ownerReads : Nat := 0
+  iterations : Nat := 0
+  failReadOnce : Option UInt64 := none
+
+def read64 (s : State) (address : UInt64) : UInt64 := s.words.getD address 0
+def write64 (s : State) (address value : UInt64) : State :=
+  {s with words := if value = 0 then s.words.erase address else s.words.insert address value}
+
+partial def execute (state : IO.Ref State) (action : Action) : IO (UInt8 × UInt64) := do
+  match action with
+  | .done s value => pure (s,value)
+  | .bind first next =>
+    let (s,value) ← execute state first
+    execute state (next s value)
+  | .boundedFoldU64 budget step count initial a b c d next =>
+    require (count.toNat ≤ budget) "allocator fold exceeds static bound"
+    let mut s : UInt8 := 0
+    let mut acc := initial
+    for i in [:count.toNat] do
+      if s = 0 then
+        state.modify fun old => {old with iterations := old.iterations+1}
+        let result ← execute state (step i.toUInt32 count acc a b c d)
+        s := result.1
+        acc := result.2
+    execute state (next s acc)
+  | .platform op address value _ _ _ _ next =>
+    require (address % 8 = 0) "allocator unaligned physical word"
+    require ((0x80400000 ≤ address && address < 0x80510000) ||
+             (0x82000000 ≤ address && address < 0x84000000)) "allocator outside admitted RAM"
+    if op = .physicalRead64 then
+      if (← state.get).failReadOnce = some address then
+        state.modify fun old => {old with failReadOnce := none}
+        execute state (next 7 0)
+      else
+        state.modify fun old =>
+          let metadata := Frames.records ≤ address && address < Frames.records+8192*32
+          let reads := old.metadataReads + (if metadata then 1 else 0)
+          let owners := old.ownerReads + (if metadata && (address-Frames.records)%32 = 0 then 1 else 0)
+          {old with metadataReads := reads, ownerReads := owners}
+        execute state (next 0 (read64 (← state.get) address))
+    else if op = .physicalWrite64 then
+      if Frames.records ≤ address && address < Frames.records+8192*32 &&
+         (address-Frames.records)%32 = 0 && value ≠ 0 && value ≠ 0xffffffffffffffff then
+        let frame := 0x82000000 + (address-Frames.records)/32*4096
+        for i in [:512] do
+          require (read64 (← state.get) (frame+i.toUInt64*8) = 0) "grant published before complete zeroing"
+      state.modify fun old => write64 old address value
+      execute state (next 0 0)
+    else throw <| IO.userError "unexpected allocator platform operation"
+  | _ => throw <| IO.userError "unexpected allocator Action"
+
+def success (s : IO.Ref State) (action : Action) : IO UInt64 := do
+  let (status,value) ← execute s action
+  require (status = 0) s!"unexpected allocator status {status}"
+  pure value
+
+def resetCounts (s : IO.Ref State) : IO Unit :=
+  s.modify fun old => {old with metadataReads := 0,ownerReads := 0,iterations := 0}
+
+def fresh (amount quota : UInt64) : IO (IO.Ref State) := do
+  let s ← IO.mkRef ({} : State)
+  discard <| success s (Frames.configure amount quota 4)
+  discard <| success s Frames.init
+  resetCounts s
+  pure s
+
+def handles (s : IO.Ref State) (address amount : UInt64) : IO (Array UInt64) := do
+  let state ← s.get
+  pure <| (Array.range amount.toNat).map fun i => read64 state (address+i.toUInt64*8)
+
+def checkReads : IO Unit := do
+  let s ← fresh 8192 8192
+  s.modify fun old => write64 old 0x82000000 0xdeadbeef
+  let first ← success s (Frames.allocate 2 4)
+  require (first = 8192) "first single grant/first generation differs"
+  let one ← s.get
+  require (one.metadataReads = 2 && one.ownerReads = 1 && one.iterations = 513)
+    "single allocation did not stop at first free slot"
+  require (read64 one 0x82000000 = 0) "single grant did not clear stale data"
+  let pairState ← fresh 8192 8192
+  let pair ← success pairState (Frames.allocateContiguous2 2 5)
+  require ((← handles pairState pair 2) = #[8192,8193]) "lowest pair differs"
+  let two ← pairState.get
+  require (two.metadataReads = 10 && two.ownerReads = 4 && two.iterations = 1025)
+    "pair allocation retains a full scan"
+  let quadState ← fresh 8192 8192
+  let quad ← success quadState (Frames.allocateContiguous4 2 1)
+  require ((← handles quadState quad 4) = #[8192,8193,8194,8195]) "lowest quad differs"
+  let four ← quadState.get
+  require (four.metadataReads = 20 && four.ownerReads = 8 && four.iterations = 2065)
+    "quad allocation retains a full scan"
+  let kernel ← fresh 512 32
+  discard <| success kernel (Frames.allocate 1 1)
+  require ((← kernel.get).metadataReads = 2) "exempt kernel still counts all owned frames"
+  IO.println "FRAMES_READS:PASS single2 pair10 quad20 metadata reads; first-free fold stops"
+
+def checkHolesAndLifetime : IO Unit := do
+  let s ← fresh 8192 8192
+  let mut allocated := #[]
+  for _ in [:12] do allocated := allocated.push (← success s (Frames.allocate 2 4))
+  discard <| success s (Frames.release 2 allocated[1]!)
+  let reused ← success s (Frames.allocate 3 4)
+  require (reused = 16385) "single allocation did not reuse lowest hole with new generation"
+  discard <| success s (Frames.pin 3 reused)
+  require ((← execute s (Frames.release 3 reused)).1 = 35) "pinned grant released"
+  discard <| success s (Frames.unpin 3 reused)
+  discard <| success s (Frames.release 3 reused)
+  for i in #[2,3,5,6,7,8] do discard <| success s (Frames.release 2 allocated[i]!)
+  let pair ← success s (Frames.allocateContiguous2 4 5)
+  require ((← handles s pair 2) = #[24577,16386]) "pair did not choose first adjacent holes"
+  let quad ← success s (Frames.allocateContiguous4 5 1)
+  require ((← handles s quad 4) = #[16389,16390,16391,16392]) "quad did not skip fragmented earlier hole"
+  require ((← success s (Frames.ownedCount 3)) = 0) "ownedCount returned fabricated fast-path value"
+  require ((← success s (Frames.ownedCount 4)) = 2 && (← success s (Frames.ownedCount 5)) = 4)
+    "multiowner exact counts differ"
+  require ((← execute s (Frames.resolve 3 reused)).1 = 34) "stale generation/owner resolved"
+  IO.println "FRAMES_HOLES:PASS lowest single/pair/quad, zero-before-publication, pins, generation and multiowner counts"
+
+def full (freeSlots : UInt64) : IO (IO.Ref State) := do
+  let s ← fresh 8192 8192
+  -- Independent valid full-pool initial state; no host mutation API exists in
+  -- the machine. Literal pressure cutpoints establish error precedence only.
+  s.modify fun old => Id.run do
+    let mut value := old
+    for i in [:(8192-freeSlots).toNat] do
+      value := write64 value (0x80401000+i.toUInt64*32) 2
+      value := write64 value (0x80401008+i.toUInt64*32) 4
+      value := write64 value (0x80401018+i.toUInt64*32) 1
+    return write64 value 0x80400100 freeSlots
+  resetCounts s
+  pure s
+
+def checkPressure : IO Unit := do
+  for freeSlots in #[0,1] do
+    for owner in #[2,3] do
+      for amount in #[2,4] do
+        let s ← full freeSlots
+        let before := (← s.get).words
+        let action := if amount = 2 then Frames.allocateContiguous2 owner 5 else Frames.allocateContiguous4 owner 1
+        let result ← execute s action
+        let expected : UInt8 := if owner = 2 then 38 else 33
+        require (result.1 = expected) "low global supply lost quota-before-exhausted priority"
+        for i in [:8192] do
+          require (read64 (← s.get) (0x80401000+i.toUInt64*32) = before.getD (0x80401000+i.toUInt64*32) 0)
+            "rejected pressure acquired ownership"
+        require ((← s.get).ownerReads = 8192) "short supply skipped real owner count"
+  let allOwned ← full 0
+  require ((← execute allOwned (Frames.allocate 2 4)).1 = 38) "full owner single not quotaExceeded"
+  require ((← execute allOwned (Frames.allocate 3 4)).1 = 33) "other owner full pool not exhausted"
+  let legacy ← fresh 512 32
+  for _ in [:32] do discard <| success legacy (Frames.allocate 2 4)
+  resetCounts legacy
+  require ((← execute legacy (Frames.allocate 2 4)).1 = 38) "legacy ordinary quota changed"
+  require ((← legacy.get).ownerReads = 512) "quota<count must retain real ownership scan"
+  discard <| success legacy (Frames.allocate 3 4)
+  require ((← success legacy (Frames.ownedCount 2)) = 32) "legacy ownedCount differs"
+  let generation ← fresh 8192 8192
+  generation.modify fun old => write64 old 0x80401018 (0xffffffffffffffff/8192)
+  require ((← execute generation (Frames.allocate 2 4)).1 = 37) "generation exhaustion changed"
+  require ((← success generation Frames.remaining) = 8192) "generation rejection changed global supply"
+  for amount in #[1,2,4] do
+    let fault ← fresh 8192 8192
+    fault.modify fun old => {old with failReadOnce := some 0x80400100}
+    let action := if amount = 1 then Frames.allocate 2 4 else
+      if amount = 2 then Frames.allocateContiguous2 2 5 else Frames.allocateContiguous4 2 1
+    let rejected ← execute fault action
+    require (rejected.1 = (if amount = 2 then 39 else 7)) "failed accounting read was swallowed"
+    require (read64 (← fault.get) 0x80400100 = 8192 && read64 (← fault.get) 0x80401000 = 0)
+      "failed accounting peek granted a frame"
+    require ((← fault.get).ownerReads = 0) "failed accounting peek continued into scans"
+  IO.println "FRAMES_PRESSURE:PASS quota/OOM priority at0/1 free, legacy ordinary quota, exact counts and generation exhaustion"
+
+end FramesScans
+open Lean Elab Command
+run_cmd do
+  liftIO FramesScans.checkReads
+  liftIO FramesScans.checkHolesAndLifetime
+  liftIO FramesScans.checkPressure
