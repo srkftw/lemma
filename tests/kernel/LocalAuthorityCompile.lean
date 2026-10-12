@@ -61,5 +61,5 @@ run_cmd do
         ("symbol", .str symbol.llvm), ("args", .arr (f.signature.args.map (Json.str ∘ Ty.render))),
         ("effects", .arr effects)]
     liftIO <| IO.FS.writeFile (path / (label ++ "-unit.json"))
-      (Json.mkObj [("role",.str "kernel"),("functions",.arr functions)]).pretty
+      (Json.mkObj [("role",.str (if label == "surface" then "user" else "kernel")),("functions",.arr functions)]).pretty
     logInfo m!"LOCAL_AUTHORITY_COMPILE:PASS {label} genuine checked LLVM lowering; full guest audit separate"

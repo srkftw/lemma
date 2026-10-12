@@ -277,3 +277,45 @@ clear; no actual upload had occurred at that boundary. This motivates trap
 validation reuse independently of the subsequent upload work. Both ongoing
 cold campaigns retain their original2B-cycle/7200-second diagnostic ceilings;
 no independent pipeline worst-case boot bound has yet been established.
+
+The allocator-only canonical cold campaign `task006-frame-index-canonical-a2`
+has now terminated with its original **FAIL**: the predeclared 7200-second host
+ceiling was exceeded at 1,681,000,000 target cycles (7204.94 seconds). It never
+reported notebook Ready or completed a panel refresh. Its source-bound guest
+remains `186e8370b36152344b1a19339d5430e68358102640879fa2736fe55fe7f471e0`;
+native runtime identity remains
+`0f994c57ca1b1760100898faa13d4819f93c46d75ca67db6aac6b50977b4cb0c`.
+The original result has SHA256
+`1a4e3ba30489644c835e410dd445dc9edbf936f1f847baaa8a604a8b5bfcec22`
+and is retained without rewriting. The observational
+`failed-boundary-checkpoint` retains 953,324,175 retired instructions,
+U108,643,610 / S1,553,300,194 / M19,056,188 cycles, 24,262 traps and 3,584 timer
+traps. The 5,703,536 framebuffer writes comprise the initial 3,630,000-pixel
+controller clear and 2,073,536 uploaded pixels; no complete display or pixel
+correctness is inferred. Three medium operations occurred, with no write or
+barrier acknowledgment. The last recorded native resident-memory high-water mark was 148,052 KiB;
+the runtime reported 14 threads. The runtime source used to decode these offline counters was
+recovered from `aa494919` only after matching its exact consumed SHA256
+`4aa2084633e824f06ca11101cb59f377bb180cb85291e9a4ca8c322409fd1bdd`.
+The paused task-owned session was destroyed through the ordinary public
+lifecycle, and its owner/runtime processes were reaped. The checkpoint, source,
+`failed-boundary-statistics.json` and `terminal-cleanup.json` remain in the
+campaign directory. This failure does not qualify cold Ready or scenario A.
+
+Before the next changed-source campaign, the fixed workload accounting at
+`build/task006-canonical-work-bound-a1.json` records the unchanged canonical
+3,630,000 pixels, 1,815,000 Gray4 bytes and 444 framebuffer frames. Full upload
+requires 3,588 tiles: 3,468 full 32x32 tiles, 68 right 18x32 tiles, 51 bottom
+32x24 tiles and one 18x24 corner. That gives 114,816 metadata bytes and at most
+243,984 checked copy-word stores and 229,632 PIO words. A port-ready full quality
+snapshot takes 7,260,000 clocks; its synthetic sequencer takes 39,930,007 clocks.
+The actual controller quality deadline is 250,000 MTIME ticks (2,500,000 machine
+cycles). Startup retains 131,072 metadata clear-word stores, 32,768 frame-record
+initialization stores and 512 zero-before-publication stores per allocated
+frame. Normal boot owners 1 through 4 use the maintained owner index; the
+8,192-record owner fallback is absent from that successful allocation path,
+and full-pool teardown scans remain. These are independent fixed operation and
+controller bounds, **not a whole-guest worst-case cycle bound**. The CPU,
+interrupt, IPC and backing waits still lack that independent bound. The
+retained 2B-cycle/7200-second campaign ceilings remain diagnostic resource
+ceilings; any terminal timeout remains a failure.
