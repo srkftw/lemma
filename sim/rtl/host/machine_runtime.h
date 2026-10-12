@@ -30,7 +30,11 @@ struct State {
  BackingState backing;
  std::vector<uint8_t> ram,rom,framebuffer,visible;
  std::map<uint64_t,std::array<uint8_t,4096>> boot_pages;
- std::map<uint64_t,std::array<uint8_t,512>> overlay,durable;
+ std::map<uint64_t,std::array<uint8_t,512>> overlay,accepted_medium;
+ // Logical external work; host sockets/pointers never enter a checkpoint.
+ std::optional<BackingRequest> backing_pending;
+ uint64_t backing_poll_cycle=0;
+ uint64_t backing_orphan=0,backing_retry_ready=0;
  std::map<uint64_t,uint8_t> optical_pending;
  std::vector<Event> input;
  // Derived from retained event payloads; reconstructed on restore and omitted
@@ -61,15 +65,15 @@ class Machine {
  int medium=-1,backing_capture=-1;
  std::shared_ptr<BackingPlatform> backing;
  std::vector<TimedBackingRecord> backing_replay;
- std::optional<BackingRequest> backing_pending;
- uint64_t backing_poll_cycle=0;
- bool backing_orphan=false;
+ // Fork execution binding is host ownership, separate from authoritative state.
+ bool backing_fork_suspended=false;
  uint64_t backing_capture_bytes=0,backing_replay_cursor=0,backing_capture_branch=0;
  std::string active_backing_capture;
  std::optional<BackingOutcome> backing_operation(BackingKind,uint64_t,uint64_t,const uint8_t* = nullptr);
  std::optional<BackingOutcome> poll_backing();
  void capture_backing(uint64_t,const std::vector<uint8_t>&);
  void abandon_media();
+ void observe_backing(const BackingRecord&);
  // File handles and private paths are external ownership, never checkpoint
  // state. A restored session has its own persistent backing and lock.
  std::string private_medium_path;
@@ -100,6 +104,9 @@ public:
  void warm_reset(uint64_t=8);
  void cold_cycle();
  void retry_backing();
+ // An isolated pending fork never reissues its inherited external operation.
+ // Bind a complete, validated outcome tape before its virtual clock advances.
+ void bind_backing_replay(const std::string&);
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;
  void ram_dump(uint64_t,uint64_t,const std::string&) const;

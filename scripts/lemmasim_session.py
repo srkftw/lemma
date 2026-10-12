@@ -253,7 +253,7 @@ class RTL:
         return value.get('result', value)
 
     def preflight_checkpoint(self, path, expected_cycle):
-        # LMSSRTL1/v1's wrapper follows its 112-byte container header.
+        # LMSSRTL1/v1 and v2's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
         # The runtime performs CRC/state/model validation before adoption.
@@ -263,7 +263,7 @@ class RTL:
         with path.open('rb') as stream:
             header = stream.read(128)
         if (len(header) != 128 or header[:8] != b'LMSSRTL1' or
-                int.from_bytes(header[8:16], 'little') != 1 or
+                int.from_bytes(header[8:16], 'little') not in (1, 2) or
                 header[16:80] != self.checkpoint_identity.encode('ascii')):
             raise ValueError('Unsupported RTL checkpoint boundary format or identity')
         wrapper_bytes = int.from_bytes(header[80:88], 'little')
@@ -536,7 +536,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -587,6 +587,17 @@ class Session:
             result = self.external(value, state, action)
             self.presentation_generation += 1
             return result
+        if action=='backing-outcomes':
+            if self.mode not in ('developer','laboratory'):raise ValueError('Pending fork outcome binding requires Developer or Laboratory mode')
+            if self.machine.identity.get('backend')!='rtl':raise ValueError('Pending fork outcome binding requires the native RTL backend')
+            path=Path(value['path']).resolve()
+            if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
+            # Runtime validates the complete tape and inherited request before
+            # rebinding. This configures isolated replay ownership; it is not
+            # a raw guest input event and does not enter external.jsonl.
+            result=self.machine.call('backing-outcomes '+str(path))
+            return {'machine':result,'outcome_tape':str(path),
+                    'scope':'isolated Pending continuation from captured outcomes; no external resubmission'}
         if action=='companion-retry':
             if self.mode not in ('developer','laboratory'):raise ValueError('Explicit pending retry requires Developer or Laboratory mode')
             state=self.machine.call('inspect')

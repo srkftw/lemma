@@ -103,3 +103,5 @@ nix develop --no-write-lock-file --command python3 -m unittest discover \
 
 This is host-boundary evidence; it does not establish guest cold recovery,
 QEMU parity, USB/companion completion, browser distribution or physical storage.
+
+The native Pending checkpoint successor is specified in [v5](006-companion-backing-dev-v5.md); the synchronous v1 observations above retain their original scope.

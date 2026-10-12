@@ -42,15 +42,15 @@ int main(int argc,char**argv){assert(argc==7);std::string dir=argv[1];auto o=opt
  original.run(3000);assert(original.state().backing.phase==BackingPhase::Pending&&!original.state().backing.poisoned);
  assert(original.state().retired>retired_before);
  assert(medium->submissions==1&&medium->polls==3);assert(original.state().pen_accepted==1);assert(original.soc().external_media_busy);
- rejects([&]{original.snapshot(dir+"/pending.snap");});rejects([&]{original.restore(dir+"/start.snap");});rejects([&]{original.export_medium(dir+"/pending.medium");});
+ auto polls=medium->polls;original.snapshot(dir+"/pending.snap");assert(medium->polls==polls&&medium->submissions==1);Machine pending(opts(dir,"pending-fork"));pending.restore(dir+"/pending.snap");auto frozen=pending.state().cycle;rejects([&]{pending.run(1);});assert(pending.state().cycle==frozen);rejects([&]{original.restore(dir+"/start.snap");});rejects([&]{original.export_medium(dir+"/pending.medium");});
  medium->released=true;original.run(2000);assert(original.state().backing.completed==1&&original.state().backing.next_id==2);
  assert(!original.soc().external_media_busy);original.snapshot(dir+"/complete.snap");
  auto replay_o=opts(dir,"replay");replay_o.backing_replay_path=dir+"/actual.io";Machine replay(replay_o);replay.restore(dir+"/start.snap");replay.run(5000);replay.snapshot(dir+"/replay.snap");
- assert(bytes(dir+"/complete.snap")==bytes(dir+"/replay.snap"));
+ assert(bytes(dir+"/complete.snap")==bytes(dir+"/replay.snap"));pending.bind_backing_replay(dir+"/actual.io");pending.run(2000);pending.snapshot(dir+"/pending-replay.snap");assert(bytes(dir+"/complete.snap")==bytes(dir+"/pending-replay.snap"));
  auto reset_o=opts(dir,"reset");reset_o.backing_capture_path=dir+"/reset.io";auto reset_medium=std::make_shared<PendingMedium>();Machine reset(reset_o);load(reset);reset.attach_backing(reset_medium);reset.run(8);held_read(reset);reset.run(500);
  reset.warm_reset(8);reset.run(1500);assert(reset.state().backing.phase==BackingPhase::Pending);
  assert(reset.soc().external_media_busy&&!reset.state().backing.poisoned);assert(reset.state().media_active==0);
  reset_medium->released=true;reset.run(1500);assert(reset.state().backing.completed==1&&!reset.soc().external_media_busy);
  assert(reset.state().overlay.empty());assert(std::all_of(reset.state().ram.begin()+0x2001000,reset.state().ram.begin()+0x2001200,[](uint8_t v){return !v;}));
- std::cout<<"PASS held request raw pen ingress, observational pending rejection, exact timed private replay, reset orphan without DMA\n";
+ std::cout<<"PASS held request raw pen ingress, observational pending snapshot and suspended fork binding, exact timed private replay, reset orphan without DMA\n";
 }

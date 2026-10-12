@@ -23,7 +23,7 @@ def run(argv,log,timeout):
             if process.poll() is None:os.killpg(process.pid,signal.SIGKILL)
             process.wait(timeout=10)
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--rtl-build',type=Path,required=True);p.add_argument('--work-dir',type=Path,required=True);p.add_argument('--guest-bundle',type=Path,required=True)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--rtl-build',type=Path,required=True);p.add_argument('--work-dir',type=Path,required=True);p.add_argument('--guest-bundle',type=Path,required=True);p.add_argument('--fixture',choices=('pending','fault-pending'),default='pending')
     a=p.parse_args();build=a.rtl_build.resolve();out=a.work_dir.resolve();out.mkdir(parents=True,exist_ok=False);started=time.monotonic()
     result={'status':'FAIL','scope':__doc__,'build':str(build)}
     try:
@@ -42,16 +42,18 @@ def main():
         prefix=Path(prefixes.pop());obj=build/'obj'
         names=['machine_runtime.o','backing_io.o','backing_io_posix.o','verilated.o','verilated_save.o','verilated_threads.o','verilated_dpi.o','Vlemma_soc__ALL.a']
         inputs={str(obj/n):sha(obj/n) for n in names}
-        source=ROOT/'tests/lemmasim/native_pending.cpp';binary=out/'test'
+        source=ROOT/('tests/lemmasim/native_pending.cpp' if a.fixture=='pending' else 'tests/lemmasim/native_fault_pending.cpp');binary=out/'test'
         run(['c++','-O2','-std=c++17','-I',ROOT/'sim/rtl/host','-I',obj,'-I',prefix/'include','-I',prefix/'include/vltstd',source,*[obj/n for n in names],'-pthread','-o',binary],out/'compile.log',60)
         run([binary,out,entry['image']['path'],guest['rom']['path'],entry['dtb']['path'],entry['descriptor']['path'],'0x87e00000'],out/'run.log',60)
-        if 'PASS held request' not in (out/'run.log').read_text():raise ValueError('Missing actual fixture result')
-        if (out/'complete.snap').read_bytes()!=(out/'replay.snap').read_bytes():raise ValueError('Exact completed suffix differs')
+        if ('PASS held request' if a.fixture=='pending' else 'PASS actual partial pwrite') not in (out/'run.log').read_text():raise ValueError('Missing actual fixture result')
+        pairs=[('complete.snap','replay.snap')] if a.fixture=='pending' else [('partial-complete.snap','partial-replay.snap'),('barrier-complete.snap','barrier-replay.snap')]
+        for left,right in pairs:
+            if (out/left).read_bytes()!=(out/right).read_bytes():raise ValueError('Exact completed suffix differs')
         for path,h in identities.items():
             if sha(path)!=h:raise ValueError('Consumed source changed during qualification')
         result.update(status='PASS',snapshot_identity=manifest['snapshot_identity'],native_sha256=manifest['binary_sha256'],fixture_sha256=sha(source),test_binary_sha256=sha(binary),compiled_inputs=inputs,
-                      authoritative_suffix_bytes_equal=True,pending_external_snapshot_admitted=False,
-                      files={n:sha(out/n) for n in ('start.snap','complete.snap','replay.snap','actual.io','reset.io','run.log')})
+                      authoritative_suffix_bytes_equal=True,pending_external_snapshot_admitted=True,
+                      files={path.name:sha(path) for path in sorted(out.iterdir()) if path.suffix in ('.snap','.io','.log')})
         result['archived_genuine_guest']={'image':entry['image'],'rom':guest['rom'],'archive':guest['native_bundle'],'scope':'Real guest instructions run while literal initialized controller request is held; no guest-driver or Ready claim'}
     except BaseException as e:result['error']=str(e);raise
     finally:
