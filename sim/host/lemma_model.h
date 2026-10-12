@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "lemma_device_abi.h"
+#include "lemma_power_abi.h"
 #define LEMMA_PEN_FIFO 256
 #define LEMMA_PAPER_BUSY 1u
 #define LEMMA_PAPER_DONE 2u
@@ -41,6 +42,16 @@ typedef struct LemmaPaper {
     uint64_t wave_phase,drive_remaining,drive_x,drive_y,drive_code,drive_clocks,scan_beats,panel_beats;
     bool panel_power;
 } LemmaPaper;
+/* Power-v1; selected only by the versioned development binding. */
+typedef struct LemmaPower {
+    uint64_t state,error,reset_cause,button_level,events,epoch,wake_cause;
+} LemmaPower;
+void lemma_power_init(LemmaPower *);
+void lemma_power_warm_reset(LemmaPower *);
+void lemma_power_button(LemmaPower *,uint64_t);
+uint64_t lemma_power_read(const LemmaPower *,uint32_t);
+bool lemma_power_write(LemmaPower *,uint32_t,uint64_t,bool);
+bool lemma_power_irq(const LemmaPower *);
 void lemma_pen_init(LemmaPen *,uint64_t,uint64_t,uint64_t);
 bool lemma_pen_push(LemmaPen *,const LemmaSample *);
 uint64_t lemma_pen_read(const LemmaPen *,uint32_t);

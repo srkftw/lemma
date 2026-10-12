@@ -149,6 +149,35 @@ def host_deadline_options(binary):
         rows.append({'argv':argv,'exit_code':result.returncode,'stdout':'','stderr':expected})
     return rows
 
+def power_control(out, timeout, jobs):
+    from silicon_profile import constants, profile
+    names = ('sim/rtl/lemma_power.sv', 'conformance/silicon/PowerControl.sv',
+             'sim/profiles/lemma-silicon-dev-0.3.0.json', 'scripts/silicon_profile.py',
+             'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock')
+    before = {name: sha(ROOT/name) for name in names}
+    fields = constants(profile('lemma-silicon-dev/0.3.0'))
+    binding = out/'lemma_silicon_binding.sv'
+    binding.write_text('package lemma_silicon_binding;\n'+''.join(
+        f"localparam logic [63:0] {name.upper()} = 64'h{value:016x};\n"
+        for name, value in fields.items())+'endpackage\n')
+    obj = out/'obj'; obj.mkdir()
+    argv = ['verilator', '--binary', '--timing', '-j', str(jobs), '-Wno-fatal',
+            '--top-module', 'PowerControl', '--Mdir', str(obj), str(binding),
+            str(ROOT/'sim/rtl/lemma_power.sv'), str(ROOT/'conformance/silicon/PowerControl.sv')]
+    built, tools = device_build(argv, out/'tools.json', out/'build.log', timeout)
+    executed = command([str(obj/'VPowerControl')], out/'simulation.log', 30)
+    expected = ['POWER six independent BUSY sources malformed MMIO no false completion PASS',
+                'POWER raw edge guest decision exact cancel wake and W1C precedence PASS',
+                'POWER warm held-button epoch retention and cold control reset PASS']
+    if any((out/'simulation.log').read_text().count(marker) != 1 for marker in expected):
+        raise RuntimeError('Missing or duplicate independent power observations')
+    if before != {name: sha(ROOT/name) for name in names}:
+        raise RuntimeError('Power inputs changed during execution')
+    return {'status': 'PASS', 'source_inputs': before, 'tool_inputs': tools,
+            'commands': [built, executed], 'compiled_binary_sha256': sha(obj/'VPowerControl'),
+            'generated_binding_sha256': sha(binding), 'observations': expected,
+            'scope': 'literal power circuitry; guest cooperative suspend, session checkpoints and physical power remain separate'}
+
 def bus_lanes(out, timeout, jobs):
     from silicon_compute import source_manifest, prepare
     dep=ROOT/'build/silicon/deps/cvw'
@@ -185,7 +214,7 @@ def bus_lanes(out, timeout, jobs):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--lane',choices=['devices','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
+    parser.add_argument('--lane',choices=['devices','power','bus-lanes','guest-devices','device-input','monitor','monitor-input','initializer','notebook','cold','failed-flush','input'],required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--timeout',type=float,default=300)
     parser.add_argument('--jobs',type=int,default=2)
@@ -206,6 +235,7 @@ def main():
             'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()}
     try:
         if args.lane=='devices':report.update(devices(out,args.timeout,args.jobs))
+        elif args.lane=='power':report.update(power_control(out,args.timeout,args.jobs))
         elif args.lane=='bus-lanes':report.update(bus_lanes(out,args.timeout,args.jobs))
         elif args.lane in ('guest-devices','device-input'):
             sys.path.insert(0,str(ROOT/'conformance/silicon'))

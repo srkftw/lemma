@@ -6,7 +6,7 @@ import argparse, hashlib, json, os, shlex, signal, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tooling/silicon'))
 from apply_cvw import apply
-from silicon_profile import profile, profile_path, constants
+from silicon_profile import profile, profile_path, constants, POWER_PROFILE
 REV='20f2af74e7aa76513e94012231d16567fa42648a'
 SIM_SHELL=ROOT/'tooling/silicon/sim.nix'
 BUILD_OPTIONS={'host_cflags':'-O3 -std=c++17',
@@ -54,7 +54,7 @@ def source_manifest(dep, profile_name=None):
     binding.write_text('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n')
     header=generated/'lemma_silicon_binding.h'
     header.write_text('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items()))
-    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
+    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
             'core_license':'Apache-2.0 WITH SHL-2.1 and six preserved MIT-notice files','top':'lemma_soc',
             'host_toolchain_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'tooling/silicon/sim.nix',ROOT/'flake.lock')},
@@ -67,6 +67,7 @@ def source_manifest(dep, profile_name=None):
             'host_binding_sha256':hashlib.sha256(header.read_bytes()).hexdigest(),
             'profile':selected['profile'],
             'profile_sha256':hashlib.sha256(profile_path(profile_name).read_bytes()).hexdigest(),
+            'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'scripts/silicon_profile.py',POWER_PROFILE)},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
             'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((ROOT/'sim/rtl/host').glob('machine_runtime.*'))},

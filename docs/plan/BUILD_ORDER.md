@@ -173,6 +173,14 @@ process DRC/LVS and extracted timing remain open. These changes do not close
 H.3, G2 or G5–G7. Resume from the [Task 006 checkpoint](006-session-state.md)
 and the existing [capability inventory](LEMMASIM.md#task006-capability-inventory).
 
+The 0.3 continuation adds an actual guest-controlled digital power controller,
+cooperative suspend/wake, reset-cause reporting and exact queued-wake state on
+both bindings. The checked-memory copy path validates ownership within each
+nonpreemptible Action. A volatile object-table successor admits the separately
+granted fifth power endpoint while preserving historical four-endpoint budgets.
+These additions do not close production boot/update, electrical power/watchdog,
+companion/radio, browser or the managed mathematics/learning requirements.
+
 | Unit | Construction | Direct dependencies | Required evidence |
 | --- | --- | --- | --- |
 | H.1 | Open RV64 compute, fabric and boot | 2.1 | Real RTL reset/Lean M/S/U execution, synthesis and explicit ROM/RAM implementation; eventual physical boot has separate evidence. |

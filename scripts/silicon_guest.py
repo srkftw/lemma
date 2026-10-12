@@ -11,13 +11,14 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
+POWER_CONFIGURATIONS={'notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 def configurations(name=None):
     profile(name)
-    return FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+    return POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     profile(name)
-    return ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
+    return ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()
@@ -120,7 +121,7 @@ def build(args):
     p=profile(name);selected=configurations(name)
     workload=getattr(args,'workload',None) or 'service'
     if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
-    out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-0.2.0' if name.endswith('/0.2.0') else 'build/silicon/compute')).resolve();dep=ROOT/'build/silicon/deps/cvw'
+    out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-'+name.split('/')[1] if name!='lemma-silicon-dev/0.1.0' else 'build/silicon/compute')).resolve();dep=ROOT/'build/silicon/deps/cvw'
     prepare(dep);current=source_manifest(dep,name)
     cached=None
     try:cached=json.loads((out/'build.json').read_text())
@@ -156,6 +157,7 @@ def build(args):
               str(Path(cached['host_include_dir'])/'lemma_silicon_binding.h'):cached['host_binding_sha256'],
               **{str(ROOT/path):digest for path,digest in cached['host_runtime'].items()},
               **{str(ROOT/path):digest for path,digest in cached['host_toolchain_inputs'].items()},
+              **{str(ROOT/path):digest for path,digest in cached['binding_generator_inputs'].items()},
               str(cached['runtime_identity_header']['path']):cached['runtime_identity_header']['sha256'],
               **{str(ROOT/name):sha(ROOT/name) for name in ('scripts/silicon_compute.py','scripts/silicon_profile.py',
                  'tooling/silicon/apply_cvw.py','tooling/silicon/dependencies.json','tooling/silicon/sim.nix')}},'workloads':{},

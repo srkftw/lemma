@@ -9,12 +9,13 @@ s=a.source;r=a.repository;host=a.host_source or r/'sim/host'
 # Keep this host presentation correction confined to the derived binary.
 f=s/'ui/ui-qmp-cmds.c';text=f.read_text();needle='                                  pixman_image_get_stride(linebuf), errp) < 0) {';assert text.count(needle)==1
 f.write_text(text.replace(needle,'                                  width * 3, errp) < 0) {'))
-for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_fast_block.c']:
+for name in ['lemma_qemu.c','lemma_model.c','lemma_model.h','lemma_device_abi.h','lemma_power_abi.h','lemma_fast_block.c']:
     shutil.copyfile(host/name,s/'hw/riscv'/name)
 shutil.copyfile(host/'lemma_durable.c',s/'block/lemma-durable.c')
 profile=json.loads((a.silicon_profile or r/'sim/profiles/lemma-silicon-dev-0.1.0.json').read_text())
 fields={k:v for k,v in profile.items() if isinstance(v,int)}
-fields.update(width=profile['geometry'][0],height=profile['geometry'][1],paper_sequencer=profile.get('paper_sequencer',0))
+fields.update(width=profile['geometry'][0],height=profile['geometry'][1],paper_sequencer=profile.get('paper_sequencer',0),
+              power_enabled=profile.get('power_enabled',0),power_base=0,power_span=0,power_irq=0)
 for dev,values in profile['devices'].items():
     fields.update({dev+'_'+key:value for key,value in values.items() if isinstance(value,int)})
 fields.update({'descriptor_'+key:value for key,value in profile['descriptor'].items()})

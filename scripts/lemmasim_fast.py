@@ -187,6 +187,8 @@ class Fast:
                        'cpu':CPU,'icount_shift':3}
         self.clock_hz=profile(self.data['profile'])['clock_hz']
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
+        self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
+        self.input_kinds={'pen','button'} if self.power_enabled else {'pen'}
         self.medium=args.disk.resolve() if args.disk else None
         self.checkpoint_files={'machine.chk','clock.json','durable.raw'} if self.medium else {'machine.chk','clock.json'}
         self.time_origin_ns=0
@@ -258,7 +260,9 @@ class Fast:
                 'runstate':status['status']}
 
     def inspect(self):
-        return {**self.clock(),'devices':json.loads(self.get('device-state')),
+        devices=json.loads(self.get('device-state'))
+        if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
+        return {**self.clock(),'devices':devices,
                 'storage':json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'})),
                 'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'})}
 
@@ -339,11 +343,11 @@ class Fast:
         if action=='run-until-ns':return self.run_until_ns(int(text))
         if action=='inject':
             fields=text.split();cycle=int(fields[0]);kind=fields[1]
-            if kind!='pen': raise ValueError('Fast timestamped UART ingress is not implemented')
+            if kind not in self.input_kinds: raise ValueError('Fast input is unsupported by this profile')
             ns=cycle*1000000000//self.clock_hz
             now=self.time_origin_ns+int(self.get('virtual-time'))
             if not now<=ns<=MAX_NS-7:raise ValueError('Fast event delivery exceeds its virtual time bound')
-            self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-event',
+            self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-button' if kind=='button' else 'external-event',
                                       'value':' '.join([str(ns-self.time_origin_ns),*fields[2:]])})
             return self.inspect()
         if action=='snapshot':

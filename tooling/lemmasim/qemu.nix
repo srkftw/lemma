@@ -17,7 +17,7 @@ let
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
-      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_durable.c" "lemma_fast_block.c" ];
+      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c" ];
   };
 in base.overrideAttrs (old: {
   pname = "lemmasim-qemu";

@@ -221,6 +221,7 @@ mutual
             program.contractVersion == Profile.kernel_v0_1.contractVersion ||
             program.contractVersion == Profile.kernel_v0_2.contractVersion ||
             program.contractVersion == Profile.kernel_v0_3.contractVersion ||
+            program.contractVersion == Profile.kernel_v0_4.contractVersion ||
             program.contractVersion == Profile.user_v0_1.contractVersion do
           evalFail stack .invalidCheckedIR
             s!"bounded iteration is not available in {program.contractVersion}"

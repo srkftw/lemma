@@ -4,6 +4,45 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+void lemma_power_init(LemmaPower *p)
+{ memset(p,0,sizeof(*p));p->reset_cause=1; }
+void lemma_power_warm_reset(LemmaPower *p)
+{ p->state=p->error=p->events=p->wake_cause=0;p->reset_cause=2; }
+bool lemma_power_irq(const LemmaPower *p) {return p->events!=0;}
+void lemma_power_button(LemmaPower *p,uint64_t level)
+{
+    if(level>1) {p->error=2;return;}
+    bool rising=level && !p->button_level;p->button_level=level;
+    if(!rising)return;
+    if(p->epoch==UINT64_MAX)p->error=2;else p->epoch++;
+    if(p->state==1) {p->state=0;p->events|=2;p->wake_cause=1;}
+    else p->events|=1;
+}
+uint64_t lemma_power_read(const LemmaPower *p,uint32_t a)
+{
+    switch(a) {
+    case LEMMA_POWER_MAGIC:return LEMMA_POWER_IDENTITY;case LEMMA_POWER_VERSION:return 1;
+    case LEMMA_POWER_STATE:return p->state;case LEMMA_POWER_ERROR:return p->error;case LEMMA_POWER_RESET_CAUSE:return p->reset_cause;
+    case LEMMA_POWER_BUTTON_LEVEL:return p->button_level;case LEMMA_POWER_EVENTS:return p->events;case LEMMA_POWER_EPOCH:return p->epoch;
+    case LEMMA_POWER_WAKE_CAUSE:return p->wake_cause;default:return 0;
+    }
+}
+bool lemma_power_write(LemmaPower *p,uint32_t a,uint64_t v,bool busy)
+{
+    if(a==LEMMA_POWER_COMMAND) {
+        if(v==1) {
+            if(p->state==1 || busy)p->error=1;
+            else {p->state=1;p->error=0;p->wake_cause=0;return true;}
+        } else if(v==2) {
+            if(p->state==1) {p->state=0;p->events|=2;p->wake_cause=2;}
+            p->error=0;
+        }
+        else p->error=2;
+    } else if(a==LEMMA_POWER_ACK && !(v&~UINT64_C(3)))p->events&=~v;
+    else if(a==LEMMA_POWER_CLEAR_ERROR && v==1)p->error=0;
+    else p->error=2;
+    return false;
+}
 static void pen_loss(LemmaPen *p)
 {
     /* Preserve the immutable old head across loss; discard its followers. */

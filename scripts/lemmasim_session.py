@@ -51,6 +51,66 @@ def bounded(value, minimum, maximum, label):
     return value
 
 
+def checkpoint_inventory(source, manifest):
+    """Validate the complete bounded file set before choosing/applying backing."""
+    files = manifest.get('files')
+    if not isinstance(files, list) or not 1 <= len(files) <= 16:
+        raise ValueError('Missing or oversized checkpoint inventory')
+    names = set()
+    total_bytes = 0
+    for item in files:
+        if not isinstance(item,dict) or set(item)!={'path','bytes','sha256'}:
+            raise ValueError('Malformed checkpoint file identity')
+        name = item['path']
+        if not isinstance(name, str) or name in names or not name or Path(name).is_absolute() or '..' in Path(name).parts:
+            raise ValueError('Invalid checkpoint path')
+        if not isinstance(item['sha256'],str) or len(item['sha256'])!=64 or any(c not in '0123456789abcdef' for c in item['sha256']):
+            raise ValueError('Malformed checkpoint checksum')
+        path = source / name
+        names.add(name)
+        if any(p.is_symlink() for p in (path, *path.parents)) or not path.is_file():
+            raise ValueError('Missing or symlinked checkpoint state')
+        bounded(item['bytes'], 1, 768 * 1024 * 1024, 'Checkpoint bytes')
+        total_bytes += item['bytes']
+        if total_bytes > 1024 * 1024 * 1024:
+            raise ValueError('Checkpoint exceeds aggregate resource bound')
+        if path.stat().st_size != item['bytes'] or digest(path) != item['sha256']:
+            raise ValueError('Checkpoint length/checksum mismatch')
+    if 'machine.chk' not in names:
+        raise ValueError('Missing machine state')
+    return names
+
+
+def startup_restore_medium(args):
+    """Choose optional fast backing from verified state, never a user disk."""
+    if not args.restore:
+        return False
+    if args.disk is not None:
+        raise ValueError('A restored fork owns its checkpoint backing; omit --disk')
+    if args.workload == 'service':
+        return False
+    if args.workload != 'power':
+        return True
+    if args.backend == 'rtl':
+        # Its exact container owns the optional backing, including its presence.
+        return False
+    source = Path(args.restore).resolve()
+    path = source / 'snapshot.json'
+    with path.open('rb') as stream:
+        wire = stream.read(MAX_REQUEST + 1)
+    if len(wire) > MAX_REQUEST:
+        raise ValueError('Snapshot manifest exceeds its bound')
+    manifest = json.loads(wire)
+    if not isinstance(manifest, dict) or manifest.get('schema') != 'lemmasim-session/1':
+        raise ValueError('Unsupported snapshot manifest')
+    names = checkpoint_inventory(source, manifest)
+    if names not in ({'machine.chk', 'clock.json'}, {'machine.chk', 'clock.json', 'durable.raw'}):
+        raise ValueError('Power checkpoint inventory differs from required fast state')
+    if 'durable.raw' in names and (source / 'durable.raw').stat().st_size != 256 * 1024 * 1024:
+        raise ValueError('Power checkpoint medium length differs')
+    return 'durable.raw' in names
+
+
 def external_command(value, current):
     if not isinstance(value,dict):raise ValueError('External request must be an object')
     if value.get('action') in ('warm-reset','cold-cycle'):return value['action'],dict(value)
@@ -68,6 +128,9 @@ def external_command(value, current):
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
         command=f'inject {cycle} uart {payload}'
+    elif kind=='button':
+        level=bounded(value.get('level'),0,1,'Button level')
+        command=f'inject {cycle} button {level}'
     else:raise ValueError('Unsupported external event')
     return command,dict(value,cycle=cycle)
 
@@ -121,9 +184,11 @@ class RTL:
         if args.fail_flush:
             command += ['--fail-flush', str(args.fail_flush)]
         if args.workload != 'service':
-            if args.disk is None:
+            if args.disk is None and args.workload != 'power':
                 raise ValueError('This workload requires an existing --disk')
-            command += ['--descriptor', entry['descriptor']['path'], '--medium', str(args.disk.resolve())]
+            command += ['--descriptor', entry['descriptor']['path']]
+            if args.disk is not None:
+                command += ['--medium', str(args.disk.resolve())]
         if args.events:
             command += ['--events', str(args.events.resolve())]
         self.process = subprocess.Popen(command, cwd=ROOT, stdin=subprocess.PIPE,
@@ -134,6 +199,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
+        self.input_kinds={'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -322,31 +388,7 @@ class Session:
             phase=bounded(manifest.get('virtual_ns'),0,(1<<63)-1,'Snapshot virtual phase')
             if (phase*self.machine.clock_hz+999999999)//1000000000!=cycle:
                 raise ValueError('Snapshot cycle and virtual phase disagree')
-        files = manifest.get('files')
-        if not isinstance(files, list) or not 1 <= len(files) <= 16:
-            raise ValueError('Missing or oversized checkpoint inventory')
-        names = set()
-        total_bytes = 0
-        for item in files:
-            if not isinstance(item,dict) or set(item)!={'path','bytes','sha256'}:
-                raise ValueError('Malformed checkpoint file identity')
-            name = item['path']
-            if not isinstance(name, str) or name in names or not name or Path(name).is_absolute() or '..' in Path(name).parts:
-                raise ValueError('Invalid checkpoint path')
-            if not isinstance(item['sha256'],str) or len(item['sha256'])!=64 or any(c not in '0123456789abcdef' for c in item['sha256']):
-                raise ValueError('Malformed checkpoint checksum')
-            path = source / name
-            names.add(name)
-            if any(p.is_symlink() for p in (path, *path.parents)) or not path.is_file():
-                raise ValueError('Missing or symlinked checkpoint state')
-            bounded(item['bytes'], 1, 768 * 1024 * 1024, 'Checkpoint bytes')
-            total_bytes += item['bytes']
-            if total_bytes > 1024 * 1024 * 1024:
-                raise ValueError('Checkpoint exceeds aggregate resource bound')
-            if path.stat().st_size != item['bytes'] or digest(path) != item['sha256']:
-                raise ValueError('Checkpoint length/checksum mismatch')
-        if 'machine.chk' not in names:
-            raise ValueError('Missing machine state')
+        names = checkpoint_inventory(source, manifest)
         if names!=getattr(self.machine,'checkpoint_files',{'machine.chk'}):
             raise ValueError('Checkpoint inventory differs from required backend state')
         if hasattr(self.machine, 'preflight_checkpoint'):
@@ -502,6 +544,8 @@ class Session:
         if action == 'inject':
             state = self.machine.call('inspect')
             command,actual=external_command(value,state['cycle'])
+            if value.get('kind') not in getattr(self.machine,'input_kinds',{'pen','uart'}):
+                raise ValueError('Input is unsupported by this backend/profile')
             return self.external(actual, state, command)
         if action in ('warm-reset', 'cold-cycle'):
             state = self.machine.call('inspect')
@@ -534,9 +578,7 @@ def serve(args):
     viewer = None
     tablet = tablet_log = None
     try:
-        if args.restore and args.workload!='service':
-            if args.disk is not None:
-                raise ValueError('A restored fork owns its checkpoint backing; omit --disk')
+        if startup_restore_medium(args):
             args=copy.copy(args)
             args.disk=directory/'startup-medium.raw'
             with args.disk.open('xb') as stream:
@@ -755,6 +797,13 @@ def view(directory):
         tk.Button(controls, text=label, command=lambda a=action: operation({'action': a})).pack(side='left')
     tk.Button(controls, text='Snapshot', command=save).pack(side='left')
     tk.Button(controls, text='Restore', command=restore).pack(side='left')
+    if metadata['identity']['profile']=='lemma-silicon-dev/0.3.0':
+        # A physical-style level bridge. Guest policy decides whether an edge
+        # requests suspend, fails Busy, or wakes the retained machine.
+        power_button=tk.Button(controls,text='Power button')
+        power_button.bind('<ButtonPress-1>',lambda _:operation({'action':'inject','kind':'button','level':1}))
+        power_button.bind('<ButtonRelease-1>',lambda _:operation({'action':'inject','kind':'button','level':0}))
+        power_button.pack(side='left')
 
     def sample(event, contact):
         state = request(directory, {'action': 'inspect'})['machine']
@@ -788,8 +837,12 @@ def view(directory):
         nonlocal frame, last_hash, last_panel
         try:
             state = request(directory, {'action': 'inspect'})
-            status.set(f"cycle {state['machine']['cycle']} · ticks {state['machine']['ticks']} · " + ('running' if state['running'] else 'paused'))
             produced=state['machine']
+            power=produced.get('devices',{}).get('power',produced.get('power'))
+            power_text=(' · power SUSPENDED' if power['state']==1 else ' · power RUN') if power else ''
+            if power and power.get('error'):
+                power_text+=' · '+{1:'suspend Busy',2:'invalid power access'}.get(power['error'],'power error '+str(power['error']))
+            status.set(f"cycle {produced['cycle']} · ticks {produced['ticks']} · " + ('running' if state['running'] else 'paused')+power_text)
             paper=produced.get('devices',{}).get('paper',{})
             panel=(state.get('presentation_generation',0),paper.get('visible_sha256',produced.get('panel_completed')))
             if panel != last_panel:

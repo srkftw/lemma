@@ -82,6 +82,39 @@ class LifecycleFailures(unittest.TestCase):
         for value in (None,[],17):
             with self.subTest(value=value):
                 (path/'snapshot.json').write_text(json.dumps(value));self.unchanged_rejection(path)
+
+    def power_startup(self,path,**changes):
+        return runtime.startup_restore_medium(SimpleNamespace(restore=path,disk=None,
+            workload='power',backend='qemu',**changes))
+    def fast_power_checkpoint(self):
+        path=self.checkpoint();clock=path/'clock.json';clock.write_bytes(b'bounded-clock-fixture')
+        self.alter(path,lambda d:d['files'].append({'path':'clock.json','bytes':clock.stat().st_size,
+            'sha256':runtime.digest(clock)}))
+        return path
+    def test_power_startup_selects_verified_optional_backing(self):
+        path=self.fast_power_checkpoint();self.assertFalse(self.power_startup(path))
+        medium=path/'durable.raw'
+        with medium.open('xb') as stream:stream.truncate(256*1024*1024)
+        self.alter(path,lambda d:d['files'].append({'path':'durable.raw','bytes':medium.stat().st_size,
+            'sha256':runtime.digest(medium)}))
+        self.assertTrue(self.power_startup(path))
+        medium.write_bytes(b'truncated')
+        with self.assertRaisesRegex(ValueError,'length/checksum'):self.power_startup(path)
+    def test_power_startup_rejects_wrong_inventory_and_short_medium(self):
+        path=self.fast_power_checkpoint();self.alter(path,lambda d:d['files'].pop())
+        with self.assertRaisesRegex(ValueError,'inventory'):self.power_startup(path)
+        clock=path/'clock.json'
+        medium=path/'durable.raw';medium.write_bytes(b'bad')
+        self.alter(path,lambda d:d['files'].extend([
+            {'path':'clock.json','bytes':clock.stat().st_size,'sha256':runtime.digest(clock)},
+            {'path':'durable.raw','bytes':3,'sha256':runtime.digest(medium)}]))
+        with self.assertRaisesRegex(ValueError,'medium length'):self.power_startup(path)
+    def test_every_startup_restore_rejects_unrelated_user_backing(self):
+        for backend in ('qemu','rtl'):
+            for workload in ('service','power','notebook'):
+                with self.subTest(backend=backend,workload=workload),self.assertRaisesRegex(ValueError,'omit --disk'):
+                    runtime.startup_restore_medium(SimpleNamespace(restore=self.root/'snapshot',
+                        disk=self.root/'user.raw',workload=workload,backend=backend))
     def test_raw_event_fields_and_separate_delivery_preserved(self):
         words=[2**63+1,1234,5678,4095,7,2,3]
         self.session.dispatch({'action':'inject','kind':'pen','cycle':45,'words':words})

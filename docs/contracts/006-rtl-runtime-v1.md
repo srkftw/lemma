@@ -59,8 +59,9 @@ volatile medium overlay, clears external RAM and reinstalls the exact original
 ELF/DTB preload bytes; the retained panel remains visible until guest-driven
 redraw. This remains explicitly **ELF-preload development boot** through the
 existing Lean-authored ROM handoff. Neither operation establishes a nonvolatile
-bootloader, authenticated update, reset-cause CSR, watchdog or guest power
-service. A new external-medium-only cold machine remains a separate acceptance
+bootloader, authenticated update or watchdog. Profile0.3 adds the separate
+Power-v1 reset-cause register and Lean cooperative suspend policy below.
+A new external-medium-only cold machine remains a separate acceptance
 operation; restoring a checkpoint is never evidence of cold recovery.
 
 `LMSSRTL1` checkpoints are implementation-specific exact continuation files.
@@ -101,6 +102,16 @@ State inventory:
   virtual clock; flush-fault ordinal; UART stop marker, panel-completion cutoff
   and virtual-cycle observer cutoff; cumulative passive observations and bounded
   UART transcript. Presentation files and host file/socket handles are external.
+
+Profile0.3 adds the Power-v1 circuitry's complete state to model serialization,
+and raw button level/reset cause to wrapper serialization. Scheduled button
+events retain their delivery cycle and insertion order. Accepted cooperative
+suspend cancels unconsumed pen/UART ingress at its declared loss boundary while
+retaining scheduled buttons, RAM, execution context, panel state and storage
+overlay. It never completes work to make serialization convenient. Warm reset
+retains physical button level/epoch and reports cause2; cold reset clears them
+and reports cause1. The historical Laboratory raw reset remains separately
+cause3. See [the complete digital policy](006-power-control-v1.md).
 
 Restore always disconnects the original medium and runs against the snapshot's
 owned durable bytes. A medium restore requires `--fork-directory PATH`. Restore

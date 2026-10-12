@@ -14,6 +14,7 @@ def control : UInt64 := Lemma.Platform.LemmaVM.Layout.capabilityControlValue
 def magic : UInt64 := 0x314a424f414d454c
 def capacity : UInt64 := 16
 def endpointCapacity : UInt64 := 4
+def powerEndpointCapacity : UInt64 := 5
 def replyCapacity : UInt64 := 8
 def registryCapacity : UInt64 := 8
 def rows : UInt64 := 256
@@ -29,6 +30,15 @@ def revoking : UInt64 := 2
 def retired : UInt64 := 3
 def failed (s : UInt8) : Bool := if s = 0 then false else true
 def fatal : Action := .done CapabilityABI.fatal 0
+
+/-- The volatile successor has one exact encoded budget. Legacy zero words
+remain legacy; neither arbitrary versions nor arbitrary limits acquire capacity. -/
+def headerAdmitted (version endpointLimit : UInt64) : Bool :=
+  if version = 1 then if endpointLimit = 0 then true else false else
+  if version = 2 then if endpointLimit = powerEndpointCapacity then true else false else false
+
+def endpointLimitFor (version : UInt64) : UInt64 :=
+  if version = 1 then endpointCapacity else if version = 2 then powerEndpointCapacity else 0
 
 def get (address : UInt64) : Action :=
   .bind (Access.read64 address) fun s value => if failed s = true then fatal else .done 0 value
@@ -55,7 +65,9 @@ def table : Action :=
   if tag = magic then
   .bind (get (address + 8)) fun s version =>
   if failed s = true then fatal else
-  if version = 1 then
+  .bind (get (address + 24)) fun s endpointLimit =>
+  if failed s = true then fatal else
+  if headerAdmitted version endpointLimit = true then
   .bind (get (address + 16)) fun s serial =>
   if failed s = true then fatal else
   if 0 < serial then if serial ≤ maxSerial + 1 then
@@ -67,6 +79,15 @@ def table : Action :=
   if enrolled ≤ registryCapacity then .done 0 address else fatal
   else fatal else fatal else fatal
   else fatal else fatal else fatal
+
+/-- Version1 retains its four-Endpoint limit. Only the validated volatile
+version2 header admits the fifth Endpoint needed by the power binding. -/
+def runtimeEndpointCapacity : Action :=
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .bind (get (address + 8)) fun s version =>
+  if failed s = true then fatal else
+  .done 0 (endpointLimitFor version)
 
 private def initStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
   let index := i.toUInt64
@@ -84,7 +105,10 @@ private def initStep (i _ : UInt32) (acc base _ _ _ : UInt64) : Action :=
 
 /-- Boot-only single initialization; the allocator zeroes the whole provisional
 frame. Global publication follows all pinned object/header initialization. -/
-def init : Action :=
+private def initFor (version : UInt64) : Action :=
+  if (if version = 1 then true else if version = 2 then true else false) = false then
+    .done CapabilityABI.invalidArgument 0 else
+  let endpointLimit := if version = 2 then powerEndpointCapacity else 0
   .bind (get control) fun s existing =>
   if failed s = true then fatal else
   if existing = 0 then
@@ -95,7 +119,9 @@ def init : Action :=
   .boundedFoldU64 16 initStep 16 0 address 0 0 0 fun s initialized =>
   if failed s = true then fatal else
   if initialized = capacity then
-  .bind (put (address + 8) 1) fun s _ =>
+  .bind (put (address + 8) version) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + 24) endpointLimit) fun s _ =>
   if failed s = true then fatal else
   .bind (put (address + 16) 1) fun s _ =>
   if failed s = true then fatal else
@@ -107,6 +133,12 @@ def init : Action :=
   if failed s = true then fatal else .done 0 handle
   else fatal
   else .done CapabilityABI.invalidArgument 0
+
+/-- Historical boot constructor and default budgets remain unchanged. -/
+def init : Action := initFor 1
+/-- Boot-only successor used by the power-enabled LemmaSim binding. Object
+rows, Reply budget, key generations and all User authority remain unchanged. -/
+def initPower : Action := initFor 2
 
 private def resolveState (key : UInt64) (allowRevoking : Bool) : Action :=
   if keyValid key = false then .done CapabilityABI.invalidHandle 0 else
@@ -334,7 +366,9 @@ def createEndpoint (ownerDescriptor : UInt64) : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 16 endpointCountStep 16 0 base 0 0 0 fun s endpoints =>
   if failed s = true then fatal else
-  if endpoints < endpointCapacity then
+  .bind runtimeEndpointCapacity fun s endpointLimit =>
+  if failed s = true then fatal else
+  if endpoints < endpointLimit then
   .boundedFoldU64 16 freeObjectStep 16 capacity base 0 0 0 fun s index =>
   if s = Status.iterationStop then
   let address := row base index
@@ -358,7 +392,7 @@ def createEndpoint (ownerDescriptor : UInt64) : Action :=
   .bind (put address live) fun s _ =>
   if failed s = true then fatal else .done 0 (generation * capacity + index)
   else fatal else if s = 0 then .done CapabilityABI.objectFull 0 else fatal
-  else if endpoints = endpointCapacity then .done CapabilityABI.objectFull 0 else fatal
+  else if endpoints = endpointLimit then .done CapabilityABI.objectFull 0 else fatal
 
 def reference (key : UInt64) : Action :=
   .bind (resolve key) fun s address =>

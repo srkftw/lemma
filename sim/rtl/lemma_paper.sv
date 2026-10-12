@@ -13,6 +13,7 @@ module lemma_paper #(
   input logic [63:0] wdata,
   output logic [63:0] rdata,
   output logic ready, error, irq,
+  output logic controller_busy,
   input logic [63:0] now_ticks,
   input logic [2047:0] descriptor,
   output logic fb_valid, fb_write,
@@ -47,6 +48,7 @@ module lemma_paper #(
   logic [63:0] req_sequence,rect_x,rect_y,rect_w,rect_h,mode;
   logic [63:0] last_sequence,completed,fault,deadline;
   logic busy,done_flag,interrupted;
+  assign controller_busy = busy || state != IDLE;
   logic [X_BITS-1:0] lx,ix;
   logic [Y_BITS-1:0] ly,iy;
   logic [W_BITS-1:0] lw;

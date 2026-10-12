@@ -118,6 +118,23 @@ must agree. The independently inspected serializer and mutation checks define
 this narrow distinction. Retain raw files, differences and the original failed
 full-container comparison; never call unequal containers byte-identical.
 
-Pending guest suspend/power/watchdog/control interfaces, nonvolatile recovery
-boot, companion/USB/radio transport, browser/Wasm, managed runtime and G5–G7
-applications remain completion requirements. Their absence is not physics.
+## Power-v1 successor
+
+Profile `lemma-silicon-dev/0.3.0` retains canonical geometry and capacity, adding
+the [digital power contract](006-power-control-v1.md), descriptor ABI4 and
+[kernel v0.4's narrowly extended PLIC range](006-core0-kernel-v0.4.md).
+Both backends consume its selected register definitions. Timestamped button
+levels are raw external events; Lean kernel policy accepts or rejects suspend.
+Pause controls simulation pacing separately from guest cooperative suspend.
+
+Exact state includes every power register, physical button level, queued levels
+and clock phase. Queued wake events survive snapshots. Restore disconnects live
+adapters and owns isolated backing; starting a restored power probe determines
+its optional medium from the validated file inventory, never a supplied user
+disk. Unsupported power state rejects in a disposable candidate before replacing
+the current machine. Synthetic power inputs establish digital behavior only.
+
+Watchdog, electrical power sequencing, brownout and remaining controls,
+nonvolatile recovery boot, companion/USB/radio transport, browser/Wasm, managed
+runtime and G5–G7 applications remain completion requirements. Their absence
+is not physics.

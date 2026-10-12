@@ -13,6 +13,8 @@ import struct
 import subprocess
 
 RUNTIME_SHA256 = '87d7282df1de259a3560fee369ef1f303a644654793726fc9da12009d639d467'
+REVIEWED_RUNTIMES = {RUNTIME_SHA256: ('lemma-silicon-dev/0.1.0', 'lemma-silicon-dev/0.2.0')}
+REVIEWED_RUNTIMES['80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a'] = ('lemma-silicon-dev/0.3.0',)
 ADAPTER = 'lemmasim-fast-adapter/2'
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 MAX_STATE = 256 * 1024 * 1024
@@ -192,6 +194,9 @@ def mutation_checks(data):
               ('qemu_icount', info['icount'] + 8, 'FAIL'),
               ('cpu.env.gpr[1]', info['cpu_gpr_x1'], 'FAIL'),
               ('RAM.first_page.byte[0]', ram_mutation_offset(data), 'FAIL')]
+    power = power_offsets(data)
+    if power is not None:
+        sites += [('power.' + name, offset, 'FAIL') for name, offset in power.items()]
     for name, offset, expected in sites:
         altered = data[:offset] + bytes([data[offset] ^ 1]) + data[offset + 1:]
         observed = compare(data, altered)
@@ -200,6 +205,38 @@ def mutation_checks(data):
         checks.append({'field': name, 'offset': offset, 'expected': expected,
                        'observed': observed['status']})
     return checks
+
+
+def power_offsets(data):
+    """Locate all seven fixed Power-v1 words; none is an allowed difference.
+
+    This is an independent wire-layout decoder, not a controller state checker.
+    The reviewed device prefix has no conditional or variable-size fields.
+    An unexpected prefix/schema rejects rather than guessing an offset.
+    """
+    info = layout(data)
+    metadata = parse_json(data[info['metadata_start']:])
+    devices = [d for d in metadata['devices'] if d.get('name') == 'lemma-paper-pen/1']
+    if not devices or (len(devices) == 1 and devices[0].get('version') == 1):
+        return None
+    if len(devices) != 1 or devices[0].get('version') != 2:
+        raise ValueError('Unsupported power device serialization')
+    fields = devices[0].get('fields', [])
+    expected = [('width', 'uint32 equal', 4), ('height', 'uint32 equal', 4),
+                ('pressure_max', 'uint32 equal', 4), ('frame_bytes', 'uint32 equal', 4),
+                ('pen', 'struct', 18523), ('paper', 'struct', 1054),
+                ('power_enabled', 'bool', 1), ('power', 'struct', 56)]
+    if len(fields) < 8 or [(f.get('name'), f.get('type'), f.get('size')) for f in fields[:8]] != expected:
+        raise ValueError('Unsupported fixed power serialization prefix')
+    names = ('state', 'error', 'reset_cause', 'button_level', 'events', 'epoch', 'wake_cause')
+    if fields[7].get('struct') != {'vmsd_name': 'lemma-power/1', 'version': 1,
+            'fields': [{'name': name, 'type': 'uint64', 'size': 8} for name in names]}:
+        raise ValueError('Unsupported Power-v1 serialization schema')
+    payload, _ = section_payload(data, b'lemma-paper-pen/1', 2)
+    start = payload + sum(item[2] for item in expected[:7])
+    if start + 56 > info['metadata_start']:
+        raise ValueError('Truncated Power-v1 state')
+    return {name: start + index * 8 for index, name in enumerate(names)}
 
 
 def load(path):
@@ -211,8 +248,8 @@ def load(path):
     manifest = parse_json(manifest_path.read_bytes())
     identity = manifest['identity']
     if manifest['schema'] != 'lemmasim-session/1' or identity.get('backend') != 'qemu' or \
-       identity.get('runtime') != RUNTIME_SHA256 or identity.get('cpu') != CPU or identity.get('icount_shift') != 3 or \
-       identity.get('profile') not in ('lemma-silicon-dev/0.1.0', 'lemma-silicon-dev/0.2.0'):
+       identity.get('profile') not in REVIEWED_RUNTIMES.get(identity.get('runtime'), ()) or \
+       identity.get('cpu') != CPU or identity.get('icount_shift') != 3:
         raise ValueError('Unsupported checkpoint implementation/configuration')
     if type(manifest.get('virtual_ns')) is not int or not 0 <= manifest['virtual_ns'] <= (1 << 63) - 1:
         raise ValueError('Invalid checkpoint virtual phase')
@@ -281,13 +318,18 @@ def main():
     parser.add_argument('--mutation-checks', action='store_true')
     args = parser.parse_args()
     try:
-        if not 0 < args.qemu.stat().st_size <= MAX_STATE or sha(args.qemu.read_bytes()) != RUNTIME_SHA256:
+        if not 0 < args.qemu.stat().st_size <= MAX_STATE:
+            raise ValueError('QEMU binary exceeds its resource bound')
+        runtime = file_sha(args.qemu)
+        if runtime not in REVIEWED_RUNTIMES:
             raise ValueError('Unreviewed QEMU binary identity')
         version = subprocess.run([str(args.qemu), '--version'], capture_output=True,
                                  text=True, timeout=10, check=True).stdout.splitlines()[0]
         if 'QEMU emulator version 11.1.1' not in version:
             raise ValueError('Unreviewed QEMU version')
         report = compare_checkpoints(args.left, args.right)
+        if report['identity']['runtime'] != runtime:
+            raise ValueError('Checkpoint does not belong to the selected QEMU binary')
         report.update({'schema': 'lemmasim-fast-state-observation/1', 'qemu': version,
                        'observer_sha256': sha(Path(__file__).read_bytes()),
                        'left': str(args.left.resolve()), 'right': str(args.right.resolve())})

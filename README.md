@@ -456,10 +456,11 @@ or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
 
 ## Task006 persistent machine sessions
 
-The new `lemma-silicon-dev/0.2.0` binding admits the same Lean notebook ELF at
-1650×2200 on the matched QEMU machine and open RTL processor. The QEMU notebook
-workflow is observed; the canonical RTL cold notebook missed its bounded ready
-deadline and remains unqualified. The binding has
+The `lemma-silicon-dev/0.3.0` successor retains the canonical 1650×2200 notebook
+binding and adds guest-controlled digital suspend, wake and reset-cause reporting
+on matched QEMU and RTL controllers. Historical 0.1/0.2 profiles remain available.
+The earlier canonical QEMU notebook workflow passed; canonical RTL cold readiness
+is tracked separately in the checkpoint. The binding has
 128 MiB external simulation RAM, a checked 32 MiB frame pool, exact
 backend-specific checkpoints, an isolated durable backing for restored forks,
 and a synthetic digital panel sequencer. The original profiles remain supported.
@@ -471,13 +472,13 @@ See the [session contract](docs/contracts/006-machine-session.md),
 Prepare pinned QEMU and genuinely compiled guest images once:
 
 ```sh
-./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.2.0 --workload initializer
-./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.2.0 --workload notebook
+./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 --workload initializer
+./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook
 mkdir -p "$HOME/.local/share/lemma"
-./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.2.0 \
+./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.3.0 \
   --disk "$HOME/.local/share/lemma/notebook.raw" --session-dir build/user-initialize
 nix-shell tooling/lemmasim/session.nix --run \
-  './scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.2.0 --mode student --disk "$HOME/.local/share/lemma/notebook.raw" --session-dir build/user-session --quantum 1000000'
+  './scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 --mode student --disk "$HOME/.local/share/lemma/notebook.raw" --session-dir build/user-session --quantum 1000000'
 ```
 
 Initialization exclusively creates a new medium; only the real Lean initializer
@@ -493,9 +494,13 @@ previous/next page, Undo, Redo, Erase, brush Width, explicit Save and Compact.
 failed saves have distinct guest-produced labels. Mouse pressure is explicitly
 synthetic. `--tablet /dev/input/eventN` transports an accessible Linux evdev
 device's reported capabilities and samples; physical tablet testing is not yet
-qualified. The window's Pause/Resume controls pause simulation, not a guest
-suspend service. Warm reset and cold cycle have the declared distinct retention
-rules; guest power-button/suspend/wake logic remains unfinished.
+qualified. The window's Power button transports its pressed/released levels;
+the Lean kernel decides whether to suspend, reject a busy operation or resume
+retained tasks. A held pen crosses an explicit loss/resynchronization boundary.
+The window reports RUN, SUSPENDED and controller errors. Pause/Resume controls
+stop and start simulation. Warm reset and cold cycle have separate retention
+rules. This cooperative policy leaves timer/controller clocks running; electrical
+sequencing, watchdog and brownout recovery remain unfinished.
 
 Use the same live session from another terminal:
 
@@ -507,12 +512,28 @@ Use the same live session from another terminal:
 ./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"resume"}'
 ```
 
+The same physical-style button is available from a terminal. While paused, run
+between press and release so they occur at distinct virtual boundaries:
+
+```sh
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"pause"}'
+./scripts/lemmasim button --session-dir build/user-session --level 1
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"run","cycles":1000000}'
+./scripts/lemmasim button --session-dir build/user-session --level 0
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"run","cycles":1000000}'
+```
+
+Repeat the sequence to wake. `button --cycle N` schedules an explicit future
+controller cycle. Both levels at one cycle are sampled together, producing no
+rising edge. A raw press during display/storage work can return guest BUSY.
+Inspect `devices.power`, queues and guest UART to retain the actual decision.
+
 Restore creates a private durable fork and disconnects live input adapters.
 It neither overwrites the original notebook nor flushes pending work. To start
 a separate paused fork, omit `--disk`:
 
 ```sh
-./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.2.0 \
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
   --headless --paused --restore build/user-checkpoint --session-dir build/user-fork
 ```
 
@@ -543,7 +564,7 @@ real-time claim. `--memory-latency N` adds admitted external-memory backpressure
 The larger RTL notebook cold path remains a performance blocker; the original
 Task005 notebook evidence retains its different binding and execution identity.
 Both backends still use explicitly named ELF-preload development boot. Companion
-transport, USB enumeration, digital Wi-Fi/Bluetooth, guest power/recovery,
+transport, USB enumeration, digital Wi-Fi/Bluetooth, production power/recovery,
 browser/Wasm and the managed mathematical/learning stack are not implemented by
 these commands and remain in the [capability inventory](docs/plan/LEMMASIM.md).
 

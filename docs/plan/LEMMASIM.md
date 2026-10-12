@@ -55,7 +55,7 @@ model or an interface specification cannot close a later column.
 | Pen | Full 256 samples, 64-bit sequence/time, loss/resync | FIFO and raw tablet transport | Synchronous banks and cached head | Existing driver and immutable ink | Tablet/manual conformance unverified |
 | Paper/panel digital control | Accepted updates, three synthetic phases and scan clocks | Functional sequencer | Versioned sequencer circuitry | Existing paper driver, regional updates | Synthetic program; panel unqualified |
 | Local durable block medium | Checked DMA and acknowledged barrier | Explicit queue/overlay and real host barrier | Existing block controller | Store/recovery and notebook | Physical storage absent |
-| Power/reset/controls | Retention, suspend/wake, watchdog, brownout required | Warm/cold lifecycle subset | Existing reset boundary | Guest power service absent | Not closed |
+| Power/reset/controls | Versioned cooperative suspend/wake and reset causes; electrical sequencing/watchdog/brownout still required | Power-v1 state, raw button queue and exact checkpoint | Power-v1 controller and existing reset boundary | Lean kernel policy, separately authorized syscall68; paired cold/wake probe observed | New controller physical flow not run |
 | Companion/USB | Enumeration, bounded framing, reconnect and durable peer required | Not built | Not built | Not built | Not closed |
 | Wi-Fi 6 / Bluetooth 5.4 | Complete digital controllers/MAC/baseband/PHY required | Not built | Not built | Not built | Analog/RF separate; digital unfinished |
 | Native/browser distribution | One core and controller-produced display | Native persistent session; browser absent | Same native RTL core | Notebook application | Manual interaction unverified |

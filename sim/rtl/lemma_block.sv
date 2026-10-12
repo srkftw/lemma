@@ -12,7 +12,7 @@ module lemma_block #(
   input logic [2:0] size,
   input logic [63:0] wdata,
   output logic [63:0] rdata,
-  output logic ready, error, irq,
+  output logic ready, error, irq, busy,
   output logic dma_valid, dma_write,
   output logic [63:0] dma_addr, dma_wdata,
   output logic [2:0] dma_size,
@@ -52,6 +52,7 @@ module lemma_block #(
     (access_ok && ((addr == 112 && wdata == 0) || addr == 100));
   assign external_quiescent = (!dma_valid || dma_ready) && (!media_valid || media_ready);
   assign configuration_idle = state == IDLE && !notify && !reset_pending && !fault_pending;
+  assign busy = !configuration_idle || status[6];
   assign access_ok = size == 2 && addr[1:0] == 0;
   assign error = valid && ready && !access_ok;
   assign irq = interrupt_status != 0;

@@ -27,6 +27,7 @@ from check_notebook_workflow import (MAGIC, check_toolbar_pixels, committed_byte
 from inspect_notebook import inspect_page
 from notebook_input import Input, generate
 from store_oracle import recover, root_slot
+from lemmasim_session import request as session_request
 
 
 def sha(path):
@@ -142,7 +143,7 @@ def observe_workflow(medium, raw_output, serial, panel, stream, expected):
 class PublicSession:
     def __init__(self, checker, name, disk, fail_flush=None):
         self.checker, self.directory = checker, checker.directory / name
-        args = ['session', '--backend', 'qemu', '--profile', checker.profile,
+        args = ['session', '--backend', getattr(checker, 'backend', 'qemu'), '--profile', checker.profile,
                 '--workload', 'notebook', '--headless', '--paused', '--mode', 'laboratory',
                 '--session-dir', str(self.directory), '--disk', str(disk),
                 '--timeout', str(checker.args.timeout)]
@@ -168,8 +169,16 @@ class PublicSession:
             raise
 
     def control(self, value):
-        return self.checker.command(['session-control', '--session-dir', str(self.directory),
-                                     '--request', json.dumps(value, separators=(',', ':'))], json_result=True)
+        # Use the same bounded public wire protocol as `session-control`.
+        # Repeated observation must not launch a new interpreter per clock
+        # quantum. The owning session still executes every machine operation.
+        remaining = self.checker.deadline - time.monotonic()
+        require(remaining > 0, 'campaign host resource deadline')
+        self.checker.commands.write(json.dumps({'session': str(self.directory),
+            'request': value, 'transport': 'public-unix-socket'}) + '\n')
+        self.checker.commands.flush()
+        return session_request(self.directory, value,
+                               timeout=min(self.checker.args.timeout + 30, remaining))
 
     def inspect(self):
         return self.control({'action': 'inspect'})

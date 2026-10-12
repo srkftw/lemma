@@ -18,7 +18,7 @@ def section(kind, ident, name, version, payload):
         struct.pack('>II', 0, version) + payload + b'\x7e' + struct.pack('>I', ident)
 
 
-def fixture(metadata=None):
+def fixture(metadata=None, power=False):
     size_record = struct.pack('>Q', 4096 | 4) + b'\x03ram' + struct.pack('>Q', 4096)
     ram = section(1, 1, b'ram', 4, size_record + struct.pack('>Q', 16))
     ram += b'\x02' + struct.pack('>I', 1) + struct.pack('>Q', 8) + b'\x03ram' + bytes(4096)
@@ -30,6 +30,18 @@ def fixture(metadata=None):
         metadata = {'page_size': 4096, 'devices': [copy.deepcopy(observer.TIMER),
             {'name': 'cpu', 'instance_id': 0, 'version': 11,
              'fields': [{'name': 'env.gpr', 'array_len': 32, 'type': 'uint64', 'size': 8}]}]}
+    if power:
+        names = ('state', 'error', 'reset_cause', 'button_level', 'events', 'epoch', 'wake_cause')
+        fields = [{'name': n, 'type': 'uint32 equal', 'size': 4}
+                  for n in ('width', 'height', 'pressure_max', 'frame_bytes')]
+        fields += [{'name': 'pen', 'type': 'struct', 'size': 18523},
+                   {'name': 'paper', 'type': 'struct', 'size': 1054},
+                   {'name': 'power_enabled', 'type': 'bool', 'size': 1},
+                   {'name': 'power', 'type': 'struct', 'size': 56, 'struct': {
+                       'vmsd_name': 'lemma-power/1', 'version': 1,
+                       'fields': [{'name': n, 'type': 'uint64', 'size': 8} for n in names]}}]
+        metadata['devices'].append({'name': 'lemma-paper-pen/1', 'version': 2, 'fields': fields})
+        cpu += section(4, 3, b'lemma-paper-pen/1', 2, bytes(16 + 18523 + 1054 + 1 + 56))
     encoded = json.dumps(metadata).encode()
     return b'QEVM\0\0\0\3\x07\0\0\0\x12lemma-silicon-fast' + ram + cpu + timer + \
         b'\0\x06' + struct.pack('>I', len(encoded)) + encoded
@@ -106,6 +118,25 @@ class CheckpointObservation(unittest.TestCase):
         result = observer.compare(source, target)
         self.assertEqual(result['status'], 'FAIL')
         self.assertEqual(result['unauthorized_differences'], result['differences'])
+
+    def test_all_seven_power_words_are_exact_even_when_timers_match(self):
+        source = fixture(power=True)
+        checks = observer.mutation_checks(source)
+        names = ('state', 'error', 'reset_cause', 'button_level', 'events', 'epoch', 'wake_cause')
+        self.assertEqual({r['field']: r['observed'] for r in checks if r['field'].startswith('power.')},
+                         {'power.' + name: 'FAIL' for name in names})
+
+    def test_missing_or_shifted_power_schema_rejects_decoding(self):
+        source = fixture(power=True)
+        info = observer.layout(source)
+        metadata = json.loads(source[info['metadata_start']:])
+        for field, value in (('size', 18524), ('name', 'other')):
+            altered = copy.deepcopy(metadata)
+            altered['devices'][-1]['fields'][4][field] = value
+            encoded = json.dumps(altered).encode()
+            data = source[:info['metadata_start'] - 4] + struct.pack('>I', len(encoded)) + encoded
+            with self.assertRaisesRegex(ValueError, 'power serialization prefix'):
+                observer.power_offsets(data)
 
     def test_missing_unknown_and_ambiguous_timer_state_rejected(self):
         source = fixture(); info = observer.layout(source)

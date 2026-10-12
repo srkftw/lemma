@@ -19,6 +19,26 @@ external-event cursor, with individually validated lengths/checksums. A future
 QEMU binary, adaptive instruction clock, realtime device or different schema
 requires new review; this observation relation cannot be assumed for it.
 
+The reviewed Power-v1 successor uses profile `lemma-silicon-dev/0.3.0` and
+binary SHA256
+`80e54f2095774ecdbfe3bcd36e52e7c55b1c5e566ecf869b4c6ed3f8c857b43a`,
+from `/nix/store/pgmq625gkqpsav85l32jkjdfp3z4z7lq-lemmasim-qemu-11.1.1`.
+It uses the same pinned upstream source, scalar CPU string and fixed instruction
+clock. The reviewed repository changes add Power-v1 to device VMState version2,
+raw button queue kinds, stable bounded future-event insertion, its level IRQ
+and passive panel inspection/saving.
+Controller and input timers continue to use `QEMU_CLOCK_VIRTUAL`; none of those
+changes consumes the two host clock statistics. The older binary/profile
+admissions retain their original meanings. The selected executable must match
+the checkpoint's exact runtime hash. No other binary is admitted.
+
+All seven power words, enable flag and queued button state are exact comparison
+bytes. The additional independent mutation checks change each power word and
+require failure. The wire decoder requires the fixed device prefix and the
+complete seven-word Power-v1 schema; it never calls the controller's state
+transition code. Save and inspection do not advance the new panel controller.
+The authoritative virtual timer performs its completion, including after restore.
+
 The historical absent-version wrapper is recognized explicitly with origin
 zero for retained observations. `lemmasim-fast-adapter/2` additionally requires
 `clock.json`, schema `lemmasim-fast-clock/1`, a bounded integer

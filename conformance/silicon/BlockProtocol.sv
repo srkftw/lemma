@@ -8,7 +8,7 @@ module BlockProtocol;
   logic [11:0] addr=0;
   logic [2:0] size=2;
   logic [63:0] wdata=0,rdata;
-  logic ready,error,irq;
+  logic ready,error,irq,busy;
   logic dma_valid,dma_write,dma_ready=1,dma_error=0;
   logic [63:0] dma_addr,dma_wdata,dma_rdata;
   logic [2:0] dma_size,media_kind;
@@ -34,6 +34,8 @@ module BlockProtocol;
     if(!reset_n) begin
       dma_beats<=0;medium_operations<=0;held_dma<=0;held_media<=0;
     end else begin
+      if((dma_valid || media_valid) && !busy)
+        $fatal(1,"active controller transfer omitted its power BUSY signal");
       if(held_dma && (!dma_valid || dma_addr!==held_dma_addr ||
           dma_wdata!==held_dma_wdata || dma_write!==held_dma_write || dma_size!==held_dma_size))
         $fatal(1,"stalled DMA request changed before handshake");

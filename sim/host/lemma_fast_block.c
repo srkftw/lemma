@@ -49,6 +49,8 @@ struct LemmaFastBlock {
     uint64_t trace_limit,trace_rows,trace_omitted;
 };
 static LemmaFastBlock *active_fast_block;
+bool lemma_fast_block_busy(void)
+{ return active_fast_block && (active_fast_block->phase!=IDLE || active_fast_block->interrupt_status || (active_fast_block->status&64)); }
 
 static void block_irq(LemmaFastBlock *s) { qemu_set_irq(s->irq,s->interrupt_status!=0); }
 static void block_trace(LemmaFastBlock *s,const char *event,uint64_t a,uint64_t b) {

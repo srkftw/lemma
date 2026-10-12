@@ -20,6 +20,15 @@ def complete (source : UInt64) : Action :=
   if source = 12 then write 0x0c201004 source else
   if source = 13 then write 0x0c201004 source else .done 169 0
 
+/-- Successor binding alone enables the additional digital power source. -/
+def initializePower : Action :=
+  .bind «initialize» fun s _ => if s = 0 then
+  .bind (write 0x0c000038 1) fun s _ => if s = 0 then
+  write 0x0c002080 0x7002 else .done s 0 else .done s 0
+
+def completePower (source : UInt64) : Action :=
+  if source = 14 then write 0x0c201004 source else complete source
+
 end Lemma.Drivers.PLIC
 
 namespace Lemma.Drivers.PLIC
