@@ -81,6 +81,7 @@ void lemma_pen_write(LemmaPen *p,uint32_t a,uint64_t v)
         pen_loss(p);
     } else p->error=3;
 }
+static uint64_t minimum_u64(uint64_t a,uint64_t b) {return a<b?a:b;}
 static uint8_t pixel(const uint8_t *b,uint32_t stride,uint64_t x,uint64_t y)
 { uint8_t v=b[y*stride+x/2]; return (x&1)?v&15:v>>4; }
 static void put_pixel(uint8_t *b,uint32_t stride,uint64_t x,uint64_t y,uint8_t v)
@@ -108,6 +109,7 @@ void lemma_paper_reset(LemmaPaper *p)
     p->status=interrupted?8:0;p->error=interrupted?6:0;p->deadline_ns=0;
     p->tile_x=p->tile_y=p->tile_w=p->tile_h=p->tile_len=0;
     p->rect_x=p->rect_y=p->rect_w=p->rect_h=p->sequence=p->mode=0;
+    p->panel_power=false;p->drive_remaining=0;p->panel_beats=0;p->sequencer_start_ns=p->sequencer_finish_ns=0;
     /* completed visible pixels and monotonic sequence lifetime are retained. */
 }
 uint64_t lemma_paper_read(const LemmaPaper *p,uint32_t a,unsigned size)
@@ -119,6 +121,13 @@ uint64_t lemma_paper_read(const LemmaPaper *p,uint32_t a,unsigned size)
     }
     if(size!=8 || (a&7)) return 0;
     if(a>=LEMMA_PAPER_DESCRIPTOR && a<LEMMA_PAPER_DESCRIPTOR+256) return p->descriptor[(a-LEMMA_PAPER_DESCRIPTOR)/8];
+    if(p->sequencer_enabled) switch(a) {
+    case 384:return 1;case 392:return 0x31504d53;
+    case 400:return (p->panel_power?1:0)|(p->wave_phase<<8)|(p->drive_remaining<<16);
+    case 408:return p->drive_x;case 416:return p->drive_y;case 424:return p->drive_code;
+    case 432:return p->drive_clocks;case 440:return p->panel_power;case 448:return p->scan_beats;
+    default:break;
+    }
     switch(a) {
     case LEMMA_PAPER_MAGIC:return LEMMA_PAPER_IDENTITY;
     case LEMMA_PAPER_VERSION:return 1;case LEMMA_PAPER_STATUS:return p->status;
@@ -171,10 +180,58 @@ void lemma_paper_write(LemmaPaper *p,uint32_t a,uint64_t v,unsigned size,uint64_
     uint64_t duration=p->mode==1?p->fast_ns:p->quality_ns;
     if(now>UINT64_MAX-duration) {p->status&=~1u;paper_error(p,5);return;}
     p->deadline_ns=now+duration;
+    if(p->sequencer_enabled) {
+        uint64_t pixels=w*h,snapshot_cycles=2*pixels,sequence_cycles=11*pixels+7;
+        if(!p->sequencer_clock_ns || snapshot_cycles>(UINT64_MAX-now)/p->sequencer_clock_ns) {p->status&=~1u;paper_error(p,5);return;}
+        p->sequencer_start_ns=now+snapshot_cycles*p->sequencer_clock_ns;
+        if(p->sequencer_start_ns<p->deadline_ns)p->sequencer_start_ns=p->deadline_ns;
+        uint64_t phase=p->sequencer_start_ns%p->sequencer_clock_ns;
+        if(phase) {
+            uint64_t padding=p->sequencer_clock_ns-phase;
+            if(p->sequencer_start_ns>UINT64_MAX-padding) {p->status&=~1u;paper_error(p,5);return;}
+            p->sequencer_start_ns+=padding;
+        }
+        if(sequence_cycles>(UINT64_MAX-p->sequencer_start_ns)/p->sequencer_clock_ns) {p->status&=~1u;paper_error(p,5);return;}
+        p->sequencer_finish_ns=p->sequencer_start_ns+sequence_cycles*p->sequencer_clock_ns;
+        p->deadline_ns=p->sequencer_finish_ns;
+        p->wave_phase=p->drive_remaining=p->drive_clocks=p->scan_beats=p->panel_beats=0;
+        p->drive_x=x;p->drive_y=y;p->drive_code=0;p->panel_power=false;
+    }
+
+}
+static void paper_sequence_advance(LemmaPaper *p,uint64_t now)
+{
+    uint64_t n=p->latched_w*p->latched_h,cycle,index=0,visible=0;
+    if(now<p->sequencer_start_ns)return;
+    cycle=(now-p->sequencer_start_ns)/p->sequencer_clock_ns;
+    p->panel_power=cycle<11*n+7;p->drive_remaining=0;p->drive_code=0;
+    if(cycle>=2 && cycle<2+3*(3*n+1)) {
+        uint64_t phase=(cycle-2)/(3*n+1),position=(cycle-2)%(3*n+1);
+        p->wave_phase=phase;
+        index=position<3*n?position/3:0;
+        p->scan_beats=phase*n+minimum_u64(position/3,n);
+        p->drive_clocks=phase*2*n+minimum_u64((position/3)*2+((position%3)==2?1:0),2*n);
+        if(position<3*n && position%3) {
+            p->drive_remaining=3-position%3;
+            uint8_t q=pixel(p->latched,p->stride,p->latched_x+index%p->latched_w,p->latched_y+index/p->latched_w);
+            p->drive_code=phase==0?3:phase==1?(q<8?1:2):0;
+        }
+    } else if(cycle>=2+3*(3*n+1)) {
+        uint64_t final=cycle-(2+3*(3*n+1));
+        p->wave_phase=2;p->scan_beats=3*n;p->drive_clocks=6*n;
+        visible=minimum_u64(final/2,n);index=final<2*n?final/2:0;
+    }
+    p->drive_x=p->latched_x+index%p->latched_w;p->drive_y=p->latched_y+index/p->latched_w;
+    /* Final digital sends produce a prefix of immutable latched data. The
+     * virtual panel retains optical-visible state until completion; reset
+     * discards this pending prefix. No excluded physical response is inferred. */
+    p->panel_beats=visible;
 }
 void lemma_paper_advance(LemmaPaper *p,uint64_t now)
 {
-    if(!(p->status&1) || now<p->deadline_ns)return;
+    if(!(p->status&1))return;
+    if(p->sequencer_enabled)paper_sequence_advance(p,now);
+    if(now<p->deadline_ns)return;
     for(uint64_t y=p->latched_y;y<p->latched_y+p->latched_h;y++)for(uint64_t x=p->latched_x;x<p->latched_x+p->latched_w;x++)put_pixel(p->visible,p->stride,x,y,pixel(p->latched,p->stride,x,y));
     p->completed=p->last_sequence;p->status=(p->status&~1u)|2;
     if(p->latched_mode==2 && p->latched_x==0 && p->latched_y==0 && p->latched_w==p->width && p->latched_h==p->height)p->status&=~8u;

@@ -36,6 +36,10 @@ typedef struct LemmaPaper {
     uint64_t completed,last_sequence,deadline_ns,fast_ns,quality_ns;
     uint64_t latched_x,latched_y,latched_w,latched_h,latched_mode;
     uint64_t descriptor[32];
+    bool sequencer_enabled;
+    uint64_t sequencer_clock_ns,sequencer_start_ns,sequencer_finish_ns;
+    uint64_t wave_phase,drive_remaining,drive_x,drive_y,drive_code,drive_clocks,scan_beats,panel_beats;
+    bool panel_power;
 } LemmaPaper;
 void lemma_pen_init(LemmaPen *,uint64_t,uint64_t,uint64_t);
 bool lemma_pen_push(LemmaPen *,const LemmaSample *);

@@ -1,6 +1,6 @@
 # LemmaSim first-class construction workstream
 
-Status: partial — Task004 bounded native notebook subset observed; finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
+Status: partial — Task006 adds persistent native sessions, backend-private checkpoints, a canonical-capacity fast binding and synthetic digital panel sequencing to the earlier notebook. Canonical RTL cold notebook acceptance remains blocked by its ready deadline. Finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
 
 | ID | Deliverable | Depends on | Required exit evidence | Status |
 | --- | --- | --- | --- | --- |
@@ -8,7 +8,7 @@ Status: partial — Task004 bounded native notebook subset observed; finished-ma
 | S1 | Deterministic virtual motherboard | S0, G1 | real Lean-authored ELF boots, traceable RV64/MMIO/clock/reset events, negative tests | partial: actual one-hart RV64 binding/discovery/replay; no physical board result |
 | S2 | Virtual memory/storage/power fault models | S1, G2/G3 | invalid accesses, flush/crash cutpoints and recovery independently checked | partial: owned memory and admitted block/flush/cut recovery |
 | S3 | Virtual pen and e-paper controllers | S1, G4 interfaces | physical USB tablet bridge -> virtual controller -> guest driver -> pixels, with ordered traces | partial: pen FIFO/PLIC, guest ink/paper, recorded pressure; physical USB/manual NOT_RUN |
-| S4 | Virtual interaction and distribution | S3, G4/G6 | installable Student mode; offline notebook; snapshot and restore | partial: native launch and offline notebook; installer and whole-machine snapshot NOT_BUILT |
+| S4 | Virtual interaction and distribution | S3, G4/G6 | installable Student mode; offline notebook; snapshot and restore | partial: persistent native lifecycle and exact fast/RTL subset checkpoints; installer, browser and finished-machine state remain incomplete |
 | S5 | Developer and Laboratory modes | S2-S4 | reproducible replay, fault injection, inspectable device state, no bypass of guest enforcement | partial: bounded Developer inspection/replay and Laboratory fault workflows |
 | S6 | Integrated virtual finished machine | S4/S5, G5-G7 | complete documented student workflows; proof and tutor trust boundaries checked | planned |
 | S7 | Physical/virtual conformance | S6 and custom open RV64 SoC embodiment | independently captured physical traces meet per-interface equivalence relations | blocked: physical hardware unavailable |
@@ -39,3 +39,28 @@ implementation, retained failures, CI and offline export. The observed notebook
 is a foundation for mathematical documents; S6 proof/tutor integration and S7
 physical parity remain unfinished. Keep the named partial scopes and do not
 replace the existing G1–G7 completion requirements with this subset.
+
+## Task006 capability inventory
+
+The columns distinguish behavior from circuitry and physical qualification.
+The Task006 checkpoint and evidence report record execution identities; a
+model or an interface specification cannot close a later column.
+
+| Subsystem | Specified behavior | Functional model | RTL | Lean guest integration | Physical qualification |
+| --- | --- | --- | --- | --- | --- |
+| Scalar CPU, M/S/U, Sv39, PMP | Development RV64IM binding | QEMU configured scalar CPU | Existing open processor | Kernel and isolated services | Not closed |
+| RAM, fabric, DMA ownership | Checked pool, byte enables, bounded pending beats | External 128MiB RAM; configurable latency | Fabric and controller boundary | Real allocation, zeroing, pinning and isolation | Large physical RAM absent |
+| Boot and image update | Development preload explicit; recoverable update required | ELF/DTB preload | Lean-authored reset ROM | Current Lean kernel boot | Nonvolatile update/recovery absent |
+| Exact machine checkpoints | Versioned backend-private state | Matched fast serialization | Verilator plus wrapper state | Guest state preserved in flight | Not a physical claim |
+| Pen | Full 256 samples, 64-bit sequence/time, loss/resync | FIFO and raw tablet transport | Synchronous banks and cached head | Existing driver and immutable ink | Tablet/manual conformance unverified |
+| Paper/panel digital control | Accepted updates, three synthetic phases and scan clocks | Functional sequencer | Versioned sequencer circuitry | Existing paper driver, regional updates | Synthetic program; panel unqualified |
+| Local durable block medium | Checked DMA and acknowledged barrier | Explicit queue/overlay and real host barrier | Existing block controller | Store/recovery and notebook | Physical storage absent |
+| Power/reset/controls | Retention, suspend/wake, watchdog, brownout required | Warm/cold lifecycle subset | Existing reset boundary | Guest power service absent | Not closed |
+| Companion/USB | Enumeration, bounded framing, reconnect and durable peer required | Not built | Not built | Not built | Not closed |
+| Wi-Fi 6 / Bluetooth 5.4 | Complete digital controllers/MAC/baseband/PHY required | Not built | Not built | Not built | Analog/RF separate; digital unfinished |
+| Native/browser distribution | One core and controller-produced display | Native persistent session; browser absent | Same native RTL core | Notebook application | Manual interaction unverified |
+| Mathematics and learning | G2 and G5–G7 remain required | Not replaced by host software | Machine substrate only | Ink/store subset; managed runtime/verifier/tutor unfinished | Not closed |
+
+Standalone pen mapping and improved global-route estimates do not close the
+physical column. Detailed routing, complete SG13G2 rule coverage, process
+DRC/LVS, extraction and post-route timing remain separate required results.

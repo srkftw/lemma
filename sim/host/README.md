@@ -99,3 +99,75 @@ Its words26/27 give the actual reset DTB address/length for a second `pmemsave`.
 The exporter must validate descriptor magic/version/checksum and bounded DTB
 header/length before reading that region. This captures actual handed boot bytes,
 without turning a host manifest into guest authority.
+
+Task006 adds a separate matched functional binding, `lemma-silicon-fast`.
+The selected `sim/profiles/lemma-silicon-dev-*.json` generates numerical constants
+consumed by the QEMU device model. Build the historical0.1 profile with the
+command above, or select its compatible successor explicitly:
+
+```
+nix-build tooling/lemmasim/qemu.nix --arg siliconProfile ./sim/profiles/lemma-silicon-dev-0.2.0.json -o build/lemmasim/qemu-fast-full
+```
+
+This binding uses the real QEMU RV64 CPU with an explicitly checked RV64IM,
+M/S/U, Sv39, PMP, Zicsr/Zifencei/Zicntr configuration. It has the selected128MiB
+RAM, frame-pool DMA confinement, profile geometry, supplied silicon DTB and
+same freestanding Lean ELF. QEMU's reset ROM handoff and instruction scheduling
+remain backend-specific. It is an ELF-preload development boot path. A real
+image-update/recovery boot controller remains unfinished.
+
+`lemma_fast_block.c` implements a bounded, timer-stepped single-request
+VirtIO-MMIO split queue instead of asynchronous host block coroutines. Each
+100ns step owns one controller transition or an aligned DMA transfer; its
+512-byte transfer buffer, descriptor cursor, timer deadline, status and IRQ are
+snapshot state. Writes change a bounded32768-sector volatile overlay. FLUSH
+publishes raw sector bytes to the independently opened256MiB backing file and
+finishes the actual `fdatasync` barrier before status DMA. No guest records are
+parsed. Reset cancels a request and retains the external overlay; a new cold
+process retains only backing-file bytes. QOM `/machine/lemma-block`, property
+`storage-state`, exposes the phase and medium counters. The old
+`lemmasim-virt` block graph and historical drain behavior are unchanged.
+
+Exact same-backend snapshots for the matched binding use paused QMP commands
+`lemma-save-machine {filename:...}` and `lemma-load-machine {filename:...}`.
+They call the pinned QEMU state serializer, including CPU/RAM/timers, plus
+explicit VMState for pen FIFO/contact/loss, all display buffers and phases,
+input cursor/queued events, and the entire block-controller/volatile-overlay
+state. Pausing this binding does not drain or flush storage. Saving uses an
+exclusive new file and never finishes future work. Loading requires the same
+medium capacity and SHA256 of the durable base. The supported LemmaSim session
+wrapper validates implementation/profile/image identities and checksums first,
+copies the snapshot durable base into an isolated session fork, and then loads
+that fork. A live external file handle is reopened, not serialized.
+Direct QMP load is a developer primitive and is not a replacement for that
+manifest and fork validation. Cross-backend microstate migration is absent.
+
+On `/machine/lemma-hardware`, `virtual-time` returns virtual nanoseconds;
+`run-until` arms a bounded virtual-time pause. `external-event` accepts exactly
+eight unsigned decimal fields:
+`DELIVERY_NS TIME X Y PRESSURE FLAGS TOOL BUTTONS`. Delivery time and the admitted
+sample timestamp are distinct. The4096-entry queue is bounded, rejects backwards
+admission, and is part of the snapshot. File events precede injected events at
+equal delivery timestamps. The CPU uses `-icount shift=3,align=off,sleep=off`;
+this is deterministic functional pacing, not a real-time RTL speed claim.
+
+Profile0.2 additionally enables `virtual-panel-synthetic/1`: three digital
+phases, registered-read intervals, pixel drive dwell, final visible scan, and
+power sequencing. Accepted immutable target pixels, pending digital panel beats, and retained
+visible pixels remain separate. The virtual panel publishes visible pixels only
+at controller completion; reset discards pending panel work. The functional model advances elapsed declared virtual controller
+clocks; the RTL reference emits individual digital beats. Synthetic programs
+establish digital sequencing only. Physical panel data, safe voltages,
+electrophoretic response, and panel compatibility remain unqualified.
+
+Detailed fast traces are optional observer output. `trace-limit` on
+`lemma-paper-pen` and `lemma-fast-block` accepts1..1,000,000 rows per file;
+additional rows increment `trace-state.omitted` without changing controller
+execution. These observer counters are outside machine state and each isolated
+restore fork owns new output files. Buffered writes replace per-row flushes for
+this binding. Historical native tracing retains its prior behavior.
+
+The explicit QEMU `qtest` accelerator executes no CPU. It may instantiate the
+matched controller inventory for bounded literal DMA/protocol fixtures; that
+mode makes no ISA, guest execution, or whole-machine claim. Actual fast guest
+runs retain the declared CPU admission checks.

@@ -366,7 +366,11 @@ RTL development backend, under the separate
 [checkpoint](docs/plan/005-session-state.md). The original Task 005 assignment
 required a draft PR; the owner subsequently authorized finishing and a guarded
 merge after verification and applicable CI pass. The native QEMU notebook
-remains the default backend.
+remains the default backend. Task 005 merged through
+[PR #7](https://github.com/srkftw/lemma/pull/7); the subsequent specification
+merge retained the same source tree. Task 006 starts from current main
+`abd9920d54df04ce52da9386170e99012c39bdfb` on
+`task/006-whole-machine-lemmasim`, with draft publication only.
 The Task003 A–K implementation is
 `14cc79be8914a349b729347cc05091aba6ac7ca7`, subsequently merged through
 [PR #3](https://github.com/srkftw/lemma/pull/3). Task004 started from reviewed
@@ -449,6 +453,99 @@ and scoped results are in [the Task 005 checkpoint](docs/plan/005-session-state.
 RTL is slower than the native notebook and does not claim physical conformance
 or a physical nonvolatile boot solution. Open synthesis/layout recipes are in
 [tooling/silicon](tooling/silicon/README.md).
+
+## Task006 persistent machine sessions
+
+The new `lemma-silicon-dev/0.2.0` binding admits the same Lean notebook ELF at
+1650×2200 on the matched QEMU machine and open RTL processor. The QEMU notebook
+workflow is observed; the canonical RTL cold notebook missed its bounded ready
+deadline and remains unqualified. The binding has
+128 MiB external simulation RAM, a checked 32 MiB frame pool, exact
+backend-specific checkpoints, an isolated durable backing for restored forks,
+and a synthetic digital panel sequencer. The original profiles remain supported.
+This is a larger running subset, not a completed Lemma One or physical signoff.
+See the [session contract](docs/contracts/006-machine-session.md),
+[checkpoint](docs/plan/006-session-state.md), and
+[observed results](docs/evidence/006-whole-machine-lemmasim.md).
+
+Prepare pinned QEMU and genuinely compiled guest images once:
+
+```sh
+./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.2.0 --workload initializer
+./scripts/lemmasim build --backend qemu --profile lemma-silicon-dev/0.2.0 --workload notebook
+mkdir -p "$HOME/.local/share/lemma"
+./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.2.0 \
+  --disk "$HOME/.local/share/lemma/notebook.raw" --session-dir build/user-initialize
+nix-shell tooling/lemmasim/session.nix --run \
+  './scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.2.0 --mode student --disk "$HOME/.local/share/lemma/notebook.raw" --session-dir build/user-session --quantum 1000000'
+```
+
+Initialization exclusively creates a new medium; only the real Lean initializer
+formats it. Preserve that raw file outside `build/`. Session directories and
+checkpoint destinations must be new. Later launches reuse the existing medium
+and prepared images without formatting or rebuilding. Preparation rejects stale
+source/artifact identities. The native host presentation environment is pinned
+for Linux x86-64; a portable installer and local browser build remain unfinished.
+
+Write with the pointer in the notebook canvas. The guest toolbar supplies Home,
+previous/next page, Undo, Redo, Erase, brush Width, explicit Save and Compact.
+`Saved` follows the guest store's actual durable barrier; provisional work and
+failed saves have distinct guest-produced labels. Mouse pressure is explicitly
+synthetic. `--tablet /dev/input/eventN` transports an accessible Linux evdev
+device's reported capabilities and samples; physical tablet testing is not yet
+qualified. The window's Pause/Resume controls pause simulation, not a guest
+suspend service. Warm reset and cold cycle have the declared distinct retention
+rules; guest power-button/suspend/wake logic remains unfinished.
+
+Use the same live session from another terminal:
+
+```sh
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"pause"}'
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"inspect"}'
+./scripts/lemmasim snapshot --session-dir build/user-session --to build/user-checkpoint
+./scripts/lemmasim restore --session-dir build/user-session --from build/user-checkpoint
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"resume"}'
+```
+
+Restore creates a private durable fork and disconnects live input adapters.
+It neither overwrites the original notebook nor flushes pending work. To start
+a separate paused fork, omit `--disk`:
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.2.0 \
+  --headless --paused --restore build/user-checkpoint --session-dir build/user-fork
+```
+
+For an exact recorded suffix, pause at its final boundary, copy the closed
+`external.jsonl` outside the session, and record `machine.virtual_ns` from
+inspection. Then restore/replay into the isolated fork:
+
+```sh
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"pause"}'
+./scripts/lemmasim session-control --session-dir build/user-session --request '{"action":"inspect"}'
+cp build/user-session/external.jsonl build/user-external.jsonl
+./scripts/lemmasim session-replay --session-dir build/user-fork \
+  --snapshot build/user-checkpoint --capture build/user-external.jsonl --until-ns 106368000276
+./scripts/lemmasim session-control --session-dir build/user-fork --request '{"action":"destroy"}'
+```
+
+The number is an example; use the actual captured endpoint. QEMU's exact
+nanosecond phase matters because its instruction clock is not an integer number
+of 100 MHz controller clocks. RTL replay uses `--until-cycle` instead. There is
+no exact QEMU/RTL microstate migration. `--trace-limit N` selects bounded detailed
+tracing; ordinary sessions avoid it. Laboratory sessions may select an actual
+failed barrier with `--fail-flush 1`; inspection retains failed operations.
+
+For RTL development, prepare the initializer and notebook with `build --backend rtl`
+and the same profile, then select `--backend rtl` on the lifecycle commands. The
+processor runs every hardware cycle; report its observed speed without a
+real-time claim. `--memory-latency N` adds admitted external-memory backpressure.
+The larger RTL notebook cold path remains a performance blocker; the original
+Task005 notebook evidence retains its different binding and execution identity.
+Both backends still use explicitly named ELF-preload development boot. Companion
+transport, USB enumeration, digital Wi-Fi/Bluetooth, guest power/recovery,
+browser/Wasm and the managed mathematical/learning stack are not implemented by
+these commands and remain in the [capability inventory](docs/plan/LEMMASIM.md).
 
 ## License and private material
 

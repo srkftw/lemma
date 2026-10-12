@@ -32,7 +32,7 @@ class ResetArtifactReuse(unittest.TestCase):
         artifacts['binary']=module.identified(path)
         audit={'status':'PASS','scope':'literal fixture scope','instruction_words':[0x00000513,0x43f00593,0x01559593,0x00100293,0x01f29293,0x00028067],**artifacts}
         audit_path=directory/'audit.json';audit_path.write_text(json.dumps(audit))
-        return {'schema_version':1,'profile':'binding-fixture','profile_sha256':'same-profile','binary':module.identified(binary),
+        return {'schema_version':1,'profile':'lemma-silicon-dev/0.1.0','profile_sha256':'same-profile','binary':module.identified(binary),
                 'rtl_build':module.identified(build),'rtl_sources':{str(self.tool):module.sha(self.tool)},'memory':'external-fixture',
                 'physical_conformance':'UNVERIFIED','rom':module.identified(path),'rom_audit':module.identified(audit_path)}
     def alter_audit(self,data,mutate):
@@ -64,11 +64,11 @@ class ResetArtifactReuse(unittest.TestCase):
     def test_atomic_publication_keeps_old_on_failure(self):
         publication=self.root/'prepared.json';publication.write_text('{"old":true}')
         with mock.patch.object(module,'PREPARED',publication),mock.patch.object(module.os,'replace',side_effect=OSError('interrupted')):
-            self.assertRaises(OSError,module.publish_prepared,{'new':True})
+            self.assertRaises(OSError,module.publish_prepared,{'profile':'lemma-silicon-dev/0.1.0','new':True})
         self.assertEqual(publication.read_text(),'{"old":true}');self.assertEqual(list(self.root.glob('prepared.json.*')),[])
     def test_atomic_publication_publishes_complete_json(self):
         publication=self.root/'prepared.json'
-        with mock.patch.object(module,'PREPARED',publication):module.publish_prepared({'workloads':{'service':'literal-existing','initializer':'literal-new'}})
-        self.assertEqual(json.loads(publication.read_text()),{'workloads':{'service':'literal-existing','initializer':'literal-new'}})
+        with mock.patch.object(module,'PREPARED',publication):module.publish_prepared({'profile':'lemma-silicon-dev/0.1.0','workloads':{'service':'literal-existing','initializer':'literal-new'}})
+        self.assertEqual(json.loads(publication.read_text()),{'profile':'lemma-silicon-dev/0.1.0','workloads':{'service':'literal-existing','initializer':'literal-new'}})
 
 if __name__=='__main__':unittest.main(verbosity=2)

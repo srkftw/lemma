@@ -135,6 +135,27 @@ listed in the checkpoint. Literal device tests, host tests and CI passes are
 separate from those guest claims. Reuse unchanged artifacts only after exact
 consumed-input validation; do not rerun every historical lane for a report edit.
 
+## Sixth task's scope
+
+Task 006 is authorized by `codex/prompts/006-whole-machine-lemmasim.md` and the
+owner's whole-machine assignment. Use `task/006-whole-machine-lemmasim`; resume
+`docs/plan/006-session-state.md`. It extends earlier task-local exclusions with
+state-complete machine sessions, matched fast/RTL bindings, digital devices,
+boot/power/recovery, companion/radio, native/browser embodiments and eventual
+G2/G5–G7 product work. Keep target policy and algorithms genuinely elaborated
+Lean. Host transport/presentation must not implement guest ink, journals,
+recovery or mathematical authority. Synthetic panel sequencing is digital
+evidence, not physical panel conformance. Report each unfinished subsystem.
+
+Publish a draft PR against current main; do not merge or inherit prior merge
+authorization. Preserve historical profiles/results, durable formats, USGCE,
+repository settings and unrelated branches. Same-backend exact checkpoints
+must retain in-flight work and restore into isolated durable forks. They are
+not cold recovery or QEMU/RTL microstate migration. The canonical-resolution
+RTL boot timeout and physical routing failures are retained failures, not
+implicit passes. Use the checkpoint for the exact final execution identities
+and remaining blockers; do not rerun historical workloads for report changes.
+
 ## Evidence discipline (all tasks)
 
 - Generate evidence from real commands, record versions and source revisions, and

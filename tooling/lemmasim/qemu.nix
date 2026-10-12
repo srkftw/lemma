@@ -1,4 +1,5 @@
 # Host-only derived QEMU. Historical pkgs.qemu and its profiles are untouched.
+{ siliconProfile ? ../../sim/profiles/lemma-silicon-dev-0.1.0.json }:
 let
   lock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   pin = lock.nodes.nixpkgs.locked;
@@ -16,7 +17,7 @@ let
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
-      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_durable.c" ];
+      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_durable.c" "lemma_fast_block.c" ];
   };
 in base.overrideAttrs (old: {
   pname = "lemmasim-qemu";
@@ -41,6 +42,6 @@ in base.overrideAttrs (old: {
     runHook postInstall
   '';
   postPatch = (old.postPatch or "") + ''
-    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources}
+    ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --silicon-profile ${siliconProfile}
   '';
 })

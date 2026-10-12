@@ -120,7 +120,7 @@ class BindingTests(unittest.TestCase):
     def test_diagnostic_outputs_are_regenerated_and_inventoried(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory=Path(tmp);image=directory/'image';image.write_bytes(b'host fixture only')
-            data={'binary':{'path':'fixture-rtl'},'rom':{'path':'fixture-rom'},
+            data={'profile':'lemma-silicon-dev/0.1.0','binary':{'path':'fixture-rtl'},'rom':{'path':'fixture-rom'},
                   'workloads':{'service':{'image':{'path':str(image)},'dtb':{'path':'fixture-dtb'}}}}
             def launched(argv,**kwargs):
                 self.assertIn('--block-trace',argv)
