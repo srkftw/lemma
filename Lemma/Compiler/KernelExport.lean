@@ -546,12 +546,14 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
 private def frameCountFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
+  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" ||
+      isManagedNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" then
+  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" ||
+      isManagedNotebookConfiguration configuration then
     (Lemma.Platform.Silicon.BindingPower.frame_pool_base + Lemma.Platform.Silicon.BindingPower.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then
     (Lemma.Platform.Silicon.BindingFull.frame_pool_base + Lemma.Platform.Silicon.BindingFull.frame_pool_bytes).toNat
