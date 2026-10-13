@@ -10,15 +10,39 @@ from silicon_profile import configuration_profile
 from core0_common import Core0Error
 class ArithmeticCatalog(unittest.TestCase):
     def test_canonical_and_only_exact_lab_names_select_three_images(self):
-        for config in ARITHMETIC_CONFIGURATIONS:
-            rows=image_specs(config)
-            self.assertEqual([r['key'] for r in rows],['store','notebook','arithmetic'])
-            self.assertEqual(rows[-1]['source'],'Lemma.Services.Arithmetic.Server.main')
-            self.assertEqual(rows[-1]['boot_role'],'arithmetic-server')
-            self.assertEqual(managed_policy(config),'lemma-notebook-arithmetic-v1')
-            self.assertEqual(managed_fields(config)['managed_policy'],'lemma-notebook-arithmetic-v1')
-            self.assertEqual(configuration_profile(config),'lemma-silicon-dev/0.3.0')
-            self.assertEqual(kernel_contract(config),'core0-kernel-v0.4')
+        expected={}
+        groups=[
+            (('lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
+              'lemmasim-silicon-power-arithmetic-oom-development',
+              'lemmasim-silicon-power-arithmetic-fault-development',
+              'lemmasim-silicon-power-arithmetic-stall-development',
+              'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'), 'Server',3,4),
+            (('lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize',
+              'lemmasim-silicon-sums-arithmetic-oom-development',
+              'lemmasim-silicon-bulk-notebook','lemmasim-silicon-bulk-initialize'), 'ServerV3',3,4),
+            (('lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize',
+              'lemmasim-silicon-bytes-arithmetic-oom-development'), 'ServerV4',3,4),
+            (('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize',
+              'lemmasim-silicon-array-arithmetic-oom-development'), 'ServerV5',3,4),
+            (('lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'), 'Server',6,6),
+            (('lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'), 'ServerV3',6,6),
+            (('lemmasim-silicon-product-notebook',), 'Server',7,7),
+            (('lemmasim-silicon-product-bulk-notebook',), 'ServerV3',7,7)]
+        for names,server,profile,kernel in groups:
+            for name in names:
+                self.assertNotIn(name,expected)
+                expected[name]=(server,profile,kernel)
+        self.assertEqual(set(ARITHMETIC_CONFIGURATIONS),set(expected))
+        for config,(server,profile,kernel) in expected.items():
+            with self.subTest(configuration=config):
+                rows=image_specs(config)
+                self.assertEqual([r['key'] for r in rows],['store','notebook','arithmetic'])
+                self.assertEqual(rows[-1]['source'],'Lemma.Services.Arithmetic.'+server+'.main')
+                self.assertEqual(rows[-1]['boot_role'],'arithmetic-server')
+                self.assertEqual(managed_policy(config),'lemma-notebook-arithmetic-v1')
+                self.assertEqual(managed_fields(config)['managed_policy'],'lemma-notebook-arithmetic-v1')
+                self.assertEqual(configuration_profile(config),f'lemma-silicon-dev/0.{profile}.0')
+                self.assertEqual(kernel_contract(config),f'core0-kernel-v0.{kernel}')
     def test_lab_root_cannot_be_freeform_or_escape_ordinary_catalog(self):
         for config,root in zip(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS,('arithmeticOOMBoot','arithmeticFaultBoot','arithmeticStallBoot')):
             self.assertEqual(configuration_roots(config)['kernel'][0][0],'Lemma.Platform.LemmaSim.NotebookKernel.'+root)

@@ -97,7 +97,7 @@ class BindingTests(unittest.TestCase):
     def test_compiled_deadline_observer_rejects_adapter_disagreement(self):
         def actual(argv,**kwargs):
             seconds=int(argv[-1])
-            error=(b'RTL adapter: --image --rom --uart-output required\n' if 1<=seconds<=7200 else
+            error=(b'RTL adapter: development boot requires --image and --rom\n' if 1<=seconds<=7200 else
                    b'RTL adapter: deadline must be1..7200seconds\n')
             return SimpleNamespace(returncode=1,stdout=b'',stderr=error)
         with mock.patch.object(check_silicon.subprocess,'run',side_effect=actual):

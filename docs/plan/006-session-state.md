@@ -425,3 +425,33 @@ receipts under opt-in0.4. BLE has independently generated/decoded sample traffic
 and genuine Lean packet/link objects; opt-in0.5 whole-machine integration is
 in progress. Neither closes product boot/update, USB, full Bluetooth5.4/Wi-Fi6,
 QEMU cached-state parity, browser product workflow or physical closure.
+
+## Ordinary arrays and corrected candidate observers
+
+The [Array milestone](../evidence/006-managed-array-integration.json) binds269
+actual consumed sources, three new whole-image build/audit passes and a real
+84.930114s QEMU course/ink/Save/independent-cold/failed-save pass. Five requests
+carry isolated Array/Protocol5 execution identities in Doc6; edited evidence
+is inapplicable while its history survives. This is bounded ordinary Array
+UInt64 with real boxes, COW, retain/release and controlled errors, not full G2
+or the proof kernel. Actual heap-OOM, old Doc5 migration and RTL/Wasm Array
+acceptance remain open. Surface row/column carry removes a real per-word divide;
+22 geometries, full canonical bytes and13 failure prefixes passed. No target
+cycle speedup is inferred from static instruction changes.
+
+Candidate CI38361053948 at bbf4039a26cb2ea251d19355ae0207590551be15 completed
+**FAILURE**, eight of ten jobs failed. The originally failed foundation host
+step passed, as did the complete foundation qualification and legacy target
+jobs. Subsequent real logs exposed a missing Course fixture build dependency,
+the new status label's12-tile expectation, incomplete arithmetic deployment
+registry, course audit applied to unrelated construction fixtures, and a stale
+valid-deadline preflight string. Focused repairs passed the actual399-test
+kernel host suite, affected Lean fixtures,3 catalog/10 binding cases and actual
+native argv diagnostics. These observations do not pass skipped or failed CI
+jobs; the next committed candidate needs its own CI run.
+
+Product7/USB6 actual cold failures now have a circuitry-level diagnosis: BLE
+MMIO overlaps the old512-byte paper staging window. Successors8/9 move only
+Paper2 staging to0xe00 and have separately passing actual-SoC literal checks.
+Their connected guest/production boot qualification is in progress. Old
+profiles and failures remain intact.

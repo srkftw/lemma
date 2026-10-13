@@ -1,0 +1,147 @@
+{
+  "schema": "lemma-managed-array-connected-integration/1",
+  "status": "PASS_PARTIAL",
+  "scope": "Ordinary genuinely elaborated bounded Array UInt64 in an isolated RV64 process; QEMU instruction-clock connected course/ink/save/new-cold/failure workflow. Not a general managed runtime, proof kernel, exact RTL timing or browser Array qualification.",
+  "source_commit": "7a9ed50c0d9e629d97b7c31a84a559902f8b196a",
+  "source_state": "269 exact consumed inputs in the retained a5 source archive; report-bearing commit separate",
+  "source_inputs": 269,
+  "source_inventory_sha256": "7a77c69fbff86a41ec395160b8af5c7257defd9ba238d211cfec84a5492ffe42",
+  "source_archive": "build/task006-array-consumed-sources-a5",
+  "builds": [
+    {
+      "configuration": "lemmasim-silicon-array-bulk-notebook",
+      "path": "build/kernel/task006-array-bulk-notebook-a5",
+      "build": {
+        "exit_code": 0,
+        "seconds": 91.06839275395032,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-notebook-build-a5.log"
+      },
+      "audit": {
+        "exit_code": 0,
+        "seconds": 60.84540129301604,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-notebook-audit-a5.log"
+      },
+      "image_sha256": "b85343bc867699dff1e1f88f6865cf78e3115f2d360518ac4dcde80af7106396",
+      "manifest_sha256": "4076efa1c1c3ee47bf18ce5e34ae20b977faeeaf3cd1369017916428428c2014"
+    },
+    {
+      "configuration": "lemmasim-silicon-array-bulk-initialize",
+      "path": "build/kernel/task006-array-bulk-initialize-a5",
+      "build": {
+        "exit_code": 0,
+        "seconds": 89.89331465697614,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-initialize-build-a5.log"
+      },
+      "audit": {
+        "exit_code": 0,
+        "seconds": 60.45590156601975,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-initialize-audit-a5.log"
+      },
+      "image_sha256": "586327ba64dbc017b64cf2cc18b31b2d375faa79facd8532e74b25f092f4fdb4",
+      "manifest_sha256": "7522b8ee1b3777351ab331c79eda703641d51d5d3872d34659c8e933b3d65c4b"
+    },
+    {
+      "configuration": "lemmasim-silicon-array-arithmetic-oom-development",
+      "path": "build/kernel/task006-array-bulk-oom-a5",
+      "build": {
+        "exit_code": 0,
+        "seconds": 89.51937723800074,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-oom-build-a5.log"
+      },
+      "audit": {
+        "exit_code": 0,
+        "seconds": 60.74420789902797,
+        "log": "/home/sreekumaar/Downloads/lemma/build/task006-array-oom-audit-a5.log"
+      },
+      "image_sha256": "66923a81421393988a564bba06c63b246f48d01dc16d1f64702623c6b67c9a2d",
+      "manifest_sha256": "a6c33d6b155a4f6535910f6931e9124963682c31be7408916233a5ed9301ceb5"
+    }
+  ],
+  "actual_workflow": {
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "b85343bc867699dff1e1f88f6865cf78e3115f2d360518ac4dcde80af7106396",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "boot": {
+      "virtual_seconds": 2.650000024,
+      "host_seconds": 2.880314718000591,
+      "cycle": 265000003
+    },
+    "execution_identity": {
+      "status": "PASS",
+      "format_bytes": 2496,
+      "actual_isolated_requests": 5,
+      "actual_request_revision_outcome_bound": true,
+      "known_attempts": 5,
+      "origin": "IsolatedArray",
+      "protocol": 5,
+      "identity_kind": "closed implementation-version authority; not artifact hash",
+      "semantic_and_heap_resources_separate": true
+    },
+    "edited_execution_applicability": {
+      "status": "PASS",
+      "active_unknown": true,
+      "old_attempt_identity_preserved": true,
+      "actual_durable_guest_record": true
+    },
+    "saved_status_publication": {
+      "status": "PASS",
+      "observed_pending_after_barrier": true,
+      "before_completed": 36,
+      "after_completed": 37,
+      "virtual_ticks": 500000,
+      "acknowledged_math_unchanged": true,
+      "original_action_seconds": 30
+    },
+    "cold_boot": {
+      "virtual_seconds": 3.45,
+      "host_seconds": 3.771517966000829,
+      "cycle": 345000000
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "166df5c003aae18819fa1fdf6efac059c434cf9c12fd6b7caa5a491939546b9a",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    },
+    "elapsed_seconds": 84.93011440697592,
+    "path": "build/task006-array-math-a1/result.json",
+    "sha256": "04c074e2a8299f2922b3980769e11d1de8c57858c95905d8a5c665b42eed4a85"
+  },
+  "negative_closure": {
+    "path": "build/managed/array-production-probe-a1/negative-qualification.json",
+    "sha256": "10ad065d457d7fa6322dc812f090fc78956d5c037b848b436d02f99016bd54b0",
+    "scope": "Seven independent actual emitted metadata/LLVM mutations reject; original mistaken mutation observer retained separately."
+  },
+  "retained_failures": [
+    "build/task006-array-production-build-a1.json",
+    "build/task006-array-production-build-a2.json",
+    "build/task006-array-production-build-a3.json",
+    "build/task006-array-a4-cancellation.json",
+    "build/managed/array-production-probe-a1/negative-original-failure.json"
+  ],
+  "not_yet_observed": [
+    "actual Array heap exhaustion containment",
+    "old mathematical Doc5 to Doc6 durable migration",
+    "RTL Array cold Ready and applicable timing",
+    "browser Array execution",
+    "general arrays/strings/closures/recursion/collection",
+    "Lean proof kernel"
+  ]
+}

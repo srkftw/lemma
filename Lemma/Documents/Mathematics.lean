@@ -2,6 +2,7 @@ import Lemma.User.Memory
 import Lemma.Mathematics.OwnedSubmission
 import Lemma.Mathematics.ExecutionIdentity
 import Lemma.Mathematics.ExecutionIdentityV2
+import Lemma.Mathematics.ExecutionIdentityV4
 import Lemma.Mathematics.ExecutionIdentityV3
 
 /-! Typed answers and evidence remain separate from immutable raw ink.
@@ -108,6 +109,7 @@ private def clearExecution (buffer : UInt64) : Action :=
   .bind (field buffer 8) fun s version => if s = 0 then
   if version = 3 then ExecutionIdentity.clearCurrent buffer else
   if version = 4 then ExecutionIdentityV2.clearCurrent buffer else
+  if version = 6 then ExecutionIdentityV4.clearCurrent buffer else
   if version = 5 then ExecutionIdentityV3.clearCurrent buffer else .done 0 0
   else .done s 0
 

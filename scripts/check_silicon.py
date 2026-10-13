@@ -142,7 +142,7 @@ def host_deadline_options(binary):
         result=subprocess.run(argv,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
         # Accepted deadlines reach the required-image check. Rejected deadlines
         # fail at argument validation, before any target image can be loaded.
-        expected=('RTL adapter: --image --rom --uart-output required\n' if 1<=seconds<=MAX_RUN_SECONDS else
+        expected=('RTL adapter: development boot requires --image and --rom\n' if 1<=seconds<=MAX_RUN_SECONDS else
                   f'RTL adapter: deadline must be1..{MAX_RUN_SECONDS}seconds\n')
         if result.returncode!=1 or result.stdout or result.stderr.decode()!=expected:
             raise RuntimeError('Compiled RTL deadline handling disagrees with the launcher')

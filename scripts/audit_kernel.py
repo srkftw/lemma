@@ -26,7 +26,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
-                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS)
+                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -220,7 +220,7 @@ SUMS_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
 MULTI_USER_CONFIGURATIONS.update({configuration:SUMS_NOTEBOOK_IMAGES for configuration in SUMS_NOTEBOOK_CONFIGURATIONS})
 BULK_NOTEBOOK_IMAGES = (SUMS_NOTEBOOK_IMAGES[0],
     {**SUMS_NOTEBOOK_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainSumsBulk'}, SUMS_NOTEBOOK_IMAGES[2])
-MULTI_USER_CONFIGURATIONS.update({configuration:BULK_NOTEBOOK_IMAGES for configuration in BULK_NOTEBOOK_CONFIGURATIONS if configuration not in BYTES_NOTEBOOK_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration:BULK_NOTEBOOK_IMAGES for configuration in BULK_NOTEBOOK_CONFIGURATIONS if configuration not in BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS})
 LEMMASIM_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
 POWER_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
@@ -234,7 +234,19 @@ LEMMASIM_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
 POWER_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
 
+ARRAY_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainArrayBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV5',
+      'source':'Lemma.Services.Arithmetic.ServerV5.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:ARRAY_NOTEBOOK_IMAGES for configuration in ARRAY_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(ARRAY_NOTEBOOK_CONFIGURATIONS)
+
 def software_deployment_fields(configuration):
+    if configuration in ARRAY_NOTEBOOK_CONFIGURATIONS:
+        from managed_array import software_deployment_for
+        return {"software_deployment":software_deployment_for(configuration)}
     if configuration in BYTES_NOTEBOOK_CONFIGURATIONS:
         from managed_bytes import software_deployment_for
         return {"software_deployment":software_deployment_for(configuration)}
@@ -3126,7 +3138,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     from arithmetic_sums_identity import FIELD as sums_execution_field, selected as sums_execution_selected, contract as sums_execution_contract
     from managed_bytes import FIELD as bytes_field, allowed as bytes_allowed, contract as bytes_contract
     from arithmetic_bytes_identity import FIELD as bytes_execution_field, selected as bytes_execution_selected, contract as bytes_execution_contract
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()), "unit")
+    from managed_array import FIELD as array_field, allowed as array_allowed, contract as array_contract
+    from arithmetic_array_identity import FIELD as array_execution_field, selected as array_execution_selected, contract as array_execution_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()) | ({array_field} if array_field in unit and array_allowed(unit) else set()) | ({array_execution_field} if array_execution_field in unit and array_execution_selected(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
@@ -3134,6 +3148,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
                 (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.5' if array_allowed(unit) else
                  'core0-user-v0.4' if bytes_allowed(unit) else
                  'core0-user-v0.3' if sums_allowed(unit) else
                  'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook')) else CONTRACTS[role])):
@@ -3189,6 +3204,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     execution_contract(unit)
     sums_contract(unit)
     sums_execution_contract(unit)
+    array_contract(unit)
+    array_execution_contract(unit)
     bytes_contract(unit)
     bytes_execution_contract(unit)
     for root in roots:
@@ -4629,7 +4646,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 return (unit.get('configuration') in DOCUMENT4_NOTEBOOK_PROFILES
                         and unit['role']=='user' and unit.get('contract_version')==DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
                         and unit.get('image_key')=='notebook'
-                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32)])
+                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32),([1856,2496,2496,2496,2496],40)])
             if source=='Lemma.USB.Control.descriptorWord':
                 return (unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS and unit['role']=='kernel'
                         and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
@@ -4967,6 +4984,10 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     sums_execution_report = validate_sums_execution_identity(ir, unit, optimized=optimized)
     from managed_bytes import validate as validate_managed_bytes
     bytes_report = validate_managed_bytes(ir, unit, optimized=optimized)
+    from managed_array import validate as validate_managed_array
+    array_report = validate_managed_array(ir, unit, optimized=optimized)
+    from arithmetic_array_identity import validate as validate_array_execution_identity
+    array_execution_report = validate_array_execution_identity(ir, unit, optimized=optimized)
     from arithmetic_bytes_identity import validate as validate_bytes_execution_identity
     bytes_execution_report = validate_bytes_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
@@ -5029,6 +5050,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
             **({"managed_sums":sums_report} if sums_report is not None else {}),
             **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
+            **({"managed_array":array_report} if array_report is not None else {}),
+            **({"arithmetic_array_execution_identity":array_execution_report} if array_execution_report is not None else {}),
             **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
             **({"arithmetic_bytes_execution_identity":bytes_execution_report} if bytes_execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),
@@ -5412,10 +5435,11 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
                 ("llc", [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"], base + "/" + directory)]
     expected = [item for role in roles for item in compile_unit(role)]
     expected += [item for image in images for item in compile_unit(image["directory"])]
-    from lemmasim_readonly import course_literal_link_options
+    from lemmasim_readonly import course_literal_link_options, DOCUMENT4_NOTEBOOK_PROFILES
     for image in images:
         d = image["directory"]
-        literal_options = course_literal_link_options(output_dir / d)
+        literal_options = (course_literal_link_options(output_dir / d)
+                           if configuration in DOCUMENT4_NOTEBOOK_PROFILES and image["key"] == "notebook" else ())
         expected += [("clang", [*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"], base),
                      ("ld.lld", ["-m", "elf64lriscv", "--no-relax", *literal_options, "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
                      ("llvm-objcopy", ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"], base),

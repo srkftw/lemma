@@ -594,9 +594,30 @@
       "sha256": "8d9472e8aac5d4f515841fed0402939c242846a48d199e8d4d5da57ff839eb6d",
       "status": "PASS",
       "scope": "Actual emitted LLVM identity/owned endpoint/caller/gate observer; no target execution or Ready claim"
+    },
+    {
+      "path": "build/task006-array-math-a1/result.json",
+      "bytes": 25369,
+      "sha256": "04c074e2a8299f2922b3980769e11d1de8c57858c95905d8a5c665b42eed4a85",
+      "status": "PASS",
+      "scope": "Real isolated User5/course/ink/Save/new-cold/failure; QEMU instruction-clock functional scope"
+    },
+    {
+      "path": "build/task006-array-production-build-a5.json",
+      "bytes": 30908,
+      "sha256": "8939160649979835f685b83af9ffceee039a87aabd18571baba0203424257d26",
+      "status": "PASS_BUILD_AND_AUDIT",
+      "scope": "Three whole-image fresh builds and strict audits"
+    },
+    {
+      "path": "build/task006-surface-carry-a1/result.json",
+      "bytes": 7392,
+      "sha256": "303dddf1ac764b1c20c24abff52a0a10e1e4af00e2744a7eca27a116d5bf49fe",
+      "status": "PASS_COMPONENT_ONLY",
+      "scope": "Finite Surface semantics and real LLVM/object diagnostics; no target cycle improvement claim"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "October12 continuation: actual canonical RTL Ready/pen/Save and isolated Sums course/migration/OOM observations; browser Ready deadline failure retained. Product installation/handoff and modern Power artifact qualification remain separate from completed product workflow. See current checkpoint."
+  "continuation_note": "Array connected milestone additive; candidate CI38361053948 FAILURE, successor8/9 connected repair in progress; complete digital, exact cached-state, distribution and physical obligations remain separate."
 }

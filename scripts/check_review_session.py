@@ -44,7 +44,7 @@ class ReviewChecker(MathChecker):
                     'guest migration invented old anchored hint events')
         else:
             require(migrated['learner']==original['learner'],'v2 migration changed durable learner events/policy')
-        if self.args.record_version in (3,4,5):
+        if self.args.record_version in (3,4,5,6):
             if self.args.source_record_version in (3,4):
                 require(self.args.record_version==self.args.source_record_version+1 and migrated['execution']==original['execution'],
                         'v3 migration relabeled old exact implementation/history')
@@ -63,9 +63,9 @@ class ReviewChecker(MathChecker):
         require(checked_record['learner']['recommendation']=='practice' and
                 checked_record['learner']['reason']=='assisted' and checked_record['learner']['understanding']=='uncertain',
                 'baseline confused an assisted exact attempt with demonstrated understanding')
-        if self.args.record_version in (3,4,5):
+        if self.args.record_version in (3,4,5,6):
             execution=checked_record['execution']
-            require(execution['active']['origin']==({3:'IsolatedManaged',4:'IsolatedSums',5:'IsolatedBytes'}[self.args.record_version]) and execution['active']['status']==0 and
+            require(execution['active']['origin']==({3:'IsolatedManaged',4:'IsolatedSums',5:'IsolatedBytes',6:'IsolatedArray'}[self.args.record_version]) and execution['active']['status']==0 and
                     execution['history'][len(original['history'])]==execution['active'] and
                     execution['history'][:len(original['history'])]==(original['execution']['history'][:len(original['history'])] if self.args.source_record_version in (3,4) else [{'origin':'Unknown'}]*len(original['history'])),
                     'new execution relabeled historical identities or lost current request')
@@ -96,7 +96,7 @@ class ReviewChecker(MathChecker):
         self.label(active_panel,'AUTO',24,300)
         self.label(active_panel,'UNCERTAIN',192,300)
         self.label(active_panel,'ASSISTED',24,280)
-        if self.args.record_version in (3,4,5):
+        if self.args.record_version in (3,4,5,6):
             require(final['execution']==checked_record['execution'],
                     'policy override/disable relabeled mathematical execution authority')
         self.report['learner']=final['learner']
@@ -145,7 +145,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--disk',type=Path,required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
-    parser.add_argument('--record-version',type=int,choices=(2,3,4,5),default=2,help='Exact declared target submission record version')
+    parser.add_argument('--record-version',type=int,choices=(2,3,4,5,6),default=2,help='Exact declared target submission record version')
     parser.add_argument('--source-record-version',type=int,choices=(1,2,3,4),default=1,help='Exact retained acknowledged source format')
     parser.add_argument('--native-bundle',help='Validated immutable native runtime bundle for every public session')
     parser.add_argument('--guest-build',help='Current genuinely compiled and audited notebook guest; requires native bundle')

@@ -164,17 +164,44 @@ private def backgroundWordStep (i _ : UInt32) (acc dimensions _ _ _ : UInt64) : 
     let packed := if y < 128 then backgroundToolbarWord x y width else backgroundCanvasWord x y width
     .bind (Memory.write64 (framebuffer + offset) packed) fun s _ => .done s acc
 
+/-- For admitted rows at least eight bytes wide, each word advances by eight
+bytes and crosses at most one row boundary. Carry the byte column and row in
+the fold accumulator instead of dividing the global offset for every word.
+The accumulator is local progress, not a published surface result. -/
+private def backgroundTrackedWordStep (i _ : UInt32) (position dimensions stride _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let column := position &&& 0xffff
+  let y := position >>> 16
+  let offset := i.toUInt64 * 8
+  let x := column * 2
+  let next : UInt64 := if stride ≤ column + 8 then
+    (column + (8 : UInt64) - stride) ||| ((y + 1) <<< 16)
+    else position + 8
+  let scalar := if stride < column + 8 then true else
+    if y < 128 then if width < 144 then true else false else false
+  if scalar then
+    .boundedFoldU64 8 backgroundOffsetStep 8 0 dimensions offset 0 0 fun s _ => .done s next
+  else
+    let packed := if y < 128 then backgroundToolbarWord x y width else backgroundCanvasWord x y width
+    .bind (Memory.write64 (framebuffer + offset) packed) fun s _ => .done s next
+
 /-- A full redraw is used for page open/edit recovery. Live ink uploads only
 intersecting tiles and coalesces their bounding refresh rectangle. Globally
 aligned words wholly within a row use packed writes, including odd byte
 strides and toolbar glyphs. Tiny toolbars, row crossings and final partial words
-use scalar pixels. -/
+use scalar pixels. Admitted rows at least eight bytes wide carry their position
+without per-word row division; the byte and checked-write order is unchanged. -/
 def background (width height : UInt64) : Action :=
-  let bytes := ((width + 1) / 2) * height
+  let stride := (width + 1) / 2
+  let bytes := stride * height
   if 2000000 < bytes then .done 16 0 else
-  .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 (width ||| (height <<< 16)) 0 0 0 fun s _ =>
+  let dimensions := width ||| (height <<< 16)
+  let tracked : Bool := if width ≤ 4096 then if height ≤ 4096 then 8 ≤ stride else false else false
+  .bind (if tracked then
+    .boundedFoldU64 250000 backgroundTrackedWordStep (bytes / 8).toUInt32 0 dimensions stride 0 0 fun s n => .done s n
+    else .boundedFoldU64 250000 backgroundWordStep (bytes / 8).toUInt32 0 dimensions 0 0 0 fun s n => .done s n) fun s _ =>
   if s = 0 then
-  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 (width ||| (height <<< 16)) (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
+  .boundedFoldU64 7 backgroundOffsetStep (bytes % 8).toUInt32 0 dimensions (bytes / 8 * 8) 0 0 fun s _ => .done s bytes
   else .done s 0
 
 private def tileLoadStep (i _ : UInt32) (acc dimensions origin _ _ : UInt64) : Action :=

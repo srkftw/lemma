@@ -12,6 +12,8 @@ SUMS_EXECUTION_IDENTITIES = (0x0003000100000001, 0x0003000000000001,
 BYTES_EXECUTION_IDENTITIES = (0x0004000100000001, 0x0004000000000001,
                              0x0001000200000001, 0x000200000000001f)
 
+ARRAY_EXECUTION_IDENTITIES = (0x0005000100000001, 0x0005000000000001,
+                             0x0001000300000001, 0x000300000000001f)
 
 def result(goal, n, d, p0, p1, p2, budget):
     if goal == 1:
@@ -32,7 +34,7 @@ def inspect(payload, namespace, object_id):
         raise ValueError('mathematical record length differs')
     words = struct.unpack('<'+str(len(payload)//8)+'Q', payload)
     version=words[1]
-    if version not in (1,2,3,4,5) or len(payload)!={1:832,2:1856,3:2496,4:2496,5:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
+    if version not in (1,2,3,4,5,6) or len(payload)!={1:832,2:1856,3:2496,4:2496,5:2496,6:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
         raise ValueError('mathematical package/namespace/page identity differs')
     if not 1 <= words[4] <= 64 or not 1 <= words[5] <= 0x7ffffffffffffffe:
         raise ValueError('mathematical anchor/revision differs')
@@ -114,16 +116,17 @@ def inspect(payload, namespace, object_id):
         else:action,reason='support','unsupported-or-resource'
         record['learner']={'policy':'lemma-offline-review/1','mode':mode,'understanding':'uncertain',
             'recommendation':action,'reason':reason,'show_reason':bool(show_reason),'events':events}
-    if version in (3,4,5):
-        if words[232:240] != (EXECUTION_MAGIC,{3:1,4:2,5:3}[version],0,0,0,0,0,0):
+    if version in (3,4,5,6):
+        if words[232:240] != (EXECUTION_MAGIC,{3:1,4:2,5:3,6:4}[version],0,0,0,0,0,0):
             raise ValueError('execution extension header/version/reserved differs')
         def execution(slot,budget,active):
             if slot==(0,)*8:
                 return {'origin':'Unknown'}
             request,implementation,lowering,runtime,resources,actual_budget,status,origin=slot
             admitted = (origin==2 and (implementation,lowering,runtime,resources)==EXECUTION_IDENTITIES) or \
-                (version in (4,5) and origin==3 and (implementation,lowering,runtime,resources)==SUMS_EXECUTION_IDENTITIES) or \
-                (version==5 and origin==4 and (implementation,lowering,runtime,resources)==BYTES_EXECUTION_IDENTITIES)
+                (version in (4,5,6) and origin==3 and (implementation,lowering,runtime,resources)==SUMS_EXECUTION_IDENTITIES) or \
+                (version in (5,6) and origin==4 and (implementation,lowering,runtime,resources)==BYTES_EXECUTION_IDENTITIES) or \
+                (version==6 and origin==5 and (implementation,lowering,runtime,resources)==ARRAY_EXECUTION_IDENTITIES)
             if not active or not 1<=request<=0x7ffffffffffffffe or not admitted or \
                 actual_budget!=budget or status!=0:
                 raise ValueError('execution request/implementation/lowering/runtime/resource/status differs')
@@ -132,7 +135,9 @@ def inspect(payload, namespace, object_id):
                    3:('IsolatedSums','lemma-isolated-arithmetic-sums-v1',
                       'core0-user-v0.3/lemma-managed-sums-v1','lemma-owned-arena-sum-cookie-v1','lemma-arithmetic-resource-v1'),
                    4:('IsolatedBytes','lemma-isolated-arithmetic-bytes-v1',
-                      'core0-user-v0.4/lemma-managed-bytes-v1','lemma-owned-arena-bytes-cookie-v1','lemma-arithmetic-bytes-resource-v1')}
+                      'core0-user-v0.4/lemma-managed-bytes-v1','lemma-owned-arena-bytes-cookie-v1','lemma-arithmetic-bytes-resource-v1'),
+                   5:('IsolatedArray','lemma-isolated-arithmetic-array-v1',
+                      'core0-user-v0.5/lemma-managed-array-v1','lemma-owned-arena-array-graph-v1','lemma-arithmetic-array-resource-v1')}
             origin_name,implementation_name,lowering_name,runtime_name,resource_name=names[origin]
             return {'origin':origin_name,'request':request,'implementation':implementation_name,
                     'lowering':lowering_name,'runtime':runtime_name,'resources':resource_name,

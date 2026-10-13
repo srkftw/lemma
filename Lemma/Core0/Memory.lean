@@ -299,6 +299,11 @@ inductive Action where
   this boundary as unchecked pointer words. Older profiles reject this bridge. -/
   | managedBytes2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- User-v0.5 only: genuinely elaborated ordinary Array UInt64, full64
+  scalar boxes and bounded parent/child graph ownership. Both out-of-bounds
+  ! operations use controlled-panic236; old profiles reject this bridge. -/
+  | managedArray2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

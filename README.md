@@ -763,3 +763,27 @@ Product ROM/update and companion commands are documented in
 [the USB notebook contract](docs/contracts/006-usb-bulk-notebook-v1.md).
 Current product installation is owner-local CRC integrity, with authenticated
 production identity and anti-rollback still unfinished.
+
+The additive bounded ordinary Array deployment has its own [language/runtime
+contract](docs/contracts/MANAGED_ARRAY_V1.md) and [actual RV64 connected receipt](docs/evidence/006-managed-array-integration.json).
+The same COURSE workflow runs with independently linked User5 arithmetic,
+full UInt64 boxes, COW arrays and actual graph reclamation. General managed
+Lean and the proof kernel remain unfinished. The retained local bundle launches
+with the normal interface (use a new private copy of your existing medium):
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-array-bulk-a1 --disk build/native/array-user.raw \
+  --session-dir build/native/array-user-session
+nix develop --no-write-lock-file --command python3 scripts/check_math_session.py \
+  --disk build/silicon/task006-loader-cold-a1/fast-medium.raw \
+  --native-bundle build/native/task006-array-bulk-a1 --require-array-identity \
+  --work-dir build/array-course-new --boot-seconds 60 --action-seconds 30 --deadline 1200
+```
+
+To rebuild, use the ByteArray build/audit/pack commands above with exact
+configurations `lemmasim-silicon-array-bulk-notebook` and
+`lemmasim-silicon-array-bulk-initialize`; all replacement images are freshly
+audited before packing. An immutable base backend is reused only after its
+complete consumed sources and dependencies validate. QEMU has instruction-clock
+functional scope. Actual RTL and Wasm Array observations remain separate.

@@ -33,7 +33,9 @@ BULK_CONFIGURATIONS={'notebook':'lemmasim-silicon-bulk-notebook',
 BYTES_DEPLOYMENT="lemma-managed-bytes-bulk-deployment-v1"
 BYTES_CONFIGURATIONS={"notebook":"lemmasim-silicon-bytes-bulk-notebook",
                       "initializer":"lemmasim-silicon-bytes-bulk-initialize"}
-SOFTWARE_DEPLOYMENTS={BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+ARRAY_DEPLOYMENT="lemma-managed-array-bulk-deployment-v1"
+ARRAY_CONFIGURATIONS={"notebook":"lemmasim-silicon-array-bulk-notebook", "initializer":"lemmasim-silicon-array-bulk-initialize"}
+SOFTWARE_DEPLOYMENTS={ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
                       SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024

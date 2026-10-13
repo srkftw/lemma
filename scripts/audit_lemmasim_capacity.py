@@ -22,7 +22,10 @@ ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
     'lemmasim-silicon-power-arithmetic-fault-development',
     'lemmasim-silicon-power-arithmetic-stall-development',
 })
-POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-power-notebook',
+POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-array-bulk-notebook',
+                              'lemmasim-silicon-array-bulk-initialize',
+                              'lemmasim-silicon-array-arithmetic-oom-development',
+                              'lemmasim-silicon-power-notebook',
                               'lemmasim-silicon-power-initialize',
                               'lemmasim-silicon-managed-notebook',
                               'lemmasim-silicon-managed-initialize',

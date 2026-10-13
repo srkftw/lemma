@@ -140,6 +140,7 @@ jobs:
             nix develop --no-write-lock-file --command \
               lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
                 Lemma.User.Runtime.Arena Lemma.Mathematics.OwnedSubmission \
+                Lemma.Courses.Arithmetic \
                 Lemma.Services.Arithmetic.Server Lemma.Services.Arithmetic.Client \
             2>&1 | tee build/ci/metadata/lake-build.log
 

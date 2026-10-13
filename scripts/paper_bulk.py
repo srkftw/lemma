@@ -13,6 +13,8 @@ CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
  'lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize',
  'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize',
  'lemmasim-silicon-bytes-arithmetic-oom-development'})
+ARRAY=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
+CONFIGURATIONS |= ARRAY
 PRODUCT='lemmasim-silicon-product-bulk-notebook'
 USB=frozenset({'lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
 BYTES=frozenset({'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'})
@@ -33,7 +35,8 @@ EXPECTED = {'kernel': {'Lemma.Platform.LemmaSim.DeviceService.surfaceV2': '9c6ba
           'Lemma.Ink.Surface.bulkUploadStep': 'bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa',
           'Lemma.Ink.Surface.uploadAllBulk': 'c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5',
           'Lemma.Applications.Notebook.mainSumsBulk': 'aa17e16c90d673cc4996b6fadf83d01d32f98b25ef04a13e61bafbf9bc466142',
-          'Lemma.Applications.Notebook.mainBytesBulk': '6cba4bcc59100add365db7e831a1d153e1008e9329f7b093ca230a05799d7a8b'}}
+          'Lemma.Applications.Notebook.mainBytesBulk': '6cba4bcc59100add365db7e831a1d153e1008e9329f7b093ca230a05799d7a8b',
+          'Lemma.Applications.Notebook.mainArrayBulk': 'aa2c27e368adc67e8ffd9899ed41237dd15195a7cf5830050d4ce5f0e596ccda'}}
 
 
 def canonical(source):
@@ -58,7 +61,7 @@ def validate(ir,unit,*,optimized):
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
   for source in list(selected):
-   if source.endswith('.mainBytesBulk') and unit['configuration'] not in BYTES or source.endswith('.mainSumsBulk') and unit['configuration'] in BYTES:del selected[source]
+   if source.endswith('.mainArrayBulk') and unit['configuration'] not in ARRAY or source.endswith('.mainBytesBulk') and unit['configuration'] not in BYTES or source.endswith('.mainSumsBulk') and unit['configuration'] in BYTES | ARRAY:del selected[source]
  observed={}
  for source,expected in selected.items():
   if source not in by:raise Core0Error('Surface-v2 source closure missing: '+source)
