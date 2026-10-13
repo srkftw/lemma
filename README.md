@@ -705,3 +705,61 @@ The launcher independently generates a capacity audit and checks current guest
 provenance before execution. This option supplies no production update policy.
 The exact Arithmetic OOM/fault/stall guest configurations additionally require
 `--mode laboratory`; they cannot launch in Student or Developer mode.
+
+The separately selected Bytes/Surface2 deployment keeps canonical hardware0.3
+and the actual8192-frame pool. It runs ordinary bounded Lean ByteArray code in
+the isolated arithmetic service, preserves old document evidence, and batches
+seven owned display tiles after complete metadata preflight. Its current
+source-bound build/launch paths are:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/build_kernel.py \
+  --stage supervisor --configuration lemmasim-silicon-bytes-bulk-notebook \
+  --output-dir build/kernel/bytes-notebook-new --opt-level O2 --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py \
+  build/kernel/bytes-notebook-new --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/build_kernel.py \
+  --stage supervisor --configuration lemmasim-silicon-bytes-bulk-initialize \
+  --output-dir build/kernel/bytes-initialize-new --opt-level O2 --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py \
+  build/kernel/bytes-initialize-new --timeout 300
+./scripts/lemmasim native-bundle-build --base-bundle build/native/task006-managed-v3-a1 \
+  --notebook-build build/kernel/bytes-notebook-new \
+  --initializer-build build/kernel/bytes-initialize-new \
+  --output-dir build/native/bytes-new
+./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/bytes-new --disk build/native/bytes-user-new.raw
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/bytes-new --disk build/native/bytes-user-new.raw \
+  --session-dir build/native/bytes-user-session
+```
+
+These local commands require the recorded immutable base bundle and pinned
+host dependencies; a missing archive fails. Use new output/medium/session names.
+COURSE opens the original offline exact-arithmetic sequence; typed edits,
+checking, hints, review overrides and Save remain guest operations. A successful
+check is restricted arithmetic evidence, not the Lean proof-kernel gate.
+The [connected receipt](docs/evidence/006-managed-bytes-integration.json)
+records actual RV64 course, migration, real heap OOM and cold-recovery results.
+QEMU remains an instruction-clock functional path; RTL timing qualification is
+separate. `--backend rtl` selects the same compiled guest on the exact RTL core.
+
+The actual prepared Bytes static bundle uses the unchanged, fully validated
+Wasm core and explicit archived consumed inputs:
+
+```sh
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --reuse-wasm --wasm-build build/wasm/task006-managed-canonical-runtime-a1 \
+  --guest-bundle build/native/task006-bytes-bulk-a1 \
+  --wasm-input-bundle build/native/task006-sums-a1 \
+  --output-dir build/browser/bytes-new
+./scripts/lemmasim browser-serve --bundle build/browser/bytes-new --port 8769
+```
+
+Browser Ready, writing/course, durable reload and applicable exact suffixes need
+their own observed results; see the [current checkpoint](docs/plan/006-session-state.md).
+Product ROM/update and companion commands are documented in
+[the product boot contract](docs/contracts/006-product-boot-v1.md) and
+[the USB notebook contract](docs/contracts/006-usb-bulk-notebook-v1.md).
+Current product installation is owner-local CRC integrity, with authenticated
+production identity and anti-rollback still unfinished.

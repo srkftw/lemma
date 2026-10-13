@@ -53,6 +53,19 @@ class NativeBundleBoundary(unittest.TestCase):
         changed=copy.deepcopy(manifest);changed['software_deployment']['runtime']='implicit'
         with self.assertRaises(ValueError):bundle_configurations(changed)
 
+    def test_bytes_pair_cannot_masquerade_as_sums_or_mix_roles(self):
+        from silicon_guest_bundle import BYTES_DEPLOYMENT, BYTES_CONFIGURATIONS
+        manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
+                  'software_deployment':{'contract_version':BYTES_DEPLOYMENT,
+                                         'configurations':dict(BYTES_CONFIGURATIONS)}}
+        self.assertEqual(bundle_configurations(manifest),BYTES_CONFIGURATIONS)
+        for role in BYTES_CONFIGURATIONS:
+            changed=copy.deepcopy(manifest)
+            changed['software_deployment']['configurations'][role]=SUMS_CONFIGURATIONS[role]
+            with self.assertRaises(ValueError):bundle_configurations(changed)
+        changed=copy.deepcopy(manifest);changed['software_deployment']['contract_version']=SUMS_DEPLOYMENT
+        with self.assertRaises(ValueError):bundle_configurations(changed)
+
     def test_archived_backends_and_new_guests_keep_exact_source_versions(self):
         path='/same/consumed/source.lean';old='a'*64;new='b'*64
         manifest={'schema':SCHEMA_WITH_SOURCE_VERSIONS,'origins':{path:{old:'old',new:'new'}},

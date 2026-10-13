@@ -37,11 +37,13 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
 }
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = ('lemmasim-silicon-power-arithmetic-oom-development', 'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development')
 MANAGED_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-managed-notebook", "lemmasim-silicon-managed-initialize")
-SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development")
-USB_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize")
-PRODUCT_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-product-notebook",)
-ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
-SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
+BYTES_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-bytes-bulk-notebook", "lemmasim-silicon-bytes-bulk-initialize", "lemmasim-silicon-bytes-arithmetic-oom-development")
+BULK_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize') + BYTES_NOTEBOOK_CONFIGURATIONS
+SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development") + tuple(x for x in BULK_NOTEBOOK_CONFIGURATIONS if x not in BYTES_NOTEBOOK_CONFIGURATIONS)
+USB_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize", "lemmasim-silicon-usb-bulk-notebook", "lemmasim-silicon-usb-bulk-initialize")
+PRODUCT_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
+ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
+SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
 SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
@@ -108,9 +110,9 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
-        entry = {"lemmasim-silicon-product-notebook": "siliconProductBoot", "lemmasim-silicon-usb-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-sums-notebook": "siliconPowerBoot", "lemmasim-silicon-sums-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-sums-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-managed-notebook": "siliconPowerBoot", "lemmasim-silicon-managed-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
+        entry = {"lemmasim-silicon-bytes-bulk-notebook": "siliconPowerBoot", "lemmasim-silicon-bytes-bulk-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-bytes-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-usb-bulk-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-bulk-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-product-bulk-notebook": "siliconProductBoot", "lemmasim-silicon-bulk-notebook": "siliconPowerBoot", "lemmasim-silicon-bulk-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-product-notebook": "siliconProductBoot", "lemmasim-silicon-usb-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-sums-notebook": "siliconPowerBoot", "lemmasim-silicon-sums-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-sums-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-managed-notebook": "siliconPowerBoot", "lemmasim-silicon-managed-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
-                 ("Lemma.Platform.LemmaSim.NotebookKernel." + ("dispatchProduct" if configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS else "dispatchUSB" if configuration in USB_NOTEBOOK_CONFIGURATIONS else "dispatch"), ("u64", "u64", "u64")))}
+                 ("Lemma.Platform.LemmaSim.NotebookKernel." + ("dispatchUSBBulk" if configuration in USB_NOTEBOOK_CONFIGURATIONS and configuration in BULK_NOTEBOOK_CONFIGURATIONS else "dispatchProductBulk" if configuration == "lemmasim-silicon-product-bulk-notebook" else "dispatchBulk" if configuration in BULK_NOTEBOOK_CONFIGURATIONS else "dispatchProduct" if configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS else "dispatchUSB" if configuration in USB_NOTEBOOK_CONFIGURATIONS else "dispatch"), ("u64", "u64", "u64")))}
     if configuration == "lemmasim-silicon-usb-link-probe":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.USBLink.boot", ()),
                  ("Lemma.Platform.Silicon.Development.USBLink.dispatch", ("u64", "u64", "u64"))),
@@ -280,7 +282,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py"):
+    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
@@ -410,8 +412,10 @@ def link_user_image(output_dir: Path, image: dict, invoke) -> None:
     relative = image["directory"]
     directory = output_dir / relative
     _nonempty(directory, USER_IMAGE_FILES)
+    from lemmasim_readonly import course_literal_link_options
+    literal_options = course_literal_link_options(directory)
     invoke(("clang", *STARTUP_ARGUMENTS, f"{relative}/startup.S", "-o", f"{relative}/startup.o"))
-    invoke(("ld.lld", "-m", "elf64lriscv", "--no-relax", "-T", f"{relative}/link.ld", f"-Map={relative}/image.map",
+    invoke(("ld.lld", "-m", "elf64lriscv", "--no-relax", *literal_options, "-T", f"{relative}/link.ld", f"-Map={relative}/image.map",
             f"{relative}/startup.o", f"{relative}/program.o", "-o", f"{relative}/image.elf"))
     for section, name in ((".text", "text.bin"), (".data", "data.bin")):
         invoke(("llvm-objcopy", "-O", "binary", f"--only-section={section}", f"{relative}/image.elf", f"{relative}/{name}"))

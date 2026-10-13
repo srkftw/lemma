@@ -27,8 +27,14 @@ MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
 SUMS_DEPLOYMENT='lemma-managed-sums-deployment-v1'
 SUMS_CONFIGURATIONS={'notebook':'lemmasim-silicon-sums-notebook',
                      'initializer':'lemmasim-silicon-sums-initialize'}
-SOFTWARE_DEPLOYMENTS={MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
-                      SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS}
+BULK_DEPLOYMENT='lemma-managed-sums-bulk-deployment-v1'
+BULK_CONFIGURATIONS={'notebook':'lemmasim-silicon-bulk-notebook',
+                     'initializer':'lemmasim-silicon-bulk-initialize'}
+BYTES_DEPLOYMENT="lemma-managed-bytes-bulk-deployment-v1"
+BYTES_CONFIGURATIONS={"notebook":"lemmasim-silicon-bytes-bulk-notebook",
+                      "initializer":"lemmasim-silicon-bytes-bulk-initialize"}
+SOFTWARE_DEPLOYMENTS={BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+                      SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
 
@@ -348,6 +354,7 @@ def bundle_configurations(manifest):
 
 
 ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-bytes-arithmetic-oom-development',
     'lemmasim-silicon-sums-arithmetic-oom-development',
     'lemmasim-silicon-power-arithmetic-oom-development',
     'lemmasim-silicon-power-arithmetic-fault-development',

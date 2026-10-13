@@ -7,7 +7,8 @@ from __future__ import annotations
 import re
 import struct
 import hashlib
-from core0_common import Core0Error
+from pathlib import Path
+from core0_common import Core0Error, load_json
 
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
@@ -104,7 +105,7 @@ MANAGED_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-managed-notebook',
 CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 SUMS_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-sums-notebook',
-    'lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}
+    'lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'} | set(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
 CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
 BLE_CONFIGURATIONS = {'lemmasim-silicon-ble-link-probe'}
@@ -144,7 +145,7 @@ def ble_specs():
     return specs
 
 USB_CONFIGURATIONS = {'lemmasim-silicon-usb-link-probe',
-    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'}
+    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'}
 CONFIGURATIONS |= USB_CONFIGURATIONS
 USB_LITERALS = {20:'lemma-usb@10010a00',56:'lemma,endpoints',57:'lemma,reset-clocks',
                 58:'lemma,decoded-packet-boundary',77:'lemma,usb-device-packet-v1'}
@@ -183,7 +184,7 @@ def usb_specs():
     specs[source]=(*specs[source][:3],words)
     return specs
 
-PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-notebook',
+PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'}
 CONFIGURATIONS |= PRODUCT_CONFIGURATIONS
 # All selected Notebook roots share this bounded scalar fetch. Historical
@@ -197,10 +198,14 @@ LEGACY_NOTEBOOK_CONFIGURATIONS = {
     'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
     'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
     'lemmasim-silicon-product-notebook'} | ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+BYTES_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-bytes-bulk-notebook',
+    'lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'}
+CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS
 DOCUMENT4_NOTEBOOK_CONFIGURATIONS = (SUMS_NOTEBOOK_CONFIGURATIONS |
-    MANAGED_NOTEBOOK_CONFIGURATIONS | LEGACY_NOTEBOOK_CONFIGURATIONS)
+    MANAGED_NOTEBOOK_CONFIGURATIONS | LEGACY_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS)
 DOCUMENT4_NOTEBOOK_PROFILES = {configuration: ('core0-user-v0.2'
-    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS | MANAGED_NOTEBOOK_CONFIGURATIONS
+    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS | MANAGED_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS
     else 'core0-user-v0.1') for configuration in DOCUMENT4_NOTEBOOK_CONFIGURATIONS}
 PRODUCT_LITERALS = {21:'lemma-boot-nv@10012000',59:'lemma,sector-bytes',
     60:'lemma,capacity-sectors',61:'lemma,rom-bytes',62:'lemma,integrity-only',
@@ -336,7 +341,7 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
     return sites,observed
 
 def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
-    """Admit the actual version2..4 course-recovery length, never an address.
+    """Admit the actual version2..4/5 scalar fetch length, never an address.
 
     The complete normalized owner remains pinned in addition to independent
     content, unsigned bound, single-use and checked readObject binding checks.
@@ -356,14 +361,21 @@ def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict
             or rows[0]['args']!=[] or rows[0]['effects']!=effects):
         raise Core0Error('Sums record-length source/signature/effects differs')
     symbol=rows[0]['symbol'];table='switch.table.'+symbol
-    definition=f'@{table} = private unnamed_addr constant [3 x i64] [i64 1856, i64 2496, i64 2496], align 8'
+    variants={
+        3:([1856,2496,2496],'8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503','document-v4-length-v1'),
+        4:([1856,2496,2496,2496],'c014832a3f62a2190a0650e8aca34ec51531d6a55fb8b50a49133132c93966d1','document-v5-length-v1')}
+    actual=[(count,values,digest,schema) for count,(values,digest,schema) in variants.items()
+        if f'@{table} = private unnamed_addr constant [{count} x i64] ['+', '.join('i64 '+str(value) for value in values)+'], align 8' in ir.splitlines()]
+    if len(actual)!=1:raise Core0Error('Course record-length closed literal variant missing or ambiguous')
+    count,values,owner_digest,schema=actual[0]
+    definition=f'@{table} = private unnamed_addr constant [{count} x i64] ['+', '.join('i64 '+str(value) for value in values)+'], align 8'
     if ir.splitlines().count(definition)!=1 or len(re.findall('@'+re.escape(table)+r'(?![A-Za-z0-9_.$-])',ir))!=2:
         raise Core0Error('Sums record-length table content/extent/use differs')
     body='\n'.join(line.split(';',1)[0].rstrip() for line in _ir_definition_body(ir,symbol).splitlines())
     normalized_table=body.replace('@'+table,'@record-length')
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),normalized_table)
     normalized=' '.join(' '.join(line.strip() for line in rebound.splitlines()).split())
-    if hashlib.sha256(normalized.encode()).hexdigest()!='8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503':
+    if hashlib.sha256(normalized.encode()).hexdigest()!=owner_digest:
         raise Core0Error('Sums record-length complete checked owner differs')
     read=next((row['symbol'] for row in unit['functions']
                if names[row['symbol']]=='Lemma.Applications.Notebook.readObject'),None)
@@ -373,9 +385,9 @@ def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict
         raise Core0Error('Sums record-length checked callees missing')
     guard=['%action.call.value39 = extractvalue { i64, i64 } %action.call.result36, 1',
            '%switch.tableidx = add i64 %action.call.value39, -2',
-           '%0 = icmp ult i64 %switch.tableidx, 3',
+           f'%0 = icmp ult i64 %switch.tableidx, {count}',
            'br i1 %0, label %switch.lookup, label %action.if.merge.20']
-    lookup=[f'%switch.gep = getelementptr inbounds nuw [3 x i64], ptr @{table}, i64 0, i64 %switch.tableidx',
+    lookup=[f'%switch.gep = getelementptr inbounds nuw [{count} x i64], ptr @{table}, i64 0, i64 %switch.tableidx',
             '%switch.load = load i64, ptr %switch.gep, align 8',
             f'%action.call.result54 = call {{ i64, i64 }} @{read}(i64 %call22, i64 3313664, i64 %switch.load)',
             '%action.call.status-word55 = extractvalue { i64, i64 } %action.call.result54, 0',
@@ -392,9 +404,37 @@ def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict
     owners=_line_functions(ir.splitlines())
     sites={i for i,line in enumerate(ir.splitlines()) if owners[i]==symbol and line.strip()=='%switch.load = load i64, ptr %switch.gep, align 8'}
     if len(sites)!=1:raise Core0Error('Sums record-length load inventory differs')
-    return sites,[dict(source=rows[0]['source'],function=symbol,values=[1856,2496,2496],
-        **{'global':table},element_bits=64,alignment_bytes=8,index_bound=3,guarded_loads=1,readonly=True,
-        guard='action.if.else.16',literal_schema='document-v4-length-v1')],{definition}
+    return sites,[dict(source=rows[0]['source'],function=symbol,values=values,
+        **{'global':table},element_bits=64,alignment_bytes=8,index_bound=count,guarded_loads=1,readonly=True,
+        guard='action.if.else.16',literal_schema=schema)],{definition}
+
+
+def course_literal_link_options(directory: Path) -> tuple[str, ...]:
+    """Retain the actual Document5 merged-table symbol for final byte accounting.
+
+    The pinned lld drops this local .rodata.cst32 symbol by default. Retaining
+    symbols does not change loadable bytes. Historical three-entry tables and
+    unoptimized programs keep their original recipe. The complete checked owner
+    must qualify before the additive linker option is selected.
+    """
+    unit = load_json(directory / 'unit.json')
+    if unit.get('configuration') not in DOCUMENT4_NOTEBOOK_CONFIGURATIONS:
+        return ()
+    ir = (directory / 'program.opt.ll').read_text()
+    owners = [row for row in unit['functions']
+              if re.sub(r'^_private\..*?\.[0-9]+\.', '', row['source'])
+              == 'Lemma.Applications.Notebook.openCourse']
+    if not owners:
+        return ()
+    if len(owners) != 1:
+        raise Core0Error('Course literal link owner is ambiguous')
+    table = 'switch.table.' + owners[0]['symbol']
+    if not re.search(r'(?m)^@' + re.escape(table) + r'\s*=', ir):
+        return ()
+    _, rows, _ = validate_sums_record_length(ir, unit)
+    if len(rows) != 1:
+        raise Core0Error('Course literal link table did not qualify')
+    return ('--discard-none',) if rows[0]['literal_schema'] == 'document-v5-length-v1' else ()
 
 
 def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:

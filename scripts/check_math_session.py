@@ -192,7 +192,7 @@ class MathChecker(Checker):
 
         edited=self.press(live,stream,'edit answer invalidates applicability',27)
         require(edited[3:]==(0,0),'editing retained current trusted applicability')
-        if (getattr(self.args,'require_execution_identity',False) or getattr(self.args,'require_sums_identity',False)):
+        if (getattr(self.args,'require_execution_identity',False) or getattr(self.args,'require_sums_identity',False) or getattr(self.args,'require_bytes_identity',False)):
             _,edited_medium=live.export('edited-execution')
             _,edited_record,_,_=self.record(edited_medium)
             require(edited_record['outcome']==0 and edited_record['evidence_revision']==0 and
@@ -256,10 +256,11 @@ class MathChecker(Checker):
                 'verified/invalid/limited/unsupported history or assistance differs')
         require({key:record.payload for key,record in records.items() if key[1]>0x10000}==raw_before,
                 'mathematical course changed original raw ink')
-        if (getattr(self.args,'require_execution_identity',False) or getattr(self.args,'require_sums_identity',False)):
+        if (getattr(self.args,'require_execution_identity',False) or getattr(self.args,'require_sums_identity',False) or getattr(self.args,'require_bytes_identity',False)):
             sums=getattr(self.args,'require_sums_identity',False)
-            version=4 if sums else 3
-            origin='IsolatedSums' if sums else 'IsolatedManaged'
+            ordinary_bytes=getattr(self.args,'require_bytes_identity',False)
+            version=5 if ordinary_bytes else 4 if sums else 3
+            origin='IsolatedBytes' if ordinary_bytes else 'IsolatedSums' if sums else 'IsolatedManaged'
             require(final['format']=='lemma-mathematical-submission/'+str(version) and 'execution' in final,
                     'new execution authority requires actual versioned2496-byte record')
             metadata=final['execution']['history'][:final['attempts']]
@@ -273,14 +274,15 @@ class MathChecker(Checker):
                         (reply[1],reply[2],reply[3],reply[4])==(entry['request'],attempt['revision'],0,attempt['outcome']),
                         'durable execution request/revision/resource outcome differs from actual server')
                 require(entry['budget']==attempt['budget'],'durable resource budget differs')
-            identities=(0x0003000100000001,0x0003000000000001,0x0001000100000001,0x000100000000001f) if sums else \
+            identities=(0x0004000100000001,0x0004000000000001,0x0001000200000001,0x000200000000001f) if ordinary_bytes else \
+                       (0x0003000100000001,0x0003000000000001,0x0001000100000001,0x000100000000001f) if sums else \
                        (0x0002000100000001,0x0002000000000001,0x0001000000000001,0x000100000000001f)
             require(any(row[0]==0x45c and tuple(row[1:])==identities for row in self.rows(live)),
                     'actual isolated server did not report exact named execution contracts')
             require(final['execution']['active']==metadata[-1],'current execution applicability differs')
             self.report['execution_identity']={'status':'PASS','format_bytes':len(final_bytes),
                 'actual_isolated_requests':len(requests),'actual_request_revision_outcome_bound':True,
-                'known_attempts':len(metadata),'origin':origin,'protocol':3 if sums else 2,'identity_kind':'closed implementation-version authority; not artifact hash',
+                'known_attempts':len(metadata),'origin':origin,'protocol':4 if ordinary_bytes else 3 if sums else 2,'identity_kind':'closed implementation-version authority; not artifact hash',
                 'semantic_and_heap_resources_separate':True}
         self.report['final_record']=final
         self.click(live,stream,'close course restores raw notebook',320,140,False)
@@ -345,6 +347,7 @@ def main():
     parser.add_argument('--guest-build',help='Current genuinely compiled and audited notebook guest; requires native bundle')
     parser.add_argument('--require-execution-identity',action='store_true',help='Require actual protocol2 request/reply identities in every new durablev3 attempt')
     parser.add_argument('--require-sums-identity',action='store_true',help='Require actual isolated ordinary-sum Protocol3 request/reply identities in every new durablev4 attempt')
+    parser.add_argument('--require-bytes-identity',action='store_true',help='Require actual isolated ordinary ByteArray Protocol4 request/reply identities in every new durablev5 attempt')
     parser.add_argument('--durable-suffix-from',type=Path,help='Reuse independently rechecked actual acknowledged course workflow; run only new cold/failure CPUs')
     parser.add_argument('--timeout',type=int,default=300)
     parser.add_argument('--boot-seconds',type=int,default=60)
@@ -352,8 +355,8 @@ def main():
     parser.add_argument('--deadline',type=int,default=2400)
     args=parser.parse_args();args.checkpoint_relation='not-exercised'
     require(not args.guest_build or args.native_bundle,'guest-build requires native-bundle')
-    require(not (args.require_execution_identity and args.require_sums_identity),'select one exact execution contract')
-    require(not (args.require_execution_identity or args.require_sums_identity) or not args.durable_suffix_from,'execution identities require actual new live requests')
+    require(sum((args.require_execution_identity,args.require_sums_identity,args.require_bytes_identity))<=1,'select one exact execution contract')
+    require(not (args.require_execution_identity or args.require_sums_identity or args.require_bytes_identity) or not args.durable_suffix_from,'execution identities require actual new live requests')
     require(1<=args.timeout<=3600 and 1<=args.boot_seconds<=600 and 1<=args.action_seconds<=600
             and 1<=args.deadline<=7200,'invalid declared resource bounds')
     checker=MathChecker(args)

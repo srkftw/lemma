@@ -43,10 +43,41 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def observe_workflow(medium, raw_output, serial, panel, stream, expected):
+def observe_raw_input(raw_output, stream, raw_format='binary-nine'):
+    """Compare actual host admission fields without inventing device metadata.
+
+    Native capture contains delivery cycle plus the seven raw device words.
+    Sequence/epoch are subsequently compared against actual guest raw objects;
+    they are not appended here to manufacture a nine-word ingress artifact.
+    """
+    if raw_format == 'binary-nine':
+        raw = b''.join(struct.pack('<9Q', *row) for row in stream.events)
+        require(Path(raw_output).read_bytes() == raw,
+                'actual raw ingress differs from every original field')
+    elif raw_format == 'native-seven-text':
+        admitted = []
+        data = Path(raw_output).read_bytes()
+        require(len(data) <= 32 << 20 and data.endswith(b'\n'),
+                'native input capture missing, truncated or oversized')
+        for line in data.decode('ascii').splitlines():
+            words = line.split()
+            require(len(words) == 9 and words[1] == 'pen' and
+                    all(word.isdecimal() and word.isascii() for word in words[:1] + words[2:]),
+                    'unexpected native input field/shape')
+            values = tuple(int(word) for word in words[:1] + words[2:])
+            require(all(0 <= value < 1 << 64 for value in values),
+                    'native input word overflow')
+            admitted.append(values)
+        require(admitted == [(row[1] * 10, *row[1:8]) for row in stream.events],
+                'native raw admission differs from every original field and delivery cycle')
+    else:
+        raise ValueError('unknown actual raw capture format')
+
+
+def observe_workflow(medium, raw_output, serial, panel, stream, expected,
+                     *, raw_format='binary-nine'):
     """Compare literal raw provenance, indexes and optical contact points."""
-    raw = b''.join(struct.pack('<9Q', *row) for row in stream.events)
-    require(Path(raw_output).read_bytes() == raw, 'actual raw ingress differs from every original field')
+    observe_raw_input(raw_output, stream, raw_format)
     root, sequence, records = recover(Path(medium).read_bytes())
     roots, pages, chunks = {}, {}, {}
     for (namespace, object_id), record in records.items():

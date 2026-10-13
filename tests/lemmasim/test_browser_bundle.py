@@ -56,6 +56,26 @@ class BrowserBundleBoundary(unittest.TestCase):
                 m[key]={'path':name,'sha256':item(name)}
             with patch('lemmasim_browser.ROOT',root):
                 validate_wasm_inputs(source,m)
+                # Preserve the original consumed adapter bytes while the
+                # current machine evolves. Exact archived identity may be
+                # reused; a missing/corrupt origin never blesses new bytes.
+                archive=root/'archive';archive.mkdir();old=root/'adapter.cpp'
+                retained=archive/'old.cpp';retained.write_bytes(old.read_bytes())
+                archive_manifest={'schema':'lemmasim-native-bundle/2',
+                    'files':{'old.cpp':{'sha256':m['portable_inputs']['adapter.cpp'],
+                        'bytes':retained.stat().st_size,'executable':False}},
+                    'origins':{str(old):{m['portable_inputs']['adapter.cpp']:'old.cpp'}}}
+                (archive/'bundle.json').write_text(json.dumps(archive_manifest))
+                old.write_bytes(b'new machine source')
+                with self.assertRaises(ValueError):validate_wasm_inputs(source,m)
+                consumed=validate_wasm_inputs(source,m,archive)
+                self.assertEqual(consumed['adapter.cpp']['path'],retained)
+                retained.write_bytes(b'corrupt old source')
+                with self.assertRaises(ValueError):validate_wasm_inputs(source,m,archive)
+                retained.write_bytes(b'adapter.cpp');archive_manifest['origins']={}
+                (archive/'bundle.json').write_text(json.dumps(archive_manifest))
+                with self.assertRaises(ValueError):validate_wasm_inputs(source,m,archive)
+                old.write_bytes(b'adapter.cpp')
                 for name in ('generator.py','driver.py','patch.py','tool/runtime.h','runtime.inc.cpp',
                              'built/verilator-portable/verilated_threads.cpp'):
                     p=root/name;before=p.read_bytes();p.write_bytes(b'changed policy/runtime')

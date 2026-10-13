@@ -805,6 +805,7 @@ def main():
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
+    p.add_argument('--wasm-input-bundle',type=Path,help='On --reuse-wasm, validate exact consumed source versions from this immutable native archive; unchanged browser-only inputs remain required')
     p=sub.add_parser('browser-serve',help='Validate and serve an immutable local browser machine on loopback')
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--port',type=int,default=8767)
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
@@ -814,14 +815,14 @@ def main():
     p.add_argument('--rtl-build',type=Path,help='Replace the archived canonical RTL backend with an exact current-source build')
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
     p.add_argument('--backend',choices=('qemu','rtl'),default='rtl');p.add_argument('--profile')
-    p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'),default='notebook')
+    p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer'),default='notebook')
     p.add_argument('--mode',choices=('student','developer','laboratory'),default='developer')
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--disk',type=Path)
     p.add_argument('--native-bundle',type=Path,help='Validate and execute an immutable native development bundle')
     p.add_argument('--guest-build',type=Path,help='Explicit current-source audited guest override; requires --native-bundle')
     p.add_argument('--rtl-source-root',type=Path,help='USB6 RTL: complete original consumed native source archive; guest sources remain current')
-    p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--guest-source-root',type=Path,help='USB6 RTL: complete original audited guest source archive, explicitly required for archive-associated preparation')
+    p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--restore',type=Path);p.add_argument('--events',type=Path)
     p.add_argument('--backing-replay',type=Path,help='Actual backing outcome log; requires an isolated --restore (QEMU excludes unresolved peer retry controls)')
     p.add_argument('--usb-host-prepared',type=Path,help='RTL binding6: exact prepared genuine hosted Lean USB packet host')
@@ -854,9 +855,9 @@ def main():
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--snapshot',type=Path,required=True)
     p.add_argument('--capture',type=Path,required=True)
     end=p.add_mutually_exclusive_group(required=True);end.add_argument('--until-cycle',type=int);end.add_argument('--until-ns',type=int,help='Exact fast-backend virtual clock phase')
-    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.add_argument('--rtl-source-root',type=Path,help='USB6 RTL: explicit complete native source archive, requires --rtl-build');p.add_argument('--guest-source-root',type=Path,help='USB6 RTL: complete original audited guest source archive, requires --guest-build');p.set_defaults(function=build)
+    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.add_argument('--rtl-source-root',type=Path,help='USB6 RTL: explicit complete native source archive, requires --rtl-build');p.add_argument('--guest-source-root',type=Path,help='USB6 RTL: complete original audited guest source archive, requires --guest-build');p.set_defaults(function=build)
     p=sub.add_parser('init');p.add_argument('--native-bundle',type=Path);p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.add_argument('--session-dir',type=Path);p.add_argument('--timeout',type=int,default=900);p.set_defaults(function=initialize)
-    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
+    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb','usb-bulk-notebook','usb-bulk-initializer'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
     p=sub.add_parser('replay');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
@@ -871,13 +872,15 @@ def main():
     try:
         if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
         if args.command=='build' and args.rtl_source_root is not None and (args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.rtl_build is None):raise Failure('--rtl-source-root requires USB6 RTL and an explicit --rtl-build')
-        if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
         if args.command=='build' and args.guest_source_root is not None and (args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.guest_build is None):raise Failure('--guest-source-root requires USB6 RTL and an explicit --guest-build')
+        if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
         if args.command=='native-bundle-build':
             import silicon_guest_bundle
             silicon_guest_bundle.bundle(args)
             return 0
         if args.command=='browser-build':
+            if args.wasm_input_bundle is not None and not args.reuse_wasm:
+                raise Failure('--wasm-input-bundle requires --reuse-wasm')
             import lemmasim_browser
             (lemmasim_browser.bundle if args.reuse_wasm else lemmasim_browser.build)(args)
             return 0
@@ -895,7 +898,7 @@ def main():
                 if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
                 usb_options=(args.usb_host_prepared,args.usb_peer_directory,args.usb_peer_socket,args.usb_host_state)
                 if any(x is not None for x in usb_options):
-                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.workload not in ('usb','notebook','initializer') or args.mode not in ('developer','laboratory'):
+                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.workload not in ('usb','notebook','initializer','usb-bulk-notebook','usb-bulk-initializer') or args.mode not in ('developer','laboratory'):
                         raise Failure('USB packet host requires USB6 RTL probe, notebook or initializer in Developer or Laboratory mode')
                     if any(x is None for x in usb_options):raise Failure('USB packet host requires prepared host, peer directory/socket and retained host state')
                     if args.disk is not None or args.companion is not None or args.restore is not None:raise Failure('USB peer uses independent opaque medium and cold USB state')
@@ -905,10 +908,10 @@ def main():
                 if args.ble_drop_packets and args.mode!='laboratory':raise Failure('Wire packet loss requires Laboratory mode')
                 if args.ble_replay is not None and (not args.restore or args.ble_peer is not None):raise Failure('BLE replay requires an isolated --restore and excludes live peer')
                 if args.rtl_source_root is not None and (args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.native_bundle is not None):raise Failure('--rtl-source-root requires USB6 RTL and excludes --native-bundle')
+                if args.guest_source_root is not None and (args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.native_bundle is not None):raise Failure('--guest-source-root requires USB6 RTL and excludes --native-bundle')
                 if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
                 if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0'):raise Failure('Persistent session requires the declared silicon-development binding')
                 lemmasim_session.bounded(args.quantum,1,1000000,'Quantum')
-                if args.guest_source_root is not None and (args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.native_bundle is not None):raise Failure('--guest-source-root requires USB6 RTL and excludes --native-bundle')
                 lemmasim_session.bounded(args.trace_limit,0,1000000,'Trace limit')
                 lemmasim_session.bounded(args.memory_latency,0,1024,'Memory latency')
                 if args.backing_replay is not None and args.restore is None:raise Failure('Backing outcome replay requires an isolated --restore')

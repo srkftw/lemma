@@ -298,4 +298,59 @@ def refresh (cap sequence x y width height mode : UInt64) : Action :=
   Syscall.call 64 cap 2 metadata 0 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0
 
+/- Surface-v2 adds one owned page, not a framebuffer or host DMA shortcut. -/
+def bulkPacket : UInt64 := 0x10a000
+
+def allocateBulk : Action :=
+  .bind (Syscall.allocatePage bulkPacket) fun s address => if s = 0 then
+  if address = bulkPacket then .done 0 0 else .done 95 0 else .done s 0
+
+private def bulkCopyWord (i _ : UInt32) (acc destination _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Memory.write64 (destination + i.toUInt64 * 8) word) fun s _ => .done s acc
+  else .done s 0
+
+private def bulkPrepareStep (i _ : UInt32) (acc dimensions first _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let columns := (width + 31) / 32
+  let index := first + i.toUInt64
+  let x := (index % columns) * 32
+  let y := (index / columns) * 32
+  let w := if 32 < width - x then 32 else width - x
+  let h := if 32 < height - y then 32 else height - y
+  let entry := bulkPacket + 32 + i.toUInt64 * 32
+  let destination := bulkPacket + 256 + i.toUInt64 * 512
+  .bind (loadTile x y width height) fun s _ => if s = 0 then
+  .bind (if w = 32 then .done 0 0 else
+    .boundedFoldU64 512 compactStep (((w + 1) / 2) * h).toUInt32 0 ((w + 1) / 2) 0 0 0 fun s _ => .done s 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 entry x) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 8) y) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 16) w) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 24) h) fun s _ => if s = 0 then
+  .boundedFoldU64 64 bulkCopyWord 64 0 destination 0 0 0 fun s _ => .done s (acc + 1)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def bulkUploadStep (i _ : UInt32) (acc cap dimensions total _ : UInt64) : Action :=
+  let first := i.toUInt64 * 7
+  let count := if 7 < total - first then 7 else total - first
+  .boundedFoldU64 7 bulkPrepareStep count.toUInt32 0 dimensions first 0 0 fun s prepared => if s = 0 then
+  if prepared = count then
+  .bind (Memory.write64 bulkPacket 2) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 8) count) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 16) 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 (bulkPacket + 24) 0) fun s _ => if s = 0 then
+  .bind (Syscall.call 64 cap 5 bulkPacket count 0) fun s completed => if s = 0 then
+  if completed = count then .done 0 (acc + count) else .done 95 0
+  else .done s completed else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done 95 0 else .done s 0
+
+/-- Identical Gray4 tile order and contents, seven separately validated rectangles
+per owned-page copy. Controller failures retain the actual completed prefix. -/
+def uploadAllBulk (cap width height : UInt64) : Action :=
+  if width = 0 then .done 16 0 else if 4096 < width then .done 16 0 else
+  if height = 0 then .done 16 0 else if 4096 < height then .done 16 0 else
+  let count := ((width + 31) / 32) * ((height + 31) / 32)
+  .boundedFoldU64 2341 bulkUploadStep ((count + 6) / 7).toUInt32 0 cap (width ||| (height <<< 16)) count 0 fun s uploaded => .done s uploaded
+
 end Lemma.Ink.Surface

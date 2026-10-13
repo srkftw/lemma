@@ -77,4 +77,27 @@ def completion : Action :=
   .bind (read DeviceABI.paperCompletedOffset) fun s seq => if s = 0 then
   .bind (write DeviceABI.paperAckOffset seq) fun s _ => .done s seq else .done s 0
 
+/-- Additive Surface-v2 source slot. The existing upload entry is unchanged.
+Every field and owner is checked afresh, and each controller command retains
+its own error result. No batch atomicity or controller bypass is implied. -/
+def uploadOffset (handle offset x y width height : UInt64) : Action :=
+  if width = 0 then .done invalid 0 else if 32 < width then .done invalid 0 else
+  if height = 0 then .done invalid 0 else if 32 < height then .done invalid 0 else
+  let length := ((width + 1) / 2) * height
+  let copied := ((length + 7) / 8) * 8
+  if offset % 8 = 0 then if offset ≤ 4096 - copied then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s buffer =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileXOffset x) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileYOffset y) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileWOffset width) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileHOffset height) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileLenOffset length) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 64 uploadWord ((length + 7) / 8).toUInt32 0 (buffer + offset) 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperCommandOffset 1) fun s _ => if failed s = true then .done s 0 else
+  .bind (read DeviceABI.paperErrorOffset) fun s error => if s = 0 then
+    if error = 0 then .done 0 length else .done deviceError error else .done s 0
+  else .done invalid 0 else .done invalid 0
+
 end Lemma.Drivers.Paper

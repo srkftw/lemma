@@ -2,6 +2,7 @@ import Lemma.User.Memory
 import Lemma.Mathematics.OwnedSubmission
 import Lemma.Mathematics.ExecutionIdentity
 import Lemma.Mathematics.ExecutionIdentityV2
+import Lemma.Mathematics.ExecutionIdentityV3
 
 /-! Typed answers and evidence remain separate from immutable raw ink.
 Historical832/1856-byte records retain their exact semantic layouts. The
@@ -106,7 +107,8 @@ the checker domain; no interpretation is inferred from ink. -/
 private def clearExecution (buffer : UInt64) : Action :=
   .bind (field buffer 8) fun s version => if s = 0 then
   if version = 3 then ExecutionIdentity.clearCurrent buffer else
-  if version = 4 then ExecutionIdentityV2.clearCurrent buffer else .done 0 0
+  if version = 4 then ExecutionIdentityV2.clearCurrent buffer else
+  if version = 5 then ExecutionIdentityV3.clearCurrent buffer else .done 0 0
   else .done s 0
 
 def revise (buffer : UInt64) : Action :=
@@ -431,8 +433,11 @@ rejects4 and retains the exact old execution-identity semantics. -/
 def validateSums (buffer ns page : UInt64) : Action :=
   .bind (field buffer 8) fun s version => if s = 0 then
   if version = 4 then
+  .bind (field buffer 0) fun s actualMagic => if s = 0 then
+  if actualMagic = magic then
   .bind (validate.validateHeader buffer ns page) fun s _ => if s = 0 then
   ExecutionIdentityV2.validate buffer else .done s 0
+  else .done 234 0 else .done s 0
   else validate buffer ns page else .done s 0
 
 /-- The caller strictly validated the original record first. v3 history remains

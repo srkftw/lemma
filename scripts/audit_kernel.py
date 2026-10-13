@@ -26,7 +26,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
-                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS)
+                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -191,12 +191,12 @@ POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_C
 BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
 USB_PROBE_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
 USB_NOTEBOOK_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-notebook',
-    'lemmasim-silicon-usb-initialize'})
+    'lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
 USB_CONFIGURATIONS = USB_PROBE_CONFIGURATIONS | USB_NOTEBOOK_CONFIGURATIONS
-PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-notebook',
+PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'})
 MODERN_NOTEBOOK_CONFIGURATIONS = USB_NOTEBOOK_CONFIGURATIONS | frozenset({
-    'lemmasim-silicon-product-notebook'})
+    'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'})
 LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MODERN_NOTEBOOK_CONFIGURATIONS
 MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1'
@@ -218,14 +218,29 @@ SUMS_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
     {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV3',
       'source':'Lemma.Services.Arithmetic.ServerV3.main'})
 MULTI_USER_CONFIGURATIONS.update({configuration:SUMS_NOTEBOOK_IMAGES for configuration in SUMS_NOTEBOOK_CONFIGURATIONS})
+BULK_NOTEBOOK_IMAGES = (SUMS_NOTEBOOK_IMAGES[0],
+    {**SUMS_NOTEBOOK_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainSumsBulk'}, SUMS_NOTEBOOK_IMAGES[2])
+MULTI_USER_CONFIGURATIONS.update({configuration:BULK_NOTEBOOK_IMAGES for configuration in BULK_NOTEBOOK_CONFIGURATIONS if configuration not in BYTES_NOTEBOOK_CONFIGURATIONS})
 LEMMASIM_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
 POWER_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
 
+BYTES_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainBytesBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV4',
+      'source':'Lemma.Services.Arithmetic.ServerV4.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:BYTES_NOTEBOOK_IMAGES for configuration in BYTES_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(BYTES_NOTEBOOK_CONFIGURATIONS)
+
 def software_deployment_fields(configuration):
+    if configuration in BYTES_NOTEBOOK_CONFIGURATIONS:
+        from managed_bytes import software_deployment_for
+        return {"software_deployment":software_deployment_for(configuration)}
     if configuration in SUMS_NOTEBOOK_CONFIGURATIONS:
-        from managed_sums import SOFTWARE_DEPLOYMENT as sums_deployment
-        return {'software_deployment':sums_deployment}
+        from managed_sums import software_deployment_for
+        return {'software_deployment':software_deployment_for(configuration)}
     return {'software_deployment':SOFTWARE_DEPLOYMENT} if configuration in MANAGED_NOTEBOOK_CONFIGURATIONS else {}
 
 
@@ -1577,7 +1592,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
     if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
         boot='Lemma.Platform.LemmaSim.NotebookKernel.bootModern'
-        binding=7 if unit['configuration']=='lemmasim-silicon-product-notebook' else 6
+        binding=7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
         wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
         if boot not in names or wrapper not in names:
             raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
@@ -3109,7 +3124,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     from arithmetic_execution_identity import FIELD as execution_field, selected as execution_selected, contract as execution_contract
     from managed_sums import FIELD as sums_field, allowed as sums_allowed, contract as sums_contract
     from arithmetic_sums_identity import FIELD as sums_execution_field, selected as sums_execution_selected, contract as sums_execution_contract
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()), "unit")
+    from managed_bytes import FIELD as bytes_field, allowed as bytes_allowed, contract as bytes_contract
+    from arithmetic_bytes_identity import FIELD as bytes_execution_field, selected as bytes_execution_selected, contract as bytes_execution_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
@@ -3117,6 +3134,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
                 (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.4' if bytes_allowed(unit) else
                  'core0-user-v0.3' if sums_allowed(unit) else
                  'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook')) else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
@@ -3171,6 +3189,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     execution_contract(unit)
     sums_contract(unit)
     sums_execution_contract(unit)
+    bytes_contract(unit)
+    bytes_execution_contract(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -3487,6 +3507,78 @@ def _raw_function(text: str, ranges: dict[str, tuple[int, int]], symbol: str) ->
     if set(words) != set(range(begin, begin + size, 4)):
         raise Core0Error("machine boundary raw instruction byte coverage differs")
     return b"".join(struct.pack("<I", words[address]) for address in sorted(words))
+
+
+def validate_product_pmp(assembly: str, raw_machine: str, ranges: dict, configuration: str) -> dict | None:
+    """Independent exact ninth-entry aperture/CSR/readback/fatal-path authority.
+
+    Ordinary historical PMP initialization remains byte/source-bound separately.
+    This adds only1 KiB RW/NX to the selected Product startup; no ninth entry
+    appears in a legacy profile or any other machine routine.
+    """
+    selected=configuration in {"lemmasim-silicon-product-notebook","lemmasim-silicon-product-bulk-notebook"}
+    body=_assembly_function(assembly,"_start")
+    mentions=[line for line in assembly.splitlines() if re.search(r"\b(?:pmpaddr8|pmpcfg2)\b",line)]
+    if not selected:
+        if mentions:raise Core0Error("Historical startup acquired Product PMP authority")
+        return None
+    old=["csrw pmpcfg0, zero","csrw pmpcfg2, zero"]
+    addresses=[536879103,537141247,553648127,67108895,262655,51380223,67110399,67126271]
+    for index,value in enumerate(addresses):old += [f"li t0, {value}",f"csrw pmpaddr{index}, t0"]
+    old += ["li t0, 1953184666628331544","csrw pmpcfg0, t0"]
+    tail=["li t0, 67127423","csrw pmpaddr8, t0","csrr t1, pmpaddr8",
+          "bne t0, t1, lemma_machine_fatal","li t0, 27","csrw pmpcfg2, t0",
+          "csrr t1, pmpcfg2","bne t0, t1, lemma_machine_fatal","sfence.vma zero, zero"]
+    expected=old+tail
+    positions=[index for index in range(len(body)-len(expected)+1) if body[index:index+len(expected)]==expected]
+    if len(positions)!=1 or [x.strip() for x in mentions] != ["csrw pmpcfg2, zero","csrw pmpaddr8, t0","csrr t1, pmpaddr8","csrw pmpcfg2, t0","csrr t1, pmpcfg2"]:
+        raise Core0Error("Product complete PMP initialization/aperture/config/readback authority differs")
+    start,size=ranges.get("_start",(0,0))
+    words=list(struct.unpack("<"+str(size//4)+"I",_raw_function(raw_machine,ranges,"_start")))
+    csr=lambda word: ((word>>20)&4095) if word&127==0x73 and (word>>12)&7 else None
+    inventory=[(index,word) for index,word in enumerate(words) if csr(word) in {0x3a2,0x3b8}]
+    def encoding(number,funct,rd,rs):return (number<<20)|(rs<<15)|(funct<<12)|(rd<<7)|0x73
+    fixed=[encoding(0x3a2,1,0,0),encoding(0x3b8,1,0,5),encoding(0x3b8,2,6,0),encoding(0x3a2,1,0,5),encoding(0x3a2,2,6,0)]
+    if [word for _,word in inventory]!=fixed or words[inventory[0][0]-1]!=encoding(0x3a0,1,0,0):
+        raise Core0Error("Product actual CSR writes/reads/clear sequence differs")
+    at=inventory[1][0]
+    # Pinned LLVM expands a positive32-bit LI to LUI+ADDIW. A forward
+    # unresolved BNE is either direct or an exact BEQ skip8+JAL fatal pair;
+    # both forms are decoded without trusting disassembly branch labels.
+    if words[at-2:at]!=[0x040052b7,0x87f2829b] or inventory[2][0]!=at+1:
+        raise Core0Error("Product actual address/readback sequence differs")
+    fatal=ranges.get("lemma_machine_fatal",(None,None))[0]
+    def mismatch_gate(index):
+        word=words[index]
+        if word&127!=0x63 or (word>>15)&31!=5 or (word>>20)&31!=6:
+            raise Core0Error("Product actual WARL comparison lacks t0/t1 branch")
+        immediate=((word>>31)<<12)|(((word>>7)&1)<<11)|(((word>>25)&63)<<5)|(((word>>8)&15)<<1)
+        if immediate&4096:immediate-=8192
+        if (word>>12)&7==1 and start+index*4+immediate==fatal:return index+1
+        if (word>>12)&7!=0 or immediate!=8:
+            raise Core0Error("Product actual WARL mismatch does not reach machine fatal")
+        jump=words[index+1]
+        if jump&127!=0x6f or (jump>>7)&31:
+            raise Core0Error("Product long WARL mismatch lacks unconditional fatal JAL")
+        offset=((jump>>31)<<20)|(((jump>>12)&255)<<12)|(((jump>>20)&1)<<11)|(((jump>>21)&1023)<<1)
+        if offset&(1<<20):offset-=1<<21
+        if start+(index+1)*4+offset!=fatal:
+            raise Core0Error("Product long WARL mismatch escapes machine fatal")
+        return index+2
+    config=mismatch_gate(at+2)
+    if words[config]!=0x01b00293 or inventory[3][0]!=config+1 or inventory[4][0]!=config+2:
+        raise Core0Error("Product actual RW/NX configuration/readback sequence differs")
+    after=mismatch_gate(config+3)
+    if words[after]!=0x12000073:
+        raise Core0Error("Product verified grant lacks following global translation fence")
+    # Independent NAPOT decode and boundary/permission checks.
+    address=0x0400487f;bits=0
+    while address&(1<<bits):bits+=1
+    base=(address&~((1<<bits)-1))*4;extent=1<<(bits+3)
+    if base!=0x10012000 or extent!=1024 or (27&7)!=3 or (27>>3)&3!=3 or 27&128:
+        raise Core0Error("Product independently decoded aperture/permissions differ")
+    return {"contract_version":"lemma-product-pmp-v1","base":base,"bytes":extent,"permissions":"RW/NX","entry":8,
+            "csr_instructions":5,"readback_fatal_branches":2,"scope":"Actual narrow startup grant; supervisor guest boot qualification separate"}
 
 
 def validate_enter_user_machine(raw: bytes) -> dict:
@@ -4537,7 +4629,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 return (unit.get('configuration') in DOCUMENT4_NOTEBOOK_PROFILES
                         and unit['role']=='user' and unit.get('contract_version')==DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
                         and unit.get('image_key')=='notebook'
-                        and row['values']==[1856,2496,2496] and row['bytes']==24)
+                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32)])
             if source=='Lemma.USB.Control.descriptorWord':
                 return (unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS and unit['role']=='kernel'
                         and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
@@ -4821,6 +4913,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
     validate_modern_power_selection(ir,unit,optimized=optimized)
+    from paper_bulk import validate as validate_surface_v2
+    validate_surface_v2(ir,unit,optimized=optimized)
     ble_header = validate_ble_header_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
@@ -4871,6 +4965,10 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     sums_report = validate_managed_sums(ir, unit, optimized=optimized)
     from arithmetic_sums_identity import validate as validate_sums_execution_identity
     sums_execution_report = validate_sums_execution_identity(ir, unit, optimized=optimized)
+    from managed_bytes import validate as validate_managed_bytes
+    bytes_report = validate_managed_bytes(ir, unit, optimized=optimized)
+    from arithmetic_bytes_identity import validate as validate_bytes_execution_identity
+    bytes_execution_report = validate_bytes_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4931,6 +5029,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
             **({"managed_sums":sums_report} if sums_report is not None else {}),
             **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
+            **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
+            **({"arithmetic_bytes_execution_identity":bytes_execution_report} if bytes_execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
@@ -5024,6 +5124,9 @@ def validate_machine(text: str, *, user: bool = False,
         if instruction.startswith("csr"):
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
             allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
+            product_csrs={"pmpaddr8","pmpcfg2"}
+            product_start=configuration in {"lemmasim-silicon-product-notebook","lemmasim-silicon-product-bulk-notebook"} and ranges is not None and "_start" in ranges and ranges["_start"][0] <= address < sum(ranges["_start"])
+            if product_start:allowed |= product_csrs
             if not names or not set(names) <= allowed:
                 raise Core0Error("unknown CSR in platform code")
     if not found:
@@ -5168,6 +5271,21 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
         sections = alloc_section_names(section_text)
         allowed = ({".text", ".text.user_start", ".text.user_boundary", ".data.user_abi"}
                    | ({".text.user_adversarial"} if user_case != "none" else set())) if obj == "startup.o" else {".text", ".rodata", ".rodata.cst8", ".data", ".bss"}
+        if obj=="program.o" and ".rodata.cst32" in sections:
+            # Only the complete independently pinned course reader can
+            # introduce this actual32-byte merged constant table in User2.
+            # validate_object below closes every byte, flag, alignment,
+            # symbol extent and absence of relocations in the whole section.
+            from lemmasim_readonly import DOCUMENT4_NOTEBOOK_PROFILES
+            course32=[row for row in ir["optimized"]["readonly_optimizer_tables"]
+                if re.sub(r"^_private\..*?\.[0-9]+\.","",row.get("source",""))=="Lemma.Applications.Notebook.openCourse"
+                and row.get("values")==[1856,2496,2496,2496]
+                and row.get("literal_schema")=="document-v5-length-v1"
+                and row.get("index_bound")==4 and row.get("element_bits")==64
+                and row.get("alignment_bytes")==8 and row.get("guarded_loads")==1 and row.get("readonly") is True]
+            if (configuration in DOCUMENT4_NOTEBOOK_PROFILES and image_key=="notebook"
+                    and unit.get("role")=="user" and unit.get("contract_version")==DOCUMENT4_NOTEBOOK_PROFILES[configuration]
+                    and len(course32)==1):allowed.add(".rodata.cst32")
         if not sections <= allowed:
             raise Core0Error("unaccounted allocated per-image user object section")
         if ".rodata.cst8" in sections:
@@ -5294,10 +5412,12 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
                 ("llc", [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"], base + "/" + directory)]
     expected = [item for role in roles for item in compile_unit(role)]
     expected += [item for image in images for item in compile_unit(image["directory"])]
+    from lemmasim_readonly import course_literal_link_options
     for image in images:
         d = image["directory"]
+        literal_options = course_literal_link_options(output_dir / d)
         expected += [("clang", [*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"], base),
-                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
+                     ("ld.lld", ["-m", "elf64lriscv", "--no-relax", *literal_options, "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"], base),
                      ("llvm-objcopy", ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"], base),
                      ("llvm-objcopy", ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"], base)]
     if not standalone:
@@ -5566,8 +5686,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                                       [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"]]
             for image in images:
                 d = image["directory"]
+                from lemmasim_readonly import course_literal_link_options
+                literal_options = course_literal_link_options(output_dir / d)
                 expected_commands += [[*STARTUP_ARGUMENTS, d + "/startup.S", "-o", d + "/startup.o"],
-                                      ["-m", "elf64lriscv", "--no-relax", "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"],
+                                      ["-m", "elf64lriscv", "--no-relax", *literal_options, "-T", d + "/link.ld", "-Map=" + d + "/image.map", d + "/startup.o", d + "/program.o", "-o", d + "/image.elf"],
                                       ["-O", "binary", "--only-section=.text", d + "/image.elf", d + "/text.bin"],
                                       ["-O", "binary", "--only-section=.data", d + "/image.elf", d + "/data.bin"]]
             expected_commands += [[*STARTUP_ARGUMENTS, "boot-package.S", "-o", "boot-package.o"],
@@ -5778,6 +5900,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
             if not user:
                 machine = (output_dir / "audit-boot-disassembly.txt").read_text()
                 info["startup"] = validate_startup_case(machine, ranges, case)
+                info["product_pmp"] = validate_product_pmp(startup, raw_machine, ranges, configuration)
                 root_symbol = (load_json(output_dir / images[0]["directory"] / "unit.json")["roots"][0]["symbol"] if multi else units["user"]["roots"][0]["symbol"])
                 info["context_abi"] = validate_context_abi(startup, raw_machine, ranges, user_startup, root_symbol, user_case)
             else:

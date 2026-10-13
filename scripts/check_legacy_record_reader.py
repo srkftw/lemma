@@ -29,21 +29,34 @@ def legacy_route(ir: str, unit: dict) -> dict:
     if main['args']!=['u64'] or upgrade['args']!=['u64','u64']:
         raise Core0Error('Legacy source signature differs')
     mainbody=_ir_definition_body(ir,main['symbol'])
-    call='call { i64, i64 } @'+rows[prefix+'mainWithExecution']['symbol']+'(i64 %arg0, i64 2)'
-    if mainbody is None or mainbody.count(call)!=1 or re.search(r'i64 3\)',mainbody):
+    arity=rows[prefix+'mainWithExecution']['args']
+    if arity not in (['u64']*2,['u64']*3):
+        raise Core0Error('Historical execution helper has an unreviewed signature')
+    bulk_argument=', i64 0' if len(arity)==3 else ''
+    call='call { i64, i64 } @'+rows[prefix+'mainWithExecution']['symbol']+'(i64 %arg0, i64 2'+bulk_argument+')'
+    if mainbody is None or mainbody.count(call)!=1 or len(re.findall(r'=\s*call\b',mainbody))!=1:
         raise Core0Error('Historical main no longer selects execution2')
     upgradebody=_ir_definition_body(ir,upgrade['symbol'])
     blocks=_structured_ir_blocks("\n".join(line.split(";",1)[0].rstrip() for line in upgradebody.splitlines()))
     branch=blocks.get('action.if.else.1',[])
-    if 'i64 2, label %action.if.then.9' not in branch or 'i64 3, label %action.if.then.3' not in branch:
+    validation_block='action.if.then.15' if len(arity)==3 else 'action.if.then.9'
+    upgrade_block='action.if.else.19' if len(arity)==3 else 'action.if.else.13'
+    cases=(['i64 4, label %action.if.then.3','i64 3, label %action.if.then.9',
+            'i64 2, label %action.if.then.15'] if len(arity)==3 else
+           ['i64 3, label %action.if.then.3','i64 2, label %action.if.then.9'])
+    expected=['%action.call.value3 = extractvalue { i64, i64 } %action.call.result0, 1',
+              'switch i64 %action.call.value3, label %action.if.merge.2 [',*cases,']']
+    if branch!=expected:
         raise Core0Error('Execution selection no longer binds its original exact branches')
     validate=rows['Lemma.Documents.Mathematics.validate']['symbol']
     current=rows['Lemma.Documents.Mathematics.upgradeCurrent']['symbol']
     oldvalidation=f'call {{ i64, i64 }} @{validate}(i64 3313664, i64 %arg0, i64 %arg1)'
     oldupgrade=f'call {{ i64, i64 }} @{current}(i64 3313664)'
-    if sum(oldvalidation in line for line in blocks.get('action.if.then.9',[]))!=1 or sum(oldupgrade in line for line in blocks.get('action.if.else.13',[]))!=1:
+    if sum(oldvalidation in line for line in blocks.get(validation_block,[]))!=1 or sum(oldupgrade in line for line in blocks.get(upgrade_block,[]))!=1:
         raise Core0Error('Historical selection bypassed original codec validation/upgrade')
-    return {'selection':2,'validator':'Lemma.Documents.Mathematics.validate',
+    return {'selection':2,'surface_bulk':0 if len(arity)==3 else 'historical ABI',
+            'execution_helper_arity':len(arity),'validation_block':validation_block,
+            'validator':'Lemma.Documents.Mathematics.validate',
             'upgrade':'Lemma.Documents.Mathematics.upgradeCurrent',
             'scope':'Actual selected source and CFG; codec semantic rejection tested separately'}
 
@@ -53,11 +66,11 @@ def qualify(directory: Path)->dict:
     names={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r['symbol'] for r in unit['functions']}
     validate=names['Lemma.Documents.Mathematics.validate'];sums=names['Lemma.Documents.Mathematics.validateSums']
     main=names['Lemma.Applications.Notebook.main'];body=_ir_definition_body(ir,main)
-    changed=ir.replace(body,body.replace('i64 2)','i64 3)'),1)
+    changed=ir.replace(body,re.sub(r'i64 2(?=, i64 0\)|\))','i64 3',body,count=1),1)
     old=f'@{validate}(i64 3313664, i64 %arg0, i64 %arg1)'
     if ir.count(old)!=1:raise Core0Error('Route corruption stimulus is not one actual call')
     cases={'historical-main-selects-sums':changed,'historical-validation-replaced':ir.replace(old,f'@{sums}(i64 3313664, i64 %arg0, i64 %arg1)',1),
-           'wrong-branch-binding':ir.replace(_ir_definition_body(ir,names['Lemma.Applications.Notebook.upgradeArithmetic']),_ir_definition_body(ir,names['Lemma.Applications.Notebook.upgradeArithmetic']).replace('i64 2, label %action.if.then.9','i64 2, label %action.if.then.3',1),1)}
+           'wrong-branch-binding':ir.replace(_ir_definition_body(ir,names['Lemma.Applications.Notebook.upgradeArithmetic']),_ir_definition_body(ir,names['Lemma.Applications.Notebook.upgradeArithmetic']).replace('i64 2, label %'+result['legacy_route']['validation_block'],'i64 2, label %action.if.then.3',1),1)}
     negatives=[]
     for name,mutated in cases.items():
         if mutated==ir:raise Core0Error('Unchanged actual route mutation')

@@ -6,7 +6,7 @@ adapter transports sectors and checks actual receipts; it never writes metadata,
 guest RAM, notebook records, or authentication/controller success state.
 """
 from pathlib import Path
-import argparse,fcntl,json,os,selectors,signal,struct,subprocess,time,zlib
+import argparse,fcntl,importlib.util,json,os,selectors,shutil,signal,struct,subprocess,tempfile,time,zlib
 import lemmasim_session as sessions
 import product_native as inputs
 
@@ -15,13 +15,59 @@ BOOT_BYTES=65544*512
 REQUEST=0x31564f4345524d4c
 RECEIPT=0x3154504345524d4c
 
+def discovery_generator(data):
+ # This is the exact already-validated native binding generator, including when
+ # the native core is reused from its complete consumed-source archive.
+ origin=Path(data['native_source_archive']) if data['native_source_archive'] else ROOT
+ path=origin/'scripts/silicon_profile.py'
+ spec=importlib.util.spec_from_file_location('product_profile_discovery',path)
+ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+ return module,module.profile(inputs.PROFILE),path
+
+def profile_discovery(data,out,dtc):
+ generator,profile,path=discovery_generator(data)
+ tool=Path(dtc or shutil.which('dtc') or '').resolve()
+ if not str(tool).startswith('/nix/store/') or not tool.is_file():
+  raise ValueError('Product preparation requires the pinned Nix dtc; run prepare inside nix develop or pass --dtc')
+ version=subprocess.run([str(tool),'--version'],check=True,capture_output=True,text=True,timeout=30).stdout.strip()
+ if version!='Version: DTC 1.8.1':raise ValueError('Product discovery requires the pinned dtc1.8.1')
+ source=generator.dts(profile);(out/'discovery.dts').write_text(source)
+ subprocess.run([str(tool),'-I','dts','-O','dtb','-o',str(out/'discovery.dtb'),str(out/'discovery.dts')],check=True,capture_output=True,timeout=30)
+ extent=(out/'discovery.dtb').stat().st_size
+ if not 40<=extent<=3072:raise ValueError('Profile discovery exceeds the exact boot-ROM discovery envelope')
+ (out/'descriptor.bin').write_bytes(generator.descriptor(profile,extent))
+ return {'contract_version':'lemma-product-digital-discovery-v1','profile_sha256':inputs.sha(generator.profile_path(inputs.PROFILE)),
+  'generator_sha256':inputs.sha(path),'dtc':{'path':str(tool),'sha256':inputs.sha(tool),'version':version},
+  'dtb_bytes':extent,'dts_sha256':inputs.sha(out/'discovery.dts'),'dtb_sha256':inputs.sha(out/'discovery.dtb'),
+  'descriptor_sha256':inputs.sha(out/'descriptor.bin'),
+  'scope':'static profile-bound hardware discovery registers; generated discovery.dtb is never preloaded into guest RAM'}
+
+def validate_discovery(data,path):
+ row=data['digital_discovery'];generator,profile,source=discovery_generator(data)
+ if row.get('contract_version')!='lemma-product-digital-discovery-v1' or row['generator_sha256']!=inputs.sha(source) or row['profile_sha256']!=inputs.sha(generator.profile_path(inputs.PROFILE)):
+  raise ValueError('Changed product digital discovery binding')
+ for name,key in [('discovery.dts','dts_sha256'),('discovery.dtb','dtb_sha256'),('descriptor.bin','descriptor_sha256')]:
+  if inputs.sha(path/name)!=row[key]:raise ValueError('Changed product discovery artifact: '+name)
+ if (path/'discovery.dts').read_text()!=generator.dts(profile) or (path/'descriptor.bin').read_bytes()!=generator.descriptor(profile,row['dtb_bytes']):
+  raise ValueError('Product discovery registers differ from the native profile')
+ if not 40<=row['dtb_bytes']<=3072 or (path/'discovery.dtb').stat().st_size!=row['dtb_bytes']:
+  raise ValueError('Product discovery extent differs from the pinned profile')
+ tool=row['dtc']
+ if not str(tool['path']).startswith('/nix/store/') or inputs.sha(tool['path'])!=tool['sha256'] or tool['version']!='Version: DTC 1.8.1':
+  raise ValueError('Changed product discovery compiler')
+ with tempfile.TemporaryDirectory(prefix='lemma-product-discovery-') as temporary:
+  output=Path(temporary)/'profile.dtb'
+  subprocess.run([tool['path'],'-I','dts','-O','dtb','-o',str(output),str(path/'discovery.dts')],check=True,capture_output=True,timeout=30)
+  if inputs.sha(output)!=row['dtb_sha256']:raise ValueError('Product discovery does not compile from the exact native profile')
+ return path/'descriptor.bin'
+
 def prepare(args):
  out=args.output_dir.resolve()
  if out.exists():raise ValueError('prepared output must be unused')
  n=inputs.native(args.native_build,args.native_source_archive)
  r=inputs.rom(args.rom_build,args.rom_source_archive)
  from silicon_guest_bundle import host_dependencies
- data={'schema':'lemma-product-prepared/1','profile':inputs.PROFILE,
+ data={'schema':'lemma-product-prepared/2','profile':inputs.PROFILE,
   'boot':'immutable Lean ROM; image and DTB loaded by real BootNV transactions',
   'authentication':'OPEN integrity-only owner-local recovery','anti_rollback':'OPEN',
   'native_build':str(args.native_build.resolve()),'rom_build':str(args.rom_build.resolve()),
@@ -33,13 +79,13 @@ def prepare(args):
   'rom_sha256':r['manifest']['artifacts']['rom.bin'],'host_dependencies':host_dependencies(n['binary']),
   'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py')},
   'qualification':'prepared exact component inputs; product boot/update acceptance separate'}
- out.mkdir(parents=True);sessions.write_json(out/'prepared.json',data)
+ out.mkdir(parents=True);data['digital_discovery']=profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local path-bound prepared product machine. Requires the exact recorded native build/source archives and Nix loader/libraries; no redistribution license is granted. CVW20f2af74 Apache-2.0 WITH SHL-2.1 and preserved notices; Verilator5.052 LGPL-3.0-only OR Artistic-2.0. All target ROM/image policy is Lean. CRC32 integrity is not authentication or anti-rollback. Physical nonvolatile qualification OPEN.\n')
  return {'prepared':str(out),'rom':data['rom_sha256'],'native':data['binary_sha256']}
 
 def prepared(path):
  data=json.loads((Path(path)/'prepared.json').read_text())
- if data.get('schema')!='lemma-product-prepared/1' or data.get('profile')!=inputs.PROFILE:
+ if data.get('schema')!='lemma-product-prepared/2' or data.get('profile')!=inputs.PROFILE:
   raise ValueError('Unsupported product prepared machine')
  for key,build in (('native_manifest_sha256','native_build'),('rom_manifest_sha256','rom_build')):
   if inputs.sha(Path(data[build])/'build.json')!=data[key]:raise ValueError('Changed prepared original build manifest')
@@ -50,13 +96,15 @@ def prepared(path):
   if inputs.sha(ROOT/p)!=h:raise ValueError('Changed prepared product host interface')
  for p,h in data['host_dependencies'].items():
   if inputs.sha(p)!=h:raise ValueError('Changed prepared native host library')
+ validate_discovery(data,Path(path))
  return data,n,r
 
 class ProductRTL(sessions.RTL):
  def __init__(self,args,directory):
   data,n,r=prepared(args.prepared);self.identity={'backend':'rtl','profile':inputs.PROFILE,
    'runtime':data['binary_sha256'],'implementation':data['runtime_identity'],'rom':data['rom_sha256'],
-   'boot':'ROM/NV-v1','authentication':'integrity-only owner-local'}
+   'boot':'ROM/NV-v1','authentication':'integrity-only owner-local',
+   'digital_discovery':data['digital_discovery']['descriptor_sha256'],'discovery_bytes':data['digital_discovery']['dtb_bytes']}
   self.log=(directory/'machine.log').open('wb');self.boot_lock=None
   medium=args.boot_medium
   if args.restore:
@@ -68,6 +116,8 @@ class ProductRTL(sessions.RTL):
   if medium is None or medium.stat().st_size!=BOOT_BYTES:raise ValueError('Product boot medium must be exactly65544 sectors')
   self.boot_lock=medium.open('r+b');fcntl.flock(self.boot_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   command=[str(n['binary']),'--rom',str(r['binary']),'--boot-medium',str(medium.resolve()),
+   '--descriptor',str((Path(args.prepared)/'descriptor.bin').resolve()),
+   '--host-threads',str(args.host_threads),
    '--session','--quiet-uart','--uart-output',str(directory/'uart.bin'),'--input-capture',str(directory/'input.events'),
    '--boot-io-capture',str(directory/'boot.nvio'),'--backing-capture',str(directory/'backing.io'),
    '--fork-directory',str(directory),'--trace-limit',str(args.trace_limit),'--deadline',str(args.timeout)]
@@ -114,6 +164,11 @@ def frame(transaction,operation,slot=0,relative=0,identity=0,payload=b''):
  words=(REQUEST,1,transaction,operation,slot,relative,identity,0,zlib.crc32(payload) if payload else 0)
  first=struct.pack('<9Q',*words);return first+struct.pack('<Q',zlib.crc32(first))+payload
 
+def install_extent(package,wire,identity):
+ extent=identity.get('discovery_bytes')
+ if type(extent)!=int or not 40<=extent<=3072 or len(wire)<512 or extent!=package.get('discovery_bytes') or struct.unpack_from('<Q',wire,48)[0]!=extent:
+  raise ValueError('Compiled package discovery extent differs from the fixed digital profile')
+
 class RecoveryClient:
  def __init__(self,args):
   self.directory=args.session_dir.resolve();self.timeout=args.timeout;self.quantum=args.quantum
@@ -138,6 +193,11 @@ class RecoveryClient:
  def send(self,operation,slot=0,relative=0,identity=0,payload=b''):
   if self.next_id>=1<<64:raise ValueError('Recovery transaction identity exhausted')
   tx=self.next_id;self.next_id+=1;wire=frame(tx,operation,slot,relative,identity,payload)
+  # Only future UART output may acknowledge this request. A client reconnect
+  # or explicitly reused transaction number must not adopt an older receipt.
+  uart=self.directory/'uart.bin';past=uart.read_bytes() if uart.exists() else b''
+  if past:receipt(past[-40:])  # Fail closed at a partial/non-recovery boundary.
+  self.cursor=len(past)
   self.call({'action':'inject','kind':'uart','hex':wire.hex()})
   return self.wait(tx)
 
@@ -151,6 +211,7 @@ def recovery(args):
   if package.get('schema')!='lemma-product-image/1' or package.get('status')!='PASS' or inputs.sha(path)!=package.get('image_sha256'):raise ValueError('Changed opaque compiled image package')
   wire=path.read_bytes()
   if not wire or len(wire)%512 or len(wire)>16*1024*1024:raise ValueError('Invalid bounded image sector payload')
+  install_extent(package,wire,client.call({'action':'inspect'})['identity'])
   for index in range(len(wire)//512):
    row=client.send(1,args.slot,index,package['identity'],wire[index*512:index*512+512]);rows.append(row)
    if row['status']:raise RuntimeError('ROM rejected image sector: '+json.dumps(row))
@@ -163,9 +224,9 @@ def recovery(args):
 
 def main(argv=None):
  p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
- a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True)
+ a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc',help='Pinned Nix dtc1.8.1 executable; defaults to dtc in the preparation environment')
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
- a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='student');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0)
+ a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='student');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0);a.add_argument('--host-threads',type=int,default=1,help='Bounded host evaluation pool; default1, no change to virtual clock or event policy')
  for name in ('capacity','install','status','boot'):
   a=sub.add_parser(name);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--timeout',type=int,default=120);a.add_argument('--cycles',type=int,default=10000000);a.add_argument('--quantum',type=int,default=100000);a.add_argument('--transaction',type=lambda x:int(x,0),default=time.time_ns());a.add_argument('--continue-recovery',action='store_true',help='An earlier owner observed the ROM beacon; supply only future framed requests after restore. Every result still requires an actual CRC-checked receipt.')
   if name in ('install','status'):a.add_argument('--slot',type=int,choices=[0,1],required=True)
@@ -180,11 +241,12 @@ def main(argv=None):
    result={'boot_medium':str(args.boot_medium.resolve()),'bytes':BOOT_BYTES,'state':'blank raw backing; no image or metadata preinstalled'}
   elif args.command=='launch':
    if not 1<=args.quantum<=1000000 or not 1<=args.timeout<=7200:raise ValueError('Invalid bounded session resource limits')
+   if not 1<=args.host_threads<=64:raise ValueError('Host evaluation thread count must be1..64')
    args.backend='rtl';args.workload='product';args.profile=inputs.PROFILE
    sessions.serve(args,ProductRTL,ProductSession);return 0
   else:
    if not 1<=args.quantum<=1000000 or not 1<=args.cycles<=2000000000 or not 1<=args.timeout<=7200:raise ValueError('Invalid bounded recovery resource limits')
    result=recovery(args)
   print(json.dumps(result,indent=2));return 0
- except (OSError,ValueError,RuntimeError,KeyError,TimeoutError,struct.error) as e:p.error(str(e))
+ except (OSError,ValueError,RuntimeError,KeyError,TimeoutError,struct.error,subprocess.SubprocessError) as e:p.error(str(e))
 if __name__=='__main__':raise SystemExit(main())

@@ -15,13 +15,34 @@ sys.path.insert(0,str(ROOT/'scripts'))
 
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
-def validate_wasm_inputs(source,m):
+def validate_wasm_inputs(source,m,input_bundle=None):
     """Check the complete recorded portable build/generation closure on reuse.
 
     Generated binding bytes alone cannot certify unchanged generator policy.
     This checks actual files before packaging, without rebuilding the machine.
     The immutable packaged launch validator remains independent of checkout.
     """
+    archive=None;consumed={}
+    if input_bundle is not None:
+        from silicon_guest_bundle import read_json,inventory
+        input_bundle=Path(input_bundle).resolve()
+        archive=read_json(input_bundle/'bundle.json')
+        inventory(input_bundle,archive)
+    def check(path,want,label):
+        resolved=path
+        try:relative=path.relative_to(ROOT)
+        except ValueError:relative=None
+        if archive is not None and relative is not None:
+            from silicon_guest_bundle import origin_destination
+            try:resolved=input_bundle/origin_destination(archive,path,want)
+            except ValueError:
+                # A native archive need not consume browser-only sources.
+                # Their actual unchanged bytes must still match the original
+                # Wasm receipt; a changed checkout is never a fallback.
+                resolved=path
+        if sha(resolved)!=want:raise ValueError('Wasm input changed: '+label)
+        if relative is not None:
+            consumed[relative.as_posix()]={'path':resolved,'sha256':want}
     def inputs(key,relative):
         values=m.get(key)
         if not isinstance(values,dict) or not values:raise ValueError('Missing Wasm inputs: '+key)
@@ -33,7 +54,7 @@ def validate_wasm_inputs(source,m):
                 if path.is_absolute() or '..' in path.parts:raise ValueError('Escaping Wasm input: '+name)
                 path=ROOT/path
             elif not path.is_absolute():raise ValueError('Nonabsolute Wasm generated/tool input: '+name)
-            if sha(path)!=want:raise ValueError('Wasm input changed: '+name)
+            check(path,want,name)
     for key in ('portable_inputs','binding_generator_inputs','host_toolchain_inputs','host_runtime'):
         inputs(key,True)
     for key in ('sha256','configuration_includes','verilator_runtime_inputs'):
@@ -45,7 +66,7 @@ def validate_wasm_inputs(source,m):
         path=Path(item['path'])
         if path.is_absolute() or '..' in path.parts or not re.fullmatch('[a-f0-9]{64}',item['sha256']):
             raise ValueError('Malformed Wasm generation identity: '+key)
-        if sha(ROOT/path)!=item['sha256']:raise ValueError('Wasm generation input changed: '+key)
+        check(ROOT/path,item['sha256'],key)
     profile='sim/profiles/'+m['profile'].replace('/','-')+'.json'
     if m['binding_generator_inputs'].get(profile)!=m.get('profile_sha256'):
         raise ValueError('Wasm binding profile is not source bound')
@@ -61,6 +82,7 @@ def validate_wasm_inputs(source,m):
         raise ValueError('Incomplete Wasm output inventory')
     for name,want in outputs.items():
         if sha(source/name)!=want:raise ValueError('Wasm output changed: '+name)
+    return consumed
 
 def bundle(args):
     import silicon_guest
@@ -68,7 +90,8 @@ def bundle(args):
     from silicon_guest_bundle import read_json
     source=args.wasm_build.resolve();m=read_json(source/'build.json')
     if m.get('status')!='BUILT' or m.get('profile')!=args.profile:raise ValueError('Missing compatible Wasm build')
-    validate_wasm_inputs(source,m)
+    input_bundle=getattr(args,'wasm_input_bundle',None)
+    consumed=validate_wasm_inputs(source,m,input_bundle)
     guest_archive=getattr(args,'guest_bundle',None)
     if guest_archive is None:
         prepared={w:silicon_guest.prepared(w,args.profile) for w in ('notebook','initializer')}
@@ -85,11 +108,22 @@ def bundle(args):
     result={'schema':'lemmasim-browser-bundle/1','profile':args.profile,'width':1650,'height':2200,
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
-            'wasm_build_sha256':sha(source/'build.json'),'workloads':{}}
+            'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
     if guest_archive is not None:
         result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),
             'source_commit':prepared['notebook']['native_bundle']['source_commit'],
             'scope':'unchanged validated archived genuine guest on current source-bound RTL/Wasm; not fresh target compilation'}
+    if input_bundle is not None:
+        result['wasm_consumed_source_reuse']={'input_bundle_sha256':sha(Path(input_bundle)/'bundle.json'),
+            'scope':'unchanged Wasm artifact with exact recorded consumed source versions; no current-machine compilation or execution qualification'}
+        if guest_archive is not None:
+            result['guest_archive']['scope']='validated archived genuine guest on unchanged Wasm artifact; exact consumed source versions retained; not fresh target or machine compilation'
+    result['wasm_project_inputs']={name:{'path':'wasm-sources/'+name,'sha256':item['sha256']}
+                                 for name,item in consumed.items()}
+    for name,item in consumed.items():
+        destination=out/'wasm-sources'/name;destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(item['path'],destination)
+        if sha(destination)!=item['sha256']:raise ValueError('Wasm consumed input changed while archiving: '+name)
     result['rom']=artifact(prepared['notebook']['rom'],'boot.bin')
     for w,data in prepared.items():
         entry=data['workloads'][w]
@@ -149,6 +183,35 @@ def validated_bundle(directory):
     if build.get('status')!='BUILT' or build.get('profile')!=m['profile']:raise ValueError('Incompatible Wasm build')
     for name in ('machine.mjs','machine.wasm'):
         if build.get('outputs',{}).get(name)!=files[name]:raise ValueError('Unbound Wasm output '+name)
+    consumed=m.get('wasm_project_inputs')
+    if consumed is not None:
+        if not isinstance(consumed,dict) or not consumed:raise ValueError('Missing archived Wasm source inventory')
+        expected={}
+        for key in ('portable_inputs','binding_generator_inputs','host_toolchain_inputs','host_runtime'):
+            values=build.get(key)
+            if not isinstance(values,dict) or not values:raise ValueError('Missing original Wasm source identity: '+key)
+            expected.update(values)
+        for key in ('build_driver','upstream_patch'):
+            item=build.get(key,{})
+            expected[item.get('path')]=item.get('sha256')
+        # Absolute project paths in the original source manifest retain their
+        # spelling. Match the archived relative path to its original digest;
+        # external tool/store/dependency inputs remain pinned by that receipt.
+        project_root=m.get('wasm_project_root')
+        if not isinstance(project_root,str) or not Path(project_root).is_absolute() or '..' in Path(project_root).parts:
+            raise ValueError('Invalid original Wasm project root')
+        for key in ('sha256','configuration_includes','verilator_runtime_inputs'):
+            values=build.get(key)
+            if not isinstance(values,dict) or not values:raise ValueError('Missing original Wasm absolute input identity: '+key)
+            for path,digest in values.items():
+                try:relative=Path(path).relative_to(project_root).as_posix()
+                except ValueError:continue
+                expected[relative]=digest
+        if set(consumed)!=set(expected):raise ValueError('Incomplete archived Wasm consumed source closure')
+        for name,digest in expected.items():
+            item=consumed[name]
+            if not isinstance(item,dict) or item!={'path':'wasm-sources/'+name,'sha256':digest} or files.get(item['path'])!=digest:
+                raise ValueError('Unbound archived Wasm consumed source: '+str(name))
     allowed=set(files)|{'bundle.json','wasm-build.json','DEPENDENCIES.txt'}
     for path in directory.rglob('*'):
         if path.is_symlink() or (path.is_file() and path.relative_to(directory).as_posix() not in allowed):raise ValueError('Unlisted browser bundle artifact')

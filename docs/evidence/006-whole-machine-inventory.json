@@ -531,8 +531,72 @@
       "scope": "final frozen code616 relevant pinned host tests+metadata,613 inputs unchanged; not target/physical acceptance",
       "status": "PASS",
       "source_commit": "de21f0c5ccc5e21a7c68082903dd7b585396a78d"
+    },
+    {
+      "path": "build/silicon/task006-managed-v3-canonical-a1/cold/result.json",
+      "bytes": 36539,
+      "sha256": "9a36db478af73c071d7f25cc0713137c25032e6bc73b754d2f94fbc6d479bf4c",
+      "status": "PASS_READY",
+      "scope": "actual canonical RTL cold guest Ready plus completed full refresh and acknowledged initial store commit; complete independent expected-pixel and connected workflow qualification remain separate"
+    },
+    {
+      "path": "build/silicon/task006-managed-v3-canonical-a1/workflow-reobserver-a2/result.json",
+      "bytes": 2790,
+      "sha256": "4cc73dceeedf74a61b747e59f1efe3e1861dfe7980c24c8b3d72974f827c1085",
+      "status": "PASS_PEN_SAVE_REOBSERVATION",
+      "scope": "Strict three-sample raw-byte recovery and all3.63M controller pixels from retained actualcanonicalRTL Save; no new machine execution/edit/navigation/cold/failure claim"
+    },
+    {
+      "path": "build/browser/task006-managed-v3-browser-cold-a1/result.json",
+      "bytes": 1878,
+      "sha256": "4a768c8f1704a7c91a77a37ebd31009a2797cfeaf004dc083fa264c8ec182deb",
+      "status": "FAIL_NOT_READY_DEADLINE",
+      "scope": "actual local browser canonical RTL cold prefix; no Ready, writing, course or durable reopen acceptance"
+    },
+    {
+      "path": "build/task006-sums-math-a1/result.json",
+      "bytes": 27101,
+      "sha256": "602023f80fdbd655baa60ba2be87e16250894cd75bb20d5ec18488e81d1abcac",
+      "status": "PASS",
+      "scope": "actual elaborated Lean RV64 bounded exact course/record/ink workflow; managed source language, proof kernel and complete G5\u2013G7 remain unfinished; isolated arithmetic is qualified only by an observed server path"
+    },
+    {
+      "path": "build/task006-sums-v3-migration-a1/result.json",
+      "bytes": 20609,
+      "sha256": "7bf6ce2a2065d9abceb60477d634c78992ccee7da5e9772f7aaed1cf8fc8a165",
+      "status": "PASS",
+      "scope": "guest historical migration and bounded original offline review with uncertain understanding; no learning-gain or complete learner/tutor claim"
+    },
+    {
+      "path": "build/task006-sums-oom-a1/result.json",
+      "bytes": 11261,
+      "sha256": "74876e681495eb2705aacb675278f7362373a74f44f03641bc5bde679dcec049",
+      "status": "PASS",
+      "scope": "actual ordinary Lean payload constructor OOM in isolated RV64 Arithmetic; bounded checked heap, pen/Save/cold recovery; general managed language/proof kernel remain unfinished"
+    },
+    {
+      "path": "build/boot/task006-product-install-a1/installation-observation.json",
+      "bytes": 933,
+      "sha256": "b2e979188bb551ba5fea59eae3b3107bd7de37f291df08f54681a27a233c312e",
+      "status": "PASS",
+      "scope": "actual Lean ROM stage/validate/publication, independent opaque payload and metadata CRC oracle; kernel boot/health not yet qualified"
+    },
+    {
+      "path": "build/boot/task006-product-install-a1/handoff-observation.json",
+      "bytes": 956,
+      "sha256": "ee9fe850cde7582473e2ed46eedc8afb0b317a66b7db31f80bcdf80055cc8d69",
+      "status": "PASS",
+      "scope": "independent observed RAM matches exact audited opaque PT_LOAD files, BSS zero and independently CRC-validated discovery after actual ROM/NV handoff; no full-kernel-health claim"
+    },
+    {
+      "path": "build/task006-modern-power-export-a1/qualification-a3.json",
+      "bytes": 1338,
+      "sha256": "8d9472e8aac5d4f515841fed0402939c242846a48d199e8d4d5da57ff839eb6d",
+      "status": "PASS",
+      "scope": "Actual emitted LLVM identity/owned endpoint/caller/gate observer; no target execution or Ready claim"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
-  "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation"
+  "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
+  "continuation_note": "October12 continuation: actual canonical RTL Ready/pen/Save and isolated Sums course/migration/OOM observations; browser Ready deadline failure retained. Product installation/handoff and modern Power artifact qualification remain separate from completed product workflow. See current checkpoint."
 }

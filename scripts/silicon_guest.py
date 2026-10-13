@@ -11,11 +11,12 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
-NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook'})
+NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook'})
 POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
-USB_CONFIGURATIONS={'usb':'lemmasim-silicon-usb-link-probe','notebook':'lemmasim-silicon-usb-notebook','initializer':'lemmasim-silicon-usb-initialize'}
+USB_CONFIGURATIONS={'usb':'lemmasim-silicon-usb-link-probe','notebook':'lemmasim-silicon-usb-notebook','initializer':'lemmasim-silicon-usb-initialize',
+                    'usb-bulk-notebook':'lemmasim-silicon-usb-bulk-notebook','usb-bulk-initializer':'lemmasim-silicon-usb-bulk-initialize'}
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
 def configurations(name=None):
     profile(name)
@@ -397,9 +398,14 @@ def build(args):
             for key,old_entry in previous['workloads'].items():
                 if key in selected:
                     try:
-                        for item in old_entry.values():validate(item)
+                        for field,item in old_entry.items():
+                            if field!='guest_source_archive':validate(item)
                         old_build=json.loads(validate(old_entry['build']).read_text())
-                        verify_guest_build(validate(old_entry['build']).parent,selected[key],old_build['optimization'])
+                        old_archive=old_entry.get('guest_source_archive')
+                        if old_archive is not None:
+                            evidence=guest_source_archive(validate(old_entry['build']).parent,old_archive['source_root'],selected[key],old_build['optimization'],name)
+                            if evidence!=old_archive:raise ValueError('Original archived guest association changed')
+                        else:verify_guest_build(validate(old_entry['build']).parent,selected[key],old_build['optimization'])
                         if key in NOTEBOOK_WORKLOADS:validate(old_entry['capacity'])
                     except (OSError,ValueError,KeyError):
                         continue

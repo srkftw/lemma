@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Host-only actual-emitted-IR negatives for document4's checked length lookup."""
+"""Host-only actual-emitted-IR negatives for checked document4/5 fetch lengths."""
 from __future__ import annotations
 import argparse
 import copy
@@ -39,7 +39,7 @@ def verify_object(directory:Path)->dict:
         except Core0Error as error:negatives.append({'name':name,'rejection':str(error)})
         else:raise Core0Error('Changed object authority admitted: '+name)
     for name,key,value in [('wrong-owner','source','Lemma.Applications.Notebook.other'),
-                           ('wrong-extent','bytes',32),('wrong-content','values',[1856,2496,1856])]:
+                           ('wrong-extent','bytes',selected['bytes']+8),('wrong-content','values',[1856,2496,1856])]:
         changed=copy.deepcopy(kwargs);row=next(row for row in changed['readonly_tables'] if row['source'].endswith('Notebook.openCourse'));row[key]=value
         try:validate_backend_jump_tables(**changed)
         except Core0Error as error:negatives.append({'name':name,'rejection':str(error)})
@@ -57,24 +57,31 @@ def verify(directory:Path)->dict:
     unit=json.loads((directory/'unit.json').read_text())
     ir=(directory/'program.opt.ll').read_text()
     sites,tables=validate_readonly_pmp_lookup(ir,unit,optimized=True)
-    lengths=[row for row in tables if row.get('literal_schema')=='document-v4-length-v1']
-    if len(lengths)!=1 or lengths[0]['values']!=[1856,2496,2496]:
-        raise Core0Error('Actual notebook lacks its single exact document4 length lookup')
+    lengths=[row for row in tables if row.get('literal_schema') in ('document-v4-length-v1','document-v5-length-v1')]
+    admitted={'document-v4-length-v1':[1856,2496,2496],
+              'document-v5-length-v1':[1856,2496,2496,2496]}
+    if len(lengths)!=1 or lengths[0]['values']!=admitted[lengths[0]['literal_schema']]:
+        raise Core0Error('Actual notebook lacks its single exact document length lookup')
+    values=lengths[0]['values'];count=len(values)
+    literal='['+', '.join('i64 '+str(value) for value in values)+']'
+    def literal_change(index,value):
+        altered=list(values);altered[index]=value
+        return changed(literal,'['+', '.join('i64 '+str(v) for v in altered)+']')
     target=lengths[0]['function'];read=next(row['symbol'] for row in unit['functions']
         if re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Applications.Notebook.readObject')
     def changed(old:str,new:str)->str:
         if ir.count(old)!=1:raise Core0Error('Mutation stimulus is not one actual emitted site: '+old)
         return ir.replace(old,new,1)
     cases={
-      'wrong-version2-size':changed('[i64 1856, i64 2496, i64 2496]','[i64 832, i64 2496, i64 2496]'),
-      'wrong-version4-size':changed('[i64 1856, i64 2496, i64 2496]','[i64 1856, i64 2496, i64 1856]'),
+      'wrong-version2-size':literal_change(0,832),
+      'wrong-newest-version-size':literal_change(count-1,1856),
       'wrong-version-origin':changed('%switch.tableidx = add i64 %action.call.value39, -2','%switch.tableidx = add i64 %action.call.value39, -1'),
-      'weaker-bound':changed('%0 = icmp ult i64 %switch.tableidx, 3','%0 = icmp ult i64 %switch.tableidx, 4'),
+      'weaker-bound':changed(f'%0 = icmp ult i64 %switch.tableidx, {count}',f'%0 = icmp ult i64 %switch.tableidx, {count+1}'),
       'guard-bypass':changed('br i1 %0, label %switch.lookup, label %action.if.merge.20','br i1 %0, label %action.if.merge.20, label %switch.lookup'),
       'different-read-destination':changed(f'@{read}(i64 %call22, i64 3313664, i64 %switch.load)',f'@{read}(i64 %call22, i64 3313672, i64 %switch.load)'),
       'length-ignored':changed(f'@{read}(i64 %call22, i64 3313664, i64 %switch.load)',f'@{read}(i64 %call22, i64 3313664, i64 2496)'),
       'table-reference-escape':ir+'\ndefine i64 @unadmitted_table_use() {\nentry:\n'
-          +'  %p = getelementptr inbounds [3 x i64], ptr @switch.table.'+target+', i64 0, i64 0\n'
+          +f'  %p = getelementptr inbounds [{count} x i64], ptr @switch.table.'+target+', i64 0, i64 0\n'
           +'  %v = load i64, ptr %p, align 8\n  ret i64 %v\n}\n',
     }
     failed=[]

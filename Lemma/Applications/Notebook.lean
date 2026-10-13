@@ -6,6 +6,8 @@ import Lemma.User.CapabilityConsole
 import Lemma.Courses.Arithmetic
 import Lemma.Services.Arithmetic.ClientV2
 import Lemma.Services.Arithmetic.ClientV3
+import Lemma.Services.Arithmetic.ClientV4
+import Lemma.Documents.MathematicsBytes
 
 /-! Capability-isolated pen notebook. Pixels, input interpretation, raw ink,
 page/edit records and save publication execute in compiled User Lean. Two
@@ -398,7 +400,8 @@ private def redraw : Action :=
   .bind statusBar fun s _ => if statusFailed s = true then .done s 0 else
   .bind clearDirtyTiles fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
-  .bind (Surface.uploadAll surface width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 584) fun s bulk => if statusFailed s = true then .done s 0 else
+  .bind (if bulk = 1 then Surface.uploadAllBulk surface width height else Surface.uploadAll surface width height) fun s _ => if statusFailed s = true then .done s 0 else
   dirty 0 0 width height
 
 private def loadPage (page : UInt64) : Action :=
@@ -673,27 +676,34 @@ private def allocateCourse : Action :=
 -- Main initialization sets it before any course request or document load.
 private def pollArithmetic (transaction incoming outgoing request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 3 then Lemma.Services.Arithmetic.ClientV3.pollCall transaction incoming outgoing request
+  if selection = 4 then Lemma.Services.Arithmetic.ClientV4.pollCall transaction incoming outgoing request
+  else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.pollCall transaction incoming outgoing request
   else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.pollCall transaction incoming outgoing request else failed
 
 private def callArithmetic (endpoint outgoing document request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 3 then Lemma.Services.Arithmetic.ClientV3.beginCall endpoint outgoing document request
+  if selection = 4 then Lemma.Services.Arithmetic.ClientV4.beginCall endpoint outgoing document request
+  else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.beginCall endpoint outgoing document request
   else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.beginCall endpoint outgoing document request else failed
 
 private def completeArithmetic (revision goal outcome request budget : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 3 then Lemma.Documents.Mathematics.completeExecutionSums mathematics revision goal outcome request budget
+  if selection = 4 then Lemma.Documents.MathematicsBytes.completeExecution mathematics revision goal outcome request budget
+  else if selection = 3 then Lemma.Documents.Mathematics.completeExecutionSums mathematics revision goal outcome request budget
   else if selection = 2 then Lemma.Documents.Mathematics.completeExecution mathematics revision goal outcome request budget else failed
 
 private def createArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 3 then Lemma.Documents.Mathematics.createSums mathematics ns page
+  if selection = 4 then Lemma.Documents.MathematicsBytes.create mathematics ns page
+  else if selection = 3 then Lemma.Documents.Mathematics.createSums mathematics ns page
   else if selection = 2 then Lemma.Documents.Mathematics.createCurrent mathematics ns page else failed
 
 private def upgradeArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 3 then
+  if selection = 4 then
+  .bind (Lemma.Documents.MathematicsBytes.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Documents.MathematicsBytes.upgrade mathematics
+  else if selection = 3 then
   .bind (Lemma.Documents.Mathematics.validateSums mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
   Lemma.Documents.Mathematics.upgradeSums mathematics
   else if selection = 2 then
@@ -786,6 +796,7 @@ private def openCourse : Action :=
     .bind (if version = 2 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes
       else if version = 3 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 4 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
+      else if version = 5 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
     upgradeArithmetic ns page
     else .done readStatus 0) fun s upgraded =>
@@ -1120,11 +1131,12 @@ private def initializeMedium : Action :=
   .bind (CapabilityConsole.record console 0x41f sequence 0 0 0) fun s _ =>
   if statusFailed s = true then .done s 0 else Syscall.exit 0
 
-private def mainWithExecution (bootArgument selection : UInt64) : Action :=
+private def mainWithExecution (bootArgument selection bulkMode : UInt64) : Action :=
   if 3 < bootArgument then failed else
-  if (if selection = 2 then true else selection = 3) = false then failed else
+  if (if selection = 2 then true else if selection = 3 then true else selection = 4) = false then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 selection) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 bulkMode) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
@@ -1156,6 +1168,7 @@ private def mainWithExecution (bootArgument selection : UInt64) : Action :=
   .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if bulkMode = 1 then Surface.allocateBulk else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
@@ -1167,11 +1180,23 @@ private def mainWithExecution (bootArgument selection : UInt64) : Action :=
   if statusFailed s = true then .done s 0 else .loop step
 
 /-- Historical software selection: bootargs0..3 keep Protocol2/document3. -/
-def main (bootArgument : UInt64) : Action := mainWithExecution bootArgument 2
+def main (bootArgument : UInt64) : Action := mainWithExecution bootArgument 2 0
 
 /-- Explicit sums software selection on the unchanged canonical machine. -/
 def mainSums (bootArgument : UInt64) : Action :=
-  if bootArgument = 2 then mainWithExecution bootArgument 3 else
-  if bootArgument = 3 then mainWithExecution bootArgument 3 else failed
+  if bootArgument = 2 then mainWithExecution bootArgument 3 0 else
+  if bootArgument = 3 then mainWithExecution bootArgument 3 0 else failed
+
+/-- Surface-v2 is selected by its own immutable software deployment. Historical
+main/mainSums roots keep their legacy upload and reject operation5. -/
+def mainSumsBulk (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithExecution bootArgument 3 1 else
+  if bootArgument = 3 then mainWithExecution bootArgument 3 1 else failed
+
+/-- The bytes deployment selects a distinct Protocol4/document5 authority.
+Surface-v2 transports exactly the same owned controller pixels. -/
+def mainBytesBulk (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithExecution bootArgument 4 1 else
+  if bootArgument = 3 then mainWithExecution bootArgument 4 1 else failed
 
 end Lemma.Applications.Notebook

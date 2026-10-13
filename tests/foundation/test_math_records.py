@@ -83,6 +83,30 @@ class MathematicsEvidenceTests(unittest.TestCase):
             changed=list(words);changed[index]=value
             with self.assertRaises(ValueError):self.inspect(changed)
 
+    def test_bytes_version_retains_older_origins_and_binds_its_distinct_resources(self):
+        words=self.current_record(True);words[1]=5;words[233]=3
+        self.assertEqual(self.inspect(words)['execution']['active']['origin'],'IsolatedManaged')
+        older=[45,*math_oracle.SUMS_EXECUTION_IDENTITIES,8,0,3]
+        words[240:248]=older;words[248:256]=older
+        self.assertEqual(self.inspect(words)['execution']['active']['origin'],'IsolatedSums')
+        slot=[46,*math_oracle.BYTES_EXECUTION_IDENTITIES,8,0,4]
+        words[240:248]=slot;words[248:256]=slot
+        active=self.inspect(words)['execution']['active']
+        self.assertEqual((active['origin'],active['runtime'],active['resources']),
+                         ('IsolatedBytes','lemma-owned-arena-bytes-cookie-v1',
+                          'lemma-arithmetic-bytes-resource-v1'))
+        for index in [0,233,*range(240,256)]:
+            changed=list(words);changed[index]+=1
+            with self.assertRaises(ValueError):self.inspect(changed)
+        for version,extension in [(3,1),(4,2)]:
+            changed=list(words);changed[1]=version;changed[233]=extension
+            with self.assertRaises(ValueError):self.inspect(changed)
+        changed=list(words);changed[5]=12;changed[12]=changed[13]=0
+        changed[240:248]=[0]*8
+        self.assertEqual(self.inspect(changed)['execution']['history'][0]['request'],46)
+        changed[240:248]=slot
+        with self.assertRaises(ValueError):self.inspect(changed)
+
     def test_actual_rational_values_and_revision_are_load_bearing(self):
         words=self.record()
         self.assertEqual(self.inspect(words)['outcome'],1)

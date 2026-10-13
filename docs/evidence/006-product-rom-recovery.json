@@ -1,7 +1,7 @@
 {
   "schema": "lemma-product-rom-recovery/1",
   "status": "PASS",
-  "scope": "genuine immutable ROM compiler/controller/recovery transport and same-backend private continuation; full product image boot/update qualification OPEN",
+  "scope": "genuine ROM recovery/private continuation, actual opaque full image installation and inactive-slot publication/reconciliation/handoff, plus interrupted payload fallback; healthy Product notebook and confirmation OPEN",
   "rom": {
     "build": "build/boot/task006-product-rom-a13",
     "build_sha256": "9776624b2b09fb4ce2ff38d4348ead5207e2eec37ca4d8dacbc3ae9e95dc8d87",
@@ -222,14 +222,17 @@
     "a8 executable literal pool",
     "a10 SHF_MERGE observer inventory",
     "product-beacon a6 batch exit3 at declared cycle ceiling despite beacon",
-    "private-fork observer a1 waited for pre-snapshot output"
+    "private-fork observer a1 waited for pre-snapshot output",
+    "Product2preparedschema1 omitted digitaldescriptor:actualDescriptor.invalid169",
+    "Product3actualSloadaccessfault5 atBootNV10012000 thenSdoublefault51",
+    "trialhandoff initialsnapshotoracle CRC32 vsnativeCRC64 mismatch (snapshot unchanged)",
+    "originalhostRecoveryClient reused a pastUARTsuccess receipt"
   ],
   "remaining": [
-    "actual full image installation and ROM\u2192loaded kernel boot",
-    "trial confirmation after real guest full initial controller frame",
-    "payload/metadata/confirmation interruption and watchdog/brownout recovery",
+    "healthy Product notebook Ready and exact recovered acknowledged documents/display",
+    "actual health confirmation and interrupted confirmation/watchdog/brownout recovery",
     "cryptographic owner authentication and durable trust state",
-    "product local bundle/distribution closure"
+    "self-contained product distribution closure"
   ],
   "repaired_rom": {
     "build": "build/boot/task006-product-rom-a14",
@@ -258,16 +261,16 @@
     "actual_policy_fixture": "build/task006-product-boot-draft-a1/recovery-status-source-tests-a1.log"
   },
   "product_guest_artifacts": {
-    "build": "build/kernel/task006-product-notebook-a2",
+    "build": "build/kernel/task006-product-notebook-a3",
     "configuration": "lemmasim-silicon-product-notebook",
-    "image_sha256": "60232247dd130bb1ebf5b988835f25a552cf6112308b68a03d2c21ada6563834",
+    "image_sha256": "20255900a08cda54affbb08a069b53ce3a7347cf8d74d61cdd8984c99402c748",
     "dtb_sha256": "b4e5cae42e35597eb7bd34f818eea6f744fcdb6a7f2cb0f0104fb18844a78e11",
-    "build_sha256": "98365ea00c5d0a4f1def5fbd5e2f76ce7273683a72f4d4a0df8978a29417a2f8",
-    "audit_sha256": "66016d832c56c99571e1ecd42832ab4eccda2d0655501afb1e1a295ebd933826",
-    "source_archive_sha256": "11f64ddbc0fe10ca7c6eecfe54222921d87c6255a236fd77fcfdf9f603f19bb9",
+    "build_sha256": "da1fe60cf3c846097dbc8bcc21bf393d2878700f5ac157ccb26270b71fe4f77c",
+    "audit_sha256": "11316e40012183d4c6025866b879f69a5b8bc71b8778cdd40aa4619324aab5bd",
+    "source_archive_sha256": "e65a70bd782c7b9ec658e1a85585c4f96747a6f0e9d0f4e4d67e0fb5334ba884",
     "source_inputs": 244,
-    "status": "BUILD_AND_FULL_AUDIT_PASS",
-    "actual_product_boot": "RUNNING_UNQUALIFIED",
+    "status": "BUILD_AND_FULL_AUDIT_PASS_RUNTIME_STARTUP_FAIL",
+    "actual_product_boot": "FAIL_PMP_BOOT_NV_APERTURE",
     "preserved_failure": "build/kernel/task006-product-notebook-a1/audit-failure.json",
     "independent_retained_observer_diagnostics": "build/kernel/task006-product-notebook-a1/artifact-diagnostic-a2.json",
     "selected_trap_stack_bytes": 2112,
@@ -275,13 +278,173 @@
   },
   "full_image_campaign": {
     "session": "build/boot/task006-product-install-a1/session",
-    "status": "RUNNING",
+    "status": "INSTALLATION_AND_HANDOFF_PASS_KERNEL_DISCOVERY_FAIL",
     "package": "build/boot/task006-product-notebook-package-a1/package.json",
     "blank_boot_medium": true,
     "user_journal_source": "build/silicon/task006-loader-cold-a1/fast-medium.raw",
     "private_user_copy": true,
     "no_host_image_preload": true,
     "bound_receipt": "build/boot/task006-product-installation-work-bound-a1.json",
-    "result_scope": "actual installation/handoff/confirmation/updates remain open until machine observations"
+    "result_scope": "actual152M/872.99s installation barrier and21.2M ROM handoff; missing static digital descriptor caused actualDescriptor.invalid169; fullReady/confirmation notpassed",
+    "installation": {
+      "path": "build/boot/task006-product-update-a1/../task006-product-install-a1/installation-observation.json",
+      "sha256": "b2e979188bb551ba5fea59eae3b3107bd7de37f291df08f54681a27a233c312e",
+      "status": "PASS"
+    },
+    "handoff": {
+      "path": "build/boot/task006-product-update-a1/../task006-product-install-a1/handoff-observation.json",
+      "sha256": "ee9fe850cde7582473e2ed46eedc8afb0b317a66b7db31f80bcdf80055cc8d69",
+      "status": "PASS"
+    },
+    "original_kernel_observer": "build/boot/task006-product-install-a1/kernel-startup-result.json",
+    "corrected_kernel_observer": "build/boot/task006-product-install-a1/kernel-startup-reobserver-a1.json"
+  },
+  "inactive_image_update": {
+    "session": "build/boot/task006-product-update-a1/session",
+    "source_guest_build": "build/kernel/task006-product-notebook-a3",
+    "package": "build/boot/task006-product-notebook-package-a2/package.json",
+    "native_identity": "f0ce9cd49559eb11717c7f9215eb2517a28055233c8c76c1f7e9bebce5a84f31",
+    "rom_identity": "efd43d2ea638931e3232428511f4c89a1f2593f891e45b10bdae91b8efd8fb34",
+    "bound_receipt": "build/boot/task006-product-update-a1/work-bound-and-inputs.json",
+    "publication": {
+      "path": "build/boot/task006-product-update-a1/publication-observation.json",
+      "sha256": "843ae78e1cbc99126b36bdcfed9bcdcccac0b64160c61308d23c5ad48dd627fd",
+      "status": "PASS"
+    },
+    "cold_reconciliation": {
+      "path": "build/boot/task006-product-update-a1/reconciliation-observation.json",
+      "sha256": "fce32e0cd0cf6d39c7d6fe4329b8a0f3c115e38f750b15c387fdb50b01ffc7a5",
+      "status": "PASS"
+    },
+    "durable_attempt_before_handoff": {
+      "path": "build/boot/task006-product-update-a1/durable-attempt-observation.json",
+      "sha256": "13192ca6a719afe3f36bf73a5fb9885446e3caa2930be048b035054e1ec33e3b",
+      "status": "PASS"
+    },
+    "handoff": {
+      "path": "build/boot/task006-product-update-a1/trial-handoff-observation.json",
+      "sha256": "502c267c0cb78b9ff6150bbff8ef24a84cc91b5fe5bd72ea6fa6f70121fd7855",
+      "status": "PASS"
+    },
+    "actual_kernel_failure": {
+      "path": "build/boot/task006-product-update-a1/kernel-startup-result.json",
+      "sha256": "f35a7e8e41dccada520fcc193a67f2a5a2333c499ebe3059d9e018856c3abb9e",
+      "status": "FAIL"
+    },
+    "scope": "independentoldslot/metadata/userjournal bytes exact; real cold reset+fresh status barrier/fullvalidation; trial1/gen3/attempt1 committed before actualload; nofullhealthyReady/confirmation",
+    "measured": {
+      "publication_cycles": 151900000,
+      "publication_host_seconds": 935.3354909507325,
+      "reconciliation_cycles": 17200000,
+      "trial_load_cycles": 21300000,
+      "native_peak_rss_kib": 153192,
+      "snapshot_bytes": 145937534,
+      "metadata_progression": "gen1 confirmed0\u2192gen2 trial1/attempt0\u2192gen3 trial1/attempt1; actual barrier beforehandoff",
+      "user_journal": "original seq5 sourceSHA1855ad13\u2026 byte-identical throughupdate/reconcile/load"
+    },
+    "actual_first_fault": {
+      "cause": 5,
+      "value": 268509184,
+      "pc": 2149600096,
+      "satp": 0,
+      "fatal": 51,
+      "cycle": 199624679
+    }
+  },
+  "host_interface_repair": {
+    "contract_version": "lemma-product-digital-discovery-v1",
+    "prepared_schema": 2,
+    "descriptor_bytes": 256,
+    "dtb_bytes": 2873,
+    "descriptor_sha256": "7649e451f1254c666fe8e9004adbf76e731f2214ff1eba5fda65cc9cff4953f4",
+    "dtb_sha256": "b4e5cae42e35597eb7bd34f818eea6f744fcdb6a7f2cb0f0104fb18844a78e11",
+    "actual_artifact_mutations": "build/boot/task006-product-profile-mutations-a1/result.json",
+    "mutants_rejected": 10,
+    "fresh_receipt_rule": "newrequests acceptonly future UARTafterinjection boundary, includingreusedexplicitTX; partialboundary failsbeforeinject",
+    "original_stale_receipt_counterexample": "build/task006-product-boot-draft-a1/receipt-cursor-original-a1.log",
+    "focused_wire_image_archive_tests": {
+      "count": 8,
+      "path": "build/task006-product-boot-draft-a1/host-image-wire-a8.log",
+      "sha256": "5fef53c19add8f4acab58c8007a344948b633c2cc6335dc75ba36fdcdcf6f085"
+    },
+    "native_host_threads": 1,
+    "scope": "fixedhardwareprofile descriptor only; nohostkernel/DTBRAMpreload orA/B policy"
+  },
+  "product_pmp_repair": {
+    "contract_version": "lemma-product-pmp-v1",
+    "status": "SOURCE_AND_HOST_GEOMETRY_PASS_RV64_NOT_YET_QUALIFIED",
+    "pmpaddr8": 67127423,
+    "pmpcfg2": 27,
+    "aperture": [
+      268509184,
+      268510208
+    ],
+    "rights": "RW/NX unlocked; S/U pagepermissions remain enforced",
+    "host_fixture": "build/task006-product-boot-draft-a1/product-pmp-host-a2.log",
+    "legacy_startup": "false selection byte-for-byte structuredinstructionarray unchanged",
+    "failure_readback": "actualcsrreadback branches toexistingmachinefatal",
+    "remaining": "freshgenuineProductimage audit and actualBootNV S-modeaccess/healthyboot"
+  },
+  "payload_interruption": {
+    "status": "PASS",
+    "receipt": "build/boot/task006-product-payload-interrupt-a1/fallback-observation.json",
+    "sha256": "ffdcf23258ceadfc798e2f9bde6d86dd3a2f0ada8ac8230977a55303d284d30f",
+    "bound": "build/boot/task006-product-payload-interrupt-a1/bound.json",
+    "stage": {
+      "cycles": 200000,
+      "host_seconds": 0.6551101980148815,
+      "receipt_transaction": 1001,
+      "observed_write": 2700,
+      "durable_barrier": 2697,
+      "installation_acknowledged": false
+    },
+    "fallback": {
+      "cycles": 21500000,
+      "receipt_transaction": 1002,
+      "slot": 0,
+      "image_id": 1970324836974593,
+      "generation": 3,
+      "trial": 0,
+      "metadata_attempts": 1,
+      "program_files_bss_discovery_exact": true
+    },
+    "scope": "Private exact restore followed by actual inactive DTB write and cold reset without publication; ROM rejected the changed image and loaded the confirmed audited image through NV. The old image has a retained startup fault; no healthy kernel or document recovery claim.",
+    "original_media_unchanged": true,
+    "private_process_destroyed_and_reaped": true,
+    "preserved_observer_failure": "build/boot/task006-product-payload-interrupt-a1/fallback-observer-failure-a1.json"
+  },
+  "metadata_interruption": {
+    "status": "PASS",
+    "receipt": "build/boot/task006-product-metadata-interrupt-a1/metadata-observation.json",
+    "sha256": "203c59a7400b16bd7c2dbf76588f8e72b72461e30ca6932e028f69498596759f",
+    "bound": "build/boot/task006-product-metadata-interrupt-a1/bound.json",
+    "pre_barrier": {
+      "cycles": 109900,
+      "host_seconds": 0.8882094480213709,
+      "observed_metadata_write": 2700,
+      "durable_barrier": 2697,
+      "handoff_acknowledged": false
+    },
+    "restart": {
+      "cycles": 21300000,
+      "host_seconds": 71.86458475101972,
+      "selected_generation": 3,
+      "selected_attempts": 1,
+      "published_generation": 4,
+      "published_attempts": 2,
+      "metadata_write": 2703,
+      "durable_barrier": 2704,
+      "loaded_slot": 1,
+      "loaded_image_id": 1970324836974594,
+      "exact_elf_bss_discovery_context": true
+    },
+    "capture": {
+      "one_request_and_completion_per_id": true,
+      "no_resubmission_of_interrupted_metadata_write": true,
+      "requests_and_outcomes_crc64_checked": true
+    },
+    "scope": "Observed but unacknowledged metadata bytes may survive reset. Actual ROM revalidation and selection retain that attempt, then another barrier precedes trial loading; both payload slots remain exact. No healthy kernel or physical persistence guarantee.",
+    "private_process_destroyed_and_reaped": true,
+    "preserved_observer_failure": "build/boot/task006-product-metadata-interrupt-a1/boundary-observer-failure-a1.json"
   }
 }

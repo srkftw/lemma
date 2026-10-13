@@ -165,6 +165,22 @@ and permissions, owned/pinned tables, version/header mutations, legacy absence
 and selector read/fault behavior, and rollback at each new mapping boundary.
 This host result is separate from linked RV64 and actual S-mode confirmation.
 
+`lemma-product-pmp-v1` adds a separate ninth PMP entry for this same NV
+aperture. Structured startup selects it only for the explicit normal Product
+supervisor deployment: `pmpaddr8=0x0400487f`, `pmpcfg2=0x1b` grant NAPOT
+`0x10012000..0x10012400`, RW/NX, unlocked. It clears cfg2 before programming,
+checks real M-mode readbacks, and enters the existing machine-fatal path if
+either differs. Historical startup keeps its exact eight entries, cfg0 and
+instruction sequence; it gains neither cfg2 nor a larger device interval.
+The canonical core has sixteen implemented entries. U access still requires
+its page-table U bit, which is clear on the Product device alias.
+
+The original Product3 kernel read NV identity with SATP zero and took actual
+load-access fault5 at `0x10012000`, followed by supervisor-double-fault51.
+Its recorded state demonstrated that the existing PMP entry7 ended exactly
+at that address. The separate entry repairs that missing startup authority;
+host geometry tests alone do not qualify the subsequent RV64 boot.
+
 ## Qualification boundaries
 
 The local command surface is `scripts/lemmasim product --help`. Preparation
@@ -176,7 +192,7 @@ redistribution bundle or a new licensing grant.
 ```sh
 nix develop --no-write-lock-file --command python3 scripts/build_product_boot.py \
   --work-dir build/boot/my-rom --timeout 300
-python3 scripts/lemmasim product prepare \
+nix develop --no-write-lock-file --command python3 scripts/lemmasim product prepare \
   --native-build build/silicon/my-product-native \
   --rom-build build/boot/my-rom --output-dir build/boot/my-prepared
 python3 scripts/lemmasim product create-medium --boot-medium build/boot/my-boot.raw
@@ -189,6 +205,15 @@ python3 scripts/lemmasim product capacity --session-dir build/boot/my-session
 For retained exact native/ROM builds, `prepare` also accepts
 `--native-source-archive` and `--rom-source-archive`. They select validated
 original input bytes; they do not bypass the normal current-source check.
+Prepared schema2 regenerates the fixed digital discovery descriptor from that
+exact native profile with pinned dtc1.8.1, and binds its bytes and DTB extent.
+Only the 256-byte hardware descriptor is supplied to the machine. The generated
+profile DTB remains a preparation artifact: ROM still reads the installed DTB
+through real NV transactions. Installation rejects a package whose discovery
+extent differs from this fixed profile. Native execution defaults to one host
+evaluation thread; this changes neither virtual clock nor target event policy.
+The omitted descriptor in original prepared schema1 caused an observed
+Descriptor.invalid169 startup failure; that failure is retained separately.
 The native build must be profile7 with real128MiB simulation RAM. Creating a
 boot medium only creates blank raw bytes and never formats the user journal.
 
@@ -200,6 +225,11 @@ sector frames and waits for actual target receipts. `product status` reconciles
 a slot/image ID, and `product boot` requests the real validated handoff. These
 commands do not interpret or manufacture A/B metadata. Full image installation,
 handoff and confirmation still require the separate acceptance evidence below.
+Packaging validates the complete original compiled source inventory. An explicit
+`--source-archive <consumed-source-root>` must match the original provenance and
+every recorded source byte; it enables reuse after maintained sources advance.
+The bulk Product software successor is admitted only as the exact independently
+audited `lemmasim-silicon-product-bulk-notebook` selection on the same profile7.
 
 The existing `snapshot`, `restore`, `session-control` and `session-replay`
 commands operate on this same persistent machine. Starting a restored Product
@@ -208,6 +238,11 @@ accepted bytes. It never opens the original boot medium. A recovery client at
 an already announced restored boundary uses `--continue-recovery`: past UART
 output is not emitted again, and every new result still requires an actual
 matching CRC-checked receipt. This is same-backend continuation, not cold boot.
+Every submitted command advances its receipt cursor to the current UART output
+boundary before injection. An earlier success receipt cannot acknowledge a new
+request, including an explicitly reused transaction ID. A partial or non-recovery
+output boundary rejects the request before injection. This is a transport rule;
+it does not claim exactly-once delivery or durable deduplication of packet IDs.
 Laboratory supply inputs remain separate from ordinary writing controls.
 
 `scripts/build_product_boot.py` builds and audits the ROM with pinned tools and
@@ -219,3 +254,22 @@ lost-receipt attempt retention and confirmation. `tests/boot/boot_nv_tb.sv`
 qualifies the literal circuit protocol. These are component results. Actual
 ROM boot, interrupted update, watchdog/brownout fallback, user-document survival,
 snapshot/replay and distribution require their own machine observations.
+
+The retained interrupted-payload observation privately restores the published
+image checkpoint, writes one changed inactive DTB sector through the ROM
+transport, and cold resets before any publication request. The write receipt
+records observed persistence; it does not acknowledge an installed image.
+ROM then records the next boot attempt durably, rejects the changed trial
+image, and loads the exact confirmed ELF, zeroed BSS and DTB. Its context
+identifies slot0, image1, generation3 and trial0. The confirmed image in that
+historical observation has its own retained startup fault, so the result
+establishes fallback loading without claiming a healthy notebook.
+
+A separate metadata interruption stops after the actual attempt-record WRITE
+outcome and before its barrier. The record bytes may therefore survive reset
+without an acknowledged handoff. ROM cold recovery rereads and validates that
+generation3 record, retains attempt1, and commits generation4/attempt2 through
+a new WRITE and barrier before loading the exact trial image. The captured
+request/outcome log contains the interrupted write once; reset does not submit
+it again. This qualifies the declared observed-persistence failure model,
+without claiming unconditional physical power-loss durability.

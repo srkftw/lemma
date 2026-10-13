@@ -398,4 +398,118 @@ private def dispatchModern (binding frame cause value : UInt64) : Action :=
 def dispatchUSB (frame cause value : UInt64) : Action := dispatchModern 6 frame cause value
 def dispatchProduct (frame cause value : UInt64) : Action := dispatchModern 7 frame cause value
 
+/-- Explicit Surface-v2 dispatcher; legacy dispatch retains its device entry. -/
+def deviceCallBulk (descriptor context pc number : UInt64) : Action :=
+  .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
+  .bind (Access.read64 (context + 88)) fun s b => if s = 0 then
+  .bind (Access.read64 (context + 96)) fun s c => if s = 0 then
+  .bind (Access.read64 (context + 104)) fun s d => if s = 0 then
+  .bind (Access.read64 (context + 112)) fun s e => if s = 0 then
+  .bind (if number = 64 then DeviceService.surfaceV2 descriptor a b c d e else
+    if number = 65 then DeviceService.input descriptor a b c d e else
+    if number = 66 then DeviceService.block descriptor a b c d e else
+    if number = 68 then PowerControl.call descriptor a b c d e else
+    if d ||| e = 0 then IPC.tryCallWait descriptor a b c else .done 16 0) fun status result =>
+  if status = DeviceService.waitStatus then
+    .bind MachineServices.time fun s now => if s = 0 then
+    if 0xffffffffffffffff - 10000000 < now then fatal else
+    .bind (Process.syscallReply context pc 174 0) fun s _ => if s = 0 then
+    .bind (Task.sleep descriptor (now + 10000000) pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 3 pc else fatal else fatal else fatal
+  else if status = 255 then fatal else
+  if number = 68 then if b = 1 then if status = 0 then
+    .bind (Process.syscallReply context pc status result) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 2 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 2 pc else fatal else fatal
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else fatal else fatal else fatal else fatal else fatal
+
+def dispatchBulk (frame cause value : UInt64) : Action :=
+  if cause = 0x8000000000000009 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    .bind Lemma.Drivers.PLIC.claim fun s source => if s = 0 then
+    .bind (if source = 14 then PowerControl.notification else DeviceService.notification source) fun s _ => if s = 0 then
+    .bind (Lemma.Drivers.PLIC.completePower source) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 1 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 1 pc else fatal else fatal else fatal else fatal
+    else fatal else fatal else fatal
+  else if cause = 8 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    if pc % 4 = 0 then
+    .bind (AddressSpace.lookup descriptor pc 4) fun s _ => if s = 0 then
+    .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
+    if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else if number = 68 then true else false) = true then
+      deviceCallBulk descriptor context pc number
+    else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
+    else fatal else fatal else fatal else fatal else fatal else fatal
+  else
+    .bind (observeFault cause) fun s _ => if s = 0 then
+    Scheduler.dispatch frame cause value else fatal
+
+
+private def deviceCallModernBulk (binding descriptor context pc number : UInt64) : Action :=
+  .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
+  .bind (Access.read64 (context + 88)) fun s b => if s = 0 then
+  .bind (Access.read64 (context + 96)) fun s c => if s = 0 then
+  .bind (Access.read64 (context + 104)) fun s d => if s = 0 then
+  .bind (Access.read64 (context + 112)) fun s e => if s = 0 then
+  .bind (if number = 64 then DeviceService.surfaceV2 descriptor a b c d e else
+    if number = 65 then DeviceService.input descriptor a b c d e else
+    if number = 66 then (if binding = 6 then DeviceService.blockUSB descriptor a b c d e else DeviceService.block descriptor a b c d e) else
+    if number = 68 then (if binding = 6 then PowerControl.callUSB descriptor a b c d e else PowerControl.call descriptor a b c d e) else
+    if d ||| e = 0 then IPC.tryCallWait descriptor a b c else .done 16 0) fun status result =>
+  if status = DeviceService.waitStatus then
+    .bind MachineServices.time fun s now => if s = 0 then
+    if 0xffffffffffffffff - 10000000 < now then fatal else
+    .bind (Process.syscallReply context pc 174 0) fun s _ => if s = 0 then
+    .bind (Task.sleep descriptor (now + 10000000) pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 3 pc else fatal else fatal else fatal
+  else if status = 255 then fatal else
+  if number = 68 then if b = 1 then if status = 0 then
+    .bind (Process.syscallReply context pc status result) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 2 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 2 pc else fatal else fatal
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else fatal else fatal else fatal else fatal else fatal
+
+private def dispatchModernBulk (binding frame cause value : UInt64) : Action :=
+  if cause = 0x8000000000000009 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    .bind Lemma.Drivers.PLIC.claim fun s source => if s = 0 then
+    .bind (if source = 14 then PowerControl.notification else if binding = 6 then DeviceService.notificationUSB source else DeviceService.notification source) fun s _ => if s = 0 then
+    .bind (if binding = 6 then Lemma.Drivers.PLIC.completeUSB source else Lemma.Drivers.PLIC.completePower source) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 1 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 1 pc else fatal else fatal else fatal else fatal
+    else fatal else fatal else fatal
+  else if cause = 8 then
+    .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
+    .bind (Task.capture descriptor frame) fun s context => if s = 0 then
+    .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
+    if pc % 4 = 0 then
+    .bind (AddressSpace.lookup descriptor pc 4) fun s _ => if s = 0 then
+    .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
+    if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else if number = 68 then true else false) = true then
+      deviceCallModernBulk binding descriptor context pc number
+    else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
+    else fatal else fatal else fatal else fatal else fatal else fatal
+  else
+    Scheduler.dispatch frame cause value
+
+
+/-- Product7 Surface-v2 uses the same validated modern privilege/device path. -/
+def dispatchProductBulk (frame cause value : UInt64) : Action := dispatchModernBulk 7 frame cause value
+
+/-- USB6 Surface-v2 is an explicit software selection over the same device path. -/
+def dispatchUSBBulk (frame cause value : UInt64) : Action := dispatchModernBulk 6 frame cause value
+
 end Lemma.Platform.LemmaSim.NotebookKernel

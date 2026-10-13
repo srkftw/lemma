@@ -43,14 +43,16 @@ def allowed(unit):
 
 MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
  'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
-SUMS_NOTEBOOK_CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'})
+SUMS_NOTEBOOK_CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
 SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
  'silicon_profile':'lemma-silicon-dev/0.3.0',
  'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
 
+BYTES_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"})
+
 def notebook_profile_allowed(unit):
  return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and
-  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS)
+  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS)
 
 def profile_allowed(unit):
  return allowed(unit) or notebook_profile_allowed(unit)
@@ -62,8 +64,10 @@ def contract(unit):
   require(FIELD not in unit and not generated,'Legacy unit acquired managed-record authority')
   return None
  if notebook_profile_allowed(unit):
-  from managed_sums import SOFTWARE_DEPLOYMENT as sums_deployment
-  expected=sums_deployment if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
+  from managed_sums import software_deployment_for
+  if unit.get("configuration") in BYTES_NOTEBOOK_CONFIGURATIONS:
+   from managed_bytes import software_deployment_for
+  expected=software_deployment_for(unit.get('configuration')) if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
   require(unit.get('software_deployment')==expected,
    'Managed Notebook software deployment differs from its exact versioned selection')
   require(FIELD not in unit and not generated,

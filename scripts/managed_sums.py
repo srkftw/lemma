@@ -2,13 +2,25 @@
 import re
 from core0_common import Core0Error
 FIELD='managed_sums'
-CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'})
+BULK_CONFIGURATIONS=frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
+CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | BULK_CONFIGURATIONS
 ENTRY='Lemma.Mathematics.ManagedResult.compareFiveSix'
 PREFIX='Lemma.Mathematics.ManagedResult.'
 GENERATED=ENTRY+'.__lemma_managed_sums_v03.'
 SOFTWARE_DEPLOYMENT={'contract_version':'lemma-managed-sums-deployment-v1',
  'silicon_profile':'lemma-silicon-dev/0.3.0',
  'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.3'}}
+BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,
+ 'contract_version':'lemma-managed-sums-bulk-deployment-v1'}
+PRODUCT_BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,
+ 'contract_version':'lemma-managed-sums-bulk-product-deployment-v1','silicon_profile':'lemma-silicon-dev/0.7.0'}
+USB_BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,
+ 'contract_version':'lemma-managed-sums-bulk-usb-deployment-v1','silicon_profile':'lemma-silicon-dev/0.6.0'}
+def software_deployment_for(configuration):
+ if configuration not in CONFIGURATIONS:raise Core0Error('Unknown exact managed sums deployment')
+ if configuration == 'lemmasim-silicon-product-bulk-notebook':return PRODUCT_BULK_SOFTWARE_DEPLOYMENT
+ if configuration in ('lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'):return USB_BULK_SOFTWARE_DEPLOYMENT
+ return BULK_SOFTWARE_DEPLOYMENT if configuration in BULK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
 EXPECTED_IR={'Lemma.Mathematics.ManagedResult.outcome': 'def Lemma.Mathematics.ManagedResult.outcome (x_1 : @& obj) : u64 :=\n  case x_1 : obj of\n  Lemma.Mathematics.ManagedResult.Comparison.equal →\n    let x_2 : u64 := sproj[0, 0] x_1;\n    let x_3 : u64 := sproj[0, 8] x_1;\n    let x_4 : u64 := 6;\n    let x_5 : u64 := UInt64.mul x_2 x_4;\n    let x_6 : u64 := 5;\n    let x_7 : u64 := UInt64.mul x_3 x_6;\n    let x_8 : u8 := UInt64.decEq x_5 x_7;\n    case x_8 : u8 of\n    Bool.false →\n      let x_9 : u64 := 2;\n      ret x_9\n    Bool.true →\n      let x_10 : u64 := 1;\n      ret x_10\n  Lemma.Mathematics.ManagedResult.Comparison.unequal →\n    let x_11 : u64 := sproj[0, 0] x_1;\n    let x_12 : u64 := 0;\n    let x_13 : u8 := UInt64.decEq x_11 x_12;\n    case x_13 : u8 of\n    Bool.false →\n      let x_14 : u64 := 2;\n      ret x_14\n    Bool.true →\n      let x_15 : u64 := 1;\n      ret x_15', 'Lemma.Mathematics.ManagedResult.compare': 'def Lemma.Mathematics.ManagedResult.compare (x_1 : u64) (x_2 : u64) : obj :=\n  let x_3 : u64 := 6;\n  let x_4 : u64 := UInt64.mul x_1 x_3;\n  let x_5 : u64 := 5;\n  let x_6 : u64 := UInt64.mul x_2 x_5;\n  let x_7 : u8 := UInt64.decEq x_4 x_6;\n  case x_7 : u8 of\n  Bool.false →\n    let x_8 : u64 := UInt64.sub x_4 x_6;\n    let x_9 : obj := ctor_1.0.8[Lemma.Mathematics.ManagedResult.Comparison.unequal];\n    sset x_9[0, 0] : u64 := x_8;\n    ret x_9\n  Bool.true →\n    let x_10 : obj := ctor_0.0.16[Lemma.Mathematics.ManagedResult.Comparison.equal];\n    sset x_10[0, 0] : u64 := x_1;\n    sset x_10[0, 8] : u64 := x_2;\n    ret x_10', 'Lemma.Mathematics.ManagedResult.compareFiveSix': 'def Lemma.Mathematics.ManagedResult.compareFiveSix (x_1 : u64) (x_2 : u64) : u64 :=\n  let x_3 : obj := Lemma.Mathematics.ManagedResult.compare x_1 x_2;\n  let x_4 : u64 := Lemma.Mathematics.ManagedResult.outcome x_3;\n  dec x_3;\n  ret x_4'}
 
 def require(value,message):
@@ -26,7 +38,7 @@ def contract(unit):
   require(FIELD not in unit and not generated,'Historical profile acquired sums authority')
   return None
  require(allowed(unit),'Managed sums User3 escaped exact isolated Arithmetic deployment')
- require(unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,'Managed sums software deployment differs')
+ require(unit.get('software_deployment')==software_deployment_for(unit.get('configuration')),'Managed sums software deployment differs')
  require('managed_records' not in unit and 'arithmetic_execution_identity' not in unit,'Sums deployment impersonated historical record authority')
  c=unit.get(FIELD)
  require(isinstance(c,dict) and set(c)=={'contract_version','compiler_revision','allocator','entry','shapes','functions'},'Managed sums catalog malformed')

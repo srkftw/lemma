@@ -12,6 +12,135 @@ The [assignment](../../codex/prompts/006-whole-machine-lemmasim.md),
 [evidence](../evidence/006-whole-machine-lemmasim.md) retain the entire destination.
 USGCE, repository settings, unrelated branches and durable formats are preserved.
 
+## Current connected observations, October12 continuation
+
+The actual canonical RTL cold notebook reached Ready and completed the full
+1650×2200 controller refresh at1.427B cycles/5487.787host seconds, with all8192
+frames and32MiB guest pool unchanged. The source-bound native archive is
+`build/native/task006-managed-v3-a1`; the actual guest ELF is
+`677e700e34d712fee2de0cb7c652d6ba56f5f054b7ce72e2aab45d87f029a98b`.
+`build/silicon/task006-managed-v3-canonical-a1/cold/result.json` is the observed
+Ready receipt, not a whole Task006 completion certificate. Peak runtime RSS was
+152484KiB. Actual raw three-sample pen input and explicit Save then reached
+1.501B cycles:52M/207.985s for ink/autosave and22M/about101.339s between the
+recorded completion times for explicit Save. The original Save report retains
+its cumulative309.324s and a failed raw-screen-pixel expectation; the corrected
+independent integer-domain oracle checks all3.63M controller pixels and every
+original raw field at `workflow-reobserver-a2/result.json`. It produces no guest
+pixels or document state. Actual Undo now passed on that same CPU at2.821B:1.320B target cycles for the
+full edit/redraw, with complete3.63M literal empty-page pixels and original
+raw/history preserved (`edit-undo-reobserver-a2/result.json`). Its two original
+observer failures remain intact: nonexistent0x427, then observation between
+real durable ACK and queued Saved-footer publication. An independent cold CPU
+recovered the acknowledged sequence5 medium and full expected stroke display;
+its first completed panel was observed at1.450B/6560.254s. The original cold
+observer incorrectly required a new0x421 Save on a clean reopen and failed;
+the retained-boundary checker proves all24 reads completed, unchanged256MiB
+backing/all acknowledged objects and all3.63M pixels without advancing the CPU.
+See `docs/evidence/006-retained-cold-recovery.json`. Navigation and unsuccessful
+save in the canonical RTL lane remain unfinished.
+
+The actual local browser on the same immutable RTL core reached1.20495B cycles
+and634235428 retired instructions but **failed** its7200s Ready deadline.
+`build/browser/task006-managed-v3-browser-cold-a1/result.json` retains that FAIL,
+the unchanged-boundary observational checkpoint and actual backing outcome tape.
+The worker's192MiB heap is measured; there is no browser Ready, writing,
+mathematics/course or durable-reopen acceptance. Prepared native Sums artifacts
+are in `build/native/task006-sums-a1`; the static bundle
+`build/browser/task006-sums-a3` retains and checks all239 exact consumed Wasm
+project inputs through `--wasm-input-bundle`, rather than treating changed
+current source as the old runtime. Prepared distribution is a separate result.
+
+`4492f10` adds real ordinary Lean sum constructors/cases through User-v0.3 and
+the existing generational31-object arena, with type/tag/layout checks and real
+release. Protocol3/document4 binds isolated arithmetic results to goal/revision,
+compiler/lowering/runtime/resource identities; editing preserves history while
+invalidating current applicability. Actual RV64 course→check→assistance/review→
+Save→new cold full-pixel recovery, old-record migration, and genuine31-slot OOM
+with responsive retained ink passed separately at
+`build/task006-sums-math-a1/`, `build/task006-sums-v3-migration-a1/` and
+`build/task006-sums-oom-a1/`. Those QEMU observations use instruction counting,
+not RTL pipeline timing. General arrays/strings/closures/recursion and the
+proof kernel remain open. The independently repaired legacy course-reader
+admission in `95f56af` preserves scalar rejection of new document4 records.
+
+`080db96` exposes real immutable Lean ROM/product-medium recovery commands.
+The ROM-only installed image completed674 actual target protocol receipts at
+152M cycles/872.99host seconds. Independent observations at
+`build/boot/task006-product-install-a1/` verify all344576 opaque package bytes,
+both generation1 metadata sectors and durable barrier2701. Real ROM handoff at
+173.2M cycles independently matches every loaded segment,1MiB zero BSS and the
+2873-byte NV-loaded DTB; no running ELF or DTB was host preloaded. The ensuing
+Product2 startup failed Descriptor discovery because the launcher omitted the
+static hardware descriptor. The repaired launcher and actual inactive-slot
+Product3 update passed publication and exact ROM handoff while preserving the
+user journal. Subsequent startup failed closed on a real BootNV PMP access
+fault51 at199,624,679 cycles/STVAL0x10012000; the eighth old range ended exactly
+there. A separately guarded ninth RW/NX PMP entry is now genuinely emitted and
+fully audited only for Product configurations. Actual reset during partial
+inactive payload and unacknowledged boot-attempt metadata also passed separate
+ROM fallback/reattempt/handoff observations, without a healthy-kernel claim.
+Fresh ProductBulk/PMP image3 is being installed through the real immutable ROM
+under `build/boot/task006-product-bulk-update-a1/`; healthy Ready/confirmation
+remains unobserved. Integrity is CRC and owner-local development recovery is
+explicit. A genuine SHA/HMAC RV64 component passed independent vectors, but
+current production authentication/anti-rollback are still OPEN.
+
+USB6 has actual EP0 enumeration, configuration and DATA/toggle/ACK controller
+execution, an independent persistent hosted-Lean peer and captured disconnect
+outcomes. The first real Store initializer failed at15,751,665 cycles/status50:
+modern profiles incorrectly used the Power-v1 identity check against Power-v2.
+The additive `configureSafety` driver preserves legacy policy and does not arm
+an implicit watchdog. Its fresh Kernel6 LLVM observer passes the exact owned
+endpoint/caller/status gate and six changed-authority negatives. Corrected USB5
+Store execution passed56M cycles/339.090s: actual guest initializer through
+modeled EP0/data endpoints, hosted Lean3 and independently durable peer; an
+opaque sentinel was persisted with its ACK lost, peer restart and exact same
+writer/sequence reconciliation before the real0x41f completion. All six actual
+write/barrier effects are checked without duplication. This is a Store result.
+The fresh USBbulk notebook/initializer both passed genuine build/full audits,
+retain exact257-source archives with original native4/host3, and are running a
+separate ordinary notebook lost-ACK/peer-restart/explicit-Save/cold campaign at
+`build/usb/notebook-workflow-a1/`. It has no Ready or notebook acceptance yet.
+
+Surface-v2 now has complete source-bound builds/audits for canonical Bytes,
+Product and USB deployments: seven owned tiles per copied page, all metadata
+preflight before PIO, fresh owner/generation/purpose checks per upload and
+explicit partial-controller failure. Full1650×2200 upload groups become506
+instead of3536 syscalls, preserving every tile/pixel. Actual seven-tile Action
+primitive steps decreased3220→2171; that fixture is not an RV64 timing result.
+The new byte-array service uses genuinely elaborated ordinary Lean ByteArray
+allocation/push/read/COW/release through User4 and the real31-object arena.
+Protocol4/document5 retains exact old history and binds new results to the
+original goal/domain/revision and named implementation/resource identities.
+The actual RV64 course/check/edited history/hint/review/Save/new-cold/full-pixel
+workflow passed155.800s, Doc4→5 migration passed90.095s, and real31-slot User4
+OOM with retained ink/Save/new-cold/full-pixels passed115.738s. The first OOM
+campaign retains its valid input-precondition FAIL (a checked course medium was
+selected), without weakening the check. Six fresh whole builds and strict
+pre/post LLVM/object/ELF/provenance audits passed, with all257 consumed inputs
+retained at `build/task006-connected-consumed-sources-a3/`.
+[The connected receipt](../evidence/006-managed-bytes-integration.json) records
+actual image/tool/source identities and retained artifact-audit failures.
+New Surface2 canonical RTL cold Ready and actual local Wasm boot run from the
+same original factory medium at `build/silicon/task006-bytes-bulk-canonical-a1/`
+and `build/browser/task006-bytes-bulk-browser-cold-a1/`, under unchanged
+2B-cycle/7200s cold ceilings. They have no Ready/performance claim yet.
+Prepared new native/static bundles are `build/native/task006-bytes-bulk-a1`
+and `build/browser/task006-bytes-bulk-a1`. General arrays/strings/closures/
+recursion and the proof kernel remain unfinished.
+
+The later historical sections retain their original identities and observations.
+They do not override these newer results. QEMU arbitrary-boundary cached-state
+continuation, complete processor/fast timing parity, browser product workflows,
+full USB/radios/tutor/package installation, general managed runtime/proof kernel,
+physical timing/routing/rule coverage/DRC/LVS/extraction and full-chip memory/
+pads/power/analog implementation remain unfinished. Current host checks passed465 foundation,184 LemmaSim,40 Core0,8 boot and18
+scaffold tests plus metadata. Those are host checks, not new target/physical
+acceptance. No new candidate CI has run; CI38288756841 passed only the earlier
+d219650 candidate. Publish a new draft
+against current main without merging after coherent integration checks.
+
 ## Baseline and implemented continuation
 
 Main was fetched once at `abd9920d54df04ce52da9386170e99012c39bdfb`, tree
