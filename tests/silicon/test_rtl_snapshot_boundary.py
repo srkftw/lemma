@@ -14,7 +14,8 @@ import lemmasim_session as runtime
 
 
 class BoundaryMachine:
-    identity = {'backend': 'rtl', 'implementation': 'boundary failure fixture'}
+    identity = {'backend': 'rtl', 'profile':'lemma-silicon-dev/0.3.0',
+                'implementation': 'boundary failure fixture'}
     checkpoint_identity = 'a' * 64
     preflight_checkpoint = runtime.RTL.preflight_checkpoint
 
@@ -78,7 +79,9 @@ class RTLBoundaryFailures(unittest.TestCase):
         self.reject_without_applying()
 
     def test_unsupported_container_identity_or_version_rejects(self):
-        for offset, payload in ((8, struct.pack('<Q', 2)), (16, b'b' * 64)):
+        # Canonical0.3 supports the historical1 and current2 containers.
+        # A genuinely unsupported version must still reject before adoption.
+        for offset, payload in ((8, struct.pack('<Q', 99)), (16, b'b' * 64)):
             with self.subTest(offset=offset):
                 original = (self.snapshot / 'machine.chk').read_bytes()
                 self.mutate_container(offset, payload)

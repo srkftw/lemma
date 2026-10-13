@@ -561,4 +561,20 @@ and rejects changed gate/source symbols. The explicit host build and genuine
 execution-identity fixture passed. These bounded corrections do not pass the
 original matrix or skipped host suites; a fresh candidate CI run is required.
 
+## Candidate e710 Silicon host fixture corrections
+
+Candidate e710dd4f932fd0fd4fef716a1913ce0328534b07 CI38438783290 completed
+**FAILURE**, nine of ten jobs passed. The full legacy/foundation, Task003
+architectural/service/source-negative, Task004 real O0/O2 notebook and RTL
+matrix passed. Metadata step14 failed on two stale host fixtures: QMP omitted
+the required paused status, and the snapshot negative used admitted canonical
+container version2. [The repair receipt](../evidence/006-ci-silicon-fixture-repair.json)
+retains both actual CI logs and independent reproduction of both failures.
+Only fixture expectations changed; exact clock mapping and pre-adoption
+identity/cycle/length/unsupported-version checks remain. All179 pinned Silicon
+host tests now pass. This does not pass the original candidate or any skipped
+work. Prior c7f9fcf CI38435618357 remains CANCELLED (8PASS/1FAIL/1CANCELLED),
+including its unfinished notebook job. A fresh committed candidate still needs
+its own complete CI result.
+
 -->

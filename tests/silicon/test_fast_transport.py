@@ -148,17 +148,20 @@ class FastTransport(unittest.TestCase):
         class QMP:
             def execute(self,command,arguments=None):
                 calls.append((command,arguments))
-                return '{}' if command=='qom-get' else {'running':False}
+                return '{}' if command=='qom-get' else {'status':'paused','running':False}
         machine.qmp=QMP()
         machine.run_until_ns(1120)
         machine.call('inject 115 pen 999 1 2 127 3 1 0')
-        self.assertEqual(calls[0],('qom-set',{'path':'/machine/lemma-hardware','property':'run-until','value':'120'}))
+        mutations=[row for row in calls if row[0] in ('qom-set','cont','stop')]
+        self.assertEqual(mutations[0],('qom-set',{'path':'/machine/lemma-hardware','property':'run-until','value':'120'}))
         self.assertEqual(calls[-1],('qom-set',{'path':'/machine/lemma-hardware','property':'external-event',
                          'value':'150 999 1 2 127 3 1 0'}))
-        count=len(calls)
+        count=len(mutations)
         for target in (1000,fast.MAX_NS,fast.MAX_NS+1,True):
             with self.subTest(target=target),self.assertRaises(ValueError):machine.run_until_ns(target)
-        self.assertEqual(len(calls),count)
+        # Reading the actual runstate is valid before admission; malformed
+        # deadlines still must never change a property or resume execution.
+        self.assertEqual(len([row for row in calls if row[0] in ('qom-set','cont','stop')]),count)
 
 
 if __name__ == '__main__':
