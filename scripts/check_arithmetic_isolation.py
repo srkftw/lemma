@@ -9,12 +9,102 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import struct
 import time
 from check_math_session import MathChecker
 from check_live_notebook import Input,idle,require,sha,visible_pixels
 from store_oracle import recover
+
+MANAGED_OOM_CONFIGURATION='lemmasim-silicon-power-arithmetic-oom-development'
+
+def managed_oom_route(unit,ir):
+    """Inspect real emitted calls independently of target events and catalog labels.
+
+    The whole image still passes its ordinary strict audit at public startup.
+    This observer additionally refuses to call a scalar allocation failure a
+    managed constructor failure. It does not execute or interpret target code.
+    """
+    from audit_kernel import _ir_definition_body,parse_definitions_and_calls
+    require(unit.get('contract_version')=='core0-user-v0.2' and
+            unit.get('role')=='user' and unit.get('image_key')=='arithmetic' and
+            unit.get('configuration')==MANAGED_OOM_CONFIGURATION,
+            'managed OOM requires the exact User2 Arithmetic Laboratory unit')
+    names={r['source']:r['symbol'] for r in unit['functions']}
+    require(len(names)==len(unit['functions']) and len(set(names.values()))==len(names),
+            'duplicate emitted source or symbol identity')
+    def suffix(name):
+        rows=[s for s in names if s.endswith(name)]
+        require(len(rows)==1,'missing or ambiguous managed OOM source: '+name)
+        return rows[0]
+    p='Lemma.User.Runtime.Arena.';m='Lemma.User.Runtime.ManagedRecords.'
+    entry='Lemma.Mathematics.ManagedRational.compareFiveSix'
+    generated=entry+'.__lemma_managed_v02.'
+    main='Lemma.Services.Arithmetic.Server.main'
+    step=suffix('Lemma.Services.Arithmetic.Server.step')
+    process=suffix('Lemma.Services.Arithmetic.Server.process')
+    pressure=suffix('Lemma.Services.Arithmetic.Server.pressureStep')
+    positive=suffix('Lemma.Mathematics.ManagedSubmission.positiveRational')
+    allocate=suffix('Lemma.User.Runtime.Arena.allocate')
+    routes=[(main,step),(step,process),(process,'Lemma.Mathematics.ManagedSubmission.check'),
+      ('Lemma.Mathematics.ManagedSubmission.check',positive),
+      (positive,generated+entry),(generated+entry,generated+'Lemma.Mathematics.ManagedRational.make'),
+      (generated+'Lemma.Mathematics.ManagedRational.make',m+'allocate'),
+      (m+'allocate',p+'newBytes'),(p+'newBytes',allocate),
+      (main,pressure),(pressure,p+'newBox'),(p+'newBox',allocate),(allocate,p+'exhausted')]
+    required={s for pair in routes for s in pair}|{p+'capacity'}
+    require(required<=set(names),'managed OOM emitted constructor/runtime closure missing')
+    bodies={s:_ir_definition_body(ir,names[s]) for s in required}
+    require(all(body is not None for body in bodies.values()),'managed OOM emitted function body missing')
+    for caller,callee in routes:
+        require(names[callee] in parse_definitions_and_calls(bodies[caller])[2],
+                'managed OOM emitted call route missing: '+caller+' -> '+callee)
+    def call(caller,callee,args):
+        require(len(re.findall(r'call \{ i64, i64 \} @'+re.escape(names[callee])+r'\('+args+r'\)',bodies[caller]))==1,
+                'managed OOM constructor/helper arguments differ: '+caller)
+    call(generated+'Lemma.Mathematics.ManagedRational.make',m+'allocate',r'i64 1, i64 24')
+    call(m+'allocate',p+'newBytes',r'i64 %arg1')
+    call(positive,generated+entry,r'i64 %arg0, i64 %arg1')
+    require(re.search(r'icmp eq i64 %arg0, 1',bodies['Lemma.Mathematics.ManagedSubmission.check']) and
+            re.search(r'icmp ult i64 %arg2, 8',bodies[positive]) and
+            re.search(r'i32 signext 31, i64',bodies[main]) and
+            re.search(r'icmp eq i64 %arg0, 1',bodies[main]),
+            'managed OOM exact goal/budget/pressure mode path differs')
+    require(re.fullmatch(r'\s*entry:\s*ret i8 237\s*',bodies[p+'exhausted']) and
+            re.fullmatch(r'\s*entry:\s*ret i64 31\s*',bodies[p+'capacity']),
+            'managed OOM arena capacity/exhaustion code differs')
+    return {'contract':'core0-user-v0.2','constructor':'Lemma.Mathematics.ManagedRational.Fraction.mk',
+      'shape':1,'bytes':24,'arena_capacity':31,'actual_failure_code':237,
+      'emitted_routes':[list(pair) for pair in routes]}
+
+def managed_oom_artifacts(directory):
+    from managed_records import validate as validate_records
+    directory=Path(directory).resolve();arithmetic=directory/'users/arithmetic'
+    unit=json.loads((arithmetic/'unit.json').read_text())
+    catalog=json.loads((directory/'user-image-catalog.json').read_text())
+    audit=json.loads((directory/'audit.json').read_text())
+    expected={'id':3,'key':'arithmetic','directory':'users/arithmetic',
+      'source':'Lemma.Services.Arithmetic.Server.main','module':'Lemma.Services.Arithmetic.Server',
+      'boot_role':'arithmetic-server','args':['u64']}
+    rows=[r for r in catalog.get('images',[]) if r.get('key')=='arithmetic']
+    require(catalog.get('configuration')==MANAGED_OOM_CONFIGURATION and
+            catalog.get('stage')=='supervisor' and len(rows)==1 and
+            all(rows[0].get(k)==v for k,v in expected.items()),
+            'managed OOM exact separately linked Arithmetic catalog differs')
+    require(audit.get('status')=='PASS' and audit.get('configuration')==MANAGED_OOM_CONFIGURATION and
+            audit.get('image_sha256')==sha(directory/'image.elf') and
+            audit['user_images']['arithmetic']['image_sha256']==sha(arithmetic/'image.elf'),
+            'managed OOM requires the exact audited combined and Arithmetic ELF bytes')
+    pre=(arithmetic/'program.ll').read_text();optimized=(arithmetic/'program.opt.ll').read_text()
+    require(validate_records(pre,unit,optimized=False) is not None and
+            validate_records(optimized,unit,optimized=True) is not None,
+            'managed OOM genuine ordinary source/checked helper closure absent')
+    result=managed_oom_route(unit,pre)
+    files=[directory/'audit.json',directory/'image.elf',directory/'user-image-catalog.json',
+      arithmetic/'image.elf',arithmetic/'unit.json',arithmetic/'program.ll',arithmetic/'program.opt.ll']
+    result['artifacts']={str(p.relative_to(directory)):sha(p) for p in files}
+    return result
 
 class IsolationChecker(MathChecker):
     def __init__(self,args):
@@ -23,6 +113,8 @@ class IsolationChecker(MathChecker):
         self.report.update(schema='lemmasim-arithmetic-isolation/1',case=args.case,
             scope='actual scalar Lean isolated arithmetic process and copied IPC; managed source constructors/proof kernel/full verifier remain unfinished')
         self.report['observer_sources']['scripts/check_arithmetic_isolation.py']=sha(Path(__file__))
+        if args.require_managed_constructor:
+            self.report['scope']='actual ordinary Lean record constructor OOM in isolated RV64 Arithmetic; bounded checked heap, pen/Save/cold recovery; general managed language/proof kernel remain unfinished'
     def settle(self,session,tick,completed=None):
         def done(state):
             rows=self.rows(session)
@@ -45,8 +137,14 @@ class IsolationChecker(MathChecker):
         first=len(stream.events);stream.tick=session.inspect()['machine']['ticks']+10000
         stream.stroke(name,1,1,6,1700);session.admit(stream.events[first:]);return first,stream.events[-1][1]
     def execute(self):
+        if self.args.require_managed_constructor:
+            self.report['managed_constructor_admission']=managed_oom_artifacts(self.args.guest_build)
         original=sha(self.args.disk);disk=self.directory/'live-input.raw';shutil.copyfile(self.args.disk,disk)
-        live=self.session('live',disk);self.report['identity']=live.identity;self.report['boot']=live.boot()
+        live=self.session('live',disk);self.report['identity']=live.identity
+        if self.args.require_managed_constructor:
+            require(live.identity['guest']==self.report['managed_constructor_admission']['artifacts']['image.elf'],
+                    'live machine did not consume the admitted managed OOM ELF')
+        self.report['boot']=live.boot()
         rows=self.rows(live);mode={'oom':1,'fault':2,'stall':3}[self.args.case]
         start=[r for r in rows if r[0]==0x456]
         require(start==[(0x456,mode,31 if mode==1 else 0,1,10000000)],'server did not execute actual declared mode/object pressure/deadline')
@@ -56,6 +154,9 @@ class IsolationChecker(MathChecker):
         prior_panel,prior_medium=live.export('before-check')
         prior_bytes,prior,_,_=self.record(prior_medium)
         require(prior['outcome']==0 and not prior['history'],'initial course already had manufactured evidence')
+        if self.args.require_managed_constructor:
+            require(prior['goal']==1 and prior['answer']==[0,1,0,0,0] and prior['budget']==8,
+                    'managed OOM submitted object would not execute the admitted ordinary constructor')
         self.allowed_error=True
         submitted=len([r for r in self.rows(live) if r[0]==0x459])
         tick=self.raw_click(live,stream,40,245)
@@ -73,6 +174,13 @@ class IsolationChecker(MathChecker):
         require(not any(r[0]==0x450 and r[3]!=0 for r in self.rows(live)),'checker failure manufactured trusted evidence')
         if self.args.case=='oom':
             require(any(r[0]==0x455 and r[3:]==(237,0) for r in self.rows(live)),'OOM was not returned by real owned-object allocation')
+            if self.args.require_managed_constructor:
+                result_rows=[r for r in self.rows(live) if r[0]==0x455 and r[1:3]==request[1:3]]
+                require(len(result_rows)==1 and result_rows[0][3:]==(237,0),
+                        'managed constructor OOM reply is not the actual submitted request/revision')
+                self.report['managed_constructor_failure']={'status':'PASS','actual_status':237,
+                  'goal':prior['goal'],'answer':prior['answer'],'budget':prior['budget'],
+                  'actual_server_reply':result_rows[0],'live_slots':31,'no_evidence':True,'record_unchanged':True}
         if self.args.case=='fault':
             require(any(r[0]==0xd4 and r[1]==13 and r[3]==0x500000 for r in self.rows(live)),'unmapped user instruction never caused actual page fault')
             require(any(r[0]==0xf6 for r in self.rows(live)),'dead checker resources were not reaped')
@@ -155,16 +263,23 @@ class IsolationChecker(MathChecker):
         self.report['cold_recovery']={'status':'PASS','new_cpu':True,'complete_controller_pixels_equal':True,'acknowledged_math_unchanged':True,'raw_ink_preserved':True}
         cold.close();self.sessions.remove(cold)
         require(sha(self.args.disk)==original,'observer changed original medium')
+        if self.args.require_managed_constructor:
+            require(all(sha(Path(self.args.guest_build)/name)==digest for name,digest in
+                        self.report['managed_constructor_admission']['artifacts'].items()),
+                    'admitted managed OOM artifacts changed during real observations')
         self.report['status']='PASS'
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',choices=('oom','fault','stall'),required=True)
     parser.add_argument('--disk',type=Path,required=True);parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--native-bundle',required=True);parser.add_argument('--guest-build',required=True)
+    parser.add_argument('--require-managed-constructor',action='store_true',
+        help='fail unless exact User2 Lab artifact and emitted real constructor allocator path qualify OOM')
     parser.add_argument('--timeout',type=int,default=300);parser.add_argument('--boot-seconds',type=int,default=60)
     parser.add_argument('--action-seconds',type=int,default=30);parser.add_argument('--deadline',type=int,default=1200)
     args=parser.parse_args();args.checkpoint_relation='not-exercised';args.durable_suffix_from=None
     require(1<=args.timeout<=3600 and 1<=args.boot_seconds<=600 and 1<=args.action_seconds<=600 and 1<=args.deadline<=2400,'invalid predeclared resource bounds')
+    require(not args.require_managed_constructor or args.case=='oom','managed constructor admission requires the OOM case')
     checker=IsolationChecker(args)
     try:checker.execute()
     except BaseException as error:checker.report['error']=str(error);raise
