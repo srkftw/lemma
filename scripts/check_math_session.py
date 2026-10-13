@@ -192,6 +192,16 @@ class MathChecker(Checker):
 
         edited=self.press(live,stream,'edit answer invalidates applicability',27)
         require(edited[3:]==(0,0),'editing retained current trusted applicability')
+        if getattr(self.args,'require_execution_identity',False):
+            _,edited_medium=live.export('edited-execution')
+            _,edited_record,_,_=self.record(edited_medium)
+            require(edited_record['outcome']==0 and edited_record['evidence_revision']==0 and
+                    edited_record['execution']['active']=={'origin':'Unknown'} and
+                    edited_record['history']==verified['history'] and
+                    edited_record['execution']['history']==verified['execution']['history'],
+                    'actual edit retained applicable execution or changed immutable attempt identity')
+            self.report['edited_execution_applicability']={'status':'PASS','active_unknown':True,
+                'old_attempt_identity_preserved':True,'actual_durable_guest_record':True}
         self.press(live,stream,'check actual invalid 5/7',1,4)
         self.press(live,stream,'bounded resource zero',17,4)
         self.press(live,stream,'check Indeterminate',1,4)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real guest v1 migration, exact-assisted review, override/disable and cold reopen.
+"""Real guest historical migration, exact-assisted review and cold reopen.
 
 Input must be the actual acknowledged course medium, never a host-constructed
 learner record. Raw pen drives every guest edit and protocol transaction.
@@ -18,11 +18,13 @@ class ReviewChecker(MathChecker):
     def execute(self):
         original_hash=sha(self.args.disk)
         original_bytes,original,_,_=self.record(self.args.disk)
-        require(original['format']=='lemma-mathematical-submission/1' and
+        require(original['format']=='lemma-mathematical-submission/'+str(self.args.source_record_version) and
                 [entry['outcome'] for entry in original['history']]==[1,2,5,1,4] and original['hints']==1,
-                'provide the retained actually acknowledged v1 course workflow')
+                'provide the retained actually acknowledged declared course workflow')
         self.report['schema']='lemmasim-guest-offline-review-observations/1'
-        self.report['scope']='guest v1 migration and bounded original offline review with uncertain understanding; no learning-gain or complete learner/tutor claim'
+        self.report['scope']='guest historical migration and bounded original offline review with uncertain understanding; no learning-gain or complete learner/tutor claim'
+        self.report['declared_record_versions']={'source':self.args.source_record_version,
+            'target':self.args.record_version}
         self.report['observer_sources']['scripts/check_review_session.py']=sha(Path(__file__))
         self.report['source_submission_sha256']=hashlib.sha256(original_bytes).hexdigest()
         disk=self.directory/'live-input.raw';shutil.copyfile(self.args.disk,disk)
@@ -31,13 +33,21 @@ class ReviewChecker(MathChecker):
         baseline_panel,baseline_medium=live.export('baseline')
         stream=Input(1650,2200,live.inspect()['machine']['ticks']+10000,100000,0)
         stream.sample(825,160,0,False);live.admit(stream.events)
-        self.click(live,stream,'guest migrate existing832byte course',320,140)
+        self.click(live,stream,'guest migrate actual historical course',320,140)
         _,migrated_medium=live.export('migrated')
         _,migrated,_,_=self.record(migrated_medium)
-        require(migrated['format']=='lemma-mathematical-submission/2' and
-                migrated['history']==original['history'] and migrated['answer']==original['answer'] and
-                migrated['learner']['events'][-1]['kind']==6 and migrated['learner']['events'][-1]['value']==1,
-                'guest migration lost evidence or invented old anchored hint events')
+        require(migrated['format']=='lemma-mathematical-submission/'+str(self.args.record_version) and
+                migrated['history']==original['history'] and migrated['answer']==original['answer'],
+                'guest migration lost exact evidence or typed answer')
+        if self.args.source_record_version==1:
+            require(migrated['learner']['events'][-1]['kind']==6 and migrated['learner']['events'][-1]['value']==1,
+                    'guest migration invented old anchored hint events')
+        else:
+            require(migrated['learner']==original['learner'],'v2 migration changed durable learner events/policy')
+        if self.args.record_version==3:
+            require(migrated['execution']['active']=={'origin':'Unknown'} and
+                    all(entry=={'origin':'Unknown'} for entry in migrated['execution']['history']),
+                    'migration invented old compiled execution or request identity')
         self.report['migration']=migrated
         self.press(live,stream,'return to fractions',7,4)
         self.press(live,stream,'select denominator',8)
@@ -49,6 +59,17 @@ class ReviewChecker(MathChecker):
         require(checked_record['learner']['recommendation']=='practice' and
                 checked_record['learner']['reason']=='assisted' and checked_record['learner']['understanding']=='uncertain',
                 'baseline confused an assisted exact attempt with demonstrated understanding')
+        if self.args.record_version==3:
+            execution=checked_record['execution']
+            require(execution['active']['origin']=='IsolatedManaged' and execution['active']['status']==0 and
+                    execution['history'][len(original['history'])]==execution['active'] and
+                    all(entry=={'origin':'Unknown'} for entry in execution['history'][:len(original['history'])]),
+                    'new execution relabeled historical identities or lost current request')
+            replies=[row for row in self.rows(live) if row[0]==0x455]
+            require(len(replies)==1 and replies[0][1:]==(execution['active']['request'],checked_record['revision'],0,1),
+                    'new migrated-record execution differs from actual isolated reply')
+            self.report['execution_migration']={'status':'PASS','old_attempts_unknown':len(original['history']),
+                'new_attempt_known':True,'actual_request_revision_outcome_bound':True}
         for mode in range(1,5):
             self.press(live,stream,'explicit review mode'+str(mode),23,4)
             panel,medium=live.export('mode'+str(mode))
@@ -58,6 +79,10 @@ class ReviewChecker(MathChecker):
                     'override or disable changed submitted mathematical authority')
             self.label(panel,'REVIEW' if mode==4 else 'MANUAL',24,300)
         self.press(live,stream,'restore offline automatic review',23,4)
+        # The barrier diagnostic precedes the Saved footer. Require its
+        # actual controller pixels before comparing the independent cold
+        # display, as for the original course workflow.
+        self.wait_label(live,'SAVED',24,132)
         active_panel,active_medium=live.export('auto-review')
         final_bytes,final,records,_=self.record(active_medium)
         require(final['learner']['mode']==0 and final['learner']['recommendation']=='practice' and
@@ -67,6 +92,9 @@ class ReviewChecker(MathChecker):
         self.label(active_panel,'AUTO',24,300)
         self.label(active_panel,'UNCERTAIN',192,300)
         self.label(active_panel,'ASSISTED',24,280)
+        if self.args.record_version==3:
+            require(final['execution']==checked_record['execution'],
+                    'policy override/disable relabeled mathematical execution authority')
         self.report['learner']=final['learner']
         self.click(live,stream,'close course through COURSE',320,140,False)
         self.wait_label(live,'SAVED',24,132)
@@ -98,10 +126,12 @@ class ReviewChecker(MathChecker):
         failed_stream.sample(304,245,2048,True);failed_stream.sample(304,245,0,False)
         failed.admit(failed_stream.events[first:])
         failed.wait(lambda state:any(row[0]==0x424 for row in self.rows(failed)) and idle(state),self.args.action_seconds)
+        failure_frame=self.wait_label(failed,'FAILED',24,132)
         _,failed_medium=failed.export('failed-policy-save')
         require(self.record(failed_medium)[0]==final_bytes and not any(row[0]==0x421 for row in self.rows(failed)),
                 'failed policy barrier fabricated acknowledged learner state')
-        self.report['failed_save']={'status':'PASS','no_false_saved':True,'acknowledged_record_unchanged':True}
+        self.report['failed_save']={'status':'PASS','no_false_saved':True,'acknowledged_record_unchanged':True,'actual_failed_controller_label':True,
+            'completed':failure_frame['devices']['paper']['completed']}
         failed.close();self.sessions.remove(failed)
         require(sha(self.args.disk)==original_hash,'review observer mutated original user medium')
         self.report['status']='PASS'
@@ -111,6 +141,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--disk',type=Path,required=True)
     parser.add_argument('--work-dir',type=Path,required=True)
+    parser.add_argument('--record-version',type=int,choices=(2,3),default=2,help='Exact declared target submission record version')
+    parser.add_argument('--source-record-version',type=int,choices=(1,2),default=1,help='Exact retained acknowledged source format')
     parser.add_argument('--native-bundle',help='Validated immutable native runtime bundle for every public session')
     parser.add_argument('--guest-build',help='Current genuinely compiled and audited notebook guest; requires native bundle')
     parser.add_argument('--timeout',type=int,default=300)
