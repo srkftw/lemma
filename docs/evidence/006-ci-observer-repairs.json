@@ -37,6 +37,15 @@
       "retained_log_sha256": "49b01db64a059fd43e809615657c3916e2ed50544c48f6c74b704c0a00c9372b",
       "artifact_id": 11824558551,
       "artifact_sha256": "30120a7af74cc90f3464a9a1fa2d642675fa3de8c272f9f22c032a38d030ffcc"
+    },
+    {
+      "job_id": 115362878982,
+      "original_status": "FAIL",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38416685379/job/115362878982",
+      "cause": "same obsolete direct IPC graph edge in actual append-O0 clean control audit; source-mutation campaign stopped before its append mutation",
+      "retained_log_sha256": "83d6fc92494bc62a8ae96912c677989513f1de3ebb2930822e0790ef396cfc7d",
+      "artifact_id": 11825004270,
+      "artifact_sha256": "646a5e1cc3401b720e6c5b6bdb81dc748e7bfc4b33a6782a96377f5b585a2f83"
     }
   ],
   "repairs": [
@@ -79,6 +88,11 @@
         "llvm-nm": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
         "llvm-readobj": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj"
       }
+    },
+    "fifth_original_control_reobservation": {
+      "status": "PASS_COMPONENT_REOBSERVATION",
+      "receipt_sha256": "b8bb54eec57c6a0e358659f8a7e0b6599e70063846c6d7a70035a6859e4f2934",
+      "scope": "Only exact retained original append-O0 control pre-IR IPC graph; complete source-negative campaign retains original FAIL"
     }
   },
   "guest_reruns": "NOT_RUN_FOR_THIS_REPAIR",
