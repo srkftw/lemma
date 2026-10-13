@@ -355,7 +355,12 @@ class RTL:
             if self.data['profile'] not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'):raise ValueError('USB packet host requires binding6')
             import lemmasim_usb
             from lemmasim_companion import peer_info
-            host=lemmasim_usb.validate(usb_prepared);peer=peer_info(args.usb_peer_directory)
+            if json.loads(usb_prepared.read_text()).get('schema') == 'lemma-usb-host-dev/4':
+                import lemmasim_usb_pending
+                host=lemmasim_usb_pending.validate(usb_prepared)
+            else:
+                host=lemmasim_usb.validate(usb_prepared)
+            peer=peer_info(args.usb_peer_directory)
             command += ['--usb-peer',host['binary']['path'],'--usb-capture',str(directory/'usb.raw'),
                         '--usb-peer-timeout-ms',str(args.usb_peer_timeout_ms)]
             for item in (str(args.usb_peer_socket.resolve()),str(args.usb_host_state.resolve()),str(peer['writer']),str(ROOT/'sim/companion/os_io.py')):
