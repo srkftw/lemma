@@ -396,6 +396,24 @@
         "bytes": 520,
         "sha256": "f08c7502bfde5189d4796b6e09acf46deb8d6a230c373bd65e5a570a60db03c8"
       }
+    },
+    "edited_answer": {
+      "result": {
+        "path": "build/browser/task006-array-browser-mixed-cold-a1/edited-acknowledged-a1/result.json",
+        "bytes": 6811,
+        "sha256": "6a53ed10f0465c15829cbf04f02929becb27c6dde3fcb3ddedbd36b028f22eec"
+      },
+      "actual_saved_sequence": 39,
+      "revision": 21,
+      "goal": 1,
+      "outcome": 0,
+      "evidence_revision": 0,
+      "history_preserved": 7,
+      "durable_barrier": 278,
+      "completed_panel": 6,
+      "cycle": 1406200000,
+      "action_cycles": 205450000,
+      "scope": "Actualguesteditclearsactiveevidenceandpreserveshistory; savedOPFSrecord decoded independently. No newbrowsercoldclaim."
     }
   },
   "independent_new_native_fast_reopen": {

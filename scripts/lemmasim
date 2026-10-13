@@ -810,7 +810,9 @@ def main():
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
     p.add_argument('--guest-bundle',type=Path,help='Use fully validated immutable genuine guest artifacts; rebuild only the current machine')
-    p.add_argument('--wasm-input-bundle',type=Path,help='On --reuse-wasm, validate exact consumed source versions from this immutable native archive; unchanged browser-only inputs remain required')
+    p.add_argument('--wasm-input-bundle',type=Path,help='On --reuse-wasm, validate exact consumed source versions from an immutable native or complete browser archive')
+    p.add_argument('--wasm-source-bundle',type=Path,help='Fresh host compilation from this complete original browser RTL/runtime source closure')
+    p.add_argument('--host-optimization',choices=('scalar','simd-lto'),default='scalar',help='Host compilation preset; real circuit timing and guest work are unchanged')
     p=sub.add_parser('browser-serve',help='Validate and serve an immutable local browser machine on loopback')
     p.add_argument('--bundle',type=Path,required=True);p.add_argument('--port',type=int,default=8767)
     p=sub.add_parser('native-bundle-build',help='Pack exact source-validated native RTL/QEMU development artifacts')
@@ -889,6 +891,8 @@ def main():
         if args.command=='browser-build':
             if args.wasm_input_bundle is not None and not args.reuse_wasm:
                 raise Failure('--wasm-input-bundle requires --reuse-wasm')
+            if args.reuse_wasm and (args.wasm_source_bundle is not None or args.host_optimization!='scalar'):
+                raise Failure('Host compilation options require a fresh Wasm build')
             import lemmasim_browser
             (lemmasim_browser.bundle if args.reuse_wasm else lemmasim_browser.build)(args)
             return 0

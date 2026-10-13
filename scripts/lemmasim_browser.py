@@ -22,24 +22,44 @@ def validate_wasm_inputs(source,m,input_bundle=None):
     This checks actual files before packaging, without rebuilding the machine.
     The immutable packaged launch validator remains independent of checkout.
     """
-    archive=None;consumed={}
+    archive=None;consumed={};browser_archive=False
     if input_bundle is not None:
         from silicon_guest_bundle import read_json,inventory
         input_bundle=Path(input_bundle).resolve()
         archive=read_json(input_bundle/'bundle.json')
-        inventory(input_bundle,archive)
+        if archive.get('schema')=='lemmasim-browser-bundle/1':
+            validated_bundle(input_bundle);browser_archive=True
+        else:inventory(input_bundle,archive)
     def check(path,want,label):
         resolved=path
         try:relative=path.relative_to(ROOT)
         except ValueError:relative=None
         if archive is not None and relative is not None:
-            from silicon_guest_bundle import origin_destination
-            try:resolved=input_bundle/origin_destination(archive,path,want)
-            except ValueError:
-                # A native archive need not consume browser-only sources.
-                # Their actual unchanged bytes must still match the original
-                # Wasm receipt; a changed checkout is never a fallback.
-                resolved=path
+            if browser_archive:
+                item=archive.get('wasm_project_inputs',{}).get(relative.as_posix())
+                if item is not None and item.get('sha256')==want:
+                    resolved=input_bundle/item['path']
+                elif relative.as_posix()=='scripts/silicon_wasm.py' and m.get('source_recompilation'):
+                    # A fresh host compilation uses the current compiler
+                    # driver. All old RTL/runtime bytes come from the archive.
+                    original=read_json(input_bundle/'wasm-build.json')
+                    receipt=m['source_recompilation']
+                    if (receipt.get('schema')!='lemma-wasm-original-source-recompilation/1' or
+                        receipt.get('bundle_sha256')!=sha(input_bundle/'bundle.json') or
+                        receipt.get('build_sha256')!=sha(input_bundle/'wasm-build.json') or
+                        receipt.get('implementation')!=original.get('snapshot_identity') or
+                        receipt.get('source_count')!=len(archive.get('wasm_project_inputs',{}))):
+                        raise ValueError('Fresh portable driver lacks its exact original source receipt')
+                    resolved=path
+                else:raise ValueError('Missing original browser consumed input: '+label)
+            else:
+                from silicon_guest_bundle import origin_destination
+                try:resolved=input_bundle/origin_destination(archive,path,want)
+                except ValueError:
+                    # A native archive need not consume browser-only sources.
+                    # Their actual unchanged bytes must still match the original
+                    # Wasm receipt; a changed checkout is never a fallback.
+                    resolved=path
         if sha(resolved)!=want:raise ValueError('Wasm input changed: '+label)
         if relative is not None:
             consumed[relative.as_posix()]={'path':resolved,'sha256':want}
@@ -115,9 +135,13 @@ def bundle(args):
             'scope':'unchanged validated archived genuine guest on current source-bound RTL/Wasm; not fresh target compilation'}
     if input_bundle is not None:
         result['wasm_consumed_source_reuse']={'input_bundle_sha256':sha(Path(input_bundle)/'bundle.json'),
-            'scope':'unchanged Wasm artifact with exact recorded consumed source versions; no current-machine compilation or execution qualification'}
+            'scope':('fresh host compilation of complete original RTL/runtime source versions; execution qualification separate'
+                     if m.get('source_recompilation') else
+                     'unchanged Wasm artifact with exact recorded consumed source versions; no current-machine compilation or execution qualification')}
         if guest_archive is not None:
-            result['guest_archive']['scope']='validated archived genuine guest on unchanged Wasm artifact; exact consumed source versions retained; not fresh target or machine compilation'
+            result['guest_archive']['scope']=('validated archived genuine guest on freshly host-compiled original RTL/runtime; not fresh target compilation'
+                if m.get('source_recompilation') else
+                'validated archived genuine guest on unchanged Wasm artifact; exact consumed source versions retained; not fresh target or machine compilation')
     result['wasm_project_inputs']={name:{'path':'wasm-sources/'+name,'sha256':item['sha256']}
                                  for name,item in consumed.items()}
     for name,item in consumed.items():
@@ -136,11 +160,18 @@ def bundle(args):
     result['files']={p.relative_to(out).as_posix():sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     (out/'bundle.json').write_text(json.dumps(result,indent=2)+'\n')
     notice='Local development bundle. Existing Lean/compiler/application sources have no selected project-wide redistribution license. Do not infer permission to redistribute from this local build.\nWasm host adapter: Apache-2.0 per source notices; no repository-wide relicensing.\nCVW pinned '+m['core_revision']+': Apache-2.0 WITH SHL-2.1 and preserved MIT notices.\nVerilator5.052: LGPL-3.0-only OR Artistic-2.0; generated model licensing follows its upstream terms. Emscripten6.0.9: MIT; generated runtime dependencies retain their upstream notices.\nSource/tool input closure is retained in wasm-build.json. Physical conformance UNVERIFIED.\n'
+    if m.get('portable_compilation',{}).get('preset')=='simd-lto':
+        notice+='This optional host compilation requires WebAssembly SIMD. The scalar build remains available. LLVM LTO/SIMD do not change RTL cycles, device scheduling or guest work.\n'
     (out/'DEPENDENCIES.txt').write_text(notice);shutil.copyfile(source/'build.json',out/'wasm-build.json')
     print(out/'index.html')
 
 def build(args):
-    subprocess.run([sys.executable,str(ROOT/'scripts/silicon_wasm.py'),'--output-dir',str(args.wasm_build),'--profile',args.profile],check=True)
+    command=[sys.executable,str(ROOT/'scripts/silicon_wasm.py'),'--output-dir',str(args.wasm_build),
+             '--profile',args.profile,'--host-optimization',getattr(args,'host_optimization','scalar')]
+    source_bundle=getattr(args,'wasm_source_bundle',None)
+    if source_bundle is not None:command+=['--source-bundle',str(source_bundle)]
+    subprocess.run(command,check=True)
+    if source_bundle is not None:args.wasm_input_bundle=source_bundle
     bundle(args)
 
 def validated_bundle(directory):

@@ -764,4 +764,43 @@ Full processor timing/cached continuation, general runtime/proof kernel, package
 tutor/assessment permissions, complete USB/BLE5.4/Wi-Fi6, browser cold/workflow and
 physical routed/process/memory/domain closure remain unfinished.
 
+
+[The original-source SIMD/LTO milestone](../evidence/006-browser-simd-lto.json)
+adds fresh host compilation of the complete original239-input portable RTL/runtime
+closure. Actual builda2PASS83.74915s, three source-admission negatives reject,
+read-only importer testPASS, seven browser host testsPASS and18scaffold testsPASS.
+Originala1hostbuild completed, but an independently caught Python bytecode-cache
+side effect failed immutable archive admission; only that test-owned cache was
+removed, importer policy repaired and fresha2qualified. Originalfailure retained.
+The identical10M guest workload takes71.381388s scalar versus58.029916s optimized;
+complete wrapper/generatedRTL/CRC bytes match at9/32/1M/10M. Only predeclared,
+independently checked implementation metadata differs; no checkpoint rewriting
+or cross-identity restore occurred. Peak comparisonRSS1012174848bytes includes
+two host modules; each machine heap192MiB. These are prefix/performance results,
+not full notebook Ready or arbitrary-boundary continuation. New staticbundlea2
+records the optional SIMD dependency and fresh-host/original-guest provenance.
+Actual local newCourseWord cold on tab11/port8778 is RUNNING under the original
+2B/7200s acceptance bounds, from original opaqueDoc6 bytes027b26c9… . Ordinary
+Open started the real CPU; remaining budgets preserve the same cold machine,
+absolute2Bcyclelimit and a conservative7170s whole-worker deadline. No snapshot,
+formatting, initialized-state injection or Ready assertion is used.
+
+The older Array browser now additionally acknowledges editSaved39 at1406200000:
+revision21/goal1/outcome0/evidence0 retains allseven historical attempts. Actual
+OPFSbarrier278 precedes the real guest acknowledgment. The independent durable
+record decoder confirms the edit invalidated current applicability. Subsequent
+raw denominator edit and remaining hint/review/check workflow continue; this
+does not extend the earlier Saved38 independent native cold receipt.
+
+Candidate4c4ffa773cfbce4ceab0c652bce11a2f4a032f5b actualCI38477948866 completed
+SUCCESS:10jobs, all reported stepscompleted/success including foundation,
+kernel and silicon host suites. No skipped work is called passed. This CI
+qualifies4c4only; laterWire/Common/Wasm changes require their own candidate.
+NewWire fullsourcepair/strictpack passed, then actualguest discovery failed169
+beforeUSBinitialization. Independent rawFDT Action diagnosis found a duplicated
+code58bit128; the distinct boundaryproperty requires256. OriginalfullFAIL and
+three passing partial suffixes remain, corrected genuine pair is in progress.
+Same-machineCommon12 raw pendingPIO/IQ exact private suffixes passed after a real
+new-event reader-bound repair; its K8 guest/ownedqueue/IRQ path is still pending.
+
 -->

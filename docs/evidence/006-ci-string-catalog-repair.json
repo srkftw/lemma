@@ -193,5 +193,19 @@
     },
     "later_local_changes": "Not qualified by this CI."
   },
-  "check_source_sha256": "71095fc84eb63a6c9a7b3c1868a67307daee30bebd167b62a53669ae371c4acf"
+  "check_source_sha256": "71095fc84eb63a6c9a7b3c1868a67307daee30bebd167b62a53669ae371c4acf",
+  "latest_complete_candidate": {
+    "commit": "4c4ffa773cfbce4ceab0c652bce11a2f4a032f5b",
+    "run_id": 38477948866,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": 10,
+    "all_job_and_step_statuses": "completed/success; no skippedsteps",
+    "actual_api_receipt": {
+      "path": "build/ci/task006-4c4ffa7/actions.json",
+      "bytes": 11963,
+      "sha256": "99ce7f2f7232c0db785b245d3a202514df7c23c8c512ba5dd4adab2f9e6df947"
+    },
+    "scope": "qualifies4c4candidate only; laterWire/Common/Wasm changes separate"
+  }
 }
