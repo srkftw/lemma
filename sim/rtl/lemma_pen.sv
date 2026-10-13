@@ -130,6 +130,13 @@ module lemma_pen #(
     // The large storage array sees only registered data/address/enable.  Raw
     // sample bounds, loss decisions and 64-bit ACK comparisons do not drive
     // every storage flip-flop's enable in the same cycle.
+    // Capture the private payload every clock. Only ingress_pending can commit
+    // it to storage, so unaccepted samples remain unobservable. This keeps the
+    // bounds/loss/ACK network out of the wide ingress register's hold mux; a
+    // bank commit still reads the preceding accepted payload/address.
+    ingress_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+      sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
+    ingress_index <= tail;
     ingress_pending <= 0;
     if (!reset_n) begin
       head <= 0; tail <= 0; count <= 0;
@@ -166,9 +173,7 @@ module lemma_pen #(
     end else if (sample_valid && sample_ready && !loss) begin
       if (resync && !sample_flags[0]) release_seen <= 1;
       if (!resync || (release_seen && sample_flags[0])) begin
-        ingress_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
-          sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
-        ingress_index <= tail; ingress_pending <= 1;
+        ingress_pending <= 1;
         if (count == 0)
           head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
             sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};

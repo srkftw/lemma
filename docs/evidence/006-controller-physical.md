@@ -112,6 +112,47 @@ SG13G2 enclosure/CUTCLASS gap is still not established as the timeout's cause.
 [The compact source/tool/result receipt](006-pen-onehot.json) retains this
 attempt separately. It used `--process-checks` in addition to the command below.
 
+The October13 private-ingress continuation addresses that measured input-to-
+ingress hold path. Payload/address registers now capture every nonreset edge;
+the unchanged registered accepted-only strobe commits the preceding payload.
+Head bypass, all 256 entries, full sequence/time widths, one-hot bank selection,
+queue order, loss/ACK/reset behavior and the two refill clocks are preserved.
+Source SHA256 is `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`.
+Unaccepted samples can change private register bits; dynamic power is unmeasured.
+Existing immutable guest runtimes/checkpoints keep their original identities.
+
+A bounded old/new external-interface miter matched all six public output
+signals at 28,457 clock edges, including consecutive accepted samples, full
+queues, invalid inputs and ACK/write/reset collisions. Literal MMIO checks
+traverse the full depth and every field, including high timestamps and an
+explicit test-only high sequence seed crossing the 32-bit carry. The unchanged
+independent two-wrap/refill/watchdog corpus and existing Pen-v1 overflow,
+exact-ACK/resynchronization/reset corpus passed. A quarantined bank-write
+mutation that bypasses the registered payload compiled, then failed the miter
+at edge 1,131. These are finite literal RTL observations, not formal proofs or
+new guest execution.
+
+One frozen-source attempt retained the original 900-second overall bound,
+100MHz constraints, SG13G2 corner and supported `WNS_PATH` repairs. Mapping
+produced 184159 cells and 50102 flip-flops, with no unresolved cells, latches or
+residual memories. Fewer cells did not reduce mapped area: 4354753.951798 µm²
+is 1.850557% larger than the earlier one-hot map. Final global-route setup WNS
+improved by 1.673568ns to **−1.732748ns**, still **FAIL**; hold WNS is
+**+0.034803ns**. The worst reported path is now a mapped refill-state flip-flop
+to `next_sequence[63]`, arriving at 13.643834ns against 11.911086ns required.
+Global geometry is 237630 instances, 5110058.016 µm² cell area and 29.369574%
+utilization. All 128 clock-buffer fanout violations remain unwaived. These
+are global-route estimated parasitics, not routed extraction or signoff.
+
+Detailed routing again timed out in pin access, after 20000 reported completed
+groups. OpenROAD received SIGTERM and was reaped; the actual result remains
+**FAIL**. No router DRC count, process DRC/LVS, extracted parasitics or post-route
+timing was reached. Original failures and the unresolved enclosure/CUTCLASS
+coverage remain intact; that gap is not established as the timeout cause.
+The [new source/tool/result receipt](006-pen-private-ingress.json) preserves
+the exact candidate, bounded tests, failed flow and global ODB/DEF/estimated
+SPEF as a resumable checkpoint. No unchanged follow-up route was launched.
+
 Reproduce with unused output paths:
 
 ```sh
