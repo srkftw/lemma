@@ -28,4 +28,6 @@ private def contains (p : Profile) (address width : Nat) (write : Bool) : Bool :
       "historical profile gained boot write authority"
     require (!(deviceRegionsFor p .deviceRead64).any (fun r => r.name == "boot-nv-controller"))
       "historical profile gained NV aperture"
+  require (contains .kernel_v0_7 0x81fc3ff8 8 true && !contains .kernel_v0_7 0x81fc4000 8 true)
+    "Product supervisor scratch authority differs"
   IO.println "BOOT_AUTHORITY:PASS exactdiscovery/width/exclusivebounds/deniedops/legacyregions"

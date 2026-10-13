@@ -26,7 +26,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           service_executable_module, user_module_closure, user_artifact_category,
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
-                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
+                          ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS)
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -189,8 +189,20 @@ LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOP
 LEMMASIM_NOTEBOOK_CONFIGURATIONS = LEMMASIM_NOTEBOOK_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
-USB_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
-LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS
+USB_PROBE_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
+USB_NOTEBOOK_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-notebook',
+    'lemmasim-silicon-usb-initialize'})
+USB_CONFIGURATIONS = USB_PROBE_CONFIGURATIONS | USB_NOTEBOOK_CONFIGURATIONS
+PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-notebook',
+    'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'})
+MODERN_NOTEBOOK_CONFIGURATIONS = USB_NOTEBOOK_CONFIGURATIONS | frozenset({
+    'lemmasim-silicon-product-notebook'})
+LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MODERN_NOTEBOOK_CONFIGURATIONS
+MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1'
+    for configuration in MODERN_NOTEBOOK_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration:ARITHMETIC_NOTEBOOK_IMAGES
+    for configuration in MODERN_NOTEBOOK_CONFIGURATIONS})
 
 MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
     'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
@@ -201,12 +213,24 @@ LEMMASIM_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 
+SUMS_NOTEBOOK_IMAGES = (NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainSums'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2], 'module':'Lemma.Services.Arithmetic.ServerV3',
+      'source':'Lemma.Services.Arithmetic.ServerV3.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:SUMS_NOTEBOOK_IMAGES for configuration in SUMS_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(SUMS_NOTEBOOK_CONFIGURATIONS)
+
 def software_deployment_fields(configuration):
+    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS:
+        from managed_sums import SOFTWARE_DEPLOYMENT as sums_deployment
+        return {'software_deployment':sums_deployment}
     return {'software_deployment':SOFTWARE_DEPLOYMENT} if configuration in MANAGED_NOTEBOOK_CONFIGURATIONS else {}
 
 
 def kernel_contract(configuration: str) -> str:
-    return "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
+    return "core0-kernel-v0.7" if configuration in PRODUCT_CONFIGURATIONS else "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -1442,10 +1466,12 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     o='Lemma.Kernel.Objects.';f='Lemma.Kernel.Memory.Frames.';var=r'%[A-Za-z0-9_.$-]+'
     if o+'initFor' not in names:return {'scope':'initializer not reachable; historical direct initializer unchanged'}
     needed={o+s for s in ('init','initFor','initStep','powerEndpointCapacity','capacity','put','get','control','magic','failed')}
+    modern=unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS
+    if modern:needed.remove(o+'init')
     needed|={f+'allocate',f+'resolvePurpose','Lemma.User.CapabilityABI.invalidArgument'}
     if not needed<=names.keys():raise Core0Error('Objects versioned initializer closure missing')
     arithmetic=o+'initArithmetic' in names
-    wrappers={o+'init':1}
+    wrappers={} if modern and o+'init' not in names else {o+'init':1}
     if arithmetic:wrappers[o+'initArithmetic']=3
     if o+'initPower' in names:wrappers[o+'initPower']=2
     expected='''entry:
@@ -1523,7 +1549,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
     for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
         gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.construct';callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1531,6 +1557,17 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
             raise Core0Error('Objects versioned initializer has a non-wrapper caller')
         if selected not in names or names[selected] not in calls:continue
         if source!=construct:raise Core0Error('Objects power initializer escapes the selected machine constructor')
+        if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+            if not arithmetic:
+                raise Core0Error('modern notebook requires the exact Objects-v3 wrapper')
+            if re.findall(r'call \{ i64, i64 \} @'+re.escape(names[selected])+r'\(([^\n]*)\)',other)!=['']:
+                raise Core0Error('modern notebook changes Objects-v3 initialization call')
+            task_init='Lemma.Kernel.Task.init'
+            if task_init not in names:
+                raise Core0Error('modern notebook omits checked task initialization')
+            binding_gates.append(validate_checked_call_gate(other,names[task_init],names[selected]))
+            callers.append(source)
+            continue
         admitted=[]
         for cmp in re.findall('('+var+r') = icmp eq i64 %arg2, 3$',other,re.M):
             try:admitted.append((validate_boolean_gate(other,cmp,names[selected]),validate_boolean_gate(other,cmp,names[o+'init'],success_when_true=False)))
@@ -1538,6 +1575,27 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         if len(admitted)!=1:raise Core0Error('Objects power initializer lacks the exact binding3 selection')
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
+    if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+        boot='Lemma.Platform.LemmaSim.NotebookKernel.bootModern'
+        binding=7 if unit['configuration']=='lemmasim-silicon-product-notebook' else 6
+        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
+        if boot not in names or wrapper not in names:
+            raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
+        constructor_callers=[];boot_callers=[]
+        for source,symbol in names.items():
+            body=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(body)[2]
+            if names[construct] in calls:
+                constructor_callers.append(source)
+                if source!=boot or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[construct])+r'\(([^\n]*)\)',body)!=['i64 %arg0, i64 %arg1']:
+                    raise Core0Error('modern Objects-v3 constructor has an undeclared binding caller')
+            if names[boot] in calls:
+                boot_callers.append(source)
+                initialization=1 if unit['configuration'].endswith('-initialize') else 0
+                if source!=wrapper or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[boot])+r'\(([^\n]*)\)',body)!=[f'i64 {initialization}, i64 {binding}']:
+                    raise Core0Error('modern Objects-v3 boot lacks its fixed selected binding')
+        if constructor_callers!=[boot] or boot_callers!=[wrapper]:
+            raise Core0Error('modern Objects-v3 constructor/boot caller closure differs')
+        binding_gates.append({'selected_binding':binding,'initialization':initialization,'boot_wrapper':wrapper,'constructor_caller':boot})
     return {'wrappers':wrappers,'version_cases':version_cases,'encoded_limit_cases':encoded_cases,
         'publication_status_gates':gates,'power_callers':callers,'binding3_gates':binding_gates}
 
@@ -3049,7 +3107,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
     from managed_records import FIELD as records_field, allowed as records_allowed, profile_allowed as user_v2_allowed, contract as records_contract
     from arithmetic_execution_identity import FIELD as execution_field, selected as execution_selected, contract as execution_contract
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()), "unit")
+    from managed_sums import FIELD as sums_field, allowed as sums_allowed, contract as sums_contract
+    from arithmetic_sums_identity import FIELD as sums_execution_field, selected as sums_execution_selected, contract as sums_execution_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
@@ -3057,6 +3117,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
                 (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.3' if sums_allowed(unit) else
                  'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook')) else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
@@ -3108,6 +3169,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     inline_catalog(unit)
     records_contract(unit)
     execution_contract(unit)
+    sums_contract(unit)
+    sums_execution_contract(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -3153,7 +3216,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6", "core0-kernel-v0.7"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -3742,14 +3805,27 @@ def validate_usb_descriptor_lookup(ir: str, unit: dict) -> tuple[set[int], list[
     The two immutable tables are byte-level USB descriptors, not host supplied
     state or authority to complete enumeration. Unknown tables still fail.
     """
-    if unit.get('configuration') not in USB_CONFIGURATIONS or unit.get('role')!='kernel':
+    if unit.get('configuration') not in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS or unit.get('role')!='kernel':
         return set(), [], set()
+    if unit.get('contract_version')!=kernel_contract(unit['configuration']):
+        raise Core0Error('USB descriptor kernel profile authority differs')
     rows=[r for r in unit['functions'] if r['source']=='Lemma.USB.Control.descriptorWord']
     if len(rows)!=1 or rows[0]['args']!=['u64','u64'] or rows[0]['effects']:
         raise Core0Error('USB descriptor lookup source/signature/effects differs')
     row=rows[0];symbol=row['symbol'];stem='switch.table.'+symbol
+    config_values=[0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]
+    config_table=stem+'.31'
+    if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
+        # Private table numbering belongs to the whole optimized module.
+        # Pin this owner's immutable contents and normalize only its name;
+        # complete body, bounds, sole-use and load checks remain below.
+        signed=[v if v<1<<63 else v-(1<<64) for v in config_values]
+        content='private unnamed_addr constant [4 x i64] ['+', '.join(f'i64 {v}' for v in signed)+'], align 8'
+        matches=re.findall(r'^@('+re.escape(stem)+r'\.[0-9]+) = '+re.escape(content)+r'$',ir,re.M)
+        if len(matches)!=1:raise Core0Error('USB descriptor owner table content/namespace differs')
+        config_table=matches[0]
     specs=[(stem,[0x4000000002000112,0x0000010000000000,0x0100],'device'),
-           (stem+'.31',[0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700],'config')]
+           (config_table,config_values,'config')]
     lines=ir.splitlines();removed=set();tables=[]
     body=_ir_definition_body(ir,symbol)
     for table,values,label in specs:
@@ -3931,7 +4007,7 @@ BACKEND_JUMP_TABLES = {
     'Lemma.Services.Buffer.Server.existing': ('user', 5, ['u64']*9, ['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'], list(range(2,7))),
 }
 BACKEND_JUMP_TABLE_CONFIGURATIONS = {
-    'Lemma.USB.BlockProtocol.headerWord': USB_CONFIGURATIONS,
+    'Lemma.USB.BlockProtocol.headerWord': USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS,
     'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
     'Lemma.Kernel.Development.ServiceEntry.command': set(SERVICE_CONFIGURATIONS) - {'service-normal'},
     'Lemma.Services.Buffer.Protocol.requestShape': set(SERVICE_CONFIGURATIONS),
@@ -4199,11 +4275,14 @@ def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
     if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
         or names.get(symbol)!=source):raise Core0Error('DTB paired body escapes exact kernel owner')
     body=_ir_definition_body(ir,symbol)
+    body=re.sub(r'@switch\.table\.'+re.escape(symbol)+r'(?![A-Za-z0-9_.$-])',
+                '@switch.table.'+source,body)
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
     normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
     digest=hashlib.sha256(normalized.encode()).hexdigest()
     if digest not in {'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c',
-                       '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2'}:
+                       '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2',
+                       '608b778cafe0dcd914a104169c10b56b02794396fef4d7c066ac08804b52b28d'}:
         raise Core0Error('DTB paired owner differs from exact checked property/role body')
     return digest
 
@@ -4217,11 +4296,14 @@ def validate_sim_geometry_body(ir: str, unit: dict, symbol: str) -> str:
         or row.get('effects')!=['checked-access','mmio-read','io-order','physical-read','physical-write']):
         raise Core0Error('geometry table escapes its closed checked kernel declaration')
     body=_ir_definition_body(ir,symbol)
+    body=re.sub(r'@switch\.table\.'+re.escape(symbol)+r'(?![A-Za-z0-9_.$-])',
+                '@switch.table.'+source,body)
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
     normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
     digest=hashlib.sha256(normalized.encode()).hexdigest()
     if digest not in {'57282f9401fcda2b06922f56f5b6fd3d480c89f10f94bff21ad18f5f3a34e150',
-                       '43264c64be87983f1354763a18f78bd3e0c0843203793f7a2511f13b6cfbc22b'}:
+                       '43264c64be87983f1354763a18f78bd3e0c0843203793f7a2511f13b6cfbc22b',
+                       '2df6496627c257026e01897b6b9cfacaa541249b1ca4c6e8e9c54e6b5c4695f3'}:
         raise Core0Error('geometry table differs from a complete declared discovery body')
     return digest
 
@@ -4237,7 +4319,8 @@ def validate_sim_binding_body(ir: str, unit: dict, symbol: str) -> str:
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),_ir_definition_body(ir,symbol))
     normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
     digest=hashlib.sha256(normalized.encode()).hexdigest()
-    if digest!='9d3b2bf8bc247f19885073361ecf10b1179727601e78248c9b3aeb5d9fcf3718':
+    if digest not in {'9d3b2bf8bc247f19885073361ecf10b1179727601e78248c9b3aeb5d9fcf3718',
+                      '9cbfb3e00b215a21afa68f0223e7d1125a3e72c653acd4e854fcc436ad3bf414'}:
         raise Core0Error('six-binding identity differs from its complete checked ABI/pool/power body')
     return digest
 
@@ -4250,7 +4333,7 @@ def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
     code,labels=_jump_assembly_function(assembly,symbol)
     uses=[(i,re.fullmatch(r'%pcrel_hi\((\.LJTI[0-9]+_[0-9]+)\)',args[1]))
           for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
-    if len(uses) not in (2,3) or any(match is None for _,match in uses):raise Core0Error('DTB declared discovery has an extra or unparseable table use')
+    if len(uses) not in (2,3,4) or any(match is None for _,match in uses):raise Core0Error('DTB declared discovery has an extra or unparseable table use')
     names=[match[1] for _,match in uses]
     group=re.fullmatch(r'\.LJTI([0-9]+)_0',names[0])
     if group is None or names!=['.LJTI'+group[1]+'_'+str(i) for i in range(len(uses))]:raise Core0Error('DTB discovery table labels/order differ')
@@ -4258,6 +4341,10 @@ def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
     shapes=((15,36,[1,2,3,4,5,6,7,8,10]),(9,1,[2,3,4,6])) if len(uses)==2 else (
         (15,36,[1,2,3,4,5,6,7,8,10]),(13,1,[2,3,4,6,9,10,11]),
         (21,38,[i for i in range(21) if i not in (0,15,18,19,20)]))
+    if len(uses)==4:
+        shapes=((15,36,[1,2,3,4,5,6,7,8,10]),(14,1,[2,3,4,6,9,10,11]),
+            (21,38,[i for i in range(21) if i not in (0,15,18,19,20)]),
+            (25,38,[i for i in range(25) if i not in (0,21,22,23,24)]))
     for (use,_),name,(count,minimum,holes) in zip(uses,names,shapes):
         declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB[0-9]+_[0-9]+\s*\n)+)',assembly)
         targets=re.findall(r'\.quad\s+(\.LBB[0-9]+_[0-9]+)',declaration[1]) if declaration else []
@@ -4311,7 +4398,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps) in (2,3) else {}
+    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps) in (2,3,4) else {}
     own_jumps=[i for i in jumps if use+4<=i<=use+6 and code[i]==('jr',[target])]
     if (len(own_jumps)!=1 or (len(jumps)!=1 and not paired)
         or (paired and paired.get(own_jumps[0])!=targets)):
@@ -4438,20 +4525,28 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     literal_contracts={'Lemma.Kernel.Objects.replyLimitFor':[8,8,7],'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
     sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
     if sim_literals:
-        from lemmasim_readonly import canonical_specs, ble_specs, usb_specs, BLE_CONFIGURATIONS, USB_CONFIGURATIONS
+        from lemmasim_readonly import canonical_specs, ble_specs, usb_specs, product_specs, BLE_CONFIGURATIONS, USB_CONFIGURATIONS, PRODUCT_CONFIGURATIONS
         extra = usb_specs() if unit.get("configuration") in USB_CONFIGURATIONS else ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
-        modern = ble_specs(); usb_modern = usb_specs()
+        modern = ble_specs(); usb_modern = usb_specs(); product_modern=product_specs()
         def admitted_literal(row):
             source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+            if source=='Lemma.Applications.Notebook.openCourse':
+                # This actual 24-byte object is admitted only after the
+                # separate version2..4 bound/read/complete-owner LLVM check.
+                from lemmasim_readonly import DOCUMENT4_NOTEBOOK_PROFILES
+                return (unit.get('configuration') in DOCUMENT4_NOTEBOOK_PROFILES
+                        and unit['role']=='user' and unit.get('contract_version')==DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
+                        and unit.get('image_key')=='notebook'
+                        and row['values']==[1856,2496,2496] and row['bytes']==24)
             if source=='Lemma.USB.Control.descriptorWord':
-                return (unit.get('configuration') in USB_CONFIGURATIONS and unit['role']=='kernel'
-                        and unit.get('contract_version')=='core0-kernel-v0.6' and row['values'] in
+                return (unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS and unit['role']=='kernel'
+                        and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
                         [[0x4000000002000112,0x0000010000000000,0x0100],
                          [0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]])
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
-            spec=extra.get(source)
-            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in (*spec[3],*modern[source][3],*usb_modern[source][3])]
+            specs=[s[source] for s in (extra,modern,usb_modern,product_modern) if source in s]
+            return bool(specs) and all(s[0]==unit['role'] for s in specs) and row['values'] in [[0 if value is None else value for value in values] for spec in specs for values in spec[3]]
         valid_literals=all(admitted_literal(row) for row in literal)
     else:
         valid_literals=unit['role']=='kernel' and all(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))==r['values'] for r in literal)
@@ -4482,7 +4577,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             raise Core0Error('actual and companion jump-table label inventories differ')
         by_symbol={r['symbol']:r for r in unit['functions']}
         for table in sorted(tables,key=lambda s:s['value']):
-            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([012])',name)
+            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([0123])',name)
             if match is None or table['type']!='NOTYPE' or table['binding']!='LOCAL' or table['section']!=section_id or table['size']!=0 or table['value']%8:
                 raise Core0Error('backend table label is not one local aligned readonly extent')
             declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)',assembly)
@@ -4503,15 +4598,19 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                           if candidate['name'].startswith('.LJTI'+match[1]+'_')]
             paired_leaf=(sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
                          and sorted(owner_tables) in (['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'],
-                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(3)]))
+                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(3)],
+                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(4)]))
             if match[2]!='0' and not paired_leaf:raise Core0Error('second table escapes closed DTB pair')
             if paired_leaf:
                 digest=validate_dtb_pair_body(optimized_ir,unit,owner['name'])
-                triple=len(owner_tables)==3
-                if triple != (digest=='4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2'):
+                version_count={'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c':2,
+                    '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2':3,
+                    '608b778cafe0dcd914a104169c10b56b02794396fef4d7c066ac08804b52b28d':4}[digest]
+                if len(owner_tables)!=version_count:
                     raise Core0Error('DTB discovery body/table version mismatch')
-                if match[2]=='1':spec=('kernel',13 if triple else 9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9,13] if triple else [1,2,6,8,9])
+                if match[2]=='1':spec=('kernel',14 if version_count==4 else 13 if version_count==3 else 9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9,13,14] if version_count==4 else [1,2,6,8,9,13] if version_count==3 else [1,2,6,8,9])
                 if match[2]=='2':spec=('kernel',21,['u64']*4,['checked-access','physical-read','physical-write'],[38,53,56,57,58])
+                if match[2]=='3':spec=('kernel',25,['u64']*4,['checked-access','physical-read','physical-write'],[38,59,60,61,62])
             if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
                     and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):
                 # Exact historical Power literal domain; immutable old units
@@ -4519,15 +4618,17 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 # requires the new domain including its five literal codes.
                 spec=('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)])
             if sim_source and source in ('Lemma.Platform.LemmaSim.Descriptor.geometry','Lemma.Platform.LemmaSim.Descriptor.expectedBinding'):
-                if len(targets)==6:
-                    spec=(*spec[:1],6,*spec[2:4],list(range(1,7)))
+                if len(targets) in (6,7):
+                    spec=(*spec[:1],len(targets),*spec[2:4],list(range(1,len(targets)+1)))
                     if source.endswith('expectedBinding'):validate_sim_binding_body(optimized_ir,unit,owner['name'])
-                elif unit.get('configuration') in USB_CONFIGURATIONS:
+                elif unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS:
                     raise Core0Error('USB binding lacks complete six-binding identity/geometry selection')
             if sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord':
                 if len(targets)==76:
                     spec=('kernel',76,['u64','u64'],[],[*range(2,21),*range(32,59),*range(64,78)])
-                elif unit.get('configuration') in USB_CONFIGURATIONS:
+                elif len(targets)==77:
+                    spec=('kernel',77,['u64','u64'],[],[*range(2,22),*range(32,63),*range(64,79)])
+                elif unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS:
                     raise Core0Error('USB binding lacks complete decoded packet literal domain')
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
                 raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
@@ -4657,7 +4758,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -4683,9 +4784,43 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             raise Core0Error("compiled boot closure contains an additional FIFO reset")
 
 
+def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> None:
+    """Modern USB/Product boot selects the actual Power-v2 identity driver.
+
+    Retain the exact cooperative constructor; only its identity callee differs
+    from the separately preserved Power-v1 constructor. This is a source/CFG
+    obligation, not evidence that a notebook reached Ready.
+    """
+    if optimized or unit.get('configuration') not in MODERN_NOTEBOOK_CONFIGURATIONS or unit.get('role')!='kernel':
+        return
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    by={source:symbol for symbol,source in names.items()}
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.constructModern',
+        'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
+        'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
+    if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
+    configure=by[required[1]]
+    body=_ir_definition_body(ir,configure)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    if hashlib.sha256(normalized.encode()).hexdigest()!='7c71aef20fefb55e4f468bb81dc052ff672bc16f36e582b501f18fe05cf65386':
+        raise Core0Error('Modern cooperative Power-v2 identity/status/record constructor differs')
+    owner=by[required[0]];constructor=_ir_definition_body(ir,owner)
+    endpoints=re.findall(r'(%[-A-Za-z0-9_.$]+) = call \{ i64, i64 \} @'+re.escape(by[required[4]])+r'\([^\n]*\)',constructor)
+    if len(endpoints)!=6:raise Core0Error('Modern power endpoint construction inventory differs')
+    values=re.findall(r'(%[-A-Za-z0-9_.$]+) = extractvalue \{ i64, i64 \} '+re.escape(endpoints[4])+r', 1',constructor)
+    if len(values)!=1 or len(re.findall(r'call \{ i64, i64 \} @'+re.escape(configure)+r'\(i64 1, i64 '+re.escape(values[0])+r'\)',constructor))!=1:
+        raise Core0Error('Modern Power-v2 configuration is not the actual owned power endpoint')
+    owners=_line_functions(ir.splitlines())
+    callers=[owners[i] for i,line in enumerate(ir.splitlines()) if re.search(r'\bcall\b[^\n]*@'+re.escape(configure)+r'\(',line)]
+    if callers!=[owner]:raise Core0Error('Modern Power-v2 configuration caller authority differs')
+    validate_checked_call_gate(constructor,configure,by[required[3]])
+
+
 def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
+    validate_modern_power_selection(ir,unit,optimized=optimized)
     ble_header = validate_ble_header_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
@@ -4732,6 +4867,10 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     records_report = validate_managed_records(ir, unit, optimized=optimized)
     from arithmetic_execution_identity import validate as validate_execution_identity
     execution_report = validate_execution_identity(ir, unit, optimized=optimized)
+    from managed_sums import validate as validate_managed_sums
+    sums_report = validate_managed_sums(ir, unit, optimized=optimized)
+    from arithmetic_sums_identity import validate as validate_sums_execution_identity
+    sums_execution_report = validate_sums_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4790,6 +4929,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
             "checked_inline": inline_report, "managed_records": records_report,
             **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
+            **({"managed_sums":sums_report} if sums_report is not None else {}),
+            **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 

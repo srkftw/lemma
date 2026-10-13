@@ -256,4 +256,32 @@ def dispatch (frame cause value : UInt64) : Action :=
   if failed s = true then fatal else
   userTrap descriptor frame cause value pc status translation
 
+/-- Explicit Product root constructor; legacy init never reads Product selection. -/
+def initProduct : Action :=
+  .bind (AddressSpace.noteActive 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.createProduct 1) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.root descriptor) fun s root =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.satp descriptor) fun s translation =>
+  if failed s = true then .done s 0 else
+  .platform .installSatp translation 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (AddressSpace.noteActive root) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 control 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (control + 8) root) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (control + 16) 2) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (control + 32) 0) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind Frames.remaining fun s remaining =>
+  if failed s = true then .done s 0 else
+  .bind (Access.write64 (control + 24) remaining) fun s _ =>
+  if failed s = true then .done s 0 else
+  Lemma.Kernel.Console.record 0xd3 root translation remaining 0
+
 end Lemma.Kernel.Process

@@ -103,6 +103,10 @@ MANAGED_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-managed-notebook',
     'lemmasim-silicon-managed-initialize'}
 CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+SUMS_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-sums-notebook',
+    'lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}
+CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
 BLE_CONFIGURATIONS = {'lemmasim-silicon-ble-link-probe'}
 CONFIGURATIONS |= BLE_CONFIGURATIONS
 BLE_LITERALS = {19:'lemma-ble@10010600',53:'lemma,payload-max',54:'lemma,clocks-per-bit',55:'lemma,manual-context',76:'lemma,ble-packet-v1'}
@@ -139,7 +143,8 @@ def ble_specs():
     specs[source]=(*specs[source][:3],words)
     return specs
 
-USB_CONFIGURATIONS = {'lemmasim-silicon-usb-link-probe'}
+USB_CONFIGURATIONS = {'lemmasim-silicon-usb-link-probe',
+    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'}
 CONFIGURATIONS |= USB_CONFIGURATIONS
 USB_LITERALS = {20:'lemma-usb@10010a00',56:'lemma,endpoints',57:'lemma,reset-clocks',
                 58:'lemma,decoded-packet-boundary',77:'lemma,usb-device-packet-v1'}
@@ -178,6 +183,80 @@ def usb_specs():
     specs[source]=(*specs[source][:3],words)
     return specs
 
+PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-notebook',
+    'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'}
+CONFIGURATIONS |= PRODUCT_CONFIGURATIONS
+# All selected Notebook roots share this bounded scalar fetch. Historical
+# main selects Protocol2 and still rejects document4 in Mathematics.validate;
+# fetching its bounded bytes grants neither sums lowering nor format authority.
+# Genuine User1/User2 exports independently retain the same complete owner pin.
+LEGACY_NOTEBOOK_CONFIGURATIONS = {
+    'lemmasim-notebook','lemmasim-initialize','lemmasim-isolation-development',
+    'lemmasim-silicon-notebook','lemmasim-silicon-initialize',
+    'lemmasim-silicon-full-notebook','lemmasim-silicon-full-initialize',
+    'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
+    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
+    'lemmasim-silicon-product-notebook'} | ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+DOCUMENT4_NOTEBOOK_CONFIGURATIONS = (SUMS_NOTEBOOK_CONFIGURATIONS |
+    MANAGED_NOTEBOOK_CONFIGURATIONS | LEGACY_NOTEBOOK_CONFIGURATIONS)
+DOCUMENT4_NOTEBOOK_PROFILES = {configuration: ('core0-user-v0.2'
+    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS | MANAGED_NOTEBOOK_CONFIGURATIONS
+    else 'core0-user-v0.1') for configuration in DOCUMENT4_NOTEBOOK_CONFIGURATIONS}
+PRODUCT_LITERALS = {21:'lemma-boot-nv@10012000',59:'lemma,sector-bytes',
+    60:'lemma,capacity-sectors',61:'lemma,rom-bytes',62:'lemma,integrity-only',
+    78:'lemma,boot-nv-v1'}
+PRODUCT_BYTES = {**USB_BYTES, **{code:value.encode('ascii')+b'\0'
+                              for code,value in PRODUCT_LITERALS.items()}}
+# rom-bytes fits two immediate words. boot-nv-v1 has two nonzero
+# words plus a scalar zero terminator, so neither needs a readonly table.
+PRODUCT_WORD_CODES = [21,59,60,62,*USB_WORD_CODES]
+PRODUCT_DEVICE_BODY_DIGESTS = {
+ 'read64': ('34649ec362f251ed67b868746f41fd59f235e6e859a0647b9337cb11916ddd7c',
+            '7f64c9cb3523c75d0c15e3742293f12b8a915f79a6bda929103a55afa5e3a275'),
+ 'write64': ('b701403a24cbc0237cccf2063f11a5abf4330c715533b2416b8604fef1a17757',
+             '2e1e9517d8eda66631f71961f6b96086191e76c6bbcda0f4463c96046f680c1b'),
+ 'read32': ('3a4c474975826132424526e5285ea2807d257965578701caaaeaace976a35a62',
+            '2335ce1a3fa88748c2643bee9c3aa10718a001df67f6ed08ee596bfc0d8eee9e'),
+ 'write32': ('03a635392c07b32c523dd2944cb177b3c48f7bbad3f82be7b14bc16a17724fed',
+             '4edb487c83b518ee2124f5cdbd289fb1a5854225a7a5a500c9009189876bd542'),
+}
+PRODUCT_LITERAL_BODIES = {
+ PREFIX+'DescriptorDTB.validateBinding': 'fb5b711c46d80edbffebd38c7d9e644f814a38416208ae3f7bc734b3a5b7ac32',
+ PREFIX+'Descriptor.geometry': '2df6496627c257026e01897b6b9cfacaa541249b1ca4c6e8e9c54e6b5c4695f3',
+}
+
+def product_specs():
+    specs=usb_specs()
+    replacements={
+      'literalLength':[len(PRODUCT_BYTES.get(code,b'')) for code in range(1,79)],
+      'nodeRole':[1,2,3,4,5,6,7,*([None]*7),8,9,13,14],
+      'requiredFlags':[255,255,15,1011,515,31,15,31,255,15,15,15,511,511],
+      'compatibleCode':[64,65,66,67,68,69,70,74,76,66,66,66,77,78],
+      'expectedIRQ':[12,13,1,None,None,10,11,14,15,None,None,None,16,17],
+      'expectedBase':[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,
+                      0x10000000,0x101000,0x10010500,0x10010600,None,None,None,
+                      0x10010a00,0x10012000],
+      'expectedSpan':[0x600000,0x10000,0x100,4096,256,1024,4096,4096,4096,1024,1024],
+    }
+    for suffix,values in replacements.items():
+        source=PREFIX+'DescriptorDTB.'+suffix
+        specs[source]=(*specs[source][:3],[values])
+    words=[]
+    for code in PRODUCT_WORD_CODES:
+        raw=PRODUCT_BYTES[code]
+        values=list(struct.unpack('<'+str((len(raw)+7)//8)+'Q',raw.ljust((len(raw)+7)//8*8,b'\0')))
+        words.append(values[:3] if code==73 else values)
+    source=PREFIX+'DescriptorDTB.literalWord'
+    specs[source]=(*specs[source][:3],words)
+    # These three-entry masks arise in genuine optimized checked bodies.
+    # Full normalized bodies, source signatures and unsigned index guards are
+    # required below; they cannot create a generic memory-table permission.
+    specs[PREFIX+'DescriptorDTB.validateBinding']=('kernel',['u64']*6,
+        ['checked-access','mmio-read','io-order','physical-read','physical-write'],[[8062,16254,32638]])
+    specs[PREFIX+'Descriptor.geometry']=('kernel',['u64'],
+        ['checked-access','mmio-read','io-order','physical-read','physical-write'],[[7,15,31]])
+    return specs
+
 def lookup_schema(ir: str, unit: dict):
     """Select one complete closed source schema, including historical artifacts.
 
@@ -187,13 +266,15 @@ def lookup_schema(ir: str, unit: dict):
     """
     functions={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
                for row in unit['functions']}
-    legacy=canonical_specs();new=ble_specs();usb=usb_specs();observed={}
+    legacy=canonical_specs();new=ble_specs();usb=usb_specs();product=product_specs();observed={}
     for symbol,count in re.findall(r'^@switch\.table\.([A-Za-z0-9_.$-]+?) = private unnamed_addr constant \[(\d+) x i64\]',ir,re.M):
         source=functions.get(symbol)
         if source in legacy and source.startswith(PREFIX+'DescriptorDTB.'):
             observed[source]=int(count)
     usb_modern=any(count == len(usb[source][3][0]) and count != len(new[source][3][0])
                    for source,count in observed.items())
+    product_modern=any(count == len(product[source][3][0]) and count != len(usb[source][3][0])
+                      for source,count in observed.items())
     modern=any(count == len(new[source][3][0]) and count != len(legacy[source][3][0])
                for source,count in observed.items())
     word=PREFIX+'DescriptorDTB.literalWord'
@@ -202,6 +283,10 @@ def lookup_schema(ir: str, unit: dict):
         number=len(re.findall(r'^@switch\.table\.'+re.escape(word_symbol)+r'(?:\.\d+)? = ',ir,re.M))
         usb_modern=usb_modern or number==len(USB_WORD_CODES)
         modern=modern or number==len(BLE_WORD_CODES)
+        product_modern=product_modern or number==len(PRODUCT_WORD_CODES)
+    if unit.get('configuration') in PRODUCT_CONFIGURATIONS and observed and not product_modern:
+        raise Core0Error('Product discovery lacks its versioned complete literal schema')
+    if product_modern:return product,PRODUCT_WORD_CODES,'boot-nv-v1'
     if unit.get('configuration') in USB_CONFIGURATIONS and observed and not usb_modern:
         raise Core0Error('USB discovery lacks its versioned complete literal schema')
     if usb_modern:return usb,USB_WORD_CODES,'usb-device-packet-v1'
@@ -219,10 +304,11 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
     power = unit['configuration'] in POWER_CONFIGURATIONS
     ble = unit['configuration'] in BLE_CONFIGURATIONS
     usb = unit['configuration'] in USB_CONFIGURATIONS
-    expected_contract = 'core0-kernel-v0.6' if usb else 'core0-kernel-v0.5' if ble else 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
+    product = unit['configuration'] in PRODUCT_CONFIGURATIONS
+    expected_contract = 'core0-kernel-v0.7' if product else 'core0-kernel-v0.6' if usb else 'core0-kernel-v0.5' if ble else 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
     if unit.get('contract_version') != expected_contract:
         raise Core0Error('Lemmasim device aperture configuration/profile differs')
-    digests = USB_DEVICE_BODY_DIGESTS if usb else BLE_DEVICE_BODY_DIGESTS if ble else POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
+    digests = PRODUCT_DEVICE_BODY_DIGESTS if product else USB_DEVICE_BODY_DIGESTS if usb else BLE_DEVICE_BODY_DIGESTS if ble else POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
     sites=set();observed=[];owners=_line_functions(ir.splitlines())
     for row in unit['functions']:
         if not row['source'].startswith(PREFIX+'IO.'): continue
@@ -233,7 +319,7 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
             raise Core0Error('Lemmasim hardware source signature/effects differs')
         body='\n'.join(line.split(';',1)[0].strip() for line in _ir_definition_body(ir,row['symbol']).splitlines() if line.split(';',1)[0].strip())
         if not optimized:
-            regions=[(0x10001000,0x10001200),(0xc000004,0xc000044 if usb else 0xc000040 if ble else 0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
+            regions=[(0x10001000,0x10001200),(0xc000004,0xc000048 if product else 0xc000044 if usb else 0xc000040 if ble else 0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000),*([(0x10012000,0x10012400)] if product else [])]
             lower=[int(value) for value in re.findall(r'icmp uge i64 %arg0, (\d+)',body)]
             upper=[int(value) for value in re.findall(r'icmp ule i64 %arg0, (\d+)',body)]
             if lower!=[start for start,end in regions] or upper!=[end-width for start,end in regions] or len(re.findall(r'and i64 %arg0, '+str(width-1)+r'$',body,re.M))!=1:
@@ -242,12 +328,74 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
         if digest!=digests[operation][int(optimized)]:
             raise Core0Error('Lemmasim device primitive closed guard/pointer/fence/result CFG differs: '+operation)
         located={i for i,line in enumerate(ir.splitlines()) if owners[i]==row['symbol'] and re.search(r'\b(?:load|store) volatile i'+str(bits)+r'\b',line)}
-        if len(located)!=(1 if optimized else 4 if width==4 else 2):
+        if len(located)!=(1 if optimized else 4 if width==4 else 3 if product else 2):
             raise Core0Error('Lemmasim device primitive volatile access inventory differs')
         sites|=located;observed.append(dict(source=row['source'],function=row['symbol'],width_bytes=width,
              direction='write' if write else 'read',access_sites=len(located),body_sha256=digest,
              optimized=optimized,scope='closed pinned lowering/provenance; not a compiler correctness proof'))
     return sites,observed
+
+def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
+    """Admit the actual version2..4 course-recovery length, never an address.
+
+    The complete normalized owner remains pinned in addition to independent
+    content, unsigned bound, single-use and checked readObject binding checks.
+    This is a versioned software lookup only; the machine profile is unchanged.
+    """
+    if unit.get('configuration') not in DOCUMENT4_NOTEBOOK_CONFIGURATIONS:
+        return set(),[],set()
+    from audit_kernel import _ir_definition_body, _line_functions
+    source='Lemma.Applications.Notebook.openCourse'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+           for row in unit['functions']}
+    rows=[row for row in unit['functions'] if names[row['symbol']]==source]
+    if not rows:return set(),[],set()
+    effects=['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition']
+    if (len(rows)!=1 or unit.get('role')!='user' or unit.get('image_key')!='notebook'
+            or unit.get('contract_version')!=DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
+            or rows[0]['args']!=[] or rows[0]['effects']!=effects):
+        raise Core0Error('Sums record-length source/signature/effects differs')
+    symbol=rows[0]['symbol'];table='switch.table.'+symbol
+    definition=f'@{table} = private unnamed_addr constant [3 x i64] [i64 1856, i64 2496, i64 2496], align 8'
+    if ir.splitlines().count(definition)!=1 or len(re.findall('@'+re.escape(table)+r'(?![A-Za-z0-9_.$-])',ir))!=2:
+        raise Core0Error('Sums record-length table content/extent/use differs')
+    body='\n'.join(line.split(';',1)[0].rstrip() for line in _ir_definition_body(ir,symbol).splitlines())
+    normalized_table=body.replace('@'+table,'@record-length')
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),normalized_table)
+    normalized=' '.join(' '.join(line.strip() for line in rebound.splitlines()).split())
+    if hashlib.sha256(normalized.encode()).hexdigest()!='8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503':
+        raise Core0Error('Sums record-length complete checked owner differs')
+    read=next((row['symbol'] for row in unit['functions']
+               if names[row['symbol']]=='Lemma.Applications.Notebook.readObject'),None)
+    field=next((row['symbol'] for row in unit['functions']
+                if names[row['symbol']]=='Lemma.Documents.Mathematics.field'),None)
+    if read is None or field is None:
+        raise Core0Error('Sums record-length checked callees missing')
+    guard=['%action.call.value39 = extractvalue { i64, i64 } %action.call.result36, 1',
+           '%switch.tableidx = add i64 %action.call.value39, -2',
+           '%0 = icmp ult i64 %switch.tableidx, 3',
+           'br i1 %0, label %switch.lookup, label %action.if.merge.20']
+    lookup=[f'%switch.gep = getelementptr inbounds nuw [3 x i64], ptr @{table}, i64 0, i64 %switch.tableidx',
+            '%switch.load = load i64, ptr %switch.gep, align 8',
+            f'%action.call.result54 = call {{ i64, i64 }} @{read}(i64 %call22, i64 3313664, i64 %switch.load)',
+            '%action.call.status-word55 = extractvalue { i64, i64 } %action.call.result54, 0',
+            '%action.call.status56 = trunc nuw i64 %action.call.status-word55 to i8',
+            'br label %action.if.merge.20']
+    from audit_kernel import _structured_ir_blocks
+    blocks=_structured_ir_blocks(body)
+    if blocks.get('action.if.else.16')!=guard or blocks.get('switch.lookup')!=lookup:
+        raise Core0Error('Sums record-length exact version bound/read binding differs')
+    if f'%action.call.result36 = call {{ i64, i64 }} @{field}(i64 3313664, i64 8)' not in body:
+        raise Core0Error('Sums record-length version does not come from the actual document header')
+    if len(re.findall(r'%switch\.load(?![A-Za-z0-9_.$-])',body))!=2 or len(re.findall(r'%switch\.gep(?![A-Za-z0-9_.$-])',body))!=2:
+        raise Core0Error('Sums record-length result/pointer escapes its sole checked read')
+    owners=_line_functions(ir.splitlines())
+    sites={i for i,line in enumerate(ir.splitlines()) if owners[i]==symbol and line.strip()=='%switch.load = load i64, ptr %switch.gep, align 8'}
+    if len(sites)!=1:raise Core0Error('Sums record-length load inventory differs')
+    return sites,[dict(source=rows[0]['source'],function=symbol,values=[1856,2496,2496],
+        **{'global':table},element_bits=64,alignment_bytes=8,index_bound=3,guarded_loads=1,readonly=True,
+        guard='action.if.else.16',literal_schema='document-v4-length-v1')],{definition}
+
 
 def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
     from audit_kernel import (_ir_definition_body, _line_functions, _structured_ir_blocks,
@@ -256,8 +404,10 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         raise Core0Error('Lemmasim readonly admission requires its exact selected configuration')
     specs,word_codes,schema=lookup_schema(ir,unit);by_symbol={row['symbol']:row for row in unit['functions']}
     globals_=[line.strip() for line in ir.splitlines() if re.match(r'^\s*@',line)]
-    known=[];sites=set();removed=set();owners=_line_functions(ir.splitlines())
+    sites,known,removed=validate_sums_record_length(ir,unit)
+    owners=_line_functions(ir.splitlines())
     for global_line in globals_:
+        if global_line in removed:continue
         match=re.fullmatch(r'@(switch\.table\.([A-Za-z0-9_.$-]+?)(?:\.(\d+))?) = private unnamed_addr constant \[(\d+) x i64\] \[(.*?)\], align 8',global_line)
         if match is None: continue  # original kernel whitelist will reject it
         table,symbol,suffix,count,raw=match.groups();count=int(count)
@@ -276,6 +426,17 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         if values!=expected or len(values)!=count or len(re.findall(r'@'+re.escape(table)+r'(?![A-Za-z0-9_.$-])',ir))!=2:
             raise Core0Error('Lemmasim literal content/global use inventory differs: '+source)
         body='\n'.join(line.split(';',1)[0].rstrip() for line in _ir_definition_body(ir,symbol).splitlines())
+        if source in PRODUCT_LITERAL_BODIES:
+            names={r['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']) for r in unit['functions']}
+            # Rebind exactly this owner's already content/extent/use-checked
+            # table, as well as function symbols. Module prefixes have no
+            # semantics; all remaining instructions and names stay pinned.
+            normalized_table=re.sub(r'@switch\.table\.'+re.escape(symbol)+r'(?![A-Za-z0-9_.$-])',
+                                    '@switch.table.'+source,body)
+            rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),normalized_table)
+            normalized=' '.join(' '.join(line.strip() for line in rebound.splitlines()).split())
+            if hashlib.sha256(normalized.encode()).hexdigest()!=PRODUCT_LITERAL_BODIES[source]:
+                raise Core0Error('Product discovery mask escapes its complete checked body')
         blocks=_structured_ir_blocks(body);successors=_structured_successors(blocks)
         # The inherited local CFG helper intentionally recognizes branches.
         # These pinned lookup owners also have scalar i64 switch selection;
@@ -306,6 +467,8 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
             PREFIX+'Descriptor.expected':('%arg0',0), 'Lemma.Ink.Surface.letter':('%arg0',-40),
             'Lemma.Applications.Notebook.statusCharacter':('%arg1',0),
+            PREFIX+'DescriptorDTB.validateBinding':('%arg0',-4),
+            PREFIX+'Descriptor.geometry':('%arg0',-5),
         }[source]
         if shift:
             if len(re.findall(re.escape(operand)+r' = add i64 '+re.escape(argument)+', '+str(shift)+r'$',body,re.M))!=1:
@@ -326,12 +489,12 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
                     true,false=successors[block];without={name:targets for name,targets in successors.items()};without[block]=(false,)
                     if not _structured_reachable(without,'entry',load_block) and _structured_reachable(successors,true,load_block): guards.append(block)
         if len(guards)!=1: raise Core0Error('Lemmasim table load lacks a dominating exact unsigned bound: '+source+' '+table)
-        if source.endswith('expectedIRQ') or source.endswith('nodeRole') or (schema=='usb-device-packet-v1' and source.endswith('expectedBase')):
+        if source.endswith('expectedIRQ') or source.endswith('nodeRole') or (schema in {'usb-device-packet-v1','boot-nv-v1'} and source.endswith('expectedBase')):
             hole=blocks.get('switch.hole_check')
             if source.endswith('nodeRole'):
-                bits,mask,fallback=(32,114815,'if.else.46') if schema=='usb-device-packet-v1' else (16,-16257,'if.else.43') if schema=='ble-packet-v1' else (16,16511,'if.else.40')
+                bits,mask,fallback=(32,245887,'if.else.49') if schema=='boot-nv-v1' else (32,114815,'if.else.46') if schema=='usb-device-packet-v1' else (16,-16257,'if.else.43') if schema=='ble-packet-v1' else (16,16511,'if.else.40')
             else:
-                bits,mask,fallback=(16,4607,'if.else.28') if source.endswith('expectedBase') else (16,4583,'if.else.22') if schema=='usb-device-packet-v1' else (16,487,'if.else.19') if schema=='ble-packet-v1' else (8,-25,'if.else.16')
+                bits,mask,fallback=((16,12799,'if.else.31') if source.endswith('expectedBase') else (16,12775,'if.else.25')) if schema=='boot-nv-v1' else (16,4607,'if.else.28') if source.endswith('expectedBase') else (16,4583,'if.else.22') if schema=='usb-device-packet-v1' else (16,487,'if.else.19') if schema=='ble-packet-v1' else (8,-25,'if.else.16')
             visible=sum(1 << ordinal for ordinal,value in enumerate(expected) if value is not None)
             if (mask & ((1 << bits)-1)) != visible:
                 raise Core0Error('Literal schema mask does not independently exclude every poison row')

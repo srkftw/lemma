@@ -5,6 +5,7 @@ import Lemma.Platform.LemmaSim.DescriptorDTB
 import Lemma.Platform.Silicon.BindingFull
 import Lemma.Platform.Silicon.BindingPower
 import Lemma.Platform.Silicon.BindingUSB
+import Lemma.Platform.Silicon.BindingProduct
 
 /-! Bounded binary descriptor consumer, v1. The actual reset DTB is validated
 by BootInfo before this module runs. Unknown versions, checksum errors, geometry,
@@ -35,7 +36,10 @@ private def expected (index : UInt64) : UInt64 :=
   if index = 28 then 0x80000000 else if index = 29 then 0x02000000 else
   if index = 30 then 0x87e00000 else if index = 31 then 0x00200000 else 0
 private def expectedBinding (binding index : UInt64) : UInt64 :=
-  if binding = 6 then if index = 1 then 7 else
+  if binding = 7 then if index = 1 then 8 else
+    if index = 7 then Lemma.Platform.Silicon.BindingProduct.frame_pool_bytes else
+    if index = 25 then Lemma.Platform.Silicon.BindingProduct.power_base else expected index
+  else if binding = 6 then if index = 1 then 7 else
     if index = 7 then Lemma.Platform.Silicon.BindingUSB.frame_pool_bytes else
     if index = 25 then Lemma.Platform.Silicon.BindingUSB.power_base else expected index
   else if binding = 5 then if index = 1 then 6 else
@@ -87,14 +91,15 @@ private def geometry (binding : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .bind (word 21) fun s features =>
   if failed s = true then .done s 0 else
-  if features = (if binding = 6 then 15 else if binding = 5 then 7 else 3) then
+  if features = (if binding = 7 then 31 else if binding = 6 then 15 else if binding = 5 then 7 else 3) then
   .bind (IO.read64 0x10011048) fun s actualPressure =>
   if failed s = true then .done s 0 else
   if width = actualWidth then if height = actualHeight then
   if pressure = actualPressure then
   .bind (word 26) fun s dtb => if s = 0 then
   .bind (word 27) fun s bytes => if s = 0 then
-  if binding = 6 then DescriptorDTB.validateSiliconUSB dtb bytes width height pressure
+  if binding = 7 then DescriptorDTB.validateSiliconProduct dtb bytes width height pressure
+  else if binding = 6 then DescriptorDTB.validateSiliconUSB dtb bytes width height pressure
   else if binding = 5 then DescriptorDTB.validateSiliconBLE dtb bytes width height pressure
   else if binding = 4 then DescriptorDTB.validateSiliconSafety dtb bytes width height pressure
   else if binding = 3 then DescriptorDTB.validateSiliconPower dtb bytes width height pressure
@@ -107,7 +112,7 @@ private def geometry (binding : UInt64) : Action :=
 /-- Called once before the frame allocator. It never treats a host JSON profile
 as guest discovery and never dereferences an unbounded borrowed pointer. -/
 def validateBinding (binding : UInt64) : Action :=
-  if 6 < binding then .done invalid 0 else
+  if 7 < binding then .done invalid 0 else
   .boundedFoldU64 32 fieldsStep 32 0 binding 0 0 0 fun s _ =>
   if failed s = true then .done s 0 else
   .boundedFoldU64 32 sumStep 32 0 0 0 0 0 fun s checksum =>
@@ -146,5 +151,7 @@ def validateSiliconBLE : Action := validateBinding 5
 
 /-- Opt-in decoded USB packet binding; physical USB PHY conformance remains open. -/
 def validateSiliconUSB : Action := validateBinding 6
+
+def validateSiliconProduct : Action := validateBinding 7
 
 end Lemma.Platform.LemmaSim.Descriptor

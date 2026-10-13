@@ -1,4 +1,5 @@
 import Lemma.Kernel.Memory.Batch
+import Lemma.Platform.LemmaSim.Descriptor
 
 /-! Single-hart Sv39 ownership. Every address space has independent 4 KiB
 tables, ASID zero and conservative full invalidation. Algorithms and metadata
@@ -199,11 +200,11 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
         if frames = 512 then .done 0 0 else .done invalidDescriptor 0
       else .done invalidDescriptor 0
     else .done invalidDescriptor 0
-  else if version = 2 then
+  else if (if version = 2 then true else if version = 3 then true else false) = true then
     if leafCapacity = expandedCapacity then
       if amount = 8 then
         .bind Frames.runtimeCount fun s frames => if failed s = true then .done s 0 else
-        if Frames.expanded frames = true then
+        if (if version = 3 then if frames = 8192 then true else false else Frames.expanded frames) = true then
           .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
           if failed s = true then .done s 0 else
           .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
@@ -222,7 +223,7 @@ def base (descriptor : UInt64) : Action :=
   if (if tag = magic then false else true) = true then .done invalidDescriptor 0 else
   .bind (get address 8) fun s version =>
   if failed s = true then .done s 0 else
-  if (if version = 1 then false else if version = 2 then false else true) = true then .done invalidDescriptor 0 else
+  if (if version = 1 then false else if version = 2 then false else if version = 3 then false else true) = true then .done invalidDescriptor 0 else
   .bind (get address 16) fun s self =>
   if failed s = true then .done s 0 else
   if (if self = descriptor then false else true) = true then .done invalidDescriptor 0 else
@@ -234,7 +235,7 @@ def base (descriptor : UInt64) : Action :=
   if (if state = 1 then false else true) = true then .done invalidDescriptor 0 else
   .bind (get address 40) fun s tables =>
   if failed s = true then .done s 0 else
-  if tables < 11 then .done invalidDescriptor 0 else
+  if tables < (if version = 3 then 14 else 11) then .done invalidDescriptor 0 else
   if 32 < tables then .done invalidDescriptor 0 else
   .bind (get address 48) fun s leaves =>
   if failed s = true then .done s 0 else
@@ -245,7 +246,7 @@ def base (descriptor : UInt64) : Action :=
   if failed s = true then .done s 0 else
   .bind (get address 88) fun s tableCapacity =>
   if failed s = true then .done s 0 else
-  if (if tableCapacity = 32 then false else true) = true then .done invalidDescriptor 0 else
+  if (if tableCapacity = (if version = 3 then 0x3353415000000020 else 32) then false else true) = true then .done invalidDescriptor 0 else
   .bind (get address 56) fun s rootHandle =>
   if failed s = true then .done s 0 else
   .bind (get address tableList) fun s firstHandle =>
@@ -910,5 +911,64 @@ def destroy (descriptor : UInt64) : Action :=
   .bind (rollbackRegistry address 0) fun s _ => if failed s = true then .done invariantFailure 0 else
   .bind (rollbackTables address 0) fun s _ =>
   if failed s = true then .done invariantFailure 0 else releaseDescriptor descriptor 0
+
+/-- Kernel-only Product selection. A fresh bounded hardware/DTB validation
+precedes publication; no User syscall can select these supervisor aliases. -/
+def productSelection : UInt64 := 0x80400fc0
+def configureProduct (binding : UInt64) : Action :=
+  if binding = 0 then Access.write64 productSelection 0 else
+  if binding = 7 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProduct fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
+private def buildProductKernel (address : UInt64) : Action :=
+  .bind (buildKernel address) fun s _ => if failed s = true then .done s 0 else
+  .bind (link address 1 15 13) fun s _ => if failed s = true then .done s 0 else
+  .bind (fillRange address 13 0x81fc0000 4 0xc7) fun s _ => if failed s = true then .done s 0 else
+  fillRange address 9 0x10012000 1 0xc7
+
+/-- Product-only layout3 adds one owned, pinned page table and supervisor
+RW/NX aliases for four ROM-context pages and the NV controller. Header+88
+encodes the layout witness with low32 capacity32. Legacy create is unchanged. -/
+def createProduct (owner : UInt64) : Action :=
+  .bind Frames.runtimeCount fun s amount => if failed s = true then .done s 0 else
+  if Frames.ownerValid owner = false then .done Frames.badOwner 0 else
+  if amount = 8192 then
+  .bind (Access.read64 productSelection) fun s selected => if failed s = true then .done s 0 else
+  if selected = 7 then
+  let initialTables : UInt64 := 14
+  .bind (Frames.allocate 1 1) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (Frames.resolvePurpose 1 descriptor 1) fun s address =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .bind (put address 24 owner) fun s _ =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .bind (Batch.allocate owner 2 initialTables) fun s _ =>
+  if failed s = true then releaseDescriptor descriptor s else
+  .boundedFoldU64 14 copyTableStep initialTables.toUInt32 0 address 0 0 0 fun s _ =>
+  if failed s = true then
+    .bind (Batch.rollback owner initialTables s) fun rollbackStatus _ =>
+    if rollbackStatus = s then releaseDescriptor descriptor s else .done invariantFailure 0
+  else
+  .bind (get address tableList) fun s rootHandle =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (tableAt address 0) fun s rootPA =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (put address 8 3) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 16 descriptor) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 56 rootHandle) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 64 rootPA) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 72 (satpWord rootPA)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 80 (if Frames.expanded amount = true then expandedCapacity else 32)) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 88 0x3353415000000020) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (buildRegistry address owner amount) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (buildProductKernel address) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .boundedFoldU64 14 pinTableStep initialTables.toUInt32 0 address owner 0 0 fun s _ =>
+  if failed s = true then abortCreate descriptor address s else
+  .bind (put address 32 1) fun s _ => if failed s = true then abortCreate descriptor address s else
+  .bind (put address 0 magic) fun s _ =>
+  if failed s = true then abortCreate descriptor address s else .done 0 descriptor
+  else .done invalidDescriptor 0 else .done invalidDescriptor 0
 
 end Lemma.Kernel.Memory.AddressSpace

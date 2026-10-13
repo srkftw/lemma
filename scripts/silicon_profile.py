@@ -58,7 +58,7 @@ def configuration_profile(configuration):
     if configuration in ('lemmasim-silicon-usb-link-probe','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'):return 'lemma-silicon-dev/0.6.0'
     if configuration=='lemmasim-silicon-ble-link-probe':return 'lemma-silicon-dev/0.5.0'
     if configuration=='lemmasim-silicon-power-safety-probe':return 'lemma-silicon-dev/0.4.0'
-    if configuration in ('lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize','lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize','lemmasim-silicon-power-probe',
+    if configuration in ('lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development','lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize','lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize','lemmasim-silicon-power-probe',
         'lemmasim-silicon-power-arithmetic-oom-development',
         'lemmasim-silicon-power-arithmetic-fault-development',
         'lemmasim-silicon-power-arithmetic-stall-development'):return 'lemma-silicon-dev/0.3.0'

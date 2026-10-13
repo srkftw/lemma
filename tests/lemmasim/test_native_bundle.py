@@ -7,7 +7,7 @@ import sys
 import tempfile
 import unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS, origin_destination, SCHEMA, SCHEMA_WITH_SOURCE_VERSIONS, SCHEMA_WITH_SOFTWARE_DEPLOYMENT, MANAGED_DEPLOYMENT, MANAGED_CONFIGURATIONS, bundle_configurations
+from silicon_guest_bundle import inventory, read_json, development_configuration, ARITHMETIC_LAB_CONFIGURATIONS, origin_destination, SCHEMA, SCHEMA_WITH_SOURCE_VERSIONS, SCHEMA_WITH_SOFTWARE_DEPLOYMENT, MANAGED_DEPLOYMENT, MANAGED_CONFIGURATIONS, SUMS_DEPLOYMENT, SUMS_CONFIGURATIONS, SOFTWARE_DEPLOYMENTS, bundle_configurations
 
 class NativeBundleBoundary(unittest.TestCase):
     def test_versioned_managed_deployment_cannot_be_mixed_or_injected_into_legacy(self):
@@ -30,13 +30,28 @@ class NativeBundleBoundary(unittest.TestCase):
             with self.assertRaises(ValueError):bundle_configurations(bad)
 
     def test_managed_guest_override_is_exact_and_available_in_ordinary_modes(self):
-        for role,configuration in MANAGED_CONFIGURATIONS.items():
+        for role,configuration in [item for configurations in SOFTWARE_DEPLOYMENTS.values() for item in configurations.items()]:
             for mode in ('student','developer','laboratory'):
                 self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0',role,configuration,mode),configuration)
             with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0',role,configuration,None)
             other='initializer' if role=='notebook' else 'notebook'
             with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0',other,configuration,'developer')
         with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.4.0','notebook',MANAGED_CONFIGURATIONS['notebook'],'developer')
+
+    def test_sums_deployment_does_not_relabel_the_prior_record_runtime(self):
+        manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
+                  'software_deployment':{'contract_version':SUMS_DEPLOYMENT,
+                                         'configurations':dict(SUMS_CONFIGURATIONS)}}
+        self.assertEqual(bundle_configurations(manifest),SUMS_CONFIGURATIONS)
+        for role in ('notebook','initializer'):
+            changed=copy.deepcopy(manifest)
+            changed['software_deployment']['configurations'][role]=MANAGED_CONFIGURATIONS[role]
+            with self.assertRaises(ValueError):bundle_configurations(changed)
+        for invalid in (MANAGED_DEPLOYMENT,'lemma-managed-sums-deployment-v2',None):
+            changed=copy.deepcopy(manifest);changed['software_deployment']['contract_version']=invalid
+            with self.assertRaises(ValueError):bundle_configurations(changed)
+        changed=copy.deepcopy(manifest);changed['software_deployment']['runtime']='implicit'
+        with self.assertRaises(ValueError):bundle_configurations(changed)
 
     def test_archived_backends_and_new_guests_keep_exact_source_versions(self):
         path='/same/consumed/source.lean';old='a'*64;new='b'*64

@@ -712,4 +712,37 @@ def queryAll : Action :=
   if failed s = true then fatal else
   .boundedFoldU64 8 queryStep 8 0 address 0 0 0 fun s count => .done s count
 
+/-- Explicit Product construction keeps legacy task preparation unchanged. -/
+def prepareProduct (image argument : UInt64) : Action :=
+  .bind table fun s address =>
+  if failed s = true then fatal else
+  .boundedFoldU64 8 freeStep 8 8 address 0 0 0 fun s index =>
+  if s = Status.iterationStop then
+    let record := address + index * stride
+    .bind (Access.write64 (record + stateOffset) building) fun s _ =>
+    if failed s = true then fatal else
+    .bind Process.reserveOwner fun s owner =>
+    if failed s = true then abandon record s else
+    .bind (Loader.loadProduct image owner argument) fun s descriptor =>
+    if failed s = true then abandon record s else
+    .bind (retainPrepared record descriptor image argument) fun s id =>
+    if failed s = true then
+      .bind (Loader.teardown descriptor) fun _ _ => fatal
+    else .done 0 id
+  else if s = 0 then .done 38 0 else fatal
+
+def prepareManagedProduct (image argument : UInt64) : Action :=
+  .bind (prepareProduct image argument) fun s descriptor =>
+  if failed s = true then .done s 0 else
+  .bind (Capability.attach descriptor) fun status _ =>
+  if status = 255 then fatal else
+  if failed status = true then
+    .bind (abort descriptor) fun s _ =>
+    if failed s = true then fatal else .done status 0
+  else
+    .bind (prepared descriptor) fun s record =>
+    if failed s = true then fatal else
+    .bind (Access.write64 (record + managedOffset) 1) fun s _ =>
+    if failed s = true then fatal else .done 0 descriptor
+
 end Lemma.Kernel.Task

@@ -790,12 +790,17 @@ def archive_acceptance(args):
 
 
 def main():
+    if len(sys.argv)>1 and sys.argv[1]=='product':
+        import lemmasim_product
+        result = lemmasim_product.main(sys.argv[2:])
+        return result if isinstance(result,int) else 0
     if len(sys.argv)>1 and sys.argv[1]=='companion':
         import lemmasim_companion
         result = lemmasim_companion.main(sys.argv[2:])
         return result if isinstance(result,int) else 0
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('companion',help='Hosted Lean persistent opaque backing development transport; use companion --help')
+    sub.add_parser('product',help='Immutable Lean ROM, real NV boot and owner-local recovery; use product --help')
     p=sub.add_parser('browser-build',help='Build the same RTL Machine as a local Wasm static bundle')
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0');p.add_argument('--wasm-build',type=Path,required=True)
     p.add_argument('--output-dir',type=Path,required=True);p.add_argument('--reuse-wasm',action='store_true')
@@ -888,10 +893,10 @@ def main():
                 if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
                 usb_options=(args.usb_host_prepared,args.usb_peer_directory,args.usb_peer_socket,args.usb_host_state)
                 if any(x is not None for x in usb_options):
-                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.workload!='usb' or args.mode not in ('developer','laboratory'):
-                        raise Failure('USB packet host currently requires USB6 RTL probe in Developer or Laboratory mode')
+                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.workload not in ('usb','notebook','initializer') or args.mode not in ('developer','laboratory'):
+                        raise Failure('USB packet host requires USB6 RTL probe, notebook or initializer in Developer or Laboratory mode')
                     if any(x is None for x in usb_options):raise Failure('USB packet host requires prepared host, peer directory/socket and retained host state')
-                    if args.disk is not None or args.companion is not None or args.restore is not None:raise Failure('USB peer probe uses independent opaque medium and cold USB state')
+                    if args.disk is not None or args.companion is not None or args.restore is not None:raise Failure('USB peer uses independent opaque medium and cold USB state')
                     lemmasim_session.bounded(args.usb_peer_timeout_ms,100,60000,'USB peer timeout milliseconds')
                 if args.ble_peer is not None or args.ble_replay is not None or args.ble_peer_arg or args.ble_drop_packets:
                     if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.5.0' or args.mode not in ('developer','laboratory'):raise Failure('BLE manual peer/replay requires binding5 RTL in Developer or Laboratory mode')

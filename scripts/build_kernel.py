@@ -37,8 +37,11 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
 }
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = ('lemmasim-silicon-power-arithmetic-oom-development', 'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development')
 MANAGED_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-managed-notebook", "lemmasim-silicon-managed-initialize")
-ARITHMETIC_CONFIGURATIONS = ("lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
-SILICON_MULTI_CONFIGURATIONS = (*MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
+SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development")
+USB_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize")
+PRODUCT_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-product-notebook",)
+ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
+SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
 SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
@@ -105,9 +108,9 @@ def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
     if configuration in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize"}:
-        entry = {"lemmasim-silicon-managed-notebook": "siliconPowerBoot", "lemmasim-silicon-managed-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
+        entry = {"lemmasim-silicon-product-notebook": "siliconProductBoot", "lemmasim-silicon-usb-notebook": "siliconUSBBoot", "lemmasim-silicon-usb-initialize": "siliconUSBInitializeMedium", "lemmasim-silicon-sums-notebook": "siliconPowerBoot", "lemmasim-silicon-sums-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-sums-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-managed-notebook": "siliconPowerBoot", "lemmasim-silicon-managed-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
-                 ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64")))}
+                 ("Lemma.Platform.LemmaSim.NotebookKernel." + ("dispatchProduct" if configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS else "dispatchUSB" if configuration in USB_NOTEBOOK_CONFIGURATIONS else "dispatch"), ("u64", "u64", "u64")))}
     if configuration == "lemmasim-silicon-usb-link-probe":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.USBLink.boot", ()),
                  ("Lemma.Platform.Silicon.Development.USBLink.dispatch", ("u64", "u64", "u64"))),
@@ -277,7 +280,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py"):
+    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
@@ -290,6 +293,8 @@ def source_inputs(root: Path) -> dict[str, str]:
     if ble_profile.is_file():inputs.append(ble_profile)
     usb_profile=root / "sim/profiles/lemma-silicon-dev-0.6.0.json"
     if usb_profile.is_file():inputs.append(usb_profile)
+    product_profile=root / "sim/profiles/lemma-silicon-dev-0.7.0.json"
+    if product_profile.is_file():inputs.append(product_profile)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 

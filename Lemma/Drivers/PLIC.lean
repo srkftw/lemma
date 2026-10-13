@@ -50,3 +50,24 @@ def enablePaper : Action :=
   .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
   if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled ||| 4096) else .done s 0
 end Lemma.Drivers.PLIC
+
+namespace Lemma.Drivers.PLIC
+open Lemma.Core0.Memory
+/-- Only binding6 enables decoded-packet USB source16. Local block source1
+remains disabled; source15 is not granted to these notebook deployments. -/
+def initializeUSB : Action :=
+  .bind initializePower fun s _ => if s = 0 then
+  .bind (Lemma.Platform.LemmaSim.IO.write32 0x0c000040 1) fun s _ => if s = 0 then
+  Lemma.Platform.LemmaSim.IO.write32 0x0c002080 0x17000 else .done s 0 else .done s 0
+
+def completeUSB (source : UInt64) : Action :=
+  if source = 16 then Lemma.Platform.LemmaSim.IO.write32 0x0c201004 source else completePower source
+
+def disableUSB : Action :=
+  .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
+  if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled &&& 0xfffeffff) else .done s 0
+
+def enableUSB : Action :=
+  .bind (Lemma.Platform.LemmaSim.IO.read32 0x0c002080) fun s enabled =>
+  if s = 0 then Lemma.Platform.LemmaSim.IO.write32 0x0c002080 (enabled ||| 65536) else .done s 0
+end Lemma.Drivers.PLIC

@@ -28,7 +28,8 @@ EXPECTED_IR={
   f'  let x_3 : obj := {PREFIX}make x_1 x_2;\n'
   f'  let x_4 : u64 := {PREFIX}differenceFromFiveSix x_3;\n  dec x_3;\n  ret x_4',
 }
-CONFIGURATIONS={'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
+CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
+ 'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
  'lemmasim-silicon-power-arithmetic-oom-development',
  'lemmasim-silicon-power-arithmetic-fault-development',
  'lemmasim-silicon-power-arithmetic-stall-development',
@@ -42,13 +43,14 @@ def allowed(unit):
 
 MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
  'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
+SUMS_NOTEBOOK_CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'})
 SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
  'silicon_profile':'lemma-silicon-dev/0.3.0',
  'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
 
 def notebook_profile_allowed(unit):
  return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and
-  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS)
+  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS)
 
 def profile_allowed(unit):
  return allowed(unit) or notebook_profile_allowed(unit)
@@ -60,7 +62,9 @@ def contract(unit):
   require(FIELD not in unit and not generated,'Legacy unit acquired managed-record authority')
   return None
  if notebook_profile_allowed(unit):
-  require(unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,
+  from managed_sums import SOFTWARE_DEPLOYMENT as sums_deployment
+  expected=sums_deployment if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
+  require(unit.get('software_deployment')==expected,
    'Managed Notebook software deployment differs from its exact versioned selection')
   require(FIELD not in unit and not generated,
    'The selected Notebook acquired a managed-record closure outside its empty genuine inventory')

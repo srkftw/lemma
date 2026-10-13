@@ -22,6 +22,7 @@ REGISTRY = {
                'heap_objects':31,'semantic_budgets':[0,8],'deadline_ticks':10000000},
 }
 CONFIGURATIONS = frozenset({
+ 'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
  'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
  'lemmasim-silicon-power-arithmetic-oom-development',
  'lemmasim-silicon-power-arithmetic-fault-development',

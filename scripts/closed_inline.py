@@ -8,11 +8,13 @@ from __future__ import annotations
 import hashlib,re
 from core0_common import Core0Error
 
-CONFIGURATIONS={'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
+CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
+ 'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
  'lemmasim-silicon-power-arithmetic-oom-development',
  'lemmasim-silicon-power-arithmetic-fault-development',
  'lemmasim-silicon-power-arithmetic-stall-development'}
-USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'}
+USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize',
+ 'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}
 CONFIGURATIONS |= USER_CONFIGURATIONS
 USER_WRAPPER='lemma-checked-user-word-wrapper-v1'
 USER_WORD={
@@ -74,7 +76,7 @@ def catalog(unit):
  for r in c['wrappers']:
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'wrapper catalog row keys differ')
   f=by.get(r.get('symbol'));op=PHYSICAL.get(r.get('operation'))
-  require(unit['role']=='kernel' and unit['contract_version']=='core0-kernel-v0.4' and
+  require(unit['role']=='kernel' and unit['contract_version'] in {'core0-kernel-v0.4','core0-kernel-v0.6'} and
    f is not None and op is not None and r['source']==f['source'] and (f['args'],f['effects'])==op[1:],
    'wrapper source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
@@ -83,7 +85,7 @@ def catalog(unit):
  for r in c.get('user_wrappers',[]):
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'user-word catalog row keys differ')
   f=by.get(r.get('symbol'));op=USER_WORD.get(r.get('operation'))
-  require(unit['role']=='user' and unit['contract_version']=='core0-user-v0.2' and
+  require(unit['role']=='user' and unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} and
    unit.get('image_key') in {'notebook','arithmetic'} and f is not None and op is not None and
    r['source']==f['source'] and (f['args'],f['effects'])==op[:2],
    'user-word source/signature/effects/authority differs')
@@ -147,7 +149,7 @@ def validate(ir,unit,*,optimized):
   digest=hashlib.sha256(_body(ir,sym).encode()).hexdigest()
   require(digest==PHYSICAL_PREIMAGE[op],'wrapper changed complete physical interval/alignment/error/volatile/result guard')
  user_expected=set()
- if unit['role']=='user' and unit['contract_version']=='core0-user-v0.2' and unit.get('configuration') in USER_CONFIGURATIONS:
+ if unit['role']=='user' and unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} and unit.get('configuration') in USER_CONFIGURATIONS:
   for f in unit['functions']:
    if any((f['args'],f['effects'])==op[:2] and hashlib.sha256(_body(ir,f['symbol']).encode()).hexdigest()==op[2]
           for op in USER_WORD.values()):user_expected.add(f['symbol'])

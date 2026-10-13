@@ -1,6 +1,7 @@
 import Lemma.Drivers.Paper
 import Lemma.Drivers.Pen
 import Lemma.Drivers.VirtIOBlock
+import Lemma.USB.Block
 import Lemma.Drivers.PLIC
 import Lemma.Kernel.Task
 import Lemma.Kernel.Memory.UserCopy
@@ -155,6 +156,60 @@ def input (descriptor handle op pointer r0 r1 : UInt64) : Action :=
   else fatal else .done s 0 else .done 16 0
   else .done s 0 else .done 16 0
 
+private def copyUSBBlock (descriptor pointer direction : UInt64) : Action :=
+  .bind (Lemma.USB.Block.bounce) fun s bounce => if s = 0 then
+  .bind (Lemma.USB.Block.context) fun s handle => if s = 0 then
+  if direction = 0 then UserCopy.copyFromUser descriptor pointer handle 0x600 512
+  else UserCopy.copyToUser descriptor pointer handle 0x600 512
+  else fatal else .done s bounce
+
+private def usbBlockFinish (descriptor pointer : UInt64) : Action :=
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 0 then .done Lemma.USB.Block.pending 0 else
+  .bind (get 56) fun s status => if s = 0 then
+  .bind (get 64) fun s kind => if s = 0 then
+  .bind (if status = 0 then if kind = 1 then copyUSBBlock descriptor pointer 1 else .done 0 0
+    else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 48 0) fun s _ => if s = 0 then .done status.toUInt8 kind else fatal
+  else .done s 0 else fatal else fatal else fatal
+
+/-- syscall66: blockcap,op,sector,buffer512,reserved. Only store has this grant.
+op0 capacity;1 read;2 write;3 barrier;4 completion. Kernel owns the PIO
+frame and immutable transaction bytes. USB ACK only advances transport; the
+independent peer receipt completes a request. The store alone interprets successful flush as publication durability. -/
+def blockUSB (descriptor handle op sector pointer reserved : UInt64) : Action :=
+  if reserved = 0 then
+  .bind (authorize descriptor handle 16) fun s _ => if s = 0 then
+  if op = 0 then Lemma.USB.Block.capacity else
+  if op = 4 then usbBlockFinish descriptor pointer else
+  if (if op = 1 then true else if op = 2 then true else if op = 3 then true else false) = true then
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 0 then
+  .bind (if op = 1 then UserCopy.validateWrite descriptor pointer 512 else
+    if op = 2 then copyUSBBlock descriptor pointer 0 else .done 0 0) fun s _ => if s = 0 then
+  .bind (Lemma.USB.Block.submit (if op = 1 then 0 else if op = 2 then 1 else 4) sector) fun status request =>
+  if status = 0 then
+    .bind (put 96 1) fun s _ => if s = 0 then .done Lemma.USB.Block.pending request else fatal
+  else .done status 0
+  else .done s 0 else .done 162 0 else fatal
+  else .done 16 0 else .done s 0 else .done 16 0
+
+/-- USB selection adds request bookkeeping without changing old bindings. -/
+def configureUSB (surface input block : UInt64) : Action :=
+  .bind (configure surface input block) fun s _ => if s = 0 then put 96 0 else .done s 0
+
+private def usbCompletion : Action :=
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 1 then .done 0 0 else
+  .bind (get 96) fun s active => if s = 0 then
+  .bind Lemma.USB.Block.finish fun status kind =>
+  if status = Lemma.USB.Block.pending then .done 0 0 else
+  if active = 0 then .done 0 0 else
+  .bind (put 96 0) fun s _ => if s = 0 then
+  .bind (put 56 status.toUInt64) fun s _ => if s = 0 then
+  .bind (put 64 kind) fun s _ => if s = 0 then put 48 1 else fatal else fatal else fatal
+  else fatal else fatal
+
 private def copyBlock (descriptor pointer direction : UInt64) : Action :=
   .bind (Lemma.Drivers.VirtIOBlock.bounce) fun s bounce => if s = 0 then
   .bind (Access.read64 Lemma.Drivers.VirtIOBlock.state) fun s handle => if s = 0 then
@@ -230,5 +285,14 @@ def deferred : Action :=
     .bind Lemma.Drivers.Paper.completion fun s _ => if s = 0 then surfaceStatus 0 0 else fatal
   else .done 0 0
   else fatal else fatal else fatal
+
+/-- Level IRQ16 is masked before return to User and consumed in bounded policy.
+A pending opaque peer transaction never blocks unrelated pen/paper dispatch. -/
+def notificationUSB (source : UInt64) : Action :=
+  if source = 16 then Lemma.Drivers.PLIC.disableUSB else notification source
+
+def deferredUSB : Action :=
+  .bind deferred fun s _ => if s = 0 then
+  .bind usbCompletion fun s _ => if s = 0 then Lemma.Drivers.PLIC.enableUSB else fatal else fatal
 
 end Lemma.Platform.LemmaSim.DeviceService

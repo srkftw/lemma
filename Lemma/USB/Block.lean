@@ -86,6 +86,14 @@ private def validateHello (base amount : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0
   else quarantine else .done s 0 else .done s 0 else .done s 0 else .done s 0 else quarantine
 
+private def receiptWordStep (i _count : UInt32) (base _ _ _ _ : UInt64) : Action :=
+  .bind (Access.read64 (base+192+i.toUInt64*8)) fun s expected => if s = 0 then
+  .bind (Access.read64 (base+832+i.toUInt64*8)) fun s actual => if s = 0 then
+  if expected = actual then .done 0 base else quarantine
+  else .done s 0 else .done s 0
+private def validateWritePayload (base : UInt64) : Action :=
+  .boundedFoldU64 64 receiptWordStep 64 base 0 0 0 0 fun s _ => .done s 0
+
 private def validateReply (base amount request writer sequence sector : UInt64) : Action :=
   if (if 72 ≤ amount then (if (if amount ≤ 584 then (if amount % 8 = 0 then true else false) else false) then true else false) else false) then
   .bind (Access.read64 (base+768)) fun s magic => if s = 0 then
@@ -100,13 +108,14 @@ private def validateReply (base amount request writer sequence sector : UInt64) 
   .bind (Access.read64 (base+768+amount-8)) fun s stored => if s = 0 then
   if (if magic = BlockProtocol.magic then (if (if version = 1 then (if (if kind = 3 then (if (if actualWriter = writer then (if (if actualSequence = (if request = 1 then 0 else sequence) then (if (if offset = sector*512 then (if (if length = amount-72 then (if (if error ≤ 4095 then (if crc = stored then true else false) else false) then true else false) else false) then true else false) else false) then true else false) else false) then true else false) else false) then true else false) else false) then true else false) else false) then true else false) else false) then
   if (if error = 0 then false else true) then quarantine else
-  if (if ((if request = 1 then (if length = 512 then true else false) else false)) then true else if ((if ((if request = 2 then true else if request = 5 then true else false)) then (if length = 0 then true else false) else false)) then true else false) then
+  if (if request = 1 then (if length = 512 then true else false) else if request = 2 then (if length = 512 then true else false) else if request = 5 then (if length = 0 then true else false) else false) then
+  .bind (if request = 2 then validateWritePayload base else .done 0 0) fun s _ => if s = 0 then
   .bind (if request = 1 then copySector (base+832) (base+1536) else .done 0 0) fun s _ => if s = 0 then
   .bind (if (if request = 1 then false else true) then put 64 (sequence+1) else .done 0 0) fun s _ => if s = 0 then
   .bind (put 40 0) fun s _ => if s = 0 then
   .bind (put 80 0) fun s _ => if s = 0 then .done 0 request else .done s 0
   else .done s 0 else .done s 0 else .done s 0
-  else quarantine else quarantine
+  else .done s 0 else quarantine else quarantine
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else quarantine
 

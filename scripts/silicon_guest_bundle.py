@@ -24,6 +24,11 @@ SCHEMA_WITH_SOFTWARE_DEPLOYMENT='lemmasim-native-bundle/3'
 MANAGED_DEPLOYMENT='lemma-managed-notebook-deployment-v1'
 MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
                       'initializer':'lemmasim-silicon-managed-initialize'}
+SUMS_DEPLOYMENT='lemma-managed-sums-deployment-v1'
+SUMS_CONFIGURATIONS={'notebook':'lemmasim-silicon-sums-notebook',
+                     'initializer':'lemmasim-silicon-sums-initialize'}
+SOFTWARE_DEPLOYMENTS={MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+                      SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
 
@@ -206,10 +211,12 @@ def bundle(args):
     selected_configurations={w:read_json(Path(rtl['workloads'][w]['build']['path']))['configuration']
                              for w in ('notebook','initializer')}
     ordinary={w:guest.configurations(name)[w] for w in ('notebook','initializer')}
-    if selected_configurations==MANAGED_CONFIGURATIONS:
+    deployment=next((name for name,configurations in SOFTWARE_DEPLOYMENTS.items()
+                     if selected_configurations==configurations),None)
+    if deployment is not None:
         manifest['schema']=SCHEMA_WITH_SOFTWARE_DEPLOYMENT
-        manifest['software_deployment']={'contract_version':MANAGED_DEPLOYMENT,
-                                         'configurations':dict(MANAGED_CONFIGURATIONS)}
+        manifest['software_deployment']={'contract_version':deployment,
+                                         'configurations':dict(SOFTWARE_DEPLOYMENTS[deployment])}
     elif selected_configurations!=ordinary:
         raise ValueError('Native bundle requires one complete admitted software deployment')
     for path,h in source_before.items():add(ROOT/path,'source/'+path,h)
@@ -325,16 +332,23 @@ def bundle_configurations(manifest):
     if manifest.get('profile')!='lemma-silicon-dev/0.3.0':
         raise ValueError('Software deployment requires canonical hardware0.3')
     if manifest.get('schema')==SCHEMA_WITH_SOFTWARE_DEPLOYMENT:
-        expected={'contract_version':MANAGED_DEPLOYMENT,'configurations':MANAGED_CONFIGURATIONS}
-        if manifest.get('software_deployment')!=expected:
+        selected=manifest.get('software_deployment')
+        if not isinstance(selected,dict) or set(selected)!={'contract_version','configurations'}:
             raise ValueError('Managed bundle software deployment differs')
-        return dict(MANAGED_CONFIGURATIONS)
+        version=selected.get('contract_version')
+        if not isinstance(version,str) or version not in SOFTWARE_DEPLOYMENTS:
+            raise ValueError('Managed bundle software deployment differs')
+        configurations=SOFTWARE_DEPLOYMENTS[version]
+        if selected['configurations']!=configurations:
+            raise ValueError('Managed bundle software deployment differs')
+        return dict(configurations)
     if manifest.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS) or 'software_deployment' in manifest:
         raise ValueError('Historical bundle acquired software deployment authority')
     return {w:guest.configurations(manifest['profile'])[w] for w in ('notebook','initializer')}
 
 
 ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-sums-arithmetic-oom-development',
     'lemmasim-silicon-power-arithmetic-oom-development',
     'lemmasim-silicon-power-arithmetic-fault-development',
     'lemmasim-silicon-power-arithmetic-stall-development',
@@ -347,8 +361,9 @@ def development_configuration(profile,workload,configuration,mode):
     if workload not in selected:raise ValueError('Workload is not admitted by the selected hardware profile')
     ordinary=selected[workload]
     if configuration==ordinary:return ordinary
-    if (profile=='lemma-silicon-dev/0.3.0' and workload in MANAGED_CONFIGURATIONS and
-            configuration==MANAGED_CONFIGURATIONS[workload] and mode in ('student','developer','laboratory')):
+    if (profile=='lemma-silicon-dev/0.3.0' and
+            any(configuration==configurations.get(workload) for configurations in SOFTWARE_DEPLOYMENTS.values())
+            and mode in ('student','developer','laboratory')):
         return configuration
     if profile=='lemma-silicon-dev/0.3.0' and workload=='notebook' and mode=='laboratory' and configuration in ARITHMETIC_LAB_CONFIGURATIONS:
         return configuration
