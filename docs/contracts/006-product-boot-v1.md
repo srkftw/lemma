@@ -273,3 +273,86 @@ a new WRITE and barrier before loading the exact trial image. The captured
 request/outcome log contains the interrupted write once; reset does not submit
 it again. This qualifies the declared observed-persistence failure model,
 without claiming unconditional physical power-loss durability.
+
+## Product 0.9 compatibility successor
+
+`lemma-silicon-dev/0.9.0` selects the Paper-v2 staging repair and descriptor
+ABI 10. Its immutable `Lemma.Boot.RecoveryNext.entry` uses the same bounded
+BootNV transactions, CRC32, metadata format, attempt tracking and framed
+recovery protocol under `core0-boot-v0.1`. Its compatibility registry ID is
+`0x0009000300010001`. The historical Product 0.7 ROM, ID and image admission
+remain unchanged. Neither ROM accepts the other profile's image as a fallback.
+A fresh Product 0.9 boot medium therefore requires an owner-local recovery
+installation; user journal media remain separate and are never formatted by
+the installer. A first image becomes a demonstrated known-good fallback only
+after actual isolated services and the complete canonical controller display
+have been observed on that hardware profile.
+
+Build the successor ROM with `scripts/build_product_boot.py --product-profile 9`.
+Public `lemmasim product prepare --profile lemma-silicon-dev/0.9.0` uses schema 3,
+binding the exact native profile, ROM root/configuration/compatibility, complete
+source archives, fixed discovery extent and Paper-v2 staging contract. Explicit
+archives are validated independently and never fall back to the current source
+tree. Mixed ROM/native/image pairs reject before installation. Default profile
+7 preparation retains schema 2 and its original admission rules.
+
+The successor's genuinely compiled ROM has one additional closed compatibility
+literal in its read-only pool: six exact 64-bit literals, 48 bytes. The boot
+auditor checks their contents, source, use, section flags and placement; this
+does not admit an arbitrary data section or runtime object. The compiled image
+and its DTB still reach volatile RAM solely through actual ROM device reads.
+Authentication, trusted owner identity, anti-rollback and physical nonvolatile
+qualification remain OPEN. A separately qualified SHA/HMAC component does not
+authenticate this CRC-only boot path.
+
+The observed Product9 installation is recorded in
+`docs/evidence/006-product9-installation.json`. It transferred 709 opaque
+sectors, received the target's publication receipt after both metadata barriers,
+reconciled the image through a real status transaction, and received the ROM's
+boot handoff receipt. The complete separate user medium remained byte-identical.
+These receipts establish installation and loading; the full controller Ready
+campaign and trial health confirmation have separate results.
+
+The following commands reuse the exact archived native, ROM and audited image
+from that observation. Preparation and packaging outputs must be unused. Run
+the blocking `launch` command in one terminal and recovery commands in another.
+Supply a private copy of an initialized user medium as `--disk`; creating a
+boot medium does not initialize or format that user medium.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/lemmasim product prepare \
+  --profile lemma-silicon-dev/0.9.0 \
+  --native-build build/silicon/task006-product-next-runtime-a1 \
+  --native-source-archive build/silicon/task006-product-next-runtime-a1/consumed-source-root \
+  --rom-build build/boot/task006-product-next-rom-a2 \
+  --rom-source-archive build/boot/task006-product-next-rom-a2/consumed-source-root \
+  --output-dir build/boot/product9-prepared
+python3 scripts/package_product_image.py \
+  --guest-build build/kernel/task006-product-next-bulk-notebook-a4 \
+  --source-archive build/kernel/task006-product-next-bulk-notebook-a4/consumed-source-root \
+  --image-id 0x9000000000001 --output-dir build/boot/product9-image
+python3 scripts/lemmasim product create-medium --boot-medium build/boot/product9.raw
+python3 scripts/lemmasim product launch \
+  --prepared build/boot/product9-prepared --boot-medium build/boot/product9.raw \
+  --disk build/boot/private-initialized-user.raw \
+  --session-dir build/boot/product9-session --recovery \
+  --mode developer --headless --paused --timeout 7200
+python3 scripts/lemmasim product install \
+  --session-dir build/boot/product9-session --package build/boot/product9-image \
+  --slot 0 --transaction 0x9001 --cycles 250000000 --timeout 3600
+python3 scripts/lemmasim product status \
+  --session-dir build/boot/product9-session --slot 0 \
+  --image-id 0x9000000000001 --transaction 0xa001 --continue-recovery \
+  --cycles 100000000 --timeout 1200
+python3 scripts/lemmasim product boot \
+  --session-dir build/boot/product9-session --transaction 0xa002 \
+  --continue-recovery --cycles 100000000 --timeout 1200
+python3 scripts/lemmasim session-control --session-dir build/boot/product9-session \
+  --request '{"action":"run","cycles":1000000}'
+python3 scripts/lemmasim session-control --session-dir build/boot/product9-session \
+  --request '{"action":"snapshot","path":"build/boot/product9-checkpoint"}'
+```
+
+Session run requests execute real cycles. The ROM handoff does not synthesize
+Notebook Ready. Snapshots preserve the actual execution boundary and both
+private backing namespaces; reopening a snapshot is distinct from cold recovery.

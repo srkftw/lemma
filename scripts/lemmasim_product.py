@@ -22,7 +22,7 @@ def discovery_generator(data):
  path=origin/'scripts/silicon_profile.py'
  spec=importlib.util.spec_from_file_location('product_profile_discovery',path)
  module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
- return module,module.profile(inputs.PROFILE),path
+ return module,module.profile(data['profile']),path
 
 def profile_discovery(data,out,dtc):
  generator,profile,path=discovery_generator(data)
@@ -36,7 +36,7 @@ def profile_discovery(data,out,dtc):
  extent=(out/'discovery.dtb').stat().st_size
  if not 40<=extent<=3072:raise ValueError('Profile discovery exceeds the exact boot-ROM discovery envelope')
  (out/'descriptor.bin').write_bytes(generator.descriptor(profile,extent))
- return {'contract_version':'lemma-product-digital-discovery-v1','profile_sha256':inputs.sha(generator.profile_path(inputs.PROFILE)),
+ return {'contract_version':'lemma-product-digital-discovery-v1','profile_sha256':inputs.sha(generator.profile_path(data['profile'])),
   'generator_sha256':inputs.sha(path),'dtc':{'path':str(tool),'sha256':inputs.sha(tool),'version':version},
   'dtb_bytes':extent,'dts_sha256':inputs.sha(out/'discovery.dts'),'dtb_sha256':inputs.sha(out/'discovery.dtb'),
   'descriptor_sha256':inputs.sha(out/'descriptor.bin'),
@@ -44,7 +44,7 @@ def profile_discovery(data,out,dtc):
 
 def validate_discovery(data,path):
  row=data['digital_discovery'];generator,profile,source=discovery_generator(data)
- if row.get('contract_version')!='lemma-product-digital-discovery-v1' or row['generator_sha256']!=inputs.sha(source) or row['profile_sha256']!=inputs.sha(generator.profile_path(inputs.PROFILE)):
+ if row.get('contract_version')!='lemma-product-digital-discovery-v1' or row['generator_sha256']!=inputs.sha(source) or row['profile_sha256']!=inputs.sha(generator.profile_path(data['profile'])):
   raise ValueError('Changed product digital discovery binding')
  for name,key in [('discovery.dts','dts_sha256'),('discovery.dtb','dtb_sha256'),('descriptor.bin','descriptor_sha256')]:
   if inputs.sha(path/name)!=row[key]:raise ValueError('Changed product discovery artifact: '+name)
@@ -64,10 +64,11 @@ def validate_discovery(data,path):
 def prepare(args):
  out=args.output_dir.resolve()
  if out.exists():raise ValueError('prepared output must be unused')
- n=inputs.native(args.native_build,args.native_source_archive)
- r=inputs.rom(args.rom_build,args.rom_source_archive)
+ selected=getattr(args,'profile',inputs.PROFILE)
+ n=inputs.native(args.native_build,args.native_source_archive,selected)
+ r=inputs.rom(args.rom_build,args.rom_source_archive,selected)
  from silicon_guest_bundle import host_dependencies
- data={'schema':'lemma-product-prepared/2','profile':inputs.PROFILE,
+ data={'schema':'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2','profile':selected,
   'boot':'immutable Lean ROM; image and DTB loaded by real BootNV transactions',
   'authentication':'OPEN integrity-only owner-local recovery','anti_rollback':'OPEN',
   'native_build':str(args.native_build.resolve()),'rom_build':str(args.rom_build.resolve()),
@@ -79,17 +80,22 @@ def prepare(args):
   'rom_sha256':r['manifest']['artifacts']['rom.bin'],'host_dependencies':host_dependencies(n['binary']),
   'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py')},
   'qualification':'prepared exact component inputs; product boot/update acceptance separate'}
+ if selected==inputs.NEXT_PROFILE:
+  data.update(image_compatibility=inputs.PROFILES[selected][2],rom_configuration=inputs.PROFILES[selected][0],paper_contract={'version':2,'staging_offset':3584,'staging_bytes':512})
  out.mkdir(parents=True);data['digital_discovery']=profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local path-bound prepared product machine. Requires the exact recorded native build/source archives and Nix loader/libraries; no redistribution license is granted. CVW20f2af74 Apache-2.0 WITH SHL-2.1 and preserved notices; Verilator5.052 LGPL-3.0-only OR Artistic-2.0. All target ROM/image policy is Lean. CRC32 integrity is not authentication or anti-rollback. Physical nonvolatile qualification OPEN.\n')
  return {'prepared':str(out),'rom':data['rom_sha256'],'native':data['binary_sha256']}
 
 def prepared(path):
  data=json.loads((Path(path)/'prepared.json').read_text())
- if data.get('schema')!='lemma-product-prepared/2' or data.get('profile')!=inputs.PROFILE:
+ selected=data.get('profile')
+ if selected not in inputs.PROFILES or data.get('schema')!=('lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2'):
   raise ValueError('Unsupported product prepared machine')
+ if selected==inputs.NEXT_PROFILE and (data.get('image_compatibility')!=inputs.PROFILES[selected][2] or data.get('rom_configuration')!=inputs.PROFILES[selected][0] or data.get('paper_contract')!={'version':2,'staging_offset':3584,'staging_bytes':512}):
+  raise ValueError('Product9 prepared compatibility or Paper2 contract differs')
  for key,build in (('native_manifest_sha256','native_build'),('rom_manifest_sha256','rom_build')):
   if inputs.sha(Path(data[build])/'build.json')!=data[key]:raise ValueError('Changed prepared original build manifest')
- n=inputs.native(data['native_build'],data['native_source_archive']);r=inputs.rom(data['rom_build'],data['rom_source_archive'])
+ n=inputs.native(data['native_build'],data['native_source_archive'],selected);r=inputs.rom(data['rom_build'],data['rom_source_archive'],selected)
  if (data['binary_sha256']!=n['manifest']['binary_sha256'] or data['runtime_identity']!=n['manifest']['snapshot_identity'] or data['rom_sha256']!=r['manifest']['artifacts']['rom.bin']):
   raise ValueError('Contradictory prepared product identities')
  for p,h in data['host_scripts'].items():
@@ -101,10 +107,11 @@ def prepared(path):
 
 class ProductRTL(sessions.RTL):
  def __init__(self,args,directory):
-  data,n,r=prepared(args.prepared);self.identity={'backend':'rtl','profile':inputs.PROFILE,
+  data,n,r=prepared(args.prepared);self.identity={'backend':'rtl','profile':data['profile'],
    'runtime':data['binary_sha256'],'implementation':data['runtime_identity'],'rom':data['rom_sha256'],
    'boot':'ROM/NV-v1','authentication':'integrity-only owner-local',
    'digital_discovery':data['digital_discovery']['descriptor_sha256'],'discovery_bytes':data['digital_discovery']['dtb_bytes']}
+  if data['profile']==inputs.NEXT_PROFILE:self.identity.update(image_compatibility=data['image_compatibility'],paper_contract=data['paper_contract'])
   self.log=(directory/'machine.log').open('wb');self.boot_lock=None
   medium=args.boot_medium
   if args.restore:
@@ -166,6 +173,10 @@ def frame(transaction,operation,slot=0,relative=0,identity=0,payload=b''):
 
 def install_extent(package,wire,identity):
  extent=identity.get('discovery_bytes')
+ selected=identity.get('profile',inputs.PROFILE)
+ if selected not in inputs.PROFILES:raise ValueError('Unknown Product package hardware profile')
+ if len(wire)<512 or package.get('compatibility')!=inputs.PROFILES[selected][2] or struct.unpack_from('<Q',wire,24)[0]!=inputs.PROFILES[selected][2]:
+  raise ValueError('Image package compatibility differs from the selected ROM/hardware profile')
  if type(extent)!=int or not 40<=extent<=3072 or len(wire)<512 or extent!=package.get('discovery_bytes') or struct.unpack_from('<Q',wire,48)[0]!=extent:
   raise ValueError('Compiled package discovery extent differs from the fixed digital profile')
 
@@ -224,7 +235,7 @@ def recovery(args):
 
 def main(argv=None):
  p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='command',required=True)
- a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--dtc',help='Pinned Nix dtc1.8.1 executable; defaults to dtc in the preparation environment')
+ a=sub.add_parser('prepare');a.add_argument('--native-build',type=Path,required=True);a.add_argument('--native-source-archive',type=Path);a.add_argument('--rom-build',type=Path,required=True);a.add_argument('--rom-source-archive',type=Path);a.add_argument('--output-dir',type=Path,required=True);a.add_argument('--profile',choices=sorted(inputs.PROFILES),default=inputs.PROFILE);a.add_argument('--dtc',help='Pinned Nix dtc1.8.1 executable; defaults to dtc in the preparation environment')
  a=sub.add_parser('create-medium');a.add_argument('--boot-medium',type=Path,required=True)
  a=sub.add_parser('launch');a.add_argument('--prepared',type=Path,required=True);a.add_argument('--session-dir',type=Path,required=True);a.add_argument('--boot-medium',type=Path);a.add_argument('--disk',type=Path);a.add_argument('--restore',type=Path);a.add_argument('--recovery',action='store_true');a.add_argument('--mode',choices=['student','developer','laboratory'],default='student');a.add_argument('--paused',action='store_true');a.add_argument('--headless',action='store_true');a.add_argument('--timeout',type=int,default=120);a.add_argument('--quantum',type=int,default=1000000);a.add_argument('--tablet',type=Path);a.add_argument('--trace-limit',type=int,default=0);a.add_argument('--host-threads',type=int,default=1,help='Bounded host evaluation pool; default1, no change to virtual clock or event policy')
  for name in ('capacity','install','status','boot'):
@@ -242,7 +253,7 @@ def main(argv=None):
   elif args.command=='launch':
    if not 1<=args.quantum<=1000000 or not 1<=args.timeout<=7200:raise ValueError('Invalid bounded session resource limits')
    if not 1<=args.host_threads<=64:raise ValueError('Host evaluation thread count must be1..64')
-   args.backend='rtl';args.workload='product';args.profile=inputs.PROFILE
+   args.backend='rtl';args.workload='product';args.profile=prepared(args.prepared)[0]['profile']
    sessions.serve(args,ProductRTL,ProductSession);return 0
   else:
    if not 1<=args.quantum<=1000000 or not 1<=args.cycles<=2000000000 or not 1<=args.timeout<=7200:raise ValueError('Invalid bounded recovery resource limits')

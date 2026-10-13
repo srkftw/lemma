@@ -48,13 +48,24 @@ class RecoveryWireTests(unittest.TestCase):
   for size in (0,39,41):
    with self.assertRaises(ValueError):product.receipt(bytes(size))
  def test_profile_discovery_extent_before_install(self):
-  wire=bytearray(512);struct.pack_into('<Q',wire,48,2873)
-  product.install_extent({'discovery_bytes':2873},wire,{'discovery_bytes':2873})
+  wire=bytearray(512);struct.pack_into('<Q',wire,48,2873);struct.pack_into('<Q',wire,24,0x0007000300010001)
+  product.install_extent({'discovery_bytes':2873,'compatibility':0x0007000300010001},wire,{'discovery_bytes':2873})
   for size in (None,39,2872,2874,3073,True,2873.0):
    with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':2873},wire,{'discovery_bytes':size})
   for size in (2872,2874,None):
    with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':size},wire,{'discovery_bytes':2873})
   struct.pack_into('<Q',wire,48,2874)
-  with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':2873},wire,{'discovery_bytes':2873})
+  with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':2873,'compatibility':0x0007000300010001},wire,{'discovery_bytes':2873})
   with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':2873},wire[:511],{'discovery_bytes':2873})
+
+ def test_product_profile_compatibility_pairs_are_exact(self):
+  for profile,compatibility in [('lemma-silicon-dev/0.7.0',0x0007000300010001),('lemma-silicon-dev/0.9.0',0x0009000300010001)]:
+   wire=bytearray(512);struct.pack_into('<Q',wire,24,compatibility);struct.pack_into('<Q',wire,48,2873)
+   package={'discovery_bytes':2873,'compatibility':compatibility};identity={'discovery_bytes':2873,'profile':profile}
+   product.install_extent(package,wire,identity)
+   other=0x0009000300010001 if compatibility==0x0007000300010001 else 0x0007000300010001
+   with self.assertRaisesRegex(ValueError,'compatibility'):product.install_extent(dict(package,compatibility=other),wire,identity)
+   struct.pack_into('<Q',wire,24,other)
+   with self.assertRaisesRegex(ValueError,'compatibility'):product.install_extent(package,wire,identity)
+
 if __name__=='__main__':unittest.main()

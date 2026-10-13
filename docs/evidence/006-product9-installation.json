@@ -1,0 +1,169 @@
+{
+  "schema": "lemma-task006-product9-installation/1",
+  "status": "PASS_INSTALL_STATUS_HANDOFF",
+  "scope": "Actual immutable Lean Recovery9 and BootNV transactions install and load the audited Product9 kernel and DTB. Full Notebook Ready, healthy trial confirmation and new-profile fallback remain separately pending.",
+  "profile": "lemma-silicon-dev/0.9.0",
+  "source_identity": {
+    "shared_baseline_commit": "caee608",
+    "guest_source_commit": "229ab6c16ea15916932fa2dc5ca6cd87ff9b6018",
+    "guest_consumed_inputs": 277,
+    "guest_source_archive": "build/kernel/task006-product-next-bulk-notebook-a4/consumed-source-root",
+    "guest_elf_sha256": "d84446d27c72447a6600c5b103e5ae572e1b98dd7f0d1979956e22e7ac74e99c",
+    "guest_provenance_sha256": "b8f8d5f2565c00b06a5b0aebe88656ec7e21e655d22b6e310f2a57f5cbb6e0a9",
+    "guest_audit_sha256": "e9718ddb91921cc58232eede87f564e3a5f427589928e175c3af5c612b5518da",
+    "rom_sha256": "5e644ab891663ed927bc765e2b033f07db5fd6e76683403d40c2a605a877dd06",
+    "rom_build_sha256": "4a3e9b03c0c166acdf3928a399fd7093afc58bde4897596e7a8ff4f6471d91f2",
+    "rom_consumed_inputs": 244,
+    "native_binary_sha256": "b922ce3ff12b60059f07791c3078b63627bdaee30a8565c70f3af062efdc17dd",
+    "native_runtime_identity": "d285a5a73c233b4a1adf17b1d8b14a39fc70cff54baf9c563ce59b81aaa2633f",
+    "native_build_sha256": "d51583456a0983bda05dc392e4a1b98bb6e51802606412b1417000d5b6e91822",
+    "native_source_archive_sha256": "c020d9ab0304d8b0ffdad3e55a8638f8f855a52f606f11637d7be2e8b9051094"
+  },
+  "image": {
+    "id": 2533274790395905,
+    "compatibility": 2533287675363329,
+    "sectors": 709,
+    "sha256": "c2e3fec8e04359ec7e913dbe0a8ca027e251bf5bbaa25359e0b7adb16dbd6575",
+    "discovery_bytes": 2910
+  },
+  "observations": {
+    "recovery_beacon": {
+      "status": "PASS_ROM_RECOVERY_ONLY",
+      "beacon": {
+        "transaction": 0,
+        "status": 0,
+        "value": 65544
+      },
+      "cycle": 1000000,
+      "retired": 412191,
+      "private_user_sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f",
+      "user_unchanged": true
+    },
+    "installation": {
+      "cycles": 160000000,
+      "boundary_cycle": 161000000,
+      "host_completion_estimate_seconds": 901.1666421890259,
+      "host_completion_estimate_method": "Actual output-file completion mtime mapped to sampled kernel process start; wall/monotonic relation assumes no host clock discontinuity. Upper observation separately retained.",
+      "host_observed_upper_seconds": 1615.5769509350066,
+      "target_receipts": 710,
+      "last_receipt": {
+        "transaction": 37574,
+        "status": 0,
+        "value": 1
+      },
+      "exact_payload_observed": true,
+      "boot_backing": {
+        "enabled": true,
+        "present": 1,
+        "next_id": 2846,
+        "completed": 2845,
+        "durable_barrier": 2845,
+        "observed_write": 2844,
+        "pending": 0,
+        "orphan": 0,
+        "reset_origin": 1,
+        "fork_suspended": false
+      },
+      "documents_unchanged": true,
+      "user_sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f",
+      "exports_observational": true
+    },
+    "status_reconciliation": {
+      "beacon": null,
+      "receipts": [
+        {
+          "transaction": 40961,
+          "status": 0,
+          "value": 1
+        }
+      ],
+      "cycles": 18100000,
+      "durability": "only the actual successful target publication/status receipt acknowledges installation; CRC integrity only"
+    },
+    "boot": {
+      "beacon": null,
+      "receipts": [
+        {
+          "transaction": 40962,
+          "status": 0,
+          "value": 2147483648
+        }
+      ],
+      "cycles": 22200000,
+      "durability": "only the actual successful target publication/status receipt acknowledges installation; CRC integrity only"
+    },
+    "boot_host_seconds": 127.0403900090023,
+    "current_host_association": {
+      "status": "PASS",
+      "scope": "Current-host preparation rebinding and strict exact9/7 rejection; no machine execution or image health claim",
+      "original_invalid_dtc_log": "build/boot/task006-product-next-boot-a1/prepare-current-host-a2.log",
+      "cases": [
+        {
+          "case": "old-host-association",
+          "accepted": false,
+          "error": "Changed prepared product host interface"
+        },
+        {
+          "case": "current-host-association",
+          "accepted": true,
+          "error": null
+        },
+        {
+          "case": "native-9-component-as7",
+          "accepted": false,
+          "error": "Product requires the selected canonical versioned native core"
+        },
+        {
+          "case": "rom-9-component-as7",
+          "accepted": false,
+          "error": "ROM root/configuration differs from selected hardware profile"
+        }
+      ]
+    }
+  },
+  "original_limits": {
+    "rom_beacon_cycles": 1000000,
+    "rom_beacon_host_seconds": 120,
+    "install_cycles": 250000000,
+    "install_host_seconds": 3600,
+    "handoff_cycles": 100000000,
+    "handoff_host_seconds": 1200,
+    "canonical_ready_cycles": 2000000000,
+    "canonical_ready_host_seconds": 7200
+  },
+  "ready_campaign": {
+    "status": "RUNNING_SEPARATE",
+    "result_path": "build/boot/task006-product-next-boot-a1/ready-result-a1.json",
+    "requires": "Actual 420 and completed 425 controller sequence, all 3,630,000 expected pixels, unchanged complete acknowledged user journal and an observational checkpoint. A marker or ROM receipt is insufficient."
+  },
+  "remaining": {
+    "boot_authentication": "OPEN: CRC32 integrity only; SHA/HMAC component does not authenticate this boot path",
+    "anti_rollback": "OPEN",
+    "healthy_trial_confirmation": "NOT_YET_OBSERVED",
+    "healthy9_fallback": "NOT_YET_OBSERVED",
+    "physical_nonvolatile_qualification": "OPEN"
+  },
+  "raw_results": "build/boot/task006-product-next-boot-a1",
+  "host_verification": {
+    "wire_and_mixed_profile_tests": {
+      "status": "PASS",
+      "count": 6,
+      "log_sha256": "e44bf12a24323af8a855a40189a96725ccb371250b73161ad323deca07b30719"
+    },
+    "ordinary_lean_policy_compatibility": {
+      "status": "PASS",
+      "fixture": "tests/boot/ProductNextPolicy.lean",
+      "log_sha256": "d9fd15cbd34671288941029e73cb467d25387bb27af0ae3f80619efed98c6650",
+      "scope": "Independent host semantic fixture; no RV64 or healthy-kernel claim"
+    },
+    "raw_io_policy_model": {
+      "status": "PASS",
+      "receipt_sha256": "ed326d8b2a38e58ce6e591b549ff5b9601c87554928e7d828c609f096a513893",
+      "scope": "Actual Action evaluation in independent finite-memory fault model; not external backing or guest execution"
+    },
+    "original_failed_host_invocations": {
+      "unavailable_lake_path": "next-policy-compatibility-a1.log",
+      "invalid_dtc_path": "prepare-current-host-a2.log"
+    }
+  }
+}

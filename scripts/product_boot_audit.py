@@ -26,13 +26,23 @@ LITERALS={'Lemma.Boot.Product.metadataMagic':0x31444d42414d454c,
  'Lemma.Boot.Recovery.responseMagic':0x3154504345524d4c,
  'Lemma.Boot.Recovery.requestMagic':0x31564f4345524d4c}
 
+def variant(configuration):
+ if configuration==CONFIGURATION:return ROOT,REQUIRED,LITERALS,'lemma_product_boot_',('Product','Recovery')
+ if configuration=='lemmasim-silicon-product-next-boot':
+  def selected(name):return name.replace('Lemma.Boot.Product.','Lemma.Boot.ProductNext.').replace('Lemma.Boot.Recovery.','Lemma.Boot.RecoveryNext.')
+  return selected(ROOT),{selected(n) for n in REQUIRED},{**{selected(n):v for n,v in LITERALS.items()},'Lemma.Boot.ProductNext.compatibility':0x0009000300010001},'lemma_product_next_boot_',('ProductNext','RecoveryNext')
+ raise Core0Error('unknown exact product boot configuration')
+
 def validate_unit(unit,pre,optimized):
+ root,required,literals,prefix,names=variant(unit.get('configuration'))
  expected={'schema_version':1,'contract_version':'core0-boot-v0.1',
-  'configuration':CONFIGURATION,'role':'boot','root':ROOT,
+  'configuration':unit['configuration'],'role':'boot','root':root,
   'rom_base':4096,'rom_bytes':65536,'stack_floor':0x81fd0000,'stack_top':0x82000000,
   'integrity':'CRC32/ISO-HDLC; no authentication or anti-rollback guarantee',
   'recovery_transport':'lemma-local-uart-recovery-v1; integrity-only, bounded owner-local transport; authentication OPEN',
   'backend_dispatch':'lemma-boot-direct-branches-v1'}
+ if unit['configuration']!='lemmasim-silicon-product-boot':
+  expected.update(hardware_profile='lemma-silicon-dev/0.9.0',image_compatibility=0x0009000300010001)
  if any(unit.get(k)!=v for k,v in expected.items()):raise Core0Error('boot ROM manifest contract differs')
  if set(unit)!=set(expected)|{'entry_symbol','functions','used_execution_ops','used_device_ops'}:raise Core0Error('unexpected boot ROM manifest authority')
  rows=unit.get('functions')
@@ -42,17 +52,17 @@ def validate_unit(unit,pre,optimized):
   if not isinstance(row,dict) or set(row)!={'source','symbol','args','effects'}:raise Core0Error('malformed boot function provenance')
   source,symbol=row['source'],row['symbol']
   if not isinstance(source,str):raise Core0Error('malformed boot source identity')
-  private=re.fullmatch(r'_private\.Lemma\.Boot\.(Product|Recovery)\.[0-9]+\.(Lemma\.Boot\.\1\.[A-Za-z_0-9]+)',source)
+  private=re.fullmatch(r'_private\.Lemma\.Boot\.('+ '|'.join(names) +r')\.[0-9]+\.(Lemma\.Boot\.\1\.[A-Za-z_0-9]+)',source)
   if private:source=private[2]
-  if not (source.startswith(('Lemma.Boot.Product.','Lemma.Boot.Recovery.')) or source in HELPERS or source in STATUS):raise Core0Error('foreign boot function source')
-  if not isinstance(symbol,str) or not re.fullmatch(r'lemma_product_boot_core0_(?:scalar|action)_[0-9]+',symbol):raise Core0Error('unexpected boot lowering symbol')
+  if not (source.startswith(tuple('Lemma.Boot.'+n+'.' for n in names)) or source in HELPERS or source in STATUS):raise Core0Error('foreign boot function source')
+  if not isinstance(symbol,str) or not re.fullmatch(re.escape(prefix)+r'core0_(?:scalar|action)_[0-9]+',symbol):raise Core0Error('unexpected boot lowering symbol')
   if source in sources or symbol in symbols:raise Core0Error('duplicate boot function authority')
   if not isinstance(row['args'],list) or any(x not in ('u8','u32','u64','bool') for x in row['args']):raise Core0Error('unexpected boot ABI')
   effects={'checked-access','physical-read','physical-write','mmio-read','mmio-write','io-order'}
   if not isinstance(row['effects'],list) or len(row['effects'])!=len(set(row['effects'])) or any(x not in effects for x in row['effects']):raise Core0Error('unexpected boot effects')
   if source in STATUS and (row['args'] or row['effects']):raise Core0Error('status literal has unexpected authority')
   sources[source]=row;symbols[symbol]=source
- if not REQUIRED<=sources.keys() or unit.get('entry_symbol')!=sources[ROOT]['symbol'] or sources[ROOT]['args']!=[]:raise Core0Error('missing real boot/recovery/installer closure')
+ if not required<=sources.keys() or unit.get('entry_symbol')!=sources[root]['symbol'] or sources[root]['args']!=[]:raise Core0Error('missing real boot/recovery/installer closure')
  ops=unit.get('used_execution_ops')
  if not isinstance(ops,list) or len(ops)!=len(set(ops)) or set(ops)!={'lemmasim.device-read64','lemmasim.device-write64','execution.physical-write64','execution.physical-read64','execution.physical-write8'}:raise Core0Error('boot primitive scope differs')
  device=unit.get('used_device_ops')
@@ -61,7 +71,7 @@ def validate_unit(unit,pre,optimized):
   if source in sources:
    symbol=re.escape(sources[source]['symbol'])
    if not re.search(r'(?m)^define internal zeroext i8 @'+symbol+r'\(\) nounwind "no-jump-tables"="true" \{\nentry:\n  ret i8 '+str(value)+r'\n\}',pre):raise Core0Error('boot status constant body differs')
- for source,value in LITERALS.items():
+ for source,value in dict(literals,**({'Lemma.Boot.ProductNext.compatibility':0x0009000300010001} if names[0]=='ProductNext' else {})).items():
   row=sources.get(source)
   if row is None or row['args'] or row['effects']:raise Core0Error('missing closed boot readonly literal source')
   if not re.search(r'(?m)^define internal i64 @'+re.escape(row['symbol'])+r'\(\) nounwind "no-jump-tables"="true" \{\nentry:\n  ret i64 '+str(value)+r'\n\}',pre):raise Core0Error('boot readonly literal body differs')
@@ -82,12 +92,13 @@ def validate_unit(unit,pre,optimized):
   if declared.pop('core0_io_fence',None)!='void()':raise Core0Error('missing real boot I/O fence')
   if label=='checked' and declared:raise Core0Error('unaccounted checked boot runtime')
   if any(INTRINSICS.get(k)!=v for k,v in declared.items()):raise Core0Error('unknown optimized boot intrinsic')
-  if not re.search(r'(?m)^define[^\n]*@'+re.escape(sources[ROOT]['symbol'])+r'\(\)',ir):raise Core0Error('missing actual boot entry body')
+  if not re.search(r'(?m)^define[^\n]*@'+re.escape(sources[root]['symbol'])+r'\(\)',ir):raise Core0Error('missing actual boot entry body')
  return {'genuine_functions':len(rows),'optimized_functions':len(re.findall(r'(?m)^define ',optimized)),
   'runtime_helpers':['core0_io_fence'],'llvm_intrinsics':sorted(declared),
   'authentication':'OPEN','anti_rollback':'OPEN'}
 
-def validate_elf(wire,rom):
+def validate_elf(wire,rom,configuration=CONFIGURATION):
+ _,_,literals,_,_=variant(configuration)
  if len(wire)<64 or wire[:7]!=b'\x7fELF\x02\x01\x01':raise Core0Error('boot image must be ELF64 little endian')
  e=struct.unpack_from('<16sHHIQQQIHHHHHH',wire)
  if e[1]!=2 or e[2]!=243 or e[3]!=1 or e[4]!=4096 or e[7]!=0 or e[8]!=64 or e[9]!=56:raise Core0Error('boot ELF type/ISA/entry differs')
@@ -115,11 +126,12 @@ def validate_elf(wire,rom):
    allocated[name]=section
  if set(allocated)!={'.text','.rodata'}:raise Core0Error('missing closed ROM code/readonly separation')
  text,rodata=allocated['.text'],allocated['.rodata']
- # LLVM emits a deduplicated SHF_ALLOC|SHF_MERGE pool of five 8-byte
- # entries. It has no writable or executable section permission.
- if text[2]!=6 or text[3]!=4096 or text[5]%4 or text[8]!=4 or rodata[2]!=18 or rodata[3]!=(text[3]+text[5]+7)&~7 or rodata[8]!=8 or rodata[9]!=8 or rodata[5]!=40:raise Core0Error('ROM code/readonly flags or placement differ')
- values=struct.unpack_from('<5Q',wire,rodata[4])
- if len(set(values))!=5 or set(values)!=set(LITERALS.values()):raise Core0Error('unaccounted linked ROM readonly literal pool')
+ # LLVM emits deduplicated SHF_ALLOC|SHF_MERGE entries: exactly five
+ # pinned magic words for Product7, plus the pinned compatibility word for9. Each
+ # entry is eight bytes. It has no writable or executable section permission.
+ if text[2]!=6 or text[3]!=4096 or text[5]%4 or text[8]!=4 or rodata[2]!=18 or rodata[3]!=(text[3]+text[5]+7)&~7 or rodata[8]!=8 or rodata[9]!=8 or rodata[5]!=8*len(literals):raise Core0Error('ROM code/readonly flags or placement differ')
+ values=struct.unpack_from('<'+str(len(literals))+'Q',wire,rodata[4])
+ if len(set(values))!=len(literals) or set(values)!=set(literals.values()):raise Core0Error('unaccounted linked ROM readonly literal pool')
  if any(rom[text[5]:rodata[3]-4096]) or rodata[3]-4096+rodata[5]!=len(rom):raise Core0Error('unaccounted ROM alignment or trailing bytes')
  return {'entry':4096,'load_bytes':len(rom),'rom_envelope_bytes':65536,'permissions':'RX',
-  'readonly_contract':'lemma-boot-readonly-magic-v1','readonly_bytes':40,'readonly_sources':sorted(LITERALS)}
+  'readonly_contract':'lemma-boot-readonly-magic-compatibility-v2' if configuration=='lemmasim-silicon-product-next-boot' else 'lemma-boot-readonly-magic-v1','readonly_bytes':8*len(literals),'readonly_sources':sorted(literals)}
