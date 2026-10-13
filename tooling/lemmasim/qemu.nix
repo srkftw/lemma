@@ -14,14 +14,17 @@ let
     enableDocs = false; enableTools = false; guestAgentSupport = false;
   };
   selectedProfile = builtins.fromJSON (builtins.readFile siliconProfile);
-  counterPatch = if selectedProfile.profile == "lemma-silicon-dev/0.3.0" then ''
+  counterPatch = if builtins.elem selectedProfile.profile [ "lemma-silicon-dev/0.3.0" "lemma-silicon-dev/0.4.0" ] then ''
     ${pkgs.python3}/bin/python3 ${./patch_counter_clock.py} .
+  '' else "";
+  safetyPatch = if selectedProfile.profile == "lemma-silicon-dev/0.4.0" then ''
+    ${pkgs.python3}/bin/python3 ${./patch_power_safety.py} .
   '' else "";
   hardwareSources = builtins.path {
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
-      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c"
+      [ "lemma_qemu.c" "lemma_model.c" "lemma_model.h" "lemma_device_abi.h" "lemma_power_abi.h" "lemma_durable.c" "lemma_fast_block.c" "lemma_power_safety.h" "lemma_power_safety.c" "lemma_power_clock.h" "lemma_power_clock.c" "lemma_power_qemu.inc.c"
         "backing_io.h" "backing_io.cpp" "backing_io_posix.h" "backing_io_posix.cpp" ];
   };
   companionSources = builtins.path {
@@ -37,6 +40,7 @@ in base.overrideAttrs (old: {
   buildPhase = ''
     set -e
     runHook preBuild
+    ${if selectedProfile.profile == "lemma-silicon-dev/0.4.0" then "${pkgs.ninja}/bin/ninja -C build -j$NIX_BUILD_CORES libqemu-riscv64-softmmu.a.p/hw_riscv_lemma_qemu.c.o libsystem.a.p/system_runstate.c.o libsystem.a.p/hw_core_loader.c.o libqemu-riscv64-softmmu.a.p/hw_intc_riscv_aclint.c.o" else ""}
     make -C build -j$NIX_BUILD_CORES qemu-system-riscv64 trace/trace-events-all qemu-gmo
     test -x build/qemu-system-riscv64
     runHook postBuild
@@ -54,5 +58,5 @@ in base.overrideAttrs (old: {
   '';
   postPatch = (old.postPatch or "") + ''
     ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --companion-source ${companionSources} --silicon-profile ${siliconProfile}
-  '' + counterPatch;
+  '' + counterPatch + safetyPatch;
 })

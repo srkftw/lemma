@@ -52,8 +52,9 @@ def prepared_path(name=None):
 def sources(name):
     paths = [ROOT/'tooling/lemmasim/qemu.nix', ROOT/'tooling/lemmasim/apply_qemu.py',
              ROOT/'flake.lock', profile_path(name)]
-    if profile(name)['profile'] == 'lemma-silicon-dev/0.3.0':
+    if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
+    if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']
     paths += sorted(p for p in (ROOT/'sim/host').glob('*') if p.is_file())
     paths += sorted(p for p in (ROOT/'sim/companion').glob('backing_*') if p.is_file())
     return {str(p.relative_to(ROOT)): digest(p) for p in paths}
@@ -61,7 +62,6 @@ def sources(name):
 
 def build(args):
     name = profile(args.profile)['profile']
-    if name=='lemma-silicon-dev/0.4.0':raise ValueError('Power-v2 fast reset/time/supply integration remains unqualified; use exact RTL')
     selected = guest.configurations(name)
     workload = args.workload or 'notebook'
     if workload not in selected:
@@ -69,9 +69,8 @@ def build(args):
     archived=None
     archive_path=getattr(args,'guest_bundle',None)
     if archive_path is not None:
-        if args.guest_build is not None or name!='lemma-silicon-dev/0.3.0':raise ValueError('Archived guest requires canonical binding without --guest-build')
-        import silicon_guest_bundle
-        archived=silicon_guest_bundle.prepared(archive_path,'qemu',workload,name)
+        if args.guest_build is not None or name not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):raise ValueError('Archived guest requires qualified binding without --guest-build')
+        archived=archived_guest(archive_path,workload,name)
         archived_build=json.loads(Path(archived['workloads'][workload]['build']['path']).read_text())
         if archived_build['optimization']!=args.opt_level:raise ValueError('Archived guest optimization differs')
     link = ROOT / ('build/lemmasim/qemu-fast-' + name.split('/')[1])
@@ -105,7 +104,7 @@ def build(args):
             'sources':before,'cpu':CPU,'icount_shift':3,'workloads':{workload:entry},
             'boot':'ELF-preload development; QEMU reset-ROM handoff to identical Lean guest ELF and supplied DTB'}
     if archived is not None:
-        data['guest_archive']={'path':str(Path(archive_path).resolve()),'manifest_sha256':digest(Path(archive_path)/'bundle.json'),
+        data['guest_archive']={'path':str(Path(archive_path).resolve()),'manifest_sha256':digest(archive_manifest(archive_path,name)),
                                'scope':'unchanged archived genuine guest; new backend, not fresh target compilation'}
         validate_archived_entry(data,workload)
     path = prepared_path(name)
@@ -128,14 +127,23 @@ def build(args):
     print(f'Prepared matched fast {workload}: {path}')
 
 
+def archive_manifest(path,name):
+    return Path(path)/('archive.json' if name=='lemma-silicon-dev/0.4.0' else 'bundle.json')
+
+def archived_guest(path,workload,name):
+    if name=='lemma-silicon-dev/0.4.0':
+        import silicon_power_guest_archive
+        return silicon_power_guest_archive.prepared(path,workload,name)
+    import silicon_guest_bundle
+    return silicon_guest_bundle.prepared(path,'qemu',workload,name)
+
 def validate_archived_entry(data,workload):
     archive=data.get('guest_archive')
     if not isinstance(archive,dict) or set(archive)!={'path','manifest_sha256','scope'} or archive['scope']!='unchanged archived genuine guest; new backend, not fresh target compilation':
         raise ValueError('Malformed archived guest preparation')
     path=Path(archive['path']).resolve()
-    if digest(path/'bundle.json')!=archive['manifest_sha256']:raise ValueError('Archived guest manifest changed')
-    import silicon_guest_bundle
-    archived=silicon_guest_bundle.prepared(path,'qemu',workload,data['profile'])
+    if digest(archive_manifest(path,data['profile']))!=archive['manifest_sha256']:raise ValueError('Archived guest manifest changed')
+    archived=archived_guest(path,workload,data['profile'])
     if data['workloads'][workload]!=archived['workloads'][workload]:raise ValueError('Guest artifacts differ from validated archived closure')
 
 
@@ -233,6 +241,7 @@ class Fast:
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))
         self.input_kinds={'pen','button'} if self.power_enabled else {'pen'}
+        if self.data['profile']=='lemma-silicon-dev/0.4.0':self.input_kinds.update(('pgood','brownout'))
         self.medium=args.disk.resolve() if args.disk else None
         self.companion=None
         if getattr(args,'companion',None) is not None:
@@ -346,6 +355,7 @@ class Fast:
                 self.socket_directory.cleanup();self.socket_directory=None
 
     def run_until_ns(self, ns):
+        if self.qmp.execute('query-status')['status']=='internal-error':raise ValueError('Fast execution scope was rejected; inspect machine.log. Use exact RTL or an explicit cold-cycle; this machine cannot resume.')
         now=self.time_origin_ns+int(self.get('virtual-time'))
         if type(ns) is not int or not now<=ns<=MAX_NS:raise ValueError('Fast interval must advance a supported virtual time')
         if ns==now:return self.clock()
@@ -360,6 +370,7 @@ class Fast:
                 self.qmp.execute('stop')
                 raise TimeoutError('Fast virtual interval exceeded host resource deadline')
             time.sleep(0.001)
+        if self.qmp.execute('query-status')['status']=='internal-error':raise ValueError('Fast execution scope was rejected; inspect machine.log. Use exact RTL or an explicit cold-cycle; no guest success was admitted.')
         storage=json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'}))
         if storage.get('backing_poisoned'):
             raise RuntimeError('Backing persistence unresolved; machine paused without acknowledgment. Restart the companion/outbox to reconcile; this machine cannot snapshot pending work.')
@@ -422,8 +433,10 @@ class Fast:
             ns=cycle*1000000000//self.clock_hz
             now=self.time_origin_ns+int(self.get('virtual-time'))
             if not now<=ns<=MAX_NS-7:raise ValueError('Fast event delivery exceeds its virtual time bound')
-            self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-button' if kind=='button' else 'external-event',
-                                      'value':' '.join([str(ns-self.time_origin_ns),*fields[2:]])})
+            supply=kind in ('pgood','brownout')
+            value=[str(ns-self.time_origin_ns),*(['2' if kind=='pgood' else '3'] if supply else []),*fields[2:]]
+            self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-supply' if supply else 'external-button' if kind=='button' else 'external-event',
+                                      'value':' '.join(value)})
             return self.inspect()
         if action=='snapshot':
             path=Path(text)

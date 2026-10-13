@@ -851,7 +851,7 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
-        if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile!='lemma-silicon-dev/0.3.0' or args.guest_build is not None):raise Failure('--guest-bundle requires canonical QEMU and excludes --guest-build')
+        if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
         if args.command=='native-bundle-build':
             import silicon_guest_bundle
             silicon_guest_bundle.bundle(args)

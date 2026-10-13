@@ -84,8 +84,17 @@ orphan ownership. Power-v2 native container3 is distinct from historical
 container1/2 and is bound to the exact generated model identity.
 
 The Power-v2 reference model is host-only circuitry emulation. QEMU/profile0.4
-admission remains disabled until its timer, domain reset and loss integration
-meet this contract. Existing QEMU profile0.3 is unaffected. The ordinary 0.3
-notebook remains the qualified product path; Power-v2 circuit/native/Lean
-qualification is recorded separately. Watchdog support does not close product
+admits only the genuine Power probe, through the partial observation relation in
+`conformance/lemmasim/POWER_V2_RELATION.md`. Its independent 10ns Power clock,
+watchdog expiry during WFI, eight-edge qualification, actual working-RAM loss,
+immutable development image reinstall and guest cause/epoch reports are
+qualified separately from full processor timing. ACLINT retains a serialized
+reset origin and fractional phase; MTIMECMP resets to all ones. A second Power
+write while one is pending halts this backend explicitly, retaining the first
+write. An unprocessed asynchronous QEMU reset request or external backing
+operation rejects snapshots. The selected warm-reset timer-phase suffix passes;
+QEMU migration still omits soft-TLB/translation-block/jump-cache contents, so
+arbitrary cached-state continuation remains open. Existing QEMU profile0.3 is
+unaffected. The ordinary 0.3 notebook remains the qualified product path;
+Power-v2 circuit/native/Lean and scoped fast qualification are separate. Watchdog support does not close product
 boot/update, physical reset-domain/CDC or electrical power qualification.
