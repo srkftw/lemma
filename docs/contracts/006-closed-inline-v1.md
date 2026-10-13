@@ -32,11 +32,17 @@ unchanged. Ordinary pinned LLVM optimization can then propagate constants
 through these exact bodies. Every ownership, capability, mapping, revocation
 and policy Action retains its inspectable call boundary.
 
-Only canonical Power-v1 notebook/initializer and the three explicitly selected
-Arithmetic Laboratory configurations enable these options. Other configurations
+Canonical Power-v1 notebook/initializer, the three explicitly selected Arithmetic
+Laboratory configurations and the managed Notebook software successor enable
+these options. Other configurations
 must not carry the catalog or an `alwaysinline` function. The catalog has exact
 version, row and attribute inventories. The ordinary postIR/object auditor
 continues to inspect accesses, calls, executable provenance, runtime closure
 and stack use. These are artifact audits and semantic regression checks, not
 proofs of LLVM correctness or a boot-cycle bound. Device MMIO wrappers retain
 the separate complete aperture/fence audit and their original call boundaries.
+
+The managed successor additionally selects the separate, default-off
+`lemma-checked-user-word-wrapper-v1` contract described in
+[006-managed-notebook-deployment-v1.md](006-managed-notebook-deployment-v1.md).
+It changes no eligibility rule or complete preimage in either contract above.

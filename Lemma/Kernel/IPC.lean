@@ -316,8 +316,8 @@ private def pollWaiting (descriptor transaction metadata : UInt64) : Action :=
 /-- Ready completion wins subsequent deadline/cancellation events. Waiting
 transactions sample hardware time here; an earlier scheduler timestamp is not
 used to decide Reply publication or timeout. Idle is an ordinary no-work result. -/
-def poll (descriptor : UInt64) : Action :=
-  .bind (IPCStorage.pending descriptor) fun s metadata =>
+def pollAt (descriptor base : UInt64) : Action :=
+  .bind (IPCStorage.pendingAt descriptor base) fun s metadata =>
   if failed s = true then fatal else
   .bind (word metadata IPCStorage.stateOffset) fun s state =>
   if failed s = true then fatal else
@@ -326,6 +326,11 @@ def poll (descriptor : UInt64) : Action :=
   if failed s = true then fatal else
   if state = IPCStorage.stateReady then .done 0 metadata else
   if state = IPCStorage.stateWaiting then pollWaiting descriptor transaction metadata else fatal
+
+/-- Public polling establishes a fresh base before using the checked helper. -/
+def poll (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else pollAt descriptor base
 
 /-- Consume only after successful copy-out. A bad destination or insufficient
 capacity leaves a committed Call Reply intact so the caller can retry. Receive

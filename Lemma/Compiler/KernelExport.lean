@@ -2,6 +2,7 @@ import Lean
 import Lemma.Compiler.CFGLower
 import Lemma.Compiler.Format
 import Lemma.Compiler.DeploymentCatalog
+import Lemma.Mathematics.ExecutionIdentity
 import Lemma.Platform.RiscV.ExecutionPrimitives
 import Lemma.Platform.Silicon.Binding
 import Lemma.Platform.Silicon.BindingFull
@@ -27,11 +28,13 @@ private def roleProfile (role : String) (configuration : String)
   | "kernel" => .ok (if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if image?.any (fun image => image.key == "arithmetic") &&
-      (configuration == "lemmasim-silicon-power-notebook" ||
-       configuration == "lemmasim-silicon-power-initialize" || isArithmeticDevelopmentConfiguration configuration)
+  | "user" => .ok (if (isManagedNotebookConfiguration configuration &&
+      image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
+      (image?.any (fun image => image.key == "arithmetic") &&
+       (configuration == "lemmasim-silicon-power-notebook" ||
+        configuration == "lemmasim-silicon-power-initialize" || isArithmeticDevelopmentConfiguration configuration))
       then .user_v0_2 else .user_v0_1)
   | _ => .error "production role must be firmware, kernel, or user"
 
@@ -81,7 +84,7 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Platform.Silicon.Development.PowerSafety.boot", "Lemma.Platform.Silicon.Development.PowerSafety.dispatch"]
     else if configuration == "lemmasim-silicon-power-probe" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
-    else if configuration == "lemmasim-silicon-power-notebook" then
+    else if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-managed-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-power-arithmetic-oom-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
@@ -89,7 +92,7 @@ private def rootIdentities (configuration role : String) : Array String :=
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticFaultBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticStallBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
-    else if configuration == "lemmasim-silicon-power-initialize" then
+    else if configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-silicon-managed-initialize" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerInitializeMedium", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
     else if configuration == "lemmasim-silicon-full-notebook" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.siliconFullBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatch"]
@@ -291,6 +294,7 @@ private def deviceJson (lowered : LoweredActionSuite) (operation : Device.Op) : 
     ("fence_after", .bool spec.fenceAfter), ("sites", .arr (deviceSites lowered operation))]
 
 private def closedInlineFor (configuration : String) : Bool :=
+  isManagedNotebookConfiguration configuration ||
   #["lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize",
     "lemmasim-silicon-power-arithmetic-oom-development",
     "lemmasim-silicon-power-arithmetic-fault-development",
@@ -299,7 +303,7 @@ private def closedInlineFor (configuration : String) : Bool :=
 private def closedInlineFields (configuration : String) (lowered : LoweredActionSuite) :
     List (String × Json) :=
   if !closedInlineFor configuration then [] else
-  [("checked_inline", Json.mkObj [
+  [("checked_inline", Json.mkObj ([
     ("literal_contract", .str "lemma-closed-literals-v1"),
     ("wrapper_contract", .str "lemma-checked-primitive-wrapper-v1"),
     ("literals", .arr (lowered.inlineLiterals.map fun row => Json.mkObj [
@@ -307,9 +311,15 @@ private def closedInlineFields (configuration : String) (lowered : LoweredAction
       ("type", .str row.ty.render), ("value", toJson row.value)])),
     ("wrappers", .arr (lowered.inlineWrappers.map fun row => Json.mkObj [
       ("source", .str row.source.toString), ("symbol", .str row.symbol),
-      ("operation", .str row.operation.stableId)]))])]
+      ("operation", .str row.operation.stableId)]))] ++
+    (if !isManagedNotebookConfiguration configuration then [] else [
+      ("user_wrapper_contract", .str "lemma-checked-user-word-wrapper-v1"),
+      ("user_wrappers", .arr (lowered.inlineUserWrappers.map fun row => Json.mkObj [
+        ("source", .str row.source.toString), ("symbol", .str row.symbol),
+        ("operation", .str row.operation.stableId)]))])))]
 
-private def managedRecordFields (env : Environment) (suite : CheckedActionSuite)
+private def managedRecordFields (env : Environment) (configuration : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite)
     (lowered : LoweredActionSuite) : Except String (List (String × Json)) := do
   let mut entries : Array Name := #[]
   for function in suite.actionFunctions do
@@ -317,6 +327,9 @@ private def managedRecordFields (env : Environment) (suite : CheckedActionSuite)
       unless entries.contains root do entries := entries.push root
   if suite.contractVersion != Profile.user_v0_2.contractVersion then
     unless entries.isEmpty do throw "Managed closure crossed a legacy User profile"
+    return []
+  if isManagedNotebookConfiguration configuration && image?.any (fun image => image.key == "notebook") then
+    unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
     throw "Production managed record entry differs from its versioned closed catalog"
@@ -341,6 +354,33 @@ private def managedRecordFields (env : Environment) (suite : CheckedActionSuite)
       ("source", .str shape.typeName.toString), ("constructor", .str shape.constructor.toString),
       ("id", toJson shape.id), ("bytes", toJson shape.bytes)])),
     ("functions", .arr functions)])]
+
+private def arithmeticExecutionFields (configuration role : String)
+    (image? : Option UserImageSpec) (suite : CheckedActionSuite) : Except String (List (String × Json)) := do
+  if !image?.any (fun image => image.key == "arithmetic") then return []
+  let hasV2 := suite.actionFunctions.any fun function =>
+    ((Lean.privateToUserName? function.name).getD function.name).toString.startsWith
+      "Lemma.Services.Arithmetic.ProtocolV2."
+  if !hasV2 then return []
+  unless role == "user" && image?.any (fun image => image.key == "arithmetic") &&
+      suite.contractVersion == Profile.user_v0_2.contractVersion &&
+      (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
+       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV2.reply) &&
+      suite.actionFunctions.any (fun function => function.name == `Lemma.Services.Arithmetic.ProtocolV2.validateRequest) do
+    throw "Arithmetic execution identity escaped its closed Protocol-v2 deployment"
+  return [("arithmetic_execution_identity", Json.mkObj [
+    ("contract_version", .str "lemma-arithmetic-execution-identity-v1"),
+    ("implementation", Json.mkObj [("name", .str "lemma-isolated-arithmetic-managed-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.implementation.toNat)]),
+    ("lowering", Json.mkObj [("name", .str "core0-user-v0.2/lemma-managed-records-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.lowering.toNat)]),
+    ("runtime", Json.mkObj [("name", .str "lemma-owned-arena-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.runtime.toNat)]),
+    ("resources", Json.mkObj [("name", .str "lemma-arithmetic-resource-v1"),
+      ("id", toJson Lemma.Mathematics.ExecutionIdentity.resources.toNat),
+      ("heap_objects", toJson (31 : Nat)), ("semantic_budgets", .arr #[toJson (0 : Nat), toJson (8 : Nat)]),
+      ("deadline_ticks", toJson (10000000 : Nat))])])]
 
 private def unitManifest (env : Environment) (configuration role : String) (suite : CheckedActionSuite)
     (lowered : LoweredActionSuite) (image? : Option UserImageSpec := none) : Except String Json := do
@@ -369,8 +409,9 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
     ("contract_version", .str suite.contractVersion), ("role", .str role), ("roots", .arr roots),
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
-      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ closedInlineFields configuration lowered ++
-      (← managedRecordFields env suite lowered))
+      Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ softwareDeploymentFields configuration ++ closedInlineFields configuration lowered ++
+      (← managedRecordFields env configuration image? suite lowered) ++
+      (← arithmeticExecutionFields configuration role image? suite))
 
 private def loopJson (use : ActionLoopUse) : Json :=
   Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]
@@ -400,7 +441,7 @@ historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
   if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration) then
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.3.0 user " ++ image.root.toString
     | none => "Lemma " ++ configuration ++ " " ++ role
@@ -458,7 +499,8 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
     preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
     inlineLiteralConstants := closedInlineFor configuration,
-    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" }
+    inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel",
+    inlineUserWordWrappers := isManagedNotebookConfiguration configuration && role == "user" && profile == .user_v0_2 }
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then

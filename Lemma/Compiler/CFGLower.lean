@@ -481,12 +481,36 @@ private def checkedPrimitiveWrapper? (function : Lemma.Core0.ActionFunction) :
       unless arguments[index]! == .lit .u64 0 do none
   some operation
 
+/-- This successor admits no byte access or policy body, and is enabled only
+under User-v0.2 by the suite entry below. -/
+private def checkedUserWordWrapper? (function : Lemma.Core0.ActionFunction) :
+    Option Lemma.Core0.Execution.Op := do
+  let .platform operation arguments status value (.done returnedStatus returnedValue) := function.body
+    | none
+  unless (operation == .virtualRead64 || operation == .virtualWrite64) && arguments.size == 6 &&
+      function.params.size == operation.argumentCount &&
+      function.signature.args == Array.replicate operation.argumentCount .u64 &&
+      function.scalarDependencies.isEmpty && function.actionDependencies.isEmpty &&
+      function.directEffects == Lemma.Core0.executionEffects operation &&
+      function.effects == Lemma.Core0.executionEffects operation &&
+      status.ty == .u8 && value.ty == .u64 && status.id != value.id &&
+      returnedStatus == .var status.id .u8 && returnedValue == .var value.id .u64 do none
+  for index in [:arguments.size] do
+    if index < operation.argumentCount then
+      let param := function.params[index]!
+      unless param.ty == .u64 && param.id != status.id && param.id != value.id &&
+          arguments[index]! == .var param.id .u64 do none
+    else
+      unless arguments[index]! == .lit .u64 0 do none
+  some operation
+
 structure LoweredActionSuite where
   functions : Array LLVM.Function
   symbols : Array Symbol
   roots : Array LoweredActionRoot
   inlineLiterals : Array ClosedLiteral := #[]
   inlineWrappers : Array CheckedPrimitiveWrapper := #[]
+  inlineUserWrappers : Array CheckedPrimitiveWrapper := #[]
   deriving Repr
 
 def LoweredActionSuite.renderSymbolManifest (lowered : LoweredActionSuite) : String :=
@@ -1650,7 +1674,8 @@ private def lowerActionFunction (profile : Lemma.Core0.Profile)
     parameters
     parameterExtensions
     linkage := if isRoot || isPreserved then none else some "internal"
-    attributes := if options.inlinePrimitiveWrappers && (checkedPrimitiveWrapper? function).isSome then
+    attributes := if (options.inlinePrimitiveWrappers && (checkedPrimitiveWrapper? function).isSome) ||
+        (options.inlineUserWordWrappers && (checkedUserWordWrapper? function).isSome) then
       #["nounwind", "alwaysinline"]
     else if isPreserved then
       #["nounwind", "noinline", "\"disable-tail-calls\"=\"true\""]
@@ -1664,6 +1689,8 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
   validateSymbolPrefix options.symbolPrefix
+  if options.inlineUserWordWrappers && profile != .user_v0_2 then
+    throw "checked virtual word wrapper optimization requires core0-user-v0.2"
   unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
       profile == .v0_7 || profile.isExecution do
     throw "Action lowering requires profile core0-v0.4, core0-v0.5, core0-v0.6, or core0-v0.7"
@@ -1906,7 +1933,14 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
         inlineWrappers := inlineWrappers.push {
           source := function.name, symbol := ← lookupSymbol symbols function.name,
           operation, effects := function.effects }
-  pure { functions, symbols, roots, inlineLiterals, inlineWrappers }
+  let mut inlineUserWrappers : Array CheckedPrimitiveWrapper := #[]
+  if options.inlineUserWordWrappers then
+    for function in suite.actionFunctions do
+      if let some operation := checkedUserWordWrapper? function then
+        inlineUserWrappers := inlineUserWrappers.push {
+          source := function.name, symbol := ← lookupSymbol symbols function.name,
+          operation, effects := function.effects }
+  pure { functions, symbols, roots, inlineLiterals, inlineWrappers, inlineUserWrappers }
 
 /-- Lower a complete checked `core0-v0.4` fixed-region Action suite.  Device
 constructors remain rejected by both the v0.4 checker and this backend entry. -/

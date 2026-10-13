@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "status": "PASS_COMPONENT",
+  "scope": "genuine maintained IPC source and User-v0.2 word optimization/deployment compiler qualification; full-image audit and actual guest/canonical cold Ready remain separate",
+  "contracts": [
+    "lemma-ipc-poll-borrow-v1",
+    "lemma-checked-user-word-wrapper-v1",
+    "lemma-managed-notebook-deployment-v1"
+  ],
+  "ipc": {
+    "qualifier": "build/task006-ipc-poll-production-a2/result.json",
+    "sha256": "64feac426a2fa2d486a1c3fb79d96fd6b61c6348f5df4c41743ced4fffc226ac",
+    "seconds": 52.055502699979115,
+    "fault_cases": 2672,
+    "genuine_partial_closures": [
+      "pending",
+      "poll"
+    ],
+    "rejected_mutations": [
+      "lookup-zero",
+      "scan-priority",
+      "poll-error",
+      "pending-self",
+      "task-live-row",
+      "role",
+      "missing:Lemma.Kernel.Task.lookupRecord",
+      "missing:Lemma.Kernel.Task.findStep",
+      "missing:Lemma.Kernel.IPC.pollAt"
+    ],
+    "expanded_reads": {
+      "runnable_idle": [
+        178,
+        99
+      ],
+      "runnable_ready": [
+        181,
+        102
+      ],
+      "runnable_waiting_requests": [
+        184,
+        105
+      ],
+      "blocked_ready_total_requests": [
+        620,
+        541
+      ]
+    },
+    "blocked_ready_writes_unchanged": 52,
+    "source_body_guards": {
+      "Lemma.Kernel.IPCStorage.pendingAt": "782d15e083e8cb7f4f2891bf06241d7fc225b50a4da23b680271934f095e9ca8",
+      "Lemma.Kernel.IPCStorage.pending": "5eeb7baf29e420e8f5839b3ec635104b58cdf5dddcb494c1f82303f2b78d4242",
+      "Lemma.Kernel.IPC.pollAt": "e2575819d3f5d4de50d1fbcc843046da97b222c9786b59cb1a91d6f1f6b90e11",
+      "Lemma.Kernel.IPC.poll": "49717fc2e560e29058b4d562ef27196615c6942771768c986fa160fe7a66c8be",
+      "Lemma.Kernel.Task.pollIPCStep": "b1f72f496dc02e89d33676cbb34db7d3bf7e555cb4d5fd1fad64da15c596b0bf"
+    }
+  },
+  "word": {
+    "source_fixture": "tests/kernel/UserWordInline.lean",
+    "profile": "core0-user-v0.2",
+    "default_disabled": true,
+    "legacy_v0_1_opt_in_rejected": true,
+    "disabled_v0_2_v0_1_llvm_functions_exact": true,
+    "actual_rv64_undefined_symbols": [],
+    "independent_observer_tests": 10,
+    "host_experiment_exact_cases": 132,
+    "host_experiment_scope": "previous exact wrapper-body behavior fixture; no guest MMU/privilege/timing claim",
+    "static_experiment": {
+      "gatherWord_wrapper_calls": [
+        3,
+        0
+      ],
+      "scatterWord_wrapper_calls": [
+        5,
+        0
+      ],
+      "scope": "static checked wrapper inlining, no target-cycle or CPU timing claim"
+    }
+  },
+  "deployment": {
+    "configurations": [
+      "lemmasim-silicon-managed-notebook",
+      "lemmasim-silicon-managed-initialize"
+    ],
+    "hardware": "lemma-silicon-dev/0.3.0",
+    "store": "core0-user-v0.1",
+    "notebook": "core0-user-v0.2",
+    "arithmetic": "core0-user-v0.2",
+    "notebook_managed_record_closure": "empty",
+    "legacy_notebook": "core0-user-v0.1"
+  },
+  "inputs": [
+    {
+      "path": "Lemma/Kernel/IPC.lean",
+      "sha256": "6a5f6fb604485218211d56ba93468b886c0cbe19c02a3374cf080a9d87c33e7e"
+    },
+    {
+      "path": "Lemma/Kernel/IPCStorage.lean",
+      "sha256": "bb7ac5463ae78823d9121596a876fce2d073a6a59dfff817150e89bdc44a444a"
+    },
+    {
+      "path": "Lemma/Kernel/Task.lean",
+      "sha256": "8afa7b34c8f17285ace092232c03b8c45ed277cdf647d861db2579bb04883455"
+    },
+    {
+      "path": "Lemma/Compiler/Lower.lean",
+      "sha256": "f27b07c3a4972d1807990f5c4d232a27952a5a94ea17a80459462542b3b1cff5"
+    },
+    {
+      "path": "Lemma/Compiler/CFGLower.lean",
+      "sha256": "7d31fcf504d64a5592455ee3ba9547491b91586b453b556495ba4f8a61482ace"
+    },
+    {
+      "path": "Lemma/Compiler/DeploymentCatalog.lean",
+      "sha256": "a55b63bf3f39e5debf13e619d048ffc27984eb18b5aac2d0e61925f007ebfc08"
+    },
+    {
+      "path": "Lemma/Compiler/KernelExport.lean",
+      "sha256": "ddbe96ba3013891a6a90a031d64562a65a13fb826a14612d8e446c156474102c"
+    },
+    {
+      "path": "scripts/build_kernel.py",
+      "sha256": "936f2f53f1ac2bb30b6986d251b43ed6daf32457bd470b024529e2d2a80fc7b8"
+    },
+    {
+      "path": "scripts/closed_inline.py",
+      "sha256": "00e961d1c945184b3b53dd9d2addb2a0b5dd7927bb5bacf0b7a13ca0c891ffe7"
+    },
+    {
+      "path": "scripts/check_kernel_ipc_poll_borrow.py",
+      "sha256": "a738c963c48a437328c82f3a5fa219b62475069208e574325e5564ad059d270e"
+    },
+    {
+      "path": "scripts/ipc_poll_borrow.py",
+      "sha256": "e0ae04cc7d29218b190b0d18577c18616178c3fb4ea00269cfd07e80153dfecc"
+    },
+    {
+      "path": "tests/kernel/IPCPolledBaseLower.lean",
+      "sha256": "4aa92cfccc668fa512e1e16c8065d7dfbfaa46b899bd1fd0115b610d49c6339b"
+    },
+    {
+      "path": "tests/kernel/IPCPolledBaseReuse.lean",
+      "sha256": "13572301a750dcf48e4cae261a4c070b4962be96b5e4264893ed19dc8a7c08af"
+    },
+    {
+      "path": "tests/kernel/UserWordInline.lean",
+      "sha256": "b5e779cfaf7b58b402cc55d670a873ca86d5054d366802d2b455c6506c819a99"
+    },
+    {
+      "path": "tests/kernel/ManagedNotebookDeployment.lean",
+      "sha256": "3a82a5082e9a63e54c4ac544b04cd9bb648342b4d41cf5e9ff85611d6a5d7229"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/task006-user-word-inline-maintained-a1/before.ll",
+      "sha256": "7db5656d34741b3d1aab7e034628e4b3e2d94e253994628a4e7f6ed610cc5efe"
+    },
+    {
+      "path": "build/task006-user-word-inline-maintained-a1/after.ll",
+      "sha256": "b377a952209c193c7c1079ab35d1852c0bbe57f6720ca15c8206e7d423bcb18e"
+    },
+    {
+      "path": "build/task006-user-word-inline-maintained-a1/unit.json",
+      "sha256": "6737ce35efac8b700b0b3f7d3d9db2daa444f47167918e6fba9c9719ac0a5086"
+    },
+    {
+      "path": "build/task006-user-word-inline-maintained-a1/after.o",
+      "sha256": "a8d921cb5e22f3ae1f90e83979c6be32321ca4bb8900d4a45a6a70315ff21f7e"
+    },
+    {
+      "path": "build/task006-user-word-inline-maintained-a1/undefined.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/task006-user-word-inline-tests-a1.log",
+      "sha256": "0618eb370f10ccb5c7c0a448299fad4be27546cd928c15a8c66d166a63865d0a"
+    },
+    {
+      "path": "build/task006-managed-notebook-deployment-a3.log",
+      "sha256": "0152ac3bea68221963a11ef9e94c4d7ff7eb86c84bd3eb3f1de8ca30ca0bc97d"
+    }
+  ],
+  "retained_failures": [
+    "build/task006-ipc-word-maintained-lake-a1.log",
+    "build/task006-ipc-poll-borrow-a1/maintained-faults-a1.log",
+    "build/task006-managed-notebook-deployment-a1.log",
+    "build/task006-managed-notebook-deployment-a2.log",
+    "build/task006-ipc-poll-production-a1.log"
+  ],
+  "remaining": "Real new deployment build/audit, fast semantic regression, canonical RTL Ready/full pixels and browser acceptance are not established by these component results."
+}

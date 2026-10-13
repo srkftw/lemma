@@ -99,11 +99,10 @@ def «initialize» (descriptor : UInt64) : Action :=
   if failed s = true then fatal else put address magic
   else fatal
 
-/-- The whole binding is checked before returning a metadata address. A zero
-legacy tail is not an IPC row and cannot silently acquire authority. -/
-def pending (descriptor : UInt64) : Action :=
-  .bind (AddressSpace.base descriptor) fun s base =>
-  if failed s = true then .done 80 0 else
+/-- Kernel-only borrowed base. The caller has checked this descriptor in the
+same nonpreemptible Action; every IPC metadata field remains freshly read.
+A zero legacy tail is not an IPC row and cannot silently acquire authority. -/
+def pendingAt (descriptor base : UInt64) : Action :=
   let address := base + metadataOffset
   .bind (equalWord address magic) fun s _ =>
   if failed s = true then fatal else
@@ -135,6 +134,11 @@ def pending (descriptor : UInt64) : Action :=
   else fatal else fatal else fatal else fatal else fatal
   else fatal else fatal
   else fatal
+
+/-- Public entry always establishes a fresh descriptor base. -/
+def pending (descriptor : UInt64) : Action :=
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then .done 80 0 else pendingAt descriptor base
 
 private def transactionRow (descriptor transaction : UInt64) : Action :=
   if transaction = 0 then .done IPCABI.invalidTransaction 0 else

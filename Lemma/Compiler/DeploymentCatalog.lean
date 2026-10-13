@@ -63,13 +63,26 @@ def arithmeticDevelopmentMode? (configuration : String) : Option UInt64 :=
 def isArithmeticDevelopmentConfiguration (configuration : String) : Bool :=
   (arithmeticDevelopmentMode? configuration).isSome
 
+/-- Software deployment successor on the unchanged canonical silicon binding. -/
+def isManagedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-managed-notebook" ||
+    configuration == "lemmasim-silicon-managed-initialize"
+
+def softwareDeploymentFields (configuration : String) : List (String × Json) :=
+  if !isManagedNotebookConfiguration configuration then [] else
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-notebook-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.2")])])]
+
 def capabilityManagedPolicy : String := "lemma-capabilities-v1"
 def ipcManagedPolicy : String := "lemma-ipc-v1"
 def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
   if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
       configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
@@ -170,7 +183,7 @@ def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
   root := `Lemma.User.Development.NotebookIsolation.main, bootRole? := some .notebookIsolation }
 
 def isMultiImageConfiguration (configuration : String) : Bool :=
-  isArithmeticDevelopmentConfiguration configuration ||
+  isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
   configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
@@ -180,7 +193,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration then .ok arithmeticNotebookImages else
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration then .ok arithmeticNotebookImages else
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" then .ok notebookImages
   else if configuration == "lemmasim-isolation-development" then .ok notebookIsolationImages
@@ -225,6 +238,7 @@ def catalogJson (configuration : String) : Except String Json := do
     ("schema_version", 1), ("contract_version", .str "lemma-user-image-catalog-v1"),
     ("configuration", .str configuration), ("stage", .str "supervisor"),
     ("image_count", toJson images.size), ("images", .arr (images.map imageJson))] ++
-    ((managedPolicyFor configuration).map (fun policy => [("managed_policy", Json.str policy)]) |>.getD []))
+    ((managedPolicyFor configuration).map (fun policy => [("managed_policy", Json.str policy)]) |>.getD []) ++
+    softwareDeploymentFields configuration)
 
 end Lemma.Compiler.DeploymentCatalog

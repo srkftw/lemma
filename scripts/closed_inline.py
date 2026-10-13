@@ -12,6 +12,15 @@ CONFIGURATIONS={'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initia
  'lemmasim-silicon-power-arithmetic-oom-development',
  'lemmasim-silicon-power-arithmetic-fault-development',
  'lemmasim-silicon-power-arithmetic-stall-development'}
+USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'}
+CONFIGURATIONS |= USER_CONFIGURATIONS
+USER_WRAPPER='lemma-checked-user-word-wrapper-v1'
+USER_WORD={
+ 'execution.virtual-read64':(['u64'],['checked-access','virtual-read'],
+  'fd0af723e70f7ca76d98cf1f44a4ebe002fc8a152ece17c2bc8a829032527061'),
+ 'execution.virtual-write64':(['u64','u64'],['checked-access','virtual-write'],
+  '1a63f9b776b46fff6eee8d4c8dcb31518a8dac7f22c2a256d0618b2bd21c83af'),
+}
 FIELD='checked_inline'
 LITERAL='lemma-closed-literals-v1'
 WRAPPER='lemma-checked-primitive-wrapper-v1'
@@ -46,8 +55,13 @@ def catalog(unit):
  # Absence grants no authority; validate() rejects every uncatalogued attribute.
  if FIELD not in unit:return None
  c=unit.get(FIELD)
- require(isinstance(c,dict) and set(c)=={'literal_contract','wrapper_contract','literals','wrappers'} and
-  c['literal_contract']==LITERAL and c['wrapper_contract']==WRAPPER,'checked-inline contract/catalog absent or malformed')
+ keys={'literal_contract','wrapper_contract','literals','wrappers'}
+ if unit.get('configuration') in USER_CONFIGURATIONS:keys|={'user_wrapper_contract','user_wrappers'}
+ require(isinstance(c,dict) and set(c)==keys and c['literal_contract']==LITERAL and c['wrapper_contract']==WRAPPER,
+  'checked-inline contract/catalog absent or malformed')
+ if 'user_wrappers' in c:
+  require(c['user_wrapper_contract']==USER_WRAPPER and isinstance(c['user_wrappers'],list),
+   'checked user-word contract/catalog malformed')
  require(isinstance(c['literals'],list) and isinstance(c['wrappers'],list),'checked-inline row arrays malformed')
  by={r['symbol']:r for r in unit['functions']};seen=set()
  for r in c['literals']:
@@ -66,6 +80,16 @@ def catalog(unit):
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
    for o in unit['used_execution_ops']),'wrapper operation is absent from genuine operation closure')
   require(r['symbol'] not in seen,'checked-inline source/symbol is duplicated');seen.add(r['symbol'])
+ for r in c.get('user_wrappers',[]):
+  require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'user-word catalog row keys differ')
+  f=by.get(r.get('symbol'));op=USER_WORD.get(r.get('operation'))
+  require(unit['role']=='user' and unit['contract_version']=='core0-user-v0.2' and
+   unit.get('image_key') in {'notebook','arithmetic'} and f is not None and op is not None and
+   r['source']==f['source'] and (f['args'],f['effects'])==op[:2],
+   'user-word source/signature/effects/authority differs')
+  require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
+   for o in unit['used_execution_ops']),'user-word operation absent from genuine closure')
+  require(r['symbol'] not in seen,'checked-inline source/symbol is duplicated');seen.add(r['symbol'])
  return c
 
 def _body(ir,symbol):
@@ -83,7 +107,7 @@ def validate(ir,unit,*,optimized):
   for sym,header in headers.items():
    tokens=header+' '+ ' '.join(groups.get(g,'') for g in re.findall(r'#(\d+)',header))
    if re.search(r'\balwaysinline\b',tokens):actual.add(sym)
-  expected=set() if c is None else {r['symbol'] for r in c['literals']+c['wrappers']}
+  expected=set() if c is None else {r['symbol'] for r in c['literals']+c['wrappers']+c.get('user_wrappers',[])}
   require(actual<=expected,'optimized function acquired uncatalogued alwaysinline authority')
   # The trusted preIR audit qualified eligibility and complete guard preimages.
   # The ordinary artifact auditor still checks every optimized memory operation,
@@ -96,7 +120,7 @@ def validate(ir,unit,*,optimized):
  if c is None:
   require(not actual,'uncatalogued historical alwaysinline function')
   return {'contracts':[],'literal_functions':0,'physical_wrappers':0}
- expected={r['symbol'] for r in c['literals']+c['wrappers']}
+ expected={r['symbol'] for r in c['literals']+c['wrappers']+c.get('user_wrappers',[])}
  require(actual==expected,'alwaysinline function inventory differs from checked catalog')
  literal_expected=set()
  for f in unit['functions']:
@@ -122,10 +146,25 @@ def validate(ir,unit,*,optimized):
    'wrapper ABI/attribute differs')
   digest=hashlib.sha256(_body(ir,sym).encode()).hexdigest()
   require(digest==PHYSICAL_PREIMAGE[op],'wrapper changed complete physical interval/alignment/error/volatile/result guard')
+ user_expected=set()
+ if unit['role']=='user' and unit['contract_version']=='core0-user-v0.2' and unit.get('configuration') in USER_CONFIGURATIONS:
+  for f in unit['functions']:
+   if any((f['args'],f['effects'])==op[:2] and hashlib.sha256(_body(ir,f['symbol']).encode()).hexdigest()==op[2]
+          for op in USER_WORD.values()):user_expected.add(f['symbol'])
+ require({r['symbol'] for r in c.get('user_wrappers',[])}==user_expected,
+  'user-word catalog omitted or invented a checked one-operation body')
+ for r in c.get('user_wrappers',[]):
+  args,_,digest=USER_WORD[r['operation']];sym=r['symbol']
+  require(headers.get(sym)=='define { i64, i64 } @'+sym+'('+', '.join('i64 %arg'+str(i) for i in range(len(args)))+') nounwind alwaysinline {',
+   'user-word wrapper ABI/attribute differs')
+  require(hashlib.sha256(_body(ir,sym).encode()).hexdigest()==digest,
+   'user-word changed complete unsigned range/alignment/error/volatile/result guard')
  # Functions outside the two precisely selected sets retain their exact original
  # external inspectable call boundaries, including every ownership/policy Action.
  for sym,header in headers.items():
   if sym not in expected:require(' nounwind noinline "disable-tail-calls"="true" {' in header,
    'noneligible policy/body acquired changed call-boundary attributes')
- return {'contracts':[LITERAL,WRAPPER],'literal_functions':len(c['literals']),
+ result={'contracts':[LITERAL,WRAPPER],'literal_functions':len(c['literals']),
   'physical_wrappers':len(c['wrappers']),'complete_physical_preimages':PHYSICAL_PREIMAGE}
+ if 'user_wrappers' in c:result.update(user_word_wrappers=len(c['user_wrappers']),user_word_contract=USER_WRAPPER)
+ return result
