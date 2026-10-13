@@ -1,0 +1,104 @@
+{
+  "schema": "lemma-native-source-archive-evidence/1",
+  "status": "PASS",
+  "scope": "complete unchanged native USB6 source/artifact admission; not fresh compilation or guest functional acceptance",
+  "qualification": {
+    "path": "build/usb/native4-source-archive-check-a2/result.json",
+    "sha256": "6fb5141eaee005cd3c0784fe0556bdc1bba2abbbfd145fd825931d92cb120a04"
+  },
+  "native": {
+    "schema": "lemma-explicit-rtl-source-archive/1",
+    "source_root": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a4/consumed-source-root",
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a4/consumed-source-archive.json",
+      "sha256": "b31cc77f8ee88a251472f4a6cd2b8272a17c67154ca91a52360fff1221582c36"
+    },
+    "original_receipt": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a4/consumed-runtime-receipt.json",
+      "sha256": "c417c34d074dbb37669745c3e0249805f06561c5253c646150555c1e7a3354e5"
+    },
+    "native_manifest": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a4/build.json",
+      "sha256": "29e733b753394d83a1438b73d29e52a790cdedf8ca6dfedc5dd78995754cd908"
+    },
+    "snapshot_identity": "fb6e43100ea5129c48ebf57b798d7844aa4e32117ad1360441f99f7682682170",
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a4/obj/lemma-rtl",
+      "sha256": "a5f0aa1df7ef0cf2d21ef2adecaaa3b21ab89738d38b9a6eecd57d5588b791e9"
+    },
+    "inputs": 245,
+    "scope": "unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities"
+  },
+  "inputs": 245,
+  "rejected_cases": [
+    {
+      "case": "changed actual source byte",
+      "status": "REJECTED",
+      "reason": "Changed archived native input: build/silicon/deps/binding-lemma-silicon-dev-0.6.0/lemma_silicon_binding.sv"
+    },
+    {
+      "case": "missing actual source file",
+      "status": "REJECTED",
+      "reason": "Native source archive has missing or unlisted files"
+    },
+    {
+      "case": "symlinked source",
+      "status": "REJECTED",
+      "reason": "Symlink in native source archive"
+    },
+    {
+      "case": "unlisted actual source",
+      "status": "REJECTED",
+      "reason": "Native source archive has missing or unlisted files"
+    },
+    {
+      "case": "omitted declared consumed input",
+      "status": "REJECTED",
+      "reason": "Native source archive differs from the complete original receipt"
+    },
+    {
+      "case": "extra declared consumed input",
+      "status": "REJECTED",
+      "reason": "Native source archive differs from the complete original receipt"
+    },
+    {
+      "case": "wrong original runtime identity",
+      "status": "REJECTED",
+      "reason": "Native source archive differs from the complete original receipt"
+    },
+    {
+      "case": "duplicate metadata keys",
+      "status": "REJECTED",
+      "reason": "Duplicate native source-archive metadata key"
+    },
+    {
+      "case": "incomplete original preparation receipt",
+      "status": "REJECTED",
+      "reason": "Original native preparation receipt differs from the full consumed manifest"
+    },
+    {
+      "case": "changed actual native executable byte",
+      "status": "REJECTED",
+      "reason": "RTL artifact changed or missing: /home/sreekumaar/Downloads/lemma/build/usb/native4-source-archive-check-a2/native/obj/lemma-rtl"
+    }
+  ],
+  "host_seconds": 0.9514064770191908,
+  "observer_sha256": "514c5522fef47d64c5ca1a49b5a8675404d64db0b4be5f77409b53c059605c4c",
+  "validator_sha256": "a4fb34dfc590d9db1e20a0d42089301297b5133b89256818cf9dfe445d7b8d44",
+  "checks": {
+    "archive_boundary_unittests": 3,
+    "historical_reset_rom_tests": 12,
+    "historical_capture_lifetime_tests": 8
+  },
+  "commands": [
+    "python3 scripts/check_native_source_archive.py --rtl-build build/silicon/task006-usb-runtime-a4 --rtl-source-root build/silicon/task006-usb-runtime-a4/consumed-source-root --work-dir build/usb/native4-source-archive-check-a2",
+    "python3 -m unittest discover -s tests/lemmasim -p test_rtl_source_archive.py -v",
+    "python3 -m unittest discover -s tests/silicon -p test_reset_artifacts.py -v",
+    "python3 -m unittest discover -s tests/silicon -p test_capture_lifetime.py -v"
+  ],
+  "remaining": [
+    "Archive CLI currently admits USB6 only; Product7 retains its separate immutable ROM/native validation path.",
+    "A newly prepared guest still requires its own current complete genuine Lean/compiler/profile source inventory and full strict audit.",
+    "The retained USB initializer a4 actual guest failure is separate from these host admission checks."
+  ]
+}

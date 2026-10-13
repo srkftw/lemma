@@ -47,15 +47,136 @@ def validate(item):
     if not p.is_file() or sha(p)!=item['sha256']:raise ValueError('RTL artifact changed or missing: '+str(p))
     return p
 
-def prepared(workload,name=None):
+def _read_unique_json(path):
+    def pairs(items):
+        result={}
+        for key,value in items:
+            if key in result:raise ValueError('Duplicate native source-archive metadata key')
+            result[key]=value
+        return result
+    return json.loads(Path(path).read_text(),object_pairs_hook=pairs)
+
+def _native_relative(path):
+    value=Path(path)
+    if value.is_absolute():
+        try:value=value.relative_to(ROOT)
+        except ValueError:raise ValueError('Native input is outside the declared source root') from None
+    if not value.parts or any(part in ('..','.') for part in value.parts):
+        raise ValueError('Escaping native source input')
+    return value.as_posix()
+
+def native_source_archive(build,source_root,name):
+    """Validate a complete original USB native closure; no current-source fallback.
+
+    The original public preparation receipt contributes only the preparation-time
+    dependency input absent from the native compiler manifest. All other entries
+    are independently reconstructed from that manifest. New guests are still
+    checked against their own current maintained Lean source inventory.
+    """
+    if name!='lemma-silicon-dev/0.6.0':
+        raise ValueError('Explicit RTL source archives currently admit only USB6; product7 uses its separate ROM validator')
+    build=Path(build).resolve();source_root=Path(source_root).resolve()
+    manifest_path=build/'build.json';m=_read_unique_json(manifest_path)
+    sidecar=source_root.parent/'consumed-source-archive.json'
+    receipt_path=source_root.parent/'consumed-runtime-receipt.json'
+    a=_read_unique_json(sidecar);receipt=_read_unique_json(receipt_path)
+    if m.get('profile')!=name or m.get('configuration')!='external-ram-128MiB':
+        raise ValueError('Native archive has a different profile or RAM configuration')
+    if m.get('profile_sha256')!=sha(profile_path(name)):
+        raise ValueError('Native archive selected profile changed')
+    expected={}
+    def add(path,digest):
+        path=_native_relative(path)
+        if not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
+            raise ValueError('Malformed native source digest')
+        if path in expected and expected[path]!=digest:raise ValueError('Conflicting native source digest')
+        expected[path]=digest
+    for key in ('sha256','configuration_includes','host_runtime','host_toolchain_inputs','binding_generator_inputs'):
+        if not isinstance(m.get(key),dict) or not m[key]:raise ValueError('Missing native source inventory: '+key)
+        for path,digest in m[key].items():add(path,digest)
+    if not isinstance(m.get('sources'),list) or len(set(m['sources']))!=len(m['sources']) or set(m['sources'])!=set(m['sha256']):
+        raise ValueError('Native compiler source list differs from its digest inventory')
+    for key in ('host_adapter','build_driver','upstream_patch','runtime_identity_header'):
+        item=m.get(key)
+        if not isinstance(item,dict) or not {'path','sha256'}<=item.keys():raise ValueError('Missing native input identity: '+key)
+        add(item['path'],item['sha256'])
+    add(Path(m['host_include_dir'])/'lemma_silicon_binding.h',m['host_binding_sha256'])
+    if not isinstance(receipt.get('rtl_sources'),dict) or not receipt['rtl_sources']:
+        raise ValueError('Original native preparation input inventory missing')
+    original={_native_relative(path):digest for path,digest in receipt['rtl_sources'].items()}
+    if len(original)!=len(receipt['rtl_sources']):raise ValueError('Duplicate normalized original native source input')
+    if (receipt.get('schema_version')!=1 or receipt.get('profile')!=name or
+        receipt.get('profile_sha256')!=m['profile_sha256'] or
+        receipt.get('rtl_build')!={'path':str(manifest_path),'sha256':sha(manifest_path)} or
+        receipt.get('binary')!={'path':str(build/'obj/lemma-rtl'),'sha256':m.get('binary_sha256')} or
+        set(original)!=set(expected)|{'tooling/silicon/dependencies.json'} or
+        any(original.get(path)!=digest for path,digest in expected.items())):
+        raise ValueError('Original native preparation receipt differs from the full consumed manifest')
+    add('tooling/silicon/dependencies.json',original['tooling/silicon/dependencies.json'])
+    if (a.get('schema')!='lemma-usb-native-source-archive/1' or
+        a.get('build_manifest_sha256')!=sha(manifest_path) or
+        a.get('binary_sha256')!=m.get('binary_sha256') or
+        a.get('snapshot_identity')!=m.get('snapshot_identity') or
+        a.get('source_inputs')!=expected):
+        raise ValueError('Native source archive differs from the complete original receipt')
+    # Recompute the native implementation identity independently of execution paths.
+    identity={k:v for k,v in m.items() if k not in
+              ('sources','include_dirs','host_include_dir','runtime_identity_header','build_argv','build_jobs','binary_sha256','snapshot_identity')}
+    identity['identity_schema']='lemmasim-rtl-implementation/2'
+    core=ROOT/'build/silicon/deps/cvw';generated=Path(m['host_include_dir'])/'lemma_silicon_binding.sv'
+    def logical(path):
+        path=Path(path)
+        if path==generated:return 'generated/lemma_silicon_binding.sv'
+        for base,prefix in ((core,'core/'),(core.parent/'cvw-patched','patched-core/'),(ROOT,'repository/')):
+            try:return prefix+path.relative_to(base).as_posix()
+            except ValueError:pass
+        raise ValueError('Unmapped native implementation input')
+    for key in ('sha256','configuration_includes'):
+        identity[key]={logical(path):digest for path,digest in m[key].items()}
+        if len(identity[key])!=len(m[key]):raise ValueError('Duplicate logical native input')
+    if hashlib.sha256(json.dumps(identity,sort_keys=True,separators=(',',':')).encode()).hexdigest()!=m.get('snapshot_identity'):
+        raise ValueError('Native implementation identity differs from its original manifest')
+    if not source_root.is_dir():raise ValueError('Native source archive directory missing')
+    actual=set()
+    for path in source_root.rglob('*'):
+        if path.is_symlink():raise ValueError('Symlink in native source archive')
+        if path.is_file():actual.add(path.relative_to(source_root).as_posix())
+    if actual!=set(expected):raise ValueError('Native source archive has missing or unlisted files')
+    for path,digest in expected.items():
+        if sha(source_root/path)!=digest:raise ValueError('Changed archived native input: '+path)
+    dependency=_read_unique_json(source_root/'tooling/silicon/dependencies.json')
+    if (dependency.get('schema_version')!=1 or
+        dependency.get('core',{}).get('repository')!=m.get('core_repository') or
+        dependency.get('core',{}).get('revision')!=m.get('core_revision')):
+        raise ValueError('Archived tool/core dependency declaration differs')
+    validate(m['runtime_identity_header'])
+    if validate(m['runtime_identity_header']).read_text()!='#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+m['snapshot_identity']+'"\n':
+        raise ValueError('Native executable identity header differs')
+    binary=validate({'path':str(build/'obj/lemma-rtl'),'sha256':m['binary_sha256']})
+    evidence={'schema':'lemma-explicit-rtl-source-archive/1','source_root':str(source_root),
+              'archive':identified(sidecar),'original_receipt':identified(receipt_path),
+              'native_manifest':identified(manifest_path),'snapshot_identity':m['snapshot_identity'],
+              'binary':identified(binary),'inputs':len(expected),
+              'scope':'unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities'}
+    return m,{str(ROOT/path):digest for path,digest in expected.items()},evidence
+
+def prepared(workload,name=None,*,rtl_source_root=None):
     selected=configurations(name)
     if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
     data=json.loads(prepared_path(name).read_text())
     if data.get('schema_version')!=1 or data.get('profile')!=profile(name)['profile'] or data.get('profile_sha256')!=sha(profile_path(name)):
         raise ValueError('RTL prepared binding changed; run lemmasim build --backend rtl')
     validate(data['binary']);validate(data['rom']);validate(data['rom_audit']);validate(data['rtl_build'])
-    for path,digest in data['rtl_sources'].items():
-        if not Path(path).is_file() or sha(path)!=digest:raise ValueError('RTL source/dependency changed: '+path)
+    archived=data.get('rtl_source_archive')
+    if archived is not None and rtl_source_root is None:
+        raise ValueError('Prepared runtime requires its explicit --rtl-source-root; current-source fallback is forbidden')
+    if rtl_source_root is not None:
+        _,sources,evidence=native_source_archive(validate(data['rtl_build']).parent,rtl_source_root,data['profile'])
+        if sources!=data['rtl_sources'] or (archived is not None and evidence!=archived):
+            raise ValueError('Prepared native source archive identity changed')
+    else:
+        for path,digest in data['rtl_sources'].items():
+            if not Path(path).is_file() or sha(path)!=digest:raise ValueError('RTL source/dependency changed: '+path)
     if workload not in data['workloads']:
         raise ValueError('RTL workload is not prepared; run lemmasim build --backend rtl --workload '+workload)
     for key in ('image','build','provenance','audit','dtb','descriptor'):
@@ -84,7 +205,7 @@ def reset_rom_audit(data):
 
 def reusable_reset_rom(previous,data,guest):
     if previous is None:return None
-    for key in ('schema_version','profile','profile_sha256','binary','rtl_build','rtl_sources','memory','physical_conformance'):
+    for key in ('schema_version','profile','profile_sha256','binary','rtl_build','rtl_sources','rtl_source_archive','memory','physical_conformance'):
         if previous.get(key)!=data.get(key):return None
     current_provenance=json.loads((guest/'provenance.json').read_text())
     matching_provenance=None
@@ -100,8 +221,12 @@ def reusable_reset_rom(previous,data,guest):
         if all(candidate[key]==current_provenance[key] for key in ('tools','lean_source_realization','source_inputs')):
             matching_provenance=candidate;break
     if matching_provenance is None:return None
-    for path,digest in previous['rtl_sources'].items():
-        if not Path(path).is_file() or sha(path)!=digest:raise ValueError('Reset ROM RTL/tool source changed: '+path)
+    if data.get('rtl_source_archive') is not None:
+        _,sources,evidence=native_source_archive(validate(data['rtl_build']).parent,data['rtl_source_archive']['source_root'],data['profile'])
+        if sources!=data['rtl_sources'] or evidence!=data['rtl_source_archive']:raise ValueError('Reset ROM native source archive changed')
+    else:
+        for path,digest in previous['rtl_sources'].items():
+            if not Path(path).is_file() or sha(path)!=digest:raise ValueError('Reset ROM RTL/tool source changed: '+path)
     for key in ('binary','rtl_build'):validate(previous[key])
     old_audit=reset_rom_audit(previous);new_audit=reset_rom_audit(data)
     if old_audit['scope']!=new_audit['scope'] or any(old_audit[key]['sha256']!=new_audit[key]['sha256'] for key in ('source','assembly','object','elf','binary')):
@@ -126,14 +251,19 @@ def build(args):
     workload=getattr(args,'workload',None) or 'service'
     if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
     out=(getattr(args,'rtl_build',None) or ROOT/('build/silicon/compute-'+name.split('/')[1] if name!='lemma-silicon-dev/0.1.0' else 'build/silicon/compute')).resolve();dep=ROOT/'build/silicon/deps/cvw'
-    prepare(dep);current=source_manifest(dep,name)
-    cached=None
-    try:cached=json.loads((out/'build.json').read_text())
-    except (OSError,ValueError):pass
-    if cached is None or cached.get('configuration')!='external-ram-128MiB' or any(cached.get(k)!=v for k,v in current.items()) or not (out/'obj/lemma-rtl').is_file() or cached.get('binary_sha256')!=sha(out/'obj/lemma-rtl'):
-        if getattr(args,'rtl_build',None):raise ValueError('Supplied RTL build differs from current exact source closure')
-        run_command(['python3','scripts/silicon_compute.py','build','--profile',name,'--output-dir',out],timeout=1200)
-        cached=json.loads((out/'build.json').read_text())
+    archive_root=getattr(args,'rtl_source_root',None);archive_sources=archive_evidence=None
+    if archive_root is not None:
+        if getattr(args,'rtl_build',None) is None:raise ValueError('--rtl-source-root requires an explicit --rtl-build')
+        cached,archive_sources,archive_evidence=native_source_archive(out,archive_root,name)
+    else:
+        prepare(dep);current=source_manifest(dep,name)
+        cached=None
+        try:cached=json.loads((out/'build.json').read_text())
+        except (OSError,ValueError):pass
+        if cached is None or cached.get('configuration')!='external-ram-128MiB' or any(cached.get(k)!=v for k,v in current.items()) or not (out/'obj/lemma-rtl').is_file() or cached.get('binary_sha256')!=sha(out/'obj/lemma-rtl'):
+            if getattr(args,'rtl_build',None):raise ValueError('Supplied RTL build differs from current exact source closure')
+            run_command(['python3','scripts/silicon_compute.py','build','--profile',name,'--output-dir',out],timeout=1200)
+            cached=json.loads((out/'build.json').read_text())
     stamp=str(time.time_ns());directory=ROOT/f'build/silicon/prepared-{stamp}'
     directory.mkdir(parents=True)
     rom=directory/'rom';rom.mkdir()
@@ -166,6 +296,8 @@ def build(args):
               **{str(ROOT/name):sha(ROOT/name) for name in ('scripts/silicon_compute.py','scripts/silicon_profile.py',
                  'tooling/silicon/apply_cvw.py','tooling/silicon/dependencies.json','tooling/silicon/sim.nix')}},'workloads':{},
           'memory':'128 MiB external simulation bytes, not synthesized SRAM','physical_conformance':'UNVERIFIED'}
+    if archive_evidence is not None:
+        data['rtl_sources']=archive_sources;data['rtl_source_archive']=archive_evidence
     guest=getattr(args,'guest_build',None)
     if guest is None:
         guest=ROOT/f'build/kernel/silicon-{workload}-{stamp}-{args.opt_level}'

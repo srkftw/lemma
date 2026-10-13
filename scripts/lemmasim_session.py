@@ -171,13 +171,15 @@ class RTL:
             self.data = silicon_guest_bundle.prepared(args.native_bundle,'rtl',args.workload,args.profile)
             if getattr(args,'guest_build',None):
                 self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
-        else:self.data = silicon_guest.prepared(args.workload, args.profile)
+        else:self.data = silicon_guest.prepared(args.workload, args.profile,rtl_source_root=getattr(args,'rtl_source_root',None))
         self.identity = {'backend': 'rtl', 'profile': self.data['profile'],
                          'runtime': self.data['binary']['sha256'],
                          'rom': self.data['rom']['sha256'],
                          'guest': self.data['workloads'][args.workload]['image']['sha256'],
                          'dtb': self.data['workloads'][args.workload]['dtb']['sha256'],
                          'descriptor': self.data['workloads'][args.workload]['descriptor']['sha256']}
+        if self.data.get('rtl_source_archive') is not None:
+            self.identity['runtime_source_archive']={key:self.data['rtl_source_archive'][key] for key in ('archive','original_receipt','native_manifest','snapshot_identity','inputs','scope')}
         entry = self.data['workloads'][args.workload]
         self.log = (directory / 'machine.log').open('wb')
         command = [self.data['binary']['path'], '--image', entry['image']['path'],
