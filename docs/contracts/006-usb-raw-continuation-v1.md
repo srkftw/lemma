@@ -63,3 +63,46 @@ checked. The retained a1 tool-PATH failure and a2 unflushed-header defect remain
 FAIL. Publishing/checking the header in the constructor repaired a2 without
 polling or draining a snapshot. Actual results and resource costs are in
 `docs/evidence/006-usb-raw-continuation.json`.
+
+## Public native command bridge
+
+The later native9 public adapter exposes `export-usb-replay` and `usb-outcomes`
+in the session protocol. The normal command surface restricts them to USB6 RTL
+Developer/Laboratory sessions. `session --restore ... --usb-replay ...` validates
+and binds a recorded suffix before clock advancement, excludes any live host,
+original medium or companion, and can be kept explicitly paused. The compiled
+adapter also rejects restore combined with live USB peer/capture arguments
+before starting a process or opening its UART/capture files.
+
+Prepare the exact recorded implementation and unchanged audited initializer:
+
+```sh
+./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.6.0 \
+  --workload usb-bulk-initializer \
+  --guest-build build/kernel/task006-usb-bulk-initialize-a3 \
+  --guest-source-root build/kernel/task006-usb-bulk-initialize-a3/consumed-source-root \
+  --rtl-build build/silicon/task006-usb-runtime-a9 \
+  --rtl-source-root build/silicon/task006-usb-runtime-a9/consumed-source-root
+
+./scripts/lemmasim session-control --session-dir LIVE_SESSION \
+  --request '{"action":"export-usb-replay","path":"/absolute/path/suffix.tape"}'
+
+./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.6.0 \
+  --workload usb-bulk-initializer --mode developer --headless --paused \
+  --session-dir build/usb/private-fork-NEW \
+  --restore /absolute/path/snapshot --usb-replay /absolute/path/suffix.tape \
+  --rtl-source-root build/silicon/task006-usb-runtime-a9/consumed-source-root \
+  --guest-source-root build/kernel/task006-usb-bulk-initialize-a3/consumed-source-root
+
+./scripts/lemmasim session-control --session-dir build/usb/private-fork-NEW \
+  --request '{"action":"usb-outcomes","path":"/absolute/path/longer-suffix.tape"}'
+```
+
+The selected public prepared registry must refer to this exact implementation;
+other versions reject its snapshot identity. Native7 notebook campaigns and
+archives retain their original identity. Public qualification a1 ran the real
+initializer and obtained actual EP1 submit mask 2 at 8834000 and actual EP2 receive
+mask 2 at 8842000. Both session binding and launch-time binding reproduced complete
+native suffix snapshots exactly at all five cuts. Absent tape and horizon
+crossing rejected before advancement. This is a captured-suffix developer
+workflow, not a live external-peer restore or a cold journal recovery claim.

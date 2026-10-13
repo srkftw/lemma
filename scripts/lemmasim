@@ -825,6 +825,7 @@ def main():
     p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--restore',type=Path);p.add_argument('--events',type=Path)
     p.add_argument('--backing-replay',type=Path,help='Actual backing outcome log; requires an isolated --restore (QEMU excludes unresolved peer retry controls)')
+    p.add_argument('--usb-replay',type=Path,help='USB6 RTL: complete captured raw outcome tape; isolated --restore only, no live peer')
     p.add_argument('--usb-host-prepared',type=Path,help='RTL binding6: exact prepared genuine hosted Lean USB packet host')
     p.add_argument('--usb-peer-directory',type=Path,help='Independent opaque durable peer directory; no guest document interpretation')
     p.add_argument('--usb-peer-socket',type=Path)
@@ -903,6 +904,9 @@ def main():
                     if any(x is None for x in usb_options):raise Failure('USB packet host requires prepared host, peer directory/socket and retained host state')
                     if args.disk is not None or args.companion is not None or args.restore is not None:raise Failure('USB peer uses independent opaque medium and cold USB state')
                     lemmasim_session.bounded(args.usb_peer_timeout_ms,100,60000,'USB peer timeout milliseconds')
+                if args.usb_replay is not None or (args.profile=='lemma-silicon-dev/0.6.0' and args.restore is not None):
+                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.mode not in ('developer','laboratory') or args.restore is None:raise Failure('USB raw fork requires USB6 RTL --restore in Developer or Laboratory mode')
+                    if any(x is not None for x in usb_options) or args.disk is not None or args.companion is not None:raise Failure('USB raw fork excludes live host, original medium and companion')
                 if args.ble_peer is not None or args.ble_replay is not None or args.ble_peer_arg or args.ble_drop_packets:
                     if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.5.0' or args.mode not in ('developer','laboratory'):raise Failure('BLE manual peer/replay requires binding5 RTL in Developer or Laboratory mode')
                 if args.ble_drop_packets and args.mode!='laboratory':raise Failure('Wire packet loss requires Laboratory mode')

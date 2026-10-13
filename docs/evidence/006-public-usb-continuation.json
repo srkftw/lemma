@@ -1,0 +1,225 @@
+{
+  "schema": "lemma-public-usb-continuation-receipt/1",
+  "status": "PASS",
+  "scope": "public commands on genuine RV64 USB6 startup/reset/owned endpoint heads and queues; recorded same-native suffix only, not privately live peer or USB PHY",
+  "result": {
+    "path": "build/usb/public-pending-a1/result.json",
+    "sha256": "8c28f73a669acfa17d407865718ebbddf04b38d33801d22365e083ec69d0874c"
+  },
+  "native": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.6.0",
+    "runtime": "2b4126bd1add7d5421346713a6096d3c0a4a51b5fcf51081e3062f0596083734",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "67fa07f8b88775ce47432864849b8892cd1035d2f0a14ad85ff6cbf1b78697c8",
+    "dtb": "c1e72e979a941441a6e67feea671a6017dfb9191cd2b41894336cbd6c1b937ae",
+    "descriptor": "f2344a740e8999b45c756409eaea83cbee85429f2933a80fe5c47328f123bdb4",
+    "runtime_source_archive": {
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a9/consumed-source-archive.json",
+        "sha256": "40dc687d0dbc5b9cbf3bbe1b9c1ed3657bb8698e37b34053f9df1aa5780b272d"
+      },
+      "original_receipt": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a9/consumed-runtime-receipt.json",
+        "sha256": "a30978b0bc8e5ed66af5de5c36f011ad22e5e2560edbd32f6cecb46209dfb102"
+      },
+      "native_manifest": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-runtime-a9/build.json",
+        "sha256": "bd3709344e29033d29ba94fcac5b57e7fcec9ad68b04cba2b22c77ecce423ec6"
+      },
+      "snapshot_identity": "23d696bb56fa9004a3111dd5f602f6b2f0155f6c0a17bad206722d43f66a759e",
+      "inputs": 245,
+      "scope": "unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities"
+    },
+    "guest_source_archive": {
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/consumed-source-archive.json",
+        "sha256": "5f0d6e855f5807e51380f2e4dc6779ae0fe01e31eb290fe5ddde19cebab1a177"
+      },
+      "build": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/build.json",
+        "sha256": "a9addf10a8c06916ab27f320506b98bc870afab449ad2006df4977eb43232678"
+      },
+      "provenance": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/provenance.json",
+        "sha256": "c8f14f9241409f9898058e88a30c1d51a8a04661d1f0cf31811778c306d43c87"
+      },
+      "audit": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/audit.json",
+        "sha256": "d4a8b39aed545ef52a38ea2850c20c9b70d4e93edf7f7e74abb835ac23684c34"
+      },
+      "source_commit": "1ea7768c44c67a05e17df5a9f5bc3b7232d4464c",
+      "dirty_paths": [
+        " M Lemma/Applications/Notebook.lean",
+        " M Lemma/Compiler/DeploymentCatalog.lean",
+        " M Lemma/Compiler/KernelExport.lean",
+        " M Lemma/Documents/Mathematics.lean",
+        " M Lemma/Drivers/Paper.lean",
+        " M Lemma/Ink/Surface.lean",
+        " M Lemma/Machine/Primitives.lean",
+        " M Lemma/Platform/LemmaSim/DeviceService.lean",
+        " M Lemma/Platform/LemmaSim/NotebookKernel.lean",
+        " M Lemma/Platform/RiscV/ExecutionPrimitives.lean",
+        " M conformance/lemmasim/math_oracle.py",
+        " M docs/contracts/006-product-boot-v1.md",
+        " M docs/evidence/006-product-rom-recovery.json",
+        " M docs/evidence/006-whole-machine-inventory.json",
+        " M docs/plan/006-session-state.md",
+        " M docs/plan/LEMMASIM.md",
+        " M scripts/arithmetic_sums_identity.py",
+        " M scripts/audit_kernel.py",
+        " M scripts/audit_lemmasim_capacity.py",
+        " M scripts/build_kernel.py",
+        " M scripts/check_arithmetic_isolation.py",
+        " M scripts/check_legacy_record_reader.py",
+        " M scripts/check_live_notebook.py",
+        " M scripts/check_math_session.py",
+        " M scripts/check_review_session.py",
+        " M scripts/check_sums_record_length.py",
+        " M scripts/closed_inline.py",
+        " M scripts/lemmasim",
+        " M scripts/lemmasim_browser.py",
+        " M scripts/lemmasim_product.py",
+        " M scripts/lemmasim_readonly.py",
+        " M scripts/managed_records.py",
+        " M scripts/managed_sums.py",
+        " M scripts/package_product_image.py",
+        " M scripts/silicon_guest.py",
+        " M scripts/silicon_guest_bundle.py",
+        " M scripts/silicon_profile.py",
+        " M tests/boot/test_product_image.py",
+        " M tests/boot/test_product_recovery.py",
+        " M tests/foundation/test_math_records.py",
+        " M tests/lemmasim/test_browser_bundle.py",
+        " M tests/lemmasim/test_native_bundle.py",
+        "?? Lemma/Documents/MathematicsBytes.lean",
+        "?? Lemma/Mathematics/ExecutionIdentityV3.lean",
+        "?? Lemma/Mathematics/ManagedByteSubmissionAction.lean",
+        "?? Lemma/Services/Arithmetic/ClientV4.lean",
+        "?? Lemma/Services/Arithmetic/ProtocolV4.lean",
+        "?? Lemma/Services/Arithmetic/ServerV4.lean",
+        "?? conformance/lemmasim/check_canonical_pen_pixels.py",
+        "?? docs/contracts/006-managed-bytes-service-v1.md",
+        "?? docs/contracts/006-paper-bulk-v2.md",
+        "?? docs/contracts/006-usb-bulk-notebook-v1.md",
+        "?? scripts/arithmetic_bytes_identity.py",
+        "?? scripts/check_guest_usb_notebook.py",
+        "?? scripts/check_managed_bytes.py",
+        "?? scripts/check_paper_bulk.py",
+        "?? scripts/managed_bytes.py",
+        "?? scripts/paper_bulk.py",
+        "?? tests/boot/ProductPMP.lean",
+        "?? tests/ink/PaperBulk.lean",
+        "?? tests/ink/SurfaceBulk.lean",
+        "?? tests/lemmasim/test_arithmetic_bytes_identity.py",
+        "?? tests/lemmasim/test_canonical_pen_pixels.py",
+        "?? tests/lemmasim/test_native_raw_capture.py",
+        "?? tests/lemmasim/test_usb_medium_observation.py",
+        "?? tests/lemmasim/test_usb_notebook_observation.py",
+        "?? tests/mathematics/ExecutionIdentityBytes.lean",
+        "?? tests/mathematics/SumsRecordMagic.lean"
+      ],
+      "inputs": 257,
+      "scope": "unchanged archived genuine USB6 guest and original strict audit; newly prepared host adapter, not fresh target compilation"
+    }
+  },
+  "host_seconds": 123.6661902879714,
+  "actual_cuts": [
+    {
+      "label": "startup",
+      "cycle": 0,
+      "suffix_cycles": 5000,
+      "rx_head_mask": 0,
+      "tx_queued_mask": 0,
+      "snapshot_sha256": "57228ab90081ea9883eb75eab30b9c0246716fd1c84ee4c0f07dd485322519d3",
+      "suffix_sha256": "44f09bd0929cebf602292d560998540f2b52be3680d2419ce6763187f72756e4",
+      "rejected": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ]
+    },
+    {
+      "label": "reset",
+      "cycle": 5000,
+      "suffix_cycles": 3000,
+      "rx_head_mask": 0,
+      "tx_queued_mask": 0,
+      "snapshot_sha256": "44f09bd0929cebf602292d560998540f2b52be3680d2419ce6763187f72756e4",
+      "suffix_sha256": "500264cd4300761363a98f5bc565e40e1be4b65d0a688bfdacbdf4b59087121c",
+      "rejected": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ]
+    },
+    {
+      "label": "owned-submit",
+      "cycle": 8834000,
+      "suffix_cycles": 5000,
+      "rx_head_mask": 0,
+      "tx_queued_mask": 2,
+      "snapshot_sha256": "abb0f98aa976259aab2f1226a4c523839c597fc42062b5044ef4a04e80e2ac57",
+      "suffix_sha256": "dbbdaf0feae988883db2d247bfbb868c5dc0c5328257d61a7169cbc19af03af1",
+      "rejected": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ]
+    },
+    {
+      "label": "owned-receive",
+      "cycle": 8842000,
+      "suffix_cycles": 5000,
+      "rx_head_mask": 2,
+      "tx_queued_mask": 0,
+      "snapshot_sha256": "230f994e37d36ef3444120fdc20361a104e4acc8f0001baf8c489f4a93def58f",
+      "suffix_sha256": "84f34c9cef5fa047a12ea0ff9d9d3d2fd68b1625d113700449b0545d455f7356",
+      "rejected": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ]
+    },
+    {
+      "label": "domain-reset",
+      "cycle": 8847000,
+      "suffix_cycles": 3000,
+      "rx_head_mask": 0,
+      "tx_queued_mask": 0,
+      "snapshot_sha256": "976c8945358176312f9ae470ab5287ba932b7b764a67dfce8c17d041916b4264",
+      "suffix_sha256": "ffb705c637ff05afe027628ad3564b7fd93ca5d1c1698e01de731cf1175359ab",
+      "rejected": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ]
+    }
+  ],
+  "no_live_peer_negative": {
+    "path": "build/usb/public-pending-a1/no-live-peer-negative.json",
+    "sha256": "622aa99b0afbc3feaa762cef91056ec46ac8288975ba5c4eed26812f86e67a02"
+  },
+  "consumed_sources": {
+    "sim/rtl/host/main.cpp": "864be87fe96ef50a54d624bfce6f23dc6c6b8338ac7e09d0366bcfcd249ed82f",
+    "sim/rtl/host/machine_runtime.cpp": "abead02a851bddf6a7604f2f97dd362337a4420caaad9256ddfafc479d4967ca",
+    "scripts/lemmasim_session.py": "ce277ede8bc50c814a31c4ab11aaded48096359005538c1aefaea196d3a4b17e",
+    "scripts/lemmasim": "ab99393dfea48fb523937ceea3d6f16a7d796acef7dc9a8e7550af0c591cbdf5",
+    "scripts/check_public_usb_pending.py": "935d2615cb0f356f3316cf08f5f6a8aaf2c2be99053e241d8ca65908f14610c5"
+  },
+  "host_tests": {
+    "public_controls": 3,
+    "status": "PASS"
+  },
+  "separate_host_regression": {
+    "suite": "tests.silicon.test_live_session",
+    "result": "45PASS/1ERROR",
+    "error": "existing Fast timeout fixture StubQMP lacks newly mandatory query-status.status; no USB failure; CI lane notified, original observation retained"
+  },
+  "limitations": [
+    "no privately live peer continuation",
+    "no physical USB PHY/full conformance",
+    "no QEMU USB device implementation",
+    "mutable selected prepared registry must match the restored implementation; native7 notebook archive remains separate"
+  ]
+}
