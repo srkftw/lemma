@@ -27,7 +27,7 @@ def main():
         roots=set(re.findall(r'^\s*VERILATOR_ROOT\s*=\s*(\S+)\s*$',version,re.M))
         if len(roots)!=1:raise ValueError('Ambiguous Verilator root')
         prefix=Path(roots.pop());obj=build/'obj'
-        names=['machine_runtime.o','backing_io.o','backing_io_posix.o','verilated.o','verilated_save.o','verilated_threads.o','verilated_dpi.o','Vlemma_soc__ALL.a']
+        names=['machine_runtime.o','backing_io.o','backing_io_posix.o','ble_peer_transport.o','verilated.o','verilated_save.o','verilated_threads.o','verilated_dpi.o','Vlemma_soc__ALL.a']
         source=ROOT/'tests/lemmasim/native_panel_pending.cpp';binary=out/'test'
         run(['c++','-O2','-std=c++17','-I',ROOT/'sim/rtl/host','-I',obj,'-I',prefix/'include','-I',prefix/'include/vltstd',source,*[obj/n for n in names],'-pthread','-o',binary],out/'compile.log',60)
         run([binary,out,entry['image']['path'],guest['rom']['path'],entry['dtb']['path'],entry['descriptor']['path'],'0x87e00000'],out/'run.log',60)
