@@ -303,7 +303,9 @@ class LifecycleFailures(unittest.TestCase):
             def execute(self,command,arguments=None):
                 self.commands.append(command)
                 if command=='stop':self.running=False
-                if command=='query-status':return {'running':self.running}
+                # Pinned QEMU StatusInfo requires both fields. Preserve the
+                # adapter's internal-error guard while modeling stop/cont.
+                if command=='query-status':return {'running':self.running,'status':'running' if self.running else 'paused'}
         machine=object.__new__(fast.Fast);machine.qmp=QMP();machine.args=SimpleNamespace(timeout=0)
         machine.clock_hz=100000000;machine.time_origin_ns=0;machine.get=lambda name:'0'
         machine.inspect=lambda:{'running':machine.qmp.running}

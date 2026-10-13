@@ -1,0 +1,84 @@
+{
+  "schema": "lemma-usb-notebook-failure-diagnosis/1",
+  "status": "FAIL_RETAINED",
+  "result": {
+    "path": "build/usb/notebook-workflow-a2/result.json",
+    "sha256": "856e5d6537613a84152e4e98c113a5c09d87fcdd6539cd35feb3852ad28f5a47"
+  },
+  "supervision": {
+    "path": "build/usb/notebook-workflow-a2.supervision/supervision.json",
+    "sha256": "0ef8b4f2b6aa358a709abda11d3f9e5f0e6eae4c97b992e988f07a766c6a3ce4"
+  },
+  "actual": {
+    "cycles": 283876165,
+    "host_seconds": 1813.6740407489706,
+    "pc": "0x80200218",
+    "finish_code": "0x333333",
+    "panel_completed": 0,
+    "usb_connected": 1,
+    "usb_terminal": 0,
+    "last_uart_tag": "0x45c Sums3 arithmetic startup",
+    "owned_survivors": []
+  },
+  "known": "Actual PC names lemma_supervisor_double_fault; exact emitted trap vector branches there when swapped sscratch is zero. This identifies nested/unguarded supervisor trap, not its original cause.",
+  "capture_limit": "Original observer preserved inspect/UART/raw USB outcomes but did not snapshot or export CSR/RAM before cleanup. Original scause/stval/sepc/satp are unavailable; no restored or rerun state is substituted.",
+  "shared_static_defect": {
+    "scope": "Exact consumed sources, independent Product saved-state diagnosis corroborates; no USB saved STVAL claim",
+    "paper_staging": "0x10010800..0x100109ff",
+    "ble_aperture": "0x10010600..0x100109ff",
+    "decoder": "Enabled BLE has priority and excludes Paper; Paper upload writes its staging through that overlap.",
+    "sources": [
+      {
+        "path": "build/silicon/task006-usb-runtime-a7/consumed-source-root/sim/rtl/lemma_soc.sv",
+        "sha256": "ba4a554dcb50eb02d08183c1aa3bd4bd1fcab8add6563179114b0be85362abe8"
+      },
+      {
+        "path": "build/silicon/task006-usb-runtime-a7/consumed-source-root/sim/rtl/lemma_paper.sv",
+        "sha256": "d605213aa284e02fe2cdf2f66db9a03db1345f527b7cbdee20301becd27a200f"
+      },
+      {
+        "path": "build/silicon/task006-usb-runtime-a7/consumed-source-root/sim/rtl/lemma_ble_packet.sv",
+        "sha256": "0051d25b1ba3ac9ef062aed19fc986196a4b8af9dd4f9bdd76f64523cb749a1a"
+      },
+      {
+        "path": "build/kernel/task006-usb-bulk-notebook-a3/consumed-source-root/Lemma/Drivers/Paper.lean",
+        "sha256": "4a98344718b49e5cda46f0258b95e30691e143672d233bc378e0905e0e5f8169"
+      },
+      {
+        "path": "build/kernel/task006-usb-bulk-notebook-a3/consumed-source-root/Lemma/Platform/RiscV/ExecutionPrimitives.lean",
+        "sha256": "4e47b17135a3ebba8cddf13da467cd2edf246897e6629aa8ec06140f6ed5a8b6"
+      },
+      {
+        "path": "build/kernel/task006-usb-bulk-notebook-a3/audit-boot-disassembly.txt",
+        "sha256": "6258a59ecfa91a14a32106ad23acfbcd28036ae59aa75d27d60bed848cc295ec"
+      }
+    ]
+  },
+  "original_failures_preserved": [
+    "build/usb/notebook-workflow-a1/result.json",
+    "build/usb/notebook-workflow-a2/result.json"
+  ],
+  "acceptance": "No Ready, Save, lost-ACK notebook workflow or cold recovery accepted from this run. No unchanged cold rerun or deadline increase.",
+  "qmp_fixture_repair": {
+    "scope": "Required QMP StatusInfo.status in existing test double only; production internal-error guard unchanged",
+    "original": {
+      "path": "build/usb/public-pending-a1/retained-fast-stub-query-status-error.log",
+      "sha256": "33b5a8c2a1816e1166d6b958520ac6bc7117fa808c26cc051b415ef7024252d0"
+    },
+    "corrected": {
+      "path": "build/usb/public-pending-a1/session-host-stub-corrected.log",
+      "sha256": "314600873b62168eb06ed2589ebc810ca3c2844b93f690c6c09aa5ad2968618d"
+    },
+    "result": "46 tests PASS",
+    "primary_local_source": [
+      {
+        "path": "build/lemmasim/qemu-src/qapi/run-state.json",
+        "sha256": "cfbd91f16aa2722fc1af6da373e1f7c9743846f7bbf99dc9455238fb856ed6e8"
+      },
+      {
+        "path": "build/lemmasim/qemu-src/system/runstate.c",
+        "sha256": "cc0ceeffd2dd2b8c61eed5d9bf14c25d211c2259df3de537ebf8f2927c1ae7ab"
+      }
+    ]
+  }
+}
