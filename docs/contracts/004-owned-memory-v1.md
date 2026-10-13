@@ -326,3 +326,15 @@ primitive or new admitted language form is involved. Independent host traces
 compare all eight-row match patterns and status values against historical source
 forms and the actual imported declarations; genuine LLVM/object qualification
 and real whole-machine timing remain distinct observations.
+
+The complete registry-directory callback may select a locally bounded branch
+when its descriptor address is a full aligned frame in the pool and its modular
+entry ordinal is below8. It performs the same directory-handle read, fresh
+owner/generation/purpose resolution, recorded-address read, resolved-index
+bound, both duplicate-pack predicates and pins read, in the same order. Pins
+must still be zero before the index is added to the local pack. Its directory
+and pins accesses remain ordinary checked physical reads. The generic callback
+is retained for all other descriptor/ordinal inputs. Direct status-zero tests
+and explicit numeric slot expressions permit LLVM to eliminate redundant
+helper calls and per-read interval checks; they do not retain descriptor
+validation or replace any live authority or duplicate check.

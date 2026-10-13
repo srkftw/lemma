@@ -130,7 +130,7 @@ private def packedMember (packed amount index : UInt64) : Bool :=
     else false
   else false
 
-private def validateRegistryStep (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
+private def validateRegistryGenericStep (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
   let ordinal := group + i.toUInt64
   .bind (get address (registryList + ordinal * 16)) fun s handle =>
   if failed s = true then .done s 0 else
@@ -150,6 +150,45 @@ private def validateRegistryStep (i _ : UInt32) (packed address owner first grou
   if failed s = true then .done s 0 else
   if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
   else .done invalidDescriptor 0
+
+
+/-- The complete directory entry sequence borrows only local numeric bounds,
+not retained authority. All owner/generation/purpose/pins and both duplicate
+checks still run on live values. Arbitrary descriptor/ordinal inputs use the
+original generic sequence, preserving its read and first-error behavior. -/
+private def validateRegistryStep (i count : UInt32) (packed address owner first group : UInt64) : Action :=
+  let ordinal := group + i.toUInt64
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  if ordinal < 8 then
+    let cursor := address + registryList + ordinal * 16
+    .bind (Access.read64 cursor) fun s handle =>
+    if s = 0 then
+    .bind (Frames.resolvePurpose owner handle 1) fun s physical =>
+    if s = 0 then
+    .bind (Access.read64 (cursor + 8)) fun s recorded =>
+    if s = 0 then
+    if physical = recorded then
+    let index := (physical - Frames.pool) / Frames.bytes
+    if index < 8192 then
+    if (if group = 4 then packedMember first 4 index else false) = true then .done invalidDescriptor 0 else
+    if packedMember packed i.toUInt64 index = true then .done invalidDescriptor 0 else
+    let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32 + 16
+    .bind (Access.read64 slot) fun s pins =>
+    if s = 0 then
+      if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
+      else .done invalidDescriptor 0
+    else .done s 0
+    else .done invalidDescriptor 0
+    else .done invalidDescriptor 0
+    else .done s 0
+    else .done s 0
+    else .done s 0
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
+  else validateRegistryGenericStep i count packed address owner first group
 
 private def validateRegistry (address owner version leafCapacity : UInt64) : Action :=
   .bind (get address registryCount) fun s amount => if failed s = true then .done s 0 else
