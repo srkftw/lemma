@@ -236,8 +236,12 @@ finite-stall cancellation scenario passed actual guest Save and independent
 cold complete records/pixels; the earlier outstanding-IPC Save failure remains
 retained. See [the isolated receipt](../evidence/006-isolated-arithmetic.json).
 This is a bounded scalar/owned-arena service, not the finished managed language
-or proof kernel. Ordinary managed-record lowering has separately reached
-genuine elaboration and LLVM objects; RV64 service integration is pending.
+or proof kernel. The additive ordinary managed-record bridge has since passed
+genuine IR/checked LLVM, independent Arithmetic and whole-notebook RV64 audits,
+and actual isolated course/check/edit/hint/ink/Save/independent-cold acceptance.
+See [managed source/audits](../evidence/006-managed-records.json) and
+[the actual guest receipt](../evidence/006-managed-guest-course.json). New heap
+OOM qualification, arrays/strings/closures/recursion and proof-kernel work remain.
 
 Native suspended external operations now have observational snapshots and
 isolated captured-outcome continuation; the original peer can be stopped before
@@ -261,3 +265,34 @@ literals and complete guarded primitive wrappers; performance acceptance has
 not passed. Power-v2 safety and BLE packet circuitry have separate changed-source
 qualifications in progress. Do not infer their guest/profile/distribution results
 from library or literal-controller tests.
+
+## Ordinary managed-record and measured host staging milestone
+
+`a681789` adds `core0-user-v0.2` and a genuinely compiled ordinary `Fraction`
+closure. It uses the real owned generational arena, borrowed projections and
+release; no foreign runtime or source AST fixture enters RV64. Actual image
+`c7933624…` passed the connected guest course scenario in216.562s: cold Ready
+8.250000008 virtual seconds/14.561 host seconds, complete1856-byte history/raw
+ink/controller recovery, and a real FAILED label without Saved on barrier error.
+The semantic exact/1 checker/revision identity remains separate from the recorded
+execution compiler/runtime/ELF identity; durable attempts do not yet carry the
+compiled implementation digest. The image is archived in
+`build/native/task006-managed-a1`; a static same-machine bundle is prepared at
+`build/browser/task006-managed-a1`, without a browser Ready claim.
+
+`8d1ffa2` replaces host panel staging's ordered map with bounded indexed pixels
+and a presence bitmap while preserving the serialized order/bytes. Equivalent
+3.63M-pixel staging measured1.71352s/230460KiB versus.015082s/14580KiB, with
+identical independent checksum. Actual RV64 pipeline/pending-panel snapshot,
+restore and warm-reset suffix checks passed; this is host performance, not fewer
+guest cycles or physical panel conformance. `d585386` and `a137179` preserve
+actual frame-zero and full frame/registry lookup error prefixes while exposing
+local interval bounds to LLVM. Their static reductions are separately recorded;
+new canonical RTL Ready acceptance is still pending. The older A4 run timed out
+at1.624B cycles/7201.957s with no completed panel/Ready and remains FAIL.
+
+Power-v2 has actual RTL guest watchdog/WFI, brownout, power-good and reset-phase
+receipts under opt-in0.4. BLE has independently generated/decoded sample traffic
+and genuine Lean packet/link objects; opt-in0.5 whole-machine integration is
+in progress. Neither closes product boot/update, USB, full Bluetooth5.4/Wi-Fi6,
+QEMU cached-state parity, browser product workflow or physical closure.

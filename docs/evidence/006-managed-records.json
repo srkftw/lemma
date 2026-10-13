@@ -73,9 +73,11 @@
     "scope": "Validated packaging of current portable runtime and audited genuine managed guest; no browser Ready qualification"
   },
   "guest_execution": {
-    "status": "RUNNING",
+    "status": "PASS",
     "path": "build/task006-managed-math-a1/result.json",
-    "scope": "Separate real course/check/save/cold/failure scenario; no pass inferred from artifact audit"
+    "sha256": "dcc3330243d72a4905777867949868c5b8d4395cc0ac4f9d7fa5036147d77e1d",
+    "receipt": "docs/evidence/006-managed-guest-course.json",
+    "scope": "Actual isolated ordinary managed-record arithmetic in course/check/edit/hint/ink/Save/cold/full-controller/failure workflow; budget0 is not heap OOM"
   },
   "commands": [
     "nix develop --no-write-lock-file --command env LEMMA_MANAGED_OUT=build/managed/UNUSED lake env lean Lemma/Compiler/Test/ManagedRecords.lean",
