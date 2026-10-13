@@ -477,10 +477,15 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
                 'Lemma.Platform.LemmaSim.Descriptor.validateBinding','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
                 'Lemma.Radio.BLE.Controller.initialize','Lemma.Radio.BLE.Controller.configure',
+                'Lemma.Platform.Silicon.Development.BLELink.base',
                 'Lemma.Platform.Silicon.Development.BLELink.configureIRQ',
                 'Lemma.Platform.Silicon.Development.BLELink.transaction',
                 'Lemma.Platform.Silicon.Development.BLELink.waitStep',
                 'Lemma.Platform.Silicon.Development.BLELink.fatal'}
+        if unit['configuration']=='lemmasim-silicon-ble-link-probe':
+            address='Lemma.Platform.Silicon.Development.BLELink.base'
+            if address not in normalized or re.fullmatch(r'\s*entry:\s*ret i64 268502528\s*',_ir_definition_body(pre_ir,normalized[address])) is None:
+                raise Core0Error('BLE probe base differs from exact controller aperture')
         if root not in normalized or not expected <= normalized.keys():
             raise Core0Error('Power probe genuine boot/policy source closure missing')
         calls = {symbol: parse_definitions_and_calls(_ir_definition_body(pre_ir, symbol))[2]
@@ -4080,6 +4085,20 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
             'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
 
 
+def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
+    source='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source):raise Core0Error('DTB paired body escapes exact kernel owner')
+    body=_ir_definition_body(ir,symbol)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest!='b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c':
+        raise Core0Error('DTB paired owner differs from exact checked property/role body')
+    return digest
+
+
 def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
                     configuration: str | None) -> dict[int,list[str]]:
     """Closed DTB property/role pair, with distinct CFG edges per transfer."""
@@ -4335,12 +4354,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                          and sorted(owner_tables)==['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'])
             if match[2]!='0' and not paired_leaf:raise Core0Error('second table escapes closed DTB pair')
             if paired_leaf:
-                names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
-                body=_ir_definition_body(optimized_ir,owner['name'])
-                rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
-                normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
-                if hashlib.sha256(normalized.encode()).hexdigest()!='18eed75a123ff7d46a4541ac19a1870197f86d187e8e244fab1178955b9c3cd4':
-                    raise Core0Error('DTB paired owner differs from exact checked property/role body')
+                validate_dtb_pair_body(optimized_ir,unit,owner['name'])
                 if match[2]=='1':spec=('kernel',9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9])
             if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
                     and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):

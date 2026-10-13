@@ -5,7 +5,7 @@ import sys,unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from core0_common import Core0Error
-from audit_kernel import validate_ble_header_intrinsic,_jump_assembly_guard
+from audit_kernel import validate_ble_header_intrinsic,validate_dtb_pair_body,_jump_assembly_guard
 
 class BLEOptimizer(unittest.TestCase):
  def test_generated_header_and_exact_intrinsic_scope(self):
@@ -26,6 +26,11 @@ class BLEOptimizer(unittest.TestCase):
 
  def test_generated_pair_each_unsigned_guard_and_exact_jr_targets(self):
   data=json.loads((ROOT/'tests/kernel/fixtures/dtb-leaf-pair-generated.json').read_text())
+  digest=validate_dtb_pair_body(data['optimized_ir'],data['unit'],data['symbol'])
+  self.assertEqual(digest,'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c')
+  altered=data['optimized_ir'].replace('i64 55, label','i64 56, label')
+  self.assertNotEqual(altered,data['optimized_ir'])
+  with self.assertRaises(Core0Error):validate_dtb_pair_body(altered,data['unit'],data['symbol'])
   args={k:data[k] for k in ('assembly','symbol','source','configuration')}
   for table in data['tables']:
    report=_jump_assembly_guard(**args,**table)
