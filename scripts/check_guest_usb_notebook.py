@@ -96,6 +96,18 @@ def explicit_save_completed(records, begin):
                 any(new[i][1] == new[-1][1] for i in pending if i < len(new) - 1))
 
 
+def initial_publication_completed(records):
+    """The initial document-root receipt must precede the later fault scenario.
+
+    Ready follows display acceptance while the independent Store call can still
+    be pending. A later valid initial ACK is not an ACK for the new raw stroke.
+    """
+    commits = [row for row in records if row[0] in (0x421, 0x423, 0x424)]
+    roots = [row for row in commits if row[0] == 0x423 and row[2:] == (1, 1, 1)]
+    return bool(roots and commits and commits[-1] == (0x421, roots[-1][1], 1, 1, 0) and
+                not any(row[0] == 0x424 for row in commits))
+
+
 def materialize_observation(peer, output):
     """Observe every actually persisted prefix, including unacknowledged bytes.
 
@@ -345,6 +357,17 @@ class Checker:
         live = NativeUSBSession(self, 'live', self.peer, self.outbox)
         self.report['identity'] = live.identity; self.report['live_argv'] = live.argv
         live.boot(empty_pixels(1650, 2200))
+        # The caller's existing cold ceiling covers both Ready and the actual
+        # initial root publication. Never schedule the lost-ACK scenario while
+        # an earlier, unrelated durable receipt can still arrive.
+        ready = self.report['milestones']['live/cold-ready']
+        remaining_cycles = self.args.cold_cycles - ready['target_cycles']
+        remaining_seconds = self.args.cold_deadline - ready['host_seconds']
+        require(remaining_cycles > 0 and remaining_seconds > 0,
+                'initial publication exhausted the original cold ceiling')
+        live.wait('initial-publication-complete', lambda state, rows:
+                  initial_publication_completed(rows) and live.panel_matches(state, empty_pixels(1650, 2200)),
+                  remaining_cycles, remaining_seconds)
         self.stop_peer(); before_log = len(opaque_log(self.peer / 'opaque.log'))
         saved_before = sum(r[0] == 0x421 for r in live.records())
         # A344-byte raw chunk's Store-v1 append performs header/body/sentinel
@@ -352,7 +375,8 @@ class Checker:
         # actual peer log below independently validates this selected ordinal.
         self.first_peer = self.start_peer(drop=6)
         self.report['predeclared_lost_ack'] = {'completed_raw_reply_ordinal': 6,
-            'operation_kinds': [1, 1, 1, 2, 1, 2], 'selected': 'final raw-chunk publication barrier'}
+            'operation_kinds': [1, 1, 1, 2, 1, 2], 'selected': 'final raw-chunk publication barrier',
+            'before_peer_effects': before_log, 'before_saved_count': saved_before}
         def restart():
             try:
                 require(self.first_peer.wait(timeout=self.args.action_deadline) == 0,
@@ -368,7 +392,9 @@ class Checker:
                     'peer_log_sha256': sha(self.peer / 'opaque.log'),
                     'outbox_sha256': sha(self.outbox / 'outbox'), 'saved_count': saved_before}
                 self.start_peer(); self.report['peer_restarted'] = True
-            except BaseException as error: self.restart_errors.append(repr(error))
+            except BaseException as error:
+                self.restart_errors.append(repr(error))
+                self.report['restart_errors'] = list(self.restart_errors)
         self.restart_thread = threading.Thread(target=restart, daemon=True); self.restart_thread.start()
         stream = Input(1650, 2200, live.machine()['ticks'] + 10000, 100000, 0)
         stream.sample(825, 160, 0, False); stream.stroke('usb annotation', 1, 1, 3, 1200)

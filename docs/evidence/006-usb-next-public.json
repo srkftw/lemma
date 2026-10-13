@@ -1,6 +1,6 @@
 {
   "schema": "lemma-usb-next-public-evidence/1",
-  "scope": "Paper-v2 circuit/native implementation and fully audited source-bound RTL-only USB8 package; real connected notebook campaign RUNNING, no Ready/Save/cold claim",
+  "scope": "Paper-v2 circuit/native implementation and fully audited source-bound RTL-only USB8 package; original actual cold Ready and ink reached, later lost-ACK Save failed227; new observer campaign RUNNING",
   "status": "PASS",
   "qualified": {
     "new_usb": {
@@ -89,18 +89,34 @@
     }
   },
   "actual_connected_campaign": {
-    "status": "RUNNING",
+    "status": "FAIL",
     "path": "build/usb/notebook-next-workflow-a1",
-    "supervisor_manifest": "build/usb/notebook-next-workflow-a1.supervision/manifest.json",
-    "supervisor_manifest_sha256": "da20f9f4cc1fa7a5b2517d27333f7c0333ab4a04876d822e3dd408945165e2a3",
-    "policy": "no automatic restart; original absolute deadline; no hidden pause; owned-child reap"
+    "result_sha256": "281f640370e313a5041d16ce402af65f86823c5b0abaf2d80d079ff6dbebcafe",
+    "cold_ready_cycles": 600000000,
+    "cold_ready_host_seconds": 3150.1295061740093,
+    "complete_empty_controller_pixels": true,
+    "raw_pen_rendered": true,
+    "error": "ValueError('raw-ink-reconciled: actual guest reported failed Save')",
+    "owned_survivors": [],
+    "policy": "no automatic restart; original absolute deadline; owned-child reap",
+    "retained_failure_snapshot_cycle": 645000000,
+    "supervision_path": "build/usb/notebook-next-workflow-a1.supervision/supervision.json"
   },
   "remaining": [
-    "full USB8 notebook Ready/edit/Save/lostACK/restart/cold acceptance",
-    "USB8 exact captured checkpoint suffix qualification",
+    "USB8 notebook acknowledged Save/lostACK/restart/cold acceptance",
     "full USB PHY/conformance",
     "browser external hosted USB peer",
     "owner authentication",
     "physical implementation closure"
-  ]
+  ],
+  "recorded_suffix_qualification": {
+    "path": "docs/evidence/006-usb8-recorded-suffix.json",
+    "status": "PASS",
+    "scope": "exact same-native recorded external USB suffix at actual guest boundaries; successful notebook lost-ACK/cold acceptance remains separate"
+  },
+  "continuing_connected_campaign": {
+    "path": "build/usb/notebook-next-workflow-a2",
+    "status": "RUNNING",
+    "changed_observer_question": "fault eligibility follows actual initial document-root durable receipt within original cold budget; restart baselines/exceptions recorded"
+  }
 }

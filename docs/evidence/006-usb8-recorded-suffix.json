@@ -1,0 +1,125 @@
+{
+  "schema": "lemma-usb8-recorded-suffix-evidence/1",
+  "status": "PASS",
+  "scope": "exact same-native recorded external USB suffix at actual guest boundaries; successful notebook lost-ACK/cold acceptance remains separate",
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.8.0",
+    "runtime": "9aa1108476fbdf4ca21ef2073a3fa52c05b95b1b2ee178064d9b23f6c8b9a8f2",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "6ed17b0d4cca94c77ae4376de5c3d78c6ff0a78f64934eea3e851da33d796532",
+    "dtb": "26ac57348875028c410807756ad360373a47f4527228ff8a02c8247ac6ab3870",
+    "descriptor": "1a17202c6bfab70ef48850a33013468a8c800d31a6eafaa4ef11ee42a67c1d01"
+  },
+  "implementation_identity": "16a447cacf38c36ecaf20c2a2a9ff32b857635597039e11d32a4d66945c15a06",
+  "native_bundle": {
+    "path": "build/native/task006-usb-next-a1/bundle.json",
+    "sha256": "4f9d59ca96d0c9eace06772144505ed66c2d169897fa5bfd7a104b364d2d3168"
+  },
+  "original_workflow": {
+    "path": "build/usb/notebook-next-workflow-a1/result.json",
+    "sha256": "281f640370e313a5041d16ce402af65f86823c5b0abaf2d80d079ff6dbebcafe",
+    "status": "FAIL",
+    "host_seconds": 3424.827173147991
+  },
+  "original_failure": "ValueError('raw-ink-reconciled: actual guest reported failed Save')",
+  "qualified": {
+    "raw_wait_pending": {
+      "path": "build/usb/usb8-poll-pending-a3/result.json",
+      "sha256": "963a9462940a2ef8fdfbf43a7885d474833d6db72679aa85514d687b768691d0",
+      "status": "PASS",
+      "host_seconds": 163.53631826501805,
+      "cut_cycle": 440000000,
+      "suffix_cycles": 20000000,
+      "retained_command": "WAIT 100000",
+      "pending_command_id": 15892,
+      "accepted_rows": 31783,
+      "accepted_hash": 462678697029361496,
+      "snapshot_rpc_seconds": 3.0057214070111513,
+      "snapshot_bytes": 145567345,
+      "initial_snapshot_sha256": "4974fa965ac4df20ed3a720dd14cca96c44aa334f254210720287fceffc850a6",
+      "final_snapshot_sha256": "40e7d32726d49a167ba81553b9c66290606a57664d8a46dc3ec6d7ace0c173bf",
+      "bound_host_seconds": 300,
+      "observer_sha256": "0c75c0fc88f54ae30ed3a2fe496f78d86d721ff1ec7ef2ad4e39242770f6e42e",
+      "private_exit_code": 0
+    },
+    "queued_panel_raw_pen_failure": {
+      "path": "build/usb/usb8-queued-pending-a2/result.json",
+      "sha256": "1810b55a9bf79c3f575f8552b8083840075eb87c70b56240328542c01d60e291",
+      "status": "PASS",
+      "host_seconds": 327.15684995497577,
+      "cut_cycle": 570000000,
+      "prefix_horizon": 575000000,
+      "suffix_cycles": 75000000,
+      "queued_packets": 1,
+      "snapshot_rpc_seconds": 0.9488946340279654,
+      "snapshot_bytes": 145567591,
+      "initial_snapshot_sha256": "cc491da7ae08651df58da0b5d8b36a07df2a269fdf3d23b012fed436fe8af2a4",
+      "final_snapshot_sha256": "9d00d8030b8ed810e30feed349172c3004c362e7312268364a609b561c94f99d",
+      "captured_tape_sha256": "ba4300c74f4472bff3a8dc6809e3907168ba115d064bc9991a3249cf2eb19262",
+      "exact_original_pen_admissions": 4,
+      "actual_suffix_uart": [
+        [
+          1059,
+          2,
+          1,
+          1,
+          1
+        ],
+        [
+          1057,
+          2,
+          1,
+          1,
+          0
+        ],
+        [
+          1059,
+          3,
+          1,
+          1,
+          65539
+        ],
+        [
+          1060,
+          227,
+          1,
+          1,
+          65539
+        ]
+      ],
+      "reproduced_failed_save_status": 227,
+      "bound_host_seconds": 1800,
+      "observer_sha256": "6c2f9b0d3a5c61c15e741f09867b076376aed3ff0115e31bf7f77f90b48d27bd",
+      "private_exit_code": 0
+    }
+  },
+  "property": {
+    "every_authoritative_snapshot_byte_equal": true,
+    "no_tape_rejects_before_clock": true,
+    "prefix_and_full_horizon_crossing_reject_before_clock": true,
+    "restore_and_binding_checkpoint_unchanged": true,
+    "private_launch_has_no_live_peer_host_or_medium_arguments": true,
+    "forks_reaped": true,
+    "new_externally_durable_commit": false,
+    "cold_recovery": false
+  },
+  "retained_failures": {
+    "original_notebook_save": "build/usb/notebook-next-workflow-a1/result.json",
+    "poll_one_call_host_bound": "build/usb/usb8-poll-pending-a1/result.json",
+    "poll_observer_return_shape": "build/usb/usb8-poll-pending-a2/result.json",
+    "queued_observer_uart_filename": "build/usb/usb8-queued-pending-a1/result.json"
+  },
+  "continuing_workflow": {
+    "path": "build/usb/notebook-next-workflow-a2",
+    "status": "RUNNING",
+    "changed_observer_question": "fault eligibility follows actual initial document-root durable receipt within original cold budget; restart baselines/exceptions recorded"
+  },
+  "remaining": [
+    "successful USB8 notebook Save/lost reply/peer restart reconciliation and independent cold recovery",
+    "unrecorded privately live external-peer continuation",
+    "physical USB PHY/full USB conformance",
+    "QEMU arbitrary cached-state continuation",
+    "browser external hosted USB peer"
+  ]
+}
