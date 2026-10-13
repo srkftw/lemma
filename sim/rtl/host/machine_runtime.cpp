@@ -77,6 +77,7 @@ Machine::Machine(const Options&o):context(new VerilatedContext),options(o){conte
  if(!o.input_capture_path.empty()){input_capture.open(o.input_capture_path);if(!input_capture)throw std::runtime_error("cannot open input capture");}
  if(!o.block_trace_path.empty()){block_trace.open(o.block_trace_path);if(!block_trace)throw std::runtime_error("cannot open block trace");block_trace<<"cycle,event,write,size,address,raw_wdata,wdata,rdata,error,state,status,queue_num,queue_ready,interrupt_status,result\n";}
  auto&soc=*model;for(int i=0;i<64;i++)soc.descriptor[i]=0;soc.clk=0;soc.reset=1;soc.power_reset_cause=1;soc.raw_button_level=0;soc.raw_power_good=1;soc.raw_brownout=0;soc.ble_rx_sample_valid=0;soc.ble_rx_sample_bit=0;soc.ble_coex_allow=1;soc.ble_peer_enabled=0;soc.ble_peer_reset=1;soc.ble_peer_coex_allow=1;soc.ble_peer_valid=0;soc.ble_peer_write=0;soc.ble_peer_addr=0;soc.ble_peer_size=3;soc.ble_peer_wdata=0;soc.ble_peer_rx_sample_valid=0;soc.ble_peer_rx_sample_bit=0;soc.preload_valid=0;soc.preload_index=0;soc.preload_data=0;soc.eval();if(soc.register_memory_enabled)s.reset_until=520;
+ soc.usb_connected=0;soc.usb_bus_reset=0;soc.usb_rx_valid=0;soc.usb_rx_last=0;soc.usb_rx_byte=0;soc.usb_tx_ready=0;
  soc.mem_ready=1;soc.mem_error=0;soc.uart_rx_valid=0;soc.uart_rx_data=0;soc.sample_valid=0;soc.sample_time=0;soc.sample_x=0;soc.sample_y=0;soc.sample_pressure=0;soc.sample_flags=0;soc.sample_tool=0;soc.sample_buttons=0;soc.fb_ready=1;soc.fb_error=0;soc.fb_rdata=15;soc.panel_ready=1;soc.media_ready=1;soc.media_error=0;soc.external_media_busy=0;
  if(o.ble_drop_packets>3||!o.ble_peer_timeout_ms||o.ble_peer_timeout_ms>60000)throw std::runtime_error("BLE peer limits differ");
  if((!o.ble_peer_executable.empty()||!o.ble_replay_path.empty()||!o.ble_capture_path.empty()||o.ble_drop_packets)&&!BINDING_BLE_ENABLED)throw std::runtime_error("BLE peer requires optional binding5");
@@ -93,6 +94,18 @@ Machine::Machine(const Options&o):context(new VerilatedContext),options(o){conte
   BleOutcome startup;ble_record(0,startup);
 #endif
  }
+ if(!o.usb_peer_executable.empty()){
+  if(!BINDING_USB_ENABLED||o.usb_capture_path.empty()||o.usb_peer_timeout_ms<100||o.usb_peer_timeout_ms>60000)throw std::runtime_error("USB live peer requires binding6, exclusive capture and bounded timeout");
+#ifdef __EMSCRIPTEN__
+  throw std::runtime_error("hosted USB process adapter unavailable in portable worker");
+#else
+  int fd=open(o.usb_capture_path.c_str(),O_CREAT|O_EXCL|O_WRONLY,0600);if(fd<0)throw std::runtime_error("USB capture requires a new file");close(fd);
+  usb_capture.open(o.usb_capture_path,std::ios::binary);if(!usb_capture)throw std::runtime_error("USB capture open");
+  usb_capture<<"LMUSBRW1 "<<LEMMA_RUNTIME_IDENTITY<<'\n';usb_capture_bytes=74;
+  usb_peer=std::make_unique<UsbProcessTransport>(o.usb_peer_executable,o.usb_peer_arguments,o.usb_peer_timeout_ms);
+#endif
+ }else if(!o.usb_peer_arguments.empty()||!o.usb_capture_path.empty())throw std::runtime_error("USB capture/arguments require live peer");
+
 }
 Machine::~Machine(){if(medium>=0)close(medium);if(backing_capture>=0)close(backing_capture);}
 void Machine::put(uint64_t addr,const uint8_t*data,size_t n){if(prepared)throw std::runtime_error("cannot preload running machine");if(addr>=RAM_BASE&&n<=RAM_SIZE&&addr-RAM_BASE<=RAM_SIZE-n)std::memcpy(s.ram.data()+addr-RAM_BASE,data,n);else if(addr>=ROM_BASE&&n<=s.rom.size()&&addr-ROM_BASE<=s.rom.size()-n)std::memcpy(s.rom.data()+addr-ROM_BASE,data,n);else throw std::runtime_error("preload outside declared RAM/ROM");}
@@ -174,6 +187,53 @@ void Machine::retry_backing(){
  s.backing_retry_ready=false;
 }
 void Machine::block_row(uint64_t c,const char*event,unsigned write,unsigned size,uint64_t address,uint64_t raw,uint64_t wdata,uint64_t rdata,unsigned error){if(!block_trace.is_open())return;if(s.block_rows>=4096){s.block_omitted++;return;}s.block_rows++;auto*r=model->rootp;block_trace<<c<<','<<event<<','<<write<<','<<size<<",0x"<<std::hex<<address<<",0x"<<raw<<",0x"<<wdata<<",0x"<<rdata<<std::dec<<','<<error<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__state)<<','<<r->lemma_soc__DOT__blockdev__DOT__status<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_num<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_ready<<','<<r->lemma_soc__DOT__blockdev__DOT__interrupt_status<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__result)<<'\n';}
+
+void Machine::usb_record(uint64_t tag,uint64_t id,const std::string& frame){
+ if(!usb_capture||frame.size()>160||usb_capture_bytes+frame.size()+80>64*1024*1024)throw std::runtime_error("USB capture resource/framing");
+ usb_capture<<s.cycle<<' '<<tag<<' '<<id<<' '<<frame<<'\n';usb_capture.flush();if(!usb_capture)throw std::runtime_error("USB capture write");usb_capture_bytes+=frame.size()+80;
+}
+void Machine::usb_reply(const std::string& frame){
+ if(!usb_command)throw std::runtime_error("USB raw reply without request");
+ usb_record(1,usb_command->id,frame);
+#ifndef __EMSCRIPTEN__
+ usb_peer->reply(usb_command->id,frame);
+#else
+ throw std::runtime_error("portable USB process reply unavailable");
+#endif
+ usb_command.reset();usb_incoming.clear();usb_cursor=0;usb_until=0;
+}
+void Machine::usb_before_edge(){auto&soc=*model;
+#ifndef __EMSCRIPTEN__
+ if(usb_peer&&!usb_command&&s.cycle>=usb_next_poll){
+  usb_next_poll=s.cycle+1000;
+  auto actual=usb_peer->poll();if(actual){usb_record(0,actual->id,actual->frame);usb_command=std::move(actual);
+   const auto&frame=usb_command->frame;
+   if(frame=="USBHOST/1 PACKET_BYTES_DEV"){usb_reply("OPEN");}
+   else if(frame.rfind("RESET ",0)==0){auto clocks=number(frame.substr(6));if(clocks!=5000000||s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB root-port reset count");usb_connected=true;usb_reset_until=s.cycle+clocks;usb_until=usb_reset_until;usb_packets.clear();usb_outgoing.clear();}
+   else if(frame.rfind("SEND ",0)==0){usb_incoming=hexbytes(frame.substr(5));if(usb_incoming.empty()||usb_incoming.size()>67)throw std::runtime_error("USB raw packet byte bound");usb_cursor=0;}
+   else if(frame=="RECV"){}
+   else if(frame.rfind("WAIT ",0)==0){auto clocks=number(frame.substr(5));if(!clocks||clocks>100000||s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB raw wait bound");usb_until=s.cycle+clocks;}
+   else throw std::runtime_error("USB raw command framing");
+  }
+ }
+#endif
+ if(usb_command){auto&frame=usb_command->frame;
+  if(frame.rfind("RESET ",0)==0&&s.cycle>=usb_until)usb_reply("RESET_DONE");
+  else if(frame.rfind("WAIT ",0)==0&&s.cycle>=usb_until)usb_reply("WAIT_DONE");
+  else if(frame=="RECV"&&!usb_packets.empty()){
+   static const char*h="0123456789abcdef";std::string raw="RX ";for(auto byte:usb_packets.front()){raw+=h[byte>>4];raw+=h[byte&15];}usb_reply(raw);usb_packets.pop_front();
+  }
+ }
+ soc.usb_connected=usb_connected;soc.usb_bus_reset=s.cycle<usb_reset_until;
+ soc.usb_rx_valid=usb_command&&usb_command->frame.rfind("SEND ",0)==0&&usb_cursor<usb_incoming.size();
+ soc.usb_rx_last=soc.usb_rx_valid&&usb_cursor+1==usb_incoming.size();soc.usb_rx_byte=soc.usb_rx_valid?usb_incoming[usb_cursor]:0;
+ soc.usb_tx_ready=usb_packets.size()<4;
+ soc.eval();usb_rx_transfer=soc.usb_rx_valid&&soc.usb_rx_ready;usb_tx_transfer=soc.usb_tx_valid&&soc.usb_tx_ready;
+ // Read generated output before the edge consumes it. This contains no packet
+ // interpretation, CRC/toggle or guest/host protocol decision.
+ if(usb_tx_transfer){if(usb_outgoing.size()>=67)throw std::runtime_error("USB raw output packet bound");usb_outgoing.push_back(soc.usb_tx_byte);if(soc.usb_tx_last){usb_packets.push_back(std::move(usb_outgoing));usb_outgoing.clear();}}
+}
+void Machine::usb_after_edge(){if(usb_rx_transfer){usb_cursor++;if(usb_cursor==usb_incoming.size())usb_reply("SENT");}}
 void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   if(soc.power_cancel_pen){
    s.samples.clear();s.rx.clear();std::vector<Event> pending;
@@ -211,6 +271,7 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   if(soc.preload_valid){uint64_t a=boot_elapsed<384?RAM_BASE+8*boot_elapsed:boot_elapsed<448?0x807ffe00+8*(boot_elapsed-384):0x81000000+8*(boot_elapsed-448);std::memcpy(&soc.preload_data,s.ram.data()+a-RAM_BASE,8);}
   soc.uart_rx_valid=!s.rx.empty();soc.uart_rx_data=s.rx.empty()?0:s.rx.front();soc.sample_valid=!s.samples.empty();
   if(!s.samples.empty()){auto&w=s.samples.front().words;soc.sample_time=w[0];soc.sample_x=w[1];soc.sample_y=w[2];soc.sample_pressure=w[3];soc.sample_flags=w[4];soc.sample_tool=w[5];soc.sample_buttons=w[6];}
+  usb_before_edge();
   try{ble_before_edge();}catch(const std::exception&e){s.ble_error=e.what();throw;}
   soc.eval();soc.mem_rdata=0;soc.mem_error=0;
   uint8_t* ram_pointer=nullptr;
@@ -291,7 +352,7 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
    if(soc.debug_trap){s.traps++;if(soc.debug_cause==0x8000000000000007ULL)s.timer_traps++;}
    if(trace&&c<options.trace_limit)trace<<c<<",0x"<<std::hex<<soc.debug_pc<<std::dec<<","<<unsigned(soc.debug_privilege)<<","<<unsigned(soc.debug_retire)<<","<<unsigned(soc.debug_trap)<<",0x"<<std::hex<<soc.debug_cause<<std::dec<<","<<unsigned(soc.mem_valid)<<","<<unsigned(soc.mem_write)<<",0x"<<std::hex<<soc.mem_addr<<std::dec<<","<<soc.timer_ticks<<"\n";
   }
-  soc.clk=1;soc.eval();ble_after_edge();
+  soc.clk=1;soc.eval();ble_after_edge();usb_after_edge();
  if(memory_completion){s.memory_pending=0;s.memory_wait=0;}
  context->timeInc(2);s.cycle++;
  s.stopped=(!s.stop_marker.empty()&&s.uart_text.find(s.stop_marker)!=std::string::npos)||(s.stop_panels&&s.panel_completed>=s.stop_panels)||(s.observer_cycle&&s.cycle>=s.observer_cycle);
@@ -377,7 +438,7 @@ void read_state(Reader&r,State&s){
 }
 }
 void Machine::model_save(const std::string&path){VerilatedSave f;f.open(path);if(!f.isOpen())throw std::runtime_error("cannot open model checkpoint");f<<*model;f.close();}
-void Machine::snapshot(const std::string&path){if(!s.ble_error.empty())throw std::runtime_error("failed BLE external owner cannot be checkpointed");if(backing_capture>=0&&fsync(backing_capture))throw std::runtime_error("backing capture checkpoint barrier failed");if(s.backing.poisoned)throw std::runtime_error("ambiguous backing operation cannot be checkpointed");prepare();Temp wrapper(path+".wrapper"),rtl(path+".model"),output(path+".partial");
+void Machine::snapshot(const std::string&path){if(BINDING_USB_ENABLED)throw std::runtime_error("USB6 whole-machine checkpoints are not admitted: complete hosted USB policy/raw pending state not yet serialized");if(!s.ble_error.empty())throw std::runtime_error("failed BLE external owner cannot be checkpointed");if(backing_capture>=0&&fsync(backing_capture))throw std::runtime_error("backing capture checkpoint barrier failed");if(s.backing.poisoned)throw std::runtime_error("ambiguous backing operation cannot be checkpointed");prepare();Temp wrapper(path+".wrapper"),rtl(path+".model"),output(path+".partial");
  // Completed rising-edge observation: no platform read, poll, drain or flush.
  // accepted_medium includes observed partial writes independently of durability.
  {std::ofstream f(wrapper.path,std::ios::binary);Writer w{f};write_state(w,s);if(!f.flush())throw std::runtime_error("wrapper checkpoint failed");}model_save(rtl.path);
@@ -391,7 +452,7 @@ void Machine::snapshot(const std::string&path){if(!s.ble_error.empty())throw std
  if(link(output.path.c_str(),path.c_str()))throw std::runtime_error("checkpoint destination exists or cannot be created");
 #endif
 }
-void Machine::restore(const std::string&path){if(s.ble_pending)throw std::runtime_error("cannot discard unresolved BLE external work during restore");if(s.backing_pending||s.backing.poisoned)throw std::runtime_error("cannot discard a pending or ambiguous external operation during restore");uint64_t total=length(path);if(total<112||total>768ULL*1024*1024)throw std::runtime_error("invalid checkpoint container length");std::ifstream f(path,std::ios::binary);Reader head{f,total,false};char magic[8],identity[64];head.raw(magic,8);auto version=head.u64();head.raw(identity,64);auto wn=head.u64(),mn=head.u64(),wc=head.u64(),mc=head.u64();if(std::memcmp(magic,"LMSSRTL1",8)||version!=(BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2)||std::memcmp(identity,LEMMA_RUNTIME_IDENTITY,64))throw std::runtime_error("unsupported checkpoint machine/implementation identity");if(wn>head.remaining||mn!=head.remaining-wn||!mn||mn>64*1024*1024)throw std::runtime_error("invalid checkpoint component lengths");if(crc(f,wn)!=wc||crc(f,mn)!=mc)throw std::runtime_error("checkpoint checksum mismatch");f.clear();f.seekg(112);State probe;Reader preflight{f,wn,true};read_state(preflight,probe);f.clear();f.seekg(112);State replacement;Reader decode{f,wn,false};read_state(decode,replacement);
+void Machine::restore(const std::string&path){if(BINDING_USB_ENABLED)throw std::runtime_error("USB6 whole-machine restore is not admitted");if(s.ble_pending)throw std::runtime_error("cannot discard unresolved BLE external work during restore");if(s.backing_pending||s.backing.poisoned)throw std::runtime_error("cannot discard a pending or ambiguous external operation during restore");uint64_t total=length(path);if(total<112||total>768ULL*1024*1024)throw std::runtime_error("invalid checkpoint container length");std::ifstream f(path,std::ios::binary);Reader head{f,total,false};char magic[8],identity[64];head.raw(magic,8);auto version=head.u64();head.raw(identity,64);auto wn=head.u64(),mn=head.u64(),wc=head.u64(),mc=head.u64();if(std::memcmp(magic,"LMSSRTL1",8)||version!=(BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2)||std::memcmp(identity,LEMMA_RUNTIME_IDENTITY,64))throw std::runtime_error("unsupported checkpoint machine/implementation identity");if(wn>head.remaining||mn!=head.remaining-wn||!mn||mn>64*1024*1024)throw std::runtime_error("invalid checkpoint component lengths");if(crc(f,wn)!=wc||crc(f,mn)!=mc)throw std::runtime_error("checkpoint checksum mismatch");f.clear();f.seekg(112);State probe;Reader preflight{f,wn,true};read_state(preflight,probe);f.clear();f.seekg(112);State replacement;Reader decode{f,wn,false};read_state(decode,replacement);
  Temp saved("/tmp/lemma-rtl-current"),incoming("/tmp/lemma-rtl-incoming");model_save(saved.path);if(length(saved.path)!=mn)throw std::runtime_error("checkpoint model shape mismatch");{std::ofstream mf(incoming.path,std::ios::binary);copy_bytes(f,mf,mn);if(!mf.flush())throw std::runtime_error("checkpoint model extraction failed");}
  // Generated state covers CVW pipeline, caches/TLBs, privilege/CSRs, fabric
  // owner, controller queues/cursors and all top-level port phase values.

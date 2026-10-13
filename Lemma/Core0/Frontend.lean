@@ -4,6 +4,7 @@ import Lean.Compiler.ImplementedByAttr
 import Lean.Compiler.InitAttr
 import Lemma.Core0.ActionIR
 import Lemma.Core0.ManagedIR
+import Lemma.Core0.ManagedSumsIR
 import Lemma.Core0.Bounded
 import Lemma.Core0.Device
 import Lemma.Core0.IR
@@ -243,17 +244,17 @@ def primitiveAllowlistFor : Profile → Array PrimitiveSpec
   | .v0_4 => primitiveAllowlistV04
   | .v0_5 => primitiveAllowlistV05
   | .v0_6 => primitiveAllowlistV06
-  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => primitiveAllowlistV07
+  | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .boot_v0_1 => primitiveAllowlistV07
 
 private def profileHasV02Scalars : Profile → Bool
   | .v0_1 => false
   | .v0_2 | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => true
+      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .boot_v0_1 => true
 
 private def profileHasBoundedFold : Profile → Bool
   | .v0_1 | .v0_2 => false
   | .v0_3 | .v0_4 | .v0_5 | .v0_6 | .v0_7 |
-      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 => true
+      .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .boot_v0_1 => true
 
 private def stripMData : Lean.Expr → Lean.Expr
   | .mdata _ e => stripMData e
@@ -1264,12 +1265,12 @@ private def storeConstructor? (name : Name) : Option Memory.Width :=
   else none
 
 private def actionMaximumBudget : Profile → Nat
-  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .user_v0_1 | .user_v0_2 =>
+  | .v0_5 | .v0_6 | .v0_7 | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .boot_v0_1 =>
       Memory.maximumBudgetV05
   | _ => Memory.maximumBudgetV04
 
 private def requireDeviceProfile (ctx : LowerContext) (op : Device.Op) : LowerM Unit := do
-  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 && ctx.profile != .kernel_v0_5 then
+  if op == .uartEnableAndResetFifo14 && ctx.profile != .kernel_v0_2 && ctx.profile != .kernel_v0_3 && ctx.profile != .kernel_v0_4 && ctx.profile != .kernel_v0_5 && ctx.profile != .kernel_v0_6 then
     fail ctx .unsupportedPrimitive "closed UART trigger14 requires core0-kernel-v0.2"
   unless op.admits ctx.profile do
     fail ctx .unsupportedPrimitive
@@ -1554,8 +1555,26 @@ mutual
       markExecutionOp operation
       pure (.platform operation arguments status value next)
 
+    else if name == ``Lemma.Core0.Memory.Action.managedSums2 then
+      unless ctx.profile == .user_v0_3 do
+        fail ctx .unsupportedPrimitive "Action.managedSums2 requires explicit core0-user-v0.3"
+      unless args.size == 4 do fail ctx .arityMismatch "malformed managed sum entry bridge"
+      let .const ordinary [] := stripMData args[0]!
+        | fail ctx .unsupportedDeclaration "managed sum entry must be a direct closed ordinary Lean definition"
+      let _ ← match ManagedSumsIR.buildProgram ctx.env ordinary with
+        | .ok program => pure program
+        | .error message => fail ctx .unsupportedDeclaration message
+      let lhs ← lowerExpr fuel ctx args[1]!
+      let rhs ← lowerExpr fuel ctx args[2]!
+      ensureType ctx .u64 lhs
+      ensureType ctx .u64 rhs
+      let (status, value, next) ← lowerActionContinuation2 fuel ctx args[3]!
+      let generated := ManagedSumsIR.genName ordinary ordinary
+      addActionDependency generated
+      pure (.bind (.call generated [lhs, rhs]) status value next)
+
     else if name == ``Lemma.Core0.Memory.Action.managed2 then
-      unless ctx.profile == .user_v0_2 do
+      unless ctx.profile == .user_v0_2 || ctx.profile == .user_v0_3 do
         fail ctx .unsupportedPrimitive "Action.managed2 requires explicit core0-user-v0.2"
       unless args.size == 4 do fail ctx .arityMismatch "malformed managed entry bridge"
       let .const ordinary [] := stripMData args[0]!
@@ -1716,9 +1735,15 @@ private def lowerActionFunction (env : Environment) (profile : Profile) (root na
     env, profile, root, declaration := name, path, locals := #[]
   }
   if (ManagedIR.generatedSource? name).isSome then
-    unless profile == .user_v0_2 do
+    unless profile == .user_v0_2 || profile == .user_v0_3 do
       throw <| mkDiagnostic baseCtx .unsupportedDeclaration "generated managed closure denied by legacy profile"
     return ← match ManagedIR.generatedFunction env name with
+      | .ok function => pure function
+      | .error message => throw <| mkDiagnostic baseCtx .unsupportedDeclaration message
+  if (ManagedSumsIR.generatedSource? name).isSome then
+    unless profile == .user_v0_3 do
+      throw <| mkDiagnostic baseCtx .unsupportedDeclaration "generated managed sum closure denied by legacy profile"
+    return ← match ManagedSumsIR.generatedFunction env name with
       | .ok function => pure function
       | .error message => throw <| mkDiagnostic baseCtx .unsupportedDeclaration message
   let some info := env.find? name
@@ -1881,7 +1906,7 @@ def checkAndLowerActionSuiteForProfile (env : Environment) (profile : Profile)
                 env, profile, root, declaration := name, path,
                 locals := function.params
               }
-              let state ← if (ManagedIR.generatedSource? name).isSome then
+              let state ← if (ManagedIR.generatedSource? name).isSome || (ManagedSumsIR.generatedSource? name).isSome then
                   pure ({nextVar := 0} : LowerState)
                 else do
                   let some info := env.find? name

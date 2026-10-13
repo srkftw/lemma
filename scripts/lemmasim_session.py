@@ -89,7 +89,7 @@ def startup_restore_medium(args):
         raise ValueError('A restored fork owns its checkpoint backing; omit --disk')
     if args.workload == 'service':
         return False
-    if args.workload not in ('power','ble'):
+    if args.workload not in ('power','ble','usb'):
         return True
     if args.backend == 'rtl':
         # Its exact container owns the optional backing, including its presence.
@@ -204,6 +204,16 @@ class RTL:
                 if args.ble_drop_packets:command += ['--ble-drop-packets',str(args.ble_drop_packets)]
             if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
         elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
+        usb_prepared=getattr(args,'usb_host_prepared',None)
+        if usb_prepared is not None:
+            if self.data['profile']!='lemma-silicon-dev/0.6.0':raise ValueError('USB packet host requires binding6')
+            import lemmasim_usb
+            from lemmasim_companion import peer_info
+            host=lemmasim_usb.validate(usb_prepared);peer=peer_info(args.usb_peer_directory)
+            command += ['--usb-peer',host['binary']['path'],'--usb-capture',str(directory/'usb.raw'),
+                        '--usb-peer-timeout-ms',str(args.usb_peer_timeout_ms)]
+            for item in (str(args.usb_peer_socket.resolve()),str(args.usb_host_state.resolve()),str(peer['writer']),str(ROOT/'sim/companion/os_io.py')):
+                command += ['--usb-peer-arg',item]
         if args.memory_latency:
             command += ['--memory-latency', str(args.memory_latency)]
         if args.fail_flush:
@@ -219,7 +229,7 @@ class RTL:
                         '--companion-writer', str(peer['writer']),
                         '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and companion is None and args.workload not in ('power','ble'):
+            if args.disk is None and companion is None and args.workload not in ('power','ble','usb'):
                 raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
@@ -234,7 +244,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
-        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile']=='lemma-silicon-dev/0.5.0' else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile'] in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']

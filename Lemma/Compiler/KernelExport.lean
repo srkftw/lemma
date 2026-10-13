@@ -25,7 +25,8 @@ private def roleProfile (role : String) (configuration : String)
     (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
+  | "kernel" => .ok (if configuration == "lemmasim-silicon-usb-link-probe" then .kernel_v0_6 else
+      if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration
@@ -41,7 +42,7 @@ private def roleProfile (role : String) (configuration : String)
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+  unless configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
@@ -64,7 +65,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+  configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
     (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
@@ -78,6 +79,8 @@ private def rootIdentities (configuration role : String) : Array String :=
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
   | "kernel" => if configuration == "lemmasim-silicon-devices" then
       #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
+    else if configuration == "lemmasim-silicon-usb-link-probe" then
+      #["Lemma.Platform.Silicon.Development.USBLink.boot", "Lemma.Platform.Silicon.Development.USBLink.dispatch"]
     else if configuration == "lemmasim-silicon-ble-link-probe" then
       #["Lemma.Platform.Silicon.Development.BLELink.boot", "Lemma.Platform.Silicon.Development.BLELink.dispatch"]
     else if configuration == "lemmasim-silicon-power-safety-probe" then
@@ -164,6 +167,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
     #["Lemma.Kernel.Development.FramesEntry"]
   else if configuration == "lemmasim-silicon-power-safety-probe" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.PowerSafety"]
+  else if configuration == "lemmasim-silicon-usb-link-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.USBLink"]
   else if configuration == "lemmasim-silicon-ble-link-probe" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.BLELink"]
   else if configuration == "lemmasim-silicon-devices" && role == "kernel" then
@@ -546,13 +551,13 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
 private def frameCountFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" ||
+  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
       isManagedNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-ble-link-probe" ||
+  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
       isManagedNotebookConfiguration configuration then
     (Lemma.Platform.Silicon.BindingPower.frame_pool_base + Lemma.Platform.Silicon.BindingPower.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then

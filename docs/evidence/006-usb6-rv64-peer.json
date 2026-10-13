@@ -1,0 +1,270 @@
+{
+  "schema": "lemma-usb6-rv64-peer-receipt/1",
+  "status": "PASS",
+  "scope": "actual checked privileged RV64 USB6 enumeration/owned-buffer negatives/barrier/read over decoded packet circuit and independent hosted Lean durable opaque peer; no notebook Save/fullUSB/PHY/checkpoint claim",
+  "source_bound_public_startup": true,
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.6.0",
+    "runtime": "5dbf80fd9abcee6cf9663ed117f585298cd948794002a18fe04da6b307e543bb",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "577a24e1c4abeace73a7d0686ea1cf146007c5c9af33c829b1017d11952bfc28",
+    "dtb": "c1e72e979a941441a6e67feea671a6017dfb9191cd2b41894336cbd6c1b937ae",
+    "descriptor": "f2344a740e8999b45c756409eaea83cbee85429f2933a80fe5c47328f123bdb4"
+  },
+  "observed": {
+    "cycles": 12250000,
+    "host_seconds": 63.723619554017205,
+    "packets": {
+      "host_packets": 1591,
+      "controller_packets": 1550,
+      "nak": 1519
+    },
+    "guest_records": [
+      [
+        1120,
+        6,
+        16,
+        0,
+        0
+      ],
+      [
+        1121,
+        524288,
+        16,
+        64,
+        0
+      ],
+      [
+        1125,
+        8193,
+        8192,
+        64,
+        12775279691613216613
+      ],
+      [
+        1122,
+        1,
+        5,
+        0,
+        0
+      ],
+      [
+        1123,
+        2,
+        1,
+        0,
+        2181043712
+      ],
+      [
+        1124,
+        1,
+        16,
+        64,
+        0
+      ]
+    ],
+    "exact_durable_receipts": [
+      [
+        3544386028192353612,
+        1,
+        2,
+        73,
+        1,
+        0,
+        0,
+        0
+      ]
+    ],
+    "lost_ack": {
+      "peer_restarted": true,
+      "guest_completed_before_reconciliation": false,
+      "before_reconciliation": {
+        "records": [
+          [
+            1120,
+            6,
+            16,
+            0,
+            0
+          ]
+        ],
+        "peer_receipts": [
+          [
+            3544386028192353612,
+            1,
+            2,
+            73,
+            1,
+            0,
+            0,
+            0
+          ]
+        ],
+        "outbox_sha256": "d6818574578e52adb2d7788777685b906aa8427e34206266f7b3b49f765bce0b"
+      }
+    },
+    "outbox_sha256": "7063d873cac25a78b07455bf1ed1737ca3d911ec572ca3f64ad528f40fbbd369"
+  },
+  "bounds": {
+    "target_cycles": 60000000,
+    "host_seconds": 900,
+    "virtual_packet_bytes": 67,
+    "host_packets_captured_bytes": 216971,
+    "configured_external_ram_bytes": 134217728,
+    "configured_guest_pool_bytes": 33554432,
+    "host_peak_rss": "not measured; not inferred from configured target RAM"
+  },
+  "artifacts": {
+    "build/kernel/task006-usb-link-a3/provenance.json": {
+      "sha256": "3825722a24574f359dec2446881da50c48c72685b5f562451641dfead450d605",
+      "bytes": 57872
+    },
+    "build/kernel/task006-usb-link-a3/audit.json": {
+      "sha256": "56bd9541a01b57053639fbff9d2b25021e2d20baa34a7c8b9d083ba3a53cff13",
+      "bytes": 435636
+    },
+    "build/silicon/task006-usb-runtime-a1/build.json": {
+      "sha256": "99cff8f840fdc44a7ddbc393eae2e20ed374ff7dc5fbdcda0e69029b50ef7818",
+      "bytes": 75212
+    },
+    "build/silicon/task006-usb-runtime-a1/sources.json": {
+      "sha256": "9123e69b36abd5b352187d3c8f9b345160418a3e4c24e738f819cca82c251117",
+      "bytes": 56714
+    },
+    "build/usb/host-qualified-a1/prepared.json": {
+      "sha256": "c24b28e84e2e052c44c4cb234dd05561b82bfd4a8e9f6fcfd07ded80b21afbd6",
+      "bytes": 1959
+    },
+    "build/usb/whole-machine-a1/result.json": {
+      "sha256": "7cd07169822022cef22ef08dbd10595c005c370b891d01d7815bc99081ee11c4",
+      "bytes": 8281
+    },
+    "build/usb/whole-machine-a1-reobserver-a3/result.json": {
+      "sha256": "371e78f620c08ba6c5e941a05b2d17f8d5578881dd3b481601ad9e8b19300b93",
+      "bytes": 3096
+    },
+    "build/usb/whole-machine-a1-oracle-negatives-a2/result.json": {
+      "sha256": "2a5e60bf535b87178622dc2d8e59affd4e9678b0f355fe8cb06bf560c5933f5c",
+      "bytes": 566
+    },
+    "build/usb/whole-machine-a1/session/usb.raw": {
+      "sha256": "187f28708c3b2afbc63353d5e64e37d76c42ce36e30670ad7c31725908b8ae47",
+      "bytes": 216971
+    },
+    "build/usb/whole-machine-a1/session/uart.bin": {
+      "sha256": "4d29ff9af5ad772bdfe43300d9f27e75ee8b079bf60c87229eb746cd8abfcc40",
+      "bytes": 528
+    },
+    "build/usb/whole-machine-a1/peer/opaque.log": {
+      "sha256": "734805413f9c309cf94a241621fb67458d3207297d29e6fab973e3976331fbf3",
+      "bytes": 88
+    },
+    "build/usb/whole-machine-a1/consumed-source/source-archive.json": {
+      "sha256": "199de3289fb561313986b6ea800b59d83d6c460735a0edf30bcb5c11c54ec793",
+      "bytes": 25426
+    },
+    "build/usb/whole-machine-a1/consumed-native/sources.json": {
+      "sha256": "9123e69b36abd5b352187d3c8f9b345160418a3e4c24e738f819cca82c251117",
+      "bytes": 56714
+    },
+    "scripts/check_guest_usb_link.py": {
+      "sha256": "b251e6b2e0758827d1d5651d7f7ab30b6267878e84a1a21bcc3f4593333b905e",
+      "bytes": 13199
+    }
+  },
+  "oracle_negatives": [
+    {
+      "name": "bad_data_crc",
+      "rejected": "data CRC16"
+    },
+    {
+      "name": "ack_to_nak",
+      "rejected": "control SETUP/OUT status handshake"
+    },
+    {
+      "name": "request_identity",
+      "rejected": "accepted capture ordering"
+    }
+  ],
+  "retained_failures": [
+    "build/kernel/task006-usb-link-a1 (genuine Bool.rec rejection)",
+    "build/kernel/task006-usb-link-a2 (strict immutable table audit rejection)",
+    "build/usb/whole-machine-a1/result.json (raw SENT toggle observer)",
+    "build/usb/whole-machine-a1-reobserver-a1/result.json (observer branch placement)",
+    "build/usb/whole-machine-a1-reobserver-a2/result.json (read request carries no512byte payload)",
+    "build/usb/whole-machine-a1-oracle-negatives-a1 (missing control ACK oracle)"
+  ],
+  "remaining": [
+    "USB write receipt payload validation and actual write transaction",
+    "Store/notebook Save, unsuccessful Save and independent cold document recovery through USB",
+    "complete USB external policy/raw Pending checkpoint continuation",
+    "USB fast/browser execution and full PHY/class/conformance",
+    "owner authentication and real USB product interoperability"
+  ],
+  "commands": {
+    "native_build": "python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.6.0 --output-dir build/silicon/task006-usb-runtime-a1 --jobs 2",
+    "target_build": "nix develop --no-write-lock-file --command ./scripts/build-kernel.sh --configuration lemmasim-silicon-usb-link-probe --output-dir build/kernel/task006-usb-link-a3 --opt-level O2 --stage supervisor",
+    "public_prepare": "./scripts/lemmasim build --backend rtl --profile lemma-silicon-dev/0.6.0 --workload usb --rtl-build build/silicon/task006-usb-runtime-a1 --guest-build build/kernel/task006-usb-link-a3",
+    "actual_execution": [
+      "/run/current-system/sw/bin/python3",
+      "/home/sreekumaar/Downloads/lemma/scripts/lemmasim",
+      "session",
+      "--backend",
+      "rtl",
+      "--profile",
+      "lemma-silicon-dev/0.6.0",
+      "--workload",
+      "usb",
+      "--session-dir",
+      "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/session",
+      "--mode",
+      "laboratory",
+      "--headless",
+      "--paused",
+      "--timeout",
+      "120",
+      "--quantum",
+      "1000",
+      "--usb-host-prepared",
+      "/home/sreekumaar/Downloads/lemma/build/usb/host-qualified-a1/prepared.json",
+      "--usb-peer-directory",
+      "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer",
+      "--usb-peer-socket",
+      "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer.sock",
+      "--usb-host-state",
+      "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/outbox"
+    ],
+    "peer_commands": [
+      [
+        "/run/current-system/sw/bin/python3",
+        "/home/sreekumaar/Downloads/lemma/scripts/lemmasim",
+        "companion",
+        "serve",
+        "--prepared",
+        "/home/sreekumaar/Downloads/lemma/build/usb/host-qualified-a1/companion/prepared.json",
+        "--directory",
+        "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer",
+        "--socket",
+        "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer.sock",
+        "--drop-reply",
+        "1",
+        "--exit-after-reply",
+        "1"
+      ],
+      [
+        "/run/current-system/sw/bin/python3",
+        "/home/sreekumaar/Downloads/lemma/scripts/lemmasim",
+        "companion",
+        "serve",
+        "--prepared",
+        "/home/sreekumaar/Downloads/lemma/build/usb/host-qualified-a1/companion/prepared.json",
+        "--directory",
+        "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer",
+        "--socket",
+        "/home/sreekumaar/Downloads/lemma/build/usb/whole-machine-a1/peer.sock"
+      ]
+    ],
+    "observer": "python3 scripts/check_guest_usb_link.py --host-prepared build/usb/host-qualified-a1/prepared.json --work-dir build/usb/NEW-UNUSED-WORK-DIRECTORY --lost-ack"
+  }
+}

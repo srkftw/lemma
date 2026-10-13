@@ -139,6 +139,45 @@ def ble_specs():
     specs[source]=(*specs[source][:3],words)
     return specs
 
+USB_CONFIGURATIONS = {'lemmasim-silicon-usb-link-probe'}
+CONFIGURATIONS |= USB_CONFIGURATIONS
+USB_LITERALS = {20:'lemma-usb@10010a00',56:'lemma,endpoints',57:'lemma,reset-clocks',
+                58:'lemma,decoded-packet-boundary',77:'lemma,usb-device-packet-v1'}
+USB_BYTES = {**BLE_BYTES, **{code:value.encode('ascii')+b'\0' for code,value in USB_LITERALS.items()}}
+# Code56 fits two immediate words; it creates no readonly table. Code73's NUL
+# remains the separately checked scalar-zero default, as in historical schemas.
+USB_WORD_CODES = [20,57,58,77,*BLE_WORD_CODES]
+USB_DEVICE_BODY_DIGESTS = {**DEVICE_BODY_DIGESTS,
+ 'read32': ('c6a8fa2fd33e12997029a7ebd25ad5d173d6d1095d48d5982614eebd144214fa',
+            '869a1f9d6cfa86fae90139b19857858610274557212725b699c5d159e2caf62e'),
+ 'write32': ('7e2647bd779cce977c967eee5607137fe88d02a003dddfbeafdecf2ce13ae87f',
+             '9c7920cd48733c306ac45a846662eebe905c6b0d14ee2e5a269432ab92f2649f'),
+}
+
+def usb_specs():
+    specs=ble_specs()
+    replacements={
+      'literalLength':[len(USB_BYTES.get(code,b'')) for code in range(1,78)],
+      'nodeRole':[1,2,3,4,5,6,7,*([None]*7),8,9,13],
+      'requiredFlags':[255,255,15,1011,515,31,15,31,255,15,15,15,511],
+      'compatibleCode':[64,65,66,67,68,69,70,74,76,66,66,66,77],
+      'expectedIRQ':[12,13,1,None,None,10,11,14,15,None,None,None,16],
+      'expectedBase':[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,
+                      0x10000000,0x101000,0x10010500,0x10010600,None,None,None,0x10010a00],
+      'expectedSpan':[0x600000,0x10000,0x100,4096,256,1024,4096,4096,4096,1024],
+    }
+    for suffix,values in replacements.items():
+        source=PREFIX+'DescriptorDTB.'+suffix
+        specs[source]=(*specs[source][:3],[values])
+    words=[]
+    for code in USB_WORD_CODES:
+        raw=USB_BYTES[code]
+        values=list(struct.unpack('<'+str((len(raw)+7)//8)+'Q',raw.ljust((len(raw)+7)//8*8,b'\0')))
+        words.append(values[:3] if code==73 else values)
+    source=PREFIX+'DescriptorDTB.literalWord'
+    specs[source]=(*specs[source][:3],words)
+    return specs
+
 def lookup_schema(ir: str, unit: dict):
     """Select one complete closed source schema, including historical artifacts.
 
@@ -148,18 +187,24 @@ def lookup_schema(ir: str, unit: dict):
     """
     functions={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
                for row in unit['functions']}
-    legacy=canonical_specs();new=ble_specs();observed={}
+    legacy=canonical_specs();new=ble_specs();usb=usb_specs();observed={}
     for symbol,count in re.findall(r'^@switch\.table\.([A-Za-z0-9_.$-]+?) = private unnamed_addr constant \[(\d+) x i64\]',ir,re.M):
         source=functions.get(symbol)
         if source in legacy and source.startswith(PREFIX+'DescriptorDTB.'):
             observed[source]=int(count)
+    usb_modern=any(count == len(usb[source][3][0]) and count != len(new[source][3][0])
+                   for source,count in observed.items())
     modern=any(count == len(new[source][3][0]) and count != len(legacy[source][3][0])
                for source,count in observed.items())
     word=PREFIX+'DescriptorDTB.literalWord'
     word_symbol=next((symbol for symbol,source in functions.items() if source==word),None)
     if word_symbol is not None:
         number=len(re.findall(r'^@switch\.table\.'+re.escape(word_symbol)+r'(?:\.\d+)? = ',ir,re.M))
+        usb_modern=usb_modern or number==len(USB_WORD_CODES)
         modern=modern or number==len(BLE_WORD_CODES)
+    if unit.get('configuration') in USB_CONFIGURATIONS and observed and not usb_modern:
+        raise Core0Error('USB discovery lacks its versioned complete literal schema')
+    if usb_modern:return usb,USB_WORD_CODES,'usb-device-packet-v1'
     if unit.get('configuration') in BLE_CONFIGURATIONS and observed and not modern:
         raise Core0Error('BLE discovery lacks its versioned complete literal schema')
     return (new,BLE_WORD_CODES,'ble-packet-v1') if modern else (legacy,WORD_CODES,'power-v2')
@@ -173,10 +218,11 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
         return set(),[]
     power = unit['configuration'] in POWER_CONFIGURATIONS
     ble = unit['configuration'] in BLE_CONFIGURATIONS
-    expected_contract = 'core0-kernel-v0.5' if ble else 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
+    usb = unit['configuration'] in USB_CONFIGURATIONS
+    expected_contract = 'core0-kernel-v0.6' if usb else 'core0-kernel-v0.5' if ble else 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
     if unit.get('contract_version') != expected_contract:
         raise Core0Error('Lemmasim device aperture configuration/profile differs')
-    digests = BLE_DEVICE_BODY_DIGESTS if ble else POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
+    digests = USB_DEVICE_BODY_DIGESTS if usb else BLE_DEVICE_BODY_DIGESTS if ble else POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
     sites=set();observed=[];owners=_line_functions(ir.splitlines())
     for row in unit['functions']:
         if not row['source'].startswith(PREFIX+'IO.'): continue
@@ -187,7 +233,7 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
             raise Core0Error('Lemmasim hardware source signature/effects differs')
         body='\n'.join(line.split(';',1)[0].strip() for line in _ir_definition_body(ir,row['symbol']).splitlines() if line.split(';',1)[0].strip())
         if not optimized:
-            regions=[(0x10001000,0x10001200),(0xc000004,0xc000040 if ble else 0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
+            regions=[(0x10001000,0x10001200),(0xc000004,0xc000044 if usb else 0xc000040 if ble else 0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
             lower=[int(value) for value in re.findall(r'icmp uge i64 %arg0, (\d+)',body)]
             upper=[int(value) for value in re.findall(r'icmp ule i64 %arg0, (\d+)',body)]
             if lower!=[start for start,end in regions] or upper!=[end-width for start,end in regions] or len(re.findall(r'and i64 %arg0, '+str(width-1)+r'$',body,re.M))!=1:
@@ -280,12 +326,12 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
                     true,false=successors[block];without={name:targets for name,targets in successors.items()};without[block]=(false,)
                     if not _structured_reachable(without,'entry',load_block) and _structured_reachable(successors,true,load_block): guards.append(block)
         if len(guards)!=1: raise Core0Error('Lemmasim table load lacks a dominating exact unsigned bound: '+source+' '+table)
-        if source.endswith('expectedIRQ') or source.endswith('nodeRole'):
+        if source.endswith('expectedIRQ') or source.endswith('nodeRole') or (schema=='usb-device-packet-v1' and source.endswith('expectedBase')):
             hole=blocks.get('switch.hole_check')
             if source.endswith('nodeRole'):
-                bits,mask,fallback=(16,-16257,'if.else.43') if schema=='ble-packet-v1' else (16,16511,'if.else.40')
+                bits,mask,fallback=(32,114815,'if.else.46') if schema=='usb-device-packet-v1' else (16,-16257,'if.else.43') if schema=='ble-packet-v1' else (16,16511,'if.else.40')
             else:
-                bits,mask,fallback=(16,487,'if.else.19') if schema=='ble-packet-v1' else (8,-25,'if.else.16')
+                bits,mask,fallback=(16,4607,'if.else.28') if source.endswith('expectedBase') else (16,4583,'if.else.22') if schema=='usb-device-packet-v1' else (16,487,'if.else.19') if schema=='ble-packet-v1' else (8,-25,'if.else.16')
             visible=sum(1 << ordinal for ordinal,value in enumerate(expected) if value is not None)
             if (mask & ((1 << bits)-1)) != visible:
                 raise Core0Error('Literal schema mask does not independently exclude every poison row')

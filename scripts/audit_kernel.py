@@ -189,7 +189,8 @@ LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOP
 LEMMASIM_NOTEBOOK_CONFIGURATIONS = LEMMASIM_NOTEBOOK_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
-LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS
+USB_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
+LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS
 
 MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
     'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
@@ -205,7 +206,7 @@ def software_deployment_fields(configuration):
 
 
 def kernel_contract(configuration: str) -> str:
-    return "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
+    return "core0-kernel-v0.6" if configuration in USB_CONFIGURATIONS else "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -462,8 +463,43 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
     return entries
 
 
+def validate_usb_owned_buffers(unit: dict, pre_ir: str) -> dict:
+    if unit.get('configuration') not in USB_CONFIGURATIONS or unit.get('role')!='kernel':
+        raise Core0Error('USB owned buffer authority requires the exact selected kernel')
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    rows={names[row['symbol']]:row for row in unit['functions']}
+    expected={
+        'Lemma.USB.Block.prepare':(['u64']*0,'ed6f2fbd9d9736ffe353cc56fa5d0246587aac00121f7cdefe2384da86040a87'),
+        'Lemma.USB.Controller.submitOwned':(['u64']*5,'8245015ec796b0b6b1eed2bfd9f8ded00d80ee3bdd6c5d6ea05f420b8df32295'),
+        'Lemma.USB.Controller.receiveOwned':(['u64']*5,'567fb8e532c6a34b97a60afb0382a32349af2ce285b7d61bbabf42d669e98812'),
+        'Lemma.Platform.Silicon.Development.USBLink.boot':([], '3b2b8c872ed6d979985cbba1e99ec87e21a2082ae9119e6c65877c4bea8549c6'),
+        'Lemma.Platform.Silicon.Development.USBLink.ownedNegative':([], 'a3189c5b2ad028aa611a00b68e443e195bb07631686a0ada47ac75f32266b2d3'),
+        'Lemma.Platform.Silicon.Development.USBLink.serviceCompletion':([], '6d14e8af5a9e6b66d0e6e730c3148136779d067d1a2906f86979b3ac6d51d482'),
+        'Lemma.Platform.Silicon.Development.USBLink.completionStep':(['u32']*2+['u64']*5, '6fe26c4cd05f18f7db6cc4859b417907fd6999b34c77e5880074b9910c965664'),
+    }
+    evidence=[]
+    for source,(args,expected_digest) in expected.items():
+        row=rows.get(source,{})
+        effects=['checked-access','mmio-read','io-order','physical-read','physical-write'] if source=='Lemma.USB.Block.prepare' else ['checked-access','mmio-read','mmio-write','io-order','physical-read'] if source.endswith('submitOwned') else ['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write']
+        if source.endswith('.boot') or source.endswith('.completionStep'):
+            effects=['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','wait-state']
+            if source.endswith('.boot'): effects.append('may-diverge')
+        if row.get('args')!=args or row.get('effects')!=effects:
+            raise Core0Error('USB owned buffer source/signature/effects differs: '+source)
+        body=_ir_definition_body(pre_ir,row['symbol'])
+        rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+        normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+        digest=hashlib.sha256(normalized.encode()).hexdigest()
+        if digest!=expected_digest:raise Core0Error('USB owned buffer allocation/generation/purpose/range/copy-before-POP body differs: '+source)
+        evidence.append({'source':source,'body_sha256':digest})
+    return {'owner':1,'purpose':1,'pages':1,'negative_fixture_pages':1,'negative_fixture_purpose':2,'page_bytes':4096,'payload_max':64,
+            'transport':'bounded owned-buffer PIO; no DMA',
+            'scope':'closed genuine checked source/lowering; live transaction qualification remains separate',
+            'bodies':evidence}
+
+
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
-    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe','lemmasim-silicon-ble-link-probe'):
+    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe','lemmasim-silicon-ble-link-probe','lemmasim-silicon-usb-link-probe'):
         # This selected S-mode probe links the ordinary dispatch boundary but
         # never constructs/enters a User task. Do not claim an allocation test
         # for absent construction; bind the actual boot call graph instead.
@@ -495,6 +531,16 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                 'Lemma.Platform.Silicon.Development.BLELink.transaction',
                 'Lemma.Platform.Silicon.Development.BLELink.waitStep',
                 'Lemma.Platform.Silicon.Development.BLELink.fatal'}
+        elif unit['configuration']=='lemmasim-silicon-usb-link-probe':
+            root='Lemma.Platform.Silicon.Development.USBLink.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateBinding','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Kernel.Console.record','Lemma.Kernel.Memory.Frames.configure','Lemma.Kernel.Memory.Frames.init',
+                'Lemma.Kernel.Memory.Frames.allocate','Lemma.Kernel.Memory.Access.write64',
+                'Lemma.Platform.Silicon.Development.USBLink.fixtureState',
+                'Lemma.Platform.Silicon.Development.USBLink.configureIRQ','Lemma.USB.Block.initialize',
+                'Lemma.Platform.Silicon.Development.USBLink.transaction','Lemma.Platform.Silicon.Development.USBLink.waitStep',
+                'Lemma.Platform.Silicon.Development.USBLink.fatal'}
         if unit['configuration']=='lemmasim-silicon-ble-link-probe':
             address='Lemma.Platform.Silicon.Development.BLELink.base'
             if address not in normalized or re.fullmatch(r'\s*entry:\s*ret i64 268502528\s*',_ir_definition_body(pre_ir,normalized[address])) is None:
@@ -514,12 +560,17 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             'Lemma.Kernel.Loader.load', 'Lemma.Kernel.Loader.allocateStack',
             'Lemma.Kernel.Memory.AddressSpace.create', 'Lemma.Kernel.Memory.Frames.allocate',
             'Lemma.Kernel.Memory.Batch.allocate', 'Lemma.Kernel.Task.capture'}
+        usb_owned = None
+        if unit['configuration'] in USB_CONFIGURATIONS:
+            usb_owned=validate_usb_owned_buffers(unit,pre_ir)
+            forbidden=forbidden-{'Lemma.Kernel.Memory.Frames.allocate'}
         if any(normalized.get(name) in visited for name in forbidden):
             raise Core0Error('Power probe reached User construction, allocation or dispatch')
         if (layout['task_kernel_stack_pages'],layout['task_kernel_stack_bytes']) != (4,16384):
             raise Core0Error('Power probe linked dispatch stack layout differs')
         return {'scope':'S-mode device probe; linked User dispatch is unreachable from this boot',
-                'owned_task_construction':'not executed or qualified', 'allocated_pages':0,
+                'owned_task_construction':'not executed or qualified', 'allocated_pages':2 if usb_owned else 0,
+                'owned_transport_buffer':usb_owned,
                 'boot_source':root, 'reachable_source_functions':len(visited),
                 'linked_dispatch_stack_pages':4, 'linked_dispatch_stack_bytes':16384}
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
@@ -3102,7 +3153,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5", "core0-kernel-v0.6"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -3685,16 +3736,54 @@ def _validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tu
                          "guarded_loads": 1, "readonly": True}]
 
 
+def validate_usb_descriptor_lookup(ir: str, unit: dict) -> tuple[set[int], list[dict], set[str]]:
+    """Only the genuine USB6 EP0 descriptors, with both exact bound guards.
+
+    The two immutable tables are byte-level USB descriptors, not host supplied
+    state or authority to complete enumeration. Unknown tables still fail.
+    """
+    if unit.get('configuration') not in USB_CONFIGURATIONS or unit.get('role')!='kernel':
+        return set(), [], set()
+    rows=[r for r in unit['functions'] if r['source']=='Lemma.USB.Control.descriptorWord']
+    if len(rows)!=1 or rows[0]['args']!=['u64','u64'] or rows[0]['effects']:
+        raise Core0Error('USB descriptor lookup source/signature/effects differs')
+    row=rows[0];symbol=row['symbol'];stem='switch.table.'+symbol
+    specs=[(stem,[0x4000000002000112,0x0000010000000000,0x0100],'device'),
+           (stem+'.31',[0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700],'config')]
+    lines=ir.splitlines();removed=set();tables=[]
+    body=_ir_definition_body(ir,symbol)
+    for table,values,label in specs:
+        signed=[v if v<1<<63 else v-(1<<64) for v in values]
+        definition=f'@{table} = private unnamed_addr constant [{len(values)} x i64] ['+', '.join(f'i64 {v}' for v in signed)+'], align 8'
+        if lines.count(definition)!=1 or len(re.findall('@'+re.escape(table)+r'(?![A-Za-z0-9_.$-])',ir))!=2:
+            raise Core0Error('USB descriptor literal content/use inventory differs')
+        removed.add(definition)
+        body=body.replace('@'+table,'@usb.'+label) if label=='config' else body
+        tables.append({'source':row['source'],'function':symbol,'global':table,'values':values,
+                       'element_bits':64,'alignment_bytes':8,'index_bound':len(values),
+                       'default':0,'guarded_loads':1,'readonly':True,'literal_schema':'usb-ep0-descriptors-v1'})
+    body=body.replace('@'+stem,'@usb.device')
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in body.splitlines()).split())
+    if hashlib.sha256(normalized.encode()).hexdigest()!='fe51949f3bee0830ffde11cebcc64c4d4905b779e2e33996b79b6ef1a4f2ad10':
+        raise Core0Error('USB descriptor lookup lacks exact dominating 3/4-word guards/default/body')
+    owners=_line_functions(lines)
+    sites={i for i,line in enumerate(lines) if owners[i]==symbol and re.fullmatch(r'\s*%switch\.load(?:3)? = load i64, ptr %switch\.gep(?:2)?, align 8\s*',line)}
+    if len(sites)!=2:raise Core0Error('USB descriptor exact guarded load inventory differs')
+    return sites,tables,removed
+
+
 def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tuple[set[int], list[dict]]:
     """Preserve PMP admission; add only the two observed managed-policy lookups."""
     if optimized and unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         from lemmasim_readonly import validate_lookup
         sim_sites, sim_tables, removed = validate_lookup(ir, unit)
+        usb_sites,usb_tables,usb_removed=validate_usb_descriptor_lookup(ir,unit)
+        removed |= usb_removed
         filtered = "\n".join("" if line.strip() in removed else line for line in ir.splitlines())
         # Re-enter the unchanged historical policy with its closed admission.
         old_unit = {**unit, "configuration": "normal"}
         old_sites, old_tables = validate_readonly_pmp_lookup(filtered, old_unit, optimized=optimized)
-        return sim_sites | old_sites, [*old_tables, *sim_tables]
+        return sim_sites | old_sites | usb_sites, [*old_tables, *sim_tables, *usb_tables]
     if unit.get("role") != "kernel" or not optimized:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
@@ -3829,6 +3918,7 @@ def validate_h_readonly_sections(section_text: str, symbol_text: str, relocation
 # Closed observed LLVM RV64 switch lowering, admitted by genuine source identity.
 # The counts are backend artifact facts, not a new Core0 source-language feature.
 BACKEND_JUMP_TABLES = {
+    'Lemma.USB.BlockProtocol.headerWord': ('kernel', 7, ['u64']*5, [], list(range(7))),
     'Lemma.Kernel.Syscall.memoryStatus': ('kernel', 77, ['u8'], [], [0,33,37,38,71,72,73,74,76]),
     'Lemma.Kernel.BootInfo.tokenStep': ('kernel', 9, ['u32','u32',*(['u64']*5)], ['checked-access','physical-read','physical-write'], [1,2,3,4,9]),
     'Lemma.Kernel.IPC.dispatch': ('kernel', 6, ['u64']*7, ['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'], list(range(20,26))),
@@ -3841,6 +3931,7 @@ BACKEND_JUMP_TABLES = {
     'Lemma.Services.Buffer.Server.existing': ('user', 5, ['u64']*9, ['checked-access','io-order','virtual-read','virtual-write','user-syscall','privilege-transition'], list(range(2,7))),
 }
 BACKEND_JUMP_TABLE_CONFIGURATIONS = {
+    'Lemma.USB.BlockProtocol.headerWord': USB_CONFIGURATIONS,
     'Lemma.Kernel.Development.FramesEntry.operation': {'frames-development'},
     'Lemma.Kernel.Development.ServiceEntry.command': set(SERVICE_CONFIGURATIONS) - {'service-normal'},
     'Lemma.Services.Buffer.Protocol.requestShape': set(SERVICE_CONFIGURATIONS),
@@ -4111,7 +4202,8 @@ def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
     normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
     digest=hashlib.sha256(normalized.encode()).hexdigest()
-    if digest!='b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c':
+    if digest not in {'b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c',
+                       '4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2'}:
         raise Core0Error('DTB paired owner differs from exact checked property/role body')
     return digest
 
@@ -4128,8 +4220,25 @@ def validate_sim_geometry_body(ir: str, unit: dict, symbol: str) -> str:
     rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
     normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
     digest=hashlib.sha256(normalized.encode()).hexdigest()
-    if digest!='57282f9401fcda2b06922f56f5b6fd3d480c89f10f94bff21ad18f5f3a34e150':
-        raise Core0Error('geometry table differs from exact five-binding checked body')
+    if digest not in {'57282f9401fcda2b06922f56f5b6fd3d480c89f10f94bff21ad18f5f3a34e150',
+                       '43264c64be87983f1354763a18f78bd3e0c0843203793f7a2511f13b6cfbc22b'}:
+        raise Core0Error('geometry table differs from a complete declared discovery body')
+    return digest
+
+
+def validate_sim_binding_body(ir: str, unit: dict, symbol: str) -> str:
+    """Closed new six-binding identity body; historical five-binding path is separate."""
+    source='Lemma.Platform.LemmaSim.Descriptor.expectedBinding'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    row=next((row for row in unit['functions'] if row['symbol']==symbol),{})
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source or row.get('args')!=['u64','u64'] or row.get('effects')!=[]):
+        raise Core0Error('six-binding identity escapes its pure checked kernel declaration')
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),_ir_definition_body(ir,symbol))
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest!='9d3b2bf8bc247f19885073361ecf10b1179727601e78248c9b3aeb5d9fcf3718':
+        raise Core0Error('six-binding identity differs from its complete checked ABI/pool/power body')
     return digest
 
 
@@ -4141,12 +4250,15 @@ def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
     code,labels=_jump_assembly_function(assembly,symbol)
     uses=[(i,re.fullmatch(r'%pcrel_hi\((\.LJTI[0-9]+_[0-9]+)\)',args[1]))
           for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
-    if len(uses)!=2 or any(match is None for _,match in uses):raise Core0Error('DTB pair has an extra or unparseable table use')
+    if len(uses) not in (2,3) or any(match is None for _,match in uses):raise Core0Error('DTB declared discovery has an extra or unparseable table use')
     names=[match[1] for _,match in uses]
     group=re.fullmatch(r'\.LJTI([0-9]+)_0',names[0])
-    if group is None or names[1]!='.LJTI'+group[1]+'_1':raise Core0Error('DTB pair table labels/order differ')
+    if group is None or names!=['.LJTI'+group[1]+'_'+str(i) for i in range(len(uses))]:raise Core0Error('DTB discovery table labels/order differ')
     result={};defaults=[]
-    for (use,_),name,count,minimum,holes in zip(uses,names,(15,9),(36,1),([1,2,3,4,5,6,7,8,10],[2,3,4,6])):
+    shapes=((15,36,[1,2,3,4,5,6,7,8,10]),(9,1,[2,3,4,6])) if len(uses)==2 else (
+        (15,36,[1,2,3,4,5,6,7,8,10]),(13,1,[2,3,4,6,9,10,11]),
+        (21,38,[i for i in range(21) if i not in (0,15,18,19,20)]))
+    for (use,_),name,(count,minimum,holes) in zip(uses,names,shapes):
         declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB[0-9]+_[0-9]+\s*\n)+)',assembly)
         targets=re.findall(r'\.quad\s+(\.LBB[0-9]+_[0-9]+)',declaration[1]) if declaration else []
         if len(targets)!=count or any(label not in labels for label in targets):raise Core0Error('DTB pair local target count differs')
@@ -4170,7 +4282,7 @@ def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
         default=code[denied[0]][1][-1]
         if any(targets[index]!=default for index in holes):raise Core0Error('DTB pair hole does not target its checked default')
         defaults.append(default)
-    if defaults[0]!=defaults[1] or set(result)!={i for i,(op,_args) in enumerate(code) if op=='jr'}:
+    if len(set(defaults))!=1 or set(result)!={i for i,(op,_args) in enumerate(code) if op=='jr'}:
         raise Core0Error('DTB pair has a foreign transfer or divergent checked default')
     return result
 
@@ -4199,7 +4311,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps)==2 else {}
+    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps) in (2,3) else {}
     own_jumps=[i for i in jumps if use+4<=i<=use+6 and code[i]==('jr',[target])]
     if (len(own_jumps)!=1 or (len(jumps)!=1 and not paired)
         or (paired and paired.get(own_jumps[0])!=targets)):
@@ -4306,7 +4418,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
     return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=not bool(paired),
-                **({'closed_dtb_pair_transfers':2,'each_transfer_uses_own_targets':True} if paired else {}),
+                **({'closed_dtb_pair_transfers':len(paired),'each_transfer_uses_own_targets':True} if paired else {}),
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
                 **({'target_preserving_mask':mask} if mask is not None else {}),
@@ -4326,15 +4438,20 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     literal_contracts={'Lemma.Kernel.Objects.replyLimitFor':[8,8,7],'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
     sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
     if sim_literals:
-        from lemmasim_readonly import canonical_specs, ble_specs, BLE_CONFIGURATIONS
-        extra = ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
-        modern = ble_specs()
+        from lemmasim_readonly import canonical_specs, ble_specs, usb_specs, BLE_CONFIGURATIONS, USB_CONFIGURATIONS
+        extra = usb_specs() if unit.get("configuration") in USB_CONFIGURATIONS else ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
+        modern = ble_specs(); usb_modern = usb_specs()
         def admitted_literal(row):
             source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+            if source=='Lemma.USB.Control.descriptorWord':
+                return (unit.get('configuration') in USB_CONFIGURATIONS and unit['role']=='kernel'
+                        and unit.get('contract_version')=='core0-kernel-v0.6' and row['values'] in
+                        [[0x4000000002000112,0x0000010000000000,0x0100],
+                         [0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]])
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
             spec=extra.get(source)
-            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in (*spec[3],*modern[source][3])]
+            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in (*spec[3],*modern[source][3],*usb_modern[source][3])]
         valid_literals=all(admitted_literal(row) for row in literal)
     else:
         valid_literals=unit['role']=='kernel' and all(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))==r['values'] for r in literal)
@@ -4365,7 +4482,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             raise Core0Error('actual and companion jump-table label inventories differ')
         by_symbol={r['symbol']:r for r in unit['functions']}
         for table in sorted(tables,key=lambda s:s['value']):
-            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([01])',name)
+            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([012])',name)
             if match is None or table['type']!='NOTYPE' or table['binding']!='LOCAL' or table['section']!=section_id or table['size']!=0 or table['value']%8:
                 raise Core0Error('backend table label is not one local aligned readonly extent')
             declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)',assembly)
@@ -4385,17 +4502,33 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             owner_tables=[candidate['name'] for candidate in tables
                           if candidate['name'].startswith('.LJTI'+match[1]+'_')]
             paired_leaf=(sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
-                         and sorted(owner_tables)==['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'])
+                         and sorted(owner_tables) in (['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'],
+                                                      ['.LJTI'+match[1]+'_'+str(i) for i in range(3)]))
             if match[2]!='0' and not paired_leaf:raise Core0Error('second table escapes closed DTB pair')
             if paired_leaf:
-                validate_dtb_pair_body(optimized_ir,unit,owner['name'])
-                if match[2]=='1':spec=('kernel',9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9])
+                digest=validate_dtb_pair_body(optimized_ir,unit,owner['name'])
+                triple=len(owner_tables)==3
+                if triple != (digest=='4a27c1267b0888724f8ec68ff8837d56a768f9bd9469f44edf19f4bb3b80a8b2'):
+                    raise Core0Error('DTB discovery body/table version mismatch')
+                if match[2]=='1':spec=('kernel',13 if triple else 9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9,13] if triple else [1,2,6,8,9])
+                if match[2]=='2':spec=('kernel',21,['u64']*4,['checked-access','physical-read','physical-write'],[38,53,56,57,58])
             if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
                     and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):
                 # Exact historical Power literal domain; immutable old units
                 # and fixtures retain this version. The selected BLE probe
                 # requires the new domain including its five literal codes.
                 spec=('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)])
+            if sim_source and source in ('Lemma.Platform.LemmaSim.Descriptor.geometry','Lemma.Platform.LemmaSim.Descriptor.expectedBinding'):
+                if len(targets)==6:
+                    spec=(*spec[:1],6,*spec[2:4],list(range(1,7)))
+                    if source.endswith('expectedBinding'):validate_sim_binding_body(optimized_ir,unit,owner['name'])
+                elif unit.get('configuration') in USB_CONFIGURATIONS:
+                    raise Core0Error('USB binding lacks complete six-binding identity/geometry selection')
+            if sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord':
+                if len(targets)==76:
+                    spec=('kernel',76,['u64','u64'],[],[*range(2,21),*range(32,59),*range(64,78)])
+                elif unit.get('configuration') in USB_CONFIGURATIONS:
+                    raise Core0Error('USB binding lacks complete decoded packet literal domain')
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
                 raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
                     table=name, source=source, role=unit['role'], count=len(targets),
@@ -4404,6 +4537,13 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                     configuration=unit.get('configuration'))))
             if sim_source and source=='Lemma.Platform.LemmaSim.Descriptor.geometry':
                 validate_sim_geometry_body(optimized_ir,unit,owner['name'])
+            if source=='Lemma.USB.BlockProtocol.headerWord':
+                names={r['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']) for r in unit['functions']}
+                body=_ir_definition_body(optimized_ir,owner['name'])
+                body=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+                normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in body.splitlines()).split())
+                if hashlib.sha256(normalized.encode()).hexdigest()!='2fd677ca1564fb786fcf33f01ed0f3dc048d36ac0fb28788053d7756929ff9fc':
+                    raise Core0Error('USB protocol header exact seven-word body differs')
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
@@ -4517,7 +4657,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:

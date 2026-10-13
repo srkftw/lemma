@@ -288,6 +288,11 @@ inductive Action where
   No Action-valued implementation or fabricated AST is supplied by callers. -/
   | managed2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- User-v0.3 only: genuine ordinary scalar-entry sum constructors, exact
+  tag cases, borrowed projections and affine reclamation. Older profiles
+  reject this distinct bridge; no supplied Action implementation is admitted. -/
+  | managedSums2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

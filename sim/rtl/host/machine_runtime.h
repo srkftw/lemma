@@ -8,6 +8,7 @@
 #ifndef __EMSCRIPTEN__
 #include "../../radio/ble_peer_transport.h"
 #endif
+#include "../../usb/usb_transport.h"
 #include <array>
 #include <cstdint>
 #include <deque>
@@ -26,7 +27,9 @@ std::vector<Event> events(const std::string&);
 struct Options {
  uint64_t trace_limit=10000,stop_panels=0,fail_flush=0,observer_cycle=0;
  unsigned deadline=120,host_threads=1;
- unsigned ble_peer_timeout_ms=10000;
+ unsigned ble_peer_timeout_ms=10000,usb_peer_timeout_ms=60000;
+ std::string usb_peer_executable,usb_capture_path;
+ std::vector<std::string> usb_peer_arguments;
  uint64_t ble_drop_packets=0;
  std::string ble_peer_executable,ble_capture_path,ble_replay_path,ble_wire_path;
  std::vector<std::string> ble_peer_arguments;
@@ -87,7 +90,19 @@ class Machine {
  State s;
 #ifndef __EMSCRIPTEN__
  std::unique_ptr<BlePeerTransport> ble_peer;
+ std::unique_ptr<UsbProcessTransport> usb_peer;
 #endif
+ // USB6 external process state remains explicitly unadmitted for snapshots.
+ std::optional<UsbRawCommand> usb_command;
+ std::vector<uint8_t> usb_incoming,usb_outgoing;
+ std::deque<std::vector<uint8_t>> usb_packets;
+ uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0,usb_capture_bytes=0;
+ bool usb_connected=false,usb_rx_transfer=false,usb_tx_transfer=false;
+ std::ofstream usb_capture;
+ void usb_before_edge();
+ void usb_after_edge();
+ void usb_record(uint64_t,uint64_t,const std::string&);
+ void usb_reply(const std::string&);
  std::vector<BleOutcome> ble_replay;
  uint64_t ble_replay_cursor=0;
  bool ble_fork_suspended=false;

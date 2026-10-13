@@ -27,6 +27,7 @@ int main(int argc,char**argv)try{
   else if(a=="--host-threads"){auto n=number(val());if(n>64)throw std::runtime_error("host thread pool must be0..64");o.host_threads=n;}else if(a=="--trace-limit")o.trace_limit=number(val());else if(a=="--deadline"){auto d=number(val());if(!d||d>7200)throw std::runtime_error("deadline must be1..7200seconds");o.deadline=d;}
   else if(a=="--quiet-uart")o.quiet_uart=true;else if(a=="--uart-stdin")uart_stdin=true;
   else if(a=="--panel-drive-trace")o.drive_trace_path=val();
+  else if(a=="--usb-peer")o.usb_peer_executable=val();else if(a=="--usb-peer-arg")o.usb_peer_arguments.push_back(val());else if(a=="--usb-capture")o.usb_capture_path=val();else if(a=="--usb-peer-timeout-ms")o.usb_peer_timeout_ms=number(val());
   else if(a=="--ble-peer")o.ble_peer_executable=val();else if(a=="--ble-peer-arg")o.ble_peer_arguments.push_back(val());else if(a=="--ble-capture")o.ble_capture_path=val();else if(a=="--ble-wire-trace")o.ble_wire_path=val();else if(a=="--ble-replay")o.ble_replay_path=val();else if(a=="--ble-drop-packets")o.ble_drop_packets=number(val());else if(a=="--ble-peer-timeout-ms")o.ble_peer_timeout_ms=number(val());
   else if(a=="--backing-capture")o.backing_capture_path=val();else if(a=="--backing-replay")o.backing_replay_path=val();
   else if(a=="--companion-client")peer.client=val();else if(a=="--companion-socket")peer.socket=val();else if(a=="--companion-state")peer.state=val();else if(a=="--companion-writer")peer.writer=val();else if(a=="--companion-helper")peer.helper=val();

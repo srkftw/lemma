@@ -15,13 +15,14 @@ NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook'})
 POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
+USB_CONFIGURATIONS={'usb':'lemmasim-silicon-usb-link-probe','notebook':'lemmasim-silicon-usb-notebook','initializer':'lemmasim-silicon-usb-initialize'}
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
 def configurations(name=None):
     profile(name)
-    return BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+    return USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     profile(name)
-    return ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
+    return ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()
@@ -266,7 +267,7 @@ def execute(data,workload,directory,options,inputs,medium):
     for key,flag in (('uart','--uart-input'),('events','--events')):
         if inputs.get(key):argv += [flag,validate(inputs[key])]
     if workload!='service':
-        if medium is None and workload not in ('power','ble'):raise ValueError('RTL notebook/initializer requires --disk retained raw medium')
+        if medium is None and workload not in ('power','ble','usb'):raise ValueError('RTL notebook/initializer requires --disk retained raw medium')
         argv+=['--descriptor',entry['descriptor']['path']]
         if medium is not None:argv+=['--medium',medium]
     for key,flag in (('uart_stop','--uart-stop'),('uart_stop_hex','--uart-stop-hex'),('stop_after_panel','--stop-after-panel'),('fail_flush','--fail-flush'),('observer_cycle','--observer-cycle')):
@@ -300,7 +301,7 @@ def capture(data,workload,directory,options,input_paths,disk):
         if path:
             destination=directory/('input.'+key);shutil.copyfile(path,destination);inputs[key]=identified(destination)
     if workload=='service' and disk is not None:raise ValueError('RTL service workload has no block medium; omit --disk')
-    if workload not in ('service','power','ble') and disk is None:raise ValueError('RTL notebook/initializer requires --disk retained raw medium')
+    if workload not in ('service','power','ble','usb') and disk is None:raise ValueError('RTL notebook/initializer requires --disk retained raw medium')
     lock=disk.open('r+b') if disk is not None else None
     try:
         if lock is not None:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)

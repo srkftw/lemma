@@ -809,7 +809,7 @@ def main():
     p.add_argument('--rtl-build',type=Path,help='Replace the archived canonical RTL backend with an exact current-source build')
     p=sub.add_parser('session',help='Persistent machine runtime; transport controls and raw input, no rebuild')
     p.add_argument('--backend',choices=('qemu','rtl'),default='rtl');p.add_argument('--profile')
-    p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble'),default='notebook')
+    p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'),default='notebook')
     p.add_argument('--mode',choices=('student','developer','laboratory'),default='developer')
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--disk',type=Path)
     p.add_argument('--native-bundle',type=Path,help='Validate and execute an immutable native development bundle')
@@ -817,6 +817,11 @@ def main():
     p.add_argument('--headless',action='store_true');p.add_argument('--paused',action='store_true')
     p.add_argument('--restore',type=Path);p.add_argument('--events',type=Path)
     p.add_argument('--backing-replay',type=Path,help='Actual backing outcome log; requires an isolated --restore (QEMU excludes unresolved peer retry controls)')
+    p.add_argument('--usb-host-prepared',type=Path,help='RTL binding6: exact prepared genuine hosted Lean USB packet host')
+    p.add_argument('--usb-peer-directory',type=Path,help='Independent opaque durable peer directory; no guest document interpretation')
+    p.add_argument('--usb-peer-socket',type=Path)
+    p.add_argument('--usb-host-state',type=Path,help='Durable opaque transaction outbox; retain across host restart')
+    p.add_argument('--usb-peer-timeout-ms',type=int,default=60000)
     p.add_argument('--ble-peer',type=Path,help='RTL binding5: executable for the genuine hosted Lean manual-context peer')
     p.add_argument('--ble-peer-arg',action='append',default=[],help='Literal peer argv item (use --ble-peer-arg=VALUE for dash-prefixed arguments)')
     p.add_argument('--ble-peer-timeout-ms',type=int,default=10000)
@@ -842,9 +847,9 @@ def main():
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--snapshot',type=Path,required=True)
     p.add_argument('--capture',type=Path,required=True)
     end=p.add_mutually_exclusive_group(required=True);end.add_argument('--until-cycle',type=int);end.add_argument('--until-ns',type=int,help='Exact fast-backend virtual clock phase')
-    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.set_defaults(function=build)
+    p=sub.add_parser('build');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'));p.add_argument('--opt-level',choices=('O0','O2'),default='O2');p.add_argument('--guest-build',type=Path);p.add_argument('--guest-bundle',type=Path,help='QEMU: fully validated archived genuine guest with a freshly built backend');p.add_argument('--rtl-build',type=Path);p.set_defaults(function=build)
     p=sub.add_parser('init');p.add_argument('--native-bundle',type=Path);p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--disk',type=Path,required=True);p.add_argument('--size-mib',type=int,default=256);p.add_argument('--force',action='store_true');p.add_argument('--session-dir',type=Path);p.add_argument('--timeout',type=int,default=900);p.set_defaults(function=initialize)
-    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
+    p=sub.add_parser('run');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--profile');p.add_argument('--workload',choices=('service','notebook','initializer','managed-notebook','managed-initializer','devices','power','ble','usb'));p.add_argument('--cycles',type=int,default=20000000);p.add_argument('--trace-limit',type=int,default=10000);p.add_argument('--uart-input',type=Path);p.add_argument('--events',type=Path);p.add_argument('--uart-stop');p.add_argument('--uart-stop-hex');p.add_argument('--stop-after-panel',type=int);p.add_argument('--fail-flush',type=int);p.add_argument('--observer-cycle',type=int);p.add_argument('--ram-dump',help='RTL only: external RAM address:bytes, at most 1MiB');p.add_argument('--block-trace',action='store_true',default=None,help='RTL only: first4096 literal block MMIO/DMA/media observations');p.add_argument('--disk',type=Path);p.add_argument('--mode',choices=('student','developer','laboratory'),default='student');p.add_argument('--record',type=Path);p.add_argument('--geometry');p.add_argument('--headless',action='store_true');p.add_argument('--raw-input',type=Path);p.add_argument('--fault',action='append');p.add_argument('--timeout',type=float);p.set_defaults(function=run)
     p=sub.add_parser('replay');p.add_argument('--backend',choices=('qemu','rtl'),default='qemu');p.add_argument('--session',type=Path,required=True);p.add_argument('--disk-copy',type=Path,required=True);p.add_argument('--timeout',type=float,default=120);p.set_defaults(function=replay)
     p=sub.add_parser('control');p.add_argument('--run-directory',type=Path,required=True);p.add_argument('action',choices=('inspect','pause','resume','reset','power-cut'));p.set_defaults(function=control)
     p=sub.add_parser('archive');g=p.add_mutually_exclusive_group(required=True);g.add_argument('--session',type=Path);g.add_argument('--acceptance',type=Path);p.add_argument('--to',type=Path,required=True);p.set_defaults(function=archive_session)
@@ -857,7 +862,7 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
-        if args.command in ('build','run') and getattr(args,'profile',None)=='lemma-silicon-dev/0.5.0' and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
+        if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
         if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
         if args.command=='native-bundle-build':
             import silicon_guest_bundle
@@ -878,13 +883,20 @@ def main():
         if args.command in ('session','session-control','snapshot','restore','session-replay','button'):
             import lemmasim_session
             if args.command=='session':
-                if args.profile=='lemma-silicon-dev/0.5.0' and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
+                if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
+                usb_options=(args.usb_host_prepared,args.usb_peer_directory,args.usb_peer_socket,args.usb_host_state)
+                if any(x is not None for x in usb_options):
+                    if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.6.0' or args.workload!='usb' or args.mode not in ('developer','laboratory'):
+                        raise Failure('USB packet host currently requires USB6 RTL probe in Developer or Laboratory mode')
+                    if any(x is None for x in usb_options):raise Failure('USB packet host requires prepared host, peer directory/socket and retained host state')
+                    if args.disk is not None or args.companion is not None or args.restore is not None:raise Failure('USB peer probe uses independent opaque medium and cold USB state')
+                    lemmasim_session.bounded(args.usb_peer_timeout_ms,100,60000,'USB peer timeout milliseconds')
                 if args.ble_peer is not None or args.ble_replay is not None or args.ble_peer_arg or args.ble_drop_packets:
                     if args.backend!='rtl' or args.profile!='lemma-silicon-dev/0.5.0' or args.mode not in ('developer','laboratory'):raise Failure('BLE manual peer/replay requires binding5 RTL in Developer or Laboratory mode')
                 if args.ble_drop_packets and args.mode!='laboratory':raise Failure('Wire packet loss requires Laboratory mode')
                 if args.ble_replay is not None and (not args.restore or args.ble_peer is not None):raise Failure('BLE replay requires an isolated --restore and excludes live peer')
                 if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
-                if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0'):raise Failure('Persistent session requires the declared silicon-development binding')
+                if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0'):raise Failure('Persistent session requires the declared silicon-development binding')
                 lemmasim_session.bounded(args.quantum,1,1000000,'Quantum')
                 lemmasim_session.bounded(args.trace_limit,0,1000000,'Trace limit')
                 lemmasim_session.bounded(args.memory_latency,0,1024,'Memory latency')
@@ -908,7 +920,7 @@ def main():
             return 0
         if getattr(args,'backend','qemu')=='rtl':
             import silicon_guest
-            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0'):raise Failure('RTL backend requires a supported silicon-development profile')
+            if getattr(args,'profile',None) not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0'):raise Failure('RTL backend requires a supported silicon-development profile')
             if args.command=='build':silicon_guest.build(args)
             elif args.command=='run':silicon_guest.run(args)
             elif args.command=='replay':silicon_guest.replay(args)

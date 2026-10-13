@@ -117,15 +117,17 @@ def isPhysical : Op → Bool
 def admits (profile : Profile) (operation : Op) : Bool :=
   match operation with
   | .physicalRead8 | .physicalRead64 | .physicalWrite8 | .physicalWrite64 =>
-      profile.isFirmware || profile.isKernel
+      profile.isFirmware || profile.isKernel || profile.isBoot
   | .virtualRead8 | .virtualRead64 | .virtualWrite8 | .virtualWrite64 | .syscall =>
       profile.isUser
   | .readTime | .setMachineCompare | .forwardSupervisor => profile.isFirmware
   | .firmwareCall | .installSatp | .fenceInstruction | .enterUser | .waitInterrupt |
       .readSupervisorPending =>
       profile.isKernel
-  | .deviceRead32 | .deviceWrite32 | .deviceRead64 | .deviceWrite64 =>
-      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5
+  | .deviceRead32 | .deviceWrite32 =>
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 || profile == .kernel_v0_6
+  | .deviceRead64 | .deviceWrite64 =>
+      profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_5 || profile.isBoot
 
   | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2
 
@@ -238,10 +240,17 @@ def deviceRegions (operation : Op) : Array MemoryRegion :=
   else #[]
 
 /-- Additive interrupt authority: kernel-v0.4 addresses priority14 and
-kernel-v0.5 also addresses priority15. Every other interval and operation
+kernel-v0.5 also addresses priority15; kernel-v0.6 additionally addresses priority16. Every other interval and operation
 retains its inherited semantics and exact exclusive bounds. -/
 def deviceRegionsFor (profile : Profile) (operation : Op) : Array MemoryRegion :=
-  if profile == .kernel_v0_5 then
+  if profile.isBoot then
+    if operation == .deviceRead64 || operation == .deviceWrite64 then
+      #[⟨"boot-nv-controller", 0x10012000, 0x10012400, true⟩]
+    else #[]
+  else if profile == .kernel_v0_6 then
+    (deviceRegions operation).map fun region =>
+      if region.name == "plic-priority" then { region with stop := 0x0c000044 } else region
+  else if profile == .kernel_v0_5 then
     (deviceRegions operation).map fun region =>
       if region.name == "plic-priority" then { region with stop := 0x0c000040 } else region
   else if profile == .kernel_v0_4 then
@@ -264,12 +273,15 @@ def kernelMemoryRegions : Array MemoryRegion := #[
         Lemma.Platform.LemmaVM.Layout.dtbReserveLimit, false⟩]
 
 def memoryRegions : Profile → Array MemoryRegion
+  | .boot_v0_1 => #[
+      ⟨"boot-loaded-image", 0x80000000, 0x81f00000, true⟩,
+      ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩]
   | .firmware_v0_1 | .firmware_v0_2 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
-  | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 => kernelMemoryRegions.map fun region =>
+  | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 => kernelMemoryRegions.map fun region =>
       if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region
-  | .user_v0_1 | .user_v0_2 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
+  | .user_v0_1 | .user_v0_2 | .user_v0_3 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
   | _ => #[]
 
 def memoryRegionsValid (profile : Profile) : Bool :=
