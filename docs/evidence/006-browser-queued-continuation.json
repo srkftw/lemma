@@ -1,0 +1,116 @@
+{
+  "schema": "lemma-browser-queued-continuation/1",
+  "status": "PASS_APPLICABLE_SAME_WASM_SUFFIX",
+  "scope": "Real UI-private OPFS restore; queued3rawpen samples then in-flight controller/processor continuation. Entire authoritative Wasm archives equal offline suffixes. Not cold recovery, C++/Wasm migration, QEMU cached-state closure or finished browser product.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "bundle": {
+    "path": "build/browser/task006-bytes-bulk-bounded-a2",
+    "sha256": "378f51a7e1f14f474e5bf69c6ffa1848bf924131861048c031a56448a8417cbd"
+  },
+  "implementation_identity": "c6f244138751f237c3676a5cccb441af664cd0796830b917de6aee9dcd151cc7",
+  "observer": {
+    "path": "conformance/lemmasim/check_wasm_browser_suffix.mjs",
+    "sha256": "33eab5f4acfc36e7deaf673c40039fc8b798ec3b6f5a8a708ba3bcc4da8b11f9"
+  },
+  "cases": [
+    {
+      "scope": "Queuedraw3\u2192actualdisplayrefreshinflight",
+      "first_cycle": "730350000",
+      "last_cycle": "734350000",
+      "cycles": "4000000",
+      "exact_archive_sha256": "cabe76a45beafed7a6099783023594e5c65c0cd6f55ff6862963735e31ac1734",
+      "observer_sha256": "68f7df788c9c074b62152888ad0b695f9721690b509a0eb90dd045d9150e8cf0",
+      "host_seconds": 32.385667348,
+      "host_peak_rss_bytes": 1836990464
+    },
+    {
+      "scope": "In-flight display/processor \u21921003cycles",
+      "first_cycle": "734350000",
+      "last_cycle": "734351003",
+      "cycles": "1003",
+      "exact_archive_sha256": "66b007a955c7d881747992b7b0ebb560ff4d655719c676b094a9d152903e5ad2",
+      "observer_sha256": "33eab5f4acfc36e7deaf673c40039fc8b798ec3b6f5a8a708ba3bcc4da8b11f9",
+      "host_seconds": 7.811329905,
+      "host_peak_rss_bytes": 1828913152,
+      "private_logical_bytes": 268435456,
+      "private_allocated_bytes": 1048576
+    }
+  ],
+  "observational": {
+    "first_event_queue": "3",
+    "after_event_queue": "0",
+    "after_paper_busy": "1",
+    "after_paper_sequence": "3",
+    "after_paper_completed": "2",
+    "snapshot_cycles_unchanged": true,
+    "original_file_or_peer_consulted": false,
+    "guest_barrier_inserted": false
+  },
+  "repairs": [
+    "Original observer rejected actualcontainer2 using stalecontainer1 expectation; originalFAIL retained",
+    "Constructor attach samples the medium; supply independent freshzero private origin before restore, never original backing. Initial observerFAIL retained",
+    "Stream restored opaque privatebytes in1MiBchunks; observe zerochunks before sparse POSIXcopy. No RSS improvement claimed"
+  ],
+  "negative": "Wrongcontainer1 version rejected with actual archived state; no bound enlarged",
+  "pending_scope": "Optional captured actual outcome tape is wired to existing private Pending replay API; these two cases have no external Pending callback and do not qualify that path.",
+  "receipts": [
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/plan.json",
+      "sha256": "55a4f5d14713c0b397bb1928eafa800fe503ae6316d1c2c612f7bded1ef0271d",
+      "bytes": 585
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/actual-ui-observation.json",
+      "sha256": "170ee8b53a2d23a2d38725c875cb6b3e336b438d3e0f83716442115ff105c1b4",
+      "bytes": 777
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/inflight-plan.json",
+      "sha256": "e4fc959f0acc6eca782ee5c7cb473fcf93b4f117a41c2fdcd286d545e8dd9795",
+      "bytes": 443
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/inflight-ui-observation.json",
+      "sha256": "af6114c608f44e5073bc5e04590b5296e3b747716d2981360ec822d819c24438",
+      "bytes": 480
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/offline-a2/result.json",
+      "sha256": "95f136da4a959f7c4525bf3077de45b748d2911563e06ff911d8a613b1fe6953",
+      "bytes": 5703
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/inflight-offline-a1/result.json",
+      "sha256": "46a190e2a2325e0e686b833d426bd1b37e04ebcdf67578b82209dc9448053ec0",
+      "bytes": 5705
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/inflight-offline-stream-a1/result.json",
+      "sha256": "1ddb95f58c5669fa6375aea74cf0cfb304e906c924bb3992d60f2a73b874826b",
+      "bytes": 5699
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/original-observer-failure/result.json",
+      "sha256": "22248127d7214a31d976ea1a308968b753b6b27648958d01e1e93be729da84e5",
+      "bytes": 378
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/offline-a1/result.json",
+      "sha256": "5d24e100d834dc821d070880d33b26e51881b9da8b1f07cc2b9b3c013422a037",
+      "bytes": 764
+    },
+    {
+      "path": "build/browser/task006-browser-queued-suffix-a1/negative-container-a1/result.json",
+      "sha256": "d9b5f351b9b8694ee4efee62aed3033f8cdc504158bce7c0cfafc83b7e4f6f43",
+      "bytes": 407
+    }
+  ],
+  "remaining": [
+    "Live browser durablecold/fullpixels",
+    "Native/Wasm authoritative state comparison on matching recoveredmedium",
+    "Browser integrated mathematics/course and ordinary editing/navigation",
+    "Pending external callback/tape browser acceptance",
+    "QEMU cached-state exactcontinuation",
+    "Distribution rights, physicalclosure and all whole-machine unfinishedgates"
+  ]
+}
