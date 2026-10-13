@@ -79,7 +79,13 @@ def require_diagnostics(image, binding, managed):
     value = binding.get("architecture_diagnostics")
     p, q, t = "Lemma.Kernel.Process.", "Lemma.Kernel.Scheduler.", "Lemma.Kernel.Task."
     read, record = "Lemma.Kernel.Memory.Access.read64", "Lemma.Kernel.Console.record"
-    context = "Lemma.Kernel.Memory.AddressSpace.context"
+    kernel = load_json(image.parent / "kernel/unit.json")
+    actual = {re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]): row["symbol"] for row in kernel.get("functions", [])}
+    # The current capture path carries its already checked task base through
+    # contextAt. Require that exact genuine successor gate, while retaining the
+    # historical context obligation for units that actually use the old path.
+    context = ("Lemma.Kernel.Memory.AddressSpace.base" if t+"contextAt" in actual
+               else "Lemma.Kernel.Memory.AddressSpace.context")
     required = {p+"validateFrame", read, record}
     required |= ({q+"dispatch", q+"reportFault", q+"failed", q+"finish", q+"returnKernel", t+"capture", t+"failed", context}
                  if managed else {p+"dispatch", p+"userTrap", p+"failed", p+"finish"})
@@ -98,8 +104,6 @@ def require_diagnostics(image, binding, managed):
                 ("halfword_ecall_return_reason", "hardware_fault_return_reason")))):
         raise Core0Error("architecture evidence lacks the exact original hardware-status diagnostic")
     sources = value.get("source_functions")
-    kernel = load_json(image.parent / "kernel/unit.json")
-    actual = {re.sub(r"^_private\..*?\.[0-9]+\.", "", row["source"]): row["symbol"] for row in kernel.get("functions", [])}
     if (not isinstance(sources, dict) or set(sources) != required
             or any(not isinstance(symbol, str) or not symbol.startswith("lemma_kernel_")
                    or actual.get(source) != symbol for source, symbol in sources.items())):

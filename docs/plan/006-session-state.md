@@ -531,3 +531,16 @@ pixels. The new continuation took63.594425s; both cold observations reached
 functional observations, not RTL timing. Original missing-Doc6-learner,
 already-migrated acknowledgment and report-serialization failures remain
 retained; the corrected observer validates learner policy/events strictly.
+
+## Candidate a735 CI diagnostic corrections
+
+Candidate a735d391a752c0a22b519a08d01604dd1f799a95 CI38425035553 completed
+**FAILURE**, eight of ten jobs passed. The remaining host step lacked the
+explicit ClientV2 olean prerequisite; the architectural observer still required
+the old context helper despite the audited fresh-base/contextAt path.
+[The correction receipt](../evidence/006-ci-a735-repair.json) binds both full
+original logs and the downloaded architecture artifact, independently
+reproduces the old failure, recomputes the exact emitted LLVM diagnostic gates
+and rejects changed gate/source symbols. The explicit host build and genuine
+execution-identity fixture passed. These bounded corrections do not pass the
+original matrix or skipped host suites; a fresh candidate CI run is required.

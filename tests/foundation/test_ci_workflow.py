@@ -76,6 +76,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("Lemma.Compiler.KernelExport", self.metadata)
         self.assertLess(self.metadata.index("Lemma.Compiler.KernelExport"),
                         self.metadata.index("tests/kernel/ManagedNotebookDeployment.lean"))
+        self.assertIn("Lemma.Services.Arithmetic.ClientV2", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Services.Arithmetic.ClientV2"),
+                        self.metadata.index("tests/mathematics/ExecutionIdentity.lean"))
         self.assertIn("test ! -e build/kernel/ci-user-word-inline", self.metadata)
         self.assertIn("env LEMMA_WORD_INLINE_FIXTURE_DIR=build/kernel/ci-user-word-inline", self.metadata)
         for guest_marker in ("check-core0.sh", "check-foundation.sh", "qualify_foundation.py", "qemu"):

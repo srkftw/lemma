@@ -180,6 +180,30 @@ class ArchitectureCheckerTests(unittest.TestCase):
                 del audit['architecture_diagnostics']
                 with self.assertRaises(Core0Error):k.require_diagnostics(image,audit,managed)
 
+    def test_context_carry_requires_its_exact_genuine_base_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            image,audit=self.binding(Path(tmp),managed=True)
+            unit_path=image.parent/'kernel/unit.json'
+            unit=json.loads(unit_path.read_text())
+            unit['functions'].append({'source':'_private.Lemma.Kernel.Task.0.Lemma.Kernel.Task.contextAt',
+                                      'symbol':'lemma_kernel_context_carry'})
+            unit_path.write_text(json.dumps(unit))
+            # A current genuine capture closure cannot gain admission from a
+            # mutually consistent historical context receipt.
+            with self.assertRaisesRegex(Core0Error,'source identities'):
+                k.require_diagnostics(image,audit,True)
+            sources=audit['architecture_diagnostics']['source_functions']
+            old='Lemma.Kernel.Memory.AddressSpace.context'
+            new='Lemma.Kernel.Memory.AddressSpace.base'
+            actual={row['source']:row['symbol'] for row in unit['functions']}
+            sources.pop(old);sources[new]=actual[new]
+            audit['architecture_diagnostics']['ownership_gates'][1]['protected']=actual[new]
+            k.require_diagnostics(image,audit,True)
+            for mutant in ('lemma_kernel_context_carry',actual[old],'lemma_kernel_wrong'):
+                changed=deepcopy(audit)
+                changed['architecture_diagnostics']['ownership_gates'][1]['protected']=mutant
+                with self.assertRaises(Core0Error):k.require_diagnostics(image,changed,True)
+
     def singleton(self,directory,case='halfword-ecall'):
         image,audit=self.binding(directory,case)
         spec=k.require_case(image,audit)
