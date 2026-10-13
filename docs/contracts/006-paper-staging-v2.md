@@ -1,3 +1,4 @@
+<!--
 # Paper-v2 staging and modern hardware successors
 
 The USB notebook and Product notebook exposed a real device-map collision:
@@ -89,3 +90,5 @@ run, and reaps only its owned process identities on cancellation or timeout.
 The launch itself does not establish Ready, Save or cold recovery. The native
 host boundary remains decoded USB packets; physical USB PHY and full USB
 conformance remain unfinished.
+
+-->

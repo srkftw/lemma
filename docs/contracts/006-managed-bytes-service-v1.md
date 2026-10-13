@@ -1,3 +1,4 @@
+<!--
 # Isolated arithmetic bytes service v1
 
 This software successor connects `lemma-managed-bytes-v1` ordinary ByteArray
@@ -70,3 +71,5 @@ NotebookUser2 and ArithmeticUser4. Laboratory OOM fills31 real slots before
 ordinary constructor execution; it does not fabricate error237. Component
 host Actions and emitted-object checks are separate from isolated RV64 user
 execution, durable Save/cold recovery, timing parity and browser qualification.
+
+-->

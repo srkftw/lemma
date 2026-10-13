@@ -1,3 +1,4 @@
+<!--
 # Indexed controller-output staging
 
 The native and portable RTL Machine now stage Gray4 controller output in a
@@ -25,3 +26,5 @@ Exact identities, commands, measured results and retained environment/fixture
 failures are in `006-indexed-panel.json`. The unchanged native property requires
 the pinned silicon shell, which supplies Verilator. Ordinary `nix develop` does
 not supply that executable.
+
+-->

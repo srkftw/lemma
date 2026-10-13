@@ -1,3 +1,4 @@
+<!--
 # Official reference register
 
 Consulted on 2026-10-07. Moving documentation is research input, not a toolchain pin.
@@ -27,3 +28,5 @@ Task 001 must record immutable revisions for code and version-specific behavior.
 The seven-stage plan and language/architecture constraints originate in the project
 conversation. This scaffold reconstructs that plan; it does not claim to have imported
 or verified any previously generated workbook, supplier reply or runtime artifact.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # USB6 recorded raw continuation v1
 
 This opt-in native `lemma-silicon-dev/0.6.0` extension adds container version 6.
@@ -106,3 +107,5 @@ mask 2 at 8842000. Both session binding and launch-time binding reproduced compl
 native suffix snapshots exactly at all five cuts. Absent tape and horizon
 crossing rejected before advancement. This is a captured-suffix developer
 workflow, not a live external-peer restore or a cold journal recovery claim.
+
+-->

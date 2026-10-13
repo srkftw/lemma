@@ -1,3 +1,4 @@
+<!--
 # Core0 kernel v0.4: Power-v1 PLIC priority
 
 This successor preserves the language, primitive operations, ABI, alignment,
@@ -20,3 +21,5 @@ their emitted O0/O2 guards against an independently mapped host-only register
 page, checking both contracts, alignment, widths, boundary addresses and rejected
 values. This focused guard evidence is separate from RV64 guest execution,
 compiler correctness, whole-machine equivalence and physical qualification.
+
+-->

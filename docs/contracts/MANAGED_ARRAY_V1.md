@@ -1,3 +1,4 @@
+<!--
 # Ordinary managed Array UInt64 v1
 
 `lemma-managed-array-v1` is a separate bounded successor grammar, selected by
@@ -113,3 +114,5 @@ A subsequent actual Array check appends its own identity; independent cold
 recovery preserves the mixed history. Doc6 learner events require the same
 strict policy/event validation as Doc5. The original missing-version observer
 failure remains retained alongside the corrected observation.
+
+-->

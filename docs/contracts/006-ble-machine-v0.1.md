@@ -1,3 +1,4 @@
+<!--
 # BLE manual-link machine development binding 0.5
 
 `lemma-silicon-dev/0.5.0` is an opt-in development machine. It retains the canonical 1650×2200 Gray4 display, 128 MiB external simulation RAM, 8192-frame guest pool, 100 MHz machine clock and 10 MHz MTIME, and inherits Power-v2. Historical bindings retain their byte meanings.
@@ -51,3 +52,5 @@ Add `--ble-drop-packets 1` in Laboratory mode to select the demonstrated lost-AC
 The same-binary fixed-prefix host-pool comparison uses `python3 scripts/check_native_host_threads.py --work-dir UNUSED_OUTPUT --cycles 2000000`. It proved byte equality for default14 versus one host thread, including a100000-cycle restore suffix. Its single short sample did not show a speedup; the default was about7% faster, with a340KiB larger peak RSS. Host thread counts do not alter virtual clock frequency.
 
 Original failures are preserved. The first integrated guest stopped with fatal50 at7,870,065cycles after successful FDT parsing: the SoC had passed low address bits for an unaligned1KiB aperture. The subsequent changed-source build subtracts BLE_BASE. The old observer's generic first-packet bound error is not reclassified as a timeout or harmless failure. The first host-suite invocation outside Nix failed because tools were unavailable; the pinned host suite separately passed146tests.
+
+-->

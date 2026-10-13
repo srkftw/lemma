@@ -1,3 +1,4 @@
+<!--
 # Lemma machine profile 0.1.0
 
 Decision date: 2026-10-10. Architecture freeze adopted by Task 004, not an
@@ -106,3 +107,5 @@ Public basis: [VirtIO1.2](https://docs.oasis-open.org/virtio/virtio/v1.2/virtio-
 [QEMU replay](https://www.qemu.org/docs/master/system/replay.html), and immutable
 [pinned map](https://github.com/qemu/qemu/blob/c3d48b7d1e89604920e5b81b91140c2ad39a1943/hw/riscv/virt.c).
 Frozen project allocations are decisions, not vendor-register claims.
+
+-->

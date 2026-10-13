@@ -1,3 +1,4 @@
+<!--
 # Evidence report: repository scaffold
 
 Status: **passed for scaffold checks only**. No target build, RV64 boot, compiler audit
@@ -49,3 +50,5 @@ a successful local test is not a substitute for that remote check.
 These checks establish only preparation metadata and mocked publishing behavior.
 They do not validate the proposed target ABI, Lean/LLVM compatibility, device drivers,
 Core0 language membership, generated image provenance or any physical assembly.
+
+-->

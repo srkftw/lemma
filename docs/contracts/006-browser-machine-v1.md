@@ -1,3 +1,4 @@
+<!--
 # Local RTL browser embodiment v1
 
 `lemmasim-browser-bundle/1` is a local development distribution of the existing
@@ -112,3 +113,5 @@ relicense target sources. Native installers, teacher/package permissions,
 tutor communication, whole-machine browser acceptance and physical conformance
 remain separate required work; a successful Wasm build or boot prefix is not
 those results.
+
+-->

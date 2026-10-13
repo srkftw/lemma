@@ -1,3 +1,4 @@
+<!--
 # core0-kernel-v0.6 — decoded USB packet controller authority
 
 This additive profile inherits the scalar source membership, checked physical memory,
@@ -32,3 +33,5 @@ target helper, host document recovery or host-set configured/authenticated flag.
 The first full probe export rejected an unsupported Bool.and dependency; that
 failed observation is retained. Component tests and artifact audits are separate
 from actual guest transactions and notebook/companion acceptance.
+
+-->

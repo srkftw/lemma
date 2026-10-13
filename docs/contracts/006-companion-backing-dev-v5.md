@@ -1,3 +1,4 @@
+<!--
 # Native Pending checkpoint continuation v5
 
 This extends the asynchronous opaque backing boundary in [v3](006-companion-backing-dev-v3.md)
@@ -149,3 +150,5 @@ nix-shell tooling/silicon/sim.nix --run \
     --guest-bundle build/native/task006-canonical-a1 \
     --work-dir build/silicon/native-pending-rebind-a1'
 ```
+
+-->

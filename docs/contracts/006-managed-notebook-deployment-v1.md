@@ -1,3 +1,4 @@
+<!--
 # Managed Notebook software deployment, version1
 
 `lemmasim-silicon-managed-notebook` and `lemmasim-silicon-managed-initialize`
@@ -39,3 +40,5 @@ This is an executable compiler/deployment extension, not full G2 language
 support or a boot-performance claim. Exact fault-prefix and backend checks,
 whole-image auditing, real guest execution and canonical cold Ready are separate
 obligations. Development ELF-preload boot remains explicitly a development path.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Fixed machine counter operations: core0-firmware-v0.2
 
 This additive development firmware profile preserves every historical Core0
@@ -72,3 +73,5 @@ The first observed run is in `docs/evidence/006-guest-counters.json`: 3,257 RTL
 cycles, 1,488 retired instructions at completion; a snapshot at cycle840 has an
 exact same-backend suffix. Those values describe this finite workload and impose
 no fast/RTL timing equivalence or broader cache-state continuation claim.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Native immutable development bundle v1
 
 `lemmasim-native-bundle/1` packs the source-validated canonical0.3 RTL
@@ -43,3 +44,5 @@ loader/libraries remain required. It is not a standalone operating-system
 installer. Guest artifacts have no target host-runtime dependency. License
 notices identify CVW, Verilator and QEMU; project redistribution rights remain
 unresolved. Local preparation changes no licensing or repository settings.
+
+-->

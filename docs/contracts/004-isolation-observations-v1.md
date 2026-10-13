@@ -1,3 +1,4 @@
+<!--
 # LemmaSim ordinary-client isolation observations v1
 
 The closed `lemmasim-isolation-development` deployment adds one separately
@@ -84,3 +85,5 @@ planned load/address/time; `433` queue phase/handle/base/outstanding; `434`
 phase/purpose/mappings/free frames; `435` erroneous returned load; `436`
 phase/actual guest ticks/outstanding kind/reserved0. Existing
 `d4`, `f4`, `f6`, `421` retain their real trap/reaping/document ACK meanings.
+
+-->

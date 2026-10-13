@@ -1,3 +1,4 @@
+<!--
 # Explicit original RTL source reuse v1
 
 `--rtl-source-root` is an explicit native USB6 preparation/launch option. It
@@ -62,3 +63,5 @@ python3 -m unittest discover -s tests/lemmasim -p test_rtl_source_archive.py -v
 
 These are source/artifact admission checks. They do not qualify arbitrary USB
 checkpoint continuation, USB PHY conformance, notebook Save or cold recovery.
+
+-->

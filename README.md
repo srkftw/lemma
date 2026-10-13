@@ -1,3 +1,4 @@
+<!--
 # Lemma
 
 ## LemmaSim: permanent virtual Lemma One
@@ -824,3 +825,5 @@ nix develop --no-write-lock-file --command python3 scripts/check_array_document_
 
 The checker copies the supplied opaque medium; only the guest migrates and
 publishes its document. This command starts from Doc5 without a snapshot.
+
+-->

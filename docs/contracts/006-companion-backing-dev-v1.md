@@ -1,3 +1,4 @@
+<!--
 # Companion opaque backing transport development profile v1
 
 `lemma-companion-backing-dev/1` is an independent persistent opaque block peer
@@ -163,3 +164,5 @@ explicit current admission limit; arbitrary pending-operation continuation is
 unfinished. Serializing backing state does not close QEMU's omitted soft-TLB
 and translation-block/jump-cache state described in
 `conformance/lemmasim/QEMU_STATE_EQUIVALENCE.md`.
+
+-->

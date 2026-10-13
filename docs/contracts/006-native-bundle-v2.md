@@ -1,3 +1,4 @@
+<!--
 # Native development bundle v2
 
 `lemmasim-native-bundle/2` preserves the v1 file/byte bounds, strict inventory,
@@ -44,3 +45,5 @@ ink-commit integration defect; its archive preserves that implementation.
 A corrected successor needs its own image, source archive and observations.
 The package qualification establishes exact artifact admission, not Ready,
 mathematical correctness, timing parity or complete checkpoint semantics.
+
+-->

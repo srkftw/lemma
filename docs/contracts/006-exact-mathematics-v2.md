@@ -1,3 +1,4 @@
+<!--
 # Durable uncertain offline review v2
 
 This additive successor preserves `lemma-exact/1`, original goal/package and
@@ -89,3 +90,5 @@ This bounded original course application remains short of managed Lean,
 isolated checking service, proof-kernel checking, general immutable package
 installation, held-out assessment, learner model calibration, permissioned
 tutor transport and demonstrated learning gains.
+
+-->

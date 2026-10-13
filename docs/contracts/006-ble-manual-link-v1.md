@@ -1,3 +1,4 @@
+<!--
 # BLE manual-context sequence policy v1
 
 `lemma-ble-manual-link/1` supplies bounded, Lean-authored ACL SN/NESN policy
@@ -127,3 +128,5 @@ Versioned0.5 descriptor/SoC integration is a separate workstream; this component
 receipt does not qualify its registration. Actual guest/controller/IRQ execution,
 bounded live native retries, whole-machine replay and companion durability
 remain separate unfinished qualifications.
+
+-->

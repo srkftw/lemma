@@ -1,3 +1,4 @@
+<!--
 # Restricted exact mathematics and original course v1
 
 This preserves the original832-byte format and its observed milestone. The
@@ -142,3 +143,5 @@ It checks actual guest results, edit invalidation, immutable history, explicit
 assistance, resource/unsupported outcomes, raw ink retention, controller pixels,
 acknowledged bytes, independent cold reopening and a failed save. It does not
 exercise a live tutor, managed runtime or Lean proof-kernel checking.
+
+-->

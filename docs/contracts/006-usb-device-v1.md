@@ -1,3 +1,4 @@
+<!--
 # USB decoded-packet device v1
 
 `lemma_usb_device.sv` implements a bounded full-speed development device at a decoded packet boundary. Packet bytes include PID, token CRC5 and DATA CRC16. SYNC/EOP, NRZI, bit stuffing, line sampling, electrical behavior and complete USB conformance remain unimplemented. The reference is the [USB-IF USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification), base PDF SHA256 `d39698a33486c399124af92bd02e4f978fd9a836b5cf4e52e6e4633eb1d89f61`. No allocated VID/PID or USB certification is claimed.
@@ -13,3 +14,5 @@ The intended optional hardware successor is0.6: USB aperture0x10010a00/0x400, IR
 `python3 scripts/check_usb_device.py --work-dir UNUSED_BUILD_PATH --jobs 2` builds the actual circuit with pinned Verilator and compares arbitrary partial-RX and pending-status-ACK generated-state suffixes. The independent CRC oracle uses an MSB polynomial formulation; the circuit uses its reflected formulation. The checked result is a literal circuit qualification, not guest execution, durable companion storage, machine checkpoint closure or full USB support.
 
 Hosted opaque backing policy is extracted unchanged into `sim/companion/ClientPolicy.lean`; the normal companion build accounts for its generated host objects and links it only into the host client. Host runtimes and objects never enter RV64 images. Existing peer barrier/receipt/outbox rules are retained. The prepared peer checks remain separately scoped opaque transport tests.
+
+-->

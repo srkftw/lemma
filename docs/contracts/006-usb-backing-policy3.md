@@ -1,3 +1,4 @@
+<!--
 # USB decoded-packet backing host policy3
 
 This additive hosted Lean policy retains `USBHOST/2 PACKET_BYTES_DEV` and
@@ -95,3 +96,5 @@ nix develop --no-write-lock-file --command env \
   LEMMA_USB_PENDING_WORK=build/usb/NEW-PENDING-FIXTURE \
   lake env lean tests/usb/PendingPolicy.lean
 ```
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Notebook and ink records: envelope v1, page v2
 
 This is the bounded document consumer implemented by
@@ -264,3 +265,5 @@ accepted refresh sequence; the marker alone is not evidence that the panel has
 completed that refresh. Initializer argument 1 alone requests explicit service
 formatting and emits `0x41f` after its durable acknowledgement. Normal argument 0
 never formats an unknown or unformatted image.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Notebook device-fault observations
 
 `check_crash_workflow.py` is an independent offline observer. It imports the
@@ -152,3 +153,5 @@ report PASS only when that real behavioral failure was observed and rejected,
 with previously acknowledged ink preserved in both cases. This tests a storage
 ordering bug, not a changed-source hash. Final candidate execution is separate
 from development experiments using earlier explicitly identified images.
+
+-->

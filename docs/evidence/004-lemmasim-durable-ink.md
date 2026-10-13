@@ -1,3 +1,4 @@
+<!--
 # Task 004 — durable native ink
 
 LemmaSim now runs an offline notebook drawn and maintained by the compiled Lean RV64 guest. Pointer or recorded raw pen input enters the modeled FIFO and PLIC, becomes integer ink, reaches the isolated record service, and recovers after a real cold restart. The host transports input, controller pixels and block bytes; notebook policy, rasterization, codecs and recovery execute in the guest.
@@ -55,3 +56,5 @@ The verified outside archive is `/home/sreekumaar/Downloads/lemma-task004-7236f7
 ```
 
 Earlier checkpoint timeout 93, Save-scalability interruption and strict table rejection remain FAIL under their original identities. First archive verification rejected duplicate selection rows; its failed export is retained. [Task003 evidence](003-kernel-isolated-services.md) preserves inherited results. This bounded notebook does not complete the managed runtime, general filesystem, all G4, mathematics/tutor, browser, snapshots or physical equivalence.
+
+-->

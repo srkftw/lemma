@@ -1,3 +1,4 @@
+<!--
 # Gate 8 machine-timer construction audit
 
 Status: finite O0/O2 target acceptance passed at clean implementation
@@ -158,3 +159,5 @@ Their assumptions do not prove the UInt64 implementation, compiler, timer
 hardware, interrupt preservation, or whole-program correctness. Real target
 tests and structural/disassembly audits remain independently required. No
 scheduler, hard-real-time latency, board compatibility, G1, or G2 is claimed.
+
+-->

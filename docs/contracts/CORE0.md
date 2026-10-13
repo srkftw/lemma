@@ -1,3 +1,4 @@
+<!--
 # Core0 contract — versioned scalar profiles
 
 Status: Task 001 implements and tests the bounded `core0-v0.1` scalar membership
@@ -301,3 +302,5 @@ in accord with the pinned Lean semantics; do not assume C semantics.
 Use a Lean reference evaluator/model for the admitted operations and distinguish this
 reference from a proof that the compiler preserves semantics. That proof is not claimed
 by a passing finite differential corpus.
+
+-->

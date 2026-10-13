@@ -1,3 +1,4 @@
+<!--
 # Task006 machine sessions and matched development binding
 
 This increment implements resumable versions of the existing digital subset.
@@ -175,3 +176,5 @@ Watchdog, electrical power sequencing, brownout and remaining controls,
 nonvolatile recovery boot, companion/USB/radio transport, browser/Wasm, managed
 runtime and G5–G7 applications remain completion requirements. Their absence
 is not physics.
+
+-->

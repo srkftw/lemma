@@ -1,3 +1,4 @@
+<!--
 # Explicit Laboratory guest source archives
 
 The canonical native bundle can run an explicitly selected, already audited
@@ -60,3 +61,5 @@ observer correction makes that bound JSON-serializable. A separately invoked
 read-only retained observer qualified the actual UART, input, durable bytes and
 full pixels under `build/task006-array-oom-retained-a1`; it neither runs nor
 contacts a machine. It does not recover the lost in-memory host-duration report.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Task006 controller changes and physical observations
 
 The full-depth pen now uses sixteen independent synchronous 16-row banks,
@@ -118,3 +119,5 @@ python3 scripts/check_silicon.py --lane devices --work-dir build/silicon/devices
 nix-shell tooling/silicon/eda.nix --run 'python3 scripts/check_openroad_journal.py --output-dir build/silicon/journal-006-new'
 nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_synth.py --top lemma_pen --source sim/rtl/lemma_pen.sv --map --layout --output-dir build/silicon/physical/pen-006-new --deadline 900'
 ```
+
+-->

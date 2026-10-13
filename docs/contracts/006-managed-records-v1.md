@@ -1,3 +1,4 @@
+<!--
 # Managed ordinary records, version1
 
 `lemma-managed-records-v1` is an additive `core0-user-v0.2` bridge, not the
@@ -74,3 +75,5 @@ now have actual full RV64 artifact audit PASS receipts. The arithmetic compiled
 frame-chain bound is576 bytes. Their immutable prepared bundle is
 `build/native/task006-managed-a1`; the connected guest campaign is separate.
 See [the source/tool-bound receipt](../evidence/006-managed-records.json).
+
+-->

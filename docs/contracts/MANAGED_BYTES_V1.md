@@ -1,3 +1,4 @@
+<!--
 # Ordinary managed bytes v1
 
 The additive successor `core0-user-v0.4` inherits User virtual memory/syscalls,
@@ -53,3 +54,5 @@ arrays/strings/closures, a proof kernel, course packages, mathematical precision
 or complete G2. Changing the checker implementation requires a separate new
 execution registry/protocol/document version; existing Sums/Document4 identities
 and receipts remain unchanged.
+
+-->

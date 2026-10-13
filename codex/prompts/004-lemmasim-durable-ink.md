@@ -1,3 +1,4 @@
+<!--
 # Task 004 — LemmaSim: the first durable writing machine
 
 Authorized 2026-10-10 by the owner in the task conversation. Reviewed baseline:
@@ -66,3 +67,5 @@ outputs under ignored build/. README documents actual workflow/limits.
 Final handoff: exact commit/branch/PR, genuinely usable behavior, launch,
 observed evidence, limitations and every unrun/failed obligation. Task 004 does
 not complete all G/S gates, managed Lean, mathematics/tutor or physical equivalence.
+
+-->

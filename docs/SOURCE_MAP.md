@@ -1,3 +1,4 @@
+<!--
 # Source map
 
 Tasks001/002 implement the bounded Core0/compiler/machine foundation. Task003
@@ -50,3 +51,5 @@ contain compiled command handling and framing; Python only drives and checks it.
 scoped structured machine glue. `scripts/check_foundation.py` runs the gate suite;
 `scripts/qualify_foundation.py` revalidates retained evidence and repeat builds.
 These are bounded M-mode capabilities, not a managed runtime, scheduler or isolation.
+
+-->

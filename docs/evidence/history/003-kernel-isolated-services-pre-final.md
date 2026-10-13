@@ -1,3 +1,4 @@
+<!--
 # Task 003 kernel and isolated services
 
 Current accepted prefix: Gates A–J. The fresh J exit was observed at
@@ -125,3 +126,5 @@ software-only denials. Initialized ABI data and zero BSS were read by U code.
 The compact JSON and ignored full hash inventory bind the actual reports.
 Highest complete gate is D; syscalls, scheduling, capabilities, IPC, buffer
 service and full qualification remain unfinished at this checkpoint.
+
+-->

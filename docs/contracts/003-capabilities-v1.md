@@ -1,3 +1,4 @@
+<!--
 # Managed capabilities v1
 
 This is the Gate H source contract. Builds, artifact audits, source/model proofs
@@ -117,3 +118,5 @@ Current rebuilt H and earlier kernel closures use the additive fifth Reply mask
 recorded in `003-ipc-v1.md`; their audit pins all five values and the corresponding
 guard and object bytes. Historical four-value H artifacts retain their original
 source and audit bindings.
+
+-->

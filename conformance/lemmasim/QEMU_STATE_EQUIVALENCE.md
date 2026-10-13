@@ -1,3 +1,4 @@
+<!--
 # Pinned QEMU checkpoint observation
 
 `check_fast_state_equivalence.py` compares complete saved machine files. The
@@ -208,3 +209,5 @@ python3 conformance/lemmasim/check_fast_lifecycle.py \
 This compares same-backend authoritative checkpoint state. It neither defines
 cross-backend microstate migration nor closes the unmatched timing/ISA or
 unfinished whole-machine capabilities.
+
+-->

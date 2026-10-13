@@ -1,3 +1,4 @@
+<!--
 # Task006 native immutable package observation
 
 The package at `build/native/task006-canonical-a1` validates separately from
@@ -41,3 +42,5 @@ python3 -m unittest discover -s tests/lemmasim -p test_native_bundle.py -v
 Host runtime files remain
 external pinned dependencies; product boot, standalone distribution and
 project redistribution rights remain unresolved.
+
+-->

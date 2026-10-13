@@ -1,3 +1,4 @@
+<!--
 # USB6 RV64 opaque backing development slice
 
 `lemma-silicon-dev/0.6.0` is opt-in. Binding6 uses descriptor ABI7/features15,
@@ -67,3 +68,5 @@ length from carried request bytes. Packet-CRC, ACK-to-NAK and raw-order mutation
 now reject. No cold run was repeated for these observer corrections. Exact
 identities and remaining scope are recorded in
 [`006-usb6-rv64-peer.json`](../evidence/006-usb6-rv64-peer.json).
+
+-->

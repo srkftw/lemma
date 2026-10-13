@@ -1,3 +1,4 @@
+<!--
 # Pinned UART boundary for Core0 v0.5
 
 The machine is the existing one-hart QEMU `virt`, RV64 integer-only, `-bios none`
@@ -51,3 +52,5 @@ compiled checked-RAM API after the selected branch. Its response carries the act
 readback in bits 15..8 and the selector in bit zero. The host requires `0x5a00` with
 no raw UART prefix for false, and `0x3c01` with raw prefix `a5` for true. Normalized
 source and pre/post LLVM reachability separately check exclusive effect placement.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Native decoded USB host v2
 
 This additive host transport revision uses `USBHOST/2 PACKET_BYTES_DEV` and the
@@ -68,3 +69,5 @@ idle-policy fixture uses the host build's `.olean` modules and an unused
 `LEMMA_USB_IDLE_WORK` directory; its transcript is a host boundary fixture, not
 a guest or controller qualification. Exact source/tool identities and original
 failures are in the accompanying evidence receipt.
+
+-->

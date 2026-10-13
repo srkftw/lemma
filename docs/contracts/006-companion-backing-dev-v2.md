@@ -1,3 +1,4 @@
+<!--
 # Asynchronous opaque backing development binding v2
 
 This extends `006-companion-backing-dev-v1.md` with optional shared host byte-I/O
@@ -98,3 +99,5 @@ compiler/guest inputs and exact workload entries, and the current new backend
 sources/output. The preparation records the archive manifest hash and explicitly
 labels unchanged genuine guest reuse, never fresh target compilation. Ordinary
 builds without this option retain their strict current-tree guest checks.
+
+-->

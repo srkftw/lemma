@@ -1,3 +1,4 @@
+<!--
 # USB8 recorded native suffix checks
 
 USB8 inherits the container-6 raw continuation relation from
@@ -61,3 +62,5 @@ guest code. Both Ready and this prerequisite must fit the original
 1.6-billion-cycle/7200-second cold ceiling. The observer records the actual
 pre-fault receipt/Saved baselines and restart-thread exception; it never uses
 an unrelated initial Saved acknowledgment as evidence for the new stroke.
+
+-->

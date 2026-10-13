@@ -1,3 +1,4 @@
+<!--
 # Construction order
 
 All units start **planned**. Dependencies permit useful overlap; gates require their own
@@ -202,3 +203,5 @@ Gate changes require explicit evidence; no percentage-complete score substitutes
 
 The original G1-G7 identifiers, dependency graph and recorded evidence remain stable. In parallel with Core0 and boot work, build permanent **LemmaSim** as a first-class virtual embodiment of the finished Lemma One. A single canonical, versioned machine contract governs both embodiments; virtual motherboard, storage/power, pen/e-paper, distribution modes and cross-embodiment tests have independent exit evidence. See [LEMMASIM.md](LEMMASIM.md) and [../../LEMMA_MACHINE_CONTRACT.md](../../LEMMA_MACHINE_CONTRACT.md). Current status includes the observed Task004 bounded native notebook and real
 virtual devices; finished-machine and physical equivalence remain unverified.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Core0 kernel v0.3: LemmaSim device boundary
 
 This additive kernel-only profile preserves all older source-language profiles.
@@ -33,3 +34,5 @@ source-language operation. Undefined symbols, generated instructions, literal
 tables, ownership and stack accounting remain independently checked. This is
 accounting for pinned optimized artifacts, not a claim of general LLVM or Lean
 compiler correctness.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Fast private timed I/O replay v4
 
 The fast controller can consume the same LMIOLOG2 request/outcome format used
@@ -82,3 +83,5 @@ Lean-authored RV64 artifact; this build compiles the changed backend and does
 not claim fresh target compilation. Normal preparation without an archive
 continues to enforce current source identity. Retained failures and measured
 results belong to their exact reported sources and commands.
+
+-->

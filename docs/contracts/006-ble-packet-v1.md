@@ -1,3 +1,4 @@
+<!--
 # BLE sampled-bit packet component v1
 
 `lemma-ble-packet/1` is an executable **partial digital LE1M data-packet
@@ -133,3 +134,5 @@ maps return through their shared checked default. Byte, relocation, owner and
 companion-code equality checks remain required. Earlier single-table historical
 artifacts retain their own admission; this is not permission for arbitrary
 indirect control flow.
+
+-->

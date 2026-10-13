@@ -1,3 +1,4 @@
+<!--
 # Task006 observed implementation increment
 
 Branch `task/006-whole-machine-lemmasim`, [PR8](https://github.com/srkftw/lemma/pull/8),
@@ -260,3 +261,5 @@ first WRITE. The loopback browser launch now validates immutable bundle/guest/
 Wasm identities; six real HTTP responses and four focused host tests passed.
 The retained older browser canonical boundary remains not Ready. See
 [portable backing and local launch](006-browser-private-pending.json).
+
+-->

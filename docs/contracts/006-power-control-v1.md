@@ -1,3 +1,4 @@
+<!--
 # Lemma digital power/control v1
 
 `lemma-silicon-dev/0.3.0` extends the preserved 0.2 binding with a digital
@@ -93,3 +94,5 @@ request decisions (source1 raw button,2 authorized syscall; status0 accepted,
 196 BUSY,197 invalid), `0x441 WAKE_CAUSE EPOCH TIME 0` for wake, and
 `0x442 RESET_CAUSE EPOCH BUTTON_LEVEL 0` after validated boot initialization.
 They are guest UART output, not fabricated host completion records.
+
+-->

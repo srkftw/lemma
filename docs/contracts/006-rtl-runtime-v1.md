@@ -1,3 +1,4 @@
+<!--
 # LemmaSim reusable RTL runtime and checkpoint v1
 
 The host-only `sim/rtl/host/machine_runtime.*` owns one `Vlemma_soc`, its
@@ -139,3 +140,5 @@ file is explicitly partial. Phase counts and the ordered logical-port hash
 count source-clock beats; `drive_clocks` counts every asserted drive clock.
 These synthetic logical symbols do not establish electrophoretic response,
 voltage safety, panel compatibility or physical display timing.
+
+-->

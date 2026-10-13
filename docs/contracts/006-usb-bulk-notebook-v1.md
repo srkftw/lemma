@@ -1,3 +1,4 @@
+<!--
 # USB6 Surface-v2 notebook deployment
 
 `lemmasim-silicon-usb-bulk-notebook` and
@@ -106,3 +107,5 @@ actual progress. A launched campaign is not a Ready/Save/recovery result. The
 native4 a1 observer interruption and subsequent actual raw-host timeout at
 cycle 195000000 remain FAIL. The native7 a2 run uses the changed, qualified USB6
 Pending machine and complete 245-input native/257-input genuine guest archives.
+
+-->

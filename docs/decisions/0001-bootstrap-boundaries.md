@@ -1,3 +1,4 @@
+<!--
 # ADR 0001 — Preserve the freestanding boundary before building applications
 
 Status: baseline decision from the project requirements.
@@ -17,3 +18,5 @@ AST demonstration is not evidence of compiling ordinary elaborated Lean declarat
 
 A successful first slice is not completion of the full G1 conformance suite and is not
 proof of compiler correctness. Preserve the remaining Stage I obligations in the backlog.
+
+-->

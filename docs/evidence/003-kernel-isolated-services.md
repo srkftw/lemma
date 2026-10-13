@@ -1,3 +1,4 @@
+<!--
 # Task 003 — supervisor kernel and isolated volatile service
 
 Lemma now has a compiled RISC-V M/S/U system with reusable owned memory, Sv39 address spaces, task scheduling, capabilities and copied blocking IPC. Separately linked U programs operate a U-mode Buffer Server while an independent CPU-bound competitor is preempted. The practical CLI supports binary create/write/read/append/status/destroy operations; a separate client exercises isolation and progress. The Server owns real allocated backing pages, enforces authenticated callers and leases, and reports explicit transport and application errors. Buffers are volatile; restart loses their contents.
@@ -81,3 +82,5 @@ The complete [base hash inventory](003-kernel-isolated-services-hashes.json) and
 The original maintained [pre-final Markdown](history/003-kernel-isolated-services-pre-final.md) and [pre-final JSON](history/003-kernel-isolated-services-pre-final.json) are preserved verbatim, with SHA256 `22403e45f128483c585f2746ab4f121fc98e4c5a46b8dafb5ac5c89bfcc5ccc4` and `be42279f0f7af6c4223a9b2ab3e00cb906e0b26ac92e6a37ec7adb11089254e0`. Their historical observations keep their original scope.
 
 Current-base14 artifact review is complete: six lanes index SHA256 `9a82c6937df7728244ec96ef98797907f6c5c7000894218d2b69a15b29c0f64a`, architecture/source-negative index `65d2b1332054613db949e34fd39cac728da3e736bef2ec9753a80be47741d913`. They bind all eight exact PR artifact IDs and actual checkout `4f47423e19321356d44c35ce8e4643421990ad32` / tree `7a3a5d25c7bdb0e599e8c1ade0771f5533c09224`; both run API records have head14 and eight successful jobs. A separate read-only binding review rehashed 13,897 declared downloaded files / 1,172,732,472 bytes. Remote process absence cannot be inspected locally, and unuploaded legacy olean bytes cannot be rehashed; exact recorded wait/reap evidence, genuine source/elaboration commands and completed remote jobs retain those limits. Original mutant inner failures and external-reader failures remain unchanged.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Power-v2 connected digital qualification
 
 `006-power-safety.json` binds the observed artifacts and exact source/tool
@@ -76,3 +77,5 @@ image authentication, A/B update or notebook document-preservation scenario is
 qualified here. QEMU 0.4 admission remains rejected. Wasm, physical reset-domain
 crossings, actual retention cells and electrical supply qualification remain
 separate. The ordinary notebook continues using its established 0.3 profile.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Independent boot backing I/O, version 1
 
 Profile `lemma-silicon-dev/0.7.0` gives BootNV a separate 65,544-sector,
@@ -74,3 +75,5 @@ nix-shell tooling/silicon/sim.nix --run \
 
 This check exercises literal controller state, actual POSIX failures and exact
 native continuation. It does not execute a product ROM or qualify guest boot.
+
+-->

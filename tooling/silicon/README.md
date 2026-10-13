@@ -1,3 +1,4 @@
+<!--
 The silicon EDA environment is separate from the accepted Lean/LLVM/QEMU shell.
 It imports the existing `flake.lock` nixpkgs revision; it does not upgrade that
 lock or link any EDA runtime into RV64 firmware. `physical-lock.json` records the
@@ -93,3 +94,5 @@ patch propagates completed instruction/load/store responses into the existing
 PMA/PMP/HPTW access-fault path, holding faults while the pipeline stalls. The
 project fabric implements the two-cycle AHB error response. These are modified
 open RTL sources under their preserved notices, hashed with the patch script.
+
+-->

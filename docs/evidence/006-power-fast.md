@@ -1,3 +1,4 @@
+<!--
 # Task006 scoped Fast Power-v2 qualification
 
 The actual archived, genuinely elaborated/checked/LLVM-lowered Power probe from
@@ -67,3 +68,5 @@ python3 scripts/check_fast_power_clock_checkpoint.py --work-dir build/power/phas
 This probe performs no notebook save. Power-v2 notebook policy, product ROM/A-B
 boot/update, general fast timing/cached-state continuation and physical
 reset-domain/CDC/power qualification remain separate unfinished obligations.
+
+-->

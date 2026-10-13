@@ -1,3 +1,4 @@
+<!--
 # Lemma One canonical machine contract
 
 Status: **normative architecture target, not hardware-conformance evidence**. Version: **draft 0.1** (2026-10-09).
@@ -64,3 +65,5 @@ For each test: record machine version, firmware/OS hash, simulator build, device
 - **Explicit exclusion:** claims of thermals, battery life, electromagnetic compatibility, panel feel, mechanical fit and material behavior require separate physical validation.
 
 See [the simulator plan](docs/plan/LEMMASIM.md), [sim/](sim/README.md) and [conformance/](conformance/README.md).
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Lemma digital power/control v2
 
 This opt-in `lemma-silicon-dev/0.4.0` successor preserves the memory, ISA,
@@ -98,3 +99,5 @@ arbitrary cached-state continuation remains open. Existing QEMU profile0.3 is
 unaffected. The ordinary 0.3 notebook remains the qualified product path;
 Power-v2 circuit/native/Lean and scoped fast qualification are separate. Watchdog support does not close product
 boot/update, physical reset-domain/CDC or electrical power qualification.
+
+-->

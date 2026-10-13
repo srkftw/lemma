@@ -1,3 +1,4 @@
+<!--
 # Task and scheduling contract v 1
 
 This contract extends the Task 003 syscall/ownership boundary with compiled Lean
@@ -81,3 +82,5 @@ return 16, and unsupported control returns 17. These are supervisor development
 commands, not grants available to user programs. K 1 records are exact 88-byte
 frames; the host controller accounts for their actual raw bytes and kills and
 reaps the continuous guest after its finite observation protocol.
+
+-->

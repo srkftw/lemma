@@ -1,3 +1,4 @@
+<!--
 # Task 003 bounded buffer service v1 — construction design
 
 This is the agreed Gate J interface design. It is not a gate pass, a compiled
@@ -294,3 +295,5 @@ binary envelopes, artifact/source/runner hashes, live-before-cleanup state and
 actual kill/reap results. A malformed transcript, unexplained suffix, missing
 case, timeout or missing evidence is a failure. This design document establishes
 none of those observations.
+
+-->

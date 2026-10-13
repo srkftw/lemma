@@ -1,3 +1,4 @@
+<!--
 # Gate 7 synchronous-trap construction audit
 
 Status: synchronous-trap acceptance passed at clean implementation
@@ -143,3 +144,5 @@ conditional local policy lemmas; their dependencies are `propext` and
 compiler correctness. Register/canary target tests, static audits, local lemmas,
 and emulator behavior remain distinct evidence. No scheduler, privilege
 transition, memory isolation, physical-board result, or G1/G2 completion follows.
+
+-->

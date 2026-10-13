@@ -1,3 +1,4 @@
+<!--
 # Isolated exact arithmetic IPC v1
 
 This is an additive scalar Lean software service on `lemma-silicon-dev/0.3.0`.
@@ -75,3 +76,5 @@ Tests of host RAM Actions, emitted-code audits, actual RV64 isolation and exact
 RTL timing are separate qualifications. QEMU counters are instruction counting,
 not canonical pipeline/bus timing. This service does not close the known QEMU
 cached-state continuation hole or portable microstate checkpoint gate.
+
+-->

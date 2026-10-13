@@ -1,3 +1,4 @@
+<!--
 # LemmaSim host hardware boundary
 
 `lemma_model.c/.h` implement only project-owned pen/paper register transitions,
@@ -171,3 +172,5 @@ The explicit QEMU `qtest` accelerator executes no CPU. It may instantiate the
 matched controller inventory for bounded literal DMA/protocol fixtures; that
 mode makes no ISA, guest execution, or whole-machine claim. Actual fast guest
 runs retain the declared CPU admission checks.
+
+-->

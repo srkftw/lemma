@@ -1,3 +1,4 @@
+<!--
 # Task 003 session state
 
 - Assignment: `codex/prompts/003-kernel-isolated-services.md`.
@@ -1382,3 +1383,5 @@ tree, then observe actual post-merge main CI. A queued merge or command exit0
 does not complete this publication. Preserve task branches, local work and
 all ignored evidence worktrees; leave USGCE untouched. Do not start Task004,
 the managed runtime, persistence, networking or another implementation task.
+
+-->

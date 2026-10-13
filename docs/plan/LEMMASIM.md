@@ -1,3 +1,4 @@
+<!--
 # LemmaSim first-class construction workstream
 
 Status: partial — Task006 adds persistent native sessions, backend-private checkpoints, a canonical-capacity fast binding, synthetic digital panel sequencing and Lean-controlled cooperative power to the earlier notebook. Canonical RTL cold notebook acceptance remains blocked by its ready deadline. Finished-machine and physical conformance remain incomplete. The original G1-G7 gates and existing 56 software / six physical unit identifiers remain stable. This cross-cutting workstream runs **alongside** them; it is not a claim of completed implementation.
@@ -70,3 +71,5 @@ model or an interface specification cannot close a later column.
 Standalone pen mapping and improved global-route estimates do not close the
 physical column. Detailed routing, complete SG13G2 rule coverage, process
 DRC/LVS, extraction and post-route timing remain separate required results.
+
+-->

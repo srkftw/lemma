@@ -1,3 +1,4 @@
+<!--
 # Owned object arena v1
 
 `Lemma.User.Runtime.Arena` is a bounded runtime foundation executed by ordinary
@@ -87,3 +88,5 @@ nix develop --no-write-lock-file --command lake env lean tests/mathematics/Exact
 
 The fixture's OS model is test evidence, not target execution. A strict audited
 RV64 build and actual guest course workflow require their own observed results.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Task 006 — whole-machine LemmaSim and controller closure
 
 The owner assigned a multi-stage implementation of the whole digital Lemma One,
@@ -71,3 +72,5 @@ Commit coherent increments and publish a draft PR against current main with
 actual workflows, launch/snapshot/restore/replay/transport commands, performance,
 observed results and separate remaining digital/physical gaps. **Do not merge.**
 Prior tasks' merge authorizations do not apply here.
+
+-->

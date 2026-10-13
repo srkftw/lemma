@@ -1,3 +1,4 @@
+<!--
 # Product boot and recovery v1
 
 This additive software/hardware contract uses `core0-boot-v0.1` and
@@ -356,3 +357,5 @@ python3 scripts/lemmasim session-control --session-dir build/boot/product9-sessi
 Session run requests execute real cycles. The ROM handoff does not synthesize
 Notebook Ready. Snapshots preserve the actual execution boundary and both
 private backing namespaces; reopening a snapshot is distinct from cold recovery.
+
+-->

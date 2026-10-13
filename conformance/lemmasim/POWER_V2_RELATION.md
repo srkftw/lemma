@@ -1,3 +1,4 @@
+<!--
 # Power-v2 partial fast/RTL relation
 
 The reference is profile `lemma-silicon-dev/0.4.0` RTL. Its immutable audited
@@ -57,3 +58,5 @@ and controller observations after isolated restore. The snapshot is observed
 without a fence, guest mutation or clock advance. Stable immutable fetches in
 this short suffix do not exercise changed page tables or stale instruction
 visibility; those cached-state obligations remain open.
+
+-->

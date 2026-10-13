@@ -1,3 +1,4 @@
+<!--
 # Native asynchronous medium boundary v3
 
 This extends the development backing binding in v2 to the reusable RTL
@@ -66,3 +67,5 @@ execution, native canonical notebook Ready or native companion cold recovery.
 The separate v2 real RV64 guest campaign establishes notebook ink/save/recovery
 through this same shared transport on the fast backend. Cross-backend timing and
 QEMU cached-translation/instruction-visibility continuation remain open.
+
+-->

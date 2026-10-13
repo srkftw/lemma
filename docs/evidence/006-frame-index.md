@@ -1,3 +1,4 @@
+<!--
 # Task006 frame allocation work reduction
 
 The maintained Lean allocator now uses `lemma-frame-index/1`, documented in
@@ -343,3 +344,5 @@ destroy reaped only the campaign's owner/runtime PIDs; `terminal-cleanup.json`
 retains that result. The separately running paired-transfer/Arithmetic A4
 campaign is unaffected. Partial upload is not scenario A or an independently
 proved whole-boot bound.
+
+-->

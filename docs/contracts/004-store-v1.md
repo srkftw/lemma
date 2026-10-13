@@ -1,3 +1,4 @@
+<!--
 # Guest record store v1
 
 Status: compiled Lean production library, separately linked service source and
@@ -308,3 +309,5 @@ memory/sector effect harness and export durable disk bytes. A separately written
 Python observer parses those bytes without calling the production recovery code.
 These checks are distinct from LLVM/RV64 object closure and actual kernel-device
 execution. Run identities and retained reports must keep that distinction.
+
+-->

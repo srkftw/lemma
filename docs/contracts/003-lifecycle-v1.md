@@ -1,3 +1,4 @@
+<!--
 # Task 003 lifecycle observation contract v1
 
 The maintained Task/Scheduler policies remove a faulted task from lookup and
@@ -52,3 +53,5 @@ output and stderr, exact source/image/runner hashes and live-kill/reap evidence.
 Its arithmetic reference and malformed-evidence tests are host tests; actual
 runtime acceptance remains a separately recorded observation, not a compiler
 correctness or physical-board proof.
+
+-->

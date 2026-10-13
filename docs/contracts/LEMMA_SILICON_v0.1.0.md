@@ -1,3 +1,4 @@
+<!--
 # Lemma Silicon Specification v0.1.0
 
 **Status:** normative architectural direction; **not** a verified physical design, approved MPW submission, or demonstration of device parity.  
@@ -105,3 +106,5 @@ Implementation effort is measured by running guest functionality and physical de
 - SG13G2 digital timing and RF viability, open SRAM, full licensing/signoff, shuttle/package eligibility and die area.
 
 **Do not silently answer an open item with an invented number.** Prefer a demonstrable, versioned minimal machine whose functionality can grow without contradicting the canonical contract.
+
+-->

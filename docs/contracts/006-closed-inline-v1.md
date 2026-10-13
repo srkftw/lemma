@@ -1,3 +1,4 @@
+<!--
 # Checked canonical call-boundary optimizations
 
 The two independently catalogued optimizations are disabled by default.
@@ -46,3 +47,5 @@ The managed successor additionally selects the separate, default-off
 `lemma-checked-user-word-wrapper-v1` contract described in
 [006-managed-notebook-deployment-v1.md](006-managed-notebook-deployment-v1.md).
 It changes no eligibility rule or complete preimage in either contract above.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # LemmaSim owned memory and stacks v1
 
 Task 004's `core0-kernel-v0.3` compilation floor permits the reserved 32 MiB
@@ -338,3 +339,5 @@ is retained for all other descriptor/ordinal inputs. Direct status-zero tests
 and explicit numeric slot expressions permit LLVM to eliminate redundant
 helper calls and per-read interval checks; they do not retain descriptor
 validation or replace any live authority or duplicate check.
+
+-->

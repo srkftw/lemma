@@ -1,3 +1,4 @@
+<!--
 # LemmaSim external backing-I/O v1
 
 The host-only [shared boundary](../../sim/host/backing_io.h) carries opaque bytes;
@@ -105,3 +106,5 @@ This is host-boundary evidence; it does not establish guest cold recovery,
 QEMU parity, USB/companion completion, browser distribution or physical storage.
 
 The native Pending checkpoint successor is specified in [v5](006-companion-backing-dev-v5.md); the synchronous v1 observations above retain their original scope.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Durable execution identity v3
 
 This additive software format preserves the original exact/1 semantic goal,
@@ -73,3 +74,5 @@ qualification. The new connected acceptance receipt is added only after the
 actual source-bound guest workflow has completed. General managed Lean,
 proof-kernel/environment closure, authenticated media and resource-failure
 history remain unfinished.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # BLE machine checkpoint extension v0.2
 
 This extends the opt-in0.5 hardware binding in `006-ble-machine-v0.1.md` with native checkpoint container5. The hardware, genuine RV64 guest and manual unauthenticated radio profile are unchanged. Container4 and its qualified outcomes remain historical results tied to their exact implementation; the new runtime rejects them rather than guessing missing state. Historical bindings retain their own container authority.
@@ -13,3 +14,5 @@ An absent, incomplete, incompatible, corrupt or nonmatching tape does not resume
 The actual result in `docs/evidence/006-ble-pending.json` snapshots startup Pending atcycle0 and data Pending atcycle7,897,000, lets the original continue3000cycles while stillPending, releases an actual hosted Lean frame, exercises lost-ACK retry, then destroys the original peer. Two private forks consume a privately copied tape and reproduce byte-exact authoritative suffixes of8,990,000 and1,093,000cycles. Changed opaque bytes and accepted phases reject before any clock/capture change. The whole-machine generated bitstreams are independently checked. Snapshot times were0.715/0.898s and the data checkpoint was145,181,993bytes.
 
 Build/preparation follows the native commands in v0.1 with unused outputs and the current genuine audited BLE guest. `python3 scripts/check_guest_ble_pending.py --work-dir UNUSED_OUTPUT --deadline 360` creates an owned raw frame-delay fixture and performs the complete qualification. The retained a1 execution used `--attach` to consume its already source-validated owner and startup snapshot, as listed in the receipt. Developer restore then uses the ordinary `restore --from` and `session-control --request '{"action":"ble-outcomes","path":"ABSOLUTE_TAPE_PATH"}'` before `run`. The fork requires no live peer executable.
+
+-->

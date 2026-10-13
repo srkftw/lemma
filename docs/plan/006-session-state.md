@@ -1,3 +1,4 @@
+<!--
 # Task006 checkpoint
 
 Task006 remains a substantial partial increment, not a completed Lemma One.
@@ -559,3 +560,5 @@ reproduces the old failure, recomputes the exact emitted LLVM diagnostic gates
 and rejects changed gate/source symbols. The explicit host build and genuine
 execution-identity fixture passed. These bounded corrections do not pass the
 original matrix or skipped host suites; a fresh candidate CI run is required.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Evidence report: <unit or slice>
 
 Status: not-run / partial / passed for the stated scope / failed / blocked.
@@ -25,3 +26,5 @@ versus unoptimized results, repeated clean builds, artifact audits and checksums
 
 Unimplemented features, unsupported semantics, test limitations, assumptions and the
 next smallest construction task. Do not mark the entire gate passed from one slice.
+
+-->

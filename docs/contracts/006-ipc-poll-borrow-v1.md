@@ -1,3 +1,4 @@
+<!--
 # Same-Action IPC polling base, version1
 
 `lemma-ipc-poll-borrow-v1` preserves the IPC-v1 ABI, metadata, completion,
@@ -33,3 +34,5 @@ whole memory and the ordered request trace, with only the redundant complete
 base-validation trace removed. Read/write/time failures, malformed directories,
 bank duplicates, metadata and task mutations are covered. These component
 checks establish neither RTL timing nor complete cold boot acceptance.
+
+-->

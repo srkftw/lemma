@@ -1,3 +1,4 @@
+<!--
 # Surface-v2 bounded paper uploads
 
 This is an additive software ABI on the existing paper controller. A separately
@@ -76,3 +77,5 @@ prefix. Primitive-operation counts measure the Action work only; they are not
 RV64 cycles, processor timing parity, notebook Ready or physical panel evidence.
 Whole-image checked lowering, selected dispatcher/deployment admission and
 actual guest notebook performance are separate required qualifications.
+
+-->

@@ -1,3 +1,4 @@
+<!--
 # Managed sums v1
 
 `core0-user-v0.3` adds `lemma-managed-sums-v1` on the existing isolated User
@@ -100,3 +101,5 @@ The source media above are retained development artifacts created by real guest
 formatting/Saves. The observers never format or modify those originals. Product
 boot, browser interaction, snapshots, radio, teacher package authoring and tutor
 transport remain separately qualified paths.
+
+-->

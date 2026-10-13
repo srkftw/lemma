@@ -1,3 +1,4 @@
+<!--
 # Task004 checkpoint
 
 The primary durable-notebook slice is complete and ready for review. Branch
@@ -36,3 +37,5 @@ JSON, and README for launch/replay/copy/archive. Publish the report-only commit
 and its own required CI, keeping PR draft for review. No merge/settings changes;
 G4/S, managed runtime, general filesystem, tutor/browser, snapshots and physical
 conformance remain broader unfinished work.
+
+-->

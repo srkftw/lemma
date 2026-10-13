@@ -1,3 +1,4 @@
+<!--
 # Target ABI — G1 proposal
 
 Status: Task 001 validates the scalar RV64/LP64 bootstrap profile against the pinned
@@ -121,3 +122,5 @@ No unresolved symbols is not enough: known, statically linked unwanted libraries
 
 Consult the RISC-V psABI and LLVM manuals listed in `docs/SOURCES.md`; freeze the exact
 versions and relevant rules in task 001's audit report.
+
+-->

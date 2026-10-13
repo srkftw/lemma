@@ -1,3 +1,4 @@
+<!--
 # Task006 companion opaque backing development increment
 
 This increment implements a separate persistent hosted-Lean peer and client,
@@ -254,3 +255,5 @@ check. The changed replay backend is bound by its exact runtime identity.
 See [the v4 boundary](../contracts/006-companion-backing-dev-v4.md).
 QEMU omitted cached state, pending external fork continuation, explicit peer
 retry-control replay, USB/radio and production boot remain unfinished.
+
+-->

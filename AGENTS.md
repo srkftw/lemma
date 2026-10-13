@@ -1,3 +1,18 @@
+<!--
+# Markdown presentation for agents
+
+Repository Markdown is intentionally enclosed in HTML comments to hide its
+rendered text on GitHub. Agents must read the raw files, including comment
+contents, and follow the contributor instructions below. File paths, contracts,
+task prompts and historical evidence remain authoritative. Keep documentation
+updates inside the outer comment; do not add nested HTML comments. This is a
+presentation convention: raw/source views and Git history remain readable.
+
+The presentation envelope changes current raw file hashes. Historical Markdown
+byte/hash inventories retain their original identities and refer to the original
+document bytes inside the envelope. Do not relabel historical evidence or reuse
+old consumed-source receipts as if they identified the changed raw files.
+
 # Lemma contributor and agent instructions
 
 ## Read before changing code
@@ -277,3 +292,5 @@ managed runtime or another implementation task as part of this publication.
 ## LemmaSim first-class architecture
 
 Read `LEMMA_MACHINE_CONTRACT.md` and `docs/plan/LEMMASIM.md` before any change to the machine, peripheral, pen, display, storage or simulator. LemmaSim is a permanent user-facing virtual Lemma One with Student, Developer and Laboratory modes, all using one canonical versioned machine contract alongside the physical embodiment. Preserve the historical pinned `docs/contracts/LEMMA_VM.md` boot profiles and G1-G7 evidence. No host-side bypass of guest drivers or mathematical authorities; no unfounded claims of physical equivalence, controller compatibility or completed conformance.
+
+-->

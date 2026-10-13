@@ -1,3 +1,4 @@
+<!--
 # Trust and dependency manifest
 
 Status: required audit structure. Task 001 implements executable scalar-image audit
@@ -117,3 +118,5 @@ supplier NDA files and personal data out of evidence bundles.
 
 `tooling/toolchain-lock.json` starts unresolved. It is not a reproducible-build lock until
 task 001 replaces each required entry with a verified immutable identity and commands.
+
+-->
