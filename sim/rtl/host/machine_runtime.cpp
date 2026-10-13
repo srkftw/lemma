@@ -103,8 +103,8 @@ Machine::Machine(const Options&o):context(new VerilatedContext),options(o){conte
 #else
   int fd=open(o.usb_capture_path.c_str(),O_CREAT|O_EXCL|O_WRONLY,0600);if(fd<0)throw std::runtime_error("USB capture requires a new file");close(fd);
   usb_capture.open(o.usb_capture_path,std::ios::binary);if(!usb_capture)throw std::runtime_error("USB capture open");
-  usb_capture<<"LMUSBRW2 "<<LEMMA_RUNTIME_IDENTITY<<'\n';usb_capture_bytes=74;
-  usb_peer=std::make_unique<UsbProcessTransport>(o.usb_peer_executable,o.usb_peer_arguments,o.usb_peer_timeout_ms);
+  usb_capture<<"LMUSBRW2 "<<LEMMA_RUNTIME_IDENTITY<<'\n';usb_capture.flush();if(!usb_capture)throw std::runtime_error("USB capture header publication failed");usb_capture_bytes=74;
+  s.usb_attached=1;usb_peer=std::make_unique<UsbProcessTransport>(o.usb_peer_executable,o.usb_peer_arguments,o.usb_peer_timeout_ms);
 #endif
  }else if(!o.usb_peer_arguments.empty()||!o.usb_capture_path.empty())throw std::runtime_error("USB capture/arguments require live peer");
 
@@ -190,64 +190,123 @@ void Machine::retry_backing(){
 }
 void Machine::block_row(uint64_t c,const char*event,unsigned write,unsigned size,uint64_t address,uint64_t raw,uint64_t wdata,uint64_t rdata,unsigned error){if(!block_trace.is_open())return;if(s.block_rows>=4096){s.block_omitted++;return;}s.block_rows++;auto*r=model->rootp;block_trace<<c<<','<<event<<','<<write<<','<<size<<",0x"<<std::hex<<address<<",0x"<<raw<<",0x"<<wdata<<",0x"<<rdata<<std::dec<<','<<error<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__state)<<','<<r->lemma_soc__DOT__blockdev__DOT__status<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_num<<','<<r->lemma_soc__DOT__blockdev__DOT__queue_ready<<','<<r->lemma_soc__DOT__blockdev__DOT__interrupt_status<<','<<unsigned(r->lemma_soc__DOT__blockdev__DOT__result)<<'\n';}
 
-void Machine::usb_record(uint64_t tag,uint64_t id,const std::string& frame){
- if(!usb_capture||frame.size()>160||usb_capture_bytes+frame.size()+80>64*1024*1024)throw std::runtime_error("USB capture resource/framing");
- usb_capture<<s.cycle<<' '<<tag<<' '<<id<<' '<<frame<<'\n';usb_capture.flush();if(!usb_capture)throw std::runtime_error("USB capture write");usb_capture_bytes+=frame.size()+80;
+static std::string usb_row_text(const UsbRawRecord&r){return std::to_string(r.cycle)+" "+std::to_string(r.tag)+" "+std::to_string(r.id)+" "+r.frame+"\n";}
+static uint64_t usb_hash(uint64_t hash,const UsbRawRecord&r){for(unsigned char c:usb_row_text(r)){hash^=c;hash*=1099511628211ULL;}return hash;}
+static void usb_command_shape(const std::string&frame){
+ if(frame=="USBHOST/2 PACKET_BYTES_DEV"||frame=="RECV")return;
+ if(frame=="RESET 5000000")return;
+ if(frame.rfind("SEND ",0)==0){auto packet=hexbytes(frame.substr(5));if(packet.empty()||packet.size()>67)throw std::runtime_error("USB raw packet byte bound");return;}
+ if(frame.rfind("WAIT ",0)==0){auto clocks=number(frame.substr(5));if(clocks&&clocks<=100000&&frame=="WAIT "+std::to_string(clocks))return;}
+ throw std::runtime_error("USB raw command framing");
 }
-bool Machine::usb_reply(const std::string& frame){
- if(!usb_command)throw std::runtime_error("USB raw reply without request");
- usb_record(1,usb_command->id,frame);
+static UsbReplayTape usb_read_tape(const std::string&path,bool replay){
+ auto size=std::filesystem::file_size(path);if(size>64*1024*1024||size<74)throw std::runtime_error("USB raw tape resource bound");
+ std::ifstream f(path,std::ios::binary);std::string line;std::getline(f,line);
+ if(line!=(replay?"LMUSBRP1 ":"LMUSBRW2 ")+std::string(LEMMA_RUNTIME_IDENTITY))throw std::runtime_error("USB raw tape implementation identity differs");
+ UsbReplayTape tape;
+ if(replay){std::getline(f,line);if(line.rfind("HORIZON ",0)!=0)throw std::runtime_error("USB tape lacks observational horizon");tape.horizon=number(line.substr(8));if(line!="HORIZON "+std::to_string(tape.horizon)||tape.horizon>UINT64_MAX/2)throw std::runtime_error("USB tape horizon invalid");}
+ uint64_t next=1,active=0,prior=0,last_reply=0,last_reply_cycle=0,hash=14695981039346656037ULL;bool terminal=false,footer=false;
+ while(std::getline(f,line)){
+  if(replay&&line.rfind("CHECKSUM ",0)==0){if(footer||f.eof()||line!="CHECKSUM "+std::to_string(number(line.substr(9)))||number(line.substr(9))!=usb_hash(hash,{tape.horizon,3,0,"HORIZON"}))throw std::runtime_error("USB raw tape checksum differs");footer=true;continue;}
+  if(f.eof()||line.size()>240||tape.rows.size()>=1000000||terminal||footer)throw std::runtime_error("USB raw tape framing/order");
+  auto a=line.find(' '),b=a==std::string::npos?a:line.find(' ',a+1),c=b==std::string::npos?b:line.find(' ',b+1);
+  if(c==std::string::npos)throw std::runtime_error("USB raw tape row fields");
+  UsbRawRecord r{number(line.substr(0,a)),number(line.substr(a+1,b-a-1)),number(line.substr(b+1,c-b-1)),line.substr(c+1)};
+  if(r.frame.empty()||r.frame.size()>160||r.frame.find_first_of("\r\0",0,2)!=std::string::npos||r.cycle<prior||(replay&&r.cycle>=tape.horizon)||usb_row_text(r)!=line+'\n')throw std::runtime_error("USB raw tape row bound/order");
+  prior=r.cycle;
+  if(r.tag==0){if(active||r.id!=next||next==UINT64_MAX||r.cycle%1000)throw std::runtime_error("USB raw tape request order");usb_command_shape(r.frame);active=next++;}
+  else if(r.tag==1){if(!active||r.id!=active)throw std::runtime_error("USB raw tape reply order");last_reply=active;last_reply_cycle=r.cycle;active=0;}
+  else if(r.tag==2){if(r.id!=active&&!(r.id==last_reply&&r.cycle==last_reply_cycle)&&r.id)throw std::runtime_error("USB raw tape failure order");terminal=true;}
+  else throw std::runtime_error("USB raw tape event kind");
+  hash=usb_hash(hash,r);tape.rows.push_back(std::move(r));
+ }
+ if(!f.eof()||(replay&&!footer))throw std::runtime_error("USB raw tape read/footer failed");return tape;
+}
+void Machine::usb_validate_tape(const UsbReplayTape&tape)const{
+ if(s.cycle>tape.horizon||s.usb_records>tape.rows.size())throw std::runtime_error("USB replay does not cover checkpoint/horizon");
+ uint64_t hash=14695981039346656037ULL;
+ for(uint64_t i=0;i<s.usb_records;i++)hash=usb_hash(hash,tape.rows[i]);
+ if(hash!=s.usb_record_hash||(s.usb_records&&tape.rows[s.usb_records-1].cycle>=s.cycle)||(s.usb_records<tape.rows.size()&&tape.rows[s.usb_records].cycle<s.cycle))throw std::runtime_error("USB replay accepted prefix differs");
+ uint64_t next=1,active=0;std::string frame;bool terminal=false;
+ for(uint64_t i=0;i<s.usb_records;i++){const auto&r=tape.rows[i];if(r.tag==0){active=r.id;frame=r.frame;next++;}else if(r.tag==1){active=0;frame.clear();}else{active=0;frame.clear();terminal=true;}}
+ if(next!=s.usb_next_id||terminal!=bool(s.usb_terminal)||active!=(s.usb_command?s.usb_command->id:0)||(active&&frame!=s.usb_command->frame))throw std::runtime_error("USB replay logical request namespace differs");
+}
+void Machine::export_usb_replay(const std::string&path)const{
+ if(!BINDING_USB_ENABLED||BINDING_BOOT_NV_ENABLED||!s.usb_attached||usb_replaying||!usb_capture.is_open())throw std::runtime_error("USB outcome export requires the original live USB6 capture");
+ auto tape=usb_read_tape(options.usb_capture_path,false);tape.horizon=s.cycle;usb_validate_tape(tape);
+ // Every accepted row was flushed before machine admission. This copy observes
+ // the completed cycle only; it never polls, drains or sends an external reply.
+ int fd=open(path.c_str(),O_WRONLY|O_CREAT|O_EXCL,0600);if(fd<0)throw std::runtime_error("USB tape destination exists or cannot be created");
+ try{std::string prefix="LMUSBRP1 "+std::string(LEMMA_RUNTIME_IDENTITY)+"\nHORIZON "+std::to_string(s.cycle)+"\n";auto put=[&](const std::string&text){size_t done=0;while(done<text.size()){auto n=write(fd,text.data()+done,text.size()-done);if(n<0&&errno==EINTR)continue;if(n<=0)throw std::runtime_error("USB tape export write failed");done+=size_t(n);}};put(prefix);for(const auto&r:tape.rows)put(usb_row_text(r));put("CHECKSUM "+std::to_string(usb_hash(s.usb_record_hash,{s.cycle,3,0,"HORIZON"}))+"\n");if(fsync(fd))throw std::runtime_error("USB tape artifact barrier failed");if(close(fd)){fd=-1;throw std::runtime_error("USB tape export close failed");}fd=-1;}catch(...){if(fd>=0)close(fd);unlink(path.c_str());throw;}
+}
+void Machine::bind_usb_replay(const std::string&path){
+ if(!BINDING_USB_ENABLED||BINDING_BOOT_NV_ENABLED||!s.isolated||!s.usb_attached||(!usb_fork_suspended&&!usb_replaying))throw std::runtime_error("USB outcomes require an isolated USB6 raw replay fork");
+ auto tape=usb_read_tape(path,true);usb_validate_tape(tape);usb_replay=std::move(tape);usb_replay_cursor=s.usb_records;usb_replaying=true;usb_fork_suspended=false;
+}
+void Machine::usb_record(uint64_t tag,uint64_t id,const std::string&frame){
+ UsbRawRecord r{s.cycle,tag,id,frame};
+ if(frame.size()>160||s.usb_records==UINT64_MAX)throw std::runtime_error("USB capture resource/framing");
+ if(usb_replaying){if(usb_replay_cursor>=usb_replay.rows.size()||usb_row_text(usb_replay.rows[usb_replay_cursor])!=usb_row_text(r))throw std::runtime_error("USB replay raw outcome bytes/boundary differ");usb_replay_cursor++;}
+ else{if(!usb_capture||usb_capture_bytes+frame.size()+80>64*1024*1024)throw std::runtime_error("USB capture resource/framing");usb_capture<<usb_row_text(r);usb_capture.flush();if(!usb_capture)throw std::runtime_error("USB capture write");usb_capture_bytes+=frame.size()+80;}
+ s.usb_records++;s.usb_record_hash=usb_hash(s.usb_record_hash,r);
+}
+bool Machine::usb_reply(const std::string&frame){
+ if(!s.usb_command)throw std::runtime_error("USB raw reply without request");usb_record(1,s.usb_command->id,frame);
+ if(usb_replaying){
+  if(usb_replay_cursor<usb_replay.rows.size()){const auto&r=usb_replay.rows[usb_replay_cursor];if(r.tag==2&&r.cycle==s.cycle){usb_disconnect(r.frame);return false;}}
+ }else{
 #ifndef __EMSCRIPTEN__
- try{usb_peer->reply(usb_command->id,frame);}catch(const UsbTransportFailure&e){usb_disconnect(e.what());return false;}
+  try{usb_peer->reply(s.usb_command->id,frame);}catch(const UsbTransportFailure&e){usb_disconnect(e.what());return false;}
 #else
- throw std::runtime_error("portable USB process reply unavailable");
+  throw std::runtime_error("portable USB process reply unavailable");
 #endif
- usb_command.reset();usb_incoming.clear();usb_cursor=0;usb_until=0;return true;
+ }
+ s.usb_command.reset();s.usb_incoming.clear();s.usb_cursor=0;s.usb_until=0;return true;
 }
 void Machine::usb_disconnect(const std::string&reason){
- // Capture the actual observed transport failure before any digital input or
- // queue changes. Capture failure itself rejects; it cannot hide ambiguity.
- usb_record(2,usb_command?usb_command->id:0,reason);
+ usb_record(2,s.usb_command?s.usb_command->id:0,reason);
 #ifndef __EMSCRIPTEN__
  usb_peer.reset();
 #endif
- usb_connected=false;usb_command.reset();usb_incoming.clear();usb_outgoing.clear();usb_packets.clear();usb_cursor=usb_until=usb_reset_until=0;usb_rx_transfer=usb_tx_transfer=false;
+ s.usb_terminal=1;s.usb_connected=false;s.usb_command.reset();s.usb_incoming.clear();s.usb_outgoing.clear();s.usb_packets.clear();s.usb_cursor=s.usb_until=s.usb_reset_until=0;usb_rx_transfer=usb_tx_transfer=false;
+}
+void Machine::usb_accept_command(const UsbRawCommand&q){
+ if(s.usb_command||q.id!=s.usb_next_id||s.usb_next_id==UINT64_MAX)throw std::runtime_error("USB logical command order");usb_command_shape(q.frame);usb_record(0,q.id,q.frame);s.usb_command=q;s.usb_next_id++;
+ const auto&frame=s.usb_command->frame;
+ if(frame=="USBHOST/2 PACKET_BYTES_DEV")usb_reply("OPEN");
+ else if(frame.rfind("RESET ",0)==0){auto clocks=number(frame.substr(6));if(s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB reset clock exhausted");s.usb_connected=true;s.usb_reset_until=s.cycle+clocks;s.usb_until=s.usb_reset_until;s.usb_packets.clear();s.usb_outgoing.clear();}
+ else if(frame.rfind("SEND ",0)==0){s.usb_incoming=hexbytes(frame.substr(5));s.usb_cursor=0;}
+ else if(frame.rfind("WAIT ",0)==0){auto clocks=number(frame.substr(5));if(s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB wait clock exhausted");s.usb_until=s.cycle+clocks;}
 }
 void Machine::usb_before_edge(bool domain_reset){auto&soc=*model;
+ if(s.usb_attached&&!s.usb_terminal&&domain_reset&&s.usb_connected)usb_disconnect("DOMAIN_RESET");
+ if(s.usb_attached&&!s.usb_terminal&&s.cycle>=s.usb_next_poll){
+  if(s.cycle>UINT64_MAX-1000)throw std::runtime_error("USB poll clock exhausted");s.usb_next_poll=s.cycle+1000;
+  if(usb_replaying){
+   if(usb_replay_cursor<usb_replay.rows.size()){const auto&r=usb_replay.rows[usb_replay_cursor];if(r.cycle==s.cycle){if(r.tag==0)usb_accept_command({r.id,r.frame});else if(r.tag==2)usb_disconnect(r.frame);}}
+  }else{
 #ifndef __EMSCRIPTEN__
- if(usb_peer&&domain_reset&&usb_connected)usb_disconnect("DOMAIN_RESET");
- if(usb_peer&&s.cycle>=usb_next_poll){
-  if(s.cycle>UINT64_MAX-1000)throw std::runtime_error("USB poll clock exhausted");usb_next_poll=s.cycle+1000;
-  std::optional<UsbRawCommand>actual;
-  try{if(usb_command)usb_peer->check();else actual=usb_peer->poll();}catch(const UsbTransportFailure&e){usb_disconnect(e.what());}
-  if(actual){usb_record(0,actual->id,actual->frame);usb_command=std::move(actual);
-   const auto&frame=usb_command->frame;
-   if(frame=="USBHOST/2 PACKET_BYTES_DEV"){usb_reply("OPEN");}
-   else if(frame.rfind("RESET ",0)==0){auto clocks=number(frame.substr(6));if(clocks!=5000000||s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB root-port reset count");usb_connected=true;usb_reset_until=s.cycle+clocks;usb_until=usb_reset_until;usb_packets.clear();usb_outgoing.clear();}
-   else if(frame.rfind("SEND ",0)==0){usb_incoming=hexbytes(frame.substr(5));if(usb_incoming.empty()||usb_incoming.size()>67)throw std::runtime_error("USB raw packet byte bound");usb_cursor=0;}
-   else if(frame=="RECV"){}
-   else if(frame.rfind("WAIT ",0)==0){auto clocks=number(frame.substr(5));if(!clocks||clocks>100000||s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB raw wait bound");usb_until=s.cycle+clocks;}
-   else throw std::runtime_error("USB raw command framing");
-  }
- }
+   std::optional<UsbRawCommand>actual;try{if(s.usb_command)usb_peer->check();else actual=usb_peer->poll();}catch(const UsbTransportFailure&e){usb_disconnect(e.what());}if(actual)usb_accept_command(*actual);
 #endif
- if(usb_command){auto&frame=usb_command->frame;
-  if(frame.rfind("RESET ",0)==0&&s.cycle>=usb_until)usb_reply("RESET_DONE");
-  else if(frame.rfind("WAIT ",0)==0&&s.cycle>=usb_until)usb_reply("WAIT_DONE");
-  else if(frame=="RECV"&&!usb_packets.empty()){
-   static const char*h="0123456789abcdef";std::string raw="RX ";for(auto byte:usb_packets.front()){raw+=h[byte>>4];raw+=h[byte&15];}if(usb_reply(raw))usb_packets.pop_front();
   }
  }
- soc.usb_connected=usb_connected;soc.usb_bus_reset=s.cycle<usb_reset_until;
- soc.usb_rx_valid=usb_command&&usb_command->frame.rfind("SEND ",0)==0&&usb_cursor<usb_incoming.size();
- soc.usb_rx_last=soc.usb_rx_valid&&usb_cursor+1==usb_incoming.size();soc.usb_rx_byte=soc.usb_rx_valid?usb_incoming[usb_cursor]:0;
- soc.usb_tx_ready=usb_packets.size()<4;
+ if(s.usb_command){const auto&frame=s.usb_command->frame;
+  if(frame.rfind("RESET ",0)==0&&s.cycle>=s.usb_until)usb_reply("RESET_DONE");
+  else if(frame.rfind("WAIT ",0)==0&&s.cycle>=s.usb_until)usb_reply("WAIT_DONE");
+  else if(frame=="RECV"&&!s.usb_packets.empty()){
+   static const char*h="0123456789abcdef";std::string raw="RX ";for(auto byte:s.usb_packets.front()){raw+=h[byte>>4];raw+=h[byte&15];}if(usb_reply(raw))s.usb_packets.pop_front();
+  }
+ }
+ soc.usb_connected=s.usb_connected;soc.usb_bus_reset=s.cycle<s.usb_reset_until;
+ soc.usb_rx_valid=s.usb_command&&s.usb_command->frame.rfind("SEND ",0)==0&&s.usb_cursor<s.usb_incoming.size();
+ soc.usb_rx_last=soc.usb_rx_valid&&s.usb_cursor+1==s.usb_incoming.size();soc.usb_rx_byte=soc.usb_rx_valid?s.usb_incoming[s.usb_cursor]:0;soc.usb_tx_ready=s.usb_packets.size()<4;
  soc.eval();usb_rx_transfer=soc.usb_rx_valid&&soc.usb_rx_ready;usb_tx_transfer=soc.usb_tx_valid&&soc.usb_tx_ready;
- // Read generated output before the edge consumes it. This contains no packet
- // interpretation, CRC/toggle or guest/host protocol decision.
- if(usb_tx_transfer){if(usb_outgoing.size()>=67)throw std::runtime_error("USB raw output packet bound");usb_outgoing.push_back(soc.usb_tx_byte);if(soc.usb_tx_last){usb_packets.push_back(std::move(usb_outgoing));usb_outgoing.clear();}}
+ if(usb_tx_transfer){if(s.usb_outgoing.size()>=67)throw std::runtime_error("USB raw output packet bound");s.usb_outgoing.push_back(soc.usb_tx_byte);if(soc.usb_tx_last){s.usb_packets.push_back(std::move(s.usb_outgoing));s.usb_outgoing.clear();}}
 }
-void Machine::usb_after_edge(){if(usb_rx_transfer){usb_cursor++;if(usb_cursor==usb_incoming.size())usb_reply("SENT");}}
+void Machine::usb_after_edge(){
+ if(usb_rx_transfer){s.usb_cursor++;if(s.usb_cursor==s.usb_incoming.size())usb_reply("SENT");}
+ if(usb_replaying&&usb_replay_cursor<usb_replay.rows.size()&&usb_replay.rows[usb_replay_cursor].cycle<=s.cycle)throw std::runtime_error("USB replay omitted accepted raw event at its boundary");
+}
 void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   if(soc.power_cancel_pen){
    s.samples.clear();s.rx.clear();std::vector<Event> pending;
@@ -372,12 +431,12 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
  context->timeInc(2);s.cycle++;
  s.stopped=(!s.stop_marker.empty()&&s.uart_text.find(s.stop_marker)!=std::string::npos)||(s.stop_panels&&s.panel_completed>=s.stop_panels)||(s.observer_cycle&&s.cycle>=s.observer_cycle);
 }
-uint64_t Machine::run(uint64_t count){if(boot_fork_suspended)throw std::runtime_error("pending boot fork awaits captured external outcome tape; virtual clock unchanged");if(s.boot_backing.poisoned)throw std::runtime_error("boot backing poisoned by ambiguous execution/capture");if(!s.ble_error.empty())throw std::runtime_error("BLE external owner failed; new work is forbidden");if(ble_fork_suspended)throw std::runtime_error("isolated BLE fork requires captured outcomes; virtual clock unchanged");if(backing_fork_suspended)throw std::runtime_error("pending fork awaits captured external outcome tape; virtual clock unchanged");if(s.backing.poisoned)throw std::runtime_error("backing owner poisoned by ambiguous execution/capture");if(!count||count>1000000000)throw std::runtime_error("run interval must be1..1000000000cycles");if(s.cycle>UINT64_MAX/2||count>UINT64_MAX/2-s.cycle)throw std::runtime_error("virtual clock exhausted");prepare();s.stopped=false;auto begin=std::chrono::steady_clock::now();uint64_t first=s.cycle;while(s.cycle-first<count&&!s.finished&&!s.stopped){tick();if((s.cycle&0x3ffff)==0&&std::chrono::steady_clock::now()-begin>std::chrono::seconds(options.deadline))throw std::runtime_error("RTL wall deadline exceeded");}uart.flush();trace.flush();panel_log.flush();block_trace.flush();input_capture.flush();drive_trace.flush();ble_wire.flush();if(!options.quiet_uart)std::cout.flush();if(!uart)throw std::runtime_error("UART output failed");return s.cycle-first;}
+uint64_t Machine::run(uint64_t count){if(usb_fork_suspended)throw std::runtime_error("isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged");if(usb_replaying&&(s.cycle>usb_replay.horizon||count>usb_replay.horizon-s.cycle))throw std::runtime_error("USB replay requested interval exceeds captured horizon; virtual clock unchanged");if(boot_fork_suspended)throw std::runtime_error("pending boot fork awaits captured external outcome tape; virtual clock unchanged");if(s.boot_backing.poisoned)throw std::runtime_error("boot backing poisoned by ambiguous execution/capture");if(!s.ble_error.empty())throw std::runtime_error("BLE external owner failed; new work is forbidden");if(ble_fork_suspended)throw std::runtime_error("isolated BLE fork requires captured outcomes; virtual clock unchanged");if(backing_fork_suspended)throw std::runtime_error("pending fork awaits captured external outcome tape; virtual clock unchanged");if(s.backing.poisoned)throw std::runtime_error("backing owner poisoned by ambiguous execution/capture");if(!count||count>1000000000)throw std::runtime_error("run interval must be1..1000000000cycles");if(s.cycle>UINT64_MAX/2||count>UINT64_MAX/2-s.cycle)throw std::runtime_error("virtual clock exhausted");prepare();s.stopped=false;auto begin=std::chrono::steady_clock::now();uint64_t first=s.cycle;while(s.cycle-first<count&&!s.finished&&!s.stopped){tick();if((s.cycle&0x3ffff)==0&&std::chrono::steady_clock::now()-begin>std::chrono::seconds(options.deadline))throw std::runtime_error("RTL wall deadline exceeded");}uart.flush();trace.flush();panel_log.flush();block_trace.flush();input_capture.flush();drive_trace.flush();ble_wire.flush();if(!options.quiet_uart)std::cout.flush();if(!uart)throw std::runtime_error("UART output failed");return s.cycle-first;}
 void Machine::warm_reset(uint64_t length){if(!length||length>1000000||s.cycle>std::numeric_limits<uint64_t>::max()-length)throw std::runtime_error("invalid reset interval");s.reset_until=s.cycle+length;abandon_media();s.power_reset_cause=2;s.memory_pending=0;s.memory_wait=0;s.finished=false;s.stopped=false;s.finish=0;s.samples.clear();s.input.clear();s.event_index=0;s.event_payload_bytes=0;s.rx.clear();s.optical_pending.clear();std::fill(s.framebuffer.begin(),s.framebuffer.end(),15);}
 void Machine::cold_cycle(){prepare();s.boot_cycle=s.cycle;std::fill(s.ram.begin(),s.ram.end(),0);if(!BINDING_BOOT_NV_ENABLED)for(auto&[p,b]:s.boot_pages)std::memcpy(s.ram.data()+4096*p,b.data(),4096);s.overlay.clear();s.samples.clear();s.input.clear();s.event_index=0;s.event_payload_bytes=0;s.rx.clear();warm_reset(model->register_memory_enabled?520:8);s.power_reset_cause=1;s.button_level=0;}
 void Machine::panel(const std::string&path)const{std::ofstream f(path,std::ios::binary);if(!f)throw std::runtime_error("cannot open panel output");f<<"P5\n"<<BINDING_WIDTH<<' '<<BINDING_HEIGHT<<"\n255\n";for(auto v:s.visible)f.put(v*17);if(!f.flush())throw std::runtime_error("panel output failed");}
 void Machine::ram_dump(uint64_t address,uint64_t size,const std::string&path)const{if(model->register_memory_enabled||!size||size>1048576||address<RAM_BASE||address-RAM_BASE>RAM_SIZE-size)throw std::runtime_error("RAM dump requires1..1048576external RAM bytes");std::ofstream f(path,std::ios::binary);if(!f.write(reinterpret_cast<const char*>(s.ram.data()+address-RAM_BASE),size)||!f.flush())throw std::runtime_error("RAM dump failed");}
-std::string Machine::inspect()const{std::ostringstream r;auto*root=model->rootp;r<<"{\"backend\":\"rtl\",\"snapshot_identity\":\""<<LEMMA_RUNTIME_IDENTITY<<"\",\"cycle\":"<<s.cycle<<",\"ticks\":"<<model->timer_ticks<<",\"pc\":"<<model->debug_pc<<",\"privilege\":"<<unsigned(model->debug_privilege)<<",\"retired\":"<<s.retired<<",\"finished\":"<<(s.finished?"true":"false")<<",\"finish_code\":"<<s.finish<<",\"isolated_medium\":"<<(s.isolated?"true":"false")<<",\"private_medium_path\":"<<json_string(private_medium_path)<<",\"volatile_sectors\":"<<s.overlay.size()<<",\"flushes\":"<<s.flushes<<",\"fail_flush\":"<<s.fail_flush<<",\"stop_panels\":"<<s.stop_panels<<",\"observer_cycle\":"<<s.observer_cycle<<",\"event_queue\":"<<s.input.size()-s.event_index<<",\"pen_queue\":"<<s.samples.size()<<",\"uart_queue\":"<<s.rx.size()<<",\"panel_pending_pixels\":"<<s.optical_pending.size()<<",\"drive_clocks\":"<<s.drive_clocks<<",\"drive_pixels\":"<<s.drive_pixels<<",\"drive_hash\":"<<s.drive_hash<<",\"drive_phase_counts\":["<<s.drive_phases[0]<<","<<s.drive_phases[1]<<","<<s.drive_phases[2]<<"],\"panel_power\":"<<unsigned(model->panel_power_enable)<<",\"panel_completed\":"<<s.panel_completed<<",\"panel_sequence\":"<<model->panel_sequence<<",\"paper_busy\":"<<unsigned(root->lemma_soc__DOT__paper__DOT__busy)<<",\"block_state\":"<<unsigned(root->lemma_soc__DOT__blockdev__DOT__state)<<",\"memory_latency\":"<<s.memory_latency<<",\"memory_pending\":"<<s.memory_pending<<",\"memory_wait\":"<<s.memory_wait<<",\"dma_outstanding\":"<<unsigned(root->lemma_soc__DOT__port_held)<<",\"backing_io\":{\"next_id\":"<<s.backing.next_id<<",\"completed\":"<<s.backing.completed<<",\"durable_barrier\":"<<s.backing.durable_barrier<<",\"observed_write\":"<<s.backing.observed_write<<",\"phase\":"<<uint64_t(s.backing.phase)<<",\"retry_ready\":"<<(s.backing_retry_ready?"true":"false")<<",\"fork_suspended\":"<<(backing_fork_suspended?"true":"false")<<",\"orphan\":"<<(s.backing_orphan?"true":"false")<<",\"poisoned\":"<<(s.backing.poisoned?"true":"false")<<"},\"power\":{\"enabled\":"<<(BINDING_POWER_ENABLED?"true":"false")<<",\"state\":"<<unsigned(model->power_suspended)<<",\"error\":"<<model->power_error<<",\"reset_cause\":"<<unsigned(model->power_cause)<<",\"button_level\":"<<s.button_level<<",\"events\":"<<model->power_events<<",\"epoch\":"<<model->power_epoch<<",\"wake_cause\":"<<model->power_wake_cause<<",\"safety\":"<<(BINDING_POWER_SAFETY?"true":"false")<<",\"power_good\":"<<s.power_good<<",\"brownout\":"<<s.brownout<<",\"domain_reset\":"<<unsigned(model->power_domain_reset)<<",\"watchdog_armed\":"<<unsigned(model->power_watchdog_armed)<<",\"watchdog_remaining\":"<<model->power_watchdog_remaining<<",\"reset_remaining\":"<<model->power_reset_remaining<<",\"reset_epoch\":"<<model->power_reset_epoch<<"},\"boot_backing\":{\"enabled\":"<<(BINDING_BOOT_NV_ENABLED?"true":"false")<<",\"present\":"<<s.boot_medium_present<<",\"next_id\":"<<s.boot_backing.next_id<<",\"completed\":"<<s.boot_backing.completed<<",\"durable_barrier\":"<<s.boot_backing.durable_barrier<<",\"observed_write\":"<<s.boot_backing.observed_write<<",\"pending\":"<<s.boot_pending.has_value()<<",\"orphan\":"<<s.boot_orphan<<",\"reset_origin\":"<<s.boot_reset_origin<<",\"fork_suspended\":"<<(boot_fork_suspended?"true":"false")<<"},\"ble\":{\"enabled\":"<<(BINDING_BLE_ENABLED?"true":"false")<<",\"peer_attached\":"<<s.ble_attached<<",\"peer_ready\":"<<s.ble_ready<<",\"pending_external\":"<<s.ble_pending<<",\"fork_suspended\":"<<(ble_fork_suspended?"true":"false")<<",\"next_request\":"<<s.ble_next_id<<",\"accepted_replies\":"<<s.ble_accepted_replies<<",\"actual_rx_heads\":"<<s.ble_rx_heads<<",\"chip_tx_packets\":"<<model->ble_tx_packets<<",\"chip_rx_packets\":"<<model->ble_rx_packets<<",\"peer_tx_packets\":"<<model->ble_peer_tx_packets<<",\"peer_rx_packets\":"<<model->ble_peer_rx_packets<<",\"chip_samples\":"<<s.ble_chip_samples<<",\"peer_samples\":"<<s.ble_peer_samples<<",\"dropped_packets\":"<<s.ble_dropped_packets<<",\"pio_queued\":"<<s.ble_pio.size()<<",\"ack_pending\":"<<s.ble_ack_pending<<",\"chip_tx_active\":"<<unsigned(model->ble_tx_active)<<",\"peer_tx_active\":"<<unsigned(model->ble_peer_tx_active)<<",\"wire_to_chip\":"<<s.ble_to_chip_valid<<",\"wire_to_peer\":"<<s.ble_to_peer_valid<<",\"chip_crc_errors\":"<<model->ble_crc_errors<<",\"peer_crc_errors\":"<<model->ble_peer_crc_errors<<",\"coex\":"<<s.ble_coex<<",\"accepted_state\":"<<json_string(s.ble_accepted_state)<<",\"capture_path\":"<<json_string(active_ble_capture)<<"}}";return r.str();}
+std::string Machine::inspect()const{std::ostringstream r;auto*root=model->rootp;r<<"{\"backend\":\"rtl\",\"snapshot_identity\":\""<<LEMMA_RUNTIME_IDENTITY<<"\",\"cycle\":"<<s.cycle<<",\"ticks\":"<<model->timer_ticks<<",\"pc\":"<<model->debug_pc<<",\"privilege\":"<<unsigned(model->debug_privilege)<<",\"retired\":"<<s.retired<<",\"finished\":"<<(s.finished?"true":"false")<<",\"finish_code\":"<<s.finish<<",\"isolated_medium\":"<<(s.isolated?"true":"false")<<",\"private_medium_path\":"<<json_string(private_medium_path)<<",\"volatile_sectors\":"<<s.overlay.size()<<",\"flushes\":"<<s.flushes<<",\"fail_flush\":"<<s.fail_flush<<",\"stop_panels\":"<<s.stop_panels<<",\"observer_cycle\":"<<s.observer_cycle<<",\"event_queue\":"<<s.input.size()-s.event_index<<",\"pen_queue\":"<<s.samples.size()<<",\"uart_queue\":"<<s.rx.size()<<",\"panel_pending_pixels\":"<<s.optical_pending.size()<<",\"drive_clocks\":"<<s.drive_clocks<<",\"drive_pixels\":"<<s.drive_pixels<<",\"drive_hash\":"<<s.drive_hash<<",\"drive_phase_counts\":["<<s.drive_phases[0]<<","<<s.drive_phases[1]<<","<<s.drive_phases[2]<<"],\"panel_power\":"<<unsigned(model->panel_power_enable)<<",\"panel_completed\":"<<s.panel_completed<<",\"panel_sequence\":"<<model->panel_sequence<<",\"paper_busy\":"<<unsigned(root->lemma_soc__DOT__paper__DOT__busy)<<",\"block_state\":"<<unsigned(root->lemma_soc__DOT__blockdev__DOT__state)<<",\"memory_latency\":"<<s.memory_latency<<",\"memory_pending\":"<<s.memory_pending<<",\"memory_wait\":"<<s.memory_wait<<",\"dma_outstanding\":"<<unsigned(root->lemma_soc__DOT__port_held)<<",\"backing_io\":{\"next_id\":"<<s.backing.next_id<<",\"completed\":"<<s.backing.completed<<",\"durable_barrier\":"<<s.backing.durable_barrier<<",\"observed_write\":"<<s.backing.observed_write<<",\"phase\":"<<uint64_t(s.backing.phase)<<",\"retry_ready\":"<<(s.backing_retry_ready?"true":"false")<<",\"fork_suspended\":"<<(backing_fork_suspended?"true":"false")<<",\"orphan\":"<<(s.backing_orphan?"true":"false")<<",\"poisoned\":"<<(s.backing.poisoned?"true":"false")<<"},\"power\":{\"enabled\":"<<(BINDING_POWER_ENABLED?"true":"false")<<",\"state\":"<<unsigned(model->power_suspended)<<",\"error\":"<<model->power_error<<",\"reset_cause\":"<<unsigned(model->power_cause)<<",\"button_level\":"<<s.button_level<<",\"events\":"<<model->power_events<<",\"epoch\":"<<model->power_epoch<<",\"wake_cause\":"<<model->power_wake_cause<<",\"safety\":"<<(BINDING_POWER_SAFETY?"true":"false")<<",\"power_good\":"<<s.power_good<<",\"brownout\":"<<s.brownout<<",\"domain_reset\":"<<unsigned(model->power_domain_reset)<<",\"watchdog_armed\":"<<unsigned(model->power_watchdog_armed)<<",\"watchdog_remaining\":"<<model->power_watchdog_remaining<<",\"reset_remaining\":"<<model->power_reset_remaining<<",\"reset_epoch\":"<<model->power_reset_epoch<<"},\"boot_backing\":{\"enabled\":"<<(BINDING_BOOT_NV_ENABLED?"true":"false")<<",\"present\":"<<s.boot_medium_present<<",\"next_id\":"<<s.boot_backing.next_id<<",\"completed\":"<<s.boot_backing.completed<<",\"durable_barrier\":"<<s.boot_backing.durable_barrier<<",\"observed_write\":"<<s.boot_backing.observed_write<<",\"pending\":"<<s.boot_pending.has_value()<<",\"orphan\":"<<s.boot_orphan<<",\"reset_origin\":"<<s.boot_reset_origin<<",\"fork_suspended\":"<<(boot_fork_suspended?"true":"false")<<"},\"ble\":{\"enabled\":"<<(BINDING_BLE_ENABLED?"true":"false")<<",\"peer_attached\":"<<s.ble_attached<<",\"peer_ready\":"<<s.ble_ready<<",\"pending_external\":"<<s.ble_pending<<",\"fork_suspended\":"<<(ble_fork_suspended?"true":"false")<<",\"next_request\":"<<s.ble_next_id<<",\"accepted_replies\":"<<s.ble_accepted_replies<<",\"actual_rx_heads\":"<<s.ble_rx_heads<<",\"chip_tx_packets\":"<<model->ble_tx_packets<<",\"chip_rx_packets\":"<<model->ble_rx_packets<<",\"peer_tx_packets\":"<<model->ble_peer_tx_packets<<",\"peer_rx_packets\":"<<model->ble_peer_rx_packets<<",\"chip_samples\":"<<s.ble_chip_samples<<",\"peer_samples\":"<<s.ble_peer_samples<<",\"dropped_packets\":"<<s.ble_dropped_packets<<",\"pio_queued\":"<<s.ble_pio.size()<<",\"ack_pending\":"<<s.ble_ack_pending<<",\"chip_tx_active\":"<<unsigned(model->ble_tx_active)<<",\"peer_tx_active\":"<<unsigned(model->ble_peer_tx_active)<<",\"wire_to_chip\":"<<s.ble_to_chip_valid<<",\"wire_to_peer\":"<<s.ble_to_peer_valid<<",\"chip_crc_errors\":"<<model->ble_crc_errors<<",\"peer_crc_errors\":"<<model->ble_peer_crc_errors<<",\"coex\":"<<s.ble_coex<<",\"accepted_state\":"<<json_string(s.ble_accepted_state)<<",\"capture_path\":"<<json_string(active_ble_capture)<<"},\"usb\":{\"attached\":"<<s.usb_attached<<",\"connected\":"<<s.usb_connected<<",\"terminal\":"<<s.usb_terminal<<",\"pending_command\":"<<(s.usb_command?s.usb_command->id:0)<<",\"command\":"<<json_string(s.usb_command?s.usb_command->frame:"")<<",\"incoming_cursor\":"<<s.usb_cursor<<",\"incoming_bytes\":"<<s.usb_incoming.size()<<",\"outgoing_bytes\":"<<s.usb_outgoing.size()<<",\"queued_packets\":"<<s.usb_packets.size()<<",\"reset_until\":"<<s.usb_reset_until<<",\"wait_until\":"<<s.usb_until<<",\"next_poll\":"<<s.usb_next_poll<<",\"accepted_rows\":"<<s.usb_records<<",\"accepted_hash\":"<<s.usb_record_hash<<",\"fork_suspended\":"<<(usb_fork_suspended?"true":"false")<<",\"replay_horizon\":"<<usb_replay.horizon<<"}}";return r.str();}
 void Machine::report(const std::string&path)const{std::ofstream r(path);r<<"{\n\"block_rows\":"<<s.block_rows<<",\"block_omitted\":"<<s.block_omitted<<",\"cycles\":"<<s.cycle<<",\"retired\":"<<s.retired<<",\"privilege_cycles\":["<<s.privilege_cycles[0]<<","<<s.privilege_cycles[1]<<","<<s.privilege_cycles[2]<<","<<s.privilege_cycles[3]<<"],\"privilege_transitions\":"<<s.transitions<<",\"traps\":"<<s.traps<<",\"timer_traps\":"<<s.timer_traps<<",\"pen_ingress\":"<<s.pen_ingress<<",\"pen_accepted\":"<<s.pen_accepted<<",\"fb_reads\":"<<s.fb_reads<<",\"fb_writes\":"<<s.fb_writes<<",\"panel_pixels\":"<<s.panel_pixels<<",\"drive_clocks\":"<<s.drive_clocks<<",\"drive_pixels\":"<<s.drive_pixels<<",\"drive_hash\":"<<s.drive_hash<<",\"drive_phase_counts\":["<<s.drive_phases[0]<<","<<s.drive_phases[1]<<","<<s.drive_phases[2]<<"],\"panel_power\":"<<unsigned(model->panel_power_enable)<<",\"panel_completed\":"<<s.panel_completed<<",\"panel_aborted\":"<<s.panel_aborted<<",\"media_requests\":"<<s.media_requests<<",\"flushes\":"<<s.flushes<<",\"volatile_sectors_discarded\":"<<s.overlay.size()<<",\"finished\":"<<(s.finished?"true":"false")<<",\"explicit_observer_stop\":"<<(s.stopped?"true":"false")<<",\"observer_cycle\":"<<options.observer_cycle<<",\"finish_code\":"<<s.finish<<"\n}\n";if(!r.flush())throw std::runtime_error("report write failed");}
 // Checkpoint container v2: bounded lengths and CRC64-ECMA integrity (not
 // authentication). Every byte is verified before allocating decoded machine
@@ -434,6 +493,26 @@ void read_boot_state(Reader&r,State&s){
  if(!s.boot_medium_present&&(b.next_id!=1||b.completed||b.durable_barrier||b.observed_write||b.phase!=BackingPhase::Idle))throw std::runtime_error("absent boot medium has external history");
  if(!s.boot_pages.empty())throw std::runtime_error("product snapshot contains volatile preload pages");
 }
+void write_usb_state(Writer&w,const State&s){
+ for(auto n:{s.usb_attached,s.usb_connected,s.usb_terminal,s.usb_next_id,s.usb_cursor,s.usb_until,s.usb_reset_until,s.usb_next_poll,s.usb_records,s.usb_record_hash})w.u64(n);
+ w.u64(s.usb_command.has_value());if(s.usb_command){w.u64(s.usb_command->id);w.str(s.usb_command->frame);}w.u64(s.usb_incoming.size());w.raw(s.usb_incoming.data(),s.usb_incoming.size());w.u64(s.usb_outgoing.size());w.raw(s.usb_outgoing.data(),s.usb_outgoing.size());w.u64(s.usb_packets.size());for(const auto&p:s.usb_packets){w.u64(p.size());w.raw(p.data(),p.size());}
+}
+void read_usb_state(Reader&r,State&s){
+ s.usb_attached=r.u64();s.usb_connected=r.u64();s.usb_terminal=r.u64();s.usb_next_id=r.u64();s.usb_cursor=r.u64();s.usb_until=r.u64();s.usb_reset_until=r.u64();s.usb_next_poll=r.u64();s.usb_records=r.u64();s.usb_record_hash=r.u64();
+ auto pending=r.u64();if(pending>1)throw std::runtime_error("invalid USB command presence");bool pre=r.validate;r.validate=false;
+ if(pending){UsbRawCommand q;q.id=r.u64();q.frame=r.str(160);usb_command_shape(q.frame);s.usb_command=std::move(q);}
+ auto read_packet=[&](){auto n=r.count(67);std::vector<uint8_t>p(n);r.raw(p.data(),n);return p;};s.usb_incoming=read_packet();s.usb_outgoing=read_packet();auto n=r.count(4);for(uint64_t i=0;i<n;i++){auto p=read_packet();if(p.empty())throw std::runtime_error("empty USB queued packet");s.usb_packets.push_back(std::move(p));}r.validate=pre;
+ if(s.usb_attached>1||s.usb_connected>1||s.usb_terminal>1||!s.usb_next_id||s.usb_records>1000000||s.usb_cursor>s.usb_incoming.size()||s.usb_outgoing.size()>=67||s.usb_next_poll>s.cycle+1000||s.usb_until>s.cycle+5000000||s.usb_reset_until>s.cycle+5000000)throw std::runtime_error("invalid USB checkpoint scalar/queue state");
+ if(pending){const auto&q=*s.usb_command;if(!s.usb_attached||s.usb_terminal||q.id!=s.usb_next_id-1||q.frame=="USBHOST/2 PACKET_BYTES_DEV")throw std::runtime_error("invalid USB checkpoint retained request");
+  if(q.frame.rfind("SEND ",0)==0){if(s.usb_incoming!=hexbytes(q.frame.substr(5))||s.usb_cursor>=s.usb_incoming.size()||s.usb_until)throw std::runtime_error("USB retained SEND/cursor differs");}
+  else if(!s.usb_incoming.empty()||s.usb_cursor)throw std::runtime_error("USB non-SEND has incoming bytes");
+  if(q.frame=="RECV"&&s.usb_until)throw std::runtime_error("USB retained receive has wait deadline");
+  if(q.frame.rfind("WAIT ",0)==0&&(s.usb_until<s.cycle||s.usb_until-s.cycle>100000))throw std::runtime_error("USB retained wait deadline differs");
+  if(q.frame.rfind("RESET ",0)==0&&(!s.usb_connected||s.usb_until!=s.usb_reset_until||s.usb_until<s.cycle))throw std::runtime_error("USB retained reset deadline differs");
+ }else if(!s.usb_incoming.empty()||s.usb_cursor||s.usb_until)throw std::runtime_error("USB unowned incoming/wait state");
+ if(s.usb_terminal&&(s.usb_connected||pending||!s.usb_outgoing.empty()||!s.usb_packets.empty()||s.usb_reset_until))throw std::runtime_error("USB terminal transport retains active work");
+ if(!s.usb_attached&&(s.usb_connected||s.usb_terminal||pending||s.usb_next_id!=1||s.usb_records||s.usb_record_hash!=14695981039346656037ULL||!s.usb_packets.empty()||!s.usb_outgoing.empty()||s.usb_next_poll||s.usb_reset_until))throw std::runtime_error("unattached USB checkpoint has external history");
+}
 void write_state(Writer&w,const State&s){
 #define PUT(n) w.u64(s.n);
  STATE_SCALARS(PUT)
@@ -442,6 +521,7 @@ void write_state(Writer&w,const State&s){
 #undef PUT
  for(auto v:s.drive_phases)w.u64(v);for(auto v:s.privilege_cycles)w.u64(v);w.u64(s.old_privilege);w.u64(s.finished);w.u64(s.stopped);w.u64(s.finish);w.u64(s.medium_present);w.str(s.uart_text);w.str(s.stop_marker);w.vec(s.ram);w.vec(s.rom);w.vec(s.framebuffer);w.vec(s.visible);write_map(w,s.boot_pages);write_map(w,s.overlay);write_map(w,s.accepted_medium);w.u64(s.optical_pending.size());s.optical_pending.each([&](uint64_t i,uint8_t v){w.u64(i);w.u64(v);});w.u64(s.rx.size());for(auto v:s.rx)w.raw(&v,1);w.u64(s.input.size());for(auto&e:s.input)write_event(w,e);w.u64(s.samples.size());for(auto&e:s.samples)write_event(w,e);w.u64(s.backing.next_id);w.u64(s.backing.completed);w.u64(s.backing.durable_barrier);w.u64(s.backing.observed_write);w.u64(uint64_t(s.backing.phase));w.u64(s.backing.poisoned);w.u64(s.backing_pending.has_value());if(s.backing_pending){auto wire=encode_backing_request(*s.backing_pending);w.vec(wire);}
  if(BINDING_BLE_ENABLED){w.u64(s.ble_request_payload.size());w.raw(s.ble_request_payload.data(),s.ble_request_payload.size());w.str(s.ble_accepted_state);w.str(s.ble_error);w.u64(s.ble_last.id);w.u64(s.ble_last.issued);w.u64(s.ble_last.accepted);w.u64(s.ble_last.header);w.u64(s.ble_last.payload.size());w.raw(s.ble_last.payload.data(),s.ble_last.payload.size());w.str(s.ble_last.frame);w.u64(s.ble_pio.size());for(auto&beat:s.ble_pio){w.u64(beat[0]);w.u64(beat[1]);}}
+ if(BINDING_USB_ENABLED&&!BINDING_BOOT_NV_ENABLED)write_usb_state(w,s);
  if(BINDING_BOOT_NV_ENABLED)write_boot_state(w,s);
 }
 void read_state(Reader&r,State&s){
@@ -468,16 +548,17 @@ void read_state(Reader&r,State&s){
 #endif
   auto beats=r.count(32);for(uint64_t i=0;i<beats;i++){auto offset=r.u64(),value=r.u64();if((offset!=48&&offset!=56&&offset!=64&&offset!=72)||(offset==48&&(value>31||(value&3)!=1))||(offset==56&&value)||(offset==64&&(value<1||value>3))||(offset==72&&value>15))throw std::runtime_error("invalid copied BLE peer PIO beat");if(!r.validate)s.ble_pio.push_back({offset,value});}
  }
+ if(BINDING_USB_ENABLED&&!BINDING_BOOT_NV_ENABLED)read_usb_state(r,s);
  if(BINDING_BOOT_NV_ENABLED)read_boot_state(r,s);
  if(r.remaining)throw std::runtime_error("trailing checkpoint wrapper state");s.isolated=true;
 }
 }
 void Machine::model_save(const std::string&path){VerilatedSave f;f.open(path);if(!f.isOpen())throw std::runtime_error("cannot open model checkpoint");f<<*model;f.close();}
-void Machine::snapshot(const std::string&path){if(BINDING_USB_ENABLED&&(!options.usb_peer_executable.empty()||usb_connected||usb_command||!usb_incoming.empty()||!usb_outgoing.empty()||!usb_packets.empty()))throw std::runtime_error("attached USB whole-machine checkpoints are not admitted: complete hosted policy/raw pending state not serialized");if(!s.ble_error.empty())throw std::runtime_error("failed BLE external owner cannot be checkpointed");if(backing_capture>=0&&fsync(backing_capture))throw std::runtime_error("backing capture checkpoint barrier failed");if(s.boot_backing.poisoned)throw std::runtime_error("ambiguous boot backing operation cannot be checkpointed");if(boot_capture>=0&&fsync(boot_capture))throw std::runtime_error("boot capture checkpoint barrier failed");if(s.backing.poisoned)throw std::runtime_error("ambiguous backing operation cannot be checkpointed");prepare();Temp wrapper(path+".wrapper"),rtl(path+".model"),output(path+".partial");
+void Machine::snapshot(const std::string&path){if(BINDING_USB_ENABLED&&BINDING_BOOT_NV_ENABLED&&(!options.usb_peer_executable.empty()||s.usb_connected||s.usb_command||!s.usb_incoming.empty()||!s.usb_outgoing.empty()||!s.usb_packets.empty()))throw std::runtime_error("attached USB whole-machine checkpoints are not admitted: complete hosted policy/raw pending state not serialized");if(!s.ble_error.empty())throw std::runtime_error("failed BLE external owner cannot be checkpointed");if(backing_capture>=0&&fsync(backing_capture))throw std::runtime_error("backing capture checkpoint barrier failed");if(s.boot_backing.poisoned)throw std::runtime_error("ambiguous boot backing operation cannot be checkpointed");if(boot_capture>=0&&fsync(boot_capture))throw std::runtime_error("boot capture checkpoint barrier failed");if(s.backing.poisoned)throw std::runtime_error("ambiguous backing operation cannot be checkpointed");prepare();Temp wrapper(path+".wrapper"),rtl(path+".model"),output(path+".partial");
  // Completed rising-edge observation: no platform read, poll, drain or flush.
  // accepted_medium includes observed partial writes independently of durability.
  {std::ofstream f(wrapper.path,std::ios::binary);Writer w{f};write_state(w,s);if(!f.flush())throw std::runtime_error("wrapper checkpoint failed");}model_save(rtl.path);
- uint64_t wn=length(wrapper.path),mn=length(rtl.path);std::ifstream wf(wrapper.path,std::ios::binary),mf(rtl.path,std::ios::binary);auto wc=crc(wf,wn),mc=crc(mf,mn);wf.clear();wf.seekg(0);mf.clear();mf.seekg(0);std::ofstream out(output.path,std::ios::binary);Writer w{out};w.raw("LMSSRTL1",8);w.u64(BINDING_BOOT_NV_ENABLED?7:BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2);w.raw(LEMMA_RUNTIME_IDENTITY,64);w.u64(wn);w.u64(mn);w.u64(wc);w.u64(mc);copy_bytes(wf,out,wn);copy_bytes(mf,out,mn);if(!out.flush())throw std::runtime_error("checkpoint output failed");out.close();int snapshot_fd=open(output.path.c_str(),O_RDONLY);if(snapshot_fd<0||fsync(snapshot_fd)){if(snapshot_fd>=0)close(snapshot_fd);throw std::runtime_error("checkpoint barrier failed");}close(snapshot_fd);
+ uint64_t wn=length(wrapper.path),mn=length(rtl.path);std::ifstream wf(wrapper.path,std::ios::binary),mf(rtl.path,std::ios::binary);auto wc=crc(wf,wn),mc=crc(mf,mn);wf.clear();wf.seekg(0);mf.clear();mf.seekg(0);std::ofstream out(output.path,std::ios::binary);Writer w{out};w.raw("LMSSRTL1",8);w.u64(BINDING_BOOT_NV_ENABLED?7:BINDING_USB_ENABLED?6:BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2);w.raw(LEMMA_RUNTIME_IDENTITY,64);w.u64(wn);w.u64(mn);w.u64(wc);w.u64(mc);copy_bytes(wf,out,wn);copy_bytes(mf,out,mn);if(!out.flush())throw std::runtime_error("checkpoint output failed");out.close();int snapshot_fd=open(output.path.c_str(),O_RDONLY);if(snapshot_fd<0||fsync(snapshot_fd)){if(snapshot_fd>=0)close(snapshot_fd);throw std::runtime_error("checkpoint barrier failed");}close(snapshot_fd);
 #ifdef __EMSCRIPTEN__
  // MEMFS has no hard-link implementation. This exports an observational
  // artifact only; it is not the browser medium's persistence barrier.
@@ -487,7 +568,7 @@ void Machine::snapshot(const std::string&path){if(BINDING_USB_ENABLED&&(!options
  if(link(output.path.c_str(),path.c_str()))throw std::runtime_error("checkpoint destination exists or cannot be created");
 #endif
 }
-void Machine::restore(const std::string&path){if(BINDING_USB_ENABLED&&(!options.usb_peer_executable.empty()||usb_connected||usb_command||!usb_incoming.empty()||!usb_outgoing.empty()||!usb_packets.empty()))throw std::runtime_error("attached USB whole-machine restore is not admitted");if(s.boot_pending||s.boot_backing.poisoned)throw std::runtime_error("cannot discard unresolved boot backing work during restore");if(s.ble_pending)throw std::runtime_error("cannot discard unresolved BLE external work during restore");if(s.backing_pending||s.backing.poisoned)throw std::runtime_error("cannot discard a pending or ambiguous external operation during restore");uint64_t total=length(path);if(total<112||total>768ULL*1024*1024)throw std::runtime_error("invalid checkpoint container length");std::ifstream f(path,std::ios::binary);Reader head{f,total,false};char magic[8],identity[64];head.raw(magic,8);auto version=head.u64();head.raw(identity,64);auto wn=head.u64(),mn=head.u64(),wc=head.u64(),mc=head.u64();if(std::memcmp(magic,"LMSSRTL1",8)||version!=(BINDING_BOOT_NV_ENABLED?7:BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2)||std::memcmp(identity,LEMMA_RUNTIME_IDENTITY,64))throw std::runtime_error("unsupported checkpoint machine/implementation identity");if(wn>head.remaining||mn!=head.remaining-wn||!mn||mn>64*1024*1024)throw std::runtime_error("invalid checkpoint component lengths");if(crc(f,wn)!=wc||crc(f,mn)!=mc)throw std::runtime_error("checkpoint checksum mismatch");f.clear();f.seekg(112);State probe;Reader preflight{f,wn,true};read_state(preflight,probe);f.clear();f.seekg(112);State replacement;Reader decode{f,wn,false};read_state(decode,replacement);
+void Machine::restore(const std::string&path){if(BINDING_USB_ENABLED&&(!options.usb_peer_executable.empty()||s.usb_connected||s.usb_command||!s.usb_incoming.empty()||!s.usb_outgoing.empty()||!s.usb_packets.empty()))throw std::runtime_error("attached USB whole-machine restore is not admitted");if(s.boot_pending||s.boot_backing.poisoned)throw std::runtime_error("cannot discard unresolved boot backing work during restore");if(s.ble_pending)throw std::runtime_error("cannot discard unresolved BLE external work during restore");if(s.backing_pending||s.backing.poisoned)throw std::runtime_error("cannot discard a pending or ambiguous external operation during restore");uint64_t total=length(path);if(total<112||total>768ULL*1024*1024)throw std::runtime_error("invalid checkpoint container length");std::ifstream f(path,std::ios::binary);Reader head{f,total,false};char magic[8],identity[64];head.raw(magic,8);auto version=head.u64();head.raw(identity,64);auto wn=head.u64(),mn=head.u64(),wc=head.u64(),mc=head.u64();if(std::memcmp(magic,"LMSSRTL1",8)||version!=(BINDING_BOOT_NV_ENABLED?7:BINDING_USB_ENABLED?6:BINDING_BLE_ENABLED?5:BINDING_POWER_SAFETY?3:2)||std::memcmp(identity,LEMMA_RUNTIME_IDENTITY,64))throw std::runtime_error("unsupported checkpoint machine/implementation identity");if(wn>head.remaining||mn!=head.remaining-wn||!mn||mn>64*1024*1024)throw std::runtime_error("invalid checkpoint component lengths");if(crc(f,wn)!=wc||crc(f,mn)!=mc)throw std::runtime_error("checkpoint checksum mismatch");f.clear();f.seekg(112);State probe;Reader preflight{f,wn,true};read_state(preflight,probe);f.clear();f.seekg(112);State replacement;Reader decode{f,wn,false};read_state(decode,replacement);
  Temp saved("/tmp/lemma-rtl-current"),incoming("/tmp/lemma-rtl-incoming");model_save(saved.path);if(length(saved.path)!=mn)throw std::runtime_error("checkpoint model shape mismatch");{std::ofstream mf(incoming.path,std::ios::binary);copy_bytes(f,mf,mn);if(!mf.flush())throw std::runtime_error("checkpoint model extraction failed");}
  // Generated state covers CVW pipeline, caches/TLBs, privilege/CSRs, fabric
  // owner, controller queues/cursors and all top-level port phase values.
@@ -527,7 +608,7 @@ void Machine::restore(const std::string&path){if(BINDING_USB_ENABLED&&(!options.
  boot_replay_cursor=boot_cursor-boot_replay.begin();boot_fork_suspended=replacement.boot_pending.has_value()&&options.boot_replay_path.empty();
  if(boot_medium>=0)close(boot_medium);boot_medium=boot_fork.fd;boot_platform=std::move(replacement_boot);boot_fork.fd=-1;private_boot_medium_path=std::move(boot_fork.path);boot_fork.retained=true;
  if(boot_branch.fd>=0){close(boot_capture);boot_capture=boot_branch.fd;boot_branch.fd=-1;active_boot_capture=std::move(boot_branch.path);boot_branch.retained=true;boot_capture_bytes=72+(replacement.boot_pending?16+encode_backing_request(*replacement.boot_pending).size():0);boot_capture_branch++;}
- context.swap(restored_context);model.swap(restored);s=std::move(replacement);prepared=true;backing_replay_cursor=cursor-backing_replay.begin();backing_fork_suspended=s.backing_pending.has_value()&&options.backing_replay_path.empty();context->time(s.cycle*2);if(medium>=0)close(medium);medium=fork.fd;backing=std::move(replacement_backing);fork.fd=-1;private_medium_path=std::move(fork.path);fork.retained=true;
+ context.swap(restored_context);model.swap(restored);s=std::move(replacement);usb_fork_suspended=BINDING_USB_ENABLED&&!BINDING_BOOT_NV_ENABLED&&s.usb_attached;usb_replaying=false;usb_replay={};usb_replay_cursor=0;usb_rx_transfer=usb_tx_transfer=false;prepared=true;backing_replay_cursor=cursor-backing_replay.begin();backing_fork_suspended=s.backing_pending.has_value()&&options.backing_replay_path.empty();context->time(s.cycle*2);if(medium>=0)close(medium);medium=fork.fd;backing=std::move(replacement_backing);fork.fd=-1;private_medium_path=std::move(fork.path);fork.retained=true;
 #ifndef __EMSCRIPTEN__
  ble_peer.reset(); // Replaced only after complete state validation; never reused by a fork.
 #endif

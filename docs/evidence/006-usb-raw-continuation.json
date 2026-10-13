@@ -1,0 +1,108 @@
+{
+  "schema": "lemma-usb-raw-continuation-receipt/1",
+  "status": "PASS",
+  "scope": "Actual audited RV64 guest-issued owned USB receive/submit; observational startup/reset/queue snapshots and isolated exact captured raw suffixes. No privately live peer continuation, USB PHY, cross-backend migration or QEMU cached-state claim.",
+  "result": {
+    "path": "build/usb/native-pending-a3/result.json",
+    "sha256": "92fb103baf43b309c03235e83d2e5035498e813521c0f7b9de4f3d473ef8b132"
+  },
+  "source_commit": "bbf4039",
+  "native_build": "build/silicon/task006-usb-runtime-a7",
+  "native_sha256": "0521ca4f609fb20c428b887b10adefc8f1438d3b6b28e938de4b35f1b856e5f4",
+  "snapshot_identity": "04a681a7018c6b544638fe8542ed6eadf2ed2e5c59003d98a0d5adb22ecd8b01",
+  "consumed_implementation": {
+    "sim/rtl/host/machine_runtime.h": "3ff9a7abe50a4edd9cb08fc7599229701958d631f28e9f4ff2b493f819c93ac1",
+    "sim/rtl/host/machine_runtime.cpp": "62f90d2dd20e6dbfb6261cda41fdb647eb0f40241d6ae488a81e5d1e845273c9",
+    "tests/lemmasim/native_usb_pending.cpp": "f987389d1b0e006a96013644de085ac55f91152036b6ca083ba746a4bff59931",
+    "scripts/check_native_usb_pending.py": "e7ada315051bad395e2d0f0716fffcf477bf8f696e841bdd69bb6ef4925819a0"
+  },
+  "guest_image": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/image.elf",
+    "sha256": "67fa07f8b88775ce47432864849b8892cd1035d2f0a14ad85ff6cbf1b78697c8"
+  },
+  "guest_source_archive": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-bulk-initialize-a3/consumed-source-archive.json",
+    "sha256": "5f0d6e855f5807e51380f2e4dc6779ae0fe01e31eb290fe5ddde19cebab1a177"
+  },
+  "guest_scope": "unchanged archived genuine USB6 guest and original strict audit; newly prepared host adapter, not fresh target compilation",
+  "host_prepared": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/host-pending-policy3-a1/prepared.json",
+    "sha256": "e2c94d4a5ec6635c55d7d990f3d304fe2ebaaef89f44ad71a5a4c27e76fd5c27"
+  },
+  "cases": [
+    {
+      "case": "startup",
+      "snapshot_cycle": 0,
+      "suffix_cycles": 5000,
+      "host_seconds": 5.65199,
+      "peak_rss_kib": 990176,
+      "pending_command": 2
+    },
+    {
+      "case": "reset",
+      "snapshot_cycle": 5000,
+      "suffix_cycles": 3000,
+      "host_seconds": 5.63089,
+      "peak_rss_kib": 990176,
+      "pending_command": 2
+    },
+    {
+      "case": "owned-submit",
+      "snapshot_cycle": 8834000,
+      "suffix_cycles": 5000,
+      "host_seconds": 5.45902,
+      "peak_rss_kib": 1023972,
+      "pending_command": 0
+    },
+    {
+      "case": "owned-receive",
+      "snapshot_cycle": 8842000,
+      "suffix_cycles": 5000,
+      "host_seconds": 5.41072,
+      "peak_rss_kib": 1024600,
+      "pending_command": 2897
+    },
+    {
+      "case": "domain-reset",
+      "snapshot_cycle": 8847000,
+      "suffix_cycles": 3000,
+      "host_seconds": 5.64113,
+      "peak_rss_kib": 1024600,
+      "pending_command": 0
+    }
+  ],
+  "host_seconds": 75.99518046103185,
+  "owned_disk": {
+    "apparent_bytes": 3910701624,
+    "allocated_bytes": 3642421248
+  },
+  "checkpoint_bytes": 145558054,
+  "snapshot_state": "USB6 container6, exact generated RTL and retained raw transport state; no original process/socket ownership",
+  "rejections": [
+    "absent tape before clock advancement",
+    "incompatible tape implementation identity",
+    "corrupt tape checksum",
+    "corrupt checkpoint before destination replacement",
+    "run past captured completed-cycle horizon before clock advancement"
+  ],
+  "retained_failures": [
+    {
+      "path": "build/usb/native-pending-a1/result.json",
+      "sha256": "943d5709ff5223b70181f0bc533b0abbf71833f5d61369303d23a9dc4cd64243",
+      "reason": "development shell lacked Verilator on PATH; no compilation/execution"
+    },
+    {
+      "path": "build/usb/native-pending-a2/result.json",
+      "sha256": "f44bd1fbe54ea9df02dc8bd9540c945a3965d29b3a666a749f284b09287677ab",
+      "reason": "live capture header buffered at startup; observational cycle0 export failed, repaired in constructor"
+    }
+  ],
+  "other_scope": [
+    {
+      "path": "build/usb/notebook-workflow-a1/result.json",
+      "sha256": "7d4bf13da69756a0d1ae1590d622dfee2cd0fa35914b3a4f4bd1192eca721a14",
+      "status": "FAIL",
+      "reason": "observer interrupted; original native4 real raw-host timeout at195000000 on diagnostic resumption; no Ready/Save/cold claim"
+    }
+  ]
+}

@@ -43,6 +43,8 @@ struct BleOutcome {
  std::vector<uint8_t> payload;
  std::string frame;
 };
+struct UsbRawRecord { uint64_t cycle=0,tag=0,id=0; std::string frame; };
+struct UsbReplayTape { std::vector<UsbRawRecord> rows; uint64_t horizon=0; };
 struct State {
  BackingState backing,boot_backing;
  std::map<uint64_t,std::array<uint8_t,512>> accepted_boot_medium;
@@ -79,6 +81,13 @@ struct State {
  uint64_t fail_flush=0,stop_panels=0,observer_cycle=0;
  uint64_t memory_latency=0,memory_pending=0,memory_wait=0,memory_addr=0,memory_write=0,memory_wdata=0,memory_strb=0;
  uint64_t media_active=0,media_kind=0,media_sector=0,flush_active=0,flush_cursor=0;
+ // USB6 raw transport authority; external process ownership is never serialized.
+ std::optional<UsbRawCommand> usb_command;
+ std::vector<uint8_t> usb_incoming,usb_outgoing;
+ std::deque<std::vector<uint8_t>> usb_packets;
+ uint64_t usb_attached=0,usb_connected=0,usb_terminal=0,usb_next_id=1;
+ uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0;
+ uint64_t usb_records=0,usb_record_hash=14695981039346656037ULL;
  uint64_t ble_attached=0,ble_ready=0,ble_coex=1,ble_next_id=1,ble_poll_cycle=0,ble_pending=0;
  uint64_t ble_request_cycle=0,ble_request_header=0;
  std::vector<uint8_t> ble_request_payload;
@@ -98,18 +107,17 @@ class Machine {
  std::unique_ptr<BlePeerTransport> ble_peer;
  std::unique_ptr<UsbProcessTransport> usb_peer;
 #endif
- // USB6 external process state remains explicitly unadmitted for snapshots.
- std::optional<UsbRawCommand> usb_command;
- std::vector<uint8_t> usb_incoming,usb_outgoing;
- std::deque<std::vector<uint8_t>> usb_packets;
- uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0,usb_capture_bytes=0;
- bool usb_connected=false,usb_rx_transfer=false,usb_tx_transfer=false;
+ UsbReplayTape usb_replay;
+ uint64_t usb_replay_cursor=0,usb_capture_bytes=0;
+ bool usb_fork_suspended=false,usb_replaying=false,usb_rx_transfer=false,usb_tx_transfer=false;
  std::ofstream usb_capture;
  void usb_before_edge(bool);
  void usb_disconnect(const std::string&);
  void usb_after_edge();
  void usb_record(uint64_t,uint64_t,const std::string&);
  bool usb_reply(const std::string&);
+ void usb_accept_command(const UsbRawCommand&);
+ void usb_validate_tape(const UsbReplayTape&) const;
  std::vector<BleOutcome> ble_replay;
  uint64_t ble_replay_cursor=0;
  bool ble_fork_suspended=false;
@@ -189,6 +197,9 @@ public:
  // Bind a complete, validated outcome tape before its virtual clock advances.
  void bind_backing_replay(const std::string&);
  void bind_ble_replay(const std::string&);
+ // Observational raw suffix export and private replay; no external reissue.
+ void export_usb_replay(const std::string&) const;
+ void bind_usb_replay(const std::string&);
  const std::string& ble_capture_path() const {return active_ble_capture;}
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;
