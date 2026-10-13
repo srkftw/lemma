@@ -72,7 +72,7 @@ def inspect(payload, namespace, object_id):
             'page': words[4], 'revision': words[5], 'goal': words[6],
             'answer': list(words[7:12]), 'outcome': words[12], 'evidence_revision': words[13],
             'budget': words[17], 'attempts': attempts, 'hints': hints, 'history': history}
-    if version in (2,3,4,5):
+    if version in (2,3,4,5,6):
         identity,mode,count,uncertain,event_version,show_reason=words[22:28]
         if identity!=IDENTITY or mode>4 or count>64 or uncertain!=1 or event_version!=1 or show_reason>1 or any(words[28:32]):
             raise ValueError('learner policy identity/bounds/uncertainty differs')

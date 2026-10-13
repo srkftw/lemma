@@ -475,8 +475,9 @@ actual consumed sources, three new whole-image build/audit passes and a real
 carry isolated Array/Protocol5 execution identities in Doc6; edited evidence
 is inapplicable while its history survives. This is bounded ordinary Array
 UInt64 with real boxes, COW, retain/release and controlled errors, not full G2
-or the proof kernel. Actual heap-OOM, old Doc5 migration and RTL/Wasm Array
-acceptance remain open. Surface row/column carry removes a real per-word divide;
+or the proof kernel. The separate Laboratory archive receipt qualifies actual
+heap-OOM containment. The separate migration receipt below qualifies old Doc5
+continuation; RTL/Wasm Array acceptance remains open. Surface row/column carry removes a real per-word divide;
 22 geometries, full canonical bytes and13 failure prefixes passed. No target
 cycle speedup is inferred from static instruction changes.
 
@@ -516,3 +517,17 @@ writing/cold recovery, and RTL devices/power. Five jobs failed, including a late
 host fixture environment requirement and subsequent kernel audit paths. Their
 logs are retained under`build/ci/task006-229ab6c-diagnosis-a1`; repairs and new
 candidate qualification remain required. No skipped step is passed.
+
+## ByteArray document continuation under Array arithmetic
+
+[The migration receipt](../evidence/006-array-document-migration.json) binds the
+actual Doc5-to-6 publication: two version words change; five prior ByteArray
+checking identities, mathematical results, assistance and every other object
+remain exact. A new actual Array request returns Unsupported for the original
+unsupported goal and appends its own execution identity. Close/reopen and an
+independent cold machine preserve the mixed record and complete notebook
+pixels. The new continuation took63.594425s; both cold observations reached
+345000001 instruction-clock cycles in6.711935s/6.655064s. These are QEMU
+functional observations, not RTL timing. Original missing-Doc6-learner,
+already-migrated acknowledgment and report-serialization failures remain
+retained; the corrected observer validates learner policy/events strictly.

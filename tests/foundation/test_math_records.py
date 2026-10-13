@@ -114,6 +114,21 @@ class MathematicsEvidenceTests(unittest.TestCase):
             changed=list(words);changed[offset]=value
             with self.assertRaises(ValueError):self.inspect(changed)
 
+    def test_array_version_keeps_learner_authority_and_exact_old_origins(self):
+        words=self.current_record(True);words[1]=6;words[233]=4
+        prior=self.inspect(self.current_record(True))
+        current=self.inspect(words)
+        self.assertEqual(current['learner'],prior['learner'])
+        self.assertEqual(current['execution'],prior['execution'])
+        for index,value in [(22,2),(24,65),(25,0),(19,1),(105,1|(2<<8)|(1<<16))]:
+            changed=list(words);changed[index]=value
+            with self.assertRaises(ValueError):self.inspect(changed)
+        slot=[47,*math_oracle.ARRAY_EXECUTION_IDENTITIES,8,0,5]
+        words[240:248]=slot;words[248:256]=slot
+        self.assertEqual(self.inspect(words)['execution']['active']['origin'],'IsolatedArray')
+        changed=list(words);changed[1]=5;changed[233]=3
+        with self.assertRaises(ValueError):self.inspect(changed)
+
     def test_edited_answer_preserves_old_evidence_without_current_applicability(self):
         words=self.record();words[5]=12;words[8]=7;words[12]=words[13]=0
         result=self.inspect(words)

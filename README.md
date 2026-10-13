@@ -805,3 +805,18 @@ configurations `lemmasim-silicon-array-bulk-notebook` and
 audited before packing. An immutable base backend is reused only after its
 complete consumed sources and dependencies validate. QEMU has instruction-clock
 functional scope. Actual RTL and Wasm Array observations remain separate.
+
+Existing acknowledged ByteArray course media can continue under Array
+arithmetic. [The actual migration/cold receipt](docs/evidence/006-array-document-migration.json)
+preserves earlier checking identities and assistance; new checks carry their
+own Array identity. To reproduce against a new private output directory:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_array_document_migration.py \
+  --disk build/task006-bytes-math-a1/closed-course.raw \
+  --native-bundle build/native/task006-array-bulk-a1 \
+  --work-dir build/array-doc5-migration-new --boot-seconds 60 --action-seconds 30 --deadline 1200
+```
+
+The checker copies the supplied opaque medium; only the guest migrates and
+publishes its document. This command starts from Doc5 without a snapshot.

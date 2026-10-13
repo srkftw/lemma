@@ -104,4 +104,12 @@ evidence identities during decoding; editing clears current applicability and
 keeps its history. The [connected receipt](../evidence/006-managed-array-integration.json)
 records three whole-image builds/audits and five actual isolated requests in a
 QEMU course/ink/Save/new-cold/failure workflow. New Array heap-OOM containment,
-Doc5 migration, RTL timing and browser execution still require observations.
+RTL timing and browser execution still require observations. The separate
+[migration receipt](../evidence/006-array-document-migration.json) observes an
+actual acknowledged Doc5 course opening under this guest: only the document
+version and execution-extension version words change. Earlier ByteArray
+execution identities, mathematical results, assistance and raw ink survive.
+A subsequent actual Array check appends its own identity; independent cold
+recovery preserves the mixed history. Doc6 learner events require the same
+strict policy/event validation as Doc5. The original missing-version observer
+failure remains retained alongside the corrected observation.

@@ -636,6 +636,13 @@
       "sha256": "02a88f5e4acf0eb564da0141cae921cc1a54e112e2eae593483f77efc3c30eb8",
       "status": "PASS",
       "scope": "Actual Product9 circuitry same capacity/owned decode; separate boot/update acceptance required"
+    },
+    {
+      "path": "build/task006-array-doc5-migration-a3/result.json",
+      "bytes": 22225,
+      "sha256": "97b9771edfa9298df26649f2360f934f5917dc7d6921280b14d5fca4ddb915bc",
+      "status": "PASS",
+      "scope": "Actual Doc5 migration retained; strict Doc6 learner observation, mixed ByteArray/Array history and independent cold recovery; QEMU instruction-clock scope"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
