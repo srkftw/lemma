@@ -92,6 +92,14 @@ companion durability. An EOF, timeout or malformed reply is an error; no ACK is
 fabricated. Snapshot callers must reject `is_pending()` and retain controller,
 wire and cached policy state separately.
 
+`parse_recorded_reply(frame)` admits an already captured complete response with
+the same canonical framing checks, without creating a process or changing peer
+state. It preserves the raw action/trailer and returns request ID zero for the
+runtime to bind to its recorded request. It rejects newlines, extra responses,
+inconsistent heads and frames over256 bytes. This parser grants no authority to
+an unbound frame: the runtime must check request identity, event cursor and the
+applicable captured outcome boundary before scheduling device effects.
+
 Run the hosted peer with:
 
 ```sh

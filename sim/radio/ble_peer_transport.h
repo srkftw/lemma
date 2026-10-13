@@ -34,6 +34,7 @@ public:
  bool submit_credit(uint64_t request_id);
  bool submit_cancel(uint64_t request_id);
  std::optional<BLEPeerReply> poll(); // captures actual complete response first
+ static BLEPeerReply parse_recorded_reply(const std::string& frame); // pure captured-frame admission
  const std::string& cached_state() const {return cached_;} // observational
  const std::string& accepted_state() const {return cached_;}
  const std::string& error_output() const {return errors_;}

@@ -1,5 +1,6 @@
 // Independent host adapter observers. Policy is executed by the hosted Lean peer.
 #include "../../sim/radio/ble_peer_transport.h"
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -23,6 +24,16 @@ int main(int argc,char** argv){try{
  require(original.accepted_state()=="STATE 0 ACCEPTED 0 DUPLICATES 0 PENDING 0 -","pending request guessed future state");
  auto first=response(original);require(first.request_id==17&&first.action=="TX 5 0 -"&&
   first.logical_state=="STATE 262 ACCEPTED 1 DUPLICATES 0 PENDING 12 4c4d434d5030303101000200","actual Lean acceptance differs");
+ const auto recorded=BLEPeerTransport::parse_recorded_reply(first.frame);
+ require(recorded.request_id==0&&recorded.action==first.action&&recorded.frame==first.frame&&
+  recorded.logical_state==first.logical_state&&recorded.state==first.state,
+  "pure recorded response differs from accepted complete frame");
+ const std::array<std::string,4> invalid_frames{first.frame+'\n',first.frame+" | STATE 0 ACCEPTED 0 DUPLICATES 0 PENDING 0 -",
+  "TX 5 0 - | STATE 262 ACCEPTED 1 DUPLICATES 0 PENDING 12 -",std::string(257,'x')};
+ for(const auto& invalid:invalid_frames){
+  bool bad=false;try{BLEPeerTransport::parse_recorded_reply(invalid);}catch(const std::exception&){bad=true;}
+  require(bad,"invalid recorded response was admitted");
+ }
  const auto cached=original.accepted_state(); // no STATUS request, flush or drain
  BLEPeerTransport fork(argv[1],args,cached);ready(fork);require(fork.accepted_state()==cached,"privately rebound complete state differs");
  require(original.submit_rx(18,2,payload)&&fork.submit_rx(18,2,payload),"lost-ACK retry did not submit");

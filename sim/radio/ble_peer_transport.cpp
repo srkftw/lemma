@@ -52,6 +52,7 @@ BLEPeerReply BLEPeerTransport::parse(const std::string& frame){
   reply.action=="EMPTY_RX"||reply.action=="STATUS"||reply.action=="CREDIT 1","unknown peer response action");
  return reply;
 }
+BLEPeerReply BLEPeerTransport::parse_recorded_reply(const std::string& frame){return parse(frame);}
 std::string BLEPeerTransport::restore_command(const std::string& state){
  validate_state(state);auto fields=words(state);return "RESTORE "+fields[1]+" "+fields[3]+" "+fields[5]+" "+fields[8]+"\n";
 }

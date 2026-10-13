@@ -7,7 +7,8 @@
     "python3 scripts/check_ble_wire_peer.py --work-dir build/radio/ble-wire-peer-a3 --timeout 300",
     "python3 scripts/check_ble_packet.py --lane rtl --work-dir build/radio/ble-busy-rtl-a1 --timeout 300 --jobs 2",
     "python3 scripts/check_ble_transport.py --work-dir build/radio/ble-transport-a1",
-    "python3 -m unittest discover -s tests/radio -p 'test_*.py' -v"
+    "python3 -m unittest discover -s tests/radio -p 'test_*.py' -v",
+    "python3 scripts/check_ble_transport.py --work-dir build/radio/ble-transport-recorded-a2"
   ],
   "receipts": {
     "policy": {
@@ -60,6 +61,32 @@
       "observations": [
         "BLE_PEER_TRANSPORT realLean nonblocking IDs/overlap/pending/private exact suffix/cancel/EOF/reap PASS"
       ]
+    },
+    "captured_reply_admission": {
+      "path": "build/radio/ble-transport-recorded-a2/result.json",
+      "sha256": "3a59943a5bf01883d14e04358e19d2fd0d77c5d2bb4bc29e962deb5263d31da7",
+      "host_seconds": 21.068776789004914,
+      "source_inputs": {
+        "scripts/check_ble_transport.py": "b0b655f9882b27732e94b22539c1bfdec5da0e625338f16bb6e28bcd8ab399ba",
+        "scripts/check_silicon.py": "692a4f51e7bb3e303682d6787c58712f2ec0c66ab4a0d3b3033b499b3fd3110f",
+        "sim/radio/ble_peer_transport.h": "941ce94311ff7bc66922c8f2ac05b5139ae58b89f4216429dd4b34dccacc979b",
+        "sim/radio/ble_peer_transport.cpp": "58cf7d76e33c915eedbb4e6ce46757eca686e6c523eaba4808db59caf40d421a",
+        "tests/radio/ble_transport.cpp": "6d51897f660047c5b7361e82243f07b06e66c81befe8031014c0f189f1338f68",
+        "sim/radio/ble_peer.lean": "e4a04741bd347b5473e2e6df70c8a334cfa89acd897966f22003ca7df375afe5",
+        "Lemma/Radio/BLE/Link.lean": "478b5c1774693f3b27a5588c4c6b3e459ee8a7161f558b88f9418177c0a2461b",
+        "Lemma/Radio/BLE/Packet.lean": "72de8bb4915e1b59bef2e68e510dbb7707860f400330200873ab80081b6bc89e",
+        "Lemma/Core0/Memory.lean": "0a6fa6da74efb17f311310f656906281e8d46fb5660993566fccfce111029b1e",
+        "Lemma/Core0/Device.lean": "95fb5a3fd88b1efc387f0359e46e3c1972bbdadcae513cf8f8a1995f4254b9c4",
+        "flake.nix": "60075481b05a75d478ac8c5e3142caa7d80527e854510cb46460d18fb7551c89",
+        "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+        "lakefile.toml": "37162dc5c6cf1601e6a76baf72120a21da8647a6c767d5f2a4ac588c8e995e67",
+        "lean-toolchain": "d5edba4e4b8faad9c1baeadb265716d20d03be4d1a2647dc5e35b0c0325bea7b"
+      },
+      "observations": [
+        "Actual complete hosted Lean response parsed identically without process or policy mutation",
+        "Newline, second trailer, inconsistent opaque head and257-byte recorded frames rejected"
+      ],
+      "scope": "Pure framing admission only; runtime request/event binding and whole-machine replay remain separate"
     }
   },
   "maintained_radio_sources": {
@@ -155,6 +182,11 @@
     {
       "path": "build/radio/ble-dev/transport-run-a1.log",
       "scope": "Test selected nonexistent Nix executable path; actual EOF rejected, corrected resolved executable in new run"
+    },
+    {
+      "path": "build/radio/ble-transport-recorded-a1/result.json",
+      "sha256": "4fddf54574a8d6a9178723b13a43e0f6d30b3465492a151a8b7270ddcea054da",
+      "reason": "Strict GCC16 compile rejected temporary-vector fixture with free-nonheap-object warning; named std::array fixture used without warning suppression"
     }
   ],
   "remaining": [
