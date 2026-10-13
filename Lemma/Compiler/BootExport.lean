@@ -37,20 +37,24 @@ def resetLines (entry : String) : Array Line := #[
 ]
 def startup (entry : String) : String := String.intercalate "\n" ([
   ".option norvc", ".option norelax", ".section .text.reset, \"ax\", @progbits",
-  ".globl _reset", ".balign 4"] ++ (resetLines entry).toList.map Line.render ++ [
-  ".section .text.io, \"ax\", @progbits", ".globl core0_io_fence", ".balign 4",
+  ".globl _reset", ".type _reset, @function", ".balign 4"] ++ (resetLines entry).toList.map Line.render ++ [
+  ".size _reset, .-_reset",
+  ".section .text.io, \"ax\", @progbits", ".globl core0_io_fence", ".type core0_io_fence, @function", ".balign 4",
   (Line.label "core0_io_fence").render,
   (Line.instruction .fenceIO).render, (Line.instruction .return).render,
+  ".size core0_io_fence, .-core0_io_fence",
   ".section .note.GNU-stack, \"\", @progbits", ""])
 
 def linker : String := String.intercalate "\n" [
   "OUTPUT_ARCH(riscv)", "ENTRY(_reset)", "PHDRS { rom PT_LOAD FLAGS(5); }", "SECTIONS {",
-  s!"  . = {romBase};", "  .text : ALIGN(4) { KEEP(startup.o(.text.reset)) startup.o(.text.io) *(.text .text.* .rodata .rodata.*) } :rom",
+  s!"  . = {romBase};", "  .text : ALIGN(4) { KEEP(startup.o(.text.reset)) startup.o(.text.io) *(.text .text.*) } :rom",
+  "  .rodata : ALIGN(8) { *(.rodata.cst8) } :rom",
   s!"  ASSERT(. <= {romBase+romBytes}, \"immutable boot ROM envelope exceeded\")",
   "  /DISCARD/ : { *(.comment) *(.note.GNU-stack) *(.eh_frame*) }", "}", ""]
 
 private def effectFields (effects : EffectSet) : Json :=
-  .arr <| ((String.ofList (effects.render.toList.drop 1 |>.reverse.drop 1 |>.reverse)).splitOn ",").toArray.map Json.str
+  if effects == EffectSet.empty then .arr #[] else
+    .arr <| ((String.ofList (effects.render.toList.drop 1 |>.reverse.drop 1 |>.reverse)).splitOn ",").toArray.map Json.str
 
 def exportFiles (env : Environment) (directory : System.FilePath) : IO Unit := do
   let suite ← match checkAndLowerActionSuiteForProfile env profile #[`Lemma.Boot.Recovery.entry] with
@@ -63,7 +67,9 @@ def exportFiles (env : Environment) (directory : System.FilePath) : IO Unit := d
     | throw <| IO.userError "missing genuine boot entry"
   let module : LLVM.Module := {
     sourceName := "Lemma immutable product boot-v1"
-    functions := lowered.functions
+    -- ROM-v1 uses branch dispatch. Prevent llc from introducing unadvertised
+    -- indirect jump-table state after the checked direct-control-flow corpus.
+    functions := lowered.functions.map fun f => {f with attributes := f.attributes.push "\"no-jump-tables\"=\"true\""}
     declarations := #[{name := "core0_io_fence", returnType := .void, parameters := #[]}] }
   IO.ofExcept <| LLVM.validateModule module
   let mut functions : Array Json := #[]
@@ -87,8 +93,10 @@ def exportFiles (env : Environment) (directory : System.FilePath) : IO Unit := d
     ("stack_floor", toJson (0x81fd0000 : Nat)), ("stack_top", toJson Lemma.Boot.Product.romStackTop.toNat),
     ("integrity", .str "CRC32/ISO-HDLC; no authentication or anti-rollback guarantee"),
     ("recovery_transport", .str "lemma-local-uart-recovery-v1; integrity-only, bounded owner-local transport; authentication OPEN"),
+    ("backend_dispatch", .str "lemma-boot-direct-branches-v1"),
     ("functions", .arr functions),
-    ("used_execution_ops", .arr <| suite.usedExecutionOps.map fun op => .str op.stableId)]
+    ("used_execution_ops", .arr <| suite.usedExecutionOps.map fun op => .str op.stableId),
+    ("used_device_ops", .arr <| suite.usedDeviceOps.map fun op => .str op.stableId)]
   IO.FS.createDirAll directory
   for (name,contents) in #[("program.ll",module.render),("unit.json",manifest.pretty++"\n"),
       ("symbols.txt",lowered.renderSymbolManifest),("startup.S",startup entry.llvm),("link.ld",linker)] do

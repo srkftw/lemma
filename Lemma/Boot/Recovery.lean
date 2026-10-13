@@ -106,12 +106,37 @@ def publishImage (slot identity : UInt64) : Action :=
   else if selected = 2 then establishRecoveryImage slot identity else .done conflict 0
   else .done s 0 else .done malformed 0
 
+-- A receipt can be lost after a first-image barrier. Reconcile against fresh
+-- durable metadata instead of treating a duplicate establishment as failure.
+-- Reconciliation establishes a fresh barrier and revalidates the complete
+-- image. Observed metadata after a failed older barrier is not an acknowledgment.
+def imageStatus (slot identity : UInt64) : Action :=
+  if slot < 2 then
+  .bind (transaction 3 0) fun s _ => if s = 0 then
+  .bind selectedMetadata fun s selected => if s = 0 then
+  if selected < 2 then
+    let metadata := if selected = 0 then metadata0Buffer else metadata1Buffer
+    .bind (Lemma.Kernel.Memory.Access.read64 (metadata+24)) fun s confirmed => if s = 0 then
+    .bind (Lemma.Kernel.Memory.Access.read64 (metadata+32)) fun s confirmedIdentity => if s = 0 then
+    if canConfirm slot identity confirmed confirmedIdentity then
+      .bind (verifyImage slot identity) fun s _ => .done s (if s = 0 then 1 else 0)
+    else
+    .bind (Lemma.Kernel.Memory.Access.read64 (metadata+40)) fun s trial => if s = 0 then
+    .bind (Lemma.Kernel.Memory.Access.read64 (metadata+48)) fun s trialIdentity => if s = 0 then
+    if canConfirm slot identity trial trialIdentity then
+      .bind (verifyImage slot identity) fun s _ => .done s (if s = 0 then 2 else 0)
+    else .done wrongReceipt 0
+    else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else if selected = 2 then .done Product.recovery 0 else .done conflict 0
+  else .done s 0 else .done s 0 else .done malformed 0
+
 private def execute (operation slot relative identity checksum : UInt64) : Action :=
   if operation = 0 then .done 0 mediumSectors else
   if operation = 1 then
     .bind (receivePayload checksum) fun s _ => if s = 0 then writeImageSector slot relative else .done s 0
   else if operation = 2 then publishImage slot identity else
-  if operation = 3 then boot else .done malformed 0
+  if operation = 3 then boot else
+  if operation = 4 then imageStatus slot identity else .done malformed 0
 private def commandStep (_ _ : UInt32) (_ _ _ _ _ : UInt64) : Action :=
   .bind receiveFrame fun s _ => if s = 0 then
   .bind (Lemma.Kernel.Memory.Access.read64 (frame+8)) fun s version => if s = 0 then
@@ -141,7 +166,22 @@ def recovery : Action :=
   .boundedFoldU64 65536 commandStep 65536 0 0 0 0 0 fun s entry =>
   if s = Status.iterationStop then .done 0 entry else
   if s = 0 then .done Product.recovery 0 else .done s 0
+private def recoveryStart : Action :=
+  .bind Product.«initialize» fun s _ => if s = 0 then
+  .uartEnableAndResetFifo fun s => if s = 0 then
+  .bind (reply 0 0 mediumSectors) fun s _ => if s = 0 then recovery else .done s 0
+  else .done s 0 else .done s 0
 def entry : Action :=
-  .bind boot fun s entry => if s = 0 then .done 0 entry else
-  .uartEnableAndResetFifo fun s => if s = 0 then recovery else .done s 0
+  -- Owner-local reset request is a single byte sent before normal boot. Only
+  -- after the ROM beacon may the host send framed image transactions; FIFO
+  -- initialization never discards a partly submitted request.
+  .uartReadStatus fun s status => if s = 0 then
+  if status &&& 1 = 0 then
+    .bind boot fun s entry => if s = 0 then .done 0 entry else recoveryStart
+  else
+    .uartReadByte fun s byte => if s = 0 then
+    if byte = 0x52 then recoveryStart else
+      .bind boot fun s entry => if s = 0 then .done 0 entry else recoveryStart
+    else .done s 0
+  else .done s 0
 end Lemma.Boot.Recovery

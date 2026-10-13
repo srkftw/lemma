@@ -45,6 +45,8 @@ def headerBuffer : UInt64 := scratch + 0x1000
 def metadata0Buffer : UInt64 := scratch + 0x2000
 def metadata1Buffer : UInt64 := scratch + 0x3000
 def romStackTop : UInt64 := 0x82000000
+def discoveryBase : UInt64 := 0x87e00000
+def discoveryLimit : UInt64 := 3072
 
 def validSpan (start bytes first limit : UInt64) : Bool :=
   if start < first then false else
@@ -52,11 +54,22 @@ def validSpan (start bytes first limit : UInt64) : Bool :=
 def validSegment (offset fileBytes memoryBytes destination : UInt64) : Bool :=
   if offset &&& 511 = 0 then
   if destination &&& 7 = 0 then
-  if fileBytes = 0 then false else
+  if memoryBytes = 0 then false else
   if memoryBytes < fileBytes then false else
-  if validSpan offset fileBytes 512 (slotSectors * 512) then
+  if validSpan offset fileBytes 4096 (slotSectors * 512) then
     validSpan destination memoryBytes ramFirst ramLimit
   else false else false else false
+def validDiscovery (bytes checksum : UInt64) : Bool :=
+  if 40 ≤ bytes then if bytes ≤ discoveryLimit then checksum ≤ 0xffffffff else false else false
+def discoveryWordValid (word bytes : UInt64) : Bool :=
+  if word &&& 0xffffffff = 0xedfe0dd0 then
+    let a : UInt64 := (word >>> 56) &&& (255 : UInt64)
+    let b : UInt64 := (word >>> 48) &&& (255 : UInt64)
+    let c : UInt64 := (word >>> 40) &&& (255 : UInt64)
+    let d : UInt64 := (word >>> 32) &&& (255 : UInt64)
+    let size : UInt64 := a ||| (b <<< 8) ||| (c <<< 16) ||| (d <<< 24)
+    size = bytes
+  else false
 def disjoint (a an b bn : UInt64) : Bool :=
   if a ≤ b then an ≤ b - a else bn ≤ a - b
 def headerFieldsValid (magic version identity binding segments entry : UInt64) : Bool :=
@@ -332,13 +345,14 @@ def validateImageHeader (base expectedIdentity : UInt64) : Action :=
   .bind (readWord base 4) fun s segments => if s = 0 then
   .bind (readWord base 5) fun s entry => if s = 0 then
   if expectedHeader magic version identity binding segments entry expectedIdentity then
-  .boundedFoldU64 2 reservedStep 2 1 base 6 0 0 fun s valid => if s = 0 then
-  if valid = 1 then
+  .bind (readWord base 6) fun s discoveryBytes => if s = 0 then
+  .bind (readWord base 7) fun s discoveryCRC => if s = 0 then
+  if validDiscovery discoveryBytes discoveryCRC then
   .boundedFoldU64 15 reservedStep 15 1 base 48 0 0 fun s valid => if s = 0 then
   if valid = 1 then
   .boundedFoldU64 8 segmentStep 8 0 base segments entry 0 fun s found => if s = 0 then
   if found = 1 then .done 0 entry else .done malformed 0 else .done s 0
-  else .done malformed 0 else .done s 0
+  else .done malformed 0 else .done s 0 else .done s 0
   else .done malformed 0 else .done s 0
   else .done malformed 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
@@ -364,6 +378,15 @@ private def fileSectorStep (index count : UInt32) (crc first fileBytes destinati
   .bind (transaction 1 (first + index.toUInt64)) fun s _ => if s = 0 then
   .boundedFoldU64 64 copyWordStep 64 crc fileBytes destination (index.toUInt64 * 512) 0 fun s crc => .done s crc
   else .done s 0 else .done 0 crc
+
+private def loadDiscovery (slot bytes checksum : UInt64) : Action :=
+  .bind (transaction 1 (slotFirst slot+1)) fun s _ => if s = 0 then
+  .bind (bufferRead 0) fun s first => if s = 0 then
+  if discoveryWordValid first bytes then
+  .boundedFoldU64 6 fileSectorStep ((bytes+511)/512).toUInt32 crcInitial
+    (slotFirst slot+1) bytes discoveryBase 0 fun s crc => if s = 0 then
+  if crcFinish crc = checksum then .done 0 0 else .done malformed 0
+  else .done s 0 else .done malformed 0 else .done s 0 else .done s 0
 
 private def zeroTailStep (index count : UInt32) (_ destination _ _ _ : UInt64) : Action :=
   if index < count then Lemma.Kernel.Memory.Access.write8 (destination + index.toUInt64) 0 else .done 0 0
@@ -411,10 +434,14 @@ def loadImage (slot identity : UInt64) : Action :=
   if slot < 2 then
   .bind (readSector (slotFirst slot) headerBuffer) fun s _ => if s = 0 then
   .bind (validateImageHeader headerBuffer identity) fun s entry => if s = 0 then
+  .bind (readWord headerBuffer 6) fun s discoveryBytes => if s = 0 then
+  .bind (readWord headerBuffer 7) fun s discoveryCRC => if s = 0 then
+  .bind (loadDiscovery slot discoveryBytes discoveryCRC) fun s _ => if s = 0 then
   .bind (readWord headerBuffer 4) fun s segments => if s = 0 then
   .boundedFoldU64 8 loadSegmentStep 8 0 slot segments 0 0 fun s _ =>
   if s = 0 then .done 0 entry else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done malformed 0
 
 private def compareMetadataStep (index count : UInt32) (equal left right _ _ : UInt64) : Action :=
   if index < count then
@@ -514,6 +541,14 @@ private def verifyFileSectorStep (index count : UInt32) (crc first fileBytes _ _
   .bind (transaction 1 (first+index.toUInt64)) fun s _ => if s = 0 then
   .boundedFoldU64 64 checksumWordStep 64 crc fileBytes (index.toUInt64*512) 0 0 fun s crc => .done s crc
   else .done s 0 else .done 0 crc
+private def verifyDiscovery (slot bytes checksum : UInt64) : Action :=
+  .bind (transaction 1 (slotFirst slot+1)) fun s _ => if s = 0 then
+  .bind (bufferRead 0) fun s first => if s = 0 then
+  if discoveryWordValid first bytes then
+  .boundedFoldU64 6 verifyFileSectorStep ((bytes+511)/512).toUInt32 crcInitial
+    (slotFirst slot+1) bytes 0 0 fun s crc => if s = 0 then
+  if crcFinish crc = checksum then .done 0 0 else .done malformed 0
+  else .done s 0 else .done malformed 0 else .done s 0 else .done s 0
 private def verifySegmentStep (index count : UInt32) (_ slot segments _ _ : UInt64) : Action :=
   if activeSegment index count segments then
   let first := 8+index.toUInt64*5
@@ -528,10 +563,14 @@ def verifyImage (slot identity : UInt64) : Action :=
   if slot < 2 then
   .bind (readSector (slotFirst slot) headerBuffer) fun s _ => if s = 0 then
   .bind (validateImageHeader headerBuffer identity) fun s entry => if s = 0 then
+  .bind (readWord headerBuffer 6) fun s discoveryBytes => if s = 0 then
+  .bind (readWord headerBuffer 7) fun s discoveryCRC => if s = 0 then
+  .bind (verifyDiscovery slot discoveryBytes discoveryCRC) fun s _ => if s = 0 then
   .bind (readWord headerBuffer 4) fun s segments => if s = 0 then
   .boundedFoldU64 8 verifySegmentStep 8 0 slot segments 0 0 fun s _ =>
   if s = 0 then .done 0 entry else .done s 0
-  else .done s 0 else .done s 0 else .done s 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done malformed 0
 
 -- The owner-authorized transport may stage opaque image sectors, but cannot
 -- write the confirmed slot or metadata directly through this installer API.
@@ -545,12 +584,20 @@ def finishInstall (currentSector metadataBase identity : UInt64) : Action :=
   .bind (readWord metadataBase 3) fun s confirmedSlot => if s = 0 then
   .bind (transaction 3 0) fun s _ => if s = 0 then
   .bind (verifyImage (inactiveSlot confirmedSlot) identity) fun s _ => if s = 0 then
+  .bind (readWord metadataBase 5) fun s trialSlot => if s = 0 then
+  .bind (readWord metadataBase 6) fun s trialIdentity => if s = 0 then
+  -- A lost publication receipt must not restart the attempt budget. This
+  -- fresh record and verified image already describe this exact transaction.
+  if canConfirm (inactiveSlot confirmedSlot) identity trialSlot trialIdentity then
+    .done 0 currentSector
+  else
   .bind (writeWord metadataBase 2 (generation+1)) fun s _ => if s = 0 then
   .bind (writeWord metadataBase 5 (inactiveSlot confirmedSlot)) fun s _ => if s = 0 then
   .bind (writeWord metadataBase 6 identity) fun s _ => if s = 0 then
   .bind (writeWord metadataBase 7 0) fun s _ => if s = 0 then
   publishMetadata currentSector metadataBase
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
 def confirm (currentSector metadataBase : UInt64) : Action :=
   .bind (validateMetadata metadataBase) fun s generation => if s = 0 then

@@ -1,0 +1,287 @@
+{
+  "schema": "lemma-product-rom-recovery/1",
+  "status": "PASS",
+  "scope": "genuine immutable ROM compiler/controller/recovery transport and same-backend private continuation; full product image boot/update qualification OPEN",
+  "rom": {
+    "build": "build/boot/task006-product-rom-a13",
+    "build_sha256": "9776624b2b09fb4ce2ff38d4348ead5207e2eec37ca4d8dacbc3ae9e95dc8d87",
+    "binary_sha256": "dcd94a747f9364c9499b250a9a2367c78f50c38d7e0d933f4cbb6484fd387135",
+    "bytes": 12752,
+    "source_inputs": 219,
+    "functions": {
+      "genuine_functions": 147,
+      "optimized_functions": 27,
+      "runtime_helpers": [
+        "core0_io_fence"
+      ],
+      "llvm_intrinsics": [
+        "llvm.fshl.i64",
+        "llvm.umax.i4",
+        "llvm.umin.i64"
+      ],
+      "authentication": "OPEN",
+      "anti_rollback": "OPEN"
+    },
+    "tool_identity": {
+      "lean": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863",
+        "version": [
+          "Lean (version 4.34.1, Release)"
+        ]
+      },
+      "lake": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+        "sha256": "2bbf0d3a0077a8bddf11ad6987ebe930b2b3692eabe15fcd72f0aa069d6f8620",
+        "version": [
+          "Lake version 5.0.0-src (Lean version 4.34.1)"
+        ]
+      },
+      "opt": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+        "sha256": "4e691ddfbf949e5cae605f4211aa687ff10cfc59c45e04090fc7eb7771f76725",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build.",
+          "  Default target: x86_64-unknown-linux-gnu"
+        ]
+      },
+      "llc": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+        "sha256": "00ef7b72f35b21cb2ddfdb66db6217120d314b36bdbed2580a330846863660ac",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build.",
+          "  Default target: x86_64-unknown-linux-gnu"
+        ]
+      },
+      "clang": {
+        "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20",
+        "sha256": "e63da6f1ae63690861bab5e2981e72ead5a3a3245ce7b2853841d19646d0b23b",
+        "version": [
+          "clang version 20.1.8",
+          "Target: x86_64-unknown-linux-gnu",
+          "Thread model: posix",
+          "InstalledDir: /nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin"
+        ]
+      },
+      "ld.lld": {
+        "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+        "sha256": "e8406185c307f68d7926eaa7570920eaf2aa0c1e52126d914c3a05c6107e7f58",
+        "version": [
+          "LLD 20.1.8 (compatible with GNU linkers)"
+        ]
+      },
+      "llvm-nm": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+        "sha256": "b93775666542ca37c59bae9b704e92ebbee38850715adf4ba04e2086843230e8",
+        "version": [
+          "llvm-nm, compatible with GNU nm",
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build."
+        ]
+      },
+      "llvm-readelf": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+        "sha256": "5f581ba2b48160f3febaba5a05a0a145ba748b29a11a20503282e7771f3efb71",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build."
+        ]
+      },
+      "llvm-objdump": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objdump",
+        "sha256": "9d688cee37fcd514374a41d659da285cd2522a30500a5faf3287460f4c69c70c",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build.",
+          ""
+        ]
+      },
+      "llvm-objcopy": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy",
+        "sha256": "1316f7fc33eb1a0e593879dfe5042d6e5a6ffe28ef45c69a5a3eb2062f0e09d1",
+        "version": [
+          "llvm-objcopy, compatible with GNU objcopy",
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8",
+          "  Optimized build."
+        ]
+      }
+    }
+  },
+  "native": {
+    "build": "build/silicon/task006-product-runtime-a2",
+    "manifest_sha256": "677bf56c889fdd80f526e96fe22f58b2613adfba685858e7f3afe4e822477bb2",
+    "binary_sha256": "2cb999a9a799ec535f3256dd0365a293f4742a52043e509b44441238df3dc62c",
+    "runtime_identity": "f0ce9cd49559eb11717c7f9215eb2517a28055233c8c76c1f7e9bebce5a84f31",
+    "explicit_archive_sha256": "cc5ecda54a0864cf38a5c6ac89ee1d246ba4b505f9305812991014dc2feaf887",
+    "inputs": 244
+  },
+  "components": {
+    "receipt": "build/boot/task006-product-components-a2/result.json",
+    "sha256": "defb2d9a77ecc7473d256c61d7c7ed9d5460fc16ca6ca72a455c6611237df318",
+    "actual_artifact_mutations_rejected": 29
+  },
+  "recovery": {
+    "capacity": {
+      "beacon": {
+        "transaction": 0,
+        "status": 0,
+        "value": 65544
+      },
+      "receipts": [
+        {
+          "transaction": 1,
+          "status": 0,
+          "value": 65544
+        }
+      ],
+      "cycles": 200000,
+      "durability": "only the actual successful target publication/status receipt acknowledges installation; CRC integrity only"
+    },
+    "stage_corrupt": {
+      "status": "PASS",
+      "scope": "actual ROM opaque sector write then rejected corrupt-image publication; no metadata or guest image fabricated",
+      "sector_receipt": {
+        "transaction": 2,
+        "status": 0,
+        "value": 3
+      },
+      "publish_receipt": {
+        "transaction": 3,
+        "status": 211,
+        "value": 0
+      },
+      "cycles": 400000,
+      "host_seconds": 2.69446779001737,
+      "observed_unacknowledged_persistence": "written sector observed; no metadata publication/durable image acknowledgment"
+    },
+    "private_fork": {
+      "status": "PASS",
+      "scope": "observational product-ROM snapshot\u2192private restored fork, exact future capacity suffix and separate real NV-write continuation",
+      "snapshot_cycle": 600000,
+      "suffix_cycle": 700000,
+      "equal_fields": [
+        "cycle",
+        "ticks",
+        "pc",
+        "privilege",
+        "retired",
+        "finished",
+        "finish_code",
+        "event_queue",
+        "uart_queue",
+        "drive_hash",
+        "panel_completed",
+        "power",
+        "boot_backing"
+      ],
+      "suffix_receipt": {
+        "transaction": 4,
+        "status": 0,
+        "value": 65544
+      },
+      "private_write_receipt": {
+        "transaction": 5,
+        "status": 0,
+        "value": 12
+      },
+      "host_seconds": 2.886896905954927,
+      "original_failed_observer": "fork waiting for pre-snapshot UART beacon; retained in fork-observer-a1.json"
+    },
+    "continued_public_capacity": {
+      "beacon": null,
+      "receipts": [
+        {
+          "transaction": 6,
+          "status": 0,
+          "value": 65544
+        }
+      ],
+      "cycles": 100000,
+      "durability": "only the actual successful target publication/status receipt acknowledges installation; CRC integrity only"
+    },
+    "snapshot_bytes": 145202334
+  },
+  "host_fixtures": [
+    "BootAuthority actual Lean PASS",
+    "ProductAddressSpace actual raw-Action/independent Sv39 oracle PASS",
+    "UserCopyScans and LoaderCopy legacy PASS",
+    "5 independent wire/opaque ELF host tests PASS"
+  ],
+  "preserved_failures": [
+    "product-rom a5 producer empty effects",
+    "a6 backend jump tables",
+    "a7 missing precise discovery region",
+    "a8 executable literal pool",
+    "a10 SHF_MERGE observer inventory",
+    "product-beacon a6 batch exit3 at declared cycle ceiling despite beacon",
+    "private-fork observer a1 waited for pre-snapshot output"
+  ],
+  "remaining": [
+    "actual full image installation and ROM\u2192loaded kernel boot",
+    "trial confirmation after real guest full initial controller frame",
+    "payload/metadata/confirmation interruption and watchdog/brownout recovery",
+    "cryptographic owner authentication and durable trust state",
+    "product local bundle/distribution closure"
+  ],
+  "repaired_rom": {
+    "build": "build/boot/task006-product-rom-a14",
+    "binary_sha256": "efd43d2ea638931e3232428511f4c89a1f2593f891e45b10bdae91b8efd8fb34",
+    "build_sha256": "8fad6939951fde805b86c045df2c3dc4651c67b0c16b9352d1439509f775fddd",
+    "source_archive_sha256": "ba3f0116659345533b0fdea6bb72b0745ce8e9057f1163ff4addb2a235cdccf8",
+    "source_inputs": 219,
+    "status": "PASS",
+    "artifact_mutations_rejected": 29,
+    "genuine_checked_closure": {
+      "genuine_functions": 147,
+      "optimized_functions": 27,
+      "runtime_helpers": [
+        "core0_io_fence"
+      ],
+      "llvm_intrinsics": [
+        "llvm.fshl.i64",
+        "llvm.umax.i4",
+        "llvm.umin.i64"
+      ],
+      "authentication": "OPEN",
+      "anti_rollback": "OPEN"
+    },
+    "status_reconciliation": "actual fresh barrier then full matching image/DTB integrity validation; no trial-attempt or generation mutation",
+    "original_counterexample": "build/task006-product-boot-draft-a1/recovery-status-candidate-a2.log demonstrates prior metadata-only status under failed barrier",
+    "actual_policy_fixture": "build/task006-product-boot-draft-a1/recovery-status-source-tests-a1.log"
+  },
+  "product_guest_artifacts": {
+    "build": "build/kernel/task006-product-notebook-a2",
+    "configuration": "lemmasim-silicon-product-notebook",
+    "image_sha256": "60232247dd130bb1ebf5b988835f25a552cf6112308b68a03d2c21ada6563834",
+    "dtb_sha256": "b4e5cae42e35597eb7bd34f818eea6f744fcdb6a7f2cb0f0104fb18844a78e11",
+    "build_sha256": "98365ea00c5d0a4f1def5fbd5e2f76ce7273683a72f4d4a0df8978a29417a2f8",
+    "audit_sha256": "66016d832c56c99571e1ecd42832ab4eccda2d0655501afb1e1a295ebd933826",
+    "source_archive_sha256": "11f64ddbc0fe10ca7c6eecfe54222921d87c6255a236fd77fcfdf9f603f19bb9",
+    "source_inputs": 244,
+    "status": "BUILD_AND_FULL_AUDIT_PASS",
+    "actual_product_boot": "RUNNING_UNQUALIFIED",
+    "preserved_failure": "build/kernel/task006-product-notebook-a1/audit-failure.json",
+    "independent_retained_observer_diagnostics": "build/kernel/task006-product-notebook-a1/artifact-diagnostic-a2.json",
+    "selected_trap_stack_bytes": 2112,
+    "selected_trap_stack_capacity_bytes": 16352
+  },
+  "full_image_campaign": {
+    "session": "build/boot/task006-product-install-a1/session",
+    "status": "RUNNING",
+    "package": "build/boot/task006-product-notebook-package-a1/package.json",
+    "blank_boot_medium": true,
+    "user_journal_source": "build/silicon/task006-loader-cold-a1/fast-medium.raw",
+    "private_user_copy": true,
+    "no_host_image_preload": true,
+    "bound_receipt": "build/boot/task006-product-installation-work-bound-a1.json",
+    "result_scope": "actual installation/handoff/confirmation/updates remain open until machine observations"
+  }
+}

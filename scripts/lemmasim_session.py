@@ -649,7 +649,7 @@ class Session:
         self.machine.close()
 
 
-def serve(args):
+def serve(args, machine_type=None, session_type=None):
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     directory = args.session_dir.resolve()
     directory.mkdir(parents=True, exist_ok=False)
@@ -661,7 +661,7 @@ def serve(args):
     viewer = None
     tablet = tablet_log = None
     try:
-        if startup_restore_medium(args):
+        if machine_type is None and startup_restore_medium(args):
             args=copy.copy(args)
             args.disk=directory/'startup-medium.raw'
             with args.disk.open('xb') as stream:
@@ -670,12 +670,14 @@ def serve(args):
         if args.disk is not None and args.backend == 'rtl':
             lock = args.disk.resolve().open('r+b')
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        if args.backend == 'rtl':
+        if machine_type is not None:
+            machine = machine_type(args, directory)
+        elif args.backend == 'rtl':
             machine = RTL(args, directory)
         else:
             from lemmasim_fast import Fast
             machine = Fast(args, directory)
-        session = Session(machine, directory, args)
+        session = (session_type or Session)(machine, directory, args)
         if args.restore:
             session.restore(args.restore)
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener, selectors.DefaultSelector() as ready:

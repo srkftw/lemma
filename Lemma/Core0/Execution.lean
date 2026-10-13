@@ -275,7 +275,8 @@ def kernelMemoryRegions : Array MemoryRegion := #[
 def memoryRegions : Profile → Array MemoryRegion
   | .boot_v0_1 => #[
       ⟨"boot-loaded-image", 0x80000000, 0x81f00000, true⟩,
-      ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩]
+      ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩,
+      ⟨"boot-loaded-discovery", 0x87e00000, 0x87e00c00, true⟩]
   | .firmware_v0_1 | .firmware_v0_2 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
@@ -288,6 +289,8 @@ def memoryRegionsValid (profile : Profile) : Bool :=
   Lemma.Platform.LemmaVM.Layout.valid && profile.isExecution && !(memoryRegions profile).isEmpty &&
     (memoryRegions profile).all fun region =>
       region.start < region.stop && region.stop ≤ 2 ^ 64 &&
-        region.start % 4096 == 0 && region.stop % 4096 == 0
+        region.start % 4096 == 0 && (region.stop % 4096 == 0 ||
+          (profile.isBoot && region.name == "boot-loaded-discovery" &&
+            region.start == 0x87e00000 && region.stop == 0x87e00c00 && region.writable))
 
 end Lemma.Core0.Execution
