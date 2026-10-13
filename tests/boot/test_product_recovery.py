@@ -59,7 +59,7 @@ class RecoveryWireTests(unittest.TestCase):
   with self.assertRaises(ValueError):product.install_extent({'discovery_bytes':2873},wire[:511],{'discovery_bytes':2873})
 
  def test_product_profile_compatibility_pairs_are_exact(self):
-  for profile,compatibility in [('lemma-silicon-dev/0.7.0',0x0007000300010001),('lemma-silicon-dev/0.9.0',0x0009000300010001)]:
+  for profile,compatibility in [('lemma-silicon-dev/0.7.0',0x0007000300010001),('lemma-silicon-dev/0.9.0',0x0009000300010001),('lemma-silicon-dev/0.10.0',0x000a000300010001)]:
    wire=bytearray(512);struct.pack_into('<Q',wire,24,compatibility);struct.pack_into('<Q',wire,48,2873)
    package={'discovery_bytes':2873,'compatibility':compatibility};identity={'discovery_bytes':2873,'profile':profile}
    product.install_extent(package,wire,identity)

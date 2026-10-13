@@ -19,15 +19,16 @@ USB_CONFIGURATIONS={'usb':'lemmasim-silicon-usb-link-probe','notebook':'lemmasim
                     'usb-bulk-notebook':'lemmasim-silicon-usb-bulk-notebook','usb-bulk-initializer':'lemmasim-silicon-usb-bulk-initialize'}
 USB_NEXT_CONFIGURATIONS={'usb-next-bulk-notebook':'lemmasim-silicon-usb-next-bulk-notebook',
                          'usb-next-bulk-initializer':'lemmasim-silicon-usb-next-bulk-initialize'}
+PRODUCT_EXECUTED_CONFIGURATIONS={'product-executed-bulk-notebook':'lemmasim-silicon-product-executed-bulk-notebook'}
 PRODUCT_NEXT_CONFIGURATIONS={'product-next-bulk-notebook':'lemmasim-silicon-product-next-bulk-notebook'}
 USB_ARCHIVE_PROFILES=frozenset({'lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'})
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
 def configurations(name=None):
     profile(name)
-    return PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+    return PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     profile(name)
-    return ROOT/'build/lemmasim/rtl-prepared-0.9.0.json' if name=='lemma-silicon-dev/0.9.0' else ROOT/'build/lemmasim/rtl-prepared-0.8.0.json' if name=='lemma-silicon-dev/0.8.0' else ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
+    return ROOT/'build/lemmasim/rtl-prepared-0.10.0.json' if name=='lemma-silicon-dev/0.10.0' else ROOT/'build/lemmasim/rtl-prepared-0.9.0.json' if name=='lemma-silicon-dev/0.9.0' else ROOT/'build/lemmasim/rtl-prepared-0.8.0.json' if name=='lemma-silicon-dev/0.8.0' else ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()

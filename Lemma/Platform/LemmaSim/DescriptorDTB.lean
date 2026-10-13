@@ -1052,4 +1052,189 @@ def validateSiliconUSBNext (pointer expectedBytes width height pressure : UInt64
 def validateSiliconProductNext (pointer expectedBytes width height pressure : UInt64) : Action :=
   validateBindingNext 8 pointer expectedBytes width height pressure
 
+private def literalLengthExecuted (code : UInt64) : UInt64 :=
+  if code = 64 then 23 else if code = 80 then 15 else literalLengthNext code
+private def literalWordExecuted (code index : UInt64) : UInt64 :=
+  if code = 64 then
+    if index = 0 then 0x78652c616d6d656c else
+    if index = 1 then 0x722d646574756365 else
+    if index = 2 then 0x687365726665 else
+    0 else
+  if code = 80 then
+    if index = 0 then 0x61702c616d6d656c else
+    if index = 1 then 0x33762d726570 else
+    0 else literalWordNext code index
+
+private def matchStepExecuted (i _ : UInt32) (acc address code _ _ : UInt64) : Action :=
+  .bind (Access.read8 (address + i.toUInt64)) fun s byte =>
+  if s = 0 then
+    let expected := (literalWordExecuted code (i.toUInt64 / 8) >>> ((i.toUInt64 % 8) * 8)) &&& 255
+    if byte = expected then .done 0 acc else .done 10 0
+  else .done s 0
+
+private def equalLiteralExecuted (address bytes code : UInt64) : Action :=
+  if bytes = literalLengthExecuted code then
+    .boundedFoldU64 32 matchStepExecuted bytes.toUInt32 1 address code 0 0 fun s same =>
+    if s = 10 then .done 0 0 else .done s same
+  else .done 0 0
+
+private def findStepExecuted (i _ : UInt32) (acc address bytes start _ : UInt64) : Action :=
+  let code := start + i.toUInt64
+  .bind (equalLiteralExecuted address bytes code) fun s same =>
+  if s = 0 then if same = 1 then .done 10 code else .done 0 acc else .done s 0
+
+private def findCodeExecuted (address bytes start count : UInt64) : Action :=
+  if count ≤ 24 then
+    .boundedFoldU64 24 findStepExecuted count.toUInt32 0 address bytes start 0 fun s code =>
+    if s = 10 then .done 0 code else .done s code
+  else .done invalid 0
+
+
+private def executedRegisterStep (i _ : UInt32) (acc data _ _ _ : UInt64) : Action :=
+  .bind (BootInfo.readBE32 (data + i.toUInt64 * 4)) fun s actual => if s = 0 then
+  if actual = 192 + i.toUInt64 * 8 then .done 0 acc else .done invalid 0
+  else .done s 0
+private def executedProperty (data bytes : UInt64) : Action :=
+  if bytes = 24 then
+  .boundedFoldU64 6 executedRegisterStep 6 0 data 0 0 0 fun s _ =>
+  if s = 0 then mark 512 else .done s 0
+  else .done invalid 0
+
+private def leafPropertyExecuted (data bytes code role : UInt64) : Action :=
+  if role = 1 then
+    if code = 32 then
+      .bind (equalLiteralExecuted data bytes 80) fun s same => if s = 0 then
+      if same = 1 then mark 2 else .done invalid 0 else .done s 0
+    else if code = 38 then fixedCell data bytes 3 16 else
+    if code = 63 then fixedCell data bytes 3584 256 else
+    if code = 64 then executedProperty data bytes else leafProperty data bytes code role
+  else if role = 4 then if code = 48 then
+    .bind (get 176) fun s binding => if s = 0 then
+    fixedCell data bytes (if binding = 9 then 17 else 16) 32 else .done s 0
+    else leafProperty data bytes code role
+  else leafProperty data bytes code role
+
+private def endNodeExecuted (cursor depth : UInt64) : Action :=
+  if 0 < depth then
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if s = 0 then
+  .bind (if leaf role = 1 then
+    .bind (get 64) fun s flags => if s = 0 then
+    if flags = (if role = 1 then 1023 else requiredFlags role) then .done 0 0 else .done invalid 0 else .done s 0
+  else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 32 (depth - 1)) fun s _ => if s = 0 then put 0 (cursor + 4) else .done s 0
+  else .done s 0 else .done s 0 else .done invalid 0
+
+
+private def propertyExecuted (cursor depth limit : UInt64) : Action :=
+  if depth = 0 then .done invalid 0 else if limit < cursor + 12 then .done invalid 0 else
+  .bind (BootInfo.readBE32 (cursor + 4)) fun s bytes => if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (cursor + 8)) fun s nameOffset => if failed s = true then .done s 0 else
+  .bind (get 16) fun s strings => if failed s = true then .done s 0 else
+  .bind (get 24) fun s stringsEnd => if failed s = true then .done s 0 else
+  if stringsEnd - strings ≤ nameOffset then .done invalid 0 else
+  let data := cursor + 12
+  if limit - data < bytes then .done invalid 0 else
+  .bind (BootInfo.readBoundedName (strings + nameOffset) stringsEnd) fun s nameEnd => if failed s = true then .done s 0 else
+  .bind (findCodeExecuted (strings + nameOffset) (nameEnd - strings - nameOffset) 32 24) fun s firstCode => if failed s = true then .done s 0 else
+  .bind (if firstCode = 0 then findCodeExecuted (strings + nameOffset) (nameEnd - strings - nameOffset) 56 9 else .done 0 firstCode) fun s code => if failed s = true then .done s 0 else
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
+  .bind (if leaf role = 1 then leafPropertyExecuted data bytes code role else
+    if role = 10 then containerProperty data bytes code role else
+    if role = 11 then containerProperty data bytes code role else
+    if role = 12 then containerProperty data bytes code role else
+    if code = 33 then
+      if 2 ≤ depth then if depth ≤ 3 then
+        .bind (get (256 + (depth - 2) * 8)) fun s parent => if s = 0 then
+        if parent = 12 then otherReg data bytes else
+        if parent = 10 then otherReg data bytes else .done 0 0 else .done s 0
+      else
+        .bind (get 264) fun s ancestor => if s = 0 then
+        if ancestor = 12 then .done invalid 0 else .done 0 0 else .done s 0
+      else .done 0 0
+    else if code = 32 then unknownCompatible data bytes else .done 0 0) fun s _ => if failed s = true then .done s 0 else
+  let next := (data + bytes + 3) &&& 0xfffffffffffffffc
+  if next ≤ limit then put 0 next else .done invalid 0
+
+
+private def tokenStepExecuted (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (get 40) fun s ended => if s = 0 then if ended = 1 then .done 0 acc else
+  .bind (get 0) fun s cursor => if s = 0 then
+  .bind (get 8) fun s limit => if s = 0 then
+  .bind (get 32) fun s depth => if s = 0 then
+  if cursor + 4 ≤ limit then
+  .bind (BootInfo.readBE32 cursor) fun s token => if s = 0 then
+  if token = 1 then beginNode cursor depth limit else if token = 2 then endNodeExecuted cursor depth else
+  if token = 3 then propertyExecuted cursor depth limit else if token = 4 then put 0 (cursor + 4) else
+  if token = 9 then if depth = 0 then if cursor + 4 = limit then put 40 1 else .done invalid 0 else .done invalid 0
+  else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0
+
+
+private def actualDevicesExecuted : Action :=
+  .bind (IO.read32 0x10001000) fun s magic => if s = 0 then
+  .bind (IO.read32 0x10001004) fun s version => if s = 0 then
+  .bind (IO.read32 0x10001008) fun s device => if s = 0 then
+  .bind (IO.read64 0x10010000) fun s paper => if s = 0 then
+  .bind (IO.read64 0x10010008) fun s paperVersion => if s = 0 then
+  .bind (IO.read64 0x10011000) fun s pen => if s = 0 then
+  .bind (IO.read64 0x10011008) fun s penVersion => if s = 0 then
+  if magic = 0x74726976 then if version = 2 then if device = 2 then
+  if paper = DeviceABI.paperMagic then if paperVersion = 3 then
+  if pen = DeviceABI.penMagic then if penVersion = 1 then
+  .bind (IO.read64 0x100100b8) fun s staging => if s = 0 then
+  if staging = 3584 then .done 0 1 else .done invalid 0 else .done s 0
+  else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+
+private def validateBindingExecutedCore (binding pointer expectedBytes width height pressure : UInt64) : Action :=
+  .bind BootInfo.validate fun s actual =>
+  if failed s = true then .done s 0 else if actual = pointer then
+  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes =>
+  if failed s = true then .done s 0 else if bytes = expectedBytes then
+  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put 0 (pointer + structureOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 16 (pointer + stringsOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 104 width) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 112 height) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 120 pressure) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 176 binding) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 4096 tokenStepExecuted 4096 0 0 0 0 0 fun s _ => if failed s = true then .done s 0 else
+  .bind (get 40) fun s ended => if failed s = true then .done s 0 else
+  .bind (get 48) fun s seen => if failed s = true then .done s 0 else
+  .bind (get 72) fun s parent => if failed s = true then .done s 0 else
+  .bind (get 80) fun s plic => if failed s = true then .done s 0 else
+  .bind (get 184) fun s socFlags => if failed s = true then .done s 0 else
+  .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
+  .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
+  if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
+  if ended = 1 then if seen = (if binding = 9 then 0x7f7e else 0x3f7e) then
+  if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
+  .bind actualDevicesExecuted fun s _ => if s = 0 then
+  .bind (if 4 ≤ binding then actualBLE else .done 0 1) fun s _ => if s = 0 then
+  .bind (if 5 ≤ binding then actualUSB else .done 0 1) fun s _ => if s = 0 then
+  .bind (if binding = 9 then actualBootNV else .done 0 1) fun s _ => .done s pointer
+  else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0
+
+
+/-- Only Product10's exact internal binding9 selects Paper3 discovery. -/
+def validateSiliconProductExecuted (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBindingExecutedCore 9 pointer expectedBytes width height pressure
+
 end Lemma.Platform.LemmaSim.DescriptorDTB

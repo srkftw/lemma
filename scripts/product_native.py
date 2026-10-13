@@ -6,7 +6,8 @@ import hashlib,json
 ROOT=Path(__file__).resolve().parents[1]
 PROFILE='lemma-silicon-dev/0.7.0'
 NEXT_PROFILE='lemma-silicon-dev/0.9.0'
-PROFILES={PROFILE:('lemmasim-silicon-product-boot','Lemma.Boot.Recovery.entry',0x0007000300010001),NEXT_PROFILE:('lemmasim-silicon-product-next-boot','Lemma.Boot.RecoveryNext.entry',0x0009000300010001)}
+EXECUTED_PROFILE='lemma-silicon-dev/0.10.0'
+PROFILES={EXECUTED_PROFILE:('lemmasim-silicon-product-executed-boot','Lemma.Boot.RecoveryExecuted.entry',0x000a000300010001),PROFILE:('lemmasim-silicon-product-boot','Lemma.Boot.Recovery.entry',0x0007000300010001),NEXT_PROFILE:('lemmasim-silicon-product-next-boot','Lemma.Boot.RecoveryNext.entry',0x0009000300010001)}
 
 def sha(path):
  h=hashlib.sha256()
@@ -66,8 +67,8 @@ def rom(build,archive=None,profile=PROFILE):
  unit=json.loads((build/'unit.json').read_text());configuration,root,compatibility=PROFILES[profile]
  if unit.get('configuration')!=configuration or unit.get('root')!=root or unit.get('contract_version')!='core0-boot-v0.1':
   raise ValueError('ROM root/configuration differs from selected hardware profile')
- if profile==NEXT_PROFILE and (unit.get('hardware_profile')!=profile or unit.get('image_compatibility')!=compatibility or m.get('hardware_profile')!=profile or m.get('image_compatibility')!=compatibility):
-  raise ValueError('Product9 ROM compatibility/profile identity differs')
+ if profile in (NEXT_PROFILE,EXECUTED_PROFILE) and (unit.get('hardware_profile')!=profile or unit.get('image_compatibility')!=compatibility or m.get('hardware_profile')!=profile or m.get('image_compatibility')!=compatibility):
+  raise ValueError('Successor Product ROM compatibility/profile identity differs')
  if profile==PROFILE and any(k in unit for k in ('hardware_profile','image_compatibility')):
   raise ValueError('Historical Product7 ROM cannot carry successor identity')
  origin=ROOT

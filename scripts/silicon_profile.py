@@ -14,6 +14,7 @@ USB_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.6.0.json'
 PRODUCT_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.7.0.json'
 USB_NEXT_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.8.0.json'
 PRODUCT_NEXT_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.9.0.json'
+PRODUCT_EXECUTED_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.10.0.json'
 
 def profile(name=None):
     path = profile_path(name)
@@ -22,7 +23,7 @@ def profile(name=None):
         raise ValueError('unsupported silicon binding')
     if p['ram_base'] + p['ram_bytes'] != p['dtb_base'] + p['dtb_reserve_bytes']:
         raise ValueError('silicon RAM/DTB bounds contradict')
-    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE) else (0x82000000,0x400000,1024,128)
+    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE) else (0x82000000,0x400000,1024,128)
     if (p['frame_pool_base'],p['frame_pool_bytes'],p['frame_count'],p['frame_quota']) != expected:
         raise ValueError('silicon development allocator binding differs')
     if p['frame_count']*4096 != p['frame_pool_bytes']:
@@ -32,24 +33,26 @@ def profile(name=None):
             raise ValueError('BLE binding feature/authority fields differ')
         if p['devices'].get('ble') != dict(base=0x10010600,span=0x400,irq=15,payload_max=27,clocks_per_bit=100):
             raise ValueError('BLE fixed packet aperture differs')
-    if path in (USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE):
-        features,abi,irqs=(31,10,17) if path==PRODUCT_NEXT_PROFILE else (15,9,16) if path==USB_NEXT_PROFILE else (31,8,17) if path==PRODUCT_PROFILE else (15,7,16)
+    if path in (USB_PROFILE,PRODUCT_PROFILE,USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE):
+        features,abi,irqs=(31,11,17) if path==PRODUCT_EXECUTED_PROFILE else (31,10,17) if path==PRODUCT_NEXT_PROFILE else (15,9,16) if path==USB_NEXT_PROFILE else (31,8,17) if path==PRODUCT_PROFILE else (15,7,16)
         if p.get('usb_enabled') != 1 or p.get('ble_enabled') != 1 or p.get('descriptor_features') != features or p['descriptor']['abi'] != abi or p['plic_sources'] != irqs or p.get('power_safety') != 1:
             raise ValueError('USB binding feature/authority fields differ')
         if p['devices'].get('usb') != dict(base=0x10010a00,span=0x400,irq=16,payload_max=64,endpoints=3,reset_clocks=1000000):
             raise ValueError('USB fixed packet aperture differs')
-    if path in (PRODUCT_PROFILE,PRODUCT_NEXT_PROFILE):
+    if path in (PRODUCT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE):
         if p.get('boot_nv_enabled') != 1 or p['rom_bytes'] != 65536 or p['reset_vector'] != 0x1000:
             raise ValueError('product immutable-ROM binding differs')
         if p['devices'].get('boot_nv') != dict(base=0x10012000,span=0x400,irq=17,capacity_sectors=65544,sector_bytes=512):
             raise ValueError('product boot medium aperture differs')
-    if path in (USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE):
-        if p.get('paper_version')!=2 or p.get('paper_stage_offset')!=3584:
+    if path in (USB_NEXT_PROFILE,PRODUCT_NEXT_PROFILE,PRODUCT_EXECUTED_PROFILE):
+        if p.get('paper_version')!=(3 if path==PRODUCT_EXECUTED_PROFILE else 2) or p.get('paper_stage_offset')!=3584:
             raise ValueError('Paper2 successor requires its disjoint512-byte staging alias')
         if not (p['devices']['paper']['base']+3584+512 == p['devices']['pen']['base']):
             raise ValueError('Paper2 stage must end exactly before the separate pen aperture')
     elif p.get('paper_version',1)!=1 or p.get('paper_stage_offset',2048)!=2048:
         raise ValueError('Historical paper staging binding may not acquire successor semantics')
+    if path==PRODUCT_EXECUTED_PROFILE and p.get('paper_executed_registers') != dict(sequence=192,x=200,y=208,width=216,height=224,mode=232):
+        raise ValueError('Paper3 executed refresh witness registers differ')
     return p
 
 def profile_path(name=None):
@@ -62,9 +65,11 @@ def profile_path(name=None):
     if name == 'lemma-silicon-dev/0.7.0': return PRODUCT_PROFILE
     if name == 'lemma-silicon-dev/0.8.0': return USB_NEXT_PROFILE
     if name == 'lemma-silicon-dev/0.9.0': return PRODUCT_NEXT_PROFILE
+    if name == 'lemma-silicon-dev/0.10.0': return PRODUCT_EXECUTED_PROFILE
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
+    if configuration in ('lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-executed-boot'):return 'lemma-silicon-dev/0.10.0'
     if configuration in ('lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-next-boot'):return 'lemma-silicon-dev/0.9.0'
     if configuration in ('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'):return 'lemma-silicon-dev/0.8.0'
     if configuration in ('lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-boot','lemmasim-silicon-product-notebook','lemmasim-silicon-product-initialize'):return 'lemma-silicon-dev/0.7.0'
@@ -85,6 +90,8 @@ def constants(p):
     c['paper_sequencer'] = p.get('paper_sequencer', 0)
     c['paper_version'] = p.get('paper_version', 1)
     c['paper_stage_offset'] = p.get('paper_stage_offset', 2048)
+    if p.get('paper_version')==3:
+        for k,v in p['paper_executed_registers'].items():c['paper_executed_'+k+'_offset']=v
     c['power_enabled']=p.get('power_enabled',0)
     c['power_safety']=p.get('power_safety',0)
     c['power_version']=p.get('power_version',1)
@@ -106,9 +113,9 @@ def power_header():
         f'#define LEMMA_POWER_{k.upper()} {v}u\n' for k,v in p['power_registers'].items())+f'#define LEMMA_POWER_IDENTITY {p["power_magic"]}u\n'
 
 def lean_text(p):
-    namespace = 'BindingProductNext' if p['profile']=='lemma-silicon-dev/0.9.0' else 'BindingUSBNext' if p['profile']=='lemma-silicon-dev/0.8.0' else 'BindingProduct' if p['profile']=='lemma-silicon-dev/0.7.0' else 'BindingUSB' if p['profile']=='lemma-silicon-dev/0.6.0' else 'BindingBLE' if p['profile']=='lemma-silicon-dev/0.5.0' else 'BindingSafety' if p['profile']=='lemma-silicon-dev/0.4.0' else 'BindingPower' if p['profile'] == 'lemma-silicon-dev/0.3.0' else 'BindingFull' if p['profile'] == 'lemma-silicon-dev/0.2.0' else 'Binding'
+    namespace = 'BindingProductExecuted' if p['profile']=='lemma-silicon-dev/0.10.0' else 'BindingProductNext' if p['profile']=='lemma-silicon-dev/0.9.0' else 'BindingUSBNext' if p['profile']=='lemma-silicon-dev/0.8.0' else 'BindingProduct' if p['profile']=='lemma-silicon-dev/0.7.0' else 'BindingUSB' if p['profile']=='lemma-silicon-dev/0.6.0' else 'BindingBLE' if p['profile']=='lemma-silicon-dev/0.5.0' else 'BindingSafety' if p['profile']=='lemma-silicon-dev/0.4.0' else 'BindingPower' if p['profile'] == 'lemma-silicon-dev/0.3.0' else 'BindingFull' if p['profile'] == 'lemma-silicon-dev/0.2.0' else 'Binding'
     return f'-- Generated by scripts/silicon_profile.py from the versioned binding.\nnamespace Lemma.Platform.Silicon.{namespace}\n' + ''.join(
-        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (k not in ('paper_version','paper_stage_offset') or p['profile'] in ('lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0')) and (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_')) and (p.get('boot_nv_enabled',0) or not k.startswith('boot_nv_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
+        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (k not in ('paper_version','paper_stage_offset') or p['profile'] in ('lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0')) and (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_')) and (p.get('boot_nv_enabled',0) or not k.startswith('boot_nv_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
 
 def descriptor(p, dtb_bytes):
     d=p['devices']; words=[p['descriptor']['magic'],p['descriptor']['abi'],256,0,p['ram_base'],p['ram_bytes'],
@@ -139,7 +146,8 @@ def dts(p, devices=True):
 '''
     if devices:
         paper_version=p.get('paper_version',1)
-        paper_stage=f" lemma,staging-offset = <{p['paper_stage_offset']}>;" if paper_version==2 else ''
+        paper_stage=f" lemma,staging-offset = <{p['paper_stage_offset']}>;" if paper_version in (2,3) else ''
+        if paper_version==3:paper_stage+=' lemma,executed-refresh = <192 200 208 216 224 232>;'
         root+=f'''    lemma-paper@10010000 {{ compatible = "lemma,paper-v{paper_version}"; reg = <{reg('paper')}>; interrupts = <12>; interrupt-parent = <&plic>; lemma,abi-version = <{paper_version}>; lemma,width = <{p['geometry'][0]}>; lemma,height = <{p['geometry'][1]}>; lemma,descriptor = <0x0 0x{p['descriptor']['base']:x} 0x0 256>;{paper_stage} }};
     lemma-pen@10011000 {{ compatible = "lemma,pen-v1"; reg = <{reg('pen')}>; interrupts = <13>; interrupt-parent = <&plic>; lemma,abi-version = <1>; lemma,max-x = <65535>; lemma,max-y = <65535>; lemma,pressure-max = <{p['pressure_max']}>; }};
     virtio_mmio@10001000 {{ compatible = "virtio,mmio"; reg = <{reg('block')}>; interrupts = <1>; interrupt-parent = <&plic>; }};
@@ -183,7 +191,7 @@ def validate_evidence(dtb, source, name=None):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--output-dir',type=Path);parser.add_argument('--compute-only',action='store_true');parser.add_argument('--check',action='store_true');parser.add_argument('--profile',default='lemma-silicon-dev/0.1.0')
-    args=parser.parse_args();p=profile(args.profile);generated=ROOT/('Lemma/Platform/Silicon/BindingProductNext.lean' if args.profile=='lemma-silicon-dev/0.9.0' else 'Lemma/Platform/Silicon/BindingUSBNext.lean' if args.profile=='lemma-silicon-dev/0.8.0' else 'Lemma/Platform/Silicon/BindingProduct.lean' if args.profile=='lemma-silicon-dev/0.7.0' else 'Lemma/Platform/Silicon/BindingUSB.lean' if args.profile=='lemma-silicon-dev/0.6.0' else 'Lemma/Platform/Silicon/BindingBLE.lean' if args.profile=='lemma-silicon-dev/0.5.0' else 'Lemma/Platform/Silicon/BindingSafety.lean' if args.profile=='lemma-silicon-dev/0.4.0' else 'Lemma/Platform/Silicon/BindingPower.lean' if args.profile=='lemma-silicon-dev/0.3.0' else 'Lemma/Platform/Silicon/BindingFull.lean' if args.profile=='lemma-silicon-dev/0.2.0' else 'Lemma/Platform/Silicon/Binding.lean')
+    args=parser.parse_args();p=profile(args.profile);generated=ROOT/('Lemma/Platform/Silicon/BindingProductExecuted.lean' if args.profile=='lemma-silicon-dev/0.10.0' else 'Lemma/Platform/Silicon/BindingProductNext.lean' if args.profile=='lemma-silicon-dev/0.9.0' else 'Lemma/Platform/Silicon/BindingUSBNext.lean' if args.profile=='lemma-silicon-dev/0.8.0' else 'Lemma/Platform/Silicon/BindingProduct.lean' if args.profile=='lemma-silicon-dev/0.7.0' else 'Lemma/Platform/Silicon/BindingUSB.lean' if args.profile=='lemma-silicon-dev/0.6.0' else 'Lemma/Platform/Silicon/BindingBLE.lean' if args.profile=='lemma-silicon-dev/0.5.0' else 'Lemma/Platform/Silicon/BindingSafety.lean' if args.profile=='lemma-silicon-dev/0.4.0' else 'Lemma/Platform/Silicon/BindingPower.lean' if args.profile=='lemma-silicon-dev/0.3.0' else 'Lemma/Platform/Silicon/BindingFull.lean' if args.profile=='lemma-silicon-dev/0.2.0' else 'Lemma/Platform/Silicon/Binding.lean')
     power_abi=ROOT/'sim/host/lemma_power_abi.h'
     if args.check:
         if not power_abi.exists() or power_abi.read_text()!=power_header():raise SystemExit('FAIL: generated power ABI is stale')

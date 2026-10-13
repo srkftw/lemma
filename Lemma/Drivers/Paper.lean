@@ -159,4 +159,17 @@ def uploadOffsetNext (handle offset x y width height : UInt64) : Action :=
   else .done invalid 0 else .done invalid 0
 
 
+
+/-- Paper3 preserves disjoint staging and adds a read-only executed-refresh
+witness. Only actual version3 and its real3584 aperture select this entry. -/
+def initializeExecuted : Action :=
+  .bind (read DeviceABI.paperMagicOffset) fun s magic => if s = 0 then
+  if magic = DeviceABI.paperMagic then
+  .bind (read DeviceABI.paperVersionOffset) fun s version => if s = 0 then
+  if version = 3 then
+  .bind (read 184) fun s staging => if s = 0 then
+  if staging = 3584 then dimensions else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0
+  else .done invalid 0 else .done s 0
+
 end Lemma.Drivers.Paper

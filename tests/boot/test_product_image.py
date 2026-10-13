@@ -48,6 +48,15 @@ class ProductImageTests(unittest.TestCase):
   self.assertEqual(words[8:13],(4096,8,16,0x80000000,zlib.crc32(b'abcdefgh')))
   self.assertEqual(words[13:18],(4608,0,0x100000,0x80400000,0))
   self.assertEqual(words[63],zlib.crc32(wire[:504]));self.assertEqual(wire[512:552],dtb);self.assertEqual(wire[4096:4104],b'abcdefgh');self.assertEqual(row['sectors'],9)
+ def test_versioned_compatibility_header_and_crc(self):
+  elf,dtb=image()
+  for compatibility in (0x0007000300010001,0x0009000300010001,0x000a000300010001):
+   wire,row=pack_elf(elf,dtb,23,compatibility)
+   self.assertEqual(struct.unpack_from('<Q',wire,24)[0],compatibility)
+   self.assertEqual(row['compatibility'],compatibility)
+   self.assertEqual(struct.unpack_from('<Q',wire,504)[0],zlib.crc32(wire[:504]))
+  for compatibility in (0x0008000300010001,0x000b000300010001,0,True):
+   with self.assertRaises(ValueError):pack_elf(elf,dtb,23,compatibility)
  def test_invalid_load_entry_and_discovery(self):
   elf,dtb=image()
   mutants=[]

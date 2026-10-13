@@ -49,6 +49,8 @@ module lemma_paper #(
   logic [63:0] tile_x,tile_y,tile_w,tile_h,tile_len;
   logic [63:0] req_sequence,rect_x,rect_y,rect_w,rect_h,mode;
   logic [63:0] last_sequence,completed,fault,deadline;
+  // Paper3-only authority. Configuration writes cannot change this witness.
+  logic executed_valid;
   logic busy,done_flag,interrupted;
   assign controller_busy = busy || state != IDLE;
   logic [X_BITS-1:0] lx,ix;
@@ -226,7 +228,13 @@ module lemma_paper #(
       end else case(op_addr)
         0: control_read_value=1280331856;
         8: control_read_value=64'(VERSION);
-        184: control_read_value=VERSION==2 ? 64'(STAGING_OFFSET) : 0;
+        184: control_read_value=(VERSION==2 || VERSION==3) ? 64'(STAGING_OFFSET) : 0;
+        192: control_read_value=(VERSION==3 && executed_valid) ? last_sequence : 0;
+        200: control_read_value=(VERSION==3 && executed_valid) ? 64'(lx) : 0;
+        208: control_read_value=(VERSION==3 && executed_valid) ? 64'(ly) : 0;
+        216: control_read_value=(VERSION==3 && executed_valid) ? 64'(lw) : 0;
+        224: control_read_value=(VERSION==3 && executed_valid) ? 64'(lh) : 0;
+        232: control_read_value=(VERSION==3 && executed_valid) ? 64'(lm) : 0;
         16: control_read_value={60'b0,interrupted,fault!=0,done_flag,busy};
         24: control_read_value=fault;
         32: control_read_value=64'(WIDTH);
@@ -279,7 +287,7 @@ module lemma_paper #(
       tile_x<=0; tile_y<=0; tile_w<=0; tile_h<=0; tile_len<=0;
       req_sequence<=0; rect_x<=0; rect_y<=0; rect_w<=0; rect_h<=0; mode<=0;
       last_sequence<=0; completed<=0; fault<=0; deadline<=0;
-      busy<=0; done_flag<=0; interrupted<=0;
+      busy<=0; done_flag<=0; interrupted<=0; executed_valid<=0;
       lx<=0; ly<=0; lw<=0; lh<=0; ix<=0; iy<=0; lm<=0; pixel_latch<=15;
       tw<=0; th<=0; frame_cursor<=0; frame_start<=0; tile_cursor<=0;
       frame_row_step<=0; tile_row_step<=0; tile_byte_row<=0; tile_row_bytes<=0;
@@ -317,11 +325,11 @@ module lemma_paper #(
           UPLOAD_BANKS: state<=UPLOAD_VALUE;
           UPLOAD_VALUE: begin upload_byte_latch<=upload_byte; state<=UPLOAD; end
           SNAPSHOT_READ: if(fb_ready) begin
-            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
+            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; if(VERSION==3) executed_valid<=0; end
             else begin pixel_latch<=lm==1?(fb_rdata[3:0]<8?0:15):fb_rdata[3:0]; state<=SNAPSHOT_WRITE; end
           end
           SNAPSHOT_WRITE: if(fb_ready) begin
-            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
+            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; if(VERSION==3) executed_valid<=0; end
             else advance_pixel(SNAPSHOT_READ,WAIT_TIME);
           end
           WAIT_TIME: if(now_ticks>=deadline) begin
@@ -332,7 +340,7 @@ module lemma_paper #(
           POWER_UP: if(power_remaining>1) power_remaining<=power_remaining-1'b1;
             else begin power_remaining<=0; state<=SCAN_READ; end
           SCAN_READ: if(fb_ready) begin
-            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
+            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; if(VERSION==3) executed_valid<=0; end
             else begin pixel_latch<=fb_rdata[3:0]; drive_remaining<=2; state<=SCAN_DRIVE; end
           end
           SCAN_DRIVE: begin
@@ -346,7 +354,7 @@ module lemma_paper #(
           PHASE_GAP: if(wave_phase<2) begin wave_phase<=wave_phase+1'b1; state<=SCAN_READ; end
             else state<=PANEL_READ;
           PANEL_READ: if(fb_ready) begin
-            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; end
+            if(fb_error) begin fault<=1; busy<=0; state<=IDLE; panel_abort<=1; if(VERSION==3) executed_valid<=0; end
             else begin pixel_latch<=fb_rdata[3:0]; state<=PANEL_SEND; end
           end
           PANEL_SEND: if(panel_ready) begin
@@ -386,7 +394,7 @@ module lemma_paper #(
           168: if(op_wdata==completed) begin done_flag<=0; fault<=0; end else fault<=2;
           176: if(op_wdata==1) begin
             if(busy || interrupted) begin interrupted<=1; fault<=6; end else fault<=0;
-            busy<=0; done_flag<=0; state<=CLEAR; clear_index<=0; panel_abort<=1;
+            busy<=0; done_flag<=0; state<=CLEAR; clear_index<=0; panel_abort<=1; if(VERSION==3) executed_valid<=0;
             wave_phase<=0; drive_remaining<=0; power_remaining<=0;
             tile_x<=0; tile_y<=0; tile_w<=0; tile_h<=0; tile_len<=0;
             rect_x<=0; rect_y<=0; rect_w<=0; rect_h<=0; mode<=0; req_sequence<=0;
@@ -410,7 +418,7 @@ module lemma_paper #(
               frame_start<=FRAME_BITS'(rect_y[Y_BITS-1:0])*FRAME_BITS'(WIDTH)+FRAME_BITS'(rect_x[X_BITS-1:0]);
               frame_cursor<=FRAME_BITS'(rect_y[Y_BITS-1:0])*FRAME_BITS'(WIDTH)+FRAME_BITS'(rect_x[X_BITS-1:0]);
               frame_row_step<=(W_BITS+1)'(WIDTH)-(W_BITS+1)'(rect_w[W_BITS-1:0])+1'b1;
-              last_sequence<=req_sequence; busy<=1;
+              last_sequence<=req_sequence; busy<=1; if(VERSION==3) executed_valid<=1;
               deadline<=now_ticks+(mode==1?20000:250000); state<=SNAPSHOT_READ;
               wave_phase<=0; drive_remaining<=0; power_remaining<=0; drive_clocks<=0; scan_beats<=0;
             end

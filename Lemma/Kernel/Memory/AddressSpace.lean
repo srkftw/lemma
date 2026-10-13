@@ -930,6 +930,14 @@ def configureProductNext (binding : UInt64) : Action :=
     if failed s = true then .done s 0 else Access.write64 productSelection 7
   else .done invalidDescriptor 0
 
+/-- Product10 uses the existing explicit layout3 aliases after fresh exact
+Paper3/ABI11 discovery. Historical Product selectors remain unchanged. -/
+def configureProductExecuted (binding : UInt64) : Action :=
+  if binding = 10 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProductExecuted fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
 private def buildProductKernel (address : UInt64) : Action :=
   .bind (buildKernel address) fun s _ => if failed s = true then .done s 0 else
   .bind (link address 1 15 13) fun s _ => if failed s = true then .done s 0 else

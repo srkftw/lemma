@@ -68,7 +68,7 @@ def prepare(args):
  n=inputs.native(args.native_build,args.native_source_archive,selected)
  r=inputs.rom(args.rom_build,args.rom_source_archive,selected)
  from silicon_guest_bundle import host_dependencies
- data={'schema':'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2','profile':selected,
+ data={'schema':'lemma-product-prepared/4' if selected==inputs.EXECUTED_PROFILE else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2','profile':selected,
   'boot':'immutable Lean ROM; image and DTB loaded by real BootNV transactions',
   'authentication':'OPEN integrity-only owner-local recovery','anti_rollback':'OPEN',
   'native_build':str(args.native_build.resolve()),'rom_build':str(args.rom_build.resolve()),
@@ -80,8 +80,8 @@ def prepare(args):
   'rom_sha256':r['manifest']['artifacts']['rom.bin'],'host_dependencies':host_dependencies(n['binary']),
   'host_scripts':{str(p.relative_to(ROOT)):inputs.sha(p) for p in (Path(__file__),ROOT/'scripts/product_native.py',ROOT/'scripts/lemmasim_session.py')},
   'qualification':'prepared exact component inputs; product boot/update acceptance separate'}
- if selected==inputs.NEXT_PROFILE:
-  data.update(image_compatibility=inputs.PROFILES[selected][2],rom_configuration=inputs.PROFILES[selected][0],paper_contract={'version':2,'staging_offset':3584,'staging_bytes':512})
+ if selected in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE):
+  data.update(image_compatibility=inputs.PROFILES[selected][2],rom_configuration=inputs.PROFILES[selected][0],paper_contract=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected==inputs.EXECUTED_PROFILE else {'version':2,'staging_offset':3584,'staging_bytes':512}))
  out.mkdir(parents=True);data['digital_discovery']=profile_discovery(data,out,args.dtc);sessions.write_json(out/'prepared.json',data)
  (out/'DEPENDENCIES.txt').write_text('Local path-bound prepared product machine. Requires the exact recorded native build/source archives and Nix loader/libraries; no redistribution license is granted. CVW20f2af74 Apache-2.0 WITH SHL-2.1 and preserved notices; Verilator5.052 LGPL-3.0-only OR Artistic-2.0. All target ROM/image policy is Lean. CRC32 integrity is not authentication or anti-rollback. Physical nonvolatile qualification OPEN.\n')
  return {'prepared':str(out),'rom':data['rom_sha256'],'native':data['binary_sha256']}
@@ -89,10 +89,10 @@ def prepare(args):
 def prepared(path):
  data=json.loads((Path(path)/'prepared.json').read_text())
  selected=data.get('profile')
- if selected not in inputs.PROFILES or data.get('schema')!=('lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2'):
+ if selected not in inputs.PROFILES or data.get('schema')!=('lemma-product-prepared/4' if selected==inputs.EXECUTED_PROFILE else 'lemma-product-prepared/3' if selected==inputs.NEXT_PROFILE else 'lemma-product-prepared/2'):
   raise ValueError('Unsupported product prepared machine')
- if selected==inputs.NEXT_PROFILE and (data.get('image_compatibility')!=inputs.PROFILES[selected][2] or data.get('rom_configuration')!=inputs.PROFILES[selected][0] or data.get('paper_contract')!={'version':2,'staging_offset':3584,'staging_bytes':512}):
-  raise ValueError('Product9 prepared compatibility or Paper2 contract differs')
+ if selected in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE) and (data.get('image_compatibility')!=inputs.PROFILES[selected][2] or data.get('rom_configuration')!=inputs.PROFILES[selected][0] or data.get('paper_contract')!=({'version':3,'staging_offset':3584,'staging_bytes':512,'executed_refresh_offsets':[192,200,208,216,224,232]} if selected==inputs.EXECUTED_PROFILE else {'version':2,'staging_offset':3584,'staging_bytes':512})):
+  raise ValueError('Successor Product prepared compatibility or versioned Paper contract differs')
  for key,build in (('native_manifest_sha256','native_build'),('rom_manifest_sha256','rom_build')):
   if inputs.sha(Path(data[build])/'build.json')!=data[key]:raise ValueError('Changed prepared original build manifest')
  n=inputs.native(data['native_build'],data['native_source_archive'],selected);r=inputs.rom(data['rom_build'],data['rom_source_archive'],selected)
@@ -111,7 +111,7 @@ class ProductRTL(sessions.RTL):
    'runtime':data['binary_sha256'],'implementation':data['runtime_identity'],'rom':data['rom_sha256'],
    'boot':'ROM/NV-v1','authentication':'integrity-only owner-local',
    'digital_discovery':data['digital_discovery']['descriptor_sha256'],'discovery_bytes':data['digital_discovery']['dtb_bytes']}
-  if data['profile']==inputs.NEXT_PROFILE:self.identity.update(image_compatibility=data['image_compatibility'],paper_contract=data['paper_contract'])
+  if data['profile'] in (inputs.NEXT_PROFILE,inputs.EXECUTED_PROFILE):self.identity.update(image_compatibility=data['image_compatibility'],paper_contract=data['paper_contract'])
   self.log=(directory/'machine.log').open('wb');self.boot_lock=None
   medium=args.boot_medium
   if args.restore:

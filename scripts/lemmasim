@@ -878,7 +878,7 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
-        if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
+        if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
         if args.command=='build' and args.rtl_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') or args.rtl_build is None):raise Failure('--rtl-source-root requires USB6/8 RTL and an explicit --rtl-build')
         if args.command=='build' and args.guest_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') or args.guest_build is None):raise Failure('--guest-source-root requires USB6/8 RTL and an explicit --guest-build')
         if args.command=='build' and args.guest_bundle is not None and (args.backend!='qemu' or args.profile not in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0') or args.guest_build is not None):raise Failure('--guest-bundle requires qualified canonical/Power QEMU and excludes --guest-build')
@@ -903,7 +903,7 @@ def main():
         if args.command in ('session','session-control','snapshot','restore','session-replay','button'):
             import lemmasim_session
             if args.command=='session':
-                if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
+                if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
                 usb_options=(args.usb_host_prepared,args.usb_peer_directory,args.usb_peer_socket,args.usb_host_state)
                 if any(x is not None for x in usb_options):
                     if args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') or args.workload not in ('usb','notebook','initializer','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer') or args.mode not in ('developer','laboratory'):

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "status": "PASS_COMPONENT_AND_AUDITED_INPUTS",
+  "scope": "Versioned Paper3 accepted-refresh execution witness and Product10 compiled health/ROM path. Actual fresh NV10 owner-local install is running; full Product10 cold Ready and trial durable confirmation are not yet claimed.",
+  "profile": "lemma-silicon-dev/0.10.0",
+  "descriptor_abi": 11,
+  "paper_version": 3,
+  "executed_offsets": [
+    192,
+    200,
+    208,
+    216,
+    224,
+    232
+  ],
+  "circuit_semantics": {
+    "authority": "latched geometry/mode and accepted sequence; independent of mutable configuration",
+    "invalidated_by": [
+      "global reset",
+      "controller reset including idle retained completion",
+      "accepted refresh abort"
+    ],
+    "retained_by": "successful ACK",
+    "guest_health": "completed==accepted==executed>0; busy0/error0/full1650x2200/qualitymode2; fresh live Store and Notebook identities before target metadata WRITE+barrier"
+  },
+  "genuine_component": {
+    "path": "build/managed/paper-executed-probe-a1/result.json",
+    "sha256": "64d2087aeba9518706cd90a8948a829f9568911e5db3dea5b036811b3b99f10f",
+    "source_inputs_equal": true,
+    "actual_body_authorities": 116,
+    "caller_edges_pre_post": [
+      171,
+      120
+    ],
+    "actual_artifact_mutants_rejected": 28,
+    "complete_pre_post_ir": "build/managed/paper-executed-authority-a1/complete-ir-diagnostic-a2.json",
+    "complete_object_diagnostic": "build/managed/paper-executed-authority-a1/object-diagnostic-a3.json",
+    "scope": "Genuine maintained Lean export/O2/RV64 object, no target runtime helper substitution; fixed independent source/signature/effect/body/table/caller guards",
+    "initial_complete_ir_diagnostic_body_authorities": 114,
+    "actual_body_authorities_note": "Final fresh full-guest strict audit qualifies all116, including both lowercase executedProperty helpers; earlier component diagnostic receipt predates that final inventory hardening."
+  },
+  "circuit_and_policy": {
+    "legacy1_2_and_new3_literal": "build/silicon/task006-paper-executed-a1/result.json",
+    "exact_stalled_scan_and_reset_suffix": "build/silicon/task006-paper-executed-state-a1/result.json",
+    "actual_health_Action_model": "build/task006-boot-health-executed-model-a1.log",
+    "corrected_component_command_observer": {
+      "path": "build/silicon/task006-paper-executed-components-a3/result.json",
+      "sha256": "f3de588762fab0c0f42732deb75351833713f22f8670a0bd7f6ffb122f919194",
+      "status": "PASS_CORRECTED_COMPONENT_OBSERVER",
+      "scope": "All target/compiler/tool/fixture bytes unchanged; original failed wrapper is retained. Corrected current helper runs only the omitted final generated-state command argument, no target or circuit rebuild."
+    }
+  },
+  "original_failures_retained": [
+    {
+      "path": "build/managed/paper-executed-authority-a1/complete-ir-diagnostic-a1.json",
+      "cause": "new Product10 constructor/FIFO observer inventory omitted"
+    },
+    {
+      "path": "build/managed/paper-executed-authority-a1/object-diagnostic-a1.json",
+      "cause": "diagnostic supplied only simulator literal subset rather than entire validated object inventory"
+    },
+    {
+      "path": "build/managed/paper-executed-authority-a1/object-diagnostic-a2.json",
+      "cause": "new exact tokenStepExecuted machine-table owner unregistered"
+    },
+    {
+      "path": "build/silicon/task006-paper-executed-components-a1/result.json",
+      "cause": "host readelf resolver uses llvm-readobj; wrapper omitted GNU output flag"
+    },
+    {
+      "path": "build/silicon/task006-paper-executed-components-a2/result.json",
+      "cause": "wrapper omitted required state-fixture output directory argument"
+    },
+    {
+      "path": "build/task006-product-executed-image-a1.log",
+      "cause": "pack_elf compatibility guard omitted explicit new10 value, corrected narrowly and independently tested"
+    }
+  ],
+  "full_guest": {
+    "build": "build/kernel/task006-product-executed-bulk-notebook-a1",
+    "image_sha256": "3fdfdd3879f67d9aac3233ef6cea506233e829159c24709411e6d22aa3594982",
+    "full_strict_audit_sha256": "81cb3fce7d342f59101b5713a6368ea277fb933202056e68d5c6d510af9ceefe",
+    "source_inputs": 299,
+    "archive_manifest_sha256": "5a8d6eaca75eff78ed353e78142464ed8ec9fa5220afd52ea82635f8a57f69fd",
+    "configuration": "lemmasim-silicon-product-executed-bulk-notebook",
+    "profiles": {
+      "kernel": "core0-kernel-v0.7",
+      "store": "core0-user-v0.1",
+      "notebook": "core0-user-v0.2",
+      "arithmetic": "core0-user-v0.3"
+    }
+  },
+  "immutable_rom": {
+    "build": "build/boot/task006-product-executed-rom-a1",
+    "rom_sha256": "5a0b384da03d22c3c8e391509c87e48c6fae13c71b9c910bb1ee52a9b34ef118",
+    "source_inputs": 262,
+    "host_seconds": 6.0986578579759225,
+    "compatibility": "0x000a000300010001",
+    "archive_manifest_sha256": "e2407ea9b17fce3aee9f1e8dbb4288c77dd0026d523091b64564997f7f9965cf",
+    "scope": "Real Lean NV reads/CRC/image selection/loader/recovery, immutable ROM contents only host loaded"
+  },
+  "native": {
+    "build": "build/silicon/task006-product-executed-runtime-a1",
+    "binary_sha256": "e8cc38b4212cb4059a1accef048f8fe63a7a750b8c37833599e13ffb758f2cb9",
+    "implementation": "efa66f430fcf3d0e7c9085421d7d5a0c94f6e320feecc7393d5005049c14fa83",
+    "archive_manifest_sha256": "c47f16bdb10a415a51bacfb5ad5326e89f2e1d04acf03120d518aafe67d62206",
+    "source_inputs": 244
+  },
+  "actual_product_campaign": {
+    "status": "RUNNING_INSTALL",
+    "path": "build/boot/task006-product-executed-boot-a1",
+    "prepared": "build/boot/task006-product-executed-prepared-a1",
+    "package": "build/boot/task006-product-executed-image-a2",
+    "image_id": "0xa000000000001",
+    "fresh_nv": true,
+    "user_source_sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f",
+    "user_media": "private unchanged acknowledged canonical user journal; no formatting",
+    "bounds": {
+      "install_cycles": 250000000,
+      "install_host_seconds": 3600,
+      "handoff_cycles": 100000000,
+      "handoff_host_seconds": 1200,
+      "cold_ready_cycles": 2000000000,
+      "cold_ready_host_seconds": 7200
+    },
+    "qualification": "prospective resource ceilings, no WCET or timeout reclassification"
+  },
+  "commands": [
+    "nix develop --no-write-lock-file --command python3 scripts/check_paper_executed.py --work-dir build/silicon/paper3-components-new --timeout 540",
+    "nix develop --no-write-lock-file --command python3 scripts/build_product_boot.py --product-profile 10 --work-dir build/boot/product10-rom-new --timeout 300",
+    "nix develop --no-write-lock-file --command flock build/task006-lake.lock python3 scripts/build_kernel.py --configuration lemmasim-silicon-product-executed-bulk-notebook --stage supervisor --opt-level O2 --output-dir build/kernel/product10-notebook-new --timeout 300",
+    "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/product10-notebook-new"
+  ],
+  "remaining": [
+    "Actual Product10 full canonical Ready and durable trial confirmation",
+    "Product10 interruption/fallback after known-good10 and exact full-machine suffixes around new health",
+    "Authentication and anti-rollback (CRC32 integrity only)",
+    "Attached-live-USB plus BootNV exact snapshot admission",
+    "Fast timing parity and complete cached-state continuation",
+    "Browser Product10 execution/distribution",
+    "Physical panel/NV/RF/full-SoC qualification"
+  ]
+}

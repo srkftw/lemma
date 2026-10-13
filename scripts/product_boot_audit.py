@@ -31,6 +31,9 @@ def variant(configuration):
  if configuration=='lemmasim-silicon-product-next-boot':
   def selected(name):return name.replace('Lemma.Boot.Product.','Lemma.Boot.ProductNext.').replace('Lemma.Boot.Recovery.','Lemma.Boot.RecoveryNext.')
   return selected(ROOT),{selected(n) for n in REQUIRED},{**{selected(n):v for n,v in LITERALS.items()},'Lemma.Boot.ProductNext.compatibility':0x0009000300010001},'lemma_product_next_boot_',('ProductNext','RecoveryNext')
+ if configuration=='lemmasim-silicon-product-executed-boot':
+  def selected(name):return name.replace('Lemma.Boot.Product.','Lemma.Boot.ProductExecuted.').replace('Lemma.Boot.Recovery.','Lemma.Boot.RecoveryExecuted.')
+  return selected(ROOT),{selected(n) for n in REQUIRED},{**{selected(n):v for n,v in LITERALS.items()},'Lemma.Boot.ProductExecuted.compatibility':0x000a000300010001},'lemma_product_executed_boot_',('ProductExecuted','RecoveryExecuted')
  raise Core0Error('unknown exact product boot configuration')
 
 def validate_unit(unit,pre,optimized):
@@ -42,7 +45,7 @@ def validate_unit(unit,pre,optimized):
   'recovery_transport':'lemma-local-uart-recovery-v1; integrity-only, bounded owner-local transport; authentication OPEN',
   'backend_dispatch':'lemma-boot-direct-branches-v1'}
  if unit['configuration']!='lemmasim-silicon-product-boot':
-  expected.update(hardware_profile='lemma-silicon-dev/0.9.0',image_compatibility=0x0009000300010001)
+  expected.update(hardware_profile='lemma-silicon-dev/0.10.0' if names[0]=='ProductExecuted' else 'lemma-silicon-dev/0.9.0',image_compatibility=0x000a000300010001 if names[0]=='ProductExecuted' else 0x0009000300010001)
  if any(unit.get(k)!=v for k,v in expected.items()):raise Core0Error('boot ROM manifest contract differs')
  if set(unit)!=set(expected)|{'entry_symbol','functions','used_execution_ops','used_device_ops'}:raise Core0Error('unexpected boot ROM manifest authority')
  rows=unit.get('functions')
@@ -71,7 +74,7 @@ def validate_unit(unit,pre,optimized):
   if source in sources:
    symbol=re.escape(sources[source]['symbol'])
    if not re.search(r'(?m)^define internal zeroext i8 @'+symbol+r'\(\) nounwind "no-jump-tables"="true" \{\nentry:\n  ret i8 '+str(value)+r'\n\}',pre):raise Core0Error('boot status constant body differs')
- for source,value in dict(literals,**({'Lemma.Boot.ProductNext.compatibility':0x0009000300010001} if names[0]=='ProductNext' else {})).items():
+ for source,value in literals.items():
   row=sources.get(source)
   if row is None or row['args'] or row['effects']:raise Core0Error('missing closed boot readonly literal source')
   if not re.search(r'(?m)^define internal i64 @'+re.escape(row['symbol'])+r'\(\) nounwind "no-jump-tables"="true" \{\nentry:\n  ret i64 '+str(value)+r'\n\}',pre):raise Core0Error('boot readonly literal body differs')

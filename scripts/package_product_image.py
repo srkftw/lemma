@@ -14,9 +14,10 @@ SLOT_BYTES=16*1024*1024
 CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'}
 NEXT_CONFIGURATION='lemmasim-silicon-product-next-bulk-notebook'
 NEXT_COMPATIBILITY=0x0009000300010001
+EXECUTED_COMPATIBILITY=0x000a000300010001
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def pack_elf(elf,dtb,identity,compatibility=COMPATIBILITY):
- if type(compatibility)!=int or compatibility not in (COMPATIBILITY,NEXT_COMPATIBILITY):raise ValueError('image compatibility must be exact Product7 or Product9')
+ if type(compatibility)!=int or compatibility not in (COMPATIBILITY,NEXT_COMPATIBILITY,EXECUTED_COMPATIBILITY):raise ValueError('image compatibility must be exact Product7, Product9 or Product10')
  if type(identity)!=int or not 0<identity<1<<64:raise ValueError('image ID must be a nonzero UInt64 registry identity')
  if not 40<=len(dtb)<=3072 or dtb[:4]!=b'\xd0\x0d\xfe\xed' or struct.unpack_from('>I',dtb,4)[0]!=len(dtb):raise ValueError('DTB must have its exact bounded FDT length')
  if len(elf)<64 or elf[:7]!=b'\x7fELF\x02\x01\x01':raise ValueError('product ELF must be ELF64 little endian')
@@ -47,8 +48,9 @@ def package(guest,out,identity,source_archive=None):
  if out.exists():raise ValueError('output directory must be unused')
  build=json.loads((guest/'build.json').read_text());audit=json.loads((guest/'audit.json').read_text())
  binding=json.loads((guest/'binding.json').read_text())
+ executed_profile=build.get('configuration')=='lemmasim-silicon-product-executed-bulk-notebook'
  next_profile=build.get('configuration')==NEXT_CONFIGURATION
- if build.get('status')!='BUILT' or audit.get('status')!='PASS' or (not next_profile and build.get('configuration') not in CONFIGURATIONS) or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=('lemma-silicon-dev/0.9.0' if next_profile else 'lemma-silicon-dev/0.7.0'):raise ValueError('packaging requires a strictly audited selected product7 guest')
+ if build.get('status')!='BUILT' or audit.get('status')!='PASS' or (not next_profile and not executed_profile and build.get('configuration') not in CONFIGURATIONS) or audit.get('configuration')!=build['configuration'] or binding.get('profile')!=('lemma-silicon-dev/0.10.0' if executed_profile else 'lemma-silicon-dev/0.9.0' if next_profile else 'lemma-silicon-dev/0.7.0'):raise ValueError('packaging requires a strictly audited selected product7 guest')
  for name in ('image.elf','platform.dtb'):
   if build.get('artifacts',{}).get(name)!=sha(guest/name):raise ValueError('compiled product artifact identity differs: '+name)
  if audit.get('image_sha256')!=sha(guest/'image.elf'):raise ValueError('product ELF audit identity differs')
@@ -65,7 +67,7 @@ def package(guest,out,identity,source_archive=None):
   p=Path(name)
   if p.is_absolute() or '..' in p.parts or (origin/p).is_symlink() or sha(origin/p)!=digest:
    raise ValueError('Changed or missing compiled product source: '+name)
- wire,layout=pack_elf((guest/'image.elf').read_bytes(),(guest/'platform.dtb').read_bytes(),identity,NEXT_COMPATIBILITY if next_profile else COMPATIBILITY)
+ wire,layout=pack_elf((guest/'image.elf').read_bytes(),(guest/'platform.dtb').read_bytes(),identity,EXECUTED_COMPATIBILITY if executed_profile else NEXT_COMPATIBILITY if next_profile else COMPATIBILITY)
  out.mkdir(parents=True);(out/'image.bin').write_bytes(wire)
  receipt={'schema':'lemma-product-image/1','status':'PASS','scope':'opaque compiled image packaging; target installation/boot qualification separate',
   'configuration':build['configuration'],'authentication':'OPEN','anti_rollback':'OPEN','image_sha256':sha(out/'image.bin'),

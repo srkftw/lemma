@@ -14,7 +14,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--work-dir',type=Path,required=True)
- p.add_argument('--timeout',type=int,default=300);p.add_argument('--product-profile',choices=['7','9'],default='7');a=p.parse_args();out=a.work_dir.resolve()
+ p.add_argument('--timeout',type=int,default=300);p.add_argument('--product-profile',choices=['7','9','10'],default='7');a=p.parse_args();out=a.work_dir.resolve()
  if out.exists() or not out.is_relative_to(ROOT/'build'):p.error('work-dir must be unused under build/')
  if not 60<=a.timeout<=600:p.error('timeout must be60..600seconds')
  out.mkdir(parents=True);started=time.monotonic();report={'schema':'lemma-product-rom-build/1','status':'FAIL',
@@ -38,17 +38,17 @@ def main():
    commands.append({'argv':argv,'cwd':str(cwd),'returncode':result.returncode,'host_seconds':result.elapsed_seconds})
    if result.returncode:raise Core0Error('ROM command failed: '+label)
    return result.stdout.decode()
-  exporter='Lemma.Compiler.BootNextExport' if a.product_profile=='9' else 'Lemma.Compiler.BootExport'
-  command='#lemma_export_product_next_boot' if a.product_profile=='9' else '#lemma_export_product_boot'
-  marker='PRODUCT_NEXT_BOOT_EXPORT:PASS' if a.product_profile=='9' else 'PRODUCT_BOOT_EXPORT:PASS'
-  output_env='LEMMA_PRODUCT_NEXT_BOOT_OUT' if a.product_profile=='9' else 'LEMMA_PRODUCT_BOOT_OUT'
-  # Shared olean publication is serialized with the other target lanes.
+  exporter='Lemma.Compiler.BootExecutedExport' if a.product_profile=='10' else 'Lemma.Compiler.BootNextExport' if a.product_profile=='9' else 'Lemma.Compiler.BootExport'
+  command='#lemma_export_product_executed_boot' if a.product_profile=='10' else '#lemma_export_product_next_boot' if a.product_profile=='9' else '#lemma_export_product_boot'
+  marker='PRODUCT_EXECUTED_BOOT_EXPORT:PASS' if a.product_profile=='10' else 'PRODUCT_NEXT_BOOT_EXPORT:PASS' if a.product_profile=='9' else 'PRODUCT_BOOT_EXPORT:PASS'
+  output_env='LEMMA_PRODUCT_EXECUTED_BOOT_OUT' if a.product_profile=='10' else 'LEMMA_PRODUCT_NEXT_BOOT_OUT' if a.product_profile=='9' else 'LEMMA_PRODUCT_BOOT_OUT'
+  # Shared olean publication and genuine exporter reads use one lock.
+  source=out/'Export.lean';source.write_text('import '+exporter+'\n'+command+'\n')
+  env=dict(os.environ);env[output_env]=str(out)
   with (ROOT/'build/task006-lake.lock').open('a') as lock:
    fcntl.flock(lock,fcntl.LOCK_EX)
    run([tools['lake'],'build',exporter],'build',ROOT)
-  source=out/'Export.lean';source.write_text('import '+exporter+'\n'+command+'\n')
-  env=dict(os.environ);env[output_env]=str(out)
-  text=run([tools['lake'],'env','lean',str(source)],'export',ROOT,env)
+   text=run([tools['lake'],'env','lean',str(source)],'export',ROOT,env)
   if text.count(marker)!=1:raise Core0Error('missing genuine ROM export result')
   run([tools['opt'],'-S','-passes=default<O2>','program.ll','-o','program.opt.ll'],'opt')
   unit=json.loads((out/'unit.json').read_text())
@@ -73,7 +73,7 @@ def main():
   if before!={n:sha256(ROOT/n) for n in names}:raise Core0Error('consumed ROM compiler/source changed during build')
   artifacts=['program.ll','program.opt.ll','program.o','startup.S','startup.o','link.ld','unit.json','symbols.txt','image.elf','rom.bin']
   report['artifacts']={n:sha256(out/n) for n in artifacts};report['status']='PASS'
-  if a.product_profile=='9':report.update(hardware_profile='lemma-silicon-dev/0.9.0',configuration=unit['configuration'],image_compatibility=unit['image_compatibility'])
+  if a.product_profile in ('9','10'):report.update(hardware_profile='lemma-silicon-dev/0.'+a.product_profile+'.0',configuration=unit['configuration'],image_compatibility=unit['image_compatibility'])
  except BaseException as e:report['error']=str(e)
  finally:
   report['host_seconds']=time.monotonic()-started

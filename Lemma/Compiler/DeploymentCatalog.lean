@@ -73,6 +73,10 @@ def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-next-bulk-initialize"
 
+/-- Product10/Paper3 executed-refresh authority has a distinct deployment. -/
+def isProductExecutedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-product-executed-bulk-notebook"
+
 def isProductNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-product-next-bulk-notebook"
 
@@ -85,7 +89,7 @@ def isUSBNotebookConfiguration (configuration : String) : Bool :=
 
 /-- Product7 uses immutable ROM/NV boot; this does not format user media. -/
 def isProductNotebookConfiguration (configuration : String) : Bool :=
-  isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
+  isProductExecutedNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
     configuration == "lemmasim-silicon-product-bulk-notebook"
 
 /-- Bounded String/UTF8 source has a distinct isolated User6 authority. -/
@@ -108,7 +112,7 @@ def isBytesNotebookConfiguration (configuration : String) : Bool :=
 
 /-- The bounded owned-page Surface ABI is a separate software selection. -/
 def isBulkNotebookConfiguration (configuration : String) : Bool :=
-  isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
+  isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-bulk-notebook" ||
     configuration == "lemmasim-silicon-bulk-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
@@ -143,8 +147,8 @@ def softwareDeploymentFields (configuration : String) : List (String × Json) :=
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.4")])])]
   else   if isSumsNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
-    ("contract_version", .str (if isProductNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-next-deployment-v1" else if isUSBNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-next-deployment-v1" else if configuration == "lemmasim-silicon-product-bulk-notebook" then "lemma-managed-sums-bulk-product-deployment-v1" else if isUSBNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-deployment-v1" else if isBulkNotebookConfiguration configuration then "lemma-managed-sums-bulk-deployment-v1" else "lemma-managed-sums-deployment-v1")),
-    ("silicon_profile", .str (if isProductNextNotebookConfiguration configuration then "lemma-silicon-dev/0.9.0" else if isUSBNextNotebookConfiguration configuration then "lemma-silicon-dev/0.8.0" else if isProductNotebookConfiguration configuration then "lemma-silicon-dev/0.7.0" else if isUSBNotebookConfiguration configuration then "lemma-silicon-dev/0.6.0" else "lemma-silicon-dev/0.3.0")),
+    ("contract_version", .str (if isProductExecutedNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-executed-deployment-v1" else if isProductNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-next-deployment-v1" else if isUSBNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-next-deployment-v1" else if configuration == "lemmasim-silicon-product-bulk-notebook" then "lemma-managed-sums-bulk-product-deployment-v1" else if isUSBNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-deployment-v1" else if isBulkNotebookConfiguration configuration then "lemma-managed-sums-bulk-deployment-v1" else "lemma-managed-sums-deployment-v1")),
+    ("silicon_profile", .str (if isProductExecutedNotebookConfiguration configuration then "lemma-silicon-dev/0.10.0" else if isProductNextNotebookConfiguration configuration then "lemma-silicon-dev/0.9.0" else if isUSBNextNotebookConfiguration configuration then "lemma-silicon-dev/0.8.0" else if isProductNotebookConfiguration configuration then "lemma-silicon-dev/0.7.0" else if isUSBNotebookConfiguration configuration then "lemma-silicon-dev/0.6.0" else "lemma-silicon-dev/0.3.0")),
     ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.3")])])]
   else if !isManagedNotebookConfiguration configuration then [] else
