@@ -1,0 +1,90 @@
+{
+  "schema": "lemma-task006-boot-backing-evidence/1",
+  "status": "PASS",
+  "scope": "Literal BootNV circuitry/runtime, real POSIX faults and isolated continuation.\nThis does not qualify a ROM, production boot, image selection or guest driver.",
+  "hardware_dependency_commit": "021eefa",
+  "runtime_build": "build/silicon/task006-product-runtime-a2",
+  "result": "build/silicon/task006-product-pending-a4/result.json",
+  "result_sha256": "d419cff46963c4c0807abcd08035a8d85d58f5517f3f470809bf0c1c470c0461",
+  "profile": "lemma-silicon-dev/0.7.0",
+  "core_revision": "20f2af74e7aa76513e94012231d16567fa42648a",
+  "snapshot_identity": "f0ce9cd49559eb11717c7f9215eb2517a28055233c8c76c1f7e9bebce5a84f31",
+  "binary_sha256": "2cb999a9a799ec535f3256dd0365a293f4742a52043e509b44441238df3dc62c",
+  "host_runtime": {
+    "sim/companion/backing_peer.cpp": "d5b9a796f9b4c07d03164648d50b4bb5ef1d52bf4ef589fe93c003f256849dac",
+    "sim/companion/backing_peer.h": "028e7131de53d3d1857d3480c532265acbc1b477782bf8b3cda46cdcccd6b8cb",
+    "sim/host/backing_io.cpp": "64a3f19c829adf568a41d3c3422d1a3fbab52dac185e80e4670cfb355b1afdf7",
+    "sim/host/backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e",
+    "sim/host/backing_io_posix.cpp": "0689696842477eab598258c921b0d3c047e60152bf6cdd74768781fbf364f482",
+    "sim/host/backing_io_posix.h": "d4742c21a9b5054bbf4a67a4c4ef5718e5602e5275a168139f9846a7c98b0cb3",
+    "sim/host/panel_pending.h": "b7b88f4b659b4234be18c0fc0a154ee722e9c38bc0ecb33b3e93fdd752d3c5e2",
+    "sim/radio/ble_peer_transport.cpp": "58cf7d76e33c915eedbb4e6ce46757eca686e6c523eaba4808db59caf40d421a",
+    "sim/radio/ble_peer_transport.h": "941ce94311ff7bc66922c8f2ac05b5139ae58b89f4216429dd4b34dccacc979b",
+    "sim/rtl/host/machine_runtime.ble.inc.cpp": "769d36c37cc342eb54e971d341b186d0bc7ef37a899f8dd775d70533f566e080",
+    "sim/rtl/host/machine_runtime.cpp": "8c0fc51c2e0bf2978f1ef552dcd167ea6c831633e68e17d2b90c8db5e7a9aa97",
+    "sim/rtl/host/machine_runtime.h": "88b1d3b4a6e952b49ef9100a851d097e5b778016875c5ecf62cb9dc840ff5811",
+    "sim/rtl/host/machine_runtime.nv.inc.cpp": "f953bddee71da2bd34253fe9efb7112a8fb5717ac7a80b4fcbe3f88f8b85ee55",
+    "sim/usb/usb_transport.cpp": "593f04a6029dbea1fb92d96bb2e8524d087b0b20ac139d938f7bc976f84db9a2",
+    "sim/usb/usb_transport.h": "574cc943feedf7f5193bcddb770221487ae0d249891ee0c85c90d184c019c6ae"
+  },
+  "checker_sha256": "4ad0dae6df0187ed94cd7f1d97643e40b697797949ec157404ae98728895d7d9",
+  "fixture_sha256": "c6a5fecc3001fc5419932670a7e60e015d568b5e84e1a52a9890fc5f7e315353",
+  "command": "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_boot_pending.py --rtl-build build/silicon/task006-product-runtime-a2 --work-dir build/silicon/task006-product-pending-a4'",
+  "observed": [
+    "Actual RLIMIT_FSIZE pwrite changes two backing bytes then returns EFBIG; cancelled controller reports the actual prefix/error.",
+    "Actual closed-descriptor fsync returns EBADF without durable acknowledgement.",
+    "Reset orphan retains actual external ownership and accepted partial bytes without publishing to a replacement controller.",
+    "Snapshots do not call submit, poll or passive_read or advance virtual time; private Pending forks reject cycle advancement until the exact suffix tape binds.",
+    "Three Pending and completed native snapshots compare byte exactly against isolated recorded suffixes.",
+    "A user-medium LMIOLOG2 tape is rejected in the boot namespace; incomplete tape is rejected before advancing.",
+    "Literal brownout erases actual volatile kernel/DTB RAM bytes without reinstalling product preload pages."
+  ],
+  "measurements": [
+    {
+      "case": "partial-cancel",
+      "initialization_seconds": 0.0300417,
+      "snapshot_seconds": 0.765655,
+      "peak_native_rss_kib": 702452,
+      "snapshot_cycle": 1008,
+      "final_cycle": 3008,
+      "boot_submissions": 1,
+      "initial_passive_reads": 33
+    },
+    {
+      "case": "barrier-error",
+      "initialization_seconds": 0.0292264,
+      "snapshot_seconds": 0.768845,
+      "peak_native_rss_kib": 741280,
+      "snapshot_cycle": 1008,
+      "final_cycle": 3008,
+      "boot_submissions": 1,
+      "initial_passive_reads": 33
+    },
+    {
+      "case": "reset-orphan",
+      "initialization_seconds": 0.0187695,
+      "snapshot_seconds": 0.84328,
+      "peak_native_rss_kib": 741280,
+      "snapshot_cycle": 1016,
+      "final_cycle": 3016,
+      "boot_submissions": 1,
+      "initial_passive_reads": 33
+    }
+  ],
+  "host_seconds": 24.58206088899169,
+  "snapshot_bytes": {
+    "barrier-error-pending.snap": 145201514,
+    "partial-cancel-pending.snap": 145202026,
+    "reset-orphan-pending.snap": 145202026
+  },
+  "original_failures": [
+    "build/task006-product-runtime-a1.log: reserved Verilog instance name; repaired in hardware dependency.",
+    "build/silicon/task006-product-pending-a1/result.json: third-party Verilator headers passed as ordinary warnings under -Werror; external headers changed to -isystem, own fixture retains -Wall -Wextra -Werror.",
+    "build/silicon/task006-product-pending-a2/result.json: mixed-type C++ auto declaration in fixture; split declarations."
+  ],
+  "remaining": [
+    "Actual ROM loading, image validation, transactional update, confirmation and recovery are not qualified by this literal test.",
+    "Fast product timing and browser product persistent backing remain unqualified.",
+    "Attached USB external-policy snapshots remain rejected."
+  ]
+}

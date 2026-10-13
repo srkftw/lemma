@@ -29,6 +29,7 @@ struct Options {
  unsigned deadline=120,host_threads=1;
  unsigned ble_peer_timeout_ms=10000,usb_peer_timeout_ms=60000;
  std::string usb_peer_executable,usb_capture_path;
+ std::string boot_capture_path,boot_replay_path;
  std::vector<std::string> usb_peer_arguments;
  uint64_t ble_drop_packets=0;
  std::string ble_peer_executable,ble_capture_path,ble_replay_path,ble_wire_path;
@@ -43,7 +44,12 @@ struct BleOutcome {
  std::string frame;
 };
 struct State {
- BackingState backing;
+ BackingState backing,boot_backing;
+ std::map<uint64_t,std::array<uint8_t,512>> accepted_boot_medium;
+ std::optional<BackingRequest> boot_pending;
+ uint64_t boot_poll_cycle=0,boot_orphan=0,boot_medium_present=0;
+ uint64_t boot_request_origin=0,boot_request_id=0,boot_request_kind=0,boot_request_sector=0;
+ uint64_t boot_reset_origin=1,boot_reset_seen=1;
  std::vector<uint8_t> ram,rom,framebuffer,visible;
  std::map<uint64_t,std::array<uint8_t,4096>> boot_pages;
  std::map<uint64_t,std::array<uint8_t,512>> overlay,accepted_medium;
@@ -118,6 +124,18 @@ class Machine {
  void ble_reply_action(const std::string&);
 
  Options options;
+ int boot_medium=-1,boot_capture=-1;
+ std::shared_ptr<BackingPlatform> boot_platform;
+ std::vector<TimedBackingRecord> boot_replay;
+ uint64_t boot_capture_bytes=0,boot_replay_cursor=0,boot_capture_branch=0;
+ bool boot_fork_suspended=false;
+ std::string active_boot_capture,private_boot_medium_path;
+ void boot_before_edge(bool);
+ void capture_boot(uint64_t,const std::vector<uint8_t>&);
+ std::optional<BackingOutcome> boot_operation(BackingKind,uint64_t,uint64_t,const uint8_t* = nullptr);
+ std::optional<BackingOutcome> poll_boot();
+ void observe_boot(const BackingRecord&);
+ void initialize_boot_io();
  int medium=-1,backing_capture=-1;
  std::shared_ptr<BackingPlatform> backing;
  std::vector<TimedBackingRecord> backing_replay;
@@ -148,6 +166,11 @@ public:
  void load_rom(const std::string&);
  void descriptor(const std::string&);
  void open_medium(const std::string&);
+ void open_boot_medium(const std::string&);
+ void attach_boot_backing(std::shared_ptr<BackingPlatform>);
+ void bind_boot_replay(const std::string&);
+ void export_boot_medium(const std::string&) const;
+ const std::string& boot_capture_path() const {return active_boot_capture;}
  void attach_backing(std::shared_ptr<BackingPlatform>);
  void rebind_private_backing(std::shared_ptr<BackingPlatform>);
  const std::string& backing_capture_path() const { return active_backing_capture; }
