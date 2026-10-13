@@ -7,6 +7,8 @@ import Lemma.Courses.Arithmetic
 import Lemma.Services.Arithmetic.ClientV2
 import Lemma.Services.Arithmetic.ClientV3
 import Lemma.Services.Arithmetic.ClientV5
+import Lemma.Services.Arithmetic.ClientV6
+import Lemma.Documents.MathematicsString
 import Lemma.Documents.MathematicsArray
 import Lemma.Services.Arithmetic.ClientV4
 import Lemma.Documents.MathematicsBytes
@@ -678,35 +680,42 @@ private def allocateCourse : Action :=
 -- Main initialization sets it before any course request or document load.
 private def pollArithmetic (transaction incoming outgoing request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 5 then Lemma.Services.Arithmetic.ClientV5.pollCall transaction incoming outgoing request
+  if selection = 6 then Lemma.Services.Arithmetic.ClientV6.pollCall transaction incoming outgoing request
+  else if selection = 5 then Lemma.Services.Arithmetic.ClientV5.pollCall transaction incoming outgoing request
   else if selection = 4 then Lemma.Services.Arithmetic.ClientV4.pollCall transaction incoming outgoing request
   else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.pollCall transaction incoming outgoing request
   else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.pollCall transaction incoming outgoing request else failed
 
 private def callArithmetic (endpoint outgoing document request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 5 then Lemma.Services.Arithmetic.ClientV5.beginCall endpoint outgoing document request
+  if selection = 6 then Lemma.Services.Arithmetic.ClientV6.beginCall endpoint outgoing document request
+  else if selection = 5 then Lemma.Services.Arithmetic.ClientV5.beginCall endpoint outgoing document request
   else if selection = 4 then Lemma.Services.Arithmetic.ClientV4.beginCall endpoint outgoing document request
   else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.beginCall endpoint outgoing document request
   else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.beginCall endpoint outgoing document request else failed
 
 private def completeArithmetic (revision goal outcome request budget : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 5 then Lemma.Documents.MathematicsArray.completeExecution mathematics revision goal outcome request budget
+  if selection = 6 then Lemma.Documents.MathematicsString.completeExecution mathematics revision goal outcome request budget
+  else if selection = 5 then Lemma.Documents.MathematicsArray.completeExecution mathematics revision goal outcome request budget
   else if selection = 4 then Lemma.Documents.MathematicsBytes.completeExecution mathematics revision goal outcome request budget
   else if selection = 3 then Lemma.Documents.Mathematics.completeExecutionSums mathematics revision goal outcome request budget
   else if selection = 2 then Lemma.Documents.Mathematics.completeExecution mathematics revision goal outcome request budget else failed
 
 private def createArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 5 then Lemma.Documents.MathematicsArray.create mathematics ns page
+  if selection = 6 then Lemma.Documents.MathematicsString.create mathematics ns page
+  else if selection = 5 then Lemma.Documents.MathematicsArray.create mathematics ns page
   else if selection = 4 then Lemma.Documents.MathematicsBytes.create mathematics ns page
   else if selection = 3 then Lemma.Documents.Mathematics.createSums mathematics ns page
   else if selection = 2 then Lemma.Documents.Mathematics.createCurrent mathematics ns page else failed
 
 private def upgradeArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 5 then
+  if selection = 6 then
+  .bind (Lemma.Documents.MathematicsString.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Documents.MathematicsString.upgrade mathematics
+  else if selection = 5 then
   .bind (Lemma.Documents.MathematicsArray.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
   Lemma.Documents.MathematicsArray.upgrade mathematics
   else if selection = 4 then
@@ -806,6 +815,7 @@ private def openCourse : Action :=
       else if version = 3 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 4 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 5 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
+      else if version = 7 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 6 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
     upgradeArithmetic ns page
@@ -1143,7 +1153,7 @@ private def initializeMedium : Action :=
 
 private def mainWithExecution (bootArgument selection bulkMode : UInt64) : Action :=
   if 3 < bootArgument then failed else
-  if (if selection = 2 then true else if selection = 3 then true else if selection = 4 then true else selection = 5) = false then failed else
+  if (if selection = 2 then true else if selection = 3 then true else if selection = 4 then true else if selection = 5 then true else selection = 6) = false then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 selection) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 584 bulkMode) fun s _ => if statusFailed s = true then .done s 0 else
@@ -1214,5 +1224,11 @@ checker any storage, ink or controller authority. -/
 def mainArrayBulk (bootArgument : UInt64) : Action :=
   if bootArgument = 2 then mainWithExecution bootArgument 5 1 else
   if bootArgument = 3 then mainWithExecution bootArgument 5 1 else failed
+
+/-- Protocol6/document7 preserve original submissions through a full-width
+hexadecimal UTF-8 String roundtrip in the separate arithmetic process. -/
+def mainStringBulk (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithExecution bootArgument 6 1 else
+  if bootArgument = 3 then mainWithExecution bootArgument 6 1 else failed
 
 end Lemma.Applications.Notebook

@@ -202,12 +202,13 @@ LEGACY_NOTEBOOK_CONFIGURATIONS = {
 BYTES_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-bytes-bulk-notebook',
     'lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'}
 ARRAY_NOTEBOOK_CONFIGURATIONS = {"lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development"}
-CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS
-POWER_CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS
+STRING_NOTEBOOK_CONFIGURATIONS = {"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}
+CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS
 DOCUMENT4_NOTEBOOK_CONFIGURATIONS = (SUMS_NOTEBOOK_CONFIGURATIONS |
-    MANAGED_NOTEBOOK_CONFIGURATIONS | LEGACY_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS)
+    MANAGED_NOTEBOOK_CONFIGURATIONS | LEGACY_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS)
 DOCUMENT4_NOTEBOOK_PROFILES = {configuration: ('core0-user-v0.2'
-    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS | MANAGED_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS
+    if configuration in SUMS_NOTEBOOK_CONFIGURATIONS | MANAGED_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS
     else 'core0-user-v0.1') for configuration in DOCUMENT4_NOTEBOOK_CONFIGURATIONS}
 PRODUCT_LITERALS = {21:'lemma-boot-nv@10012000',59:'lemma,sector-bytes',
     60:'lemma,capacity-sectors',61:'lemma,rom-bytes',62:'lemma,integrity-only',
@@ -376,7 +377,8 @@ def validate_sums_record_length(ir: str, unit: dict) -> tuple[set[int],list[dict
     variants={
         3:([1856,2496,2496],'8cba4770e09dbb24ae2819a55d646e2f69029fe725bcb1aaebd27e6dfb2e8503','document-v4-length-v1'),
         4:([1856,2496,2496,2496],'c014832a3f62a2190a0650e8aca34ec51531d6a55fb8b50a49133132c93966d1','document-v5-length-v1'),
-        5:([1856,2496,2496,2496,2496],'65873a892ea6d2cb246a8c6a38572ec6b76ab80f375de5b2ff45d560c816a11a','document-v6-length-v1')}
+        5:([1856,2496,2496,2496,2496],'65873a892ea6d2cb246a8c6a38572ec6b76ab80f375de5b2ff45d560c816a11a','document-v6-length-v1'),
+        6:([1856,2496,2496,2496,2496,2496],'7e3dc992f3c32bd5d028674edb6574c1cde65622739740bc81acc81ea9194edd','document-v7-length-v1')}
     actual=[(count,values,digest,schema) for count,(values,digest,schema) in variants.items()
         if f'@{table} = private unnamed_addr constant [{count} x i64] ['+', '.join('i64 '+str(value) for value in values)+'], align 8' in ir.splitlines()]
     if len(actual)!=1:raise Core0Error('Course record-length closed literal variant missing or ambiguous')

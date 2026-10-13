@@ -235,16 +235,45 @@ def array_oom_route(unit,ir):
       'arena_capacity':31,'actual_failure_code':237,
       'emitted_routes':[list(pair) for pair in routes]}
 
-def managed_oom_artifacts(directory,*,sums=False,bytes_payload=False,array_payload=False):
+STRING_OOM_CONFIGURATION='lemmasim-silicon-string-arithmetic-oom-development'
+
+def string_oom_route(unit,ir):
+    """Real ordinary hex/String workload's first owned byte-buffer allocation."""
+    from audit_kernel import _ir_definition_body,parse_definitions_and_calls
+    from managed_string import validate as validate_string,GENERATED,PREFIX,ENTRY
+    from arithmetic_string_identity import validate as validate_identity,canonical
+    require(unit.get('contract_version')=='core0-user-v0.6' and unit.get('role')=='user'
+      and unit.get('image_key')=='arithmetic' and unit.get('configuration')==STRING_OOM_CONFIGURATION,
+      'String OOM requires the exact User6 Laboratory unit')
+    require(validate_string(ir,unit,optimized=False) is not None and validate_identity(ir,unit,optimized=False) is not None,
+      'String OOM genuine ordinary IR/complete implementation authority absent')
+    names={canonical(row['source']):row['symbol'] for row in unit['functions']}
+    require(len(names)==len(unit['functions']) and len(set(names.values()))==len(names),'String OOM source inventory duplicated')
+    server='Lemma.Services.Arithmetic.ServerV6.';arena='Lemma.User.Runtime.Arena.';runtime='Lemma.User.Runtime.ManagedBytes.';submission='Lemma.Mathematics.ManagedStringSubmissionAction.'
+    main=server+'main';pressure=server+'pressureStep';positive=submission+'positiveRational';entry=GENERATED+ENTRY;encoded=GENERATED+PREFIX+'encoded';empty=GENERATED+PREFIX+'empty';parse=GENERATED+PREFIX+'parse'
+    routes=[(main,server+'step'),(server+'step',server+'processV6'),(server+'processV6',submission+'check'),(submission+'check',positive),(positive,entry),(entry,encoded),(encoded,empty),(empty,runtime+'emptyWithCapacity'),(runtime+'emptyWithCapacity',runtime+'allocate'),(runtime+'allocate',arena+'newBytes'),(arena+'newBytes',arena+'allocate'),(arena+'allocate',arena+'exhausted'),(main,pressure),(pressure,arena+'newBox'),(arena+'newBox',arena+'allocate'),(entry,parse),(parse,'Lemma.User.Runtime.ManagedString.fromByteArray')]
+    required={source for pair in routes for source in pair}|{arena+'capacity'};require(required<=set(names),'String OOM actual allocation/UTF8 path absent')
+    bodies={source:_ir_definition_body(ir,names[source]) for source in required};require(all(bodies.values()),'String OOM emitted body missing')
+    for caller,callee in routes:require(names[callee] in parse_definitions_and_calls(bodies[caller])[2],'String OOM actual route missing: '+caller+' -> '+callee)
+    require(re.search(r'call \{ i64, i64 \} @'+re.escape(names[encoded])+r'\(i64 16, i64 %arg0\)',bodies[entry]),'String OOM actual sixteen-byte encoding absent')
+    require(re.search(r'call \{ i64, i64 \} @'+re.escape(names[arena+'newBytes'])+r'\(i64 64\)',bodies[runtime+'allocate']), 'String OOM actual slot extent differs')
+    require(re.search(r'icmp eq i64 %arg0, 1',bodies[submission+'check']) and re.search(r'icmp ult i64 %arg2, 8',bodies[positive]) and re.search(r'i32 signext 31, i64',bodies[main]) and re.search(r'icmp eq i64 %arg0, 1',bodies[main]),'String OOM goal/budget/pressure mode differs')
+    require(re.fullmatch(r'\s*entry:\s*ret i8 237\s*',bodies[arena+'exhausted']) and re.fullmatch(r'\s*entry:\s*ret i64 31\s*',bodies[arena+'capacity']),'String OOM actual capacity/status differs')
+    return {'contract':'core0-user-v0.6','ordinary_source':ENTRY,'maximum_utf8_bytes':40,'logical_payload_bytes':16,'arena_slot_bytes':64,'arena_capacity':31,'actual_failure_code':237,'failure_phase':'first ByteArray allocation before String.ofByteArray; no completed String-object construction claim','emitted_routes':[list(pair) for pair in routes]}
+
+
+def managed_oom_artifacts(directory,*,sums=False,bytes_payload=False,array_payload=False,string_payload=False):
     from managed_records import validate as validate_records
-    if array_payload:
+    if string_payload:
+        from managed_string import validate as validate_records
+    elif array_payload:
         from managed_array import validate as validate_records
     elif sums:
         from managed_sums import validate as validate_records
     elif bytes_payload:
         from managed_bytes import validate as validate_records
-    configuration=ARRAY_OOM_CONFIGURATION if array_payload else BYTES_OOM_CONFIGURATION if bytes_payload else SUMS_OOM_CONFIGURATION if sums else MANAGED_OOM_CONFIGURATION
-    server='Lemma.Services.Arithmetic.ServerV5' if array_payload else 'Lemma.Services.Arithmetic.ServerV4' if bytes_payload else 'Lemma.Services.Arithmetic.ServerV3' if sums else 'Lemma.Services.Arithmetic.Server'
+    configuration=STRING_OOM_CONFIGURATION if string_payload else ARRAY_OOM_CONFIGURATION if array_payload else BYTES_OOM_CONFIGURATION if bytes_payload else SUMS_OOM_CONFIGURATION if sums else MANAGED_OOM_CONFIGURATION
+    server='Lemma.Services.Arithmetic.ServerV6' if string_payload else 'Lemma.Services.Arithmetic.ServerV5' if array_payload else 'Lemma.Services.Arithmetic.ServerV4' if bytes_payload else 'Lemma.Services.Arithmetic.ServerV3' if sums else 'Lemma.Services.Arithmetic.Server'
     directory=Path(directory).resolve();arithmetic=directory/'users/arithmetic'
     unit=json.loads((arithmetic/'unit.json').read_text())
     catalog=json.loads((directory/'user-image-catalog.json').read_text())
@@ -265,13 +294,16 @@ def managed_oom_artifacts(directory,*,sums=False,bytes_payload=False,array_paylo
     require(validate_records(pre,unit,optimized=False) is not None and
             validate_records(optimized,unit,optimized=True) is not None,
             'managed OOM genuine ordinary source/checked helper closure absent')
-    if array_payload:
+    if string_payload:
+        from arithmetic_string_identity import validate as validate_identity
+        require(validate_identity(optimized,unit,optimized=True) is not None,'String complete optimized implementation authority absent')
+    elif array_payload:
         from arithmetic_array_identity import validate as validate_identity
         require(validate_identity(optimized,unit,optimized=True) is not None,'Array complete optimized implementation authority absent')
     elif bytes_payload:
         from arithmetic_bytes_identity import validate as validate_identity
         require(validate_identity(optimized,unit,optimized=True) is not None,'bytes complete optimized implementation authority absent')
-    result=array_oom_route(unit,pre) if array_payload else bytes_oom_route(unit,pre) if bytes_payload else sums_oom_route(unit,pre) if sums else managed_oom_route(unit,pre)
+    result=string_oom_route(unit,pre) if string_payload else array_oom_route(unit,pre) if array_payload else bytes_oom_route(unit,pre) if bytes_payload else sums_oom_route(unit,pre) if sums else managed_oom_route(unit,pre)
     files=[directory/'audit.json',directory/'image.elf',directory/'user-image-catalog.json',
       arithmetic/'image.elf',arithmetic/'unit.json',arithmetic/'program.ll',arithmetic/'program.opt.ll']
     result['artifacts']={str(p.relative_to(directory)):sha(p) for p in files}
@@ -286,7 +318,7 @@ class IsolationChecker(MathChecker):
         self.report.update(schema='lemmasim-arithmetic-isolation/1',case=args.case,
             scope='actual scalar Lean isolated arithmetic process and copied IPC; managed source constructors/proof kernel/full verifier remain unfinished')
         self.report['observer_sources']['scripts/check_arithmetic_isolation.py']=sha(Path(__file__))
-        if args.require_managed_constructor or args.require_sums_constructor or getattr(args,'require_bytes_payload',False) or getattr(args,'require_array_payload',False):
+        if args.require_managed_constructor or args.require_sums_constructor or getattr(args,'require_bytes_payload',False) or getattr(args,'require_array_payload',False) or getattr(args,'require_string_payload',False):
             self.report['scope']='actual ordinary Lean payload constructor OOM in isolated RV64 Arithmetic; bounded checked heap, pen/Save/cold recovery; general managed language/proof kernel remain unfinished'
     def settle(self,session,tick,completed=None):
         def done(state):
@@ -310,17 +342,21 @@ class IsolationChecker(MathChecker):
         first=len(stream.events);stream.tick=session.inspect()['machine']['ticks']+10000
         stream.stroke(name,1,1,6,1700);session.admit(stream.events[first:]);return first,stream.events[-1][1]
     def execute(self):
-        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False):
-            self.report['managed_constructor_admission']=managed_oom_artifacts(self.args.guest_build,sums=self.args.require_sums_constructor,bytes_payload=getattr(self.args,'require_bytes_payload',False),array_payload=getattr(self.args,'require_array_payload',False))
+        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False) or getattr(self.args,'require_string_payload',False):
+            self.report['managed_constructor_admission']=managed_oom_artifacts(self.args.guest_build,sums=self.args.require_sums_constructor,bytes_payload=getattr(self.args,'require_bytes_payload',False),array_payload=getattr(self.args,'require_array_payload',False),string_payload=getattr(self.args,'require_string_payload',False))
         original=sha(self.args.disk);disk=self.directory/'live-input.raw';shutil.copyfile(self.args.disk,disk)
         live=self.session('live',disk);self.report['identity']=live.identity
-        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False):
+        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False) or getattr(self.args,'require_string_payload',False):
             require(live.identity['guest']==self.report['managed_constructor_admission']['artifacts']['image.elf'],
                     'live machine did not consume the admitted managed OOM ELF')
         self.report['boot']=live.boot()
         rows=self.rows(live);mode={'oom':1,'fault':2,'stall':3}[self.args.case]
         start=[r for r in rows if r[0]==0x456]
-        require(start==[(0x456,mode,31 if mode==1 else 0,5 if getattr(self.args,'require_array_payload',False) else 4 if getattr(self.args,'require_bytes_payload',False) else 3 if self.args.require_sums_constructor else 1,10000000)],'server did not execute actual declared mode/object pressure/deadline')
+        require(start==[(0x456,mode,31 if mode==1 else 0,6 if getattr(self.args,'require_string_payload',False) else 5 if getattr(self.args,'require_array_payload',False) else 4 if getattr(self.args,'require_bytes_payload',False) else 3 if self.args.require_sums_constructor else 1,10000000)],'server did not execute actual declared mode/object pressure/deadline')
+        if getattr(self.args,'require_string_payload',False):
+            from math_oracle import STRING_EXECUTION_IDENTITIES
+            require([row for row in rows if row[0]==0x45c]==[(0x45c,*STRING_EXECUTION_IDENTITIES)],
+                    'actual Protocol6 String implementation/lowering/runtime/resource handshake differs')
         if getattr(self.args,'require_array_payload',False):
             from math_oracle import ARRAY_EXECUTION_IDENTITIES
             require([row for row in rows if row[0]==0x45c]==[(0x45c,*ARRAY_EXECUTION_IDENTITIES)],
@@ -331,6 +367,14 @@ class IsolationChecker(MathChecker):
         prior_panel,prior_medium=live.export('before-check')
         prior_bytes,prior,_,_=self.record(prior_medium)
         require(prior['outcome']==0 and not prior['history'],'initial course already had manufactured evidence')
+        if getattr(self.args,'require_string_payload',False):
+            require(len(prior_bytes)==2496 and prior['format']=='lemma-mathematical-submission/7'
+                    and prior['execution']['active']=={'origin':'Unknown'}
+                    and all(entry=={'origin':'Unknown'} for entry in prior['execution']['history']),
+                    'String OOM requires actual Document7 without manufactured evidence')
+            self.report['string_protocol_document']={'status':'PASS','protocol':6,'document':7,
+              'format_bytes':2496,'actual_handshake':(0x45c,*STRING_EXECUTION_IDENTITIES),
+              'no_applicable_evidence_before_request':True}
         if getattr(self.args,'require_array_payload',False):
             require(len(prior_bytes)==2496 and prior['format']=='lemma-mathematical-submission/6' and
                     prior['execution']['active']=={'origin':'Unknown'} and
@@ -339,7 +383,7 @@ class IsolationChecker(MathChecker):
             self.report['array_protocol_document']={'status':'PASS','protocol':5,'document':6,
               'format_bytes':2496,'actual_handshake':(0x45c,*ARRAY_EXECUTION_IDENTITIES),
               'no_applicable_evidence_before_request':True}
-        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False):
+        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False) or getattr(self.args,'require_string_payload',False):
             require(prior['goal']==1 and prior['answer']==[0,1,0,0,0] and prior['budget']==8,
                     'managed OOM submitted object would not execute the admitted ordinary constructor')
         self.allowed_error=True
@@ -359,7 +403,7 @@ class IsolationChecker(MathChecker):
         require(not any(r[0]==0x450 and r[3]!=0 for r in self.rows(live)),'checker failure manufactured trusted evidence')
         if self.args.case=='oom':
             require(any(r[0]==0x455 and r[3:]==(237,0) for r in self.rows(live)),'OOM was not returned by real owned-object allocation')
-            if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False):
+            if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False) or getattr(self.args,'require_string_payload',False):
                 result_rows=[r for r in self.rows(live) if r[0]==0x455 and r[1:3]==request[1:3]]
                 require(len(result_rows)==1 and result_rows[0][3:]==(237,0),
                         'managed constructor OOM reply is not the actual submitted request/revision')
@@ -448,7 +492,7 @@ class IsolationChecker(MathChecker):
         self.report['cold_recovery']={'status':'PASS','new_cpu':True,'complete_controller_pixels_equal':True,'acknowledged_math_unchanged':True,'raw_ink_preserved':True}
         cold.close();self.sessions.remove(cold)
         require(sha(self.args.disk)==original,'observer changed original medium')
-        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False):
+        if self.args.require_managed_constructor or self.args.require_sums_constructor or getattr(self.args,'require_bytes_payload',False) or getattr(self.args,'require_array_payload',False) or getattr(self.args,'require_string_payload',False):
             require(all(sha(Path(self.args.guest_build)/name)==digest for name,digest in
                         self.report['managed_constructor_admission']['artifacts'].items()),
                     'admitted managed OOM artifacts changed during real observations')
@@ -459,6 +503,7 @@ def main():
     parser.add_argument('--disk',type=Path,required=True);parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--native-bundle',required=True);parser.add_argument('--guest-build',required=True)
     parser.add_argument('--guest-source-root',type=Path,help='Complete original canonical Laboratory Array OOM consumed-source archive')
+    parser.add_argument('--require-string-payload',action='store_true',help='Require exact User6 ordinary UTF8 String workload first allocation OOM and Protocol6/Document7 closure')
     parser.add_argument('--require-array-payload',action='store_true',help='Require exact User5 Array allocation and Protocol5/Document6 closure')
     parser.add_argument('--require-managed-constructor',action='store_true',
         help='fail unless exact User2 Lab artifact and emitted real constructor allocator path qualify OOM')
@@ -470,8 +515,8 @@ def main():
     parser.add_argument('--action-seconds',type=int,default=30);parser.add_argument('--deadline',type=int,default=1200)
     args=parser.parse_args();args.checkpoint_relation='not-exercised';args.durable_suffix_from=None
     require(1<=args.timeout<=3600 and 1<=args.boot_seconds<=600 and 1<=args.action_seconds<=600 and 1<=args.deadline<=2400,'invalid predeclared resource bounds')
-    require(sum((args.require_managed_constructor,args.require_sums_constructor,args.require_bytes_payload,args.require_array_payload))<=1,'select one exact managed payload contract')
-    require(not (args.require_managed_constructor or args.require_sums_constructor or getattr(args,'require_bytes_payload',False) or getattr(args,'require_array_payload',False)) or args.case=='oom','managed constructor admission requires the OOM case')
+    require(sum((args.require_managed_constructor,args.require_sums_constructor,args.require_bytes_payload,args.require_array_payload,args.require_string_payload))<=1,'select one exact managed payload contract')
+    require(not (args.require_managed_constructor or args.require_sums_constructor or getattr(args,'require_bytes_payload',False) or getattr(args,'require_array_payload',False) or getattr(args,'require_string_payload',False)) or args.case=='oom','managed constructor admission requires the OOM case')
     require(args.guest_source_root is None or args.require_array_payload,
             'archived Laboratory guest observation requires exact Array payload admission')
     checker=IsolationChecker(args)

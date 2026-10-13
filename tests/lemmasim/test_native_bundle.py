@@ -66,6 +66,26 @@ class NativeBundleBoundary(unittest.TestCase):
         changed=copy.deepcopy(manifest);changed['software_deployment']['contract_version']=SUMS_DEPLOYMENT
         with self.assertRaises(ValueError):bundle_configurations(changed)
 
+    def test_string_pair_keeps_its_own_authority_and_oom_is_laboratory_only(self):
+        manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
+                  'software_deployment':{'contract_version':'lemma-managed-string-bulk-deployment-v1',
+                    'configurations':{'notebook':'lemmasim-silicon-string-bulk-notebook',
+                                      'initializer':'lemmasim-silicon-string-bulk-initialize'}}}
+        self.assertEqual(bundle_configurations(manifest),manifest['software_deployment']['configurations'])
+        for role in ('notebook','initializer'):
+            for family in ('array','bytes','sums'):
+                changed=copy.deepcopy(manifest)
+                suffix='notebook' if role=='notebook' else 'initialize'
+                changed['software_deployment']['configurations'][role]=f'lemmasim-silicon-{family}-bulk-{suffix}'
+                with self.assertRaises(ValueError):bundle_configurations(changed)
+        changed=copy.deepcopy(manifest)
+        changed['software_deployment']['contract_version']='lemma-managed-array-bulk-deployment-v1'
+        with self.assertRaises(ValueError):bundle_configurations(changed)
+        cfg='lemmasim-silicon-string-arithmetic-oom-development'
+        self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0','notebook',cfg,'laboratory'),cfg)
+        for mode in ('student','developer',None):
+            with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0','notebook',cfg,mode)
+
     def test_archived_backends_and_new_guests_keep_exact_source_versions(self):
         path='/same/consumed/source.lean';old='a'*64;new='b'*64
         manifest={'schema':SCHEMA_WITH_SOURCE_VERSIONS,'origins':{path:{old:'old',new:'new'}},

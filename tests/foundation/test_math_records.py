@@ -138,6 +138,32 @@ class MathematicsEvidenceTests(unittest.TestCase):
         words[13]=11
         with self.assertRaises(ValueError):self.inspect(words)
 
+    def test_string_record_preserves_prior_origins_and_strict_learner_validation(self):
+        words=self.current_record(True);words[1]=7;words[233]=5
+        for origin,identities in [(2,math_oracle.EXECUTION_IDENTITIES),
+                                  (3,math_oracle.SUMS_EXECUTION_IDENTITIES),
+                                  (4,math_oracle.BYTES_EXECUTION_IDENTITIES),
+                                  (5,math_oracle.ARRAY_EXECUTION_IDENTITIES)]:
+            slot=[48,*identities,8,0,origin]
+            words[240:248]=slot;words[248:256]=slot
+            self.assertNotEqual(self.inspect(words)['execution']['active']['origin'],'IsolatedString')
+        slot=[49,0x0006000100000001,0x0006000000000001,
+              0x0001000400000001,0x000400000000001f,8,0,6]
+        words[240:248]=slot;words[248:256]=slot
+        observed=self.inspect(words)
+        self.assertEqual(observed['execution']['active']['origin'],'IsolatedString')
+        self.assertEqual(observed['execution']['active']['runtime'],'lemma-owned-arena-string-graph-v1')
+        for index in [233,22,25,105,*range(240,256)]:
+            changed=list(words);changed[index]+=1
+            with self.assertRaises(ValueError):self.inspect(changed)
+        changed=list(words);changed[1]=6;changed[233]=4
+        with self.assertRaises(ValueError):self.inspect(changed)
+        changed=list(words);changed[5]=12;changed[8]=7;changed[12]=changed[13]=0
+        changed[240:248]=[0]*8
+        self.assertEqual(self.inspect(changed)['execution']['history'],observed['execution']['history'])
+        changed[240:248]=slot
+        with self.assertRaises(ValueError):self.inspect(changed)
+
     def test_history_and_unused_storage_cannot_hide_forged_results(self):
         for offset,value in [(35,7),(39,2),(40,0),(50,1),(22,1)]:
             words=self.record();words[offset]=value

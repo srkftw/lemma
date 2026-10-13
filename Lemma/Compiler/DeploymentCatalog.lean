@@ -56,7 +56,7 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .arithmeticServer => "arithmetic-server"
 
 def arithmeticDevelopmentMode? (configuration : String) : Option UInt64 :=
-  if configuration == "lemmasim-silicon-power-arithmetic-oom-development" || configuration == "lemmasim-silicon-sums-arithmetic-oom-development" || configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" then some 1 else
+  if configuration == "lemmasim-silicon-power-arithmetic-oom-development" || configuration == "lemmasim-silicon-sums-arithmetic-oom-development" || configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" then some 1 else
   if configuration == "lemmasim-silicon-power-arithmetic-fault-development" then some 2 else
   if configuration == "lemmasim-silicon-power-arithmetic-stall-development" then some 3 else none
 
@@ -88,6 +88,12 @@ def isProductNotebookConfiguration (configuration : String) : Bool :=
   isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
     configuration == "lemmasim-silicon-product-bulk-notebook"
 
+/-- Bounded String/UTF8 source has a distinct isolated User6 authority. -/
+def isStringNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-string-bulk-notebook" ||
+    configuration == "lemmasim-silicon-string-bulk-initialize" ||
+    configuration == "lemmasim-silicon-string-arithmetic-oom-development"
+
 /-- Bounded full-width arrays have their own isolated User5 software authority. -/
 def isArrayNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-array-bulk-notebook" ||
@@ -102,7 +108,7 @@ def isBytesNotebookConfiguration (configuration : String) : Bool :=
 
 /-- The bounded owned-page Surface ABI is a separate software selection. -/
 def isBulkNotebookConfiguration (configuration : String) : Bool :=
-  isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
+  isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-bulk-notebook" ||
     configuration == "lemmasim-silicon-bulk-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
@@ -111,13 +117,19 @@ def isBulkNotebookConfiguration (configuration : String) : Bool :=
 
 /-- Additive managed sums software; hardware remains silicon0.3. -/
 def isSumsNotebookConfiguration (configuration : String) : Bool :=
-  (isBulkNotebookConfiguration configuration && !isBytesNotebookConfiguration configuration && !isArrayNotebookConfiguration configuration) ||
+  (isBulkNotebookConfiguration configuration && !isBytesNotebookConfiguration configuration && !isArrayNotebookConfiguration configuration && !isStringNotebookConfiguration configuration) ||
   configuration == "lemmasim-silicon-sums-notebook" ||
     configuration == "lemmasim-silicon-sums-initialize" ||
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isArrayNotebookConfiguration configuration then
+  if isStringNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-managed-string-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.6")])])]
+  else if isArrayNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-managed-array-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -148,7 +160,7 @@ def bufferManagedPolicy : String := "lemma-buffer-service-v1"
 
 def managedPolicyFor (configuration : String) : Option String :=
   if configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then some "lemma-notebook-arithmetic-v1" else
   if configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
       configuration == "lemmasim-isolation-development" then some "lemma-notebook-v1"
@@ -269,6 +281,13 @@ def arrayNotebookImages : Array UserImageSpec := #[
   {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV5,
     root := `Lemma.Services.Arithmetic.ServerV5.main, bootRole? := some .arithmeticServer}]
 
+def stringNotebookImages : Array UserImageSpec := #[
+  notebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainStringBulk, bootRole? := some .notebook},
+  {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV6,
+    root := `Lemma.Services.Arithmetic.ServerV6.main, bootRole? := some .arithmeticServer}]
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -276,7 +295,7 @@ def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
   root := `Lemma.User.Development.NotebookIsolation.main, bootRole? := some .notebookIsolation }
 
 def isMultiImageConfiguration (configuration : String) : Bool :=
-  isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
+  isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" || configuration == "lemmasim-notebook" || configuration == "lemmasim-initialize" ||
       configuration == "lemmasim-silicon-full-notebook" || configuration == "lemmasim-silicon-notebook" || configuration == "lemmasim-silicon-full-initialize" || configuration == "lemmasim-silicon-initialize" ||
   configuration == "lemmasim-isolation-development" || configuration == "tasks-development" || configuration == "tasks-fault-development" ||
@@ -285,7 +304,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages
+  if isStringNotebookConfiguration configuration then .ok stringNotebookImages
+  else if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages
   else if isBytesNotebookConfiguration configuration then .ok bytesNotebookImages
   else if isBulkNotebookConfiguration configuration then .ok bulkNotebookImages else
   if isSumsNotebookConfiguration configuration then .ok sumsNotebookImages else

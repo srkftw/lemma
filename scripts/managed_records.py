@@ -50,11 +50,12 @@ SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1'
 
 BYTES_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"})
 
+STRING_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"})
 ARRAY_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
 
 def notebook_profile_allowed(unit):
  return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and
-  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS)
+  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS)
 
 def profile_allowed(unit):
  return allowed(unit) or notebook_profile_allowed(unit)
@@ -71,7 +72,9 @@ def contract(unit):
    from managed_bytes import software_deployment_for
   if unit.get("configuration") in ARRAY_NOTEBOOK_CONFIGURATIONS:
    from managed_array import software_deployment_for
-  expected=software_deployment_for(unit.get('configuration')) if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
+  if unit.get("configuration") in STRING_NOTEBOOK_CONFIGURATIONS:
+   from managed_string import software_deployment_for
+  expected=software_deployment_for(unit.get('configuration')) if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
   require(unit.get('software_deployment')==expected,
    'Managed Notebook software deployment differs from its exact versioned selection')
   require(FIELD not in unit and not generated,

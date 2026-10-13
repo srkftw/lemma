@@ -304,6 +304,11 @@ inductive Action where
   ! operations use controlled-panic236; old profiles reject this bridge. -/
   | managedArray2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- User-v0.6 only: genuine ordinary bounded UTF8 String and exact Option
+  String cases, using real owned Arena allocation and typed child lifetime.
+  This bridge never evaluates a host function as target behavior. -/
+  | managedString2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

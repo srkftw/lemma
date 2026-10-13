@@ -1689,7 +1689,7 @@ private def lowerActionSuiteForProfile (profile : Lemma.Core0.Profile)
     (suite : Lemma.Core0.CheckedActionSuite)
     (options : SuiteLowerOptions := {}) : Except String LoweredActionSuite := do
   validateSymbolPrefix options.symbolPrefix
-  if options.inlineUserWordWrappers && profile != .user_v0_2 && profile != .user_v0_3 && profile != .user_v0_4 && profile != .user_v0_5 then
+  if options.inlineUserWordWrappers && profile != .user_v0_2 && profile != .user_v0_3 && profile != .user_v0_4 && profile != .user_v0_5 && profile != .user_v0_6 then
     throw "checked virtual word wrapper optimization requires core0-user-v0.2"
   unless profile == .v0_4 || profile == .v0_5 || profile == .v0_6 ||
       profile == .v0_7 || profile.isExecution do
