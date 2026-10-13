@@ -8,6 +8,16 @@ complete matching tape is admitted; it never starts a host, contacts the
 original peer or resubmits an external transaction. Crossing the tape horizon
 rejects before advancing the virtual clock.
 
+The corrected live eligibility observer subsequently captured a queued USB
+packet at 655 million cycles, before the stroke's durable document-root
+receipt. The extracted checker consumed its recorded 60-million-cycle suffix
+through 715 million cycles in 509.393 seconds and matched every final
+authoritative checkpoint byte. This suffix includes the real Saved5 receipt,
+completed controller output and two later original Undo pen admissions. Its
+snapshot cost was 1.013 seconds. No-tape and horizon violations still rejected
+before advancing; the private branch contacted no peer. Whole live
+Undo/Redo/navigation/Save/independent cold acceptance remains separate.
+
 The actual USB8 notebook produced two retained properties on the fully audited
 `task006-usb-next-a1` native package. At 440 million cycles a configured link
 had raw `WAIT 100000` command 15892 pending. Its private 20-million-cycle suffix
@@ -29,7 +39,9 @@ measurements are in `docs/evidence/006-usb8-recorded-suffix.json`.
 interface. It validates both public checkpoint inventories, preserves exactly
 the recorded raw pen admissions, restores with no external peer arguments,
 checks horizon rejection, advances in at most five-million-cycle groups and
-compares complete final native checkpoint bytes. Its initial input-negative
+compares complete final native checkpoint bytes. A tape may observationally
+extend beyond the final checkpoint; its horizon must cover the selected suffix
+and remain within the predeclared resource ceiling. Its initial input-negative
 tests qualify malformed/missing/corrupt inventory, unsupported profile,
 symbolic files, event order/cursor and unaccepted or non-pen requests. The
 measured properties above retain their original fixture identities; they are

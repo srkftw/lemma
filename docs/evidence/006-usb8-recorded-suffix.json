@@ -1,7 +1,7 @@
 {
   "schema": "lemma-usb8-recorded-suffix-evidence/1",
   "status": "PASS",
-  "scope": "exact same-native recorded external USB suffix at actual guest boundaries; successful notebook lost-ACK/cold acceptance remains separate",
+  "scope": "exact same-native recorded external USB suffix at actual guest boundaries; includes real Saved5/later Undo admissions; complete live actions/cold acceptance remains separate",
   "identity": {
     "backend": "rtl",
     "profile": "lemma-silicon-dev/0.8.0",
@@ -92,6 +92,50 @@
       "bound_host_seconds": 1800,
       "observer_sha256": "6c2f9b0d3a5c61c15e741f09867b076376aed3ff0115e31bf7f77f90b48d27bd",
       "private_exit_code": 0
+    },
+    "queued_successful_receipt_and_later_raw_pen": {
+      "path": "build/usb/usb8-success-private-suffix-a1/result.json",
+      "sha256": "1bfcb4f5dae2dafcd7348633fe80731307e6430fb6b3094ac57935459b015e03",
+      "status": "PASS",
+      "cut_cycle": 655000000,
+      "final_cycle": 715000000,
+      "suffix_cycles": 60000000,
+      "host_seconds": 509.39319499599515,
+      "observer_sha256": "197f4cb5a7fa937d7ef047954e948201eb90e244014430a52edba4e6c392c081",
+      "captured_tape_horizon": 715000000,
+      "exact_every_snapshot_byte": true,
+      "actual_suffix_uart": [
+        [
+          1059,
+          5,
+          1,
+          1,
+          1
+        ],
+        [
+          1057,
+          5,
+          1,
+          1,
+          3
+        ]
+      ],
+      "original_raw_pen_admissions": 2,
+      "rejections_before_advance": [
+        "isolated USB6 fork awaits recorded raw outcomes; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged",
+        "USB replay requested interval exceeds captured horizon; virtual clock unchanged"
+      ],
+      "input_files": {
+        "/home/sreekumaar/Downloads/lemma/build/usb/usb8-success-pending-a1/cut-1/machine.chk": "0292754d108558035a6af667c9690a41e440619ea6a953d25e7f459709acf08a",
+        "/home/sreekumaar/Downloads/lemma/build/usb/usb8-success-pending-a1/prefix.tape": "37f0f06baf5a01e8f68c605d764fcf5ab32ad0add7a71f738d15bf48fc33aa1c",
+        "/home/sreekumaar/Downloads/lemma/build/usb/usb8-success-pending-a1/suffix-new.tape": "057019ffe0b8c3547bf8bae68aec67027d1e4e6f99a02191a90dc609f8c5f84d",
+        "/home/sreekumaar/Downloads/lemma/build/usb/usb8-success-pending-a1/original-final-new/machine.chk": "9ae439ad8de61f510f515556a96e9cd97871940b4af6d95180918226927066a6",
+        "/home/sreekumaar/Downloads/lemma/build/usb/usb8-success-pending-a1/external-suffix.jsonl": "2ccc544ac4d8120361567faef69f24ab71fbb80c4b491ac31a05fd6ac281693f"
+      },
+      "snapshot_rpc_seconds": 1.012823836,
+      "private_exit_code": 0,
+      "scope": "captured same-native USB suffix; no original peer contact or new durability"
     }
   },
   "property": {
@@ -121,5 +165,6 @@
     "physical USB PHY/full USB conformance",
     "QEMU arbitrary cached-state continuation",
     "browser external hosted USB peer"
-  ]
+  ],
+  "current_reusable_checker_sha256": "197f4cb5a7fa937d7ef047954e948201eb90e244014430a52edba4e6c392c081"
 }

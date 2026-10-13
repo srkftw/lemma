@@ -148,9 +148,11 @@ def main():
                 'prefix tape has a different authoritative horizon')
         errors.append(rejected({'action': 'run', 'cycles': args.prefix_cycle - begin + 1}))
         call({'action': 'usb-outcomes', 'path': str(args.tape.resolve())})
-        require(state()['usb']['replay_horizon'] == end,
-                'full tape has a different authoritative horizon')
-        errors.append(rejected({'action': 'run', 'cycles': end - begin + 1}))
+        horizon = state()['usb']['replay_horizon']
+        require(end <= horizon <= begin + args.suffix_cycles,
+                'full tape does not cover the bounded applicable snapshot suffix')
+        report['captured_tape_horizon'] = horizon
+        errors.append(rejected({'action': 'run', 'cycles': horizon - begin + 1}))
         call({'action': 'snapshot', 'path': str(out / 'restored')})
         require(sha(out / 'restored/machine.chk') == sha(args.snapshot / 'machine.chk'),
                 'restore or tape admission mutated authoritative checkpoint bytes')
