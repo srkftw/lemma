@@ -11,6 +11,7 @@ POWER_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.3.0.json'
 SAFETY_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.4.0.json'
 BLE_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.5.0.json'
 USB_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.6.0.json'
+PRODUCT_PROFILE = ROOT / 'sim/profiles/lemma-silicon-dev-0.7.0.json'
 
 def profile(name=None):
     path = profile_path(name)
@@ -19,7 +20,7 @@ def profile(name=None):
         raise ValueError('unsupported silicon binding')
     if p['ram_base'] + p['ram_bytes'] != p['dtb_base'] + p['dtb_reserve_bytes']:
         raise ValueError('silicon RAM/DTB bounds contradict')
-    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE) else (0x82000000,0x400000,1024,128)
+    expected = (0x82000000,0x2000000,8192,8192) if path in (FULL_PROFILE,POWER_PROFILE,SAFETY_PROFILE,BLE_PROFILE,USB_PROFILE,PRODUCT_PROFILE) else (0x82000000,0x400000,1024,128)
     if (p['frame_pool_base'],p['frame_pool_bytes'],p['frame_count'],p['frame_quota']) != expected:
         raise ValueError('silicon development allocator binding differs')
     if p['frame_count']*4096 != p['frame_pool_bytes']:
@@ -29,11 +30,17 @@ def profile(name=None):
             raise ValueError('BLE binding feature/authority fields differ')
         if p['devices'].get('ble') != dict(base=0x10010600,span=0x400,irq=15,payload_max=27,clocks_per_bit=100):
             raise ValueError('BLE fixed packet aperture differs')
-    if path == USB_PROFILE:
-        if p.get('usb_enabled') != 1 or p.get('ble_enabled') != 1 or p.get('descriptor_features') != 15 or p['descriptor']['abi'] != 7 or p['plic_sources'] != 16 or p.get('power_safety') != 1:
+    if path in (USB_PROFILE,PRODUCT_PROFILE):
+        features,abi,irqs=(31,8,17) if path==PRODUCT_PROFILE else (15,7,16)
+        if p.get('usb_enabled') != 1 or p.get('ble_enabled') != 1 or p.get('descriptor_features') != features or p['descriptor']['abi'] != abi or p['plic_sources'] != irqs or p.get('power_safety') != 1:
             raise ValueError('USB binding feature/authority fields differ')
         if p['devices'].get('usb') != dict(base=0x10010a00,span=0x400,irq=16,payload_max=64,endpoints=3,reset_clocks=1000000):
             raise ValueError('USB fixed packet aperture differs')
+    if path == PRODUCT_PROFILE:
+        if p.get('boot_nv_enabled') != 1 or p['rom_bytes'] != 65536 or p['reset_vector'] != 0x1000:
+            raise ValueError('product immutable-ROM binding differs')
+        if p['devices'].get('boot_nv') != dict(base=0x10012000,span=0x400,irq=17,capacity_sectors=65544,sector_bytes=512):
+            raise ValueError('product boot medium aperture differs')
     return p
 
 def profile_path(name=None):
@@ -43,9 +50,11 @@ def profile_path(name=None):
     if name == 'lemma-silicon-dev/0.4.0': return SAFETY_PROFILE
     if name == 'lemma-silicon-dev/0.5.0': return BLE_PROFILE
     if name == 'lemma-silicon-dev/0.6.0': return USB_PROFILE
+    if name == 'lemma-silicon-dev/0.7.0': return PRODUCT_PROFILE
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
+    if configuration in ('lemmasim-silicon-product-boot','lemmasim-silicon-product-notebook','lemmasim-silicon-product-initialize'):return 'lemma-silicon-dev/0.7.0'
     if configuration in ('lemmasim-silicon-usb-link-probe','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'):return 'lemma-silicon-dev/0.6.0'
     if configuration=='lemmasim-silicon-ble-link-probe':return 'lemma-silicon-dev/0.5.0'
     if configuration=='lemmasim-silicon-power-safety-probe':return 'lemma-silicon-dev/0.4.0'
@@ -66,6 +75,7 @@ def constants(p):
     c['power_version']=p.get('power_version',1)
     c.update(power_base=0,power_span=0,power_irq=0)
     c.update(usb_enabled=p.get('usb_enabled',0),usb_base=0,usb_span=0,usb_irq=0,usb_payload_max=0,usb_endpoints=0,usb_reset_clocks=0)
+    c.update(boot_nv_enabled=p.get('boot_nv_enabled',0),boot_nv_base=0,boot_nv_span=0,boot_nv_irq=0,boot_nv_capacity_sectors=0,boot_nv_sector_bytes=0)
     c.update(ble_enabled=p.get('ble_enabled',0),ble_base=0,ble_span=0,ble_irq=0,ble_payload_max=0,ble_clocks_per_bit=0)
     power=p if p.get('power_safety',0) else json.loads(POWER_PROFILE.read_text())
     c['power_magic_value']=power['power_magic']
@@ -81,9 +91,9 @@ def power_header():
         f'#define LEMMA_POWER_{k.upper()} {v}u\n' for k,v in p['power_registers'].items())+f'#define LEMMA_POWER_IDENTITY {p["power_magic"]}u\n'
 
 def lean_text(p):
-    namespace = 'BindingUSB' if p['profile']=='lemma-silicon-dev/0.6.0' else 'BindingBLE' if p['profile']=='lemma-silicon-dev/0.5.0' else 'BindingSafety' if p['profile']=='lemma-silicon-dev/0.4.0' else 'BindingPower' if p['profile'] == 'lemma-silicon-dev/0.3.0' else 'BindingFull' if p['profile'] == 'lemma-silicon-dev/0.2.0' else 'Binding'
+    namespace = 'BindingProduct' if p['profile']=='lemma-silicon-dev/0.7.0' else 'BindingUSB' if p['profile']=='lemma-silicon-dev/0.6.0' else 'BindingBLE' if p['profile']=='lemma-silicon-dev/0.5.0' else 'BindingSafety' if p['profile']=='lemma-silicon-dev/0.4.0' else 'BindingPower' if p['profile'] == 'lemma-silicon-dev/0.3.0' else 'BindingFull' if p['profile'] == 'lemma-silicon-dev/0.2.0' else 'Binding'
     return f'-- Generated by scripts/silicon_profile.py from the versioned binding.\nnamespace Lemma.Platform.Silicon.{namespace}\n' + ''.join(
-        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
+        f'def {k} : UInt64 := {v}\n' for k,v in constants(p).items() if (p.get('ble_enabled',0) or not k.startswith('ble_')) and (p.get('usb_enabled',0) or not k.startswith('usb_')) and (p.get('boot_nv_enabled',0) or not k.startswith('boot_nv_'))) + f'end Lemma.Platform.Silicon.{namespace}\n'
 
 def descriptor(p, dtb_bytes):
     d=p['devices']; words=[p['descriptor']['magic'],p['descriptor']['abi'],256,0,p['ram_base'],p['ram_bytes'],
@@ -126,6 +136,9 @@ def dts(p, devices=True):
     if devices and p.get('usb_enabled',0):
         root+=f'''    lemma-usb@10010a00 {{ compatible = "lemma,usb-device-packet-v1"; reg = <{reg('usb')}>; interrupts = <16>; interrupt-parent = <&plic>; lemma,abi-version = <1>; lemma,payload-max = <64>; lemma,endpoints = <3>; lemma,reset-clocks = <1000000>; lemma,decoded-packet-boundary = <1>; }};
 '''
+    if devices and p.get('boot_nv_enabled',0):
+        root+=f'''    lemma-boot-nv@10012000 {{ compatible = "lemma,boot-nv-v1"; reg = <{reg('boot_nv')}>; interrupts = <17>; interrupt-parent = <&plic>; lemma,abi-version = <1>; lemma,sector-bytes = <512>; lemma,capacity-sectors = <65544>; lemma,rom-bytes = <65536>; lemma,integrity-only = <1>; }};
+'''
     return root+'  };\n};\n'
 
 def generate(out, *, devices=True, name=None):
@@ -153,7 +166,7 @@ def validate_evidence(dtb, source, name=None):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--output-dir',type=Path);parser.add_argument('--compute-only',action='store_true');parser.add_argument('--check',action='store_true');parser.add_argument('--profile',default='lemma-silicon-dev/0.1.0')
-    args=parser.parse_args();p=profile(args.profile);generated=ROOT/('Lemma/Platform/Silicon/BindingUSB.lean' if args.profile=='lemma-silicon-dev/0.6.0' else 'Lemma/Platform/Silicon/BindingBLE.lean' if args.profile=='lemma-silicon-dev/0.5.0' else 'Lemma/Platform/Silicon/BindingSafety.lean' if args.profile=='lemma-silicon-dev/0.4.0' else 'Lemma/Platform/Silicon/BindingPower.lean' if args.profile=='lemma-silicon-dev/0.3.0' else 'Lemma/Platform/Silicon/BindingFull.lean' if args.profile=='lemma-silicon-dev/0.2.0' else 'Lemma/Platform/Silicon/Binding.lean')
+    args=parser.parse_args();p=profile(args.profile);generated=ROOT/('Lemma/Platform/Silicon/BindingProduct.lean' if args.profile=='lemma-silicon-dev/0.7.0' else 'Lemma/Platform/Silicon/BindingUSB.lean' if args.profile=='lemma-silicon-dev/0.6.0' else 'Lemma/Platform/Silicon/BindingBLE.lean' if args.profile=='lemma-silicon-dev/0.5.0' else 'Lemma/Platform/Silicon/BindingSafety.lean' if args.profile=='lemma-silicon-dev/0.4.0' else 'Lemma/Platform/Silicon/BindingPower.lean' if args.profile=='lemma-silicon-dev/0.3.0' else 'Lemma/Platform/Silicon/BindingFull.lean' if args.profile=='lemma-silicon-dev/0.2.0' else 'Lemma/Platform/Silicon/Binding.lean')
     power_abi=ROOT/'sim/host/lemma_power_abi.h'
     if args.check:
         if not power_abi.exists() or power_abi.read_text()!=power_header():raise SystemExit('FAIL: generated power ABI is stale')

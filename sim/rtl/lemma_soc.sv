@@ -34,6 +34,15 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [7:0] usb_tx_byte,
  output logic [63:0] usb_ticks,usb_rx_packets,usb_tx_packets,usb_packet_errors,
  output logic [6:0] usb_address,output logic usb_configured,
+ // Product boot medium has its own captured external-operation namespace.
+ input logic boot_media_ready,external_boot_media_busy,
+ input logic [63:0] boot_media_result,boot_reset_origin,
+ input logic [9:0] boot_media_bytes,
+ input logic [4095:0] boot_media_rdata,
+ output logic boot_media_valid,boot_media_cancel,
+ output logic [1:0] boot_media_kind,
+ output logic [63:0] boot_media_id,boot_media_sector,boot_media_origin,
+ output logic [4095:0] boot_media_wdata,
  input logic preload_valid,
  input logic [8:0] preload_index,
  input logic [63:0] preload_data,
@@ -111,14 +120,14 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic dma_valid,dma_write,dma_ready,dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
- logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata;
+ logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata,boot_nv_rdata;
  logic pen_ready,paper_ready,block_ready,pen_error,paper_error,block_error;
  logic pen_irq,paper_irq,block_irq,power_irq,power_ready,power_bus_error,paper_busy,block_busy,pen_sample_ready;
- logic ble_ready,ble_error,ble_irq,usb_ready,usb_error,usb_irq;
+ logic ble_ready,ble_error,ble_irq,usb_ready,usb_error,usb_irq,boot_nv_ready,boot_nv_error,boot_nv_irq;
  logic [5:0] power_busy_sources;
  logic [1:0] power_event_flags;
  logic [31:0] irqs;
- logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,usb_sel,dma_grant,dma_alignment,dma_span;
+ logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,usb_sel,boot_nv_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
  logic port_held,held_dma,held_write;
@@ -145,12 +154,13 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
  assign ble_sel=BLE_ENABLED!=0&&dev_addr>=BLE_BASE&&dev_addr<BLE_BASE+BLE_SPAN;
  assign usb_sel=USB_ENABLED!=0&&dev_addr>=USB_BASE&&dev_addr<USB_BASE+USB_SPAN;
+ assign boot_nv_sel=BOOT_NV_ENABLED!=0&&dev_addr>=BOOT_NV_BASE&&dev_addr<BOOT_NV_BASE+BOOT_NV_SPAN;
  assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel&&!ble_sel&&!usb_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ);
+ assign dev_rdata=boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ);
  lemma_compute compute(
    .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
@@ -223,8 +233,23 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign usb_address=0;assign usb_configured=0;
  end endgenerate
  assign usb_irq_out=usb_irq;
+
+ generate if(BOOT_NV_ENABLED!=0) begin: product_boot_medium
+   lemma_boot_nv #(.CAPACITY_SECTORS(BOOT_NV_CAPACITY_SECTORS)) boot_store(
+     .clk,.reset_n(!domain_reset),.valid(dev_valid&&boot_nv_sel&&!power_suspended),.write(dev_write),
+     .addr(10'(dev_addr-BOOT_NV_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(boot_nv_rdata),.ready(boot_nv_ready),.error(boot_nv_error),.irq(boot_nv_irq),
+     .media_valid(boot_media_valid),.media_kind(boot_media_kind),.media_id(boot_media_id),
+     .media_sector(boot_media_sector),.media_wdata(boot_media_wdata),.media_cancel(boot_media_cancel),
+     .media_ready(boot_media_ready),.media_result(boot_media_result),.media_bytes(boot_media_bytes),
+     .media_rdata(boot_media_rdata),.reset_origin(boot_reset_origin),.media_origin(boot_media_origin));
+ end else begin: no_product_boot_medium
+   assign boot_nv_rdata=0;assign boot_nv_ready=1;assign boot_nv_error=0;assign boot_nv_irq=0;
+   assign boot_media_valid=0;assign boot_media_kind=0;assign boot_media_id=0;assign boot_media_sector=0;
+   assign boot_media_wdata=0;assign boot_media_cancel=0;assign boot_media_origin=0;
+ end endgenerate
  assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
- assign power_busy_sources={(media_valid||external_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy)};
+ assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy)};
  generate if(POWER_ENABLED!=0) begin: control_domain
    lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),

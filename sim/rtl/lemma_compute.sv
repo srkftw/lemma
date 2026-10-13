@@ -88,7 +88,8 @@ module lemma_compute import cvw::*; #(
   assign sel_finish = (addr_d == FINISHER_BASE);
   assign sel_dev = ((addr_d >= BLOCK_BASE && addr_d < BLOCK_BASE+BLOCK_SPAN) ||
                    (addr_d >= PAPER_BASE && addr_d < PAPER_BASE+PAPER_SPAN) ||
-                   (addr_d >= PEN_BASE && addr_d < PEN_BASE+PEN_SPAN));
+                   (addr_d >= PEN_BASE && addr_d < PEN_BASE+PEN_SPAN) ||
+                   (BOOT_NV_ENABLED!=0 && addr_d >= BOOT_NV_BASE && addr_d < BOOT_NV_BASE+BOOT_NV_SPAN));
   assign mem_valid = valid_d && sel_mem && !bad_alignment;
   assign mem_write = write_d;
   assign mem_addr = {addr_d[55:3],3'b000};

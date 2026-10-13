@@ -1,0 +1,36 @@
+{
+  "schema": "lemma-product-nv-hardware/1",
+  "status": "PASS",
+  "scope": "Additive Product profile7 NV circuit/native interface only. ROM, product boot/update, guest confirmation and complete digital device remain unqualified.",
+  "native_build": "build/silicon/task006-product-runtime-a2/build.json",
+  "qualification": "build/silicon/task006-product-pending-a3/result.json",
+  "qualification_sha256": "844ea319e73457d8f344e889a783c7d185aabb719817425f8f1bcc571f6d7fa3",
+  "binary_sha256": "2cb999a9a799ec535f3256dd0365a293f4742a52043e509b44441238df3dc62c",
+  "snapshot_identity": "f0ce9cd49559eb11717c7f9215eb2517a28055233c8c76c1f7e9bebce5a84f31",
+  "host_seconds": 22.420611688983627,
+  "exact_isolated_suffixes": 3,
+  "observed": [
+    "actual partial pwrite of2 bytes and cancelled completion3",
+    "actual fsync EBADF failure",
+    "reset orphan captures outcome without replacement-controller publication",
+    "three exact private fork/replay suffixes; no live original poll/read/resubmit"
+  ],
+  "retained_failure": "build/silicon/task006-product-runtime-a1: Verilator rejected reserved instance name medium; renamed boot_store before fresha2 build",
+  "source_inputs": {
+    "scripts/silicon_compute.py": "74ea6b2391b03e11a4aef46cfedb2b28a6b432f271ac222f5ec32d16f1ce0dc2",
+    "scripts/silicon_profile.py": "8c5b380473b148dc061812733a38b2e865c674169dc40287f4a4f025dfe4cf39",
+    "sim/profiles/lemma-silicon-dev-0.7.0.json": "1882c9b39e0b0578a589b09972e2b87f64160bf3004af8c068b17618f84ddc42",
+    "Lemma/Platform/Silicon/BindingProduct.lean": "b3cd8be3b76191341824c4716620365659bd5e68592e03c80544b9f0798ad408",
+    "sim/rtl/lemma_boot_nv.sv": "c3770d5962f156d8bba09fb79d9178506a1b0f97eca84d622ed7192cc1558ac0",
+    "sim/rtl/lemma_compute.sv": "87ac191956f50e50dbdb9959171d39eaa1fcdbfd0674e07721b8bde06b78eae9",
+    "sim/rtl/lemma_soc.sv": "ba4a554dcb50eb02d08183c1aa3bd4bd1fcab8add6563179114b0be85362abe8",
+    "sim/rtl/host/main.cpp": "830ccdb20b67085117ab24a44c4cefdb33153cc4b31050c4ade91cfddd54f7c7"
+  },
+  "remaining": [
+    "actual audited ROM boot and per-slot image load",
+    "interrupted update/attempt fallback/health confirmation",
+    "user document preservation under product power recovery",
+    "owner-controlled authentication and durable trust state",
+    "physical nonvolatile implementation"
+  ]
+}
