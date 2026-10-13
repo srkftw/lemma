@@ -113,3 +113,23 @@ not execution of target instructions. A complete audited RV64 guest reading this
 actual controller, PLIC admission, a fast model, SoC descriptors, companion
 transport/service integration, L2CAP/reliable connection/security and radio/RF
 qualification are still required. Bluetooth5.4 remains NOT COMPLETE.
+
+The selected Kernel-v0.5 BLE probe also has one audited LLVM20 optimization:
+`Link.headerResult` exchanges the two sequence bits into header bits2/3. LLVM
+uses `llvm.bitreverse.i4` on a nibble masked to3, then zero extends the result.
+Its [pinned intrinsic semantics](https://releases.llvm.org/20.1.0/docs/LangRef.html#llvm-bitreverse-intrinsics)
+reverse four bits. Exact pre/post checked body hashes, the pure three-word
+signature, one call site and the i4 declaration bind this admission to the
+selected kernel. It grants no general bit-reversal, foreign helper, ISA
+extension or legacy-profile authority. The actual RV64IM object uses shifts,
+AND and OR; full object/instruction/helper closure is still required.
+
+The expanded shared DTB `leafProperty` can generate two readonly branch tables:
+property codes36..50 (six live cases) and leaf roles1..9 (five live cases).
+The auditor binds both to the exact optimized source body and exact signature,
+checks each unsigned subtraction/bound/scale/load/transfer, and follows each
+transfer's own local targets when checking dominance. Sparse holes in both
+maps return through their shared checked default. Byte, relocation, owner and
+companion-code equality checks remain required. Earlier single-table historical
+artifacts retain their own admission; this is not permission for arbitrary
+indirect control flow.

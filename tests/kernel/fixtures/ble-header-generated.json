@@ -1,0 +1,48 @@
+{
+  "unit": {
+    "configuration": "lemmasim-silicon-ble-link-probe",
+    "role": "kernel",
+    "functions": [
+      {
+        "symbol": "lemma_kernel_core0_scalar_68",
+        "source": "Lemma.Radio.BLE.Link.validState",
+        "effects": [],
+        "args": [
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_scalar_69",
+        "source": "Lemma.Radio.BLE.Link.failure",
+        "effects": [],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_scalar_74",
+        "source": "Lemma.Radio.BLE.Packet.validHeader",
+        "effects": [],
+        "args": [
+          "u64",
+          "u64"
+        ]
+      },
+      {
+        "symbol": "lemma_kernel_core0_scalar_75",
+        "source": "Lemma.Radio.BLE.Link.headerResult",
+        "effects": [],
+        "args": [
+          "u64",
+          "u64",
+          "u64"
+        ]
+      }
+    ]
+  },
+  "ir": {
+    "pre": "define i64 @lemma_kernel_core0_scalar_75(i64 %arg0, i64 %arg1, i64 %arg2) nounwind noinline \"disable-tail-calls\"=\"true\" {\nentry:\n  %call0 = call zeroext i1 @lemma_kernel_core0_scalar_68(i64 %arg0)\n  %cmp1 = icmp eq i1 %call0, 1\n  br i1 %cmp1, label %if.then.0, label %if.else.1\nif.then.0:\n  %bin2 = and i64 %arg0, 8\n  %cmp3 = icmp eq i64 %bin2, 0\n  br i1 %cmp3, label %if.then.3, label %if.else.4\nif.then.3:\n  %shift.count4 = and i64 1, 63\n  %lshr5 = lshr i64 %arg0, %shift.count4\n  %bin6 = and i64 %lshr5, 1\n  %shift.count7 = and i64 2, 63\n  %shl8 = shl i64 %bin6, %shift.count7\n  %bin9 = or i64 %arg1, %shl8\n  %bin10 = and i64 %arg0, 1\n  %shift.count11 = and i64 3, 63\n  %shl12 = shl i64 %bin10, %shift.count11\n  %bin13 = or i64 %bin9, %shl12\n  %cmp14 = icmp eq i64 %arg1, 1\n  br i1 %cmp14, label %if.then.6, label %if.else.7\nif.then.6:\n  %call15 = call zeroext i1 @lemma_kernel_core0_scalar_74(i64 %bin13, i64 %arg2)\n  %cmp16 = icmp eq i1 %call15, 1\n  br i1 %cmp16, label %if.then.9, label %if.else.10\nif.then.9:\n  br label %if.merge.11\nif.else.10:\n  %call17 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.11\nif.merge.11:\n  %if.result18 = phi i64 [ %bin13, %if.then.9 ], [ %call17, %if.else.10 ]\n  br label %if.merge.8\nif.else.7:\n  %cmp19 = icmp eq i64 %arg1, 2\n  br i1 %cmp19, label %if.then.12, label %if.else.13\nif.then.12:\n  %call20 = call zeroext i1 @lemma_kernel_core0_scalar_74(i64 %bin13, i64 %arg2)\n  %cmp21 = icmp eq i1 %call20, 1\n  br i1 %cmp21, label %if.then.15, label %if.else.16\nif.then.15:\n  br label %if.merge.17\nif.else.16:\n  %call22 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.17\nif.merge.17:\n  %if.result23 = phi i64 [ %bin13, %if.then.15 ], [ %call22, %if.else.16 ]\n  br label %if.merge.14\nif.else.13:\n  %call24 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.14\nif.merge.14:\n  %if.result25 = phi i64 [ %if.result23, %if.merge.17 ], [ %call24, %if.else.13 ]\n  br label %if.merge.8\nif.merge.8:\n  %if.result26 = phi i64 [ %if.result18, %if.merge.11 ], [ %if.result25, %if.merge.14 ]\n  br label %if.merge.5\nif.else.4:\n  %call27 = call i64 @lemma_kernel_core0_scalar_69(i64 199, i64 %arg0)\n  br label %if.merge.5\nif.merge.5:\n  %if.result28 = phi i64 [ %if.result26, %if.merge.8 ], [ %call27, %if.else.4 ]\n  br label %if.merge.2\nif.else.1:\n  %call29 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.2\nif.merge.2:\n  %if.result30 = phi i64 [ %if.result28, %if.merge.5 ], [ %call29, %if.else.1 ]\n  ret i64 %if.result30\n\n}\n",
+    "optimized": "define i64 @lemma_kernel_core0_scalar_75(i64 %arg0, i64 %arg1, i64 %arg2) local_unnamed_addr #1 {\nentry:\n  %call0 = call zeroext i1 @lemma_kernel_core0_scalar_68(i64 %arg0)\n  br i1 %call0, label %if.then.0, label %if.else.1\n\nif.then.0:                                        ; preds = %entry\n  %bin2 = and i64 %arg0, 8\n  %cmp3 = icmp eq i64 %bin2, 0\n  br i1 %cmp3, label %if.then.3, label %if.else.4\n\nif.then.3:                                        ; preds = %if.then.0\n  %trunc = trunc i64 %arg0 to i4\n  %0 = and i4 %trunc, 3\n  %mask = call i4 @llvm.bitreverse.i4(i4 %0)\n  %1 = zext i4 %mask to i64\n  %bin13 = or i64 %arg1, %1\n  switch i64 %arg1, label %if.else.13 [\n    i64 1, label %if.then.6\n    i64 2, label %if.then.12\n  ]\n\nif.then.6:                                        ; preds = %if.then.3\n  %call15 = call zeroext i1 @lemma_kernel_core0_scalar_74(i64 %bin13, i64 %arg2)\n  br i1 %call15, label %if.merge.2, label %if.else.10\n\nif.else.10:                                       ; preds = %if.then.6\n  %call17 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.2\n\nif.then.12:                                       ; preds = %if.then.3\n  %call20 = call zeroext i1 @lemma_kernel_core0_scalar_74(i64 %bin13, i64 %arg2)\n  br i1 %call20, label %if.merge.2, label %if.else.16\n\nif.else.16:                                       ; preds = %if.then.12\n  %call22 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.2\n\nif.else.13:                                       ; preds = %if.then.3\n  %call24 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.2\n\nif.else.4:                                        ; preds = %if.then.0\n  %call27 = call i64 @lemma_kernel_core0_scalar_69(i64 199, i64 %arg0)\n  br label %if.merge.2\n\nif.else.1:                                        ; preds = %entry\n  %call29 = call i64 @lemma_kernel_core0_scalar_69(i64 197, i64 0)\n  br label %if.merge.2\n\nif.merge.2:                                       ; preds = %if.else.4, %if.else.13, %if.then.12, %if.else.16, %if.else.10, %if.then.6, %if.else.1\n  %if.result30 = phi i64 [ %call29, %if.else.1 ], [ %call27, %if.else.4 ], [ %call17, %if.else.10 ], [ %bin13, %if.then.6 ], [ %call24, %if.else.13 ], [ %call22, %if.else.16 ], [ %bin13, %if.then.12 ]\n  ret i64 %if.result30\n\n}\ndeclare i4 @llvm.bitreverse.i4(i4)\n"
+  }
+}

@@ -199,7 +199,49 @@ def optimizer_intrinsics(unit: dict) -> set[str]:
     # LLVM's saturating unsigned subtraction and funnel shift lower to ordinary
     # RV64 integer code, with no foreign runtime boundary. Only the new profile's
     # genuine store/notebook consumer authorizes these observed optimizations.
-    return OPTIMIZER_INTRINSICS | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
+    return (OPTIMIZER_INTRINSICS
+            | ({"llvm.usub.sat.i64", "llvm.fshl.i64"} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else set())
+            | ({"llvm.bitreverse.i4"} if unit.get("configuration") in BLE_CONFIGURATIONS
+               and unit.get("role")=="kernel" else set()))
+
+
+BLE_HEADER_SHAPES = {
+    False: '9948d829801f423a94de257639db303304266aca273b192516426213087b2ecc',
+    True: '94965b0dcfc63e3b87df94fcf20867e327125e146682ac51f15ca4a7346c50d5',
+}
+
+
+def validate_ble_header_intrinsic(ir: str, unit: dict, *, optimized: bool,
+                                  optimization: str | None = None) -> dict:
+    """One actual LLVM20 i4 bit permutation; no general intrinsic admission."""
+    intrinsic='llvm.bitreverse.i4'; source='Lemma.Radio.BLE.Link.headerResult'
+    selected=unit.get('configuration') in BLE_CONFIGURATIONS and unit.get('role')=='kernel'
+    if not selected:
+        if '@'+intrinsic+'(' in ir:raise Core0Error('BLE header intrinsic escapes selected kernel')
+        return {}
+    sources=[re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']]
+    if len(sources)!=len(set(sources)):raise Core0Error('BLE header source inventory duplicates declarations')
+    rows=dict(zip(sources,unit['functions'])); row=rows.get(source)
+    if row is None or row.get('args')!=['u64']*3 or row.get('effects')!=[]:
+        raise Core0Error('BLE header lacks its pure three-word genuine declaration')
+    names={value['symbol']:key for key,value in rows.items()}
+    body=_ir_definition_body(ir,row['symbol'])
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines())
+    normalized=' '.join(normalized.split())
+    transformed=optimized and optimization!='O0'
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest!=BLE_HEADER_SHAPES[transformed]:raise Core0Error('BLE header differs from pinned checked bit-permutation body')
+    sites=[line.strip() for line in ir.splitlines() if '@'+intrinsic+'(' in line]
+    if transformed:
+        if (len(sites)!=2 or sites.count('%mask = call i4 @llvm.bitreverse.i4(i4 %0)')!=1
+            or not any(re.fullmatch(r'declare i4 @llvm\.bitreverse\.i4\(i4\)(?: #[0-9]+)?',line) for line in sites)
+            or '%mask = call i4 @llvm.bitreverse.i4(i4 %0)' not in body):
+            raise Core0Error('BLE intrinsic has an extra site or altered width/signature/owner')
+    elif sites:raise Core0Error('BLE intrinsic appears before the selected O2 optimization')
+    return {'source':source,'body_sha256':digest,'optimized':transformed,
+            'intrinsic':intrinsic if transformed else None,
+            'input_mask':3,'output_bits':[2,3],'foreign_runtime':False}
 
 
 def managed_fields(configuration: str, image: dict | None = None) -> dict:
@@ -4038,6 +4080,48 @@ def _jump_save_default(optimized_body: str, assembly: str, symbol: str,
             'default_status':234,'default_value':0,'wait_split_phases':[0,5]}
 
 
+def _jump_leaf_pair(assembly: str, symbol: str, source: str | None,
+                    configuration: str | None) -> dict[int,list[str]]:
+    """Closed DTB property/role pair, with distinct CFG edges per transfer."""
+    if source!='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty' or configuration not in LEMMASIM_CONFIGURATIONS:
+        raise Core0Error('paired table escapes the exact LemmaSim DTB owner')
+    code,labels=_jump_assembly_function(assembly,symbol)
+    uses=[(i,re.fullmatch(r'%pcrel_hi\((\.LJTI[0-9]+_[0-9]+)\)',args[1]))
+          for i,(op,args) in enumerate(code) if op=='auipc' and len(args)==2 and args[1].startswith('%pcrel_hi(.LJTI')]
+    if len(uses)!=2 or any(match is None for _,match in uses):raise Core0Error('DTB pair has an extra or unparseable table use')
+    names=[match[1] for _,match in uses]
+    group=re.fullmatch(r'\.LJTI([0-9]+)_0',names[0])
+    if group is None or names[1]!='.LJTI'+group[1]+'_1':raise Core0Error('DTB pair table labels/order differ')
+    result={};defaults=[]
+    for (use,_),name,count,minimum,holes in zip(uses,names,(15,9),(36,1),([1,2,3,4,5,6,7,8,10],[2,3,4,6])):
+        declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB[0-9]+_[0-9]+\s*\n)+)',assembly)
+        targets=re.findall(r'\.quad\s+(\.LBB[0-9]+_[0-9]+)',declaration[1]) if declaration else []
+        if len(targets)!=count or any(label not in labels for label in targets):raise Core0Error('DTB pair local target count differs')
+        if use+4>=len(code) or code[use+3][0]!='ld' or code[use+4]!=('jr',[code[use+3][1][0]]):
+            raise Core0Error('DTB pair transfer is not the exact loaded target')
+        index=code[use+3][1][0];base=code[use][1][0]
+        guard=code[use-2] if use>=5 else ('invalid',[])
+        if (use<5 or guard[0]!='bltu' or len(guard[1])!=3 or guard[1][1]!=index
+            or code[use-5][0]!='addi' or code[use-5][1][0]!=index
+            or code[use-5][1][2]!=str(-minimum)
+            or code[use-4]!=('li',[guard[1][0],str(count-1)])
+            or code[use-3][0]!='li' or code[use-3][1][1]!='0'
+            or code[use-3][1][0] in {index,guard[1][0]}
+            or code[use-1]!=('slli',[index,index,'3']) or base==index
+            or code[use+2]!=('add',[index,index,base])
+            or code[use+3]!=('ld',[index,'0('+index+')'])):
+            raise Core0Error('DTB paired guard/index/load differs from its closed path')
+        result[use+4]=targets
+        denied=[i for i in range(max(0,use-4),use) if code[i][0]=='bltu']
+        if len(denied)!=1:raise Core0Error('DTB pair lacks its local unsigned guard')
+        default=code[denied[0]][1][-1]
+        if any(targets[index]!=default for index in holes):raise Core0Error('DTB pair hole does not target its checked default')
+        defaults.append(default)
+    if defaults[0]!=defaults[1] or set(result)!={i for i,(op,_args) in enumerate(code) if op=='jr'}:
+        raise Core0Error('DTB pair has a foreign transfer or divergent checked default')
+    return result
+
+
 def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[str], count: int, minimum: int,
                          *, source: str | None = None, configuration: str | None = None, image_key: str | None = None) -> dict:
     """Check the actual closed unsigned guard/scale/load/JR path and its CFG."""
@@ -4062,9 +4146,12 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     if load[0]!='ld' or load[1][1]!='0('+address+')':
         raise Core0Error('jump table target lacks one 64-bit table load')
     jumps=[i for i,(op,args) in enumerate(code) if op=='jr']
-    if len(jumps)!=1 or not use+4<=jumps[0]<=use+6 or code[jumps[0]]!=('jr',[target]):
+    paired = _jump_leaf_pair(assembly,symbol,source,configuration) if len(jumps)==2 else {}
+    own_jumps=[i for i in jumps if use+4<=i<=use+6 and code[i]==('jr',[target])]
+    if (len(own_jumps)!=1 or (len(jumps)!=1 and not paired)
+        or (paired and paired.get(own_jumps[0])!=targets)):
         raise Core0Error('jump table has an unknown or unbound indirect transfer')
-    jump=jumps[0]
+    jump=own_jumps[0]
     reload = None
     literal = None
     mask = None
@@ -4150,8 +4237,9 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
             if args!=args[-1:] or args[0] not in labels or labels[args[0]]>=len(code): raise Core0Error('jump function has nonlocal/noninstruction branch')
             successors[i]=[labels[args[0]]]
         elif op=='jr':
-            if any(label not in labels for label in targets): raise Core0Error('jump table contains a foreign assembly block')
-            successors[i]=list({labels[label] for label in targets})
+            selected_targets=paired.get(i,targets)
+            if any(label not in labels for label in selected_targets): raise Core0Error('jump table contains a foreign assembly block')
+            successors[i]=list({labels[label] for label in selected_targets})
         elif op in {'ret','tail'}: successors[i]=[]
         else: successors[i]=following
     def reaches(graph,start,finish):
@@ -4164,7 +4252,8 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
     denied={i:list(edges) for i,edges in successors.items()};denied[guard]=[labels[code[guard][1][-1]]]
     if any(reaches(denied,0,point) for point in (use-1,use,use+3,jump)) or not reaches(successors,0,jump):
         raise Core0Error('jump table load/transfer can bypass the unsigned guard')
-    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=True,
+    return dict(bound=count,minimum=minimum,unsigned=True,scale_bytes=8,load_bytes=8,guard_dominates_load=True,one_indirect_transfer=not bool(paired),
+                **({'closed_dtb_pair_transfers':2,'each_transfer_uses_own_targets':True} if paired else {}),
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
                 **({'target_preserving_mask':mask} if mask is not None else {}),
@@ -4223,7 +4312,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             raise Core0Error('actual and companion jump-table label inventories differ')
         by_symbol={r['symbol']:r for r in unit['functions']}
         for table in sorted(tables,key=lambda s:s['value']):
-            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_0',name)
+            name=table['name'];match=re.fullmatch(r'\.LJTI(\d+)_([01])',name)
             if match is None or table['type']!='NOTYPE' or table['binding']!='LOCAL' or table['section']!=section_id or table['size']!=0 or table['value']%8:
                 raise Core0Error('backend table label is not one local aligned readonly extent')
             declaration=re.search(r'(?m)^'+re.escape(name)+r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)',assembly)
@@ -4240,6 +4329,19 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
             sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and source in LEMMASIM_BACKEND_JUMP_TABLES
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            owner_tables=[candidate['name'] for candidate in tables
+                          if candidate['name'].startswith('.LJTI'+match[1]+'_')]
+            paired_leaf=(sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
+                         and sorted(owner_tables)==['.LJTI'+match[1]+'_0','.LJTI'+match[1]+'_1'])
+            if match[2]!='0' and not paired_leaf:raise Core0Error('second table escapes closed DTB pair')
+            if paired_leaf:
+                names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+                body=_ir_definition_body(optimized_ir,owner['name'])
+                rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+                normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+                if hashlib.sha256(normalized.encode()).hexdigest()!='18eed75a123ff7d46a4541ac19a1870197f86d187e8e244fab1178955b9c3cd4':
+                    raise Core0Error('DTB paired owner differs from exact checked property/role body')
+                if match[2]=='1':spec=('kernel',9,['u64']*4,['checked-access','physical-read','physical-write'],[1,2,6,8,9])
             if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
                     and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):
                 # Exact historical Power literal domain; immutable old units
@@ -4394,6 +4496,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
 def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
+    ble_header = validate_ble_header_intrinsic(ir,unit,optimized=optimized,optimization=optimization)
     definitions, declarations, calls = parse_definitions_and_calls(ir)
     functions = {row["symbol"] for row in unit["functions"]}
     primitives = {row["primitive_symbol"] for row in unit["used_execution_ops"] if row["primitive_symbol"] is not None}
@@ -4494,6 +4597,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
             "checked_inline": inline_report, "managed_records": records_report,
+            **({"ble_header_intrinsic":ble_header} if ble_header else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
 
