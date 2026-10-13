@@ -34,7 +34,7 @@ function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=d
 document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value});
 document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,initialize:true});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>send(b.dataset.action));
-document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked});
+document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#warm').onclick=()=>send('reset',{cold:false});document.querySelector('#cold').onclick=()=>send('reset',{cold:true});
 document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};

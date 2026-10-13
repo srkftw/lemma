@@ -770,6 +770,13 @@ Wasm core and explicit archived consumed inputs:
 ./scripts/lemmasim browser-serve --bundle build/browser/bytes-new --port 8769
 ```
 
+In newly prepared bundles, Run bounded accepts an exact cycle budget and an
+optional1–7200-second host limit. Host-limit pauses retain the executed prefix
+and pending machine work; they do not count as successful Ready observations.
+The worker checks between calls of at most50000 cycles, so a synchronous call
+can finish after the host deadline. The bound carries across initializer launch
+without replenishment. Resume starts ordinary continuous execution.
+
 The [actual Byte/Bulk browser cold and native comparison](docs/evidence/006-canonical-native-browser-cold.json)
 passed real durable reopen at631.55M browser cycles under its original2B/7200s
 bounds. An independent native cold from the same opaque bytes then matched

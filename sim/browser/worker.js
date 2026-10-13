@@ -41,6 +41,7 @@ function admitRaw(text){if(replayUntil!==null)throw Error('Offline replay accept
  if(fields[0]==='now')fields[0]=s.cycle;if(fields[1]==='pen'&&fields[2]==='now')fields[2]=s.ticks;
  const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);sendState();}
 function step(){if(!running)return;try{
+ if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const before=state(),cycle=uint64(before.cycle);
  let quantum=budget?budget.quantum(before.cycle):50000n;
  if(budget?.stopOnReady&&observeReady()){pause('guest-ready');panel(true);sendState();return;}
@@ -52,6 +53,7 @@ function step(){if(!running)return;try{
  try{check('lemma_run',['number'],[Number(quantum)]);}finally{inRun=false;timing.runSeconds+=(performance.now()-start)/1000;if(budget)budget.observe(state().cycle,quantum);}
  loops++;
  const after=state(),periodic=loops%10===0;
+ if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const data=(periodic||initializing||budget?.stopOnReady)?core.FS.readFile('/uart.bin'):null;
  if(data)observeReady(data);
  if(budget?.remaining===0n){pause('cycle-limit');panel(true);sendState();return;}
@@ -136,7 +138,7 @@ onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage 
  if(m.action==='pause'){pause('user');sendState();}
  else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');budget=null;pauseReason=null;running=true;scheduleStep();}
  else if(m.action==='run'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');
-  const next=new RunBudget(state().cycle,m.cycles,m.stopOnReady??false);pause(null);budget=next;running=true;sendState();scheduleStep();}
+  const next=new RunBudget(state().cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null);pause(null);budget=next;running=true;sendState();scheduleStep();}
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}

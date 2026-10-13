@@ -82,6 +82,21 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  await f.send('run',{cycles:'1'});await f.drain();assert.equal(f.cycle(),MAX);
 }
 // Only the existing full guest/controller predicate can end Ready runs.
+// Wall-clock expiration consumes no additional guest work; a slow synchronous
+// call retains its actual prefix even when Ready bytes arrive after deadline.
+{
+ const f=await fixture(),origin=f.cycle();await f.send('run',{cycles:'100001',hostSeconds:'1'});
+ f.advanceWall(1000);await f.drain();assert.equal(f.cycle(),origin);assert.equal(f.state().pauseReason,'host-limit');
+ assert.equal(f.state().budget.used,'0');assert.equal(f.state().budget.remaining,'100001');assert.equal(f.calls.filter(x=>x[0]==='lemma_run').length,0);
+ await f.send('run',{cycles:'100001',hostSeconds:'1'});await f.tick();const boundary=f.cycle();
+ f.advanceWall(1000);await f.drain();assert.equal(f.cycle(),boundary);assert.equal(f.state().budget.used,'50000');assert.equal(f.state().budget.hostSecondsLimit,1);
+ for(const bad of [0,1,0n,'0','01','1.5',' 1','7201','10000',true]){const before=f.cycle();await f.send('run',{cycles:'1',hostSeconds:bad});assert.equal(f.cycle(),before);assert.equal(f.timers.size,0);assert.match(f.messages.at(-1).error,/Host limit/);}
+}
+{
+ let f;f=await fixture({cycle:0n,onRun:({setUART,setPaper})=>{f.advanceWall(1000);setUART(record(0x420)+record(0x425,3n));setPaper({completed:'3',accepted:'3'});}});
+ await f.send('run',{cycles:'100001',hostSeconds:'1',stopOnReady:true});await f.drain();assert.equal(f.cycle(),50000n);assert.equal(f.state().pauseReason,'host-limit');assert.equal(f.state().readyAt,null);
+ assert.equal(f.state().budget.remaining,'50001');await f.send('snapshot');assert.equal(decoder.decode(f.exports().at(-1).bytes),'50000');
+}
 {
  let runs=0;const full=record(0x420)+record(0x425,2n);
  const f=await fixture({initialUART:full,onRun:({setUART,setPaper})=>{runs++;setUART(full+record(0x420)+(runs>=2?record(0x425,3n):''));setPaper({completed:runs>=3?'3':'2',accepted:'3'});}});
@@ -94,6 +109,12 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  await f.send('run',{cycles:'100001',stopOnReady:true});await f.drain();assert.equal(f.state().pauseReason,'cycle-limit');assert.equal(f.state().readyAt,null);
 }
 // Actual initializer transition retains the total budget across clock reset.
+{
+ let f;f=await fixture({cycle:0n,initialize:true,onRun:({generation,setUART,finish})=>{if(generation===1){f.advanceWall(600);setUART(record(0x41f));finish();}}});
+ await f.send('run',{cycles:'150000',hostSeconds:'1'});await f.tick();await f.tick();
+ assert.equal(f.calls.filter(x=>x[0]==='lemma_create').length,2);assert.equal(f.cycle(),50000n);
+ f.advanceWall(400);await f.drain();assert.equal(f.cycle(),50000n);assert.equal(f.state().pauseReason,'host-limit');assert.equal(f.state().budget.used,'100000');
+}
 {
  const f=await fixture({cycle:0n,initialize:true,onRun:({generation,setUART,finish})=>{if(generation===1){setUART(record(0x41f));finish();}else setUART('');}});
  await f.send('run',{cycles:'100001'});await f.drain();assert.equal(f.cycle(),50001n);assert.equal(f.state().budget.used,'100001');assert.equal(f.state().budget.remaining,'0');
@@ -125,6 +146,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const app=new vm.SourceTextModule(await fs.readFile('sim/browser/app.js','utf8'),{context});await app.link(()=>{throw Error('unexpected app import');});await app.evaluate();
  node('#run-cycles').value='18446744073709551615';node('#stop-ready').checked=true;node('#run-bounded').onclick();
  assert.equal(sent.at(-1).action,'run');assert.equal(sent.at(-1).cycles,String(MAX));assert.equal(typeof sent.at(-1).cycles,'string');assert.equal(sent.at(-1).stopOnReady,true);
+ assert.equal(sent.at(-1).hostSeconds,null);node('#run-seconds').value='7200';node('#run-bounded').onclick();assert.equal(sent.at(-1).hostSeconds,'7200');
  for(const action of ['events','capture-outcomes']){actions.find(n=>n.dataset.action===action).onclick();assert.equal(sent.at(-1).action,action);}
  appWorker.onmessage({data:{type:'export',name:'lemma-events.json',bytes:encoder.encode('{}')}});assert.deepEqual(downloads,['lemma-events.json']);
  appWorker.onmessage({data:{type:'state',state:{cycle:String(MAX)},running:false,pauseReason:'cycle-limit',readyAt:null,heapBytes:1048576,guestObservation:'continuation',hostSeconds:100,
