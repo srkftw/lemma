@@ -61,6 +61,7 @@ inductive CSR where
   | mcounteren | scounteren
   | sstatus | sie | stvec | sscratch | sepc | scause | stval | sip | satp
   | misa | mcycle | minstret | mcountinhibit
+  | cycle | time | instret
   deriving Repr, BEq, DecidableEq
 
 def CSR.render : CSR → String
@@ -100,6 +101,9 @@ def CSR.render : CSR → String
   | .mcycle => "mcycle"
   | .minstret => "minstret"
   | .mcountinhibit => "mcountinhibit"
+  | .cycle => "cycle"
+  | .time => "time"
+  | .instret => "instret"
 
 inductive Instruction where
   | loadAddress (dst : Register) (symbol : String)

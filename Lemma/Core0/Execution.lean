@@ -16,6 +16,7 @@ inductive Op where
   | deviceRead32 | deviceWrite32 | deviceRead64 | deviceWrite64
 
   | readMisa | readMachineCycle | writeMachineCycle | readMachineRetired | writeMachineRetired | readMachineInhibit | writeMachineInhibit | readMachineCounterEnable | writeMachineCounterEnable
+  | readCounterCycle | readCounterTime | readCounterRetired | readSupervisorCounterEnable | writeSupervisorCounterEnable | attemptWriteCounterCycle | attemptWriteCounterTime | attemptWriteCounterRetired | counterEnterSupervisor | counterEnterUser
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Op
@@ -26,7 +27,8 @@ def all : Array Op := #[
   .readTime, .setMachineCompare, .forwardSupervisor, .firmwareCall, .syscall,
   .installSatp, .fenceInstruction, .enterUser, .waitInterrupt, .readSupervisorPending,
   .deviceRead32, .deviceWrite32, .deviceRead64, .deviceWrite64,
-  .readMisa, .readMachineCycle, .writeMachineCycle, .readMachineRetired, .writeMachineRetired, .readMachineInhibit, .writeMachineInhibit, .readMachineCounterEnable, .writeMachineCounterEnable]
+  .readMisa, .readMachineCycle, .writeMachineCycle, .readMachineRetired, .writeMachineRetired, .readMachineInhibit, .writeMachineInhibit, .readMachineCounterEnable, .writeMachineCounterEnable,
+  .readCounterCycle, .readCounterTime, .readCounterRetired, .readSupervisorCounterEnable, .writeSupervisorCounterEnable, .attemptWriteCounterCycle, .attemptWriteCounterTime, .attemptWriteCounterRetired, .counterEnterSupervisor, .counterEnterUser]
 
 def stableId : Op → String
   | .physicalRead8 => "execution.physical-read8"
@@ -60,6 +62,16 @@ def stableId : Op → String
   | .writeMachineInhibit => "execution.write-machine-inhibit"
   | .readMachineCounterEnable => "execution.read-machine-counter-enable"
   | .writeMachineCounterEnable => "execution.write-machine-counter-enable"
+  | .readCounterCycle => "execution.read-counter-cycle"
+  | .readCounterTime => "execution.read-counter-time"
+  | .readCounterRetired => "execution.read-counter-retired"
+  | .readSupervisorCounterEnable => "execution.read-supervisor-counter-enable"
+  | .writeSupervisorCounterEnable => "execution.write-supervisor-counter-enable"
+  | .attemptWriteCounterCycle => "execution.attempt-write-counter-cycle"
+  | .attemptWriteCounterTime => "execution.attempt-write-counter-time"
+  | .attemptWriteCounterRetired => "execution.attempt-write-counter-retired"
+  | .counterEnterSupervisor => "execution.counter-enter-supervisor"
+  | .counterEnterUser => "execution.counter-enter-user"
 
 def sourceIdentity : Op → Lean.Name
   | .physicalRead8 => ``Op.physicalRead8
@@ -93,6 +105,16 @@ def sourceIdentity : Op → Lean.Name
   | .writeMachineInhibit => ``Op.writeMachineInhibit
   | .readMachineCounterEnable => ``Op.readMachineCounterEnable
   | .writeMachineCounterEnable => ``Op.writeMachineCounterEnable
+  | .readCounterCycle => ``Op.readCounterCycle
+  | .readCounterTime => ``Op.readCounterTime
+  | .readCounterRetired => ``Op.readCounterRetired
+  | .readSupervisorCounterEnable => ``Op.readSupervisorCounterEnable
+  | .writeSupervisorCounterEnable => ``Op.writeSupervisorCounterEnable
+  | .attemptWriteCounterCycle => ``Op.attemptWriteCounterCycle
+  | .attemptWriteCounterTime => ``Op.attemptWriteCounterTime
+  | .attemptWriteCounterRetired => ``Op.attemptWriteCounterRetired
+  | .counterEnterSupervisor => ``Op.counterEnterSupervisor
+  | .counterEnterUser => ``Op.counterEnterUser
 
 def ofSourceIdentity? (name : Lean.Name) : Option Op :=
   all.find? fun operation => operation.sourceIdentity == name
@@ -108,6 +130,7 @@ def isWrite : Op → Bool
   | .physicalWrite8 | .physicalWrite64 | .virtualWrite8 | .virtualWrite64 => true
   | .deviceWrite32 | .deviceWrite64 => true
   | .writeMachineCycle | .writeMachineRetired | .writeMachineInhibit | .writeMachineCounterEnable => true
+  | .writeSupervisorCounterEnable | .attemptWriteCounterCycle | .attemptWriteCounterTime | .attemptWriteCounterRetired => true
   | _ => false
 
 def isPhysical : Op → Bool
@@ -129,7 +152,9 @@ def admits (profile : Profile) (operation : Op) : Bool :=
   | .deviceRead64 | .deviceWrite64 =>
       profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_6 || profile == .kernel_v0_7 || profile == .kernel_v0_5 || profile.isBoot
 
-  | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2
+  | .readMisa | .readMachineCycle | .writeMachineCycle | .readMachineRetired | .writeMachineRetired | .readMachineInhibit | .writeMachineInhibit | .readMachineCounterEnable | .writeMachineCounterEnable => profile == .firmware_v0_2 || profile == .counter_su_v0_1
+
+  | .readCounterCycle | .readCounterTime | .readCounterRetired | .readSupervisorCounterEnable | .writeSupervisorCounterEnable | .attemptWriteCounterCycle | .attemptWriteCounterTime | .attemptWriteCounterRetired | .counterEnterSupervisor | .counterEnterUser => profile == .counter_su_v0_1
 
 /-- Number of meaningful source operands; the remaining six-word slots must be
 literal zero. Firmware/syscall operands are number followed by five payloads. -/
@@ -141,6 +166,8 @@ def argumentCount : Op → Nat
       .setMachineCompare | .installSatp | .enterUser => 1
   | .forwardSupervisor => 1
   | .writeMachineCycle | .writeMachineRetired | .writeMachineInhibit | .writeMachineCounterEnable => 1
+  | .writeSupervisorCounterEnable | .attemptWriteCounterCycle | .attemptWriteCounterTime | .attemptWriteCounterRetired => 1
+  | .counterEnterSupervisor | .counterEnterUser => 2
   | .firmwareCall | .syscall => 6
   | _ => 0
 
@@ -164,6 +191,16 @@ def primitiveSymbol? : Op → Option String
   | .writeMachineInhibit => some "lemma_exec_write_machine_inhibit"
   | .readMachineCounterEnable => some "lemma_exec_read_machine_counter_enable"
   | .writeMachineCounterEnable => some "lemma_exec_write_machine_counter_enable"
+  | .readCounterCycle => some "lemma_exec_read_counter_cycle"
+  | .readCounterTime => some "lemma_exec_read_counter_time"
+  | .readCounterRetired => some "lemma_exec_read_counter_retired"
+  | .readSupervisorCounterEnable => some "lemma_exec_read_supervisor_counter_enable"
+  | .writeSupervisorCounterEnable => some "lemma_exec_write_supervisor_counter_enable"
+  | .attemptWriteCounterCycle => some "lemma_exec_attempt_write_counter_cycle"
+  | .attemptWriteCounterTime => some "lemma_exec_attempt_write_counter_time"
+  | .attemptWriteCounterRetired => some "lemma_exec_attempt_write_counter_retired"
+  | .counterEnterSupervisor => some "lemma_exec_counter_enter_supervisor"
+  | .counterEnterUser => some "lemma_exec_counter_enter_user"
   | _ => none
 
 end Op
@@ -283,7 +320,7 @@ def memoryRegions : Profile → Array MemoryRegion
       ⟨"boot-loaded-image", 0x80000000, 0x81f00000, true⟩,
       ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩,
       ⟨"boot-loaded-discovery", 0x87e00000, 0x87e00c00, true⟩]
-  | .firmware_v0_1 | .firmware_v0_2 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
+  | .firmware_v0_1 | .firmware_v0_2 | .counter_su_v0_1 => #[⟨"firmware-storage", Lemma.Platform.LemmaVM.Layout.privateBase,
       Lemma.Platform.LemmaVM.Layout.privateLimit, true⟩]
   | .kernel_v0_1 | .kernel_v0_2 => kernelMemoryRegions
   | .kernel_v0_7 =>

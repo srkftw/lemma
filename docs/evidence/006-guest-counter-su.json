@@ -1,0 +1,549 @@
+{
+  "commands": {
+    "actual": "nix develop --no-write-lock-file --command python3 scripts/check_guest_counter_su.py --work-dir build/silicon/task006-counter-su-a2 --native-bundle build/native/task006-arithmetic-a3 --fast",
+    "reusable": "nix develop --no-write-lock-file --command python3 scripts/check_guest_counter_su.py --work-dir UNUSED_OUTPUT --native-bundle build/native/task006-arithmetic-a3 --fast",
+    "source_guards": "nix develop --no-write-lock-file --command flock build/task006-lake.lock lake env lean tests/kernel/CounterSuExecutionCompile.lean"
+  },
+  "consumed_input_count": 301,
+  "consumed_source_inventory": {
+    "before_after_exact": true,
+    "path": "build/silicon/task006-counter-su-a2/audit.json",
+    "sha256": "afc59b2b36ceddef64d458959d94ab294c665f9cc3a33c4045233b7ad6de4c95"
+  },
+  "default_preservation": {
+    "CounterPolicy_source": "26fa4234b71c962ed7ed66f3f44577114d0c2d505565bed88635d325e8019775",
+    "CounterPrimitives_source": "925edc0802f41858107e2dc8b72c2b439248398e7ad519eaca4d22cf13b21fb8",
+    "backend_changed": false,
+    "fresh_legacy_export": {
+      "artifact_count": 7,
+      "guest_rerun": false,
+      "reference": "build/task006-counter-su-legacy-regression-a1/result.json",
+      "status": "PASS_EXACT_LEGACY_COUNTER_EXPORT"
+    },
+    "hardware_profile_changed": false,
+    "old_checker_source": "647f5fc4ca0fc5d6ef2b8df3457666a6ed5fcbbff5f0d9fdd6388bb8f7854f06"
+  },
+  "fast": {
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-arithmetic-a3/runtime/qemu/qemu-system-riscv64",
+      "sha256": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716"
+    },
+    "cached_state_experiment": false,
+    "cases": 404,
+    "checked_record_bytes": 32768,
+    "ecalls": 398,
+    "elapsed_seconds": 0.06464975699782372,
+    "illegal_traps": 255,
+    "mtime_bracket": [
+      12155,
+      74253
+    ],
+    "record_sha256": "2097b35d02c9ec76b7c88fc5b44f6eac6d9b6680989b4fffe8d88638f9b556c5",
+    "status": "PASS",
+    "timing_parity": false,
+    "total_traps": 653,
+    "virtual_ns_bound": 50000000
+  },
+  "fast_bundle": {
+    "manifest_sha256": "ffe588f3c33f6efacb94230fd441a7bf8e7fdd80e1ea263fed050b4cc7aa6f7e",
+    "schema": "lemmasim-native-bundle/2",
+    "scope": "validated archived inputs; not current compilation",
+    "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1"
+  },
+  "guest_sha256": "ae658d00e6b92ed31f2b56b21258c1f6de0b03b6e677134021fc6bba882f10cc",
+  "native_bundle": {
+    "manifest_sha256": "ffe588f3c33f6efacb94230fd441a7bf8e7fdd80e1ea263fed050b4cc7aa6f7e",
+    "schema": "lemmasim-native-bundle/2",
+    "scope": "validated archived inputs; not current compilation",
+    "source_commit": "c1100df2f13cb558360aa25881bd7db8cc4040c1"
+  },
+  "original_failures": [
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a1/build.log",
+      "sha256": "2e02d77131b285ca1009256cad94b8bc41879d064c4b432351e7662af0489667"
+    },
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a2/build.log",
+      "sha256": "28bac17c1f717c2335c49c048f5ea34e821339f386db3c367869488f856157c4"
+    },
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a3/export.log",
+      "sha256": "fbacd01cd663d9210c9918296343c0bcf47c670e8bcf2443e62810082598e4f1"
+    },
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a4/export.log",
+      "sha256": "d54358f26da21e0c5e4e12a56aa6ccd369b161df35ac94dad001c0c733d6e310"
+    },
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a5/export.log",
+      "sha256": "c5bc4338763cdde0a956ea756b84507c8e239d5ab5ea8f942ff40c9a2509d673"
+    },
+    {
+      "classification": "actual draft elaboration/frontend failure; no CPU admission",
+      "path": "build/task006-counter-su-compile-a6/build.log",
+      "sha256": "1925c4470c70db38b8f4a04420d1a72f1e236a47357b80d9d055b2094f9b3786"
+    },
+    {
+      "classification": "actual auditor rejection of optimized switch table; no CPU admission",
+      "path": "build/silicon/task006-counter-su-a1/result.json",
+      "sha256": "36347c95bfd6d7c3c826b9799ce01f5244ecb4fecd16c393fbd34993f10a462f",
+      "status": "FAIL"
+    },
+    {
+      "classification": "retained actual tool-observed host fixture exception; no CPU admission",
+      "path": "build/task006-counter-su-plan/original-host-fixture-failure.json",
+      "sha256": "bacce4e96cdcf3b87c3284f41be650a1647e8862d2691a9050ee3a9d3f820928"
+    }
+  ],
+  "owned_source_inputs": {
+    "Lemma/Compiler/CounterSuExport.lean": "302281ac31294cbab83c053b9e75866e71ae5f879bc47481588feef97c3e4e81",
+    "Lemma/Core0/ActionIR.lean": "e49183735572a2fdc93b872d4ce6f68482d82e464b1c426942b9af4fa2b2f244",
+    "Lemma/Core0/Execution.lean": "7f508f00782d14d0b3b6eecbd42c1cfc967c6f4f0dcce1bd24a5a55676473bb5",
+    "Lemma/Core0/Frontend.lean": "2479704726a66cde5fec394091a86ea6325ae3544834484c1c52e5599f61cbd9",
+    "Lemma/Core0/IR.lean": "f0415da12a6a58077baea337d8fc575dd0bb424fada973ec9ba7774d6bc56061",
+    "Lemma/Core0/Semantics.lean": "9027694b7c08dfbbb971e574690750f0f93d5c0d754f74760ce7de5b5c9f5f0f",
+    "Lemma/Machine/Primitives.lean": "830f34ad80ce03167d4aa444c6796f619e73bbf6690d8c74a064205b957701f7",
+    "Lemma/Platform/RiscV/CounterSuPrimitives.lean": "cd3e9de94c9911b37a0750e988411bb31d47f697eb0db0b3aa14097fe9e63c05",
+    "Lemma/Platform/RiscV/Development/CounterSuPolicy.lean": "8ef79624618224e7e94ad37b674c641221ee2c5c2c35c1b5f598f8401952c95c",
+    "docs/contracts/006-guest-counter-su-v1.md": "c159d25c04fc53a92f463740ddb60f3f784c2eaa2b7e0b923928c1a3179dc27a",
+    "scripts/check_guest_counter_su.py": "b2add9d2dd34a07b8491990a8616568f3a1f56cfc0d004c7590b1247e2195c9b",
+    "tests/kernel/CounterSuExecutionCompile.lean": "7abd91fe87f5b5b9f9d8077fb358312d948728f6c4742b140081c3405ff8cf46",
+    "tests/silicon/test_counter_su.py": "878c0e7f89baf853f476e8c553c236edcd2464be9becd6e4fa798f63b6ca3027"
+  },
+  "plan": {
+    "build_timeout_per_command": 300,
+    "fast_virtual_ns": 50000000,
+    "host_seconds_per_backend": 120,
+    "native_boundary_seek_clocks": 2002000,
+    "native_clocks": 5000000
+  },
+  "profile": "core0-counter-su-v0.1",
+  "qualification": "actual genuinely compiled guest permission/trap corpus and one exact own-native suffix",
+  "references": [
+    {
+      "bytes": 148774,
+      "path": "build/silicon/task006-counter-su-a2/result.json",
+      "sha256": "ce36fcedf03d7ae872a3c704ae2670befc0966630cd4e74ae30dd6f418e5d284"
+    },
+    {
+      "bytes": 84780,
+      "path": "build/silicon/task006-counter-su-a2/audit.json",
+      "sha256": "afc59b2b36ceddef64d458959d94ab294c665f9cc3a33c4045233b7ad6de4c95"
+    },
+    {
+      "bytes": 169598,
+      "path": "build/silicon/task006-counter-su-a2/commands.json",
+      "sha256": "f7f996aae2dacc9fc53ede32b9676450eb5de78134c8223e7bc6fd0651767b58"
+    },
+    {
+      "bytes": 175,
+      "path": "build/silicon/task006-counter-su-a2/plan.json",
+      "sha256": "69a46a83b16f85063d5dc2531f347dc6ef83b7fea2384f1297173abc690d0695"
+    },
+    {
+      "bytes": 1143,
+      "path": "build/silicon/task006-counter-su-a2/rtl-boundary.json",
+      "sha256": "2756ad0bc020fa3886add8f6c1785d4a9631d41517103d0efd49f581def25093"
+    },
+    {
+      "bytes": 1148,
+      "path": "build/silicon/task006-counter-su-a2/rtl-original-final.json",
+      "sha256": "7558677784f614fd95b403c7392013aafb5bb2a4917a876d6ed4ee552c8baba4"
+    },
+    {
+      "bytes": 1147,
+      "path": "build/silicon/task006-counter-su-a2/rtl-fork-final.json",
+      "sha256": "2d31a19581762d3437db2621e2d475ae50f1046eea510ad68eb4817238a4856b"
+    },
+    {
+      "bytes": 22728,
+      "path": "build/silicon/task006-counter-su-a2/target/image.elf",
+      "sha256": "ae658d00e6b92ed31f2b56b21258c1f6de0b03b6e677134021fc6bba882f10cc"
+    },
+    {
+      "bytes": 127079,
+      "path": "build/silicon/task006-counter-su-a2/target/program.ll",
+      "sha256": "cbf11a42fad71b7bedf7078769ca6952fd398ec1532704c7c8f08f172cc9c59b"
+    },
+    {
+      "bytes": 84457,
+      "path": "build/silicon/task006-counter-su-a2/target/program.opt.ll",
+      "sha256": "dbfd4b36458de945cf4155ace29c147512f40631674e7840a0cb2c5b3eec15f2"
+    },
+    {
+      "bytes": 44806,
+      "path": "build/silicon/task006-counter-su-a2/target/normalized.txt",
+      "sha256": "fb570ed12123448dc154b3df4960d4e0bee69aa2e69725bddcb5687843cfc604"
+    },
+    {
+      "bytes": 17397,
+      "path": "build/silicon/task006-counter-su-a2/target/unit.json",
+      "sha256": "60035457ea0e8f8fefb056ba869fa8733ade5da812febda64fc157c9096803e4"
+    },
+    {
+      "bytes": 11762,
+      "path": "build/silicon/task006-counter-su-a2/target/startup.S",
+      "sha256": "c37ef7aa30b16ff5ed3e4dface6b7ca5492356f8fad760547a986797a21e956d"
+    },
+    {
+      "bytes": 21688,
+      "path": "build/silicon/task006-counter-su-a2/target/program.o",
+      "sha256": "aa018d256f97d4e2c8967fce9f039cfcb8fff5d8456c1d9dfa2090782ffe7ebb"
+    },
+    {
+      "bytes": 6112,
+      "path": "build/silicon/task006-counter-su-a2/target/startup.o",
+      "sha256": "b4da7345ee991fd7f4b888a3bfa53d5308d6eb4e9c47da4647b390f538479d5d"
+    },
+    {
+      "bytes": 6952,
+      "path": "build/silicon/task006-counter-su-a2/target/code.bin",
+      "sha256": "05011f0cf871211e5b616ee1d378ac9405fd32ccd1e3c2eb17dbff946cec43c4"
+    },
+    {
+      "bytes": 145143446,
+      "path": "build/silicon/task006-counter-su-a2/rtl-prefix.chk",
+      "sha256": "5deeace1f51f89f7413d0cc4b883e32129a1446b1b1d592882c562b3c06d3ed7"
+    },
+    {
+      "bytes": 145143446,
+      "path": "build/silicon/task006-counter-su-a2/rtl-final-original.chk",
+      "sha256": "517d7cce5624caa257d04bf21956ec82f895d66c340c96b8d5b1e808c8f1da14"
+    },
+    {
+      "bytes": 145143446,
+      "path": "build/silicon/task006-counter-su-a2/rtl-final-fork.chk",
+      "sha256": "517d7cce5624caa257d04bf21956ec82f895d66c340c96b8d5b1e808c8f1da14"
+    },
+    {
+      "bytes": 32768,
+      "path": "build/silicon/task006-counter-su-a2/rtl-original/records.bin",
+      "sha256": "654809899fa62fe7da7d4c35bb96c9161121f329a344f2b15b708f9368c7bc5c"
+    },
+    {
+      "bytes": 32768,
+      "path": "build/silicon/task006-counter-su-a2/rtl-fork/records.bin",
+      "sha256": "654809899fa62fe7da7d4c35bb96c9161121f329a344f2b15b708f9368c7bc5c"
+    },
+    {
+      "bytes": 553,
+      "path": "build/silicon/task006-counter-su-a2/rtl-original/report.json",
+      "sha256": "a2e999e72e2eed22bfb28ed6ae2b8a7fbc28a5acfedba641054ced8542b08601"
+    },
+    {
+      "bytes": 553,
+      "path": "build/silicon/task006-counter-su-a2/rtl-fork/report.json",
+      "sha256": "a2e999e72e2eed22bfb28ed6ae2b8a7fbc28a5acfedba641054ced8542b08601"
+    },
+    {
+      "bytes": 32768,
+      "path": "build/silicon/task006-counter-su-a2/fast/records.bin",
+      "sha256": "2097b35d02c9ec76b7c88fc5b44f6eac6d9b6680989b4fffe8d88638f9b556c5"
+    },
+    {
+      "bytes": 0,
+      "path": "build/silicon/task006-counter-su-a2/fast/machine.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 174,
+      "path": "build/task006-counter-su-plan/source-checks-a1.log",
+      "sha256": "d7df8282f8c9504f404cab0914afcf3a0893ada6e0c541c2b4b8640eaa5bb211"
+    },
+    {
+      "bytes": 128189,
+      "path": "build/silicon/task006-counter-su-a1/target/program.ll",
+      "sha256": "63ce63be390dbacf5fc83c58f11d7e7074f8f96a62f94e6a096d85d4ba2cbb49"
+    },
+    {
+      "bytes": 85030,
+      "path": "build/silicon/task006-counter-su-a1/target/program.opt.ll",
+      "sha256": "9806f206ed4e66fc41c165d3dde4d92be2479d1525858c5f2f1a2460b849d000"
+    },
+    {
+      "bytes": 45085,
+      "path": "build/silicon/task006-counter-su-a1/target/normalized.txt",
+      "sha256": "6d1a1a125286cc47f736677d93b9660e332c396694563075910be269a05f1a97"
+    },
+    {
+      "bytes": 17397,
+      "path": "build/silicon/task006-counter-su-a1/target/unit.json",
+      "sha256": "60035457ea0e8f8fefb056ba869fa8733ade5da812febda64fc157c9096803e4"
+    },
+    {
+      "bytes": 22904,
+      "path": "build/silicon/task006-counter-su-a1/target/image.elf",
+      "sha256": "cdd3f4e8f1891396e91986eb22f3f0973328910a442444d5300f78e12b5b2638"
+    },
+    {
+      "bytes": 69868,
+      "path": "build/silicon/task006-counter-su-a1/commands.json",
+      "sha256": "b644c62a8d58a69e21bec5ee63a7652e284bf5e2fe02d77da4c33cc5fc01193a"
+    },
+    {
+      "bytes": 5816,
+      "path": "build/task006-counter-su-plan/core0-host-a1.log",
+      "sha256": "e6afa3a5fff42f0c17fd5006213d6cdc6160833566aedd684db4a8530d4b7bff"
+    },
+    {
+      "bytes": 74694,
+      "path": "build/task006-counter-su-plan/foundation-host-a1.log",
+      "sha256": "72e8f0fbfccdeff6e6dc4cd7ca5f28ec50eb15cd99eecddb1f46bdd77a5462c9"
+    },
+    {
+      "bytes": 1342,
+      "path": "build/task006-counter-su-plan/legacy-source-negatives-locked-a1.log",
+      "sha256": "d6718901def671d7037fb038484f60c035c74c7b63c86496be43b212546bd424"
+    },
+    {
+      "bytes": 185,
+      "path": "build/task006-counter-su-plan/scaffold-a1.log",
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "bytes": 1811,
+      "path": "build/task006-counter-su-plan/scaffold-host-a1.log",
+      "sha256": "6c6a3f8e7bfb66ef8a7bc0421a6964e1e65736269dc9c989fdfc8fd3f74a4b49"
+    },
+    {
+      "bytes": 1328,
+      "path": "build/task006-counter-su-legacy-regression-a1/result.json",
+      "sha256": "4772d8f64e63faae845e4c8c1b29fca43a135ef70f89839e015deb8abd61bfea"
+    },
+    {
+      "bytes": 425,
+      "path": "build/task006-counter-su-legacy-regression-a1/source.log",
+      "sha256": "bc6b855b6ed6cf1ff8138a693e03d9c5e9ca21b7927013dfb9f91855a50b81ae"
+    }
+  ],
+  "remaining": [
+    "Full ISA/CSR exhaustiveness, CSR instruction variants and untested lower-mode WARL write/readback transitions",
+    "Uninhibited S/U counter scheduling/read-boundary parity and interrupt suffixes",
+    "Arbitrary cached translation/instruction-visibility QEMU continuation GAP_CONFIRMED",
+    "Cross-backend microstate migration/timing and physical processor conformance UNVERIFIED"
+  ],
+  "rtl": {
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-arithmetic-a3/runtime/rtl/lemma-rtl",
+      "sha256": "44442fc19ba05bc6ff315116fcad84421e1d851464cb080267da3409982c10b9"
+    },
+    "cases": 404,
+    "checked_record_bytes": 32768,
+    "checkpoint_bytes": 145143446,
+    "ecalls": 398,
+    "exact_suffix": true,
+    "final": {
+      "backend": "rtl",
+      "backing_io": {
+        "completed": 0,
+        "durable_barrier": 0,
+        "next_id": 1,
+        "observed_write": 0,
+        "phase": 0,
+        "poisoned": false
+      },
+      "block_state": 0,
+      "cycle": 1788660,
+      "dma_outstanding": 0,
+      "drive_clocks": 0,
+      "drive_hash": 14695981039346656037,
+      "drive_phase_counts": [
+        0,
+        0,
+        0
+      ],
+      "drive_pixels": 0,
+      "event_queue": 0,
+      "fail_flush": 0,
+      "finish_code": 21845,
+      "finished": true,
+      "flushes": 0,
+      "isolated_medium": false,
+      "memory_latency": 0,
+      "memory_pending": 0,
+      "memory_wait": 0,
+      "observer_cycle": 0,
+      "panel_completed": 0,
+      "panel_pending_pixels": 0,
+      "panel_power": 0,
+      "panel_sequence": 0,
+      "paper_busy": 0,
+      "pc": 2147483812,
+      "pen_queue": 0,
+      "power": {
+        "button_level": 0,
+        "enabled": true,
+        "epoch": 0,
+        "error": 0,
+        "events": 0,
+        "reset_cause": 1,
+        "state": 0,
+        "wake_cause": 0
+      },
+      "private_medium_path": "",
+      "privilege": 3,
+      "retired": 921071,
+      "snapshot_identity": "255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e",
+      "stop_panels": 0,
+      "ticks": 178865,
+      "uart_queue": 0,
+      "volatile_sectors": 0
+    },
+    "final_original_and_fork_sha256": "517d7cce5624caa257d04bf21956ec82f895d66c340c96b8d5b1e808c8f1da14",
+    "illegal_traps": 255,
+    "inhibit": 5,
+    "initial_warl_mcounteren": 7,
+    "initial_warl_scounteren": 7,
+    "mcycle": 1234605616436508552,
+    "minstret": 2464388554683811993,
+    "mtime_bracket": [
+      24265,
+      178807
+    ],
+    "prefix_sha256": "5deeace1f51f89f7413d0cc4b883e32129a1446b1b1d592882c562b3c06d3ed7",
+    "record_sha256": "654809899fa62fe7da7d4c35bb96c9161121f329a344f2b15b708f9368c7bc5c",
+    "snapshot_boundary": {
+      "backend": "rtl",
+      "backing_io": {
+        "completed": 0,
+        "durable_barrier": 0,
+        "next_id": 1,
+        "observed_write": 0,
+        "phase": 0,
+        "poisoned": false
+      },
+      "block_state": 0,
+      "cycle": 243598,
+      "dma_outstanding": 0,
+      "drive_clocks": 0,
+      "drive_hash": 14695981039346656037,
+      "drive_phase_counts": [
+        0,
+        0,
+        0
+      ],
+      "drive_pixels": 0,
+      "event_queue": 0,
+      "fail_flush": 0,
+      "finish_code": 0,
+      "finished": false,
+      "flushes": 0,
+      "isolated_medium": false,
+      "memory_latency": 0,
+      "memory_pending": 0,
+      "memory_wait": 0,
+      "observer_cycle": 0,
+      "panel_completed": 0,
+      "panel_pending_pixels": 0,
+      "panel_power": 0,
+      "panel_sequence": 0,
+      "paper_busy": 0,
+      "pc": 2147483940,
+      "pen_queue": 0,
+      "power": {
+        "button_level": 0,
+        "enabled": true,
+        "epoch": 0,
+        "error": 0,
+        "events": 0,
+        "reset_cause": 1,
+        "state": 0,
+        "wake_cause": 0
+      },
+      "private_medium_path": "",
+      "privilege": 0,
+      "retired": 152325,
+      "snapshot_identity": "255030a218bf67acc26a5807e1b3eb8ab97ff2d768501df0d037775e50abf90e",
+      "stop_panels": 0,
+      "ticks": 24359,
+      "uart_queue": 0,
+      "volatile_sectors": 0
+    },
+    "status": "PASS",
+    "total_traps": 653
+  },
+  "schema": "lemma-guest-counter-su-evidence/1",
+  "stack_bytes": {
+    "M_main_chain": 256,
+    "M_trap_compiled_chain": 112,
+    "M_trap_vector_frame": 288,
+    "S_U_probe_chain": 32
+  },
+  "status": "PASS_ARCHITECTURAL_BOTH",
+  "tool_versions": {
+    "clang": {
+      "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20",
+      "version": "clang version 20.1.8"
+    },
+    "dtc": {
+      "path": "/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1/bin/dtc",
+      "version": "Version: DTC 1.8.1"
+    },
+    "lake": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+      "version": "Lake version 5.0.0-src (Lean version 4.34.1)"
+    },
+    "ld.lld": {
+      "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+      "version": "LLD 20.1.8 (compatible with GNU linkers)"
+    },
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "version": "Lean (version 4.34.1, Release)"
+    },
+    "llc": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "version": "LLVM (http://llvm.org/):"
+    },
+    "opt": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+      "version": "LLVM (http://llvm.org/):"
+    },
+    "qemu-system-riscv64": {
+      "path": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64",
+      "version": "QEMU emulator version 11.1.1"
+    }
+  },
+  "upstream": {
+    "narHash": "sha256-JO1pCqWeotC4zjiIQZccEPXfVHnuDQC0DugyuJvIMRs=",
+    "narSize": 674782584,
+    "revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+    "source_path": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source",
+    "uint_source": "/nix/store/1szlhrxfpn9a2xadknnd18ynp2qxcq7h-source/src/Init/Data/UInt/Basic.lean",
+    "uint_source_sha256": "d0f463c78f6c92585caffef53154cadd3c3e0f3b1681584f19e85d8e5da15c94"
+  },
+  "verification": {
+    "core0_host": {
+      "status": "PASS",
+      "tests": 40
+    },
+    "foundation_host": {
+      "lake_negatives_repeated_under_lock": true,
+      "status": "PASS",
+      "tests": 467
+    },
+    "host_oracle_checks": {
+      "scope": "literal permission/instruction fixtures and fail-closed missing records; host fixtures are not target execution",
+      "status": "PASS",
+      "tests": 4
+    },
+    "legacy_source_negatives_locked": {
+      "status": "PASS",
+      "tests": 7
+    },
+    "scaffold": {
+      "status": "PASS"
+    },
+    "scaffold_host": {
+      "status": "PASS",
+      "tests": 18
+    },
+    "source_guards": "PASS"
+  },
+  "wall_seconds": 30.33111239800928
+}
