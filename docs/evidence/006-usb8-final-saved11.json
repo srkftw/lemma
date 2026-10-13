@@ -1,0 +1,233 @@
+{
+  "schema": "lemma-usb8-final-saved11-milestone/1",
+  "status": "LIVE_UI_FROZEN_WIRE_ARCHIVE_AND_INDEPENDENT_COLD_PASS",
+  "scope": "actual guest raw ink, Undo/Redo/navigation/explicit Save; retained original wire observer FAIL with independently corrected frozen wire; new CPU cold recovery through policy4 and independently persistent opaque peer. Decoded-packet USB8 only, not PHY/fullUSB or QEMU cache closure.",
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.8.0",
+    "runtime": "9aa1108476fbdf4ca21ef2073a3fa52c05b95b1b2ee178064d9b23f6c8b9a8f2",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "6ed17b0d4cca94c77ae4376de5c3d78c6ff0a78f64934eea3e851da33d796532",
+    "dtb": "26ac57348875028c410807756ad360373a47f4527228ff8a02c8247ac6ab3870",
+    "descriptor": "1a17202c6bfab70ef48850a33013468a8c800d31a6eafaa4ef11ee42a67c1d01"
+  },
+  "source_association": {
+    "native_bundle": {
+      "path": "build/native/task006-usb-next-a1/bundle.json",
+      "sha256": "4f9d59ca96d0c9eace06772144505ed66c2d169897fa5bfd7a104b364d2d3168"
+    },
+    "native_consumed_inputs": 245,
+    "guest_consumed_inputs": 277,
+    "target_compilation": "unchanged genuine audited USB8 guest; complete archived source/tool/object/ELF authority, no ROOT fallback"
+  },
+  "original_workflow": {
+    "path": "build/usb/notebook-next-workflow-a2/result.json",
+    "sha256": "b9275f871b885d26843ef3a2ffef5e177f06356cb4aef4d924d7a707dc6d8440",
+    "status": "FAIL",
+    "error": "ValueError('actual hello identity')",
+    "actual_user_workflow": {
+      "status": "PASS",
+      "sequence": 11,
+      "generation": 1,
+      "raw_samples": 3,
+      "strokes": 1,
+      "pages": 2,
+      "documents": [
+        1
+      ],
+      "contact_points": [
+        [
+          "usb annotation",
+          330,
+          1200,
+          true
+        ]
+      ],
+      "explicit_save": [
+        1057,
+        11,
+        1,
+        1,
+        0
+      ],
+      "committed_objects": 4
+    },
+    "milestones": {
+      "live/cold-ready": {
+        "cycle": 600000000,
+        "host_seconds": 2680.225841384032
+      },
+      "live/initial-publication-complete": {
+        "cycle": 605000000,
+        "host_seconds": 24.830093267024495
+      },
+      "live/raw-ink-reconciled": {
+        "cycle": 710000000,
+        "host_seconds": 563.2835993559565
+      },
+      "live/undo": {
+        "cycle": 1210000000,
+        "host_seconds": 3672.2956240969943
+      },
+      "live/redo": {
+        "cycle": 1720000000,
+        "host_seconds": 3287.53968053899
+      },
+      "live/next-page": {
+        "cycle": 2225000000,
+        "host_seconds": 2269.609788725036
+      },
+      "live/previous-page": {
+        "cycle": 2715000000,
+        "host_seconds": 2573.7311704609892
+      },
+      "live/explicit-save": {
+        "cycle": 2740000000,
+        "host_seconds": 157.08769525203388
+      }
+    },
+    "supervision": {
+      "path": "build/usb/notebook-next-workflow-a2.supervision/supervision.json",
+      "sha256": "0c2b63b17687bba7f2a35677d349dcd7a7c765bdfb438a1a9356bb551550275d"
+    },
+    "correction": "default initial hello sequence1 is stale: independent initial6-effect peer prefix and outbox prove next7. No CPU rerun."
+  },
+  "frozen_wire": {
+    "path": "build/usb/notebook-next-retained-wire-a2/result.json",
+    "sha256": "fb230ceedb33d48f708699050d086e14b2049455f7be7acce3844682763d3cc7",
+    "status": "PASS",
+    "observer_sha256": "d22a391f5ab6fd9db484aa17a28f07215296c7fc18ce4d420f8d14adc0a749a7",
+    "host_seconds": 1.209480071964208,
+    "initial_sequence": 7,
+    "writer": 83,
+    "durable_high_water": 72,
+    "lost_barrier_effect_count": 1,
+    "exact_journal_records": {
+      "root1": "sequence11",
+      "page1": "sequence8",
+      "page2": "sequence10",
+      "raw_chunk3": "sequence3"
+    },
+    "source_oracle": "actual consumed Notebook newPage writes page10/root11; PreviousPage loads only and explicitSave flushes only"
+  },
+  "passive_archive": {
+    "path": "build/usb/usb8-final-saved11-boundary-a1/boundary.json",
+    "sha256": "1411e4a244f37953923d63e0a3a9d7b5cb0d8361c87516b39f8a79f78e9df541",
+    "status": "PASS",
+    "observer_sha256": "957d4bd9907860d01f3a77982f90cee6e20d9b153d16f0775218bd88283e52bf",
+    "host_seconds": 4.776661821000744,
+    "source_before_after_equal": true,
+    "saved_sequence": 11,
+    "high_water": 72,
+    "wire_transactions": 75,
+    "boundary": "current observational peer/outbox boundary; not the715M machine cut",
+    "policy": "no pause, poll, drain or guest/peer mutation; fixed3observations/30seconds; six exact privately-backed authoritative files"
+  },
+  "independent_cold": {
+    "path": "build/usb/usb8-policy4-final-saved11-cold-a2/result.json",
+    "sha256": "4e013cd2107b196e8c995b65c7852393ed8438e7e83689176768930b7ccc6e51",
+    "status": "PASS",
+    "observer_sha256": "cb5d77a9e30ce4afaba745647a8daf572b328be3e3d164c6846d784f1536a2c8",
+    "new_cpu": true,
+    "restored_machine": false,
+    "cold_ready_cycle": 735000000,
+    "cold_ready_host_seconds": 3536.544510272972,
+    "whole_host_seconds": 3545.3354329349822,
+    "bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "redraw_save_cycles": 1600000000,
+      "action_host_seconds": 7200
+    },
+    "exact_acknowledged_bytes": true,
+    "complete_controller_pixels_equal": true,
+    "clean_load_without_new_save": true,
+    "peer_receipt_state_unchanged": true,
+    "read_transactions": 42,
+    "write_or_barrier_transactions": 0,
+    "host_resources": {
+      "cold": {
+        "sampled_tree_peak_resident_kib": 204608,
+        "sampled_tree_peak_threads": 5,
+        "last_sample": {
+          "processes": [
+            {
+              "pid": 909068,
+              "resident_kib": 36580,
+              "process_highwater_kib": 48392,
+              "threads": 1
+            },
+            {
+              "pid": 909071,
+              "resident_kib": 151484,
+              "process_highwater_kib": 152640,
+              "threads": 1
+            },
+            {
+              "pid": 909072,
+              "resident_kib": 16372,
+              "process_highwater_kib": 16460,
+              "threads": 3
+            }
+          ],
+          "sampled_resident_kib": 204436,
+          "sampled_threads": 5
+        }
+      },
+      "peer": {
+        "sampled_tree_peak_resident_kib": 41988,
+        "sampled_tree_peak_threads": 4,
+        "last_sample": {
+          "processes": [
+            {
+              "pid": 909065,
+              "resident_kib": 25468,
+              "process_highwater_kib": 30584,
+              "threads": 1
+            },
+            {
+              "pid": 909067,
+              "resident_kib": 16520,
+              "process_highwater_kib": 16520,
+              "threads": 3
+            }
+          ],
+          "sampled_resident_kib": 41988,
+          "sampled_threads": 4
+        }
+      }
+    },
+    "observer_self_maxrss_kib": 291984,
+    "owned_children_reaped": true,
+    "supervision": {
+      "path": "build/usb/usb8-policy4-final-saved11-cold-a2.supervision/supervision.json",
+      "sha256": "474c7e4c186c173ec2814afc675d7d20f4bde410e5aa6aba732e0a1ada69b938"
+    }
+  },
+  "retained_failures": {
+    "frozen_wire_a1": {
+      "path": "build/usb/notebook-next-retained-wire-a1/result.json",
+      "sha256": "9bc3c9ea36c4d24b9bc8a081adfd795c8afb95540a1ea771baa7a9786f6eae0a",
+      "reason": "observer initially guessed page1/page2 sequence order; actual consumed source and journal prove page1=8/page2=10"
+    },
+    "saved11_cold_a1": {
+      "path": "build/usb/usb8-policy4-final-saved11-cold-a1/result.json",
+      "sha256": "55058dbe642737ac01827637f0acc9ab94fda762814d077fd70d0b0ab876de0a",
+      "reason": "obsolete policy4 prepared-a1 interface/object identity rejected before CPU start; actual unchanged qualified producer-a3 validates. No host clock/source repair."
+    }
+  },
+  "focused_host_tests": {
+    "path": "build/task006-saved11-boundary-tests-a2.log",
+    "sha256": "27129305d3380261eac1d170c97bcfbd21bc2810c96475f45c19ab9c55cc7f9a",
+    "status": "PASS",
+    "tests": 10,
+    "scope": "exact current Saved11 receipt high-water rejects stale, pending or different metadata; does not establish guest execution"
+  },
+  "remaining": [
+    "profile11 whole-machine PHY and standards-MAC qualification remains separate and pending",
+    "ordinary unsuccessful Save under the final USB8 complete notebook scenario",
+    "privately live peer forks and arbitrary QEMU cached-state continuation",
+    "owner-controlled authentication and physical USB qualification"
+  ]
+}

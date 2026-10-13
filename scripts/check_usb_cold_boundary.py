@@ -57,27 +57,30 @@ def execute(args):
         boundary_path = directory / 'boundary.json'
         boundary = json.loads(boundary_path.read_text())
         require(boundary['status'] == 'PASS' and boundary['source_before_after_equal'] is True and
-                boundary['high_water'] == 36 and boundary['saved_sequence'] == 5,
+                boundary['high_water'] == args.high_water and boundary['saved_sequence'] == args.saved_sequence and
+                (args.saved_sequence, args.high_water) in ((5, 36), (11, 72)),
                 'unqualified acknowledged archive boundary')
         validate_archive_files(directory, boundary)
-        reference = Path(boundary['reference_suffix']['path'])
-        require(sha(reference) == boundary['reference_suffix']['sha256'], 'retained suffix receipt differs')
+        reference_kind = 'reference_suffix' if args.saved_sequence == 5 else 'reference_workflow'
+        reference = Path(boundary[reference_kind]['path'])
+        require(sha(reference) == boundary[reference_kind]['sha256'], 'retained acknowledged reference differs')
         expected_identity = json.loads(reference.read_text())['identity']
         validate(args.host_prepared)
         copy_opaque_peer(directory / 'peer', checker.peer, directory / 'outbox', checker.outbox)
         observed = checker.out / 'before.raw'; materialize_observation(checker.peer, observed)
         require(sha(observed) == boundary['files']['acknowledged.raw']['sha256'], 'private cold backing bytes differ')
         _, sequence, records = recover(observed.read_bytes())
-        require(sequence == 5 and set(records) == {(1, 1), (1, 257), (1, 65539)} and
-                records[(1, 1)].sequence == 5 and records[(1, 257)].sequence == 4 and
-                records[(1, 65539)].sequence == 3, 'independent committed journal identity differs from Saved5')
+        expected_records = {(1, 1): 5, (1, 257): 4, (1, 65539): 3} if args.saved_sequence == 5 else \
+                           {(1, 1): 11, (1, 257): 8, (1, 258): 10, (1, 65539): 3}
+        require(sequence == args.saved_sequence and {key: value.sequence for key, value in records.items()} == expected_records,
+                'independent committed journal identity differs from declared Saved receipt')
         data = records[(1, 65539)].payload
         require(len(data) == 344 and struct.unpack_from('<3Q', data) == (0x314b4e49414d454c, 1, 3),
                 'acknowledged raw ink format differs')
         samples = [struct.unpack_from('<9Q', data, 128 + 72 * index) for index in range(3)]
         expected, points = expected_stroke(samples)
         checker.report.update(boundary={'path': str(boundary_path), 'sha256': sha(boundary_path),
-            'kind': boundary['boundary'], 'peer_high_water': 36, 'saved_sequence': 5},
+            'kind': boundary['boundary'], 'peer_high_water': args.high_water, 'saved_sequence': args.saved_sequence},
             independently_observed_black_points=points, initial_peer_log_sha256=sha(checker.peer / 'opaque.log'),
             host_policy='lemma-usb-pending-policy/4')
         checker.start_peer()
@@ -120,6 +123,8 @@ def main():
     for name in ('boundary', 'host-prepared', 'native-bundle', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--expected-source-sha')
+    parser.add_argument('--saved-sequence', type=int, default=5)
+    parser.add_argument('--high-water', type=int, default=36)
     args = parser.parse_args()
     if args.action == '_run': return execute(args)
     work = args.work_dir.resolve(); supervisor = work.with_name(work.name + '.supervision')
@@ -130,6 +135,7 @@ def main():
     command = [sys.executable, str(Path(__file__).resolve()), '_run', '--expected-source-sha', sha(__file__)]
     for name in ('boundary', 'host_prepared', 'native_bundle', 'work_dir'):
         command += ['--' + name.replace('_', '-'), str(getattr(args, name).resolve())]
+    command += ['--saved-sequence', str(args.saved_sequence), '--high-water', str(args.high_water)]
     manifest = {'schema': 'lemma-usb-cold-boundary-supervision/1', 'work_dir': str(work), 'argv': command,
         'supervisor_sha256': sha(ROOT / 'scripts/supervise_usb_notebook.py'),
         'observer_sha256': sha(ROOT / 'scripts/check_guest_usb_notebook.py'),

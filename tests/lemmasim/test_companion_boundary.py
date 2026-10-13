@@ -16,6 +16,12 @@ class ObservationalPeerBoundary(unittest.TestCase):
     def test_exact_atomic_metadata(self):
         outbox_fields(self.outbox(), 83, 36)
 
+    def test_final_saved11_requires_its_own_receipt_high_water(self):
+        outbox_fields(self.outbox(next_sequence=73), 83, 72)
+        for data in (self.outbox(), self.outbox(next_sequence=72),
+                     self.outbox(next_sequence=74), self.outbox(next_sequence=73, pending=72)):
+            with self.assertRaises(ValueError): outbox_fields(data, 83, 72)
+
     def test_unacknowledged_different_writer_and_sequence_reject(self):
         for data in (self.outbox(pending=72), self.outbox(writer=84),
                      self.outbox(next_sequence=36), self.outbox(next_sequence=38)):

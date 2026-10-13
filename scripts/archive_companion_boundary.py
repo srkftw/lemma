@@ -84,24 +84,47 @@ def capture(args):
               'bounds': {'attempts': 3, 'host_seconds': 30}, 'attempts': []}
     began = time.monotonic()
     try:
-        reference = args.reference_suffix.resolve()
-        source = json.loads(reference.read_text())
-        require(source.get('status') == 'PASS' and source.get('exact_every_snapshot_byte') is True and
-                source['identity']['profile'] == 'lemma-silicon-dev/0.8.0', 'reference is not qualified native USB8 suffix')
-        evidence = json.loads((ROOT / 'docs/evidence/006-usb8-recorded-suffix.json').read_text())
-        declared = evidence['qualified']['queued_successful_receipt_and_later_raw_pen']
-        require(sha(reference) == declared['sha256'], 'reference suffix receipt identity differs')
-        require((0x421, args.saved_sequence, 1, 1, 3) in
-                [tuple(row) for row in source['actual_suffix_uart']], 'reference has no admitted Saved receipt')
-        for path, digest in source['input_files'].items():
-            require(sha(path) == digest, 'reference input artifact changed')
-        tapes = [Path(p) for p in source['input_files'] if Path(p).name == 'suffix-new.tape']
-        require(len(tapes) == 1, 'reference tape identity missing')
-        rows = tapes[0].read_text().splitlines()
-        require(rows[0].startswith('LMUSBRP1 ') and rows[1] == 'HORIZON ' + str(source['captured_tape_horizon'])
-                and rows[-1].startswith('CHECKSUM '), 'reference tape container changed')
+        workflow_reference = getattr(args, 'reference_workflow', None)
         raw = out / 'reference.raw'
-        raw.write_text(rows[0].replace('LMUSBRP1 ', 'LMUSBRW2 ', 1) + '\n' + '\n'.join(rows[2:-1]) + '\n')
+        if workflow_reference is not None:
+            reference = workflow_reference.resolve(); source = json.loads(reference.read_text())
+            require(source.get('schema') == 'lemma-usb8-retained-workflow-wire/1' and source.get('status') == 'PASS' and
+                    source['identity']['profile'] == 'lemma-silicon-dev/0.8.0' and source['owned_children_reaped'] is True and
+                    (source['saved_sequence'], source['high_water']) == (args.saved_sequence, args.high_water) == (11, 72),
+                    'reference is not the independently qualified frozen Saved11 workflow')
+            require(source['workflow']['status'] == 'PASS' and source['workflow']['explicit_save'] == [0x421, 11, 1, 1, 0] and
+                    source['initial_sequence'] == 7 and source['durable_effects_equal_actual_wire'] is True,
+                    'reference has no exact Saved11/effect observation')
+            for path, digest in source['input_files'].items():
+                require(sha(path) == digest, 'reference workflow artifact changed')
+            observed_raw = Path(source['raw_capture']['path'])
+            require(1 <= observed_raw.stat().st_size <= 64 << 20 and sha(observed_raw) == source['raw_capture']['sha256'],
+                    'reference workflow wire capture differs')
+            shutil.copyfile(observed_raw, raw)
+            acknowledged_references = [Path(path) for path in source['input_files'] if Path(path).name == 'acknowledged.raw']
+            require(len(acknowledged_references) == 1, 'reference acknowledged bytes missing or ambiguous')
+            expected_acknowledged_sha = source['input_files'][str(acknowledged_references[0])]
+            reference_metadata = {'reference_workflow': {'path': str(reference), 'sha256': sha(reference)}}
+        else:
+            reference = args.reference_suffix.resolve()
+            source = json.loads(reference.read_text())
+            require(source.get('status') == 'PASS' and source.get('exact_every_snapshot_byte') is True and
+                    source['identity']['profile'] == 'lemma-silicon-dev/0.8.0', 'reference is not qualified native USB8 suffix')
+            evidence = json.loads((ROOT / 'docs/evidence/006-usb8-recorded-suffix.json').read_text())
+            declared = evidence['qualified']['queued_successful_receipt_and_later_raw_pen']
+            require(sha(reference) == declared['sha256'], 'reference suffix receipt identity differs')
+            require((0x421, args.saved_sequence, 1, 1, 3) in
+                    [tuple(row) for row in source['actual_suffix_uart']], 'reference has no admitted Saved receipt')
+            for path, digest in source['input_files'].items():
+                require(sha(path) == digest, 'reference input artifact changed')
+            tapes = [Path(p) for p in source['input_files'] if Path(p).name == 'suffix-new.tape']
+            require(len(tapes) == 1, 'reference tape identity missing')
+            rows = tapes[0].read_text().splitlines()
+            require(rows[0].startswith('LMUSBRP1 ') and rows[1] == 'HORIZON ' + str(source['captured_tape_horizon'])
+                    and rows[-1].startswith('CHECKSUM '), 'reference tape container changed')
+            raw.write_text(rows[0].replace('LMUSBRP1 ', 'LMUSBRW2 ', 1) + '\n' + '\n'.join(rows[2:-1]) + '\n')
+            reference_metadata = {'reference_suffix': {'path': str(reference), 'sha256': sha(reference),
+                'reference_final_cycle': source['final_cycle']}}
         first = peer_info(args.initial_peer.resolve())
         prior = log_frames((args.initial_peer / 'opaque.log').read_bytes())
         initial_next = len(prior) + 1
@@ -112,8 +135,7 @@ def capture(args):
         require(len(prior) + len(mutations) == args.high_water and args.high_water < (1 << 64) - 1,
                 'declared high-water is not the exact captured acknowledged receipt prefix')
         expected_log = prior + mutations
-        report.update(reference_suffix={'path': str(reference), 'sha256': sha(reference),
-            'reference_final_cycle': source['final_cycle']}, saved_sequence=args.saved_sequence,
+        report.update(**reference_metadata, saved_sequence=args.saved_sequence,
             high_water=args.high_water, writer=initial_writer, wire_transactions=len(wire['transactions']))
         peer = args.peer.resolve(); state = args.outbox.resolve() / 'outbox'
         inputs = (peer / 'peer.json', peer / 'base.img', peer / 'opaque.log', state)
@@ -156,6 +178,8 @@ def capture(args):
         (out / 'outbox/outbox').write_bytes(outbox)
         medium = out / 'acknowledged.raw'
         materialize_observation(out / 'peer', medium)
+        if workflow_reference is not None:
+            require(sha(medium) == expected_acknowledged_sha, 'observational archive differs from actual final acknowledged bytes')
         for path in (out / 'peer/opaque.log', out / 'outbox/outbox'):
             with path.open('rb') as handle: os.fsync(handle.fileno())
         for directory in (out / 'peer', out / 'outbox', out):
@@ -178,8 +202,11 @@ def capture(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('peer', 'outbox', 'initial-peer', 'reference-suffix', 'output'):
+    for name in ('peer', 'outbox', 'initial-peer', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
+    reference = parser.add_mutually_exclusive_group(required=True)
+    reference.add_argument('--reference-suffix', type=Path)
+    reference.add_argument('--reference-workflow', type=Path)
     parser.add_argument('--saved-sequence', type=int, required=True)
     parser.add_argument('--high-water', type=int, required=True)
     return capture(parser.parse_args())

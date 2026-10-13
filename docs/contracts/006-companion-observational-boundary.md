@@ -18,6 +18,13 @@ packet/control/CRC/toggle decoding retains its checks; the initial hello
 sequence is an explicit positive UInt64 parameter, defaulting to the original
 sequence one for historical callers.
 
+An explicit `--reference-workflow` alternative binds the final Saved11
+workflow. It requires the independently corrected frozen wire observation,
+exact four-object journal, initial six-effect receipt prefix, next sequence
+seven, and final high-water 72 with no pending outbox. Materialized bytes must
+equal the actual acknowledged artifact. This alternative does not relax the
+existing Saved5 suffix path or convert the retained original observer FAIL.
+
 Only privately copied artifacts receive file and directory barriers. An
 offline observer may materialize opaque sectors for comparison; it never
 repairs records or supplies recovered state to the guest. A current passive
@@ -45,12 +52,31 @@ guard passes against the same frozen archive and rejects missing/extra inputs,
 symbolic parents, invalid sizes and capacity mismatch. These guard checks are
 host checks, not a second cold guest run.
 
+The final actual USB8 workflow completed ink, lost-ACK reconciliation, Undo,
+Redo, next/previous page and explicit Saved11. Its original whole report
+remains FAIL because the terminal wire observer assumed initial sequence one.
+The initial peer/outbox independently establish sequence seven. A separate
+frozen wire observation passes without executing another CPU. Its first
+attempt also remains FAIL: the independent object oracle was corrected from
+the consumed Notebook source, which writes page1 at sequence8 and page2 at
+sequence10 before root11; previous-page loading and explicit flushing create
+no additional page records.
+
+A new CPU then cold-recovered this current final boundary at 735 million
+target cycles and 3536.545 seconds. Every controller pixel and acknowledged
+byte matched, 42 opaque reads produced no new write or barrier, and the peer
+receipt log stayed unchanged. The original 1.6B/7200-second ceiling applied.
+The obsolete prepared-host selection failed before execution in the retained
+first attempt; the successful run uses the unchanged qualified policy4-a3
+host closure. This is a Saved11 cold recovery, separate from the earlier
+Saved5 cold result and all machine snapshot continuation checks.
+
 Commands for the qualified artifact shapes (use unused output directories):
 
 ```sh
 python3 scripts/archive_companion_boundary.py \
-  --peer build/usb/notebook-next-workflow-a2/peer \
-  --outbox build/usb/notebook-next-workflow-a2/outbox \
+  --peer build/usb/usb8-acknowledged-boundary-a1/peer \
+  --outbox build/usb/usb8-acknowledged-boundary-a1/outbox \
   --initial-peer build/usb/store-initialize-a3/peer \
   --reference-suffix build/usb/usb8-success-private-suffix-a1/result.json \
   --saved-sequence 5 --high-water 36 \
@@ -60,6 +86,30 @@ python3 scripts/check_usb_cold_boundary.py launch \
   --host-prepared build/usb/host-pending-policy4-a3/prepared.json \
   --native-bundle build/native/task006-usb-next-a1 \
   --work-dir build/usb/acknowledged-cold-NEW
+```
+
+The final acknowledged artifact uses its own declared sequence/high-water:
+
+```sh
+python3 scripts/observe_usb_workflow_wire.py \
+  --workflow build/usb/notebook-next-workflow-a2 \
+  --initial-peer build/usb/store-initialize-a3/peer \
+  --initial-outbox build/usb/store-initialize-a3/outbox \
+  --native-bundle build/native/task006-usb-next-a1 \
+  --work-dir build/usb/final-wire-NEW
+python3 scripts/archive_companion_boundary.py \
+  --peer build/usb/notebook-next-workflow-a2/peer \
+  --outbox build/usb/notebook-next-workflow-a2/outbox \
+  --initial-peer build/usb/store-initialize-a3/peer \
+  --reference-workflow build/usb/final-wire-NEW/result.json \
+  --saved-sequence 11 --high-water 72 \
+  --output build/usb/final-acknowledged-NEW
+python3 scripts/check_usb_cold_boundary.py launch \
+  --boundary build/usb/final-acknowledged-NEW \
+  --host-prepared build/usb/host-pending-policy4-a3/prepared.json \
+  --native-bundle build/native/task006-usb-next-a1 \
+  --saved-sequence 11 --high-water 72 \
+  --work-dir build/usb/final-cold-NEW
 ```
 
 The companion remains the development opaque peer; USB decoded-packet and
