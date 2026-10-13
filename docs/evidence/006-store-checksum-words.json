@@ -1,0 +1,182 @@
+{
+  "schema": "lemma-store-checksum-word-integration/1",
+  "status": "PASS_COMPONENT_AND_FAST_GUEST_WORKFLOW_RTL_COLD_RUNNING",
+  "scope": "Real Lean Store checksum batching, unchanged durable v1 format; genuine source/LLVM/object and complete fast guest mathematics/ink/Save/newcold/failure qualification. Canonical RTL changed-source cold and new browser deployment are separate obligations.",
+  "algorithm": {
+    "aligned_word_bytes": 8,
+    "address_and_length_alignment": 8,
+    "maximum_payload_bytes": 32768,
+    "reads_per_aligned_sector": 64,
+    "historical_reads_per_sector": 512,
+    "unaligned_and_partial_span": "original byte fold",
+    "zero_length_reads": 0,
+    "error": "first nonzero read status stops fold; no checksum publication",
+    "hash": "existing ordered FNV-1a byte steps; little endian word"
+  },
+  "component": {
+    "receipt": {
+      "path": "build/task006-store-checksum-words-component-a3/result.json",
+      "bytes": 11638,
+      "sha256": "5ad201ebb20bf3c1e3ecfa0507ec2c3d5a53785c9c9691196e1163baeeb690f7"
+    },
+    "host_seconds": 8.611528887005989,
+    "semantic_cases": 54,
+    "independent_known_answers": 4,
+    "read_faults": 6,
+    "bounds": 2,
+    "actual_genuine_source_functions": 9,
+    "target_execution_by_component": "NOT_RUN"
+  },
+  "whole_guest_builds": {
+    "notebook": {
+      "image": {
+        "path": "build/kernel/task006-array-checksum-words-a1/image.elf",
+        "bytes": 597824,
+        "sha256": "97df1eaf3feaccea315f7d8fd21805ca9336d8100fb7e977a35e112628fc0183"
+      },
+      "audit": {
+        "path": "build/kernel/task006-array-checksum-words-a1/audit.json",
+        "bytes": 3689285,
+        "sha256": "35fc8078f53675a33183e5da8dc6ac43ad57cce23025b1872f8c77c2757e0a6c"
+      },
+      "provenance": {
+        "path": "build/kernel/task006-array-checksum-words-a1/provenance.json",
+        "bytes": 88207,
+        "sha256": "579c29da5e3ed5c57ce177bc9e0426d94394658f32e1fb539948363538d7d805"
+      },
+      "source_input_count": 293,
+      "configuration": "lemmasim-silicon-array-bulk-notebook",
+      "source_commit": "b400f8fb478392a91376d20403eaefeb27c5edeb"
+    },
+    "initializer": {
+      "image": {
+        "path": "build/kernel/task006-array-checksum-words-initialize-a1/image.elf",
+        "bytes": 597832,
+        "sha256": "c4d86b1e944d22810f50e0702195b1850c24f3e5edb90d97b89e498dd4afe2d3"
+      },
+      "audit": {
+        "path": "build/kernel/task006-array-checksum-words-initialize-a1/audit.json",
+        "bytes": 3690571,
+        "sha256": "f9135876c4707d7733cd50d5fd01fd52f957a1d7e50fb32f95249a30e22de358"
+      },
+      "provenance": {
+        "path": "build/kernel/task006-array-checksum-words-initialize-a1/provenance.json",
+        "bytes": 88750,
+        "sha256": "72be67e2fa1103f0655ba1363353827aa3f6ff893d017ec4f7a89858647b270d"
+      },
+      "source_input_count": 293,
+      "configuration": "lemmasim-silicon-array-bulk-initialize",
+      "source_commit": "b400f8fb478392a91376d20403eaefeb27c5edeb"
+    }
+  },
+  "complete_consumed_source_archive": {
+    "path": "build/task006-array-checksum-words-source-archive-a1/source-inputs.json",
+    "bytes": 32020,
+    "sha256": "bb9cce571f10cf2d2e9a5d11bca95a2e17aafedd62d9fb0496c2ef2a05e7b8ca"
+  },
+  "fast_guest": {
+    "receipt": {
+      "path": "build/task006-array-checksum-words-math-a1/result.json",
+      "bytes": 28302,
+      "sha256": "c596208422707bf9229f955ab14b4d135c0322dbb41b40772016bceb9095c310"
+    },
+    "elapsed_seconds": 158.82449903001543,
+    "boot": {
+      "virtual_seconds": 2.650000016,
+      "host_seconds": 5.9134779830346815,
+      "cycle": 265000002
+    },
+    "cold_boot": {
+      "virtual_seconds": 3.450000004,
+      "host_seconds": 5.175127357011661,
+      "cycle": 345000001
+    },
+    "new_cpu_cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "166df5c003aae18819fa1fdf6efac059c434cf9c12fd6b7caa5a491939546b9a",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    },
+    "scope": "QEMU instruction-clock functional workflow; no exact pipeline timing or arbitrary cached-state continuation"
+  },
+  "prepared_distribution": {
+    "native": {
+      "manifest": {
+        "path": "build/native/task006-array-checksum-words-a1/bundle.json",
+        "bytes": 483766,
+        "sha256": "f1d68eb08e90a6a3d7b395b685f1cdd9f485d111fa0db58d99244b1ba60837ca"
+      },
+      "files": 735
+    },
+    "static_browser": {
+      "manifest": {
+        "path": "build/browser/task006-array-checksum-words-a1/bundle.json",
+        "bytes": 90139,
+        "sha256": "4ac152c3180e9b087212b180207414f7568396988d3f9fb267b1f47a52855409"
+      },
+      "files": 261
+    }
+  },
+  "code_comparison": {
+    "receipt": {
+      "path": "build/task006-store-checksum-words-a1/whole-array-code-comparison.json",
+      "bytes": 548,
+      "sha256": "9d77c1c2a6c377459dbc9ba6c5077ca09fb7407acd801e9d21134e6572366d3e"
+    },
+    "kernel_firmware_arithmetic_pre_post_ir_and_objects_equal": true,
+    "store_object_bytes_before": 94456,
+    "store_object_bytes_after": 94840,
+    "notebook_object_bytes_before": 289336,
+    "notebook_object_bytes_after": 307896,
+    "confounder": "Common String/Doc7-support Notebook changes accumulated since Arraya5. No isolated whole-boot improvement is attributed solely to checksum."
+  },
+  "rtl_cold": {
+    "status": "RUNNING",
+    "plan": {
+      "path": "build/silicon/task006-array-checksum-cold-a1/plan.json",
+      "bytes": 982,
+      "sha256": "62b802cfa13d0ce8ba5cfe36d7cf93825cab5f58c0a5e3637e1a5f0f4e972669"
+    },
+    "directory": "build/silicon/task006-array-checksum-cold-a1/full-cold",
+    "deadline_seconds": 7200,
+    "cycle_limit": 2000000000,
+    "scope": "new audited image and untouched opaque mixed Doc6 backing; no restore or initialized application preload; acceptance remains pending"
+  },
+  "retained_original_failures": [
+    {
+      "path": "build/task006-store-checksum-words-a1/host-a1.log",
+      "bytes": 144,
+      "sha256": "61b984fd67d564d9072bb58ea83730d118d4224b362182cfdda9846ac01ccc2e"
+    },
+    {
+      "path": "build/task006-store-checksum-words-component-a1/result.json",
+      "bytes": 4045,
+      "sha256": "c9cf5444b93c45704d023249f3f5bebafef407c0529ab715afc9cbfd5f890aeb"
+    }
+  ],
+  "source_files": {
+    "Lemma/Services/Store/Format.lean": "034dd9a3e104105a311194e2719fd7117d08f8b46400b9dd1ca1bb8caf6efad4",
+    "tests/store/ChecksumWords.lean": "332b3805f09deaea2b0a56d4f2ed0099dde270491a4058f953d303c516715a46",
+    "scripts/check_store_checksum.py": "cc00cb47121c194280295d8d1a68b69b2dc6fc9de6abf8acc58b1cb52af25053"
+  },
+  "prepared_initializer_execution": {
+    "receipt": {
+      "path": "build/task006-store-checksum-words-a1/new-initializer/result.json",
+      "bytes": 1170,
+      "sha256": "62d9c746d20dde763f5ee97a900abed8fd325944d632fca58aa58b682e936ca9"
+    },
+    "guest_sha256": "c4d86b1e944d22810f50e0702195b1850c24f3e5edb90d97b89e498dd4afe2d3",
+    "cycle": 24000001,
+    "host_seconds": 0.9350836669909768,
+    "medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46",
+    "scope": "actual public init selects matched audited initializer; all owned processes reaped"
+  }
+}

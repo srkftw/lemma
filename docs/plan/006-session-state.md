@@ -646,4 +646,56 @@ Complete QEMU continuation remains GAP_CONFIRMED for executable translation,
 TB/jump/instruction visibility, interrupt and pending acceleration boundaries;
 the public default and timing scope are unchanged by that opt-in work.
 
+## Changed checksum, companion cold and architectural counter milestone
+
+[Aligned Store checksum](../evidence/006-store-checksum-words.json) now consumes
+64 checked little-endian word reads per aligned512-byte span instead of512 byte
+reads; the existing eight FNV steps, bounds, zero-length and read-error semantics
+remain. Actual genuine-source component qualification passed54 independent cases,
+four known answers, six read failures and two invalid spans. Two whole guest
+builds/audits sealed293 consumed inputs. Public prepared initializerc4d86b1e ran
+at24000001cycles/0.935084seconds; notebook97df1eaf executes the complete fast
+course/ink/Save/newcold/failure scenario in158.824499seconds. This is functional
+QEMU instruction-clock scope. The native/static artifacts are
+`build/native/task006-array-checksum-words-a1` and
+`build/browser/task006-array-checksum-words-a1`.
+
+The changed canonical RTL cold is live at
+`build/silicon/task006-array-checksum-cold-a1/full-cold`, bound before CPU execution
+to2Bcycles/7200seconds and unchanged opaque mixed Doc6 backing. It has no accepted
+Ready result yet. The first observer incorrectly measured the Python owner RSS;
+its executed source is retained. An independent exact-process-lifetime check
+measured both owner and actual native child and admitted the immutable audited
+bundle. The maintained observer now requires that bundle and monitors tree RSS.
+Do not relabel the executing original observer as the corrected source. Earlier
+canonical failures retain their original results.
+
+[USB8 independent cold](../evidence/006-companion-acknowledged-boundary.json) at801bffe
+passed680Mcycles/4353.814seconds, full3.63Mpixels and acknowledged Saved5 bytes
+without new publication, original-peer contact or snapshot restoration. Its
+supervisor and children are reaped. The separate actual both-side hosted restart
+retains writer91/sequence1/one durable effect and returns ACK only after500k modeled
+WAITclocks. Original USB8 navigation/Save remains live and unqualified until its
+own terminal observation. The proposed full-speed digital PHY is a separately
+versioned workstream; no raw socket or development token timer is called USB
+conformance.
+
+[The opt-in guest CounterSu check](../evidence/006-guest-counter-su.json) atfbc9dbb
+executes404 real S/U CSR cases on both backends, observes255 illegal traps and398
+ECALLs, and compares an arbitrary U-mode native checkpoint suffix exactly. It
+preserves legacy language profiles and does not establish complete processor
+conformance or fast timing parity.
+
+## Actual failed candidate2c and exact catalog repair
+
+Candidate2c215010c6ba72d9c357c4bf57d4a250d06d1d8d CI38455285333 completed
+**FAILURE**, eight jobs passed and two failed. Both actual kernel-host logs,
+including the downloaded A-E artifact, identify the independent exact catalog
+fixture missing three maintained String configurations. A-E target work never
+ran and the silicon host step was skipped. [The repair receipt](../evidence/006-ci-string-catalog-repair.json)
+adds those exact ServerV6/Profile0.3/Kernel4 entries and the newly versioned
+Product10 entry while preserving strict set/image/policy/profile/kernel checks.
+Current401 kernel hosts passed10.568seconds. No corrected-candidate CI or fresh
+A-E target pass is claimed; prior6f complete CI remains distinct.
+
 -->

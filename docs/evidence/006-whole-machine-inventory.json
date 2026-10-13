@@ -643,9 +643,37 @@
       "sha256": "97b9771edfa9298df26649f2360f934f5917dc7d6921280b14d5fca4ddb915bc",
       "status": "PASS",
       "scope": "Actual Doc5 migration retained; strict Doc6 learner observation, mixed ByteArray/Array history and independent cold recovery; QEMU instruction-clock scope"
+    },
+    {
+      "path": "docs/evidence/006-store-checksum-words.json",
+      "bytes": 7411,
+      "sha256": "270b80c8ca7b7e86923e32abddf69cf06b36438f03295f7ca7070c25516a8a7a",
+      "status": "PASS_COMPONENT_AND_FAST_GUEST_RTL_PENDING",
+      "scope": "Fresh genuine293-source guest closure and actual fast workflow; changed canonical RTL cold pending"
+    },
+    {
+      "path": "docs/evidence/006-companion-acknowledged-boundary.json",
+      "bytes": 9736,
+      "sha256": "ba86a58716e1b4713b20e4e0244165974687265ddc79fa41c56d10904cfb4c14",
+      "status": "PASS",
+      "scope": "Independent policy4 USB8 cold680M/fullpixels; passive archive and actual both-side hosted write restart"
+    },
+    {
+      "path": "docs/evidence/006-guest-counter-su.json",
+      "bytes": 20780,
+      "sha256": "7741890b34ae739d83c3103829232b792ed0913a77d70344c4f87bc22a5c96c6",
+      "status": "PASS_ARCHITECTURAL_BOTH",
+      "scope": "Actual404S/U guest CSR cases, exact declared native U-mode suffix; no full processor/timing claim"
+    },
+    {
+      "path": "docs/evidence/006-ci-string-catalog-repair.json",
+      "bytes": 3925,
+      "sha256": "4834849c4217cc38fe6fd41ca4b7901194a46cc1eff32d6a2c7f4b8334986a6f",
+      "status": "FAILURE_RETAINED_LOCAL_HOST_REPAIR",
+      "scope": "Actual2c CI8PASS/2FAIL and skipped work retained; local401kernelhosts corrected, no newCIclaim"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Paper2 circuitry and genuine guest build/audits qualified; USB8 and Product9 connected cold workflows running. CI38416685379 FAILURE; full digital, exact cached-state, distribution and physical obligations remain separate."
+  "continuation_note": "Bounded managed String/mixed migration, actual companion Saved5 plus independent policy4 cold,404 real S/U CSR cases and checksum integration qualified in separate receipts. Latest pushed2c CI38455285333 FAILURE8PASS/2FAIL on stale exact String catalog; local401hosts repaired. Product10 actual boot/trial and changed RTL/browser course remain pending; all digital, timing/checkpoint, distribution and physical gaps remain."
 }

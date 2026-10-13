@@ -119,10 +119,23 @@ private def hashStep (i _ : UInt32) (hash address _ _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.read8 (address + i.toUInt64)) fun s byte =>
   if s = 0 then .done 0 (hashByte hash byte) else .done s 0
 
+private def hashWordStep (i _ : UInt32) (hash address _ _ _ : UInt64) : Action :=
+  .bind (Lemma.User.Memory.read64 (address + i.toUInt64 * 8)) fun s word =>
+  if s = 0 then .done 0 (hashWord hash word) else .done s 0
+
+/-- The little-endian aligned path consumes exactly the same bytes in the same
+order. Every eight-byte load lies wholly inside the declared span and one Sv39
+page. Unaligned or partial-word spans retain their original byte-read path.
+Neither path publishes state or turns a failed read into a checksum. -/
 def checksum (address length initial : UInt64) : Action :=
   if length ≤ maximumPayload then if address ≤ 0xffffffffffffffff - length then
-  .boundedFoldU64 32768 hashStep length.toUInt32 initial address 0 0 0 fun s hash =>
-  .done s hash else .done malformed 0 else .done malformed 0
+  if (address ||| length) &&& 7 = 0 then
+    .boundedFoldU64 4096 hashWordStep (length / 8).toUInt32 initial address 0 0 0 fun s hash =>
+    .done s hash
+  else
+    .boundedFoldU64 32768 hashStep length.toUInt32 initial address 0 0 0 fun s hash =>
+    .done s hash
+  else .done malformed 0 else .done malformed 0
 
 private def copyStep (i _ : UInt32) (count source target _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.read8 (source + i.toUInt64)) fun s byte => if s = 0 then

@@ -24,12 +24,15 @@ class ArithmeticCatalog(unittest.TestCase):
               'lemmasim-silicon-bytes-arithmetic-oom-development'), 'ServerV4',3,4),
             (('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize',
               'lemmasim-silicon-array-arithmetic-oom-development'), 'ServerV5',3,4),
+            (('lemmasim-silicon-string-bulk-notebook','lemmasim-silicon-string-bulk-initialize',
+              'lemmasim-silicon-string-arithmetic-oom-development'), 'ServerV6',3,4),
             (('lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize'), 'Server',6,6),
             (('lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'), 'ServerV3',6,6),
             (('lemmasim-silicon-product-notebook',), 'Server',7,7),
             (('lemmasim-silicon-product-bulk-notebook',), 'ServerV3',7,7),
             (('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'), 'ServerV3',8,6),
-            (('lemmasim-silicon-product-next-bulk-notebook',), 'ServerV3',9,7)]
+            (('lemmasim-silicon-product-next-bulk-notebook',), 'ServerV3',9,7),
+            (('lemmasim-silicon-product-executed-bulk-notebook',), 'ServerV3',10,7)]
         for names,server,profile,kernel in groups:
             for name in names:
                 self.assertNotIn(name,expected)

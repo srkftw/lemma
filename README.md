@@ -873,4 +873,38 @@ encodings of complete UInt64 values. General String/runtime/proof-kernel scope
 is separate. The [prepared initializer repair](docs/evidence/006-native-bundle-initialization.json)
 ensures `--native-bundle` is honored even when `--profile` is omitted.
 
+### Aligned journal checksums and prepared Array deployment
+
+[The checksum qualification](docs/evidence/006-store-checksum-words.json) preserves
+Store-v1 bytes, error handling and guest recovery while reducing aligned512-byte
+reads from512 byte accesses to64 checked word accesses. Fresh complete guest
+builds/audits and real fast-backend course/check/edit/hint/review/ink/Save/newcold/
+failed-save passed. Canonical RTL changed-source cold is still running; the whole
+Notebook also contains later shared String-support changes, so this is not an
+isolated boot-speed comparison. The prepared public initializer actually ran.
+
+```sh
+./scripts/lemmasim init --backend qemu \
+  --native-bundle build/native/task006-array-checksum-words-a1 \
+  --disk build/array-checksum-notebook-NEW.raw --session-dir build/array-checksum-init-NEW --timeout 120
+./scripts/lemmasim session --backend qemu \
+  --native-bundle build/native/task006-array-checksum-words-a1 \
+  --disk build/array-checksum-notebook-NEW.raw --session-dir build/array-checksum-session-NEW
+nix develop --no-write-lock-file --command python3 scripts/check_store_checksum.py \
+  --work-dir build/store-checksum-NEW --timeout 300
+```
+
+This is development ELF preload. The same immutable native bundle provides the
+exact RTL path with `--backend rtl`. The fast backend keeps its instruction-clock
+scope. The corresponding prepared browser artifact is
+`build/browser/task006-array-checksum-words-a1`; its changed guest cold/browser
+workflow is not yet qualified.
+
+[Independent companion cold recovery](docs/evidence/006-companion-acknowledged-boundary.json)
+now passed from an observational acknowledged peer archive: a new USB8 CPU and
+separate persistent policy4 peer recovered Saved5, exact bytes and every controller
+pixel at680Mcycles/4353.814seconds, without formatting or republishing. The hosted
+lost-ACK case also restarts both client and peer and retains one durable effect.
+Full original notebook navigation/Save and full USB wire timing remain separate.
+
 -->
