@@ -15,6 +15,7 @@ from check_guest_usb_notebook import committed_bytes, expected_stroke, recover
 from check_guest_usb_link import decode_capture, require, sha
 from lemmasim_companion import validate as validate_companion
 from lemmasim_usb_pending import validate
+from archive_companion_boundary import validate_archive_files
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,10 +59,7 @@ def execute(args):
         require(boundary['status'] == 'PASS' and boundary['source_before_after_equal'] is True and
                 boundary['high_water'] == 36 and boundary['saved_sequence'] == 5,
                 'unqualified acknowledged archive boundary')
-        for name, identity in boundary['files'].items():
-            path = directory / name
-            require(path.is_file() and not path.is_symlink() and path.stat().st_size == identity['bytes'] and
-                    sha(path) == identity['sha256'], 'acknowledged boundary file mismatch')
+        validate_archive_files(directory, boundary)
         reference = Path(boundary['reference_suffix']['path'])
         require(sha(reference) == boundary['reference_suffix']['sha256'], 'retained suffix receipt differs')
         expected_identity = json.loads(reference.read_text())['identity']

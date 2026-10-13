@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from archive_companion_boundary import crc64, identity, log_frames, outbox_fields
+from archive_companion_boundary import BOUNDARY_FILES, crc64, identity, log_frames, outbox_fields, validate_archive_files
 
 
 class ObservationalPeerBoundary(unittest.TestCase):
@@ -41,6 +41,39 @@ class ObservationalPeerBoundary(unittest.TestCase):
             link = root / 'link'; link.symlink_to(regular)
             self.assertEqual(identity(regular)[2], 8)
             with self.assertRaises(ValueError): identity(link)
+
+    def test_cold_inventory_cannot_omit_or_add_an_input(self):
+        exact = {name: {} for name in BOUNDARY_FILES}
+        for wrong in ({}, {**exact, '../original-medium': {}},
+                      {name: {} for name in BOUNDARY_FILES if name != 'peer/base.img'}):
+            with self.assertRaisesRegex(ValueError, 'file inventory'):
+                validate_archive_files('/unused', {'files': wrong})
+
+    def test_cold_rejects_symbolic_parent_before_hash_or_copy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root / 'elsewhere').mkdir()
+            (root / 'peer').symlink_to(root / 'elsewhere', target_is_directory=True)
+            files = {name: {'bytes': 0, 'sha256': '0' * 64} for name in BOUNDARY_FILES}
+            # Ordered mapping makes the first inspected input the aliased base.
+            files = {'peer/base.img': files.pop('peer/base.img'), **files}
+            with self.assertRaisesRegex(ValueError, 'symbolic path'):
+                validate_archive_files(root, {'files': files})
+
+    def test_cold_rejects_non_integral_size_before_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root / 'peer').mkdir(); (root / 'peer/base.img').write_bytes(b'')
+            files = {'peer/base.img': {'bytes': True, 'sha256': '0' * 64}}
+            files.update({name: {} for name in BOUNDARY_FILES if name not in files})
+            with self.assertRaisesRegex(ValueError, 'metadata differs'):
+                validate_archive_files(root, {'files': files})
+
+    def test_cold_rejects_capacity_mismatch_before_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root / 'peer').mkdir(); (root / 'peer/base.img').write_bytes(b'')
+            files = {'peer/base.img': {'bytes': 268435457, 'sha256': '0' * 64}}
+            files.update({name: {} for name in BOUNDARY_FILES if name not in files})
+            with self.assertRaisesRegex(ValueError, 'declared bound'):
+                validate_archive_files(root, {'files': files})
 
 
 if __name__ == '__main__': unittest.main()

@@ -1,7 +1,7 @@
 {
   "schema": "lemma-companion-acknowledged-boundary-evidence/1",
   "status": "PASS",
-  "scope": "passive opaque acknowledged archive and host-only both-sided lost-write receipt restart; cold guest qualification separate",
+  "scope": "passive acknowledged opaque archive; hosted both-side write restart; real new-CPU USB8 policy4 cold recovery from prior guest Saved5",
   "archive": {
     "path": "build/usb/usb8-acknowledged-boundary-a1/boundary.json",
     "sha256": "1b1842216623cb417226743168b05d1ec3a09ee5bb6ddf1a2a8e2bf68810aedf"
@@ -121,19 +121,135 @@
     }
   ],
   "cold_guest": {
-    "status": "RUNNING",
-    "path": "build/usb/usb8-policy4-acknowledged-cold-a1/result.json",
-    "scope": "new CPU cold from this current archive; no machine restore; original7200s/1.6Bbound",
+    "status": "PASS",
+    "receipt": {
+      "path": "build/usb/usb8-policy4-acknowledged-cold-a1/result.json",
+      "sha256": "4ece4a0a6ce950dc46429df24f58322478e8fed56703bad10a3645487499801b"
+    },
+    "scope": "new CPU cold recovery from current observational opaque receipt boundary; policy4 actual guest transport; no snapshot restore",
+    "executed_observer_commit": "b400f8f",
+    "executed_observer_sha256": "a6d8762ee1a5fe67a0adde3308415363cecc301dec1b9a9d465685c0acab9ab4",
+    "native_guest_identity": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.8.0",
+      "runtime": "9aa1108476fbdf4ca21ef2073a3fa52c05b95b1b2ee178064d9b23f6c8b9a8f2",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "6ed17b0d4cca94c77ae4376de5c3d78c6ff0a78f64934eea3e851da33d796532",
+      "dtb": "26ac57348875028c410807756ad360373a47f4527228ff8a02c8247ac6ab3870",
+      "descriptor": "1a17202c6bfab70ef48850a33013468a8c800d31a6eafaa4ef11ee42a67c1d01"
+    },
+    "source_archives": {
+      "native_bundle": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-next-a1",
+      "manifest_sha256": "4f9d59ca96d0c9eace06772144505ed66c2d169897fa5bfd7a104b364d2d3168"
+    },
+    "host_prepared": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/host-pending-policy4-a3/prepared.json",
+      "sha256": "1c2ffc4fb0556687d2ea531f12133d14fe70320d22b7ba536265036b35526d4a"
+    },
+    "ready_target_cycles": 680000000,
+    "ready_host_seconds": 4353.814358645002,
+    "whole_host_seconds": 4363.6337444050005,
+    "original_bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "redraw_save_cycles": 1600000000,
+      "action_host_seconds": 7200
+    },
+    "full_controller_pixels_equal": true,
+    "exact_acknowledged_bytes": true,
+    "peer_receipt_state_unchanged": true,
+    "no_new_save_or_format": true,
+    "new_cpu": true,
+    "restored_machine": false,
+    "actual_wire_transactions": 24,
+    "actual_wire_sha256": "ab3272847b24e0a36da66432499fc0f7cb672f6d1a246d537d773403ef27e142",
+    "actual_read_transactions_only": true,
+    "observer_self_maxrss_kib": 288436,
+    "sampled_host_resources": {
+      "cold": {
+        "sampled_tree_peak_resident_kib": 204476,
+        "sampled_tree_peak_threads": 5,
+        "last_sample": {
+          "processes": [
+            {
+              "pid": 855378,
+              "resident_kib": 36536,
+              "process_highwater_kib": 48072,
+              "threads": 1
+            },
+            {
+              "pid": 855381,
+              "resident_kib": 151492,
+              "process_highwater_kib": 152344,
+              "threads": 1
+            },
+            {
+              "pid": 855382,
+              "resident_kib": 16448,
+              "process_highwater_kib": 16448,
+              "threads": 3
+            }
+          ],
+          "sampled_resident_kib": 204476,
+          "sampled_threads": 5
+        }
+      },
+      "peer": {
+        "sampled_tree_peak_resident_kib": 38020,
+        "sampled_tree_peak_threads": 4,
+        "last_sample": {
+          "processes": [
+            {
+              "pid": 855376,
+              "resident_kib": 25428,
+              "process_highwater_kib": 30380,
+              "threads": 1
+            },
+            {
+              "pid": 855377,
+              "resident_kib": 12592,
+              "process_highwater_kib": 12592,
+              "threads": 3
+            }
+          ],
+          "sampled_resident_kib": 38020,
+          "sampled_threads": 4
+        }
+      }
+    },
+    "owned_children_reaped": true,
+    "supervision": {
+      "path": "build/usb/usb8-policy4-acknowledged-cold-a1.supervision/supervision.json",
+      "sha256": "110469396a69f04f173c8a828c06a56da6baf60f89a31dd3eb945812554089c7"
+    },
     "supervision_manifest": {
       "path": "build/usb/usb8-policy4-acknowledged-cold-a1.supervision/manifest.json",
       "sha256": "db1a7ea4d0661ace4177ffa53acad7a782f82902c2833859e9a34aba6a392e7d"
     }
   },
   "remaining": [
-    "complete new-CPU cold guest/controller qualification",
-    "original USB8 Redo/navigation/explicitSave/failedSave workflow",
+    "original USB8 navigation/explicitSave/failedSave workflow still running",
+    "policy4 RV64 lost-ACK Save (prior actual guest Saved5 used preserved policy3)",
     "USB PHY/full conformance",
     "general privately-live peer continuation",
     "arbitrary QEMU cached-state continuation"
-  ]
+  ],
+  "subsequent_public_input_guard": {
+    "status": "PASS",
+    "scope": "same actual frozen archive and malformed-input host checks; no second guest execution",
+    "receipt": {
+      "path": "build/usb/usb8-boundary-input-guard-a2.json",
+      "sha256": "eb4f5d8650932dc06938075aa60eea5c732893641d8e550df35b5513121e7724"
+    },
+    "negative_log": {
+      "path": "build/usb/usb8-boundary-input-guard-a2.log",
+      "sha256": "338a1dab330fd4e18ccae473d8c4463a7211766d26941028e5f62c7d9412c94c"
+    },
+    "observer_sources": {
+      "scripts/archive_companion_boundary.py": "af727254cc20e4e7aafe2f56c7e9c38755a80cb5dafe491bfb3afb74904a0046",
+      "scripts/check_usb_cold_boundary.py": "0a2f51ab1a9b2375d23482081cdbc4b564588a36b5d0663a694d660e83c7c90b",
+      "tests/lemmasim/test_companion_boundary.py": "74d6129138b3119aa47ce9a91fa3a0a0a3f11523937ded6840414f1bb6b49e3a"
+    }
+  }
 }

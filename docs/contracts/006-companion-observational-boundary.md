@@ -35,6 +35,16 @@ state must match; recovery must neither format nor issue a replacement Save.
 The first cold qualification is recorded separately from the archive and is
 not established by successful host archive tests.
 
+The first actual policy4 cold run passed at 680 million target cycles and
+4353.814 seconds, with all controller pixels, opaque bytes and peer receipts
+unchanged. It executed the observer at commit `b400f8f`; the receipt records
+that exact observer hash. Subsequent public input validation additionally
+requires all six authoritative files, canonical non-symbolic paths, bounded
+sizes and exact hashes before copying or starting an actor. The strengthened
+guard passes against the same frozen archive and rejects missing/extra inputs,
+symbolic parents, invalid sizes and capacity mismatch. These guard checks are
+host checks, not a second cold guest run.
+
 Commands for the qualified artifact shapes (use unused output directories):
 
 ```sh

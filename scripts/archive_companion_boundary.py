@@ -16,6 +16,38 @@ from check_guest_usb_store import opaque_log
 from lemmasim_companion import initialize, peer_info
 
 ROOT = Path(__file__).resolve().parents[1]
+BOUNDARY_FILES = frozenset(('peer/base.img', 'peer/opaque.log', 'peer/peer.json',
+                           'outbox/outbox', 'acknowledged.raw', 'reference.raw'))
+FILE_LIMITS = {'peer/base.img': (268435456, 268435456),
+               'acknowledged.raw': (268435456, 268435456),
+               'peer/opaque.log': (8, 64 << 20), 'peer/peer.json': (1, 4096),
+               'outbox/outbox': (40, 40), 'reference.raw': (1, 128 << 20)}
+
+
+def validate_archive_files(directory, boundary):
+    """Validate every authoritative cold input before copying or starting actors."""
+    directory = Path(directory).resolve()
+    files = boundary.get('files')
+    require(isinstance(files, dict) and set(files) == BOUNDARY_FILES,
+            'acknowledged boundary file inventory differs')
+    for name, expected in files.items():
+        path = directory / name
+        require(path.resolve() == path and not path.is_symlink(),
+                'acknowledged boundary file escaped through a symbolic path')
+        actual = identity(path)
+        require(isinstance(expected, dict) and set(expected) == {'bytes', 'sha256'} and
+                type(expected['bytes']) is int and expected['bytes'] >= 0 and
+                isinstance(expected['sha256'], str) and len(expected['sha256']) == 64 and
+                all(char in '0123456789abcdef' for char in expected['sha256']),
+                'acknowledged boundary file metadata differs')
+        minimum, maximum = FILE_LIMITS[name]
+        require(minimum <= expected['bytes'] <= maximum,
+                'acknowledged boundary file exceeds its declared bound')
+        require(actual[2] == expected['bytes'] and sha(path) == expected['sha256'],
+                'acknowledged boundary file mismatch')
+    info = peer_info(directory / 'peer')
+    require(info['writer'] == boundary.get('writer'), 'acknowledged boundary peer writer differs')
+    outbox_fields((directory / 'outbox/outbox').read_bytes(), info['writer'], boundary['high_water'])
 
 
 def identity(path):
