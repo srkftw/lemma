@@ -1,0 +1,52 @@
+{
+  "schema": "lemma-task006-workflow-observer-repair/1",
+  "status": "PASS",
+  "scope": "Exact foundation workflow expectation repair; no workflow, target, lowering, configuration or CI-job changes.",
+  "source_commit": "8ce9741930d1287b9029c8e98e9c62b83ca916b8",
+  "workflow": {
+    "path": ".github/workflows/core0.yml",
+    "sha256": "2d99a6948e3d083c636ab240f04af62dced40afb7d25b2943fd19ca7d817855d"
+  },
+  "observer": {
+    "path": "tests/foundation/test_ci_workflow.py",
+    "sha256": "3f27513e31e3887db56cf38dd30b39ce770c461e918082cff2c4eeeb4d905045"
+  },
+  "original_observer": {
+    "artifact": "build/task006-foundation-workflow-observer-a1/original-test.py",
+    "sha256": "e02d5ba7890393a14a91b08a04ed8e3804c6d80c9622e9eb0a8d1f5550b3bcf4"
+  },
+  "defect": {
+    "test": "test_every_logged_pipeline_fails_closed_with_explicit_pipefail",
+    "job": "metadata",
+    "missing_exact_paths": [
+      "metadata/managed-notebook-deployment.log",
+      "metadata/user-word-inline.log",
+      "metadata/arithmetic-execution-identity.log",
+      "metadata/ipc-poll-borrow.log"
+    ],
+    "placement": "After metadata/companion-peer.log and before metadata/kernel-host-unittest.log in workflow order"
+  },
+  "original_focused_failure": {
+    "path": "build/task006-foundation-workflow-observer-a1/original-failure.log",
+    "sha256": "84628bc76b3eb0444ed16802d6dd248aa5b21259ac76293db3077f92f7c87872",
+    "tests": 13,
+    "failures": 1,
+    "retained": true
+  },
+  "corrected_focused_result": {
+    "path": "build/task006-foundation-workflow-observer-a1/corrected-tests.log",
+    "sha256": "562e86479e483fc070660d04f6be12baa91d03e9c2d35a9cc4263e77512e9785",
+    "tests": 13,
+    "failures": 0
+  },
+  "command": "python3 -m unittest discover -s tests/foundation -p test_ci_workflow.py -v",
+  "preserved": [
+    "Every logged run block must begin with set -euo pipefail",
+    "Every tee output must be retained under build/ci",
+    "Exact pipeline path inventory for all other jobs",
+    "Negative missing-pipefail and unretained-log stimuli"
+  ],
+  "limitations": [
+    "This focused host observer result does not replace the retained complete foundation failure or establish a fresh complete-suite or CI PASS."
+  ]
+}
