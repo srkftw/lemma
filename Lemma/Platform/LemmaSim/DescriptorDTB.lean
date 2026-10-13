@@ -40,6 +40,7 @@ private def literalLength (code : UInt64) : UInt64 :=
   if code = 16 then 21 else
   if code = 17 then 21 else
   if code = 18 then 21 else
+  if code = 19 then 19 else
   if code = 32 then 11 else
   if code = 33 then 4 else
   if code = 34 then 11 else
@@ -61,6 +62,9 @@ private def literalLength (code : UInt64) : UInt64 :=
   if code = 50 then 20 else
   if code = 51 then 16 else
   if code = 52 then 7 else
+  if code = 53 then 18 else
+  if code = 54 then 21 else
+  if code = 55 then 21 else
   if code = 64 then 15 else
   if code = 65 then 13 else
   if code = 66 then 12 else
@@ -73,8 +77,29 @@ private def literalLength (code : UInt64) : UInt64 :=
   if code = 73 then 25 else
   if code = 75 then 15 else
   if code = 74 then 15 else
+  if code = 76 then 20 else
   0
 private def literalWord (code index : UInt64) : UInt64 :=
+  if code = 19 then
+    if index = 0 then 0x6c622d616d6d656c else
+    if index = 1 then 0x3630313030314065 else
+    if index = 2 then 0x3030 else 0 else
+  if code = 53 then
+    if index = 0 then 0x61702c616d6d656c else
+    if index = 1 then 0x616d2d64616f6c79 else
+    if index = 2 then 0x78 else 0 else
+  if code = 54 then
+    if index = 0 then 0x6c632c616d6d656c else
+    if index = 1 then 0x7265702d736b636f else
+    if index = 2 then 0x7469622d else 0 else
+  if code = 55 then
+    if index = 0 then 0x616d2c616d6d656c else
+    if index = 1 then 0x6e6f632d6c61756e else
+    if index = 2 then 0x74786574 else 0 else
+  if code = 76 then
+    if index = 0 then 0x6c622c616d6d656c else
+    if index = 1 then 0x74656b6361702d65 else
+    if index = 2 then 0x31762d else 0 else
   if code = 18 then
     if index = 0 then 0x6f702d616d6d656c else
     if index = 1 then 0x3130303140726577 else
@@ -394,13 +419,13 @@ private def findStep (i _ : UInt32) (acc address bytes start _ : UInt64) : Actio
   if s = 0 then if same = 1 then .done 10 code else .done 0 acc else .done s 0
 
 private def findCode (address bytes start count : UInt64) : Action :=
-  if count ≤ 21 then
-    .boundedFoldU64 21 findStep count.toUInt32 0 address bytes start 0 fun s code =>
+  if count ≤ 24 then
+    .boundedFoldU64 24 findStep count.toUInt32 0 address bytes start 0 fun s code =>
     if s = 10 then .done 0 code else .done s code
   else .done invalid 0
 
 private def leaf (role : UInt64) : UInt64 :=
-  if 1 ≤ role then if role ≤ 8 then 1 else
+  if 1 ≤ role then if role ≤ 9 then 1 else
     if 21 ≤ role then if role ≤ 27 then 1 else 0 else 0
   else 0
 
@@ -410,27 +435,27 @@ private def nodeRole (parent code : UInt64) : UInt64 :=
   if parent = 12 then
     if code = 4 then 1 else if code = 5 then 2 else if code = 6 then 3 else
     if code = 7 then 4 else if code = 8 then 5 else if code = 9 then 6 else
-    if code = 10 then 7 else if code = 18 then 8 else if 11 ≤ code then if code ≤ 17 then code + 10 else 0 else 0
+    if code = 10 then 7 else if code = 18 then 8 else if code = 19 then 9 else if 11 ≤ code then if code ≤ 17 then code + 10 else 0 else 0
   else 0
 
 private def expectedBase (role : UInt64) : UInt64 :=
   if role = 1 then 0x10010000 else if role = 2 then 0x10011000 else
   if role = 3 then 0x10001000 else if role = 4 then 0x0c000000 else
   if role = 5 then 0x02000000 else if role = 6 then 0x10000000 else
-  if role = 7 then 0x00101000 else if role = 8 then 0x10010500 else if 21 ≤ role then 0x10001000 + (role - 20) * 4096 else 0
+  if role = 7 then 0x00101000 else if role = 8 then 0x10010500 else if role = 9 then 0x10010600 else if 21 ≤ role then 0x10001000 + (role - 20) * 4096 else 0
 private def expectedSpan (role : UInt64) : UInt64 :=
-  if role = 8 then 256 else if role = 4 then 0x600000 else if role = 5 then 0x10000 else if role = 6 then 0x100 else 4096
+  if role = 9 then 1024 else if role = 8 then 256 else if role = 4 then 0x600000 else if role = 5 then 0x10000 else if role = 6 then 0x100 else 4096
 private def expectedIRQ (role : UInt64) : UInt64 :=
   if role = 1 then 12 else if role = 2 then 13 else if role = 3 then 1 else
-  if role = 6 then 10 else if role = 7 then 11 else if role = 8 then 14 else role - 19
+  if role = 6 then 10 else if role = 7 then 11 else if role = 8 then 14 else if role = 9 then 15 else role - 19
 private def compatibleCode (role : UInt64) : UInt64 :=
   if role = 1 then 64 else if role = 2 then 65 else if role = 4 then 67 else
-  if role = 8 then 74 else if role = 5 then 68 else if role = 6 then 69 else if role = 7 then 70 else 66
+  if role = 9 then 76 else if role = 8 then 74 else if role = 5 then 68 else if role = 6 then 69 else if role = 7 then 70 else 66
 private def compatibleBinding (binding role : UInt64) : UInt64 :=
-  if binding = 3 then if role = 8 then 75 else if role = 6 then 73 else compatibleCode role else
+  if 3 ≤ binding then if role = 8 then 75 else if role = 6 then 73 else compatibleCode role else
   if 0 < binding then if role = 6 then 73 else compatibleCode role else compatibleCode role
 private def requiredFlags (role : UInt64) : UInt64 :=
-  if role = 8 then 31 else if role = 1 then 255 else if role = 2 then 255 else
+  if role = 9 then 255 else if role = 8 then 31 else if role = 1 then 255 else if role = 2 then 255 else
   if role = 4 then 1011 else if role = 5 then 515 else if role = 6 then 31 else 15
 
 private def mark (bit : UInt64) : Action :=
@@ -517,7 +542,7 @@ private def leafProperty (data bytes code role : UInt64) : Action :=
       else .done invalid 0 else .done s 0 else .done invalid 0
     else if code = 48 then
       .bind (get 176) fun s binding => if s = 0 then
-      fixedCell data bytes (if 2 ≤ binding then Lemma.Platform.Silicon.BindingPower.plic_sources else if binding = 1 then Lemma.Platform.Silicon.Binding.plic_sources else 95) 32 else .done s 0
+      fixedCell data bytes (if binding = 4 then 15 else if 2 ≤ binding then Lemma.Platform.Silicon.BindingPower.plic_sources else if binding = 1 then Lemma.Platform.Silicon.Binding.plic_sources else 95) 32 else .done s 0
     else
     if code = 47 then fixedCell data bytes 1 64 else
     if code = 45 then fixedCell data bytes 0 128 else
@@ -529,7 +554,12 @@ private def leafProperty (data bytes code role : UInt64) : Action :=
   if code = 35 then parentCell data bytes else
   if role = 8 then if code = 38 then
     .bind (get 176) fun s binding => if s = 0 then
-    fixedCell data bytes (if binding = 3 then 2 else 1) 16 else .done s 0 else .done 0 0 else
+    fixedCell data bytes (if 3 ≤ binding then 2 else 1) 16 else .done s 0 else .done 0 0 else
+  if role = 9 then
+    if code = 38 then fixedCell data bytes 1 16 else
+    if code = 53 then fixedCell data bytes 27 32 else
+    if code = 54 then fixedCell data bytes 100 64 else
+    if code = 55 then fixedCell data bytes 1 128 else .done 0 0 else
   if role = 1 then
     if code = 38 then fixedCell data bytes 1 16 else
     if code = 39 then dynamicCell data bytes 104 32 else
@@ -589,7 +619,7 @@ private def unknownCompatible (data bytes : UInt64) : Action :=
 private def beginNode (cursor depth limit : UInt64) : Action :=
   if depth < 16 then
   .bind (BootInfo.readBoundedName (cursor + 4) limit) fun s endName => if s = 0 then
-  .bind (findCode (cursor + 4) (endName - cursor - 4) 1 18) fun s code => if s = 0 then
+  .bind (findCode (cursor + 4) (endName - cursor - 4) 1 19) fun s code => if s = 0 then
   .bind (if depth = 0 then .done 0 0 else get (256 + (depth - 1) * 8)) fun s parent => if s = 0 then
   if leaf parent = 0 then
   let role := nodeRole parent code
@@ -627,7 +657,7 @@ private def property (cursor depth limit : UInt64) : Action :=
   let data := cursor + 12
   if limit - data < bytes then .done invalid 0 else
   .bind (BootInfo.readBoundedName (strings + nameOffset) stringsEnd) fun s nameEnd => if failed s = true then .done s 0 else
-  .bind (findCode (strings + nameOffset) (nameEnd - strings - nameOffset) 32 21) fun s code => if failed s = true then .done s 0 else
+  .bind (findCode (strings + nameOffset) (nameEnd - strings - nameOffset) 32 24) fun s code => if failed s = true then .done s 0 else
   .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
   .bind (if leaf role = 1 then leafProperty data bytes code role else
     if role = 10 then containerProperty data bytes code role else
@@ -677,6 +707,12 @@ private def actualDevices : Action :=
   else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
+private def actualBLE : Action :=
+  .bind (IO.read64 0x10010600) fun s identity => if s = 0 then
+  .bind (IO.read64 0x10010608) fun s version => if s = 0 then
+  if identity = 0x31544b50454c4d4c then if version = 1 then .done 0 1
+  else .done invalid 0 else .done invalid 0 else .done s 0 else .done s 0
+
 /-- Descriptor consistency with the actual reset DTB; exact inventories remain
 separate. A silicon device list cannot certify the inherited QEMU devices. -/
 def validateBinding (binding pointer expectedBytes width height pressure : UInt64) : Action :=
@@ -711,9 +747,10 @@ def validateBinding (binding pointer expectedBytes width height pressure : UInt6
   .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
   .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
   if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
-  if ended = 1 then if seen = (if 2 ≤ binding then 0x1d7e else if binding = 1 then 0x1c7e else 0x0fe01cfe) then
+  if ended = 1 then if seen = (if binding = 4 then 0x1f7e else if 2 ≤ binding then 0x1d7e else if binding = 1 then 0x1c7e else 0x0fe01cfe) then
   if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
-  .bind actualDevices fun s _ => .done s pointer
+  .bind actualDevices fun s _ => if s = 0 then
+  .bind (if binding = 4 then actualBLE else .done 0 1) fun s _ => .done s pointer else .done s 0
   else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
   else .done invalid 0 else .done invalid 0 else .done invalid 0
   else .done invalid 0 else .done invalid 0
@@ -729,5 +766,8 @@ def validateSiliconPower (pointer expectedBytes width height pressure : UInt64) 
 
 def validateSiliconSafety (pointer expectedBytes width height pressure : UInt64) : Action :=
   validateBinding 3 pointer expectedBytes width height pressure
+
+def validateSiliconBLE (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBinding 4 pointer expectedBytes width height pressure
 
 end Lemma.Platform.LemmaSim.DescriptorDTB

@@ -99,7 +99,66 @@ ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = {'lemmasim-silicon-power-arithmetic-oom-
     'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development'}
 CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 POWER_CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+BLE_CONFIGURATIONS = {'lemmasim-silicon-ble-link-probe'}
+CONFIGURATIONS |= BLE_CONFIGURATIONS
+BLE_LITERALS = {19:'lemma-ble@10010600',53:'lemma,payload-max',54:'lemma,clocks-per-bit',55:'lemma,manual-context',76:'lemma,ble-packet-v1'}
+BLE_BYTES = {**DTB_BYTES, **{code:value.encode('ascii')+b'\0' for code,value in BLE_LITERALS.items()}}
+BLE_WORD_CODES = [19,53,54,55,76,*WORD_CODES]
+BLE_DEVICE_BODY_DIGESTS = {**DEVICE_BODY_DIGESTS,
+ 'read32': ('40856209d13c0216986e1da617017e8c9484d9e4d94d847e870a4686f84bf19d',
+            '50e97a0a6e45697b135f3628381f3d29758184b5d55700cf30ab448f8fd8fd34'),
+ 'write32': ('9cf06ddf2472e44e7d8cadeddbaa4aa975278f2032a60e05a5e5b3653b424302',
+             'c15a1e6a0be1b43b301839f681944ddec2db5a354554fd7a45143bcd2749696a'),
+}
 
+def ble_specs():
+    specs=canonical_specs()
+    replacements={
+      'literalLength':[len(BLE_BYTES.get(code,b'')) for code in range(1,77)],
+      'nodeRole':[1,2,3,4,5,6,7,*([None]*7),8,9],
+      'requiredFlags':[255,255,15,1011,515,31,15,31,255],
+      'compatibleCode':[64,65,66,67,68,69,70,74,76],
+      'expectedIRQ':[12,13,1,None,None,10,11,14,15],
+      'expectedBase':[0x10010000,0x10011000,0x10001000,0xc000000,0x2000000,0x10000000,0x101000,0x10010500,0x10010600],
+      'expectedSpan':[0x600000,0x10000,0x100,4096,256,1024],
+    }
+    for suffix,values in replacements.items():
+        source=PREFIX+'DescriptorDTB.'+suffix
+        specs[source]=(*specs[source][:3],[values])
+    words = []
+    for code in BLE_WORD_CODES:
+        raw = BLE_BYTES[code]
+        values = list(struct.unpack('<' + str((len(raw)+7)//8) + 'Q',
+                                  raw.ljust((len(raw)+7)//8*8,b'\0')))
+        words.append(values[:3] if code == 73 else values)
+    source=PREFIX+'DescriptorDTB.literalWord'
+    specs[source]=(*specs[source][:3],words)
+    return specs
+
+def lookup_schema(ir: str, unit: dict):
+    """Select one complete closed source schema, including historical artifacts.
+
+    New literal declarations are shared source across the legacy bindings;
+    the binding-specific guest pass still rejects an unexpected BLE node.
+    A source schema cannot mix old and new table extents or word ordering.
+    """
+    functions={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+               for row in unit['functions']}
+    legacy=canonical_specs();new=ble_specs();observed={}
+    for symbol,count in re.findall(r'^@switch\.table\.([A-Za-z0-9_.$-]+?) = private unnamed_addr constant \[(\d+) x i64\]',ir,re.M):
+        source=functions.get(symbol)
+        if source in legacy and source.startswith(PREFIX+'DescriptorDTB.'):
+            observed[source]=int(count)
+    modern=any(count == len(new[source][3][0]) and count != len(legacy[source][3][0])
+               for source,count in observed.items())
+    word=PREFIX+'DescriptorDTB.literalWord'
+    word_symbol=next((symbol for symbol,source in functions.items() if source==word),None)
+    if word_symbol is not None:
+        number=len(re.findall(r'^@switch\.table\.'+re.escape(word_symbol)+r'(?:\.\d+)? = ',ir,re.M))
+        modern=modern or number==len(BLE_WORD_CODES)
+    if unit.get('configuration') in BLE_CONFIGURATIONS and observed and not modern:
+        raise Core0Error('BLE discovery lacks its versioned complete literal schema')
+    return (new,BLE_WORD_CODES,'ble-packet-v1') if modern else (legacy,WORD_CODES,'power-v2')
 
 def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],list[dict]]:
     from audit_kernel import _ir_definition_body, _line_functions
@@ -109,10 +168,11 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
             raise Core0Error('Lemmasim hardware operation reached user authority')
         return set(),[]
     power = unit['configuration'] in POWER_CONFIGURATIONS
-    expected_contract = 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
+    ble = unit['configuration'] in BLE_CONFIGURATIONS
+    expected_contract = 'core0-kernel-v0.5' if ble else 'core0-kernel-v0.4' if power else 'core0-kernel-v0.3'
     if unit.get('contract_version') != expected_contract:
         raise Core0Error('Lemmasim device aperture configuration/profile differs')
-    digests = POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
+    digests = BLE_DEVICE_BODY_DIGESTS if ble else POWER_DEVICE_BODY_DIGESTS if power else DEVICE_BODY_DIGESTS
     sites=set();observed=[];owners=_line_functions(ir.splitlines())
     for row in unit['functions']:
         if not row['source'].startswith(PREFIX+'IO.'): continue
@@ -123,7 +183,7 @@ def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],lis
             raise Core0Error('Lemmasim hardware source signature/effects differs')
         body='\n'.join(line.split(';',1)[0].strip() for line in _ir_definition_body(ir,row['symbol']).splitlines() if line.split(';',1)[0].strip())
         if not optimized:
-            regions=[(0x10001000,0x10001200),(0xc000004,0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
+            regions=[(0x10001000,0x10001200),(0xc000004,0xc000040 if ble else 0xc00003c if power else 0xc000038),(0xc002080,0xc002084),(0xc201000,0xc201008)] if width==4 else [(0x10010000,0x10011000),(0x10011000,0x10012000)]
             lower=[int(value) for value in re.findall(r'icmp uge i64 %arg0, (\d+)',body)]
             upper=[int(value) for value in re.findall(r'icmp ule i64 %arg0, (\d+)',body)]
             if lower!=[start for start,end in regions] or upper!=[end-width for start,end in regions] or len(re.findall(r'and i64 %arg0, '+str(width-1)+r'$',body,re.M))!=1:
@@ -144,7 +204,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
                               _structured_successors, _structured_reachable)
     if unit.get('configuration') not in CONFIGURATIONS:
         raise Core0Error('Lemmasim readonly admission requires its exact selected configuration')
-    specs=canonical_specs();by_symbol={row['symbol']:row for row in unit['functions']}
+    specs,word_codes,schema=lookup_schema(ir,unit);by_symbol={row['symbol']:row for row in unit['functions']}
     globals_=[line.strip() for line in ir.splitlines() if re.match(r'^\s*@',line)]
     known=[];sites=set();removed=set();owners=_line_functions(ir.splitlines())
     for global_line in globals_:
@@ -218,7 +278,13 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         if len(guards)!=1: raise Core0Error('Lemmasim table load lacks a dominating exact unsigned bound: '+source+' '+table)
         if source.endswith('expectedIRQ') or source.endswith('nodeRole'):
             hole=blocks.get('switch.hole_check')
-            bits,mask,fallback=(16,16511,'if.else.40') if source.endswith('nodeRole') else (8,-25,'if.else.16')
+            if source.endswith('nodeRole'):
+                bits,mask,fallback=(16,-16257,'if.else.43') if schema=='ble-packet-v1' else (16,16511,'if.else.40')
+            else:
+                bits,mask,fallback=(16,487,'if.else.19') if schema=='ble-packet-v1' else (8,-25,'if.else.16')
+            visible=sum(1 << ordinal for ordinal,value in enumerate(expected) if value is not None)
+            if (mask & ((1 << bits)-1)) != visible:
+                raise Core0Error('Literal schema mask does not independently exclude every poison row')
             if hole!=[f'%switch.maskindex = trunc nuw i64 %switch.tableidx to i{bits}',f'%switch.shifted = lshr i{bits} {mask}, %switch.maskindex',f'%switch.lobit = trunc i{bits} %switch.shifted to i1',f'br i1 %switch.lobit, label %switch.lookup, label %{fallback}']:
                 raise Core0Error('Lemmasim poisoned literal holes lack their exact exclusion mask')
         if source.endswith('nodeRole'):
@@ -226,7 +292,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             if parent is None or not _structured_reachable(successors,parent[4],load_block) or any(_structured_reachable(successors,parent[i],load_block) for i in (1,2,3)):
                 raise Core0Error('Power node-role lookup escaped its exact soc parent12 gate')
         if source.endswith('literalWord'):
-            guard=guards[0];code=WORD_CODES[index]
+            guard=guards[0];code=word_codes[index]
             if len(re.findall(r'i64 '+str(code)+r', label %'+re.escape(guard)+r'(?![A-Za-z0-9_.$-])',body))!=1:
                 raise Core0Error('FDT word table is not bound to its exact literal code')
         if source.endswith('statusCharacter'):
@@ -248,7 +314,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         if len(located)!=1: raise Core0Error('Lemmasim literal load inventory differs')
         sites|=located;removed.add(global_line)
         known.append(dict(source=row['source'],function=symbol,global_=table,values=values,
-            element_bits=64,alignment_bytes=8,index_bound=count,guarded_loads=1,readonly=True,guard=guards[0]))
+            element_bits=64,alignment_bytes=8,index_bound=count,guarded_loads=1,readonly=True,guard=guards[0],literal_schema=schema))
         known[-1]['global']=known[-1].pop('global_')
     for source,spec in specs.items():
         if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])==source for row in unit['functions']):

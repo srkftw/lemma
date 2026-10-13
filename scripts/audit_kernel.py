@@ -188,9 +188,11 @@ MULTI_USER_CONFIGURATIONS.update({configuration: ARITHMETIC_NOTEBOOK_IMAGES for 
 LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS = LEMMASIM_NOTEBOOK_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
+BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
+LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS
 
 def kernel_contract(configuration: str) -> str:
-    return "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
+    return "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
 
 def optimizer_intrinsics(unit: dict) -> set[str]:
@@ -406,7 +408,7 @@ def validate_stack_entries(unit: dict, graph: dict, *, capacities: dict[str, int
 
 
 def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
-    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe'):
+    if unit.get('configuration') in ('lemmasim-silicon-power-probe','lemmasim-silicon-power-safety-probe','lemmasim-silicon-ble-link-probe'):
         # This selected S-mode probe links the ordinary dispatch boundary but
         # never constructs/enters a User task. Do not claim an allocation test
         # for absent construction; bind the actual boot call graph instead.
@@ -428,6 +430,15 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
                 'Lemma.Drivers.PowerSafety.initialize','Lemma.Drivers.PowerSafety.resetEpoch','Lemma.Drivers.PowerSafety.arm',
                 'Lemma.Kernel.Console.record','Lemma.Platform.Silicon.Development.PowerSafety.waitStep',
                 'Lemma.Platform.Silicon.Development.PowerSafety.fatal'}
+        elif unit['configuration']=='lemmasim-silicon-ble-link-probe':
+            root='Lemma.Platform.Silicon.Development.BLELink.boot'
+            expected={'Lemma.Platform.LemmaVM.ConsoleDevice.initialize14','Lemma.Kernel.BootInfo.validate',
+                'Lemma.Platform.LemmaSim.Descriptor.validateBinding','Lemma.Platform.LemmaSim.MachineServices.validateSilicon',
+                'Lemma.Radio.BLE.Controller.initialize','Lemma.Radio.BLE.Controller.configure',
+                'Lemma.Platform.Silicon.Development.BLELink.configureIRQ',
+                'Lemma.Platform.Silicon.Development.BLELink.transaction',
+                'Lemma.Platform.Silicon.Development.BLELink.waitStep',
+                'Lemma.Platform.Silicon.Development.BLELink.fatal'}
         if root not in normalized or not expected <= normalized.keys():
             raise Core0Error('Power probe genuine boot/policy source closure missing')
         calls = {symbol: parse_definitions_and_calls(_ir_definition_body(pre_ir, symbol))[2]
@@ -447,7 +458,7 @@ def validate_owned_task_stack(layout: dict, unit: dict, pre_ir: str) -> dict:
             raise Core0Error('Power probe reached User construction, allocation or dispatch')
         if (layout['task_kernel_stack_pages'],layout['task_kernel_stack_bytes']) != (4,16384):
             raise Core0Error('Power probe linked dispatch stack layout differs')
-        return {'scope':'S-mode power probe; linked User dispatch is unreachable from this boot',
+        return {'scope':'S-mode device probe; linked User dispatch is unreachable from this boot',
                 'owned_task_construction':'not executed or qualified', 'allocated_pages':0,
                 'boot_source':root, 'reachable_source_functions':len(visited),
                 'linked_dispatch_stack_pages':4, 'linked_dispatch_stack_bytes':16384}
@@ -3028,7 +3039,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         "uart.write-byte": ("uartWriteByte", "uart.thr.write8", 0, "write", None),
         "uart.enable-reset-fifo": ("uartEnableAndResetFifo", "uart.fcr.enable-reset", 2, "write", 7),
     }
-    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4"}:
+    if role == "kernel" and unit["contract_version"] in {"core0-kernel-v0.2", "core0-kernel-v0.3", "core0-kernel-v0.4", "core0-kernel-v0.5"}:
         expected_devices["uart.enable-reset-fifo-trigger14"] = (
             "uartEnableAndResetFifo14", "uart.fcr.enable-reset-trigger14", 2, "write", 199)
     for raw in device:
@@ -3780,11 +3791,11 @@ LEMMASIM_BACKEND_JUMP_TABLES = {
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
-    # The maintained discovery parser contains the additive Power node18 and
-    # compatible74/v2-compatible75 literals. Legacy bindings still reject
+    # The maintained discovery parser contains the additive Power and manual
+    # BLE literal inventories. Legacy bindings still reject
     # undeclared device roles; this is exact literal provenance, not an MMIO
     # authority extension. Older immutable artifacts retain their prior audit.
-    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)]),
+    'Lemma.Platform.LemmaSim.DescriptorDTB.literalWord': ('kernel',75,['u64','u64'],[],[*range(2,20),*range(32,56),*range(64,77)]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty': ('kernel',15,['u64']*4,['checked-access','physical-read','physical-write'],[36,45,47,48,49,50]),
     'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStep': ('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
     'Lemma.Services.Store.Protocol.shape': ('user',10,['u64']*7,[],list(range(1,11))),
@@ -4171,14 +4182,15 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     literal_contracts={'Lemma.Kernel.Objects.replyLimitFor':[8,8,7],'Lemma.User.CapabilityABI.typeMask':[35,124,928,1056,1], 'Lemma.Kernel.Objects.initStep':[1,3,4]}
     sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
     if sim_literals:
-        from lemmasim_readonly import canonical_specs
-        extra = canonical_specs()
+        from lemmasim_readonly import canonical_specs, ble_specs, BLE_CONFIGURATIONS
+        extra = ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
+        modern = ble_specs()
         def admitted_literal(row):
             source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
             spec=extra.get(source)
-            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in spec[3]]
+            return spec is not None and spec[0]==unit['role'] and row['values'] in [[0 if value is None else value for value in values] for values in (*spec[3],*modern[source][3])]
         valid_literals=all(admitted_literal(row) for row in literal)
     else:
         valid_literals=unit['role']=='kernel' and all(literal_contracts.get(re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']))==r['values'] for r in literal)
@@ -4226,6 +4238,12 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
             sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and source in LEMMASIM_BACKEND_JUMP_TABLES
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            if (sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWord'
+                    and len(targets)==74 and unit.get('configuration') not in BLE_CONFIGURATIONS):
+                # Exact historical Power literal domain; immutable old units
+                # and fixtures retain this version. The selected BLE probe
+                # requires the new domain including its five literal codes.
+                spec=('kernel',74,['u64','u64'],[],[*range(2,19),*range(32,53),*range(64,76)])
             if spec is None or (unit['role'],len(targets),source_row['args'],source_row['effects'])!=spec[:4]:
                 raise Core0Error('unknown backend table owner/count/source signature/effects: '+repr(dict(
                     table=name, source=source, role=unit['role'], count=len(targets),
@@ -4345,7 +4363,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:

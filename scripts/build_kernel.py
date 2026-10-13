@@ -38,7 +38,7 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = ('lemmasim-silicon-power-arithmetic-oom-development', 'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development')
 ARITHMETIC_CONFIGURATIONS = ("lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS)
 SILICON_MULTI_CONFIGURATIONS = (*ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
-SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe")
+SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
@@ -107,6 +107,10 @@ def configuration_roots(configuration: str) -> dict:
         entry = {"lemmasim-silicon-power-arithmetic-oom-development": "arithmeticOOMBoot", "lemmasim-silicon-power-arithmetic-fault-development": "arithmeticFaultBoot", "lemmasim-silicon-power-arithmetic-stall-development": "arithmeticStallBoot", "lemmasim-silicon-power-notebook": "siliconPowerBoot", "lemmasim-silicon-power-initialize": "siliconPowerInitializeMedium", "lemmasim-silicon-full-notebook": "siliconFullBoot", "lemmasim-silicon-full-initialize": "siliconFullInitializeMedium", "lemmasim-silicon-notebook": "siliconBoot", "lemmasim-silicon-initialize": "siliconInitializeMedium", "lemmasim-initialize": "initializeMedium", "lemmasim-isolation-development": "isolationBoot"}.get(configuration, "boot")
         return {"firmware": ROLE_ROOTS["firmware"], "kernel": (("Lemma.Platform.LemmaSim.NotebookKernel." + entry, ()),
                  ("Lemma.Platform.LemmaSim.NotebookKernel.dispatch", ("u64", "u64", "u64")))}
+    if configuration == "lemmasim-silicon-ble-link-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.BLELink.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.BLELink.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
     if configuration == "lemmasim-silicon-power-safety-probe":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.PowerSafety.boot", ()),
                  ("Lemma.Platform.Silicon.Development.PowerSafety.dispatch", ("u64", "u64", "u64"))),
@@ -149,6 +153,8 @@ def configuration_modules(configuration: str) -> dict:
     configuration_roots(configuration)
     if configuration in MULTI_CONFIGURATIONS:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
+    if configuration == "lemmasim-silicon-ble-link-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.BLELink", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-power-safety-probe":
         return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.PowerSafety", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-power-probe":
@@ -169,7 +175,7 @@ def configuration_modules(configuration: str) -> dict:
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
     return (configuration in MULTI_CONFIGURATIONS and configuration != "service-normal" and role == "kernel"
-            or configuration in {"frames-development", "lemmasim-silicon-devices", "lemmasim-silicon-power-safety-probe"} and role == "kernel"
+            or configuration in {"frames-development", "lemmasim-silicon-devices", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe"} and role == "kernel"
             or configuration == "user-isolation-development" and role in {"kernel", "user"}
             or configuration == "user-syscall-development" and role == "user")
 
@@ -219,7 +225,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("unknown execution stage")
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
-    if configuration in {"lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
+    if configuration in {"lemmasim-silicon-ble-link-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
                          "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                          *USER_INSTRUCTION_CONFIGURATIONS, *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
@@ -270,6 +276,8 @@ def source_inputs(root: Path) -> dict[str, str]:
     # require/validate their profile through configuration_profile/generate.
     safety_profile=root / "sim/profiles/lemma-silicon-dev-0.4.0.json"
     if safety_profile.is_file():inputs.append(safety_profile)
+    ble_profile=root / "sim/profiles/lemma-silicon-dev-0.5.0.json"
+    if ble_profile.is_file():inputs.append(ble_profile)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -377,7 +385,7 @@ def export_user_files(root: Path, output_dir: Path, configuration: str, image: d
 
 
 def configuration_lemmasim(layout: dict) -> bool:
-    return layout.get("configuration") in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe"}
+    return layout.get("configuration") in {*ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-initialize", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe"}
 
 
 def link_user_image(output_dir: Path, image: dict, invoke) -> None:

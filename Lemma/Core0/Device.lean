@@ -54,9 +54,9 @@ def stableId : Op → String
   | .uartEnableAndResetFifo14 => "uart.enable-reset-fifo-trigger14"
 
 def admits (profile : Profile) (op : Op) : Bool :=
-  if op == .uartEnableAndResetFifo14 then profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4) else
+  if op == .uartEnableAndResetFifo14 then profile == .kernel_v0_2 || profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5 else
   profile == .v0_5 || profile == .v0_6 || profile == .v0_7 ||
-    profile.isFirmware || profile == .kernel_v0_1 || profile == .kernel_v0_2 || (profile == .kernel_v0_3 || profile == .kernel_v0_4)
+    profile.isFirmware || profile == .kernel_v0_1 || profile == .kernel_v0_2 || profile == .kernel_v0_3 || profile == .kernel_v0_4 || profile == .kernel_v0_5
 
 def render : Op → String := stableId
 
