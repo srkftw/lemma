@@ -293,6 +293,12 @@ inductive Action where
   reject this distinct bridge; no supplied Action implementation is admitted. -/
   | managedSums2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- User-v0.4 only: genuine ordinary bounded ByteArray code, using the real
+  owned Arena for payloads and exact retain/release from genuine upstream IR.
+  The direct source entry has scalar parameters/results; arrays never cross
+  this boundary as unchecked pointer words. Older profiles reject this bridge. -/
+  | managedBytes2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

@@ -36,6 +36,7 @@ inductive Profile where
   | kernel_v0_7
   | boot_v0_1
   | user_v0_3
+  | user_v0_4
   deriving BEq, DecidableEq, Inhabited, Repr
 
 namespace Profile
@@ -61,6 +62,7 @@ def contractVersion : Profile → String
   | .kernel_v0_7 => "core0-kernel-v0.7"
   | .boot_v0_1 => "core0-boot-v0.1"
   | .user_v0_3 => "core0-user-v0.3"
+  | .user_v0_4 => "core0-user-v0.4"
 
 def ofContractVersion? : String → Option Profile
   | "core0-v0.1" => some .v0_1
@@ -83,11 +85,12 @@ def ofContractVersion? : String → Option Profile
   | "core0-kernel-v0.7" => some .kernel_v0_7
   | "core0-boot-v0.1" => some .boot_v0_1
   | "core0-user-v0.3" => some .user_v0_3
+  | "core0-user-v0.4" => some .user_v0_4
   | _ => none
 
 /-- Production execution profiles have separate authority from the diagnostic profiles. -/
 def isExecution : Profile → Bool
-  | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .boot_v0_1 => true
+  | .firmware_v0_1 | .firmware_v0_2 | .kernel_v0_1 | .kernel_v0_2 | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_7 | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .boot_v0_1 => true
   | _ => false
 
 def isKernel : Profile → Bool
@@ -101,7 +104,7 @@ def isFirmware : Profile → Bool
 
 /-- Managed records inherit exactly the existing User privilege boundary. -/
 def isUser : Profile → Bool
-  | .user_v0_1 | .user_v0_2 | .user_v0_3 => true
+  | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 => true
   | _ => false
 
 /-- Immutable product boot has a separate narrow RAM/NV boundary. It does not
