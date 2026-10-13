@@ -1,0 +1,464 @@
+{
+  "schema_version": 1,
+  "task": "006-whole-machine-lemmasim",
+  "status": "PARTIAL_PASS_LOGICAL_SOFTTLB_DATA_SUFFIX",
+  "full_qemu_continuation": "GAP_CONFIRMED",
+  "scope": "Local opt-in QEMU logical software data-translation preservation under a paused single-CPU pair; test-only genuine Lean kernel-v0.4 RV64IM guest. No notebook, cross-backend, timing-parity, physical-conformance or total continuation claim.",
+  "source_review_head": "e451bb1b558d2ed8fc881528476f3de3bf35f432",
+  "binding": {
+    "experimental": "lemma-silicon-fast-softtlb/0.1.0",
+    "hardware_profile": "lemma-silicon-dev/0.3.0",
+    "device_vmstate_version": 3,
+    "cpu_selection": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+    "icount": "shift=3,align=off,sleep=off",
+    "default_backend": "unchanged; exact default derivation equality with pre-change HEAD",
+    "default_derivation": "/nix/store/5nybhkp376mwggmji1v6p4ff4p1jdbiy-lemmasim-qemu-11.1.1.drv"
+  },
+  "implementation": {
+    "contents": "All22 MMU modes, primary/victim slots, comparators/flags, physical mappings, capacity/occupancy/eviction/resize metadata and dirty/flush counters; no raw pointers or host addends serialized.",
+    "mapping_identity": "Explicit nullable names/types/owners, region location/size/kind/protection and SHA256 of every mapped segment/hole in the complete physical page; host section/addend references rebound without guest PTE walks.",
+    "capture": "Selected paired paused operation copies every initially dirty RAM page and skips only migration dirty-log start/stop, avoiding tcg_commit_cpu original-TLB flush. No original flush, restore, drain or hidden clean-boundary retry.",
+    "resize_semantics": "Explicit derivative behavior: seqlock view of published precise icount/bias plus executing CPU budget minus decrement/extra; no host-time window and no in-flight budget mutation; allocation-capacity fallback fails closed.",
+    "admission": "Stopped single CPU with empty work queue, no concurrent migration dirty logging; halt/interrupt/exception pending witness bound and checked against loaded CPU. Logical arrays and mapping identities validate before cache adoption.",
+    "restore_limit": "Fresh never-run private fork only. Ordinary VMState loading is not transactional: a failed isolated fork must be discarded, never resumed. Public Fast/Session integration remains absent."
+  },
+  "observations": {
+    "plan": {
+      "start_ns": 1000000,
+      "end_ns": 300000000,
+      "host_seconds_per_interval": 120,
+      "external_events": [],
+      "medium": "absent, independently constructed per process; no storage operations"
+    },
+    "guest": "Guest constructs Sv39 tables, warms alias A111, changes its leaf PTE to B222 without SFENCE, delays with real volatile RAM reads, observes stale data, executes actual guest SFENCE and observes fresh data.",
+    "boundary_alias": {
+      "virtual_page": "0x82050000",
+      "physical_page": "0x82103000",
+      "mmu_mode": 1,
+      "primary_slot": 80,
+      "complete_comparators": [
+        2181365760,
+        2181365760,
+        18446744073709551615
+      ],
+      "page_topology_sha256": "bdf6f1c5f44c4054bf3d6e4ce0851787a2e4f8f2fda3a47dea46cfbb9599156f"
+    },
+    "inactive_boundary": {
+      "cpu_index": 0,
+      "stopped": 1,
+      "running": 0,
+      "pending_work": 0,
+      "halted": 0,
+      "interrupt_request": 2,
+      "exception_index": 4294967295
+    },
+    "original": {
+      "stale": 111,
+      "fenced": 222,
+      "raw": "82105000: 0x000000000000006f 0x00000000000000de\r\n",
+      "uart_hex": "574e46"
+    },
+    "restored_private_fork": {
+      "stale": 111,
+      "fenced": 222,
+      "raw": "82105000: 0x000000000000006f 0x00000000000000de\r\n",
+      "uart_hex": "4e46"
+    },
+    "execution_host_seconds": {
+      "original_prefix": 0.053687080973759294,
+      "original_suffix": 0.1306462940410711,
+      "fork_suffix": 0.1366012250073254
+    },
+    "owners_reaped": true,
+    "final_complete_logical_state_equal": {
+      "schema": true,
+      "binding": true,
+      "boundary_ns": true,
+      "inactive_boundary": true,
+      "common": true,
+      "modes": true
+    },
+    "comparison_rule": "Every declared logical field/slot is exact. Ordinary-file binding hashes, raw sidecar checksums and full file identities remain independently reported and unequal; no logical-state field mask or tolerance.",
+    "final_sidecar_raw_files_equal": false,
+    "final_common": {
+      "dirty": 2,
+      "full_flush_count": 0,
+      "part_flush_count": 7,
+      "elide_flush_count": 297
+    },
+    "final_primary_capacities": [
+      256,
+      64,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256
+    ]
+  },
+  "construction": {
+    "host_initial_completion_seconds": 563.1346836260054,
+    "host_bound_seconds": 1200,
+    "qualified_host_increment_seconds": 17.75045371800661,
+    "host_tool_context": "/nix/store/dvgy7dr85lbs2pjqydy7klgj6nwninsp-lemmasim-qemu-softtlb-v1-11.1.1.drv",
+    "reuse": "Kept pinned Nix-configured source; path-relocated configured Ninja build, manifest regeneration disabled after freezing configuration. Genuine host compilation, no fabricated executable or target substitution.",
+    "guarded_preparation": "All8 installer-produced derivative source files exactly match the tested consumed source. This is preparation verification; complete fresh Nix packaging was not rerun after original failed attempts.",
+    "guest_tools": {
+      "lean": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "version": [
+          "Lean (version 4.34.1, Release)"
+        ]
+      },
+      "lake": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+        "version": [
+          "Lake version 5.0.0-src (Lean version 4.34.1)"
+        ]
+      },
+      "opt": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8"
+        ]
+      },
+      "llc": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8"
+        ]
+      },
+      "clang": {
+        "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang",
+        "version": [
+          "clang version 20.1.8",
+          "Target: x86_64-unknown-linux-gnu"
+        ]
+      },
+      "ld.lld": {
+        "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+        "version": [
+          "LLD 20.1.8 (compatible with GNU linkers)"
+        ]
+      },
+      "llvm-nm": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+        "version": [
+          "llvm-nm, compatible with GNU nm",
+          "LLVM (http://llvm.org/):"
+        ]
+      },
+      "llvm-readelf": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readelf",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8"
+        ]
+      },
+      "llvm-objdump": {
+        "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objdump",
+        "version": [
+          "LLVM (http://llvm.org/):",
+          "  LLVM version 20.1.8"
+        ]
+      }
+    },
+    "focused_guest_audit": "Actual genuine declaration check/lowering, LLVM verification/O2, RV64IM ELF attributes, complete symbol/disassembly output, no undefined symbol. Not a new full production target audit."
+  },
+  "checks": {
+    "scaffold_metadata": "PASS",
+    "scaffold_unittests": {
+      "status": "PASS",
+      "count": 18
+    },
+    "python_syntax": "PASS",
+    "default_derivation_equality": "PASS",
+    "guarded_preparation_exact_source": "PASS",
+    "actual_data_translation_and_sfence": "PASS",
+    "reference_inventory": {
+      "status": "PASS",
+      "count": 47
+    },
+    "diff_whitespace": "PASS"
+  },
+  "remaining_gaps": [
+    "TCG TB/jump-cache state and executable-translation bypass are not serialized or shown semantically irrelevant.",
+    "Self-modifying-code visibility, code dirty tracking and FENCE.I continuation remain unqualified.",
+    "Actual interrupt delivery/handler suffixes around the pause have not been qualified; retained pending CPU bits alone do not establish this.",
+    "Unrepresented asynchronous CPU work is explicitly rejected; other acceleration/control pending-state dependencies remain unresolved.",
+    "Ordinary whole-VMState restore is not fully prevalidated transactionally; failed private forks must not resume.",
+    "No public adapter admission, arbitrary cached-boundary exactness, QEMU/RTL microstate migration or physical equivalence."
+  ],
+  "maintained_inputs": [
+    {
+      "path": "tooling/lemmasim/qemu.nix",
+      "bytes": 3638,
+      "sha256": "84bf0875ec5448baeccb73df26ec5c9a0d9c15d8e55f68022fdd4e930a7e4851"
+    },
+    {
+      "path": "tooling/lemmasim/patch_soft_tlb.py",
+      "bytes": 8221,
+      "sha256": "c8f4a7fbc1f29581fce25f3a72b7fcfc122ea0d7b2f9b557b07e9e6cf77ed1e0"
+    },
+    {
+      "path": "sim/host/lemma_softtlb_qemu.inc.c",
+      "bytes": 25585,
+      "sha256": "fd83fa2d1d7f8f1266806cd2b9736cfca1f07fde755462dea04e19ea277e0491"
+    },
+    {
+      "path": "conformance/lemmasim/check_logical_softtlb.py",
+      "bytes": 6676,
+      "sha256": "1cad62a144156e09f574b6295346f8c1151e57f24a7b17dbcec2496887d1675b"
+    },
+    {
+      "path": "conformance/lemmasim/run_softtlb_probe.py",
+      "bytes": 7988,
+      "sha256": "ee0aa9e94dfc11368ef4a7abddf3c5dd8e66674314baf7399c901bd1214d3845"
+    },
+    {
+      "path": "tests/qemu/SoftTlbProbe.lean",
+      "bytes": 3669,
+      "sha256": "aeebf720768d8c6acbf70391e3f622fe64d2c8f78aa1cc676c0b2a98c595edb4"
+    },
+    {
+      "path": "tests/qemu/SoftTlbExport.lean",
+      "bytes": 3951,
+      "sha256": "8ee60a375ddf5d8159a9204ca44713262435b2a40873de3a10520588f0f6f6e9"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/task006-softtlb-a1/qualified-a10/manifest.json",
+      "bytes": 1228,
+      "sha256": "1b82cdd3b51aed1ae1d8c8326d54116235fcb471fa067b1114b3d3ce54cdec52"
+    },
+    {
+      "path": "build/task006-softtlb-a1/qualified-a10/host-tools.json",
+      "bytes": 1515,
+      "sha256": "db511e9093418654b3c28098e29fc98830b5888c3717aa3b0cdfe0e98a012459"
+    },
+    {
+      "path": "build/task006-softtlb-a1/qualified-a10/qemu-system-riscv64",
+      "bytes": 43225632,
+      "sha256": "4503f703bdf3b7d5ab9655e2b41ec9a55ddbf1e7eeeebd6bc1e3e3d9d74f6edb"
+    },
+    {
+      "path": "build/task006-softtlb-a1/rebuild-a7.json",
+      "bytes": 1685,
+      "sha256": "6a77edda077b9332b900261aa39342d27759aac7f0e03140e188854d46e71cb0"
+    },
+    {
+      "path": "build/task006-softtlb-a1/rebuild-a8.json",
+      "bytes": 1787,
+      "sha256": "c767bbbef3f5ce695d61277d2c65b227827483df3d67e19a66acb5fe9dc64e6e"
+    },
+    {
+      "path": "build/task006-softtlb-a1/rebuild-a9.json",
+      "bytes": 1878,
+      "sha256": "c7246c592e311ab16413d7aecea6a2374982e9c038979e2ad9ad7260de849031"
+    },
+    {
+      "path": "build/task006-softtlb-a1/rebuild-a10.json",
+      "bytes": 1877,
+      "sha256": "368e1b0ea52324cd58c7a2f52c7d4a3fb4e3646b20565e6b4c7d6ac3ae0f0e78"
+    },
+    {
+      "path": "build/task006-softtlb-a1/probe-target-a6/result.json",
+      "bytes": 9537,
+      "sha256": "65c3e1289f63644834c69d91672278195e31dca6e88a19df5a92ae17b478a5fb"
+    },
+    {
+      "path": "build/task006-softtlb-a1/probe-target-a6/image.elf",
+      "bytes": 2103912,
+      "sha256": "d5b9b0c45c4d5f3115b471b7943baa20c8dc3a93b630942d041b5de7eed53845"
+    },
+    {
+      "path": "build/task006-softtlb-a1/probe-target-a6/elf-audit.txt",
+      "bytes": 3461,
+      "sha256": "9efde2a31a3e33aa41503ad98a5e574e31155462353426c6195883438b0f3bb4"
+    },
+    {
+      "path": "build/task006-softtlb-a1/probe-target-a6/disassembly.txt",
+      "bytes": 18230,
+      "sha256": "ca96cb8105c2d359ad1ffb57db0d316d530f5f43a683b2497288159b7fc370ef"
+    },
+    {
+      "path": "build/task006-softtlb-a1/default-derivation-a2/result.json",
+      "bytes": 916,
+      "sha256": "83db3a6a0ec244fcdba560191a623e770694df0a0f59acc4e2de862042781473"
+    },
+    {
+      "path": "build/task006-softtlb-a1/guarded-patch-a1/result.json",
+      "bytes": 2253,
+      "sha256": "4e8bf3971f2cb04ed9b3597a9ff571af517e551d1aad4901f80d7bfd1fb5f0f8"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/result.json",
+      "bytes": 706843,
+      "sha256": "6f7d07bf2cf62936c6acead5899e635bb0cb88de0980ece2e89281d91a5f35aa"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/boundary.vmstate",
+      "bytes": 23324168,
+      "sha256": "8b4058bee214b30df891a895e1ef20e221b54a44403bcefe30a96c3389fa0830"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/boundary.tlb",
+      "bytes": 49779,
+      "sha256": "9bfecf084f7584600517f504148885bc399a3b9396b8640b0e237324eaae80e5"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/boundary-decoded.json",
+      "bytes": 326445,
+      "sha256": "9832974de80b32f67458c6a508840c07b5230b054aa5e75967639477124cc9e7"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/original-final.vmstate",
+      "bytes": 23328263,
+      "sha256": "9178c3cdf4fadffa6a20c694fab8f779816e725287b01c2decedef99bd9dcc15"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/original-final.tlb",
+      "bytes": 48243,
+      "sha256": "15400e283ad7edf9a543e9368ae2ee64ef6cd1f67218e3e3625411fd0026e0ed"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/fork-final.vmstate",
+      "bytes": 23328263,
+      "sha256": "97ef0be4e3721fcd978402258e971ebf642eb22e85007eefdf6f64215ad9ae26"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/fork-final.tlb",
+      "bytes": 48243,
+      "sha256": "fa7284869d9919e68dc5849e1cb57d362ec4abfd5ef9f02a9571e41ff6fc8507"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/original/uart.bin",
+      "bytes": 3,
+      "sha256": "be25423b04257e3c24fd83e7470ffe045bf77fa1588dc0e98243e72c8d824a33"
+    },
+    {
+      "path": "build/task006-softtlb-a1/logical-guest-a5/fork/uart.bin",
+      "bytes": 2,
+      "sha256": "6a4b804705e725b9f4fd4adf6500180b54cc5ddefed460e48d1be724fed155d6"
+    },
+    {
+      "path": "build/task006-softtlb-a1/scaffold.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/task006-softtlb-a1/scaffold-tests.log",
+      "bytes": 1811,
+      "sha256": "52adba3bdf5fb00a5184180a38f01df62bbf4b4b7549153b8238d058ecfdf917"
+    }
+  ],
+  "retained_failures": [
+    {
+      "reason": "QAPI documentation line length rejected before C compilation",
+      "path": "build/task006-softtlb-a1/build-a1.json",
+      "bytes": 1145,
+      "sha256": "026fe53b3084b6f1b4852fe2e13e0172f84bcb8a988e2c013b228ae37bc98aae"
+    },
+    {
+      "reason": "QAPI member documentation rejected before C compilation",
+      "path": "build/task006-softtlb-a1/build-a2.json",
+      "bytes": 1145,
+      "sha256": "9942057e394cb8fe45e3dbd468804dee9dcdb31ff47a9be0411bff4e9dabd439"
+    },
+    {
+      "reason": "Host header path rejected; kept configured source used for subsequent bounded compilation",
+      "path": "build/task006-softtlb-a1/build-a3.json",
+      "bytes": 1144,
+      "sha256": "bde0a544b599aca9f200aaa94742753ac8b5dbede566d19e78c2a8f1f799baeb"
+    },
+    {
+      "reason": "Ninja debug option unsupported; no C compilation",
+      "path": "build/task006-softtlb-a1/reusable-a4-focused.log",
+      "bytes": 48,
+      "sha256": "f8aef4b34475be6159079358ec20a3526e47e8241c7e083b037b2e85ae461dc9"
+    },
+    {
+      "reason": "Relocated venv interpreter path failed before host compilation completion",
+      "path": "build/task006-softtlb-a1/rebuild-a6.json",
+      "bytes": 1451,
+      "sha256": "d01278b7409885ea4bb6f12cdc0f73b8e7d70731a8146848e5ac303af7fe00a9"
+    },
+    {
+      "reason": "Private baseline omitted filtered empty directories; corrected a2 retained identical default derivation",
+      "path": "build/task006-softtlb-a1/default-derivation-a1/result.json",
+      "bytes": 861,
+      "sha256": "8ac5f3f8426277044e74b576770a59f11895865ccfc195f8af9919a03cc4e42e"
+    },
+    {
+      "reason": "Undefined global symbols in generated test startup; original linker FAIL retained",
+      "path": "build/task006-softtlb-a1/probe-target-a1/result.json",
+      "bytes": 8580,
+      "sha256": "8fae38bbc65bae9378ae6c912e1375797b1dbfb8e437911ceeffb009c29caa5a"
+    },
+    {
+      "reason": "Observer admitted dependent compilation before export completed; no target compilation",
+      "path": "build/task006-softtlb-a1/probe-target-a3/result.json",
+      "bytes": 323,
+      "sha256": "93887df66220b7f18c125617a2fef5a953d8e2e8ac8e794d50974552da12c994"
+    },
+    {
+      "reason": "Wrong probe load address; declared120s host bound failed with no marker",
+      "path": "build/task006-softtlb-a1/legacy-guest-a1/result.json",
+      "bytes": 1300,
+      "sha256": "cc7af794aa6d361b5821bc446243cd063ceb8f2218a0a49a609f93dfcc03b587"
+    },
+    {
+      "reason": "Probe identity mapping was incomplete; prospective boundary did not qualify",
+      "path": "build/task006-softtlb-a1/legacy-guest-a2/result.json",
+      "bytes": 1311,
+      "sha256": "11ffd27df751c4a280280b7a668628ba41219f92e4168bfa313521167751f958"
+    },
+    {
+      "reason": "Ordinary virtual-clock API used from non-I/O SFENCE helper; actual Bad icount read",
+      "path": "build/task006-softtlb-a1/logical-guest-a1/result.json",
+      "bytes": 1324,
+      "sha256": "64ad41ff8d39af3b3facda99f3be80aa6767458062d13c5fefce85ea45923c4f"
+    },
+    {
+      "reason": "Arithmetic-only delay had finished before prospective checkpoint; actual WNF at1Mns rejected",
+      "path": "build/task006-softtlb-a1/logical-guest-a2/result.json",
+      "bytes": 9203,
+      "sha256": "7bad77db336e0ce716c5b3eb92b045c9a1f747d2c6fd97f76613a091ca331c9c"
+    },
+    {
+      "reason": "Actual ordinary save flushed original TLB; empty saved cache, WBF/BF; HMP observer formatting also rejected",
+      "path": "build/task006-softtlb-a1/logical-guest-a3/result.json",
+      "bytes": 25235,
+      "sha256": "614b13d801eb991816c343aedb09d48109c265768225f5fcd08ee1640323f24b"
+    },
+    {
+      "reason": "Actual NULL MemoryRegion name caused SIGSEGV during capture; core/stack retained",
+      "path": "build/task006-softtlb-a1/logical-guest-a4/result.json",
+      "bytes": 9176,
+      "sha256": "d7b733f67ba037cba6c9dea384ebf8aa1f12acd3427e2f4a662e3d530eb871df"
+    }
+  ],
+  "retained_core_stack": {
+    "path": "build/task006-softtlb-a1/logical-guest-a4/coredump-info.txt",
+    "bytes": 11307,
+    "sha256": "04d3bb695e6204709b3e1309d553fb90527d4384f59a9e9818658b65fd900521"
+  }
+}

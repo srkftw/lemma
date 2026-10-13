@@ -1,5 +1,6 @@
 # Host-only derived QEMU. Historical pkgs.qemu and its profiles are untouched.
-{ siliconProfile ? ../../sim/profiles/lemma-silicon-dev-0.1.0.json }:
+{ siliconProfile ? ../../sim/profiles/lemma-silicon-dev-0.1.0.json
+, logicalSoftTlb ? false }:
 let
   lock = builtins.fromJSON (builtins.readFile ../../flake.lock);
   pin = lock.nodes.nixpkgs.locked;
@@ -20,6 +21,9 @@ let
   safetyPatch = if selectedProfile.profile == "lemma-silicon-dev/0.4.0" then ''
     ${pkgs.python3}/bin/python3 ${./patch_power_safety.py} .
   '' else "";
+  softTlbPatch = if logicalSoftTlb then ''
+    ${pkgs.python3}/bin/python3 ${./patch_soft_tlb.py} . --helper ${../../sim/host/lemma_softtlb_qemu.inc.c}
+  '' else "";
   hardwareSources = builtins.path {
     path = ../../sim/host;
     name = "lemmasim-host-hardware";
@@ -33,8 +37,9 @@ let
     filter = path: type: type == "directory" || builtins.elem (builtins.baseNameOf path)
       [ "backing_peer.h" "backing_peer.cpp" "backing_c.h" "backing_c.cpp" ];
   };
-in base.overrideAttrs (old: {
-  pname = "lemmasim-qemu";
+in assert !logicalSoftTlb || selectedProfile.profile == "lemma-silicon-dev/0.3.0";
+base.overrideAttrs (old: {
+  pname = if logicalSoftTlb then "lemmasim-qemu-softtlb-v1" else "lemmasim-qemu";
   nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.python3Packages.qemu-qmp ];
   buildInputs = old.buildInputs ++ [ pkgs.pixman ];
   buildPhase = ''
@@ -58,5 +63,5 @@ in base.overrideAttrs (old: {
   '';
   postPatch = (old.postPatch or "") + ''
     ${pkgs.python3}/bin/python3 ${./apply_qemu.py} . --host-source ${hardwareSources} --companion-source ${companionSources} --silicon-profile ${siliconProfile}
-  '' + counterPatch + safetyPatch;
+  '' + counterPatch + safetyPatch + softTlbPatch;
 })
