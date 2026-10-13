@@ -31,7 +31,7 @@ def verify_object(directory:Path)->dict:
         'text':(directory/'program-audit-text.bin').read_bytes(),
         'companion_text':(directory/'program-audit-companion-text.bin').read_bytes()}
     baseline=validate_backend_jump_tables(**kwargs);negatives=[]
-    for name,key,value in [('historical-config','configuration','lemmasim-silicon-managed-notebook'),
+    for name,key,value in [('incompatible-config','configuration','lemmasim-bringup'),
                            ('wrong-profile','contract_version','core0-user-v0.3'),
                            ('wrong-image','image_key','arithmetic')]:
         changed=copy.deepcopy(kwargs);changed['unit'][key]=value
@@ -83,8 +83,9 @@ def verify(directory:Path)->dict:
         try:validate_readonly_pmp_lookup(mutated,unit,optimized=True)
         except Core0Error as error:failed.append({'name':name,'rejection':str(error)})
         else:raise Core0Error('Mutated actual lookup admitted: '+name)
-    for name,key,value in [('historical-configuration','configuration','lemmasim-silicon-managed-notebook'),
-                           ('kernel-role','role','kernel')]:
+    for name,key,value in [('incompatible-configuration','configuration','lemmasim-bringup'),
+                           ('kernel-role','role','kernel'),
+                           ('wrong-reader-profile','contract_version','core0-user-v0.3')]:
         mutated=copy.deepcopy(unit);mutated[key]=value
         try:validate_readonly_pmp_lookup(ir,mutated,optimized=True)
         except Core0Error as error:failed.append({'name':name,'rejection':str(error)})
