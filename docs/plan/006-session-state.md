@@ -33,6 +33,23 @@ and8192 owned frames/32MiB; it does not qualify later Array/Surface carry,
 browser, Product/USB or physical work. Older observations below retain their
 separate execution identities.
 
+The same archived Byte/Bulk guest now has a separately qualified
+[actual browser durable cold and exact native comparison](../evidence/006-canonical-native-browser-cold.json).
+The browser cold opened its actual opaque ink medium and reached real Ready
+at631.55M cycles/4573.492worker elapsed seconds, with4335.017simulation-call
+seconds, zero writes/FLUSH and all3.63M pixels/original raw3 samples. An
+independent native cold from a private byte-identical copy first observed Ready
+at632M with a1M observation quantum and reached the declared657M comparison
+boundary in2869.329observer wall seconds, with152548KiB peak runtime RSS.
+Both original2B-cycle/7200s cold bounds passed. At exact657M, every145520584
+wrapper byte and22967 generated logical RTL byte matches; all four component
+CRC64s were independently recomputed. All3.63M pixels,1232 UART bytes and
+256MiB opaque bytes match exactly. Original implementation headers remain
+distinct and non-interchangeable. Browser pen timing overrun and the native
+prelaunch moving-pen-up oracle FAIL remain unchanged. This finite independent
+cold comparison does not establish general parity, migration, later target
+execution or browser course/Product completion.
+
 The actual canonical RTL cold notebook reached Ready and completed the full
 1650×2200 controller refresh at1.427B cycles/5487.787host seconds, with all8192
 frames and32MiB guest pool unchanged. The source-bound native archive is
@@ -64,7 +81,7 @@ The actual local browser on the same immutable RTL core reached1.20495B cycles
 and634235428 retired instructions but **failed** its7200s Ready deadline.
 `build/browser/task006-managed-v3-browser-cold-a1/result.json` retains that FAIL,
 the unchanged-boundary observational checkpoint and actual backing outcome tape.
-The worker's192MiB heap is measured; there is no browser Ready, writing,
+The worker's192MiB heap is measured; this older guest has no browser Ready, writing,
 mathematics/course or durable-reopen acceptance. Prepared native Sums artifacts
 are in `build/native/task006-sums-a1`; the static bundle
 `build/browser/task006-sums-a3` retains and checks all239 exact consumed Wasm

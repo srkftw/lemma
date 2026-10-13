@@ -769,8 +769,13 @@ Wasm core and explicit archived consumed inputs:
 ./scripts/lemmasim browser-serve --bundle build/browser/bytes-new --port 8769
 ```
 
-Browser Ready, writing/course, durable reload and applicable exact suffixes need
-their own observed results; see the [current checkpoint](docs/plan/006-session-state.md).
+The [actual Byte/Bulk browser cold and native comparison](docs/evidence/006-canonical-native-browser-cold.json)
+passed real durable reopen at631.55M browser cycles under its original2B/7200s
+bounds. An independent native cold from the same opaque bytes then matched
+every wrapper/generatedRTL byte, all3.63M pixels and all durable bytes at the
+declared657M boundary. Original browser writing timing FAIL remains retained;
+course/Product acceptance and general parity remain separate work in the
+[current checkpoint](docs/plan/006-session-state.md).
 Product ROM/update and companion commands are documented in
 [the product boot contract](docs/contracts/006-product-boot-v1.md) and
 [the USB notebook contract](docs/contracts/006-usb-bulk-notebook-v1.md).
