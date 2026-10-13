@@ -1,0 +1,87 @@
+{
+  "schema": "lemma-ci-observer-repair/1",
+  "scope": "Bounded host prerequisite and emitted IPC graph corrections; original guest campaigns remain FAIL until a fresh candidate run",
+  "original_run_id": 38416685379,
+  "original_head": "229ab6c16ea15916932fa2dc5ca6cd87ff9b6018",
+  "jobs_diagnosed": [
+    {
+      "job_id": 115362878780,
+      "original_status": "FAIL",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38416685379/job/115362878780",
+      "cause": "missing required fixture output environment",
+      "retained_log_sha256": "ced13929c06c564790d8e3c7b43fa60abe34c4f6a1c94a4d38fd09acfc50b8e8"
+    },
+    {
+      "job_id": 115362878799,
+      "original_status": "FAIL",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38416685379/job/115362878799",
+      "cause": "obsolete direct IPC graph edge",
+      "retained_log_sha256": "681f9bc6adf757511194608c0b67e2184762887f9d343be859e8d7d7c651e58e",
+      "artifact_id": 11825246121,
+      "artifact_sha256": "a145be8df933b248d420728e73b4ed3e5798893f860617af76eb473618b8bd85"
+    },
+    {
+      "job_id": 115362879000,
+      "original_status": "FAIL",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38416685379/job/115362879000",
+      "cause": "obsolete direct IPC graph edge",
+      "retained_log_sha256": "baad9dfcba7c9375d33a0c064c7e6b034352454dff5cd50cca6529ccb0f20504",
+      "artifact_id": 11824288144,
+      "artifact_sha256": "7f06a7a2bd1c89b73b635f9da73d46f1ec3256918ecf5b9545e000f835980b0f"
+    },
+    {
+      "job_id": 115362878668,
+      "original_status": "FAIL",
+      "url": "https://github.com/srkftw/lemma/actions/runs/38416685379/job/115362878668",
+      "cause": "obsolete direct IPC graph edge",
+      "retained_log_sha256": "49b01db64a059fd43e809615657c3916e2ed50544c48f6c74b704c0a00c9372b",
+      "artifact_id": 11824558551,
+      "artifact_sha256": "30120a7af74cc90f3464a9a1fa2d642675fa3de8c272f9f22c032a38d030ffcc"
+    }
+  ],
+  "repairs": [
+    "Select an explicit unused UserWordInline output directory and retain generated fixture artifacts",
+    "Require exact reachable IPC borrow body/caller/fresh-base/live-row guards before following the versioned public/helper edges; keep historical edges and public-only closures"
+  ],
+  "verification": {
+    "workflow_host_tests": {
+      "status": "PASS",
+      "count": 13,
+      "log_sha256": "e6a2f08393f4416ab65a4b2b048a0118925b9002119983012c4df484468be798"
+    },
+    "existing_ipc_host_tests": {
+      "status": "PASS",
+      "count": 18,
+      "log_sha256": "1e0554ceb85ae2d4428ff3bb69994fb3ab47f718334adb71776f38b8914ebf05"
+    },
+    "genuine_word_fixture": {
+      "status": "PASS",
+      "log_sha256": "b244bbfeaa440642613bc54e5e0a8d953b0a8beea77a1b04628f0f8f401420d5"
+    },
+    "original_actual_ir_diagnostic": {
+      "status": "PASS",
+      "artifacts": 3,
+      "rejected_authority_mutations": 12,
+      "receipt_sha256": "68da5db7fcbe1a9220da19261ed6d9c7469fb34835512a9a15a71b0da93b208f"
+    },
+    "fresh_genuine_full_and_partial_qualifier": {
+      "status": "PASS",
+      "seconds": 65.86174965603277,
+      "fault_cases": 2672,
+      "body_mutations_rejected": 9,
+      "result_sha256": "3e0d080c53d9a0cea090843227b292f77c53b753099e974a650c85c5df612884",
+      "source_input_count": 247,
+      "tool_paths": {
+        "lean": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "lake": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+        "opt": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+        "llc": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+        "llvm-nm": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+        "llvm-readobj": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj"
+      }
+    }
+  },
+  "guest_reruns": "NOT_RUN_FOR_THIS_REPAIR",
+  "timing_claim": "NONE",
+  "weakened_checks": false
+}

@@ -2238,6 +2238,29 @@ def validate_current_ipc_saved_context(body: str, names: dict[str, str],
             'success_block':success,'saved_pointer':pointer[1],'scope':'exact current four-page blocked context; no cross-call cache'}
 
 
+def _ipc_poll_graph_edges(unit: dict, pre_ir: str, by_source: dict[str,str]) -> dict:
+    """Versioned graph edges after exact same-Action borrow qualification."""
+    i='Lemma.Kernel.IPC.';s='Lemma.Kernel.IPCStorage.'
+    t='Lemma.Kernel.Task.';a='Lemma.Kernel.Memory.AddressSpace.'
+    edges={}
+    # Additive helpers retain their exact body, caller, fresh-base and live-row
+    # obligations; presence alone never grants graph or pointer authority.
+    if i+'pollAt' in by_source or s+'pendingAt' in by_source:
+        from ipc_poll_borrow import validate_reachable_helpers
+        validate_reachable_helpers(unit, pre_ir)
+        if s+'pendingAt' in by_source:
+            edges[s+'pending']=[a+'base',s+'pendingAt']
+            edges[s+'pendingAt']=[s+'equalWord']
+        if i+'pollAt' in by_source:
+            edges[i+'poll']=[a+'base',i+'pollAt']
+            edges[i+'pollAt']=[s+'pendingAt',i+'pollWaiting']
+            if t+'pollIPCStep' in by_source:
+                task_calls=parse_definitions_and_calls(_ir_definition_body(pre_ir,by_source[t+'pollIPCStep']))[2]
+                if by_source[i+'pollAt'] in task_calls:
+                    edges[t+'pollIPCStep']=[t+'lookupRecord',a+'base',i+'pollAt',t+'completeBlocked']
+    return edges
+
+
 def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
     """Bind the selected IPC policy to its genuine source/CFG/storage closure.
 
@@ -2331,6 +2354,7 @@ def validate_ipc_graph(unit: dict, pre_ir: str) -> dict:
       t+"completeBlocked":[t+"savedContext",i+"completeWait",x+"write64"],
       t+"pollIPC":[t+"pollIPCStep"],t+"pollIPCStep":[t+"lookup",i+"poll",t+"completeBlocked"],
     }
+    edges.update(_ipc_poll_graph_edges(unit,pre_ir,by_source))
     constants={c+"headerOffset":2560,c+"entriesOffset":2624,c+"capacity":16,c+"stride":64,
        o+"capacity":16,o+"endpointCapacity":4,o+"replyCapacity":8,o+"registryCapacity":8,o+"rows":256,o+"stride":128,
        o+"maxGeneration":0x0fffffffffffffff,o+"maxSerial":0x0fffffffffffffff,

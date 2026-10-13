@@ -11,6 +11,7 @@ from check_silicon import command
 from check_ble_packet import validate_object_attributes
 from ipc_poll_borrow import (_poll_rows,validate_reachable_helpers,
                             validate_ipc_poll_borrow,task_lookup_record_allowed_callers)
+from audit_kernel import _ipc_poll_graph_edges
 ROOT=Path(__file__).resolve().parents[1]
 
 def mutate_body(ir,symbol,old,new):
@@ -74,6 +75,19 @@ def main():
   for label in ('full','pending','poll'):
    d=out/'lowered'/label;unit=json.loads((d/'production-unit.json').read_text());ir=(d/'production.ll').read_text()
    reports[label]=validate_reachable_helpers(unit,ir)
+   _,source_names=_poll_rows(unit)
+   edges=_ipc_poll_graph_edges(unit,ir,source_names)
+   pending='Lemma.Kernel.IPCStorage.';poll='Lemma.Kernel.IPC.';task='Lemma.Kernel.Task.'
+   expected_edges={pending+'pending': ['Lemma.Kernel.Memory.AddressSpace.base',pending+'pendingAt'],
+      pending+'pendingAt':[pending+'equalWord']}
+   if label in ('poll','full'):
+    expected_edges.update({poll+'poll':['Lemma.Kernel.Memory.AddressSpace.base',poll+'pollAt'],
+        poll+'pollAt':[pending+'pendingAt',poll+'pollWaiting']})
+   if label=='full':
+    expected_edges[task+'pollIPCStep']=[task+'lookupRecord','Lemma.Kernel.Memory.AddressSpace.base',
+        poll+'pollAt',task+'completeBlocked']
+   if edges!=expected_edges:raise Core0Error('genuine full/partial IPC graph changed its qualified edges')
+   reports[label]['graph_edges']=edges
    allowed=task_lookup_record_allowed_callers(unit,ir)
    expected={'Lemma.Kernel.Task.lookup','Lemma.Kernel.Task.contextAt'}
    if label=='full':expected.add('Lemma.Kernel.Task.pollIPCStep')
