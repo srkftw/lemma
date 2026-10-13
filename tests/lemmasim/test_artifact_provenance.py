@@ -15,7 +15,7 @@ def fixture():
     values=[10530,8778,21973,1488,0,448,0,4772,
             31599,11415,29671,29647,23497,31183,31215,29330,31727,31695,
             0,0,0,3640,0,0,0,11245,27566,31015,27502,31143,31140,31087,23533,29847,
-            0,0,18727,24557,24573,31599,31716,31609,27565,31183,29842,23407,23402,23423,23213,23186]
+            0,23469,18727,24557,24573,31599,31716,31609,27565,31183,29842,23407,23402,23423,23213,23186]
     unit={'configuration':'lemmasim-notebook','role':'user','functions':[{
         'source':'Lemma.Ink.Surface.letter','symbol':'letter','args':['u64'],'effects':[]}]}
     ir='@switch.table.letter = private unnamed_addr constant [50 x i64] ['+', '.join('i64 '+str(v) for v in values)+'''], align 8
@@ -44,7 +44,7 @@ class LemmaSimArtifactBoundaries(unittest.TestCase):
         with self.assertRaises(Core0Error): validate_readonly_pmp_lookup(ir,bad,optimized=True)
         for changed in [ir.replace('constant [50','global [50'),ir.replace('i64 31599','i64 31600'),
                         ir.replace('i64 31015','i64 0'),ir.replace('i64 31015','i64 31014'),
-                        ir.replace('i64 21973','i64 21974'),ir.replace('i64 31609','i64 31608'),
+                        ir.replace('i64 21973','i64 21974'),ir.replace('i64 23469','i64 0'),ir.replace('i64 31609','i64 31608'),
                         ir.replace('add i64 %arg0, -40','add i64 %arg0, -41'),
                         ir.replace('icmp ult i64 %index, 50','icmp ult i64 %index, 51'),
                         ir.replace('br i1 %bound, label %lookup, label %done','br i1 %bound, label %done, label %lookup'),

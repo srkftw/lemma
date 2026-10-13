@@ -34,7 +34,7 @@ def validate_wasm_inputs(source,m):
                 path=ROOT/path
             elif not path.is_absolute():raise ValueError('Nonabsolute Wasm generated/tool input: '+name)
             if sha(path)!=want:raise ValueError('Wasm input changed: '+name)
-    for key in ('portable_inputs','binding_generator_inputs','host_toolchain_inputs'):
+    for key in ('portable_inputs','binding_generator_inputs','host_toolchain_inputs','host_runtime'):
         inputs(key,True)
     for key in ('sha256','configuration_includes','verilator_runtime_inputs'):
         inputs(key,False)

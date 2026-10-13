@@ -20,6 +20,10 @@ from types import SimpleNamespace
 ROOT=Path(__file__).resolve().parents[1]
 SCHEMA='lemmasim-native-bundle/1'
 SCHEMA_WITH_SOURCE_VERSIONS='lemmasim-native-bundle/2'
+SCHEMA_WITH_SOFTWARE_DEPLOYMENT='lemmasim-native-bundle/3'
+MANAGED_DEPLOYMENT='lemma-managed-notebook-deployment-v1'
+MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
+                      'initializer':'lemmasim-silicon-managed-initialize'}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
 
@@ -40,7 +44,7 @@ def origin_destination(manifest,path,digest):
     origins=manifest.get('origins')
     if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
     entry=origins.get(str(Path(path).resolve()))
-    if manifest.get('schema')==SCHEMA_WITH_SOURCE_VERSIONS:
+    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT):
         if not isinstance(entry,dict):raise ValueError('Missing versioned archived origin: '+str(path))
         destination=entry.get(digest)
     elif manifest.get('schema')==SCHEMA:
@@ -92,6 +96,44 @@ def host_dependencies(binary):
     return {p:sha(p) for p in sorted(files)}
 
 
+def current_rtl_backend(build,previous):
+    """Replace only an exactly consumed, audited current canonical machine core.
+
+    Guest artifacts are independently replaced/validated by the ordinary path.
+    Every current input is retained by its actual version alongside old backend
+    inputs; an existing output path or matching nominal profile is insufficient.
+    """
+    import hashlib
+    import silicon_guest as guest
+    from silicon_compute import source_manifest,snapshot_inputs,prepare
+    build=Path(build).resolve();m=read_json(build/'build.json')
+    dep=ROOT/'build/silicon/deps/cvw';prepare(dep)
+    expected=source_manifest(dep,'lemma-silicon-dev/0.3.0')
+    expected['configuration']='external-ram-128MiB'
+    if any(m.get(k)!=v for k,v in expected.items()):
+        raise ValueError('Replacement native RTL differs from exact consumed inputs')
+    identity=hashlib.sha256(json.dumps(snapshot_inputs(expected,dep),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    if m.get('snapshot_identity')!=identity:raise ValueError('Replacement RTL implementation identity differs')
+    binary=build/'obj/lemma-rtl'
+    if guest.sha(binary)!=m.get('binary_sha256'):raise ValueError('Replacement RTL binary changed')
+    header=guest.validate(m.get('runtime_identity_header'))
+    if header.read_text()!='#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+identity+'"\n':
+        raise ValueError('Replacement RTL compiled identity header differs')
+    consumed={**m['sha256'],
+        **{str(ROOT/p):h for k in ('host_runtime','host_toolchain_inputs','binding_generator_inputs') for p,h in m[k].items()},
+        **m['configuration_includes'],
+        str(ROOT/m['build_driver']['path']):m['build_driver']['sha256'],
+        str(ROOT/m['upstream_patch']['path']):m['upstream_patch']['sha256'],
+        str(ROOT/m['host_adapter']['path']):m['host_adapter']['sha256'],
+        str(Path(m['host_include_dir'])/'lemma_silicon_binding.h'):m['host_binding_sha256'],
+        str(header):m['runtime_identity_header']['sha256']}
+    for path,h in consumed.items():
+        if guest.sha(path)!=h:raise ValueError('Replacement RTL input changed: '+path)
+    result=copy.deepcopy(previous)
+    result.update(binary=guest.identified(binary),rtl_build=guest.identified(build/'build.json'),rtl_sources=consumed)
+    return result,consumed
+
+
 def bundle(args):
     import silicon_guest as guest
     import lemmasim_fast as fast
@@ -102,6 +144,9 @@ def bundle(args):
     replacements=(getattr(args,'notebook_build',None),getattr(args,'initializer_build',None))
     if base is None and any(replacements) or base is not None and not all(replacements):
         raise ValueError('Archived backend replacement requires base bundle and both current audited guest builds')
+    replacement_rtl=getattr(args,'rtl_build',None)
+    if replacement_rtl is not None and base is None:
+        raise ValueError('Replacement RTL requires an immutable base bundle and both audited guest builds')
     if base is None:
         rtl=guest.prepared('notebook',name)
         initializer=guest.prepared('initializer',name)
@@ -115,6 +160,9 @@ def bundle(args):
         qemu=prepared(base,'qemu','notebook',name)
         prepared(base,'rtl','initializer',name)
         prepared(base,'qemu','initializer',name)
+    current_backend_inputs={}
+    if replacement_rtl is not None:
+        rtl,current_backend_inputs=current_rtl_backend(replacement_rtl,rtl)
     source_before=source_inputs(ROOT)
     archive_base=base
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
@@ -135,6 +183,9 @@ def bundle(args):
         if guest.sha(out/prior)!=h:raise ValueError('Conflicting bundle origin')
         return {'path':name,'sha256':h}
     def backend_source(path,h):
+        if current_backend_inputs.get(str(Path(path).resolve()))==h:
+            if guest.sha(path)!=h:raise ValueError('Replacement RTL source changed during pack: '+str(path))
+            return Path(path)
         if archive_base is None:
             return Path(path)
         old=read_json(archive_base/'bundle.json');dest=origin_destination(old,path,h)
@@ -145,11 +196,22 @@ def bundle(args):
         return item
     if base is not None:
         manifest['base_bundle']={'sha256':guest.sha(base/'bundle.json'),
-            'scope':'validated unchanged archived backends; new genuine current-source guest compilation'}
+            'scope':('validated archived QEMU backend; exact current-source RTL backend; new genuine current-source guest compilation'
+                     if replacement_rtl is not None else
+                     'validated unchanged archived backends; new genuine current-source guest compilation')}
         for workload,build in zip(('notebook','initializer'),replacements):
             override=development_guest(rtl,workload,out,build,'developer')
             rtl['workloads'][workload]=override['workloads'][workload]
         qemu['workloads']=copy.deepcopy(rtl['workloads'])
+    selected_configurations={w:read_json(Path(rtl['workloads'][w]['build']['path']))['configuration']
+                             for w in ('notebook','initializer')}
+    ordinary={w:guest.configurations(name)[w] for w in ('notebook','initializer')}
+    if selected_configurations==MANAGED_CONFIGURATIONS:
+        manifest['schema']=SCHEMA_WITH_SOFTWARE_DEPLOYMENT
+        manifest['software_deployment']={'contract_version':MANAGED_DEPLOYMENT,
+                                         'configurations':dict(MANAGED_CONFIGURATIONS)}
+    elif selected_configurations!=ordinary:
+        raise ValueError('Native bundle requires one complete admitted software deployment')
     for path,h in source_before.items():add(ROOT/path,'source/'+path,h)
     for path,h in rtl['rtl_sources'].items():
         add_backend_source(path,h)
@@ -184,6 +246,8 @@ def bundle(args):
     manifest['files']={str(p.relative_to(out)):{'sha256':guest.sha(p),'bytes':p.stat().st_size,
                         'executable':os.access(p,os.X_OK)} for p in sorted(out.rglob('*')) if p.is_file()}
     if source_inputs(ROOT)!=source_before:raise ValueError('Guest inputs changed during pack')
+    for path,h in current_backend_inputs.items():
+        if guest.sha(path)!=h:raise ValueError('Replacement RTL input changed during pack: '+path)
     (out/'bundle.json').write_text(json.dumps(manifest,indent=2)+'\n')
     # Read the packed bytes using the same fail-closed validator used at launch.
     for backend in ('rtl','qemu'):
@@ -196,9 +260,10 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
-    if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
+    if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
         raise ValueError('Unsupported/mismatched native bundle')
     if backend not in ('rtl','qemu') or workload not in ('notebook','initializer'):raise ValueError('Unsupported bundled execution')
+    selected_configurations=bundle_configurations(m)
     inventory(directory,m)
     if m.get('sources')!=source_inputs(directory/'source'):raise ValueError('Archived compiler/source closure differs')
     data=copy.deepcopy(m['backends'][backend])
@@ -221,12 +286,13 @@ def prepared(directory,backend,workload,name=None):
         if not path.startswith('/nix/store/') or not Path(path).is_file() or guest.sha(path)!=h:
             raise ValueError('Exact external native host library missing/changed: '+path)
     for key in (('binary','rom','rom_audit','rtl_build') if backend=='rtl' else ('qemu','derivation')):data[key]=absolute(data[key])
+    if set(data['workloads'])!={'notebook','initializer'}:raise ValueError('Incomplete bundled software deployment')
     for w,e in data['workloads'].items():
         if w not in ('notebook','initializer'):raise ValueError('Unknown bundled workload')
         data['workloads'][w]={k:absolute(item) for k,item in e.items()}
         base=Path(data['workloads'][w]['build']['path']).parent
         build=read_json(base/'build.json')
-        guest.verify_guest_build(base,guest.configurations(m['profile'])[w],build['optimization'],source_root=directory/'source')
+        guest.verify_guest_build(base,selected_configurations[w],build['optimization'],source_root=directory/'source')
         if w=='notebook':
             capacity=read_json(Path(data['workloads'][w]['capacity']['path']))
             if capacity.get('status')!='PASS' or capacity.get('configuration')!=build['configuration']:raise ValueError('Bundled capacity audit differs')
@@ -248,7 +314,24 @@ def prepared(directory,backend,workload,name=None):
             raise ValueError('Bundled fast execution contract differs')
     data['native_bundle']={'schema':m['schema'],'manifest_sha256':guest.sha(directory/'bundle.json'),
                            'source_commit':m['source_commit'],'scope':'validated archived inputs; not current compilation'}
+    if m['schema']==SCHEMA_WITH_SOFTWARE_DEPLOYMENT:
+        data['native_bundle']['software_deployment']=copy.deepcopy(m['software_deployment'])
     return data
+
+
+def bundle_configurations(manifest):
+    """An immutable package selects both guest roles under one closed contract."""
+    import silicon_guest as guest
+    if manifest.get('profile')!='lemma-silicon-dev/0.3.0':
+        raise ValueError('Software deployment requires canonical hardware0.3')
+    if manifest.get('schema')==SCHEMA_WITH_SOFTWARE_DEPLOYMENT:
+        expected={'contract_version':MANAGED_DEPLOYMENT,'configurations':MANAGED_CONFIGURATIONS}
+        if manifest.get('software_deployment')!=expected:
+            raise ValueError('Managed bundle software deployment differs')
+        return dict(MANAGED_CONFIGURATIONS)
+    if manifest.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS) or 'software_deployment' in manifest:
+        raise ValueError('Historical bundle acquired software deployment authority')
+    return {w:guest.configurations(manifest['profile'])[w] for w in ('notebook','initializer')}
 
 
 ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
@@ -260,8 +343,13 @@ ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
 
 def development_configuration(profile,workload,configuration,mode):
     import silicon_guest as guest
-    ordinary=guest.configurations(profile)[workload]
+    selected=guest.configurations(profile)
+    if workload not in selected:raise ValueError('Workload is not admitted by the selected hardware profile')
+    ordinary=selected[workload]
     if configuration==ordinary:return ordinary
+    if (profile=='lemma-silicon-dev/0.3.0' and workload in MANAGED_CONFIGURATIONS and
+            configuration==MANAGED_CONFIGURATIONS[workload] and mode in ('student','developer','laboratory')):
+        return configuration
     if profile=='lemma-silicon-dev/0.3.0' and workload=='notebook' and mode=='laboratory' and configuration in ARITHMETIC_LAB_CONFIGURATIONS:
         return configuration
     raise ValueError('Development guest configuration is not admitted for this profile/workload/mode')

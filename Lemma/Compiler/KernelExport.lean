@@ -843,7 +843,8 @@ elab_rules : command
         | .error error => throwError error
       let some output ← liftIO <| IO.getEnv "LEMMA_KERNEL_OUT"
         | throwError "LEMMA_KERNEL_OUT must name the deployment directory"
-      if (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_2 then
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_2 then
         -- Ordinary imported source declarations go through Lean's genuine
         -- compiler before the checked managed IR bridge. No synthetic defs.
         liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedRational.compareFiveSix]

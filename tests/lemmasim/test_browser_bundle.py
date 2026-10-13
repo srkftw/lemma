@@ -42,6 +42,7 @@ class BrowserBundleBoundary(unittest.TestCase):
                'portable_inputs':{'adapter.cpp':item('adapter.cpp')},
                'binding_generator_inputs':{'generator.py':item('generator.py'),profile:item(profile)},
                'host_toolchain_inputs':{'flake.lock':item('flake.lock')},
+               'host_runtime':{'runtime.inc.cpp':item('runtime.inc.cpp')},
                'sha256':{str(root/'model.sv'):item('model.sv')},
                'configuration_includes':{str(root/'config.vh'):item('config.vh')},
                'verilator_runtime_inputs':{str(root/'tool/runtime.h'):item('tool/runtime.h')},
@@ -55,11 +56,14 @@ class BrowserBundleBoundary(unittest.TestCase):
                 m[key]={'path':name,'sha256':item(name)}
             with patch('lemmasim_browser.ROOT',root):
                 validate_wasm_inputs(source,m)
-                for name in ('generator.py','driver.py','patch.py','tool/runtime.h',
+                for name in ('generator.py','driver.py','patch.py','tool/runtime.h','runtime.inc.cpp',
                              'built/verilator-portable/verilated_threads.cpp'):
                     p=root/name;before=p.read_bytes();p.write_bytes(b'changed policy/runtime')
                     with self.subTest(input=name),self.assertRaises(ValueError):validate_wasm_inputs(source,m)
                     p.write_bytes(before)
+                include=m.pop('host_runtime')
+                with self.assertRaises(ValueError):validate_wasm_inputs(source,m)
+                m['host_runtime']=include
                 del m['binding_generator_inputs']
                 with self.assertRaises(ValueError):validate_wasm_inputs(source,m)
 

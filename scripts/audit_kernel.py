@@ -191,6 +191,19 @@ POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_C
 BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
 LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS
 
+MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
+    'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
+SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
+    'silicon_profile':'lemma-silicon-dev/0.3.0',
+    'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
+LEMMASIM_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+
+def software_deployment_fields(configuration):
+    return {'software_deployment':SOFTWARE_DEPLOYMENT} if configuration in MANAGED_NOTEBOOK_CONFIGURATIONS else {}
+
+
 def kernel_contract(configuration: str) -> str:
     return "core0-kernel-v0.5" if configuration in BLE_CONFIGURATIONS else "core0-kernel-v0.4" if configuration in POWER_CONFIGURATIONS else "core0-kernel-v0.3" if configuration in LEMMASIM_CONFIGURATIONS else CONTRACTS["kernel"]
 
@@ -316,7 +329,7 @@ def validate_user_image_catalog(value: object, *, configuration: str | None = No
     images = image_specs(selected)
     expected = {"schema_version": 1, "contract_version": "lemma-user-image-catalog-v1",
                 "configuration": selected, "stage": "supervisor", "image_count": len(images),
-                "images": list(images), **managed_fields(selected)}
+                "images": list(images), **managed_fields(selected), **software_deployment_fields(selected)}
     # Exact equality also closes paths, IDs, per-image prefixes and source roots.
     if (type(catalog.get("schema_version")) is not int or type(catalog.get("image_count")) is not int
             or catalog != expected or any(type(row.get("id")) is not int for row in catalog.get("images", []))):
@@ -878,7 +891,8 @@ def validate_task_capture_borrow(unit: dict, ir: str) -> dict:
                             (t+'copyStep',['u32','u32']+['u64']*5,{'checked-access','physical-read','physical-write'})]:
         if rows[s].get('args')!=args or set(rows[s].get('effects',[]))!=effects:raise Core0Error('task capture helper signature/effects differ')
     _local_callers(unit,ir,t+'contextAt',{t+'capture'},n)
-    _local_callers(unit,ir,t+'lookupRecord',{t+'lookup',t+'contextAt'},n)
+    from ipc_poll_borrow import task_lookup_record_allowed_callers
+    _local_callers(unit,ir,t+'lookupRecord',task_lookup_record_allowed_callers(unit,ir),n)
     body=_ir_definition_body(ir,n[t+'capture']);failed=_ir_definition_body(ir,n[t+'failed'])
     _,actual=_local_checked_result(body,n[p+'validateFrame'],'i64 %arg1')
     _,base=_local_checked_result(body,n[a+'base'],'i64 %arg0')
@@ -2982,16 +2996,17 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     case_field = {"startup_case"} if multi_user and configuration in {"tasks-fault-development", *MANAGED_POLICIES} else set()
     expected_managed = managed_fields(configuration, image)
     from closed_inline import selected as inline_selected, FIELD as inline_field, catalog as inline_catalog
-    from managed_records import FIELD as records_field, allowed as records_allowed, contract as records_contract
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()), "unit")
-    if any(unit.get(key) != value for key, value in expected_managed.items()):
+    from managed_records import FIELD as records_field, allowed as records_allowed, profile_allowed as user_v2_allowed, contract as records_contract
+    from arithmetic_execution_identity import FIELD as execution_field, selected as execution_selected, contract as execution_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()), "unit")
+    if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
     if (unit.get("schema_version") != (2 if multi_user else 1) or type(unit.get("schema_version")) is not int
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
                 (kernel_contract(configuration) if role == "kernel" else
-                 'core0-user-v0.2' if role == 'user' and records_allowed(unit) and records_field in unit else CONTRACTS[role])):
+                 'core0-user-v0.2' if role == 'user' and (user_v2_allowed(unit) and (records_field in unit or image_key=='notebook')) else CONTRACTS[role])):
         raise Core0Error(f"{role} unit identity/version differs")
     if multi_user and (unit.get("image_key") != image_key or type(unit.get("image_id")) is not int or unit.get("image_id") != image["id"]):
         raise Core0Error("per-image user unit key/ID differs")
@@ -3041,6 +3056,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             raise Core0Error("function effect catalog escapes role authority")
     inline_catalog(unit)
     records_contract(unit)
+    execution_contract(unit)
     for root in roots:
         if not any(row["source"] == root["source"] and row["symbol"] == root["symbol"] and row["args"] == root["args"] for row in functions):
             raise Core0Error("root/function signature or symbol mismatch")
@@ -4574,6 +4590,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     inline_report = validate_closed_inline(ir, unit, optimized=optimized)
     from managed_records import validate as validate_managed_records
     records_report = validate_managed_records(ir, unit, optimized=optimized)
+    from arithmetic_execution_identity import validate as validate_execution_identity
+    execution_report = validate_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
     lines = ir.splitlines()
     # A post-pipeline O0 file still contains the untransformed genuine bodies.
@@ -4631,6 +4649,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
             "checked_inline": inline_report, "managed_records": records_report,
+            **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),
             **({"lemmasim_device_lowering":sim_devices} if unit.get("configuration") in LEMMASIM_CONFIGURATIONS else {})}
 
@@ -5307,6 +5326,8 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         capability_header_borrow = (validate_capability_header_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
             if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Capability.managed'
                    for row in units['kernel']['functions']) else None)
+        from ipc_poll_borrow import validate_reachable_helpers
+        ipc_poll_borrow = validate_reachable_helpers(units['kernel'], (output_dir/'kernel/program.ll').read_text())
         task_capture_borrow = (validate_task_capture_borrow(units['kernel'], (output_dir/'kernel/program.ll').read_text())
             if any(re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])=='Lemma.Kernel.Task.capture'
                    for row in units['kernel']['functions']) else None)
@@ -5504,8 +5525,10 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
                   "task_kernel_stack": task_stack,
+                  **software_deployment_fields(configuration),
                   "object_budget": object_budget,
                   **({"capability_header_borrow":capability_header_borrow} if capability_header_borrow is not None else {}),
+                  **({"ipc_poll_borrow":ipc_poll_borrow} if ipc_poll_borrow is not None else {}),
                   **({"task_capture_borrow":task_capture_borrow} if task_capture_borrow is not None else {}),
                   **({"surface_read_page_borrow":surface_read_page_borrow} if surface_read_page_borrow is not None else {}),
                   **({"architecture_diagnostics": architecture} if architecture is not None else {}),

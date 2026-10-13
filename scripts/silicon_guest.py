@@ -11,7 +11,8 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
-POWER_CONFIGURATIONS={'notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
+NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook'})
+POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
@@ -60,7 +61,7 @@ def prepared(workload,name=None):
         validate(data['workloads'][workload][key])
     guest=validate(data['workloads'][workload]['build']).parent
     verify_guest_build(guest,selected[workload],json.loads((guest/'build.json').read_text())['optimization'])
-    if workload=='notebook':
+    if workload in NOTEBOOK_WORKLOADS:
         capacity=json.loads(validate(data['workloads'][workload]['capacity']).read_text())
         if capacity.get('status')!='PASS' or capacity.get('configuration')!=selected[workload]:
             raise ValueError('RTL notebook selected capacity evidence differs')
@@ -173,14 +174,14 @@ def build(args):
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',guest],timeout=600,log=directory/'guest-audit.log')
     guest=Path(guest).resolve()
     verify_guest_build(guest,selected[workload],args.opt_level)
-    if workload=='notebook':
+    if workload in NOTEBOOK_WORKLOADS:
         capacity_path=directory/'guest-capacity.json'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_lemmasim_capacity.py',
                      '--build',guest,'--output',capacity_path],timeout=120,log=directory/'guest-capacity.log')
         capacity=json.loads(capacity_path.read_text())
         if capacity.get('status')!='PASS':raise ValueError('RTL notebook selected capacity audit did not pass')
     entry={key:identified(guest/name) for key,name in [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
-    if workload=='notebook':entry['capacity']=identified(capacity_path)
+    if workload in NOTEBOOK_WORKLOADS:entry['capacity']=identified(capacity_path)
     previous=None
     try:
         previous=json.loads(prepared_path(name).read_text())
@@ -191,7 +192,7 @@ def build(args):
                         for item in old_entry.values():validate(item)
                         old_build=json.loads(validate(old_entry['build']).read_text())
                         verify_guest_build(validate(old_entry['build']).parent,selected[key],old_build['optimization'])
-                        if key=='notebook':validate(old_entry['capacity'])
+                        if key in NOTEBOOK_WORKLOADS:validate(old_entry['capacity'])
                     except (OSError,ValueError,KeyError):
                         continue
                     data['workloads'][key]=old_entry

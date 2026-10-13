@@ -31,7 +31,8 @@ EXPECTED_IR={
 CONFIGURATIONS={'lemmasim-silicon-power-notebook','lemmasim-silicon-power-initialize',
  'lemmasim-silicon-power-arithmetic-oom-development',
  'lemmasim-silicon-power-arithmetic-fault-development',
- 'lemmasim-silicon-power-arithmetic-stall-development'}
+ 'lemmasim-silicon-power-arithmetic-stall-development',
+ 'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'}
 
 def require(value,message):
  if not value:raise Core0Error(message)
@@ -39,11 +40,30 @@ def require(value,message):
 def allowed(unit):
  return unit.get('role')=='user' and unit.get('image_key')=='arithmetic' and unit.get('configuration') in CONFIGURATIONS
 
+MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
+ 'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
+SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
+ 'silicon_profile':'lemma-silicon-dev/0.3.0',
+ 'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
+
+def notebook_profile_allowed(unit):
+ return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and
+  unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS)
+
+def profile_allowed(unit):
+ return allowed(unit) or notebook_profile_allowed(unit)
+
 def contract(unit):
  version=unit.get('contract_version')
  generated=[r for r in unit.get('functions',[]) if '.__lemma_managed_v02.' in r.get('source','')]
  if version!='core0-user-v0.2':
   require(FIELD not in unit and not generated,'Legacy unit acquired managed-record authority')
+  return None
+ if notebook_profile_allowed(unit):
+  require(unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,
+   'Managed Notebook software deployment differs from its exact versioned selection')
+  require(FIELD not in unit and not generated,
+   'The selected Notebook acquired a managed-record closure outside its empty genuine inventory')
   return None
  require(allowed(unit),'Managed User profile escaped its exact isolated Arithmetic deployment')
  c=unit.get(FIELD)
