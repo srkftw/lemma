@@ -3835,6 +3835,7 @@ BACKEND_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Buffer.Server.existing': {'server'},
 }
 LEMMASIM_BACKEND_JUMP_TABLES = {
+    'Lemma.Platform.LemmaSim.Descriptor.geometry': ('kernel',5,['u64'],['checked-access','mmio-read','io-order','physical-read','physical-write'],list(range(1,6))),
     # Pure descriptor identity selection for the five exact declared bindings.
     'Lemma.Platform.LemmaSim.Descriptor.expectedBinding': ('kernel',5,['u64','u64'],[],list(range(1,6))),
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
@@ -4096,6 +4097,23 @@ def validate_dtb_pair_body(ir: str, unit: dict, symbol: str) -> str:
     digest=hashlib.sha256(normalized.encode()).hexdigest()
     if digest!='b259ebe10adb20c25ef1dc0e83cdc915789c742220633112f38267596185af1c':
         raise Core0Error('DTB paired owner differs from exact checked property/role body')
+    return digest
+
+
+def validate_sim_geometry_body(ir: str, unit: dict, symbol: str) -> str:
+    source='Lemma.Platform.LemmaSim.Descriptor.geometry'
+    names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
+    rows={row['symbol']:row for row in unit['functions']};row=rows.get(symbol,{})
+    if (unit.get('role')!='kernel' or unit.get('configuration') not in LEMMASIM_CONFIGURATIONS
+        or names.get(symbol)!=source or row.get('args')!=['u64']
+        or row.get('effects')!=['checked-access','mmio-read','io-order','physical-read','physical-write']):
+        raise Core0Error('geometry table escapes its closed checked kernel declaration')
+    body=_ir_definition_body(ir,symbol)
+    rebound=re.sub(r'@([^ (]+)',lambda m:'@'+names.get(m[1],m[1]),body)
+    normalized=' '.join(' '.join(line.split(';',1)[0].strip() for line in rebound.splitlines()).split())
+    digest=hashlib.sha256(normalized.encode()).hexdigest()
+    if digest!='57282f9401fcda2b06922f56f5b6fd3d480c89f10f94bff21ad18f5f3a34e150':
+        raise Core0Error('geometry table differs from exact five-binding checked body')
     return digest
 
 
@@ -4368,6 +4386,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                     args=source_row.get('args') if source_row else None,
                     effects=source_row.get('effects') if source_row else None,
                     configuration=unit.get('configuration'))))
+            if sim_source and source=='Lemma.Platform.LemmaSim.Descriptor.geometry':
+                validate_sim_geometry_body(optimized_ir,unit,owner['name'])
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
