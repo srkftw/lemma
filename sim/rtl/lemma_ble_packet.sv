@@ -8,7 +8,7 @@ module lemma_ble_packet (
  input logic rx_sample_valid,rx_sample_bit,
  output logic tx_sample_valid,tx_sample_bit,
  output logic [63:0] ticks,tx_packets,rx_packets,crc_errors,rx_errors,
- output logic tx_active,rx_active
+ output logic tx_active,rx_active,controller_busy
 );
  localparam logic [63:0] MAGIC=64'h31544b50454c4d4c;
  logic [31:0] access_address;
@@ -69,6 +69,9 @@ module lemma_ble_packet (
    (addr>=256&&addr<=464&&wdata<=255);
  assign error=valid&&(!enabled||!access_ok||!known||(write&&!write_ok));
  assign irq=events!=0;
+ // Power admission must include retained heads and unacknowledged events,
+ // even after RX/TX shifting has stopped or the IRQ has been acknowledged.
+ assign controller_busy=tx_active||rx_active||rx_pending||guard_ticks!=0||events!=0;
  assign event_base=(valid&&write&&!error&&addr==72)?events&~wdata[3:0]:events;
  assign rx_active=rx_phase!=0;
  always_comb begin

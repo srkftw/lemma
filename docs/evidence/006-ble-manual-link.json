@@ -1,0 +1,169 @@
+{
+  "schema": "lemma-ble-manual-link/1",
+  "status": "PASS_COMPONENT",
+  "scope": "Genuinely elaborated scalar SN/NESN policy, RV64IM object, hosted Lean opaque peer/2 and two distinct sampled-bit RTL packet endpoints; full guest/SoC transport remains separate",
+  "commands": [
+    "python3 scripts/check_ble_link.py --work-dir build/radio/ble-link-policy-a2 --timeout 300",
+    "python3 scripts/check_ble_wire_peer.py --work-dir build/radio/ble-wire-peer-a3 --timeout 300",
+    "python3 scripts/check_ble_packet.py --lane rtl --work-dir build/radio/ble-busy-rtl-a1 --timeout 300 --jobs 2",
+    "python3 scripts/check_ble_transport.py --work-dir build/radio/ble-transport-a1",
+    "python3 -m unittest discover -s tests/radio -p 'test_*.py' -v"
+  ],
+  "receipts": {
+    "policy": {
+      "path": "build/radio/ble-link-policy-a2/result.json",
+      "sha256": "49f442120ceadab6b0835cf24c0e1f0eb32bb09c7f95351b245164ea449b20d6",
+      "host_seconds": 24.540617349965032,
+      "source_inventory_sha256": "a8c5afbda55c2b8683e99f9baa0d0cce890ba9160cc58ab24273a7ec16284cb2",
+      "observations": {
+        "accepted": 2,
+        "duplicates": 1,
+        "cancellation_frozen": true,
+        "trust": "open manual development context; no connection/security/durable receipt",
+        "complete_accepted_response_state": true,
+        "actual_private_fork_exact_suffix": true,
+        "malformed_restore_rejections": 6
+      }
+    },
+    "wire_peer": {
+      "path": "build/radio/ble-wire-peer-a3/result.json",
+      "sha256": "4a35d89ac8b76590ed5fd0a7da47550ec02af007f16e930e1aecdcd70bb80bba",
+      "host_seconds": 14.325246919994242,
+      "source_inventory_sha256": "afb3400a4de2a1127d08d34ade2a2bef77093295ce884ae872d85fe5cbea0ea1",
+      "observations": {
+        "actual_generated_packets": 9,
+        "opaque_accepted": 3,
+        "duplicate_ignored": 1,
+        "actual_ack_lost": true,
+        "actual_crc_corruption_rejected": true,
+        "reset_head_cleared": true,
+        "explicit_cancel_frozen": true,
+        "real_hosted_lean_peer": true
+      }
+    },
+    "power_busy": {
+      "path": "build/radio/ble-busy-rtl-a1/result.json",
+      "sha256": "f67ee5221da22562b15f054fcbce1ea60586e5448e387697fd83b6a052d02a4c",
+      "host_seconds": 10.58814101794269,
+      "source_inventory_sha256": "ce38f69447341d84cc8738fbc9c46ca58df2ad4bbc441d29cab994749681c24f",
+      "observations": [
+        "BLE KAT official5.4 data bytes and two endpoints independently decoded PASS",
+        "BLE corruption loss wrong-channel bounded-head reset power coexistence PASS",
+        "BLE four arbitrary live TX/RX checkpoints exact30000-clock suffix PASS"
+      ]
+    },
+    "native_transport": {
+      "path": "build/radio/ble-transport-a1/result.json",
+      "sha256": "fc3443ff19ba7da21c9587a4a77816421106d2b899584daf3d9e04707eb82765",
+      "host_seconds": 14.550994553021155,
+      "source_inventory_sha256": "c95943e1f845a817428255b43dcfe0d0a818f78b09479317a26ab20c33a82360",
+      "observations": [
+        "BLE_PEER_TRANSPORT realLean nonblocking IDs/overlap/pending/private exact suffix/cancel/EOF/reap PASS"
+      ]
+    }
+  },
+  "maintained_radio_sources": {
+    "Lemma/Radio/BLE/Link.lean": "478b5c1774693f3b27a5588c4c6b3e459ee8a7161f558b88f9418177c0a2461b",
+    "Lemma/Platform/Silicon/Development/BLELink.lean": "a0e7c4f78d4ac56c96fd197a08e98e8ea7764d4f1c269192257bbe09dcb48df5",
+    "sim/radio/ble_peer.lean": "e4a04741bd347b5473e2e6df70c8a334cfa89acd897966f22003ca7df375afe5",
+    "sim/radio/ble_peer_transport.h": "23c8d7102e2247d44b78a5658303205e7712711389d66dd865188a10d1804f8b",
+    "sim/radio/ble_peer_transport.cpp": "4aa9249e2c7780469d08895ce826ff8cdc6047be764e95d3ab531fc18279d53e",
+    "sim/rtl/lemma_ble_packet.sv": "0051d25b1ba3ac9ef062aed19fc986196a4b8af9dd4f9bdd76f64523cb749a1a"
+  },
+  "pinned_lowering_tools": {
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863",
+      "version": [
+        "Lean (version 4.34.1, Release)"
+      ]
+    },
+    "lake": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+      "sha256": "2bbf0d3a0077a8bddf11ad6987ebe930b2b3692eabe15fcd72f0aa069d6f8620",
+      "version": [
+        "Lake version 5.0.0-src (Lean version 4.34.1)"
+      ]
+    },
+    "llvm-as": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-as",
+      "sha256": "8e2fd9eff5a77e2e24e068d5cf3bb2f9447f8fe94f6c43236531bd8490484bad",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "llc": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "sha256": "00ef7b72f35b21cb2ddfdb66db6217120d314b36bdbed2580a330846863660ac",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build.",
+        "  Default target: x86_64-unknown-linux-gnu"
+      ]
+    },
+    "llvm-nm": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+      "sha256": "b93775666542ca37c59bae9b704e92ebbee38850715adf4ba04e2086843230e8",
+      "version": [
+        "llvm-nm, compatible with GNU nm",
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "llvm-readobj": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+      "sha256": "5f581ba2b48160f3febaba5a05a0a145ba748b29a11a20503282e7771f3efb71",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "llvm-objdump": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objdump",
+      "sha256": "9d688cee37fcd514374a41d659da285cd2522a30500a5faf3287460f4c69c70c",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build.",
+        ""
+      ]
+    }
+  },
+  "source_language": "Ordinary scalar Lean declarations and Action wrappers through genuine checked elaboration/lowering. No managed-language or proof-kernel closure claim.",
+  "packet_path": "Native fixture supplies predeclared client bus stimulus, never client sequence policy. Peer receives only actual RTL CRC-valid immutable heads; its genuine hosted Lean responses go through a distinct real packet circuit. Nine generated/independently compared encoded packets, dropped actual ACK, same-SN retry, duplicate ignored, three distinct opaque admissions, explicit credit, corruption rejection, cancel and reset.",
+  "state_continuation": "Each hosted response contains complete accepted state/opaque head/counters. Actual fresh private process restoration has an exact accepted-boundary suffix, six malformed restore cases reject, and live restore is forbidden. Native async adapter captures stable request IDs and actual outcomes; original is not queried/flushed/drained for fork.",
+  "snapshot_limit": "Whole-machine peer/controller/wire integration and arbitrary-boundary pending-host continuation are not qualified. Snapshot callers must reject pending external requests until the actual accepted outcome is available or use a separately specified captured-outcome fork; never rerun against original peer.",
+  "native_adapter": "Thin host process/socketpair mechanics only; nonblocking bounded256-byte framing, one pending request, actual timeout/EOF failure, owned process-group reaping. Startup readiness is host process readiness, not Bluetooth configuration/authentication.",
+  "power_busy": "New combinational controller_busy includes shifting, immutable RX head, guard and events. IRQ acknowledgment after guard expiry cannot hide a retained RX head; pop/reset and active TX are checked. No MMIO/packet semantics change.",
+  "focused_python_tests": {
+    "count": 7,
+    "status": "PASS",
+    "scope": "Exact RV64 ELF/ISA observer admission and complete peer trailer/restore framing negatives"
+  },
+  "primary_specification": "Bluetooth Core5.4 (2023-01-31), Vol6B4.5.9 SN/NESN ACK rules; mandatory full-role scope remains incomplete",
+  "specification_url": "https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/low-energy-controller/link-layer-specification.html",
+  "retained_failures": [
+    {
+      "path": "build/radio/ble-dev/transport-build-a1.log",
+      "scope": "Strict host GCC misleading-indentation errors; source corrected without suppressions"
+    },
+    {
+      "path": "build/radio/ble-dev/transport-run-a1.log",
+      "scope": "Test selected nonexistent Nix executable path; actual EOF rejected, corrected resolved executable in new run"
+    }
+  ],
+  "remaining": [
+    "Actual RV64 BLELink probe/controller/IRQ/native0.5 SoC and reset/power integration",
+    "Real guest companion protocol/service and opaque fragmentation/durable peer receipts",
+    "Whole-machine radio state/replay and pending external outcome capture",
+    "Bluetooth connection establishment/control procedures/channel/event schedule/L2CAP/security/applicable5.4 features",
+    "Digital GFSK modulation/demodulation and calibration/control/status boundary; RF propagation/physical qualification separately",
+    "Fast/browser radio parity and distribution",
+    "Wi-Fi6 digital implementation separately unfinished"
+  ]
+}

@@ -75,6 +75,12 @@ int main(int argc,char**argv){try{
  {Endpoint c;c.put(40,15);inject(c,official);need(c.d->crc_errors+c.d->rx_errors!=0&&!(c.get(16)&4),"wrong whitening channel admitted");}
  {Endpoint c;c.submit(2,{9,8,7});for(unsigned t=0;t<6500;t++)c.step();need(c.d->tx_active,"coexistence probe not in flight");c.d->coex_allow=0;c.step();need(!c.d->tx_active&&!c.d->tx_sample_valid&&c.get(80)==6,"coex withdrawal failed cancel");c.d->enabled=0;c.d->valid=1;c.d->write=1;c.d->addr=64;c.d->wdata=1;c.d->eval();need(c.d->error,"powered-down admission");c.step();need(c.d->tx_packets==0&&c.d->rx_packets==0,"power loss retained packet state");}
  {Endpoint c;inject(c,official);c.d->reset=1;c.step();c.d->reset=0;need(!(c.get(16)&7)&&c.get(72)==0,"reset retained packet or irq");}
+ {Endpoint c;need(!c.d->controller_busy,"reset controller reports busy");inject(c,official);
+  for(unsigned i=0;i<20000;i++)c.step();c.put(72,15);
+  need(!c.d->tx_active&&!c.d->rx_active&&!c.d->irq&&c.get(104)==0&&c.d->controller_busy,"IRQ acknowledgment hid retained RX head from power busy");
+  c.put(64,2);need(!c.d->controller_busy,"popped idle controller remains busy");
+  c.submit(2,{1});need(c.d->controller_busy,"active TX absent from power busy");
+  c.d->reset=1;c.step();c.d->reset=0;need(!c.d->controller_busy,"reset retained power busy");}
  {Endpoint c;for(unsigned i=0;i<official.size();i++){if(i+1==official.size()){c.d->valid=1;c.d->write=1;c.d->size=3;c.d->addr=72;c.d->wdata=15;}c.step(true,official[i]);c.d->valid=0;for(unsigned t=0;t<99;t++)c.step();}need(c.get(72)==2&&c.d->irq,"RX event lost to coincident W1C");c.put(72,2);need(c.get(72)==0&&!c.d->irq,"IRQ W1C failed");}
  {Endpoint c;for(unsigned i=0;i<60;i++){c.step(true,official[i]);for(unsigned t=0;t<99;t++)c.step();}need(c.d->rx_active,"reset probe not receiving");c.d->reset=1;c.step();c.d->reset=0;for(unsigned i=60;i<official.size();i++){c.step(true,official[i]);for(unsigned t=0;t<99;t++)c.step();}need(c.d->rx_packets==0&&!(c.get(16)&4),"reset prefix resumed without sync");}
  {Endpoint c;for(uint64_t aa:{0ULL,0xffffffffULL,0x8e89bed6ULL,0x8e89bed7ULL,0xaaaaaaaaULL,0x33333333ULL,0x100000000ULL}){c.d->valid=1;c.d->write=1;c.d->size=3;c.d->addr=24;c.d->wdata=aa;c.d->eval();need(c.d->error,"invalid data access address bus admitted");c.step();c.d->valid=0;need(c.get(24)==0xaa08192b,"bad address changed context");}}
