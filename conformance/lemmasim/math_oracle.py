@@ -7,6 +7,8 @@ IDENTITY = 0x0001000000000001
 EXECUTION_MAGIC = 0x314558454D4D454C
 EXECUTION_IDENTITIES = (0x0002000100000001, 0x0002000000000001,
                         0x0001000000000001, 0x000100000000001f)
+SUMS_EXECUTION_IDENTITIES = (0x0003000100000001, 0x0003000000000001,
+                            0x0001000100000001, 0x000100000000001f)
 
 
 def result(goal, n, d, p0, p1, p2, budget):
@@ -28,7 +30,7 @@ def inspect(payload, namespace, object_id):
         raise ValueError('mathematical record length differs')
     words = struct.unpack('<'+str(len(payload)//8)+'Q', payload)
     version=words[1]
-    if version not in (1,2,3) or len(payload)!={1:832,2:1856,3:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
+    if version not in (1,2,3,4) or len(payload)!={1:832,2:1856,3:2496,4:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
         raise ValueError('mathematical package/namespace/page identity differs')
     if not 1 <= words[4] <= 64 or not 1 <= words[5] <= 0x7ffffffffffffffe:
         raise ValueError('mathematical anchor/revision differs')
@@ -66,7 +68,7 @@ def inspect(payload, namespace, object_id):
             'page': words[4], 'revision': words[5], 'goal': words[6],
             'answer': list(words[7:12]), 'outcome': words[12], 'evidence_revision': words[13],
             'budget': words[17], 'attempts': attempts, 'hints': hints, 'history': history}
-    if version in (2,3):
+    if version in (2,3,4):
         identity,mode,count,uncertain,event_version,show_reason=words[22:28]
         if identity!=IDENTITY or mode>4 or count>64 or uncertain!=1 or event_version!=1 or show_reason>1 or any(words[28:32]):
             raise ValueError('learner policy identity/bounds/uncertainty differs')
@@ -110,22 +112,23 @@ def inspect(payload, namespace, object_id):
         else:action,reason='support','unsupported-or-resource'
         record['learner']={'policy':'lemma-offline-review/1','mode':mode,'understanding':'uncertain',
             'recommendation':action,'reason':reason,'show_reason':bool(show_reason),'events':events}
-    if version==3:
-        if words[232:240] != (EXECUTION_MAGIC,1,0,0,0,0,0,0):
+    if version in (3,4):
+        if words[232:240] != (EXECUTION_MAGIC,1 if version==3 else 2,0,0,0,0,0,0):
             raise ValueError('execution extension header/version/reserved differs')
         def execution(slot,budget,active):
             if slot==(0,)*8:
                 return {'origin':'Unknown'}
             request,implementation,lowering,runtime,resources,actual_budget,status,origin=slot
-            if not active or not 1<=request<=0x7ffffffffffffffe or origin!=2 or \
-                (implementation,lowering,runtime,resources)!=EXECUTION_IDENTITIES or \
+            admitted = (origin==2 and (implementation,lowering,runtime,resources)==EXECUTION_IDENTITIES) or \
+                (version==4 and origin==3 and (implementation,lowering,runtime,resources)==SUMS_EXECUTION_IDENTITIES)
+            if not active or not 1<=request<=0x7ffffffffffffffe or not admitted or \
                 actual_budget!=budget or status!=0:
                 raise ValueError('execution request/implementation/lowering/runtime/resource/status differs')
-            return {'origin':'IsolatedManaged','request':request,
-                    'implementation':'lemma-isolated-arithmetic-managed-v1',
-                    'lowering':'core0-user-v0.2/lemma-managed-records-v1',
-                    'runtime':'lemma-owned-arena-v1','resources':'lemma-arithmetic-resource-v1',
-                    'budget':budget,'status':0}
+            return {'origin':'IsolatedSums' if origin==3 else 'IsolatedManaged','request':request,
+                    'implementation':'lemma-isolated-arithmetic-sums-v1' if origin==3 else 'lemma-isolated-arithmetic-managed-v1',
+                    'lowering':'core0-user-v0.3/lemma-managed-sums-v1' if origin==3 else 'core0-user-v0.2/lemma-managed-records-v1',
+                    'runtime':'lemma-owned-arena-sum-cookie-v1' if origin==3 else 'lemma-owned-arena-v1',
+                    'resources':'lemma-arithmetic-resource-v1','budget':budget,'status':0}
         slots=[words[248+index*8:256+index*8] for index in range(8)]
         metadata=[execution(slot,history[index]['budget'] if index<attempts else 0,index<attempts)
                   for index,slot in enumerate(slots)]

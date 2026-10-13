@@ -63,3 +63,40 @@ shared references and general calling conventions remain open. A compiler
 fixture or host runtime fixture does not establish isolated RV64 execution,
 exact simulator timing parity, mathematical understanding or a proof-kernel
 check. Those obligations require their own real guest observations.
+
+The prepared native bundle `build/native/task006-sums-a1` contains the complete
+audited notebook and initializer artifacts with archived consumed sources.
+Use a private, guest-initialized medium for the normal notebook:
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-sums-a1 --disk PRIVATE_MEDIUM \
+  --session-dir NEW_SESSION
+```
+
+COURSE opens the existing offline arithmetic sequence. Raw pen taps edit the
+submitted rational/coefficient values, CHECK invokes the separately linked
+Arithmetic process, HINT records authored local assistance, and REVIEW exposes
+the uncertain offline policy with user override/disable. Save remains the
+ordinary Store journal/barrier path. The native implementation versions are
+not proof-kernel or exact RTL timing claims.
+
+The connected normal and historical-record checks use independent cold machines,
+private backing copies, complete controller pixels and the unchanged 60-second
+boot/30-second action bounds:
+
+```sh
+python3 scripts/check_math_session.py --require-sums-identity \
+  --disk build/silicon/task006-canonical-cold-a2/medium.raw \
+  --work-dir NEW_MATH_OUTPUT --native-bundle build/native/task006-sums-a1 \
+  --boot-seconds 60 --action-seconds 30 --deadline 1200
+python3 scripts/check_review_session.py --record-version 4 --source-record-version 3 \
+  --disk build/task006-execution-identity-math-a1/closed-course.raw \
+  --work-dir NEW_MIGRATION_OUTPUT --native-bundle build/native/task006-sums-a1 \
+  --boot-seconds 60 --action-seconds 30 --deadline 1200
+```
+
+The source media above are retained development artifacts created by real guest
+formatting/Saves. The observers never format or modify those originals. Product
+boot, browser interaction, snapshots, radio, teacher package authoring and tutor
+transport remain separately qualified paths.

@@ -5,6 +5,7 @@ import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
 import Lemma.Courses.Arithmetic
 import Lemma.Services.Arithmetic.ClientV2
+import Lemma.Services.Arithmetic.ClientV3
 
 /-! Capability-isolated pen notebook. Pixels, input interpretation, raw ink,
 page/edit records and save publication execute in compiled User Lean. Two
@@ -668,6 +669,37 @@ private def allocateCourse : Action :=
   .bind (Syscall.allocatePage mathematicsIO) fun s actual => if statusFailed s = true then .done s 0 else
   if actual = mathematicsIO then put 520 3 else failed
 
+-- Versioned software selection occupies a formerly unused state word.
+-- Main initialization sets it before any course request or document load.
+private def pollArithmetic (transaction incoming outgoing request : UInt64) : Action :=
+  .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
+  if selection = 3 then Lemma.Services.Arithmetic.ClientV3.pollCall transaction incoming outgoing request
+  else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.pollCall transaction incoming outgoing request else failed
+
+private def callArithmetic (endpoint outgoing document request : UInt64) : Action :=
+  .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
+  if selection = 3 then Lemma.Services.Arithmetic.ClientV3.beginCall endpoint outgoing document request
+  else if selection = 2 then Lemma.Services.Arithmetic.ClientV2.beginCall endpoint outgoing document request else failed
+
+private def completeArithmetic (revision goal outcome request budget : UInt64) : Action :=
+  .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
+  if selection = 3 then Lemma.Documents.Mathematics.completeExecutionSums mathematics revision goal outcome request budget
+  else if selection = 2 then Lemma.Documents.Mathematics.completeExecution mathematics revision goal outcome request budget else failed
+
+private def createArithmetic (ns page : UInt64) : Action :=
+  .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
+  if selection = 3 then Lemma.Documents.Mathematics.createSums mathematics ns page
+  else if selection = 2 then Lemma.Documents.Mathematics.createCurrent mathematics ns page else failed
+
+private def upgradeArithmetic (ns page : UInt64) : Action :=
+  .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
+  if selection = 3 then
+  .bind (Lemma.Documents.Mathematics.validateSums mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Documents.Mathematics.upgradeSums mathematics
+  else if selection = 2 then
+  .bind (Lemma.Documents.Mathematics.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Documents.Mathematics.upgradeCurrent mathematics else failed
+
 /-- Caller cancellation consumes the terminal transaction exactly once. A
 reply already accepted by the kernel is discarded without publishing evidence. -/
 private def cancelArithmetic : Action :=
@@ -677,7 +709,7 @@ private def cancelArithmetic : Action :=
     .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
     .bind (IPC.cancel transaction) fun canceled _ =>
     if (if canceled = 0 then true else if canceled = IPCABI.alreadyCompleted then true else false) = true then
-    .bind (Lemma.Services.Arithmetic.ClientV2.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
+    .bind (pollArithmetic transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
     if terminal = IPCABI.wouldBlock then .done IPCABI.invalidTransaction 0 else .done 0 terminal.toUInt64
     else .done canceled 0
     else .done 0 0) fun s terminal => if statusFailed s = true then .done s 0 else
@@ -691,7 +723,7 @@ private def beginArithmetic : Action :=
   .bind (Lemma.Documents.Mathematics.field mathematics 144) fun s attempts => if statusFailed s = true then .done s 0 else
   if attempts = 8 then .bind (Lemma.Documents.Mathematics.submit mathematics) fun s _ => .done s 0 else if 8 < attempts then .done 234 0 else
   .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Services.Arithmetic.ClientV2.beginCall endpoint mathematicsIO mathematics request) fun s transaction =>
+  .bind (callArithmetic endpoint mathematicsIO mathematics request) fun s transaction =>
   if statusFailed s = true then .done s 0 else
   .bind (put 544 transaction) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 552 request) fun s _ => if statusFailed s = true then .done s 0 else
@@ -710,7 +742,7 @@ private def pumpArithmetic : Action :=
   .bind (if phase = 1 then
     .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
     .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
-    .bind (Lemma.Services.Arithmetic.ClientV2.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun s outcome =>
+    .bind (pollArithmetic transaction (mathematicsIO + 256) mathematicsIO request) fun s outcome =>
     if s = IPCABI.wouldBlock then .done 0 0 else
     .bind (put 560 outcome) fun stored _ => if statusFailed stored = true then .done stored 0 else
     .bind (put 568 s.toUInt64) fun stored _ => if statusFailed stored = true then .done stored 0 else
@@ -737,7 +769,7 @@ private def pumpArithmetic : Action :=
   .bind (get 560) fun s outcome => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (mathematicsIO + 104)) fun s request => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (mathematicsIO + 96)) fun s budget => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Mathematics.completeExecution mathematics revision goal outcome request budget) fun s _ =>
+  .bind (completeArithmetic revision goal outcome request budget) fun s _ =>
   if statusFailed s = true then courseError s else
   .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else saveCourse
@@ -748,14 +780,14 @@ private def openCourse : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.legacyBytes) fun readStatus _ =>
-  .bind (if readStatus = 230 then Lemma.Documents.Mathematics.createCurrent mathematics ns page else
+  .bind (if readStatus = 230 then createArithmetic ns page else
     if readStatus = 0 then
     .bind (Lemma.Documents.Mathematics.field mathematics 8) fun s version => if statusFailed s = true then .done s 0 else
     .bind (if version = 2 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes
       else if version = 3 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
+      else if version = 4 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
-    .bind (Lemma.Documents.Mathematics.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
-    Lemma.Documents.Mathematics.upgradeCurrent mathematics
+    upgradeArithmetic ns page
     else .done readStatus 0) fun s upgraded =>
   if statusFailed s = true then courseError s else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
@@ -1088,9 +1120,11 @@ private def initializeMedium : Action :=
   .bind (CapabilityConsole.record console 0x41f sequence 0 0 0) fun s _ =>
   if statusFailed s = true then .done s 0 else Syscall.exit 0
 
-def main (bootArgument : UInt64) : Action :=
+private def mainWithExecution (bootArgument selection : UInt64) : Action :=
   if 3 < bootArgument then failed else
+  if (if selection = 2 then true else selection = 3) = false then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 selection) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
@@ -1131,5 +1165,13 @@ def main (bootArgument : UInt64) : Action :=
   .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
   .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
   if statusFailed s = true then .done s 0 else .loop step
+
+/-- Historical software selection: bootargs0..3 keep Protocol2/document3. -/
+def main (bootArgument : UInt64) : Action := mainWithExecution bootArgument 2
+
+/-- Explicit sums software selection on the unchanged canonical machine. -/
+def mainSums (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithExecution bootArgument 3 else
+  if bootArgument = 3 then mainWithExecution bootArgument 3 else failed
 
 end Lemma.Applications.Notebook

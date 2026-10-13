@@ -70,6 +70,19 @@ class MathematicsEvidenceTests(unittest.TestCase):
         words[240:248]=saved
         with self.assertRaises(ValueError):self.inspect(words)
 
+    def test_sums_version_preserves_exact_old_authority_and_rejects_cross_origin(self):
+        words=self.current_record(True);words[1]=4;words[233]=2
+        observed=self.inspect(words)
+        self.assertEqual(observed['execution']['history'][0]['origin'],'IsolatedManaged')
+        slot=[45,*math_oracle.SUMS_EXECUTION_IDENTITIES,8,0,3]
+        words[240:248]=slot;words[248:256]=slot
+        observed=self.inspect(words)
+        self.assertEqual(observed['execution']['active']['origin'],'IsolatedSums')
+        self.assertEqual(observed['execution']['active']['runtime'],'lemma-owned-arena-sum-cookie-v1')
+        for index,value in [(1,3),(233,1),(247,2),(255,2),(241,math_oracle.EXECUTION_IDENTITIES[0]),(243,math_oracle.EXECUTION_IDENTITIES[2])]:
+            changed=list(words);changed[index]=value
+            with self.assertRaises(ValueError):self.inspect(changed)
+
     def test_actual_rational_values_and_revision_are_load_bearing(self):
         words=self.record()
         self.assertEqual(self.inspect(words)['outcome'],1)

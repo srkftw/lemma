@@ -45,7 +45,7 @@ run_elab do
     throwError "ordinary sum source was not genuinely lowered"
   unless suite.usedExecutionOps.all (·.operation.admits .user_v0_3) do
     throwError "sum closure exceeded inherited User authority"
-  for profile in #[Lemma.Core0.Profile.user_v0_1, .user_v0_2, .kernel_v0_5, .kernel_v0_6, .boot_v0_1] do
+  for profile in #[Lemma.Core0.Profile.user_v0_1, .user_v0_2, .kernel_v0_5, .kernel_v0_6, .kernel_v0_7, .boot_v0_1] do
     match Lemma.Core0.checkAndLowerActionSuiteForProfile env profile #[``ordinary] with
     | .ok _ => throwError m!"historical profile {profile.contractVersion} silently admitted sum bridge"
     | .error error => unless error.code == .unsupportedPrimitive do throwError error.render

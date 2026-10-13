@@ -1,6 +1,7 @@
 import Lemma.User.Memory
 import Lemma.Mathematics.OwnedSubmission
 import Lemma.Mathematics.ExecutionIdentity
+import Lemma.Mathematics.ExecutionIdentityV2
 
 /-! Typed answers and evidence remain separate from immutable raw ink.
 Historical832/1856-byte records retain their exact semantic layouts. The
@@ -104,7 +105,8 @@ The bounded UI uses nonnegative integer coefficients 0..99, a proper subset of
 the checker domain; no interpretation is inferred from ink. -/
 private def clearExecution (buffer : UInt64) : Action :=
   .bind (field buffer 8) fun s version => if s = 0 then
-  if version = 3 then ExecutionIdentity.clearCurrent buffer else .done 0 0
+  if version = 3 then ExecutionIdentity.clearCurrent buffer else
+  if version = 4 then ExecutionIdentityV2.clearCurrent buffer else .done 0 0
   else .done s 0
 
 def revise (buffer : UInt64) : Action :=
@@ -169,6 +171,19 @@ def completeExecution (buffer revision goal outcome request budget : UInt64) : A
   .bind (field buffer 144) fun s index => if s = 0 then if index < 8 then
   .bind (completeSubmit buffer revision goal outcome) fun s actual => if s = 0 then
   .bind (ExecutionIdentity.publish buffer request index budget) fun s _ => .done s actual
+  else .done s 0 else .done 235 0 else .done s 0 else .done 234 0 else .done s 0
+  else .done 234 0 else .done s 0
+
+/-- Protocol3 publishes only the new closed sums identity into document4.
+The semantic, request, revision and resource checks precede publication. -/
+def completeExecutionSums (buffer revision goal outcome request budget : UInt64) : Action :=
+  if request = 0 then .done 234 0 else if 0x7ffffffffffffffe < request then .done 234 0 else
+  if (if budget = 0 then true else budget = 8) = false then .done 234 0 else
+  .bind (field buffer 8) fun s version => if s = 0 then if version = 4 then
+  .bind (field buffer 136) fun s currentBudget => if s = 0 then if currentBudget = budget then
+  .bind (field buffer 144) fun s index => if s = 0 then if index < 8 then
+  .bind (completeSubmit buffer revision goal outcome) fun s actual => if s = 0 then
+  .bind (ExecutionIdentityV2.publish buffer request index budget) fun s _ => .done s actual
   else .done s 0 else .done 235 0 else .done s 0 else .done 234 0 else .done s 0
   else .done 234 0 else .done s 0
 
@@ -410,5 +425,28 @@ def upgradeCurrent (buffer : UInt64) : Action :=
 def createCurrent (buffer ns page : UInt64) : Action :=
   .bind (create buffer ns page) fun s _ => if s = 0 then
   upgradeCurrent buffer else .done s 0
+
+/-- Document4 is an additive authority registry. Historical validate still
+rejects4 and retains the exact old execution-identity semantics. -/
+def validateSums (buffer ns page : UInt64) : Action :=
+  .bind (field buffer 8) fun s version => if s = 0 then
+  if version = 4 then
+  .bind (validate.validateHeader buffer ns page) fun s _ => if s = 0 then
+  ExecutionIdentityV2.validate buffer else .done s 0
+  else validate buffer ns page else .done s 0
+
+/-- The caller strictly validated the original record first. v3 history remains
+byte-for-byte Known/Unknown; v1/v2 migration inherits its original Unknown rule.
+Only format and registry version change before the normal Store transaction. -/
+def upgradeSums (buffer : UInt64) : Action :=
+  .bind (field buffer 8) fun s version => if s = 0 then
+  if version = 4 then .done 0 0 else
+  .bind (upgradeCurrent buffer) fun s _ => if s = 0 then
+  .bind (put buffer 1864 ExecutionIdentityV2.extensionVersion) fun s _ => if s = 0 then
+  .bind (put buffer 8 4) fun s _ => .done s 1 else .done s 0 else .done s 0 else .done s 0
+
+def createSums (buffer ns page : UInt64) : Action :=
+  .bind (createCurrent buffer ns page) fun s _ => if s = 0 then
+  upgradeSums buffer else .done s 0
 
 end Lemma.Documents.Mathematics
