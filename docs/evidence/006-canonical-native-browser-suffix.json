@@ -1,0 +1,398 @@
+{
+  "schema": "lemma-canonical-native-browser-suffix/1",
+  "status": "PASS_EXACT_NATIVE_WASM_MATCHED_EVENT_SUFFIX",
+  "scope": "Actual own-backend private native/Wasm restores from separately exact657M checkpoints, identical prospective raw3 event suffix to658000003. Complete authoritative state and applicable observations compare exactly; no cross-backend restore/cold or fullSaved/new-display-publication claim.",
+  "cold_receipt": "docs/evidence/006-canonical-native-browser-cold.json",
+  "plan": {
+    "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/plan.json",
+    "sha256": "98590b263ed9ca12906de76ed1eb9ae5179be1e73e1fbf0a06f3d7f4d1328bbd",
+    "start_cycle": 657000000,
+    "end_cycle": 658000003,
+    "delta_cycles": 1000003,
+    "maximum_host_seconds_per_backend": 600,
+    "maximum_quantum": 50000,
+    "literal_rows": [
+      "657000100 pen 65700009 12000 24000 2048 3 1 0",
+      "657100100 pen 65710009 12100 24100 2048 3 1 0",
+      "657200100 pen 65720009 12200 24200 0 2 1 0"
+    ],
+    "native_source": {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/cycle-657M-checkpoint/machine.chk",
+      "sha256": "7fffd7e571d284cc436d811bc4259dc73e4b82439b40973907d4d4d0e7a09bb2",
+      "identity": "6fae5d6e14ef3125c0bd2394cabf7678fc32db39d17dceb2f3b216775e9f0ed0"
+    },
+    "browser_source": {
+      "path": "build/browser/task006-bytes-browser-durable-cold-a2/comparison-657M.chk",
+      "sha256": "8cce8ab94984ca448762ce63d5f519c367970bf3d8b02f6555aff6335ae4c25e",
+      "identity": "c6f244138751f237c3676a5cccb441af664cd0796830b917de6aee9dcd151cc7"
+    }
+  },
+  "identity_policy": "Distinct implementation identities at offsets16..79 only; original full headers retained and non-interchangeable",
+  "native_runtime_identity": "6fae5d6e14ef3125c0bd2394cabf7678fc32db39d17dceb2f3b216775e9f0ed0",
+  "wasm_runtime_identity": "c6f244138751f237c3676a5cccb441af664cd0796830b917de6aee9dcd151cc7",
+  "whole_archive_bytes": 145543936,
+  "native_whole_sha256": "dbf848b1c7ebe9bb18a48585352c6d33c0a4b0c2d32abe4b9f07f790f478b462",
+  "browser_whole_sha256": "d9e706414b7ec43cf8871d6ffe604ab5d168524cbe7281960956ef34258186f1",
+  "wrapper": {
+    "bytes": 145520857,
+    "sha256": "340208e6eaac793367cc8005ba7f30e7f554feabe1409ab265c3fa16c6b753cc",
+    "stored_crc64": "18247573501336374354",
+    "computed_crc64": "18247573501336374354"
+  },
+  "generated_logical_rtl": {
+    "bytes": 22967,
+    "sha256": "9f11937f873aa94629132ba60146ca63df357fa89e2070c5cb15f5c5a66ca1ac",
+    "stored_crc64": "2067781806382581785",
+    "computed_crc64": "2067781806382581785"
+  },
+  "exact_wrapper_comparison": {
+    "compared_bytes": 145520857,
+    "differing_bytes": 0,
+    "first_difference": null,
+    "exact_equal": true
+  },
+  "exact_generated_rtl_comparison": {
+    "compared_bytes": 22967,
+    "differing_bytes": 0,
+    "first_difference": null,
+    "exact_equal": true
+  },
+  "crc_checks": {
+    "literal_ecma_123456789": "6c40df5f0b497347",
+    "independent_bitwise_fixture_bytes": 4096,
+    "all_four_producer_component_crcs_verified": true
+  },
+  "native": {
+    "host_seconds": 13.847614487982355,
+    "runtime_request_seconds": 5.187061516917311,
+    "peak_runtime_rss_kib": 298896,
+    "owners_reaped": true,
+    "source_runner_sha256": "a466110f3d00b4aa0030a01ef1ed618c21227e962f091886826e6b0bf32bae3b"
+  },
+  "actual_browser": {
+    "schema": "lemma-browser-actual-matched-suffix/1",
+    "status": "PASS_EXACT_BOUNDARY_WITHIN_BOUND",
+    "tab_id": "7",
+    "url": "http://127.0.0.1:8772/",
+    "private_origin": "queued-suffix-private-a1",
+    "restore": "build/browser/task006-bytes-browser-durable-cold-a2/comparison-657M.chk",
+    "own_backend_restore": true,
+    "no_native_archive_imported": true,
+    "original_cold_tab6_unchanged": true,
+    "start": "657000000",
+    "end": "658000003",
+    "cycles": "1000003",
+    "host_bound_seconds": 600,
+    "observed_wall_upper_seconds": 96.081,
+    "simulation_call_seconds": 7.253714999973795,
+    "heap_bytes": 345833472,
+    "running": false,
+    "pause_reason": "cycle-limit",
+    "budget": {
+      "requested": "1000003",
+      "used": "1000003",
+      "remaining": "0",
+      "limit": "658000003",
+      "stopOnReady": false
+    },
+    "event_queue": "0",
+    "pen_queue": "0",
+    "paper_busy": "0",
+    "panel_completed": "1",
+    "panel_sequence": "1",
+    "backing_next_id": "25",
+    "backing_completed": "24",
+    "flushes": "0",
+    "volatile_sectors": "0",
+    "retired": "316558739",
+    "pc": "2149637472",
+    "ticks": "65799999",
+    "qualification": "Actual browser UI completed bounded suffix and exported state; cross-native byte comparison awaits independent observation"
+  },
+  "outputs": {
+    "gray4_pixels": 3630000,
+    "gray4_sha256": "a54b78aa315b9a3c95d0331dd6548c9692c281847c960f40724c4613e895826f",
+    "all_authoritative_visible_bytes_exact": true,
+    "uart_bytes": 1232,
+    "uart_sha256": "903a450daef953065a4227bf8508a928141c497a3a8c90b2f084de865c2da2f9",
+    "all_retained_authoritative_uart_bytes_exact": true,
+    "newly_emitted_uart_suffix_bytes": 0,
+    "native_transport_file_scope": "After same-backend restore, native output file contains newly emitted bytes only; original history remains exactly compared in authoritative wrapper",
+    "medium_bytes": 268435456,
+    "medium_sha256": "74de6126ad3f5f86003fae605a5db695ea462cbf28787bf1908949fc88f3c85f",
+    "all_opaque_medium_bytes_exact": true,
+    "unchanged_publication": true
+  },
+  "pen": {
+    "wrapper_counters": {
+      "event_index": 3,
+      "pen_ingress": 3,
+      "pen_accepted": 3
+    },
+    "actual_authoritative_events": [
+      {
+        "cycle": 657000100,
+        "kind": "pen",
+        "words": [
+          65700009,
+          12000,
+          24000,
+          2048,
+          3,
+          1,
+          0
+        ],
+        "payload": ""
+      },
+      {
+        "cycle": 657100100,
+        "kind": "pen",
+        "words": [
+          65710009,
+          12100,
+          24100,
+          2048,
+          3,
+          1,
+          0
+        ],
+        "payload": ""
+      },
+      {
+        "cycle": 657200100,
+        "kind": "pen",
+        "words": [
+          65720009,
+          12200,
+          24200,
+          0,
+          2,
+          1,
+          0
+        ],
+        "payload": ""
+      }
+    ],
+    "processing": {
+      "descriptor_pa": 2181308416,
+      "root_pa": 2181312512,
+      "raw_va": 131840,
+      "raw_pa": 2181522176,
+      "state_pa": 2181523456,
+      "ink_buffer_va": 3145728,
+      "ink_sample_pa": 2181861504,
+      "latest_raw": [
+        1,
+        65700009,
+        12000,
+        24000,
+        2048,
+        3,
+        1,
+        0,
+        1
+      ],
+      "first_appended_raw": [
+        1,
+        65700009,
+        12000,
+        24000,
+        2048,
+        3,
+        1,
+        0,
+        1
+      ],
+      "raw_count": 1,
+      "last_sequence": 1,
+      "last_time": 65700009,
+      "last_epoch": 1,
+      "write_status": 1,
+      "raw_pending": 0,
+      "active_stroke": 6
+    },
+    "qualification": "RTL accepted all3 literal samples. Actual Sv39-mapped Notebook raw and active ink buffer contain the exact first new72-byte sample; subsequent complete guest samples are not claimed. All remaining pipeline/FIFO/in-flight work is compared in the entire logicalRTL section; no Saved or new panel completion is inferred."
+  },
+  "original_failures_retained": [
+    {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a1/result.json",
+      "sha256": "8d0dd6f8670f8bac8de834b43d8f75151bc3dfc27c323e964358419a701c54e3",
+      "meaning": "offline observer conflated newly emitted native UART transport file with checkpoint-retained history; no target cycles executed"
+    },
+    {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-result.json",
+      "sha256": "89192af8b39bbd869b50d500abdf7a8c8e8116f6effc025dfcd14c8ec38cf883",
+      "meaning": "early buffered native input capture read after exact restore and3 actual admissions; zero target suffix cycles, exact applied capture flushed on cleanup"
+    },
+    {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a2/supervision.json",
+      "sha256": "5e479f94dd4e1de9c304924dd7719acc9a1c1228e5dbae9a211b8f5766120a9b",
+      "meaning": "host observer preamble NameError before owner/CPU creation"
+    }
+  ],
+  "observer": {
+    "target_cycles_executed": 0,
+    "crc_observer_seconds": 9.715861038000002,
+    "crc_observer_peak_rss_bytes": 877486080,
+    "output_observer_seconds": 2.8834480509976856,
+    "output_observer_peak_rss_kib": 856920,
+    "sections_source": "Unchanged actual comparison-a1 section/CRC observerPASS reused by output reobservera2; only the offline native UART transport-vs-retained-history expectation changed. No machine or target suffix rerun."
+  },
+  "inventory": [
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/plan.json",
+      "bytes": 4894,
+      "sha256": "98590b263ed9ca12906de76ed1eb9ae5179be1e73e1fbf0a06f3d7f4d1328bbd"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-result.json",
+      "bytes": 33654,
+      "sha256": "35e2f649f9dca77c2dc93ba6162802c2c5c121326d3ce63a596985a0d174fbd9"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/observe.py",
+      "bytes": 8252,
+      "sha256": "a466110f3d00b4aa0030a01ef1ed618c21227e962f091886826e6b0bf32bae3b"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/supervision.json",
+      "bytes": 864,
+      "sha256": "88cd03ea772db88d2efcaf7f576d7e5e6399bdba3982965114999f7b86432218"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-commands.jsonl",
+      "bytes": 80759,
+      "sha256": "aca0c79e0950205798ac050ec95834fd986be439d5ae0c0faf0ea9a3544dbdab"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-final/machine.chk",
+      "bytes": 145543936,
+      "sha256": "dbf848b1c7ebe9bb18a48585352c6d33c0a4b0c2d32abe4b9f07f790f478b462"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-final/snapshot.json",
+      "bytes": 1019,
+      "sha256": "216001197f37a7c4a35eeabaccf0a8198d5a9e6186727f90bf1b247bade12eb6"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-queued/machine.chk",
+      "bytes": 145543936,
+      "sha256": "8f9ffff9c23ba6c78e4ef501a3bcc2047d41cfda606582483a016323d2889dba"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-queued/snapshot.json",
+      "bytes": 1019,
+      "sha256": "784ddf2d1a6d524a23168da4d7036ebf116dc6c970a82849efed5360b9a27080"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-final.ppm",
+      "bytes": 3630017,
+      "sha256": "f1b53456179e0a834833b809ba4310ce60e8add91e55ca035cf8eaf8f7ae4802"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-final.raw",
+      "bytes": 268435456,
+      "sha256": "74de6126ad3f5f86003fae605a5db695ea462cbf28787bf1908949fc88f3c85f"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-final-uart.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-session/input.events",
+      "bytes": 135,
+      "sha256": "65f4aaa2926b868331f69bb15753bf1c3c9df609977b55f113079b91322cb921"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a3/native-session/external.jsonl",
+      "bytes": 555,
+      "sha256": "0d44e642ad5a07db9b8c2bff58aa94cc53e4cc89900750907620c94a322ff088"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/browser/final.chk",
+      "bytes": 145543936,
+      "sha256": "d9e706414b7ec43cf8871d6ffe604ab5d168524cbe7281960956ef34258186f1"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/browser/final.raw",
+      "bytes": 268435456,
+      "sha256": "74de6126ad3f5f86003fae605a5db695ea462cbf28787bf1908949fc88f3c85f"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/browser/raw-events.json",
+      "bytes": 335,
+      "sha256": "77896186e6f8532e3243cb18dd7c37a7a7b519a168a43668d8ccca0020d8cb57"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/browser/ui-observation.json",
+      "bytes": 1242,
+      "sha256": "44656f97f21ccb9e6b14c62a174ee85dbdc1a87e1435b5cf6efbc2be40e34743"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a2/sections.json",
+      "bytes": 3205,
+      "sha256": "95286a371e723416d2204b8784c49147134a16e066a6fc3a46317d84d94cbb0e"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a2/sections.mjs",
+      "bytes": 5512,
+      "sha256": "b8022126b0bd7bd1c3569bdd185a0742b6be97247dd6bf8490134f9422342035"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a2/observe.py",
+      "bytes": 11982,
+      "sha256": "dd8f6eb074c77b63e402047c31cadb8eceb2b139379ca1111fdbf41b9154336b"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-result.json",
+      "bytes": 15917,
+      "sha256": "89192af8b39bbd869b50d500abdf7a8c8e8116f6effc025dfcd14c8ec38cf883"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/observe.py",
+      "bytes": 7851,
+      "sha256": "b62427b751ca3051e9850cb67f23785861f7b746404eb78a9160fd3d839d3dc5"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a2/observe.py",
+      "bytes": 8248,
+      "sha256": "81db090158c3262eec24ba1522d18832230672f8e487d0cc8b7af88fd4433ecc"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a2/supervision.json",
+      "bytes": 649,
+      "sha256": "5e479f94dd4e1de9c304924dd7719acc9a1c1228e5dbae9a211b8f5766120a9b"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/native-a2/observer.log",
+      "bytes": 410,
+      "sha256": "24304e4da6d0aac3d2071c1503ac12f2dc5e16afaea7d3c3ba8b960336aed756"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a1/result.json",
+      "bytes": 464,
+      "sha256": "8d0dd6f8670f8bac8de834b43d8f75151bc3dfc27c323e964358419a701c54e3"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a1/observe.py",
+      "bytes": 11397,
+      "sha256": "9e652c57ef622d50b13e5efe63e4eb57fd5c9dbd6116668d4a4eacd16ec972e9"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a2/result.json",
+      "bytes": 22494,
+      "sha256": "7e7cac85153a63abe9023fe2e06edf376f15645c5ebda4da68593ec8692244b6"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a1/sections.json",
+      "bytes": 3205,
+      "sha256": "95286a371e723416d2204b8784c49147134a16e066a6fc3a46317d84d94cbb0e"
+    },
+    {
+      "path": "build/silicon/task006-browser-medium-native-cold-a2/native-wasm-suffix-a1/comparison-a1/sections.mjs",
+      "bytes": 5512,
+      "sha256": "b8022126b0bd7bd1c3569bdd185a0742b6be97247dd6bf8490134f9422342035"
+    }
+  ]
+}

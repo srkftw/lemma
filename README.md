@@ -776,6 +776,10 @@ every wrapper/generatedRTL byte, all3.63M pixels and all durable bytes at the
 declared657M boundary. Original browser writing timing FAIL remains retained;
 course/Product acceptance and general parity remain separate work in the
 [current checkpoint](docs/plan/006-session-state.md).
+An additional [matched raw-event suffix](docs/evidence/006-canonical-native-browser-suffix.json)
+passed exact658000003 state/output equality on private own-backend restores,
+with all three hardware-accepted samples and the first guest raw copy observed
+under the declared600s/backend bound. New Save/display completion is separate.
 Product ROM/update and companion commands are documented in
 [the product boot contract](docs/contracts/006-product-boot-v1.md) and
 [the USB notebook contract](docs/contracts/006-usb-bulk-notebook-v1.md).

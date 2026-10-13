@@ -50,6 +50,21 @@ prelaunch moving-pen-up oracle FAIL remain unchanged. This finite independent
 cold comparison does not establish general parity, migration, later target
 execution or browser course/Product completion.
 
+The subsequent [matched raw-event suffix](../evidence/006-canonical-native-browser-suffix.json)
+also **PASS**es on private own-backend restores: the predeclared three literal
+pen samples and1000003 cycles stop at exact658000003. Native13.848observer
+seconds and actual browser96.081seconds upper bound both pass600s. Every
+145520857 wrapper byte and22967 logicalRTL byte, all retained raw events,
+3.63M visible pixels,1232 retained UART bytes and256MiB private medium bytes
+match exactly. All3 samples reached RTL acceptance; actual saved Sv39 mappings
+show the guest raw buffer and active ink chunk contain the first exact72-byte
+sample. Later guest samples, new panel completion and Save are not inferred.
+The native suffix emitted no new UART bytes; its transport file excludes the
+old history that remains in the authoritative wrapper. Buffered-capture,
+preconstruction launcher and offline UART-scope observer FAILs remain intact.
+The original native/browser owners were untouched, and the native fork was
+reaped. This extends the finite event-continuation evidence only.
+
 The actual canonical RTL cold notebook reached Ready and completed the full
 1650×2200 controller refresh at1.427B cycles/5487.787host seconds, with all8192
 frames and32MiB guest pool unchanged. The source-bound native archive is
