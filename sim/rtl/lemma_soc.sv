@@ -11,6 +11,22 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [2:0] power_cause,
  output logic power_domain_reset,power_loss,power_watchdog_armed,
  output logic [63:0] power_watchdog_timeout,power_watchdog_remaining,power_reset_remaining,power_reset_epoch,
+ // Explicit recovered-bit boundary. The peer is a separate circuit with its
+ // own reset/PIO and is outside the device's power domain.
+ input logic ble_rx_sample_valid,ble_rx_sample_bit,ble_coex_allow,
+ output logic ble_tx_sample_valid,ble_tx_sample_bit,ble_busy,
+ output logic [63:0] ble_ticks,ble_tx_packets,ble_rx_packets,ble_crc_errors,ble_rx_errors,
+ output logic ble_tx_active,ble_rx_active,
+ input logic ble_peer_enabled,ble_peer_reset,ble_peer_coex_allow,
+ input logic ble_peer_valid,ble_peer_write,
+ input logic [9:0] ble_peer_addr,input logic [2:0] ble_peer_size,
+ input logic [63:0] ble_peer_wdata,
+ output logic [63:0] ble_peer_rdata,
+ output logic ble_peer_ready,ble_peer_error,ble_peer_irq,
+ input logic ble_peer_rx_sample_valid,ble_peer_rx_sample_bit,
+ output logic ble_peer_tx_sample_valid,ble_peer_tx_sample_bit,ble_peer_busy,
+ output logic [63:0] ble_peer_ticks,ble_peer_tx_packets,ble_peer_rx_packets,ble_peer_crc_errors,ble_peer_rx_errors,
+ output logic ble_peer_tx_active,ble_peer_rx_active,
  input logic preload_valid,
  input logic [8:0] preload_index,
  input logic [63:0] preload_data,
@@ -88,13 +104,14 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic dma_valid,dma_write,dma_ready,dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
- logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata;
+ logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata;
  logic pen_ready,paper_ready,block_ready,pen_error,paper_error,block_error;
  logic pen_irq,paper_irq,block_irq,power_irq,power_ready,power_bus_error,paper_busy,block_busy,pen_sample_ready;
+ logic ble_ready,ble_error,ble_irq;
  logic [5:0] power_busy_sources;
  logic [1:0] power_event_flags;
  logic [31:0] irqs;
- logic pen_sel,paper_sel,block_sel,power_sel,dma_grant,dma_alignment,dma_span;
+ logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
  logic port_held,held_dma,held_write;
@@ -119,12 +136,13 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  end endgenerate
  assign pen_sel=dev_addr>=PEN_BASE&&dev_addr<PEN_BASE+PEN_SPAN;
  assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
- assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel;
+ assign ble_sel=BLE_ENABLED!=0&&dev_addr>=BLE_BASE&&dev_addr<BLE_BASE+BLE_SPAN;
+ assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel&&!ble_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=power_sel?power_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=power_sel?power_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=power_sel?power_bus_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ);
+ assign dev_rdata=power_sel?power_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=power_sel?power_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=power_sel?power_bus_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ);
  lemma_compute compute(
    .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
@@ -159,8 +177,31 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .dma_valid,.dma_write,.dma_addr,.dma_wdata,.dma_size,.dma_ready,.dma_error,.dma_rdata,
    .media_valid(controller_media_valid),.media_kind,.media_sector,.media_wdata,.media_ready,.media_error,.media_rdata
  );
+ generate if(BLE_ENABLED!=0) begin: sampled_ble
+   lemma_ble_packet endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.coex_allow(ble_coex_allow),
+     .valid(dev_valid&&ble_sel),.write(dev_write),.addr(10'(dev_addr-BLE_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(ble_rdata),.ready(ble_ready),.error(ble_error),.irq(ble_irq),
+     .rx_sample_valid(ble_rx_sample_valid),.rx_sample_bit(ble_rx_sample_bit),
+     .tx_sample_valid(ble_tx_sample_valid),.tx_sample_bit(ble_tx_sample_bit),
+     .ticks(ble_ticks),.tx_packets(ble_tx_packets),.rx_packets(ble_rx_packets),
+     .crc_errors(ble_crc_errors),.rx_errors(ble_rx_errors),.tx_active(ble_tx_active),.rx_active(ble_rx_active),.controller_busy(ble_busy));
+   lemma_ble_packet peer(.clk,.reset(ble_peer_reset),.enabled(ble_peer_enabled),.coex_allow(ble_peer_coex_allow),
+     .valid(ble_peer_valid),.write(ble_peer_write),.addr(ble_peer_addr),.size(ble_peer_size),.wdata(ble_peer_wdata),
+     .rdata(ble_peer_rdata),.ready(ble_peer_ready),.error(ble_peer_error),.irq(ble_peer_irq),
+     .rx_sample_valid(ble_peer_rx_sample_valid),.rx_sample_bit(ble_peer_rx_sample_bit),
+     .tx_sample_valid(ble_peer_tx_sample_valid),.tx_sample_bit(ble_peer_tx_sample_bit),
+     .ticks(ble_peer_ticks),.tx_packets(ble_peer_tx_packets),.rx_packets(ble_peer_rx_packets),
+     .crc_errors(ble_peer_crc_errors),.rx_errors(ble_peer_rx_errors),.tx_active(ble_peer_tx_active),.rx_active(ble_peer_rx_active),.controller_busy(ble_peer_busy));
+ end else begin: no_sampled_ble
+   assign ble_rdata=0;assign ble_ready=1;assign ble_error=0;assign ble_irq=0;assign ble_busy=0;
+   assign ble_tx_sample_valid=0;assign ble_tx_sample_bit=0;assign ble_ticks=0;assign ble_tx_packets=0;
+   assign ble_rx_packets=0;assign ble_crc_errors=0;assign ble_rx_errors=0;assign ble_tx_active=0;assign ble_rx_active=0;
+   assign ble_peer_rdata=0;assign ble_peer_ready=1;assign ble_peer_error=0;assign ble_peer_irq=0;assign ble_peer_busy=0;
+   assign ble_peer_tx_sample_valid=0;assign ble_peer_tx_sample_bit=0;assign ble_peer_ticks=0;assign ble_peer_tx_packets=0;
+   assign ble_peer_rx_packets=0;assign ble_peer_crc_errors=0;assign ble_peer_rx_errors=0;assign ble_peer_tx_active=0;assign ble_peer_rx_active=0;
+ end endgenerate
  assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
- assign power_busy_sources={(media_valid||external_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,paper_busy};
+ assign power_busy_sources={(media_valid||external_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy)};
  generate if(POWER_ENABLED!=0) begin: control_domain
    lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),

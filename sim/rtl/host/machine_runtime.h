@@ -5,6 +5,9 @@
 #include "verilated.h"
 #include "../../host/backing_io.h"
 #include "../../host/panel_pending.h"
+#ifndef __EMSCRIPTEN__
+#include "../../radio/ble_peer_transport.h"
+#endif
 #include <array>
 #include <cstdint>
 #include <deque>
@@ -22,10 +25,19 @@ Event parse_event(const std::string&);
 std::vector<Event> events(const std::string&);
 struct Options {
  uint64_t trace_limit=10000,stop_panels=0,fail_flush=0,observer_cycle=0;
- unsigned deadline=120;
+ unsigned deadline=120,host_threads=1;
+ unsigned ble_peer_timeout_ms=10000;
+ uint64_t ble_drop_packets=0;
+ std::string ble_peer_executable,ble_capture_path,ble_replay_path,ble_wire_path;
+ std::vector<std::string> ble_peer_arguments;
  uint64_t memory_latency=0;
  bool quiet_uart=false;
  std::string uart_path,trace_path,panel_path,block_trace_path,input_capture_path,stop_marker,drive_trace_path,fork_directory,backing_capture_path,backing_replay_path;
+};
+struct BleOutcome {
+ uint64_t id=0,issued=0,accepted=0,header=0;
+ std::vector<uint8_t> payload;
+ std::string frame;
 };
 struct State {
  BackingState backing;
@@ -58,11 +70,38 @@ struct State {
  uint64_t fail_flush=0,stop_panels=0,observer_cycle=0;
  uint64_t memory_latency=0,memory_pending=0,memory_wait=0,memory_addr=0,memory_write=0,memory_wdata=0,memory_strb=0;
  uint64_t media_active=0,media_kind=0,media_sector=0,flush_active=0,flush_cursor=0;
+ uint64_t ble_attached=0,ble_ready=0,ble_coex=1,ble_next_id=1,ble_poll_cycle=0,ble_pending=0;
+ uint64_t ble_request_cycle=0,ble_request_header=0;
+ std::vector<uint8_t> ble_request_payload;
+ std::string ble_accepted_state,ble_error;
+ BleOutcome ble_last;
+ uint64_t ble_peer_reset_until=8,ble_drop_remaining=0,ble_dropped_packets=0,ble_peer_sending=0,ble_peer_dropping=0;
+ uint64_t ble_to_chip_valid=0,ble_to_chip_bit=0,ble_to_peer_valid=0,ble_to_peer_bit=0;
+ uint64_t ble_raw_valid=0,ble_raw_bit=0,ble_ack_pending=0,ble_ack_header=0;
+ uint64_t ble_chip_samples=0,ble_peer_samples=0,ble_rx_heads=0,ble_accepted_replies=0;
+ std::deque<std::array<uint64_t,2>> ble_pio;
 };
 class Machine {
  std::unique_ptr<VerilatedContext> context;
  std::unique_ptr<Vlemma_soc> model;
  State s;
+#ifndef __EMSCRIPTEN__
+ std::unique_ptr<BlePeerTransport> ble_peer;
+#endif
+ std::vector<BleOutcome> ble_replay;
+ uint64_t ble_replay_cursor=0;
+ bool ble_fork_suspended=false;
+ std::ofstream ble_capture,ble_wire;
+ std::string active_ble_capture;
+ uint64_t ble_capture_bytes=0,ble_capture_branch=0;
+ void ble_before_edge();
+ void ble_after_edge();
+ uint64_t ble_read(uint64_t);
+ void ble_queue(uint64_t,uint64_t);
+ void ble_record(uint64_t,const BleOutcome&);
+ void ble_accept(const BleOutcome&);
+ void ble_reply_action(const std::string&);
+
  Options options;
  int medium=-1,backing_capture=-1;
  std::shared_ptr<BackingPlatform> backing;
@@ -110,6 +149,8 @@ public:
  // An isolated pending fork never reissues its inherited external operation.
  // Bind a complete, validated outcome tape before its virtual clock advances.
  void bind_backing_replay(const std::string&);
+ void bind_ble_replay(const std::string&);
+ const std::string& ble_capture_path() const {return active_ble_capture;}
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;
  // Export already-private accepted bytes for a platform rebind. Never reads

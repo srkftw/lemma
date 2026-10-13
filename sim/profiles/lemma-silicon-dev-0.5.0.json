@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "profile": "lemma-silicon-dev/0.5.0",
+  "canonical": "lemma-one-core/0.1.0",
+  "physical_conformance": "UNVERIFIED",
+  "reset_vector": 4096,
+  "rom_bytes": 4096,
+  "entry": 2147483648,
+  "hart_count": 1,
+  "ram_base": 2147483648,
+  "ram_bytes": 134217728,
+  "ram_implementation": "simulation-external-memory-port; not on-chip SRAM",
+  "dtb_base": 2279604224,
+  "dtb_reserve_bytes": 2097152,
+  "timebase_hz": 10000000,
+  "clock_hz": 100000000,
+  "boot_timer_probe_ticks": 10000,
+  "geometry": [
+    1650,
+    2200
+  ],
+  "pressure_max": 4095,
+  "frame_pool_base": 2181038080,
+  "frame_pool_bytes": 33554432,
+  "plic_sources": 15,
+  "devices": {
+    "uart": {
+      "base": 268435456,
+      "span": 256,
+      "irq": 10
+    },
+    "finisher": {
+      "base": 1048576,
+      "span": 4096
+    },
+    "timer": {
+      "base": 33554432,
+      "span": 65536,
+      "mtime": 33603576,
+      "mtimecmp": 33570816
+    },
+    "plic": {
+      "base": 201326592,
+      "span": 6291456
+    },
+    "block": {
+      "base": 268439552,
+      "span": 4096,
+      "irq": 1,
+      "sector_bytes": 512
+    },
+    "paper": {
+      "base": 268500992,
+      "span": 4096,
+      "irq": 12
+    },
+    "pen": {
+      "base": 268505088,
+      "span": 4096,
+      "irq": 13,
+      "fifo": 256
+    },
+    "power": {
+      "base": 268502272,
+      "span": 256,
+      "irq": 14
+    },
+    "ble": {
+      "base": 268502528,
+      "span": 1024,
+      "irq": 15,
+      "payload_max": 27,
+      "clocks_per_bit": 100
+    }
+  },
+  "descriptor": {
+    "base": 268502016,
+    "bytes": 256,
+    "magic": 1280132179,
+    "abi": 6
+  },
+  "absent": [
+    "RTC",
+    "seven unused VirtIO slots",
+    "PCIe",
+    "CFI flash",
+    "fw_cfg",
+    "platform bus"
+  ],
+  "dma_policy": "CVW 4 KiB instruction cache with guest fence.i; data cache disabled; controller DMA restricted to checked frame-pool physical window; one request outstanding",
+  "panel_model": "external visible state driven only by RTL controller output; synthetic refresh timing",
+  "frame_count": 8192,
+  "frame_quota": 8192,
+  "development_memory_scope": "32 MiB checked owned frame pool and 8192-frame per-owner ceiling; actual allocation/zeroing/generation/pin/reaping algorithms; external simulation capacity remains separate from physical memory",
+  "paper_sequencer": 1,
+  "digital_panel_program": "virtual-panel-synthetic/1; openly specified three-phase digital scan; no physical voltages or electrophoretic-response qualification",
+  "power_enabled": 1,
+  "power_registers": {
+    "magic": 0,
+    "version": 8,
+    "state": 16,
+    "error": 24,
+    "reset_cause": 32,
+    "button_level": 40,
+    "events": 48,
+    "epoch": 56,
+    "wake_cause": 64,
+    "command": 72,
+    "ack": 80,
+    "clear_error": 88,
+    "watchdog_timeout": 96,
+    "watchdog_command": 104,
+    "watchdog_remaining": 112,
+    "watchdog_armed": 120,
+    "supply_status": 128,
+    "domain_status": 136,
+    "reset_remaining": 144,
+    "reset_epoch": 152
+  },
+  "power_magic": 1280333650,
+  "power_policy": "lemma-power-v2; preserved cooperative suspend/wake plus always-on watchdog, sampled power-good/brownout,8-clock reset qualification; ELF-preload development recovery",
+  "power_safety": 1,
+  "power_version": 2,
+  "ble_enabled": 1,
+  "ble_context": "manual unauthenticated LE1M development context; no connection establishment, hopping, encryption, RF or complete Bluetooth5.4 support",
+  "descriptor_features": 7
+}

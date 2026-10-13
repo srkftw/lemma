@@ -1,0 +1,171 @@
+{
+  "schema": "lemma-ble-machine-evidence/1",
+  "status": "PASS",
+  "scope": "checked privileged RV64 manual LE1M PIO/IRQ15 exchange, actual hosted Lean policy, real lost sampled ACK and resolved-policy exact native outcome-tape fork",
+  "profile": "lemma-silicon-dev/0.5.0",
+  "guest": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.5.0",
+    "runtime": "2fe469dc8fd456fd8abefbd1e7fc357117c3de19ed58b63bb3c38fb800847f9f",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "63ce93225c6cd3c075a08a910e52e95c82b189f2fa977595ab4fdc1e6981d087",
+    "dtb": "9a16c429949978601001ce5f0560937a22bbe541375fe8e2b3477aea7cc71746",
+    "descriptor": "81aa8cd9c02c98bcca1a03340394cfddae881ab19faa84774d7cbed7b9fd8f8b"
+  },
+  "native_snapshot_identity": "d276a129ba4d14b649c31946829e73fda98935009ff64318d850e10fa8c5f286",
+  "actual_guest_execution": {
+    "cycles": 8982000,
+    "host_seconds": 53.36822696303716,
+    "guest_records": [
+      [
+        1104,
+        0,
+        260,
+        2,
+        12
+      ],
+      [
+        1104,
+        1,
+        516,
+        2,
+        12
+      ],
+      [
+        1105,
+        15,
+        5,
+        196611,
+        2
+      ],
+      [
+        1106,
+        3,
+        12,
+        3,
+        0
+      ]
+    ],
+    "ble": {
+      "enabled": true,
+      "peer_attached": 1,
+      "peer_ready": 1,
+      "pending_external": 0,
+      "fork_suspended": false,
+      "next_request": 3,
+      "accepted_replies": 3,
+      "actual_rx_heads": 2,
+      "chip_tx_packets": 2,
+      "chip_rx_packets": 1,
+      "peer_tx_packets": 2,
+      "peer_rx_packets": 2,
+      "chip_samples": 352,
+      "peer_samples": 160,
+      "dropped_packets": 1,
+      "pio_queued": 0,
+      "ack_pending": 0,
+      "chip_tx_active": 0,
+      "peer_tx_active": 0,
+      "wire_to_chip": 0,
+      "wire_to_peer": 0,
+      "chip_crc_errors": 0,
+      "peer_crc_errors": 0,
+      "coex": 1,
+      "accepted_state": "STATE 518 ACCEPTED 1 DUPLICATES 1 PENDING 12 4c4d434d5030303101000200",
+      "capture_path": "/home/sreekumaar/Downloads/lemma/build/radio/task006-ble-machine-a2/session/ble.outcomes"
+    },
+    "independent_sample_vector": {
+      "chip_bits": 352,
+      "peer_bits": 160,
+      "chip_sha256": "46c4f4c6bdd74afd2597f49eda461cac2de3fef49a20b40a733f8a45436d75de",
+      "peer_sha256": "1afd809f785d745698a310e13313f9f5506547f3c31a35ec7ce679d08bc11fc6"
+    }
+  },
+  "checkpoint": {
+    "snapshot_seconds": 0.9285998359555379,
+    "replay_seconds": 5.000179175985977,
+    "cycles": 1070000,
+    "checkpoint_bytes": 145182264,
+    "checkpoint_sha256": "59bef4511e951118650981299248077dd9d57d1b03fbb33ee287d5ce2e9ea903",
+    "original_tape_sha256": "babf4d5d7cb6daa0c9615b67548e6e443a07e1ea6ddab01b3d3745399b28e896",
+    "replayed_uart_sha256": "3ac47390f00bbc5db2131363e0a9f0e6bb6046926907576de66adabb20b34bc2"
+  },
+  "negative_checks": {
+    "pending_snapshot": "unresolved or failed BLE external outcome cannot be checkpointed",
+    "no_tape": "isolated BLE fork requires captured outcomes; virtual clock unchanged",
+    "wrong_context": "BLE tape lacks exact accepted checkpoint outcome"
+  },
+  "host_pool_comparison": {
+    "scope": "same exact generated scalar RTL and genuine guest, fixed target cycles; host worker-pool resource/time comparison only",
+    "native_binary_sha256": "47b2fb596ec043d0080d6d49f7918aa98518a9bfc50192e9db834ee72da1fcb1",
+    "elapsed_ratio_default_over_one": 0.9336362504260537,
+    "default": {
+      "prefix_seconds": 9.837277635000646,
+      "cycles_per_second": 203308.2804214124,
+      "resources": {
+        "VmHWM": "151876 kB",
+        "VmRSS": "151300 kB",
+        "Threads": "14"
+      },
+      "prefix_sha256": "1be2d7fef51cb0d13c12e7b47be805c22ebb3446daa29b0843c2275b1547d8aa",
+      "suffix_sha256": "685d03a276d99f06d7369ca43ee5f79014b26a8d1f4de233a867e7a80fc56bd3",
+      "checkpoint_bytes": 145181750
+    },
+    "one": {
+      "prefix_seconds": 10.536520652996842,
+      "cycles_per_second": 189815.98061321615,
+      "resources": {
+        "VmHWM": "151536 kB",
+        "VmRSS": "150968 kB",
+        "Threads": "1"
+      },
+      "prefix_sha256": "1be2d7fef51cb0d13c12e7b47be805c22ebb3446daa29b0843c2275b1547d8aa",
+      "suffix_sha256": "685d03a276d99f06d7369ca43ee5f79014b26a8d1f4de233a867e7a80fc56bd3",
+      "checkpoint_bytes": 145181750
+    },
+    "interpretation": "One short sample; no speedup demonstrated. Exact admitted authoritative prefix/suffix equality passed."
+  },
+  "retained_failure": {
+    "schema": "lemma-ble-decode-failure-diagnosis/1",
+    "status": "FAIL",
+    "original_campaign": "build/radio/task006-ble-machine-a1/result.json",
+    "original_cycles": 7870065,
+    "finish_code": "0x323333",
+    "guest_artifact_sha256": "63ce93225c6cd3c075a08a910e52e95c82b189f2fa977595ab4fdc1e6981d087",
+    "native_binary_sha256": "47b2fb596ec043d0080d6d49f7918aa98518a9bfc50192e9db834ee72da1fcb1",
+    "phase_continuation": "retained same-backend no-peer 2.1M checkpoint; no guest mutation; same 7,870,065-cycle fatal",
+    "metadata_sha256": "dd3cb4dc23c33070b448ce84f0ad404358a1933bb2f0418a4e42f283ab8fca91",
+    "fdt_scratch": {
+      "ended": 1,
+      "seen": "0x1f7e",
+      "plic_parent": 2,
+      "plic_phandle": 2
+    },
+    "defect": "SoC passed dev_addr[9:0] for BLE base0x10010600/window0x400; ID read decoded offset0x200 rather than0.",
+    "repair": "Endpoint addr is now 10-bit (dev_addr-BLE_BASE), new native build required.",
+    "qualification": "No packet/guest success claimed by this diagnosis."
+  },
+  "focused_checks": {
+    "new_binding_tests": 5,
+    "pinned_lemmasim_host_suite_tests": 146,
+    "host_suite_seconds": 47.485,
+    "original_outside_nix_suite": "FAIL; missing g++/Lean and independently repaired container-profile admission expectation"
+  },
+  "artifacts": {
+    "build/radio/task006-ble-machine-a1/result.json": "18b4bb96f148428bdd72e8bbc0c8d1e38e98d87d4ec66e3df1bc384295df698a",
+    "build/radio/task006-ble-machine-a2/result.json": "01c91e430e3b28f13ceec74558fc4c22198673072d7304e5c9282b326f543cdb",
+    "build/silicon/task006-host-threads-a1/result.json": "a7a09898e35d6c1ea80cd025e321248c4f6ed1b17b64048422d18a5084cfea34",
+    "build/silicon/task006-ble-wire-runtime-a4/build.json": "5d8316b6a4a495c712d4ef2fcf583eaa9e24fbae612dd1af44eca04d77c0597a",
+    "build/kernel/task006-ble-guest-a4/audit.json": "5af890df5f39616da29326e20537dbc659785febc4839bba9c27e079cae47110",
+    "scripts/check_guest_ble_link.py": "4476b78989520f60f1fea341a73e006769854b3f3b5d5c75ae0fdf316a11528f",
+    "scripts/check_native_host_threads.py": "5d4e37be20082bc3461540ee096a503c6b942619a89cfcf13ea36640594d5939",
+    "sim/rtl/lemma_soc.sv": "f7497482ed7d5ae038634a5e3212a35f7c0dd946e082efcfc06a24805ccfd525"
+  },
+  "remaining": [
+    "Unresolved hosted-response checkpoints reject; Pending successor not yet implemented.",
+    "Manual unauthenticated LE1M data/empty-ACK slice; connection, encryption, full Bluetooth5.4, digital modulation/demodulation/RF and coexistence qualification incomplete.",
+    "No notebook BLE-backed durable receipt or USB claim.",
+    "No Fast5 or portable hosted-process peer qualification; exact native RTL path only.",
+    "No production ROM/A-B update claim."
+  ]
+}

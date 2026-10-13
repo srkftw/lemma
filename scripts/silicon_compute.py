@@ -54,7 +54,7 @@ def source_manifest(dep, profile_name=None):
     binding.write_text('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n')
     header=generated/'lemma_silicon_binding.h'
     header.write_text('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items()))
-    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
+    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
             'core_license':'Apache-2.0 WITH SHL-2.1 and six preserved MIT-notice files','top':'lemma_soc',
             'host_toolchain_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'tooling/silicon/sim.nix',ROOT/'flake.lock')},
@@ -70,7 +70,7 @@ def source_manifest(dep, profile_name=None):
             'binding_generator_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'scripts/silicon_profile.py',POWER_PROFILE)},
             'sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
             'host_adapter':{'path':'sim/rtl/host/main.cpp','sha256':hashlib.sha256((ROOT/'sim/rtl/host/main.cpp').read_bytes()).hexdigest()},
-            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([ROOT/'sim/host/panel_pending.h',*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*')])},
+            'host_runtime':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted([ROOT/'sim/host/panel_pending.h',*(ROOT/'sim/rtl/host').glob('machine_runtime.*'),*(ROOT/'sim/host').glob('backing_io*'),*(ROOT/'sim/companion').glob('backing_peer.*'),*(ROOT/'sim/radio').glob('ble_peer_transport.*')])},
             'configuration_includes':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((dep/'config/shared').glob('*.vh'))}}
 
 def snapshot_inputs(manifest, dep):
@@ -121,7 +121,7 @@ def main():
           '-MAKEFLAGS',manifest['build_options']['make_flags'],
           '-CFLAGS',manifest['build_options']['host_cflags']+' -I'+str(identity_dir)+' -I'+manifest['host_include_dir']]
     if a.register_ram: args+=['-GREGISTER_RAM=1']
-    args += ['-I'+d for d in manifest['include_dirs']]+manifest['sources']+[str(ROOT/'sim/rtl/host/main.cpp'),str(ROOT/'sim/rtl/host/machine_runtime.cpp'),str(ROOT/'sim/host/backing_io.cpp'),str(ROOT/'sim/host/backing_io_posix.cpp'),str(ROOT/'sim/companion/backing_peer.cpp')]
+    args += ['-I'+d for d in manifest['include_dirs']]+manifest['sources']+[str(ROOT/'sim/rtl/host/main.cpp'),str(ROOT/'sim/rtl/host/machine_runtime.cpp'),str(ROOT/'sim/host/backing_io.cpp'),str(ROOT/'sim/host/backing_io_posix.cpp'),str(ROOT/'sim/companion/backing_peer.cpp'),str(ROOT/'sim/radio/ble_peer_transport.cpp')]
     args=['nix-shell',str(SIM_SHELL),'--run',shlex.join(args)]
     manifest['build_argv']=args
     manifest['build_jobs']=a.jobs

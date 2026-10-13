@@ -89,7 +89,7 @@ def startup_restore_medium(args):
         raise ValueError('A restored fork owns its checkpoint backing; omit --disk')
     if args.workload == 'service':
         return False
-    if args.workload != 'power':
+    if args.workload not in ('power','ble'):
         return True
     if args.backend == 'rtl':
         # Its exact container owns the optional backing, including its presence.
@@ -128,7 +128,7 @@ def external_command(value, current):
         if not isinstance(payload,str) or not 2<=len(payload)<=8192 or len(payload)%2 or any(c not in '0123456789abcdefABCDEF' for c in payload):
             raise ValueError('UART requires1..4096 literal hex bytes')
         command=f'inject {cycle} uart {payload}'
-    elif kind in ('pgood','brownout'):
+    elif kind in ('pgood','brownout','ble-rx','ble-coex'):
         level=bounded(value.get('level'),0,1,'Supply digital level')
         command=f'inject {cycle} {kind} {level}'
     elif kind=='button':
@@ -194,6 +194,16 @@ class RTL:
             command += ['--backing-replay', str(replay.resolve())]
         else:
             command += ['--backing-capture', str(directory / 'backing.io')]
+        ble_peer = getattr(args,'ble_peer',None)
+        ble_replay = getattr(args,'ble_replay',None)
+        if self.data['profile']=='lemma-silicon-dev/0.5.0':
+            command += ['--ble-capture',str(directory/'ble.outcomes'),'--ble-wire-trace',str(directory/'ble-wire.csv')]
+            if ble_peer is not None:
+                command += ['--ble-peer',str(ble_peer.resolve()),'--ble-peer-timeout-ms',str(args.ble_peer_timeout_ms)]
+                for item in args.ble_peer_arg:command += ['--ble-peer-arg',item]
+                if args.ble_drop_packets:command += ['--ble-drop-packets',str(args.ble_drop_packets)]
+            if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
+        elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
         if args.memory_latency:
             command += ['--memory-latency', str(args.memory_latency)]
         if args.fail_flush:
@@ -209,7 +219,7 @@ class RTL:
                         '--companion-writer', str(peer['writer']),
                         '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and companion is None and args.workload != 'power':
+            if args.disk is None and companion is None and args.workload not in ('power','ble'):
                 raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
@@ -224,7 +234,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
-        self.input_kinds={'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile']=='lemma-silicon-dev/0.5.0' else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -256,7 +266,11 @@ class RTL:
         return value.get('result', value)
 
     def preflight_checkpoint(self, path, expected_cycle):
-        # LMSSRTL1/v1 and v2's wrapper follows its 112-byte container header.
+        # Each selected binding admits only its declared container schema; the
+        # exact runtime identity and CRC/state checks still apply below.
+        profile=getattr(self,'identity',{}).get('profile')
+        versions=(4,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
         # The runtime performs CRC/state/model validation before adoption.
@@ -266,7 +280,7 @@ class RTL:
         with path.open('rb') as stream:
             header = stream.read(128)
         if (len(header) != 128 or header[:8] != b'LMSSRTL1' or
-                int.from_bytes(header[8:16], 'little') not in (1, 2, 3) or
+                int.from_bytes(header[8:16], 'little') not in versions or
                 header[16:80] != self.checkpoint_identity.encode('ascii')):
             raise ValueError('Unsupported RTL checkpoint boundary format or identity')
         wrapper_bytes = int.from_bytes(header[80:88], 'little')
@@ -539,7 +553,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -578,7 +592,7 @@ class Session:
         if action == 'replay':
             return self.replay(value['snapshot'],value['capture'],value.get('until_cycle'),value.get('until_ns'))
         if action == 'inject':
-            if value.get('kind') in ('pgood','brownout') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
+            if value.get('kind') in ('pgood','brownout','ble-coex') and self.mode!='laboratory':raise ValueError('Supply fault inputs require Laboratory mode')
             # Admission consumes only the exact current cycle and virtual
             # phase. Keep the full post-injection observer returned by call.
             state = self.machine.clock() if hasattr(self.machine, 'clock') else self.machine.call('inspect')
@@ -591,6 +605,11 @@ class Session:
             result = self.external(value, state, action)
             self.presentation_generation += 1
             return result
+        if action=='ble-outcomes':
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('profile')!='lemma-silicon-dev/0.5.0':raise ValueError('BLE outcome binding requires binding5 Developer or Laboratory mode')
+            path=Path(value['path']).resolve()
+            if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
+            return {'machine':self.machine.call('ble-outcomes '+str(path)),'outcome_tape':str(path),'scope':'isolated resolved peer continuation from captured actual outcomes'}
         if action=='backing-outcomes':
             if self.mode not in ('developer','laboratory'):raise ValueError('Pending fork outcome binding requires Developer or Laboratory mode')
             if self.machine.identity.get('backend')!='rtl':raise ValueError('Pending fork outcome binding requires the native RTL backend')
