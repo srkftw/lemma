@@ -42,8 +42,9 @@ def setup (h : Host) (word : UInt64) : IO Unit := do
   send h (← checked (dataPacket false (put64 ByteArray.empty word)))
   if !handshake (← receive h) 0xd2 then throw (IO.userError "USB SETUP not ACKed")
 def pollIN (h : Host) (endpoint : UInt8) : IO (Bool × ByteArray) := do
-  -- Declared packet-boundary deadline: ten million100MHz device clocks.
-  -- This is a bounded development host, not full USB timing qualification.
+  -- At most10,000 attempts and ten million explicitly scheduled wait clocks.
+  -- Packet transfer and raw-adapter scheduling add virtual clocks. This is a
+  -- bounded development host, not full USB timing qualification.
   for _ in [0:10000] do
     send h (← checked (token 0x69 h.address endpoint))
     let p ← receive h
@@ -53,6 +54,20 @@ def pollIN (h : Host) (endpoint : UInt8) : IO (Bool × ByteArray) := do
       | .ok decoded => return decoded
       | .error e => throw (IO.userError e)
   throw (IO.userError "USB IN deadline")
+/-- Before a first opaque fragment exists there is no transaction to expire.
+The idle loop retains bounded buffers and yields through an explicit 1ms
+virtual wait after each real NAK. Control and partial frames keep pollIN's
+separate bounded retry deadline. No receipt or configured state is invented. -/
+partial def idleIN (h : Host) (endpoint : UInt8) : IO (Bool × ByteArray) := do
+  send h (← checked (token 0x69 h.address endpoint))
+  let p ← receive h
+  if handshake p 0x5a then
+    if (← line h "WAIT 100000") != "WAIT_DONE" then throw (IO.userError "USB idle wait boundary")
+    idleIN h endpoint
+  else if handshake p 0x1e then throw (IO.userError "USB endpoint STALL") else
+    match dataPayload p with
+      | .ok decoded => return decoded
+      | .error e => throw (IO.userError e)
 def control (h : Host) (word : UInt64) (hasData : Bool) : IO ByteArray := do
   setup h word
   let (one,bytes) ← pollIN h 0
@@ -84,7 +99,7 @@ def request (h : Host) : IO (Host × ByteArray) := do
   let mut bytes := ByteArray.emptyWithCapacity 584
   let mut duplicates := 0
   for _ in [0:16] do
-    let (one,part) ← pollIN h 1
+    let (one,part) ← if bytes.isEmpty then idleIN h 1 else pollIN h 1
     send h (ByteArray.mk #[0xd2])
     if one != h.inOne then
       duplicates := duplicates+1
@@ -153,7 +168,7 @@ def main (args : List String) : IO UInt32 := do
   if !ready then throw (IO.userError "USB pending outbox uncertain")
   c := next
   let host : Host := {input := ← IO.getStdin,output := ← IO.getStdout}
-  if (← line host "USBHOST/1 PACKET_BYTES_DEV") != "OPEN" then throw (IO.userError "USB raw adapter version")
+  if (← line host "USBHOST/2 PACKET_BYTES_DEV") != "OPEN" then throw (IO.userError "USB raw adapter version")
   let mut host ← enumerate host
   for _ in [0:100000] do
     let (next,bytes) ← request host

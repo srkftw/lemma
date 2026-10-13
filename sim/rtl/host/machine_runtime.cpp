@@ -103,7 +103,7 @@ Machine::Machine(const Options&o):context(new VerilatedContext),options(o){conte
 #else
   int fd=open(o.usb_capture_path.c_str(),O_CREAT|O_EXCL|O_WRONLY,0600);if(fd<0)throw std::runtime_error("USB capture requires a new file");close(fd);
   usb_capture.open(o.usb_capture_path,std::ios::binary);if(!usb_capture)throw std::runtime_error("USB capture open");
-  usb_capture<<"LMUSBRW1 "<<LEMMA_RUNTIME_IDENTITY<<'\n';usb_capture_bytes=74;
+  usb_capture<<"LMUSBRW2 "<<LEMMA_RUNTIME_IDENTITY<<'\n';usb_capture_bytes=74;
   usb_peer=std::make_unique<UsbProcessTransport>(o.usb_peer_executable,o.usb_peer_arguments,o.usb_peer_timeout_ms);
 #endif
  }else if(!o.usb_peer_arguments.empty()||!o.usb_capture_path.empty())throw std::runtime_error("USB capture/arguments require live peer");
@@ -194,23 +194,35 @@ void Machine::usb_record(uint64_t tag,uint64_t id,const std::string& frame){
  if(!usb_capture||frame.size()>160||usb_capture_bytes+frame.size()+80>64*1024*1024)throw std::runtime_error("USB capture resource/framing");
  usb_capture<<s.cycle<<' '<<tag<<' '<<id<<' '<<frame<<'\n';usb_capture.flush();if(!usb_capture)throw std::runtime_error("USB capture write");usb_capture_bytes+=frame.size()+80;
 }
-void Machine::usb_reply(const std::string& frame){
+bool Machine::usb_reply(const std::string& frame){
  if(!usb_command)throw std::runtime_error("USB raw reply without request");
  usb_record(1,usb_command->id,frame);
 #ifndef __EMSCRIPTEN__
- usb_peer->reply(usb_command->id,frame);
+ try{usb_peer->reply(usb_command->id,frame);}catch(const UsbTransportFailure&e){usb_disconnect(e.what());return false;}
 #else
  throw std::runtime_error("portable USB process reply unavailable");
 #endif
- usb_command.reset();usb_incoming.clear();usb_cursor=0;usb_until=0;
+ usb_command.reset();usb_incoming.clear();usb_cursor=0;usb_until=0;return true;
 }
-void Machine::usb_before_edge(){auto&soc=*model;
+void Machine::usb_disconnect(const std::string&reason){
+ // Capture the actual observed transport failure before any digital input or
+ // queue changes. Capture failure itself rejects; it cannot hide ambiguity.
+ usb_record(2,usb_command?usb_command->id:0,reason);
 #ifndef __EMSCRIPTEN__
- if(usb_peer&&!usb_command&&s.cycle>=usb_next_poll){
-  usb_next_poll=s.cycle+1000;
-  auto actual=usb_peer->poll();if(actual){usb_record(0,actual->id,actual->frame);usb_command=std::move(actual);
+ usb_peer.reset();
+#endif
+ usb_connected=false;usb_command.reset();usb_incoming.clear();usb_outgoing.clear();usb_packets.clear();usb_cursor=usb_until=usb_reset_until=0;usb_rx_transfer=usb_tx_transfer=false;
+}
+void Machine::usb_before_edge(bool domain_reset){auto&soc=*model;
+#ifndef __EMSCRIPTEN__
+ if(usb_peer&&domain_reset&&usb_connected)usb_disconnect("DOMAIN_RESET");
+ if(usb_peer&&s.cycle>=usb_next_poll){
+  if(s.cycle>UINT64_MAX-1000)throw std::runtime_error("USB poll clock exhausted");usb_next_poll=s.cycle+1000;
+  std::optional<UsbRawCommand>actual;
+  try{if(usb_command)usb_peer->check();else actual=usb_peer->poll();}catch(const UsbTransportFailure&e){usb_disconnect(e.what());}
+  if(actual){usb_record(0,actual->id,actual->frame);usb_command=std::move(actual);
    const auto&frame=usb_command->frame;
-   if(frame=="USBHOST/1 PACKET_BYTES_DEV"){usb_reply("OPEN");}
+   if(frame=="USBHOST/2 PACKET_BYTES_DEV"){usb_reply("OPEN");}
    else if(frame.rfind("RESET ",0)==0){auto clocks=number(frame.substr(6));if(clocks!=5000000||s.cycle>UINT64_MAX-clocks)throw std::runtime_error("USB root-port reset count");usb_connected=true;usb_reset_until=s.cycle+clocks;usb_until=usb_reset_until;usb_packets.clear();usb_outgoing.clear();}
    else if(frame.rfind("SEND ",0)==0){usb_incoming=hexbytes(frame.substr(5));if(usb_incoming.empty()||usb_incoming.size()>67)throw std::runtime_error("USB raw packet byte bound");usb_cursor=0;}
    else if(frame=="RECV"){}
@@ -223,7 +235,7 @@ void Machine::usb_before_edge(){auto&soc=*model;
   if(frame.rfind("RESET ",0)==0&&s.cycle>=usb_until)usb_reply("RESET_DONE");
   else if(frame.rfind("WAIT ",0)==0&&s.cycle>=usb_until)usb_reply("WAIT_DONE");
   else if(frame=="RECV"&&!usb_packets.empty()){
-   static const char*h="0123456789abcdef";std::string raw="RX ";for(auto byte:usb_packets.front()){raw+=h[byte>>4];raw+=h[byte&15];}usb_reply(raw);usb_packets.pop_front();
+   static const char*h="0123456789abcdef";std::string raw="RX ";for(auto byte:usb_packets.front()){raw+=h[byte>>4];raw+=h[byte&15];}if(usb_reply(raw))usb_packets.pop_front();
   }
  }
  soc.usb_connected=usb_connected;soc.usb_bus_reset=s.cycle<usb_reset_until;
@@ -274,7 +286,7 @@ void Machine::tick(){auto&soc=*model;uint64_t c=s.cycle;
   soc.uart_rx_valid=!s.rx.empty();soc.uart_rx_data=s.rx.empty()?0:s.rx.front();soc.sample_valid=!s.samples.empty();
   if(!s.samples.empty()){auto&w=s.samples.front().words;soc.sample_time=w[0];soc.sample_x=w[1];soc.sample_y=w[2];soc.sample_pressure=w[3];soc.sample_flags=w[4];soc.sample_tool=w[5];soc.sample_buttons=w[6];}
   boot_before_edge(domain_reset);
-  usb_before_edge();
+  usb_before_edge(domain_reset);
   try{ble_before_edge();}catch(const std::exception&e){s.ble_error=e.what();throw;}
   soc.eval();soc.mem_rdata=0;soc.mem_error=0;
   uint8_t* ram_pointer=nullptr;

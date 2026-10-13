@@ -3,11 +3,15 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <stdexcept>
 #include <vector>
 namespace lemma {
 // Raw, bounded, independently running hosted-Lean process boundary. It does
 // not parse USB packets, opcodes, receipt state, or guest documents. Machine
 // adapters own virtual scheduling and capture each actual command before use.
+// Actual external transport failure; internal request/reply misuse remains a
+// regular exception and cannot masquerade as a digital disconnect.
+struct UsbTransportFailure : std::runtime_error { using std::runtime_error::runtime_error; };
 struct UsbRawCommand { uint64_t id;std::string frame; };
 class UsbProcessTransport {
  public:
@@ -16,6 +20,7 @@ class UsbProcessTransport {
   UsbProcessTransport(const UsbProcessTransport&)=delete;
   UsbProcessTransport& operator=(const UsbProcessTransport&)=delete;
   std::optional<UsbRawCommand> poll();
+  void check(); // Nonblocking liveness while a retained raw request awaits circuit work.
   void reply(uint64_t id,const std::string& frame);
   // This first adapter does not export the Lean host's complete logical state.
   // A live attachment is therefore unresolved external state for snapshots,

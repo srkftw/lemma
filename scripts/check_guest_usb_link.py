@@ -49,8 +49,10 @@ def opaque(b):
  require(len(b)>=72 and len(b)<=584 and len(b)%8==0 and crc64(b[:-8])==int.from_bytes(b[-8:],'little'),'opaque frame CRC/bound')
  f=struct.unpack('<8Q',b[:64]);require(f[:2]==(0x313030504d434d4c,1) and len(b)==72+(f[6] if f[2] in (1,3) else 0),'opaque header length')
  return f,b[64:-8]
-def decode_capture(path):
- rows=Path(path).read_text().splitlines();require(rows and rows[0].startswith('LMUSBRW1 ') and len(rows[0].split()[1])==64,'raw capture identity')
+def decode_capture(path, *, probe=True, writer=73):
+ rows=Path(path).read_text().splitlines();header=rows[0].split() if rows else []
+ require(len(header)==2 and header[0] in ('LMUSBRW1','LMUSBRW2') and len(header[1])==64 and all(c in '0123456789abcdef' for c in header[1]),'raw capture identity')
+ host_handshake='USBHOST/'+('1' if header[0]=='LMUSBRW1' else '2')+' PACKET_BYTES_DEV'
  issued={};last=0;cycle=0;setups=[];requests=[];responses=[];req=bytearray();resp=bytearray();token=None;pending_out=None;pending_in=None;in_one=False;out_one=False;controls=[];counts={'host_packets':0,'controller_packets':0,'nak':0}
  for row in rows[1:]:
   fields=row.split(' ',3);require(len(fields)==4,'raw capture framing');tick,kind,key=map(int,fields[:3]);frame=fields[3]
@@ -88,7 +90,7 @@ def decode_capture(path):
       if len(pending_out[2])<64:responses.append(bytes(resp));resp.clear()
      pending_out=None
     if d==('handshake',0x5a):counts['nak']+=1
-   elif command=='USBHOST/1 PACKET_BYTES_DEV':require(frame=='OPEN','raw handshake')
+   elif command==host_handshake:require(frame=='OPEN','raw handshake')
    elif command.startswith('RESET '):require(command=='RESET 5000000' and frame=='RESET_DONE','real root reset duration')
    elif command.startswith('WAIT '):require(frame=='WAIT_DONE','virtual wait completion')
    else:raise ValueError('unadmitted raw command')
@@ -96,15 +98,26 @@ def decode_capture(path):
  require(controls==[bytes([18,1,0,2,0,0,0,64,0,0,0,0,0,1,0,0,0,1]),b'',bytes([9,2,32,0,1,1,0,128,50,9,4,0,0,2,255,0,0,0,7,5,129,2,64,0,0,7,5,2,2,64,0,0]),b'',b'\x01'],'actual guest-produced control descriptor/status bytes')
  expected=[0x0012000001000680,0x0000000000070500,0x0020000002000680,0x0000000000010900,0x0001000000000880]
  require(setups==expected,'actual standard request sequence changed')
- require(len(requests)==len(responses)==3,'actual opaque transaction count')
+ require(len(requests)==len(responses) and len(requests)>=1,'actual opaque transaction count')
  require(requests[0]==b'LMCUSB01' and len(responses[0])==32,'actual hello')
- hello=struct.unpack('<4Q',responses[0]);require(hello==(0x3130425355434d4c,73,1,268435456),'actual hello identity')
- barrier,_=opaque(requests[1]);receipt,_=opaque(responses[1]);read,_=opaque(requests[2]);data,body=opaque(responses[2])
- require(barrier==(0x313030504d434d4c,1,2,73,1,0,0,0),'actual guest barrier request')
- require(receipt==(0x313030504d434d4c,1,3,73,1,0,0,0),'actual durable barrier receipt')
- require(read==(0x313030504d434d4c,1,0,73,0,0,512,0),'actual guest read request')
- require(data==(0x313030504d434d4c,1,3,73,0,0,512,0) and body==bytes(512),'actual opaque read bytes')
- return {'rows':len(rows)-1,'last_cycle':cycle,'counts':counts,'requests':[b.hex() for b in requests],'responses_sha256':[hashlib.sha256(b).hexdigest() for b in responses],'pending_raw_request':issued,'sha256':sha(path)}
+ hello=struct.unpack('<4Q',responses[0]);require(hello==(0x3130425355434d4c,writer,1,268435456),'actual hello identity')
+ transactions=[]
+ for request_bytes,response_bytes in zip(requests[1:],responses[1:]):
+  request,payload=opaque(request_bytes);response,returned=opaque(response_bytes)
+  require(request[2] in (0,1,2) and request[3]==writer and request[7]==0,'actual opaque request fields')
+  require(response[:2]==request[:2] and response[2]==3 and response[3:6]==request[3:6] and response[7]==0,'actual receipt identity/error')
+  if request[2]==0:require(request[4]==0 and request[6]==512 and len(returned)==512,'actual read transfer')
+  elif request[2]==1:require(request[4]>0 and request[6]==512 and returned==payload,'actual write receipt prefix')
+  else:require(request[4]>0 and request[5:7]==(0,0) and not returned,'actual barrier receipt')
+  transactions.append({'request':list(request),'response':list(response),'payload_sha256':hashlib.sha256(payload).hexdigest(),'returned_sha256':hashlib.sha256(returned).hexdigest()})
+ if probe:
+  require(len(requests)==3 and writer==73,'actual probe transaction count/identity')
+  barrier,_=opaque(requests[1]);receipt,_=opaque(responses[1]);read,_=opaque(requests[2]);data,body=opaque(responses[2])
+  require(barrier==(0x313030504d434d4c,1,2,73,1,0,0,0),'actual guest barrier request')
+  require(receipt==(0x313030504d434d4c,1,3,73,1,0,0,0),'actual durable barrier receipt')
+  require(read==(0x313030504d434d4c,1,0,73,0,0,512,0),'actual guest read request')
+  require(data==(0x313030504d434d4c,1,3,73,0,0,512,0) and body==bytes(512),'actual opaque read bytes')
+ return {'wire_version':header[0],'runtime_identity':header[1],'rows':len(rows)-1,'last_cycle':cycle,'counts':counts,'requests':[b.hex() for b in requests],'transactions':transactions,'responses_sha256':[hashlib.sha256(b).hexdigest() for b in responses],'pending_raw_request':issued,'sha256':sha(path)}
 def peer_log(path):
  b=Path(path).read_bytes();require(b[:8]==struct.pack('<Q',0x3130474f4c434d4c),'durable peer log identity');pos=8;rows=[]
  while pos<len(b):

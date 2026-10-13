@@ -229,7 +229,7 @@ class RTL:
                         '--companion-writer', str(peer['writer']),
                         '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and companion is None and args.workload not in ('power','ble','usb'):
+            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb'):
                 raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:

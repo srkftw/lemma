@@ -105,10 +105,11 @@ class Machine {
  uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0,usb_capture_bytes=0;
  bool usb_connected=false,usb_rx_transfer=false,usb_tx_transfer=false;
  std::ofstream usb_capture;
- void usb_before_edge();
+ void usb_before_edge(bool);
+ void usb_disconnect(const std::string&);
  void usb_after_edge();
  void usb_record(uint64_t,uint64_t,const std::string&);
- void usb_reply(const std::string&);
+ bool usb_reply(const std::string&);
  std::vector<BleOutcome> ble_replay;
  uint64_t ble_replay_cursor=0;
  bool ble_fork_suspended=false;

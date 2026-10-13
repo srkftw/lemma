@@ -1,0 +1,175 @@
+{
+  "schema": "lemma-usb-host-v2-evidence/1",
+  "status": "PASS",
+  "scope": "genuine hosted Lean idle polling plus actual native process failures and literal USB/pen controller suffixes; no guest notebook Save or whole-machine USB checkpoint claim",
+  "native": {
+    "build": {
+      "path": "build/silicon/task006-usb-runtime-a4/build.json",
+      "sha256": "29e733b753394d83a1438b73d29e52a790cdedf8ca6dfedc5dd78995754cd908",
+      "bytes": 75583
+    },
+    "wire_version": "LMUSBRW2",
+    "snapshot_identity": "fb6e43100ea5129c48ebf57b798d7844aa4e32117ad1360441f99f7682682170",
+    "binary_sha256": "a5f0aa1df7ef0cf2d21ef2adecaaa3b21ab89738d38b9a6eecd57d5588b791e9",
+    "property": {
+      "path": "build/usb/native-disconnect-a4/result.json",
+      "sha256": "610f7520cace496f625e3d9ce934a7521b29680debb8a9b5b8fabc1e184ddc27",
+      "bytes": 3842
+    },
+    "host_seconds": 78.14777460100595,
+    "measurements": [
+      {
+        "case": "closed",
+        "failure_cycle": 1000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      },
+      {
+        "case": "pending-exit",
+        "failure_cycle": 5015000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      },
+      {
+        "case": "reset",
+        "failure_cycle": 5004000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      }
+    ],
+    "all_owned_processes_reaped": true
+  },
+  "host": {
+    "manifest": {
+      "path": "build/usb/host-qualified-a3/prepared.json",
+      "sha256": "a963b63616d70a399018f66cd127ce2640de21a951e0aff2e70df0b0d3c2f385",
+      "bytes": 1959
+    },
+    "schema": "lemma-usb-host-dev/2",
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/host-qualified-a2/usb-host",
+      "sha256": "802b2ab810420017fe09ffbeef28d2a32c23f8c4d8faa242da03f4ae644b2c6e"
+    },
+    "tools": {
+      "lean": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+        "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863"
+      },
+      "leanc": {
+        "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/leanc",
+        "sha256": "8230f2a3fc1f8e8960066d5289168178a39850d027b46cc20affb3fbfc4c5966"
+      },
+      "cc": {
+        "path": "/nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/gcc",
+        "sha256": "79770329fa1c8d56f5d70222d22b04b2b74cc74254da74b16205ba8da4e7b4b5"
+      }
+    },
+    "target_objects_added": [],
+    "identical_previous_compiled_objects": {
+      "USBHost.c": true,
+      "USBHost.o": true,
+      "usb-host": true
+    },
+    "source_only_delta": "pollIN comment correctly distinguishes scheduled wait clocks from total transfer virtual time"
+  },
+  "genuine_idle_fixture": {
+    "log": {
+      "path": "build/usb/idle-policy-a4.log",
+      "sha256": "7cf7d3fa377ca5dbf7ed2ececdb960ca2a21d72e2f4536cc69155deda2fdbc24",
+      "bytes": 182
+    },
+    "fixture": {
+      "path": "tests/usb/IdlePolicy.lean",
+      "sha256": "d4f11be8f6e781cbab50e4b8708ae6535faf88e4e22290b1f372bfbfc9c79a6b",
+      "bytes": 1594
+    },
+    "accepted_NAK_responses": 10001,
+    "yield_clocks_per_NAK": 100000,
+    "oracle": "literal independently encoded DATA0 LMCUSB01/CRC16 fragment; exact emitted token/wait counts",
+    "scope": "hosted Lean policy only; no controller or RV64 execution"
+  },
+  "raw_transport_regression": {
+    "path": "build/usb/transport-failure-v2-a2.log",
+    "sha256": "5bbd99693632244e7184d9097ce2526260d08f5d290773b4d10d023f41e6eba4",
+    "bytes": 82
+  },
+  "commands": [
+    "nix develop --no-write-lock-file --command python3 scripts/lemmasim_usb.py build --output-dir build/usb/host-qualified-a3",
+    "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_disconnect.py --rtl-build build/silicon/task006-usb-runtime-a4 --work-dir build/usb/native-disconnect-a4'",
+    "LEAN_PATH=\"$PWD/build/usb/host-qualified-a2:$PWD/build/usb/host-qualified-a2/companion\" LEMMA_USB_IDLE_WORK=\"$PWD/build/usb/idle-policy-a4\" nix develop --no-write-lock-file --command lean tests/usb/IdlePolicy.lean",
+    "python3 tests/usb/capture_observer.py --capture build/usb/whole-machine-a1/session/usb.raw --work-dir build/usb/wire-observer-a4"
+  ],
+  "retained_failures": [
+    {
+      "path": "build/usb/native-disconnect-a1/result.json",
+      "reason": "fixture specified absent /usr/bin/python3; exec EOF occurred before intended pending/reset cases"
+    },
+    {
+      "path": "build/usb/transport-failure-v2.log",
+      "reason": "same absent fixture interpreter path"
+    },
+    {
+      "path": "build/usb/idle-policy-a1.log",
+      "reason": "fixture syntax rejected before execution"
+    },
+    {
+      "path": "build/usb/idle-policy-a2.log",
+      "reason": "fixture main conflicted with imported USBHost.main"
+    },
+    {
+      "path": "build/usb/idle-policy-a3.log",
+      "reason": "fixture #eval inferred BaseIO rather than explicit IO"
+    },
+    {
+      "path": "build/usb/native-disconnect-a3/result.json",
+      "reason": "main flake excludes Verilator; failed before compiling/running fixture; corrected pinned sim.nix invocation"
+    }
+  ],
+  "remaining": [
+    "actual USB Store/journal write/init and notebook Save/cold recovery are not qualified by this receipt",
+    "live attached USB snapshots reject observationally; no complete raw/policy private continuation",
+    "fast/browser USB and USB physical PHY/full conformance open"
+  ],
+  "native_prior_without_wire_version2": {
+    "build": {
+      "path": "build/silicon/task006-usb-runtime-a3/build.json",
+      "sha256": "7fd8c6448b7049a047932d54168787b155159d9c38d7768e3156df51ee74dd1b",
+      "bytes": 75583
+    },
+    "snapshot_identity": "10a3667755533f2048081323b8c0715ce00f69420e1fa054e32a0f711e33c873",
+    "binary_sha256": "f2dbac493371d6dd446ba9a7d6d0345be033f524b1d1138a607edceb8466a820",
+    "property": {
+      "path": "build/usb/native-disconnect-a2/result.json",
+      "sha256": "74a119c9496282184e16cd82cbc7eb6df4d4e9c418c77688a82675a1e87b15ed",
+      "bytes": 3842
+    },
+    "host_seconds": 45.92854660196463,
+    "measurements": [
+      {
+        "case": "closed",
+        "failure_cycle": 1000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      },
+      {
+        "case": "pending-exit",
+        "failure_cycle": 5028000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      },
+      {
+        "case": "reset",
+        "failure_cycle": 5004000,
+        "suffix_cycles": 2000,
+        "actual_pen_fifo_entries": 1
+      }
+    ],
+    "all_owned_processes_reaped": true
+  },
+  "wire_observer": {
+    "path": "build/usb/wire-observer-a4/result.json",
+    "sha256": "3bf7b72d7a47b4c7ede4f7c19dba93e4f8c130c962a7159575e341991d4c7055",
+    "bytes": 751,
+    "scope": "four negative observer fixtures plus strict historical actual tape observation; transformed version2 tape is not execution evidence"
+  }
+}
