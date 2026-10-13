@@ -3788,6 +3788,8 @@ BACKEND_JUMP_TABLE_USER_IMAGES = {
     'Lemma.Services.Buffer.Server.existing': {'server'},
 }
 LEMMASIM_BACKEND_JUMP_TABLES = {
+    # Pure descriptor identity selection for the five exact declared bindings.
+    'Lemma.Platform.LemmaSim.Descriptor.expectedBinding': ('kernel',5,['u64','u64'],[],list(range(1,6))),
     'Lemma.Platform.LemmaSim.DeviceService.surface': ('kernel',5,['u64']*6,['checked-access','mmio-read','mmio-write','io-order','physical-read','physical-write'],list(range(5))),
     'Lemma.Kernel.IPC.dispatchWithLimit': ('kernel',6,['u64']*8,['checked-access','io-order','machine-state','physical-read','physical-write','firmware-call'],list(range(20,26))),
     'Lemma.Kernel.Syscall.dispatchManagedWithIPCLimit': ('kernel',18,['u64']*8,['checked-access','mmio-read','mmio-write','io-order','machine-state','interrupt-state','physical-read','physical-write','firmware-call','address-space','wait-state'],[2,*range(9,20)]),
