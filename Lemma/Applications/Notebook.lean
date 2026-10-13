@@ -4,7 +4,7 @@ import Lemma.Documents.Ink
 import Lemma.Services.Store.Client
 import Lemma.User.CapabilityConsole
 import Lemma.Courses.Arithmetic
-import Lemma.Services.Arithmetic.Client
+import Lemma.Services.Arithmetic.ClientV2
 
 /-! Capability-isolated pen notebook. Pixels, input interpretation, raw ink,
 page/edit records and save publication execute in compiled User Lean. Two
@@ -640,9 +640,9 @@ private def reportCourse : Action :=
   CapabilityConsole.record console 0x450 revision goal outcome evidence
 
 private def saveCourse : Action :=
-  .bind (Lemma.Documents.Mathematics.copy mathematics mathematicsSave) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.copyCurrent mathematics mathematicsSave) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (startSave mathematicsSave Lemma.Documents.Mathematics.bytes (Lemma.Documents.Mathematics.object page) 3) fun s _ =>
+  .bind (startSave mathematicsSave Lemma.Documents.Mathematics.currentBytes (Lemma.Documents.Mathematics.object page) 3) fun s _ =>
   if statusFailed s = true then saveFailure s else publishStatus
 
 /-- Failed application admission leaves ink and the store available. A storage
@@ -677,7 +677,7 @@ private def cancelArithmetic : Action :=
     .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
     .bind (IPC.cancel transaction) fun canceled _ =>
     if (if canceled = 0 then true else if canceled = IPCABI.alreadyCompleted then true else false) = true then
-    .bind (Lemma.Services.Arithmetic.Client.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
+    .bind (Lemma.Services.Arithmetic.ClientV2.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun terminal _ =>
     if terminal = IPCABI.wouldBlock then .done IPCABI.invalidTransaction 0 else .done 0 terminal.toUInt64
     else .done canceled 0
     else .done 0 0) fun s terminal => if statusFailed s = true then .done s 0 else
@@ -691,7 +691,7 @@ private def beginArithmetic : Action :=
   .bind (Lemma.Documents.Mathematics.field mathematics 144) fun s attempts => if statusFailed s = true then .done s 0 else
   if attempts = 8 then .bind (Lemma.Documents.Mathematics.submit mathematics) fun s _ => .done s 0 else if 8 < attempts then .done 234 0 else
   .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Services.Arithmetic.Client.beginCall endpoint mathematicsIO mathematics request) fun s transaction =>
+  .bind (Lemma.Services.Arithmetic.ClientV2.beginCall endpoint mathematicsIO mathematics request) fun s transaction =>
   if statusFailed s = true then .done s 0 else
   .bind (put 544 transaction) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 552 request) fun s _ => if statusFailed s = true then .done s 0 else
@@ -710,7 +710,7 @@ private def pumpArithmetic : Action :=
   .bind (if phase = 1 then
     .bind (get 544) fun s transaction => if statusFailed s = true then .done s 0 else
     .bind (get 552) fun s request => if statusFailed s = true then .done s 0 else
-    .bind (Lemma.Services.Arithmetic.Client.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun s outcome =>
+    .bind (Lemma.Services.Arithmetic.ClientV2.pollCall transaction (mathematicsIO + 256) mathematicsIO request) fun s outcome =>
     if s = IPCABI.wouldBlock then .done 0 0 else
     .bind (put 560 outcome) fun stored _ => if statusFailed stored = true then .done stored 0 else
     .bind (put 568 s.toUInt64) fun stored _ => if statusFailed stored = true then .done stored 0 else
@@ -735,7 +735,9 @@ private def pumpArithmetic : Action :=
   .bind (Memory.read64 (mathematicsIO + 40)) fun s revision => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (mathematicsIO + 48)) fun s goal => if statusFailed s = true then .done s 0 else
   .bind (get 560) fun s outcome => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Documents.Mathematics.completeSubmit mathematics revision goal outcome) fun s _ =>
+  .bind (Memory.read64 (mathematicsIO + 104)) fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (mathematicsIO + 96)) fun s budget => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Documents.Mathematics.completeExecution mathematics revision goal outcome request budget) fun s _ =>
   if statusFailed s = true then courseError s else
   .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else saveCourse
@@ -746,13 +748,14 @@ private def openCourse : Action :=
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
   .bind (readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.legacyBytes) fun readStatus _ =>
-  .bind (if readStatus = 230 then Lemma.Documents.Mathematics.create mathematics ns page else
+  .bind (if readStatus = 230 then Lemma.Documents.Mathematics.createCurrent mathematics ns page else
     if readStatus = 0 then
     .bind (Lemma.Documents.Mathematics.field mathematics 8) fun s version => if statusFailed s = true then .done s 0 else
     .bind (if version = 2 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.bytes
+      else if version = 3 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (Lemma.Documents.Mathematics.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
-    Lemma.Documents.Mathematics.upgrade mathematics
+    Lemma.Documents.Mathematics.upgradeCurrent mathematics
     else .done readStatus 0) fun s upgraded =>
   if statusFailed s = true then courseError s else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else

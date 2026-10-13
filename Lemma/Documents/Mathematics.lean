@@ -1,10 +1,12 @@
 import Lemma.User.Memory
 import Lemma.Mathematics.OwnedSubmission
+import Lemma.Mathematics.ExecutionIdentity
 
-/-! `lemma-mathematical-submission/2`: typed answers and evidence are separate
-from immutable raw ink. The ordinary store retains an exact1856-byte record
-with eight immutable attempts and64 ordered learner events. Version1's832-byte
-records migrate in the guest. This is a bounded original course package, not an
+/-! Typed answers and evidence remain separate from immutable raw ink.
+Historical832/1856-byte records retain their exact semantic layouts. The
+additive2496-byte submission/3 stores separately versioned execution identities
+for new isolated replies; migrated historical execution identities are Unknown.
+Every record retains eight immutable attempts and64 ordered learner events. This is a bounded original course package, not an
 imported proof environment or evidence of mathematical understanding. -/
 namespace Lemma.Documents.Mathematics
 open Lemma.Core0.Memory
@@ -15,6 +17,7 @@ def magic : UInt64 := 0x314854414d4d454c
 def packageIdentity : UInt64 := 0x0001000000000001
 def legacyBytes : UInt64 := 832
 def bytes : UInt64 := 1856
+def currentBytes : UInt64 := 2496
 def policyIdentity : UInt64 := 0x0001000000000001
 def object (page : UInt64) : UInt64 := 0x8000 + page
 def field (buffer offset : UInt64) : Action := Memory.read64 (buffer + offset)
@@ -59,6 +62,14 @@ def copy (source target : UInt64) : Action :=
   .boundedFoldU64 232 copyStep 232 0 source target 0 0 fun s copied => .done s copied
   else .done 234 0 else .done 234 0 else .done 234 0 else .done 234 0
 
+/-- The v3 transaction copy includes every active and historical execution
+identity. Historical1856-byte copy retains its original separate interface. -/
+def copyCurrent (source target : UInt64) : Action :=
+  if source % 8 = 0 then if target % 8 = 0 then
+  if source ≤ 0xffffffffffffffff - currentBytes then if target ≤ 0xffffffffffffffff - currentBytes then
+  .boundedFoldU64 312 copyStep 312 0 source target 0 0 fun s copied => .done s copied
+  else .done 234 0 else .done 234 0 else .done 234 0 else .done 234 0
+
 private def zeroStep (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
   .bind (put buffer (i.toUInt64 * 8) 0) fun s _ => .done s acc
 
@@ -91,13 +102,19 @@ def result (goal n d p0 p1 p2 budget : UInt64) : UInt64 :=
 /-- Each edit invalidates current applicability while retaining attempt history.
 The bounded UI uses nonnegative integer coefficients 0..99, a proper subset of
 the checker domain; no interpretation is inferred from ink. -/
+private def clearExecution (buffer : UInt64) : Action :=
+  .bind (field buffer 8) fun s version => if s = 0 then
+  if version = 3 then ExecutionIdentity.clearCurrent buffer else .done 0 0
+  else .done s 0
+
 def revise (buffer : UInt64) : Action :=
   .bind (field buffer 40) fun s revision => if s = 0 then
   if 0x7ffffffffffffffe ≤ revision then .done 235 0 else
   .bind (put buffer 40 (revision + 1)) fun s _ => if s = 0 then
   .bind (put buffer 96 0) fun s _ => if s = 0 then
-  .bind (put buffer 104 0) fun s _ => .done s (revision + 1)
-  else .done s 0 else .done s 0 else .done s 0
+  .bind (put buffer 104 0) fun s _ => if s = 0 then
+  .bind (clearExecution buffer) fun s _ => .done s (revision + 1)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
 
 def edit (buffer offset operation : UInt64) : Action :=
   if offset < 56 then .done 234 0 else if 88 < offset then .done 234 0 else
@@ -128,6 +145,7 @@ def completeSubmit (buffer revision goal outcome : UInt64) : Action :=
   .bind (field buffer 144) fun s attempts => if s = 0 then
   if 8 < attempts then .done 234 0 else
   if (if attempts = 8 then if outcome = Exact.indeterminate then true else false else true) = true then
+  .bind (clearExecution buffer) fun s _ => if s = 0 then
   .bind (put buffer 96 outcome) fun s _ => if s = 0 then
   .bind (put buffer 104 revision) fun s _ => if s = 0 then
   .bind (put buffer 168 (if outcome = Exact.verified then 2 else if outcome = Exact.invalid then 1 else 3)) fun s _ => if s = 0 then
@@ -136,9 +154,23 @@ def completeSubmit (buffer revision goal outcome : UInt64) : Action :=
       if s = 0 then put buffer 144 (attempts + 1) else .done s 0
     else .done 0 0) fun s _ => if s = 0 then
   .bind (appendEvent buffer (if attempts < 8 then 1 else 5) outcome (if attempts < 8 then attempts else 0)) fun s _ => .done s outcome
-  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done 234 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done 234 0
   else .done s 0 else .done 234 0 else .done 234 0
   else .done s 0 else .done s 0 else .done s 0
+
+/-- Protocol2 publishes its separately audited execution authority only for
+an admitted current result. All preflight checks precede semantic publication.
+No error/OOM/death/cancellation invokes this operation. -/
+def completeExecution (buffer revision goal outcome request budget : UInt64) : Action :=
+  if request = 0 then .done 234 0 else if 0x7ffffffffffffffe < request then .done 234 0 else
+  if (if budget = 0 then true else budget = 8) = false then .done 234 0 else
+  .bind (field buffer 8) fun s version => if s = 0 then if version = 3 then
+  .bind (field buffer 136) fun s currentBudget => if s = 0 then if currentBudget = budget then
+  .bind (field buffer 144) fun s index => if s = 0 then if index < 8 then
+  .bind (completeSubmit buffer revision goal outcome) fun s actual => if s = 0 then
+  .bind (ExecutionIdentity.publish buffer request index budget) fun s _ => .done s actual
+  else .done s 0 else .done 235 0 else .done s 0 else .done 234 0 else .done s 0
+  else .done 234 0 else .done s 0
 
 /-- Historical/local checking retains its real owned-object implementation.
 Canonical software bootargs2/3 instead use the isolated endpoint asynchronously.
@@ -266,7 +298,8 @@ def validate (buffer ns page : UInt64) : Action :=
   if value = magic then
   .bind (field buffer 8) fun s value => if s = 0 then
   if value = 1 then validateHeader buffer ns page else
-  if value = 2 then validateHeader buffer ns page else .done 234 0
+  if value = 2 then validateHeader buffer ns page else
+  if value = 3 then validateHeader buffer ns page else .done 234 0
   else .done s 0 else .done 234 0 else .done s 0
 where
   validateHeader (buffer ns page : UInt64) : Action :=
@@ -324,7 +357,10 @@ where
     if 3 < recommendation then .done 234 0 else
     .bind (validateExtension buffer revision attempts) fun s _ => if s = 0 then
     .boundedFoldU64 5 validateOperandStep 5 0 buffer 0 0 0 fun s _ => if s = 0 then
-    .boundedFoldU64 8 validateHistoryStep 8 0 buffer attempts revision 0 fun s _ => .done s 0
+    .boundedFoldU64 8 validateHistoryStep 8 0 buffer attempts revision 0 fun s _ => if s = 0 then
+    .bind (field buffer 8) fun s version => if s = 0 then
+    if version = 3 then ExecutionIdentity.validate buffer else .done 0 0
+    else .done s 0 else .done s 0
     else .done s 0 else .done s 0 else .done s 0 else .done 234 0 else .done s 0
 
 private def upgradeZeroStep (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
@@ -360,5 +396,19 @@ def upgrade (buffer : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done 234 0 else .done s 0
+
+/-- Validated v1/v2 records migrate with explicitly Unknown execution slots.
+No old result is labeled with this implementation or a fabricated request ID. -/
+def upgradeCurrent (buffer : UInt64) : Action :=
+  .bind (field buffer 8) fun s version => if s = 0 then
+  if version = 3 then .done 0 0 else
+  .bind (upgrade buffer) fun s _ => if s = 0 then
+  .bind (ExecutionIdentity.createExtension buffer) fun s _ => if s = 0 then
+  .bind (put buffer 8 3) fun s _ => .done s 1
+  else .done s 0 else .done s 0 else .done s 0
+
+def createCurrent (buffer ns page : UInt64) : Action :=
+  .bind (create buffer ns page) fun s _ => if s = 0 then
+  upgradeCurrent buffer else .done s 0
 
 end Lemma.Documents.Mathematics

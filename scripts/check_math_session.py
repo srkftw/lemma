@@ -246,6 +246,28 @@ class MathChecker(Checker):
                 'verified/invalid/limited/unsupported history or assistance differs')
         require({key:record.payload for key,record in records.items() if key[1]>0x10000}==raw_before,
                 'mathematical course changed original raw ink')
+        if getattr(self.args,'require_execution_identity',False):
+            require(final['format']=='lemma-mathematical-submission/3' and 'execution' in final,
+                    'new execution authority requires actual2496-byte v3 record')
+            metadata=final['execution']['history'][:final['attempts']]
+            require(len(metadata)==5 and all(entry['origin']=='IsolatedManaged' and entry['status']==0 for entry in metadata),
+                    'new attempts lack exact isolated implementation/resource identity')
+            requests=[row for row in self.rows(live) if row[0]==0x459]
+            replies=[row for row in self.rows(live) if row[0]==0x455]
+            require(len(requests)==len(replies)==len(metadata),'actual isolated request/reply count differs from durable history')
+            for attempt,entry,request,reply in zip(final['history'],metadata,requests,replies):
+                require((request[1],request[2],request[3])==(entry['request'],attempt['revision'],attempt['goal']) and
+                        (reply[1],reply[2],reply[3],reply[4])==(entry['request'],attempt['revision'],0,attempt['outcome']),
+                        'durable execution request/revision/resource outcome differs from actual server')
+                require(entry['budget']==attempt['budget'],'durable resource budget differs')
+            require(any(row[0]==0x45c and tuple(row[1:])==(0x0002000100000001,0x0002000000000001,
+                    0x0001000000000001,0x000100000000001f) for row in self.rows(live)),
+                    'actual isolated server did not report exact named execution contracts')
+            require(final['execution']['active']==metadata[-1],'current execution applicability differs')
+            self.report['execution_identity']={'status':'PASS','format_bytes':len(final_bytes),
+                'actual_isolated_requests':len(requests),'actual_request_revision_outcome_bound':True,
+                'known_attempts':len(metadata),'identity_kind':'closed implementation-version authority; not artifact hash',
+                'semantic_and_heap_resources_separate':True}
         self.report['final_record']=final
         self.click(live,stream,'close course restores raw notebook',320,140,False)
         self.wait_label(live,'SAVED',24,132)
@@ -307,6 +329,7 @@ def main():
     parser.add_argument('--work-dir',type=Path,required=True)
     parser.add_argument('--native-bundle',help='Validated immutable native runtime bundle for every public session')
     parser.add_argument('--guest-build',help='Current genuinely compiled and audited notebook guest; requires native bundle')
+    parser.add_argument('--require-execution-identity',action='store_true',help='Require actual protocol2 request/reply identities in every new durablev3 attempt')
     parser.add_argument('--durable-suffix-from',type=Path,help='Reuse independently rechecked actual acknowledged course workflow; run only new cold/failure CPUs')
     parser.add_argument('--timeout',type=int,default=300)
     parser.add_argument('--boot-seconds',type=int,default=60)
@@ -314,6 +337,7 @@ def main():
     parser.add_argument('--deadline',type=int,default=2400)
     args=parser.parse_args();args.checkpoint_relation='not-exercised'
     require(not args.guest_build or args.native_bundle,'guest-build requires native-bundle')
+    require(not args.require_execution_identity or not args.durable_suffix_from,'execution identities require actual new live requests')
     require(1<=args.timeout<=3600 and 1<=args.boot_seconds<=600 and 1<=args.action_seconds<=600
             and 1<=args.deadline<=7200,'invalid declared resource bounds')
     checker=MathChecker(args)

@@ -4,6 +4,9 @@ from fractions import Fraction
 
 MAGIC = 0x314854414D4D454C
 IDENTITY = 0x0001000000000001
+EXECUTION_MAGIC = 0x314558454D4D454C
+EXECUTION_IDENTITIES = (0x0002000100000001, 0x0002000000000001,
+                        0x0001000000000001, 0x000100000000001f)
 
 
 def result(goal, n, d, p0, p1, p2, budget):
@@ -21,11 +24,11 @@ def result(goal, n, d, p0, p1, p2, budget):
 
 
 def inspect(payload, namespace, object_id):
-    if len(payload) not in (832,1856):
+    if len(payload) not in (832,1856,2496):
         raise ValueError('mathematical record length differs')
     words = struct.unpack('<'+str(len(payload)//8)+'Q', payload)
     version=words[1]
-    if version not in (1,2) or len(payload)!=(832 if version==1 else 1856) or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
+    if version not in (1,2,3) or len(payload)!={1:832,2:1856,3:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
         raise ValueError('mathematical package/namespace/page identity differs')
     if not 1 <= words[4] <= 64 or not 1 <= words[5] <= 0x7ffffffffffffffe:
         raise ValueError('mathematical anchor/revision differs')
@@ -63,7 +66,7 @@ def inspect(payload, namespace, object_id):
             'page': words[4], 'revision': words[5], 'goal': words[6],
             'answer': list(words[7:12]), 'outcome': words[12], 'evidence_revision': words[13],
             'budget': words[17], 'attempts': attempts, 'hints': hints, 'history': history}
-    if version==2:
+    if version in (2,3):
         identity,mode,count,uncertain,event_version,show_reason=words[22:28]
         if identity!=IDENTITY or mode>4 or count>64 or uncertain!=1 or event_version!=1 or show_reason>1 or any(words[28:32]):
             raise ValueError('learner policy identity/bounds/uncertainty differs')
@@ -107,4 +110,30 @@ def inspect(payload, namespace, object_id):
         else:action,reason='support','unsupported-or-resource'
         record['learner']={'policy':'lemma-offline-review/1','mode':mode,'understanding':'uncertain',
             'recommendation':action,'reason':reason,'show_reason':bool(show_reason),'events':events}
+    if version==3:
+        if words[232:240] != (EXECUTION_MAGIC,1,0,0,0,0,0,0):
+            raise ValueError('execution extension header/version/reserved differs')
+        def execution(slot,budget,active):
+            if slot==(0,)*8:
+                return {'origin':'Unknown'}
+            request,implementation,lowering,runtime,resources,actual_budget,status,origin=slot
+            if not active or not 1<=request<=0x7ffffffffffffffe or origin!=2 or \
+                (implementation,lowering,runtime,resources)!=EXECUTION_IDENTITIES or \
+                actual_budget!=budget or status!=0:
+                raise ValueError('execution request/implementation/lowering/runtime/resource/status differs')
+            return {'origin':'IsolatedManaged','request':request,
+                    'implementation':'lemma-isolated-arithmetic-managed-v1',
+                    'lowering':'core0-user-v0.2/lemma-managed-records-v1',
+                    'runtime':'lemma-owned-arena-v1','resources':'lemma-arithmetic-resource-v1',
+                    'budget':budget,'status':0}
+        slots=[words[248+index*8:256+index*8] for index in range(8)]
+        metadata=[execution(slot,history[index]['budget'] if index<attempts else 0,index<attempts)
+                  for index,slot in enumerate(slots)]
+        active=execution(words[240:248],words[17],outcome!=0)
+        if active['origin']!='Unknown':
+            if not history or words[240:248]!=slots[attempts-1] or \
+                (history[-1]['revision'],history[-1]['goal'],history[-1]['outcome'])!=(words[5],words[6],outcome):
+                raise ValueError('active execution differs from latest applicable attempt')
+        record['execution']={'active':active,'history':metadata,
+            'identity_kind':'closed implementation-version authority; not artifact digests'}
     return record

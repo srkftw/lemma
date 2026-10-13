@@ -34,6 +34,42 @@ class MathematicsEvidenceTests(unittest.TestCase):
             changed=list(words);changed[index]=value
             with self.assertRaises(ValueError):self.inspect(changed)
 
+    def current_record(self, known):
+        words=self.record()+[0]*208
+        words[1]=3;words[22:28]=[math_oracle.IDENTITY,0,1,1,1,0]
+        words[104:106]=[11,1|(1<<8)|(1<<16)]
+        words[232:240]=[math_oracle.EXECUTION_MAGIC,1,0,0,0,0,0,0]
+        if known:
+            slot=[44,*math_oracle.EXECUTION_IDENTITIES,8,0,2]
+            words[240:248]=slot;words[248:256]=slot
+        return words
+
+    def test_current_execution_identity_and_unknown_legacy_are_distinct(self):
+        unknown=self.inspect(self.current_record(False))
+        self.assertEqual(unknown['execution']['active'],{'origin':'Unknown'})
+        self.assertEqual(unknown['execution']['history'][0],{'origin':'Unknown'})
+        words=self.current_record(True)
+        known=self.inspect(words)
+        self.assertEqual(known['execution']['active']['request'],44)
+        self.assertEqual(known['execution']['active']['status'],0)
+        self.assertEqual(known['execution']['active']['implementation'],'lemma-isolated-arithmetic-managed-v1')
+        for index in [232,233,234,*range(240,256)]:
+            changed=list(words);changed[index]+=1
+            with self.assertRaises(ValueError):self.inspect(changed)
+        changed=list(words);changed[256:264]=changed[248:256]
+        with self.assertRaises(ValueError):self.inspect(changed)
+
+    def test_current_edit_clears_only_active_execution_applicability(self):
+        words=self.current_record(True)
+        saved=words[248:256]
+        words[5]=12;words[8]=7;words[12]=words[13]=0;words[240:248]=[0]*8
+        record=self.inspect(words)
+        self.assertEqual(record['execution']['active'],{'origin':'Unknown'})
+        self.assertEqual(record['execution']['history'][0]['request'],44)
+        self.assertEqual(words[248:256],saved)
+        words[240:248]=saved
+        with self.assertRaises(ValueError):self.inspect(words)
+
     def test_actual_rational_values_and_revision_are_load_bearing(self):
         words=self.record()
         self.assertEqual(self.inspect(words)['outcome'],1)

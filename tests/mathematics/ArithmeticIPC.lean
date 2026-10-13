@@ -5,13 +5,22 @@ import Std.Data.HashMap
 
 open Lean Elab Command Lemma.Core0 Lemma.Compiler
 run_cmd do
-  let suite ← match checkAndLowerActionSuiteForProfile (← getEnv) .user_v0_1
+  -- The formerly scalar server now calls genuine managed records. Legacy
+  -- User1 must reject that extension, while its original Client stays legal.
+  match checkAndLowerActionSuiteForProfile (← getEnv) .user_v0_1
+      #[``Lemma.Services.Arithmetic.Server.main] with
+  | .error diagnostic =>
+    unless diagnostic.code = .unsupportedPrimitive && diagnostic.message == "Action.managed2 requires explicit core0-user-v0.2" do
+      throwError diagnostic.render
+  | .ok _ => throwError "managed Arithmetic server escaped historical User1"
+  liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedRational.compareFiveSix]
+  let suite ← match checkAndLowerActionSuiteForProfile (← getEnv) .user_v0_2
       #[``Lemma.Services.Arithmetic.Server.main, ``Lemma.Services.Arithmetic.Client.beginCall,
         ``Lemma.Services.Arithmetic.Client.pollCall] with
     | .ok suite => pure suite
     | .error diagnostic => throwError diagnostic.render
-  match lowerActionSuiteExecution .user_v0_1 suite with
-  | .ok _ => logInfo "ARITHMETIC_IPC_LOWERING:PASS genuine elaboration and checked LLVM; isolated RV64/death/resource execution separate"
+  match lowerActionSuiteExecution .user_v0_2 suite with
+  | .ok _ => logInfo "ARITHMETIC_IPC_LOWERING:PASS genuine managed IR and checked User2 LLVM; historical User1 rejects managed server; isolated RV64/death/resource execution separate"
   | .error diagnostic => throwError diagnostic
 
 /-! This independent host RAM fixture tests reply admission, not service

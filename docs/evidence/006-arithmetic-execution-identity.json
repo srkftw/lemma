@@ -1,0 +1,70 @@
+{
+  "schema": "lemma-arithmetic-execution-identity/1",
+  "status": "COMPONENT_PASS",
+  "scope": "Genuine source-bound isolated Arithmetic units, checked LLVM/RV64 objects, closed implementation-version admission and v3codec/reply host Actions; connected new guest execution not yet claimed",
+  "source_inventory": {
+    "path": "build/mathematics/evidence-v3-draft-a1/identity-probe-a1.json",
+    "sha256": "6951ed8c98da02863cfba079c7efcd63da66714f702f84d058e40acdeeaac570",
+    "unchanged_during_both_exports": true
+  },
+  "variants": {
+    "power": {
+      "catalog": "30533449cd44ec708abda34b519af05ad8f4a5a5694c45e92e5ce1211ffa44eb",
+      "pre": "679954e0e01c6357fb685c31b70bc1055dca2292ce541e47f9692068cfa40592",
+      "post": "0dd7d90f092a169415f4d018fb91d703e42dced6afb061b8796e331f07d99a3a",
+      "function_count": 151,
+      "artifacts": {
+        "unit.json": "c390060b0aace199dff6bac5087b045f32e2d6d82cc9a187e055bd0bfa648893",
+        "program.ll": "497c999d989788f315ec039c442e54e7f6f53253f373b228a8d2a1297cd769ce",
+        "program.opt.ll": "a9cb0b403e7401fe827173fc08e458b7254e29bbbc0c5b4cac43f4577ccbf6f3",
+        "program.o": "647e2bef2eff6c5b10d8e29079e87b64b758f63d9aef35ecdb3b580c6d2fa720"
+      },
+      "directory": "build/kernel/task006-arithmetic-identity-power-probe-a1/users/arithmetic"
+    },
+    "managed": {
+      "catalog": "30533449cd44ec708abda34b519af05ad8f4a5a5694c45e92e5ce1211ffa44eb",
+      "pre": "6dc632a11ecdc2ef2828eb732395ae6ebd527a90743602003e7daaa419663100",
+      "post": "677344e628a993c33e4279626054fad768fea0b248de390fc401730b74c99d89",
+      "function_count": 151,
+      "artifacts": {
+        "unit.json": "a04875b90b5f0284ab50d5294431b6cd1cbfbf40b87b4e54197ff59034b84a40",
+        "program.ll": "ff90e281e2abdf1af2bbe71d867f7fd4d9ceb207c5c64040b4dd8653a8ddd64c",
+        "program.opt.ll": "01bace903c8bef521f586b1b7385e128c0561f49591df0636af78f35f07af89e",
+        "program.o": "7a868a5841d9371d69f7f3f79b7e7007bbcbf5d8f16c240978475c51baec30a2"
+      },
+      "directory": "build/kernel/task006-arithmetic-identity-managed-probe-a1/users/arithmetic"
+    }
+  },
+  "actual_emitted_mutations": {
+    "path": "build/mathematics/evidence-v3-draft-a1/identity-mutations-a2.json",
+    "sha256": "c8fe140ccf1b77ccfa4d04612e4b82d3eace70dcdf0a7d8f901fb882441b7e6f",
+    "negative_count": 24
+  },
+  "retained_observer_failure": {
+    "path": "build/mathematics/evidence-v3-draft-a1/identity-mutations-a1.json",
+    "sha256": "252230cff1ea5d92d3d0c76448f236abeb1c96970cced5ce91ef849d631ca1b4",
+    "reason": "Initial constant mutation targeted a delegating source and did not change artifact; corrected stimulus requires changed bytes"
+  },
+  "host_checks": [
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExecutionIdentity.lean:PASS genuine scalar checked lowering and Unknown migration/metadata/history/copy/reply Actions",
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ExactMath.lean:PASS378 independent exact semantic comparisons and original record Actions",
+    "nix develop --no-write-lock-file --command lake env lean tests/mathematics/ArithmeticIPC.lean:PASS genuine managed source\u2192User2 LLVM and exact historical User1 rejection/v1 Reply admission",
+    "python3 -m unittest discover -s tests/foundation -p test_math_records.py -v:PASS7",
+    "python3 -m unittest discover -s tests/lemmasim -p test_arithmetic_execution_identity.py -v:PASS4"
+  ],
+  "format": {
+    "version": 3,
+    "bytes": 2496,
+    "legacy_formats": [
+      1,
+      2
+    ],
+    "legacy_execution_origin": "Unknown",
+    "raw_ink_and_journal_unchanged": true
+  },
+  "limitations": [
+    "Named u64 identities are closed implementation/contract version authorities, not artifact hashes",
+    "Actual source/tool/ELF correspondence and connected current guest protocol2/save/cold/failed-save acceptance remain separate",
+    "General managed language, proof-kernel environment, authenticated media and resource-failure history remain unfinished"
+  ]
+}
