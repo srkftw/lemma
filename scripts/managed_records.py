@@ -43,7 +43,7 @@ def allowed(unit):
 
 MANAGED_NOTEBOOK_CONFIGURATIONS = frozenset({
  'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize'})
-SUMS_NOTEBOOK_CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
+SUMS_NOTEBOOK_CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize', 'lemmasim-silicon-usb-next-bulk-notebook', 'lemmasim-silicon-usb-next-bulk-initialize', 'lemmasim-silicon-product-next-bulk-notebook'))
 SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1',
  'silicon_profile':'lemma-silicon-dev/0.3.0',
  'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// Paper v1 controller: registered MMIO, bounded geometry, banked tile registers.
+// Paper v1/v2 controller: registered MMIO, bounded geometry, banked tile registers.
 // Target/latch SRAM and the optical panel remain external interfaces.
 module lemma_paper #(
   parameter int WIDTH = 512,
   parameter int HEIGHT = 640,
-  parameter bit ENABLE_SEQUENCER = 0
+  parameter bit ENABLE_SEQUENCER = 0,
+  parameter int VERSION = 1,
+  parameter int STAGING_OFFSET = 2048
 ) (
   input logic clk, reset_n,
   input logic valid, write,
@@ -96,8 +98,8 @@ module lemma_paper #(
   logic aperture_access,control_access,accepted,reset_command,write_admitted;
   logic [3:0] transfer_bytes;
   assign transfer_bytes = 4'b0001 << op_size;
-  assign aperture_access = op_addr >= 2048 && op_addr < 2560 && op_size <= 3 &&
-    {1'b0,op_addr} + {9'b0,transfer_bytes} <= 2560;
+  assign aperture_access = op_addr >= STAGING_OFFSET && op_addr < STAGING_OFFSET+512 && op_size <= 3 &&
+    {1'b0,op_addr} + {9'b0,transfer_bytes} <= 13'(STAGING_OFFSET+512);
   assign control_access = op_size == 3 && op_addr[2:0] == 0;
   assign write_admitted=state==IDLE || state==WAIT_TIME ||
     (control_access && (op_addr==176 || (op_addr==104 && op_wdata==2 && busy)));
@@ -223,7 +225,8 @@ module lemma_paper #(
           control_read_value|=descriptor[word*64 +: 64] & {64{descriptor_select[word]}};
       end else case(op_addr)
         0: control_read_value=1280331856;
-        8: control_read_value=1;
+        8: control_read_value=64'(VERSION);
+        184: control_read_value=VERSION==2 ? 64'(STAGING_OFFSET) : 0;
         16: control_read_value={60'b0,interrupted,fault!=0,done_flag,busy};
         24: control_read_value=fault;
         32: control_read_value=64'(WIDTH);

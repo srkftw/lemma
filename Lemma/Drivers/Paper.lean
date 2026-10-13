@@ -100,4 +100,63 @@ def uploadOffset (handle offset x y width height : UInt64) : Action :=
     if error = 0 then .done 0 length else .done deviceError error else .done s 0
   else .done invalid 0 else .done invalid 0
 
+/-- Paper-v2 is selected only by validated successor discovery. Read actual
+controller version and staging register; a profile label alone cannot admit it. -/
+def initializeNext : Action :=
+  .bind (read DeviceABI.paperMagicOffset) fun s magic => if s = 0 then
+  if magic = DeviceABI.paperMagic then
+  .bind (read DeviceABI.paperVersionOffset) fun s version => if s = 0 then
+  if version = 2 then
+  .bind (read 184) fun s staging => if s = 0 then
+  if staging = 3584 then dimensions else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0
+  else .done invalid 0 else .done s 0
+
+private def uploadWordNext (i _ : UInt32) (acc buffer _ _ _ : UInt64) : Action :=
+  .bind (Access.read64 (buffer + i.toUInt64 * 8)) fun s packed =>
+  if s = 0 then .bind (write (0xe00 + i.toUInt64 * 8) packed) fun s _ => .done s acc
+  else .done s 0
+
+/-- handle is a resolved owner1/purpose1 bounce frame, not U memory. Width32
+and height32 use512 packed bytes; edge tiles may be smaller. The guest supplies
+white unused low nibbles. The controller independently validates every field. -/
+def uploadNext (handle x y width height : UInt64) : Action :=
+  if width = 0 then .done invalid 0 else if 32 < width then .done invalid 0 else
+  if height = 0 then .done invalid 0 else if 32 < height then .done invalid 0 else
+  .bind (Frames.resolvePurpose 1 handle 1) fun s buffer =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileXOffset x) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileYOffset y) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileWOffset width) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileHOffset height) fun s _ => if failed s = true then .done s 0 else
+  let length := ((width + 1) / 2) * height
+  .bind (write DeviceABI.paperTileLenOffset length) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 64 uploadWordNext ((length + 7) / 8).toUInt32 0 buffer 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperCommandOffset 1) fun s _ => if failed s = true then .done s 0 else
+  .bind (read DeviceABI.paperErrorOffset) fun s error => if s = 0 then
+    if error = 0 then .done 0 length else .done deviceError error else .done s 0
+
+
+def uploadOffsetNext (handle offset x y width height : UInt64) : Action :=
+  if width = 0 then .done invalid 0 else if 32 < width then .done invalid 0 else
+  if height = 0 then .done invalid 0 else if 32 < height then .done invalid 0 else
+  let length := ((width + 1) / 2) * height
+  let copied := ((length + 7) / 8) * 8
+  if offset % 8 = 0 then if offset ≤ 4096 - copied then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s buffer =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileXOffset x) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileYOffset y) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileWOffset width) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileHOffset height) fun s _ => if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperTileLenOffset length) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 64 uploadWordNext ((length + 7) / 8).toUInt32 0 (buffer + offset) 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (write DeviceABI.paperCommandOffset 1) fun s _ => if failed s = true then .done s 0 else
+  .bind (read DeviceABI.paperErrorOffset) fun s error => if s = 0 then
+    if error = 0 then .done 0 length else .done deviceError error else .done s 0
+  else .done invalid 0 else .done invalid 0
+
+
 end Lemma.Drivers.Paper

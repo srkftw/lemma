@@ -177,7 +177,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    .now_ticks(timer_ticks),.sample_valid(sample_valid&&!power_suspended&&!power_cancel_pen&&!domain_reset),.sample_ready(pen_sample_ready),.sample_time,.sample_x,.sample_y,
    .sample_pressure,.sample_flags,.sample_tool,.sample_buttons,.sample_accepted
  );
- lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0)) paper(
+ lemma_paper #(.WIDTH(int'(WIDTH)),.HEIGHT(int'(HEIGHT)),.ENABLE_SEQUENCER(PAPER_SEQUENCER!=0),.VERSION(int'(PAPER_VERSION)),.STAGING_OFFSET(int'(PAPER_STAGE_OFFSET))) paper(
    .clk,.reset_n(!domain_reset),.valid(dev_valid&&paper_sel),.write(dev_valid&&paper_sel&&dev_write),
    .addr((dev_valid&&paper_sel)?dev_addr[11:0]:12'd0),
    .size((dev_valid&&paper_sel)?dev_size:3'd0),.wdata((dev_valid&&paper_sel)?dev_wdata:64'd0),

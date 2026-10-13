@@ -6,6 +6,8 @@ import Lemma.Platform.Silicon.BindingFull
 import Lemma.Platform.Silicon.BindingPower
 import Lemma.Platform.Silicon.BindingUSB
 import Lemma.Platform.Silicon.BindingProduct
+import Lemma.Platform.Silicon.BindingUSBNext
+import Lemma.Platform.Silicon.BindingProductNext
 
 /-! Bounded binary descriptor consumer, v1. The actual reset DTB is validated
 by BootInfo before this module runs. Unknown versions, checksum errors, geometry,
@@ -153,5 +155,92 @@ def validateSiliconBLE : Action := validateBinding 5
 def validateSiliconUSB : Action := validateBinding 6
 
 def validateSiliconProduct : Action := validateBinding 7
+
+private def expectedBindingNext (binding index : UInt64) : UInt64 :=
+  if binding = 9 then if index = 1 then 10 else
+    if index = 7 then Lemma.Platform.Silicon.BindingProductNext.frame_pool_bytes else
+    if index = 25 then Lemma.Platform.Silicon.BindingProductNext.power_base else expected index
+  else if binding = 8 then if index = 1 then 9 else
+    if index = 7 then Lemma.Platform.Silicon.BindingUSBNext.frame_pool_bytes else
+    if index = 25 then Lemma.Platform.Silicon.BindingUSBNext.power_base else expected index
+  else 0
+
+private def fieldsStepNext (i _ : UInt32) (acc binding _ _ _ : UInt64) : Action :=
+  if i = 3 then .done 0 acc else if 18 ≤ i then if i ≤ 21 then .done 0 acc else
+    if i = 26 then .done 0 acc else if i = 27 then .done 0 acc else compare binding i acc
+  else compare binding i acc
+where
+  compare (binding : UInt64) (i : UInt32) (acc : UInt64) : Action :=
+    .bind (word i.toUInt64) fun s v =>
+    if s = 0 then if v = expectedBindingNext binding i.toUInt64 then .done 0 acc else .done invalid 0 else .done s 0
+
+
+private def geometryNext (binding : UInt64) : Action :=
+  .bind (word 18) fun s width =>
+  if failed s = true then .done s 0 else
+  .bind (word 19) fun s height =>
+  if failed s = true then .done s 0 else
+  if (if binding = 1 then
+      if width = Lemma.Platform.Silicon.Binding.width then
+      if height = Lemma.Platform.Silicon.Binding.height then true else false else false else
+    if 3 ≤ binding then
+      if width = Lemma.Platform.Silicon.BindingPower.width then
+      if height = Lemma.Platform.Silicon.BindingPower.height then true else false else false else
+    if binding = 2 then
+      if width = Lemma.Platform.Silicon.BindingFull.width then
+      if height = Lemma.Platform.Silicon.BindingFull.height then true else false else false else
+    if width = 1650 then if height = 2200 then true else false else
+    if width = 1404 then if height = 1872 then true else false else false) = false then .done invalid 0 else
+  .bind (IO.read64 0x10010020) fun s actualWidth =>
+  if failed s = true then .done s 0 else
+  .bind (IO.read64 0x10010028) fun s actualHeight =>
+  if failed s = true then .done s 0 else
+  .bind (word 20) fun s pressure =>
+  if failed s = true then .done s 0 else
+  .bind (word 21) fun s features =>
+  if failed s = true then .done s 0 else
+  if features = (if binding = 9 then 31 else 15) then
+  .bind (IO.read64 0x10011048) fun s actualPressure =>
+  if failed s = true then .done s 0 else
+  if width = actualWidth then if height = actualHeight then
+  if pressure = actualPressure then
+  .bind (word 26) fun s dtb => if s = 0 then
+  .bind (word 27) fun s bytes => if s = 0 then
+  if binding = 9 then DescriptorDTB.validateSiliconProductNext dtb bytes width height pressure
+  else DescriptorDTB.validateSiliconUSBNext dtb bytes width height pressure
+  else .done s 0 else .done s 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+
+
+def validateBindingNext (binding : UInt64) : Action :=
+  if binding = 8 then admitted binding else if binding = 9 then admitted binding else .done invalid 0
+where
+ admitted (binding : UInt64) : Action :=
+  if 9 < binding then .done invalid 0 else
+  .boundedFoldU64 32 fieldsStepNext 32 0 binding 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 32 sumStep 32 0 0 0 0 0 fun s checksum =>
+  if failed s = true then .done s 0 else
+  .bind (word 3) fun s actual =>
+  if failed s = true then .done s 0 else
+  if checksum = actual then
+  .bind (word 26) fun s dtb =>
+  if failed s = true then .done s 0 else
+  .bind (Access.read64 0x80400008) fun s handed =>
+  if failed s = true then .done s 0 else
+  if dtb = handed then
+  .bind (geometryNext binding) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (word 7) fun s bytes =>
+  if failed s = true then .done s 0 else
+  if binding = 1 then
+    Frames.configure (bytes / 4096) Lemma.Platform.Silicon.Binding.frame_quota 4
+  else Frames.configure (bytes / 4096) (bytes / 4096) 4
+  else .done invalid 0 else .done invalid 0
+
+
+/-- Additive Paper-v2 USB/Product hardware discovery, exact ABI9/10. -/
+def validateSiliconUSBNext : Action := validateBindingNext 8
+def validateSiliconProductNext : Action := validateBindingNext 9
 
 end Lemma.Platform.LemmaSim.Descriptor

@@ -28,6 +28,7 @@ DTB_LITERALS = {
 }
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
 WORD_CODES = [18,4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
+PAPER_NEXT_CONFIGURATIONS={'lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-next-bulk-notebook'}
 PREFIX = 'Lemma.Platform.LemmaSim.'
 # Independent visible rows for the guest-authored bounded font. These are
 # packed here rather than imported from the production Lean lookup.
@@ -105,7 +106,7 @@ MANAGED_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-managed-notebook',
 CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 SUMS_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-sums-notebook',
-    'lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'} | set(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
+    'lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'} | set(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize', 'lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-next-bulk-notebook'))
 CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= SUMS_NOTEBOOK_CONFIGURATIONS
 BLE_CONFIGURATIONS = {'lemmasim-silicon-ble-link-probe'}
@@ -145,7 +146,7 @@ def ble_specs():
     return specs
 
 USB_CONFIGURATIONS = {'lemmasim-silicon-usb-link-probe',
-    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'}
+    'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'}
 CONFIGURATIONS |= USB_CONFIGURATIONS
 USB_LITERALS = {20:'lemma-usb@10010a00',56:'lemma,endpoints',57:'lemma,reset-clocks',
                 58:'lemma,decoded-packet-boundary',77:'lemma,usb-device-packet-v1'}
@@ -184,7 +185,7 @@ def usb_specs():
     specs[source]=(*specs[source][:3],words)
     return specs
 
-PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
+PRODUCT_CONFIGURATIONS = {'lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'}
 CONFIGURATIONS |= PRODUCT_CONFIGURATIONS
 # All selected Notebook roots share this bounded scalar fetch. Historical
@@ -263,7 +264,7 @@ def product_specs():
         ['checked-access','mmio-read','io-order','physical-read','physical-write'],[[7,15,31]])
     return specs
 
-def lookup_schema(ir: str, unit: dict):
+def _lookup_schema(ir: str, unit: dict):
     """Select one complete closed source schema, including historical artifacts.
 
     New literal declarations are shared source across the legacy bindings;
@@ -299,6 +300,16 @@ def lookup_schema(ir: str, unit: dict):
     if unit.get('configuration') in BLE_CONFIGURATIONS and observed and not modern:
         raise Core0Error('BLE discovery lacks its versioned complete literal schema')
     return (new,BLE_WORD_CODES,'ble-packet-v1') if modern else (legacy,WORD_CODES,'power-v2')
+
+def lookup_schema(ir: str, unit: dict):
+    specs,words,schema=_lookup_schema(ir,unit)
+    if unit.get('configuration') in PAPER_NEXT_CONFIGURATIONS:
+        specs=dict(specs)
+        # literal63 includes its NUL in the final little-endian word. Literal79
+        # consists of two immediate words; it introduces no readonly table.
+        specs[PREFIX+'DescriptorDTB.literalWordNext']=('kernel',['u64','u64'],[],
+            [[0x74732c616d6d656c,0x666f2d676e696761,0x74657366]])
+    return specs,words,schema
 
 def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],list[dict]]:
     from audit_kernel import _ir_definition_body, _line_functions
@@ -503,7 +514,7 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
         if len(geps)!=1: raise Core0Error('Lemmasim literal lacks one exact typed pointer derivation')
         pointer,operand=geps[0]
         argument,shift={
-            PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0),
+            PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0), PREFIX+'DescriptorDTB.literalWordNext':('%arg1',0),
             PREFIX+'DescriptorDTB.nodeRole':('%arg1',-4), PREFIX+'DescriptorDTB.compatibleCode':('%arg0',-1),
             PREFIX+'DescriptorDTB.requiredFlags':('%arg0',-1), PREFIX+'DescriptorDTB.expectedIRQ':('%arg0',-1),
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
@@ -546,8 +557,8 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
             parent=re.search(r'switch i64 %arg0, label %(\S+) \[\s*i64 0, label %(\S+)\s*i64 10, label %(\S+)\s*i64 12, label %(\S+)\s*\]',body)
             if parent is None or not _structured_reachable(successors,parent[4],load_block) or any(_structured_reachable(successors,parent[i],load_block) for i in (1,2,3)):
                 raise Core0Error('Power node-role lookup escaped its exact soc parent12 gate')
-        if source.endswith('literalWord'):
-            guard=guards[0];code=word_codes[index]
+        if source.endswith('literalWord') or source.endswith('literalWordNext'):
+            guard=guards[0];code=63 if source.endswith('literalWordNext') else word_codes[index]
             if len(re.findall(r'i64 '+str(code)+r', label %'+re.escape(guard)+r'(?![A-Za-z0-9_.$-])',body))!=1:
                 raise Core0Error('FDT word table is not bound to its exact literal code')
         if source.endswith('statusCharacter'):

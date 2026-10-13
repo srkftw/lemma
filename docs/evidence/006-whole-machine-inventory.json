@@ -615,9 +615,30 @@
       "sha256": "303dddf1ac764b1c20c24abff52a0a10e1e4af00e2744a7eca27a116d5bf49fe",
       "status": "PASS_COMPONENT_ONLY",
       "scope": "Finite Surface semantics and real LLVM/object diagnostics; no target cycle improvement claim"
+    },
+    {
+      "path": "build/task006-paper-next-full-a4.json",
+      "bytes": 31908,
+      "sha256": "3bed27f044191e7be71056ec8d215a891be3e4cd68fafbe0fbbd8982a760f4c8",
+      "status": "PASS_BUILD_AND_AUDIT",
+      "scope": "Actual277-source-bound USB8 initialize/notebook and Product9 notebook, genuine elaboration/checked lowering/LLVM/audited RV64; no guest Ready claim"
+    },
+    {
+      "path": "build/usb/paper-staging-v2-a3/result.json",
+      "bytes": 3492,
+      "sha256": "f8b1fef5eea15b01c54b020157fb2b2728340c3cdf5ed10ad6ef22b11b4ef84b",
+      "status": "PASS",
+      "scope": "Actual USB8 circuitry512-byte staging/neighbor ownership/canonical clear/1024independent pixels; raw literal stimuli, not guest"
+    },
+    {
+      "path": "build/usb/paper-staging-product-v2-a1/result.json",
+      "bytes": 3524,
+      "sha256": "02a88f5e4acf0eb564da0141cae921cc1a54e112e2eae593483f77efc3c30eb8",
+      "status": "PASS",
+      "scope": "Actual Product9 circuitry same capacity/owned decode; separate boot/update acceptance required"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Array connected milestone additive; candidate CI38361053948 FAILURE, successor8/9 connected repair in progress; complete digital, exact cached-state, distribution and physical obligations remain separate."
+  "continuation_note": "Paper2 circuitry and genuine guest build/audits qualified; USB8 and Product9 connected cold workflows running. CI38416685379 FAILURE; full digital, exact cached-state, distribution and physical obligations remain separate."
 }

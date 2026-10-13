@@ -37,8 +37,8 @@ POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-array-bulk-notebook',
                               'lemmasim-silicon-bulk-notebook',
                               'lemmasim-silicon-bulk-initialize',
                               'lemmasim-silicon-sums-arithmetic-oom-development'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
-USB_CONFIGURATIONS=frozenset({'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
-PRODUCT_CONFIGURATIONS=frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'})
+USB_CONFIGURATIONS=frozenset({'lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'})
+PRODUCT_CONFIGURATIONS=frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'})
 ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
     'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',
     'lemmasim-silicon-full-notebook','lemmasim-silicon-notebook',

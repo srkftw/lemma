@@ -88,7 +88,11 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isBulkNotebookConfiguration configuration then
-      if isUSBNotebookConfiguration configuration then
+      if isUSBNextNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-next-bulk-notebook" then "siliconUSBNextBoot" else "siliconUSBNextInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBNextBulk"]
+      else if isProductNextNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductNextBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductNextBulk"]
+      else if isUSBNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-bulk-notebook" then "siliconUSBBoot" else "siliconUSBInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBBulk"]
       else if isProductNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel.siliconProductBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchProductBulk"]

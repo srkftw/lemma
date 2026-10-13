@@ -27,6 +27,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS)
+from build_kernel import NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -191,12 +192,13 @@ POWER_CONFIGURATIONS = POWER_CONFIGURATIONS | frozenset(ARITHMETIC_DEVELOPMENT_C
 BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
 USB_PROBE_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
 USB_NOTEBOOK_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-notebook',
-    'lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
+    'lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'})
 USB_CONFIGURATIONS = USB_PROBE_CONFIGURATIONS | USB_NOTEBOOK_CONFIGURATIONS
-PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
+PRODUCT_NOTEBOOK_CONFIGURATIONS=frozenset(('lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
+PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
     'lemmasim-silicon-product-initialize','lemmasim-silicon-product-boot-probe'})
 MODERN_NOTEBOOK_CONFIGURATIONS = USB_NOTEBOOK_CONFIGURATIONS | frozenset({
-    'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'})
+    'lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook'})
 LEMMASIM_CONFIGURATIONS = LEMMASIM_CONFIGURATIONS | BLE_CONFIGURATIONS | USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= MODERN_NOTEBOOK_CONFIGURATIONS
 MANAGED_POLICIES.update({configuration:'lemma-notebook-arithmetic-v1'
@@ -1580,7 +1582,8 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
     for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
         gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1607,9 +1610,9 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
     if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
-        boot='Lemma.Platform.LemmaSim.NotebookKernel.bootModern'
-        binding=7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
-        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
+        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootModernNext' if next_binding else 'bootModern')
+        binding=(9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
+        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
         if boot not in names or wrapper not in names:
             raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
         constructor_callers=[];boot_callers=[]
@@ -3537,7 +3540,7 @@ def validate_product_pmp(assembly: str, raw_machine: str, ranges: dict, configur
     This adds only1 KiB RW/NX to the selected Product startup; no ninth entry
     appears in a legacy profile or any other machine routine.
     """
-    selected=configuration in {"lemmasim-silicon-product-notebook","lemmasim-silicon-product-bulk-notebook"}
+    selected=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS
     body=_assembly_function(assembly,"_start")
     mentions=[line for line in assembly.splitlines() if re.search(r"\b(?:pmpaddr8|pmpcfg2)\b",line)]
     if not selected:
@@ -4656,6 +4659,13 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                         and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
                         [[0x4000000002000112,0x0000010000000000,0x0100],
                          [0x8000010100200209,0x00ff020000040932,0x0040028105070000,0x0000400202050700]])
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordNext':
+                # This exact24-byte pool comes only from the independently
+                # content/bound/use-checked post-LLVM Paper2 owner. No generic
+                # readonly pool or historical declaration authority is added.
+                return (unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
+                        and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
+                        and (row['values'],row['bytes'])==([0x74732c616d6d656c,0x666f2d676e696761,0x74657366],24))
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
             specs=[s[source] for s in (extra,modern,usb_modern,product_modern) if source in s]
@@ -4705,8 +4715,14 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if owner['value']%4 or owner['size']%4 or references[0]['offset']%4:
                 raise Core0Error('jump table owner/address reference has invalid instruction alignment')
             source_row=by_symbol.get(owner['name']);source=re.sub(r'^_private\..*?\.[0-9]+\.','',source_row.get('source','') if source_row else '')
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and source in LEMMASIM_BACKEND_JUMP_TABLES
+            next_token=(unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
+                        and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepNext')
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            if next_token:
+                # Same admitted FDT token domain and exact typed callback;
+                # complete Next pre-body/discovery authority was checked above.
+                spec=('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9])
             owner_tables=[candidate['name'] for candidate in tables
                           if candidate['name'].startswith('.LJTI'+match[1]+'_')]
             paired_leaf=(sim_source and source=='Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty'
@@ -4871,7 +4887,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -4908,7 +4924,7 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
         return
     names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
     by={source:symbol for symbol,source in names.items()}
-    required=['Lemma.Platform.LemmaSim.NotebookKernel.constructModern',
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
         'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
         'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
     if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
@@ -4933,6 +4949,8 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
 def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
+    from paper_next import validate as validate_paper_next
+    paper_next_report=validate_paper_next(ir,unit,optimized=optimized)
     validate_modern_power_selection(ir,unit,optimized=optimized)
     from paper_bulk import validate as validate_surface_v2
     validate_surface_v2(ir,unit,optimized=optimized)
@@ -5054,6 +5072,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
             **({"managed_sums":sums_report} if sums_report is not None else {}),
             **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
+            **({"paper_staging_v2":paper_next_report} if paper_next_report is not None else {}),
             **({"managed_array":array_report} if array_report is not None else {}),
             **({"arithmetic_array_execution_identity":array_execution_report} if array_execution_report is not None else {}),
             **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
@@ -5152,7 +5171,7 @@ def validate_machine(text: str, *, user: bool = False,
             names = re.findall(r"\b(?:[ms][a-z][a-z0-9]+|satp|pmp[a-z0-9]+)\b", operands)
             allowed = KNOWN_CSRS | ({"pmpaddr5", "pmpaddr6", "pmpaddr7"} if configuration in LEMMASIM_CONFIGURATIONS else set())
             product_csrs={"pmpaddr8","pmpcfg2"}
-            product_start=configuration in {"lemmasim-silicon-product-notebook","lemmasim-silicon-product-bulk-notebook"} and ranges is not None and "_start" in ranges and ranges["_start"][0] <= address < sum(ranges["_start"])
+            product_start=configuration in PRODUCT_NOTEBOOK_CONFIGURATIONS and ranges is not None and "_start" in ranges and ranges["_start"][0] <= address < sum(ranges["_start"])
             if product_start:allowed |= product_csrs
             if not names or not set(names) <= allowed:
                 raise Core0Error("unknown CSR in platform code")

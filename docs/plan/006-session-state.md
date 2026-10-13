@@ -455,3 +455,23 @@ MMIO overlaps the old512-byte paper staging window. Successors8/9 move only
 Paper2 staging to0xe00 and have separately passing actual-SoC literal checks.
 Their connected guest/production boot qualification is in progress. Old
 profiles and failures remain intact.
+
+## Paper-v2 connected-device repair
+
+[The Paper-v2 receipt](../evidence/006-paper-staging-v2.json) binds the exact277
+consumed inputs and three fresh complete successor guest builds/audits. The
+actual motherboard/controller tests preserve all512 staged bytes, neighboring
+USB/BLE ownership and canonical framebuffer capacity. Profiles8/9 expose the
+disjoint0xe00 staging window and readonly discovery; the genuine Lean driver,
+FDT/descriptor validation, kernel startup and image lowering select it. Their
+software privilege contracts remain Kernel6/7. Historical profiles1–7 and the
+actual old-map faults remain unchanged. Five actual lowered-body mutations
+were rejected. This repairs a load-bearing guest/controller path; it does not
+yet establish USB8 notebook or Product9 healthy boot/update acceptance.
+
+Candidate229ab6c16ea15916932fa2dc5ca6cd87ff9b6018 CI38416685379 completed
+**FAILURE**. Six jobs passed: foundation, legacy, Task003 A–E, Task004 notebook
+writing/cold recovery, and RTL devices/power. Five jobs failed, including a later
+host fixture environment requirement and subsequent kernel audit paths. Their
+logs are retained under`build/ci/task006-229ab6c-diagnosis-a1`; repairs and new
+candidate qualification remain required. No skipped step is passed.

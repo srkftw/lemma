@@ -922,6 +922,14 @@ def configureProduct (binding : UInt64) : Action :=
     if failed s = true then .done s 0 else Access.write64 productSelection 7
   else .done invalidDescriptor 0
 
+/-- Hardware Product9 admission, retaining the already versioned layout3
+policy and exact S-only aliases. No legacy construction path reads this selector. -/
+def configureProductNext (binding : UInt64) : Action :=
+  if binding = 9 then
+    .bind Lemma.Platform.LemmaSim.Descriptor.validateSiliconProductNext fun s _ =>
+    if failed s = true then .done s 0 else Access.write64 productSelection 7
+  else .done invalidDescriptor 0
+
 private def buildProductKernel (address : UInt64) : Action :=
   .bind (buildKernel address) fun s _ => if failed s = true then .done s 0 else
   .bind (link address 1 15 13) fun s _ => if failed s = true then .done s 0 else

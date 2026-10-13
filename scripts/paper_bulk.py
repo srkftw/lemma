@@ -14,7 +14,8 @@ CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
  'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize',
  'lemmasim-silicon-bytes-arithmetic-oom-development'})
 ARRAY=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
-CONFIGURATIONS |= ARRAY
+NEXT_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-next-bulk-notebook'))
+CONFIGURATIONS |= ARRAY | NEXT_CONFIGURATIONS
 PRODUCT='lemmasim-silicon-product-bulk-notebook'
 USB=frozenset({'lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
 BYTES=frozenset({'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'})
@@ -52,6 +53,9 @@ def validate(ir,unit,*,optimized):
  names={row['symbol']:canonical(row['source']) for row in unit['functions']}
  by={source:symbol for symbol,source in names.items()}
  selected=dict(EXPECTED[role])
+ if role=='kernel' and unit['configuration'] in NEXT_CONFIGURATIONS:
+  from paper_next import validate as validate_next
+  return validate_next(ir,unit,optimized=optimized)
  if role=='kernel':
   modern=unit['configuration']==PRODUCT or unit['configuration'] in USB
   wrapper='dispatchProductBulk' if unit['configuration']==PRODUCT else 'dispatchUSBBulk'
