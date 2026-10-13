@@ -1,7 +1,7 @@
 {
   "schema": "lemma-arithmetic-execution-identity/1",
-  "status": "COMPONENT_PASS",
-  "scope": "Genuine source-bound isolated Arithmetic units, checked LLVM/RV64 objects, closed implementation-version admission and v3codec/reply host Actions; connected new guest execution not yet claimed",
+  "status": "CONNECTED_GUEST_PASS",
+  "scope": "Genuine closed isolated Arithmetic implementation-version authority, actual protocol2 durable v3 course/edit/Save/cold workflow and v2 guest migration; not general managed language or proof-kernel completion",
   "source_inventory": {
     "path": "build/mathematics/evidence-v3-draft-a1/identity-probe-a1.json",
     "sha256": "6951ed8c98da02863cfba079c7efcd63da66714f702f84d058e40acdeeaac570",
@@ -64,7 +64,185 @@
   },
   "limitations": [
     "Named u64 identities are closed implementation/contract version authorities, not artifact hashes",
-    "Actual source/tool/ELF correspondence and connected current guest protocol2/save/cold/failed-save acceptance remain separate",
-    "General managed language, proof-kernel environment, authenticated media and resource-failure history remain unfinished"
-  ]
+    "QEMU instruction counts do not establish canonical RTL processor timing or exact checkpoint parity",
+    "New v3 guest semantic budget0 is qualified; new protocol2 heap-OOM history is not claimed. Earlier isolated managed constructor OOM remains separately recorded.",
+    "General managed language, bytearrays/strings/recursive inductives/proof-kernel environment, authenticated media and durable resource-failure history remain unfinished"
+  ],
+  "connected_guest": {
+    "immutable_bundle": {
+      "path": "build/native/task006-managed-v3-a1/bundle.json",
+      "sha256": "2ccc78b6900cffadfbe1ea53c04fc7b77b62f33a495260a794246f0a8de9d389",
+      "schema": "lemmasim-native-bundle/3",
+      "source_commit": "f9e1ab034efa0e0b5c33bec1783e02126226477b",
+      "source_inputs": 220
+    },
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "677e700e34d712fee2de0cb7c652d6ba56f5f054b7ce72e2aab45d87f029a98b",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "actual_artifacts": {
+      "build/kernel/task006-managed-notebook-v3-a4/image.elf": "677e700e34d712fee2de0cb7c652d6ba56f5f054b7ce72e2aab45d87f029a98b",
+      "build/kernel/task006-managed-notebook-v3-a4/users/arithmetic/image.elf": "470fc36173488c0813597b0adff33e47599fae38dde211aeee88094d2b7f0a63",
+      "build/kernel/task006-managed-notebook-v3-a4/users/arithmetic/unit.json": "a04875b90b5f0284ab50d5294431b6cd1cbfbf40b87b4e54197ff59034b84a40",
+      "build/kernel/task006-managed-notebook-v3-a4/audit.json": "6f881523a7fb52ce435798ce7246660bdedb23d228ea383d43b05c94559c2060"
+    },
+    "normal": {
+      "result": "build/task006-execution-identity-math-a1/result.json",
+      "sha256": "73cc5fca11a400e8375d18ab31b668a415d70d77e22924b0c6a15e03d58f4944",
+      "command": "python3 scripts/check_math_session.py --require-execution-identity --disk build/silicon/task006-canonical-cold-a2/medium.raw --work-dir build/task006-execution-identity-math-a1 --native-bundle build/native/task006-managed-v3-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200",
+      "elapsed_host_seconds": 105.72777350305114,
+      "boot": {
+        "virtual_seconds": 4.700000012,
+        "host_seconds": 5.384869433997665,
+        "cycle": 470000002
+      },
+      "cold_boot": {
+        "virtual_seconds": 5.500000008,
+        "host_seconds": 6.599954450968653,
+        "cycle": 550000001
+      },
+      "execution_identity": {
+        "status": "PASS",
+        "format_bytes": 2496,
+        "actual_isolated_requests": 5,
+        "actual_request_revision_outcome_bound": true,
+        "known_attempts": 5,
+        "identity_kind": "closed implementation-version authority; not artifact hash",
+        "semantic_and_heap_resources_separate": true
+      },
+      "edited_applicability": {
+        "status": "PASS",
+        "active_unknown": true,
+        "old_attempt_identity_preserved": true,
+        "actual_durable_guest_record": true
+      },
+      "cold_recovery": {
+        "status": "PASS",
+        "actual_new_cpu": true,
+        "math_sha256": "f39309c8ae3fc2f6057873a07efe27a2b41c0ffff8c28f5fdf436a67ed0e10c9",
+        "complete_controller_pixels": true,
+        "raw_ink_preserved": true
+      },
+      "failed_save": {
+        "status": "PASS",
+        "no_false_saved": true,
+        "acknowledged_math_unchanged": true,
+        "actual_failed_controller_label": true,
+        "completed": 4
+      },
+      "history_outcomes": [
+        1,
+        2,
+        5,
+        1,
+        4
+      ],
+      "observer_sources": {
+        "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+        "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+        "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+        "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+        "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+        "scripts/check_math_session.py": "404badb6699803d365420f12e88b5b00bc1d35378b90d4f714df5ff204be503e",
+        "conformance/lemmasim/math_oracle.py": "dd8dc1b9ddff8b195c07aabc31cc3e937865302d73e7aa474f91e3ee64fead4d"
+      }
+    },
+    "migration": {
+      "result": "build/task006-execution-identity-v2-migration-a1/result.json",
+      "sha256": "5ace2ee883ca1206225446e6ce434c3832e2db76709246b278058cf3918f5a3a",
+      "command": "python3 scripts/check_review_session.py --record-version 3 --source-record-version 2 --disk build/task006-managed-math-a1/closed-course.raw --work-dir build/task006-execution-identity-v2-migration-a1 --native-bundle build/native/task006-managed-v3-a1 --boot-seconds 60 --action-seconds 30 --deadline 1200",
+      "elapsed_host_seconds": 95.96738264203304,
+      "boot": {
+        "virtual_seconds": 5.400000004,
+        "host_seconds": 8.055197457957547,
+        "cycle": 540000001
+      },
+      "cold_boot": {
+        "virtual_seconds": 5.600000004,
+        "host_seconds": 10.515402844990604,
+        "cycle": 560000001
+      },
+      "execution_migration": {
+        "status": "PASS",
+        "old_attempts_unknown": 5,
+        "new_attempt_known": true,
+        "actual_request_revision_outcome_bound": true
+      },
+      "cold_recovery": {
+        "status": "PASS",
+        "complete_controller_pixels": true,
+        "math_sha256": "189c6ac2f77b83cd25f87a1e75839ee8a0e4eef8ad206b5b8897399e000e64c7",
+        "actual_new_cpu": true
+      },
+      "failed_save": {
+        "status": "PASS",
+        "no_false_saved": true,
+        "acknowledged_record_unchanged": true,
+        "actual_failed_controller_label": true,
+        "completed": 4
+      },
+      "learner_mode": 0,
+      "learner_understanding": "uncertain",
+      "observer_sources": {
+        "scripts/check_live_notebook.py": "566e68fed80217d55fd08de93b6db372923d97689ab4ddd93a94dc89d2351e60",
+        "conformance/lemmasim/check_notebook_workflow.py": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96",
+        "conformance/lemmasim/inspect_notebook.py": "08d6eb39127d0c12d0a170afdbd0678b74704aa9e4d66918b92cb8606b9d60f7",
+        "conformance/lemmasim/notebook_input.py": "177621eb64769660cc6dbc08d625292455942dbdabc52ca64656ef8096652252",
+        "conformance/lemmasim/store_oracle.py": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c",
+        "scripts/check_math_session.py": "404badb6699803d365420f12e88b5b00bc1d35378b90d4f714df5ff204be503e",
+        "conformance/lemmasim/math_oracle.py": "dd8dc1b9ddff8b195c07aabc31cc3e937865302d73e7aa474f91e3ee64fead4d",
+        "scripts/check_review_session.py": "0db39ef4b1a99b18f9344bf98770aca6af38269f8965c9c586d68d56a221f297"
+      }
+    },
+    "performance_context": {
+      "same_backend": "exact archived QEMU2874932d; instruction counting is not RTL timing parity",
+      "baseline_result": "build/task006-managed-math-a1/result.json",
+      "baseline": {
+        "boot": {
+          "virtual_seconds": 7.300000028,
+          "host_seconds": 11.943986998987384,
+          "cycle": 730000003
+        },
+        "cold_boot": {
+          "virtual_seconds": 8.250000008,
+          "host_seconds": 14.560771406977437,
+          "cycle": 825000001
+        },
+        "elapsed_seconds": 216.56198510405375
+      },
+      "comparison": "Same original course actions/canonical geometry8192frames; current adds durable edit-identity observation and2496B records. Software also includes checked-word/IPC improvements; host load is not a controlled benchmark."
+    },
+    "retained_candidate_failures": [
+      {
+        "path": "build/kernel/task006-managed-notebook-v3-a1/build-failure.json",
+        "reason": "Exporter compiled hardcoded Arithmetic constructor for empty Notebook User2 closure",
+        "sha256": "5b10a2f788d3be05a1f6a2b078467691226879c512b03b31feca2737df98ff42"
+      },
+      {
+        "path": "build/kernel/task006-managed-notebook-v3-a2/audit-failure.json",
+        "reason": "New software selector emitted historical1024-frame capacity instead of canonical8192",
+        "sha256": "6fa30fddd299edea16fe2cff67901fc7ae617838ad6fac4497e6e95145d3e5b1"
+      },
+      {
+        "path": "build/kernel/task006-managed-notebook-v3-a3/audit-failure.json",
+        "reason": "New selected configuration not admitted by exact readonly observer",
+        "sha256": "05a475a18991c7b5b9ef15a1d7e6ae9d44cfa926429b0231b6d535c9dc40660a"
+      },
+      {
+        "path": "build/kernel/task006-managed-initialize-v3-a2/audit-failure.json",
+        "reason": "Matching exact readonly configuration observer failure",
+        "sha256": "05a475a18991c7b5b9ef15a1d7e6ae9d44cfa926429b0231b6d535c9dc40660a"
+      }
+    ],
+    "source_media_policy": "Only private copies; both original acknowledged media remain unchanged; no host construction/recovery of live guest mathematical state",
+    "resources": "Each session is bounded60sboot/30saction, campaign1200s. All public sessions shut down and owned processes reaped; no new peak RAM measurement claimed."
+  }
 }
