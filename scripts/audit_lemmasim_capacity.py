@@ -23,7 +23,9 @@ ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
     'lemmasim-silicon-power-arithmetic-stall-development',
 })
 POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-power-notebook',
-                              'lemmasim-silicon-power-initialize'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+                              'lemmasim-silicon-power-initialize',
+                              'lemmasim-silicon-managed-notebook',
+                              'lemmasim-silicon-managed-initialize'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
     'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',
     'lemmasim-silicon-full-notebook','lemmasim-silicon-notebook',

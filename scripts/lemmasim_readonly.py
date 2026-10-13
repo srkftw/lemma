@@ -99,6 +99,10 @@ ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = {'lemmasim-silicon-power-arithmetic-oom-
     'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development'}
 CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 POWER_CONFIGURATIONS |= ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
+MANAGED_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-managed-notebook',
+    'lemmasim-silicon-managed-initialize'}
+CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
+POWER_CONFIGURATIONS |= MANAGED_NOTEBOOK_CONFIGURATIONS
 BLE_CONFIGURATIONS = {'lemmasim-silicon-ble-link-probe'}
 CONFIGURATIONS |= BLE_CONFIGURATIONS
 BLE_LITERALS = {19:'lemma-ble@10010600',53:'lemma,payload-max',54:'lemma,clocks-per-bit',55:'lemma,manual-context',76:'lemma,ble-packet-v1'}
