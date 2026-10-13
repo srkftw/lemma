@@ -311,8 +311,29 @@ The observed Product9 installation is recorded in
 sectors, received the target's publication receipt after both metadata barriers,
 reconciled the image through a real status transaction, and received the ROM's
 boot handoff receipt. The complete separate user medium remained byte-identical.
-These receipts establish installation and loading; the full controller Ready
-campaign and trial health confirmation have separate results.
+These receipts establish installation and loading. The same exact Product9
+image subsequently reached initial Notebook Ready after 886 million additional
+target cycles and 4069.36 host seconds. All 3,630,000 controller pixels and the
+separate user medium matched the independent acknowledged notebook. Initial
+establishment has trial=0 and does not exercise replacement confirmation.
+
+Private brownout forks qualified observed but unpublished inactive payload
+bytes and real pre-confirmation attempt recovery. Three new ROM boots advanced
+trial attempts to2 and3, then selected the demonstrated known-good Product9
+slot0. Each handoff loaded the exact firmware/kernel RX bytes, and documents
+remained unchanged. These results qualify ROM recovery and selection; a
+post-fault full Notebook Ready, torn-metadata interruption, guest watchdog
+policy and authentication still need their own observations.
+
+The replacement trial reached the real full display, but its health policy
+remained at phase1. Exact Paper-v2 circuitry returns zero for offsets120,
+128,136 and144, while `BootHealth.fullRefresh` requires the executed rectangle
+width1650 and height2200 before confirmation. A bounded Verilator test against
+the consumed native9 leaf reproduced the missing read after an actual completed
+refresh. The original trial deadline and failure retain their meaning; no host
+confirmation, fabricated dimensions or relaxed health check repairs this gap.
+A future readback contract must bind geometry to the accepted/completed sequence
+rather than expose writable, unissued rectangle configuration.
 
 The following commands reuse the exact archived native, ROM and audited image
 from that observation. Preparation and packaging outputs must be unused. Run

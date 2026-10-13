@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task006-product9-installation/1",
-  "status": "PASS_INSTALL_STATUS_HANDOFF",
-  "scope": "Actual immutable Lean Recovery9 and BootNV transactions install and load the audited Product9 kernel and DTB. Full Notebook Ready, healthy trial confirmation and new-profile fallback remain separately pending.",
+  "status": "PASS_INITIAL_READY_AND_INTERRUPTED_RECOVERY",
+  "scope": "Actual immutable Lean Recovery9 and BootNV installation/status/handoff, initial canonical Notebook Ready with exact full pixels and preserved documents, plus interrupted payload and pre-confirmation brownout attempt/fallback handoffs. Trial health confirmation remains separately incomplete.",
   "profile": "lemma-silicon-dev/0.9.0",
   "source_identity": {
     "shared_baseline_commit": "caee608",
@@ -132,15 +132,26 @@
     "canonical_ready_host_seconds": 7200
   },
   "ready_campaign": {
-    "status": "RUNNING_SEPARATE",
+    "status": "PASS_INITIAL_PRODUCT9_READY",
     "result_path": "build/boot/task006-product-next-boot-a1/ready-result-a1.json",
-    "requires": "Actual 420 and completed 425 controller sequence, all 3,630,000 expected pixels, unchanged complete acknowledged user journal and an observational checkpoint. A marker or ROM receipt is insufficient."
+    "result_sha256": "8f1ca28b053c4874f498fee5c5030f5470a5d5b0073fe5811d20375840d51126",
+    "origin_cycle": 201300000,
+    "completed_cycle": 1087300000,
+    "additional_cycles": 886000000,
+    "host_seconds": 4069.364324148046,
+    "controller_sequence": 1,
+    "display_pixels": 3630000,
+    "controller_pixels_sha256": "331fac60128165e6b01f73573da0297f123a51e0be9d282b6e1e309b32ef643a",
+    "documents_unchanged": true,
+    "snapshot_cycle": 1087300000,
+    "health_rows": [],
+    "scope": "Initial recovery establishment with trial=0. Full actual Store/Notebook/controller/journal health is observed; trial-image target confirmation remains a separate obligation."
   },
   "remaining": {
     "boot_authentication": "OPEN: CRC32 integrity only; SHA/HMAC component does not authenticate this boot path",
     "anti_rollback": "OPEN",
-    "healthy_trial_confirmation": "NOT_YET_OBSERVED",
-    "healthy9_fallback": "NOT_YET_OBSERVED",
+    "healthy_trial_confirmation": "FAIL_ORIGINAL_HOST_DEADLINE:1,044,000,000 additionalcycles/7207.5866host seconds under unchanged2B/7200. Full display is observed, but missing actual Paper geometry readbacks block guest confirmation.",
+    "healthy9_fallback": "PASS_ROM_ATTEMPT_FALLBACK_HANDOFF: actual brownout boots increment attempts and choose known-good9 slot0 after exhaustion; post-fault full Notebook Ready remains separate.",
     "physical_nonvolatile_qualification": "OPEN"
   },
   "raw_results": "build/boot/task006-product-next-boot-a1",
@@ -165,5 +176,113 @@
       "unavailable_lake_path": "next-policy-compatibility-a1.log",
       "invalid_dtc_path": "prepare-current-host-a2.log"
     }
+  },
+  "interrupted_payload": {
+    "status": "PASS_PARTIAL_PAYLOAD_BROWNOUT_CONFIRMED_SELECTION",
+    "result_path": "build/boot/task006-product-next-payload-brownout-a1/result.json",
+    "result_sha256": "1f44b36cbe16d61aab05c74d2637f439fff43d673350fee9553255eeaa17aa0e",
+    "host_seconds": 329.4714517360553,
+    "qualification": "Eight inactive-slot sectors acknowledged before publication; observed partial bytes survive actual brownout. Original durable metadata and user media unchanged. Actual ROM chooses confirmed9 slot0/id1/gen1 and loads exact RX segments after RAM loss. No post-fault full Ready, authentication or watchdog-policy claim."
+  },
+  "preconfirmation_recovery": {
+    "status": "PASS_PRECONFIRM_INTERRUPTION_ATTEMPT_FALLBACK_HANDOFF",
+    "result_path": "build/boot/task006-product-next-preconfirm-fallback-a1/result.json",
+    "result_sha256": "d918828dc0d9ad0463de5c89993bf54b668f6fa795f1e2637195d38c64042ec8",
+    "host_seconds": 850.8250014460064,
+    "boot_cycles": [
+      35000000,
+      35000000,
+      35000000
+    ],
+    "metadata_generation": [
+      4,
+      5,
+      5
+    ],
+    "trial_attempts": [
+      2,
+      3,
+      3
+    ],
+    "selected_slots": [
+      1,
+      1,
+      0
+    ],
+    "reset_cause": [
+      5,
+      5,
+      5
+    ],
+    "documents_unchanged": true,
+    "qualification": "Actual target attempt writes/barriers and fresh ROM selection choose known-good9 after three attempts; fallback context/code qualified. Initialknown-good9 fullReady separately observed. No postfault fullReady, torn-metadata, auth/antirollback or actual guest watchdog claim.",
+    "owned_children_reaped": true
+  },
+  "health_readback_defect": {
+    "status": "FAIL_HEALTH_GEOMETRY_READBACK",
+    "literal_result_path": "build/boot/task006-product-next-paper-readback-a1/result.json",
+    "literal_result_sha256": "f963d5641b46c7a5d6918039e561219dbf68ebbb0da41c3511a26b61cf424c3c",
+    "literal_host_seconds": 32.219431556994095,
+    "literal_exit_code": 1,
+    "observational_snapshot_receipt": "build/boot/task006-product-next-trial-a1/health-diagnostic-a1.json",
+    "observational_snapshot_receipt_sha256": "0b1e67a7f7478a0aa5ef4306e62a8dd154eec0c1ed48a8d5512730459245bc55",
+    "snapshot_cycle": 2226800000,
+    "health_words": [
+      1,
+      8218,
+      8260,
+      0,
+      0
+    ],
+    "rom_context_words": [
+      3555684553644131660,
+      1,
+      1,
+      2533274790395906,
+      3,
+      1
+    ],
+    "scope": "Exact native9 Paper-v2 circuitry omits read cases120/128/136/144 and returns0. Real completed partial refresh read120 returned0 instead of acceptedx3. Actual trial guest health remains phase1 although full frame completed; required width1650/height2200 reads can never qualify. No host bypass or policy weakening applied."
+  },
+  "trial_confirmation_campaign": {
+    "status": "FAIL_ORIGINAL_HOST_DEADLINE",
+    "result_path": "build/boot/task006-product-next-trial-a1/ready-result-a2.json",
+    "result_sha256": "70dcf6c6c3337ef75800c2a8ec413fb9e8ea27ba1766ad99cad77a0fb17ade63",
+    "origin_cycle": 1287800000,
+    "additional_cycles": 1044000000,
+    "host_seconds": 7207.586618225381,
+    "original_bounds": {
+      "cycles": 2000000000,
+      "host_seconds": 7200
+    },
+    "error": "TimeoutError('Original host bound exhausted before full Ready')",
+    "actual_full_controller_frame_observed": true,
+    "controller_sequence": 1,
+    "native_lifetime_completions": 2,
+    "lifetime_completion_origin": 1,
+    "controller_sequence_origin": 0,
+    "boot_reset_origin": 2,
+    "healthy_confirmation_rows": 0,
+    "documents_unchanged": true,
+    "durable_metadata": [
+      3550047353233556812,
+      1,
+      3,
+      0,
+      2533274790395905,
+      1,
+      2533274790395906,
+      1,
+      3
+    ],
+    "failure_checkpoint": "build/boot/task006-product-next-trial-a1/ready-failure-checkpoint-a2",
+    "exports_observational": true,
+    "original_observer_failure_retained": "build/boot/task006-product-next-trial-a1/observer-retention-count-a2.json",
+    "qualification": "Actual trial full display does not close confirmation. Real Paper-v2 readback defect blocks phase1; timeout retains its original meaning. Both original lifetime-count observer failure and corrected same-live-machine deadline failure remain immutable."
+  },
+  "owned_process_cleanup": {
+    "receipt": "build/boot/task006-product-next-trial-a1/owned-process-cleanup-a1.json",
+    "receipt_sha256": "c9bacc8bb01f1c3c487e05939fcca0227c90e121ec92b50d861500f77744fab8",
+    "initial_and_trial_reaped": true
   }
 }
