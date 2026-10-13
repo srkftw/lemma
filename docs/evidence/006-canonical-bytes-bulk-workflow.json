@@ -1,0 +1,398 @@
+{
+  "schema": "lemma-canonical-bytes-bulk-workflow/1",
+  "status": "PASS_NATIVE_RTL_SCENARIO_A",
+  "scope": "Actual RV64 notebook execution on immutable canonical RTL0.3, with independent complete-pixel/durable/raw-field observations. Original failures retained. Archived Bytes/Bulk image only; no fresh current-head target compilation, Array or Surface row-carry execution claim.",
+  "native_bundle": {
+    "manifest": {
+      "path": "build/native/task006-bytes-bulk-a1/bundle.json",
+      "sha256": "5d4545dd361681401021472c94870af12b86343dd4872ab8e38b6763b6c7443b"
+    },
+    "schema": "lemmasim-native-bundle/3",
+    "manifest_sha256": "5d4545dd361681401021472c94870af12b86343dd4872ab8e38b6763b6c7443b",
+    "source_commit": "1ea7768c44c67a05e17df5a9f5bc3b7232d4464c",
+    "scope": "validated archived inputs; not current compilation",
+    "software_deployment": {
+      "contract_version": "lemma-managed-bytes-bulk-deployment-v1",
+      "configurations": {
+        "notebook": "lemmasim-silicon-bytes-bulk-notebook",
+        "initializer": "lemmasim-silicon-bytes-bulk-initialize"
+      }
+    }
+  },
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "062a97b03f0cee5fd2beaa28add668b9306e9879d4d76bdf962d57ee3e177e28",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+  },
+  "hardware": {
+    "profile": "lemma-silicon-dev/0.3.0",
+    "profile_source": {
+      "path": "build/native/task006-bytes-bulk-a1/source/sim/profiles/lemma-silicon-dev-0.3.0.json",
+      "sha256": "ff2d02c122f0a0974d4591fc648b27ad1e3c0837be2d64d9ecaa0cd922f9e688"
+    },
+    "geometry": [
+      1650,
+      2200
+    ],
+    "display": "Gray4",
+    "external_simulation_ram_bytes": 134217728,
+    "owned_frame_pool_bytes": 33554432,
+    "owned_frame_pool_frames": 8192,
+    "physical_conformance": "UNVERIFIED"
+  },
+  "guest_build_admission": {
+    "image": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/image.elf",
+      "sha256": "062a97b03f0cee5fd2beaa28add668b9306e9879d4d76bdf962d57ee3e177e28"
+    },
+    "build": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/build.json",
+      "sha256": "5c9468f01a73039f50a7438bee8ff077a0e24cfafc3649590e4b575fde17a2da"
+    },
+    "provenance": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/provenance.json",
+      "sha256": "8768493bcb8bb810767531cd14c7a2de8fc4a676a48d69808de48f3e434fbcf2"
+    },
+    "audit": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/audit.json",
+      "sha256": "6eb2e52a7bcb08b0d908bb3e57642458229deabf8fc382769b0c3525f1a64fae"
+    },
+    "dtb": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/platform.dtb",
+      "sha256": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da"
+    },
+    "descriptor": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/descriptor.bin",
+      "sha256": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+    },
+    "capacity": {
+      "path": "build/native/task006-bytes-bulk-a1/workloads/notebook/guest-override-capacity.json",
+      "sha256": "9b30453eb19fa540d2035762c33afce46926c9d0207142a9eaf63edfd3b26762"
+    }
+  },
+  "original_cold": {
+    "ready_cycle": 609000000,
+    "runtime_run_seconds": 2872.5959938087617,
+    "client_request_seconds_sum": 2873.147960595845,
+    "campaign_wall_seconds": 2875.170839267026,
+    "full_independent_pixels": 3630000,
+    "observation": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-reobserver-a1/result.json",
+      "sha256": "bd722c6ec616d12e7145c722cec6966f9454193e8333d0a437b58cc6fbe048f2"
+    },
+    "retained_failure": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold/result.json",
+      "sha256": "8fcba8506f60e92cdc98f3de0391030368357a3382d00f95ebe2baf01000cd4a"
+    },
+    "failure": "ModuleNotFoundError(\"No module named 'check_notebook_workflow'\")",
+    "correction": "Load independent pixel oracle correctly and reobserve the exact paused609M boundary without advancing it. Original import FAIL remains unchanged.",
+    "original_bounds": {
+      "cycles": 2000000000,
+      "host_seconds": 7200
+    }
+  },
+  "live_workflow": {
+    "status": "PASS_ALL_LIVE_WORKFLOW_REOBSERVATION",
+    "phases": [
+      {
+        "name": "pen-autosave",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 62000000,
+        "host_seconds": 282.29084711603355,
+        "durable_sequence": 5,
+        "full_pixels": 3630000,
+        "original_phase_status": "PASS"
+      },
+      {
+        "name": "undo",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 499000000,
+        "host_seconds": 2381.7904309299774,
+        "durable_sequence": 7,
+        "full_pixels": 3630000,
+        "original_phase_status": "PASS"
+      },
+      {
+        "name": "redo",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 506000000,
+        "host_seconds": 1775.9120855189976,
+        "durable_sequence": 9,
+        "full_pixels": 3630000,
+        "original_phase_status": "PASS"
+      },
+      {
+        "name": "next-page2",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 499000000,
+        "host_seconds": 1734.6527525290148,
+        "durable_sequence": 11,
+        "full_pixels": 3630000,
+        "original_phase_status": "PASS"
+      },
+      {
+        "name": "previous-page1",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 489000000,
+        "host_seconds": 1693.8728319830261,
+        "durable_sequence": 11,
+        "full_pixels": 3630000,
+        "original_phase_status": "PASS"
+      },
+      {
+        "name": "explicit-save",
+        "status": "PASS_INDEPENDENT_REOBSERVATION",
+        "target_cycles": 22000000,
+        "host_seconds": 77.78779125597794,
+        "durable_sequence": 11,
+        "full_pixels": 3630000,
+        "original_phase_status": "FAIL"
+      }
+    ],
+    "literal_raw_stroke_samples": 3,
+    "acknowledged_sequence": 11,
+    "full_independent_pixels_per_phase": 3630000,
+    "final_paused_cycle": 2686000000,
+    "source_bound_input": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/input.json",
+      "sha256": "06d294559168fd186bd0f67888961a1f8a0524000a350defdc811de9d2b63d38"
+    },
+    "observation": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/live-workflow-reobserver.json",
+      "sha256": "2897fbe2c3e7826bca6864ca463a95eb623877f63f5cf6848f9f7e09f8b3f786"
+    },
+    "retained_failure": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/result.json",
+      "sha256": "e3e95bf48732f76e0c924387bf002e05b296c49595b22334d15653dbe6b34de6"
+    },
+    "retained_startup_stderr": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/independent-cold-recovery-launch.log",
+      "sha256": "84009c54a0efcd0078beb6280c687be83c00d680e71bf076080f5758c134011a"
+    },
+    "failure": "ValueError('cold owner failed before opening socket')",
+    "correction": "All six live phases had completed. The first cold owner hit Unix-socket path preflight before CPU construction; the broadcatch incorrectly marked completed explicit Save FAIL. Independent reobservation preserves both original FAIL and exact live boundary.",
+    "explicit_save_semantics": "The actual raw tool7 operation is the existing Inspect/Save action; it emits completeSaved0x421 sequence11 and full SAVED footer after prior autosave. A new FLUSH is not claimed."
+  },
+  "corrected_cold_and_unsuccessful_save": {
+    "status": "PASS_CANONICAL_COLD_FAILURE_SUFFIX",
+    "phases": [
+      {
+        "name": "independent-cold-recovery",
+        "status": "PASS",
+        "target_cycles": 657000000,
+        "host_seconds": 2126.103143995977,
+        "runtime_request_seconds": 2121.3421100231353,
+        "cycle_bound": 2000000000,
+        "host_seconds_bound": 7200,
+        "final_cycle": 657000000,
+        "full_independent_pixels": 3630000,
+        "durable_sequence": 11,
+        "actual_new_cpu": true,
+        "cold_writes": 0,
+        "cold_flushes": 0,
+        "entire_acknowledged_medium_and_objects_unchanged": true,
+        "artifacts": [
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/explicit-save.raw",
+            "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/explicit-save.ppm",
+            "sha256": "65c5d779eab9b7b39e52b9c0d818a792a4a865d31b76448cd13920c07a7ff656"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/independent-cold-recovery.ppm",
+            "sha256": "65c5d779eab9b7b39e52b9c0d818a792a4a865d31b76448cd13920c07a7ff656"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/independent-cold-recovery.raw",
+            "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+          }
+        ]
+      },
+      {
+        "name": "failed-root-edit-save",
+        "status": "PASS",
+        "target_cycles": 25000000,
+        "host_seconds": 76.39573824004037,
+        "runtime_request_seconds": 74.66052395408042,
+        "cycle_bound": 500000000,
+        "host_seconds_bound": 3600,
+        "final_cycle": 682000000,
+        "full_independent_pixels": 3630000,
+        "durable_sequence": 11,
+        "no_false_saved": true,
+        "actual_failed_footer": true,
+        "guest_failure": [
+          1060,
+          227,
+          1,
+          1,
+          1
+        ],
+        "artifacts": [
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/failed-root-edit-save.ppm",
+            "sha256": "e4f9c7df5b4802e4290ecc7c242377ab1e80961a537589fcdc1a3a3106b7486e"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/failed-root-edit-save.raw",
+            "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+          }
+        ]
+      },
+      {
+        "name": "explicit-save-while-failed",
+        "status": "PASS",
+        "target_cycles": 22000000,
+        "host_seconds": 67.48139428900322,
+        "runtime_request_seconds": 66.02020625409205,
+        "cycle_bound": 100000000,
+        "host_seconds_bound": 600,
+        "final_cycle": 704000000,
+        "full_independent_pixels": 3630000,
+        "durable_sequence": 11,
+        "no_false_saved": true,
+        "failed_state_remains_visible": true,
+        "actual_raw_Save_attempt": true,
+        "artifacts": []
+      },
+      {
+        "name": "postfailure-independent-cold",
+        "status": "PASS",
+        "target_cycles": 657000000,
+        "host_seconds": 2462.5013504990493,
+        "runtime_request_seconds": 2455.570726246515,
+        "cycle_bound": 2000000000,
+        "host_seconds_bound": 7200,
+        "final_cycle": 657000000,
+        "full_independent_pixels": 3630000,
+        "durable_sequence": 11,
+        "actual_new_cpu": true,
+        "cold_writes": 0,
+        "cold_flushes": 0,
+        "entire_acknowledged_medium_and_objects_unchanged": true,
+        "artifacts": [
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/explicit-save-while-failed.raw",
+            "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/explicit-save.ppm",
+            "sha256": "65c5d779eab9b7b39e52b9c0d818a792a4a865d31b76448cd13920c07a7ff656"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/postfailure-independent-cold.ppm",
+            "sha256": "65c5d779eab9b7b39e52b9c0d818a792a4a865d31b76448cd13920c07a7ff656"
+          },
+          {
+            "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/postfailure-independent-cold.raw",
+            "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+          }
+        ]
+      }
+    ],
+    "total_host_seconds": 4746.083508597978,
+    "observation": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/result.json",
+      "sha256": "43ade2a0396339ed70524427b1b971e712ae37a0f50e9d3548d0e87df1607746"
+    },
+    "command_capture": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/commands.jsonl",
+      "sha256": "cbe08ed3c5c887c6c3a8a3f11c973a2d7158bad643985d64f904f00ef3bb11f1"
+    },
+    "predeclared_plan": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/plan.json",
+      "sha256": "872f6e22b992fac5c628c2b9acd1d1a8bfca81024e3b1622ad62ad5934f953c4"
+    },
+    "failure_raw_input": {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/failure-input.json",
+      "sha256": "b1148a16450d8579e62214f8e75cd79ef3a002ee4a2be9aa4596db296e13d034"
+    },
+    "correction": "Use new short, exclusively owned cold session directories after failed long-path preflight; same archive and original2B/7200 cold bounds. No live prefix or already admitted input is repeated.",
+    "postfailure_semantics": "An ordinary raw brush4 root edit triggers the first future actual FLUSH failure/error227. The Failed footer remains after attempted raw explicit Save. New durable-only CPU recovers original Saved brush2/ink/page/root without formatting, writing or FLUSH."
+  },
+  "final_independent_admission": {
+    "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-admission-a2/result.json",
+    "sha256": "643e31a41be7c006ec6b73c2667345482d37d6acdd48992717e3d1cc29e449d1"
+  },
+  "peak_native_rss_KiB": {
+    "original_cold_and_live": 152512,
+    "corrected_cold_failure_suffix": 152296
+  },
+  "retained_receipts": [
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold/result.json",
+      "sha256": "8fcba8506f60e92cdc98f3de0391030368357a3382d00f95ebe2baf01000cd4a"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-reobserver-a1/result.json",
+      "sha256": "bd722c6ec616d12e7145c722cec6966f9454193e8333d0a437b58cc6fbe048f2"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-workflow-a1/result.json",
+      "sha256": "e3e95bf48732f76e0c924387bf002e05b296c49595b22334d15653dbe6b34de6"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/live-workflow-reobserver.json",
+      "sha256": "2897fbe2c3e7826bca6864ca463a95eb623877f63f5cf6848f9f7e09f8b3f786"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold-suffix-a2/result.json",
+      "sha256": "43ade2a0396339ed70524427b1b971e712ae37a0f50e9d3548d0e87df1607746"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-admission-a1/result.json",
+      "sha256": "a391e828ee53125871329b75b1900aa5aed911aa0fa7266221f6693f7a504d08"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected-admission-a2/result.json",
+      "sha256": "643e31a41be7c006ec6b73c2667345482d37d6acdd48992717e3d1cc29e449d1"
+    }
+  ],
+  "observer_inventory": [
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold_campaign.py",
+      "sha256": "cadfa33e61c0fe90dd28f771dfe81b94748fb9690f7949d915e05d6c7376a041"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/reobserve_ready.py",
+      "sha256": "88ce01f7117f88b1aa9cd1a3956c696450014224021fe473e3806ded731e1ecb"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/connected_workflow.py",
+      "sha256": "ed717970c7e87798ae1c94134f4ef9645956f03d25f6d569b85826bd52467ca5"
+    },
+    {
+      "path": "build/silicon/task006-bytes-bulk-canonical-a1/cold_suffix_a2.py",
+      "sha256": "02b0d9aeb6d3d2478d04016e43d8b0011f32838812cf9b745eb68fbb62dcac5b"
+    },
+    {
+      "path": "conformance/lemmasim/check_notebook_workflow.py",
+      "sha256": "f1e6807034291f24ff482d569fc292e062a9e3046a2e542c5924a9a6d986fa96"
+    },
+    {
+      "path": "conformance/lemmasim/check_canonical_pen_pixels.py",
+      "sha256": "5805fbf825c948ab8373b82384fd095670cc976b2e763893eebeb0f9894d47f7"
+    },
+    {
+      "path": "conformance/lemmasim/notebook_pixels.py",
+      "sha256": "e296b04f89e0395f59c8654ec637950ec1efd6be7d34bb68c3db5e77ecb27735"
+    },
+    {
+      "path": "conformance/lemmasim/store_oracle.py",
+      "sha256": "d03b54bec2f8e2c1883f6b27a25ab3ebaa59062d6299aec1a81ce42835b5324c"
+    }
+  ],
+  "limits": [
+    "Predeclared diagnostic ceilings passed; these observations are not a whole-workload WCET proof.",
+    "Original import, socket startup, broadcatch and final-admission exception-type oracle failures retain their original reports. Corrected observations run no repeated live/cold prefix.",
+    "Only the two new cold suffix owners were closed/reaped; original live canonical CPU remains paused at2686M.",
+    "No new Array/Surface-carry target execution, browser timing/product workflow, USB/Product/Paper2 or physical conformance claim follows.",
+    "Full canonical geometry, Gray4,128MiB external RAM and8192 owned frames/32MiB are retained; no host-generated guest ink/recovery or reduced display/pool."
+  ]
+}

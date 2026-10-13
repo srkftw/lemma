@@ -26,6 +26,19 @@ deadlines are bounded. A failed automatic interval pauses and retains an
 inspectable error. Host time controls pacing/resource failure only.
 Pause/resume are simulator controls, not a guest suspend service.
 
+Short session paths retain their in-session `machine.sock` address and existing
+wire protocol. A session whose path exceeds the Unix-socket address bound owns
+a unique short control directory with mode0700 and a mode0600 socket. Its
+optional `lemmasim-live/1` manifest `control` binding has version1, the complete
+session path, private directory/address, owner PID/start ticks and random nonce.
+The owner file, live start time and endpoint permissions are checked before
+contact; both request and response carry the nonce. Cross-session redirection,
+stale/PID-reused owners, changed endpoint permissions/types and responses with
+another nonce fail closed. Machine construction failure and normal close remove
+only this owner's recorded directory/file/socket
+inodes. No shared static control address or change to medium/fork ownership is
+introduced.
+
 The read-only public `clock` action returns `machine` timing and the owner's
 `running` pacing flag. RTL timing contains mandatory `backend`, `cycle`, `ticks`
 and `finished` fields from its existing completed-edge observer. QEMU adds its

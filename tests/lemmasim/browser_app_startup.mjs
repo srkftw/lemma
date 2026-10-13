@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: Apache-2.0
+// Actual app module with independent DOM/device fixtures. Host protocol only;
+// no browser GPU, RV64 execution or controller conformance is established.
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await fs.readFile('sim/browser/app.js','utf8');
+const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
+const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+async function appFixture(gpu){
+ const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[];let worker,current;
+ const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){}});return nodes.get(id);};
+ function canvas(){const c={width:3,height:1,setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>({left:0,top:0,width:100,height:100}),
+  cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
+   if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
+ current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
+ const document={querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
+ const context=vm.createContext({document,navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
+ const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
+ let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
+ function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');
+  actions.find(n=>n.dataset.action==='inspect').onclick();assert.equal(sent.at(-1).action,'inspect');
+  node('#run-cycles').value='9007199254740993';node('#run-bounded').onclick();assert.equal(sent.at(-1).cycles,'9007199254740993');
+  node('#import').onchange({target:{files:[]}});assert.equal(typeof node('#import').onchange,'function');
+  worker.onmessage({data:{type:'state',state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',readyAt:null,heapBytes:1048576,pauseReason:'cycle-limit',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
+  assert.match(node('#status').textContent,/9007199254740993/);
+  worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
+  assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
+ }
+ exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current};
+}
+// A GPU implementation may leave either capability promise pending forever.
+for(const phase of ['adapter','device']){
+ const never=new Promise(()=>{}),gpu={requestAdapter:()=>phase==='adapter'?never:Promise.resolve({requestDevice:()=>never}),getPreferredCanvasFormat:()=> 'rgba8unorm'};
+ const f=await appFixture(gpu);await settle();f.exercise();assert.equal(f.canvases.length,1);assert.equal(f.sent.filter(m=>m.action==='pen').length,0);
+}
+// Qualifying a replacement and later device loss both cancel real contact.
+{
+ const adapter=deferred(),device=deferred(),pipeline=deferred(),lost=deferred(),written=[];
+ const candidate={lost:lost.promise,createShaderModule:()=>({}),createRenderPipelineAsync:()=>pipeline.promise,
+  createTexture:()=>({createView:()=>({}),destroy(){}}),createBindGroup:()=>({}),
+  createCommandEncoder:()=>({beginRenderPass:()=>({setPipeline(){},setBindGroup(){},draw(){},end(){}}),finish:()=>({})}),
+  queue:{writeTexture(_destination,bytes){written.push(Array.from(bytes));},submit(){},onSubmittedWorkDone:()=>Promise.resolve()}};
+ const f=await appFixture({requestAdapter:()=>adapter.promise,getPreferredCanvasFormat:()=> 'rgba8unorm'});
+ f.canvas().onpointerdown({pointerId:7,pointerType:'pen',pressure:.5,clientX:10,clientY:20});assert.equal(f.sent.at(-1).flags,3);const start=f.sent.at(-1);
+ adapter.resolve({requestDevice:()=>device.promise});await settle();assert.equal(f.canvases.length,1);
+ device.resolve(candidate);await settle();assert.equal(f.canvases.length,1);assert.equal(f.sent.at(-1),start);
+ pipeline.resolve({getBindGroupLayout:()=>({})});await settle();assert.equal(f.canvases.length,2);
+ const cancelled=f.sent.at(-1);assert.equal(cancelled.action,'pen');assert.equal(cancelled.pressure,0);assert.equal(cancelled.flags,10);assert.equal(cancelled.tool,1);assert.equal(cancelled.x,start.x);assert.equal(cancelled.y,start.y);
+ assert.deepEqual(written.at(-1),[0,8,15]);assert.equal(typeof f.canvas().onpointerdown,'function');
+ f.canvas().onpointerdown({pointerId:8,pointerType:'mouse',clientX:20,clientY:30});lost.resolve({reason:'destroyed'});await settle();
+ assert.equal(f.canvases.length,3);assert.equal(f.sent.at(-1).flags,10);assert.equal(f.sent.at(-1).tool,0);assert.equal(f.sent.at(-1).pressure,0);
+ assert.deepEqual(f.images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
+}
+console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');

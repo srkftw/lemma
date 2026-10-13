@@ -460,7 +460,10 @@ The `lemma-silicon-dev/0.3.0` successor retains the canonical 1650×2200 noteboo
 binding and adds guest-controlled digital suspend, wake and reset-cause reporting
 on matched QEMU and RTL controllers. Historical 0.1/0.2 profiles remain available.
 Canonical QEMU writing, suspend/wake, warm reset, Save and new cold recovery
-have separate observed workflows; canonical RTL cold readiness remains unqualified.
+have separate observed workflows. The archived Bytes/Bulk canonical RTL guest
+has separately observed cold Ready, ink/edit/navigation/Save, independent cold
+recovery and unsuccessful-save recovery with complete pixel checks; see the
+[native RTL receipt](docs/evidence/006-canonical-bytes-bulk-workflow.json).
 The binding has
 128 MiB external simulation RAM, a checked 32 MiB frame pool,
 backend-specific checkpoints, an isolated durable backing for restored forks,
@@ -743,6 +746,16 @@ The [connected receipt](docs/evidence/006-managed-bytes-integration.json)
 records actual RV64 course, migration, real heap OOM and cold-recovery results.
 QEMU remains an instruction-clock functional path; RTL timing qualification is
 separate. `--backend rtl` selects the same compiled guest on the exact RTL core.
+
+The immutable `build/native/task006-bytes-bulk-a1` guest completed the
+[canonical native RTL workflow](docs/evidence/006-canonical-bytes-bulk-workflow.json).
+Cold Ready was independently observed at609M cycles/2872.596s of runtime calls.
+Actual raw pen, Undo, Redo, page2/page1 navigation and explicit Save preserved
+all original samples and matched every controller pixel. Two new cold CPUs
+each recovered at657M cycles, including after a real FLUSH failure and a Save
+attempt that remained Failed. Full1650×2200 Gray4,128MiB external RAM and8192
+owned frames/32MiB were retained. Original observer/startup FAILs remain intact;
+this archived image excludes the later Array and Surface row-carry changes.
 
 The actual prepared Bytes static bundle uses the unchanged, fully validated
 Wasm core and explicit archived consumed inputs:

@@ -15,11 +15,14 @@ import os
 import re
 from pathlib import Path
 import selectors
+import secrets
 import shutil
 import signal
 import socket
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,9 +141,137 @@ def external_command(value, current):
     return command,dict(value,cycle=cycle)
 
 
+def process_start_ticks(pid):
+    """Linux owner identity, including the start time that distinguishes PID reuse."""
+    bounded(pid, 1, (1 << 31) - 1, 'Control owner PID')
+    raw = (Path('/proc') / str(pid) / 'stat').read_text()
+    fields = raw[raw.rfind(') ') + 2:].split()
+    return int(fields[19])
+
+
+class ControlSocket:
+    """A session owns its socket, including a private short path when necessary.
+
+    The usual in-session address remains compatible with existing clients.
+    A long session gets one exclusively created0700 directory, never a shared
+    static socket. Its random token, full session path and live PID/start time
+    bind the published address to this exact owner.
+    """
+    def __init__(self, directory):
+        self.address = str(directory / 'machine.sock')
+        self.private = None
+        self.private_identity = None
+        self.binding = None
+        self.owner_identity = None
+        self.socket_identity = None
+        if len(os.fsencode(self.address)) < 104:
+            return
+        parent = Path('/tmp')
+        candidate = os.environ.get('XDG_RUNTIME_DIR')
+        if candidate:
+            path = Path(candidate)
+            try:
+                info = path.lstat()
+                if (path.is_absolute() and stat.S_ISDIR(info.st_mode) and
+                        info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == 0o700 and
+                        len(os.fsencode(str(path))) < 60):
+                    parent = path
+            except OSError:
+                pass
+        self.private = Path(tempfile.mkdtemp(prefix='lm-', dir=parent))
+        os.chmod(self.private, 0o700)
+        info = self.private.lstat()
+        self.private_identity = (info.st_dev, info.st_ino)
+        self.address = str(self.private / 'machine.sock')
+        try:
+            if len(os.fsencode(self.address)) >= 104:
+                raise ValueError('Private control address exceeds Unix socket bound')
+            self.binding = {'version': 1, 'session': str(directory),
+                            'directory': str(self.private), 'socket': self.address,
+                            'pid': os.getpid(), 'start_ticks': process_start_ticks(os.getpid()),
+                            'nonce': secrets.token_hex(32)}
+            fd = os.open(self.private / 'owner.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, 'w') as stream:
+                info = os.fstat(stream.fileno())
+                self.owner_identity = (info.st_dev, info.st_ino)
+                json.dump(self.binding, stream, separators=(',', ':'))
+                stream.write('\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+        except BaseException:
+            self.close()
+            raise
+
+    def bound(self):
+        info = Path(self.address).lstat()
+        self.socket_identity = (info.st_dev, info.st_ino)
+
+    def close(self):
+        if self.private is not None:
+            try:
+                info = self.private.lstat()
+            except FileNotFoundError:
+                return
+            if self.private_identity != (info.st_dev, info.st_ino):
+                raise RuntimeError('Private control directory was replaced before cleanup')
+        path = Path(self.address)
+        try:
+            info = path.lstat()
+            if self.socket_identity == (info.st_dev, info.st_ino):
+                path.unlink()
+        except FileNotFoundError:
+            pass
+        if self.private is not None:
+            owner = self.private / 'owner.json'
+            try:
+                info = owner.lstat()
+                if self.owner_identity == (info.st_dev, info.st_ino):
+                    owner.unlink()
+            except FileNotFoundError:
+                pass
+            self.private.rmdir()
+
+
+def control_binding(directory, metadata):
+    """Reject a stale, replaced or cross-session private control address."""
+    binding = metadata.get('control')
+    if binding is None:
+        if metadata.get('socket') != str(directory / 'machine.sock'):
+            raise ValueError('Legacy control address does not identify this session')
+        return None  # Historical and ordinary short-path manifests.
+    keys = {'version', 'session', 'directory', 'socket', 'pid', 'start_ticks', 'nonce'}
+    if (not isinstance(binding, dict) or set(binding) != keys or type(binding['version']) is not int or binding['version'] != 1 or
+            binding['session'] != str(directory) or binding['socket'] != metadata.get('socket') or
+            binding['pid'] != metadata.get('pid') or type(binding['start_ticks']) is not int or
+            not isinstance(binding['nonce'], str) or len(binding['nonce']) != 64 or
+            any(c not in '0123456789abcdef' for c in binding['nonce'])):
+        raise ValueError('Private control manifest does not identify this session')
+    private = Path(binding['directory'])
+    if not private.is_absolute() or Path(binding['socket']) != private / 'machine.sock':
+        raise ValueError('Private control address is outside its owned directory')
+    info = private.lstat()
+    owner = (private / 'owner.json').lstat()
+    if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or
+            stat.S_IMODE(info.st_mode) != 0o700 or
+            not stat.S_ISREG(owner.st_mode) or owner.st_uid != os.getuid() or
+            stat.S_IMODE(owner.st_mode) != 0o600 or
+            json.loads((private / 'owner.json').read_text()) != binding):
+        raise ValueError('Private control directory/owner binding changed')
+    if process_start_ticks(binding['pid']) != binding['start_ticks']:
+        raise ValueError('Private control owner exited or its PID was reused')
+    endpoint = Path(binding['socket']).lstat()
+    if (not stat.S_ISSOCK(endpoint.st_mode) or endpoint.st_uid != os.getuid() or
+            stat.S_IMODE(endpoint.st_mode) != 0o600):
+        raise ValueError('Private control socket was replaced or changed')
+    return binding
+
+
 def request(directory, value, timeout=120):
     directory = Path(directory).resolve()
     metadata = json.loads((directory / 'session.json').read_text())
+    binding = control_binding(directory, metadata)
+    if binding is not None:
+        value = {**value, '_control_nonce': binding['nonce']}
     wire = json.dumps(value, separators=(',', ':')).encode() + b'\n'
     if len(wire) > MAX_REQUEST:
         raise ValueError('Session request exceeds 64 KiB')
@@ -157,6 +288,8 @@ def request(directory, value, timeout=120):
             if len(response) > MAX_REQUEST:
                 raise ValueError('Oversized session response')
     result = json.loads(response.split(b'\n', 1)[0])
+    if binding is not None and result.get('_control_nonce') != binding['nonce']:
+        raise RuntimeError('Private control response belongs to another owner')
     if result.get('ok') is not True:
         raise RuntimeError(result.get('error', 'Machine operation failed'))
     return result['result']
@@ -672,9 +805,8 @@ def serve(args, machine_type=None, session_type=None):
     signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     directory = args.session_dir.resolve()
     directory.mkdir(parents=True, exist_ok=False)
-    address = str(directory / 'machine.sock')
-    if len(os.fsencode(address)) >= 104:
-        raise ValueError('Session path too long for Unix socket (choose a shorter directory)')
+    control = ControlSocket(directory)
+    address = control.address
     lock = None
     machine = session = None
     viewer = None
@@ -704,14 +836,18 @@ def serve(args, machine_type=None, session_type=None):
             if getattr(args,'profile',None) in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and args.paused:session.automatic=False
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener, selectors.DefaultSelector() as ready:
             listener.bind(address)
+            control.bound()
             os.chmod(address, 0o600)
             listener.listen(8)
             listener.setblocking(False)
             ready.register(listener, selectors.EVENT_READ)
-            write_json(directory / 'session.json', {'schema': 'lemmasim-live/1', 'pid': os.getpid(),
+            metadata = {'schema': 'lemmasim-live/1', 'pid': os.getpid(),
                        'socket': address, 'backend': args.backend, 'mode': args.mode,
                        'identity': machine.identity, 'argv': machine.argv,
-                       'tablet': str(args.tablet) if args.tablet else None})
+                       'tablet': str(args.tablet) if args.tablet else None}
+            if control.binding is not None:
+                metadata['control'] = control.binding
+            write_json(directory / 'session.json', metadata)
             print(f'Persistent machine: {directory}', flush=True)
             if args.tablet:
                 tablet_log=(directory/'tablet.log').open('wb')
@@ -762,11 +898,18 @@ def serve(args, machine_type=None, session_type=None):
                         continue
                     if b'\n' in buffer:
                         try:
-                            response = {'ok': True, 'result': session.dispatch(json.loads(buffer.split(b'\n', 1)[0]))}
+                            value = json.loads(buffer.split(b'\n', 1)[0])
+                            if control.binding is not None:
+                                if (not isinstance(value, dict) or
+                                        value.pop('_control_nonce', None) != control.binding['nonce']):
+                                    raise ValueError('Private control request belongs to another session')
+                            response = {'ok': True, 'result': session.dispatch(value)}
                         except Exception as error:
                             if not session.capture_uncertain:
                                 session.last_error=str(error)
                             response = {'ok': False, 'error': str(error)}
+                        if control.binding is not None:
+                            response['_control_nonce'] = control.binding['nonce']
                         client.settimeout(3)
                         try:
                             client.sendall(json.dumps(response, separators=(',', ':')).encode() + b'\n')
@@ -804,7 +947,7 @@ def serve(args, machine_type=None, session_type=None):
             machine.close()
         if lock is not None:
             lock.close()
-        Path(address).unlink(missing_ok=True)
+        control.close()
 
 
 def initialize(args):

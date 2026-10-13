@@ -14,6 +14,25 @@ USGCE, repository settings, unrelated branches and durable formats are preserved
 
 ## Current connected observations, October12 continuation
 
+The separately identified [canonical Bytes/Bulk native RTL scenario](../evidence/006-canonical-bytes-bulk-workflow.json)
+now **PASS**es cold Ready, raw ink, Undo/Redo, page navigation, explicit Save,
+independent cold recovery and unsuccessful-save recovery. Its archived guest
+is `062a97b03f0cee5fd2beaa28add668b9306e9879d4d76bdf962d57ee3e177e28`
+in `build/native/task006-bytes-bulk-a1`. Cold Ready609M/2872.596s of runtime calls
+was checked at the original paused boundary after an oracle import failure.
+All six live actions matched all3.63M pixels and every original raw sample;
+the last CPU remains paused at2686M/acknowledged sequence11. New cold CPUs each
+recovered at657M, in2126.103s and2462.501s phase wall time. Between them, actual
+first-FLUSH failure/error227 and attempted explicit Save preserved the Failed
+footer, acknowledged objects and no false Saved receipt. The final new cold
+recovered the original Saved brush2/ink. Every original bound passed; peak RSS
+was152512KiB live and152296KiB in the corrected cold/failure suffix. Original
+import, socket-path startup and broadcatch FAILs remain unchanged. This closes
+this archived native Bytes/Bulk scenario, with full1650×2200 Gray4,128MiB RAM
+and8192 owned frames/32MiB; it does not qualify later Array/Surface carry,
+browser, Product/USB or physical work. Older observations below retain their
+separate execution identities.
+
 The actual canonical RTL cold notebook reached Ready and completed the full
 1650×2200 controller refresh at1.427B cycles/5487.787host seconds, with all8192
 frames and32MiB guest pool unchanged. The source-bound native archive is
@@ -38,7 +57,8 @@ observer incorrectly required a new0x421 Save on a clean reopen and failed;
 the retained-boundary checker proves all24 reads completed, unchanged256MiB
 backing/all acknowledged objects and all3.63M pixels without advancing the CPU.
 See `docs/evidence/006-retained-cold-recovery.json`. Navigation and unsuccessful
-save in the canonical RTL lane remain unfinished.
+save were not completed on this older managed-v3 image; the separately bound
+Bytes/Bulk scenario above closes them for its own guest.
 
 The actual local browser on the same immutable RTL core reached1.20495B cycles
 and634235428 retired instructions but **failed** its7200s Ready deadline.
@@ -122,10 +142,13 @@ pre/post LLVM/object/ELF/provenance audits passed, with all257 consumed inputs
 retained at `build/task006-connected-consumed-sources-a3/`.
 [The connected receipt](../evidence/006-managed-bytes-integration.json) records
 actual image/tool/source identities and retained artifact-audit failures.
-New Surface2 canonical RTL cold Ready and actual local Wasm boot run from the
-same original factory medium at `build/silicon/task006-bytes-bulk-canonical-a1/`
-and `build/browser/task006-bytes-bulk-browser-cold-a1/`, under unchanged
-2B-cycle/7200s cold ceilings. They have no Ready/performance claim yet.
+The Surface2/Bytes canonical native RTL workflow at
+`build/silicon/task006-bytes-bulk-canonical-a1/` now has the source-bound
+scenario PASS recorded above, under the unchanged2B-cycle/7200s cold ceilings.
+Original `cold/result.json` and `connected-workflow-a1/result.json` remain FAIL;
+separate corrected reobservation and actual cold/failure suffix receipts pass.
+The local Wasm boot at `build/browser/task006-bytes-bulk-browser-cold-a1/`
+retains its own observations; native results do not qualify that browser run.
 Prepared new native/static bundles are `build/native/task006-bytes-bulk-a1`
 and `build/browser/task006-bytes-bulk-a1`. General arrays/strings/closures/
 recursion and the proof kernel remain unfinished.
@@ -417,7 +440,8 @@ restore and warm-reset suffix checks passed; this is host performance, not fewer
 guest cycles or physical panel conformance. `d585386` and `a137179` preserve
 actual frame-zero and full frame/registry lookup error prefixes while exposing
 local interval bounds to LLVM. Their static reductions are separately recorded;
-new canonical RTL Ready acceptance is still pending. The older A4 run timed out
+canonical RTL Ready acceptance was still pending at that checkpoint. The
+separately identified Bytes/Bulk scenario above later passed. The older A4 run timed out
 at1.624B cycles/7201.957s with no completed panel/Ready and remains FAIL.
 
 Power-v2 has actual RTL guest watchdog/WFI, brownout, power-good and reset-phase

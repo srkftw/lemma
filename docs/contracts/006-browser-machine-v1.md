@@ -51,6 +51,33 @@ The original source closures and each implementation identity remain recorded.
 This does not establish all possible architectural/cache/device boundaries or
 QEMU timing parity. QEMU's untranslated-cache checkpoint hole remains open.
 
+The public worker `run` action accepts a positive additional cycle budget as a
+literal unsigned decimal string or BigInt; a JavaScript Number and UInt64
+overflow are rejected. Each scheduled machine call is at most50000 cycles,
+with an exact final remainder. One worker timer owns scheduling and pauses at
+the declared limit without animation-frame or UI polling dependencies.
+Optional `stopOnReady` observes the existing complete new0x420/opened-page0x425
+records and their actual completed controller sequence. It does not synthesize
+Ready. A real initializer-to-notebook CPU replacement carries the unused budget
+across the clock reset. Continuous Resume clears the budget; pause, snapshot
+and export cancel scheduled work without advancing the machine. Inspection
+reports requested/used/remaining/limit as decimal strings.
+
+Legacy `hostSeconds` remains elapsed time for the current guest launch,
+including pauses. Separate opened-worker-session timing reports elapsed time,
+time inside actual `lemma_run` calls, synchronous machine-backing call time
+within those calls, and run-call time outside those backing calls. These host
+durations are not guest CPU time or a WCET proof. Raw-event JSON and backing
+outcome exports have separate user actions and one file per action; the older
+combined `capture` protocol action remains compatible.
+
+Controls, worker observations and controller-pixel 2D presentation register
+before asynchronous GPU capability requests. An unresolved adapter/device
+promise leaves them usable. A detached replacement canvas switches only after
+device/pipeline qualification; switching or device loss cancels active contact
+with the existing raw loss/resynchronization flags before pointer rebinding.
+The same retained controller plane is presented after the renderer changes.
+
 ## Origin persistence and faults
 
 The backing interface is `lemma-backing-io/1`. A worker holds an exclusive OPFS
