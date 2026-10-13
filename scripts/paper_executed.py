@@ -121,7 +121,7 @@ EXPECTED = {
  'Lemma.Platform.LemmaSim.BootHealthExecuted.step': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'physical-read', 'physical-write'], '7a0a97381349fc9f326baa92a23b744813e441803295d6961f6421be7c465e4b'),
  'Lemma.Platform.LemmaSim.NotebookKernel.modernExecutedStep': (['u64'], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state'], '0d82ee353a165c706973dc0d1f2b83e782912e4b0400e4bed39742831c210de8'),
  'Lemma.Platform.LemmaSim.NotebookKernel.modernUSBExecutedStep': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state'], 'b1e9a851fc3fd77e8919ae843519760b5649dc59c3f98c9e607f32368d5a02f2'),
- 'Lemma.Platform.LemmaSim.NotebookKernel.modernProductExecutedStep': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state'], '2c01dbb975f361f8960b320f5e122d4b4a9d694ee596b1018e29604361f5e409'),
+ 'Lemma.Platform.LemmaSim.NotebookKernel.modernProductExecutedStep': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state'], '5a9bbc85f2564869f44ed8d9337d85b388028e720774a3402697c180e388df63'),
  'Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted': (['u64', 'u64'], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge'], '014782077bd25e9ba48bc74b279e67616fa40619d3377d1efcf1fcabb2600336'),
  'Lemma.Platform.LemmaSim.NotebookKernel.siliconProductExecutedBoot': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge'], 'dd37ac912456ae7a3842609e5aca6cf6c894a8a7bad55080e6856423f698b197'),
  'Lemma.Platform.LemmaSim.NotebookKernel.deviceCallModernExecutedBulk': (['u64', 'u64', 'u64', 'u64', 'u64'], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'physical-read', 'physical-write', 'firmware-call'], 'b080a1fea5cb6c0f9a40a7d67cdece25b73de6d3cbb6aa0c699fff6ef14da03f'),
@@ -145,6 +145,16 @@ def validate(ir,unit,*,optimized):
      len(rows)!=len(unit.get('functions',[]))):
   raise Core0Error('Paper3 complete declaration/Kernel7 inventory differs')
  names={row['symbol']:source for source,row in rows.items()};observed={}
+ if not optimized:
+  # A valid Paper3 policy is useful only if the scheduler invokes its own
+  # binding. The historical Product9 callback remains separate and exact.
+  from audit_kernel import _ir_definition_body
+  callback=rows.get('Lemma.Platform.LemmaSim.NotebookKernel.modernProductExecutedStep')
+  step=rows.get('Lemma.Platform.LemmaSim.NotebookKernel.modernExecutedStep')
+  if callback is None or step is None:raise Core0Error('Product10 health loop callback closure missing')
+  body=_ir_definition_body(ir,callback['symbol'])
+  calls=re.findall(r'call \{ i64, i64 \} @'+re.escape(step['symbol'])+r'\(([^)]+)\)',body or '')
+  if calls!=['i64 10']:raise Core0Error('Product10 scheduler does not invoke actual health binding10')
  for source,(args,effects,digest) in EXPECTED.items():
   row=rows.get(source)
   if row is None or (row.get('args'),row.get('effects'))!=(args,effects):

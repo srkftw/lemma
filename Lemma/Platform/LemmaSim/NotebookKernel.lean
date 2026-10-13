@@ -709,7 +709,7 @@ private def modernExecutedStep (binding : UInt64) : Action :=
   else fatal else fatal else fatal
 
 private def modernUSBExecutedStep : Action := modernExecutedStep 8
-private def modernProductExecutedStep : Action := modernExecutedStep 9
+private def modernProductExecutedStep : Action := modernExecutedStep 10
 
 private def bootModernExecuted (initialization binding : UInt64) : Action :=
   .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then

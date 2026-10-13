@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "PASS_COMPONENT_AND_AUDITED_INPUTS",
-  "scope": "Versioned Paper3 accepted-refresh execution witness and Product10 compiled health/ROM path. Actual fresh NV10 owner-local install is running; full Product10 cold Ready and trial durable confirmation are not yet claimed.",
+  "status": "PASS_COMPONENT_AND_AUDITED_INPUTS_ORIGINAL_CALLBACK_DEFECT_RETAINED",
+  "scope": "Paper3 circuitry/health component and original audited Product10 inputs remain qualified in their stated scope. The original image3fdf has a copied callback argument9, so it is not trial-confirmation qualified. Initial real install/status/handoff passed; ordinary initial cold Ready is running. A genuine component-qualified callback10 repair requires a fresh full image and actual trial.",
   "profile": "lemma-silicon-dev/0.10.0",
   "descriptor_abi": 11,
   "paper_version": 3,
@@ -107,7 +107,7 @@
     "source_inputs": 244
   },
   "actual_product_campaign": {
-    "status": "RUNNING_INSTALL",
+    "status": "RUNNING_INITIAL_READY_NOT_CONFIRMABLE_ORIGINAL_CALLBACK9",
     "path": "build/boot/task006-product-executed-boot-a1",
     "prepared": "build/boot/task006-product-executed-prepared-a1",
     "package": "build/boot/task006-product-executed-image-a2",
@@ -123,7 +123,32 @@
       "cold_ready_cycles": 2000000000,
       "cold_ready_host_seconds": 7200
     },
-    "qualification": "prospective resource ceilings, no WCET or timeout reclassification"
+    "qualification": "prospective resource ceilings, no WCET or timeout reclassification",
+    "install": {
+      "cycles": 112530000,
+      "target_receipts": 724,
+      "final_receipt": {
+        "transaction": 41683,
+        "status": 0,
+        "value": 1
+      }
+    },
+    "status_reconciliation": {
+      "cycles": 18400000,
+      "receipt": {
+        "transaction": 40961,
+        "status": 0,
+        "value": 1
+      }
+    },
+    "handoff": {
+      "cycles": 22300000,
+      "receipt": {
+        "transaction": 40962,
+        "status": 0,
+        "value": 2147483648
+      }
+    }
   },
   "commands": [
     "nix develop --no-write-lock-file --command python3 scripts/check_paper_executed.py --work-dir build/silicon/paper3-components-new --timeout 540",
@@ -139,5 +164,19 @@
     "Fast timing parity and complete cached-state continuation",
     "Browser Product10 execution/distribution",
     "Physical panel/NV/RF/full-SoC qualification"
-  ]
+  ],
+  "callback_defect_and_repair": {
+    "original_image_sha256": "3fdfdd3879f67d9aac3233ef6cea506233e829159c24709411e6d22aa3594982",
+    "original_problem": "modernProductExecutedStep calls modernExecutedStep9; the new actual health gate selects10, preventing trial publication despite correct standalone BootHealth policy. Earlier full audits pinned code provenance; they did not prove integration behavior.",
+    "fixed_source": "only the new callback passes10; historical callbacks untouched",
+    "genuine_probe": "build/managed/paper-executed-callback-probe-a1/result.json",
+    "source_inputs_equal": true,
+    "probe_host_seconds": 46.91750121396035,
+    "normalized_pre_bodies_changed": 1,
+    "unchanged_body_authorities": 115,
+    "explicit_independent_guard": "the actual maintained emitted callback must directly call modernExecutedStep(i64 10)",
+    "actual_mutants_rejected": 29,
+    "current_whole_corrected_guest": "NOT_BUILT",
+    "current_corrected_trial": "NOT_RUN"
+  }
 }
