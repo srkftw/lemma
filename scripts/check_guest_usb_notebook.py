@@ -473,6 +473,10 @@ def main():
             1 <= args.cold_cycles <= 1600000000 and 1 <= args.action_cycles <= 1600000000 and
             30 <= args.cold_deadline <= 7200 and 30 <= args.action_deadline <= 7200,
             'resource bounds exceed the declared workload ceilings')
+    def cancel(signum, _frame):
+        raise KeyboardInterrupt("explicit observer cancellation signal " + str(signum))
+    signal.signal(signal.SIGTERM, cancel)
+    signal.signal(signal.SIGINT, cancel)
     checker = Checker(args)
     try: checker.execute()
     except BaseException as error:

@@ -80,3 +80,29 @@ USB whole-machine snapshots remain rejected because complete hosted policy and
 pending transport state are not serialized. Physical USB encoding/full USB
 conformance, browser hosted-process transport and owner authentication remain
 open.
+
+A detached supervisor keeps the original observer running across tool/inference
+interruptions. It records its PID plus Linux process-start identity, the exact
+observer/supervisor source hashes and an absolute 65000-second whole-campaign
+ceiling before launch. The original nine 7200-second phase ceilings and target
+cycle ceilings still apply. It never automatically restarts an observer, resets
+an external timeout or silently pauses virtual time. The unchanged USB host has
+an actual 60-second wall inactivity policy; explicitly pausing its owner can
+therefore disconnect. SIGTERM of the recorded supervisor cancels the observer,
+allows 180 seconds for cleanup, then reaps only recorded owned process identities.
+
+```sh
+python3 scripts/supervise_usb_notebook.py launch \
+  --host-prepared build/usb/host-pending-policy3-a1/prepared.json \
+  --rtl-source-root build/silicon/task006-usb-runtime-a7/consumed-source-root \
+  --guest-source-root build/kernel/task006-usb-bulk-notebook-a3/consumed-source-root \
+  --formatted-peer build/usb/store-initialize-a3/peer \
+  --formatted-outbox build/usb/store-initialize-a3/outbox \
+  --work-dir build/usb/notebook-workflow-NEW
+```
+
+Read `WORK_DIR.supervision/supervision.json` and `WORK_DIR/progress.jsonl` for
+actual progress. A launched campaign is not a Ready/Save/recovery result. The
+native4 a1 observer interruption and subsequent actual raw-host timeout at
+cycle 195000000 remain FAIL. The native7 a2 run uses the changed, qualified USB6
+Pending machine and complete 245-input native/257-input genuine guest archives.
