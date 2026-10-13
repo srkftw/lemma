@@ -97,15 +97,25 @@ def supervise(manifest):
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
     launch=sub.add_parser('launch')
-    for name in ('host-prepared','rtl-source-root','guest-source-root','formatted-peer','formatted-outbox','work-dir'):launch.add_argument('--'+name,type=Path,required=True)
+    for name in ('host-prepared','formatted-peer','formatted-outbox','work-dir'):launch.add_argument('--'+name,type=Path,required=True)
+    launch.add_argument('--profile',choices=('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'),default='lemma-silicon-dev/0.6.0')
+    launch.add_argument('--native-bundle',type=Path)
+    launch.add_argument('--rtl-source-root',type=Path)
+    launch.add_argument('--guest-source-root',type=Path)
     worker=sub.add_parser('_run');worker.add_argument('manifest',type=Path)
     a=p.parse_args()
     if a.action=='_run':return supervise(a.manifest)
+    if not ((a.native_bundle is None and a.rtl_source_root is not None and a.guest_source_root is not None) or
+            (a.profile=='lemma-silicon-dev/0.8.0' and a.native_bundle is not None and a.rtl_source_root is None and a.guest_source_root is None)):
+        p.error('explicit complete source archives or one USB8 immutable bundle required')
     work=a.work_dir.resolve();supervision=work.with_name(work.name+'.supervision')
     if work.exists() or supervision.exists() or not work.is_relative_to(ROOT/'build'):p.error('unused owned campaign and supervision outputs under build required')
     supervision.mkdir(parents=True,mode=0o700)
     argv=[sys.executable,str(ROOT/'scripts/check_guest_usb_notebook.py')]
-    for name in ('host_prepared','rtl_source_root','guest_source_root','formatted_peer','formatted_outbox','work_dir'):argv+=['--'+name.replace('_','-'),str(getattr(a,name).resolve())]
+    argv+=['--profile',a.profile]
+    for name in ('host_prepared','rtl_source_root','guest_source_root','native_bundle','formatted_peer','formatted_outbox','work_dir'):
+        value=getattr(a,name)
+        if value is not None:argv+=['--'+name.replace('_','-'),str(value.resolve())]
     now=time.time_ns();data={'schema':'lemma-usb-notebook-supervision/1','work_dir':str(work),'argv':argv,'supervisor_sha256':digest(__file__),'observer_sha256':digest(ROOT/'scripts/check_guest_usb_notebook.py'),'started_unix_ns':now,'absolute_deadline_unix_ns':now+MAX_SECONDS*1000000000,'whole_host_ceiling_seconds':MAX_SECONDS,
         'policy':{'automatic_restart':False,'virtual_time':'original observer bounded quanta; no schedule or timeout reset','external_wall_timeout':'unchanged actual USB process60s inactivity; a paused owner may disconnect','pause':'no automatic pause; supervisor survives tool/inference interruption; manual machine pause is not hidden from host wall time','cancellation':'SIGTERM supervisor; observer handles interruption and reaps owned children; deadline180s grace then owned identities only'}}
     manifest=supervision/'manifest.json';manifest.write_text(json.dumps(data,indent=2)+'\n')

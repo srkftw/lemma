@@ -186,6 +186,8 @@ class PublicSession:
             args += ['--native-bundle', checker.args.native_bundle]
         if getattr(checker.args, 'guest_build', None):
             args += ['--guest-build', checker.args.guest_build]
+        if getattr(checker.args, 'guest_source_root', None):
+            args += ['--guest-source-root', str(checker.args.guest_source_root)]
         if fail_flush:
             args += ['--fail-flush', str(fail_flush), '--trace-limit', '1000']
         self.log = (checker.directory / (name + '.log')).open('xb')

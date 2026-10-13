@@ -1,0 +1,106 @@
+{
+  "schema": "lemma-usb-next-public-evidence/1",
+  "scope": "Paper-v2 circuit/native implementation and fully audited source-bound RTL-only USB8 package; real connected notebook campaign RUNNING, no Ready/Save/cold claim",
+  "status": "PASS",
+  "qualified": {
+    "new_usb": {
+      "path": "build/usb/paper-staging-v2-a3/result.json",
+      "sha256": "f8b1fef5eea15b01c54b020157fb2b2728340c3cdf5ed10ad6ef22b11b4ef84b",
+      "status": "PASS",
+      "seconds": 28.548801087017637
+    },
+    "historical_collision": {
+      "path": "build/usb/paper-staging-legacy-a1/result.json",
+      "sha256": "baf979a31e6dd8d262782ee0ca681a33a9a029f593577f2857087be9cf79aab0",
+      "status": "PASS",
+      "seconds": 27.8946757579688
+    },
+    "new_product": {
+      "path": "build/usb/paper-staging-product-v2-a1/result.json",
+      "sha256": "02a88f5e4acf0eb564da0141cae921cc1a54e112e2eae593483f77efc3c30eb8",
+      "status": "PASS",
+      "seconds": 30.366212592984084
+    },
+    "package_negative_boundaries": {
+      "path": "build/usb/usb8-bundle-boundary-a1/result.json",
+      "sha256": "17c2eed922acc510b535f0e3dd3587217b3540607664da36cda65eddcc431221",
+      "status": "PASS",
+      "seconds": 1.5798169890185818
+    }
+  },
+  "native": {
+    "build": "build/silicon/task006-usb-next-runtime-a1/build.json",
+    "build_sha256": "280ce5ac9bd1925f252db247dfaed49f2f1060afd5d3d835fc4909b0d30c9238",
+    "binary_sha256": "9aa1108476fbdf4ca21ef2073a3fa52c05b95b1b2ee178064d9b23f6c8b9a8f2",
+    "implementation_identity": "16a447cacf38c36ecaf20c2a2a9ff32b857635597039e11d32a4d66945c15a06",
+    "profile": "lemma-silicon-dev/0.8.0"
+  },
+  "bundle": {
+    "path": "build/native/task006-usb-next-a1/bundle.json",
+    "sha256": "4f9d59ca96d0c9eace06772144505ed66c2d169897fa5bfd7a104b364d2d3168",
+    "schema": "lemmasim-native-bundle/4",
+    "guest_source_inputs": 277,
+    "files": 697,
+    "bytes": 60775766,
+    "backends": [
+      "rtl"
+    ],
+    "boot": "ELF-preload development"
+  },
+  "guest_artifacts": {
+    "notebook": {
+      "build": "build/kernel/task006-usb-next-bulk-notebook-a4",
+      "audit_status": "PASS",
+      "source_inputs": 277,
+      "image_sha256": "6ed17b0d4cca94c77ae4376de5c3d78c6ff0a78f64934eea3e851da33d796532",
+      "provenance_sha256": "27dbf95373f7af424176effa59222742447777e9847a87478f235a190c74ec5d",
+      "audit_sha256": "123103d4e2c11e745395d0a851102958de7db3b4696dfa411866fa58e12151ca",
+      "scope": "unchanged genuine Lean/checkedLLVM/RV64 a4 artifact; no new target compilation by packaging"
+    },
+    "initialize": {
+      "build": "build/kernel/task006-usb-next-bulk-initialize-a4",
+      "audit_status": "PASS",
+      "source_inputs": 277,
+      "image_sha256": "01e55e3e5d51c18f3ee42f9f9d50a11d905263ad7436a957da8680d9eb76f066",
+      "provenance_sha256": "b3a1a16f83c567d3ea33a399b0574a4db2c20f857d867903d5604be7a8340a4f",
+      "audit_sha256": "d890cfc4bc903a06cd5ee317f8b438b91f9b1f7f117e92f159df528577fd7ff5",
+      "scope": "unchanged genuine Lean/checkedLLVM/RV64 a4 artifact; no new target compilation by packaging"
+    }
+  },
+  "retained_failures": {
+    "usb6_cold": "build/usb/notebook-workflow-a2/result.json",
+    "product7_fault": "build/boot/task006-product-bulk-update-a1/diagnosis-a1/result.json",
+    "literal_observer_a1": "build/usb/paper-staging-v2-a1/result.json",
+    "literal_observer_a2": "build/usb/paper-staging-v2-a2/result.json",
+    "host_outside_pinned_environment": "build/usb/usb8-public-and-lab-host-tests-a1.log"
+  },
+  "host_regressions": {
+    "pinned_lemmasim": {
+      "path": "build/usb/usb8-public-and-lab-host-tests-a2.log",
+      "sha256": "6961a6e4c3ed99be9acd62de3d254127fe9125aa415bc5aeec4f86985fe36249",
+      "tests": 198,
+      "status": "PASS"
+    },
+    "session": {
+      "path": "build/usb/usb8-session-host-tests-a1.log",
+      "sha256": "5a97ce7fd44023d7b130febd4b4a7132a5ec8feb02cf89a3cad3907e906ec8dc",
+      "tests": 46,
+      "status": "PASS"
+    }
+  },
+  "actual_connected_campaign": {
+    "status": "RUNNING",
+    "path": "build/usb/notebook-next-workflow-a1",
+    "supervisor_manifest": "build/usb/notebook-next-workflow-a1.supervision/manifest.json",
+    "supervisor_manifest_sha256": "da20f9f4cc1fa7a5b2517d27333f7c0333ab4a04876d822e3dd408945165e2a3",
+    "policy": "no automatic restart; original absolute deadline; no hidden pause; owned-child reap"
+  },
+  "remaining": [
+    "full USB8 notebook Ready/edit/Save/lostACK/restart/cold acceptance",
+    "USB8 exact captured checkpoint suffix qualification",
+    "full USB PHY/conformance",
+    "browser external hosted USB peer",
+    "owner authentication",
+    "physical implementation closure"
+  ]
+}

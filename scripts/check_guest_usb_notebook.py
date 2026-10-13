@@ -143,13 +143,17 @@ class NativeUSBSession:
         self.view_generation, self.view = None, None
         args = checker.args
         cmd = [sys.executable, str(ROOT / 'scripts/lemmasim'), 'session', '--backend', 'rtl',
-               '--profile', 'lemma-silicon-dev/0.6.0', '--workload', 'usb-bulk-notebook',
+               '--profile', args.profile, '--workload', 'usb-next-bulk-notebook' if args.profile=='lemma-silicon-dev/0.8.0' else 'usb-bulk-notebook',
                '--session-dir', str(self.directory), '--mode', 'laboratory', '--headless',
                '--paused', '--timeout', '120', '--quantum', '1000', '--trace-limit', '0',
                '--usb-host-prepared', str(args.host_prepared.resolve()),
                '--usb-peer-directory', str(peer), '--usb-peer-socket', str(checker.socket),
-               '--usb-host-state', str(state), '--rtl-source-root', str(args.rtl_source_root.resolve()),
-               '--guest-source-root', str(args.guest_source_root.resolve())]
+               '--usb-host-state', str(state)]
+        if args.native_bundle is not None:
+            cmd += ['--native-bundle', str(args.native_bundle.resolve())]
+        else:
+            cmd += ['--rtl-source-root', str(args.rtl_source_root.resolve()),
+                    '--guest-source-root', str(args.guest_source_root.resolve())]
         self.argv = cmd
         self.process = subprocess.Popen(cmd, cwd=ROOT, stdout=self.log, stderr=subprocess.STDOUT,
                                         start_new_session=True)
@@ -263,8 +267,12 @@ class Checker:
                        'raw_capture_format': 'native-seven-text; sequence/epoch from actual guest raw objects',
                        'host_prepared': {'path': str(args.host_prepared.resolve()),
                                          'sha256': sha(args.host_prepared)},
-                       'source_archives': {'rtl': str(args.rtl_source_root.resolve()),
-                                           'guest': str(args.guest_source_root.resolve())}}
+                       'profile': args.profile,
+                       'source_archives': ({'rtl': str(args.rtl_source_root.resolve()),
+                                            'guest': str(args.guest_source_root.resolve())}
+                                           if args.native_bundle is None else
+                                           {'native_bundle': str(args.native_bundle.resolve()),
+                                            'manifest_sha256': sha(args.native_bundle/'bundle.json')})}
 
     def update(self):
         self.report['host_seconds'] = time.monotonic() - self.started
@@ -460,15 +468,21 @@ class Checker:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('host-prepared', 'rtl-source-root', 'guest-source-root',
-                 'formatted-peer', 'formatted-outbox', 'work-dir'):
+    for name in ('host-prepared', 'formatted-peer', 'formatted-outbox', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--profile', choices=('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'), default='lemma-silicon-dev/0.6.0')
+    parser.add_argument('--native-bundle', type=Path)
+    parser.add_argument('--rtl-source-root', type=Path)
+    parser.add_argument('--guest-source-root', type=Path)
     parser.add_argument('--cold-cycles', type=int, default=1600000000)
     parser.add_argument('--cold-deadline', type=int, default=7200)
     parser.add_argument('--ink-cycles', type=int, default=200000000)
     parser.add_argument('--action-cycles', type=int, default=1600000000)
     parser.add_argument('--action-deadline', type=int, default=7200)
     args = parser.parse_args()
+    require((args.native_bundle is None and args.rtl_source_root is not None and args.guest_source_root is not None) or
+            (args.profile=='lemma-silicon-dev/0.8.0' and args.native_bundle is not None and args.rtl_source_root is None and args.guest_source_root is None),
+            'explicit complete source archives or one USB8 immutable bundle required')
     require(1 <= args.ink_cycles <= 200000000 and
             1 <= args.cold_cycles <= 1600000000 and 1 <= args.action_cycles <= 1600000000 and
             30 <= args.cold_deadline <= 7200 and 30 <= args.action_deadline <= 7200,
@@ -484,6 +498,19 @@ def main():
         for live in checker.sessions:
             try: checker.report.setdefault('failed_boundaries', {})[live.name] = live.control({'action': 'inspect'})
             except BaseException as observed: checker.report['failed_observation_error'] = repr(observed)
+            # Preserve the real failed boundary before owned-process cleanup.
+            # Snapshot/export are observational, never a poll, drain or replay.
+            try:
+                checkpoint = checker.out/(live.name+'-failure.snapshot')
+                captured = live.control({'action':'snapshot','path':str(checkpoint)})
+                checker.report.setdefault('failed_checkpoints',{})[live.name] = {
+                    'path':str(checkpoint),'machine_sha256':sha(checkpoint/'machine.chk'),
+                    'snapshot_sha256':sha(checkpoint/'snapshot.json'),'result':captured}
+                tape = checker.out/(live.name+'-failure.usb.tape')
+                live.control({'action':'export-usb-replay','path':str(tape)})
+                checker.report['failed_checkpoints'][live.name]['tape']={'path':str(tape),'sha256':sha(tape)}
+            except BaseException as observed:
+                checker.report.setdefault('failed_checkpoint_errors',{})[live.name] = repr(observed)
         raise
     finally: checker.close()
     require(checker.report['status'] == 'PASS', 'owned process cleanup failed')

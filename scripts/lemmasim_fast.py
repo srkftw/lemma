@@ -229,7 +229,11 @@ class Fast:
             import silicon_guest_bundle
             self.data=silicon_guest_bundle.prepared(args.native_bundle,'qemu',args.workload,args.profile)
             if getattr(args,'guest_build',None):
-                self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
+                if getattr(args,'guest_source_root',None) is None:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
+                else:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode,
+                                                                   source_root=args.guest_source_root)
         else:self.data=prepared(args.workload,args.profile)
         self.identity={'backend':'qemu','profile':self.data['profile'],'runtime':self.data['qemu']['sha256'],
                        'adapter':ADAPTER,
@@ -237,6 +241,9 @@ class Fast:
                        'dtb':self.data['workloads'][args.workload]['dtb']['sha256'],
                        'descriptor':self.data['workloads'][args.workload]['descriptor']['sha256'],
                        'cpu':CPU,'icount_shift':3}
+        override_archive=self.data.get('guest_override',{}).get('source_archive')
+        if override_archive is not None:
+            self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
         self.clock_hz=profile(self.data['profile'])['clock_hz']
         self.mtime_address=profile(self.data['profile'])['devices']['timer']['mtime']
         self.power_enabled=bool(profile(self.data['profile']).get('power_enabled',0))

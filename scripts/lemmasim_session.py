@@ -170,7 +170,11 @@ class RTL:
             import silicon_guest_bundle
             self.data = silicon_guest_bundle.prepared(args.native_bundle,'rtl',args.workload,args.profile)
             if getattr(args,'guest_build',None):
-                self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
+                if getattr(args,'guest_source_root',None) is None:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode)
+                else:
+                    self.data=silicon_guest_bundle.development_guest(self.data,args.workload,directory,args.guest_build,args.mode,
+                                                                   source_root=args.guest_source_root)
         else:self.data = silicon_guest.prepared(args.workload, args.profile,rtl_source_root=getattr(args,'rtl_source_root',None),guest_source_root=getattr(args,'guest_source_root',None))
         self.identity = {'backend': 'rtl', 'profile': self.data['profile'],
                          'runtime': self.data['binary']['sha256'],
@@ -180,6 +184,9 @@ class RTL:
                          'descriptor': self.data['workloads'][args.workload]['descriptor']['sha256']}
         if self.data.get('rtl_source_archive') is not None:
             self.identity['runtime_source_archive']={key:self.data['rtl_source_archive'][key] for key in ('archive','original_receipt','native_manifest','snapshot_identity','inputs','scope')}
+        override_archive=self.data.get('guest_override',{}).get('source_archive')
+        if override_archive is not None:
+            self.identity['development_guest_source_archive']={key:override_archive[key] for key in ('inventory','build','provenance','audit','image','configuration','source_commit','dirty_paths','inputs','scope')}
         entry = self.data['workloads'][args.workload]
         if entry.get('guest_source_archive') is not None:
             self.identity['guest_source_archive']={key:entry['guest_source_archive'][key] for key in ('archive','build','provenance','audit','source_commit','dirty_paths','inputs','scope')}
@@ -209,10 +216,10 @@ class RTL:
             if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
         elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
         usb_prepared=getattr(args,'usb_host_prepared',None)
-        if self.data['profile']=='lemma-silicon-dev/0.6.0' and getattr(args,'restore',None) and usb_prepared is not None:
+        if self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and getattr(args,'restore',None) and usb_prepared is not None:
             raise ValueError('Restored USB raw fork cannot launch a live host')
         if usb_prepared is not None:
-            if self.data['profile']!='lemma-silicon-dev/0.6.0':raise ValueError('USB packet host requires binding6')
+            if self.data['profile'] not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'):raise ValueError('USB packet host requires binding6')
             import lemmasim_usb
             from lemmasim_companion import peer_info
             host=lemmasim_usb.validate(usb_prepared);peer=peer_info(args.usb_peer_directory)
@@ -235,7 +242,7 @@ class RTL:
                         '--companion-writer', str(peer['writer']),
                         '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb') and not (self.data['profile']=='lemma-silicon-dev/0.6.0' and getattr(args,'restore',None)):
+            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb') and not (self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and getattr(args,'restore',None)):
                 raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
@@ -285,7 +292,7 @@ class RTL:
         # Each selected binding admits only its declared container schema; the
         # exact runtime identity and CRC/state checks still apply below.
         profile=getattr(self,'identity',{}).get('profile')
-        versions=(6,) if profile=='lemma-silicon-dev/0.6.0' else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        versions=(6,) if profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
         # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
@@ -622,7 +629,7 @@ class Session:
             self.presentation_generation += 1
             return result
         if action in ('usb-outcomes','export-usb-replay'):
-            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile')!='lemma-silicon-dev/0.6.0':raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'):raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
             path=Path(value['path']).resolve()
             if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
             result=self.machine.call(action+' '+str(path))
@@ -694,7 +701,7 @@ def serve(args, machine_type=None, session_type=None):
             session.restore(args.restore)
             if getattr(args,'usb_replay',None) is not None:
                 session.dispatch({'action':'usb-outcomes','path':str(args.usb_replay.resolve())})
-            if getattr(args,'profile',None)=='lemma-silicon-dev/0.6.0' and args.paused:session.automatic=False
+            if getattr(args,'profile',None) in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and args.paused:session.automatic=False
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener, selectors.DefaultSelector() as ready:
             listener.bind(address)
             os.chmod(address, 0o600)
