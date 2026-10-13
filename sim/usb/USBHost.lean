@@ -110,22 +110,38 @@ def request (h : Host) : IO (Host × ByteArray) := do
       h := {h with inOne := !h.inOne}
       if part.size < 64 then return (h,bytes)
   throw (IO.userError "USB fragment bound")
+/-- Policy3: NAK is occupied-slot Pending, not a transfer error. The
+100M explicitly scheduled wait-clock budget covers the entire opaque reply,
+not each fragment. Packet/admission clocks add actual virtual time, which the
+caller separately bounds. This is not a claimed USB timing qualification. -/
+def pendingQuantum : Nat := 100000
+def maximumPendingClocks : Nat := 100000000
+def chargePending (spent : Nat) : Except String Nat :=
+  if spent ≤ maximumPendingClocks - pendingQuantum then .ok (spent + pendingQuantum)
+  else .error "USB bulk OUT Pending budget"
 def reply (h : Host) (bytes : ByteArray) : IO Host := do
   if bytes.isEmpty || bytes.size > 584 then throw (IO.userError "USB opaque reply bound")
   let mut h := h
+  let mut spent := 0
   for i in [0:(bytes.size+63)/64] do
     let part := bytes.extract (64*i) (min bytes.size (64*(i+1)))
     let packet ← checked (dataPacket h.outOne part)
     let mut accepted := false
-    for _ in [0:3] do
+    let mut errors := 0
+    for _ in [0:1004] do
       if !accepted then
         send h (← checked (token 0xe1 h.address 2));send h packet
         let ack ← receive h
         if handshake ack 0xd2 then accepted := true else
         if handshake ack 0x5a then
+          spent ← match chargePending spent with
+            | .ok next => pure next
+            | .error e => throw (IO.userError e)
           if (← line h "WAIT 100000") != "WAIT_DONE" then throw (IO.userError "USB backpressure wait")
-        else throw (IO.userError "USB bulk OUT handshake")
-    if !accepted then throw (IO.userError "USB bulk OUT retry bound")
+        else if handshake ack 0x1e then throw (IO.userError "USB endpoint STALL") else
+          errors := errors+1
+          if errors ≥ 3 then throw (IO.userError "USB bulk OUT malformed/error retry bound")
+    if !accepted then throw (IO.userError "USB bulk OUT finite attempt bound")
     h := {h with outOne := !h.outOne}
   return h
 def exchangeOpaque (c : Client) (bytes : ByteArray) : IO (Client × ByteArray) := do

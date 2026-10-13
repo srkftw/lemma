@@ -21,12 +21,12 @@ def build(output):
         subprocess.run(['leanc','-O2','-c',str(output/(module+'.c')),'-o',str(output/(module+'.o'))],check=True,timeout=120)
     subprocess.run(['leanc',*[str(output/'companion'/(n+'.o')) for n in ('Protocol','HostIO','ClientPolicy')],str(output/'USBPacket.o'),str(output/'USBHost.o'),'-o',str(output/'usb-host')],check=True,timeout=120)
     if before!={str(p.relative_to(ROOT)):sha(p) for p in SOURCES}:raise ValueError('USB host sources changed during build')
-    result={'schema':'lemma-usb-host-dev/2','scope':'hosted Lean packet/control/toggle and unchanged opaque backing policy; no guest/PHY/whole-machine result','sources':before,'companion_prepared':{'path':str(output/'companion/prepared.json'),'sha256':sha(output/'companion/prepared.json')},'lean_revision':companion['lean_revision'],'host_tools':companion['host_tools'],'objects':{n:sha(output/n) for n in ('USBPacket.c','USBHost.c','USBPacket.o','USBHost.o')},'binary':{'path':str(output/'usb-host'),'sha256':sha(output/'usb-host')},'target_objects_added':[]}
+    result={'schema':'lemma-usb-host-dev/3','policy_version':'lemma-usb-pending-policy/3','maximum_pending_wait_clocks':100000000,'pending_quantum_clocks':100000,'malformed_error_retries':3,'scope':'hosted Lean packet/control/toggle and unchanged opaque backing policy; no guest/PHY/whole-machine result','sources':before,'companion_prepared':{'path':str(output/'companion/prepared.json'),'sha256':sha(output/'companion/prepared.json')},'lean_revision':companion['lean_revision'],'host_tools':companion['host_tools'],'objects':{n:sha(output/n) for n in ('USBPacket.c','USBHost.c','USBPacket.o','USBHost.o')},'binary':{'path':str(output/'usb-host'),'sha256':sha(output/'usb-host')},'target_objects_added':[]}
     (output/'prepared.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2));return result
 
 def validate(prepared):
     prepared=Path(prepared).resolve();r=json.loads(prepared.read_text())
-    if r.get('schema')!='lemma-usb-host-dev/2' or r.get('sources')!={str(p.relative_to(ROOT)):sha(p) for p in SOURCES}:raise ValueError('USB host source identity changed')
+    if (r.get('schema'),r.get('policy_version'),r.get('maximum_pending_wait_clocks'),r.get('pending_quantum_clocks'),r.get('malformed_error_retries'))!=('lemma-usb-host-dev/3','lemma-usb-pending-policy/3',100000000,100000,3) or r.get('sources')!={str(p.relative_to(ROOT)):sha(p) for p in SOURCES}:raise ValueError('USB host source identity changed')
     c=r['companion_prepared'];p=Path(c['path'])
     if sha(p)!=c['sha256']:raise ValueError('USB companion manifest changed')
     validate_companion(p)

@@ -160,7 +160,70 @@ def native_source_archive(build,source_root,name):
               'scope':'unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities'}
     return m,{str(ROOT/path):digest for path,digest in expected.items()},evidence
 
-def prepared(workload,name=None,*,rtl_source_root=None):
+def guest_source_archive(guest,source_root,configuration,optimization,name):
+    """Revalidate an unchanged genuine USB guest's entire consumed source tree.
+
+    The original sidecar is observational evidence, not an alternate compilation
+    oracle. The ordinary build/audit validator still checks the original artifacts
+    and independently enumerates this complete tree with source_inputs().
+    """
+    if name!='lemma-silicon-dev/0.6.0' or configuration not in USB_CONFIGURATIONS.values():
+        raise ValueError('Explicit guest source archives currently admit only USB6')
+    guest=Path(guest).resolve();source_root=Path(source_root).resolve()
+    sidecar=source_root.parent/'consumed-source-archive.json'
+    a=_read_unique_json(sidecar)
+    b=_read_unique_json(guest/'build.json');v=_read_unique_json(guest/'provenance.json');audit=_read_unique_json(guest/'audit.json')
+    expected=v.get('source_inputs')
+    if not isinstance(expected,dict) or not expected:raise ValueError('Missing original guest source inventory')
+    for path,digest in expected.items():
+        if Path(path).is_absolute() or _native_relative(path)!=path or not isinstance(digest,str) or len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest):
+            raise ValueError('Malformed original guest source input')
+    if (a.get('schema')!='lemma-usb-guest-source-archive/1' or
+        a.get('source_inputs')!=expected or a.get('source_commit')!=v.get('source_commit') or
+        a.get('dirty_paths')!=v.get('dirty_paths') or a.get('tools')!=v.get('tools') or
+        a.get('lean_source_realization')!=v.get('lean_source_realization') or
+        a.get('provenance_sha256')!=sha(guest/'provenance.json') or
+        a.get('build_sha256')!=sha(guest/'build.json') or a.get('image_sha256')!=sha(guest/'image.elf')):
+        raise ValueError('Guest archive differs from its complete original build/provenance/image identities')
+    if not source_root.is_dir():raise ValueError('Guest source archive directory missing')
+    actual=set()
+    for path in source_root.rglob('*'):
+        if path.is_symlink():raise ValueError('Symlink in guest source archive')
+        if path.is_file():actual.add(path.relative_to(source_root).as_posix())
+    if actual!=set(expected):raise ValueError('Guest source archive has missing or unlisted files')
+    for path,digest in expected.items():
+        if sha(source_root/path)!=digest:raise ValueError('Changed archived guest input: '+path)
+    if (audit.get('source_commit')!=v.get('source_commit') or audit.get('dirty_paths')!=v.get('dirty_paths') or
+        any(report.get('lean_source_realization')!=v.get('lean_source_realization') for report in (b,audit))):
+        raise ValueError('Guest audit source/tool realization differs from the original build')
+    pin=_read_unique_json(source_root/'tooling/toolchain-lock.json').get('tools',{}).get('lean',{})
+    realization=v.get('lean_source_realization',{})
+    if (realization.get('revision')!=pin.get('revision') or realization.get('source_path')!=pin.get('source_path') or
+        realization.get('narHash')!=pin.get('source_sha256') or realization.get('narSize')!=pin.get('source_nar_size') or
+        not Path(realization.get('source_path','/missing')).is_dir() or
+        realization.get('uint_source')!=str(Path(pin.get('source_path','/missing'))/'src/Init/Data/UInt/Basic.lean') or
+        sha(realization['uint_source'])!=realization.get('uint_source_sha256')):
+        raise ValueError('Original guest Lean source realization changed')
+    tools=v.get('tools',{})
+    if set(tools)!={'lean','lake','opt','llc','clang','ld.lld','qemu-system-riscv64','dtc'}:
+        raise ValueError('Original guest tool inventory differs')
+    observed_tools={}
+    for tool,item in tools.items():
+        if not isinstance(item,dict) or set(item)!={'path','version'} or not str(item['path']).startswith('/nix/store/') or not os.access(item['path'],os.X_OK):
+            raise ValueError('Missing immutable original guest tool: '+tool)
+        output=subprocess.run([item['path'],'--version'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,check=True,timeout=10).stdout.decode().strip()
+        if output!=item['version']:raise ValueError('Original guest tool version changed: '+tool)
+        observed_tools[tool]={**item,'sha256':sha(item['path'])}
+    verify_guest_build(guest,configuration,optimization,source_root=source_root)
+    return {'schema':'lemma-explicit-guest-source-archive/1','source_root':str(source_root),
+            'archive':identified(sidecar),'build':identified(guest/'build.json'),'provenance':identified(guest/'provenance.json'),
+            'audit':identified(guest/'audit.json'),'image':identified(guest/'image.elf'),
+            'source_commit':v['source_commit'],'dirty_paths':v['dirty_paths'],'inputs':len(expected),
+            'configuration':configuration,'optimization':optimization,'tools':observed_tools,
+            'lean_source_realization':realization,
+            'scope':'unchanged archived genuine USB6 guest and original strict audit; newly prepared host adapter, not fresh target compilation'}
+
+def prepared(workload,name=None,*,rtl_source_root=None,guest_source_root=None):
     selected=configurations(name)
     if workload not in selected:raise ValueError('Workload is not admitted by the selected binding')
     data=json.loads(prepared_path(name).read_text())
@@ -181,8 +244,15 @@ def prepared(workload,name=None,*,rtl_source_root=None):
         raise ValueError('RTL workload is not prepared; run lemmasim build --backend rtl --workload '+workload)
     for key in ('image','build','provenance','audit','dtb','descriptor'):
         validate(data['workloads'][workload][key])
-    guest=validate(data['workloads'][workload]['build']).parent
-    verify_guest_build(guest,selected[workload],json.loads((guest/'build.json').read_text())['optimization'])
+    entry=data['workloads'][workload];guest=validate(entry['build']).parent
+    optimization=json.loads((guest/'build.json').read_text())['optimization']
+    guest_archive=entry.get('guest_source_archive')
+    if guest_archive is not None and guest_source_root is None:
+        raise ValueError('Prepared guest requires its explicit --guest-source-root; current-source fallback is forbidden')
+    if guest_source_root is not None:
+        evidence=guest_source_archive(guest,guest_source_root,selected[workload],optimization,data['profile'])
+        if guest_archive is not None and evidence!=guest_archive:raise ValueError('Prepared guest source archive identity changed')
+    else:verify_guest_build(guest,selected[workload],optimization)
     if workload in NOTEBOOK_WORKLOADS:
         capacity=json.loads(validate(data['workloads'][workload]['capacity']).read_text())
         if capacity.get('status')!='PASS' or capacity.get('configuration')!=selected[workload]:
@@ -306,7 +376,11 @@ def build(args):
             '--output-dir',guest,'--timeout','300'],timeout=1500,log=directory/'guest-build.log')
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_kernel.py',guest],timeout=600,log=directory/'guest-audit.log')
     guest=Path(guest).resolve()
-    verify_guest_build(guest,selected[workload],args.opt_level)
+    guest_root=getattr(args,'guest_source_root',None);guest_evidence=None
+    if guest_root is not None:
+        if getattr(args,'guest_build',None) is None:raise ValueError('--guest-source-root requires an explicit --guest-build')
+        guest_evidence=guest_source_archive(guest,guest_root,selected[workload],args.opt_level,name)
+    else:verify_guest_build(guest,selected[workload],args.opt_level)
     if workload in NOTEBOOK_WORKLOADS:
         capacity_path=directory/'guest-capacity.json'
         run_command(['nix','develop','--no-write-lock-file','--command','python3','scripts/audit_lemmasim_capacity.py',
@@ -314,6 +388,7 @@ def build(args):
         capacity=json.loads(capacity_path.read_text())
         if capacity.get('status')!='PASS':raise ValueError('RTL notebook selected capacity audit did not pass')
     entry={key:identified(guest/name) for key,name in [('image','image.elf'),('build','build.json'),('provenance','provenance.json'),('audit','audit.json'),('dtb','platform.dtb'),('descriptor','descriptor.bin')]}
+    if guest_evidence is not None:entry['guest_source_archive']=guest_evidence
     if workload in NOTEBOOK_WORKLOADS:entry['capacity']=identified(capacity_path)
     previous=None
     try:
