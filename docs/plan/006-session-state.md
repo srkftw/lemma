@@ -577,4 +577,73 @@ work. Prior c7f9fcf CI38435618357 remains CANCELLED (8PASS/1FAIL/1CANCELLED),
 including its unfinished notebook job. A fresh committed candidate still needs
 its own complete CI result.
 
+## Connected String deployment and document continuation
+
+[The String implementation](../evidence/006-managed-string-integration.json)
+at179e44b adds genuinely elaborated User6 UTF8/String/Option through versioned
+checked LLVM lowering and real31-slot ownership. Three fresh whole builds and
+full audits passed against289 sealed consumed inputs. The real ordinary ASCII
+service course/check/edit/hint/review/Save/newcold/failed-save workflow and
+controlled OOM/raw-ink/Save/newcold containment passed. General runtime, non-ASCII
+whole-guest qualification, closures/recursion and the proof kernel remain open.
+A later independently qualified scalar Notebook dispatch-table observer supports
+historical roles without granting them User6 or new managed-language features.
+Original audit failures and exact289-input archives remain unchanged.
+
+[The mixed Doc6→7 continuation](../evidence/006-string-document-migration.json)
+passed98.410078s of actual QEMU execution/observation. Only the two declared
+version words change during migration; prior five ByteArray attempts, one Array
+attempt, assistance and all other objects remain exact. Actual String request103
+returns Unsupported for the original unsupported goal. Close/reopen and an
+independent cold at355000001 instruction-clock cycles/7.824633s preserve the
+mixed record and every notebook controller pixel. No snapshot substitutes for
+cold recovery, and QEMU timing is not canonical RTL timing.
+
+The immutable native String bundle is`build/native/task006-string-bulk-a1`
+(731 files, manifest e6ef92d409ac40a6eb2ba3c1f0af09e62e9cd200bcf5a073a0fe40d4add1f1cd).
+The static String browser bundle is`build/browser/task006-string-bulk-host-limit-a1`
+(manifest cce4e932ed9d02883db89134e13cf0c6f845749bd7cd3fb71286b5a6b2901db4),
+with the same reusable authoritative Wasm core. This packages String for browser
+execution; it does not qualify browser String Ready/course/durability.
+
+[The public initialization repair](../evidence/006-native-bundle-initialization.json)
+fixes a real routing defect: an explicit bundle without an explicit profile
+formerly used the legacy initializer. The corrected command ran the actual
+selected85545d7 String initializer and acknowledged durability at25000001
+instruction-clock cycles/1.364735s. Missing bundles reject before media creation;
+historical no-bundle routing remains. The original wrong-route medium/log/source
+remain retained. Laboratory String OOM now accepts only its complete original
+289-source/tool/object archive, alongside the unchanged Array scope; ordinary
+modes and other profiles remain denied. A real paused Laboratory session admitted
+the archived String OOM image at cycle zero, exposed its complete source authority,
+and was closed and reaped. This admission check is separate from the earlier real
+OOM/ink/save/cold execution.
+
+The [first Array browser mixed-history cold run](../evidence/006-browser-array-cold-failure.json)
+failed its original 7200-second host deadline without Ready. The old bundle lacked
+the new automatic wall guard: the manual pause occurred at 843850000 cycles,
+7822.1215 worker seconds (7515.21727 simulation calls), retaining all late work as
+failure. No panel completed; the opaque Doc6 medium remained unchanged. Its actual
+checkpoint, raw medium, outcome tape and UART are retained. This is neither a
+completed browser mathematics workflow nor a new accepted deadline.
+
+## Complete CI at the corrected host candidate
+
+Candidate6f93fb72a02f981f41217d6e4a8810fea692a8a3 CI38444112101 completed
+**SUCCESS**, all ten jobs and all reported steps passed. The exact job matrix
+is retained at`build/ci/task006-6f93fb7-qualified-jobs.json`. This qualifies the
+corrected host fixtures and that candidate's real legacy/foundation/Task003/
+Task004/RTL matrix. Later String, companion policy4, opt-in QEMU and physical
+changes require their own candidate checks. Earlier failures/cancellations
+remain unchanged; no merge is authorized.
+
+[The opt-in QEMU logical-TLB receipt](../evidence/006-qemu-logical-softtlb.json)
+at e2acaa7 preserves a real guest's stale111 data translation and guest
+SFENCE→222 in the original/private restored fork, plus exact declared final
+logical cache fields. It avoids the original migration flush. Default backend
+identity equality was independently established at that source boundary.
+Complete QEMU continuation remains GAP_CONFIRMED for executable translation,
+TB/jump/instruction visibility, interrupt and pending acceleration boundaries;
+the public default and timing scope are unchanged by that opt-in work.
+
 -->

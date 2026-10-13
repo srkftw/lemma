@@ -1,0 +1,219 @@
+{
+  "schema": "lemma-prepared-initialization-routing/1",
+  "status": "PASS_CORRECTED_EXPLICIT_BUNDLE_INITIALIZATION",
+  "defect": "With --native-bundle and no --profile, init chose legacy initialize() and ignored the selected immutable bundle",
+  "original": {
+    "command_exit": 0,
+    "qualification": "WRONG_BACKEND_ROUTE; not selected String initializer acceptance",
+    "profile": "lemmasim-virt/0.1.0",
+    "initializer": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/kernel/lemmasim-initializer-7236f7889fb9-1791676848071776845-O2/image.elf",
+      "sha256": "0e65cfdb519914c0cae9c98a627d675b716a837806d1c232367522f05f44e9dc",
+      "build_sha256": "5655ee71ea779fdb41118d8b3c3982e58f2fd020d788939f4518352363b9b7a5",
+      "audit_sha256": "40c831b6cae823efe90a2c6aa0edb1fa16639446f09c2e8d0899a438ddbd838f",
+      "artifacts": {
+        "image.elf": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/lemmasim-initializer-7236f7889fb9-1791676848071776845-O2/image.elf",
+          "sha256": "0e65cfdb519914c0cae9c98a627d675b716a837806d1c232367522f05f44e9dc"
+        },
+        "build.json": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/lemmasim-initializer-7236f7889fb9-1791676848071776845-O2/build.json",
+          "sha256": "5655ee71ea779fdb41118d8b3c3982e58f2fd020d788939f4518352363b9b7a5"
+        },
+        "provenance.json": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/lemmasim-initializer-7236f7889fb9-1791676848071776845-O2/provenance.json",
+          "sha256": "9347eaf9432648ceb74785f1a806f81142f41ac242dbe98d350558d599647963"
+        },
+        "audit.json": {
+          "path": "/home/sreekumaar/Downloads/lemma/build/kernel/lemmasim-initializer-7236f7889fb9-1791676848071776845-O2/audit.json",
+          "sha256": "40c831b6cae823efe90a2c6aa0edb1fa16639446f09c2e8d0899a438ddbd838f"
+        }
+      }
+    },
+    "retained_medium": {
+      "path": "build/task006-string-prepared-launch-a1/notebook.raw",
+      "bytes": 268435456,
+      "sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+    },
+    "legacy_guest_acknowledgment_is_not_selected_bundle_success": true
+  },
+  "repair": "Explicit native bundle dispatches to the same strict matched initializer used by canonical profiles; historical no-bundle default remains unchanged",
+  "corrected_actual": {
+    "status": "ACKNOWLEDGED_GUEST_INITIALIZATION",
+    "scope": "guest initialization, not host formatting",
+    "medium": "/home/sreekumaar/Downloads/lemma/build/task006-string-prepared-launch-a1/notebook-corrected.raw",
+    "identity": {
+      "backend": "qemu",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+      "adapter": "lemmasim-fast-adapter/4",
+      "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+      "guest": "85545d7b18e39cbc0c43f545f6030b83064b948a45514e418e4909bae8483212",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+      "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+      "icount_shift": 3
+    },
+    "guest_ack": "K1 000000000000041f 0000000000000000 0000000000000000 0000000000000000 0000000000000000",
+    "cycle": 25000001,
+    "elapsed_seconds": 1.3647349440143444,
+    "medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+  },
+  "bundle_manifest": {
+    "path": "build/native/task006-string-bulk-a1/bundle.json",
+    "bytes": 480910,
+    "sha256": "e6ef92d409ac40a6eb2ba3c1f0af09e62e9cd200bcf5a073a0fe40d4add1f1cd"
+  },
+  "host_tests": {
+    "count": 3,
+    "scope": "Actual CLI dispatch, historical routing and missing explicit bundle rejects before media/session creation; no fixture guest execution"
+  },
+  "references": [
+    {
+      "path": "build/task006-string-prepared-launch-a1/original-lemmasim",
+      "bytes": 82627,
+      "sha256": "406f3a5219c3b467894874292c4e34f36a03c6e7f8499f1bced93bb027706668"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/original-default-prepared.json",
+      "bytes": 7186,
+      "sha256": "44aa8631722366f820df8cf9589073de2adb507fb894aa67d888ec1a2911e790"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/initialize.log",
+      "bytes": 129,
+      "sha256": "1b1c684929e1a9721f53a7115d9564a52f31f1d66641bdc4096b516b8da4e5b8"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/initialize-corrected.log",
+      "bytes": 250,
+      "sha256": "ffe7b28ee76e167856d992c72261c33c06371351891c48500efd0a9bc73978af"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/init-routing-hosts.log",
+      "bytes": 632,
+      "sha256": "44742c456c22085a68e7290d51899755f52a7f6ca9d0d22126c1ae386fc8e5ee"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/initializer-corrected/result.json",
+      "bytes": 1175,
+      "sha256": "643193f819c54568a496cf95cfa154e9635976012cff239a5145d36779d330fb"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/initializer-corrected/uart-0.bin",
+      "bytes": 1408,
+      "sha256": "e0cc5795ef5f645ddd0d0bfc9aba2c4d8df839b62d38f7f139ad581c9f3c5f7b"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/initializer-corrected/backing-0.io",
+      "bytes": 4744,
+      "sha256": "5eb6ec6280fbf92c619b989b6359ca35997a41f0988ba02628120e168d54fae7"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/laboratory-inspect.json",
+      "bytes": 13594,
+      "sha256": "0efe0e4783a4ee64bf8ad65f1f8ef1a9c29c6d2a4e762526b9237505a4c85bb5"
+    },
+    {
+      "path": "build/task006-string-prepared-launch-a1/string-laboratory-archive-validation.json",
+      "bytes": 8381,
+      "sha256": "041c7192bc821ad8a3cd67e49aead670afd7e52435499e4ad521570c3e8f4e20"
+    }
+  ],
+  "changed_sources": {
+    "scripts/lemmasim": "ff4daeeac3ae0532d04a2a89542fa3e61aacce75ecdcbd2df868496cd33f2d3c",
+    "tests/lemmasim/test_init_bundle_routing.py": "8cdc6d0fb4d1c6348d65c958d041fe84b82a943ea7d55b3740b0d1e042cd1bdc"
+  },
+  "reproduce": "./scripts/lemmasim init --native-bundle build/native/task006-string-bulk-a1 --backend qemu --disk build/task006-string-initializer-NEW.raw --session-dir build/task006-string-initializer-NEW --timeout 120",
+  "scope": "Actual selected Lean-authored development initializer and QEMU instruction-clock path; not product ROM boot or RTL timing",
+  "laboratory_string_archive_admission": {
+    "status": "PASS_ACTUAL_PAUSED_SESSION",
+    "cycle": 0,
+    "running": false,
+    "guest": "5ea362cceffe5fc85be7d5cc96abadebf7334a3471979e46a996e667027479f9",
+    "authority": {
+      "inventory": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/task006-string-laboratory-source-archive-a1/source-inputs.json",
+        "sha256": "212c8245b9f346de951fde0bd518ec8561413657b985af6a7832887f341dbc43"
+      },
+      "build": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-string-arithmetic-oom-a3/build.json",
+        "sha256": "0ba43f7737f38cd389cb9c42d790499428b92fbf1a695261b4ea6f8d8cd5bb06"
+      },
+      "provenance": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-string-arithmetic-oom-a3/provenance.json",
+        "sha256": "de7e48cbdb43a832d5c531b7658713b5faf7295d34818bb7d0130a73a61fe6ec"
+      },
+      "audit": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-string-arithmetic-oom-a3/audit.json",
+        "sha256": "abcfdcf59a4706208deac93ec21d8ea2c657410959c91c47b1f0aa94fe16c7f0"
+      },
+      "image": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-string-arithmetic-oom-a3/image.elf",
+        "sha256": "5ea362cceffe5fc85be7d5cc96abadebf7334a3471979e46a996e667027479f9"
+      },
+      "configuration": "lemmasim-silicon-string-arithmetic-oom-development",
+      "source_commit": "e451bb1b558d2ed8fc881528476f3de3bf35f432",
+      "dirty_paths": [
+        " M Lemma/Applications/Notebook.lean",
+        " M Lemma/Compiler/CFGLower.lean",
+        " M Lemma/Compiler/DeploymentCatalog.lean",
+        " M Lemma/Compiler/KernelExport.lean",
+        " M Lemma/Core0/Execution.lean",
+        " M Lemma/Core0/Frontend.lean",
+        " M Lemma/Core0/IR.lean",
+        " M Lemma/Core0/Memory.lean",
+        " M Lemma/Core0/MemoryModel.lean",
+        " M Lemma/Core0/Semantics.lean",
+        " M Lemma/Documents/Mathematics.lean",
+        " M conformance/lemmasim/math_oracle.py",
+        " M docs/evidence/006-product9-installation.json",
+        " M scripts/audit_kernel.py",
+        " M scripts/audit_lemmasim_capacity.py",
+        " M scripts/build_kernel.py",
+        " M scripts/check_arithmetic_isolation.py",
+        " M scripts/check_array_document_migration.py",
+        " M scripts/check_guest_usb_link.py",
+        " M scripts/check_math_session.py",
+        " M scripts/closed_inline.py",
+        " M scripts/lemmasim_readonly.py",
+        " M scripts/managed_records.py",
+        " M scripts/silicon_guest_bundle.py",
+        " M scripts/silicon_profile.py",
+        " M tests/foundation/test_math_records.py",
+        " M tests/lemmasim/test_native_bundle.py",
+        " M tooling/lemmasim/qemu.nix",
+        "?? Lemma/Compiler/Test/ManagedString.lean",
+        "?? Lemma/Core0/ManagedStringIR.lean",
+        "?? Lemma/Documents/MathematicsString.lean",
+        "?? Lemma/Mathematics/ExecutionIdentityV5.lean",
+        "?? Lemma/Mathematics/ManagedStringSubmission.lean",
+        "?? Lemma/Mathematics/ManagedStringSubmissionAction.lean",
+        "?? Lemma/Services/Arithmetic/ClientV6.lean",
+        "?? Lemma/Services/Arithmetic/ProtocolV6.lean",
+        "?? Lemma/Services/Arithmetic/ServerV6.lean",
+        "?? Lemma/User/Runtime/ManagedString.lean",
+        "?? conformance/lemmasim/check_logical_softtlb.py",
+        "?? conformance/lemmasim/run_softtlb_probe.py",
+        "?? docs/contracts/006-qemu-logical-softtlb-v1.md",
+        "?? docs/contracts/MANAGED_STRING_V1.md",
+        "?? docs/evidence/006-string-document-migration.json",
+        "?? scripts/archive_companion_boundary.py",
+        "?? scripts/arithmetic_string_identity.py",
+        "?? scripts/check_managed_string.py",
+        "?? scripts/check_managed_string_component.py",
+        "?? scripts/check_string_record_length.py",
+        "?? scripts/managed_string.py",
+        "?? sim/host/lemma_softtlb_qemu.inc.c",
+        "?? tests/qemu/SoftTlbExport.lean",
+        "?? tests/qemu/SoftTlbProbe.lean",
+        "?? tests/runtime/ManagedString.lean",
+        "?? tooling/lemmasim/patch_soft_tlb.py"
+      ],
+      "inputs": 289,
+      "scope": "unchanged fully audited canonical Laboratory String OOM guest; complete original source/tool/object closure"
+    },
+    "closed_owned_session": true,
+    "scope": "Complete289source/tool/object authority admitted beforeCPU; actualString OOM guestexecution remains separate original receipt"
+  }
+}

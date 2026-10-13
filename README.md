@@ -833,4 +833,44 @@ nix develop --no-write-lock-file --command python3 scripts/check_array_document_
 The checker copies the supplied opaque medium; only the guest migrates and
 publishes its document. This command starts from Doc5 without a snapshot.
 
+### Bounded managed String development deployment
+
+The [User6/Doc7 receipt](docs/evidence/006-managed-string-integration.json)
+qualifies the exact guest mathematics/course/edit/assistance/Save/newcold and
+OOM containment paths. The [mixed migration](docs/evidence/006-string-document-migration.json)
+keeps prior ByteArray/Array evidence and appends a real String-service result.
+Use the prepared immutable artifacts without rebuilding the machine:
+
+```sh
+./scripts/lemmasim init --backend qemu \
+  --native-bundle build/native/task006-string-bulk-a1 \
+  --disk build/string-notebook-NEW.raw --session-dir build/string-init-NEW --timeout 120
+./scripts/lemmasim session --backend qemu \
+  --native-bundle build/native/task006-string-bulk-a1 \
+  --disk build/string-notebook-NEW.raw --session-dir build/string-session-NEW
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-string-bulk-host-limit-a1 --port 8775
+```
+
+Open the local static bundle at`http://127.0.0.1:8775`. It packages the same
+RV64 String guest for the existing RTL/Wasm worker; actual browser String
+Ready/course/durability remains unqualified. The compiler is the native pinned
+Lean/LLVM helper. Local dependency/notice and redistribution limitations remain.
+Both native commands use explicit development ELF preload, not product ROM boot.
+
+For actual existing mixed Doc6 media, the guest performs migration and checking:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_array_document_migration.py \
+  --disk build/task006-array-doc5-migration-a3/cold-course.raw \
+  --native-bundle build/native/task006-string-bulk-a1 --destination-runtime string \
+  --work-dir build/string-doc6-migration-NEW --boot-seconds 60 --action-seconds 30 --deadline 1200
+```
+
+The String subset admits at most40 UTF8 bytes with actual heap allocation,
+retained aliases and graph reclamation. The integrated service uses ASCII hex
+encodings of complete UInt64 values. General String/runtime/proof-kernel scope
+is separate. The [prepared initializer repair](docs/evidence/006-native-bundle-initialization.json)
+ensures `--native-bundle` is honored even when `--profile` is omitted.
+
 -->

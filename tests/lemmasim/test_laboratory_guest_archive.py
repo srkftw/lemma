@@ -12,6 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 import silicon_guest_bundle as bundle
 
 CONFIG='lemmasim-silicon-array-arithmetic-oom-development'
+STRING_CONFIG='lemmasim-silicon-string-arithmetic-oom-development'
 PROFILE='lemma-silicon-dev/0.3.0'
 
 class LaboratoryArchiveBoundary(unittest.TestCase):
@@ -22,6 +23,15 @@ class LaboratoryArchiveBoundary(unittest.TestCase):
             (PROFILE,'lemmasim-silicon-bytes-arithmetic-oom-development','laboratory')]:
             with self.subTest(profile=profile,configuration=configuration,mode=mode),self.assertRaisesRegex(ValueError,'canonical Laboratory Array OOM'):
                 bundle.laboratory_guest_archive('/missing','/missing',profile,configuration,mode)
+
+    def test_string_archive_requires_same_canonical_laboratory_boundaries_before_io(self):
+        for profile,mode in [(PROFILE,'student'),(PROFILE,'developer'),(PROFILE,None),
+                             ('lemma-silicon-dev/0.2.0','laboratory'),
+                             ('lemma-silicon-dev/0.8.0','laboratory')]:
+            with self.subTest(profile=profile,mode=mode),self.assertRaisesRegex(ValueError,'canonical Laboratory'):
+                bundle.laboratory_guest_archive('/missing','/missing',profile,STRING_CONFIG,mode)
+        with self.assertRaises(FileNotFoundError):
+            bundle.laboratory_guest_archive('/missing','/missing',PROFILE,STRING_CONFIG,'laboratory')
 
     def test_missing_corrupt_unlisted_and_mismatched_archive_fail_before_tool_artifact_checks(self):
         with tempfile.TemporaryDirectory() as temporary:

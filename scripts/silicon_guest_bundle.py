@@ -664,11 +664,15 @@ def development_configuration(profile,workload,configuration,mode):
 
 
 def laboratory_guest_archive(base, source_root, profile, configuration, mode):
-    """Complete original canonical Array-OOM authority; no ROOT fallback."""
+    """Complete original canonical Array/String OOM authority; no ROOT fallback."""
     import silicon_guest as guest
+    archived_configurations = {
+        'lemmasim-silicon-array-arithmetic-oom-development': 'Array',
+        'lemmasim-silicon-string-arithmetic-oom-development': 'String',
+    }
     if (profile != 'lemma-silicon-dev/0.3.0' or mode != 'laboratory' or
-            configuration != 'lemmasim-silicon-array-arithmetic-oom-development'):
-        raise ValueError('Archived development guest requires canonical Laboratory Array OOM')
+            configuration not in archived_configurations):
+        raise ValueError('Archived development guest requires canonical Laboratory Array OOM or String OOM')
     base = Path(base).resolve()
     root = Path(source_root).resolve()
     provenance = read_json(base / 'provenance.json')
@@ -727,7 +731,7 @@ def laboratory_guest_archive(base, source_root, profile, configuration, mode):
             'image': guest.identified(base / 'image.elf'), 'configuration': configuration,
             'source_commit': provenance['source_commit'], 'dirty_paths': provenance['dirty_paths'],
             'inputs': len(expected), 'tools': observed, 'lean_source_realization': realization,
-            'scope': 'unchanged fully audited canonical Laboratory Array OOM guest; complete original source/tool/object closure'}
+            'scope': 'unchanged fully audited canonical Laboratory ' + archived_configurations[configuration] + ' OOM guest; complete original source/tool/object closure'}
 
 
 def development_guest(data,workload,directory,guest_build,mode=None,*,source_root=None):
