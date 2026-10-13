@@ -109,10 +109,16 @@ class MathChecker(Checker):
     def reuse_live(self):
         origin=self.args.durable_suffix_from.resolve()
         report=json.loads((origin/'result.json').read_text())
+        archive_startup=(report.get('error')=='public session exited before readiness; see cold.log')
         require(report['schema']=='lemmasim-guest-exact-course-observations/1' and
                 report['profile']==self.profile and report['status']=='FAIL' and
-                report['error']=='closing course lost original full ink display',
-                'suffix requires the retained specific footer-observer failure')
+                (report['error']=='closing course lost original full ink display' or archive_startup),
+                'suffix requires a retained specific footer or pre-CPU source-validation failure')
+        if archive_startup:
+            require((origin/'cold.log').read_text()=='FAIL: RTL guest source snapshot differs from exact inputs\n' and
+                    sha(origin/'cold.log')==report['artifacts']['cold.log']['sha256'] and
+                    not (origin/'cold'/'session.json').exists(),
+                    'retained cold failure was not the exact pre-CPU source-validation rejection')
         require(report['medium_source']['sha256']==sha(self.args.disk),
                 'suffix original medium differs')
         for name in ('verified.ppm','course-final.ppm','closed-course.ppm','ink-baseline.ppm','live/uart-0.bin'):
@@ -122,11 +128,15 @@ class MathChecker(Checker):
         require(sha(original_observer)==report['observer_sources']['scripts/check_math_session.py'],
                 'retained original observer identity differs')
         rows=guest_events(origin/'live/uart-0.bin')
+        acknowledgements=[row for row in rows if row[0]==0x421]
+        closed=(rows[-1]==(0x458,0,0,0,0) if archive_startup else rows[-1][0]==0x421)
         require(not any(row[0] in (0xf4,0xd4,0x454,0x41f) for row in rows) and
-                rows[-1][0]==0x421 and rows[-1][4]==0x8001,
+                acknowledgements and closed and acknowledgements[-1][4]==0x8001,
                 'retained guest did not acknowledge actual final mathematical bytes')
         _,verified,_,_=self.record(origin/'verified.raw')
         final_bytes,final,records,_=self.record(origin/'closed-course.raw')
+        require(acknowledgements[-1]==(0x421,records[1,0x8001].sequence,1,1,0x8001),
+                'retained acknowledgement is not the current durable mathematical transaction')
         require(verified==report['verified'] and final==report['final_record'] and
                 [entry['outcome'] for entry in final['history']]==[1,2,5,1,4] and final['hints']==1,
                 'retained actual semantic workflow differs')
@@ -138,11 +148,27 @@ class MathChecker(Checker):
                 'retained actual raw ink changed')
         self.label(origin/'verified.ppm','VERIFIED',24,260)
         self.label(origin/'course-final.ppm','UNSUPPORTED',24,260)
-        self.label(origin/'ink-baseline.ppm','PENDING',24,132)
+        self.label(origin/'ink-baseline.ppm','SAVED' if archive_startup else 'PENDING',24,132)
         self.label(origin/'closed-course.ppm','SAVED',24,132)
         width,height,before_pixels=visible_pixels(origin/'ink-baseline.ppm')
         observed_width,observed_height,after_pixels=visible_pixels(origin/'closed-course.ppm')
         require((width,height)==(observed_width,observed_height),'retained panel dimensions differ')
+        if archive_startup:
+            require(before_pixels==after_pixels,'retained closing changed complete controller pixels')
+            requests=[row for row in rows if row[0]==0x459]
+            replies=[row for row in rows if row[0]==0x455]
+            metadata=final['execution']['history'][:final['attempts']]
+            require(len(requests)==len(replies)==len(metadata)==5,
+                    'retained isolated authority request/reply count differs')
+            for attempt,entry,request,reply in zip(final['history'],metadata,requests,replies):
+                require((request[1],request[2],request[3])==(entry['request'],attempt['revision'],attempt['goal']) and
+                        (reply[1],reply[2],reply[3],reply[4])==(entry['request'],attempt['revision'],0,attempt['outcome']) and
+                        entry['budget']==attempt['budget'] and entry['status']==0,
+                        'retained isolated reply is not bound to actual submission and resource outcome')
+            require(report.get('execution_identity',{}).get('status')=='PASS',
+                    'retained startup failure lacks its observed exact execution identity')
+            self.report['execution_identity']=report['execution_identity']
+            self.report['saved_status_publication']=report['saved_status_publication']
         for y in range(height):
             if 132<=y<148:
                 require(before_pixels[y*width*3:(y*width+24)*3]==after_pixels[y*width*3:(y*width+24)*3] and
@@ -155,9 +181,11 @@ class MathChecker(Checker):
             self.report[key]=report[key]
         self.report['reused_acknowledged_workflow']={'path':str(origin),'result_sha256':sha(origin/'result.json'),
             'original_status':'FAIL','original_failure':report['error'],
-            'independent_correction':'Actual original panel still showed PENDING; actual closed panel shows SAVED. '
+            'independent_correction':('The new cold CPU uses the explicit immutable matched guest bundle. '
+                'All original controller pixels, isolated request/revision/outcome identities and acknowledged bytes are independently rechecked.' if archive_startup else
+                'Actual original panel still showed PENDING; actual closed panel shows SAVED. '
                 'All pixels outside the status text and all raw ink bytes match exactly. '
-                'Verified/unsupported pixels and all immutable mathematical history are independently rechecked.'}
+                'Verified/unsupported pixels and all immutable mathematical history are independently rechecked.')}
         return sha(self.args.disk),origin/'closed-course.ppm',origin/'closed-course.raw',final_bytes,origin/'course-final.ppm'
 
     def live_workflow(self):

@@ -79,4 +79,29 @@ class LaboratoryArchiveBoundary(unittest.TestCase):
             self.assertIsInstance(args.guest_source_root,Path)
             json.dumps(checker.report)
 
+class CanonicalArchiveBoundary(unittest.TestCase):
+    def test_other_profile_or_role_cannot_reach_archive_io(self):
+        for profile,role in [('lemma-silicon-dev/0.8.0','notebook'),
+                             (PROFILE,'service'),(PROFILE,'initializer-any')]:
+            with self.subTest(profile=profile,role=role),self.assertRaisesRegex(ValueError,'profile0.3 notebook or initializer'):
+                bundle.canonical_guest_archive('/missing','/missing',profile,role)
+
+    def test_failure_guest_wrong_role_and_freeform_configuration_reject_before_source_io(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base=Path(temporary)
+            for config in (CONFIG,STRING_CONFIG,'lemmasim-silicon-array-bulk-initialize',
+                           'lemmasim-silicon-array-bulk-notebook-any'):
+                (base/'build.json').write_text(json.dumps({'configuration':config}))
+                with self.subTest(configuration=config),self.assertRaisesRegex(ValueError,'exact ordinary deployment role'):
+                    bundle.canonical_guest_archive(base,'/missing',PROFILE,'notebook')
+
+    def test_admitted_normal_role_still_requires_original_complete_inventory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base=Path(temporary)/'guest';base.mkdir()
+            (base/'build.json').write_text(json.dumps({'configuration':'lemmasim-silicon-array-bulk-notebook'}))
+            (base/'audit.json').write_text('{}')
+            (base/'provenance.json').write_text(json.dumps({'source_inputs':{'Lemma.lean':'0'*64}}))
+            with self.assertRaisesRegex(ValueError,'original consumed inventory'):
+                bundle.canonical_guest_archive(base,'/missing',PROFILE,'notebook')
+
 if __name__=='__main__':unittest.main()

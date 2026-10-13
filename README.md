@@ -879,9 +879,11 @@ ensures `--native-bundle` is honored even when `--profile` is omitted.
 Store-v1 bytes, error handling and guest recovery while reducing aligned512-byte
 reads from512 byte accesses to64 checked word accesses. Fresh complete guest
 builds/audits and real fast-backend course/check/edit/hint/review/ink/Save/newcold/
-failed-save passed. Canonical RTL changed-source cold is still running; the whole
-Notebook also contains later shared String-support changes, so this is not an
-isolated boot-speed comparison. The prepared public initializer actually ran.
+failed-save passed. Changed canonical RTL actual cold Ready/full pixels now
+qualifies890Mcycles/3651.507731seconds, with the retained P5/P6 observer failure
+independently corrected. The whole Notebook also contains later shared String
+support, so this is not an isolated boot-speed comparison. The prepared public
+initializer actually ran.
 
 ```sh
 ./scripts/lemmasim init --backend qemu \
@@ -906,5 +908,57 @@ separate persistent policy4 peer recovered Saved5, exact bytes and every control
 pixel at680Mcycles/4353.814seconds, without formatting or republishing. The hosted
 lost-ACK case also restarts both client and peer and retains one durable effect.
 Full original notebook navigation/Save and full USB wire timing remain separate.
+
+### Prepared packed-course notebook
+
+[The packed course renderer](docs/evidence/006-course-word-rendering.json) preserves
+raw ink, revisions, exact isolated checking and glyphs. The same30 fast course
+interactions use9.557% fewer instruction-clock cycles. Actual course/edit/hint/
+acknowledged Save, independent cold/full pixels and unsuccessful Save qualify the
+prepared new guest. These commands use immutable audited source/tool/object
+archives; normal launch does not consult the changed checkout.
+
+```sh
+./scripts/lemmasim init --backend qemu \
+  --native-bundle build/native/task006-array-course-words-a1 \
+  --disk build/course-word-notebook-NEW.raw --session-dir build/course-word-init-NEW --timeout 120
+./scripts/lemmasim session --backend qemu \
+  --native-bundle build/native/task006-array-course-words-a1 \
+  --disk build/course-word-notebook-NEW.raw --session-dir build/course-word-session-NEW
+./scripts/lemmasim browser-serve --bundle build/browser/task006-array-course-words-a1 --port 8780
+nix develop --no-write-lock-file --command python3 scripts/check_course_renderer.py \
+  --work-dir build/course-word-component-NEW --timeout 300
+```
+
+Use COURSE in the guest notebook; edit the rational/polynomial fields, submit,
+request the authored bounded hint and Save. Hints are authored local assistance;
+the full proof kernel, immutable course packages and permissioned tutor remain
+unfinished. Native`--backend rtl` retains the exact digital execution path.
+Development ELF preload and QEMU instruction-clock scope remain explicit.
+New static guest packaging is qualified; its actual browser cold/workflow is
+pending. The earlier Array private browser course now has actual isolated
+Unsupported, OPFS Saved and native cold recovery of exported bytes; its original
+browser cold deadline FAIL remains. Browser Run bounded can pause after the next
+real completed panel scan. A course scan can complete before a pending Save;
+wait for the guest's Saved footer and durable receipt.
+
+To pack both already audited normal roles after sources advance:
+
+```sh
+./scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.3.0 \
+  --base-bundle build/native/task006-array-bulk-a1 \
+  --notebook-build build/kernel/task006-array-course-words-a2 \
+  --initializer-build build/kernel/task006-array-course-words-initialize-a1 \
+  --guest-source-root build/task006-array-course-word-source-archive-a1 \
+  --output-dir build/native/course-word-NEW
+```
+
+The complete original inventory, every source/artifact and pinned host-tool
+realization must validate. No archived source fallback is implicit. Local bundle
+notices retain unresolved redistribution and external Nix host dependencies.
+[Companion final Saved11](docs/evidence/006-usb8-final-saved11.json) also cold-recovers
+all actual edited/navigated bytes and full pixels on a new CPU/restarted persistent
+peer, without republishing. Full USB wire timing/PHY and unsuccessful final Save
+remain separate from this qualified transaction/recovery path.
 
 -->

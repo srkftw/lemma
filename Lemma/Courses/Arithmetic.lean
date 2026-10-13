@@ -131,11 +131,46 @@ def panelPixel (x y goal values displayState : UInt64) : UInt64 :=
       if (Lemma.Ink.Surface.letter code >>> (14 - (cellY / 3 * 3 + cellX / 3))) &&& 1 = 1 then 0 else 15
     else 15 else 15 else 15 else 15
 
+private def cachedPixel (position row first second : UInt64) : UInt64 :=
+  if row < 15 then if position % 12 < 9 then
+    let glyph := if position < 12 then first else second
+    if (glyph >>> (14 - (row / 3 * 3 + position % 12 / 3))) &&& 1 = 1 then 0 else 15
+  else 15 else 15
+
+private def cachedPair (position row first second : UInt64) : UInt64 :=
+  (cachedPixel position row first second <<< 4) ||| cachedPixel (position + 1) row first second
+
+/-- One little-endian word covers sixteen declared course pixels. The word
+starts at a multiple of sixteen, so it meets at most two twelve-pixel character
+cells. Glyph lookup happens once per cell rather than once per pixel. -/
+def panelWord (x y goal values displayState : UInt64) : UInt64 :=
+  if x ≤ 368 then if x % 16 = 0 then if y < 160 then
+    let first := Lemma.Ink.Surface.letter (panelCharacter (y / 20) (x / 12) goal values displayState)
+    let second := Lemma.Ink.Surface.letter (panelCharacter (y / 20) (x / 12 + 1) goal values displayState)
+    let start := x % 12
+    let row := y % 20
+    cachedPair start row first second |||
+    (cachedPair (start + 2) row first second <<< 8) |||
+    (cachedPair (start + 4) row first second <<< 16) |||
+    (cachedPair (start + 6) row first second <<< 24) |||
+    (cachedPair (start + 8) row first second <<< 32) |||
+    (cachedPair (start + 10) row first second <<< 40) |||
+    (cachedPair (start + 12) row first second <<< 48) |||
+    (cachedPair (start + 14) row first second <<< 56)
+  else 0xffffffffffffffff else 0xffffffffffffffff else 0xffffffffffffffff
+
+private def renderByteStep (i _ : UInt32) (acc address word _ _ : UInt64) : Action :=
+  .bind (Memory.write8 (address + i.toUInt64) ((word >>> (i.toUInt64 * 8)) &&& 255)) fun s _ => .done s acc
+
 private def renderStep (i _ : UInt32) (acc width goal values displayState : UInt64) : Action :=
-  let x := (i.toUInt64 % 192) * 2
-  let y := i.toUInt64 / 192
-  let packed := (panelPixel x y goal values displayState <<< 4) ||| panelPixel (x + 1) y goal values displayState
-  .bind (Memory.write8 (Lemma.Ink.Surface.framebuffer + (160 + y) * ((width + 1) / 2) + 12 + x / 2) packed) fun s _ => .done s acc
+  let x := (i.toUInt64 % 24) * 16
+  let y := i.toUInt64 / 24
+  let word := panelWord x y goal values displayState
+  let address := Lemma.Ink.Surface.framebuffer + (160 + y) * ((width + 1) / 2) + 12 + x / 2
+  if address &&& 7 = 0 then
+    .bind (Memory.write64 address word) fun s _ => .done s acc
+  else
+    .boundedFoldU64 8 renderByteStep 8 acc address word 0 0 fun s value => .done s value
 
 def render (buffer width : UInt64) : Action :=
   .bind (Mathematics.field buffer 48) fun s goal => if bad s = true then .done s 0 else
@@ -149,7 +184,7 @@ def render (buffer width : UInt64) : Action :=
   .bind (Mathematics.field buffer 40) fun s revision => if bad s = true then .done s 0 else
   .bind (Mathematics.field buffer 144) fun s attempts => if bad s = true then .done s 0 else
   .bind (Review.summary buffer) fun s review => if bad s = true then .done s 0 else
-  .boundedFoldU64 30720 renderStep 30720 0 width goal
+  .boundedFoldU64 3840 renderStep 3840 0 width goal
     (n ||| (d <<< 7) ||| (p0 <<< 14) ||| (p1 <<< 21) ||| (p2 <<< 28))
     (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
 

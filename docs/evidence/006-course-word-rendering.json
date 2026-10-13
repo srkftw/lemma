@@ -1,0 +1,477 @@
+{
+  "schema": "lemma-course-packed-render-integration/1",
+  "status": "PASS_GENUINE_COMPONENT_LIVE_FAST_COURSE_SAVE_INDEPENDENT_COLD_AND_FAILURE",
+  "scope": "Genuinely elaborated Lean Gray4 rendering; same records/raw ink/glyphs/checker authority. QEMU functional instruction-clock scope. No full language/runtime, proof kernel, G5\u2013G7, or new RTL/Wasm cold claim.",
+  "algorithm": {
+    "pixels_per_word": 16,
+    "cached_glyphs_max": 2,
+    "prior_glyph_calls": 16,
+    "roi": [
+      384,
+      160
+    ],
+    "groups": 3840,
+    "prior_byte_groups": 30720,
+    "aligned": "Checked LE write64; word wholly within a page.",
+    "unaligned": "Original ordered eight checked byte writes; canonical825-byte row stride preserved.",
+    "error": "First failed checked operation stops fold; no panel publication before completed render."
+  },
+  "component": {
+    "status": "PASS_GENUINE_COMPONENT",
+    "host_seconds": 21.457076627004426,
+    "tools": {
+      "lean": "Lean (version 4.34.1, Release)",
+      "lake": "Lake version 5.0.0-src (Lean version 4.34.1)",
+      "opt": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake",
+      "llc": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore",
+      "llvm-nm": "llvm-nm, compatible with GNU nm\nLLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.",
+      "llvm-readelf": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build."
+    },
+    "source_functions": 21,
+    "exact_word_cases": 92160,
+    "exact_scalar_pixels": 1474560,
+    "invalid_geometries": 5,
+    "target_execution": "NOT_RUN_BY_COMPONENT_CHECK"
+  },
+  "whole_guests": {
+    "source_commit": "07402f56285964a561a26ee0bb6c438d56c49a1e",
+    "complete_consumed_inputs": 303,
+    "notebook": {
+      "path": "build/kernel/task006-array-course-words-a2/image.elf",
+      "bytes": 598696,
+      "sha256": "10ad4d66e1122e0920aa5fd39c50d18eb397b830fd6278417710e5de84770aa4"
+    },
+    "initializer": {
+      "path": "build/kernel/task006-array-course-words-initialize-a1/image.elf",
+      "bytes": 598704,
+      "sha256": "105704070dbb6d1914093d56a439121600054a46875414ea45965abe35d4c9f3"
+    },
+    "strict_audits": "Both PASS; exact303 source inventories equal; original dirty paths retained."
+  },
+  "live_guest": {
+    "original_status": "FAIL",
+    "original_failure": "public session exited before readiness; see cold.log",
+    "boot": {
+      "virtual_seconds": 2.650000016,
+      "host_seconds": 4.977973721048329,
+      "cycle": 265000002
+    },
+    "isolated_identity": {
+      "status": "PASS",
+      "format_bytes": 2496,
+      "actual_isolated_requests": 5,
+      "actual_request_revision_outcome_bound": true,
+      "known_attempts": 5,
+      "origin": "IsolatedArray",
+      "protocol": 5,
+      "identity_kind": "closed implementation-version authority; not artifact hash",
+      "semantic_and_heap_resources_separate": true
+    },
+    "outcomes": [
+      1,
+      2,
+      5,
+      1,
+      4
+    ],
+    "assistance": 1,
+    "edited_applicability": {
+      "status": "PASS",
+      "active_unknown": true,
+      "old_attempt_identity_preserved": true,
+      "actual_durable_guest_record": true
+    },
+    "saved_publication": {
+      "status": "PASS",
+      "observed_pending_after_barrier": true,
+      "before_completed": 36,
+      "after_completed": 37,
+      "virtual_ticks": 500000,
+      "acknowledged_math_unchanged": true,
+      "original_action_seconds": 30
+    },
+    "cold_failure": "Sources advanced after live session. Strict public launcher rejected before starting cold CPU."
+  },
+  "independent_suffix": {
+    "status": "PASS",
+    "elapsed_seconds": 23.35319861298194,
+    "cold_boot": {
+      "virtual_seconds": 3.450000008,
+      "host_seconds": 5.656360029010102,
+      "cycle": 345000001
+    },
+    "cold_recovery": {
+      "status": "PASS",
+      "actual_new_cpu": true,
+      "math_sha256": "166df5c003aae18819fa1fdf6efac059c434cf9c12fd6b7caa5a491939546b9a",
+      "complete_controller_pixels": true,
+      "raw_ink_preserved": true
+    },
+    "failed_save": {
+      "status": "PASS",
+      "no_false_saved": true,
+      "acknowledged_math_unchanged": true,
+      "actual_failed_controller_label": true,
+      "completed": 4
+    },
+    "reused_acknowledged_workflow": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/task006-array-course-words-math-a1",
+      "result_sha256": "d943d67fbde33fdca134320c693c0cae8dabff34afb7fa4a72464f8a4a0e46e0",
+      "original_status": "FAIL",
+      "original_failure": "public session exited before readiness; see cold.log",
+      "independent_correction": "The new cold CPU uses the explicit immutable matched guest bundle. All original controller pixels, isolated request/revision/outcome identities and acknowledged bytes are independently rechecked."
+    }
+  },
+  "same_cold_guest_identity": true,
+  "all_suffix_owners_reaped": true,
+  "comparable_performance": {
+    "scope": "Same QEMU instruction-clock backend and same first30 raw-event/course/check/Save actions; closed-course redraw excluded. Not RTL pipeline timing or isolated simulator-host speedup.",
+    "summary": {
+      "matched_actions": 30,
+      "old_total": 1423000170,
+      "new_total": 1287000171,
+      "old_host_total": 98.85034888418159,
+      "new_host_total": 88.30036338913487,
+      "old_open": 48000005,
+      "new_open": 43000006,
+      "old_guest": "97df1eaf3feaccea315f7d8fd21805ca9336d8100fb7e977a35e112628fc0183",
+      "new_guest": "10ad4d66e1122e0920aa5fd39c50d18eb397b830fd6278417710e5de84770aa4",
+      "same_backend": true
+    },
+    "rows": [
+      {
+        "name": "open original course",
+        "old": 48000005,
+        "new": 43000006,
+        "reduction": 4999999
+      },
+      {
+        "name": "edit numerator +1",
+        "old": 47000006,
+        "new": 43000005,
+        "reduction": 4000001
+      },
+      {
+        "name": "edit numerator +1",
+        "old": 47000004,
+        "new": 43000005,
+        "reduction": 3999999
+      },
+      {
+        "name": "edit numerator +1",
+        "old": 47000006,
+        "new": 42000006,
+        "reduction": 5000000
+      },
+      {
+        "name": "edit numerator +1",
+        "old": 48000005,
+        "new": 43000005,
+        "reduction": 5000000
+      },
+      {
+        "name": "edit numerator +1",
+        "old": 47000005,
+        "new": 42000005,
+        "reduction": 5000000
+      },
+      {
+        "name": "select denominator",
+        "old": 47000005,
+        "new": 43000005,
+        "reduction": 4000000
+      },
+      {
+        "name": "edit denominator +1",
+        "old": 47000005,
+        "new": 43000005,
+        "reduction": 4000000
+      },
+      {
+        "name": "edit denominator +1",
+        "old": 47000005,
+        "new": 42000007,
+        "reduction": 4999998
+      },
+      {
+        "name": "edit denominator +1",
+        "old": 47000006,
+        "new": 43000005,
+        "reduction": 4000001
+      },
+      {
+        "name": "edit denominator +1",
+        "old": 47000007,
+        "new": 42000006,
+        "reduction": 5000001
+      },
+      {
+        "name": "edit denominator +1",
+        "old": 48000006,
+        "new": 43000006,
+        "reduction": 5000000
+      },
+      {
+        "name": "check actual 5/6",
+        "old": 49000006,
+        "new": 45000006,
+        "reduction": 4000000
+      },
+      {
+        "name": "explicit authored local hint",
+        "old": 47000006,
+        "new": 42000005,
+        "reduction": 5000001
+      },
+      {
+        "name": "edit answer invalidates applicability",
+        "old": 47000006,
+        "new": 43000005,
+        "reduction": 4000001
+      },
+      {
+        "name": "check actual invalid 5/7",
+        "old": 49000006,
+        "new": 44000005,
+        "reduction": 5000001
+      },
+      {
+        "name": "bounded resource zero",
+        "old": 47000004,
+        "new": 42000007,
+        "reduction": 4999997
+      },
+      {
+        "name": "check Indeterminate",
+        "old": 48000006,
+        "new": 44000006,
+        "reduction": 4000000
+      },
+      {
+        "name": "next polynomial goal",
+        "old": 47000006,
+        "new": 43000005,
+        "reduction": 4000001
+      },
+      {
+        "name": "restore arithmetic budget",
+        "old": 48000006,
+        "new": 43000006,
+        "reduction": 5000000
+      },
+      {
+        "name": "select polynomial constant",
+        "old": 47000006,
+        "new": 42000007,
+        "reduction": 4999999
+      },
+      {
+        "name": "constant +1",
+        "old": 47000006,
+        "new": 43000006,
+        "reduction": 4000000
+      },
+      {
+        "name": "select polynomial linear term",
+        "old": 47000006,
+        "new": 43000006,
+        "reduction": 4000000
+      },
+      {
+        "name": "linear +1",
+        "old": 48000006,
+        "new": 42000005,
+        "reduction": 6000001
+      },
+      {
+        "name": "linear +1",
+        "old": 47000007,
+        "new": 43000006,
+        "reduction": 4000001
+      },
+      {
+        "name": "select polynomial quadratic term",
+        "old": 47000005,
+        "new": 42000006,
+        "reduction": 4999999
+      },
+      {
+        "name": "quadratic +1",
+        "old": 47000004,
+        "new": 43000006,
+        "reduction": 3999998
+      },
+      {
+        "name": "check actual polynomial identity",
+        "old": 49000006,
+        "new": 44000006,
+        "reduction": 5000000
+      },
+      {
+        "name": "next unsupported goal",
+        "old": 47000007,
+        "new": 43000006,
+        "reduction": 4000001
+      },
+      {
+        "name": "check Unsupported",
+        "old": 48000006,
+        "new": 44000006,
+        "reduction": 4000000
+      }
+    ]
+  },
+  "distribution": {
+    "native": {
+      "path": "build/native/task006-array-course-words-a1/bundle.json",
+      "bytes": 521022,
+      "sha256": "82b08746e4b867e0ee990d1e8340e7fe427778b82388902499d2b72bafd53151"
+    },
+    "native_files": 746,
+    "static_browser": {
+      "path": "build/browser/task006-array-course-words-a1/bundle.json",
+      "bytes": 90139,
+      "sha256": "d512cabad96db1ae4e158b55eda4a116e3098869f8ab8991d66faed7f97d1599"
+    },
+    "browser_files": 261,
+    "browser_execution": "New guest NOT_RUN. Existing same reusable RTL Machine Wasm core; older Array browser private course separately has actual isolated Unsupported and OPFS Saved.",
+    "archive_admission": {
+      "path": "build/task006-course-word-archive-mutants-a1/result.json",
+      "bytes": 16963,
+      "sha256": "f8a7a0515976978284e9c4af3ed1fdbbc5843b5859d0b6612c4ecf0fb9242372"
+    },
+    "initializer": {
+      "status": "ACKNOWLEDGED_GUEST_INITIALIZATION",
+      "scope": "guest initialization, not host formatting",
+      "medium": "/home/sreekumaar/Downloads/lemma/build/task006-store-checksum-words-a1/course-word-new.raw",
+      "identity": {
+        "backend": "qemu",
+        "profile": "lemma-silicon-dev/0.3.0",
+        "runtime": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+        "adapter": "lemmasim-fast-adapter/4",
+        "derivation": "b62381b4e97debdd8652052f7a5bea10666d4c97eea0af3d6600a8481701440f",
+        "guest": "105704070dbb6d1914093d56a439121600054a46875414ea45965abe35d4c9f3",
+        "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+        "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+        "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+        "icount_shift": 3
+      },
+      "guest_ack": "K1 000000000000041f 0000000000000000 0000000000000000 0000000000000000 0000000000000000",
+      "cycle": 24000001,
+      "elapsed_seconds": 0.8503422269714065,
+      "medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+    },
+    "license": "Local prepared development artifacts and pinned external Nix dependencies; project redistribution license unresolved."
+  },
+  "retained_failures": [
+    "First whole image rejected source change; new stable303 builds/audits qualified.",
+    "Original fast workflow rejected later cold launch before CPU on source mismatch.",
+    "First suffix incorrectly required final421 instead of actual close458; retained. Corrected guard independently binds durable421 sequence to actual record and close.",
+    "Archive host fixture expectedFileNotFound instead of validValueError; corrected expectation passes8.",
+    "Browser pack a1 omitted required wasm-build; a2 supplied static instead of native archive; a3 qualified.",
+    "Node invocation omitted experimental-vm-modules; correct flags and seven browser host tests passed."
+  ],
+  "artifacts": {
+    "Lemma/Courses/Arithmetic.lean": {
+      "path": "Lemma/Courses/Arithmetic.lean",
+      "bytes": 16573,
+      "sha256": "324964251acaf3d72cc16bde60e777fffeb32f7aa6c608099585754335faa65c"
+    },
+    "tests/course/PackedRender.lean": {
+      "path": "tests/course/PackedRender.lean",
+      "bytes": 3815,
+      "sha256": "3ec6e99ab6c5765d2215dc90e64098e7e8988014e3fb9800d97c5274e54518c2"
+    },
+    "scripts/check_course_renderer.py": {
+      "path": "scripts/check_course_renderer.py",
+      "bytes": 6135,
+      "sha256": "0b14ebd86221620b02b153a630ec6e205e62a7729261593e849f6f60e08d3194"
+    },
+    "scripts/check_math_session.py": {
+      "path": "scripts/check_math_session.py",
+      "bytes": 29174,
+      "sha256": "c6e7c6262eed8ae2d4811fd2ec1c6a584be91000389a6aa7fcb7a1dd2d851a78"
+    },
+    "scripts/silicon_guest_bundle.py": {
+      "path": "scripts/silicon_guest_bundle.py",
+      "bytes": 53719,
+      "sha256": "adf74abcd100b0857edcc1cbf434ea0f26856cdc230807ec22ec10d0fc3c8800"
+    },
+    "build/task006-course-word-component-a1/result.json": {
+      "path": "build/task006-course-word-component-a1/result.json",
+      "bytes": 10975,
+      "sha256": "1be0107d063ba66a12459043cc53e653679ae3ea48397b35e9f6ff0d5d946926"
+    },
+    "build/kernel/task006-array-course-words-a1/build-failure.json": {
+      "path": "build/kernel/task006-array-course-words-a1/build-failure.json",
+      "bytes": 22588,
+      "sha256": "c2aff62bc2f9003516b7174cbe82dd092aba335e7be4d806a6092d2d2ae7e5b3"
+    },
+    "build/kernel/task006-array-course-words-a2/provenance.json": {
+      "path": "build/kernel/task006-array-course-words-a2/provenance.json",
+      "bytes": 90294,
+      "sha256": "6e7abbd452f62be143b2e265a1db3719e8b431881a753d2127a9a7c91b23bc9d"
+    },
+    "build/kernel/task006-array-course-words-a2/audit.json": {
+      "path": "build/kernel/task006-array-course-words-a2/audit.json",
+      "bytes": 3693935,
+      "sha256": "2b366807b608446525df59f751da954bcf21f4514fb49ee352811fa686ce1ce7"
+    },
+    "build/kernel/task006-array-course-words-initialize-a1/provenance.json": {
+      "path": "build/kernel/task006-array-course-words-initialize-a1/provenance.json",
+      "bytes": 90697,
+      "sha256": "e69ee4b72d5786e944320b42f2ddea7c8e38e69338fdc708160fd23012ed4191"
+    },
+    "build/kernel/task006-array-course-words-initialize-a1/audit.json": {
+      "path": "build/kernel/task006-array-course-words-initialize-a1/audit.json",
+      "bytes": 3694851,
+      "sha256": "aaffa48ed9ce896596b44ee641d28db7b270bd71f067928474fa024504277177"
+    },
+    "build/task006-array-course-word-source-archive-a1/source-inputs.json": {
+      "path": "build/task006-array-course-word-source-archive-a1/source-inputs.json",
+      "bytes": 32435,
+      "sha256": "fdeaf605116b7b968b258bfd6663cc57c0017f3cdb49ed116d34b6b7af0cb582"
+    },
+    "build/task006-array-course-words-math-a1/result.json": {
+      "path": "build/task006-array-course-words-math-a1/result.json",
+      "bytes": 23789,
+      "sha256": "d943d67fbde33fdca134320c693c0cae8dabff34afb7fa4a72464f8a4a0e46e0"
+    },
+    "build/task006-array-course-words-math-a1/original-check_math_session.py": {
+      "path": "build/task006-array-course-words-math-a1/original-check_math_session.py",
+      "bytes": 26658,
+      "sha256": "f2586009d1639a01cdf71cc324eac1e48cb76a60cbc692789cdbbad488ad1e57"
+    },
+    "build/task006-array-course-words-math-suffix-a1/result.json": {
+      "path": "build/task006-array-course-words-math-suffix-a1/result.json",
+      "bytes": 2532,
+      "sha256": "9c5ced19bb8a6f07a7c857c216080a82b7497f9a45077e558cef42bb8c47b399"
+    },
+    "build/task006-array-course-words-math-suffix-a2/result.json": {
+      "path": "build/task006-array-course-words-math-suffix-a2/result.json",
+      "bytes": 25807,
+      "sha256": "f5d2a7f43cbc1f0165809a2e7979593860dbce5d648f417e5268374d4b142cb7"
+    },
+    "build/task006-course-word-archive-mutants-a1/result.json": {
+      "path": "build/task006-course-word-archive-mutants-a1/result.json",
+      "bytes": 16963,
+      "sha256": "f8a7a0515976978284e9c4af3ed1fdbbc5843b5859d0b6612c4ecf0fb9242372"
+    },
+    "build/native/task006-array-course-words-a1/bundle.json": {
+      "path": "build/native/task006-array-course-words-a1/bundle.json",
+      "bytes": 521022,
+      "sha256": "82b08746e4b867e0ee990d1e8340e7fe427778b82388902499d2b72bafd53151"
+    },
+    "build/browser/task006-array-course-words-a1/bundle.json": {
+      "path": "build/browser/task006-array-course-words-a1/bundle.json",
+      "bytes": 90139,
+      "sha256": "d512cabad96db1ae4e158b55eda4a116e3098869f8ab8991d66faed7f97d1599"
+    },
+    "build/task006-store-checksum-words-a1/course-word-new-init-a1/result.json": {
+      "path": "build/task006-store-checksum-words-a1/course-word-new-init-a1/result.json",
+      "bytes": 1170,
+      "sha256": "a4e6818fc63b0440c573a1f0047c3897d699874867898bf708a3315ef0292d86"
+    }
+  },
+  "remaining": "New CourseWord actual canonical RTL/Wasm cold/course/Save/reload; immutable packages, permissioned tutor, proof kernel and full runtime."
+}

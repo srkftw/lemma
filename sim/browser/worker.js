@@ -43,6 +43,7 @@ function admitRaw(text){if(replayUntil!==null)throw Error('Offline replay accept
 function step(){if(!running)return;try{
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const before=state(),cycle=uint64(before.cycle);
+ if(budget?.panelCompleted(before)){pause('panel-complete');panel(true);sendState();return;}
  let quantum=budget?budget.quantum(before.cycle):50000n;
  if(budget?.stopOnReady&&observeReady()){pause('guest-ready');panel(true);sendState();return;}
  if(replayUntil!==null){const left=uint64(replayUntil)-cycle;if(left<=0n){pause('replay-limit');panel(true);sendState();return;}if(left<quantum)quantum=left;}
@@ -57,6 +58,7 @@ function step(){if(!running)return;try{
  const data=(periodic||initializing||budget?.stopOnReady)?core.FS.readFile('/uart.bin'):null;
  if(data)observeReady(data);
  if(budget?.remaining===0n){pause('cycle-limit');panel(true);sendState();return;}
+ if(budget?.panelCompleted(after)){pause('panel-complete');panel(true);sendState();return;}
  if(budget?.stopOnReady&&readyAt!==null){pause('guest-ready');panel(true);sendState();return;}
  if(replayUntil!==null&&uint64(after.cycle)>=uint64(replayUntil)){pause('replay-limit');panel(true);sendState();return;}
  if(initializing&&guestRecord(data,guestOutputStart,'000000000000041f')){
@@ -138,7 +140,8 @@ onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage 
  if(m.action==='pause'){pause('user');sendState();}
  else if(m.action==='resume'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');budget=null;pauseReason=null;running=true;scheduleStep();}
  else if(m.action==='run'){if(!backingReady)throw Error('Private origin backing is incomplete; retry binding before continuing');
-  const next=new RunBudget(state().cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null);pause(null);budget=next;running=true;sendState();scheduleStep();}
+  if(m.stopOnPanel!==undefined&&typeof m.stopOnPanel!=='boolean')throw Error('Panel stop must be a boolean');
+  const initial=state(),next=new RunBudget(initial.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?initial.panel_completed:null);pause(null);budget=next;running=true;sendState();scheduleStep();}
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}

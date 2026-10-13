@@ -21,7 +21,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  ccall(name,_return,_types,args=[]){calls.push([name,...args]);switch(name){
   case 'lemma_create':case 'lemma_create_mode':current=generation++===0?cycle:0n;finished=false;return 0;
   case 'lemma_destroy':return undefined;
-  case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"finished":${finished}}`;
+  case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"paper_busy":${paper.busy??0},"panel_power":${paper.power??0},"finished":${finished}}`;
   case 'lemma_paper_inspect':return JSON.stringify(paper);
   case 'lemma_run':{const n=BigInt(args[0]);assert(n>0n&&n<=50000n);current+=n;now+=5;core.backing.read(new Uint8Array(1),{at:0});return onRun?.({n,current,generation,setUART:x=>{uart=x;},setPaper:x=>{paper=x;},setCycle:x=>{current=x;},finish:()=>{finished=true;}})??0;}
   case 'lemma_event':events.push(args[0]);return 0;
@@ -109,6 +109,22 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  await f.send('run',{cycles:'100001',stopOnReady:true});await f.drain();assert.equal(f.state().pauseReason,'cycle-limit');assert.equal(f.state().readyAt,null);
 }
 // Actual initializer transition retains the total budget across clock reset.
+// Full-width panel counters and scan/power completion are load-bearing.
+// An old completed scan, a busy scan or a late deadline never satisfies it.
+{
+ let runs=0;const f=await fixture({onRun:({setPaper})=>{runs++;setPaper({completed:String(9007199254740993n+(runs>=2?1n:0n)),accepted:'0',busy:runs<3?'1':'0',power:runs<4?'1':'0'});}});
+ f.setPaper({completed:'9007199254740993',accepted:'0',busy:'0',power:'0'});
+ await f.send('run',{cycles:'300000',stopOnPanel:true});await f.drain();assert.equal(runs,4);
+ assert.equal(f.state().pauseReason,'panel-complete');assert.equal(f.state().budget.panelBoundary,'9007199254740993');
+ assert.equal(f.state().budget.used,'200000');assert.equal(f.state().budget.remaining,'100000');
+ const boundary=f.cycle();await f.send('snapshot');assert.equal(f.cycle(),boundary);assert.equal(f.timers.size,0);
+ await f.send('run',{cycles:'1',stopOnPanel:true});await f.drain();assert.equal(f.cycle(),boundary+1n);assert.equal(f.state().pauseReason,'cycle-limit');
+ await f.send('run',{cycles:'1',stopOnPanel:'true'});assert.equal(f.timers.size,0);assert.match(f.messages.at(-1).error,/Panel stop/);
+}
+{
+ let f;f=await fixture({cycle:0n,onRun:({setPaper})=>{f.advanceWall(1000);setPaper({completed:'1',accepted:'1',busy:'0',power:'0'});}});
+ await f.send('run',{cycles:'100001',hostSeconds:'1',stopOnPanel:true});await f.drain();assert.equal(f.cycle(),50000n);assert.equal(f.state().pauseReason,'host-limit');assert.equal(f.state().budget.remaining,'50001');
+}
 {
  let f;f=await fixture({cycle:0n,initialize:true,onRun:({generation,setUART,finish})=>{if(generation===1){f.advanceWall(600);setUART(record(0x41f));finish();}}});
  await f.send('run',{cycles:'150000',hostSeconds:'1'});await f.tick();await f.tick();
@@ -144,8 +160,9 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const document={querySelector:node,querySelectorAll:()=>actions,createElement:()=>({click(){downloads.push(this.download);}})};
  const context=vm.createContext({document,navigator:{},Worker:class{constructor(){appWorker=this;}postMessage(m){sent.push(m);}},URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console});
  const app=new vm.SourceTextModule(await fs.readFile('sim/browser/app.js','utf8'),{context});await app.link(()=>{throw Error('unexpected app import');});await app.evaluate();
- node('#run-cycles').value='18446744073709551615';node('#stop-ready').checked=true;node('#run-bounded').onclick();
+ node('#run-cycles').value='18446744073709551615';node('#stop-ready').checked=true;node('#stop-panel').checked=true;node('#run-bounded').onclick();
  assert.equal(sent.at(-1).action,'run');assert.equal(sent.at(-1).cycles,String(MAX));assert.equal(typeof sent.at(-1).cycles,'string');assert.equal(sent.at(-1).stopOnReady,true);
+ assert.equal(sent.at(-1).stopOnPanel,true);
  assert.equal(sent.at(-1).hostSeconds,null);node('#run-seconds').value='7200';node('#run-bounded').onclick();assert.equal(sent.at(-1).hostSeconds,'7200');
  for(const action of ['events','capture-outcomes']){actions.find(n=>n.dataset.action===action).onclick();assert.equal(sent.at(-1).action,action);}
  appWorker.onmessage({data:{type:'export',name:'lemma-events.json',bytes:encoder.encode('{}')}});assert.deepEqual(downloads,['lemma-events.json']);

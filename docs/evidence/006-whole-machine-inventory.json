@@ -646,10 +646,10 @@
     },
     {
       "path": "docs/evidence/006-store-checksum-words.json",
-      "bytes": 7411,
-      "sha256": "270b80c8ca7b7e86923e32abddf69cf06b36438f03295f7ca7070c25516a8a7a",
-      "status": "PASS_COMPONENT_AND_FAST_GUEST_RTL_PENDING",
-      "scope": "Fresh genuine293-source guest closure and actual fast workflow; changed canonical RTL cold pending"
+      "bytes": 8211,
+      "sha256": "dba016065b23d86a92e9b5c68357b69c37666eb90d40ede0c5e2a43c5c1636fd",
+      "status": "PASS_COMPONENT_FAST_AND_ACTUAL_RTL_COLD_WITH_OBSERVER_CORRECTION",
+      "scope": "Real Lean Store checksum batching, unchanged durable v1 format; genuine source/LLVM/object and complete fast guest mathematics/ink/Save/newcold/failure qualification. Canonical RTL changed-source cold and new browser deployment are separate obligations."
     },
     {
       "path": "docs/evidence/006-companion-acknowledged-boundary.json",
@@ -667,13 +667,55 @@
     },
     {
       "path": "docs/evidence/006-ci-string-catalog-repair.json",
-      "bytes": 3925,
-      "sha256": "4834849c4217cc38fe6fd41ca4b7901194a46cc1eff32d6a2c7f4b8334986a6f",
-      "status": "FAILURE_RETAINED_LOCAL_HOST_REPAIR",
-      "scope": "Actual2c CI8PASS/2FAIL and skipped work retained; local401kernelhosts corrected, no newCIclaim"
+      "bytes": 6912,
+      "sha256": "0efc0ac994a0e7fe78fcd907e295827f0061ce8d5fdaafa3c4339d175793a8b6",
+      "status": "OBSERVED_IN_SCOPED_RECEIPT",
+      "scope": "Original source/execution identities and qualified partial scopes; unfinished gates remain."
+    },
+    {
+      "path": "docs/evidence/006-canonical-checksum-cold.json",
+      "bytes": 4582,
+      "sha256": "e17e614163a5b1168f58375c9dcb36d4d5726d8598ee2e52cda1b1191c8c9f77",
+      "status": "PASS_ACTUAL_COLD_READY_MEDIA_AND_ALL_PIXELS_WITH_OBSERVER_CORRECTION",
+      "scope": "Fresh canonical128MiB/8192-frame/1650x2200 RTL CPU, development ELF preload and real guest recovery. No new RTL pen/edit/Save or product boot claim. Original observer FAIL retained; independent full pixels and process lifetime qualify that retained execution."
+    },
+    {
+      "path": "docs/evidence/006-course-word-rendering.json",
+      "bytes": 19549,
+      "sha256": "44b2578ade76b6a437cb6f864cbd0c1d8f27c08121747aa00897d9adb655e6e1",
+      "status": "PASS_GENUINE_COMPONENT_LIVE_FAST_COURSE_SAVE_INDEPENDENT_COLD_AND_FAILURE",
+      "scope": "Genuinely elaborated Lean Gray4 rendering; same records/raw ink/glyphs/checker authority. QEMU functional instruction-clock scope. No full language/runtime, proof kernel, G5\u2013G7, or new RTL/Wasm cold claim."
+    },
+    {
+      "path": "docs/evidence/006-browser-panel-stop-course.json",
+      "bytes": 14735,
+      "sha256": "fb7b74c9e53c3b64d1967319259afc2a146323caf46b2dbbc4d6bc6e8ee8f16b",
+      "status": "PASS_HOST_CONTROL_AND_ACTUAL_PRIVATE_ARRAY_COURSE_SAVED_NATIVE_COLD",
+      "scope": "New passive panel-stop UI over unchanged exact RTL Machine Wasm. Real old Array guest course/check/Saved in local OPFS private continuation; no browser cold acceptance or complete browser mathematics sequence, new CourseWord browser execution, full proof kernel or G5\u2013G7 claim."
+    },
+    {
+      "path": "docs/evidence/006-usb8-final-saved11.json",
+      "bytes": 8646,
+      "sha256": "f7bab889a83bd53cf70cf5f9a77862f38d0e25f986d0f37270f47ced59317233",
+      "status": "LIVE_UI_FROZEN_WIRE_ARCHIVE_AND_INDEPENDENT_COLD_PASS",
+      "scope": "actual guest raw ink, Undo/Redo/navigation/explicit Save; retained original wire observer FAIL with independently corrected frozen wire; new CPU cold recovery through policy4 and independently persistent opaque peer. Decoded-packet USB8 only, not PHY/fullUSB or QEMU cache closure."
+    },
+    {
+      "path": "docs/evidence/006-paper-executed-v3.json",
+      "bytes": 9238,
+      "sha256": "cb38b180a420f2770673d4e32c28c2524960ae3ee9795413443e32c7475b44a4",
+      "status": "PASS_COMPONENT_AND_AUDITED_INPUTS_ORIGINAL_CALLBACK_DEFECT_RETAINED",
+      "scope": "Paper3 circuitry/health component and original audited Product10 inputs remain qualified in their stated scope. The original image3fdf has a copied callback argument9, so it is not trial-confirmation qualified. Initial real install/status/handoff passed; ordinary initial cold Ready is running. A genuine component-qualified callback10 repair requires a fresh full image and actual trial."
+    },
+    {
+      "path": "docs/evidence/006-wifi-common-ofdm-data.json",
+      "bytes": 32955,
+      "sha256": "98d90c6daa433e557adb1a589615894ce9a4466d5c216c30a09405cf2ccece27",
+      "status": "PASS_COMMON_OFDM_COMPONENT",
+      "scope": "Bounded common legacy20MHz BPSK/r1/2 DATA coding and real complex-sample endpoint component, a Wi-Fi6 construction dependency; not final-standard conformance or a connected whole-machine radio"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Bounded managed String/mixed migration, actual companion Saved5 plus independent policy4 cold,404 real S/U CSR cases and checksum integration qualified in separate receipts. Latest pushed2c CI38455285333 FAILURE8PASS/2FAIL on stale exact String catalog; local401hosts repaired. Product10 actual boot/trial and changed RTL/browser course remain pending; all digital, timing/checkpoint, distribution and physical gaps remain."
+  "continuation_note": "Aligned checksum actual RTL cold890M/allpixels with retained observerFAIL independently corrected; packed course21 genuine functions and9.557% fewer fast actioncycles, Save/newcold/failure and complete303-input prepared pair qualified; oldArray private browser actualUnsupported/OPFSSaved38 plus new native cold fullpixels. USB8 finalSaved11 independent cold735M/no republish qualified; USBWire11 wholeguest and same-machineWiFi12 continue. Corrected9076 CI38467033782 SUCCESS10jobs with stale two-step API resolved against actual execution logs; laterlocal changes notqualifiedbyCI. Digital, fast/checkpoint, distribution and physical obligations remain separate."
 }

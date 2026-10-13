@@ -1,6 +1,6 @@
 {
   "schema": "lemma-store-checksum-word-integration/1",
-  "status": "PASS_COMPONENT_AND_FAST_GUEST_WORKFLOW_RTL_COLD_RUNNING",
+  "status": "PASS_COMPONENT_FAST_AND_ACTUAL_RTL_COLD_WITH_OBSERVER_CORRECTION",
   "scope": "Real Lean Store checksum batching, unchanged durable v1 format; genuine source/LLVM/object and complete fast guest mathematics/ink/Save/newcold/failure qualification. Canonical RTL changed-source cold and new browser deployment are separate obligations.",
   "algorithm": {
     "aligned_word_bytes": 8,
@@ -139,16 +139,27 @@
     "confounder": "Common String/Doc7-support Notebook changes accumulated since Arraya5. No isolated whole-boot improvement is attributed solely to checksum."
   },
   "rtl_cold": {
-    "status": "RUNNING",
-    "plan": {
-      "path": "build/silicon/task006-array-checksum-cold-a1/plan.json",
-      "bytes": 982,
-      "sha256": "62b802cfa13d0ce8ba5cfe36d7cf93825cab5f58c0a5e3637e1a5f0f4e972669"
+    "status": "PASS_ACTUAL_COLD_READY_MEDIA_AND_ALL_PIXELS_WITH_OBSERVER_CORRECTION",
+    "identity": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.3.0",
+      "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "97df1eaf3feaccea315f7d8fd21805ca9336d8100fb7e977a35e112628fc0183",
+      "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+      "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
     },
-    "directory": "build/silicon/task006-array-checksum-cold-a1/full-cold",
-    "deadline_seconds": 7200,
-    "cycle_limit": 2000000000,
-    "scope": "new audited image and untouched opaque mixed Doc6 backing; no restore or initialized application preload; acceptance remains pending"
+    "ready_cycle": 890000000,
+    "ready_host_seconds": 3651.5077312130015,
+    "original_status": "FAIL",
+    "original_error": "Complete controller pixels differ from acknowledged reference",
+    "read_operations": 250,
+    "write_operations": 0,
+    "barrier_operations": 0,
+    "receipt": "docs/evidence/006-canonical-checksum-cold.json",
+    "complete_pixels": 3630000,
+    "sum_process_lifetime_HWM_upper_kib": 196824,
+    "scope": "Fresh canonical128MiB/8192-frame/1650x2200 RTL CPU, development ELF preload and real guest recovery. No new RTL pen/edit/Save or product boot claim. Original observer FAIL retained; independent full pixels and process lifetime qualify that retained execution."
   },
   "retained_original_failures": [
     {

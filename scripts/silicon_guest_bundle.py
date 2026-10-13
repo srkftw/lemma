@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Immutable native development package; exact archived inputs, no target policy.
 
-Packing requires ordinary current-tree preparation. Launch validates the entire
+Packing requires ordinary current-tree preparation or an explicitly selected,
+complete original source archive for an audited guest pair. Launch validates the entire
 package and archived compiler closure. It does not relabel old builds as fresh.
 Host dynamic libraries remain pinned external dependencies, not bundled target
 objects. This is a local development package, not a redistribution license.
@@ -26,6 +27,13 @@ USB_NEXT_PROFILE='lemma-silicon-dev/0.8.0'
 USB_NEXT_DEPLOYMENT='lemma-managed-sums-bulk-usb-next-deployment-v1'
 USB_NEXT_CONFIGURATIONS={'usb-next-bulk-notebook':'lemmasim-silicon-usb-next-bulk-notebook',
                          'usb-next-bulk-initializer':'lemmasim-silicon-usb-next-bulk-initialize'}
+SCHEMA_USB_WIRE='lemmasim-native-bundle/5'
+USB_WIRE_PROFILE='lemma-silicon-dev/0.11.0'
+USB_WIRE_DEPLOYMENT='lemma-managed-sums-bulk-usb-wire-deployment-v1'
+USB_WIRE_CONFIGURATIONS={'usb-wire-bulk-notebook':'lemmasim-silicon-usb-wire-bulk-notebook',
+                         'usb-wire-bulk-initializer':'lemmasim-silicon-usb-wire-bulk-initialize'}
+USB_NATIVE_DEPLOYMENTS={USB_NEXT_PROFILE:(SCHEMA_USB_NEXT,USB_NEXT_DEPLOYMENT,USB_NEXT_CONFIGURATIONS),
+                        USB_WIRE_PROFILE:(SCHEMA_USB_WIRE,USB_WIRE_DEPLOYMENT,USB_WIRE_CONFIGURATIONS)}
 MANAGED_DEPLOYMENT='lemma-managed-notebook-deployment-v1'
 MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
                       'initializer':'lemmasim-silicon-managed-initialize'}
@@ -65,7 +73,7 @@ def origin_destination(manifest,path,digest):
     origins=manifest.get('origins')
     if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
     entry=origins.get(str(Path(path).resolve()))
-    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT):
+    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
         if not isinstance(entry,dict):raise ValueError('Missing versioned archived origin: '+str(path))
         destination=entry.get(digest)
     elif manifest.get('schema')==SCHEMA:
@@ -160,15 +168,29 @@ def bundle(args):
     import lemmasim_fast as fast
     from build_kernel import source_inputs
     name=args.profile
-    if name==USB_NEXT_PROFILE:
-        return bundle_usb_next(args)
-    if getattr(args,'rtl_source_root',None) is not None or getattr(args,'guest_source_root',None) is not None:
-        raise ValueError('Explicit package source archives are admitted only by USB8 schema4')
+    if name in USB_NATIVE_DEPLOYMENTS:
+        return bundle_usb_next(args, name)
+    if getattr(args,'rtl_source_root',None) is not None:
+        raise ValueError('Explicit native source archives are admitted only by USB native schemas')
     if name!='lemma-silicon-dev/0.3.0':raise ValueError('Native bundle v1 admits canonical0.3 only')
     base=getattr(args,'base_bundle',None)
     replacements=(getattr(args,'notebook_build',None),getattr(args,'initializer_build',None))
     if base is None and any(replacements) or base is not None and not all(replacements):
         raise ValueError('Archived backend replacement requires base bundle and both current audited guest builds')
+    guest_root=getattr(args,'guest_source_root',None)
+    if guest_root is not None and (base is None or not all(replacements)):
+        raise ValueError('Canonical source archive requires an immutable base bundle and both audited guest builds')
+    source_origin=Path(guest_root).resolve() if guest_root is not None else ROOT
+    archive_receipts={}
+    if guest_root is not None:
+        for role,build in zip(('notebook','initializer'),replacements):
+            archive_receipts[role]=canonical_guest_archive(build,source_origin,name,role)
+        if archive_receipts['notebook']['inventory']!=archive_receipts['initializer']['inventory']:
+            raise ValueError('Canonical guest roles have different consumed source inventories')
+        configurations={role:receipt['configuration'] for role,receipt in archive_receipts.items()}
+        ordinary={role:guest.configurations(name)[role] for role in configurations}
+        if configurations!=ordinary and configurations not in SOFTWARE_DEPLOYMENTS.values():
+            raise ValueError('Original canonical archive requires one complete admitted deployment pair')
     replacement_rtl=getattr(args,'rtl_build',None)
     if replacement_rtl is not None and base is None:
         raise ValueError('Replacement RTL requires an immutable base bundle and both audited guest builds')
@@ -188,13 +210,14 @@ def bundle(args):
     current_backend_inputs={}
     if replacement_rtl is not None:
         rtl,current_backend_inputs=current_rtl_backend(replacement_rtl,rtl)
-    source_before=source_inputs(ROOT)
+    source_before=source_inputs(source_origin)
     archive_base=base
     out=args.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     manifest={'schema':SCHEMA_WITH_SOURCE_VERSIONS,'profile':name,'boot':'ELF-preload development',
               'compiler':'genuine pinned native Lean/LLVM; archived consumed inputs, not fresh compilation',
-              'physical_conformance':'UNVERIFIED','source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+              'physical_conformance':'UNVERIFIED','source_commit':(archive_receipts['notebook']['source_commit'] if archive_receipts else subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()),
               'sources':source_before,'origins':{},'host_dependencies':{},'backends':{}}
+    if archive_receipts:manifest['guest_source_archive']=archive_receipts
     def add(path,name,expected=None,executable=False):
         path=Path(path).resolve();h=guest.sha(path)
         if expected is not None and h!=expected:raise ValueError('Consumed artifact changed during pack: '+str(path))
@@ -221,11 +244,13 @@ def bundle(args):
         return item
     if base is not None:
         manifest['base_bundle']={'sha256':guest.sha(base/'bundle.json'),
-            'scope':('validated archived QEMU backend; exact current-source RTL backend; new genuine current-source guest compilation'
+            'scope':('validated backends and original fully audited guest source/tool/object archives'
+                     if archive_receipts else
+                     'validated archived QEMU backend; exact current-source RTL backend; new genuine current-source guest compilation'
                      if replacement_rtl is not None else
                      'validated unchanged archived backends; new genuine current-source guest compilation')}
         for workload,build in zip(('notebook','initializer'),replacements):
-            override=development_guest(rtl,workload,out,build,'developer')
+            override=development_guest(rtl,workload,out,build,'developer',source_root=source_origin if archive_receipts else None)
             rtl['workloads'][workload]=override['workloads'][workload]
         qemu['workloads']=copy.deepcopy(rtl['workloads'])
     selected_configurations={w:read_json(Path(rtl['workloads'][w]['build']['path']))['configuration']
@@ -239,7 +264,7 @@ def bundle(args):
                                          'configurations':dict(SOFTWARE_DEPLOYMENTS[deployment])}
     elif selected_configurations!=ordinary:
         raise ValueError('Native bundle requires one complete admitted software deployment')
-    for path,h in source_before.items():add(ROOT/path,'source/'+path,h)
+    for path,h in source_before.items():add(source_origin/path,'source/'+path,h)
     for path,h in rtl['rtl_sources'].items():
         add_backend_source(path,h)
     for path,h in qemu['sources'].items():add_backend_source(str(ROOT/path),h)
@@ -272,7 +297,10 @@ def bundle(args):
     (out/'DEPENDENCIES.txt').write_text('Local prepared development artifacts. A compatible Linux x86-64 host, Python3, optional Tk/evdev and the exact external Nix loader/library files in bundle.json are required. No target host runtime is linked into RV64. Project-wide redistribution licensing remains unresolved; this package grants no redistribution license. CVW20f2af74: Apache-2.0 WITH SHL-2.1 and retained MIT notices. Verilator5.052: LGPL-3.0-only OR Artistic-2.0. QEMU11.1.1: GPL-2.0-or-later. Exact source/tool identities are archived. ELF preload is development boot. Physical conformance UNVERIFIED.\n')
     manifest['files']={str(p.relative_to(out)):{'sha256':guest.sha(p),'bytes':p.stat().st_size,
                         'executable':os.access(p,os.X_OK)} for p in sorted(out.rglob('*')) if p.is_file()}
-    if source_inputs(ROOT)!=source_before:raise ValueError('Guest inputs changed during pack')
+    if source_inputs(source_origin)!=source_before:raise ValueError('Guest inputs changed during pack')
+    for role,build in zip(('notebook','initializer'),replacements):
+        if archive_receipts and canonical_guest_archive(build,source_origin,name,role)!=archive_receipts[role]:
+            raise ValueError('Original consumed guest archive changed during pack')
     for path,h in current_backend_inputs.items():
         if guest.sha(path)!=h:raise ValueError('Replacement RTL input changed during pack: '+path)
     (out/'bundle.json').write_text(json.dumps(manifest,indent=2)+'\n')
@@ -282,7 +310,7 @@ def bundle(args):
     print(out/'bundle.json')
 
 
-def bundle_usb_next(args):
+def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
     """Pack one independently validated USB8 RTL/guest pair; no fast backend.
 
     Source archives are explicit caller inputs and use the ordinary complete
@@ -296,10 +324,12 @@ def bundle_usb_next(args):
         raise ValueError('USB8 package requires its prepared exact pair; canonical backend replacement is separate')
     native_root = getattr(args, 'rtl_source_root', None)
     guest_root = getattr(args, 'guest_source_root', None)
-    roles = tuple(USB_NEXT_CONFIGURATIONS)
-    data = guest.prepared(roles[0], USB_NEXT_PROFILE, rtl_source_root=native_root,
+    if selected_profile not in USB_NATIVE_DEPLOYMENTS:raise ValueError('Unsupported USB native package profile')
+    selected_schema, selected_deployment, selected_configurations=USB_NATIVE_DEPLOYMENTS[selected_profile]
+    roles = tuple(selected_configurations)
+    data = guest.prepared(roles[0], selected_profile, rtl_source_root=native_root,
                           guest_source_root=guest_root)
-    other = guest.prepared(roles[1], USB_NEXT_PROFILE, rtl_source_root=native_root,
+    other = guest.prepared(roles[1], selected_profile, rtl_source_root=native_root,
                            guest_source_root=guest_root)
     for key in ('binary', 'rom', 'rom_audit', 'rtl_build', 'rtl_sources'):
         if data[key] != other[key]:
@@ -310,7 +340,7 @@ def bundle_usb_next(args):
     guest.reset_rom_audit(data)
     origin = Path(guest_root).resolve() if guest_root is not None else ROOT
     sources = source_inputs(origin)
-    for role, configuration in USB_NEXT_CONFIGURATIONS.items():
+    for role, configuration in selected_configurations.items():
         build = Path(data['workloads'][role]['build']['path']).parent
         provenance = read_json(build / 'provenance.json')
         if provenance['source_inputs'] != sources:
@@ -319,14 +349,14 @@ def bundle_usb_next(args):
                                  source_root=origin)
     out = args.output_dir.resolve()
     out.mkdir(parents=True, exist_ok=False)
-    manifest = {'schema': SCHEMA_USB_NEXT, 'profile': USB_NEXT_PROFILE,
+    manifest = {'schema': selected_schema, 'profile': selected_profile,
                 'original_repository_root': str(ROOT),
                 'boot': 'ELF-preload development', 'physical_conformance': 'UNVERIFIED',
                 'compiler': 'genuine pinned Lean/LLVM; complete original consumed source versions',
                 'source_commit': read_json(Path(data['workloads'][roles[0]]['provenance']['path']))['source_commit'],
                 'sources': sources, 'origins': {}, 'host_dependencies': {}, 'backends': {},
-                'software_deployment': {'contract_version': USB_NEXT_DEPLOYMENT,
-                                        'configurations': dict(USB_NEXT_CONFIGURATIONS)}}
+                'software_deployment': {'contract_version': selected_deployment,
+                                        'configurations': dict(selected_configurations)}}
 
     def add(source, destination, digest, *, executable=False, original=None):
         source = Path(source)
@@ -395,7 +425,7 @@ def bundle_usb_next(args):
         raise ValueError('USB8 source inputs changed during pack')
     (out / 'bundle.json').write_text(json.dumps(manifest, indent=2) + '\n')
     for role in roles:
-        prepared(out, 'rtl', role, USB_NEXT_PROFILE)
+        prepared(out, 'rtl', role, selected_profile)
     print(out / 'bundle.json')
 
 
@@ -476,13 +506,17 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
     import silicon_guest as guest
     from build_kernel import source_inputs
     from silicon_profile import profile_path
-    if (manifest.get('profile') != USB_NEXT_PROFILE or name not in (None, USB_NEXT_PROFILE) or
-            backend != 'rtl' or workload not in USB_NEXT_CONFIGURATIONS):
+    selected_profile=manifest.get('profile')
+    if selected_profile not in USB_NATIVE_DEPLOYMENTS:raise ValueError('Unsupported USB native package profile')
+    selected_schema, selected_deployment, selected_configurations=USB_NATIVE_DEPLOYMENTS[selected_profile]
+    if manifest.get('schema')!=selected_schema:raise ValueError('USB package profile/schema association differs')
+    if (manifest.get('profile') != selected_profile or name not in (None, selected_profile) or
+            backend != 'rtl' or workload not in selected_configurations):
         raise ValueError('USB8 native package requires its exact RTL profile/workload')
     if (set(manifest.get('backends', {})) != {'rtl'} or
             set(manifest.get('host_dependencies', {})) != {'rtl'} or
-            manifest.get('software_deployment') != {'contract_version': USB_NEXT_DEPLOYMENT,
-                                                   'configurations': USB_NEXT_CONFIGURATIONS}):
+            manifest.get('software_deployment') != {'contract_version': selected_deployment,
+                                                   'configurations': selected_configurations}):
         raise ValueError('USB8 native deployment/implementation authority differs')
     inventory(directory, manifest)
     if manifest.get('sources') != source_inputs(directory / 'source'):
@@ -496,12 +530,12 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
             raise ValueError('USB8 prepared identity contradicts inventory')
         return {'path': str(directory / item['path']), 'sha256': item['sha256']}
 
-    if (data.get('schema_version') != 1 or data.get('profile') != USB_NEXT_PROFILE or
-            data.get('profile_sha256') != guest.sha(profile_path(USB_NEXT_PROFILE)) or
-            set(data.get('workloads', {})) != set(USB_NEXT_CONFIGURATIONS) or
+    if (data.get('schema_version') != 1 or data.get('profile') != selected_profile or
+            data.get('profile_sha256') != guest.sha(profile_path(selected_profile)) or
+            set(data.get('workloads', {})) != set(selected_configurations) or
             'rtl_source_archive' in data):
         raise ValueError('USB8 prepared machine authority differs')
-    origin_destination(manifest, profile_path(USB_NEXT_PROFILE), data['profile_sha256'])
+    origin_destination(manifest, profile_path(selected_profile), data['profile_sha256'])
     for path, digest in data['rtl_sources'].items():
         origin_destination(manifest, path, digest)
     dependencies = manifest['host_dependencies']['rtl']
@@ -516,11 +550,11 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
         data['workloads'][role] = {key: absolute(item) for key, item in entry.items()}
         base = Path(data['workloads'][role]['build']['path']).parent
         build = read_json(base / 'build.json')
-        guest.verify_guest_build(base, USB_NEXT_CONFIGURATIONS[role], build['optimization'],
+        guest.verify_guest_build(base, selected_configurations[role], build['optimization'],
                                  source_root=directory / 'source')
-        if role == 'usb-next-bulk-notebook':
+        if role in ('usb-next-bulk-notebook','usb-wire-bulk-notebook'):
             capacity = read_json(Path(data['workloads'][role]['capacity']['path']))
-            if capacity.get('status') != 'PASS' or capacity.get('configuration') != USB_NEXT_CONFIGURATIONS[role]:
+            if capacity.get('status') != 'PASS' or capacity.get('configuration') != selected_configurations[role]:
                 raise ValueError('USB8 notebook capacity authority differs')
             for path, digest in capacity['artifacts'].items():
                 if guest.sha(base / path) != digest:
@@ -534,12 +568,12 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
     for key in ('source', 'assembly', 'object', 'elf', 'binary'):
         origin_destination(manifest, audit[key]['path'], audit[key]['sha256'])
     runtime = read_json(Path(data['rtl_build']['path']))
-    if runtime.get('binary_sha256') != data['binary']['sha256'] or runtime.get('profile') != USB_NEXT_PROFILE:
+    if runtime.get('binary_sha256') != data['binary']['sha256'] or runtime.get('profile') != selected_profile:
         raise ValueError('USB8 native implementation differs')
     validate_usb_runtime(directory, manifest, data, runtime)
-    data['native_bundle'] = {'schema': SCHEMA_USB_NEXT, 'manifest_sha256': guest.sha(directory / 'bundle.json'),
+    data['native_bundle'] = {'schema': selected_schema, 'manifest_sha256': guest.sha(directory / 'bundle.json'),
                              'source_commit': manifest['source_commit'],
-                             'scope': 'complete original consumed USB8 sources and artifacts; RTL only',
+                             'scope': 'complete original consumed '+selected_profile+' sources and artifacts; RTL only',
                              'software_deployment': copy.deepcopy(manifest['software_deployment'])}
     return data
 
@@ -549,7 +583,7 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
-    if m.get('schema') == SCHEMA_USB_NEXT:
+    if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
         return prepared_usb_next(directory, m, backend, workload, name)
     if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
         raise ValueError('Unsupported/mismatched native bundle')
@@ -613,12 +647,11 @@ def prepared(directory,backend,workload,name=None):
 def bundle_configurations(manifest):
     """An immutable package selects both guest roles under one closed contract."""
     import silicon_guest as guest
-    if manifest.get('schema')==SCHEMA_USB_NEXT:
-        if (manifest.get('profile')!=USB_NEXT_PROFILE or
-                manifest.get('software_deployment')!={'contract_version':USB_NEXT_DEPLOYMENT,
-                                                     'configurations':USB_NEXT_CONFIGURATIONS}):
-            raise ValueError('USB8 immutable deployment authority differs')
-        return dict(USB_NEXT_CONFIGURATIONS)
+    if manifest.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
+        selected=USB_NATIVE_DEPLOYMENTS.get(manifest.get('profile'))
+        if selected is None or manifest.get('schema')!=selected[0] or manifest.get('software_deployment')!={'contract_version':selected[1],'configurations':selected[2]}:
+            raise ValueError('USB immutable deployment authority differs')
+        return dict(selected[2])
     if manifest.get('profile')!='lemma-silicon-dev/0.3.0':
         raise ValueError('Software deployment requires canonical hardware0.3')
     if manifest.get('schema')==SCHEMA_WITH_SOFTWARE_DEPLOYMENT:
@@ -673,6 +706,34 @@ def laboratory_guest_archive(base, source_root, profile, configuration, mode):
     if (profile != 'lemma-silicon-dev/0.3.0' or mode != 'laboratory' or
             configuration not in archived_configurations):
         raise ValueError('Archived development guest requires canonical Laboratory Array OOM or String OOM')
+    return _audited_guest_archive(base,source_root,configuration,
+        'lemma-laboratory-guest-source-archive/1',
+        'unchanged fully audited canonical Laboratory ' + archived_configurations[configuration] + ' OOM guest; complete original source/tool/object closure')
+
+
+def canonical_guest_archive(base, source_root, profile, workload):
+    """Normal canonical role admission plus the complete original audit closure.
+
+    The caller cannot select an arbitrary root or a Laboratory failure image.
+    A package still requires a matched notebook/initializer deployment.
+    """
+    import silicon_guest as guest
+    if profile!='lemma-silicon-dev/0.3.0' or workload not in ('notebook','initializer'):
+        raise ValueError('Original canonical archive requires profile0.3 notebook or initializer')
+    base=Path(base).resolve()
+    configuration=read_json(base/'build.json').get('configuration')
+    admitted={guest.configurations(profile)[workload]}
+    admitted.update(pair[workload] for pair in SOFTWARE_DEPLOYMENTS.values())
+    if configuration not in admitted:
+        raise ValueError('Original canonical archive requires an exact ordinary deployment role')
+    return _audited_guest_archive(base,source_root,configuration,
+        'lemma-canonical-guest-source-archive/1',
+        'unchanged fully audited canonical '+workload+'; complete original source/tool/object closure')
+
+
+def _audited_guest_archive(base, source_root, configuration, schema, scope):
+    """One fail-closed consumed-source/tool/object validator; no ROOT fallback."""
+    import silicon_guest as guest
     base = Path(base).resolve()
     root = Path(source_root).resolve()
     provenance = read_json(base / 'provenance.json')
@@ -725,13 +786,13 @@ def laboratory_guest_archive(base, source_root, profile, configuration, mode):
             raise ValueError('Original Laboratory tool version differs')
         observed[tool] = {**item, 'sha256': guest.sha(item['path'])}
     guest.verify_guest_build(base, configuration, build['optimization'], source_root=root)
-    return {'schema': 'lemma-laboratory-guest-source-archive/1', 'source_root': str(root),
+    return {'schema': schema, 'source_root': str(root),
             'inventory': guest.identified(inventory_path), 'build': guest.identified(base / 'build.json'),
             'provenance': guest.identified(base / 'provenance.json'), 'audit': guest.identified(base / 'audit.json'),
             'image': guest.identified(base / 'image.elf'), 'configuration': configuration,
             'source_commit': provenance['source_commit'], 'dirty_paths': provenance['dirty_paths'],
             'inputs': len(expected), 'tools': observed, 'lean_source_realization': realization,
-            'scope': 'unchanged fully audited canonical Laboratory ' + archived_configurations[configuration] + ' OOM guest; complete original source/tool/object closure'}
+            'scope': scope}
 
 
 def development_guest(data,workload,directory,guest_build,mode=None,*,source_root=None):
@@ -747,9 +808,12 @@ def development_guest(data,workload,directory,guest_build,mode=None,*,source_roo
     configuration=development_configuration(data['profile'],workload,build['configuration'],mode)
     archive=None
     if source_root is not None:
-        if not isinstance(data.get('native_bundle'),dict) or workload!='notebook':
-            raise ValueError('Laboratory source archive requires a validated immutable native notebook bundle')
-        archive=laboratory_guest_archive(base,source_root,data['profile'],configuration,mode)
+        if not isinstance(data.get('native_bundle'),dict):
+            raise ValueError('Original source archive requires a validated immutable native bundle')
+        if configuration in ARITHMETIC_LAB_CONFIGURATIONS:
+            if workload!='notebook':raise ValueError('Laboratory source archive requires notebook')
+            archive=laboratory_guest_archive(base,source_root,data['profile'],configuration,mode)
+        else:archive=canonical_guest_archive(base,source_root,data['profile'],workload)
     else:guest.verify_guest_build(base,configuration,build['optimization'])
     result=copy.deepcopy(data)
     entry={key:guest.identified(base/name) for key,name in (
@@ -767,8 +831,10 @@ def development_guest(data,workload,directory,guest_build,mode=None,*,source_roo
             if guest.sha(base/name)!=h:raise ValueError('Development guest capacity input changed')
         entry['capacity']=guest.identified(capacity)
     if archive is not None:
-        if laboratory_guest_archive(base,source_root,data['profile'],configuration,mode)!=archive:
-            raise ValueError('Laboratory consumed archive changed during preparation')
+        repeated=(laboratory_guest_archive(base,source_root,data['profile'],configuration,mode)
+                  if configuration in ARITHMETIC_LAB_CONFIGURATIONS else
+                  canonical_guest_archive(base,source_root,data['profile'],workload))
+        if repeated!=archive:raise ValueError('Original consumed archive changed during preparation')
     else:guest.verify_guest_build(base,configuration,build['optimization'])
     result['workloads'][workload]=entry
     result['guest_override']={'scope':'new strict current-source audited development guest on unchanged archived backend',

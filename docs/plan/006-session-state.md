@@ -660,15 +660,18 @@ QEMU instruction-clock scope. The native/static artifacts are
 `build/native/task006-array-checksum-words-a1` and
 `build/browser/task006-array-checksum-words-a1`.
 
-The changed canonical RTL cold is live at
-`build/silicon/task006-array-checksum-cold-a1/full-cold`, bound before CPU execution
-to2Bcycles/7200seconds and unchanged opaque mixed Doc6 backing. It has no accepted
-Ready result yet. The first observer incorrectly measured the Python owner RSS;
-its executed source is retained. An independent exact-process-lifetime check
-measured both owner and actual native child and admitted the immutable audited
-bundle. The maintained observer now requires that bundle and monitors tree RSS.
-Do not relabel the executing original observer as the corrected source. Earlier
-canonical failures retain their original results.
+[The changed canonical RTL cold](../evidence/006-canonical-checksum-cold.json)
+reached actual Ready at890Mcycles/3651.507731seconds within its prospective
+2B/7200 bounds, using untouched opaque mixed Doc6 backing and real guest recovery.
+All3.63Mcontroller pixels match;250READs/noWRITE/BARRIER. Original observer FAIL
+is retained: it compared P5 with P6 file bytes. The independently checked complete
+pixels have zero differences. Same-process lifetime Linux HWM measured the real
+native child152352KiB plus owner44472KiB; summed upper196824KiB. Snapshot did not
+advance/change the boundary; both owners are reaped. The new maintained observer
+requires the immutable loaded image/executable and measures tree RSS. Its fresh
+cold execution is NOT_RUN; no unchanged cold was repeated for observer repair.
+This qualifies that actual cold, separate from new packed-course RTL/Wasm and
+new RTL edit/Save scenarios; earlier failures remain.
 
 [USB8 independent cold](../evidence/006-companion-acknowledged-boundary.json) at801bffe
 passed680Mcycles/4353.814seconds, full3.63Mpixels and acknowledged Saved5 bytes
@@ -695,7 +698,70 @@ fixture missing three maintained String configurations. A-E target work never
 ran and the silicon host step was skipped. [The repair receipt](../evidence/006-ci-string-catalog-repair.json)
 adds those exact ServerV6/Profile0.3/Kernel4 entries and the newly versioned
 Product10 entry while preserving strict set/image/policy/profile/kernel checks.
-Current401 kernel hosts passed10.568seconds. No corrected-candidate CI or fresh
-A-E target pass is claimed; prior6f complete CI remains distinct.
+Current401 kernel hosts passed10.568seconds. Corrected candidate9076a8dad7b0964ac9e329d6b2180af2477aaac5
+CI38467033782 is SUCCESS, all ten jobs. It checked synthetic merge
+3de16a3045625312079e0a6514e6bce4857fc37e. All reported metadata/host steps passed,
+including kernel/silicon formerly failed/skipped. A-E/notebook step metadata
+remained stale pending despite completed jobs; their actual complete logs execute
+the qualification guards,20A-Eimages/24reports and O0/O2writingPASS, publish
+artifacts and clean up. Later local changes need their own candidate CI. Original
+2cFAIL and prior6f qualification remain distinct; no merge is authorized.
+
+## Packed course renderer and complete companion boundary
+
+[Packed course rendering](../evidence/006-course-word-rendering.json) caches at
+most two glyphs for16pixels, uses checked aligned words and preserves original
+ordered byte writes on unaligned rows. Genuine-source/LLVM/RV64 component passed
+92160words/1,474,560scalar pixel comparisons,21functions/no unknown helpers.
+Fresh whole notebook10ad4d66 and initializer10570407 each pass strict audit with
+exact303 consumed inputs, archived at`build/task006-array-course-word-source-archive-a1`.
+The same first30 fast course actions fell from1423000170 to1287000171instruction-clock
+cycles (9.557%); host98.850349→88.300363s is a contended observation, not an isolated
+simulator speedup. Kernel/firmware/Store/Arithmetic objects are byte-identical;
+Notebook307896→309744bytes. The complete live exact-check/edit/hint/ink/Save ran,
+then original cold startup FAIL correctly rejected sources advanced by USB work.
+It remains retained. Explicit normal canonical archive packing now validates
+complete original source/tool/object closure and a matched deployment; five real
+corrupt/missing/unlisted/symlink/inventory negatives reject. Independently rechecked
+acknowledged live bytes plus new cold/failure CPUs PASS23.353199s, cold345M/5.656360s,
+every pixel, five actual isolated outcomes, edited applicability and no false Saved.
+Public prepared initializer actually acknowledged24,000,001cycles/0.850342s.
+
+Prepared local packages are`build/native/task006-array-course-words-a1`(746files)
+and`build/browser/task006-array-course-words-a1`(261files). The static package uses
+the same reusable RTL Machine Wasm; its new guest execution is NOT_RUN. Complete
+original source selection has no current-source fallback and does not relabel the
+compiled dirty source as a fresh clean build. Redistribution limits remain.
+
+[The browser panel-stop and course receipt](../evidence/006-browser-panel-stop-course.json)
+qualifies passive completed-scan stopping, exact64-bit boundaries/deadline priority,
+seven host tests and the older Array guest's actual local private course. Raw submit
+produced isolated Unsupported(request65/revision20/goal3), then OPFSbarrier268 and
+real Saved38 at1200750000.141.65Mcycles/984.36441simulation-callseconds/330MiB heap
+stay within the650M/7200 action bound. An early diagnostic misread0x423Pending38 as
+failure; no0x424 occurred. It is explicitly corrected. A new same-image native fast
+CPU cold reopened the exported OPFS bytes, seven-attempt record and every3.63Mpixel:
+355MReady/7.310258s,12.847233s whole,265READ/noWRITE/BARRIER. This is native recovery
+of browser-exported bytes, not browser cold or an exact native/Wasm suffix.
+Original7200s browser cold FAIL remains. Next rational/edit/hint/review/resource
+browser actions continue from the private source-bound boundary.
+
+[Final USB8 Saved11 recovery](../evidence/006-usb8-final-saved11.json) closes the
+actual notebook's lost-ACK/restarted peer, Undo/Redo/Next/Previous/explicit Save
+boundary and independent final cold observations. Original full-run FAIL was an
+independently diagnosed hello-sequence observer mismatch after six peer effects;
+frozen wire/archive rechecks derive sequence7 from actual outbox/effects. New CPU
+and independently persistent peer recover final Saved11 at735M/3536.5445s,
+all3.63M pixels,42READ/noWRITE/BARRIER, unchanged72-effect log. All owners are
+reaped. Failed final notebook Save and full-speed PHY11 whole-guest execution
+remain separate.
+
+Paper3/Product10 executed-request witness and callback9→10 repair, standalone
+CommonOFDM actual generated/decoded sample path and genuine guest bytes, new
+USB full-speed circuitry and same-machine12 integration have their own bounded
+workstreams. Build/component/source capture is not full product execution.
+Full processor timing/cached continuation, general runtime/proof kernel, package/
+tutor/assessment permissions, complete USB/BLE5.4/Wi-Fi6, browser cold/workflow and
+physical routed/process/memory/domain closure remain unfinished.
 
 -->
