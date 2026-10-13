@@ -53,4 +53,28 @@ class ObjectsV3Audit(unittest.TestCase):
         with self.assertRaises(Core0Error):self.observe(f)
         self.reject('initFor','i64 %arg0)','i64 2)')
 
+    def test_shared_v3_header_does_not_require_optional_arithmetic_wrapper(self):
+        # Genuine shared initializer fragments, restricted to the closure that
+        # historical H/J units actually reach. This is an observer regression;
+        # the independently retained CI artifacts establish its real occurrence.
+        f=copy.deepcopy(self.f)
+        removed={self.names['Lemma.Kernel.Objects.initArithmetic'],
+                 self.names['Lemma.Platform.LemmaSim.NotebookKernel.construct']}
+        f['unit']['functions']=[r for r in f['unit']['functions'] if r['symbol'] not in removed]
+        for symbol in removed:
+            del f['bodies'][symbol]
+            del f['headers'][symbol]
+        result=self.observe(f)['initialization']
+        self.assertEqual(result['wrappers'],{'Lemma.Kernel.Objects.init':1})
+        self.assertEqual(result['power_callers'],[])
+        self.assertEqual({r['version'] for r in result['version_cases'] if r['result']},{1,2,3})
+        for tail,before,after in [('initFor','icmp eq i64 %arg0, 3','icmp eq i64 %arg0, 4'),
+            ('init','i64 1)','i64 3)'),
+            ('encodedLimitFor','@'+self.names['Lemma.Kernel.Objects.arithmeticEndpointCapacity']+'()',
+                '@'+self.names['Lemma.Kernel.Objects.powerEndpointCapacity']+'()')]:
+            mutant=copy.deepcopy(f);symbol=self.names['Lemma.Kernel.Objects.'+tail]
+            self.assertIn(before,mutant['bodies'][symbol])
+            mutant['bodies'][symbol]=mutant['bodies'][symbol].replace(before,after,1)
+            with self.subTest(tail=tail),self.assertRaises(Core0Error):self.observe(mutant)
+
 if __name__=='__main__':unittest.main()

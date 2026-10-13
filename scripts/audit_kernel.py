@@ -1498,6 +1498,10 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     needed|={f+'allocate',f+'resolvePurpose','Lemma.User.CapabilityABI.invalidArgument'}
     if not needed<=names.keys():raise Core0Error('Objects versioned initializer closure missing')
     arithmetic=o+'initArithmetic' in names
+    # The shared initializer can admit the v3 header even when a legacy unit
+    # reaches only its fixed v1/v2 wrappers. Constructor authority still follows
+    # the actual wrapper closure below, independently of header semantics.
+    supports_arithmetic_header=o+'encodedLimitFor' in names
     wrappers={} if modern and o+'init' not in names else {o+'init':1}
     if arithmetic:wrappers[o+'initArithmetic']=3
     if o+'initPower' in names:wrappers[o+'initPower']=2
@@ -1521,7 +1525,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if len(tests)!=1:raise Core0Error('Objects initializer lacks one closed version gate')
     comparison,predicate=tests[0]
     prefix=body[:body.index(comparison+' =')]+'ret i1 '+predicate+'\n'
-    version_cases=_object_scalar_cases(prefix,{},header=True,version_only=True,arithmetic=arithmetic)
+    version_cases=_object_scalar_cases(prefix,{},header=True,version_only=True,arithmetic=supports_arithmetic_header)
     gates=[validate_boolean_gate(body,comparison,names[source],success_when_true=False) for source in (f+'allocate',o+'get',o+'put')]
     _object_invalid_init_path(body,gates[0]['failure'],invalid)
     resolved=re.findall('('+var+r') = call \{ i64, i64 \} @'+re.escape(names[f+'resolvePurpose'])+r'\(i64 1, i64 ('+var+r'), i64 1\)',body)
@@ -1539,7 +1543,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     if locations['version'][2]!='%arg0' or operands.get(locations['magic'][2],locations['magic'][2])!=0x314a424f414d454c or locations['publish'][2]!=handle:
         raise Core0Error('Objects initializer header/global publication lost source values')
     encoded=locations['limit'][2]
-    if arithmetic:
+    if supports_arithmetic_header:
         helper=o+'encodedLimitFor'
         if helper not in names or o+'arithmeticEndpointCapacity' not in names:
             raise Core0Error('Objects-v3 initializer lacks its closed encoded-limit helper')

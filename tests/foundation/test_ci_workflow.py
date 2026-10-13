@@ -73,6 +73,9 @@ class CiWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/check_scaffold.py", self.metadata)
         self.assertIn("lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel", self.metadata)
         self.assertLess(self.metadata.index("lake build"), self.metadata.index("tests/foundation"))
+        self.assertIn("Lemma.Compiler.KernelExport", self.metadata)
+        self.assertLess(self.metadata.index("Lemma.Compiler.KernelExport"),
+                        self.metadata.index("tests/kernel/ManagedNotebookDeployment.lean"))
         for guest_marker in ("check-core0.sh", "check-foundation.sh", "qualify_foundation.py", "qemu"):
             self.assertNotIn(guest_marker, self.metadata.lower())
 
