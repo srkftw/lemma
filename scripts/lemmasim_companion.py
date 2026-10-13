@@ -14,7 +14,7 @@ import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-SOURCES=tuple(ROOT/'sim/companion'/name for name in ('Protocol.lean','HostIO.lean','Peer.lean','Client.lean','os_io.py','server.py'))+(Path(__file__).resolve(),ROOT/'flake.lock')
+SOURCES=tuple(ROOT/'sim/companion'/name for name in ('Protocol.lean','HostIO.lean','Peer.lean','ClientPolicy.lean','Client.lean','os_io.py','server.py'))+(Path(__file__).resolve(),ROOT/'flake.lock')
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -25,11 +25,11 @@ def build(output):
     output.mkdir(parents=True)
     sources={str(path.relative_to(ROOT)):sha(path) for path in SOURCES}
     environment=dict(os.environ,LEAN_PATH=str(output))
-    for module in ('Protocol','HostIO','Peer','Client'):
+    for module in ('Protocol','HostIO','ClientPolicy','Peer','Client'):
         subprocess.run(['lean','-R',str(ROOT/'sim/companion'),'-o',str(output/(module+'.olean')),'-c',str(output/(module+'.c')),str(ROOT/'sim/companion'/(module+'.lean'))],env=environment,cwd=ROOT,check=True,timeout=120)
         subprocess.run(['leanc','-O2','-c',str(output/(module+'.c')),'-o',str(output/(module+'.o'))],cwd=ROOT,check=True,timeout=120)
     for module in ('Peer','Client'):
-        subprocess.run(['leanc',str(output/'Protocol.o'),str(output/'HostIO.o'),str(output/(module+'.o')),'-o',str(output/('companion-'+module.lower()))],cwd=ROOT,check=True,timeout=120)
+        subprocess.run(['leanc',str(output/'Protocol.o'),str(output/'HostIO.o'),*([str(output/'ClientPolicy.o')] if module=='Client' else []),str(output/(module+'.o')),'-o',str(output/('companion-'+module.lower()))],cwd=ROOT,check=True,timeout=120)
     if sources!={str(path.relative_to(ROOT)):sha(path) for path in SOURCES}:
         raise ValueError('companion source changed during build')
     prefix=Path(subprocess.check_output(['lean','--print-prefix'],text=True).strip()).resolve()
@@ -39,7 +39,7 @@ def build(output):
             'sources':sources,'lean_version':subprocess.check_output(['lean','--version'],text=True).strip(),
             'lean_revision':revision or None,'hosted_lean_prefix':str(prefix),
             'host_tools':{name:{'path':str(Path(shutil.which(name)).resolve()),'sha256':sha(Path(shutil.which(name)).resolve())} for name in ('lean','leanc','cc')},
-            'generated_host_objects':{name:sha(output/name) for name in ('Protocol.c','HostIO.c','Peer.c','Client.c','Protocol.o','HostIO.o','Peer.o','Client.o')},
+            'generated_host_objects':{name:sha(output/name) for name in ('Protocol.c','HostIO.c','ClientPolicy.c','Peer.c','Client.c','Protocol.o','HostIO.o','ClientPolicy.o','Peer.o','Client.o')},
             'target_objects_added':[],
             'binaries':{name:{'path':str(output/name),'sha256':sha(output/name)} for name in ('companion-peer','companion-client')},
             'medium_bytes':268435456,'max_wire_bytes':1048576+72,'max_journal_bytes':64*1024*1024,'max_receipts':100000}
