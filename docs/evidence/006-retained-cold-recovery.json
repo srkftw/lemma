@@ -1,0 +1,55 @@
+{
+  "schema": "lemma-retained-cold-recovery-milestone/1",
+  "status": "PASS_CORRECTED_RETAINED_OBSERVER",
+  "scope": "Corrected observer over the unchanged independent canonical RTL cold CPU; no new execution, mutation, restore, Save, or deadline change. Original timeout is retained.",
+  "original_failure": {
+    "path": "build/silicon/task006-managed-v3-canonical-recovery-a1/result.json",
+    "sha256": "5b02fa47dc8f53d4289f99041ce1472fa7a72ce6757d14d3b19f686209d794bb"
+  },
+  "original_bounds": {
+    "cycles": 2000000000,
+    "host_seconds": 7200
+  },
+  "corrected_observation": {
+    "result": "build/silicon/task006-managed-v3-cold-observer-a1/result.json",
+    "sha256": "0d1d9c8372dd850bfc3cd95c5265a803342d1b3865991ee920816c6f3fe4d091",
+    "recorded_full_redraw_boundary": {
+      "cycle": 1450000000,
+      "host_seconds": 6560.254311275028
+    },
+    "paused_final_cycle": 1641000000,
+    "completed_successful_reads": 24,
+    "full_pixels": 3630000,
+    "pixel_sha256": "331fac60128165e6b01f73573da0297f123a51e0be9d282b6e1e309b32ef643a",
+    "entire_backing_bytes_equal": true,
+    "acknowledged_sequence": 5,
+    "acknowledged_objects": {
+      "1/1": "4a2d467f9fe42ed6ccd50b83f64097524254317a8848d346f3554b3b0c0445d7",
+      "1/257": "8889dc3285c1cce0ca14e20b1b47eaa3afbc9b60d82b8bd2c28d3e23c70d2181",
+      "1/65539": "60973eb9dadd8cf0fad9913269a958948614aec915adae674e56b8da6f82c429"
+    }
+  },
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "677e700e34d712fee2de0cb7c652d6ba56f5f054b7ce72e2aab45d87f029a98b",
+    "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+    "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a"
+  },
+  "consumed_sources": {
+    "Notebook.lean": "12d781566d4493ee6bdc48f9476bded15b924b80f76a661a54de0bdf0d89cfd3",
+    "backing_io.h": "25c1695d3c813bfbe5769a6acc27e0a3168cfa11a868739efbb1d1aa27ef560e"
+  },
+  "diagnosis": "The original observer required a new 0x421 Save event after a clean cold reopen. Consumed Notebook saves only when loadNotebook marks create=1; an existing saved notebook emits 0x420 Ready and 0x425 redraw without republishing. BackingPhase2 is Completed, not Pending. All24 successful captured reads completed and PC0x802001d0 is lemma_exec_wait_interrupt.",
+  "qualification": "Four focused tests retain no-Save clean-load acceptance and reject missing Ready, uncompleted redraw, backing Pending, missing read completion, device Pending, poison, writes, format and errors. Actual complete panel matches acknowledged output and independent signed-vector stroke oracle; all acknowledged objects and entire256MiB backing medium match. Observational exports left inspect bytes unchanged.",
+  "command": "python3 scripts/check_retained_cold_recovery.py --session build/rtlrec-v3-a1/session --retained-result build/silicon/task006-managed-v3-canonical-recovery-a1/result.json --samples build/silicon/task006-managed-v3-canonical-recovery-a1/samples.jsonl --native-bundle build/native/task006-managed-v3-a1 --acknowledged-medium build/silicon/task006-managed-v3-canonical-a1/workflow/acknowledged.raw --acknowledged-panel build/silicon/task006-managed-v3-canonical-a1/workflow/acknowledged.ppm --raw-input build/silicon/task006-managed-v3-canonical-a1/workflow/input.json --work-dir build/silicon/task006-managed-v3-cold-observer-a1",
+  "test_command": "python3 -m unittest discover -s tests/lemmasim -p 'test_retained_cold_recovery.py' -v",
+  "observer_sha256": "20f7d6da58b57196cebc8c3cf32028e213e5a998f7b2d7e0ed00c2133b580deb",
+  "limits": [
+    "Ready UART has no cycle timestamp;1.450B is the first recorded completed full-redraw boundary, not an exact instruction WCET.",
+    "Retained result is a separate corrected observation. Original7200-second timeout result is unchanged.",
+    "This closes this existing acknowledged raw-stroke cold suffix only; unrelated USBNotebook, product boot/update, browserReady, fast cached-state and physical obligations remain separate."
+  ]
+}
