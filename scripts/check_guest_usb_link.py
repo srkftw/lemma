@@ -49,7 +49,7 @@ def opaque(b):
  require(len(b)>=72 and len(b)<=584 and len(b)%8==0 and crc64(b[:-8])==int.from_bytes(b[-8:],'little'),'opaque frame CRC/bound')
  f=struct.unpack('<8Q',b[:64]);require(f[:2]==(0x313030504d434d4c,1) and len(b)==72+(f[6] if f[2] in (1,3) else 0),'opaque header length')
  return f,b[64:-8]
-def decode_capture(path, *, probe=True, writer=73):
+def decode_capture(path, *, probe=True, writer=73, initial_sequence=1):
  rows=Path(path).read_text().splitlines();header=rows[0].split() if rows else []
  require(len(header)==2 and header[0] in ('LMUSBRW1','LMUSBRW2') and len(header[1])==64 and all(c in '0123456789abcdef' for c in header[1]),'raw capture identity')
  host_handshake='USBHOST/'+('1' if header[0]=='LMUSBRW1' else '2')+' PACKET_BYTES_DEV'
@@ -100,7 +100,8 @@ def decode_capture(path, *, probe=True, writer=73):
  require(setups==expected,'actual standard request sequence changed')
  require(len(requests)==len(responses) and len(requests)>=1,'actual opaque transaction count')
  require(requests[0]==b'LMCUSB01' and len(responses[0])==32,'actual hello')
- hello=struct.unpack('<4Q',responses[0]);require(hello==(0x3130425355434d4c,writer,1,268435456),'actual hello identity')
+ require(type(initial_sequence) is int and 0 < initial_sequence < (1<<64),'declared initial writer sequence')
+ hello=struct.unpack('<4Q',responses[0]);require(hello==(0x3130425355434d4c,writer,initial_sequence,268435456),'actual hello identity')
  transactions=[]
  for request_bytes,response_bytes in zip(requests[1:],responses[1:]):
   request,payload=opaque(request_bytes);response,returned=opaque(response_bytes)

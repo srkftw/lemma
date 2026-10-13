@@ -1,0 +1,139 @@
+{
+  "schema": "lemma-companion-acknowledged-boundary-evidence/1",
+  "status": "PASS",
+  "scope": "passive opaque acknowledged archive and host-only both-sided lost-write receipt restart; cold guest qualification separate",
+  "archive": {
+    "path": "build/usb/usb8-acknowledged-boundary-a1/boundary.json",
+    "sha256": "1b1842216623cb417226743168b05d1ec3a09ee5bb6ddf1a2a8e2bf68810aedf"
+  },
+  "archive_observer_sha256": "56baad59a009460d53be8810e7f51a0740f2221becd51c3a18435b78f5de6f24",
+  "archive_host_seconds": 7.354280886007473,
+  "archive_boundary": "current observational peer/outbox boundary; not the715M machine cut",
+  "saved_sequence": 5,
+  "writer": 83,
+  "peer_high_water": 36,
+  "wire_transactions": 33,
+  "source_before_after_equal": true,
+  "archive_attempts": [
+    {
+      "ordinal": 0,
+      "status": "QUALIFIED",
+      "identities": [
+        [
+          65025,
+          32653746,
+          232,
+          1791910077853319792,
+          1791910077853319792
+        ],
+        [
+          65025,
+          32653745,
+          268435456,
+          1791910077845320026,
+          1791910077853319792
+        ],
+        [
+          65025,
+          32653747,
+          14664,
+          1791913277256599974,
+          1791913277256599974
+        ],
+        [
+          65025,
+          32654373,
+          40,
+          1791913277317598181,
+          1791913277370596623
+        ]
+      ]
+    }
+  ],
+  "artifact_files": {
+    "peer/base.img": {
+      "bytes": 268435456,
+      "sha256": "a6d72ac7690f53be6ae46ba88506bd97302a093f7108472bd9efc3cefda06484"
+    },
+    "peer/opaque.log": {
+      "bytes": 14664,
+      "sha256": "65aa6e9b9fa742743da590073590f90aa241664ce37d1ff12a1b36e2230d8b1d"
+    },
+    "peer/peer.json": {
+      "bytes": 236,
+      "sha256": "9896396d7a86d065a6c253c721c4ed26cb9ea33ad21c0a6d3a23e127f3289edb"
+    },
+    "outbox/outbox": {
+      "bytes": 40,
+      "sha256": "e6a090cb0a2d925beaee99acb041fdcd7545d8d400c1a96678a83b1898877f6b"
+    },
+    "acknowledged.raw": {
+      "bytes": 268435456,
+      "sha256": "3d8db1f666c98ff4114adda8c58cc830cec85f6c7ba83ecb616dfe9bfce68627"
+    },
+    "reference.raw": {
+      "bytes": 2367761,
+      "sha256": "bbcaa3ae7ff82d25ebee38eb8df91155e08d1dfe4da6e415dfa25f3419662632"
+    }
+  },
+  "focused_boundary_negatives": {
+    "path": "build/usb/usb8-boundary-negative-tests-a2.log",
+    "sha256": "d383baabceb0833755b7395f7261bdf314c7bb549dbeaf33d9700a710119194e"
+  },
+  "initial_sequence_oracle": {
+    "path": "build/usb/usb8-wire-initial-sequence-a2.json",
+    "sha256": "910fd1b08403d126b549ca22aae5d67d13c52e6a206c3fa8b4c4139b57ef29f0"
+  },
+  "both_restart": {
+    "path": "build/usb/usb-host-pending4-both-restart-a2/result.json",
+    "sha256": "d0cb0b5ed3ba1d8fe448377f92c342d55f5679749c5085f918aa35d1d2e8a4cb"
+  },
+  "both_restart_result": "RESULT ACK NEXT 2 ERROR 0 SPENT 500000",
+  "both_restart_host_seconds": 5.198784291977063,
+  "actual_wait_clocks": 500000,
+  "before_crash": {
+    "peer_effects": 1,
+    "pending_outbox_sha256": "dadfed3fe3d58a099880058a66dec7b66e23db398b887bd98edb9cef591fe756",
+    "pending_frame_bytes": 584,
+    "next_sequence": 1,
+    "actual_pending_command": "WAIT 100000",
+    "peer_log_sha256": "cc85c43870517fb0c0195e1daed40468411679faeb36d48c27a4c0ff33415ec5",
+    "payload_sha256": "110009dcee21620b166f3abfecb5eff7a873be729d1c2d53822e7acc5f34eb9b"
+  },
+  "durable_effects": 1,
+  "exact_persisted_payload": true,
+  "same_writer_sequence": true,
+  "owned_children_reaped": true,
+  "fixture_source_sha256": "a9fbfa43d4d33a60f08b6358181eefdcdfdf77efdbf32b475cbc189d746f17cd",
+  "fixture_binary_sha256": "0730004bf5db7fec29e862a72d6986d83affad7f81b6b2b6c4110cbee5f98968",
+  "policy_prepared_sha256": "1c2ffc4fb0556687d2ea531f12133d14fe70320d22b7ba536265036b35526d4a",
+  "policy_binary_sha256": "d5bdaa2127ff9025b95e7ec55cdf769eb71d54304bcce167d9af4aadc29be54b",
+  "clock_proof_sha256": "27dd212d09e6a64c27b6d6d06077589efb9445bfcfc5a56ba5e7ccb90f4de18d",
+  "wait_adapter_sha256": "2544a798410b10d68259d8906b4b2eb46d09f3680903df1cfc72eb6a62b1d06f",
+  "restart_observer_sha256": "02f47e85e4a4f67adba5a52de36f03928e03a598e1bb1e80a0517c83392f7b31",
+  "original_failures": [
+    {
+      "receipt": {
+        "path": "build/usb/usb-host-pending4-both-restart-a1/result.json",
+        "sha256": "758e7187354d8a440f9cc29da7a10bd7fd56334dc07e66b71dcddc032c51b0a4"
+      },
+      "reason": "genuine host fixture syntax rejected before either actor executed"
+    }
+  ],
+  "cold_guest": {
+    "status": "RUNNING",
+    "path": "build/usb/usb8-policy4-acknowledged-cold-a1/result.json",
+    "scope": "new CPU cold from this current archive; no machine restore; original7200s/1.6Bbound",
+    "supervision_manifest": {
+      "path": "build/usb/usb8-policy4-acknowledged-cold-a1.supervision/manifest.json",
+      "sha256": "db1a7ea4d0661ace4177ffa53acad7a782f82902c2833859e9a34aba6a392e7d"
+    }
+  },
+  "remaining": [
+    "complete new-CPU cold guest/controller qualification",
+    "original USB8 Redo/navigation/explicitSave/failedSave workflow",
+    "USB PHY/full conformance",
+    "general privately-live peer continuation",
+    "arbitrary QEMU cached-state continuation"
+  ]
+}
