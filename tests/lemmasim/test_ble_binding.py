@@ -43,9 +43,9 @@ class BLEBinding(unittest.TestCase):
   with tempfile.TemporaryDirectory() as temporary:
    runtime=object.__new__(session.RTL);runtime.checkpoint_identity='a'*64
    path=Path(temporary)/'state'
-   for profile,allowed in [('lemma-silicon-dev/0.3.0',(1,2)),('lemma-silicon-dev/0.4.0',(3,)),('lemma-silicon-dev/0.5.0',(4,))]:
+   for profile,allowed in [('lemma-silicon-dev/0.3.0',(1,2)),('lemma-silicon-dev/0.4.0',(3,)),('lemma-silicon-dev/0.5.0',(5,))]:
     runtime.identity={'profile':profile}
-    for version in range(5):
+    for version in range(6):
      path.write_bytes(b'LMSSRTL1'+struct.pack('<Q',version)+b'a'*64+struct.pack('<4Q',16,1,0,0)+struct.pack('<2Q',0,7)+b'\0')
      if version in allowed:runtime.preflight_checkpoint(path,7)
      else:

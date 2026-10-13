@@ -3,7 +3,7 @@
 """Genuine checked RV64 BLE PIO/IRQ probe, sampled packet peer, captured suffix.
 
 Manual unauthenticated LE1M context only. No connection, RF, full Bluetooth,
-USB, notebook companion durability or general external-Pending checkpoint claim.
+USB or notebook companion durability. Pending continuation has its own checker.
 """
 import argparse,csv,hashlib,json,os,shutil,signal,subprocess,sys,time
 from pathlib import Path
@@ -54,7 +54,10 @@ def main():
    require(process.poll() is None,'source-bound public startup failed; see launch.log');require(time.monotonic()<startup,'owner startup bound');time.sleep(0.02)
   first=control({'action':'inspect'});result['identity']=first['identity'];result['initial']=first['machine']
   require(first['machine']['cycle']==0 and first['machine']['ble']['pending_external']==1,'cold live peer startup was not represented as Pending')
-  result['pending_snapshot_rejection']=rejected({'action':'snapshot','path':str(out/'unresolved')},'unresolved')
+  before=inspect();tape=sha(directory/'ble.outcomes');t=time.monotonic()
+  control({'action':'snapshot','path':str(out/'startup-pending')})
+  require(inspect()==before and sha(directory/'ble.outcomes')==tape,'startup Pending snapshot polled/drained/mutated original work')
+  result['startup_pending_snapshot']={'seconds':time.monotonic()-t,'cycle':before['cycle']}
   result['source_validated_public_startup']=True
   snapshot=None
   while snapshot is None:

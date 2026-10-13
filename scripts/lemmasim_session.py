@@ -269,7 +269,7 @@ class RTL:
         # Each selected binding admits only its declared container schema; the
         # exact runtime identity and CRC/state checks still apply below.
         profile=getattr(self,'identity',{}).get('profile')
-        versions=(4,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        versions=(5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
         # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.

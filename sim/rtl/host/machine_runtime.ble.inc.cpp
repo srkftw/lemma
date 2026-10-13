@@ -105,15 +105,22 @@ void Machine::ble_after_edge(){
  s.ble_to_chip_valid=soc.ble_peer_tx_sample_valid&&!s.ble_peer_dropping;s.ble_to_chip_bit=soc.ble_peer_tx_sample_bit;
  s.ble_chip_samples+=soc.ble_tx_sample_valid;s.ble_peer_samples+=soc.ble_peer_tx_sample_valid;
 }
-void Machine::bind_ble_replay(const std::string&path){
- if(!BINDING_BLE_ENABLED||!s.isolated||!s.ble_attached||!s.ble_ready||s.ble_pending||!ble_fork_suspended)throw std::runtime_error("BLE outcomes require a suspended isolated resolved peer fork");
- auto tape=ble_read_outcomes(path);auto next=std::lower_bound(tape.begin(),tape.end(),s.ble_next_id,[](const BleOutcome&r,uint64_t id){return r.id<id;});
- // The cached accepted logical state is load-bearing: the tape's previous
- // complete actual response must match it before any future clocks advance.
- if(next==tape.begin()||(next-1)->id!=s.ble_last.id||(next-1)->issued!=s.ble_last.issued||(next-1)->accepted!=s.ble_last.accepted||(next-1)->header!=s.ble_last.header||(next-1)->payload!=s.ble_last.payload||(next-1)->frame!=s.ble_last.frame)throw std::runtime_error("BLE tape lacks exact accepted checkpoint outcome");
+static uint64_t ble_tape_cursor(const State&s,const std::vector<BleOutcome>&tape){
+ uint64_t id=s.ble_pending?(s.ble_ready?s.ble_next_id-1:0):s.ble_next_id;
+ auto next=std::lower_bound(tape.begin(),tape.end(),id,[](const BleOutcome&r,uint64_t request){return r.id<request;});
+ if(s.ble_ready){
+  if(next==tape.begin()||(next-1)->id!=s.ble_last.id||(next-1)->issued!=s.ble_last.issued||(next-1)->accepted!=s.ble_last.accepted||(next-1)->header!=s.ble_last.header||(next-1)->payload!=s.ble_last.payload||(next-1)->frame!=s.ble_last.frame)throw std::runtime_error("BLE tape lacks exact accepted checkpoint outcome");
 #ifndef __EMSCRIPTEN__
- auto previous=BlePeerTransport::parse_recorded_reply((next-1)->frame);if(previous.logical_state!=s.ble_accepted_state)throw std::runtime_error("BLE tape cached peer context differs");
+  if(BlePeerTransport::parse_recorded_reply((next-1)->frame).logical_state!=s.ble_accepted_state)throw std::runtime_error("BLE tape cached peer context differs");
 #endif
- if(next!=tape.end()&&(next->id!=s.ble_next_id||next->issued<s.cycle))throw std::runtime_error("BLE tape next request predates checkpoint");
- auto cursor=next-tape.begin();ble_replay=std::move(tape);ble_replay_cursor=cursor;options.ble_replay_path=path;ble_fork_suspended=false;
+ }
+ if(s.ble_pending){
+  if(next==tape.end()||next->id!=id||next->issued!=s.ble_request_cycle||next->header!=s.ble_request_header||next->payload!=s.ble_request_payload||next->accepted<s.ble_poll_cycle||(next->accepted-s.ble_poll_cycle)%1000)throw std::runtime_error("BLE tape does not cover inherited request and poll boundary");
+ }else if(next!=tape.end()&&(next->id!=s.ble_next_id||next->issued<s.cycle))throw std::runtime_error("BLE tape next request predates checkpoint");
+ return next-tape.begin();
+}
+void Machine::bind_ble_replay(const std::string&path){
+ if(!BINDING_BLE_ENABLED||!s.isolated||!s.ble_attached||!ble_fork_suspended)throw std::runtime_error("BLE outcomes require a suspended isolated peer fork");
+ auto tape=ble_read_outcomes(path);auto cursor=ble_tape_cursor(s,tape);
+ ble_replay=std::move(tape);ble_replay_cursor=cursor;options.ble_replay_path=path;ble_fork_suspended=false;
 }
