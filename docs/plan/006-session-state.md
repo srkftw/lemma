@@ -847,4 +847,25 @@ pending test fails before firstWRITE at30M/226.633s; the actual boundary is
 retained. This remains a failure, with no extended bound or wholepending claim.
 Newcore full browser cold/OPFS and applicable native comparison remain separate.
 
+
+
+## Native evaluation schedule developer control
+
+[The measured comparison](../evidence/006-native-evaluation-schedule.json)
+keeps the ordinary reference schedule. Omitting one extra disabled-domain
+low-edge eval passed eight complete same-binary checkpoints, actual guest UART,
+held-RAM private suffixes and warm reset edges. Initial wall time regressed
+64.800s→74.806s; four balanced retained suffixes saved only1.87% aggregate CPU
+with mixed samples. This is no general speedup or full Ready claim.
+
+`python3 scripts/check_native_evaluation.py --native-build build/silicon/task006-canonical-eval-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --resume-from build/silicon/task006-disabled-eval-compare-a1 --work-dir build/silicon/eval-retained-new`
+uses the unchanged admitted cut, archived native headers and private backing;
+it never reads the original medium. The complete250-input identity seal and
+five malformed/changed input mutants pass a separate read-only admission check.
+For a fresh native build, `--capture-current-source` seals only original inputs
+that still match, refuses existing archives and includes the selected profile.
+The old candidate build retains its original false default and source identity;
+the maintained default is true. Original execution receipts are not relabeled
+as results from the later host admission extension.
+
 -->
