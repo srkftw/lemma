@@ -47,4 +47,23 @@ versus70 in the prior one-word callback. Full-frame UserCopy still performs one
 complete mapping-list validation per syscall. Real guest performance, fresh
 whole-image audits and native/browser workflow results require separate receipts.
 Old compiled images and checkpoints keep their original source/runtime identity.
+
+## Exact artifact observer successor
+
+The first fresh whole Closure initializer compiled in67.086s but its ordinary
+audit failed at144.569s because the Surface borrow observer required the old
+now-unreachable `fromWordStep` callback. That FAIL and complete unchanged361
+input archive remain retained. This is a demonstrated observer gap; the target
+implementation and its finite fault-prefix comparison did not change.
+
+The dedicated `usercopy_page_words.py` observer admits the new three-argument
+page-span call only with exact pre/post bodies, signatures/effects and seven
+private caller closures. It checks eight ordered read64/write64 pairs, original
+read values,64-block/7-word-tail bounds and the optimized sixteen ordered
+volatile64-bit accesses. The ordinary IR audit invokes it for both phases.
+The existing seven-argument callback path retains its original checks/pins, and
+the new Surface path retains all eleven scratch/page/fallback gates. Actual
+genuine new and historical exports pass;43 actual mutations reject. This
+artifact qualification does not claim compiler correctness or new guest speed.
+
 -->

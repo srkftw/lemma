@@ -22,6 +22,40 @@
       }
     }
   },
+  "artifact_observer": {
+    "actual_post_block": "16 ordered volatile i64 accesses, align8, original read values",
+    "actual_pre_block": "8 ordered checked read64/write64 pairs, original values and64-block/7-word-tail bounds",
+    "common_borrow_gates": 11,
+    "genuine_inputs": {
+      "build/kernel/task006-closure-initializer-a2/kernel/program.ll": "623109609ffee004804cf5384bc5fc5951b4b1faebeaa301e4fed3d7426d5b24",
+      "build/kernel/task006-closure-initializer-a2/kernel/program.opt.ll": "9af5923cecec41d35af1104f6247e72a5071324b6799825c630dc04fd77d399b",
+      "build/kernel/task006-closure-initializer-a2/kernel/unit.json": "8769f9fa02e182a5af87687075797cf9c1e030e35ef5402e52f8bf3ab802f0e3",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/program.ll": "fd263c94cb94e8eaecf150583ec6c22a5293f8188023b7a76cb10bf051624ebd",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/program.opt.ll": "79fccbd56f6bfe8cfae70015da5e0f0e0f31583ec77e8613d1961e44dd69a647",
+      "build/kernel/task006-usercopy-closure-initializer-a1/kernel/unit.json": "c769072924f69a5354365c47a75b78b9d1f5f854567e0e2570531b5abe3cb47c"
+    },
+    "helper": {
+      "bytes": 11086,
+      "path": "scripts/usercopy_page_words.py",
+      "sha256": "a4134f130ddb7e417dcc50316b46c19f24d0e3555c20c4711fad9deb2bcd921c"
+    },
+    "legacy_callback_route_unchanged": true,
+    "mutation_fixture": {
+      "bytes": 7039,
+      "path": "tests/kernel/usercopy_page_words_mutations.py",
+      "sha256": "588c26dd583a7df206d4505517690de2d989e5c305448c3395860fdbf254afe9"
+    },
+    "new_pre_post_complete_shapes": 9,
+    "private_caller_closures": 7,
+    "receipt": {
+      "bytes": 27715,
+      "path": "build/managed/usercopy-hotpath-a1/page-word-observer-a1.json",
+      "sha256": "1c3e117134fd10b4e15e3a888585bcc8313bdea117d632bae181d9ebe0aa019b"
+    },
+    "rejected_actual_mutations": 43,
+    "scope": "Narrow artifact admission only; no target change, compiler-correctness or guest/native/browser acceptance claim",
+    "status": "PASS_ACTUAL_PAGE_WORD_OBSERVER_AND_LEGACY"
+  },
   "contract": "docs/contracts/006-user-copy-page-words-v1.md",
   "earlier_component_without_descriptor_alias_matrix": {
     "bytes": 5889,
@@ -232,6 +266,28 @@
     "build/managed/usercopy-hotpath-a1/maintained-build-a1.log",
     "build/managed/usercopy-hotpath-a1/maintained-qualification-a1/result.json"
   ],
+  "retained_whole_a1_failure": {
+    "cause": "Existing Surface borrow observer required now-unreachable fromWordStep7-argument callback; new genuine source emits checked copyPageWords3-argument path. Complete361-source archive unchanged. Notebook/CPU not run.",
+    "genuine_initializer_build_seconds": 67.08586262504105,
+    "image_sha256": "f664bbe34818f35ed7ed71035530dbe738935bf948cf567a874ee2c9fc169b58",
+    "receipt": {
+      "bytes": 1485,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/result.json",
+      "sha256": "c87c43afa019f043553ed3f25e2154a7dee910cd7825d820bbfbdef4e29ba83d"
+    },
+    "seconds": 144.56888097699266,
+    "source_inventory": {
+      "bytes": 38831,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/consumed-source-root/source-inputs.json",
+      "sha256": "e730d01a36fa3a61433e0956c1b440899ee56ee63ec7e937db3834c9fb2d5839"
+    },
+    "source_seal": {
+      "bytes": 346,
+      "path": "build/managed/usercopy-closure-whole-pair-a1/source-seal.json",
+      "sha256": "864ae25ca4860985f13795fb79307a58342a192490b41a2b9a3df102a90b040d"
+    },
+    "status": "FAIL"
+  },
   "rv64_static": {
     "functions": [
       {

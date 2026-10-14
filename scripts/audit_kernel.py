@@ -1106,8 +1106,15 @@ def validate_surface_read_page_borrow(unit: dict, ir: str) -> dict:
     rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']};n={s:r['symbol'] for s,r in rows.items()}
     d='Lemma.Platform.LemmaSim.DeviceService.';u='Lemma.Kernel.Memory.UserCopy.';x='Lemma.Kernel.Memory.Access.'
     f='Lemma.Kernel.Memory.Frames.resolvePurpose';paper='Lemma.Drivers.Paper.upload'
-    required={d+s for s in ('upload','uploadOrdinary','uploadBorrowed','get','fatal')}|{u+s for s in ('copyFromUser','copyFromUserResult','copyFromUserReadPage','copyFromUserReusingReadPage','scratch','validRange','maximumLength','wordsAligned','fromStep','fromWordStep')}|{f,paper,x+'read64'}
+    page_words=u+'copyPageWords' in n
+    word_callback=u+('copyPageWords' if page_words else 'fromWordStep')
+    required={d+s for s in ('upload','uploadOrdinary','uploadBorrowed','get','fatal')}|{u+s for s in ('copyFromUser','copyFromUserResult','copyFromUserReadPage','copyFromUserReusingReadPage','scratch','validRange','maximumLength','wordsAligned','fromStep')}|{word_callback,f,paper,x+'read64'}
     if unit.get('role')!='kernel' or not required<=n.keys():raise Core0Error('surface read-page borrow lacks its closed kernel inventory')
+    page_word_report=None
+    if page_words:
+        if u+'fromWordStep' in n:raise Core0Error('surface read-page borrow mixes legacy and page-word callbacks')
+        from usercopy_page_words import validate as validate_page_words
+        page_word_report=validate_page_words(ir,unit,optimized=False)
     for source,count in ((u+'copyFromUserReadPage',5),(u+'copyFromUserReusingReadPage',7),(u+'copyFromUserResult',6)):
         if rows[source].get('args')!=['u64']*count or set(rows[source].get('effects',[]))!={'checked-access','physical-read','physical-write'}:
             raise Core0Error('read-page copy helper signature/effects differ')
@@ -1157,10 +1164,10 @@ def validate_surface_read_page_borrow(unit: dict, ir: str) -> dict:
         if any(_structured_reachable(successors,label,site) for site in sites):
             _local_closed_calls('\n'.join(lines),readonly)
     reuse=_ir_definition_body(ir,n[u+'copyFromUserReusingReadPage'])
-    allowed={n[source] for source in (u+'copyFromUser',u+'scratch',u+'validRange',u+'maximumLength',u+'wordsAligned',u+'fromStep',u+'fromWordStep')}
+    allowed={n[source] for source in (u+'copyFromUser',u+'scratch',u+'validRange',u+'maximumLength',u+'wordsAligned',u+'fromStep',word_callback)}
     allowed|={symbol for source,symbol in n.items() if source.startswith('Lemma.User.ABI.')}
     _local_closed_calls(reuse,allowed)
-    for callback in (u+'fromStep',u+'fromWordStep'):
+    for callback in (u+'fromStep',word_callback):
         gates.append(validate_checked_call_gate(reuse,n[u+'scratch'],n[callback]))
     if len(re.findall(r'udiv i64 %arg1, 4096$',reuse,re.M))!=1 or len(re.findall(r'udiv i64 %arg3, 4096$',reuse,re.M))!=1:
         raise Core0Error('read-page reuse changed its exact page equality')
@@ -1173,21 +1180,24 @@ def validate_surface_read_page_borrow(unit: dict, ir: str) -> dict:
     remainder_phis=[result for result,v in re.findall(r'('+var+r') = phi i64 \[ %arg3, %[^ ]+ \], \[ ('+var+r'), %[^ ]+ \]',reuse) if v in remainder]
     bounds=[result for result,right in re.findall(r'('+var+r') = icmp ule i64 %arg6, ('+var+r')$',reuse,re.M) if any(address==right and rem in remainder_phis for address,rem in remaining)]
     if len(pagecmp)!=1 or len(bounds)!=1:raise Core0Error('read-page reuse lost its exact whole-span page bound')
-    for callback in (u+'fromStep',u+'fromWordStep'):
+    for callback in (u+'fromStep',word_callback):
         gates.extend([validate_boolean_gate(reuse,pagecmp[0],n[callback]),validate_boolean_gate(reuse,bounds[0],n[callback])])
     operands=_local_arithmetic(reuse,{})
     source=('add',('sub','%arg2',('urem','%arg1',4096)),('urem','%arg3',4096))
     _,destination=_local_checked_result(reuse,n[u+'scratch'],'i64 %arg4, i64 %arg5, i64 %arg6')
-    for callback in (u+'fromStep',u+'fromWordStep'):
+    for callback in (u+'fromStep',word_callback):
         args=_local_call_arguments(reuse,n[callback])
         if len(args)!=1:raise Core0Error('read-page reuse changed the bounded copy callback count')
         fields=args[0].split(', ')
-        if len(fields)!=7 or operands.get(fields[3][4:])!=source or fields[4]!='i64 0' or fields[5]!='i64 '+destination or fields[6]!='i64 %arg6':
+        correct=(len(fields)==3 and operands.get(fields[0][4:])==source and fields[1]=='i64 '+destination and fields[2]=='i64 %arg6') if page_words and callback==word_callback else (len(fields)==7 and operands.get(fields[3][4:])==source and fields[4]=='i64 0' and fields[5]=='i64 '+destination and fields[6]=='i64 %arg6')
+        if not correct:
             raise Core0Error('read-page reuse substituted checked page arithmetic or scratch span')
     if _local_call_arguments(reuse,n[u+'copyFromUser'])!=['i64 %arg0, i64 %arg3, i64 %arg4, i64 %arg5, i64 %arg6']*2:
         raise Core0Error('read-page fallback lost complete ordinary validation')
+    shapes=page_word_report['complete_shapes'] if page_words else _local_pinned_shapes(ir,n,(u+'copyFromUserResult',u+'copyFromUserReusingReadPage'))
     return {'helper':u+'copyFromUserReusingReadPage','metadata_bytes':32,'metadata_scratch_offset':1024,'page_bytes':4096,
-            'gates':gates,'pinned_shapes':_local_pinned_shapes(ir,n,(u+'copyFromUserResult',u+'copyFromUserReusingReadPage')),'scope':'same nonpreemptible surface upload; exact checked alias, distinct descriptor scratch, freshly owned destination; ordinary path outside checked page'}
+            'gates':gates,'pinned_shapes':shapes,'scope':'same nonpreemptible surface upload; exact checked alias, distinct descriptor scratch, freshly owned destination; ordinary path outside checked page',
+            **({'page_word_successor':page_word_report} if page_words else {})}
 
 
 def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
@@ -5115,6 +5125,8 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
 def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | None = None) -> dict:
     if optimization is not None and optimization not in OPT_PASSES:
         raise Core0Error("IR audit optimization level differs from closed pipeline")
+    from usercopy_page_words import validate_if_present as validate_page_words
+    validate_page_words(ir,unit,optimized=optimized)
     from paper_next import validate as validate_paper_next
     from paper_executed import validate as validate_paper_executed
     from paper_wire import validate as validate_paper_wire
