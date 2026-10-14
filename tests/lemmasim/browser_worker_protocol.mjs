@@ -30,7 +30,8 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   case 'lemma_pixel_count':return 1;
   case 'lemma_capture_path':return '/capture.io';
   case 'lemma_snapshot':files.set(args[0],encoder.encode(String(current)));return 0;
-  case 'lemma_restore':isolated=true;current=BigInt(decoder.decode(files.get(args[0])));return 0;
+  case 'lemma_restore':{const archive=decoder.decode(files.get(args[0]));if(!/^\d+$/.test(archive))return 1;
+   const restored=BigInt(archive);if(restored>MAX)return 1;isolated=true;current=restored;return 0;}
   case 'lemma_export':case 'lemma_export_private':files.set(args[0],encoder.encode('opaque'));return 0;
   case 'lemma_rebind_private':case 'lemma_backing_outcomes':return 0;
   case 'lemma_reset':current=0n;return 0;
@@ -68,6 +69,36 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  await f.send('close');await f.send('open',{name:fork,paused:true,mode:'student'});
  assert.equal(f.state().backingMedium.name,fork);assert.equal(f.state().backingMedium.private,false);
  assert.equal(f.cycle(),0n);assert.equal(f.state().guestCommit,null);assert.equal(f.timers.size,0);
+}
+// Rejected state leaves the exact active scheduling budget and raw cursor
+// intact. The next scheduled quantum must still consume that same budget.
+{
+ const f=await fixture({cycle:0n,paused:true});
+ await f.send('raw',{row:'now button 1'});await f.send('run',{cycles:'100001',hostSeconds:'1'});
+ const before=JSON.stringify(f.state()),timerKeys=[...f.timers.keys()],calls=f.calls.length;
+ for(const bytes of [encoder.encode('corrupt').buffer,encoder.encode(String(MAX+1n)).buffer,'invalid-type']){
+  await f.send('restore',{bytes});assert.equal(f.cycle(),0n);
+  assert.equal(JSON.stringify(f.state()),before);assert.deepEqual([...f.timers.keys()],timerKeys);
+  assert.equal(f.messages.at(-1).type,'error');assert.equal(f.mediumCalls.filter(x=>x==='flush').length,0);
+ }
+ assert.equal(f.calls.slice(calls).filter(x=>x[0]==='lemma_restore').length,2);
+ await f.drain();assert.equal(f.cycle(),100001n);assert.equal(f.state().budget.used,'100001');
+ await f.send('events');assert.deepEqual(JSON.parse(decoder.decode(f.exports().at(-1).bytes)).events,['0 button 1']);
+}
+// A valid restore that cannot bind its private copy clears earlier launch
+// observations immediately, even before retry. It never reports old success.
+{
+ const f=await fixture({cycle:0n,paused:true,onRun:({setUART,setPaper})=>{
+  setUART(record(0x420)+record(0x425,1n)+record(0x421,7n));setPaper({completed:'1',accepted:'1'});
+ }});
+ await f.send('run',{cycles:'50000',stopOnReady:true});await f.drain();
+ assert.equal(f.state().readyAt.cycle,'50000');assert.equal(f.state().guestCommit.state,'saved');
+ f.setStorageFault('flush');await f.send('restore',{bytes:encoder.encode('17').buffer});
+ assert.equal(f.cycle(),17n);assert.equal(f.state().readyAt,null);assert.equal(f.state().guestCommit,null);
+ assert.equal(f.state().guestObservation,'continuation');assert.equal(f.state().backingMedium.ready,false);
+ assert.equal(f.state().budget,null);assert.equal(f.timers.size,0);
+ f.setStorageFault(null);await f.send('bind');assert.equal(f.cycle(),17n);
+ assert.equal(f.state().readyAt,null);assert.equal(f.state().guestCommit,null);assert.equal(f.timers.size,0);
 }
 // Student can retry only its opaque private copy. Captured-outcome binding
 // stays privileged; neither a failed copy nor retry executes a guest clock.

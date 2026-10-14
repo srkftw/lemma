@@ -81,6 +81,12 @@ browser copies its opaque bytes to an exclusively created OPFS fork, flushes
 that copy, and rebinds only after full byte equality. A storage failure after a
 valid restore leaves the machine paused; Resume cannot use MEMFS as durable
 backing. Retry private binding or export that machine's actual backing bytes.
+Rejected archives preserve the current scheduling timer, run budget, input
+capture and launch observations as well as authoritative machine state. The
+synchronous machine validator runs before cancelling a live run. Once a valid
+archive is adopted, the worker clears old Ready/save observations before any
+asynchronous private copy; a failed copy cannot expose the previous launch's
+success. These are repairs within control contract2, not a new state format.
 
 Native and Wasm implementation identities are distinct. Their archive headers
 need not match and cannot be interchanged. For this pinned little-endian port,

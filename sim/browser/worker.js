@@ -161,9 +161,13 @@ async function bindPrivate(){
   next.flush();core.backing=timedBacking(next);check('lemma_rebind_private');const old=handle;handle=next;activeMediumName=nextName;next=null;backingReady=true;old.close();
  }finally{if(stream)core.FS.close(stream);core.FS.unlink(path);next?.close();if(!backingReady)core.backing=timedBacking(handle);}
 }
-async function restore(bytes){
+function restoreCheckpoint(bytes){
+ if(!(bytes instanceof ArrayBuffer)||bytes.byteLength>805306368)throw Error('Checkpoint exceeds the machine bound');
  core.FS.writeFile('/incoming.bin',new Uint8Array(bytes));
  try{check('lemma_restore',['string'],['/incoming.bin']);}finally{core.FS.unlink('/incoming.bin');}
+}
+async function restore(bytes){
+ restoreCheckpoint(bytes);
  // A valid restored machine stays paused until its private origin backing
  // is complete. On storage failure, retry binding or export its actual bytes.
  backingReady=false;await bindPrivate();
@@ -199,7 +203,16 @@ onmessage=async({data:m})=>{
   postMessage({type:'export',name:'lemma-checkpoint.bin',bytes:b},[b.buffer]);sendState();}
  else if(m.action==='export'){pause('export');const path='/durable-'+loops+'.raw';check('lemma_export',['string'],[path]);
   const b=core.FS.readFile(path);core.FS.unlink(path);postMessage({type:'export',name:'lemma-backing.raw',bytes:b},[b.buffer]);sendState();}
- else if(m.action==='restore'){pause('restore');budget=null;await restore(m.bytes);guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;sendState();panel(true);}
+ else if(m.action==='restore'){
+  // The machine validates before replacing authoritative state. Reject an
+  // incompatible/corrupt archive without cancelling the live run or budget.
+  // No asynchronous copy starts until this synchronous acceptance succeeds.
+  try{restoreCheckpoint(m.bytes);}catch(error){postMessage({type:'error',error:String(error)});return;}
+  pause('restore');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='continuation';capture=[];checkpoints={};replayUntil=null;readyAt=null;
+  // Clear launch observations before private backing can fail. The accepted
+  // continuation remains paused and retryable, with no prior Ready/save label.
+  backingReady=false;await bindPrivate();sendState();panel(true);
+ }
  else if(m.action==='bind'){pause('bind');if(backingReady)throw Error('Private backing is already bound');await bindPrivate();sendState();}
  else if(m.action==='outcomes'){pause('outcomes');if(!backingReady)throw Error('Private origin backing is incomplete');
   if(!(m.bytes instanceof ArrayBuffer)||m.bytes.byteLength>268435456)throw Error('Outcome tape exceeds its bound');

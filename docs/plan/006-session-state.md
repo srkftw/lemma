@@ -1262,4 +1262,28 @@ subsequentexactcandidateacceptanceSKIPPED. Actualcheckoutc00a58d..., originalZIP
 f832ca7a.../18,063,837B and retainedunit/IR/log preserve thefailure. Independently
 qualified correction is being prepared; no rerun or candidatePASS inferred.
 
+
+## October14 browser restore rejection and private-name continuity
+
+Actualcontrol2 Student imports opaque Saved29 backing and privately restores the
+actual Saved29 machine without clocks. All256MiB exported bytes equal97547b...;
+fullcopy/flush/rebind publishes fork_cefe735fda6f48899d9031cb5df9ca29 in both
+active status and retained Open name. Close/Open constructs an independentCPU
+atcycle0 against that sameexistingOPFSfile; no restore/import/initializer enters
+this newCPU. Its original2B/7200s/2GiB coldrun remainsRUNNING. The priorStudent
+restore is explicitly a separate phase, not a newcold acceptance.
+
+Control2 restore now validates synchronously before cancelling clocks/budget.
+Corrupt/type/range fixture rejection preserves active timerkeys, rawcursor and
+budget; validrestore/privateflushfailure clears priorReady/Saved before retry.
+Actualprepared74b4 browser publicUI restores Saved29 privately, runs exactly
+onecycle, then rejects a32byte corruptarchive without live adoption. Complete
+145626900byte observational checkpoints before/after are byte-identical
+c67303c6...; allinspection state, private name, spent1cyclebudget, clocks and
+launch observations agree. Actualheap345964544,900s/2GiB bounds. Resultfbf0e9e...
+at build/browser/restore-rejection-owner-a1 is distinct from coldrecovery or
+an arbitrary pending cachedstate suffix. Realactive-run rejection and OPFSfault
+are not separately claimed; active scheduling and private-copyfailure are host
+boundary checks. No guest/core/stateformat changed.
+
 -->

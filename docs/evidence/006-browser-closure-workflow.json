@@ -674,12 +674,45 @@
     }
   },
   "active_browser_medium_name": {
-    "status": "PASS_HOST_CONTROL_ONLY",
+    "status": "PASS_ACTUAL_STUDENT_PRIVATE_COPY_AND_NAME_COLD_REOPEN_RUNNING",
     "control_contract": "lemma-browser-session-modes/2",
     "behavior": "Publish actualprivate OPFSname only after fullopaque copy/flush/rebind; preserve nameafterClose forfreshCPUOpen, keepusernext-name edits; Student canretryincompleteopaqueprivatecopy, capturedoutcomebinding staysprivileged.",
     "host_checks": "5browser distribution +2 actualapp/worker protocol fixtures PASS, scaffold metadata/18tests PASS. Existing control1 bundles preserved.",
-    "browser_execution": "NOT_RUN newcontrol2; actuala3 canvasSaved29 remainscontrol1.",
+    "browser_execution": "Actualcontrol2 Student publicrestore/privatecopy/name/Close PASS; then newCPU cycle0 Open samepersistentname, instrumentedcold2B/7200s RUNNING. Priorrestorephase is explicit, not input to newCPU.",
     "guest_or_machine_core_changes": false,
-    "source_input_boundary": "BrowserJS/builder/contract notconsumed by377targetcompiler sourceinputs."
+    "source_input_boundary": "BrowserJS/builder/contract notconsumed by377targetcompiler sourceinputs.",
+    "actual_student": {
+      "bundle": "build/browser/task006-surface-bulk-closure-a4",
+      "bundle_sha256": "396665e2e0832cc5dcf38f06fad6bd6b54048ee5436514d83340e4e84809f8c9",
+      "name": "fork_cefe735fda6f48899d9031cb5df9ca29",
+      "all256MiB_bytes_equal_saved29": true,
+      "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
+      "guest_clock_on_student_restore": "770050000",
+      "additional_guest_cycles": 0,
+      "new_open_cycle": "0",
+      "result": "build/browser/control2-private-reopen-owner-a1/student-restore-result-a1.json",
+      "cold_plan": "build/browser/control2-private-reopen-owner-a1/plan.json",
+      "cold_status": "RUNNING"
+    }
+  },
+  "restore_validation_control_repair": {
+    "status": "PASS_ACTUAL_MACHINE_REJECTION_AND_IDENTICAL_AUTHORITATIVE_CHECKPOINTS",
+    "behavior": "Rejected corrupt/incompatible archives retain live scheduling/budget/rawcapture/labels; acceptedrestore clearsoldReady/save beforeprivatebindingcanfail. No core/target change.",
+    "executed_bundle": "build/browser/task006-surface-bulk-closure-a5",
+    "bundle_sha256": "74b4de36b195674c0fa58f73a102cded1418084ea14eeefda28ddbd4dba6fe58",
+    "actual_error": "Error: invalid checkpoint container length",
+    "cycle": "770050001",
+    "heap_bytes": 345964544,
+    "before_after_checkpoint_sha256": "c67303c6bddef13941589c8a8261bd4128495154df9ee5cfd4c32190c8ce72e4",
+    "checkpoint_bytes": 145626900,
+    "complete_inspection_equal": true,
+    "actual_run_cycles": "1",
+    "host_seconds_bound": 900,
+    "heap_bytes_bound": 2147483648,
+    "result": "build/browser/restore-rejection-owner-a1/result-a1.json",
+    "result_sha256": "fbf0e9e3ff79a2b201200576432c2c64f6c21e3f69cc3b76aec40306b11b1a3b",
+    "host_checks": "tests/lemmasim/browser_worker_protocol.mjs: corrupt/type/range rejection while actively scheduled preserves timer keys, rawcursor and exact budget; validrestore/privateflushfailure clears old Ready/Saved beforeretry",
+    "scope": "PublicUI valid Saved29 private restore,1 realcycle, observational snapshot, corrupt32byte archive rejection; no newcold/Ready claim",
+    "remaining": "Live active-run corruption rejected by real publicmachine not separately exercised; active scheduling exactness qualified by worker boundary fixture. Validrestore actual OPFS quota/failure NOT_RUN in browser."
   }
 }
