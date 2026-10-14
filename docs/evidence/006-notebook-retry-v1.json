@@ -1,0 +1,53 @@
+{
+  "schema": "lemma-notebook-retained-retry-component/1",
+  "status": "PASS_COMPONENT",
+  "scope": "actual Lean Actions and genuine existing User2 scalar lowering; no admitted whole-image/recovery/Save claim",
+  "source_head": "72ad3d004e2649380561d3afd8c6eeea79ed9b3e",
+  "source_inputs": {
+    "Lemma/Notebook/RetryPolicy.lean": "ad1c88d7c4eb97d799ab39df3354a91b99a8ee116bf3245a0c8c43c3550c9310",
+    "Lemma/Services/Store/Remount.lean": "2f81f39f6d5bd8559b8bce528c490f3ca475af974e292378a69a3c843e5055f6",
+    "tests/ink/NotebookRetryPolicy.lean": "a333fe8efe544a1ffe7b92d97ad2a30185c302fe2fe3926a9718cb8a99475687",
+    "tests/ink/NotebookRetry.lean": "888be376ffc00d4763df229008e61f0c2354eb35efee41e323ea373d700bf41f",
+    "tests/ink/NotebookRetryCompile.lean": "1c53dee2874cc41243ce13b5a6647a612d22b0e76929c004fc42048af8f79b07",
+    "tests/store/Remount.lean": "6096ec78ec71867e51b58eab36237109d9bcb297841b1cb3b217800abb4d36af",
+    "docs/contracts/006-notebook-retry-v1.md": "f13e781a8f1bb1fd5e7ca20c692d2239c92dad5d3fa3a385a347c700bbf19bbd",
+    "Lemma/Applications/Notebook.lean": "2d7c96f514ad9bbcbe9b3a3fcb3ae13a660cec30e7f2aaa28e7cd5d6171ee0df"
+  },
+  "notebook_source": "exact HEAD plus only RetryPolicy import/append, qualified in isolated complete dependency module environment; Array7 working delta excluded",
+  "qualification_logs": {
+    "build/usb/notebook-retry-stage-a1/qualification-a2.log": "5ec0d3ac0d6653283565f9b19959c5b4997f2757a71dbe7ae69fd4ade74dcdf1",
+    "build/usb/notebook-retry-draft-a1/remount-action-a2.log": "29f1e8fd48f0d1c7b33d5084b3a3710b780dff120ba0f51574a87ff0d4079ecd",
+    "build/usb/notebook-retry-draft-a1/remount-lake-a2.log": "11701e85065f6bd14957b745d733ec14f3a9e4b8d92ed914a4c63f2bd94e5e1e"
+  },
+  "commands": [
+    "timeout 180 nix develop --no-write-lock-file --command bash build/usb/notebook-retry-stage-a1/qualify.sh",
+    "timeout 240 nix develop --no-write-lock-file --command lake env lean --run tests/store/Remount.lean /home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-boundary-a1/acknowledged.raw"
+  ],
+  "action_claims": [
+    "Pinned failed source remains byte-identical; readonly/ambiguous/foreign replies cannot begin mutation",
+    "At most3 explicit user Inspect attempts; no old Inspect becomes Saved",
+    "One other bounded raw buffer;384 samples; release/rendering and pending-safe overflow",
+    "Actual Engine shadow scan of retained Saved11 uses36 READs; no WRITE/BARRIER/format",
+    "Pending/failure/14 invalid adoption facts leave current readonly context/index unchanged",
+    "Genuine12 Notebook roots plus2 Remount roots lower through existing User2 scalar/Action authority"
+  ],
+  "retained_failures": {
+    "build/usb/notebook-retry-stage-a1/qualification.log": "72cea1f835c0a19f4044fffce03862ec5cdff35c799c38daec0420cd76eea5a9",
+    "build/usb/notebook-retry-draft-a1/action-a1.log": "12c4ead52c34b6619e982177aab56de81eb64a5994c78f5e86468be7d668b4a5",
+    "build/usb/notebook-retry-draft-a1/genuine-lowering-a1.log": "5ca53949413ef78dbb0a0c458c09e32a34edf393895bd66ca09fe15df752c2e3",
+    "build/usb/notebook-retry-draft-a1/genuine-lowering-a2.log": "9ef2cf9ea6886e4b67a9b9991a67b1bc28e579253613729af374f10c72f3be30",
+    "build/usb/notebook-retry-draft-a1/remount-lake-a1.log": "db9e7f7adf64ffc79e949ce9a7c405789e7a8d4c80fedf3203eb412677c9c3f1",
+    "build/usb/notebook-retry-draft-a1/remount-action-a1.log": "0941753f887f2f811017a4074a0950a540498f0ff028baaadced1d6520cb93b5"
+  },
+  "opaque_input": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-final-saved11-boundary-a1/acknowledged.raw",
+    "bytes": 268435456,
+    "sha256": "868f341aee58d4d4652b45cd384c0c67adc3f19507bc7a56d37eb8f816144208"
+  },
+  "remaining": [
+    "actual quarantined USB frame reconciliation",
+    "new capability-checked recovery service caller and epoch binding",
+    "new Store entry with public-mode/staging/reply gates",
+    "whole-image/source/object audits and real guest retry/acknowledged Save/newcold"
+  ]
+}

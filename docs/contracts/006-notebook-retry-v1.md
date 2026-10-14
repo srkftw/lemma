@@ -1,0 +1,58 @@
+<!--
+# Notebook retained-failure policy v1
+
+This is an opt-in software component, not an admitted deployment or a completed
+reconnect/Save result. Every historical Notebook root, Store entry and Engine
+method retains its byte-identical definition. `mainRetrySumsBulk` alone selects
+the new User2/Arithmetic3 failure policy; no frozen Wire11 or Clocked13 image is
+replaced. Genuine elaboration and existing scalar/Action lowering are component
+checks, separate from LLVM/object/link audits and RV64 execution.
+
+An actual device error227 retains the exact owned staged record, its source,
+length, object, publication stage and last acknowledged journal sequence.
+The failed raw buffer remains pinned until its complete chunk/page/root chain
+receives the ordinary matching Store replies. One other owned raw buffer accepts
+at most384 samples and renders offline ink while the visible state stays Failed.
+Full/lost input ends only that contact; it never discards the retained source,
+releases a pending IPC operation or overwrites an uncertain record.
+
+Only a fresh toolbar Save press while idle may use one of three explicit
+attempts. It issues the ordinary read-only Inspect request first. Read-only
+mode3, a changed sequence, corrupt/foreign reply, an IPC error or ambiguity
+retains Failed. Inspect is never Saved. Only a coherent writable mode1 at the
+exact prior sequence can start a new Pending request for the exact retained
+record; normal request/generation/status/publication checks still establish
+any later Saved observation. No replayed old Inspect becomes a new receipt.
+
+The current historical Store latches read-only after I/O failure. This component
+therefore supplies useful bounded offline writing and safe explicit inspection,
+but does not make that Store writable. Recoverable reconnect requires the
+separate target/transport work below; this limitation is not a success outcome.
+
+`Store.Remount` is a separately selected shadow-mount library. It accepts only
+the fixed Store current/context buffers and the unused one of its two private
+indexes, plus a nonzero caller-bound ticket and validated connection epoch.
+It mounts opaque bytes through the real Lean Engine with READs only; it never
+formats or supplies a write/barrier. Pending/failing scans and every preflight
+failure leave the current read-only context/index intact. Adoption requires a
+complete valid scan with exact ticket/epoch/capacity/index/buffer facts, copies
+the complete validated context, changes the selected index and invalidates
+cached sectors. Its returned sequence is an observation, not Saved.
+
+The new caller must allocate the two shadow pages, hold the sole block grant,
+resolve any quarantined opaque frame using an actual independent peer receipt,
+and pump actual READ completions. It must keep public Store mode read-only while
+adoption runs and after any copy fault, and gate outstanding staging/replies/
+checkpoint receipts before starting. A partially persisted write is not rolled
+back. Those caller/device/epoch obligations and actual post-failure writable
+publication remain unimplemented by this component commit.
+
+The Action fixtures independently retain pinned bytes, execute literal offline
+raw releases/rendering, reject read-only/ambiguous/malformed replies, enforce
+three attempts and pending-safe exhaustion, and forbid undeclared effects.
+The shadow fixture supplies only generic raw sector bytes from the actual
+acknowledged Saved11 medium. The real Engine performs the scan and validates
+the journal; the fixture does not implement a journal parser. These are host
+Action observations, not target CPU execution, recovery proofs or physical USB
+conformance. Original fixture/compiler/environment failures remain retained.
+-->
