@@ -16,7 +16,8 @@ import sys
 from typing import Sequence
 
 from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS
-from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+from course_await_deployment import (CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS,
+                                     library_source_allowed as course_await_library_source_allowed)
 COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
@@ -297,8 +298,13 @@ def service_executable_module(module: str) -> bool:
 
 def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str, str]:
     """Selected target source only; exporter/compiler host imports are separate."""
+    course_await_library = (configuration in COURSE_AWAIT_CONFIGURATIONS
+                            and type(image.get("id")) is int and image["id"] == 1
+                            and image.get("boot_role") == "store-server"
+                            and course_await_library_source_allowed("user", "Lemma.Services.Store.Server", image))
     return module_closure(root, image["module"], allow_development=".Development." in image["module"],
                           forbid_user_privileged_imports=managed_policy(configuration) is not None,
+                          allow_course_await_library=course_await_library,
                           selected_executable_module=image["module"] if configuration in (*SERVICE_CONFIGURATIONS, *ARITHMETIC_CONFIGURATIONS, "lemmasim-notebook", "lemmasim-initialize", "lemmasim-isolation-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize") else None)
 
 
@@ -347,7 +353,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
                    development_module: str | None = None,
                    development_modules: tuple[str, ...] | None = None,
                    forbid_user_privileged_imports: bool = False,
-                   selected_executable_module: str | None = None) -> dict[str, str]:
+                   selected_executable_module: str | None = None,
+                   allow_course_await_library: bool = False) -> dict[str, str]:
     import re
     if development_modules is None:
         development_modules = ((development_module or module,) if allow_development else ())
@@ -358,7 +365,14 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     if forbid_user_privileged_imports and module.startswith(("Lemma.Kernel.", "Lemma.Compiler.")):
         raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
     recovery_library = (selected_executable_module == "Lemma.Services.Store.ServerRecovery" and module == "Lemma.Services.Store.Server")
-    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library:
+    # The exact Await Store1 root borrows existing engine/dispatcher source.
+    # Full IR admission separately excludes the old executable entry bodies.
+    # The flag is derived only from the closed pair/role/root catalog above and
+    # does not authorize any other executable or privileged dependency.
+    course_await_library = (allow_course_await_library
+                            and selected_executable_module == "Lemma.Services.Store.ServerAwait"
+                            and module == "Lemma.Services.Store.Server")
+    if selected_executable_module is not None and service_executable_module(module) and module != selected_executable_module and not recovery_library and not course_await_library:
         raise Core0Error(f"user dependency imports another executable module: {module}")
     if ".Test." in module or module.startswith("Lemma.Compiler.Test") or "Mutation" in module:
         raise Core0Error(f"production dependency imports a test/mutation module: {module}")
@@ -378,7 +392,8 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
             result.update(module_closure(root, dependency, seen, allow_development=allow_development,
                                          development_modules=development_modules,
                                          forbid_user_privileged_imports=forbid_user_privileged_imports,
-                                         selected_executable_module=selected_executable_module))
+                                         selected_executable_module=selected_executable_module,
+                                         allow_course_await_library=allow_course_await_library))
     return result
 
 

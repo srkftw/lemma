@@ -880,6 +880,68 @@
     "source_root": "build/courses/task006-course-await-deployment-component-a2/consumed-source-root",
     "status": "PASS_SELECTED_PRODUCTION_USER1_COURSE_AWAIT_COMPONENT"
   },
+  "mounted_await_whole_dependency_followup": {
+    "admission": {
+      "borrowed_module": "Lemma.Services.Store.Server",
+      "configurations": [
+        "lemmasim-silicon-course-await-bulk-notebook",
+        "lemmasim-silicon-course-await-bulk-initialize"
+      ],
+      "image": {
+        "boot_role": "store-server",
+        "id": 1,
+        "key": "store",
+        "module": "Lemma.Services.Store.ServerAwait",
+        "source": "Lemma.Services.Store.ServerAwait.main"
+      },
+      "other_or_swapped_roles_configs_roots_ids": "REJECT",
+      "recovery_and_historical_defaults": "UNCHANGED",
+      "recursive_checks": "Existing privileged/compiler, executable, test and development checks preserved; old executable-entry IR exclusions remain mandatory"
+    },
+    "focused_source_closure_tests": {
+      "real_per_role_source_counts": {
+        "arithmetic": 27,
+        "course": 25,
+        "notebook": 55,
+        "store": 23
+      },
+      "seconds": 0.015,
+      "status": "PASS",
+      "tests": 4
+    },
+    "full_kernel_host_suite": {
+      "exit_code": 0,
+      "log": {
+        "path": "build/courses/task006-course-await-whole-a1/dependency-repair-kernel-host.log",
+        "sha256": "3e9c0931ce1aa4988513a5915d66a79ace57904835082802e23f1ce10a26a9e0"
+      },
+      "seconds": 6.047,
+      "status": "PASS",
+      "tests": 410
+    },
+    "original_371_inventory_sha256": "a3a9f7b39be89775649a41d61a014155351652456ae178d760023a9ab5ce6ee2",
+    "original_source_seal": {
+      "path": "build/courses/task006-course-await-whole-a1/source-seal.json",
+      "sha256": "7438b0b9fb4a1edc3b0de505d733cc84c7e8d95f3c2e02a4bd3d48c6addc3634"
+    },
+    "original_whole_failure_error": "Core0Error('user dependency imports another executable module: Lemma.Services.Store.Server')",
+    "original_whole_failure_seconds": 2.0925047349883243,
+    "original_whole_preflight_failure": {
+      "path": "build/courses/task006-course-await-whole-a1/result.json",
+      "sha256": "b848f0f59423d70937e65a4a364eb3b05e6cf835bf330cf0ee4490b3d265c84b"
+    },
+    "prelaunch_failure": {
+      "path": "build/courses/task006-course-await-whole-a1/launch-failure-v2.json",
+      "sha256": "5d5baeca70edd85c3ca0946a7bb06e177b9093042d2a7428b09d2a540e09d076"
+    },
+    "remaining": "New prospective complete initializer/notebook ordinary audits and actual unchanged60M mountedReady/100M each Load. No CPU launched by this milestone.",
+    "scaffold": {
+      "metadata": "PASS",
+      "status": "PASS",
+      "tests": 18
+    },
+    "scope": "Exact whole source-import grant correction only; no target body change, whole image or cold success"
+  },
   "observed_action_outputs": {
     "author-edition": "COURSE_PACKAGE_PUBLISH:PASS 4058 bytes,8 original typed nodes\nCOURSE_AUTHOR_EDITION:PASS changed lesson/hint/source/edition; unchanged target decoder selects pinned goal1 and new hint bytes",
     "genuine-export": "COURSE_PACKAGE_EXPORT:PASS genuine read-only User2 source/LLVM closure",

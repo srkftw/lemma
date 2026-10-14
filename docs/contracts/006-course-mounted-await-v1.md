@@ -1,4 +1,5 @@
-<!--+# Completion-driven course mount readiness
+<!--
+# Completion-driven course mount readiness
 
 `lemma-course-mounted-await/1` is an additive guest protocol in
 `PackageAwaitProtocol.lean`, `PackageAwaitClient.lean` and
@@ -93,7 +94,13 @@ validated terminal mounted response with positive root generation produces4b0.
 That record is a readiness observation, never a durability acknowledgement.
 The new Store root may borrow the old Server engine/dispatcher library only in
 this exact selected User image. Old main/step/courseMain/courseStep are excluded;
-other images/privileges cannot acquire that library grant.
+other images/privileges cannot acquire that library grant. The whole source-import
+closure derives its separate allowance only from the exact pair, Store ID1,
+store-server role, ServerAwait module and main root. That allowance propagates
+only the literal Server library; recursive executable, privileged/compiler,
+test and development imports retain their original rejection order. Historical
+and Recovery source grants remain unchanged. Independent temporary source
+closures reject wrong roots/IDs/roles/configurations and forbidden nested imports.
 
 Actual production User1 Store/installer exports, ordinary metadata and complete
 pre/post LLVM checks, O2 and RV64 objects passed in19.566s from367 original

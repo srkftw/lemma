@@ -2,11 +2,12 @@
 from copy import deepcopy
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
 from audit_kernel import image_specs,kernel_contract,software_deployment_fields,validate_user_image_catalog
-from build_kernel import configuration_roots,managed_policy
+from build_kernel import configuration_roots,managed_policy,user_module_closure
 from silicon_profile import configuration_profile
 from silicon_guest_bundle import development_configuration
 from course_await_deployment import library_source_allowed
@@ -64,5 +65,43 @@ class CourseAwaitCatalog(unittest.TestCase):
                 with self.assertRaises(ValueError):development_configuration(profile,workload,config,mode)
         for unknown in ('lemmasim-silicon-course-await-notebook','lemmasim-silicon-course-await-bulk-any-development'):
             with self.assertRaises(Core0Error):configuration_roots(unknown)
+
+    def test_source_closure_borrows_only_exact_waiter_store_and_checks_nested_imports(self):
+        def source(root,module,text=''):
+            path=root/(module.replace('.','/')+'.lean')
+            path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_text(text+'\n')
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            source(root,'Lemma.Services.Store.Engine')
+            source(root,'Lemma.Services.Store.Server','import Lemma.Services.Store.Engine')
+            source(root,'Lemma.Services.Store.ServerAwait','import Lemma.Services.Store.Server')
+            for config in ('lemmasim-silicon-course-await-bulk-notebook',
+                           'lemmasim-silicon-course-await-bulk-initialize'):
+                image=image_specs(config)[0]
+                self.assertEqual(set(user_module_closure(root,image,config)),{
+                  'Lemma/Services/Store/ServerAwait.lean','Lemma/Services/Store/Server.lean',
+                  'Lemma/Services/Store/Engine.lean'})
+                for bad in ({**image,'key':'notebook'},{**image,'id':2},{**image,'id':True},
+                            {**image,'source':'Lemma.Services.Store.Server.main'},
+                            {**image,'source':'Lemma.Services.Store.ServerAwait.any'},
+                            {**image,'boot_role':'notebook'}):
+                    with self.assertRaisesRegex(Core0Error,'another executable module'):
+                        user_module_closure(root,bad,config)
+                for other in ('lemmasim-silicon-course-bulk-notebook','lemmasim-notebook','service-normal'):
+                    with self.assertRaisesRegex(Core0Error,'another executable module'):
+                        user_module_closure(root,image,other)
+                for foreign,error in (
+                    ('Lemma.Applications.Notebook','another executable module'),
+                    ('Lemma.Services.Store.Server.Other','another executable module'),
+                    ('Lemma.Services.Buffer.Server','another executable module'),
+                    ('Lemma.Kernel.Memory.Frames','privileged/compiler code'),
+                    ('Lemma.Compiler.Core0','privileged/compiler code'),
+                    ('Lemma.Services.Store.Development.Unregistered','development code')):
+                    source(root,foreign)
+                    source(root,'Lemma.Services.Store.Engine','import '+foreign)
+                    with self.assertRaisesRegex(Core0Error,error):
+                        user_module_closure(root,image,config)
+                    source(root,'Lemma.Services.Store.Engine')
 
 if __name__=='__main__':unittest.main()
