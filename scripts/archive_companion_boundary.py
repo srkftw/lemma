@@ -16,6 +16,7 @@ from check_guest_usb_store import opaque_log
 from lemmasim_companion import initialize, peer_info
 
 ROOT = Path(__file__).resolve().parents[1]
+WORKFLOW_PROFILES = frozenset(('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'))
 BOUNDARY_FILES = frozenset(('peer/base.img', 'peer/opaque.log', 'peer/peer.json',
                            'outbox/outbox', 'acknowledged.raw', 'reference.raw'))
 FILE_LIMITS = {'peer/base.img': (268435456, 268435456),
@@ -88,8 +89,12 @@ def capture(args):
         raw = out / 'reference.raw'
         if workflow_reference is not None:
             reference = workflow_reference.resolve(); source = json.loads(reference.read_text())
-            require(source.get('schema') == 'lemma-usb8-retained-workflow-wire/1' and source.get('status') == 'PASS' and
-                    source['identity']['profile'] == 'lemma-silicon-dev/0.8.0' and source['owned_children_reaped'] is True and
+            profile = getattr(args, 'profile', 'lemma-silicon-dev/0.8.0')
+            expected_schema = ('lemma-usb8-retained-workflow-wire/1' if profile == 'lemma-silicon-dev/0.8.0'
+                               else 'lemma-usb-retained-workflow-wire/2')
+            require(profile in WORKFLOW_PROFILES and source.get('schema') == expected_schema and source.get('status') == 'PASS' and
+                    source['identity']['profile'] == profile and
+                    (profile == 'lemma-silicon-dev/0.8.0' or source.get('profile') == profile) and source['owned_children_reaped'] is True and
                     (source['saved_sequence'], source['high_water']) == (args.saved_sequence, args.high_water) == (11, 72),
                     'reference is not the independently qualified frozen Saved11 workflow')
             require(source['workflow']['status'] == 'PASS' and source['workflow']['explicit_save'] == [0x421, 11, 1, 1, 0] and
@@ -106,6 +111,8 @@ def capture(args):
             expected_acknowledged_sha = source['input_files'][str(acknowledged_references[0])]
             reference_metadata = {'reference_workflow': {'path': str(reference), 'sha256': sha(reference)}}
         else:
+            require(getattr(args, 'profile', 'lemma-silicon-dev/0.8.0') == 'lemma-silicon-dev/0.8.0',
+                    'recorded suffix boundary is only qualified for the historical USB8 profile')
             reference = args.reference_suffix.resolve()
             source = json.loads(reference.read_text())
             require(source.get('status') == 'PASS' and source.get('exact_every_snapshot_byte') is True and
@@ -135,6 +142,8 @@ def capture(args):
         require(len(prior) + len(mutations) == args.high_water and args.high_water < (1 << 64) - 1,
                 'declared high-water is not the exact captured acknowledged receipt prefix')
         expected_log = prior + mutations
+        if getattr(args, 'profile', 'lemma-silicon-dev/0.8.0') != 'lemma-silicon-dev/0.8.0':
+            report['profile'] = args.profile
         report.update(**reference_metadata, saved_sequence=args.saved_sequence,
             high_water=args.high_water, writer=initial_writer, wire_transactions=len(wire['transactions']))
         peer = args.peer.resolve(); state = args.outbox.resolve() / 'outbox'
@@ -209,6 +218,7 @@ def main():
     reference.add_argument('--reference-workflow', type=Path)
     parser.add_argument('--saved-sequence', type=int, required=True)
     parser.add_argument('--high-water', type=int, required=True)
+    parser.add_argument('--profile', choices=sorted(WORKFLOW_PROFILES), default='lemma-silicon-dev/0.8.0')
     return capture(parser.parse_args())
 
 

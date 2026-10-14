@@ -1,0 +1,268 @@
+{
+  "schema": "lemma-usb-wire-saved11-evidence/1",
+  "status": "PASS_RETAINED_LIVE_OBSERVATION_COLD_RUNNING",
+  "scope": "Real immutable Wire11 notebook Ready/ink/lost durable barrier reply/independent peer restart/Undo/Redo/navigation/Save11. Strict recorded-transport and peer/outbox reobservation after original terminal observer FAIL; no CPU prefix rerun. New independent cold is separately RUNNING.",
+  "identity": {
+    "backend": "rtl",
+    "profile": "lemma-silicon-dev/0.11.0",
+    "runtime": "20a35cbef6956b25f3ad6ab1c16d0914124d29b2f013b1b549151a8e73fe179a",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "guest": "d18880e20ecfd15d15de67eab122762fca2655b7e879fe9c45cea0666a7cda3c",
+    "dtb": "0b606e67baacf2790ea97640557abf2b4810760d80fcf8885b78882a0656c978",
+    "descriptor": "d273b9213eb3db6218125560aa5958d7b5d3d2b31b360dbd101534f4309d20d3"
+  },
+  "native_bundle": {
+    "native_bundle": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-wire-a2",
+    "manifest_sha256": "152572a9c95528bac3257a3c4ca3b258d9a7237d26b47e6ea3bad5497ed80662"
+  },
+  "original_failure": {
+    "path": "build/usb/wire-notebook-workflow-a2/result.json",
+    "sha256": "849602d726e16b544211ab112d374076a64d166061c12865c72fd54d1375b45e",
+    "status": "FAIL",
+    "error": "ValueError('actual hello identity')",
+    "owned_survivors": [],
+    "cold_not_run_in_original": true
+  },
+  "qualified_observation": {
+    "path": "build/usb/wire-notebook-retained-observation-a1/result.json",
+    "sha256": "16a942c53362178a0825b5622425df8d8861fccd59205652152c9b9110dce248",
+    "host_seconds": 1.9978125980123878,
+    "observer_sha256": "c400d78344b58561f836e6a9df70177cd85554b065f4d2ee2075d71eac37f41c",
+    "decoder_sha256": "b4423709e551234756e955349c1bb6b9a94feb43c233fe497ddb276f20ec9cbf",
+    "transactions": 75,
+    "accepted_rows": 258865,
+    "persisted_effects": 72,
+    "initial_sequence": 7,
+    "outbox_next": 73,
+    "lost_barrier_effect_count": 1
+  },
+  "hosted_lean_hello": {
+    "scope": "actual host-only Lean loadOutbox and Pending4.exchangeOpaque evaluation; no peer contact or mutation; separate from RV64 execution",
+    "prepared": "build/usb/host-pending-policy4-a3/prepared.json",
+    "prepared_sha256": "1c2ffc4fb0556687d2ea531f12133d14fe70320d22b7ba536265036b35526d4a",
+    "command_record": "build/usb/wire-hello-policy-diagnosis-a2/command.json",
+    "command_record_sha256": "5ca187c3ebd2d0d03fd2e9f48b8709aad6588b1c4dadee3c1fa6feb93394401c",
+    "log": "build/usb/wire-hello-policy-diagnosis-a2/run.log",
+    "log_sha256": "28192b47da8a24ae7c62438d528f8ca9848e07e5a898c420c88c15a1ac465a5d",
+    "actual_reply_words": [
+      3544405832420773196,
+      83,
+      7,
+      268435456
+    ],
+    "unchanged_initial_outbox_sha256": "14cece0d3a943e792ba27ac03df09beb40d38302d3965bd27ec519cd92102f77",
+    "initial_persisted_receipt_sha256": "bf06117e934acf7f602665bb9677b2d1b729adcc68a6191d82e3436568766d83",
+    "preserved_failure": "build/usb/wire-hello-policy-diagnosis-a1/run.log"
+  },
+  "negative_qualification": {
+    "path": "build/usb/wire-hello-observer-negatives-a1/result.json",
+    "sha256": "00b2815bf940b5ee1fd1ee400395b41847625427db56d40201760ad2176da22c",
+    "host_seconds": 1.698720743006561,
+    "fixture_sha256": "14328964b9967af2ebe5b22b43d31ce3dff3a3816628e5ad54100972f2041a51",
+    "rejected": [
+      "default sequence1 is not this admitted baseline",
+      "different declared writer",
+      "corrupt actual HELLO CRC",
+      "extra persisted effect",
+      "missing persisted effect",
+      "corrupt initial outbox CRC",
+      "checksum-valid wrong initial outbox",
+      "checksum-valid wrong outbox writer"
+    ],
+    "original_unchanged": true
+  },
+  "workflow": {
+    "status": "PASS",
+    "sequence": 11,
+    "generation": 1,
+    "raw_samples": 3,
+    "strokes": 1,
+    "pages": 2,
+    "documents": [
+      1
+    ],
+    "contact_points": [
+      [
+        "usb annotation",
+        330,
+        1200,
+        true
+      ]
+    ],
+    "explicit_save": [
+      1057,
+      11,
+      1,
+      1,
+      0
+    ],
+    "committed_objects": 4
+  },
+  "milestones": {
+    "live/cold-ready": {
+      "cycle": 605000000,
+      "target_cycles": 605000000,
+      "host_seconds": 3677.379517628986
+    },
+    "live/initial-publication-complete": {
+      "cycle": 610000000,
+      "target_cycles": 5000000,
+      "host_seconds": 26.066070630971808
+    },
+    "live/raw-ink-reconciled": {
+      "cycle": 720000000,
+      "target_cycles": 110000000,
+      "host_seconds": 655.2306193989934
+    },
+    "live/undo": {
+      "cycle": 1225000000,
+      "target_cycles": 505000000,
+      "host_seconds": 2356.006952900032
+    },
+    "live/redo": {
+      "cycle": 1740000000,
+      "target_cycles": 515000000,
+      "host_seconds": 2060.8324631719734
+    },
+    "live/next-page": {
+      "cycle": 2250000000,
+      "target_cycles": 510000000,
+      "host_seconds": 1806.375387403008
+    },
+    "live/previous-page": {
+      "cycle": 2745000000,
+      "target_cycles": 495000000,
+      "host_seconds": 1539.1475553700002
+    },
+    "live/explicit-save": {
+      "cycle": 2770000000,
+      "target_cycles": 25000000,
+      "host_seconds": 92.08291345200269
+    }
+  },
+  "acknowledged_bytes": {
+    "path": "build/usb/wire-notebook-workflow-a2/acknowledged.raw",
+    "sha256": "97c763f23eb15bd951d2325edfe30b845c96ea049d28e23e5652f91c0cd019e4",
+    "complete_pixels": "build/usb/wire-notebook-workflow-a2/acknowledged.ppm",
+    "pixels_sha256": "ff7bfc3a9219fc48aa17fe44fb421c59f2fb1745d4fcf4048a5880c51c227def"
+  },
+  "atomic_observational_archive": {
+    "path": "build/usb/wire-final-saved11-boundary-a1/boundary.json",
+    "sha256": "1bd73dc9d09df24186691d42fe63688832d0806e96ca833adbd2847caef93214",
+    "status": "PASS",
+    "host_seconds": 5.050116333994083,
+    "source_before_after_equal": true,
+    "saved_sequence": 11,
+    "high_water": 72,
+    "original_medium_not_modified": true
+  },
+  "separate_cold_launch": {
+    "status_at_observation": "RUNNING",
+    "work_dir": "build/usb/wire-final-saved11-cold-a1",
+    "manifest": "build/usb/wire-final-saved11-cold-a1.supervision/manifest.json",
+    "manifest_sha256": "453323236212920f80b4baea1b1e1a8b8552b04e377e465b5b1bf53ca78f1c7a",
+    "supervisor": {
+      "pid": 1036652,
+      "start_ticks": 51612308
+    },
+    "observer": {
+      "pid": 1036653,
+      "start_ticks": 51612319
+    },
+    "absolute_deadline_unix_ns": 1791957030655120812,
+    "bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "whole_host_seconds": 7400,
+      "maximum_owned_tree_rss_kib": 4194304,
+      "maximum_owned_disk_bytes": 12000000000
+    },
+    "new_cpu": true,
+    "snapshot_restore": false,
+    "original_prefix_not_rerun": true
+  },
+  "host_deployment_guards": {
+    "path": "build/usb/wire-retained-cold-profile-host-a1.log",
+    "sha256": "7793df7cc435b3225a4b0e57d9c6f888e9411c12824d8cdca6093f3855905b9d",
+    "passed": 4,
+    "scope": "historical defaults, exact successor/receipt boundary and mismatched deployment rejection; no CPU execution"
+  },
+  "commands": [
+    [
+      "python3",
+      "scripts/observe_usb_workflow_wire.py",
+      "--profile",
+      "lemma-silicon-dev/0.11.0",
+      "--workflow",
+      "build/usb/wire-notebook-workflow-a2",
+      "--initial-peer",
+      "build/usb/store-initialize-a3/peer",
+      "--initial-outbox",
+      "build/usb/store-initialize-a3/outbox",
+      "--native-bundle",
+      "build/native/task006-usb-wire-a2",
+      "--work-dir",
+      "UNUSED"
+    ],
+    [
+      "python3",
+      "tests/usb/retained_hello.py",
+      "--workflow",
+      "build/usb/wire-notebook-workflow-a2",
+      "--initial-peer",
+      "build/usb/store-initialize-a3/peer",
+      "--initial-outbox",
+      "build/usb/store-initialize-a3/outbox",
+      "--work-dir",
+      "UNUSED"
+    ],
+    [
+      "python3",
+      "scripts/archive_companion_boundary.py",
+      "--profile",
+      "lemma-silicon-dev/0.11.0",
+      "--peer",
+      "build/usb/wire-notebook-workflow-a2/peer",
+      "--outbox",
+      "build/usb/wire-notebook-workflow-a2/outbox",
+      "--initial-peer",
+      "build/usb/store-initialize-a3/peer",
+      "--reference-workflow",
+      "build/usb/wire-notebook-retained-observation-a1/result.json",
+      "--saved-sequence",
+      "11",
+      "--high-water",
+      "72",
+      "--output",
+      "UNUSED"
+    ],
+    [
+      "python3",
+      "scripts/check_usb_cold_boundary.py",
+      "launch",
+      "--profile",
+      "lemma-silicon-dev/0.11.0",
+      "--boundary",
+      "build/usb/wire-final-saved11-boundary-a1",
+      "--host-prepared",
+      "build/usb/host-pending-policy4-a3/prepared.json",
+      "--native-bundle",
+      "build/native/task006-usb-wire-a2",
+      "--work-dir",
+      "UNUSED",
+      "--saved-sequence",
+      "11",
+      "--high-water",
+      "72"
+    ]
+  ],
+  "remaining": [
+    "Separate Wire11 Saved11 independent cold full pixels/bytes (RUNNING)",
+    "Wire11 unsuccessful Save after disconnect",
+    "Clocked13 full notebook Ready/Save/cold (separate RUNNING campaign)",
+    "normative USB source jitter/full MAC/timing/topology/electrical/analog CDC conformance",
+    "privately live external peer continuation",
+    "QEMU cached-state continuation",
+    "browser hosted peer and owner authentication"
+  ]
+}

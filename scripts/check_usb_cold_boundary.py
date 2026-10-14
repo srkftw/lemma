@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Cold USB8 recovery from a frozen acknowledged peer, using hosted policy4."""
+"""Cold USB8 or explicit Wire11 recovery from an acknowledged opaque archive.
+
+Historical USB8 remains the default; all original cold/pixel/byte oracles and
+resource bounds remain active. This starts a new CPU, never a restored machine.
+"""
 import argparse
 import json
 import os
@@ -18,6 +22,17 @@ from lemmasim_usb_pending import validate
 from archive_companion_boundary import validate_archive_files
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def validate_cold_binding(args, boundary):
+    require(boundary['status'] == 'PASS' and boundary['source_before_after_equal'] is True and
+            boundary['high_water'] == args.high_water and boundary['saved_sequence'] == args.saved_sequence and
+            (args.saved_sequence, args.high_water) in ((5, 36), (11, 72)),
+            'unqualified acknowledged archive boundary')
+    require(args.profile in ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0') and
+            boundary.get('profile', 'lemma-silicon-dev/0.8.0') == args.profile and
+            (args.profile == 'lemma-silicon-dev/0.8.0' or (args.saved_sequence, args.high_water) == (11, 72)),
+            'cold boundary does not belong to this explicit deployment')
 
 
 class ColdChecker(Checker):
@@ -42,11 +57,13 @@ class ColdChecker(Checker):
 
 def execute(args):
     require(args.expected_source_sha == sha(__file__), 'cold observer source differs from supervised manifest')
-    args.profile = 'lemma-silicon-dev/0.8.0'
+    require(args.profile in ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'),
+            'cold recovery deployment is not qualified')
     args.cold_cycles, args.cold_deadline = 1600000000, 7200
     args.ink_cycles, args.action_cycles, args.action_deadline = 200000000, 1600000000, 7200
     checker = ColdChecker(args)
-    checker.report.update(schema='lemma-usb8-acknowledged-cold/1',
+    checker.report.update(schema=('lemma-usb8-acknowledged-cold/1' if args.profile == 'lemma-silicon-dev/0.8.0'
+                                  else 'lemma-usb-wire-acknowledged-cold/2'),
         scope='new CPU cold recovery from current observational opaque receipt boundary; policy4 actual guest transport; no snapshot restore',
         observer_sha256=sha(__file__), status='RUNNING')
     before = time.monotonic()
@@ -56,15 +73,13 @@ def execute(args):
         directory = args.boundary.resolve()
         boundary_path = directory / 'boundary.json'
         boundary = json.loads(boundary_path.read_text())
-        require(boundary['status'] == 'PASS' and boundary['source_before_after_equal'] is True and
-                boundary['high_water'] == args.high_water and boundary['saved_sequence'] == args.saved_sequence and
-                (args.saved_sequence, args.high_water) in ((5, 36), (11, 72)),
-                'unqualified acknowledged archive boundary')
+        validate_cold_binding(args, boundary)
         validate_archive_files(directory, boundary)
         reference_kind = 'reference_suffix' if args.saved_sequence == 5 else 'reference_workflow'
         reference = Path(boundary[reference_kind]['path'])
         require(sha(reference) == boundary[reference_kind]['sha256'], 'retained acknowledged reference differs')
         expected_identity = json.loads(reference.read_text())['identity']
+        require(expected_identity['profile'] == args.profile, 'cold reference deployment differs')
         validate(args.host_prepared)
         copy_opaque_peer(directory / 'peer', checker.peer, directory / 'outbox', checker.outbox)
         observed = checker.out / 'before.raw'; materialize_observation(checker.peer, observed)
@@ -125,6 +140,8 @@ def main():
     parser.add_argument('--expected-source-sha')
     parser.add_argument('--saved-sequence', type=int, default=5)
     parser.add_argument('--high-water', type=int, default=36)
+    parser.add_argument('--profile', choices=('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'),
+                        default='lemma-silicon-dev/0.8.0')
     args = parser.parse_args()
     if args.action == '_run': return execute(args)
     work = args.work_dir.resolve(); supervisor = work.with_name(work.name + '.supervision')
@@ -135,7 +152,8 @@ def main():
     command = [sys.executable, str(Path(__file__).resolve()), '_run', '--expected-source-sha', sha(__file__)]
     for name in ('boundary', 'host_prepared', 'native_bundle', 'work_dir'):
         command += ['--' + name.replace('_', '-'), str(getattr(args, name).resolve())]
-    command += ['--saved-sequence', str(args.saved_sequence), '--high-water', str(args.high_water)]
+    command += ['--saved-sequence', str(args.saved_sequence), '--high-water', str(args.high_water),
+                '--profile', args.profile]
     manifest = {'schema': 'lemma-usb-cold-boundary-supervision/1', 'work_dir': str(work), 'argv': command,
         'supervisor_sha256': sha(ROOT / 'scripts/supervise_usb_notebook.py'),
         'observer_sha256': sha(ROOT / 'scripts/check_guest_usb_notebook.py'),

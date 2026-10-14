@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Observe frozen USB8 wire bytes after the retained original observer failure."""
+"""Observe retained USB wire bytes after a terminal HELLO observer failure.
+
+USB8 remains the default. Wire11/Clocked13 are explicit immutable deployments;
+no CPU is run and no original result or acknowledged medium is modified.
+"""
 import argparse
 import json
 from pathlib import Path
@@ -14,16 +18,49 @@ from lemmasim_companion import peer_info
 from silicon_guest_bundle import prepared
 
 ROOT = Path(__file__).resolve().parents[1]
+PROFILES = {'lemma-silicon-dev/0.8.0': 'usb-next-bulk-notebook',
+            'lemma-silicon-dev/0.11.0': 'usb-wire-bulk-notebook',
+            'lemma-silicon-dev/0.13.0': 'usb-clocked-bulk-notebook'}
+
+
+def initial_receipt_sequence(peer, outbox, writer):
+    prior = log_frames((peer / 'opaque.log').read_bytes())
+    checked = opaque_log(peer / 'opaque.log')
+    require(len(prior) == len(checked) == 6 and peer_info(peer)['writer'] == writer == 83,
+            'preexisting formatted receipt state differs')
+    require(all(fields[2] in (1, 2) and fields[3] == writer and fields[4] == index + 1 and fields[7] == 0
+                for index, (fields, _) in enumerate(checked)),
+            'initial persisted receipt writer/order/CRC differs')
+    outbox_fields((outbox / 'outbox').read_bytes(), writer, len(prior))
+    return prior, len(prior) + 1
+
+
+def durable_effects_match(wire, prior, current):
+    mutations = [bytes.fromhex(value) for value in wire['requests'][1:]
+                 if int.from_bytes(bytes.fromhex(value)[16:24], 'little') in (1, 2)]
+    require(current == prior + mutations and len(current) == 72,
+            'actual accepted wire effects differ from durable peer receipt prefix')
+    return mutations
+
+
+def original_bounds(profile):
+    bounds = {'cold_cycles': 1600000000, 'cold_host_seconds': 7200,
+              'ink_cycles': 200000000, 'redraw_save_cycles': 1600000000, 'action_host_seconds': 7200}
+    if profile != 'lemma-silicon-dev/0.8.0':
+        bounds.update(maximum_owned_tree_rss_kib=4194304, maximum_owned_disk_bytes=12000000000)
+    return bounds
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('workflow', 'initial-peer', 'initial-outbox', 'native-bundle', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--profile', choices=PROFILES, default='lemma-silicon-dev/0.8.0')
     args = parser.parse_args()
     out = args.work_dir.resolve(); require(not out.exists() and out.is_relative_to(ROOT / 'build'), 'unused owned output')
     out.mkdir(); started = time.monotonic()
-    report = {'schema': 'lemma-usb8-retained-workflow-wire/1', 'status': 'FAIL',
+    report = {'schema': ('lemma-usb8-retained-workflow-wire/1' if args.profile == 'lemma-silicon-dev/0.8.0'
+                         else 'lemma-usb-retained-workflow-wire/2'), 'profile': args.profile, 'status': 'FAIL',
               'scope': 'frozen actual wire/workflow observation; original campaign FAIL retained; no CPU run or cold claim'}
     try:
         original = args.workflow.resolve(); result = original / 'result.json'
@@ -31,34 +68,30 @@ def main():
         supervision = original.with_name(original.name + '.supervision') / 'supervision.json'
         supervised = json.loads(supervision.read_text())
         require(source['status'] == 'FAIL' and source['error'] == "ValueError('actual hello identity')" and
-                source['profile'] == 'lemma-silicon-dev/0.8.0' and supervised['status'] == 'FAIL' and
+                source['profile'] == args.profile and supervised['status'] == 'FAIL' and
                 supervised['owned_survivors'] == [] and supervised['result_sha256'] == sha(result),
                 'original failure/reaped source identity differs')
         require(source['workflow'] == {'status': 'PASS', 'sequence': 11, 'generation': 1,
             'raw_samples': 3, 'strokes': 1, 'pages': 2, 'documents': [1],
             'contact_points': [['usb annotation', 330, 1200, True]],
             'explicit_save': [0x421, 11, 1, 1, 0], 'committed_objects': 4}, 'original complete workflow observation differs')
-        require(source['bounds'] == {'cold_cycles': 1600000000, 'cold_host_seconds': 7200,
-            'ink_cycles': 200000000, 'redraw_save_cycles': 1600000000, 'action_host_seconds': 7200}, 'original ceilings changed')
-        bundle = prepared(args.native_bundle.resolve(), 'rtl', 'usb-next-bulk-notebook', 'lemma-silicon-dev/0.8.0')
+        require(source['bounds'] == original_bounds(args.profile), 'original ceilings changed')
+        workload = PROFILES[args.profile]
+        bundle = prepared(args.native_bundle.resolve(), 'rtl', workload, args.profile)
         require(source['identity']['runtime'] == bundle['binary']['sha256'] and
-                source['identity']['guest'] == bundle['workloads']['usb-next-bulk-notebook']['image']['sha256'],
+                source['identity']['guest'] == bundle['workloads'][workload]['image']['sha256'],
                 'actual workflow is not the complete qualified native/guest bundle')
-        initial = args.initial_peer.resolve(); info = peer_info(initial)
-        prior = log_frames((initial / 'opaque.log').read_bytes())
-        require(info['writer'] == source['writer'] == 83 and len(prior) == 6,
-                'preexisting formatted receipt state differs')
-        outbox_fields((args.initial_outbox.resolve() / 'outbox').read_bytes(), 83, 6)
+        initial = args.initial_peer.resolve()
+        prior, initial_sequence = initial_receipt_sequence(initial, args.initial_outbox.resolve(), source['writer'])
         # The next writer sequence is established by the independent initial
         # receipt log and outbox, before consulting the observed hello.
         raw = original / 'live/usb.raw'
-        wire = decode_capture(raw, probe=False, writer=83, initial_sequence=len(prior) + 1)
-        mutations = [bytes.fromhex(value) for value in wire['requests'][1:]
-                     if int.from_bytes(bytes.fromhex(value)[16:24], 'little') in (1, 2)]
+        wire = decode_capture(raw, probe=False, writer=83, initial_sequence=initial_sequence)
+        require(wire['runtime_identity'] == source['milestones']['live/explicit-save']['machine']['snapshot_identity'],
+                'recorded wire belongs to a different generated machine')
         actual_log = log_frames((original / 'peer/opaque.log').read_bytes())
-        require(actual_log == prior + mutations and len(actual_log) == 72 and
-                len(opaque_log(original / 'peer/opaque.log')) == 72,
-                'actual accepted wire effects differ from durable peer receipt prefix')
+        durable_effects_match(wire, prior, actual_log)
+        require(len(opaque_log(original / 'peer/opaque.log')) == 72, 'actual durable peer CRC/frame inventory differs')
         outbox_fields((original / 'outbox/outbox').read_bytes(), 83, 72)
         receipt = source['lost_ack_boundary']['receipt']
         require(sum(list(fields) == receipt for fields, _ in opaque_log(original / 'peer/opaque.log')) == 1,
@@ -77,13 +110,13 @@ def main():
                   original / 'peer/opaque.log', original / 'outbox/outbox', original / 'acknowledged.raw',
                   original / 'acknowledged.ppm', original / 'live/uart.bin', original / 'live/input.events']
         report.update(status='PASS', identity=source['identity'], original_failure={'path': str(result), 'sha256': sha(result)},
-            workflow=source['workflow'], milestones=source['milestones'], initial_sequence=7,
+            workflow=source['workflow'], milestones=source['milestones'], initial_sequence=initial_sequence,
             writer=83, saved_sequence=11, high_water=72, wire=wire,
             raw_capture={'path': str(raw), 'sha256': sha(raw)},
             input_files={str(path): sha(path) for path in inputs},
             initial_receipt_state={'count': 6, 'outbox_next': 7, 'log_prefix_equal': True},
             durable_effects_equal_actual_wire=True, lost_barrier_effect_count=1,
-            owned_children_reaped=True)
+            owned_children_reaped=True, cold_not_run=True)
     except BaseException as error:
         report['error'] = repr(error)
     report.update(host_seconds=time.monotonic() - started, observer_sha256=sha(__file__),

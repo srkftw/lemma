@@ -175,4 +175,35 @@ BLE-only ISA-observer failure is retained; the corrected kernel CSR/fence ISA
 observer and five ISA/class/endian/flags negatives are separate observations.
 These artifact results do not qualify the still separate real Pending/PHY run.
 
+## Ordinary Wire notebook and retained observation
+
+The immutable Wire11 notebook actually reached Ready605M, reconciled the lost
+final raw-publication barrier after an independent peer restart, and completed
+Undo, Redo, Next, Previous and explicit Save11 by2.770B cycles. Complete controller
+pixels and the independently decoded opaque journal agree. The original full
+campaign then failed in its frozen HELLO observer before cold startup; that
+terminal FAIL and its original records, medium and checkpoint remain unchanged.
+
+The admitted formatted peer has six actual persisted effects and a CRC-valid
+outbox writer83/next7/pending0. The actual hosted Lean loadOutbox and Pending4
+HELLO return that7; the original decoder call instead used its default1. The
+explicit retained-artifact observer requires this initial receipt/outbox state
+before decoding. All75 actual transactions, USB toggles/CRCs/receipts and exact
+72 persisted effects match, including exactly one lost-barrier effect. Eight
+actual captured-byte/outbox/effect negatives reject wrong sequence, writer,
+CRC and missing or extra effects. This is a corrected observation, not corrected
+guest policy, and does not turn the original campaign into a whole-scenario PASS.
+
+`observe_usb_workflow_wire.py --profile lemma-silicon-dev/0.11.0` is an explicit
+immutable deployment; the historical USB8 default remains. Its separate
+schema2 receipt authorizes the passive companion archive only for the exact
+Saved11/high-water72 boundary. Before/after file and metadata identities match,
+the outbox has no pending transaction and materialized bytes equal the actual
+acknowledged guest bytes. No owner, peer or guest is polled, drained or paused.
+A separately supervised new CPU uses that archive through policy4 under the
+original1.6B/7200 cold bound,4GiB/12GB caps and a7400second absolute deadline
+including startup/cleanup. This cold run is RUNNING and has no recovery claim
+until its full controller pixels, acknowledged bytes and unchanged peer receipt
+state are observed. Normative USB/full MAC/physical conformance remain separate.
+
 -->
