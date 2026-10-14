@@ -21,6 +21,9 @@ from core0_common import sha256, write_json
 def main():
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--configuration', choices=('lemmasim-silicon-wifi-common-probe',
+                                                   'lemmasim-silicon-wifi-common-read-probe'),
+                        default='lemmasim-silicon-wifi-common-probe')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     out = args.work_dir.resolve()
@@ -30,6 +33,7 @@ def main():
     shutil.copyfile(__file__, out / 'runner.py')
     started = time.monotonic()
     result = {'status': 'FAIL', 'scope': 'genuine complete Kernel8 build/ordinary full artifact audit; CPU NOT_RUN',
+              'configuration': args.configuration,
               'command_timeout_seconds': 300, 'observer_sha256': sha256(out / 'runner.py')}
     try:
         with (root / 'build/task006-lake.lock').open('a+b') as lock:
@@ -52,7 +56,7 @@ def main():
             result['source_inputs'] = before
             write_json(out / 'source-inputs.json', before)
             build(root=root, output_dir=out / 'target', opt_level='O2', stage='supervisor',
-                  configuration='lemmasim-silicon-wifi-common-probe', timeout_seconds=300)
+                  configuration=args.configuration, timeout_seconds=300)
             result['build'] = 'PASS'
             result['build_seconds'] = time.monotonic() - started
             audit(root=root, output_dir=out / 'target', timeout_seconds=300)

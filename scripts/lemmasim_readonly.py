@@ -10,7 +10,7 @@ import hashlib
 from pathlib import Path
 from core0_common import Core0Error, load_json
 
-COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe'}
+COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'}
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
     1: '', 2: 'cpus', 3: 'soc', 4: 'lemma-paper@10010000', 5: 'lemma-pen@10011000',

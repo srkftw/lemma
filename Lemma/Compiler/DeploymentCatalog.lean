@@ -9,6 +9,12 @@ namespace Lemma.Compiler.DeploymentCatalog
 open Lean
 open Lemma.Platform.RiscV.ExecutionPrimitives (UserStartupCase)
 
+/-- Two exact privileged Common12 workloads share only their hardware/startup
+authority. Each has its own complete artifact body corpus. -/
+def isWiFiCommonConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-wifi-common-probe" ||
+    configuration == "lemmasim-silicon-wifi-common-read-probe"
+
 /-- These exact deployment names select diagnostic startup authority. They
 are never an independent case, module, or instruction-list input. -/
 def singletonInstructionCase? (configuration : String) : Option UserStartupCase :=

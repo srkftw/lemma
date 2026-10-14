@@ -85,7 +85,7 @@ def profile_path(name=None):
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
-    if configuration=="lemmasim-silicon-wifi-common-probe":return "lemma-silicon-dev/0.12.0"
+    if configuration in ("lemmasim-silicon-wifi-common-probe","lemmasim-silicon-wifi-common-read-probe"):return "lemma-silicon-dev/0.12.0"
     if configuration in ('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'):return 'lemma-silicon-dev/0.11.0'
     if configuration in ('lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-executed-boot'):return 'lemma-silicon-dev/0.10.0'
     if configuration in ('lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-next-boot'):return 'lemma-silicon-dev/0.9.0'

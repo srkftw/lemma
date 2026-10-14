@@ -9,12 +9,13 @@ from pathlib import Path
 from core0_common import Core0Error
 from paper_next import canonical
 CONFIGURATION='lemmasim-silicon-wifi-common-probe'
+READ_CONFIGURATION='lemmasim-silicon-wifi-common-read-probe'
 PREFIX='Lemma.Platform.LemmaSim.DescriptorDTB.'
 LITERAL_TEXT={'Wire':{65:'lemma,phy-version',66:'lemma,phy-sample-hz',68:'lemma,development-mac',81:'lemma,usb-device-wire-v1'},'Common':{22:'lemma-wifi-common@10013000',82:'lemma,wifi-common-ofdm-data-v1',91:'lemma,aligned-data-only'}}
 
-def selected(unit):return unit.get('configuration')==CONFIGURATION and unit.get('role')=='kernel'
+def selected(unit):return unit.get('configuration') in (CONFIGURATION,READ_CONFIGURATION) and unit.get('role')=='kernel'
 def _new(source):
- return source.startswith(('Lemma.Radio.WiFi.','Lemma.Platform.Silicon.Development.WiFiCommonProbe.','Lemma.Platform.Silicon.BindingWiFiCommon.')) or (source.startswith('Lemma.Platform.LemmaSim.') and 'Common' in source)
+ return source.startswith(('Lemma.Radio.WiFi.','Lemma.Platform.Silicon.Development.WiFiCommonProbe.','Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.','Lemma.Platform.Silicon.BindingWiFiCommon.')) or (source.startswith('Lemma.Platform.LemmaSim.') and 'Common' in source)
 def literal_values(family,code):
  raw=LITERAL_TEXT[family][code].encode('ascii')+b'\0';raw=raw.ljust((len(raw)+7)//8*8,b'\0');words=[int.from_bytes(raw[i:i+8],'little') for i in range(0,len(raw),8)]
  # Existing Wire81's fourth all-zero NUL word is a scalar default, not a pool.
@@ -54,6 +55,9 @@ def authority():
  return value['functions']
 
 def validate(ir,unit,*,optimized):
+ if unit.get('configuration')==READ_CONFIGURATION:
+  from wifi_owned_read import validate as validate_read
+  return validate_read(ir,unit,optimized=optimized)
  rows={canonical(r['source']):r for r in unit.get('functions',[])}
  if not selected(unit):
   if any(_new(s) for s in rows):raise Core0Error('CommonOFDM declarations escape exact Kernel8 selection')
@@ -104,7 +108,7 @@ def validate_pmp(assembly,raw_machine,ranges,configuration):
  """
  import struct
  from audit_kernel import _assembly_function,_raw_function
- if configuration!=CONFIGURATION:raise Core0Error('Common PMP escaped its exact configuration')
+ if configuration not in (CONFIGURATION,READ_CONFIGURATION):raise Core0Error('Common PMP escaped its exact configurations')
  body=_assembly_function(assembly,'_start')
  mentions=[line.strip() for line in assembly.splitlines() if re.search(r'\b(?:pmpaddr8|pmpcfg2)\b',line)]
  old=['csrw pmpcfg0, zero','csrw pmpcfg2, zero']

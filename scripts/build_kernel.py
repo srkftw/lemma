@@ -51,7 +51,8 @@ USB_NOTEBOOK_CONFIGURATIONS = USB_WIRE_NOTEBOOK_CONFIGURATIONS + USB_NEXT_NOTEBO
 PRODUCT_NOTEBOOK_CONFIGURATIONS = PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
 ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
 SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
-SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, "lemmasim-silicon-wifi-common-probe", "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe")
+WIFI_COMMON_CONFIGURATIONS = ("lemmasim-silicon-wifi-common-probe", "lemmasim-silicon-wifi-common-read-probe")
+SILICON_CONFIGURATIONS = (*SILICON_MULTI_CONFIGURATIONS, *WIFI_COMMON_CONFIGURATIONS, "lemmasim-silicon-devices", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe")
 CONFIGURATIONS = (*SILICON_CONFIGURATIONS, "lemmasim-isolation-development", "lemmasim-notebook", "lemmasim-initialize", "lemmasim-bringup", "normal", "frames-development", "machine-origin-development",
                   "user-isolation-development", "user-csr-development", "user-nx-development",
                   "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
@@ -124,6 +125,10 @@ def configuration_roots(configuration: str) -> dict:
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.USBLink.boot", ()),
                  ("Lemma.Platform.Silicon.Development.USBLink.dispatch", ("u64", "u64", "u64"))),
                  "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
+    if configuration == "lemmasim-silicon-wifi-common-read-probe":
+        return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.boot", ()),
+                 ("Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.dispatch", ("u64", "u64", "u64"))),
+                 "user": (("Lemma.User.DeviceWorker.main", ("u64",)),)}
     if configuration == "lemmasim-silicon-wifi-common-probe":
         return {**ROLE_ROOTS, "kernel": (("Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot", ()),
                  ("Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch", ("u64", "u64", "u64"))),
@@ -176,6 +181,8 @@ def configuration_modules(configuration: str) -> dict:
         return {"firmware": ROLE_MODULES["firmware"], "kernel": configuration_roots(configuration)["kernel"][0][0].rsplit(".", 1)[0]}
     if configuration == "lemmasim-silicon-usb-link-probe":
         return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.USBLink", "user": "Lemma.User.DeviceWorker"}
+    if configuration == "lemmasim-silicon-wifi-common-read-probe":
+        return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.WiFiCommonReadProbe", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-wifi-common-probe":
         return {**ROLE_MODULES, "kernel": "Lemma.Platform.Silicon.Development.WiFiCommonProbe", "user": "Lemma.User.DeviceWorker"}
     if configuration == "lemmasim-silicon-ble-link-probe":
@@ -200,7 +207,7 @@ def configuration_modules(configuration: str) -> dict:
 def development_role(configuration: str, role: str) -> bool:
     configuration_roots(configuration)
     return (configuration in MULTI_CONFIGURATIONS and configuration != "service-normal" and role == "kernel"
-            or configuration in {"lemmasim-silicon-wifi-common-probe", "frames-development", "lemmasim-silicon-devices", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe"} and role == "kernel"
+            or configuration in {*WIFI_COMMON_CONFIGURATIONS, "frames-development", "lemmasim-silicon-devices", "lemmasim-silicon-power-safety-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe"} and role == "kernel"
             or configuration == "user-isolation-development" and role in {"kernel", "user"}
             or configuration == "user-syscall-development" and role == "user")
 
@@ -250,7 +257,7 @@ def validate_configuration_stage(configuration: str, stage: str) -> None:
         raise Core0Error("unknown execution stage")
     if configuration == "machine-origin-development" and stage != "bootstrap-m":
         raise Core0Error("machine-origin-development requires bootstrap-m")
-    if configuration in {"lemmasim-silicon-wifi-common-probe", "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
+    if configuration in {*WIFI_COMMON_CONFIGURATIONS, "lemmasim-silicon-ble-link-probe", "lemmasim-silicon-usb-link-probe", "lemmasim-silicon-power-probe", "lemmasim-silicon-power-safety-probe", "user-isolation-development", "user-csr-development", "user-nx-development",
                          "user-kernel-fetch-development", "user-misaligned-development", "user-syscall-development",
                          *USER_INSTRUCTION_CONFIGURATIONS, *MULTI_CONFIGURATIONS} and stage != "supervisor":
         raise Core0Error("user isolation configurations require supervisor")
@@ -295,7 +302,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "wifi_common.py"):
+    for helper in ("ipc_poll_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "wifi_common.py", "wifi_owned_read.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
@@ -315,6 +322,8 @@ def source_inputs(root: Path) -> dict[str, str]:
         if next_profile.is_file():inputs.append(next_profile)
     common_authority=root / "tooling/wifi_common-authority.json"
     if common_authority.is_file():inputs.append(common_authority)
+    read_authority=root / "tooling/wifi-owned-read-authority.json"
+    if read_authority.is_file():inputs.append(read_authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
