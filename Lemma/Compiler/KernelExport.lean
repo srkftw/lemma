@@ -36,7 +36,7 @@ private def roleProfile (role : String) (configuration : String)
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if isClosureNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+  | "user" => .ok (if isUSBRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store") then .user_v0_2 else if isClosureNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
       if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) &&
       image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
       (image?.any (fun image => image.key == "arithmetic") &&
@@ -102,6 +102,8 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if isBulkNotebookConfiguration configuration then
       if isCourseNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-bulk-notebook" then "siliconCourseBoot" else "siliconCourseInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isUSBRecoveryNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" then "siliconUSBRecoveryBoot" else "siliconUSBRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk"]
       else if isUSBClockedNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" then "siliconUSBClockedBoot" else "siliconUSBClockedInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBClockedBulk"]
       else if isUSBWireNotebookConfiguration configuration then
@@ -382,6 +384,9 @@ private def managedRecordFields (env : Environment) (configuration : String)
     return []
   if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
     unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
+    return []
+  if isUSBRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse) then
+    unless entries.isEmpty do throw "Recovery scalar Store may not acquire managed heap authority"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
     throw "Production managed record entry differs from its versioned closed catalog"

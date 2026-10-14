@@ -416,4 +416,77 @@ def surfaceV2Next (descriptor handle op pointer count reserved : UInt64) : Actio
     else .done Lemma.User.ABI.invalidArgument 0
   else surface descriptor handle op pointer count reserved
 
+/-! Recovery-v1 adds only separately selected syscall/deferred roots. It uses
+the same Store-only block endpoint authority and retains the full task
+descriptor/ticket/guest recovery epoch while active. Historical blockUSB and
+deferredUSB never accept these control operations. -/
+
+def configureUSBRecovery (surface input block : UInt64) : Action :=
+  .bind (configureUSB surface input block) fun s _ => if s = 0 then
+  .bind (put 104 0) fun s _ => if s = 0 then
+  .bind (put 112 0) fun s _ => if s = 0 then
+  .bind (put 120 0) fun s _ => if s = 0 then put 128 0 else fatal else fatal else fatal else fatal
+
+/-- New-only operations5/6/7: begin(ticket,expected epoch), take(ticket,epoch),
+and read the logical guest recovery epoch. Only a matching independent opaque
+receipt can finish5/6. A new transport's host epoch is not a guest MMIO fact. -/
+def blockUSBRecovery (descriptor handle op sector pointer reserved : UInt64) : Action :=
+  if reserved = 0 then
+  .bind (authorize descriptor handle 16) fun s _ => if s = 0 then
+  if op = 7 then if sector ||| pointer = 0 then Lemma.USB.Block.recoveryEpoch else .done 16 0 else
+  .bind (get 128) fun s active => if s = 0 then
+  if op = 6 then
+    if active = 1 then
+    .bind (get 104) fun s owner => if s = 0 then
+    .bind (get 112) fun s ticket => if s = 0 then
+    .bind (get 120) fun s epoch => if s = 0 then
+    if owner = descriptor then if ticket = sector then if epoch = pointer then
+    .bind (Lemma.USB.Block.takeRecovery ticket epoch) fun status result =>
+    if status = Lemma.USB.Block.pending then .done status result else
+    .bind (put 128 0) fun s _ => if s = 0 then .done status result else fatal
+    else .done Lemma.USB.Block.recoveryInvalid 0 else .done Lemma.USB.Block.recoveryInvalid 0
+    else .done CapabilityABI.denied 0 else fatal else fatal else fatal
+    else .done Lemma.USB.Block.recoveryInvalid 0
+  else if op = 5 then
+    if active = 0 then
+    .bind (get 48) fun s ready => if s = 0 then
+    .bind (get 96) fun s submitted => if s = 0 then
+    if ready ||| submitted = 0 then
+    .bind (Lemma.USB.Block.beginRecovery sector pointer) fun status epoch =>
+    if status = Lemma.USB.Block.pending then
+    .bind (put 104 descriptor) fun s _ => if s = 0 then
+    .bind (put 112 sector) fun s _ => if s = 0 then
+    .bind (put 120 pointer) fun s _ => if s = 0 then
+    .bind (put 128 1) fun s _ => if s = 0 then .done status epoch else fatal
+    else fatal else fatal else fatal else .done status epoch
+    else .done Lemma.USB.Block.busy 0 else fatal else fatal
+    else .done Lemma.USB.Block.busy 0
+  else if active = 0 then
+    if op ≤ 4 then blockUSB descriptor handle op sector pointer reserved else .done 16 0
+  else .done Lemma.USB.Block.busy 0
+  else fatal else .done s 0 else .done 16 0
+
+private def usbCompletionRecovery : Action :=
+  .bind (get 128) fun s recovery => if s = 0 then
+  if recovery = 1 then
+    .bind Lemma.USB.Block.finishRecovery fun status _ =>
+    if status = 0 then .done 0 0 else if status = Lemma.USB.Block.pending then .done 0 0 else
+    .bind Lemma.USB.Block.recoveryState fun s phase => if s = 0 then
+    if phase = 7 then .done 0 0 else fatal else fatal
+  else
+  .bind (get 48) fun s ready => if s = 0 then
+  if ready = 1 then .done 0 0 else
+  .bind (get 96) fun s active => if s = 0 then
+  .bind Lemma.USB.Block.finishRecovery fun status kind =>
+  if status = Lemma.USB.Block.pending then .done 0 0 else
+  if active = 0 then .done 0 0 else
+  .bind (put 96 0) fun s _ => if s = 0 then
+  .bind (put 56 status.toUInt64) fun s _ => if s = 0 then
+  .bind (put 64 kind) fun s _ => if s = 0 then put 48 1 else fatal else fatal else fatal
+  else fatal else fatal else fatal
+
+def deferredUSBRecovery : Action :=
+  .bind deferred fun s _ => if s = 0 then
+  .bind usbCompletionRecovery fun s _ => if s = 0 then Lemma.Drivers.PLIC.enableUSB else fatal else fatal
+
 end Lemma.Platform.LemmaSim.DeviceService

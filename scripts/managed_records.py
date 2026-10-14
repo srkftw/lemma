@@ -50,6 +50,7 @@ SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1'
 
 SUMS_NOTEBOOK_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 SUMS_NOTEBOOK_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'))
+SUMS_NOTEBOOK_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'))
 BYTES_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"})
 
 STRING_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"})
@@ -61,8 +62,12 @@ def notebook_profile_allowed(unit):
  return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and
   unit.get('configuration') in MANAGED_NOTEBOOK_CONFIGURATIONS | SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS | frozenset(CLOSURE_CONFIGURATIONS))
 
+def recovery_store_profile_allowed(unit):
+ from managed_sums import RECOVERY_USB
+ return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in RECOVERY_USB
+
 def profile_allowed(unit):
- return allowed(unit) or notebook_profile_allowed(unit)
+ return allowed(unit) or notebook_profile_allowed(unit) or recovery_store_profile_allowed(unit)
 
 def contract(unit):
  version=unit.get('contract_version')
@@ -70,7 +75,7 @@ def contract(unit):
  if version!='core0-user-v0.2':
   require(FIELD not in unit and not generated,'Legacy unit acquired managed-record authority')
   return None
- if notebook_profile_allowed(unit):
+ if notebook_profile_allowed(unit) or recovery_store_profile_allowed(unit):
   from managed_sums import software_deployment_for
   if unit.get("configuration") in BYTES_NOTEBOOK_CONFIGURATIONS:
    from managed_bytes import software_deployment_for

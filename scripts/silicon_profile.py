@@ -97,6 +97,7 @@ def configuration_profile(configuration):
     from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
     if configuration in CLOSURE_CONFIGURATIONS:return "lemma-silicon-dev/0.3.0"
     if configuration in ("lemmasim-silicon-course-bulk-notebook","lemmasim-silicon-course-bulk-initialize"):return "lemma-silicon-dev/0.3.0"
+    if configuration in ('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'):return 'lemma-silicon-dev/0.13.0'
     if configuration in ('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'):return 'lemma-silicon-dev/0.13.0'
     if configuration in ("lemmasim-silicon-wifi-common-probe","lemmasim-silicon-wifi-common-read-probe"):return "lemma-silicon-dev/0.12.0"
     if configuration in ('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'):return 'lemma-silicon-dev/0.11.0'

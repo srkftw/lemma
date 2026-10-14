@@ -107,4 +107,47 @@ def adopt (ticket epoch : UInt64) : Action :=
   if different copied 512 = true then .done invalid 0 else
   .bind (Engine.invalidateReadCache current) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Engine.put current 24 currentBuffer) fun s _ => .done s sequence
+
+/-- Complete adoption preflight without changing either context. The recovery
+server uses this before its real durability barrier; it does not publish Saved. -/
+def inspect (ticket epoch : UInt64) : Action :=
+  if ticket = 0 then .done invalid 0 else
+  if epoch = 0 then .done invalid 0 else
+  .bind (Engine.field current 0) fun s currentOperation => if statusFailed s = true then .done s 0 else
+  if different currentOperation 0 = true then .done busy 0 else
+  .bind (Engine.field current 336) fun s currentReadonly => if statusFailed s = true then .done s 0 else
+  if different currentReadonly 1 = true then .done busy 0 else
+  .bind (Engine.field shadow 3584) fun s magic => if statusFailed s = true then .done s 0 else
+  if different magic controlMagic = true then .done invalid 0 else
+  .bind (Engine.field shadow 3592) fun s schema => if statusFailed s = true then .done s 0 else
+  if different schema version = true then .done invalid 0 else
+  .bind (Engine.field shadow 3600) fun s actualTicket => if statusFailed s = true then .done s 0 else
+  if different actualTicket ticket = true then .done invalid 0 else
+  .bind (Engine.field shadow 3608) fun s actualEpoch => if statusFailed s = true then .done s 0 else
+  if different actualEpoch epoch = true then .done invalid 0 else
+  .bind (Engine.field shadow 0) fun s operation => if statusFailed s = true then .done s 0 else
+  if different operation 0 = true then .done busy 0 else
+  .bind (Engine.field shadow 32) fun s result => if statusFailed s = true then .done s 0 else
+  if different result 0 = true then .done invalid 0 else
+  .bind (Engine.field shadow 336) fun s readonly => if statusFailed s = true then .done s 0 else
+  if different readonly 0 = true then .done invalid 0 else
+  .bind (Engine.field shadow 24) fun s actualBuffer => if statusFailed s = true then .done s 0 else
+  if different actualBuffer shadowBuffer = true then .done invalid 0 else
+  .bind (Engine.field shadow 3616) fun s expectedCapacity => if statusFailed s = true then .done s 0 else
+  .bind (Engine.field current 48) fun s currentCapacity => if statusFailed s = true then .done s 0 else
+  if different expectedCapacity currentCapacity = true then .done invalid 0 else
+  .bind (Engine.field shadow 48) fun s recoveredCapacity => if statusFailed s = true then .done s 0 else
+  if different recoveredCapacity currentCapacity = true then .done invalid 0 else
+  .bind (Engine.field shadow 3624) fun s originalIndex => if statusFailed s = true then .done s 0 else
+  .bind (Engine.field current 104) fun s actualOriginalIndex => if statusFailed s = true then .done s 0 else
+  if different originalIndex actualOriginalIndex = true then .done invalid 0 else
+  .bind (Engine.field shadow 3632) fun s unused => if statusFailed s = true then .done s 0 else
+  if different unused (spareIndex originalIndex) = true then .done invalid 0 else
+  if unused = 0 then .done invalid 0 else
+  .bind (Engine.field shadow 104) fun s actualUnused => if statusFailed s = true then .done s 0 else
+  if different actualUnused unused = true then .done invalid 0 else
+  .bind (Engine.field shadow 40) fun s sequence => if statusFailed s = true then .done s 0 else
+  if Format.maximumSequence < sequence then .done invalid 0 else
+  .done 0 sequence
+
 end Lemma.Services.Store.Remount

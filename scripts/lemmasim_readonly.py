@@ -31,7 +31,7 @@ DTB_LITERALS = {
 }
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
 WORD_CODES = [18,4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
-PAPER_CLOCKED_CONFIGURATIONS={'lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'}
+PAPER_CLOCKED_CONFIGURATIONS={'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize','lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'}
 PAPER_WIRE_CONFIGURATIONS={'lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'}
 PAPER_NEXT_CONFIGURATIONS={'lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'}
 PREFIX = 'Lemma.Platform.LemmaSim.'

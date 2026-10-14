@@ -80,6 +80,11 @@ def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-next-bulk-initialize"
 
+/-- Recovery-v2 selects new device/Store/Notebook policy on Clocked13 only. -/
+def isUSBRecoveryNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-retry-bulk-initialize"
+
 /-- Clocked13 uses distinct PHY2/CDC1 identity with K6 and Paper3. -/
 def isUSBClockedNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" ||
@@ -99,7 +104,7 @@ def isProductNextNotebookConfiguration (configuration : String) : Bool :=
 
 /-- USB6 transport with the original isolated arithmetic User-v0.2 image. -/
 def isUSBNotebookConfiguration (configuration : String) : Bool :=
-  isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
+  isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
     configuration == "lemmasim-silicon-usb-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-bulk-initialize"
@@ -142,7 +147,7 @@ def isBytesNotebookConfiguration (configuration : String) : Bool :=
 
 /-- The bounded owned-page Surface ABI is a separate software selection. -/
 def isBulkNotebookConfiguration (configuration : String) : Bool :=
-  isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
+  isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-bulk-notebook" ||
     configuration == "lemmasim-silicon-bulk-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
@@ -157,7 +162,13 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isClosureNotebookConfiguration configuration then
+  if isUSBRecoveryNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-usb-clocked-recovery-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.3")])])]
+  else if isClosureNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-managed-closure-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -314,6 +325,14 @@ def bulkNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainSumsBulk, bootRole? := some .notebook},
   sumsNotebookImages[2]!]
 
+/-- A distinct service root retains old durable bytes and course guards. -/
+def recoveryNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerRecovery,
+    root := `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse, bootRole? := some .storeServer},
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverableSumsBulk, bootRole? := some .notebook},
+  sumsNotebookImages[2]!]
+
 def bytesNotebookImages : Array UserImageSpec := #[
   notebookImages[0]!,
   {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
@@ -367,7 +386,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isClosureNotebookConfiguration configuration then .ok closureNotebookImages
+  if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
+  else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages
   else if isCourseNotebookConfiguration configuration then .ok courseNotebookImages
   else if isStringNotebookConfiguration configuration then .ok stringNotebookImages
   else if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages

@@ -546,4 +546,11 @@ def courseMain (bootArgument : UInt64) : Action :=
   else failed else failed else failed else failed
   else failed else failed else failed else failed
 
+/-- Opt-in recovery server composes this exact ordinary pump/settle/lease
+prefix with its separately versioned receive dispatcher. Historical step and
+courseStep retain their own complete definitions and receive paths. -/
+def courseService : Action :=
+  .bind pump fun s _ => if s = 0 then
+  .bind settle fun s _ => if s = 0 then expireStage else failed else failed
+
 end Lemma.Services.Store.Server

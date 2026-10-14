@@ -1,0 +1,191 @@
+{
+  "schema": "lemma-usb-recovery-target-evidence/1",
+  "status": "PASS_COMPONENT_ARTIFACT_AND_FRESH_WHOLE_PAIR_ONLY",
+  "scope": "Separately selected Clocked13 recovery software: genuine component/Action observations, complete IR/object/table authority, then fresh matched Kernel6/Store2/Notebook2/Arithmetic3 whole images and ordinary full audits with complete original source archives. Connected EOF/reattach/remount/retry/Saved/cold NOT_RUN.",
+  "configurations": [
+    "lemmasim-silicon-usb-clocked-retry-bulk-notebook",
+    "lemmasim-silicon-usb-clocked-retry-bulk-initialize"
+  ],
+  "historical_profiles_and_roots": "Preserved; old deployments and on-disk encodings unchanged.",
+  "genuine_component": {
+    "path": "build/usb/recovery-target-component-a4/result.json",
+    "sha256": "1e786a6aad94334b23e22b5da4c6ffd75b10b38659d563ddeff8ac7431d14418",
+    "host_seconds": 136.6558954109205,
+    "original_sources": 359,
+    "roles": {
+      "kernel": {
+        "functions": 1291,
+        "contract_role": "kernel"
+      },
+      "kernel-init": {
+        "functions": 1291,
+        "contract_role": "kernel"
+      },
+      "store": {
+        "functions": 275,
+        "contract_role": "user"
+      },
+      "notebook": {
+        "functions": 677,
+        "contract_role": "user"
+      }
+    }
+  },
+  "complete_qualification": {
+    "path": "build/usb/recovery-artifact-qualification-a4/result.json",
+    "sha256": "23e0603323303c25eec7c3a09fa1aee4f6c327f3e821db45e4593c8a64fdac9a",
+    "host_seconds": 93.20562239992432,
+    "prospective_bounds": {
+      "seconds": 420,
+      "virtual_memory_bytes": 17179869184
+    },
+    "qualification_sources": 368,
+    "rejected_actual_mutants": {
+      "kernel": 38,
+      "kernel-init": 38,
+      "store": 18,
+      "notebook": 14
+    },
+    "coverage": [
+      "all eight complete pre/post generic LLVM audits",
+      "all four RV64 object/read-only bytes/relocations/generated branch guards",
+      "all three actual GEP-derived request-kind bounds mutated independently",
+      "real driver Actions with fresh-owned-frame/generation/capability/receipt guards",
+      "real Engine36 READ shadow scan, pending/failed barrier and adoption-copy faults",
+      "Notebook exact retained bytes/EOF/ACK floor/stage completion, no duplicate confirmed PUT"
+    ]
+  },
+  "maintained_command": "python3 scripts/check_usb_recovery_target.py --component build/usb/recovery-target-component-a4 --medium build/usb/clocked-final-saved11-boundary-a1/acknowledged.raw --work-dir build/usb/UNUSED --timeout 420",
+  "authority": {
+    "path": "tooling/usb-recovery-target-authority.json",
+    "sha256": "5e1542db01b91cab56f4b2102c768573e435cd5093a5cb0879e54116db49f067"
+  },
+  "retained_results": [
+    {
+      "path": "build/usb/recovery-target-component-a1/result.json",
+      "sha256": "a951449f0bd65360dd4db914f3a50745e8c6406517b4e9f3454687d84ec6e192"
+    },
+    {
+      "path": "build/usb/recovery-target-component-a2/result.json",
+      "sha256": "e6cf7c1d198704f208dae005bcbaec8e909cc03347b23f6d39bac2135d490c96"
+    },
+    {
+      "path": "build/usb/recovery-target-component-a3/result.json",
+      "sha256": "f6d185f21507b5b20fbe283c211c534b98c5d0ef7531d4cb580d3057a8d91387"
+    },
+    {
+      "path": "build/usb/recovery-artifact-diagnostic-a1/result.json",
+      "sha256": "cce92805a76298a45df6f650b0687bca0ffed4f5fe793c33feaaf5ed8a9b9378"
+    },
+    {
+      "path": "build/usb/recovery-artifact-diagnostic-a2/result.json",
+      "sha256": "4b478032fe0a5ade6f65f6626a7e2e05e6c8a9b677ddaa002b7beb47fdc5a72b"
+    },
+    {
+      "path": "build/usb/recovery-object-diagnostic-a1/result.json",
+      "sha256": "d6fee740082f5dd835fb961b7014727bcb7d473a03d5c9dd7b37d27386886328"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a1/result.json",
+      "sha256": "5deea86f0822d9a144c766249b76df3578714bc6dc3275d2a60d7ac233035e33"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a2/result.json",
+      "sha256": "c3ddcc0df5b57084626c53a4026c6977ac4e0342ac2ec8370fae297c6b8ac647"
+    },
+    {
+      "path": "build/usb/recovery-artifact-qualification-a3/result.json",
+      "sha256": "6edb2f05265a01afdcd970fc9b402653f7c6df92de65366d00bfb31738de8e1f"
+    }
+  ],
+  "observational_correction": "Qualifier a3 PASS retains its executed fixture hash: named kind-bound negative actually mutated an earlier sector bound. Corrected a4 independently derives each of three real table indices and rejects unsigned/extent mutants at each; no target or captured artifact was changed.",
+  "limits": [
+    "Action receipts are explicitly posed boundary outcomes, not peer durability",
+    "complete artifact admission is not a compiler proof",
+    "connected recovery and independent cold NOT_RUN",
+    "no full USB MAC/electrical/physical conformance",
+    "Fresh full image audits do not establish actual guest recovery; connected scenario remains NOT_RUN"
+  ],
+  "executed_checker": {
+    "path": "build/usb/recovery-artifact-qualification-a4/consumed-source-root/scripts/check_usb_recovery_target.py",
+    "sha256": "8a63eb384ac873bbdb8000f51482152ff79f5fc7f549fc686ae735cfc6cf6431"
+  },
+  "current_checker_observer_addition": {
+    "path": "scripts/check_usb_recovery_target.py",
+    "sha256": "077ccd7a6cf8573b857f298a2eb976de4dd3b0ef12fba4e2200f8d53489da64c",
+    "scope": "Only literal UserCopy observer addition and exact original arithmetic helper plus the two Recovery config names may reconcile original component provenance; no other target/helper/pin change admitted.",
+    "full_changed_command": "FAIL_SOURCE_INVENTORY",
+    "retained_current_result": {
+      "path": "build/usb/recovery-artifact-qualification-a5/result.json",
+      "sha256": "a7996ea43a5c6a37a43cb097ebe7f6acd627dd41e1480f79788e87b4b40cded2",
+      "seconds": 0.2518865199526772,
+      "reason": "Course saved new await modules after original whole362 seal, before separate checker hold; correct complete original inventory rejection. No unconsumed target exception granted."
+    }
+  },
+  "whole_pair": {
+    "path": "build/usb/recovery-whole-pair-a2/result.json",
+    "sha256": "42447f9133602625b7aee7cc369a77253e933c5fa3bfcbd90c38acb2901d99ee",
+    "host_seconds": 533.0122354179621,
+    "bounds": {
+      "aggregate_seconds": 900,
+      "audit_seconds": 180,
+      "build_seconds": 300
+    },
+    "source_count": 362,
+    "matched_source_inventories": true,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 148.53731723804958,
+        "build_seconds": 103.89514189003967,
+        "configuration": "lemmasim-silicon-usb-clocked-retry-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-clocked-retry-bulk-initialize-a2",
+        "image_sha256": "95a4dc27268309861cc0363d2473e60b406912fa4abfa510a4b90ee271d6848a",
+        "source_archive_sha256": "40f0f846c40590160d14679d2da5b405051268b984fe408b1f9ff53b0fb374d2",
+        "source_inputs": 362,
+        "status": "PASS_BUILD_FULL_AUDIT_EXACT_ARCHIVE"
+      },
+      "notebook": {
+        "audit_seconds": 166.232765168068,
+        "build_seconds": 114.14955851098057,
+        "configuration": "lemmasim-silicon-usb-clocked-retry-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-usb-clocked-retry-bulk-notebook-a2",
+        "image_sha256": "1aa1e715cac81d8ade7cca00d0e9c4db5727018b62532313c0b8a1232f8fefb4",
+        "source_archive_sha256": "22f5b52ba5b2c79978f1a9d647b2e8bbbd3bbb336064e6b256e4adc6ac9bec6a",
+        "source_inputs": 362,
+        "status": "PASS_BUILD_FULL_AUDIT_EXACT_ARCHIVE"
+      }
+    },
+    "prior_shared_cohort": "Original Closure/Course362 map remains sealed; Recovery fresh map differs only in the independently qualified arithmetic_sums_identity exact new pair registry."
+  },
+  "arithmetic_registry_correction": {
+    "original_failure": {
+      "path": "build/usb/recovery-whole-pair-a1/result.json",
+      "sha256": "5683cc8b98de60bfe81ba89cec6c5a26b8bb872f27d910d64377a5d80946ae17",
+      "seconds": 96.12500353704672,
+      "reason": "Genuine149-function Arithmetic3 emitter metadata rejected because execution-identity helper omitted exact new configuration pair"
+    },
+    "candidate": {
+      "path": "build/usb/recovery-arithmetic-registry-candidate-a1/result.json",
+      "sha256": "7c922e205b0e3148c61131ff288ea222da93d3e10009583f69fcf11f8240ec62",
+      "actual_mutants": 11,
+      "scope": "Complete existing registry/catalog/pre+post body pins retained; exact pair positive and wrong-role/config/profile/software/catalog/identity/body negatives"
+    },
+    "maintained_source_positive": {
+      "path": "build/usb/recovery-arithmetic-registry-candidate-a1/maintained-identical-source-check-a2.json",
+      "sha256": "84c3bba9b468e9ee8fb950307215af5d2fe9b021e9883868fd93878a65a55880"
+    },
+    "retained_host_receipt_failure": "build/usb/recovery-arithmetic-registry-candidate-a1/maintained-source-check-a1-failure.json"
+  },
+  "immutable_package": {
+    "path": "build/native/task006-usb-recovery-connected-a1",
+    "schema": "lemmasim-native-bundle/7",
+    "bundle_sha256": "71515671d1533f48ca6c19a2bb01c539b442faef5037df8d00318acbccd37381",
+    "native_original_inputs": 255,
+    "guest_original_inputs": 362,
+    "strict_validation": {
+      "path": "build/usb/notebook-retry-draft-a1/schema7-package-validation-a1.json",
+      "sha256": "be1036593107daeef4d88bdad5f3388e83f9e2b12cc879b6fd0f842a02688523"
+    },
+    "connected_guest": "NOT_RUN"
+  }
+}
