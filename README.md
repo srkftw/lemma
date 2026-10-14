@@ -1039,6 +1039,27 @@ Developer raw-button/one-clock controller boundary. Host fixtures additionally
 reject restricted direct messages without changing clocks, pending timers or
 backing. New cold guest acceptance and teacher/tutor permissions are distinct.
 
+The canonical portable builder also accepts a complete v2 native source archive.
+It validates the original binary, every consumed source, generated binding and
+archived profile JSON before compiling the same circuitry and `Machine` for
+Wasm. The portable C ABI and build recipe retain their own source identities.
+The [fresh native/portable build receipt](docs/evidence/006-canonical-native-wasm-source-v1.json)
+records39.17s native and75.58s portable builds. Guest execution and exact applicable
+native/Wasm suffixes remain separate checks. The following command actually built
+the prepared portable machine; use an unused output directory for another build:
+
+```sh
+python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 \
+  --native-build build/silicon/task006-canonical-port-a1 \
+  --native-source-root build/silicon/task006-canonical-port-a1/consumed-source-root \
+  --host-optimization simd-lto --output-dir build/wasm/canonical-NEW
+```
+
+`simd-lto` requires WebAssembly SIMD; `scalar` remains available. A missing,
+old v1, corrupt or mismatched canonical archive fails before portable compilation.
+Neither source admission nor a successful build establishes a cold notebook,
+browser compiler, completed USB/radio browser adapter or redistribution rights.
+
 ### Opt-in native live USB reattachment
 
 The prepared `build/native/task006-usb-live-recovery-a1` package admits

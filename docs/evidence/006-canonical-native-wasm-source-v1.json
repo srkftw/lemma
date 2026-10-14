@@ -1,0 +1,89 @@
+{
+  "schema": "lemma-canonical-native-wasm-source-port/1",
+  "status": "PASS_SOURCE_ARCHIVED_NATIVE_AND_PORTABLE_BUILDS",
+  "scope": "Nativecanonical0.3 and portableWasm compilation of the same complete254input archived circuitry/Machine. This is build/provenance evidence; realfreshClosureguest/cold/controller/suffix qualification is separate and pending. Implementation identities properlydiffer by hostbuild inputs; no crossbackendcheckpointmigration claim.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "native": {
+    "schema": "lemma-canonical-native-wasm-build/1",
+    "status": "PASS_NATIVE_BUILD_AND_COMPLETE_ORIGINAL_ARCHIVE",
+    "plan_sha256": "f446bf4ae885d4a8ae99bcde220b1d241819745bbb8ffcf1c6711b30942e1d3c",
+    "identity": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "source_count": 254,
+    "source_root": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-canonical-port-a1/consumed-source-root",
+    "manifest_sha256": "9d364d45aabdaea791fcfe74aaa0fabecd9cffb7bcf263cc1bf6f5f142f93e1c",
+    "archive_sha256": "9c75d229757fc7c9a9a211901e0b1f8be660406d07f0b38e5e69c26411e14fca",
+    "binary_sha256": "3d265e97e1ad1d0271430d51f8a051993408327f37193f18959de05f046305e2",
+    "disk_bytes": 187498326,
+    "host_seconds": 39.16771653504111,
+    "peak_tree_rss_kib": 836340,
+    "owned_survivors": []
+  },
+  "portable": {
+    "schema": "lemma-canonical-native-wasm-build/1",
+    "status": "PASS_SAME_ORIGINAL_MACHINE_PORTABLE_BUILD",
+    "plan_sha256": "f446bf4ae885d4a8ae99bcde220b1d241819745bbb8ffcf1c6711b30942e1d3c",
+    "original_identity": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "portable_identity": "fe167c21fe704436650efabf550fcb0767c666c8cae99b379f85dead20ca1895",
+    "source_count": 254,
+    "manifest_sha256": "8c9968c5b010186fbf260095d4ccef25f6a070379dd11bf2411f15ae1e603a2d",
+    "outputs": {
+      "machine.mjs": "1f0047314e11de7abdbbffa5421c21b4c870ad1df5f0ad1fae1b4af237616340",
+      "machine.wasm": "94bf974a05d3841a2ca30c09f2cdf1337750a5126d6ed92c141a4d26b8ba1d53"
+    },
+    "disk_bytes": 9366180,
+    "portable_tool_versions": {
+      "verilator": "Verilator 5.052 2026-09-05 rev v5.052\n",
+      "em++": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.9-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "node": "v24.21.0\n"
+    },
+    "host_seconds": 75.58370129705872,
+    "peak_tree_rss_kib": 758080,
+    "owned_survivors": []
+  },
+  "plan": {
+    "path": "build/browser/canonical-native-source-owner-a1/plan.json",
+    "bytes": 1500,
+    "sha256": "f446bf4ae885d4a8ae99bcde220b1d241819745bbb8ffcf1c6711b30942e1d3c"
+  },
+  "native_supervision": {
+    "path": "build/browser/canonical-native-source-owner-a1/native.supervision.json",
+    "bytes": 5264,
+    "sha256": "37200f0d99f41ba3ebf8a0959fc89d4102e0bae8d66c0b8f98382b14d18036a4"
+  },
+  "portable_supervision": {
+    "path": "build/browser/canonical-native-source-owner-a1/portable.supervision.json",
+    "bytes": 3575,
+    "sha256": "1ee493000745a188b20b7df3893abbd211922c4d0579c280670738f0be2e0c48"
+  },
+  "source_driver": {
+    "path": "scripts/silicon_wasm.py",
+    "bytes": 17792,
+    "sha256": "0c3e87b870faeab07729dd82cbe0b069d7c5b190c9d98474be00c839d58bdd6e"
+  },
+  "source_validator": {
+    "path": "scripts/check_native_evaluation.py",
+    "bytes": 17599,
+    "sha256": "af4b312dd18c835b4182ae93fd4fe45566206cc4ac7a8f9b09ed9a26ce61833a"
+  },
+  "archive": {
+    "path": "build/silicon/task006-canonical-port-a1/consumed-source-archive.json",
+    "bytes": 30922,
+    "sha256": "9c75d229757fc7c9a9a211901e0b1f8be660406d07f0b38e5e69c26411e14fca"
+  },
+  "native_manifest": {
+    "path": "build/silicon/task006-canonical-port-a1/build.json",
+    "bytes": 77723,
+    "sha256": "9d364d45aabdaea791fcfe74aaa0fabecd9cffb7bcf263cc1bf6f5f142f93e1c"
+  },
+  "portable_manifest": {
+    "path": "build/wasm/task006-canonical-native-port-a1/build.json",
+    "bytes": 112861,
+    "sha256": "8c9968c5b010186fbf260095d4ccef25f6a070379dd11bf2411f15ae1e603a2d"
+  },
+  "commands": [
+    "nix-shell tooling/silicon/sim.nix --run \"python3 scripts/silicon_compute.py build --profile lemma-silicon-dev/0.3.0 --output-dir build/silicon/canonical-NEW --jobs 2\"",
+    "python3 -c \"import sys;sys.path.insert(0,'scripts');from pathlib import Path;from check_native_evaluation import capture_current_source;capture_current_source(Path('build/silicon/canonical-NEW'))\"",
+    "python3 scripts/silicon_wasm.py --profile lemma-silicon-dev/0.3.0 --native-build build/silicon/canonical-NEW --native-source-root build/silicon/canonical-NEW/consumed-source-root --host-optimization simd-lto --output-dir build/wasm/canonical-NEW"
+  ],
+  "remaining": "Actualnewguestexecution and fullcoldnotebook/math/course/newnative-Wasmsuffix remain separate. Generalbrowsercompiler,productionboot/browserradio/USBpeers, distribution rights and arbitrarycachedstate fullparity remain open. SIMD requires hostWebAssemblySIMD; scalar compilation remains selectable."
+}

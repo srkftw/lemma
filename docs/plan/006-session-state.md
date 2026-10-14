@@ -1060,4 +1060,14 @@ cold remains a retained failure, not an extended deadline or completed G6.
 Native/browser distribution, full fast cached-state parity, radios and physical
 closure remain unfinished in the original inventory.
 
+The fresh canonical native6cab32ec and portablefe167c21 builds now consume the
+same complete254-input v2 archived native circuitry/`Machine`, including the
+selected0.3 profile JSON. [The source-port receipt](../evidence/006-canonical-native-wasm-source-v1.json)
+records actual39.168s native and75.584s Wasm compilation, peaks836340/758080KiB,
+187498326/9366180outputbytes, pinnedVerilator5.052 andEmscripten6.0.9, and reaped
+owners. The portable shim/recipe are separately bound new host inputs; these
+builds do not claim guest execution, cold recovery or cross-backend checkpoint
+migration. New Closure7/Doc8/UserCopy guest pair qualification and browser
+packaging/execution remain in progress on this same runtime.
+
 -->

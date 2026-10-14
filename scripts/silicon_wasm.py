@@ -76,17 +76,40 @@ def host_flags(preset):
     raise ValueError('Unknown portable host optimization')
 
 def archived_native_build(build, source_root, selected_profile):
-    """Port only the complete original Clocked13 producer, never current RTL.
+    """Port a complete original canonical or Clocked13 producer.
 
     The native archive closes all original inputs and its separately bound
     selected JSON. The portable C ABI and build recipe are new host inputs;
     neither is represented as an input to the historical native compilation.
     """
     from silicon_guest import native_source_archive, USB_CLOCKED_PROFILE_NAME
-    if selected_profile != USB_CLOCKED_PROFILE_NAME:
-        raise ValueError('Native-to-portable source admission is Clocked13 only')
+    canonical = selected_profile == 'lemma-silicon-dev/0.3.0'
+    if not canonical and selected_profile != USB_CLOCKED_PROFILE_NAME:
+        raise ValueError('Native-to-portable source admission is canonical0.3 or Clocked13 only')
     source_root = Path(source_root).resolve()
-    manifest, inputs, evidence = native_source_archive(build, source_root, selected_profile)
+    if canonical:
+        # This validator checks the exact compiler inventory, identity header,
+        # binary and selected JSON from the original native producer. A v1
+        # archive did not retain that JSON and cannot supply this new port.
+        from check_native_evaluation import original_native
+        from silicon_guest import _read_unique_json
+        build = Path(build).resolve()
+        archive = _read_unique_json(build/'consumed-source-archive.json')
+        if archive.get('schema') != 'lemma-original-native-component-archive/2':
+            raise ValueError('Canonical portable producer requires its complete v2 native archive')
+        manifest, original_root, relative_inputs = original_native(build)
+        if source_root != original_root.resolve():
+            raise ValueError('Canonical portable producer source root differs from its original archive')
+        inputs = {str(ROOT/name):want for name,want in relative_inputs.items()}
+        evidence = {'schema':'lemma-wasm-canonical-native-producer/1',
+            'build_manifest_sha256':digest(build/'build.json'),
+            'archive_sha256':digest(build/'consumed-source-archive.json'),
+            'binary_sha256':manifest['binary_sha256'],
+            'runtime_identity':manifest['snapshot_identity'],
+            'source_count':len(relative_inputs),
+            'scope':'unchanged complete canonical native producer; selected JSON archived; execution separate'}
+    else:
+        manifest, inputs, evidence = native_source_archive(build, source_root, selected_profile)
     def resolve(path):
         path = Path(path)
         if not path.is_absolute(): path = ROOT/path
@@ -107,7 +130,8 @@ def archived_native_build(build, source_root, selected_profile):
         'native':evidence,
         'original_snapshot_identity':manifest['snapshot_identity'],
         'native_source_inputs':inputs,
-        'scope':'fresh portable host compilation of the complete original Clocked13 circuit and Machine; no fresh guest compilation'}
+        'scope':'fresh portable host compilation of the complete original '+
+            ('canonical0.3' if canonical else 'Clocked13')+' circuit and Machine; no fresh guest compilation'}
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
@@ -117,9 +141,9 @@ def main():
     p.add_argument('--source-bundle',type=Path,
                    help='complete original static browser source bundle; never mix with current RTL')
     p.add_argument('--native-build',type=Path,
-                   help='original Clocked13 native build; requires its complete source archive')
+                   help='original canonical0.3 or Clocked13 native build; requires its complete source archive')
     p.add_argument('--native-source-root',type=Path,
-                   help='complete selected-profile Clocked13 native source archive; no checkout fallback')
+                   help='complete selected-profile native source archive; no checkout fallback')
     p.add_argument('--host-optimization',choices=('scalar','simd-lto'),default='scalar',
                    help='host compilation only; RTL clocks, scheduling and guest work are unchanged')
     a=p.parse_args()
