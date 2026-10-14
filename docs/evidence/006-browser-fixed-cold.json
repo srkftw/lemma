@@ -1,0 +1,96 @@
+{
+  "schema": "lemma-browser-fixed-capture-cold/1",
+  "status": "PASS_ACTUAL_COLD_READY_AND_APPLICABLE_SAME_WASM_SUFFIX",
+  "scope": "Local browser worker executes canonicalRTL and genuine auditedArray/CourseWord/OwnedTablePrefix RV64. Actualcycle0cold recovery, fullcontrollerpixels and validactualread outcomes; separate arbitrarycourse-workflow same-Wasm suffix. Fullbrowsermath/save/reopen,newnativeC++/Wasm relation and wholePending boundary remain separate.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "runtime": "0c22430ee3939550a8e13deb034746f7e10df7310dc15c1c3c1ac6721199066b",
+  "guest": "437224ddd541ce2b3e5acb3678f53a4ff43fcadb6dd39df234c9167b53d4ad63",
+  "source_revision": "d182313 actualWasm32lengthrepair plus independently auditeda9520f1 guest; complete consumedsource inventories inimmutablebundle",
+  "bundle": {
+    "path": "build/browser/task006-capture-u64-simd-a1/bundle.json",
+    "bytes": 94133,
+    "sha256": "b0eb11c150c69f7c34fe51acfcbf119dded12b609aaf1840ad7ef2c603b19c2d"
+  },
+  "wasm_build": {
+    "path": "build/wasm/task006-capture-u64-simd-a1/build.json",
+    "bytes": 72463,
+    "sha256": "3a8e8e287700f276e735438ca75618e5c6c02fd0d484f12f96bfd0683e1612fa"
+  },
+  "cold_plan": {
+    "path": "build/browser/task006-capture-u64-cold-a1/plan.json",
+    "bytes": 1199,
+    "sha256": "f9615555bdc011a89b62283f635fe39904076703d449c299a4122c1b2e5bcd42"
+  },
+  "actual_start": {
+    "path": "build/browser/task006-capture-u64-cold-a1/actual-start-a1.json",
+    "bytes": 750,
+    "sha256": "b1c400e75798a7b97b857fe86ebff748000ddc6a9ce2b91823b4341e7cf87269"
+  },
+  "cold_observation": {
+    "path": "build/browser/task006-capture-u64-cold-a1/cold-result-a1.json",
+    "bytes": 8146,
+    "sha256": "2c3204a6653b9233fb3b28f9293ac5500b2cf76d9ea4dcb582cebbfaf2ff9562"
+  },
+  "actual_cold": {
+    "ready_cycle": 878550000,
+    "worker_elapsed_seconds": 5332.5653500000235,
+    "simulation_call_seconds": 5195.965839996071,
+    "wasm_heap_bytes": 201326592,
+    "full_expected_pixels": 3630000,
+    "medium_sha256": "027b26c9e6af04a6d03a97a051a52d1eed32f87c92f99663a94f2d0459f0e2db",
+    "snapshot_sha256": "0557c6be83b6ebcb41d306bc5cd32fc3798a23de8530a0a7b768a0c48f42e47a",
+    "actual_successful_reads": 250,
+    "writes": 0,
+    "barriers": 0,
+    "sequence": 37,
+    "document_revision": 20,
+    "original_clock_bound": 2000000000,
+    "original_host_seconds": 7200,
+    "original_wasm_heap_bound": 2147483648,
+    "restored_cpu_state": false,
+    "format_or_initializer_used": false,
+    "snapshot_after_ready_only": true,
+    "export_pause_after_deadline": "Observational exports happenedaftertheactualReady/completioncallback; they advancedzero clocks. Readytime is5332.565s, notthe later7313.711s exportelapsed."
+  },
+  "applicable_suffix": {
+    "plan": {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-pipeline-suffix-plan-a1.json",
+      "bytes": 630,
+      "sha256": "00c684173a8a84633ba1ce7e35d55ceba81399b788e7aec9343f2a18ac8bce3a"
+    },
+    "result": {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-suffix-a1/replay/result.json",
+      "bytes": 7358,
+      "sha256": "d29d5bae36243f789e4779be20b7f4f1993730f1f6ad03ad8498395fa2277cb5"
+    },
+    "supervision": {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-suffix-a1/run.supervision.json",
+      "bytes": 521,
+      "sha256": "8df52d90b04d5388308dafe348f4565744ef8118dbadf772db849218e7db6d38"
+    },
+    "first_cycle": "918650000",
+    "last_cycle": "919650003",
+    "cycles": "1000003",
+    "exact_complete_archive_sha256": "fc0c800d23da0b8f61b3002ffc31c06aaf6d6ca4ebf9d7be8065833396ed0182",
+    "host_seconds": 13.40123231,
+    "node_peak_rss_bytes": 1846947840,
+    "wasm_heap_bytes": 345833472,
+    "maximum_host_seconds": 300,
+    "maximum_tree_rss_kib": 3145728,
+    "masked_fields": 0,
+    "origin_contacted": false,
+    "scope": "same Wasm implementation: real browser arbitrary-boundary archive and exact applicable suffix; not cold recovery or C++/Wasm microstate migration"
+  },
+  "retained_failures": [
+    "Earlier Array browser7200s coldtimeout unchanged; privatecontinuation mathematics isnotcoldacceptance.",
+    "Earlier SIMD/CourseWord coldReady passes independently but itsmalformed32-bitoutcome tape remainsFAIL; no replayfromthat tape.",
+    "Newfixedwholeinitializer30M/600s pendingtest remainsFAILbeforefirstWRITE; no extendedlimit orwholePendingclaim."
+  ],
+  "commands": [
+    "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --reuse-wasm --output-dir build/browser/fixed-capture-new",
+    "./scripts/lemmasim browser-serve --bundle build/browser/task006-capture-u64-simd-a1 --port 8780",
+    "python3 scripts/check_browser_cold_export.py --directory build/browser/task006-capture-u64-cold-a1 --bundle build/browser/task006-capture-u64-simd-a1 --reference-medium build/task006-array-doc5-migration-a3/cold-course.raw --reference-pixels build/task006-array-doc5-migration-a3/cold-notebook.ppm --result-name new-observation.json",
+    "nix-shell build/browser/task006-capture-u64-simd-a1/wasm-sources/tooling/silicon/wasm.nix --run \"node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-capture-u64-simd-a1 build/browser/task006-capture-u64-cold-a1/course-suffix-a1/prefix.chk build/browser/task006-capture-u64-cold-a1/course-suffix-a1/suffix.chk build/browser/suffix-new\""
+  ],
+  "remaining": "Samecoldmachine course/check/acknowledgedSave/newcoldreopen stillinprogress; nativeC++ finitecomparison, wholearchitecturalcached-state campaign, Stringbrowserexecution, browsercompiler/installers/permissions/redistribution incomplete. OPFSsuccessqualifiescompletedworkerflush, notunconditionaleviction/physicalpowerloss."
+}

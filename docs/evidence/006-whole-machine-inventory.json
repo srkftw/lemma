@@ -713,6 +713,20 @@
       "sha256": "98d90c6daa433e557adb1a589615894ce9a4466d5c216c30a09405cf2ccece27",
       "status": "PASS_COMMON_OFDM_COMPONENT",
       "scope": "Bounded common legacy20MHz BPSK/r1/2 DATA coding and real complex-sample endpoint component, a Wi-Fi6 construction dependency; not final-standard conformance or a connected whole-machine radio"
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/cold-result-a1.json",
+      "bytes": 8146,
+      "sha256": "2c3204a6653b9233fb3b28f9293ac5500b2cf76d9ea4dcb582cebbfaf2ff9562",
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Actualcanonicalcycle0browsercold Ready/all3.63Mpixels/unchangedDoc6medium; valid250READtape; no fullmath/save/reopen claim"
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-suffix-a1/replay/result.json",
+      "bytes": 7358,
+      "sha256": "d29d5bae36243f789e4779be20b7f4f1993730f1f6ad03ad8498395fa2277cb5",
+      "status": "PASS",
+      "scope": "Actualbrowserarbitrarycourseboundary and1,000,003-clock same-Wasm suffix; entirecontainerexact/nooriginalbacking/masks; notnewC++Wasm orcached-state wholequalification"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",

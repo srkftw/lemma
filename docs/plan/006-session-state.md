@@ -868,4 +868,29 @@ The old candidate build retains its original false default and source identity;
 the maintained default is true. Original execution receipts are not relabeled
 as results from the later host admission extension.
 
+
+
+## Repaired browser canonical cold and exact course suffix
+
+[The repaired core](../evidence/006-browser-fixed-cold.json) actually starts at
+cycle0, recovers the existing acknowledged Doc6 medium, and reaches Ready at
+878.55M clocks/5332.565worker seconds/5195.966simulation-call seconds/192MiB
+Wasm heap. All3.63M expected controller pixels and all medium bytes match.
+All250 actual READ outcomes have valid complete lengths/CRCs/order; zero
+writes/barriers occur. The original2B/7200s/2GiB heap limits remain unchanged.
+The paused later exports do not change the actual Readytime or CPUstate.
+
+The same live cold machine now accepts raw course input. An observational
+checkpoint during that workflow at918650000, then exactly1,000,003clocks, matches
+every complete same-Wasm container byte on the native Node host. Runtime0c22430e,
+audited guest437224dd, strict static bundle`build/browser/task006-capture-u64-simd-a1`.
+The suffix passes13.401s/1.847GB NodepeakRSS inside300s/3GiB; no original backing
+contact, fences, device drain or field masks. This is a finite same-Wasm suffix,
+not a new native C++ relation or whole cached-state qualification.
+
+`./scripts/lemmasim browser-serve --bundle build/browser/task006-capture-u64-simd-a1 --port 8780`
+opens the real local machine. Existing malformed oldSIMD tape and wholePending
+30M/600s failure remain failures. Fullcourse/check/Save/newcold at this fixed
+identity continues; original oldArray privatecourse observations stay separate.
+
 -->
