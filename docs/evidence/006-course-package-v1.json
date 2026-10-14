@@ -574,6 +574,175 @@
     "status": "PASS_COURSE_MOUNTED_AWAIT_COMPONENT",
     "wall_seconds": 15.95888241007924
   },
+  "mounted_await_selected_deployment": {
+    "configuration_names": [
+      "lemmasim-silicon-course-await-bulk-notebook",
+      "lemmasim-silicon-course-await-bulk-initialize"
+    ],
+    "historical_roots": "Unchanged old course installer/store/main and all prior configuration tuples; new exact root borrows old Server library but excludes old main/step/courseMain/courseStep",
+    "host_checks": {
+      "course_real_artifact_and_owned_bytes": {
+        "artifact": "build/courses/task006-package-qualified-a5/package/arithmetic.lcp",
+        "status": "PASS",
+        "tests": 11
+      },
+      "first_lemmasim_full_failure": {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests/lemmasim",
+          "-v"
+        ],
+        "error": "test_managed_guest_override_is_exact_and_available_in_ordinary_modes omitted new restricted Await2 configurations; actual gate correctly rejected Student mode",
+        "seconds": 52.074,
+        "tests": 279
+      },
+      "kernel_full": {
+        "seconds": 7.589,
+        "status": "PASS",
+        "tests": 409
+      },
+      "lemmasim_full": {
+        "path": "build/courses/task006-course-await-host-regressions-a1/result.json",
+        "sha256": "ff7d92ce35e9939e695f6eb417e56615a834bf12b1ead6854d12f135056e234e"
+      },
+      "lemmasim_full_suite_seconds": 44.978,
+      "lemmasim_full_suite_tests": 280,
+      "new_catalog_and_historical_arithmetic": {
+        "status": "PASS",
+        "tests": 7
+      },
+      "raw_command_guards": {
+        "status": "PASS",
+        "tests": 6
+      }
+    },
+    "original_import_gate_failure": {
+      "path": "build/courses/task006-course-await-deployment-component-a1/result.json",
+      "sha256": "6984993ad5d527d25ce467cf18acb3fffdbbb8e4fb2f3efac2aa8c65a36b757f"
+    },
+    "original_import_gate_failure_seconds": 2.515789750032127,
+    "peak_rss_kib": 1714188,
+    "remaining": "Fresh whole four-image initializer/notebook/full ordinary audits; original60M mountedReady and100M-per-Load actual check. Component/metadata/host PASS is not a CPU or cold success.",
+    "role_profiles": {
+      "arithmetic": "core0-user-v0.5",
+      "course": "core0-user-v0.1",
+      "kernel": "core0-kernel-v0.4",
+      "notebook": "core0-user-v0.2",
+      "store": "core0-user-v0.1"
+    },
+    "scope": "selected genuine production User1 StoreAwait+mainAwait LLVM/O2/object; whole images/CPU NOT_RUN",
+    "seconds": 19.566459657042287,
+    "selected_result": {
+      "path": "build/courses/task006-course-await-deployment-component-a2/result.json",
+      "sha256": "069320b53a47d4ea0111a30155ed7f3c8a454644c9856b766548773b4e0d4e12"
+    },
+    "selected_units": [
+      {
+        "artifacts": {
+          "program.ll": "2b3c60a81b05bdbf38260ee6a1578100bcdcc8d1513b9995b5b5c91947670447",
+          "program.o": "74607fb054c0f1a6d2e8aac24b41962ce3bbfbc5fd3f1ad8fe58f41ad48f98d7",
+          "program.opt.ll": "139441085dff00a4b10f5bcc06d0ff3bb62828ce7486e738fbc35ebb60c8e0b0",
+          "unit.json": "1d8e362f0b295d0aa62510102b4d4fb42d4434cc5a96179fe7f011aa288cd7b5"
+        },
+        "functions": 259,
+        "key": "store",
+        "ordinary_audits": {
+          "post": {
+            "complete_result_in_selected_result": true,
+            "report_fields": [
+              "calls",
+              "checked_inline",
+              "declarations",
+              "definitions",
+              "device_operations",
+              "lemmasim_device_lowering",
+              "managed_records",
+              "memory_access_counts",
+              "optimizer_intrinsics",
+              "readonly_optimizer_tables"
+            ],
+            "status": "PASS"
+          },
+          "pre": {
+            "complete_result_in_selected_result": true,
+            "report_fields": [
+              "calls",
+              "checked_inline",
+              "declarations",
+              "definitions",
+              "device_operations",
+              "lemmasim_device_lowering",
+              "managed_records",
+              "memory_access_counts",
+              "optimizer_intrinsics",
+              "readonly_optimizer_tables"
+            ],
+            "status": "PASS"
+          }
+        },
+        "profile": "core0-user-v0.1",
+        "root": "Lemma.Services.Store.ServerAwait.main"
+      },
+      {
+        "artifacts": {
+          "program.ll": "2e90537c66d9b891e90c58933d441e16cf5f980353349f7d57eafb64bf9e3a99",
+          "program.o": "58f3a37bcb9a5b88c901ac52d8b71ba5f7c0ed9519b5b4f0afb951233c6db5d3",
+          "program.opt.ll": "76a954be4f017c0b71a51ed79dd8f23c233737cf93dae8f0d4a023f4fc2b690e",
+          "unit.json": "4c276551627562e2cb7937f4efc7649e03ad655b355701cdfd176b6f54021b2e"
+        },
+        "functions": 169,
+        "key": "course",
+        "ordinary_audits": {
+          "post": {
+            "complete_result_in_selected_result": true,
+            "report_fields": [
+              "calls",
+              "checked_inline",
+              "declarations",
+              "definitions",
+              "device_operations",
+              "lemmasim_device_lowering",
+              "managed_records",
+              "memory_access_counts",
+              "optimizer_intrinsics",
+              "readonly_optimizer_tables"
+            ],
+            "status": "PASS"
+          },
+          "pre": {
+            "complete_result_in_selected_result": true,
+            "report_fields": [
+              "calls",
+              "checked_inline",
+              "declarations",
+              "definitions",
+              "device_operations",
+              "lemmasim_device_lowering",
+              "managed_records",
+              "memory_access_counts",
+              "optimizer_intrinsics",
+              "readonly_optimizer_tables"
+            ],
+            "status": "PASS"
+          }
+        },
+        "profile": "core0-user-v0.1",
+        "root": "Lemma.Courses.PackageInstaller.mainAwait"
+      }
+    ],
+    "source_count": 367,
+    "source_inventory_sha256": "1eb1644fe3229efb058e308bd827c56b0c95b5759b985423e524520398e7ec7f",
+    "source_root": "build/courses/task006-course-await-deployment-component-a2/consumed-source-root",
+    "status": "PASS_SELECTED_PRODUCTION_USER1_COURSE_AWAIT_COMPONENT"
+  },
   "observed_action_outputs": {
     "author-edition": "COURSE_PACKAGE_PUBLISH:PASS 4058 bytes,8 original typed nodes\nCOURSE_AUTHOR_EDITION:PASS changed lesson/hint/source/edition; unchanged target decoder selects pinned goal1 and new hint bytes",
     "genuine-export": "COURSE_PACKAGE_EXPORT:PASS genuine read-only User2 source/LLVM closure",

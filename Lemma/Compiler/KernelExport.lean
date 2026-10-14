@@ -100,7 +100,9 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isBulkNotebookConfiguration configuration then
-      if isCourseNotebookConfiguration configuration then
+      if isCourseAwaitNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-await-bulk-notebook" then "siliconCourseAwaitBoot" else "siliconCourseAwaitInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isCourseNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-bulk-notebook" then "siliconCourseBoot" else "siliconCourseInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
       else if isUSBRecoveryNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" then "siliconUSBRecoveryBoot" else "siliconUSBRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk"]
@@ -289,7 +291,18 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if !isServiceConfiguration configuration && !isCourseNotebookConfiguration configuration then true
+  if isCourseAwaitNotebookConfiguration configuration then
+    let executable := serviceExecutableSource source ||
+      source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait."
+    if !executable then true else
+    if role != "user" then false else
+    image?.any fun image =>
+      source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerAwait &&
+        (source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
+        !#["Lemma.Services.Store.Server.main", "Lemma.Services.Store.Server.step",
+          "Lemma.Services.Store.Server.courseMain", "Lemma.Services.Store.Server.courseStep"].contains source)
+  else if !isServiceConfiguration configuration && !isCourseNotebookConfiguration configuration then true
   else if !serviceExecutableSource source then true
   else if role != "user" then false
   else image?.any fun image => source == image.moduleName.toString ||

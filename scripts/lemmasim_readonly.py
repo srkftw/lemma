@@ -9,7 +9,9 @@ import struct
 import hashlib
 from pathlib import Path
 from core0_common import Core0Error, load_json
-from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 
 COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'}

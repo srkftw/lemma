@@ -1,5 +1,6 @@
 import Lemma.Courses.PackageCommand
 import Lemma.Courses.PackageStore
+import Lemma.Courses.PackageAwaitClient
 import Lemma.User.CapabilityConsole
 
 /-! Separately linked owner-local course installer. Raw console input is copied
@@ -176,6 +177,32 @@ def main (initialization : UInt64) : Action :=
   else failed else failed else failed else failed
   else failed else failed else failed else failed else failed
 
+  else failed
+
+/-! The completion-driven successor preserves historical main and every
+command/Load/Install path. Only startup uses the explicitly selected op16
+Store root. Admission is pending; only its genuine mounted reply reaches4b0.
+The same private pages, capability grants and initialization flag remain. -/
+def mainAwait (initialization : UInt64) : Action :=
+  if initialization ≤ 1 then
+  .bind (Capability.bootGrant 0) fun s console => if s = 0 then
+  .bind (Capability.bootGrant 1) fun s endpoint => if s = 0 then
+  .bind Syscall.identity fun s identity => if s = 0 then
+  .boundedFoldU64 16 allocateStep 16 0 0 0 0 0 fun s pages => if s = 0 then
+  if pages = 16 then
+  .bind (put 0 console) fun s _ => if s = 0 then
+  .bind (put 8 endpoint) fun s _ => if s = 0 then
+  .bind (put 40 6001) fun s _ => if s = 0 then
+  .bind reset fun s _ => if s = 0 then
+  .bind (CapabilityConsole.record console 0x4b5 identity initialization console endpoint) fun s _ => if s = 0 then
+  .bind (prepare 1 1 loaded 1) fun s _ => if s = 0 then
+  .bind (PackageAwaitClient.call endpoint outgoing incoming 1 initialization 1) fun s generation => if s = 0 then
+  if 0 < generation then
+  .bind (CapabilityConsole.record console 0x4b0 identity initialization console endpoint) fun s _ =>
+  if s = 0 then .loop step else failed else failed
+  else failed else failed else failed
+  else failed else failed else failed else failed
+  else failed else failed else failed else failed else failed
   else failed
 
 end Lemma.Courses.PackageInstaller

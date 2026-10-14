@@ -133,9 +133,14 @@ def isCourseNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-course-bulk-notebook" ||
     configuration == "lemmasim-silicon-course-bulk-initialize"
 
+/-- Completion-driven mount publication is a distinct four-image deployment. -/
+def isCourseAwaitNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-course-await-bulk-notebook" ||
+    configuration == "lemmasim-silicon-course-await-bulk-initialize"
+
 /-- Bounded full-width arrays have their own isolated User5 software authority. -/
 def isArrayNotebookConfiguration (configuration : String) : Bool :=
-  isCourseNotebookConfiguration configuration || configuration == "lemmasim-silicon-array-bulk-notebook" ||
+  isCourseAwaitNotebookConfiguration configuration || isCourseNotebookConfiguration configuration || configuration == "lemmasim-silicon-array-bulk-notebook" ||
     configuration == "lemmasim-silicon-array-bulk-initialize" ||
     configuration == "lemmasim-silicon-array-arithmetic-oom-development"
 
@@ -174,6 +179,13 @@ def softwareDeploymentFields (configuration : String) : List (String × Json) :=
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
     ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7")])])]
+  else if isCourseAwaitNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-course-mounted-await-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.5"),
+      ("course", .str "core0-user-v0.1")])])]
   else if isCourseNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-course-array-bulk-deployment-v1"),
@@ -356,6 +368,13 @@ def courseNotebookImages : Array UserImageSpec := #[
   {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
     root := `Lemma.Courses.PackageInstaller.main, bootRole? := some .courseInstaller}]
 
+def courseAwaitNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerAwait,
+    root := `Lemma.Services.Store.ServerAwait.main, bootRole? := some .storeServer},
+  arrayNotebookImages[1]!, arrayNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.mainAwait, bootRole? := some .courseInstaller}]
+
 def stringNotebookImages : Array UserImageSpec := #[
   notebookImages[0]!,
   {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
@@ -388,6 +407,7 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
   if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
   else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages
+  else if isCourseAwaitNotebookConfiguration configuration then .ok courseAwaitNotebookImages
   else if isCourseNotebookConfiguration configuration then .ok courseNotebookImages
   else if isStringNotebookConfiguration configuration then .ok stringNotebookImages
   else if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages

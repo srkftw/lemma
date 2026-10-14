@@ -6,7 +6,9 @@ inlining. Historical units have no catalog and may not acquire alwaysinline.
 """
 from __future__ import annotations
 import hashlib,re
-from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 from core0_common import Core0Error
 

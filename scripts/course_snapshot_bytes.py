@@ -28,9 +28,26 @@ BOUND_SOURCES = {
 }
 
 
+AWAIT_INSTALLER_SOURCE = "58efcb7fd14e6377ec9292889d52a19fe288085839f18687e6aeeb0594df8830"
+COURSE_CONFIGURATIONS = ("lemmasim-silicon-course-bulk-notebook", "lemmasim-silicon-course-bulk-initialize")
+AWAIT_CONFIGURATIONS = ("lemmasim-silicon-course-await-bulk-notebook", "lemmasim-silicon-course-await-bulk-initialize")
+
+
 def require(value, message):
     if not value:
         raise ValueError(message)
+
+
+def layout_sources(inventory, configuration):
+    """Exact two source versions with unchanged declared owned-buffer layout."""
+    require(configuration in COURSE_CONFIGURATIONS + AWAIT_CONFIGURATIONS,
+            'observer exact course deployment layout')
+    installer = (AWAIT_INSTALLER_SOURCE if configuration in AWAIT_CONFIGURATIONS else
+                 BOUND_SOURCES['Lemma/Courses/PackageInstaller.lean'])
+    require(inventory.get('Lemma/Courses/PackageInstaller.lean') == installer and
+            all(inventory.get(name) == digest for name, digest in BOUND_SOURCES.items()
+                if name != 'Lemma/Courses/PackageInstaller.lean'),
+            'observer exact version-selected frame/descriptor/installer layout sources')
 
 
 def crc64(data):
@@ -167,8 +184,7 @@ def loaded_ram(snapshot, expected_identity, implementation, source_root):
     inventory = json.loads(inventory_path.read_text())
     require(len(inventory) >= 300 and all(sha256(Path(source_root) / name) == digest
             for name, digest in inventory.items()), 'observer complete original source bytes')
-    require(all(inventory.get(name) == digest for name, digest in BOUND_SOURCES.items()),
-            'observer exact declared frame/descriptor/installer layout sources')
+    layout_sources(inventory, expected_identity['development_guest_source_archive']['configuration'])
     files = metadata.get('files')
     require(type(files) is list and len(files) == 1 and files[0]['path'] == 'machine.chk',
             'observer exact native2 container file')

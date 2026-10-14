@@ -43,6 +43,8 @@ class ArithmeticCatalog(unittest.TestCase):
         # historical deployments retain their exact three-image assertions.
         self.assertEqual(set(ARITHMETIC_CONFIGURATIONS),set(expected)|{
             'lemmasim-silicon-course-bulk-notebook','lemmasim-silicon-course-bulk-initialize',
+            'lemmasim-silicon-course-await-bulk-notebook','lemmasim-silicon-course-await-bulk-initialize',
+            'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize',
             'lemmasim-silicon-closure-bulk-notebook','lemmasim-silicon-closure-bulk-initialize',
             'lemmasim-silicon-closure-arithmetic-oom-development',
             'lemmasim-silicon-closure-arithmetic-fault-development'})

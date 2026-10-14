@@ -72,4 +72,46 @@ header; no Load was admitted and no write/barrier occurred. Those failures
 remain failures, and operation counts are not a causal processor timing proof.
 Full image audits and the unchanged60M Ready/100M-per-Load checks remain required
 before this new readiness path qualifies connected package loading.
+
+## Exact additive deployment
+
+The registered software contract is
+`lemma-course-mounted-await-bulk-deployment-v1`, with exact configurations
+`lemmasim-silicon-course-await-bulk-notebook` and
+`lemmasim-silicon-course-await-bulk-initialize`. Kernel4, Store1, Notebook2,
+Arithmetic5 and installer1 retain the canonical silicon0.3 hardware binding.
+The four image IDs/grants/order remain Store1, Notebook2, Arithmetic3 and
+installer4. Store selects `ServerAwait.main`; installer selects
+`PackageInstaller.mainAwait`. Notebook and arithmetic roots remain their
+original Array implementations. Historical course configuration/root tuples
+are unchanged.
+
+`mainAwait` retains the same owned pages, initialization flag, raw command
+framing, validation and real Load/Install paths. Its single operation16 call
+replaces startup status polling. Allocation still produces4b5; only a fully
+validated terminal mounted response with positive root generation produces4b0.
+That record is a readiness observation, never a durability acknowledgement.
+The new Store root may borrow the old Server engine/dispatcher library only in
+this exact selected User image. Old main/step/courseMain/courseStep are excluded;
+other images/privileges cannot acquire that library grant.
+
+Actual production User1 Store/installer exports, ordinary metadata and complete
+pre/post LLVM checks, O2 and RV64 objects passed in19.566s from367 original
+inputs. The initial exact-module import rejection remains FAIL: the first
+new grant matched function names with a trailing dot but omitted the literal
+module name. The corrected grant covers that one exact imported module and
+retains every executable-entry exclusion. No target policy/profile changed.
+
+Developer/Laboratory native bundle/source admission and raw commands recognize
+only the exact new pair. Student, wrong hardware profiles, swapped roles,
+legacy package mixtures and unknown names reject. Independent layout admission
+keeps separate old/new installer source pins and rejects swaps. Full pinned
+kernel409 and LemmaSim280 host tests passed. The first279-test host run remains
+FAIL: a generic ordinary-mode observer excluded only the old restricted course
+pair. Its correction adds the exact new restriction and independent package
+map/permission negatives; the valid mode gate remains unchanged.
+
+Full initializer/notebook image audits and actual cold mountedReady/Load remain
+pending. Installed-course Notebook rendering, source-bound submission/evidence
+and a cooperative chunk reader remain separate required connected work.
 -->

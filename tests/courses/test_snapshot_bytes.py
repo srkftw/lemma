@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from course_snapshot_bytes import OwnedRAM, crc64
+from course_snapshot_bytes import OwnedRAM, crc64, layout_sources
 
 
 class SparseBytes:
@@ -52,6 +52,22 @@ def fixture():
 
 
 class SnapshotBytes(unittest.TestCase):
+    def test_exact_course_source_version_selection_rejects_swaps_and_unknown(self):
+        original={
+          'Lemma/Kernel/Memory/Frames.lean':'bd750645ae330e1ce3c0e7baa98478daffa34f8350dcd74ae6c83e55f0304df8',
+          'Lemma/Kernel/Memory/AddressSpace.lean':'83fa78cdb9be8cb9fc7fd468b0d15a49026774fb615d46773181ce74f04b4cf8',
+          'Lemma/Platform/LemmaVM/Layout.lean':'75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903',
+          'Lemma/Courses/PackageInstaller.lean':'e766ac704d2248e5d265fb94aed91bf4daf6d7c4cdac4619d19ed0d746fb30ae'}
+        awaiting={**original,'Lemma/Courses/PackageInstaller.lean':'58efcb7fd14e6377ec9292889d52a19fe288085839f18687e6aeeb0594df8830'}
+        for name in ('lemmasim-silicon-course-bulk-notebook','lemmasim-silicon-course-bulk-initialize'):
+            layout_sources(original,name)
+            with self.assertRaises(ValueError):layout_sources(awaiting,name)
+        for name in ('lemmasim-silicon-course-await-bulk-notebook','lemmasim-silicon-course-await-bulk-initialize'):
+            layout_sources(awaiting,name)
+            with self.assertRaises(ValueError):layout_sources(original,name)
+        with self.assertRaises(ValueError):layout_sources(awaiting,'lemmasim-silicon-course-await-bulk-any')
+        with self.assertRaises(ValueError):layout_sources({**awaiting,'Lemma/Kernel/Memory/Frames.lean':'0'*64},'lemmasim-silicon-course-await-bulk-notebook')
+
     def test_crc_published_answer_and_independent_bitwise_vectors(self):
         def bitwise(raw):
             value = 0

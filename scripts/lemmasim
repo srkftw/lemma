@@ -953,8 +953,8 @@ def main():
                     course_archive=False
                     if (args.profile=='lemma-silicon-dev/0.3.0' and args.mode in ('developer','laboratory') and
                             args.workload in ('notebook','initializer') and args.native_bundle is not None and args.guest_build is not None):
-                        from silicon_guest_bundle import COURSE_CONFIGURATIONS
-                        course_archive=json.loads((args.guest_build/'build.json').read_text()).get('configuration')==COURSE_CONFIGURATIONS[args.workload]
+                        from silicon_guest_bundle import COURSE_CONFIGURATIONS, COURSE_AWAIT_CONFIGURATIONS
+                        course_archive=json.loads((args.guest_build/'build.json').read_text()).get('configuration') in (COURSE_CONFIGURATIONS[args.workload],COURSE_AWAIT_CONFIGURATIONS[args.workload])
                     if not (usb_archive or lab_archive or course_archive):raise Failure('--guest-source-root requires USB6/8/11/13 RTL preparation, an exact canonical course guest, or a canonical Laboratory Array/String OOM native-bundle override')
                 if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
                 if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0'):raise Failure('Persistent session requires the declared silicon-development binding')

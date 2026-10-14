@@ -89,10 +89,13 @@ STRING_CONFIGURATIONS={"notebook":"lemmasim-silicon-string-bulk-notebook",
 COURSE_DEPLOYMENT="lemma-course-array-bulk-deployment-v1"
 COURSE_CONFIGURATIONS={"notebook":"lemmasim-silicon-course-bulk-notebook",
                        "initializer":"lemmasim-silicon-course-bulk-initialize"}
+COURSE_AWAIT_DEPLOYMENT="lemma-course-mounted-await-bulk-deployment-v1"
+COURSE_AWAIT_CONFIGURATIONS={"notebook":"lemmasim-silicon-course-await-bulk-notebook",
+                             "initializer":"lemmasim-silicon-course-await-bulk-initialize"}
 CLOSURE_DEPLOYMENT="lemma-managed-closure-bulk-deployment-v1"
 CLOSURE_CONFIGURATIONS={"notebook":"lemmasim-silicon-closure-bulk-notebook",
                         "initializer":"lemmasim-silicon-closure-bulk-initialize"}
-SOFTWARE_DEPLOYMENTS={CLOSURE_DEPLOYMENT:CLOSURE_CONFIGURATIONS,COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+SOFTWARE_DEPLOYMENTS={COURSE_AWAIT_DEPLOYMENT:COURSE_AWAIT_CONFIGURATIONS,CLOSURE_DEPLOYMENT:CLOSURE_CONFIGURATIONS,COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
                       SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
@@ -770,7 +773,7 @@ def development_configuration(profile,workload,configuration,mode):
     if workload not in selected:raise ValueError('Workload is not admitted by the selected hardware profile')
     ordinary=selected[workload]
     if configuration==ordinary:return ordinary
-    if configuration in COURSE_CONFIGURATIONS.values() and mode not in ("developer","laboratory"):
+    if configuration in (*COURSE_CONFIGURATIONS.values(),*COURSE_AWAIT_CONFIGURATIONS.values()) and mode not in ("developer","laboratory"):
         raise ValueError("Course installer deployment requires Developer or Laboratory mode")
     if (profile=='lemma-silicon-dev/0.3.0' and
             any(configuration==configurations.get(workload) for configurations in SOFTWARE_DEPLOYMENTS.values())

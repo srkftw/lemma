@@ -1137,6 +1137,11 @@ private def bootCourseSelected (initialization isolation binding arithmeticMode 
 def siliconCourseBoot : Action := bootCourseSelected 0 0 3 0
 def siliconCourseInitializeMedium : Action := bootCourseSelected 1 0 3 0
 
+/-- Distinct images select new User startup/library roots; device/boot policy
+and the original four-role initialization/grants are unchanged. -/
+def siliconCourseAwaitBoot : Action := bootCourseSelected 0 0 3 0
+def siliconCourseAwaitInitializeMedium : Action := bootCourseSelected 1 0 3 0
+
 /-- Closed software selectors reuse canonical digital boot/power policy. -/
 def siliconClosureBoot : Action := bootSelected 0 0 3 0
 def siliconClosureInitializeMedium : Action := bootSelected 1 0 3 0

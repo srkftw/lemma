@@ -7,7 +7,9 @@ source/tool/ELF correspondence remains in the ordinary strict artifact audit.
 """
 from __future__ import annotations
 import hashlib
-from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 import json
 import re
 from core0_common import Core0Error

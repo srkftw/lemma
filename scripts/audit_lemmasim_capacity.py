@@ -15,7 +15,9 @@ from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph
                           optimizer_intrinsics, validate_layout,
                           validate_fresh_descriptor_helpers)
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
-from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 
 CAPACITY = 16352

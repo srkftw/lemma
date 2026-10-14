@@ -27,7 +27,9 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
-from course_deployment import CONFIGURATIONS as COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_SOFTWARE_DEPLOYMENT, library_source_allowed as course_await_library_source_allowed
+COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as CLOSURE_SOFTWARE_DEPLOYMENT
 from build_kernel import USB_RECOVERY_NOTEBOOK_CONFIGURATIONS, NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
@@ -271,7 +273,10 @@ COURSE_NOTEBOOK_IMAGES=({**ARRAY_NOTEBOOK_IMAGES[0],"source":"Lemma.Services.Sto
     *ARRAY_NOTEBOOK_IMAGES[1:], {"key":"course","id":4,"module":"Lemma.Courses.PackageInstaller",
     "source":"Lemma.Courses.PackageInstaller.main","args":["u64"],"symbol_prefix":"lemma_user_course_",
     "startup_case":"none","directory":"users/course","boot_role":"course-installer"})
-MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for configuration in COURSE_NOTEBOOK_CONFIGURATIONS})
+MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for configuration in LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS})
+COURSE_AWAIT_NOTEBOOK_IMAGES=({**COURSE_NOTEBOOK_IMAGES[0],"module":"Lemma.Services.Store.ServerAwait","source":"Lemma.Services.Store.ServerAwait.main"},
+    *COURSE_NOTEBOOK_IMAGES[1:3], {**COURSE_NOTEBOOK_IMAGES[3],"source":"Lemma.Courses.PackageInstaller.mainAwait"})
+MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_AWAIT_NOTEBOOK_IMAGES for configuration in COURSE_AWAIT_CONFIGURATIONS})
 
 RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecovery','source':'Lemma.Services.Store.ServerRecovery.mainRecoveryCourse'},
     {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableSumsBulk'},SUMS_NOTEBOOK_IMAGES[2])
@@ -283,7 +288,9 @@ def software_deployment_fields(configuration):
         return {'software_deployment':software_deployment_for(configuration)}
     if configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS:
         return {"software_deployment":CLOSURE_SOFTWARE_DEPLOYMENT}
-    if configuration in COURSE_NOTEBOOK_CONFIGURATIONS:
+    if configuration in COURSE_AWAIT_CONFIGURATIONS:
+        return {"software_deployment":COURSE_AWAIT_SOFTWARE_DEPLOYMENT}
+    if configuration in LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS:
         return {"software_deployment":COURSE_SOFTWARE_DEPLOYMENT}
     if configuration in STRING_NOTEBOOK_CONFIGURATIONS:
         from managed_string import software_deployment_for
@@ -3279,8 +3286,10 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
         normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
-        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and service_executable_module(normalized_source):
-            if role != "user" or not normalized_source.startswith(image["module"] + "."):
+        course_await_executable=(configuration in COURSE_AWAIT_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerAwait."))
+        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and (service_executable_module(normalized_source) or course_await_executable):
+            borrowed=(configuration in COURSE_AWAIT_CONFIGURATIONS and course_await_library_source_allowed(role,normalized_source,image))
+            if not borrowed and (role != "user" or not normalized_source.startswith(image["module"] + ".")):
                 raise Core0Error("service unit reaches another executable namespace")
         if ".Development." in source:
             allowed = (image["module"],) if multi_user else development_modules(configuration, role)

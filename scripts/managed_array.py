@@ -1,6 +1,8 @@
 """Independent closed Array production admission; no target execution oracle."""
 import re
-from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_DEPLOYMENT
+from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_DEPLOYMENT
+from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_DEPLOYMENT
+COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from core0_common import Core0Error
 FIELD='managed_array'
 CONFIGURATIONS=frozenset(COURSE_CONFIGURATIONS) | frozenset(('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize','lemmasim-silicon-array-arithmetic-oom-development'))
@@ -23,7 +25,7 @@ def require(value,message):
  if not value:raise Core0Error(message)
 def software_deployment_for(configuration):
  require(configuration in CONFIGURATIONS,'Unknown exact Array deployment')
- return COURSE_DEPLOYMENT if configuration in COURSE_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
+ return COURSE_AWAIT_DEPLOYMENT if configuration in COURSE_AWAIT_CONFIGURATIONS else COURSE_DEPLOYMENT if configuration in LEGACY_COURSE_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
 def allowed(unit):
  return unit.get('role')=='user' and unit.get('image_key')=='arithmetic' and unit.get('configuration') in CONFIGURATIONS
 
