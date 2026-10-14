@@ -28,7 +28,7 @@ async function appFixture(gpu){
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
- exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,setRect:r=>rect=r};
+ exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,actions,setRect:r=>rect=r};
 }
 {
  const f=await appFixture(undefined);
@@ -39,6 +39,24 @@ async function appFixture(gpu){
   timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  assert.equal(f.node('#session-mode').disabled,true);
  f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
+}
+// An implicit capture loss ends exactly the held raw contact. A stale loss
+// after pointerup cannot cancel a new pointer, and lifecycle controls release
+// contact before asking the worker to close or reset the digital machine.
+{
+ const f=await appFixture(undefined);
+ const down=id=>f.canvas().onpointerdown({pointerId:id,pointerType:'pen',pressure:.25,clientX:20,clientY:30});
+ down(41);const first=f.sent.at(-1),count=f.sent.length;
+ f.canvas().onlostpointercapture({pointerId:40});assert.equal(f.sent.length,count);
+ f.canvas().onlostpointercapture({pointerId:41});
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{...first,pressure:0,flags:10});
+ const cancelled=f.sent.length;f.canvas().onlostpointercapture({pointerId:41});assert.equal(f.sent.length,cancelled);
+ down(42);assert.equal(f.sent.at(-1).flags,3);
+ f.canvas().onpointerup({pointerId:42,pointerType:'pen',clientX:21,clientY:31});
+ down(43);const third=f.sent.at(-1);f.canvas().onlostpointercapture({pointerId:42});assert.equal(f.sent.at(-1),third);
+ f.node('#warm').onclick();assert.equal(f.sent.at(-2).flags,10);assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'reset',cold:false});
+ down(44);f.node('#cold').onclick();assert.equal(f.sent.at(-2).flags,10);assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'reset',cold:true});
+ down(45);f.actions.find(n=>n.dataset.action==='close').onclick();assert.equal(f.sent.at(-2).flags,10);assert.equal(f.sent.at(-1).action,'close');
 }
 // View scaling cannot advance a clock or change controller pixels. Scrolled,
 // scaled geometry still supplies raw normalized device coordinates; a held
