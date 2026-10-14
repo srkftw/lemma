@@ -42,7 +42,17 @@ try{
  // replaces its accepted-byte view from the archive before any target cycle.
  core.backing={getSize:()=>268435456,read:b=>{b.fill(0);return b.length;},write:()=>{throw Error('Unexpected constructor backing write');},flush:()=>{throw Error('Unexpected constructor backing barrier');}};
  function call(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
- call('lemma_create');core.FS.writeFile('/incoming.bin',prefix);call('lemma_restore',['string'],['/incoming.bin']);core.FS.unlink('/incoming.bin');
+ // Admit the original tape before construction, using the same replay entry
+ // point as the browser worker. Restore then selects the next operation ID
+ // from the checkpoint, whether or not an external request is Pending.
+ // The late binder is intentionally restricted to suspended Pending forks.
+ if(outcomesFile){
+  const tape=fs.readFileSync(outcomesFile);
+  if(tape.length<72||tape.length>64*1048576||tape.subarray(0,8).toString()!=='LMIOLOG2'||tape.subarray(8,72).toString()!==build.snapshot_identity)throw Error('Invalid implementation-bound outcome tape');
+  core.FS.writeFile('/replay.io',tape);call('lemma_create_mode',['number'],[1]);
+  result.input.outcomesSha256=sha(tape);
+ }else call('lemma_create');
+ core.FS.writeFile('/incoming.bin',prefix);call('lemma_restore',['string'],['/incoming.bin']);core.FS.unlink('/incoming.bin');
  // Export only the restored accepted-byte view. A saved Pending request is
  // never retried against the original adapter or an invented live peer.
  call('lemma_export_private',['string'],['/opaque.raw']);
@@ -63,12 +73,6 @@ try{
  const exact=s=>JSON.parse(s.replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(all,n)=>n===undefined?all:JSON.stringify(n)));
  const initial=exact(core.ccall('lemma_inspect','string',[],[]));if(BigInt(initial.cycle)!==first||!initial.isolated_medium)throw Error('Wrong restored boundary');
  if(initial.backing_io.phase==='1'&&!outcomesFile)throw Error('Pending continuation requires its captured actual outcome tape');
- if(outcomesFile){
-  const tape=fs.readFileSync(outcomesFile);
-  if(tape.length<72||tape.length>64*1048576||tape.subarray(0,8).toString()!=='LMIOLOG2'||tape.subarray(8,72).toString()!==build.snapshot_identity)throw Error('Invalid implementation-bound outcome tape');
-  core.FS.writeFile('/actual-outcomes.io',tape);call('lemma_backing_outcomes',['string'],['/actual-outcomes.io']);core.FS.unlink('/actual-outcomes.io');
-  result.input.outcomesSha256=sha(tape);
- }
  result.initial=initial;
  for(let left=last-first;left>0n;){const amount=left<50000n?left:50000n;call('lemma_run',['number'],[Number(amount)]);left-=amount;}
  call('lemma_snapshot',['string'],['/actual.bin']);const actual=Buffer.from(core.FS.readFile('/actual.bin'));

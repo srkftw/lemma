@@ -1,0 +1,245 @@
+{
+  "schema": "lemma-browser-closure-connected-workflow/1",
+  "status": "PASS_COLD_RAW_INK_SAVED_AND_LOADED_COURSE_EXACT_SUFFIX",
+  "scope": "Fresh audited Closure7/Doc8/UserCopy pair on the canonical original RTL Machine compiled to localWasm. Actual independent cold recovery, new controller raw ink/Saved22, complete3.63M pixels, complete loadedDoc8 plus full original course pixels, and exact same-Wasm arbitrary continuation. Fresh mathematical submission, hint/review and durable-only newcold are ongoing, not inherited from the recovered Verified record. Finished G2/G4\u2013G7/runtime/browser product/physical gates remain incomplete.",
+  "profile": "lemma-silicon-dev/0.3.0",
+  "bundle": {
+    "path": "build/browser/task006-usercopy-closure-a1",
+    "manifest_sha256": "b17dd9a2c400fdcecdf04b9318a6e3b8cd98588457dbd2b8e891c112970bb165",
+    "native_bundle": "build/native/task006-usercopy-closure-a1",
+    "guest_source_inventory_sha256": "f4fe85ff703dc26656ac29cdc24b475195e0c8657c1745faeefd0a0282a7b9f8",
+    "source_files": 362,
+    "guest": "cf5250af2c7a6d1a721fa8cc01c3fa944ccbb66383d335a207876c96a478038e",
+    "initializer": "f664bbe34818f35ed7ed71035530dbe738935bf948cf567a874ee2c9fc169b58",
+    "native_implementation": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "wasm_implementation": "fe167c21fe704436650efabf550fcb0767c666c8cae99b379f85dead20ca1895",
+    "wasm_sha256": "94bf974a05d3841a2ca30c09f2cdf1337750a5126d6ed92c141a4d26b8ba1d53",
+    "development_elf_preload": true,
+    "production_boot": false,
+    "pointer_lost_capture_fix_in_this_pack": false
+  },
+  "cold": {
+    "cycle": 713850000,
+    "host_elapsed_seconds": 3901.040350000024,
+    "simulation_call_seconds": 3777.270834994664,
+    "wasm_heap_bytes": 201326592,
+    "medium_sha256": "85c962ed51d5c376c1dd47d3f15b709ba76f8693c6b86e70ef32625612a0e151",
+    "sequence": 19,
+    "complete_pixels": 3630000,
+    "complete_read_count": 124,
+    "writes": 0,
+    "barriers": 0,
+    "source": "imported opaque previously guest-written verified.raw into a new private origin/name; no CPU state import/restore/replay/initialization; original medium untouched",
+    "max_cycles": 2000000000,
+    "max_host_seconds": 7200,
+    "max_heap_bytes": 2147483648
+  },
+  "resources": {
+    "allocated_frames": 696,
+    "owner_counts": {
+      "1": 36,
+      "2": 74,
+      "3": 548,
+      "4": 38
+    },
+    "purpose_counts": {
+      "1": 59,
+      "2": 57,
+      "3": 44,
+      "4": 524,
+      "5": 12
+    },
+    "pinned_frames": 637,
+    "actual_frame_capacity": 8192,
+    "actual_pool_bytes": 33554432,
+    "owner_index_matches_all_records": true,
+    "privilege_cycles": [
+      97568590,
+      604030706,
+      0,
+      12250696
+    ]
+  },
+  "cold_target_counters": {
+    "cycle": 713850000,
+    "retired": 354663166,
+    "traps": 14834,
+    "timer_traps": 1916,
+    "fb_reads": 18150000,
+    "fb_writes": 10890000,
+    "panel_pixels": 3630000,
+    "drive_clocks": 21780000,
+    "drive_pixels": 10890000
+  },
+  "new_raw_ink_save": {
+    "cycles": 60400000,
+    "phase_host_seconds": 724.7022799999713,
+    "simulation_seconds": 321.7244150005595,
+    "heap_bytes": 201326592,
+    "sequence": 22,
+    "new_key": [
+      1,
+      65556
+    ],
+    "new_raw_samples": 3,
+    "all_new_raw_bytes_exact": true,
+    "unchanged_original_ink_and_math": true,
+    "complete_controller_pixels": 3630000,
+    "barriers": 6,
+    "writes": 12,
+    "all_actual_backing_changes_reproduce_export": true,
+    "saved_row": [
+      1057,
+      22,
+      1,
+      1,
+      20
+    ],
+    "snapshot_sha256": "0a17162d8c43282974e2d7a3c1afee2296fea0ec76297c7eee8795ac6ff4c38d",
+    "medium_sha256": "617b9cdb169c20fa4de99e8413c2a2ec25bfcf40218653c93ebe106679cf41ab",
+    "pixels_sha256": "8008b98849a8fd67bde4414c5ed8556a07d57807c5c5b91d6331cd1dada9b3fd"
+  },
+  "course_open": {
+    "cycles": 104650000,
+    "conservative_phase_host_seconds": 1010.8931649999622,
+    "simulation_call_seconds": 621.3313850018935,
+    "loaded_bytes": 2496,
+    "all_loaded_bytes_equal_acknowledged_document": true,
+    "complete_controller_pixels": 3630000,
+    "full_course_expected_pixels_qualified": true,
+    "all_durable_bytes_unchanged": true,
+    "new_math_check_not_yet_claimed": true,
+    "checkpoint_sha256": "ed3b299ac7bee26bb73db58c9668bc4fc0d2378fad2a27c7ce1f84b2de06ca10",
+    "medium_sha256": "617b9cdb169c20fa4de99e8413c2a2ec25bfcf40218653c93ebe106679cf41ab"
+  },
+  "same_wasm_continuation": {
+    "status": "PASS",
+    "first_cycle": "774250000",
+    "last_cycle": "803250000",
+    "cycles": "29000000",
+    "exact_archive_sha256": "35e33d0f6aca482423b682a513db93df488ad50602afc565b9527a10bf33115a",
+    "actual_outcomes_sha256": "f38cb8dbf0a80cfd39397e6c363d1f939444b5ed08b04a723e8a219b001ffaa4",
+    "host_seconds": 190.543560507,
+    "host_peak_rss_bytes": 1705992192,
+    "wasm_heap_bytes": 345964544,
+    "private_backing": true,
+    "whole_archive_exact": true,
+    "masks_or_tolerance": false,
+    "external_actions_rerun_against_original": false,
+    "owner_reaped": true,
+    "native_cpp_wasm_migration": false
+  },
+  "retained_failures": {
+    "resource_observer": "Wrong frame-field order in a1/a2. Original allocator writes establish owner,purpose,pins,generation; distinguishing fixture and a3 independently qualify all8192 records/64 owner counts. No guest clocks changed.",
+    "ink_plan": "a1 expected adjacentrawkey65540. Existing source uses0x10001+acknowledged19, establishing65556; original plan and correction retained, no rerun.",
+    "early_display": "Real firstSaved22 snapshot771.5M has1566 RGB-byte differences/522 stale pixels, retained FAIL. Real nextscan774.25M passes all pixels, no mask/drain/synthetic completion.",
+    "suffix_observer": "a1 rejected atzero restored clocks: completedphase2 was routed through Pending-only latebinder. Existing replay constructor-before-restore selects savednextID; unchanged actual capsules/tape a2 pass exactwholearchive, no deadline widening."
+  },
+  "native_500M_failure": "build/managed/usercopy-native-connected-a3/workflow/result.json remains FAIL. A separate isolated continuation from actual452.5M retainedprefix is running solely to compare exact native713.85M state; not nativecoldPASS.",
+  "commands": {
+    "browser_pack": "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-canonical-native-port-a1 --reuse-wasm --wasm-input-bundle build/native/task006-usercopy-closure-a1 --guest-bundle build/native/task006-usercopy-closure-a1 --output-dir NEW_OUTPUT",
+    "launch": "./scripts/lemmasim browser-serve --bundle build/browser/task006-usercopy-closure-a1 --port 8786",
+    "cold_export_check": "python3 scripts/check_browser_cold_export.py --directory build/browser/usercopy-closure-owner-a1 --bundle build/browser/task006-usercopy-closure-a1 --reference-medium build/managed/closure-mathematics-guest-a1/workflow/verified.raw --reference-pixels build/managed/closure-mathematics-guest-a1/workflow/closed-course.ppm --derive-single-page-reads --result-name NEW_RESULT.json",
+    "same_wasm_suffix": "nix develop --no-write-lock-file --command node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-usercopy-closure-a1 build/browser/usercopy-closure-owner-a1/status-panel4.chk build/browser/usercopy-closure-owner-a1/course-suffix.chk NEW_OUTPUT build/browser/usercopy-closure-owner-a1/course-suffix.io"
+  },
+  "qualified_host_checks": {
+    "indexed_page_read_observer": "3 tests PASS0.054s, checksum-correct duplicate/missing/wrongstroke/page/calibration/version/provenance and wrongtape bytes/ID/offset/time/identity negatives",
+    "metadata": "PASS7gates/56software/6physical;18 scaffold tests PASS6.852s",
+    "candidate_ci": "Publisheddd5 actual38524024216 SUCCESS; later local commits need newcandidateCI. NoCI inherited."
+  },
+  "retained_artifacts": {
+    "plan.json": {
+      "bytes": 4124,
+      "sha256": "330525c2e061f73ef4ed69c1e1e1d83765ceecaa43a4bf9eb700eb70d086045d"
+    },
+    "pack-plan.json": {
+      "bytes": 516,
+      "sha256": "f34b650e238f55f02e140bc9bd307ac3144b1f8f53f52e0edbc5abed45571cda"
+    },
+    "pack-result.json": {
+      "bytes": 3279,
+      "sha256": "2b1c8d5192503db0a78dd4ef1670749bbed1ba8d37b44394e5d38d254ee56fdd"
+    },
+    "cold-result-a1.json": {
+      "bytes": 4717,
+      "sha256": "7fd139bbae7a99333da3398d5c129c77e7319c832c03c4eec1362c254fb44496"
+    },
+    "reference-read-plan-a1.json": {
+      "bytes": 1775,
+      "sha256": "a2b460a8c8610073551fc5bf3ed2dc4122eda0a4be16402e04c63abf9553c436"
+    },
+    "ready-resources-a1.json": {
+      "bytes": 328,
+      "sha256": "60bcf79a14cebc71e9899751337c2afd7693671130574c5d514f4da8430bb2c0"
+    },
+    "ready-resources-a2.json": {
+      "bytes": 611,
+      "sha256": "03f42938e692066785762d3ac95d4880837ca01cd804bf4deddefdcaa37e41c0"
+    },
+    "ready-resources-a3.json": {
+      "bytes": 2158,
+      "sha256": "6d57d86741a970e12197b6889d0dce77e27b97a62327a34334b862e5e7706de4"
+    },
+    "resource-record-order-a3.json": {
+      "bytes": 391,
+      "sha256": "919d1212b8b7dce3ac04c58c7d00089bf1b49db4524ef50942fe6c3bc633b123"
+    },
+    "ink-plan-a1.json": {
+      "bytes": 1151,
+      "sha256": "dc315f5b6166beae2fa125b4bbb1e83f30003f2555a4126d22434f649b425a61"
+    },
+    "ink-plan-correction-a1.json": {
+      "bytes": 587,
+      "sha256": "66d314e23a70050dd3201c819117ab70731474553e720fd3efe7267a2027aca5"
+    },
+    "ink-plan-a2.json": {
+      "bytes": 1198,
+      "sha256": "c6b325b7ce6cccb83f18381ae5f2e0a083db4df01832980a6b30643259879188"
+    },
+    "ink-result-a1.json": {
+      "bytes": 798,
+      "sha256": "7d2152fbeaf250e8e7dce3d50006afaee2175a7abc53f57971351633b043ed0e"
+    },
+    "ink-result-a2.json": {
+      "bytes": 3425,
+      "sha256": "5004696314dbb530b0ace258d0f141278b783d6903d6d7dde3fe42cc7f21a07a"
+    },
+    "course-open-plan-a1.json": {
+      "bytes": 740,
+      "sha256": "3b0a0f176540fad39798a1ae1a147d467f3e5729d3a1c65d6cdf84776ea58dfa"
+    },
+    "course-open-result-a1.json": {
+      "bytes": 3930,
+      "sha256": "df2202653209a02a70a3be28f0b30e27c1c3a215c1c01ca77b0b6845d9fba39f"
+    },
+    "suffix-plan-a1.json": {
+      "bytes": 710,
+      "sha256": "17d26ec3a25e5d5a83bffea093a01caea65841a028be58d794c78d5545c0bfd6"
+    },
+    "suffix-host-a1/result.json": {
+      "bytes": 782,
+      "sha256": "93f081cc20ccb1b61f927e1059575d8fbc72042bda2e55ecafb52adf1dd0483f"
+    },
+    "suffix-host-a2/result.json": {
+      "bytes": 7452,
+      "sha256": "402224753c14ed298a5a17ad54e213acddb5ce52216a23d8523a81dbda07dd26"
+    },
+    "suffix-host-a2.supervision.json": {
+      "bytes": 228,
+      "sha256": "1faff507f8613ffd913ed3ba2b8548decd0e31841602e38e55ee77df9d62c8ab"
+    },
+    "qualify-ink-a1.py": {
+      "bytes": 5192,
+      "sha256": "6c7fd9ab5643a698d893fe3259fdb1f5f836be1efa9823469a3203f5d5c04958"
+    },
+    "qualify-ink-a2.py": {
+      "bytes": 5364,
+      "sha256": "ad3865f2d7775d9efbbb005a358db503f1a253a53ee1582f84a798e2609c7e7f"
+    },
+    "observe-course-open-a1.py": {
+      "bytes": 6312,
+      "sha256": "96a1d09545f992fe9a6bb27eca7bb34da1d0726033317925a9eb3abf1f5c5f11"
+    }
+  },
+  "remaining": "Fresh browser submission/edited applicability/hint/review, actual durable-only reopen, current pointer-fix pack, installed-course UI, full managed runtime/proof kernel, exact fast cached state/timing, full device/radio/distribution/physical closure."
+}

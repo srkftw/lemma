@@ -1079,8 +1079,56 @@ selected0.3 profile JSON. [The source-port receipt](../evidence/006-canonical-na
 records actual39.168s native and75.584s Wasm compilation, peaks836340/758080KiB,
 187498326/9366180outputbytes, pinnedVerilator5.052 andEmscripten6.0.9, and reaped
 owners. The portable shim/recipe are separately bound new host inputs; these
-builds do not claim guest execution, cold recovery or cross-backend checkpoint
-migration. New Closure7/Doc8/UserCopy guest pair qualification and browser
-packaging/execution remain in progress on this same runtime.
+builds do not themselves claim guest execution, cold recovery or cross-backend
+checkpoint migration. The subsequent fresh362-source Closure7/Doc8/UserCopy
+pair passes356.252s of genuine builds and complete ordinary audits; its exact
+native/browser packs and actual execution have separate observations below.
+
+## October14 canonical Closure browser connected boundary
+
+[The connected browser receipt](../evidence/006-browser-closure-workflow.json)
+records a genuine cycle0 cold CPU on native6cab's original circuitry/`Machine`
+compiled as Wasmfe167. The new origin imports an opaque, previously guest-written
+Verified Doc8 medium; this is disclosed backup recovery, not CPU-state import,
+preinitialized application state or replay. Actual Ready713.85M reaches all3.63M
+expected pixels and every acknowledged byte in3901.040 elapsed seconds,
+3777.271 simulation-call seconds and192MiB heap. All124 reference-derived READ
+requests/returned bytes match, with zeroWRITE/BARRIER. The actual8192-frame pool
+contains696 allocated frames; all64 maintained owner counts match all records.
+This workload differs from the older Saved46/313-READ cold and supplies no
+comparable speedup claim. Original native500M deadline remains FAIL.
+
+Four real raw controller samples then produce a retained three-sample stroke,
+Saved22,12 actualWRITE and six completedOPFS barriers. The first771.5M export
+still has522 stale display pixels and remains FAIL. Actual nextscan774.25M
+passes every pixel against the retained ink plus independent integer raster,
+in60.4M additional clocks/321.724 simulation-call seconds. The tape reproduces
+all backing changes exactly. Source-bound observer corrections retain the
+original wrong frame-field order and adjacent-raw-object expectation; allocator
+records are owner/purpose/pins/generation and raw identity is0x10001+the global
+acknowledged sequence. No guest code, deadline or pixel tolerance changed.
+
+Actual raw input opens the course at876.15M in104.65M clocks,621.331 simulation
+seconds and1010.893 conservative phase seconds, including pauses. Every2496
+loadedDoc8 byte equals the acknowledged object through owned frames and actual
+Sv39 mappings. All3.63M pixels match the complete literal eight-row course over
+retained ink. The recovered Verified result is not a fresh browser submission;
+an actual edited answer/newcheck/hint/review/durable-only reopen remains active.
+Run the prepared local machine with:
+
+```sh
+./scripts/lemmasim browser-serve --bundle build/browser/task006-usercopy-closure-a1 --port 8786
+```
+
+An observational774.25M→803.25M course-loading cut also passes exact entire
+archive equality on the identical Wasm implementation on a native host. Actual
+recorded READ outcomes feed a private fork; no original file/peer is consulted.
+The29M suffix takes190.544s/1705992192 peakRSS bytes, below64M/900s/2GiB bounds.
+The original zero-clock late-binder rejection is retained; the independent
+correction uses the existing replay constructor before restore, preserving
+full equality without masks. A separate native452.5M retained-prefix fork is
+running only to compare exact713.85M state; it cannot relabel the native500M
+cold failure. The UI lost-pointer-capture/reset/Close cancellation fix is
+committed and host-qualified, but the currentb17 pack predates it.
 
 -->
