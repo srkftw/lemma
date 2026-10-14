@@ -29,6 +29,87 @@ CALLERS = {'copyWord': {'copyWordTailStep'}, 'copyWordTailStep': {'copyPageWords
            'copyFromPages': {'copyFromUserResult'}, 'copyToPages': {'copyToUser'}}
 
 
+# Exact retained Task004 O2 Kernel3 non-inlined alternatives. All other
+# pre/post bodies retain the original immutable pins. The historical metadata
+# does not claim the separately selected checked-inline lowering contract.
+KERNEL3_POST = {'copyWord': '4d27ef720a282b05999fa6a7e2b12e8dfcd0b5e8f57ea239135c46d6b743eabd', 'copyWordGenericBlockStep': 'c6c53a66388b0054f19412e2e9701681adaf75de1164aec0539d09be9d4004bc', 'copyWordBlockStep': 'c27e6ad0412ced85faea38707d733fec9b98e48fed2833633c7a94796df4191d'}
+
+
+def _kernel3_checked_pairs(body, rows, *, pairs, block):
+    from audit_kernel import (_local_checked_result, validate_boolean_gate,
+                              _structured_ir_blocks)
+    access = 'Lemma.Kernel.Memory.Access.'
+    if not {access+'read64', access+'write64'} <= rows.keys():
+        raise Core0Error('page-word Kernel3 physical wrapper closure absent')
+    read = rows[access+'read64']['symbol']; write = rows[access+'write64']['symbol']
+    if rows[access+'read64']['args'] != ['u64'] or rows[access+'write64']['args'] != ['u64','u64'] or \
+       rows[access+'read64']['effects'] != ['checked-access','physical-read'] or \
+       rows[access+'write64']['effects'] != ['checked-access','physical-write']:
+        raise Core0Error('page-word Kernel3 checked physical wrapper metadata differs')
+    calls = [(result, target, args) for result,target,args in re.findall(
+        r'(%[-\w.]+) = call \{ i64, i64 \} @([-A-Za-z0-9_.$]+)\(([^\n]*)\)', body)
+        if target in (read,write)]
+    if len(calls) != pairs*2:
+        raise Core0Error('page-word Kernel3 original checked pair count differs')
+    # An independent affine operand view of the exact LLVM zext/shl/add forms.
+    # It does not rewrite the complete pinned bodies or admit new instructions.
+    operands = {}
+    def affine(token):
+        if token in operands: return operands[token]
+        if re.fullmatch(r'-?[0-9]+',token): return ({},int(token))
+        return ({token:1},0)
+    for line in body.splitlines():
+        m = re.fullmatch(r'\s*(%[-\w.]+) = zext i32 (%[-\w.]+) to i64',line)
+        if m: operands[m[1]]=affine(m[2]); continue
+        m = re.fullmatch(r'\s*(%[-\w.]+) = shl(?: nuw)?(?: nsw)? i64 (%[-\w.]+), 6',line)
+        if m:
+            terms,constant=affine(m[2]);operands[m[1]]=({k:v*64 for k,v in terms.items()},constant*64);continue
+        m = re.fullmatch(r'\s*(%[-\w.]+) = add(?: nuw)?(?: nsw)? i64 ([^,]+), ([^ ]+)',line)
+        if m:
+            left,a=affine(m[2]);right,b=affine(m[3]);combined=left.copy()
+            for k,v in right.items():combined[k]=combined.get(k,0)+v
+            operands[m[1]]=(combined,a+b)
+    parsed='\n'.join(line.split(';',1)[0].rstrip() for line in body.splitlines())
+    blocks=_structured_ir_blocks(parsed)
+    owners={result:label for result,_,_ in calls for label,lines in blocks.items()
+            if any(line.startswith(result+' = call ') for line in lines)}
+    gates=[]
+    for index in range(pairs):
+        result,target,args=calls[index*2];written,write_target,write_args=calls[index*2+1]
+        fields=write_args.split(', ')
+        source=({'%arg3':1,'%arg0':64},index*8) if block else ({'%arg0':1},0)
+        destination=({'%arg4':1,'%arg0':64},index*8) if block else ({'%arg1':1},0)
+        if target != read or write_target != write or not args.startswith('i64 ') or len(fields)!=2 or \
+           affine(args[4:])!=source or affine(fields[0][4:])!=destination:
+            raise Core0Error('page-word Kernel3 checked pair/address/stride order differs')
+        _,value=_local_checked_result(body,read,args)
+        if fields[1]!='i64 '+value:
+            raise Core0Error('page-word Kernel3 write substitutes the original read value')
+    for index,(result,target,args) in enumerate(calls):
+        statuses=re.findall(r'(%[-\w.]+) = extractvalue \{ i64, i64 \} '+re.escape(result)+r', 0$',body,re.M)
+        if len(statuses)!=1:
+            raise Core0Error('page-word Kernel3 checked status extraction absent')
+        comparisons=re.findall(r'(%[-\w.]+) = icmp eq i64 '+re.escape(statuses[0])+r', 0$',body,re.M)
+        if len(comparisons)!=1:
+            raise Core0Error('page-word Kernel3 original zero-status test differs')
+        comparison=comparisons[0]
+        if index+1<len(calls):
+            next_result,next_target,_=calls[index+1]
+            gates.append(validate_boolean_gate(parsed,comparison,next_target,
+                                               protected_scope={owners[next_result]}))
+        else:
+            if len(re.findall(r'select i1 '+re.escape(comparison)+r', i64 0, i64 255$',body,re.M))!=1:
+                raise Core0Error('page-word Kernel3 final checked success/fatal outcome differs')
+            if block:
+                values=[name for name,value in operands.items() if value==({'%arg2':1},64)]
+                if len(values)!=1 or len(re.findall(r'select i1 '+re.escape(comparison)+
+                        r', i64 '+re.escape(values[0])+r', i64 0$',body,re.M))!=1:
+                    raise Core0Error('page-word Kernel3 final64-byte prefix accumulator differs')
+    return {'checked_pairs':pairs,'ordered_status_gates':gates,
+            'final_status':'zero on successful last write, kernel-fatal255 otherwise',
+            'scope':'Real non-inlined checked wrapper calls, exact original addresses/values/status order; primitive hardware contract audited separately'}
+
+
 def validate_if_present(ir, unit, *, optimized):
     from paper_next import canonical
     sources = {canonical(row['source']) for row in unit.get('functions', [])}
@@ -57,6 +138,14 @@ def validate(ir, unit, *, optimized):
         raise Core0Error('page-word closed kernel helper inventory absent')
     names = {r['symbol']: source for source, r in rows.items()}
     phase = 'post' if optimized else 'pre'
+    kernel3=unit.get('contract_version')=='core0-kernel-v0.3'
+    if kernel3 and (unit.get('configuration')!='lemmasim-notebook' or unit.get('managed_policy')!='lemma-notebook-v1' or
+                    unit.get('schema_version')!=1 or unit.get('artifact_category')!='development-kernel-unit' or
+                    'checked_inline' in unit or
+                    [(canonical(row['source']),row['id'],row['args']) for row in unit.get('roots',[])]!=
+                    [('Lemma.Platform.LemmaSim.NotebookKernel.boot',1,[]),
+                     ('Lemma.Platform.LemmaSim.NotebookKernel.dispatch',2,['u64','u64','u64'])]):
+        raise Core0Error('page-word Kernel3 historical configuration/lowering authority differs')
     observed = {}
     def body(source):
         result = _ir_definition_body(ir, rows[source]['symbol'])
@@ -70,7 +159,8 @@ def validate(ir, unit, *, optimized):
             raise Core0Error('page-word exact signature/effects differ: '+source)
         normalized = ' '.join(re.sub(r'@([^ (]+)', lambda m: '@'+names.get(m[1], m[1]), body(source)).split())
         digest = hashlib.sha256(normalized.encode()).hexdigest()
-        if digest != PINS[phase][suffix]:
+        expected=KERNEL3_POST.get(suffix,PINS[phase][suffix]) if kernel3 and optimized else PINS[phase][suffix]
+        if digest != expected:
             raise Core0Error('page-word complete checked body differs: '+source+'/'+phase)
         observed[source] = digest
     incoming = {BASE+s: set() for s in CALLERS}
@@ -91,7 +181,12 @@ def validate(ir, unit, *, optimized):
         if incoming[BASE+suffix] != expected_sources:
             raise Core0Error('page-word private helper caller closure differs: '+suffix)
     operations = None
-    if optimized:
+    if optimized and kernel3:
+        gates={suffix:_kernel3_checked_pairs(body(BASE+suffix),rows,pairs=1 if suffix=='copyWord' else 8,block=suffix!='copyWord')
+               for suffix in KERNEL3_POST}
+        operations={'block_words':8,'ordered_checked_accesses':16,'word_bits':64,'lowering':'historical Kernel3 non-inlined checked wrappers',
+                    'checked_call_gates':gates,'scope':'Complete original prebody and all9 postbodies, exact real checked call/failure prefix audit'}
+    if optimized and not kernel3:
         for suffix in ('copyWordGenericBlockStep', 'copyWordBlockStep'):
             instructions = [line.strip() for line in body(BASE+suffix).splitlines()
                             if re.search(r'\b(load|store)\b', line)]
