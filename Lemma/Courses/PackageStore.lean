@@ -186,4 +186,75 @@ def install (context length transaction : UInt64) : Action :=
   else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done malformed 0 else .done malformed 0
 
+/-! `lemma-course-mount-wait/1`: read-only status8 remains available while
+Store mounts. Each reply is ordinary copied IPC; mode0 yields this User task,
+mode1 admits loading, and unformatted/read-only modes fail without formatting.
+All6000 request IDs are reserved separately from later READ/Commit IDs. -/
+private def mountStatus (context requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  Client.call endpoint outgoing incoming 8 ns 0 0 0 0 0 (request + requestOffset)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def mountWaitStep (i _ : UInt32) (acc context deadline initialization pause : UInt64) : Action :=
+  .bind Lemma.User.Syscall.time fun s before => if s = 0 then
+  if deadline ≤ before then .done Lemma.User.IPCABI.timeout 0 else
+  .bind (mountStatus context i.toUInt64) fun s sequence => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
+  .bind Lemma.User.Syscall.time fun s after => if s = 0 then
+  if deadline ≤ after then .done Lemma.User.IPCABI.timeout 0 else
+  if mode = 0 then
+    .bind (Lemma.User.Syscall.sleep pause) fun s _ => .done s (acc + 1)
+  else if mode = 1 then .done Status.iterationStop sequence
+  else if mode = 2 then
+    if initialization = 1 then
+      .bind (Lemma.User.Syscall.sleep pause) fun s _ => .done s (acc + 1)
+    else .done Format.unformatted 0
+  else if mode = 3 then .done Format.readOnly 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Bounded guest readiness, not a host configured flag or durable receipt.
+The complete owned context is checked before the first actual status request;
+errors keep their original status and never restart a write/commit. -/
+private def awaitWithPolicy (context initialization pause : UInt64) : Action :=
+  if context % 8 = 0 then if context ≤ 0xffffffffffffffff - 80 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 48) fun s buffer => if s = 0 then
+  .bind (field context 56) fun s capacity => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (field context 72) fun s reserved => if s = 0 then
+  if reserved = 0 then if Protocol.namespaceValid ns = 1 then
+  if request = 0 then .done malformed 0 else if Format.maximumSequence - 6000 < request then .done resourceLimit 0 else
+  if capacity < headerBytes then .done resourceLimit 0 else if maximumBytes < capacity then .done resourceLimit 0 else
+  if contextValid context outgoing incoming buffer capacity = 1 then
+  .bind Lemma.User.Syscall.time fun s now => if s = 0 then
+  if now ≤ 0xffffffffffffffff - 6000000000 then
+  .boundedFoldU64 6000 mountWaitStep 6000 0 context (now + 6000000000) initialization pause fun s sequence =>
+  if s = Status.iterationStop then .done 0 sequence else if s = 0 then .done Lemma.User.IPCABI.timeout 0 else .done s 0
+  else .done resourceLimit 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+
+/-- Historical Load readiness: unformatted mode reports its actual error and
+pending mounts yield100ms. Success is never a new durability receipt. -/
+def awaitReady (context : UInt64) : Action := awaitWithPolicy context 0 1000000
+
+/-- `lemma-course-installer-startup/2`: only the kernel-selected initializer
+may wait for another authorized task to format previously unformatted media.
+This Action performs status8 only. Both modes use the historical100ms pending
+pause, reserving6000 independent request IDs and the10-minute/time/fold ceilings.
+The longer interval gives the mounting Store worker time between status RPCs;
+the readiness predicate and every framed reply/failure check remain exact. -/
+def awaitPublished (context initialization : UInt64) : Action :=
+  if initialization ≤ 1 then awaitWithPolicy context initialization 1000000
+  else .done malformed 0
+
 end Lemma.Courses.PackageStore

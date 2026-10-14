@@ -1,8 +1,12 @@
 """Raw command frame and exact deployment admission, not guest durability."""
-import struct,sys,unittest
+import copy,struct,sys,tempfile,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from lemmasim_course import frame
+from check_course_guest import Machine
+from check_course_cold import admitted_writer
+from core0_common import sha256
+from unittest.mock import patch
 from silicon_guest_bundle import development_configuration
 
 class CourseCommand(unittest.TestCase):
@@ -23,5 +27,44 @@ class CourseCommand(unittest.TestCase):
   with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.2.0','notebook',course,'developer')
   ordinary='lemmasim-silicon-array-bulk-notebook'
   self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0','notebook',ordinary,'student'),ordinary)
+
+class CourseCommandBudgets(unittest.TestCase):
+ def test_each_command_gets_the_declared_budget_from_actual_admission(self):
+  machine=Machine.__new__(Machine);limits=[]
+  machine.until=lambda predicate,limit:limits.append(limit)
+  machine.directory=Path('/not-used-by-mocked-observer')
+  matching=[(0x4b1,1,7,0,0)]
+  with patch('check_course_guest.rows',return_value=matching):
+   machine.cycles=56000000
+   self.assertEqual(machine.outcome(0,1,0,100000000),matching[0])
+   machine.cycles=135000000
+   self.assertEqual(machine.outcome(0,1,0,100000000),matching[0])
+  self.assertEqual(limits,[156000000,235000000])
+ def test_invalid_or_overflowing_command_budget_rejects_before_run(self):
+  machine=Machine.__new__(Machine);machine.cycles=0
+  machine.until=lambda *_:self.fail('invalid budget ran the machine')
+  for budget in (0,100000001,True):
+   with self.assertRaises(ValueError):machine.outcome(0,1,0,budget)
+  machine.cycles=(1<<64)-1
+  with self.assertRaises(ValueError):machine.outcome(0,1,0,1)
+
+class CourseColdAdmission(unittest.TestCase):
+ def test_only_exact_acknowledged_artifacts_and_medium_admit(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   root=Path(temporary);medium=(root/'actual.raw').resolve();packages=[];installed=[]
+   for edition in (1,2):
+    package=root/f'edition{edition}.lcp';raw=bytearray(128);struct.pack_into('<Q',raw,80,0xabcd+edition);package.write_bytes(raw);packages.append(package)
+    installed.append({'artifact_sha256':sha256(package),'outcome':[0x4b1,1,edition,1+(edition<<16),0xabcd+edition],
+     'command':{'edition':edition},'cycle':edition*100})
+   receipt={'status':'FAIL','installed':installed,'preflight_rejections':{},'commands':[['lemmasim','--disk',str(medium)]]}
+   self.assertEqual([item['outcome'][2] for item in admitted_writer(receipt,packages,medium)],[1,2])
+   negatives=[]
+   value=copy.deepcopy(receipt);value['status']='PASS';negatives.append(value)
+   value=copy.deepcopy(receipt);value['installed'][1]['outcome'][2]=3;negatives.append(value)
+   value=copy.deepcopy(receipt);value['installed'][0]['artifact_sha256']='0'*64;negatives.append(value)
+   value=copy.deepcopy(receipt);value['commands'][0][-1]=str(root/'other.raw');negatives.append(value)
+   value=copy.deepcopy(receipt);value.pop('preflight_rejections');negatives.append(value)
+   for value in negatives:
+    with self.assertRaises(ValueError):admitted_writer(value,packages,medium)
 
 if __name__=='__main__':unittest.main()

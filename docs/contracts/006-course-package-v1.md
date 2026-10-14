@@ -139,6 +139,53 @@ unprivileged installer. Its private pages and Console/Store grants never grant
 block or notebook memory authority. This transport is RTL-only in the current
 canonical profile, local-owner integrity only, and does not authenticate a peer.
 
+## Guest mount and command readiness
+
+`lemma-course-mount-wait/1` uses ordinary read-only Store status8 with object0,
+never an adapter readiness flag. Pending mode0 yields100ms; ready mode1 admits
+Load. Unformatted221, read-only223, malformed mode240 and real transport/access
+errors stop without formatting or restarting Commit. The context spans and
+namespace are checked before I/O. Up to6000 stable polling IDs precede the
+separate256 Read IDs; each command reserves6288 IDs. A ten-minute MTIME ceiling,
+fold exhaustion and counter overflow remain explicit errors. This wait returns
+an existing sequence observation, never a new durability receipt.
+
+The subsequent `lemma-course-installer-startup/2` policy gives Ready4b0 its
+ordinary meaning: the installer has allocated its private pages and observed
+actual Store mode1 before accepting commands. Allocation4b5 is a separate
+debug record. The kernel passes only initialization0/1. Only initialization1
+may yield through unformatted mode while the existing authorized notebook
+initializer performs the real format; the installer itself sends status8 only.
+An ordinary cold boot returns Unformatted221. Pending startup yields100ms with
+separate IDs1..6000; command IDs start6001. All deadline, context, checked access
+and error rules above remain. Component qualification has passed; the latest
+startup policy has not yet been qualified by a completed cold RTL scenario.
+
+Startup/1 used a1ms pending pause. Its fresh359-input whole normal/initializer
+pair passed full ordinary audits in367.141s, but its actual independent cold
+machine failed the unchanged60M Ready bound in190.733s. Store was still mounting
+the first acknowledged4040-byte record, with four of eight body sectors read;
+the installer had received no command. That failure and its observational
+checkpoint remain retained. All288 conservative host-code inputs stayed exact
+through the actor and its owned children were reaped.
+
+The complete actual status-sized Kernel IPC Actions require7873 memory requests
+and1427 callbacks in the independently retained8192-frame fixture. These are
+operation counts, not a target-cycle timing proof. Startup/2 restores the
+historical100ms polling pause while preserving the same mounted predicate,
+framing, ordered errors and original60M Ready/100M per-Load prospective bounds.
+Its75-input genuine component passed in22.566s; a fresh whole deployment and
+completed cold Load remain required.
+
+The first changed-component build failed with Lean exit134 while creating host
+threads under the existing16GiB address-space bound. The exact pinned module
+compile with the original setup/JSON/output arguments passed with `-j2`.
+`lakefile.toml` therefore sets `weakLeanArgs = ["-j2"]` for host frontend
+scheduling, and the fresh component built and lowered the actual declarations.
+The failed receipt is preserved. This flag changes no Core0 language/profile,
+guest runtime or target resource policy; host-generated C remains outside RV64
+images.
+
 ## Same-Action IPC base reuse
 
 The next internal optimization is `lemma-ipc-call-base-reuse/1`. The existing
@@ -213,7 +260,7 @@ scripts/lemmasim course-delete-probe --session-dir build/courses/course-session-
 The exclusive raw-medium creation refuses an existing path. These commands
 admit raw bytes only. Their
 `RAW_COMMAND_ADMITTED` status is not a storage acknowledgement. Actual guest
-K1 records distinguish installerReady4b0, outcome4b1, validatedPresent4b2 and
+K1 records distinguish mounted installerReady4b0, allocation4b5, outcome4b1, validatedPresent4b2 and
 selectedReference4b3. An Install outcome must have application status0 and a
 positive durable sequence. A validated reference is not verification evidence.
 For a cold read, launch workload notebook with the notebook build/source role
@@ -267,15 +314,74 @@ observational checkpoint: all4040 bytes had been received/validated, the UART
 queue was empty, and the next copied Store chunk was offset1920/count128. Body
 input drained by66M; subsequent samples mostly execute kernel frame/page-table/
 IPC checks and zeroing. The per-read Console allocation is not the main blocker.
-This retained failure is not Installed or cold recovery. A future change needs
-its own prospective workload bound and actual completed scenario. Notebook package selection,
-durable cold reopen and full G2/G4-G7 completion remain unqualified. Any future
+That original failure remains unchanged. The measured same-Action IPC base
+reuse was then linked into a fresh339-input full pair. Actual ordinary RTL
+publication acknowledged the4040-byte edition1 at141M/sequence1 and4058-byte
+edition2 at224M/sequence2, after input admission at56M and141M respectively.
+Overwrite, Delete and a corrupt CRC were rejected before any backing outcome.
+The scenario still failed: its independent cold reader accepted Load at
+allocation-ready and returned Busy231. This is a real startup defect.
+
+A fresh mounted-reader pair passed full ordinary audits in514.527s under its
+original900s aggregate, with339 exact inputs. Its independent cold machine
+privately copied the previously acknowledged opaque raw medium and performed
+real guest mounting and Read calls. At the unchanged126M machine boundary
+(100M from Load admission), it had read2560 of4040 bytes and the real header,
+but had not completed Load/selection. This second cold scenario remains FAIL
+(540.615s, child peak407444KiB); no longer timeout was substituted. Its
+observational snapshot, real outgoing Read offset/count and exact code-location
+observer are retained. UserCopy and Task already copy aligned words; the single
+sampled Task.copyStep PC does not establish dominance or a new optimization.
+Completed cold load, notebook package selection/rendering and full G2/G4-G7
+completion remain unqualified. Any future
 evidence must bind the exact package identity, edition, integrity value, node
 source anchor, original goal, document/submission revision and existing checker
 environment. Current submission formats remain untouched; no legacy evidence
-is relabelled as dynamically package-bound. Actual completed immutable installation, package
+is relabelled as dynamically package-bound. Package
 selection/rendering in the existing notebook, durable learner references,
 permissioned tutor context, general course declarations and proof-kernel
 closure remain separate work.
+
+
+## Bounded actual package text renderer
+
+`lemma-course-text-panel/1` is an additive component in `PackageRender.lean`.
+`prepare(address, bytes, ordinal, role, position, cache)` validates the complete
+package once, then lays out that selected raw text field into a disjoint
+4096-byte owned glyph cache. The cache has32 columns and16 rows. Explicit LF
+and wrapping advance cells; success returns the first unrepresented raw byte,
+so another page can be requested without silently discarding text. The original
+text, source/edition/rights anchors and submitted mathematical object stay exact.
+Lowercase is presented in uppercase by the original3x5 font; unsupported
+printable glyphs have a visible box.
+
+The read view is confined to this Action. Its source and output are private
+caller-owned spans with no asynchronous writer, and all real accesses remain
+checked User memory operations. No validation token or unchecked entry pointer
+is returned. Argument/role, full validation, ordinal/span and position checks
+all precede cache writes. A real failure preserves its status and ordered
+partial effects on the unpublished cache. There is no device or syscall effect.
+
+`render(cache, width, height)` writes the actual Gray4 region(24,320) through
+(408,640) in the owned framebuffer, using the same declared high-nibble-first
+pixels. Geometry and disjointness checks precede its writes. A later write fault
+may leave a prefix in this private framebuffer; it creates no controller
+transaction. The connected `renderSelected` entry rejects aliasing between the source, cache
+and complete framebuffer before any access, prepares the actual text and renders
+it within one Action. The notebook must publish the completed region through
+ordinary tile/controller operations after successful rendering.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_course_render.py \
+  --output-dir build/courses/course-render-new
+```
+
+The retained qualification checks actual imported Actions against independent
+cell/glyph and complete scalar Gray4 expectations, pagination, CRC/alias/error
+precedence and ordered partial faults. It then lowers the ordinary declarations
+under User2, optimizes and builds a freestanding RV64IM object with no unresolved
+runtime/helper symbols. The54-source,55-function connected component passed in18.351s. This is not
+notebook integration, controller presentation, browser execution or completed
+cold package recovery. Those remain required connected machine observations.
 
 -->

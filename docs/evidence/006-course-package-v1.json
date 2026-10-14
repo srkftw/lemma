@@ -354,6 +354,449 @@
     "reason": "completed component qualification before reusable host publisher/CLI separation; original receipt preserved",
     "status": "PASS_TYPED_PACKAGE_AND_GENUINE_RV64_COMPONENTS"
   },
+  "publication_mount_followup": {
+    "fresh_mount_pair": {
+      "path": "build/courses/task006-course-mount-whole-a1/result.json",
+      "roles": {
+        "initializer": {
+          "audit_seconds": 125.47504459694028,
+          "audit_sha256": "cfff459d6b441a5b36f1f143ca96d1f860e4fc90ef86d51cc1dd4d906c03f4b2",
+          "audit_status": "PASS",
+          "build_seconds": 141.3858319990104,
+          "build_status": "BUILT",
+          "bytes": 623304,
+          "configuration": "lemmasim-silicon-course-bulk-initialize",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-mount-initializer-a1",
+          "image_sha256": "653eea5e10128006656a4a90b4aa6c0858960b032bf6aa38be4809de143bc31c"
+        },
+        "notebook": {
+          "audit_seconds": 109.87007883598562,
+          "audit_sha256": "7f714002894977e19d53c4e4478551458dbcd4e8cad8fe8defff904a74856a37",
+          "audit_status": "PASS",
+          "build_seconds": 137.66879765503109,
+          "build_status": "BUILT",
+          "bytes": 623304,
+          "configuration": "lemmasim-silicon-course-bulk-notebook",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-mount-notebook-a1",
+          "image_sha256": "bd19cde708458432ec050d74b7d2777486890aa9a362325b706d3da68bde2fbe"
+        }
+      },
+      "sha256": "2c74a3102c689b21d514531384dfb1cf99beb2a424b5cead9f8a5079276978ed",
+      "source_count": 339,
+      "source_inventory_sha256": "6a808d76f473dcbfae92834b3a5ac67d692c270484bd600470f6edb7f23a0ba8",
+      "source_root": "build/courses/task006-course-mount-whole-a1/consumed-source-root",
+      "status": "PASS_FRESH_COURSE_MOUNT_WHOLE_ARTIFACT_PAIR",
+      "wall_seconds": 514.5267361619044
+    },
+    "independent_cold": {
+      "actual_read_count": 128,
+      "actual_read_offset": 2560,
+      "actual_read_operation": 5,
+      "bounds": {
+        "cold_target_cycles": 60000000,
+        "maximum_declared_cycles": 260000000,
+        "per_load_command_cycles": 100000000,
+        "whole_host_seconds": 1800
+      },
+      "child_peak_rss_kib": 407444,
+      "cycle": 126000000,
+      "diagnostic": {
+        "path": "build/courses/task006-course-mount-cold-a1/decoded-boundary.json",
+        "sha256": "387e3adab9ee94504889b8c13e689723362250400dd8c68b909eeefd5c124822"
+      },
+      "diagnostic_source": {
+        "path": "build/courses/task006-course-mount-cold-a1/decode.py",
+        "sha256": "1b8ee2182ba2d8b45e536d1b1a6afa860453ab0463b13d4837474b0272a0799b"
+      },
+      "interpretation": "actualguestmountcompleted and Read progress2560/4040; no completeLoad orlongeracceptancebound; singleTaskcopyStepPCnotdominance",
+      "loaded_header": [
+        3554275057280961868,
+        1,
+        4040,
+        1,
+        1,
+        8,
+        192,
+        128
+      ],
+      "new_writer_NOT_RUN": true,
+      "path": "build/courses/task006-course-mount-cold-a1/result.json",
+      "private_opaque_backing_sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829",
+      "sampled_pc": [
+        {
+          "cycle": 126000000,
+          "pc": 2149754716,
+          "privilege": 1,
+          "source_ranges": [
+            {
+              "offset": 300,
+              "role": "kernel",
+              "source": "_private.Lemma.Kernel.Task.0.Lemma.Kernel.Task.copyStep"
+            }
+          ],
+          "uart_queue": 0
+        }
+      ],
+      "sha256": "78e89ef567496456eec06d4aa987bab071ab4ab287a43e669dca47779c06babe",
+      "snapshot": "build/courses/task006-course-mount-cold-a1/failed-boundary",
+      "snapshot_is_observational": true,
+      "status": "FAIL",
+      "wall_seconds": 540.6149369759951
+    },
+    "known_foundations": "UserCopy aligned64-bit copy and Task36-word context copy alreadyexist; no newwordcopyclaim",
+    "latest_startup_component": {
+      "behavior": "Ready4b0afteractualStoremode1; separateallocation4b5; onlykernelinitializerflag1waitsthroughunformattedwhileexistingNotebookformats; status8/object0only,1msyield,IDs1..6000reserved,ordinaryunformatted221",
+      "child_peak_rss_kib": 1627140,
+      "components": {
+        "guard": {
+          "artifacts": {
+            "normalized.txt": "a59dd2724fe28734bf246fb584130ae0fb3ecad63bf4faca22c20961e3912d68",
+            "program.ll": "283a0513a0ef65f0869f2d33df5b8e270b92b95084bb7de52423bbfe6797195c",
+            "program.o": "45dc4ce03dd5a17f974ebad15500828d3959603b0b792b906673beca46de1c3f",
+            "program.opt.ll": "e196d56e9d1b8ee7028e89cd9b1ffc61793fdf7830bb56fc3b9aa9cfbf88fc30",
+            "unit.json": "a33739109fd3d7f8777017a3c0ef74e03ffd0f2c6da3b511a0fd59ca147669f1"
+          },
+          "function_count": 239,
+          "roots": [
+            "Lemma.Services.Store.Server.courseMain"
+          ],
+          "unresolved_boundary": [
+            "lemma_exec_syscall"
+          ]
+        },
+        "install": {
+          "artifacts": {
+            "normalized.txt": "e8cbc101c99fd695cdc6ef122dfb42e70441fce7262f21603cfc6a6cc6637924",
+            "program.ll": "a98cd275ccff3dfb09f2e55f22c5a2c615a98961272b8f5da082d34bfaa78012",
+            "program.o": "22bd09362890605380605e7ecc7e5bbd0d26f40a4a8ebf79acdb0f95bd440fe7",
+            "program.opt.ll": "cc26998941b10c027155341ceabe649bac0db38c32f563050c87315f784eea94",
+            "unit.json": "73856343a8623deb8ee26d34663b608b99ef4e82d05cf935723438212023e45d"
+          },
+          "function_count": 158,
+          "roots": [
+            "Lemma.Courses.PackageStore.install",
+            "Lemma.Courses.PackageInstaller.main"
+          ],
+          "unresolved_boundary": [
+            "lemma_exec_syscall"
+          ]
+        }
+      },
+      "host_environment": {
+        "LEAN_NUM_THREADS": "2"
+      },
+      "path": "build/courses/task006-course-published-component-a3/result.json",
+      "scope": "genuineUser2 component and independentactualActions; lateststartupfullCourseimage/RTLReadyNOT_RUN",
+      "sha256": "62dfeb6788dd0aec8dfa5af8aadc00a95192693e1b30185ba7a37f07de313a86",
+      "source_count": 75,
+      "status": "PASS_COURSE_INSTALL_GUARD_COMPONENTS",
+      "wall_seconds": 15.596788908937015
+    },
+    "native_bundle": {
+      "path": "build/native/task006-course-mount-a1/bundle.json",
+      "sha256": "3aee007d2d3fe8ffa2874651d967078d1eed0db49a624215e9113856c65ed39e"
+    },
+    "next_required": "measuredSameActionReceive/Replydescriptorreuse withoriginalerror/authority/partialfaultbehavior, freshfullCourseimages/prospectivebounds andcompletedindependentcoldLoad; thenactualNotebookpackageUI/source-revision-boundevidence",
+    "observer_host_tests": 5,
+    "original_writer": {
+      "cold_failure": "Load returned actual Busy231 after allocation-only4b0; originalFAIL preserved",
+      "installed": [
+        {
+          "artifact_sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf",
+          "cycle": 141000000,
+          "outcome": [
+            1201,
+            1,
+            1,
+            65537,
+            1743257817
+          ]
+        },
+        {
+          "artifact_sha256": "dcde9241f0a8f611e07d94fa6fb7ee453be301d197704e9fe8162496576f5f4c",
+          "cycle": 224000000,
+          "outcome": [
+            1201,
+            1,
+            2,
+            131073,
+            1253124339
+          ]
+        }
+      ],
+      "path": "build/courses/task006-course-ipc-guest-a1/result.json",
+      "preflight_rejections": {
+        "backing_outcome_bytes_unchanged": 44936,
+        "delete": [
+          1201,
+          57091,
+          2,
+          65537,
+          1743257817
+        ],
+        "integrity": [
+          1201,
+          62209,
+          0,
+          65537,
+          1743257817
+        ],
+        "overwrite": [
+          1201,
+          57089,
+          0,
+          65537,
+          1743257817
+        ]
+      },
+      "sha256": "9eec5d7042f05e5b7aeee834e1d4297ff4282385e15b511fa6d8b96c79a71e1d",
+      "status": "FAIL",
+      "wall_seconds": 1248.4476666530827
+    },
+    "retained_failures": [
+      {
+        "path": "build/courses/task006-course-mount-component-a1/result.json",
+        "sha256": "7dde0d50d3025e833be801be14bd97786c0a2d506711efc3779eea409b74b142"
+      },
+      {
+        "path": "build/courses/task006-course-published-component-a1/result.json",
+        "sha256": "e37e618c71c060db1a6a2589c4909dc005a94cf98557427dc58e3d591e70a36a"
+      },
+      {
+        "path": "build/courses/task006-course-published-component-a2/result.json",
+        "sha256": "0811b05c010ab8be275d8401c7025010f89bae35db8c8cfce3591cf7a33f7c17"
+      }
+    ],
+    "scope": "actual guest opaque package publication/Read progress; completed cold selection/notebook package UI/evidence binding NOT_RUN",
+    "status": "TWO_ACTUAL_DURABLE_INSTALLS_AND_FRESH_FULL_IMAGES_PASS; INDEPENDENT_COLD_LOAD_100M_FAIL"
+  },
+  "published_ready_followup": {
+    "actual_independent_cold": {
+      "Load_NOT_ADMITTED": true,
+      "actual_host_source": {
+        "count": 288,
+        "inventory_sha256": "af3b201fb15890374bff0b184c347273775e4dc0b7a7eee9336f4b9125382bd6",
+        "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-published-cold-a1/host-source-root",
+        "scope": "full conservative project host-code corpus; imported paths held stable throughout actual actor",
+        "unchanged_after_actor": true
+      },
+      "allocation_event": [
+        1205,
+        8357,
+        0,
+        192,
+        209
+      ],
+      "backing_io": {
+        "completed": 7,
+        "durable_barrier": 0,
+        "fork_suspended": false,
+        "next_id": 8,
+        "observed_write": 0,
+        "orphan": false,
+        "phase": 2,
+        "poisoned": false,
+        "retry_ready": false
+      },
+      "bounds": {
+        "cold_target_cycles": 60000000,
+        "maximum_declared_cycles": 260000000,
+        "per_load_command_cycles": 100000000,
+        "whole_host_seconds": 1800
+      },
+      "child_peak_rss_kib": 152232,
+      "cycle": 60000000,
+      "diagnostic": {
+        "path": "build/courses/task006-course-published-cold-a1/decoded-boundary.json",
+        "sha256": "e74b169e00f38cdcb9d8be9bf156afa2a5e9f88e4b609c8fe31df1a6da811642"
+      },
+      "diagnostic_source": {
+        "path": "build/courses/task006-course-published-cold-a1/decode.py",
+        "sha256": "1dd4849a73e059ab9abae3f2c2606be89fecd74fcf8ea64adeea9bc52c7806a0"
+      },
+      "guest": "1aeeb9ef1394afc1035bdd1413a100ed7d4d20ea776a4725edd9a9124b8a635c",
+      "interpretation": "original60MFAIL retained, no longer startup deadline substituted; single sampled PC and Action operation counts do not establish causal target timing",
+      "mounted_ready_NOT_OBSERVED": true,
+      "observed_state": "Store mounting mode0, real first4040-byte record body4/8sectors/nextsector13; installer status8/object0 pending request11; staging/header remain zero; PC IPCStorage.zeroStep+32 performs a validation read, not a new zeroing optimization",
+      "opaque_backing": {
+        "bytes": 268435456,
+        "original": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-ipc-guest-a1/durable.raw",
+        "private": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-published-cold-a1/durable.raw",
+        "sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829"
+      },
+      "owned_children_reaped": true,
+      "path": "build/courses/task006-course-published-cold-a1/result.json",
+      "retired": 32291390,
+      "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+      "sha256": "cea7dab5955ff71186ec7acfafa7b3450e034222ba3afd5f2303a0f47cf88e65",
+      "snapshot": "build/courses/task006-course-published-cold-a1/failed-boundary",
+      "snapshot_is_observational": true,
+      "status": "FAIL",
+      "wall_seconds": 190.73302351299208
+    },
+    "focused_host_tests": {
+      "course_command": 5,
+      "status": "PASS"
+    },
+    "host_frontend_thread_repair": {
+      "matching_flag_probe": {
+        "command": "nix develop --no-write-lock-file --command bash -c: LEAN_NUM_THREADS=2, ulimit -v16777216, flock build/task006-lake.lock lake env lean -j2 Lemma/Courses/PackageStore.lean -o build/courses/task006-course-published-thread-a2/PackageStore.olean -i build/courses/task006-course-published-thread-a2/PackageStore.ilean -c build/courses/task006-course-published-thread-a2/PackageStore.c --setup .lake/build/ir/Lemma/Courses/PackageStore.setup.json --json",
+        "generated_C_never_target_image": true,
+        "host_only_outputs": {
+          "PackageStore.c": "4946d96f6130ac0be687fbed9ed384a5f0696a82bcb36272fb5eaf4b3625fbf7",
+          "PackageStore.ilean": "823cfed8f0cd77e3b891fee484223c98703cad430b57c944ae9e78ebf31414f3",
+          "PackageStore.olean": "4ef28bb521dc819f58a5d32cebab4ea8c7e32d2f44cbe50e68dcb17a64727253"
+        },
+        "status": "PASS_PINNED_LEAN_EXACT_SETUP_JSON_O_I_C_WITH_J2",
+        "stderr": {
+          "path": "build/courses/task006-course-published-thread-a2/compile.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "path": "build/courses/task006-course-published-thread-a2/compile.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "repair": "lakefile.toml weakLeanArgs=[-j2] limits package-module host frontend workers; compiler language/profile/runtime semantics and resource caps unchanged; pinned Lake explicitly excludes weak flags from semantic build trace; genuine changed-module build plus actual Actions/export/object requalified by a5",
+      "retained_failure": {
+        "failure": "actual Lake compiled changed PackageStore without -j2; exit134 failed to create thread: Resource temporarily unavailable; original16GiB address-space cap and LEAN_NUM_THREADS2 retained",
+        "path": "build/courses/task006-course-published-component-a4/result.json",
+        "sha256": "53471df69f8b1e97bb13d2ae0a10ee522296ff53435e98061ae7ca4d72ee8502",
+        "status": "FAIL",
+        "wall_seconds": 34.83477154595312
+      }
+    },
+    "native_bundle": {
+      "path": "build/native/task006-course-published-a1/bundle.json",
+      "sha256": "7aa46a100e2a4a78590cd2d7b42e7a2ee6e8eafd9d597794215794ec7cf0ad23"
+    },
+    "next_required": "one fresh exact shared stable source cohort including independently qualified UserCopy algorithm plus100ms polling; whole Course pair/full ordinary audits, unchanged prospective60MReady/100M eachLoad; completed actualcoldLoad thenNotebook package selection/rendering and revision/source/edition-bound evidence",
+    "retained_original_failures": [
+      "original install100M",
+      "allocation-only Ready coldBusy231",
+      "mountedcoldRead2560/4040at100M",
+      "truthfulstartup1actual60MnoReady",
+      "changedstartup2componenthostthread134"
+    ],
+    "scope": "immutable fully audited whole images and actual canonical RTL cold failure; newer startup2 component uses changed polling only; no new cold Ready/Load or notebook package UI claim",
+    "startup_2_component": {
+      "behavior": "same fully framed status8/object0 mounted-mode1 Ready predicate; ordinary unformatted221/readOnly223/error/overflow behavior preserved; initializer alone may wait through unformatted for authorized notebook formatting; historical100ms pause between pending polls,6000 separate IDs and10-minute/time/fold ceilings; no write/format/Commit",
+      "bounds": {
+        "address_space_bytes": 17179869184,
+        "command_seconds": 300,
+        "file_bytes": 1073741824,
+        "whole_seconds": 900
+      },
+      "child_peak_rss_kib": 1647216,
+      "components": {
+        "guard": {
+          "artifacts": {
+            "normalized.txt": "a59dd2724fe28734bf246fb584130ae0fb3ecad63bf4faca22c20961e3912d68",
+            "program.ll": "283a0513a0ef65f0869f2d33df5b8e270b92b95084bb7de52423bbfe6797195c",
+            "program.o": "45dc4ce03dd5a17f974ebad15500828d3959603b0b792b906673beca46de1c3f",
+            "program.opt.ll": "fb633df7969dbccc296d9b8c3435adf258682ebb6516d8db38857e2d90c60d37",
+            "unit.json": "a33739109fd3d7f8777017a3c0ef74e03ffd0f2c6da3b511a0fd59ca147669f1"
+          },
+          "function_count": 239,
+          "roots": [
+            "Lemma.Services.Store.Server.courseMain"
+          ],
+          "unresolved_boundary": [
+            "lemma_exec_syscall"
+          ]
+        },
+        "install": {
+          "artifacts": {
+            "normalized.txt": "313cf193eed47cd64d44ba53c638d45ca3fb44beecb5babc468e69d84ea97783",
+            "program.ll": "9da9f29961ee384f411d2f78bd60a60baf3ba6084ad2f1087bbc2d4321d26485",
+            "program.o": "669b76fa88d0576289664179cf28e2b2df57a704008028f9ca4fb2cb1859fe3f",
+            "program.opt.ll": "c658ea7b32386f717dc31cbd3da039c0b733feb833c2b6f31ddfe1c407f2fd6e",
+            "unit.json": "73856343a8623deb8ee26d34663b608b99ef4e82d05cf935723438212023e45d"
+          },
+          "function_count": 158,
+          "roots": [
+            "Lemma.Courses.PackageStore.install",
+            "Lemma.Courses.PackageInstaller.main"
+          ],
+          "unresolved_boundary": [
+            "lemma_exec_syscall"
+          ]
+        }
+      },
+      "path": "build/courses/task006-course-published-component-a5/result.json",
+      "sha256": "e9359a951b230f5ec9e35a85322127eacf344be6ae433466a3b1d93eef5d7b3f",
+      "source_count": 75,
+      "source_inventory_sha256": "045d6af61367fd6c9f265347f4782fbac994e8fa46d451496db15949ab8fc3b5",
+      "source_root": "build/courses/task006-course-published-component-a5/consumed-source-root",
+      "status": "PASS_COURSE_INSTALL_GUARD_COMPONENTS",
+      "version": "lemma-course-installer-startup/2",
+      "wall_seconds": 22.565836338093504
+    },
+    "status": "PASS_FRESH_WHOLE_359_SOURCE_PAIR_AND_STARTUP2_COMPONENT; ACTUAL_COLD_READY_60M_FAIL",
+    "status_rpc_measurement": {
+      "fixture": {
+        "path": "build/courses/task006-course-startup-rpc-a1/MeasureStatus.lean",
+        "sha256": "6fb82b1b04d98563b86d4d446ba718bf28aa8f375cd1045a8c17b13eb8c21aae"
+      },
+      "observed": "RPC_COMPLETE_ACTION_MEASURE:PASS Begin1382,Receive2647,Reply3031,Wait813,Total7873; callbacks1427; actual ordered copied128-byte call and128-byte reply;64-byte opaque status-sized application frames, no journal/checker policy",
+      "operation_counts": {
+        "Begin": 1382,
+        "Receive": 2647,
+        "Reply": 3031,
+        "Wait": 813,
+        "callbacks": 1427,
+        "total": 7873
+      },
+      "scope": "maintained Kernel Actions on owned8192-frame model with real ordered copied128-byte packet/reply;64-byte opaque status-sized application fields; no journal/checker policy and no target-cycle or causal dominance claim",
+      "stderr": {
+        "path": "build/courses/task006-course-startup-rpc-a1/status.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "path": "build/courses/task006-course-startup-rpc-a1/status.stdout.log",
+        "sha256": "8e8401bf6ab451bcff5b35694914121d0e7d0118fc3d86165a698a4054b225a0"
+      }
+    },
+    "whole_pair": {
+      "bounds": {
+        "aggregate_host_seconds": 900,
+        "per_audit_command_seconds": 60,
+        "per_build_command_seconds": 300
+      },
+      "path": "build/courses/task006-course-published-whole-a1/result.json",
+      "roles": {
+        "initializer": {
+          "audit_seconds": 94.3045397909591,
+          "audit_sha256": "da201fea22cbbf3009a37b7771df3371f496c8fa4e8e286bc523b4f484ea288b",
+          "audit_status": "PASS",
+          "build_seconds": 80.14875108306296,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-course-bulk-initialize",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-published-initializer-a1",
+          "image_bytes": 636200,
+          "image_sha256": "a553f00daed36e2eb9b76e84b907d79deef1efb71fb3e4af5ea3583535d9b7fd"
+        },
+        "notebook": {
+          "audit_seconds": 112.67176523699891,
+          "audit_sha256": "76f280a11436c44cafdf59f93549ace4c1b9a56f77092df7798e05b5c0628d4f",
+          "audit_status": "PASS",
+          "build_seconds": 79.93578936206177,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-course-bulk-notebook",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-published-notebook-a1",
+          "image_bytes": 636200,
+          "image_sha256": "1aeeb9ef1394afc1035bdd1413a100ed7d4d20ea776a4725edd9a9124b8a635c"
+        }
+      },
+      "sha256": "4b38036205dbe6bffa977d1e6c8c79ac5662c7e15cacc24a7d4f6cc1873f5523",
+      "source_commit": "fbd0bf3c02ba1c53f7b28aac4bbb77d6ce02f5cc",
+      "source_count": 359,
+      "source_inventory_sha256": "0a28f62d22e884ec9ac79eeb2b708c301b69c78d6f816004ec0653c4a95121c4",
+      "source_root": "build/courses/task006-course-published-whole-a1/consumed-source-root",
+      "status": "PASS_FRESH_WHOLE_COURSE_PUBLISHED_MATCHED_PAIR",
+      "wall_seconds": 367.1414881820092
+    }
+  },
   "remaining": [
     "actual completed guest installation/durable publication and independent cold selected package read",
     "notebook package selection/rendering with revision-bound package identity/edition/source anchors",
@@ -426,6 +869,55 @@
     "store_unresolved_boundary": [
       "lemma_exec_syscall"
     ]
+  },
+  "text_render_component": {
+    "artifacts": {
+      "normalized.txt": "4e6ad406b6446c59bfb7bb16b3352da2890643e8a7e93f417149ab3872a2addc",
+      "program.ll": "0ed2a0639d98cc0d770b6ce4995b9c656115f8362e881164ed992d5bd14bcc9e",
+      "program.o": "743007034fc82377fa7ada898bd1599339487ee792cd710ee60525b97b447c8a",
+      "program.opt.ll": "7df382c74fd767a06d92ab0337e8986a3b93d2219707bde86f0fefa14380122a",
+      "unit.json": "f045584911f7e865c5210bcfa34963e9a22221c927e9747c7c6c1286afd43852"
+    },
+    "child_peak_rss_kib": 1625140,
+    "command": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "python3",
+      "scripts/check_course_render.py",
+      "--output-dir",
+      "build/courses/course-render-new"
+    ],
+    "function_count": 55,
+    "independent_oracles": [
+      "explicit glyph/cell literals and raw byte pagination",
+      "528000-byte scalar Gray4 framebuffer comparison",
+      "CRC rejection and alias/geometry guards before output",
+      "real read/write errors with ordered partial cache effects",
+      "same-Action actual package-to-pixels identity and source/cache/full framebuffer alias rejection before accesses"
+    ],
+    "previous_prepare_render_component": {
+      "connected_entry_NOT_RUN": true,
+      "path": "build/courses/task006-course-render-a1/result.json",
+      "sha256": "b6b03336acda185d8504cd521f2efed26cd64f6bdd544eaff3e294e98c8b553f",
+      "status": "PASS_GENUINE_COURSE_TEXT_RENDER_COMPONENT"
+    },
+    "remaining": [
+      "actual complete independent RTL cold Load",
+      "Notebook installed package selection and dirty-tile/controller publication",
+      "versioned exact package/edition/source-anchor binding to document revision and checker evidence"
+    ],
+    "result": {
+      "path": "build/courses/task006-course-render-a2/result.json",
+      "sha256": "d4748626e20474b1b0a04c86143eea62d560331b5d9132b7fad6d521aabd666c"
+    },
+    "scope": "actual guest Actions and genuine User2 LLVM/RV64 object; notebook/controller execution NOT_RUN",
+    "source_count": 54,
+    "source_inventory_sha256": "7db1f1b94a2f4c3dea8755b1c45343125d019e22e8a87a0962a2e4317e545219",
+    "source_root": "build/courses/task006-course-render-a2/consumed-source-root",
+    "status": "PASS_GENUINE_COURSE_TEXT_RENDER_COMPONENT",
+    "wall_seconds": 18.3509070109576
   },
   "tools": {
     "lake": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",

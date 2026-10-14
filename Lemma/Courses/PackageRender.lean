@@ -1,0 +1,149 @@
+import Lemma.Courses.PackageTarget
+import Lemma.Ink.Surface
+
+/-! `lemma-course-text-panel/1` prepares one bounded page from the actual
+validated package bytes. There is no cross-Action validation token. The source
+and glyph cache are private caller-owned pages with no asynchronous writer;
+their checked disjoint spans make the same-Action read view immutable. Errors
+may alter an unpublished glyph cache, but never start a display transaction.
+
+The authored 3x5 font uses uppercase presentation for lowercase ASCII. Other
+printable ASCII has an explicit missing-glyph box rather than disappearing.
+Raw package text, anchors and mathematical objects remain unchanged. -/
+namespace Lemma.Courses.PackageRender
+open Lemma.Core0.Memory
+open Lemma.Courses.PackageFormat
+
+def columns : UInt64 := 32
+def rows : UInt64 := 16
+def cacheBytes : UInt64 := 4096
+
+def glyph (character : UInt64) : UInt64 :=
+  let code := if 97 ≤ character then if character ≤ 122 then character - 32 else character else character
+  if code = 32 then 0 else
+  if code = 74 then 0x124e else if code = 90 then 0x72a7 else
+  if code = 46 then 0x0002 else if code = 44 then 0x0014 else
+  if code = 58 then 0x0410 else if code = 59 then 0x0414 else
+  if code = 39 then 0x2400 else if code = 34 then 0x5a00 else
+  if code = 33 then 0x2482 else if code = 63 then 0x7282 else
+  if code = 95 then 0x0007 else if code = 60 then 0x1541 else
+  if code = 62 then 0x4454 else
+  let known := Lemma.Ink.Surface.letter code
+  if known = 0 then 0x7b6f else known
+
+private def separate (a n b m : UInt64) : UInt64 :=
+  if a + n ≤ b then 1 else if b + m ≤ a then 1 else 0
+
+private def clearStep (i _ : UInt32) (acc output _ _ _ : UInt64) : Action :=
+  .bind (Lemma.User.Memory.write64 (output + i.toUInt64 * 8) 0) fun s _ => .done s acc
+
+private def textStep (i _ : UInt32) (cursor source output _ _ : UInt64) : Action :=
+  if cursor < columns * rows then
+  .bind (Lemma.User.Memory.read8 (source + i.toUInt64)) fun s character => if s = 0 then
+  if character = 10 then .done 0 (cursor + columns - cursor % columns) else
+  .bind (Lemma.User.Memory.write64 (output + cursor * 8) (glyph character)) fun s _ =>
+  if s = 0 then .done 0 (cursor + 1) else .done s 0
+  else .done s 0
+  else .done Status.iterationStop i.toUInt64
+
+/-- Validate once, then prepare actual selected text in a disjoint4096-byte
+glyph cache. `position` is a raw text-byte offset; success returns the first
+unrepresented byte for explicit pagination. LF advances to the next row and
+wrap uses32 columns. Neither an entry pointer nor a validity token escapes.
+Arguments/role precede package validation, then ordinal/span/position checks;
+the cache is untouched until all those checks pass. -/
+def prepare (address bytes ordinal role position output : UInt64) : Action :=
+  if role < 8 then
+  if output % 8 = 0 then if output ≤ 0xffffffffffffffff - cacheBytes then
+  if address ≤ 0xffffffffffffffff - bytes then
+  if separate address bytes output cacheBytes = 1 then
+  .bind (PackageTarget.validate address bytes) fun s count => if s = 0 then
+  if ordinal < count then
+  let entry := address + headerBytes + ordinal * entryBytes
+  .bind (Lemma.User.Memory.read64 (entry + 112 + role * 8)) fun s descriptor => if s = 0 then
+  let offset := spanOffset descriptor
+  let length := spanLength descriptor
+  if position ≤ length then
+  .boundedFoldU64 512 clearStep 512 0 output 0 0 0 fun s _ => if s = 0 then
+  .boundedFoldU64 512 textStep (length - position).toUInt32 0 (address + offset + position) output 0 0 fun s next =>
+  if s = Status.iterationStop then .done 0 (position + next)
+  else if s = 0 then .done 0 length else .done s 0
+  else .done s 0
+  else .done selectionAbsent 0 else .done s 0
+  else .done selectionAbsent 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0
+  else .done unsupported 0
+
+private def pixel (position row first second : UInt64) : UInt64 :=
+  if row < 15 then if position % 12 < 9 then
+    let selected := if position < 12 then first else second
+    if (selected >>> (14 - (row / 3 * 3 + position % 12 / 3))) &&& 1 = 1 then 0 else 15
+  else 15 else 15
+
+private def pair (position row first second : UInt64) : UInt64 :=
+  (pixel position row first second <<< 4) ||| pixel (position + 1) row first second
+
+/-- Gray4 high-nibble-first pixels packed into a little-endian aligned word.
+Two cached glyphs cover at most two12-pixel cells of the16-pixel span. -/
+def panelWord (x y first second : UInt64) : UInt64 :=
+  let start := x % 12
+  let row := y % 20
+  pair start row first second |||
+  (pair (start + 2) row first second <<< 8) |||
+  (pair (start + 4) row first second <<< 16) |||
+  (pair (start + 6) row first second <<< 24) |||
+  (pair (start + 8) row first second <<< 32) |||
+  (pair (start + 10) row first second <<< 40) |||
+  (pair (start + 12) row first second <<< 48) |||
+  (pair (start + 14) row first second <<< 56)
+
+private def renderByteStep (i _ : UInt32) (acc address word _ _ : UInt64) : Action :=
+  .bind (Lemma.User.Memory.write8 (address + i.toUInt64) ((word >>> (i.toUInt64 * 8)) &&& 255)) fun s _ => .done s acc
+
+private def renderStep (i _ : UInt32) (acc cache width _ _ : UInt64) : Action :=
+  let x := (i.toUInt64 % 24) * 16
+  let y := i.toUInt64 / 24
+  let cell := (y / 20) * columns + x / 12
+  .bind (Lemma.User.Memory.read64 (cache + cell * 8)) fun s first => if s = 0 then
+  .bind (if x / 12 + 1 < columns then Lemma.User.Memory.read64 (cache + (cell + 1) * 8)
+    else .done 0 0) fun s second => if s = 0 then
+  let word := panelWord x y first second
+  let target := Lemma.Ink.Surface.framebuffer + (320 + y) * ((width + 1) / 2) + 12 + x / 2
+  if target % 8 = 0 then
+    .bind (Lemma.User.Memory.write64 target word) fun s _ => .done s acc
+  else .boundedFoldU64 8 renderByteStep 8 acc target word 0 0 fun s value => .done s value
+  else .done s 0 else .done s 0
+
+/-- Render a prepared cache into owned Gray4 framebuffer pixels at(24,320),
+384x320. The notebook must explicitly mark/publish this region through its
+normal tile/controller path. This Action has no panel or storage authority.
+Its cache is disjoint from the complete declared framebuffer span. -/
+def render (cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .boundedFoldU64 7680 renderStep 7680 0 cache width 0 0 fun s _ => .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+/-- Connected package-to-framebuffer entry point. Source, cache and complete
+framebuffer are disjoint before any cache/display write. The validation view
+does not cross a return, syscall, publication or package-buffer mutation. The
+returned position is raw text pagination, never a storage or proof receipt. -/
+def renderSelected (address bytes ordinal role position cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if address ≤ 0xffffffffffffffff - bytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate address bytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .bind (prepare address bytes ordinal role position cache) fun s next => if s = 0 then
+  .bind (render cache width height) fun s _ => if s = 0 then .done 0 next else .done s 0
+  else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+end Lemma.Courses.PackageRender

@@ -35,7 +35,7 @@ def exportFiles (env : Environment) (directory : System.FilePath) (guard : Bool 
     unless #["Lemma.Courses.PackageTarget.","Lemma.Courses.PackageFormat.",
       "Lemma.Courses.PackageStore.","Lemma.Courses.PackageCommand.",
       "Lemma.Courses.PackageInstaller.","Lemma.Services.Store.","Lemma.User."].any
-        (fun stem => source.startsWith stem) do
+        (fun stem => source.startsWith stem) || source == "Lemma.Core0.Memory.Status.iterationStop" do
       throw <| IO.userError s!"unaccounted course-install dependency {name}"
   let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution .user_v0_2 suite {

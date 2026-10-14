@@ -11,7 +11,8 @@ def source_inputs(root: Path) -> dict[str, str]:
              'tests/courses/test_package.py'}
     files.update({'scripts/check_course_install.py'})
     pending = ['Lemma/Compiler/CourseInstallExport.lean','tests/courses/InstallExport.lean',
-               'tests/courses/GuardExport.lean','tests/courses/Install.lean','tests/courses/Guard.lean']
+               'tests/courses/GuardExport.lean','tests/courses/Install.lean','tests/courses/Guard.lean',
+               'tests/courses/Mount.lean']
     while pending:
         name = pending.pop()
         if name in files:
@@ -42,7 +43,9 @@ def main():
     a=p.parse_args(); root=Path(__file__).resolve().parents[1]; out=a.output_dir.resolve()
     if not out.is_relative_to(root/'build/courses') or out.exists(): p.error('unused build/courses output required')
     out.mkdir(parents=True); started=time.monotonic(); commands=[]
+    os.environ['LEAN_NUM_THREADS']='2'
     result=dict(status='FAIL',scope='actual Lean Actions and genuinely elaborated LLVM/RV64 objects; CPU/durable medium NOT_RUN',
+                host_environment={'LEAN_NUM_THREADS':'2'},
                 bounds=dict(command_seconds=300,whole_seconds=900,address_space_bytes=16<<30,file_bytes=1<<30))
     resource.setrlimit(resource.RLIMIT_AS,(16<<30,16<<30)); resource.setrlimit(resource.RLIMIT_FSIZE,(1<<30,1<<30))
     def run(label,argv,env=None):
@@ -65,11 +68,12 @@ def main():
                 if sha256(target)!=digest: raise Core0Error('changed input during archive:'+name)
             write_json(out/'source-inputs.json',before); result.update(source_inputs=before,source_count=len(before))
             run('build',[tools['lake'],'build','Lemma.Compiler.CourseInstallExport'])
-            run('guard-actions',[tools['lake'],'env','lean','--run','tests/courses/Guard.lean'])
-            run('install-actions',[tools['lake'],'env','lean','--run','tests/courses/Install.lean'])
+            run('guard-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Guard.lean'])
+            run('install-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Install.lean'])
+            run('mount-actions',[tools['lake'],'env','lean','-j2','--run','tests/courses/Mount.lean'])
             env=dict(os.environ,LEMMA_COURSE_INSTALL_OUT=str(out/'install'),LEMMA_COURSE_GUARD_OUT=str(out/'guard'))
-            run('install-export',[tools['lake'],'env','lean','tests/courses/InstallExport.lean'],env)
-            run('guard-export',[tools['lake'],'env','lean','tests/courses/GuardExport.lean'],env)
+            run('install-export',[tools['lake'],'env','lean','-j2','tests/courses/InstallExport.lean'],env)
+            run('guard-export',[tools['lake'],'env','lean','-j2','tests/courses/GuardExport.lean'],env)
             if source_inputs(root)!=before: raise Core0Error('consumed source changed during capture')
         qualified={}
         for role,roots in [('install',['Lemma.Courses.PackageStore.install','Lemma.Courses.PackageInstaller.main']),

@@ -1079,7 +1079,7 @@ private def constructCourse (initialization isolation binding arithmeticMode : U
   .bind (Task.prepareManaged 0 initialization) fun s store => if s = 0 then
   .bind (Task.prepareManaged 1 (if binding = 3 then initialization + 2 else initialization)) fun s notebook => if s = 0 then
   .bind (if binding = 3 then Task.prepareManaged 2 arithmeticMode else .done 0 0) fun s arithmetic => if s = 0 then
-  .bind (Task.prepareManaged 3 0) fun s installer => if s = 0 then
+  .bind (Task.prepareManaged 3 initialization) fun s installer => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s surface => if s = 0 then
   .bind (Objects.createEndpoint notebook) fun s input => if s = 0 then
   .bind (Objects.createEndpoint store) fun s block => if s = 0 then

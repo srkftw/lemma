@@ -78,15 +78,19 @@ private def execute : Action :=
   .bind (command 48) fun s transaction => if s = 0 then
   .bind (command 56) fun s expected => if s = 0 then
   .bind (get 40) fun s request => if s = 0 then
-  if request ≤ Format.maximumSequence - 260 then
-  .bind (put 40 (request + 260)) fun s _ => if s = 0 then
+  if request ≤ Format.maximumSequence - 6288 then
+  .bind (put 40 (request + 6288)) fun s _ => if s = 0 then
   .bind (prepare identity edition (if operation = 2 then loaded else package) request) fun s _ => if s = 0 then
   .bind (if operation = 1 then
     .bind (Memory.read64 (package + 80)) fun s crc => if s = 0 then
     if crc = expected then
       .bind (PackageStore.install context bytes transaction) fun s sequence => report operation identity edition crc sequence s
     else report operation identity edition crc 0 integrityFailure else failed
-  else if operation = 2 then loadPackage identity edition transaction expected
+  else if operation = 2 then
+    .bind (PackageStore.awaitReady context) fun s _ => if s = 0 then
+    .bind (Memory.write64 (context + 64) (request + 6000)) fun s _ => if s = 0 then
+    loadPackage identity edition transaction expected else failed
+    else report operation identity edition expected 0 s
   else if operation = 3 then
     .bind (get 8) fun s endpoint => if s = 0 then
     .bind (Client.call endpoint outgoing incoming 6 1 (object identity edition) transaction 0 0 0 request)
@@ -153,7 +157,8 @@ def step : Action :=
   else failed else failed
   else failed else failed else failed
 
-def main (nonce : UInt64) : Action :=
+def main (initialization : UInt64) : Action :=
+  if initialization ≤ 1 then
   .bind (Capability.bootGrant 0) fun s console => if s = 0 then
   .bind (Capability.bootGrant 1) fun s endpoint => if s = 0 then
   .bind Syscall.identity fun s identity => if s = 0 then
@@ -161,11 +166,16 @@ def main (nonce : UInt64) : Action :=
   if pages = 16 then
   .bind (put 0 console) fun s _ => if s = 0 then
   .bind (put 8 endpoint) fun s _ => if s = 0 then
-  .bind (put 40 1) fun s _ => if s = 0 then
+  .bind (put 40 6001) fun s _ => if s = 0 then
   .bind reset fun s _ => if s = 0 then
-  .bind (CapabilityConsole.record console 0x4b0 identity nonce console endpoint) fun s _ =>
-  if s = 0 then .loop step else failed
+  .bind (CapabilityConsole.record console 0x4b5 identity initialization console endpoint) fun s _ => if s = 0 then
+  .bind (prepare 1 1 loaded 1) fun s _ => if s = 0 then
+  .bind (PackageStore.awaitPublished context initialization) fun s _ => if s = 0 then
+  .bind (CapabilityConsole.record console 0x4b0 identity initialization console endpoint) fun s _ =>
+  if s = 0 then .loop step else failed else failed else failed else failed
   else failed else failed else failed else failed
   else failed else failed else failed else failed else failed
+
+  else failed
 
 end Lemma.Courses.PackageInstaller

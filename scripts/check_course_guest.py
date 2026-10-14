@@ -26,7 +26,7 @@ class Machine:
   self.log=(args.work_dir/(label+'.launch.log')).open('xb')
   role='initializer' if workload=='initializer' else 'notebook'
   build=args.initializer_build if role=='initializer' else args.notebook_build
-  source=args.source_root/role
+  source=args.source_root if (args.source_root/'source-inputs.json').is_file() else args.source_root/role
   self.argv=[str(ROOT/'scripts/lemmasim'),'session','--backend','rtl','--profile','lemma-silicon-dev/0.3.0',
    '--workload',workload,'--mode','laboratory' if fail_flush is not None else 'developer','--session-dir',str(self.directory),
    '--disk',str(disk),'--native-bundle',str(args.native_bundle),'--guest-build',str(build),
@@ -41,7 +41,7 @@ class Machine:
  def until(self,predicate,max_cycles):
   while not predicate(rows(self.directory)):
    if self.cycles>=max_cycles:raise RuntimeError('declared course target-cycle boundary not reached')
-   if time.monotonic()-self.args.started>1800:raise RuntimeError('whole course scenario host1800s ceiling')
+   if time.monotonic()-self.args.started>getattr(self.args,'host_seconds',4800):raise RuntimeError('declared whole course scenario host ceiling')
    result=request(self.directory,{'action':'run','cycles':1000000},timeout=130)
    self.cycles=result['cycle']
    if self.cycles%2000000==0:self.observations.append(request(self.directory,{'action':'inspect'},timeout=130))
@@ -51,8 +51,12 @@ class Machine:
   args=SimpleNamespace(command=operation,session_dir=self.directory,package=package,identity=identity,
    edition=edition,crc=crc,node=node,transaction=transaction,cycle=None)
   return send(args)
- def outcome(self,begin,operation,status,max_cycles):
-  self.until(lambda r:any(x[0]==0x4b1 and x[1]==operation+(status<<8) for x in r[begin:]),max_cycles)
+ def outcome(self,begin,operation,status,command_cycles):
+  if type(command_cycles) is not int or not 0<command_cycles<=100000000 or self.cycles>(1<<64)-1-command_cycles:
+   raise ValueError('course command cycle budget must be1..100M without overflow')
+  # A command owns a new budget from admission. Reusing an absolute cold-machine
+  # deadline gave later commands less/zero work even when each obeyed its bound.
+  self.until(lambda r:any(x[0]==0x4b1 and x[1]==operation+(status<<8) for x in r[begin:]),self.cycles+command_cycles)
   return next(x for x in rows(self.directory)[begin:] if x[0]==0x4b1 and x[1]==operation+(status<<8))
  def close(self):
   if self.process.poll() is None:
@@ -69,7 +73,7 @@ def main():
  for name,value in vars(a).items():setattr(a,name,value.resolve())
  if a.work_dir.exists() or not a.work_dir.is_relative_to(ROOT/'build/courses'):p.error('unused build/courses scenario directory required')
  a.work_dir.mkdir();a.started=time.monotonic();owned=[];report={'status':'FAIL','scope':'actual RTL guest course installer/Store/cold decoder; notebook Ready/UI/evidence binding NOT_RUN',
-  'bounds':{'whole_host_seconds':1800,'cold_target_cycles':60000000,'install_target_cycles':100000000,'medium_bytes':268435456},'commands':[]}
+  'bounds':{'whole_host_seconds':4800,'cold_target_cycles':60000000,'per_install_or_load_command_cycles':100000000,'per_preflight_rejection_cycles':50000000,'maximum_declared_scenario_cycles':670000000,'medium_bytes':268435456},'commands':[]}
  try:
   for name in ('package','author_package'):
    value=getattr(a,name)
@@ -89,12 +93,12 @@ def main():
   crc=int.from_bytes(a.package.read_bytes()[80:88],'little')
   before=(first.directory/'backing.io').stat().st_size
   begin=len(rows(first.directory));first.command('course-install',package=a.package,transaction=11)
-  rejected=first.outcome(begin,1,223,120000000)
+  rejected=first.outcome(begin,1,223,50000000)
   begin=len(rows(first.directory));first.command('course-delete-probe',crc=crc,transaction=12)
-  denied=first.outcome(begin,3,223,130000000)
+  denied=first.outcome(begin,3,223,50000000)
   corrupt=a.work_dir/'corrupt.lcp';raw=bytearray(a.package.read_bytes());raw[-1]^=1;corrupt.write_bytes(raw)
   begin=len(rows(first.directory));first.command('course-install',package=corrupt,transaction=13)
-  invalid=first.outcome(begin,1,243,140000000)
+  invalid=first.outcome(begin,1,243,50000000)
   if (first.directory/'backing.io').stat().st_size!=before:raise RuntimeError('overwrite/delete/integrity rejection produced backing I/O')
   report['preflight_rejections']={'overwrite':rejected,'delete':denied,'integrity':invalid,'backing_outcome_bytes_unchanged':before}
   first.close()
