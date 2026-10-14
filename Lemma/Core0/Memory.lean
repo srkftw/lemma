@@ -309,6 +309,11 @@ inductive Action where
   This bridge never evaluates a host function as target behavior. -/
   | managedString2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
       (next : UInt8 → UInt64 → Action)
+  /-- User-v0.7 only: genuine ordinary unary UInt64 closures with owned scalar
+  captures, finite checked source-derived dispatch and real bounded lifetime.
+  No closure value escapes this scalar2 source entry. -/
+  | managedClosure2 (function : UInt64 → UInt64 → UInt64) (lhs rhs : UInt64)
+      (next : UInt8 → UInt64 → Action)
   /-- Read the fixed UART line-status register.  The byte is zero-extended into
   the standard Action value word. -/
   | uartReadStatus (next : UInt8 → UInt64 → Action)

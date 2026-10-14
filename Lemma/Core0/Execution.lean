@@ -337,7 +337,7 @@ def memoryRegions : Profile → Array MemoryRegion
         ⟨"boot-private-scratch", 0x81fc0000, 0x81fc4000, true⟩
   | .kernel_v0_3 | .kernel_v0_4 | .kernel_v0_5 | .kernel_v0_6 | .kernel_v0_8 => kernelMemoryRegions.map fun region =>
       if region.name == "owned-frame-pool" then { region with stop := 0x84000000 } else region
-  | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
+  | .user_v0_1 | .user_v0_2 | .user_v0_3 | .user_v0_4 | .user_v0_5 | .user_v0_6 | .user_v0_7 => #[⟨"user-virtual-domain", 0x10000, 0x40000000, true⟩]
   | _ => #[]
 
 def memoryRegionsValid (profile : Profile) : Bool :=

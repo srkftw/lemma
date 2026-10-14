@@ -1,0 +1,524 @@
+{
+  "archive": {
+    "commands_sha256": "ff349c92423917f6d65eb9e2ce7efcb316186216b8fa2a9efb3f784c797c6bc3",
+    "directory": "build/managed/closure-rv64-a5",
+    "export_receipt_sha256": "c73251e94eaff75ba02777d2984a2145331fffc57fef7d219b980cc3d13556ec",
+    "genuine_provenance_sha256": "0ab6a5bec8d8431b5756b93a020a9f13413369289265402cccccf68f0b16b210",
+    "lean_imports": 83,
+    "qualification_sha256": "2e4624fd2a34ab07d81f9282104cbdb093aeb752db048f0cead0e242808446e4",
+    "source_inputs": 95
+  },
+  "base_commit": "2cf657b98072243eacc29ba20960673727a5348e",
+  "commands": [
+    "nix develop --no-write-lock-file --command python3 scripts/check_managed_closure.py --work-dir build/managed/closure-rv64-a5 --deadline 180",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command env LEMMA_MANAGED_CLOSURE_OUT=build/managed/closure-component-a9 lake env lean Lemma/Compiler/Test/ManagedClosure.lean",
+    "flock build/task006-lake.lock nix develop --no-write-lock-file --command lake env lean --run tests/runtime/ManagedClosure.lean"
+  ],
+  "compiler_component": {
+    "actual_ir_mutations": [
+      {
+        "actual_changed_nodes": 1,
+        "mutation": 1,
+        "rejected": "Adapter scalar call/full64 result box differs"
+      },
+      {
+        "actual_changed_nodes": 1,
+        "mutation": 2,
+        "rejected": "Adapter source/argument/result correspondence differs"
+      },
+      {
+        "actual_changed_nodes": 2,
+        "mutation": 3,
+        "rejected": "Adapter must unbox and actually consume every argument"
+      },
+      {
+        "actual_changed_nodes": 2,
+        "mutation": 4,
+        "rejected": "PAP must leave exactly one scalar invocation argument"
+      },
+      {
+        "actual_changed_nodes": 2,
+        "mutation": 5,
+        "rejected": "Only unary UInt64 closure application admitted"
+      },
+      {
+        "actual_changed_nodes": 2,
+        "mutation": 6,
+        "rejected": "Read after reference consumption rejected"
+      },
+      {
+        "actual_changed_nodes": 2,
+        "mutation": 7,
+        "rejected": "Unsupported increment metadata"
+      },
+      {
+        "actual_changed_nodes": 4,
+        "mutation": 8,
+        "rejected": "Unreleased object at scalar return"
+      },
+      {
+        "actual_changed_nodes": 1,
+        "mutation": 9,
+        "rejected": "Parameter layout/range/uniqueness differs"
+      },
+      {
+        "actual_changed_nodes": 1,
+        "mutation": 10,
+        "rejected": "Only exhaustive exact Boolean cases admitted"
+      }
+    ],
+    "catalog_sha256": "3f699d8d17d31d6bf2ddfc205365c84f93a80a86f210a97b47865288b54ec0d3",
+    "directory": "build/managed/closure-component-a9",
+    "historical_profiles_rejected": 25,
+    "host_action_model": "executionActionUnsupported; never executes the ordinary source",
+    "llvm_sha256": "04ed8203c28de0af58943088c4e271c0bcc54ec7f8cc32becb6afbf9c153f51d",
+    "other_genuine_negatives": [
+      "static initializer capture",
+      "closure-valued capture",
+      "scalar-only entry",
+      "recursive source",
+      "dispatcher name collision"
+    ]
+  },
+  "compiler_immutable_revision": "5045d0056413266e57c625dcd7c365b10e377c52",
+  "contract": "lemma-managed-closure-v1",
+  "executions": {
+    "O0": {
+      "cases": [
+        {
+          "case": 0,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 13835058055282163710,
+          "scalar_hex": "bffffffffffffffe"
+        },
+        {
+          "case": 1,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775804,
+          "scalar_hex": "7ffffffffffffffc"
+        },
+        {
+          "case": 2,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 4611686018427387903,
+          "scalar_hex": "3fffffffffffffff"
+        },
+        {
+          "case": 3,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 13835058055282163712,
+          "scalar_hex": "c000000000000000"
+        },
+        {
+          "case": 4,
+          "exit_status": 237,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 0,
+          "scalar_hex": "0000000000000000"
+        },
+        {
+          "case": 5,
+          "exit_status": 237,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 0,
+          "scalar_hex": "0000000000000000"
+        },
+        {
+          "case": 6,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775809,
+          "scalar_hex": "8000000000000001"
+        },
+        {
+          "case": 7,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775807,
+          "scalar_hex": "7fffffffffffffff"
+        },
+        {
+          "case": 8,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775809,
+          "scalar_hex": "8000000000000001"
+        },
+        {
+          "case": 9,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 965,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775807,
+          "scalar_hex": "7fffffffffffffff"
+        }
+      ],
+      "cleanup": "compiled c7 count10 observed before explicit host kill/reap; finite protocol, not natural shutdown",
+      "elapsed_seconds": 0.3673490280052647,
+      "functions": {
+        "firmware": 18,
+        "kernel": 769,
+        "user": 84
+      },
+      "image_sha256": "aa5dc389e638387084b980f5a7e6c9a7bd79e27235c26540dd13d1519b5ccf4a",
+      "observation_sha256": "40e4c1c586441c34c8ae69a6683e08970f70f47ba821342904ca69a01b14fb5d",
+      "status": "PASS",
+      "transcript_sha256": "c7a47c091c460a9532df4418d829e50e3bbf03287fc7aa14204cc46f4e7798f3",
+      "user_foreign_helper": "lemma_exec_syscall only before linking; none undefined after link",
+      "user_image_sha256": "79615d19b6407fe05a684463d63499d1f4613546c791b0a1999238018af098ae"
+    },
+    "O2": {
+      "cases": [
+        {
+          "case": 0,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 13835058055282163710,
+          "scalar_hex": "bffffffffffffffe"
+        },
+        {
+          "case": 1,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775804,
+          "scalar_hex": "7ffffffffffffffc"
+        },
+        {
+          "case": 2,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 4611686018427387903,
+          "scalar_hex": "3fffffffffffffff"
+        },
+        {
+          "case": 3,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 13835058055282163712,
+          "scalar_hex": "c000000000000000"
+        },
+        {
+          "case": 4,
+          "exit_status": 237,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 0,
+          "scalar_hex": "0000000000000000"
+        },
+        {
+          "case": 5,
+          "exit_status": 237,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 0,
+          "scalar_hex": "0000000000000000"
+        },
+        {
+          "case": 6,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775809,
+          "scalar_hex": "8000000000000001"
+        },
+        {
+          "case": 7,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775807,
+          "scalar_hex": "7fffffffffffffff"
+        },
+        {
+          "case": 8,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775809,
+          "scalar_hex": "8000000000000001"
+        },
+        {
+          "case": 9,
+          "exit_status": 0,
+          "owned_frames_before_teardown": 966,
+          "owned_frames_restored": 1002,
+          "scalar": 9223372036854775807,
+          "scalar_hex": "7fffffffffffffff"
+        }
+      ],
+      "cleanup": "compiled c7 count10 observed before explicit host kill/reap; finite protocol, not natural shutdown",
+      "elapsed_seconds": 0.3203260649461299,
+      "functions": {
+        "firmware": 18,
+        "kernel": 769,
+        "user": 84
+      },
+      "image_sha256": "6b7af193c60b03b2ec0a1ff9aeb27c6a00a3d940dc51636e5e9e870d584c0acf",
+      "observation_sha256": "02b1eb9ef0b2f5c2e617b844fd80a523ea3d9ca56e41efd091ee6e18b740ed38",
+      "status": "PASS",
+      "transcript_sha256": "76dad7d836f41f9cafe7d73e43758f3477a4dda2646adfbc6ad553cdc04247b2",
+      "user_foreign_helper": "lemma_exec_syscall only before linking; none undefined after link",
+      "user_image_sha256": "c165c2dda57e5cb80c7a05bf9a20a3f96a8773a5e43bca5e1351af661bf48c17"
+    }
+  },
+  "genuine_roots": [
+    {
+      "derived_adapters": 2,
+      "ordinary_functions": 4,
+      "source": "Lemma.User.ClosureExamples.selected"
+    },
+    {
+      "derived_adapters": 1,
+      "ordinary_functions": 3,
+      "source": "Lemma.User.ClosureExamples.fourCaptures"
+    },
+    {
+      "derived_adapters": 1,
+      "ordinary_functions": 3,
+      "source": "Lemma.User.ClosureExamples.lambdaEntry"
+    },
+    {
+      "derived_adapters": 2,
+      "ordinary_functions": 4,
+      "source": "Lemma.User.ClosureExamples.sharedCaptures"
+    }
+  ],
+  "language": "core0-user-v0.7",
+  "qualified_owned_inputs": {
+    "Lemma/Compiler/CFGLower.lean": "66a3b7a277749fa6b7d9ab69de58011c290a42861fbbd280fccc0b2a509aab50",
+    "Lemma/Compiler/ClosureExport.lean": "005c033355abfb158e7eaf8d8790c615005aa82e5ca2eaf5bdea56b308323147",
+    "Lemma/Compiler/Test/ManagedClosure.lean": "2b951990b37c2ef3d120bb7a1a6ee3aa81a205bfee9d0fb8409598b79d3ea8b6",
+    "Lemma/Core0/Execution.lean": "48ed9c02848fbfb0fabaa35929567178bd8aa479e0265935bafc295b48efde50",
+    "Lemma/Core0/Frontend.lean": "84856abb5cce9678be0bbef44266f9a4a73fb159852edc9f6a6c81657278f7fa",
+    "Lemma/Core0/IR.lean": "c926b1a1b2072102c5a9c5d8de8f866422846074f09aaa2dbe1538b0bc9eec35",
+    "Lemma/Core0/ManagedClosureIR.lean": "c8f1a0e16f3e9bbcd80560d0c64b717ef845736f2975cb2c03cad2a0994d809c",
+    "Lemma/Core0/Memory.lean": "c7a772dee2092c3d3bb0da48e6eec78c3ae3dfb00ced8424b704b7fb940f5a80",
+    "Lemma/Core0/MemoryModel.lean": "aee209c3bc2c6cab2ea6bfa6326ecd7177d186e83b2d0438a65098e18d56e563",
+    "Lemma/Core0/Semantics.lean": "adee2aa4464edf5f73db7f1e6e4b7407f2d44a13611bdbfb0727b7b4a265adce",
+    "Lemma/Kernel/Development/ClosureKernel.lean": "5f3fa17e101a5a9342b25f3409ed4a6b6b161bedbcf9f21ee137b54ee0df45fa",
+    "Lemma/User/ClosureExamples.lean": "86afab62e7e200ea15d6a00c92a7305ad4cbb54841aa1004030a5ee36186ce04",
+    "Lemma/User/Development/ClosureProcess.lean": "7926bef8c67a7982e634cb9e7e0b093eddba828dfb05d0d0b75e24e50b9c2394",
+    "Lemma/User/Runtime/ManagedClosure.lean": "e28443f299971fea7b7eabb4c2e196ade4b8fad67529dc92fd389c7cab6adaff",
+    "scripts/check_managed_closure.py": "dd5548a1be9e493438e2b23e49bc299cec4aa1d27d74cc9e541527811c5d3c9d",
+    "tests/runtime/ManagedClosure.lean": "995485f2d93560e645c9e64a2d5e14f8aa9ab649338028fb2f4f6ec1210f6446"
+  },
+  "regression": {
+    "logs": {
+      "build/managed/closure-ir-a1/regression-managedarray-a1.log": "ab2dadcc1610b5278a2e04c10bf61e6cb31d0cf8d5fe568d3590c5c0db6b0f7c",
+      "build/managed/closure-ir-a1/regression-managedbytes-a1.log": "fe7a6cd75bb1a2b56a1103666a6723b790ac3c5ae3acbdd5754a48dc02482432",
+      "build/managed/closure-ir-a1/regression-managedrecords-a1.log": "46c72cdec10d4bdde75e1e01812d06c6fa2f7dca86d57da437412add7d4ce845",
+      "build/managed/closure-ir-a1/regression-managedstring-a1.log": "fe3edae97101d40082e7959bfd834d26863443de3b6ee41ec35019675de6c81a",
+      "build/managed/closure-ir-a1/regression-managedsums-a1.log": "1dc0025b72021768864010021f7529eea361dec8e6eb465ead81c36dcb544764"
+    },
+    "managed_profiles": [
+      "Records/User2",
+      "Sums/User3",
+      "Bytes/User4",
+      "Array/User5",
+      "String/User6"
+    ],
+    "scaffold_log_sha256": "c07e02b60fe053560df83df549c26d27aabc8d461335bb48059751eb09d5fa5f",
+    "scaffold_tests": 18
+  },
+  "remaining": [
+    "static/persistent closures",
+    "closure-valued environments",
+    "escaping/generic/multiargument/over/under application",
+    "join/reset/reuse",
+    "general recursion",
+    "proof kernel",
+    "RTL/Wasm closure execution",
+    "production deployment integration"
+  ],
+  "resources": {
+    "actual_oom_status": 237,
+    "actual_pressure_boxes": [
+      29,
+      27
+    ],
+    "arena": "lemma-owned-arena-v1",
+    "call_depth": 8,
+    "closure_payload_bytes": 64,
+    "closure_slots": "k+1 for k scalar captures",
+    "ir_nodes_per_function": 4096,
+    "kernel_boot_mode": {
+      "frames": 1024,
+      "owner_quota": 128,
+      "package_version": 2,
+      "stack_pages": 4
+    },
+    "maximum_captures": 4,
+    "maximum_targets": 8,
+    "normal_peak_slots": {
+      "fourCaptures": 6,
+      "lambdaEntry": 4,
+      "selected": 5,
+      "sharedCaptures": 5
+    },
+    "page": 4194304,
+    "runtime_refcount_maximum": 65535,
+    "slot_bytes": 128,
+    "slots": 31,
+    "source_functions": 32,
+    "source_local_references": 8
+  },
+  "retained_failures": [
+    {
+      "directory": "build/managed/closure-rv64-a1",
+      "reason": "new observer blanket pointer prohibition rejected legitimate checked internal memory lowering; no guest launched",
+      "status": "FAIL"
+    },
+    {
+      "directory": "build/managed/closure-rv64-a2",
+      "reason": "real historical512-frame guest denied arena VA with actual exit71 in all8cases",
+      "status": "FAIL"
+    },
+    {
+      "directory": "build/managed/closure-rv64-a3",
+      "reason": "strict new O2 observer did not yet account for inherited integer optimizer intrinsics; whole run remainsFAIL",
+      "status": "FAIL_OVERALL",
+      "valid_observation": "8case O0 isolated guest PASS from original source"
+    },
+    {
+      "directory": "build/managed/closure-rv64-a4",
+      "reason": "new observer wrongly required O2 intrinsic sites after O0 verify; no new guest launched",
+      "status": "FAIL"
+    }
+  ],
+  "runtime_model": {
+    "claim": "finite memory model only",
+    "log": "build/managed/closure-ir-a1/runtime-test-a4.log",
+    "observations": [
+      "full64 capture/result",
+      "parent alias retain/decrement/final reclamation",
+      "real shared child box across two parent graphs",
+      "generation changes/stale rejection",
+      "cancellation independent cleanup",
+      "literal31-slot OOM with captured-root cleanup",
+      "invalid code cleanup",
+      "owned page destroy"
+    ],
+    "sha256": "fbcc0c1e23a4bb30d14dc000eace0485c9eb56df671dfb8c059929512d954cc5"
+  },
+  "schema_version": 1,
+  "scope": "Genuine ordinary unary UInt64 closures with0..4owned scalar captures; source-derived checked LLVM and separately linked isolated RV64 process. No production mathematical authority, general closures, recursion or proof-kernel claim.",
+  "status": "PASS_BOUNDED_ISOLATED_SUBSET",
+  "tools": {
+    "clang": {
+      "path": "/nix/store/c0jm2ghmasw8rljbixrhq3vw4hx2rgk8-clang-20.1.8/bin/clang-20",
+      "sha256": "e63da6f1ae63690861bab5e2981e72ead5a3a3245ce7b2853841d19646d0b23b",
+      "version": [
+        "clang version 20.1.8",
+        "Target: x86_64-unknown-linux-gnu",
+        "Thread model: posix"
+      ]
+    },
+    "dtc": {
+      "path": "/nix/store/7v9p68ylbqfcj7mapysfhff2vzwl75aw-dtc-1.8.1/bin/dtc",
+      "sha256": "77942b703e072eed3b9b490378b20feda506498ea8ae9b54dd41a26d1ded5900",
+      "version": [
+        "Version: DTC 1.8.1"
+      ]
+    },
+    "lake": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+      "sha256": "2bbf0d3a0077a8bddf11ad6987ebe930b2b3692eabe15fcd72f0aa069d6f8620",
+      "version": [
+        "Lake version 5.0.0-src (Lean version 4.34.1)"
+      ]
+    },
+    "ld.lld": {
+      "path": "/nix/store/kavf1x7bf1j36jlnybs5am32lca7gw8a-lld-20.1.8/bin/ld.lld",
+      "sha256": "e8406185c307f68d7926eaa7570920eaf2aa0c1e52126d914c3a05c6107e7f58",
+      "version": [
+        "LLD 20.1.8 (compatible with GNU linkers)"
+      ]
+    },
+    "lean": {
+      "path": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+      "sha256": "f70d0a2a69e99b5d99c0abf4310731c512489c801099111f367981f24439a863",
+      "version": [
+        "Lean (version 4.34.1, Release)"
+      ]
+    },
+    "llc": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+      "sha256": "00ef7b72f35b21cb2ddfdb66db6217120d314b36bdbed2580a330846863660ac",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "llvm-nm": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+      "sha256": "b93775666542ca37c59bae9b704e92ebbee38850715adf4ba04e2086843230e8",
+      "version": [
+        "llvm-nm, compatible with GNU nm",
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8"
+      ]
+    },
+    "llvm-objcopy": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objcopy",
+      "sha256": "1316f7fc33eb1a0e593879dfe5042d6e5a6ffe28ef45c69a5a3eb2062f0e09d1",
+      "version": [
+        "llvm-objcopy, compatible with GNU objcopy",
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8"
+      ]
+    },
+    "llvm-objdump": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-objdump",
+      "sha256": "9d688cee37fcd514374a41d659da285cd2522a30500a5faf3287460f4c69c70c",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "llvm-readelf": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+      "sha256": "5f581ba2b48160f3febaba5a05a0a145ba748b29a11a20503282e7771f3efb71",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "opt": {
+      "path": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+      "sha256": "4e691ddfbf949e5cae605f4211aa687ff10cfc59c45e04090fc7eb7771f76725",
+      "version": [
+        "LLVM (http://llvm.org/):",
+        "  LLVM version 20.1.8",
+        "  Optimized build."
+      ]
+    },
+    "qemu-system-riscv64": {
+      "path": "/nix/store/9ihv5zpj6l7fl12mdcxrbmiih3wgrmhw-qemu-11.1.1/bin/qemu-system-riscv64",
+      "sha256": "656a0a05684a478dc6295eebcd5df2e3f3e15f1e9135491d32890477430bae2d",
+      "version": [
+        "QEMU emulator version 11.1.1",
+        "Copyright (c) 2003-2026 Fabrice Bellard and the QEMU Project developers"
+      ]
+    }
+  }
+}
