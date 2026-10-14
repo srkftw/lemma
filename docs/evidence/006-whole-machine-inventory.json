@@ -688,8 +688,8 @@
     },
     {
       "path": "docs/evidence/006-browser-panel-stop-course.json",
-      "bytes": 14735,
-      "sha256": "fb7b74c9e53c3b64d1967319259afc2a146323caf46b2dbbc4d6bc6e8ee8f16b",
+      "bytes": 18626,
+      "sha256": "4ff20dc1ff54323ce6acec2e4cbb266afbf1011094d514f75bc925854215a506",
       "status": "PASS_HOST_CONTROL_AND_ACTUAL_PRIVATE_ARRAY_COURSE_SAVED_NATIVE_COLD",
       "scope": "New passive panel-stop UI over unchanged exact RTL Machine Wasm. Real old Array guest course/check/Saved in local OPFS private continuation; no browser cold acceptance or complete browser mathematics sequence, new CourseWord browser execution, full proof kernel or G5\u2013G7 claim."
     },
@@ -734,6 +734,13 @@
       "sha256": "29dc75192b13a5968d3e0c1cbab4b33f9019c4d381b1b94ee1ad957dfada2713",
       "status": "PASS_REAL_BROWSER_UI_AND_HOST_PROTOCOL",
       "scope": "Readable presentation and zero-clock opening over existing exact portable RTL Machine, auditedArray RV64, real controller output and isolated backing. No new emulator, cold result or managed checker claim."
+    },
+    {
+      "path": "build/browser/task006-capture-u64-cold-a1/verified-rational-saved41-a1/result.json",
+      "bytes": 7725,
+      "sha256": "37e194ade8bc50fa52de428d719dd50a98271c6ac56d6b705a0c2b770f762566",
+      "status": "PASS_ACTUAL_COLD_GUEST_ISOLATED_VERIFIED_SAVED41",
+      "scope": "ActualrepairedRTL/Wasm cold\u2192rawcourse/edit\u2192isolatedArray5/6 Verifiedrevision22\u2192realSaved41; nofinalnewcold/wholeproofkernel claim"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",

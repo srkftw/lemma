@@ -30,13 +30,40 @@ class NativeBundleBoundary(unittest.TestCase):
             with self.assertRaises(ValueError):bundle_configurations(bad)
 
     def test_managed_guest_override_is_exact_and_available_in_ordinary_modes(self):
+        # Course installation carries an owned package buffer and is an
+        # explicitly restricted deployment, rather than an ordinary notebook.
+        course = {'lemmasim-silicon-course-bulk-notebook',
+                  'lemmasim-silicon-course-bulk-initialize'}
         for role,configuration in [item for configurations in SOFTWARE_DEPLOYMENTS.values() for item in configurations.items()]:
+            if configuration in course:
+                continue
             for mode in ('student','developer','laboratory'):
                 self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0',role,configuration,mode),configuration)
             with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0',role,configuration,None)
             other='initializer' if role=='notebook' else 'notebook'
             with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0',other,configuration,'developer')
         with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.4.0','notebook',MANAGED_CONFIGURATIONS['notebook'],'developer')
+
+    def test_course_installer_requires_its_exact_developer_roles(self):
+        from silicon_guest_bundle import COURSE_CONFIGURATIONS
+        expected = {'notebook':'lemmasim-silicon-course-bulk-notebook',
+                    'initializer':'lemmasim-silicon-course-bulk-initialize'}
+        self.assertEqual(COURSE_CONFIGURATIONS, expected)
+        for role, configuration in expected.items():
+            for mode in ('developer', 'laboratory'):
+                self.assertEqual(development_configuration(
+                    'lemma-silicon-dev/0.3.0', role, configuration, mode), configuration)
+            for mode in ('student', None):
+                with self.assertRaises(ValueError):
+                    development_configuration('lemma-silicon-dev/0.3.0', role, configuration, mode)
+            other = 'initializer' if role == 'notebook' else 'notebook'
+            for profile, wrong_role, wrong_configuration in (
+                    ('lemma-silicon-dev/0.2.0', role, configuration),
+                    ('lemma-silicon-dev/0.4.0', role, configuration),
+                    ('lemma-silicon-dev/0.3.0', other, configuration),
+                    ('lemma-silicon-dev/0.3.0', role, configuration+'-invented')):
+                with self.assertRaises(ValueError):
+                    development_configuration(profile, wrong_role, wrong_configuration, 'developer')
 
     def test_sums_deployment_does_not_relabel_the_prior_record_runtime(self):
         manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,

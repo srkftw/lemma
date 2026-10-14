@@ -92,5 +92,35 @@
     "python3 scripts/check_browser_cold_export.py --directory build/browser/task006-capture-u64-cold-a1 --bundle build/browser/task006-capture-u64-simd-a1 --reference-medium build/task006-array-doc5-migration-a3/cold-course.raw --reference-pixels build/task006-array-doc5-migration-a3/cold-notebook.ppm --result-name new-observation.json",
     "nix-shell build/browser/task006-capture-u64-simd-a1/wasm-sources/tooling/silicon/wasm.nix --run \"node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-capture-u64-simd-a1 build/browser/task006-capture-u64-cold-a1/course-suffix-a1/prefix.chk build/browser/task006-capture-u64-cold-a1/course-suffix-a1/suffix.chk build/browser/suffix-new\""
   ],
-  "remaining": "Samecoldmachine course/check/acknowledgedSave/newcoldreopen stillinprogress; nativeC++ finitecomparison, wholearchitecturalcached-state campaign, Stringbrowserexecution, browsercompiler/installers/permissions/redistribution incomplete. OPFSsuccessqualifiescompletedworkerflush, notunconditionaleviction/physicalpowerloss."
+  "remaining": "Samecoldmachine course/check/acknowledgedSave/newcoldreopen stillinprogress; nativeC++ finitecomparison, wholearchitecturalcached-state campaign, Stringbrowserexecution, browsercompiler/installers/permissions/redistribution incomplete. OPFSsuccessqualifiescompletedworkerflush, notunconditionaleviction/physicalpowerloss.",
+  "actual_math_after_cold": {
+    "status": "PASS_ACTUAL_COLD_COURSE_EDIT_AND_ISOLATED_VERIFIED_SAVED41",
+    "course_open": {
+      "path": "build/browser/task006-capture-u64-cold-a1/course-opened-a1/result.json",
+      "bytes": 6808,
+      "sha256": "be5d58c470bf8f8a0ae8586759072f40ab47cf66c0ab4f1c1c8e45a061b5c741"
+    },
+    "edit": {
+      "path": "build/browser/task006-capture-u64-cold-a1/edited-rational-saved40-a1/result.json",
+      "bytes": 6647,
+      "sha256": "c4f71f666c8d07410a24bcd56b9898e08c8bd81d41776799f803c40d52c5fa99"
+    },
+    "check": {
+      "path": "build/browser/task006-capture-u64-cold-a1/verified-rational-saved41-a1/result.json",
+      "bytes": 7725,
+      "sha256": "37e194ade8bc50fa52de428d719dd50a98271c6ac56d6b705a0c2b770f762566"
+    },
+    "properties": [
+      "actualcold machine openscourse985250003; all3.63Mexpectedpixels andunchangedmedium",
+      "rawNext/selectD/minus makes5/6revision22 andrealSaved40",
+      "actualisolatedArray request128/status0 producesVerified1revision22, seventhimmutablehistory andrealSaved41/barrier298",
+      "allprior6histories/1hint andallotherrecordpayloadspreserved"
+    ],
+    "check_clocks": 124700000,
+    "check_completed_cycle": 1574950003,
+    "check_max_clocks": 650000000,
+    "check_original_host_seconds": 7200,
+    "scope": "Restrictedexactrationalguestchecker, nothostLeanoracle orproofkernel. Sameactual0c cold lineage withoutrestore.",
+    "remaining": "Hint/edit/Invalid/resources/review batch continues; finalnewcold/durable reload remains separate."
+  }
 }

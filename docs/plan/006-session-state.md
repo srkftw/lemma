@@ -937,8 +937,9 @@ contain exactly those three rows, and the rejected/remainder rows never enter.
 All seven browser host tests pass; bounds and partial-error/capture semantics
 are explicit. This is device admission, not guest ink execution.
 
-Fresh CI38515295625 at670325b passes its repaired foundation host step, but
-Kernel A–E fails its kernel-host step:401tests identify only the arithmetic
+CI38515295625 at670325b completedFAILURE: seven jobsPASS; Metadata, Kernel
+A–E and notebook writingFAIL before their guest acceptance. The repaired
+foundation host step passes remotely. The401-test kernel host step identifies only the arithmetic
 catalog's omitted two newly declared course names. The preserved artifact ZIP
 11872226261 has SHA70783fccff0aeb19017c26055220247e3f670a7f587e8949f20a2d3ab9765497.
 The narrow observer correction retains every historical three-image assertion,
@@ -948,5 +949,39 @@ Four catalog tests and all402 kernel host tests pass locally (10.344s). The
 existing intentional late-contradiction negative printsFAIL; its test passes and
 the complete suite exits0. Original remoteFAIL and skipped guest acceptance
 remain unqualified; the next candidate needs its own CI.
+
+Notebook writing stops in its242-test host suite because its broad managed
+deployment fixture assumes Student admission for the deliberately restricted
+course installer. Artifact11871307666 retains the exact error and ZIP
+SHAd19ee0b7a55373b5072c82b6542a9517ce5574be89190173828a42251e201e23.
+The narrow fixture correction preserves ordinary deployment checks and adds
+exact Developer/Laboratory course-role/profile/name positives and negatives;
+all10 admission tests pass. The complete pinned host suite passes255tests in
+76.049s. An initial local suite outsideNix failed for missing required compiler
+tools; that failure is retained separately. No CI job or guest acceptance is
+disabled or inferred from these host results. The skipped silicon host step and
+both skipped post-host guest requirements retain their actual status.
+
+## Browser mathematical evidence and durable learner-policy sequence
+
+The [oldArray private sequence](../evidence/006-browser-panel-stop-course.json)
+now has real Saved42–46: isolated5/6 Verifiedrevision22, authored local hint,
+edit5/7revision23 clearing current applicability, history-cap Indeterminate, and
+manual practice review override. All eight previous checks and two assistance
+events survive. Complete snapshot CRCs and actual controller glyphs show the
+resource limit, manual explanation and uncertain learner state. This oldc6
+private continuation remains distinct from its retained7200s cold failure and
+from a new durable-only reopen; it is not a live/permissioned tutor or heapOOM.
+The first label/spelling observers and missing hostPIL failure remain separate;
+only those observers changed, with no guest rerun or enlarged bounds.
+
+The [repaired0c cold machine](../evidence/006-browser-fixed-cold.json) independently
+opens its course, edits5/7→5/6 and acknowledges Saved40. Actual isolatedArray
+request128/status0 produces Verified atrevision22 and Saved41 after barrier298,
+adding the seventh immutable attempt while retaining all old history/hints and
+other documents. That check/commit executes124.7Mclocks within the original
+650M/7200s bound. This is the same actual cold lineage, without restore. The next
+prospective465M/7200s batch covers authored hint, edit and actual Invalid check;
+final resource/review/newcold and full G2/G4–G7 remain unfinished.
 
 -->
