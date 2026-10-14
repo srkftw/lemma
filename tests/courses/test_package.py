@@ -3,12 +3,15 @@ import os
 from pathlib import Path
 import struct
 import sys
+import tempfile
 import unittest
 import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from course_package import PackageError, decode
+from build_course_package import source_inputs
+from core0_common import Core0Error
 
 
 def changed(image, offset, value, *, rechecksum=True):
@@ -73,6 +76,16 @@ class PackageBoundaries(unittest.TestCase):
         struct.pack_into('<QQ', raw, 80, crc, crc ^ 0xffffffff)
         with self.assertRaisesRegex(PackageError, 'text byte'):
             decode(bytes(raw))
+
+    def test_source_archive_rejects_std_prefix_lookalikes(self):
+        for module in ('LeanFake', 'InitCourse', 'StdOverride'):
+            with self.subTest(module=module), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = root / 'tests/courses/Author.lean'
+                source.parent.mkdir(parents=True)
+                source.write_text('import ' + module + '\n')
+                with self.assertRaisesRegex(Core0Error, 'unaccounted upstream module'):
+                    source_inputs(root)
 
 
 if __name__ == '__main__':

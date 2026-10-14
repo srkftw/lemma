@@ -125,6 +125,23 @@
   ],
   "schema_version": 1,
   "source_archive": "build/courses/task006-package-qualified-a5/consumed-source-root",
+  "source_archive_admission_followup": {
+    "changed_inputs": [
+      "scripts/build_course_package.py",
+      "tests/courses/test_package.py"
+    ],
+    "host_tests": 5,
+    "negative_prefixes": [
+      "LeanFake",
+      "InitCourse",
+      "StdOverride"
+    ],
+    "path": "build/courses/task006-package-source-admission-a1/result.json",
+    "sha256": "54ba9e55a2cb4e7355dea9e709b13af3980c139cc14887b1487b83d370bbdef3",
+    "source_count": 64,
+    "status": "PASS_SOURCE_ADMISSION_ONLY",
+    "target_compiler_inputs_unchanged": true
+  },
   "source_count": 64,
   "source_inputs": "build/courses/task006-package-qualified-a5/source-inputs.json",
   "source_inputs_sha256": "c5d43d0e9c34cba2d9220d2973fa2a35ed8c51ee668db13bdd3f92d80ce6e6ce",

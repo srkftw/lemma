@@ -45,7 +45,8 @@ def source_inputs(root: Path) -> dict[str, str]:
                     if not re.fullmatch(r'Lemma(?:\.[A-Za-z0-9_]+)+', module):
                         raise Core0Error('unsupported project import syntax: ' + line)
                     pending.append(module.replace('.', '/') + '.lean')
-                elif not module.startswith(('Lean', 'Init', 'Std')):
+                elif not any(module == prefix or module.startswith(prefix + '.')
+                             for prefix in ('Lean', 'Init', 'Std')):
                     raise Core0Error('unaccounted upstream module: ' + module)
     if len(files) < 20:
         raise Core0Error('unexpectedly empty project/compiler source closure')
