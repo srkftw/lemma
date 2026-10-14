@@ -96,6 +96,31 @@ component metadata. Primitive/ISA/object/source audits remain independently
 load-bearing. The component's sole unresolved boundary is `lemma_exec_syscall`;
 no hosted Lean runtime, C runtime or undocumented target helper enters it.
 
+The optimized readonly supplement admits six exact source-owned tables only
+after all189 complete body and caller checks pass. Five three-word control-label
+tables use the unsigned column<24 and shift3 index. Three share one exact
+pointer phi selected by row0/1/2; the two others belong to row3 and the default
+row. The capture callback's ten offsets use an unsigned UInt32 index<10 before
+conversion and load. Every scalar-switch edge participates in the independent
+CFG guard check, and removing the admitted true-bound edges must make the loads
+unreachable. Exact contents, sole pointer/load uses and local readonly object
+bytes remain required. These display/offset tables grant no checking authority.
+
+The three new machine jump tables retain separate exact source and machine
+relations: glyph64 cells (14 explicit cases and50 fallback cells), configure8
+cells, and reader6 cells. The glyph fallback, every return constant, all local
+case targets and the reader cancellation94 are independently checked against
+actual source and emitted instructions. The ordinary unsigned index guard,
+local relocations, readonly extent and actual object/companion bytes remain
+required. Foreign roles, owners, table cells and source domains are rejected.
+
+The optional selected `lemma-surface-word-inline-v1` policy admits removal of
+exactly two ordinary Surface callbacks from the optimized body inventory only
+after its independent complete body/caller/access/fault-order validator passes.
+No package-owned function is removed; all189 package body and caller pins remain
+unchanged. The original817-function object and the separate selected815-body
+object retain their own source and observer identities.
+
 RAM faults retain their actual partial prefix. Staging admission failure keeps
 active inputs unchanged; a later publication-write fault can leave an invalid
 RAM wrapper or partial current copy and is not claimed to roll back. Only an
@@ -112,6 +137,8 @@ PYTHONPYCACHEPREFIX=build/courses/package-guards-cache-new \
   python3 scripts/check_package_notebook_target.py \
   --producer-dir build/courses/task006-package-production-roles-a1 \
   --component-dir build/courses/task006-notebook-package-component-a2 \
+  --producer-source-root build/courses/task006-package-production-archival-source-a1/consumed-source-root \
+  --object-dir build/courses/task006-package-notebook-object-suffix-a1 \
   --output build/courses/package-guards-new.json
 ```
 

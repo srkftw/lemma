@@ -106,7 +106,17 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers):
     rows = _rows(unit)
     names = {row['symbol']: source for source, row in rows.items()}
     bodies = _bodies(ir)
-    require(set(bodies) == set(names), 'Package Notebook LLVM/catalog owner inventory differs')
+    expected = set(names)
+    if optimized and 'surface_word_inline' in unit:
+        from surface_word_inline import validate as validate_surface_words, removed_symbols
+        require(validate_surface_words(ir, unit, optimized=True) is not None,
+                'Package Notebook lost exact Surface-word source/IR authority')
+        removed = removed_symbols(unit)
+        require(len(removed) == 2 and removed <= expected and
+                not any(names[symbol] in SIGNATURES for symbol in removed),
+                'Package Notebook Surface-word removal escaped its exact two unowned library callbacks')
+        expected -= removed
+    require(set(bodies) == expected, 'Package Notebook LLVM/catalog owner inventory differs')
     references = {name: set(re.findall(r'@([^ (]+)\(', body)) for name, body in bodies.items()}
     observed = {}
     phase = 'post' if optimized else 'pre'
@@ -136,6 +146,350 @@ def validate(ir, unit, *, optimized):
             'Package Notebook production authority not yet independently qualified')
     return _validate_bodies(ir, unit, optimized=optimized,
                             pins=PRODUCTION_PINS, callers=PRODUCTION_CALLERS)
+
+
+READONLY_SCHEMA = 'installed-package-notebook-v1'
+CONTROL_SOURCE = 'Lemma.Applications.Notebook.packageControlCharacter'
+CAPTURE_SOURCE = 'Lemma.Courses.PackageBinding.captureField'
+# Original Lean packed labels and field offsets, independently specified here.
+# None of these display/offset bytes grants checking or ownership authority.
+CONTROL_WORDS = (
+    (0x2020202b45444f4e, 0x2020202b454c4f52, 0x2020202b45474150),
+    (0x20202b544e454449, 0x2020202b54494445, 0x2020202044414f4c),
+    (0x2020454352554f53, 0x204e4f4954494445, 0x2020535448474952),
+    (0x3030304920514552, 0x3030303030452030, 0x2030304e20303030),
+    (0x3030492044414552, 0x3030303045203030, 0x2020202030303030),
+)
+CAPTURE_OFFSETS = (24, 32, 80, 0, 64, 8, 16, 24, 32, 40)
+
+
+def _readonly_cfg(body):
+    from audit_core0 import _structured_ir_blocks, _structured_successors
+    blocks = _structured_ir_blocks('\n'.join(line.split(';', 1)[0].rstrip()
+                                             for line in body.splitlines()))
+    successors = _structured_successors(blocks)
+    # The inherited helper handles branches. Include every admitted scalar
+    # switch edge before reachability; omitted edges cannot prove dominance.
+    for block, lines in blocks.items():
+        starts = [i for i, line in enumerate(lines) if line.startswith('switch ')]
+        if not starts:
+            continue
+        require(len(starts) == 1 and lines[-1] == ']', 'Package readonly switch form differs')
+        start = starts[0]
+        head = re.fullmatch(r'switch i64 %[-A-Za-z0-9_.$]+, label %([-A-Za-z0-9_.$]+) \[', lines[start])
+        cases = [re.fullmatch(r'i64 (-?\d+), label %([-A-Za-z0-9_.$]+)', line)
+                 for line in lines[start + 1:-1]]
+        require(head is not None and cases and all(cases) and
+                len({case[1] for case in cases}) == len(cases), 'Package readonly switch cases differ')
+        targets = (head[1], *(case[2] for case in cases))
+        require(all(target in blocks for target in targets), 'Package readonly switch target absent')
+        successors[block] = targets
+    return blocks, successors
+
+
+def _readonly_load(body, blocks, pointer, *, count, operand, table_pointer):
+    gep = re.findall(r'(%[-A-Za-z0-9_.$]+) = getelementptr inbounds nuw \[' + str(count) +
+                     r' x i64\], ptr ' + re.escape(table_pointer) + r', i64 0, i64 ' +
+                     re.escape(operand) + r'$', body, re.M)
+    require(gep == [pointer], 'Package readonly typed/indexed pointer differs')
+    loads = re.findall(r'(%[-A-Za-z0-9_.$]+) = load i64, ptr ' + re.escape(pointer) +
+                       r', align 8$', body, re.M)
+    require(len(loads) == 1 and len(re.findall(re.escape(pointer) + r'(?![-A-Za-z0-9_.$])', body)) == 2,
+            'Package readonly pointer escapes its unique aligned load')
+    located = [block for block, lines in blocks.items()
+               if any(line.startswith(loads[0] + ' = load ') for line in lines)]
+    require(len(located) == 1, 'Package readonly load block ambiguous')
+    return loads[0], located[0]
+
+
+def _readonly_lookup_verified(ir, unit):
+    """Structural supplement; caller must first close all189 bodies/callers.
+
+    Kept separate for independent actual-IR mutation tests, which verify the
+    table/CFG checks themselves rather than merely failing a complete-body pin.
+    Public admission always invokes validate before this function.
+    """
+    from audit_core0 import _structured_reachable
+    from audit_device import _line_functions
+    rows = _rows(unit); bodies = _bodies(ir); lines = ir.splitlines()
+    owners = _line_functions(lines); sites = set(); tables = []; removed = set()
+
+    def global_row(source, table, values, load, guard, selection):
+        expected = '@' + table + ' = private unnamed_addr constant [' + str(len(values)) + ' x i64] [' + \
+            ', '.join('i64 ' + str(value) for value in values) + '], align 8'
+        require(sum(line.strip() == expected for line in lines) == 1 and
+                len(re.findall('@' + re.escape(table) + r'(?![-A-Za-z0-9_.$])', ir)) == 2,
+                'Package readonly exact global/content/use inventory differs: ' + table)
+        symbol = rows[source]['symbol']
+        located = {i for i, line in enumerate(lines)
+                   if owners[i] == symbol and line.strip().startswith(load + ' = load ')}
+        require(len(located) == 1, 'Package readonly physical load site differs')
+        sites.update(located); removed.add(expected)
+        tables.append({'source': rows[source]['source'], 'function': symbol, 'global': table,
+                       'values': list(values), 'element_bits': 64, 'alignment_bytes': 8,
+                       'index_bound': len(values), 'guarded_loads': 1, 'readonly': True,
+                       'guard': guard, 'literal_schema': READONLY_SCHEMA, 'selection': selection})
+
+    source = CONTROL_SOURCE; symbol = rows[source]['symbol']; body = bodies[symbol]
+    blocks, successors = _readonly_cfg(body)
+    require(len(re.findall(r'%udiv11 = lshr i64 %arg1, 3$', body, re.M)) == 1 and
+            len(re.findall(r'%0 = icmp ult i64 %arg1, 24$', body, re.M)) == 1,
+            'Package label index lacks its exact unsigned24/shift3 bound')
+    branch = re.search(r'switch i64 %arg0, label %(\S+) \[\s*'
+                       r'i64 0, label %(\S+)\s*i64 1, label %(\S+)\s*'
+                       r'i64 2, label %(\S+)\s*i64 3, label %(\S+)\s*\]', body)
+    require(branch is not None, 'Package label table lacks exact row selection')
+    selected_blocks = [branch[i] for i in (2, 3, 4, 5, 1)]
+    require(len(set(selected_blocks)) == 5, 'Package label row branches alias')
+    base = 'switch.table.' + symbol
+    names = [base, base + '.4', base + '.5', base + '.6', base + '.7']
+    phi = '%' + base + '.5.sink'; joined = 'if.else.109.sink.split'
+    expected_phi = phi + ' = phi ptr ' + ', '.join('[ @' + name + ', %' + block + ' ]'
+                                                 for name, block in zip(names[:3], selected_blocks[:3]))
+    require(sum(line == expected_phi for line in blocks.get(joined, [])) == 1 and
+            len(re.findall(re.escape(phi) + r'(?![-A-Za-z0-9_.$])', body)) == 2,
+            'Package label joined pointer selection/uses differ')
+    group_load, group_block = _readonly_load(body, blocks, '%switch.gep15', count=3,
+                                            operand='%udiv11', table_pointer=phi)
+    load_specs = [(group_load, group_block)] * 3
+    for ordinal, pointer in ((3, '%switch.gep18'), (4, '%switch.gep21')):
+        load_specs.append(_readonly_load(body, blocks, pointer, count=3, operand='%udiv11',
+                                        table_pointer='@' + names[ordinal]))
+    require(len(re.findall(r' = load i64, ptr ', body)) == 3 and
+            len(re.findall(r' = getelementptr ', body)) == 3,
+            'Package label lookup acquired an additional pointer/load')
+    without = dict(successors)
+    for ordinal, block in enumerate(selected_blocks):
+        load, load_block = load_specs[ordinal]
+        require(block in successors and len(successors[block]) == 2,
+                'Package label row has no recognized two-edge bound branch')
+        expected_branch = 'br i1 %0, label %' + load_block + ', label %' + successors[block][1]
+        require(blocks[block] == [expected_branch] and
+                _structured_reachable(successors, 'entry', block) and
+                _structured_reachable(successors, successors[block][0], load_block) and
+                not _structured_reachable(successors, successors[block][1], load_block),
+                'Package label row lacks its exact guarded lookup edge')
+        without[block] = (successors[block][1],)
+        for other, other_block in enumerate(selected_blocks):
+            if other != ordinal and (ordinal >= 3 or other >= 3):
+                require(not _structured_reachable(successors, other_block, load_block),
+                        'Package label table reachable from another source row')
+        global_row(source, names[ordinal], CONTROL_WORDS[ordinal], load, block,
+                   {'row': ordinal, 'row_argument': 0, 'column_argument': 1,
+                    'unsigned_column_bound': 24, 'index_shift': 3,
+                    'joined_rows': [0, 1, 2] if ordinal < 3 else []})
+    require(all(not _structured_reachable(without, 'entry', block) for _, block in load_specs),
+            'Package label lookup has an unguarded CFG route')
+
+    source = CAPTURE_SOURCE; symbol = rows[source]['symbol']; body = bodies[symbol]
+    blocks, successors = _readonly_cfg(body); base = 'switch.table.' + symbol
+    require(len(re.findall(r'%0 = icmp ult i32 %arg0, 10$', body, re.M)) == 1 and
+            len(re.findall(r'%1 = zext nneg i32 %arg0 to i64$', body, re.M)) == 1,
+            'Package capture field lookup lacks its exact unsigned10/index conversion')
+    load, block = _readonly_load(body, blocks, '%switch.gep', count=10, operand='%1',
+                                table_pointer='@' + base)
+    require(blocks['entry'][-1] == 'br i1 %0, label %' + block + ', label %if.else.34' and
+            len(re.findall(r' = load i64, ptr ', body)) == 1 and
+            len(re.findall(r' = getelementptr ', body)) == 1,
+            'Package capture field lacks exact sole bounded lookup')
+    without = dict(successors); without['entry'] = ('if.else.34',)
+    require(_structured_reachable(successors, 'entry', block) and
+            not _structured_reachable(without, 'entry', block),
+            'Package capture field lookup has an unguarded CFG route')
+    global_row(source, base, CAPTURE_OFFSETS, load, 'entry',
+               {'index_argument': 0, 'unsigned_bound': 10, 'package_indices': [0, 1, 2],
+                'entry_indices': list(range(3, 10))})
+    require(len(sites) == 4 and len(tables) == 6 and len(removed) == 6,
+            'Package readonly complete physical/table inventory differs')
+    return sites, tables, removed
+
+
+def readonly_lookup(ir, unit):
+    """Exact selected optimized Package User2 readonly supplement only."""
+    if contract(unit) is None:
+        return set(), [], set()
+    validate(ir, unit, optimized=True)
+    return _readonly_lookup_verified(ir, unit)
+
+
+NOTEBOOK_JUMPS = {
+    'Lemma.Courses.PackageRender.glyph': (64, [32, 33, 34, 39, 44, 46, 58, 59, 60, 62, 63, 74, 90, 95]),
+    'Lemma.Applications.Notebook.packageConfigureStep': (8, list(range(8))),
+    'Lemma.Courses.PackageReader.step': (6, list(range(6))),
+}
+GLYPH_RETURNS = {32: 0, 74: 0x124e, 90: 0x72a7, 46: 2, 44: 20, 58: 0x410,
+                 59: 0x414, 39: 0x2400, 34: 0x5a00, 33: 0x2482, 63: 0x7282,
+                 95: 7, 60: 0x1541, 62: 0x4454}
+JUMP_MACHINE_PINS = {
+    'Lemma.Courses.PackageRender.glyph': 'a49da89f4de67e5e31ab6f3be4b8a0ebdfdb3b922689dd1b98d1a27c86240287',
+    'Lemma.Applications.Notebook.packageConfigureStep': '37ee0c74fa7af4807e8197ec27abdfb5da349531bc800a624aaef0ee35e788f0',
+    'Lemma.Courses.PackageReader.step': '9cd9968e4ebe7e974a335e10b4381172514def67d8957b8a2aecd73b6185bdce',
+}
+
+
+def notebook_jump_spec(ir, unit, source, symbol):
+    if source not in NOTEBOOK_JUMPS:
+        return None
+    require(validate(ir, unit, optimized=True) is not None,
+            'Package backend table escaped the exact selected189-body authority')
+    row = _rows(unit).get(source)
+    require(row is not None and row['symbol'] == symbol,
+            'Package backend table does not have its exact source symbol')
+    count, cases = NOTEBOOK_JUMPS[source]
+    body = _bodies(ir)[symbol]
+    domains = [sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label', block))
+               for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]', body, re.S)]
+    require(domains == [cases], 'Package backend exact source switch domain differs')
+    args, effects = SIGNATURES[source]
+    require(row['args'] == args and row['effects'] == effects,
+            'Package backend source signature/effects differ')
+    return ('user', count, args, effects, cases)
+
+
+def _normalized_jump_code(code, labels, table, names):
+    normalized = []
+    for operation, arguments in code:
+        words = []
+        for argument in arguments:
+            if argument in labels:
+                words.append('@' + str(labels[argument]))
+            elif argument == '%pcrel_hi(' + table + ')':
+                words.append('%TABLE')
+            elif re.fullmatch(r'%pcrel_lo\(\.Lpcrel_hi\d+\)', argument):
+                low = argument[len('%pcrel_lo('):-1]
+                require(low in labels, 'Package backend low relocation label absent')
+                words.append('%LOW' + str(labels[low]))
+            elif argument in names:
+                words.append('@' + names[argument])
+            else:
+                words.append(argument)
+        normalized.append((operation, words))
+    return normalized
+
+
+def _constant_glyph_return(code, start):
+    # Audit only the closed constant-construction instruction shapes emitted
+    # by pinned LLVM. This is not a guest interpreter or a target runtime.
+    value = 0  # the exact dispatch preloads a0=0 for the blank glyph.
+    for operation, arguments in code[start:start + 4]:
+        if operation == 'ret' and arguments == []:
+            return value
+        if operation == 'li' and arguments[0] == 'a0' and len(arguments) == 2:
+            value = int(arguments[1])
+        elif operation == 'lui' and arguments[0] == 'a0' and len(arguments) == 2:
+            value = int(arguments[1]) << 12
+        elif operation == 'addiw' and arguments[:2] == ['a0', 'a0'] and len(arguments) == 3:
+            value = (value + int(arguments[2])) & 0xffffffff
+            if value & 0x80000000:
+                value -= 1 << 32
+        elif operation == 'slli' and arguments[:2] == ['a0', 'a0'] and len(arguments) == 3:
+            value <<= int(arguments[2])
+        else:
+            raise Core0Error('Package glyph cell does not reach an admitted constant return')
+    raise Core0Error('Package glyph constant cell lacks its bounded return')
+
+
+def validate_jump_relation(ir, unit, assembly, symbol, table, targets, code, labels):
+    """Close all64/8/6 actual machine cells against their exact source roles.
+
+    The ordinary caller also checks object/companion bytes, every relocation,
+    local owner extent and unsigned dispatch path. No other table is admitted.
+    """
+    rows = _rows(unit); names = {row['symbol']: source for source, row in rows.items()}
+    source = names.get(symbol)
+    spec = notebook_jump_spec(ir, unit, source, symbol)
+    if spec is None:
+        return None
+    from audit_kernel import _jump_assembly_function
+    actual_code, actual_labels = _jump_assembly_function(assembly, symbol)
+    require(code == actual_code and labels == actual_labels,
+            'Package backend relation was supplied foreign machine instructions/labels')
+    declarations = re.findall(r'(?m)^' + re.escape(table) + r':\n((?:\s*\.quad\s+\.LBB\d+_\d+\s*\n)+)', assembly)
+    require(len(declarations) == 1 and
+            re.findall(r'\.quad\s+(\.LBB\d+_\d+)', declarations[0]) == targets,
+            'Package backend relation differs from the actual declared table cells')
+    count, cases = NOTEBOOK_JUMPS[source]
+    require(len(targets) == count and all(target in labels for target in targets),
+            'Package backend table cell count/local target differs')
+    normalized = _normalized_jump_code(code, labels, table, names)
+    digest = hashlib.sha256(repr(normalized).encode()).hexdigest()
+    require(digest == JUMP_MACHINE_PINS[source],
+            'Package complete actual machine owner/guard/calls differ: ' + source)
+    body = _bodies(ir)[symbol]
+    if source.endswith('.glyph'):
+        switch = re.search(r'switch i64 %if.result4, label %([^ ]+) \[([^]]+)\]', body, re.S)
+        require(switch is not None, 'Package glyph exact source selector absent')
+        source_targets = {int(value): block for value, block in
+                          re.findall(r'i64 (-?\d+), label %([^\s]+)', switch[2])}
+        require(set(source_targets) == set(GLYPH_RETURNS), 'Package glyph source case inventory differs')
+        # Source-selected constants are checked independently of the whole
+        # body pin; 32 reaches the phi directly from entry.
+        for character, value in GLYPH_RETURNS.items():
+            incoming = 'entry' if character == 32 else source_targets[character]
+            require(len(re.findall(r'\[ ' + str(value) + ', %' + re.escape(incoming) + r' \]', body)) == 1,
+                    'Package glyph source return constant differs')
+        cells = []
+        for index, target in enumerate(targets):
+            character = index + 32; at = labels[target]
+            if character in GLYPH_RETURNS:
+                require(_constant_glyph_return(code, at) == GLYPH_RETURNS[character],
+                        'Package glyph actual cell returns another source constant')
+                cells.append({'character': character, 'value': GLYPH_RETURNS[character], 'target': at})
+            else:
+                require(at == 49, 'Package glyph hole does not reach the exact Surface-letter/missing-box fallback')
+                cells.append({'character': character, 'fallback': True, 'target': at})
+        require(code[13] == ('li', ['a0', '0']) and
+                normalized[49:] == [('addi', ['sp', 'sp', '-16']), ('sd', ['ra', '8(sp)']),
+                    ('mv', ['a0', 'a1']), ('call', ['@Lemma.Ink.Surface.letter']),
+                    ('ld', ['ra', '8(sp)']), ('addi', ['sp', 'sp', '16']),
+                    ('bnez', ['a0', '@32']), ('lui', ['a0', '8']),
+                    ('addiw', ['a0', 'a0', '-1169']), ('ret', [])],
+                'Package glyph actual default/blank/missing-box semantics differ')
+        return {'schema': 'lemma-package-backend-cells/1', 'source': source,
+                'all_cells': cells, 'holes': [i for i in range(32, 96) if i not in GLYPH_RETURNS],
+                'lowercase_ascii': [97, 122], 'lowercase_shift': -32,
+                'fallback': {'source': 'Lemma.Ink.Surface.letter', 'missing_box': 31599},
+                'machine_sha256': digest}
+    if source.endswith('.packageConfigureStep'):
+        expected = [30, 9, 15, 18, 12, 22, 24, 20]
+        require([labels[target] for target in targets] == expected,
+                'Package configure actual cell/source-field mapping differs')
+        source_values = [('%arg3', 'entry'), ('3392000', 'if.then.3'), ('3391744', 'if.then.6'),
+                         ('%arg4', 'if.merge.5'), ('%bin11', 'if.then.12'),
+                         ('%lshr14', 'if.then.15'), ('3350528', 'if.then.18'), ('32768', 'if.merge.14')]
+        require(all(len(re.findall(r'\[ ' + re.escape(value) + ', %' + re.escape(block) + r' \]', body)) == 1
+                    for value, block in source_values) and
+                '%bin11 = and i64 %arg5, 65535' in body and '%lshr14 = lshr i64 %arg5, 16' in body,
+                'Package configure source-field/identity slicing differs')
+        require('[ %arg6, %execution.mem.0.lookup.1.i ]' in body,
+                'Package configure ninth request-ID field/default differs')
+        return {'schema': 'lemma-package-backend-cells/1', 'source': source,
+                'all_targets': expected, 'fields': ['Store endpoint', 'owned outgoing+512',
+                    'owned incoming+256', 'Store namespace', 'identity low16', 'edition after shift16',
+                    'private package buffer', 'package resource32768'],
+                'ninth_default_field': 'first request ID; checked write preserved', 'machine_sha256': digest}
+    require([labels[target] for target in targets] == [34, 31, 27, 27, 37, 11],
+            'Package reader actual state/call mapping differs')
+    field = rows['Lemma.Courses.PackageReader.field']['symbol']
+    for state, source_target, callee, arguments in (
+            (0, 'action.if.then.6', rows['Lemma.Courses.PackageReader.beginPiece']['symbol'], 'i64 %arg0'),
+            (1, 'action.if.then.9', rows['Lemma.Courses.PackageReader.pollPiece']['symbol'], 'i64 %arg0'),
+            (2, 'action.if.then.12', field, 'i64 %arg0, i64 96'),
+            (3, 'action.if.then.15', field, 'i64 %arg0, i64 96'),
+            (4, 'action.if.then.18', field, 'i64 %arg0, i64 120')):
+        require('i64 ' + str(state) + ', label %' + source_target in body,
+                'Package reader source state edge differs')
+        block = _readonly_cfg(body)[0][source_target]
+        require(sum(' @' + callee + '(' + arguments + ')' in line for line in block) == 1,
+                'Package reader source state invokes another operation')
+    require('i64 5, label %action.if.merge.2' in body and
+            '[ 94, %action.if.then.3 ]' in body and '[ 240, %action.if.else.25 ]' in body,
+            'Package reader complete/error source states differ')
+    return {'schema': 'lemma-package-backend-cells/1', 'source': source,
+            'all_targets': [34, 31, 27, 27, 37, 11],
+            'states': ['begin real READ', 'poll real READ', 'return observed bytes',
+                       'return observed bytes', 'return actual error', 'canceled94'],
+            'other_state_error': 240, 'machine_sha256': digest}
 
 
 # All constants below derive from the original actual selected production

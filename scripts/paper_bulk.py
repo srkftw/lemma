@@ -8,6 +8,7 @@ compiler correctness or establish actual notebook execution/performance.
 import hashlib
 from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_CONFIGURATIONS
 import re
 from core0_common import Core0Error
 CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
@@ -78,7 +79,9 @@ def validate(ir,unit,*,optimized):
    special='ModernBulk' in source or 'ProductBulk' in source or 'USBBulk' in source
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
-  if unit['configuration'] in CLOSURE_CONFIGURATIONS:
+  if unit['configuration'] in PACKAGE_CONFIGURATIONS:
+   selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea'
+  elif unit['configuration'] in CLOSURE_CONFIGURATIONS:
    selected['Lemma.Applications.Notebook.mainClosureBulk']='435236b7dba59e7ff115a510fce38c4157b1e8c120e07695bacfa937b9cabf82'
   for source in list(selected):
    if source.endswith('.mainArrayBulk') and unit['configuration'] not in ARRAY or source.endswith('.mainBytesBulk') and unit['configuration'] not in BYTES or source.endswith('.mainSumsBulk') and unit['configuration'] in BYTES | ARRAY | frozenset(CLOSURE_CONFIGURATIONS):del selected[source]

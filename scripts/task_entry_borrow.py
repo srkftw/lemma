@@ -17,6 +17,27 @@ CONFIGURATIONS={'lemmasim-silicon-closure-entry2-bulk-notebook':'Lemma.Platform.
 BOOT_SIGNATURES={'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state']), 'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2': (['u64', 'u64', 'u64', 'u64'], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge']), 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge']), 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2InitializeMedium': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge'])}
 BOOT_PINS={'pre': {'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2': '1b662c233aa336337d7625e7da1d2ed78e2d69b8353574e005ad020cc4f619bb', 'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2': '2eac08fff51e17065ddb1afe6ea2e99ab8eb7c8137f9cf2ded0cf6b7b70b9373', 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot': '73253f81650747eb8e104e4619f654d6f8b4540a23ab606a1cf43f71b3edf3b2', 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2InitializeMedium': '8e9f658fb1425f44871b9e53082203fa732a1aab384cef10e3fbe7ac05f4880d'}, 'post': {'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2': '11f44a257e3d88c586bd2973397d482f5f79823a39ba7665e0e104087d47a5ad', 'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2': '5249284d45bcb46fe54257a5fbfa17f2110a0f6186c65bb215b9c25c9add61e7', 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot': '80f45ce263a79a1cf1131dfc9f574585e0dc9c53c09caff9b3eeb8c64b689fad', 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2InitializeMedium': '78a33395d2799d2da08e33357929dbc8adf98e1f093ab4d2b722fd3a11e56aa5'}}
 BOOT_FAMILY=set(BOOT_SIGNATURES)
+from package_closure_deployment import (CONFIGURATIONS as PACKAGE_CONFIGURATIONS,
+ SOFTWARE_DEPLOYMENT as PACKAGE_SOFTWARE_DEPLOYMENT, BOOT_ROOTS as PACKAGE_BOOT_ROOTS)
+CONFIGURATIONS.update({c:'Lemma.Platform.LemmaSim.NotebookKernel.'+root for c,root in PACKAGE_BOOT_ROOTS.items()})
+PACKAGE_BOOT='Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2'
+PACKAGE_SIGNATURES={PACKAGE_BOOT:BOOT_SIGNATURES['Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2'],
+ **{CONFIGURATIONS[c]:BOOT_SIGNATURES['Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot'] for c in PACKAGE_CONFIGURATIONS}}
+BOOT_SIGNATURES.update(PACKAGE_SIGNATURES)
+BOOT_FAMILY.update(PACKAGE_SIGNATURES)
+# Separately inspected genuine selected normal/initializer Kernel4 exports.
+# Both roles retain the19 original entry bodies and the exact power loop;
+# their new boot invokes constructCourse with unchanged checked operands.
+PACKAGE_BOOT_PINS={
+ 'pre':{PACKAGE_BOOT:'e80cb1a1e9ace7819254201cac7d2ea7cbbc8b1fbb98cfee498e74d973ca599d',
+  'Lemma.Platform.LemmaSim.NotebookKernel.siliconPackageClosureEntry2Boot':'07dd441f69c7c58c2cc6896040bfc1b28c84b39e355c10507e928a1c4bec445c',
+  'Lemma.Platform.LemmaSim.NotebookKernel.siliconPackageClosureEntry2InitializeMedium':'71510a49ba5878be2e0e5bb5f639ae24f8b58a37d2e6a3b5075c253c79299932'},
+ 'post':{PACKAGE_BOOT:'b290c168de9d3c49efc2a05a5ae18d8c507e0b96d0115d9587483cd74e7af59a',
+  'Lemma.Platform.LemmaSim.NotebookKernel.siliconPackageClosureEntry2Boot':'aba981d00fe617fc91b648e63de4e3cb28eddc5cbf2a17fc55b7906f16a22622',
+  'Lemma.Platform.LemmaSim.NotebookKernel.siliconPackageClosureEntry2InitializeMedium':'318c94308281be376c69585bb2cd1ec56328a0d0970e9bf7f56add9e5f2bcb1b'}}
+
+def boot_source(configuration):
+ return PACKAGE_BOOT if configuration in PACKAGE_CONFIGURATIONS else 'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2'
 
 def require(ok,message):
  if not ok:raise Core0Error(message)
@@ -112,7 +133,8 @@ def validate_if_present(ir,unit,*,optimized):
          unit.get('managed_policy')=='lemma-notebook-arithmetic-v1' and unit.get('artifact_category')=='development-kernel-unit',
          'Entry2 exact selected configuration/profile/metadata authority differs')
  from closure_deployment import ENTRY2_SOFTWARE_DEPLOYMENT
- require(unit.get('software_deployment')==ENTRY2_SOFTWARE_DEPLOYMENT,
+ deployment=PACKAGE_SOFTWARE_DEPLOYMENT if unit.get('configuration') in PACKAGE_CONFIGURATIONS else ENTRY2_SOFTWARE_DEPLOYMENT
+ require(unit.get('software_deployment')==deployment,
          'Entry2 exact software/hardware/user profile tuple differs')
  require([(canonical(x['source']),x['id'],x['args']) for x in unit.get('roots',[])]==
          [(CONFIGURATIONS[unit['configuration']],1,[]),('Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk',2,['u64']*3)],
@@ -127,7 +149,7 @@ def validate_boot_operations(ir,unit):
  from audit_kernel import _ir_definition_body,_local_call_arguments
  rows={canonical(row['source']):row for row in unit['functions']}
  root=CONFIGURATIONS[unit['configuration']]
- boot='Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2'
+ boot=boot_source(unit['configuration'])
  power='Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2'
  step=FAMILY[3]
  needed={root,boot,power,step}
@@ -139,6 +161,10 @@ def validate_boot_operations(ir,unit):
          'Entry2 exact initialization/isolation/hardware/arithmetic root operands differ')
  require(calls(power,step)==[''] and calls(boot,power)==[''],
          'Entry2 actual scheduler/power loop operand/count differs')
+ if unit['configuration'] in PACKAGE_CONFIGURATIONS:
+  constructor='Lemma.Platform.LemmaSim.NotebookKernel.constructCourse'
+  require(constructor in rows and calls(boot,constructor)==['i64 %arg0, i64 %arg1, i64 %arg2, i64 %arg3'],
+          'Package Entry2 four-role construction operands/count differ')
  return {'initialization':mode,'isolation':0,'binding':3,'arithmetic_mode':0,
          'typed_entry':'single privately checked Task/Scheduler Action','no_cross_syscall_cache':True}
 
@@ -148,7 +174,8 @@ def validate_boot(ir,unit,*,optimized):
  entries=unit['functions'];rows={canonical(row['source']):row for row in entries}
  require(len(rows)==len(entries),'Entry2 selected duplicate source inventory')
  root=CONFIGURATIONS[unit['configuration']]
- common={'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2',
+ selected_boot=boot_source(unit['configuration'])
+ common={selected_boot,
          'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2'}
  expected=common|{root}
  require(BOOT_FAMILY & set(rows)==expected,'Entry2 selected boot family missing/foreign sibling')
@@ -161,11 +188,12 @@ def validate_boot(ir,unit,*,optimized):
   require(row['args']==arguments and row['effects']==effects,'Entry2 exact boot signature/effects differ')
   body=_ir_definition_body(ir,row['symbol']);require(body is not None,'Entry2 actual selected boot body absent')
   digest=hashlib.sha256(normalized_body(body,names).encode()).hexdigest()
-  require(digest==BOOT_PINS[phase][source],'Entry2 complete selected boot body differs: '+source+'/'+phase)
+  pins=PACKAGE_BOOT_PINS[phase] if source in PACKAGE_SIGNATURES else BOOT_PINS[phase]
+  require(digest==pins.get(source),'Entry2 complete selected boot body differs: '+source+'/'+phase)
   observed[source]=digest
  callers={FAMILY[3]:{'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2'},
-          'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2':{'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2'},
-          'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2':{root},root:set()}
+          'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2':{selected_boot},
+          selected_boot:{root},root:set()}
  actual={target:set() for target in callers}
  for source,row in rows.items():
   body=_ir_definition_body(ir,row['symbol']);require(body is not None,'Entry2 selected actual caller body absent')

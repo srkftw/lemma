@@ -12,7 +12,8 @@ from pathlib import Path
 from lemmasim_session import request,bounded
 from course_deployment import CONFIGURATIONS as LEGACY_CONFIGURATIONS
 from course_await_deployment import CONFIGURATIONS as AWAIT_CONFIGURATIONS
-CONFIGURATIONS=LEGACY_CONFIGURATIONS+AWAIT_CONFIGURATIONS
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_CONFIGURATIONS
+CONFIGURATIONS=LEGACY_CONFIGURATIONS+AWAIT_CONFIGURATIONS+PACKAGE_CONFIGURATIONS
 MAGIC=0x31504b43414d454c
 
 def frame(operation,identity,edition,count,transaction,crc):

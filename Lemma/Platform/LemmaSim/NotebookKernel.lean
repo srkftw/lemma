@@ -1357,4 +1357,29 @@ private def bootSelectedEntryV2 (initialization isolation binding arithmeticMode
 def siliconClosureEntry2Boot : Action := bootSelectedEntryV2 0 0 3 0
 def siliconClosureEntry2InitializeMedium : Action := bootSelectedEntryV2 1 0 3 0
 
+/-- The package/closure notebook keeps the existing four-role constructor and
+installer capability grants. Only the new software roots select the checked
+entry-context borrow; historical course boot loops remain unchanged. -/
+private def bootCourseSelectedEntryV2 (initialization isolation binding arithmeticMode : UInt64) : Action :=
+  .bind Lemma.Platform.LemmaVM.ConsoleDevice.initialize14 fun s _ => if s = 0 then
+  .bind BootInfo.validate fun status value =>
+  .bind (observedStage 1 status value) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Descriptor.validateSiliconPower else if binding = 1 then Descriptor.validateSilicon else if binding = 2 then Descriptor.validateSiliconFull else Descriptor.validate) fun status value =>
+  .bind (observedStage 2 status value) fun s _ => if s = 0 then
+  .bind (if binding = 0 then Lemma.Platform.LemmaSim.MachineServices.validate else Lemma.Platform.LemmaSim.MachineServices.validateSilicon) fun status value =>
+  .bind (observedStage 3 status value) fun s _ => if s = 0 then
+  .bind Frames.init fun s _ => if s = 0 then
+  .bind Lemma.Drivers.VirtIOBlock.initialize fun s capacity => if s = 0 then
+  .bind Lemma.Drivers.Paper.initialize fun s geometry => if s = 0 then
+  .bind Lemma.Drivers.Pen.initialize fun s epoch => if s = 0 then
+  .bind (Lemma.Kernel.Console.record 0x405 capacity geometry epoch 0) fun s _ => if s = 0 then
+  .bind (if binding = 3 then Lemma.Drivers.PLIC.initializePower else Lemma.Drivers.PLIC.initialize) fun s _ => if s = 0 then
+  .bind (constructCourse initialization isolation binding arithmeticMode) fun s _ => if s = 0 then
+    if binding = 3 then .loop powerStepEntryV2 else .loop step else .done s 0
+  else .done s 0 else fatal else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+def siliconPackageClosureEntry2Boot : Action := bootCourseSelectedEntryV2 0 0 3 0
+def siliconPackageClosureEntry2InitializeMedium : Action := bootCourseSelectedEntryV2 1 0 3 0
+
 end Lemma.Platform.LemmaSim.NotebookKernel

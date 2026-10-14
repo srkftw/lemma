@@ -115,6 +115,8 @@ def _headers(ir):
 
 def validate(ir,unit,*,optimized):
  c=catalog(unit);headers=_headers(ir)
+ from surface_word_inline import validate as validate_surface_word_inline
+ surface_inline=validate_surface_word_inline(ir,unit,optimized=optimized)
  if optimized:
   groups={m[1]:m[2] for m in re.finditer(r'^attributes #(\d+) = \{([^\n]*)\}$',ir,re.M)}
   actual=set()
@@ -176,8 +178,11 @@ def validate(ir,unit,*,optimized):
  # Functions outside the two precisely selected sets retain their exact original
  # external inspectable call boundaries, including every ownership/policy Action.
  for sym,header in headers.items():
-  if sym not in expected:require(' nounwind noinline "disable-tail-calls"="true" {' in header,
-   'noneligible policy/body acquired changed call-boundary attributes')
+  if sym not in expected:
+   if surface_inline is not None and sym in surface_inline['headers']:
+    require(header==surface_inline['headers'][sym], 'catalogued Surface callback internal header differs')
+   else:require(' nounwind noinline "disable-tail-calls"="true" {' in header,
+    'noneligible policy/body acquired changed call-boundary attributes')
  result={'contracts':[LITERAL,WRAPPER],'literal_functions':len(c['literals']),
   'physical_wrappers':len(c['wrappers']),'complete_physical_preimages':PHYSICAL_PREIMAGE}
  if 'user_wrappers' in c:result.update(user_word_wrappers=len(c['user_wrappers']),user_word_contract=USER_WRAPPER)

@@ -83,7 +83,10 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isClosureEntry2NotebookConfiguration configuration then
+  | "kernel" => if isPackageClosureNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isClosureEntry2NotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" then "siliconClosureEntry2Boot" else "siliconClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isClosureNotebookConfiguration configuration then
@@ -296,7 +299,7 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if isCourseAwaitNotebookConfiguration configuration then
+  if isCourseAwaitNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration then
     let executable := serviceExecutableSource source ||
       source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait."
     if !executable then true else
@@ -371,6 +374,74 @@ private def closedInlineFor (configuration : String) : Bool :=
     "lemmasim-silicon-power-arithmetic-oom-development",
     "lemmasim-silicon-power-arithmetic-fault-development",
     "lemmasim-silicon-power-arithmetic-stall-development"].contains configuration
+
+
+private def surfaceWordInlineSelected (configuration role : String) (image? : Option UserImageSpec) : Bool :=
+  #["lemmasim-silicon-package-closure-entry2-bulk-notebook",
+    "lemmasim-silicon-package-closure-entry2-bulk-initialize"].contains configuration &&
+    role == "user" && image?.any (·.key == "notebook")
+
+/-- Closed existing callback inlining. These are actual source-derived checked
+body preimages, not constructed compiler programs or target implementation strings.
+The two complete caller trees keep64 ordered iterations and their fault exits. -/
+private def surfaceWordInlineSources (configuration role : String) (suite : CheckedActionSuite)
+    (image? : Option UserImageSpec) : Except String (Array Name) := do
+  if !surfaceWordInlineSelected configuration role image? then return #[]
+  unless suite.contractVersion == Profile.user_v0_2.contractVersion do
+    throw "Surface-word inlining escaped Package Notebook User2"
+  let expected : Array (String × String) := #[
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep", "(action.bind (action.call _private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.gatherWord [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.framebuffer u64 []) (bin mul u64 (bin add u64 (bin lshr u64 (var 4 u64) (lit u64 16)) (bin udiv u64 (cast zext u32 u64 (var 0 u32)) (lit u64 2))) (var 3 u64))) (bin udiv u64 (bin and u64 (var 4 u64) (lit u64 65535)) (lit u64 2))) (bin mul u64 (bin urem u64 (cast zext u32 u64 (var 0 u32)) (lit u64 2)) (lit u64 8)))]) (status %10) (value %11) (action.ite (cmp eq u8 (var 10 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (call Lemma.Ink.Surface.tile u64 []) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8))) (var 11 u64)]) (status %12) (value %13) (action.done (var 12 u8) (var 2 u64))) (action.done (var 10 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord", "(action.bind (action.call Lemma.User.Memory.read64 [(bin add u64 (call Lemma.Ink.Surface.tile u64 []) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8)))]) (status %7) (value %8) (action.ite (cmp eq u8 (var 7 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (var 3 u64) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 8))) (var 8 u64)]) (status %9) (value %10) (action.done (var 9 u8) (var 2 u64))) (action.done (var 7 u8) (lit u64 0))))"),
+    ("Lemma.Ink.Surface.loadTile", "(action.ite (cmp eq bool (call _private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.fullPackedTile bool [(var 0 u64) (var 1 u64) (var 2 u64) (var 3 u64)]) (bool true)) (action.bounded-fold-u64 budget=64 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep count=(lit u32 64) initial=(lit u64 0) ctx=[(bin udiv u64 (bin add u64 (var 2 u64) (lit u64 1)) (lit u64 2)) (bin or u64 (var 0 u64) (bin shl u64 (var 1 u64) (lit u64 16))) (lit u64 0) (lit u64 0)] (status %4) (value %5) (action.done (var 4 u8) (lit u64 0))) (action.bounded-fold-u64 budget=512 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadStep count=(lit u32 512) initial=(lit u64 0) ctx=[(bin or u64 (var 2 u64) (bin shl u64 (var 3 u64) (lit u64 16))) (bin or u64 (var 0 u64) (bin shl u64 (var 1 u64) (lit u64 16))) (lit u64 0) (lit u64 0)] (status %6) (value %7) (action.done (var 6 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep", "(action.bind (action.call Lemma.Ink.Surface.loadTile [(bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)) (bin and u64 (var 3 u64) (lit u64 65535)) (bin lshr u64 (var 3 u64) (lit u64 16))]) (status %17) (value %18) (action.ite (cmp eq u8 (var 17 u8) (lit u8 0)) (action.bind (action.ite (cmp eq u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32)) (action.done (lit u8 0) (lit u64 0)) (action.bounded-fold-u64 budget=512 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.compactStep count=(cast trunc u64 u32 (bin mul u64 (bin udiv u64 (bin add u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 1)) (lit u64 2)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))))) initial=(lit u64 0) ctx=[(bin udiv u64 (bin add u64 (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 1)) (lit u64 2)) (lit u64 0) (lit u64 0) (lit u64 0)] (status %19) (value %20) (action.done (var 19 u8) (lit u64 0)))) (status %21) (value %22) (action.ite (cmp eq u8 (var 21 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))]) (status %23) (value %24) (action.ite (cmp eq u8 (var 23 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 8)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))]) (status %25) (value %26) (action.ite (cmp eq u8 (var 25 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 16)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin and u64 (var 3 u64) (lit u64 65535)) (bin mul u64 (bin urem u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))))]) (status %27) (value %28) (action.ite (cmp eq u8 (var 27 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.write64 [(bin add u64 (bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 32)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 32))) (lit u64 24)) (ite u64 (cmp ult u64 (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32)))) (lit u64 32) (bin sub u64 (bin lshr u64 (var 3 u64) (lit u64 16)) (bin mul u64 (bin udiv u64 (bin add u64 (var 4 u64) (cast zext u32 u64 (var 0 u32))) (bin udiv u64 (bin add u64 (bin and u64 (var 3 u64) (lit u64 65535)) (lit u64 31)) (lit u64 32))) (lit u64 32))))]) (status %29) (value %30) (action.ite (cmp eq u8 (var 29 u8) (lit u8 0)) (action.bounded-fold-u64 budget=64 callback=_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord count=(lit u32 64) initial=(lit u64 0) ctx=[(bin add u64 (bin add u64 (call Lemma.Ink.Surface.bulkPacket u64 []) (lit u64 256)) (bin mul u64 (cast zext u32 u64 (var 0 u32)) (lit u64 512))) (lit u64 0) (lit u64 0) (lit u64 0)] (status %31) (value %32) (action.done (var 31 u8) (bin add u64 (var 2 u64) (lit u64 1)))) (action.done (var 29 u8) (lit u64 0)))) (action.done (var 27 u8) (lit u64 0)))) (action.done (var 25 u8) (lit u64 0)))) (action.done (var 23 u8) (lit u64 0)))) (action.done (var 21 u8) (lit u64 0)))) (action.done (var 17 u8) (lit u64 0))))"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.gatherWord", "(action.ite (cmp eq u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 0)) (action.call Lemma.User.Memory.read64 [(var 0 u64)]) (action.bind (action.call Lemma.User.Memory.read64 [(bin sub u64 (var 0 u64) (bin urem u64 (var 0 u64) (lit u64 8)))]) (status %4) (value %5) (action.ite (cmp eq u8 (var 4 u8) (lit u8 0)) (action.bind (action.call Lemma.User.Memory.read64 [(bin add u64 (bin sub u64 (var 0 u64) (bin urem u64 (var 0 u64) (lit u64 8))) (lit u64 8))]) (status %6) (value %7) (action.ite (cmp eq u8 (var 6 u8) (lit u8 0)) (action.done (lit u8 0) (bin or u64 (bin lshr u64 (var 5 u64) (bin mul u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 8))) (bin shl u64 (var 7 u64) (bin sub u64 (lit u64 64) (bin mul u64 (bin urem u64 (var 0 u64) (lit u64 8)) (lit u64 8)))))) (action.done (var 6 u8) (lit u64 0)))) (action.done (var 4 u8) (lit u64 0)))))")
+  ]
+  for (source, body) in expected do
+    let some function := suite.actionFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word inlining source missing"
+    unless function.body.renderNormalized == body do
+      throw s!"Surface-word inlining checked source body differs: {source}"
+  for (source, value) in #[
+      ("Lemma.Ink.Surface.framebuffer", "(lit u64 1114112)"),
+      ("Lemma.Ink.Surface.tile", "(lit u64 132352)"),
+      ("Lemma.Ink.Surface.bulkPacket", "(lit u64 1089536)")] do
+    let some function := suite.scalarFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word scalar source absent"
+    unless function.signature.args.isEmpty && function.signature.result == .u64 &&
+        function.body.renderNormalized == value do
+      throw "Surface-word scalar layout identity differs"
+  let mut selected : Array Name := #[]
+  for (source, caller) in #[
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep", "Lemma.Ink.Surface.loadTile"),
+    ("_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord", "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep")] do
+    let some function := suite.actionFunctions.find? (fun f => f.name.toString == source)
+      | throw "Surface-word callback absent"
+    unless function.signature.args == #[.u32, .u32, .u64, .u64, .u64, .u64, .u64] &&
+        function.effects.render == "[checked-access,virtual-read,virtual-write]" do
+      throw "Surface-word callback signature/effects differ"
+    let incoming := suite.actionFunctions.filter (fun f => f.actionDependencies.contains function.name)
+    unless incoming.size == 1 && incoming[0]!.name.toString == caller do
+      throw "Surface-word callback acquired a foreign caller"
+    selected := selected.push function.name
+  return selected
+
+private def surfaceWordInlineFields (configuration role : String) (suite : CheckedActionSuite)
+    (lowered : LoweredActionSuite) (image? : Option UserImageSpec) : Except String (List (String × Json)) := do
+  let selected ← surfaceWordInlineSources configuration role suite image?
+  if selected.isEmpty then return []
+  let mut callbacks : Array Json := #[]
+  for source in selected do
+    let some function := suite.actionFunctions.find? (·.name == source)
+      | throw "Surface-word callback disappeared"
+    let caller := if source.toString.endsWith ".tileLoadWordStep" then "Lemma.Ink.Surface.loadTile"
+      else "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep"
+    callbacks := callbacks.push <| Json.mkObj [
+      ("source", .str source.toString), ("symbol", .str (← rootSymbol lowered source)),
+      ("args", argumentsJson function.signature.args), ("effects", effectsJson function.effects),
+      ("caller", .str caller), ("budget", toJson (64 : Nat)), ("count", toJson (64 : Nat))]
+  return [("surface_word_inline", Json.mkObj [
+    ("contract_version", .str "lemma-surface-word-inline-v1"),
+    ("policy", .str "two-checked-callbacks-internal-LLVM-O2"), ("callbacks", .arr callbacks)])]
 
 private def closedInlineFields (configuration : String) (lowered : LoweredActionSuite) :
     List (String × Json) :=
@@ -757,6 +828,7 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
     ("functions", .arr functions), ("used_execution_ops", .arr (suite.usedExecutionOps.map executionJson)),
     ("used_device_ops", .arr devices), ("used_loops", .arr (suite.usedLoops.map fun use =>
       Json.mkObj [("stable_id", .str use.stableId), ("callback", .str use.callback.toString)]))] ++ imageFields ++ managedPolicyFields configuration ++ softwareDeploymentFields configuration ++ closedInlineFields configuration lowered ++
+      (← surfaceWordInlineFields configuration role suite lowered image?) ++
       (← managedRecordFields env configuration image? suite lowered) ++
       (← managedSumFields env configuration image? suite lowered) ++
       (← managedBytesFields env configuration image? suite lowered) ++
@@ -853,7 +925,9 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
         managedUserSource configuration role function.name &&
         selectedExecutableSource configuration role ((Lean.privateToUserName? function.name).getD function.name).toString image? do
       throw <| IO.userError s!"forbidden reachable source `{function.name}` for {configuration} {role}"
-  let preserved := suite.scalarFunctions.map (·.name) ++ suite.actionFunctions.map (·.name)
+  let surfaceInline ← IO.ofExcept <| surfaceWordInlineSources configuration role suite image?
+  let preserved := suite.scalarFunctions.map (·.name) ++
+    (suite.actionFunctions.filter (fun f => !surfaceInline.contains f.name)).map (·.name)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution profile suite {
     preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
     inlineLiteralConstants := closedInlineFor configuration,

@@ -119,6 +119,11 @@ def isProductNotebookConfiguration (configuration : String) : Bool :=
   isProductExecutedNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-product-notebook" ||
     configuration == "lemmasim-silicon-product-bulk-notebook"
 
+/-- Installed immutable packages and the Closure7 checker use four guest roles. -/
+def isPackageClosureNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" ||
+    configuration == "lemmasim-silicon-package-closure-entry2-bulk-initialize"
+
 /-- One fresh validated task-entry borrow; historical Closure roots remain unchanged. -/
 def isClosureEntry2NotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" ||
@@ -127,7 +132,7 @@ def isClosureEntry2NotebookConfiguration (configuration : String) : Bool :=
 /-- Ordinary captured closures have a distinct isolated User7 authority.
 Only the exact four deployments admit Protocol7/document8; hardware stays0.3. -/
 def isClosureNotebookConfiguration (configuration : String) : Bool :=
-  isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
+  isPackageClosureNotebookConfiguration configuration || isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
     "lemmasim-silicon-closure-arithmetic-oom-development",
     "lemmasim-silicon-closure-arithmetic-fault-development"].contains configuration
 
@@ -177,7 +182,14 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isUSBClosureRecoveryNotebookConfiguration configuration then
+  if isPackageClosureNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-closure-entry2-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isUSBClosureRecoveryNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-usb-clocked-closure-recovery-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
@@ -418,6 +430,12 @@ def closureRecoveryNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainRecoverableClosureBulk, bootRole? := some .notebook},
   closureNotebookImages[2]!]
 
+def packageClosureNotebookImages : Array UserImageSpec := #[
+  courseAwaitNotebookImages[0]!,
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainPackageClosureBulk, bootRole? := some .notebook},
+  closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -434,7 +452,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
+  if isPackageClosureNotebookConfiguration configuration then .ok packageClosureNotebookImages
+  else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
   else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages
   else if isCourseAwaitNotebookConfiguration configuration then .ok courseAwaitNotebookImages

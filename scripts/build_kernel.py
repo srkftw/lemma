@@ -18,7 +18,9 @@ from typing import Sequence
 from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS
 from course_await_deployment import (CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS,
                                      library_source_allowed as course_await_library_source_allowed)
-COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS
+COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, KERNEL_ENTRIES as CLOSURE_KERNEL_ENTRIES
 from build_core0 import (LLC_ARGUMENTS, OPT_PASSES, STARTUP_ARGUMENTS,
                         capture_platform_dtb, prepare_output_directory)
@@ -43,7 +45,7 @@ SERVICE_INSTRUCTION_CONFIGURATIONS = {
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS = ('lemmasim-silicon-power-arithmetic-oom-development', 'lemmasim-silicon-power-arithmetic-fault-development', 'lemmasim-silicon-power-arithmetic-stall-development')
 MANAGED_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-managed-notebook", "lemmasim-silicon-managed-initialize")
 STRING_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-string-bulk-notebook", "lemmasim-silicon-string-bulk-initialize", "lemmasim-silicon-string-arithmetic-oom-development")
-ARRAY_NOTEBOOK_CONFIGURATIONS = COURSE_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development")
+ARRAY_NOTEBOOK_CONFIGURATIONS = LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS + COURSE_AWAIT_CONFIGURATIONS + ("lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development")
 BYTES_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-bytes-bulk-notebook", "lemmasim-silicon-bytes-bulk-initialize", "lemmasim-silicon-bytes-arithmetic-oom-development")
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
 USB_RECOVERY_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')
@@ -299,7 +301,7 @@ def service_executable_module(module: str) -> bool:
 
 def user_module_closure(root: Path, image: dict, configuration: str) -> dict[str, str]:
     """Selected target source only; exporter/compiler host imports are separate."""
-    course_await_library = (configuration in COURSE_AWAIT_CONFIGURATIONS
+    course_await_library = (configuration in AWAIT_NOTEBOOK_CONFIGURATIONS
                             and type(image.get("id")) is int and image["id"] == 1
                             and image.get("boot_role") == "store-server"
                             and course_await_library_source_allowed("user", "Lemma.Services.Store.Server", image))
@@ -322,7 +324,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
+    for helper in ("surface_word_inline.py", "package_closure_deployment.py", "package_notebook_target.py", "task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]

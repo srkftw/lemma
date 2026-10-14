@@ -29,7 +29,9 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
 from course_deployment import CONFIGURATIONS as LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
 from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_AWAIT_SOFTWARE_DEPLOYMENT, library_source_allowed as course_await_library_source_allowed
-COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
+from package_closure_deployment import CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS
+AWAIT_NOTEBOOK_CONFIGURATIONS=COURSE_AWAIT_CONFIGURATIONS+PACKAGE_NOTEBOOK_CONFIGURATIONS
+COURSE_NOTEBOOK_CONFIGURATIONS=LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS+AWAIT_NOTEBOOK_CONFIGURATIONS
 from closure_deployment import (KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS,
                                 ENTRY2_CONFIGURATIONS,
                                 software_deployment_for as closure_software_deployment_for)
@@ -281,6 +283,10 @@ MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for confi
 COURSE_AWAIT_NOTEBOOK_IMAGES=({**COURSE_NOTEBOOK_IMAGES[0],"module":"Lemma.Services.Store.ServerAwait","source":"Lemma.Services.Store.ServerAwait.main"},
     *COURSE_NOTEBOOK_IMAGES[1:3], {**COURSE_NOTEBOOK_IMAGES[3],"source":"Lemma.Courses.PackageInstaller.mainAwait"})
 MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_AWAIT_NOTEBOOK_IMAGES for configuration in COURSE_AWAIT_CONFIGURATIONS})
+PACKAGE_CLOSURE_NOTEBOOK_IMAGES=(COURSE_AWAIT_NOTEBOOK_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1],"source":"Lemma.Applications.Notebook.mainPackageClosureBulk"},
+    CLOSURE_NOTEBOOK_IMAGES[2],COURSE_AWAIT_NOTEBOOK_IMAGES[3])
+MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_CLOSURE_NOTEBOOK_IMAGES for configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS})
 
 RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecovery','source':'Lemma.Services.Store.ServerRecovery.mainRecoveryCourse'},
     {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableSumsBulk'},SUMS_NOTEBOOK_IMAGES[2])
@@ -3266,6 +3272,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     from arithmetic_string_identity import FIELD as string_execution_field, selected as string_execution_selected, contract as string_execution_contract
     from arithmetic_closure_identity import FIELD as closure_execution_field, selected as closure_allowed, contract as closure_contract
     from managed_closure import contract as managed_closure_contract
+    from surface_word_inline import FIELD as surface_inline_field, catalog as surface_inline_catalog
+    surface_inline=surface_inline_catalog(unit)
+    keys |= {surface_inline_field} if surface_inline is not None else set()
     _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()) | ({array_field} if array_field in unit and array_allowed(unit) else set()) | ({array_execution_field} if array_execution_field in unit and array_execution_selected(unit) else set()) | ({string_field} if string_field in unit and string_allowed(unit) else set()) | ({string_execution_field} if string_execution_field in unit and string_execution_selected(unit) else set()) | ({"managed_closure",closure_execution_field} if closure_allowed(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
@@ -3309,9 +3318,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
         normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
-        course_await_executable=(configuration in COURSE_AWAIT_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerAwait."))
+        course_await_executable=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and normalized_source.startswith("Lemma.Services.Store.ServerAwait."))
         if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and (service_executable_module(normalized_source) or course_await_executable):
-            borrowed=(configuration in COURSE_AWAIT_CONFIGURATIONS and course_await_library_source_allowed(role,normalized_source,image))
+            borrowed=(configuration in AWAIT_NOTEBOOK_CONFIGURATIONS and course_await_library_source_allowed(role,normalized_source,image))
             if not borrowed and (role != "user" or not normalized_source.startswith(image["module"] + ".")):
                 raise Core0Error("service unit reaches another executable namespace")
         if ".Development." in source:
@@ -3330,6 +3339,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if any(not isinstance(effect, str) for effect in effects) or len(effects) != len(set(effects)) or not set(effects) <= ROLE_EFFECTS[role]:
             raise Core0Error("function effect catalog escapes role authority")
     inline_catalog(unit)
+    surface_inline_catalog(unit)
     records_contract(unit)
     execution_contract(unit)
     sums_contract(unit)
@@ -4104,11 +4114,14 @@ def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tup
             from usb_recovery_target import readonly_request_kinds
         recovery_sites,recovery_tables,recovery_removed=readonly_request_kinds(ir,unit)
         removed |= recovery_removed
+        from package_notebook_target import readonly_lookup as package_readonly_lookup
+        package_sites,package_tables,package_removed=package_readonly_lookup(ir,unit)
+        removed |= package_removed
         filtered = "\n".join("" if line.strip() in removed else line for line in ir.splitlines())
         # Re-enter the unchanged historical policy with its closed admission.
         old_unit = {**unit, "configuration": "normal"}
         old_sites, old_tables = validate_readonly_pmp_lookup(filtered, old_unit, optimized=optimized)
-        return sim_sites | old_sites | usb_sites | recovery_sites, [*old_tables, *sim_tables, *usb_tables, *recovery_tables]
+        return sim_sites | old_sites | usb_sites | recovery_sites | package_sites, [*old_tables, *sim_tables, *usb_tables, *recovery_tables, *package_tables]
     if unit.get("role") != "kernel" or not optimized:
         return _validate_readonly_pmp_lookup(ir,unit,optimized=optimized)
     lines=ir.splitlines();globals_=[line.strip() for line in lines if re.match(r"^\s*@",line)]
@@ -4697,6 +4710,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
             raise Core0Error('jump table target is overwritten or has an unknown intervening instruction before transfer')
     guards=[]
     hoisted=None
+    index_rebind=None
     for i in range(max(0,use-8),use-1):
         op,args=code[i]
         if op=='bltu' and len(args)==3 and args[1]==index:
@@ -4718,10 +4732,27 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 guards.append(i)
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
+        elif (source=='Lemma.Courses.PackageReader.step'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
+              and index==scaled==address=='a0' and base==target=='a2'
+              and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),
+                            ('sd',['s0','0(sp)']),('mv',['s0','a0'])]
+              and code[i-1]==('li',['a0','5']) and op=='bltu' and len(args)==3
+              and args[:2]==['a0','a1'] and labels.get(args[2])==45
+              and code[i+1:use-1]==[('mv',['a0','a1']),('li',['a1','0'])]):
+            # Only this selected reader's complete source/machine/cell relation
+            # admits rebinding the already bounded returned phase a1 to a0.
+            # The original phase, bound, sole transfer and CFG remain checked.
+            guards.append(i)
+            index_rebind={'instruction':'mv a0,a1','instruction_index':i+1,
+                          'bounded_register':'a1','scaled_register':'a0'}
     if len(guards)!=1: raise Core0Error('jump table lacks the exact unsigned index bound')
     guard=guards[0]
     # Every instruction between the guard and scale preserves the bounded index.
-    if any(args[:1]==[index] for _op,args in code[guard+1:use-1]):
+    if any(args[:1]==[index] and not (index_rebind is not None and
+           i==index_rebind['instruction_index'] and (op,args)==('mv',['a0','a1']))
+           for i,(op,args) in enumerate(code[guard+1:use-1],guard+1)):
         raise Core0Error('jump table bounded index is overwritten')
     if minimum:
         normalizations=[i for i in range(max(0,guard-5),guard) if code[i][0]=='addi' and len(code[i][1])==3 and code[i][1][0]==index and code[i][1][2]==str(-minimum)]
@@ -4758,6 +4789,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 **({'target_preserving_reload':reload} if reload is not None else {}),
                 **({'target_preserving_literal':literal} if literal is not None else {}),
                 **({'target_preserving_mask':mask} if mask is not None else {}),
+                **({'bounded_index_rebind':index_rebind} if index_rebind is not None else {}),
                 **({'hoisted_entry_bound':hoisted} if hoisted is not None else {}))
 
 
@@ -4786,8 +4818,23 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             validate_recovery(optimized_ir,unit,optimized=True)
         extra = usb_specs() if unit.get("configuration") in USB_CONFIGURATIONS else ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
         modern = ble_specs(); usb_modern = usb_specs(); product_modern=product_specs()
+        from package_notebook_target import (CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS,
+                                            readonly_lookup as package_readonly_lookup)
+        package_literals=[]
+        if unit.get('configuration') in PACKAGE_NOTEBOOK_CONFIGURATIONS:
+            _, package_literals, _ = package_readonly_lookup(optimized_ir,unit)
+        package_literal_keys={
+            (re.sub(r'^_private\..*?\.[0-9]+\.','',table['source']),
+             '.L'+table['global'],8*len(table['values']),tuple(table['values']))
+            for table in package_literals
+        }
         def admitted_literal(row):
             source=re.sub(r'^_private\..*?\.[0-9]+\.','',row['source'])
+            # The selected Package User2 helper first closes all189 complete
+            # bodies/callers and all six exact readonly CFG/content/uses. Keep
+            # each object's actual local symbol and extent bound to that row.
+            if package_literal_keys and (source,row.get('symbol'),row['bytes'],tuple(row['values'])) in package_literal_keys:
+                return True
             if unit.get('configuration') in COMMON_CONFIGURATIONS:
                 from wifi_common import validate as validate_common, literal_values
                 validate_common(optimized_ir,unit,optimized=True)
@@ -4915,9 +4962,13 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             from course_await_deployment import RESULT_SOURCE, result_jump_spec, validate_result_split
             course_result_spec=result_jump_spec(optimized_ir,unit,source,owner['name'])
             course_result_owner=course_result_spec is not None
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner)
+            from package_notebook_target import notebook_jump_spec as package_jump_spec, validate_jump_relation as validate_package_jump_relation
+            package_spec=package_jump_spec(optimized_ir,unit,source,owner['name'])
+            package_owner=package_spec is not None
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner or package_owner)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
             if course_result_owner:spec=course_result_spec
+            if package_owner:spec=package_spec
             if clocked_owner:
                 # Complete actual pre/post owner/caller authority was checked
                 # before literal provenance above. These four measured domains
@@ -4999,7 +5050,12 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
-            if course_result_owner:image_authority={**image_authority,RESULT_SOURCE:{'course'}}
+            if course_result_owner:
+                # result_jump_spec has already closed the complete unchanged
+                # result/caller bodies, exact software tuple and either the
+                # Installer User1 root or selected Package Notebook User2 root.
+                image_authority={**image_authority,RESULT_SOURCE:{unit['image_key']}}
+            if package_owner:image_authority={**image_authority,source:{'notebook'}}
             if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS and
                     source == 'Lemma.Services.Store.Protocol.shape'):
                 image_authority={**image_authority,source:image_authority[source] | {'course'}}
@@ -5015,6 +5071,9 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if course_result_owner:
                 code,labels=_jump_assembly_function(assembly,owner['name'])
                 split_result_report=validate_result_split(optimized_ir,unit,assembly,owner['name'],name,targets,code,labels)
+            elif package_owner:
+                code,labels=_jump_assembly_function(assembly,owner['name'])
+                split_result_report=validate_package_jump_relation(optimized_ir,unit,assembly,owner['name'],name,targets,code,labels)
             elif split_common:
                 if switch_sets!=[[4,15],spec[4]] or len(targets)!=60:raise Core0Error('Common split switch escaped exact full domain/table extent')
             elif switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
@@ -5130,6 +5189,8 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelected')
         if unit['configuration'] in ENTRY2_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2')
+        if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2')
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -5197,6 +5258,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     entry_borrow_report=validate_entry_borrow(ir,unit,optimized=optimized)
     from course_await_deployment import validate_mount_reply
     validate_mount_reply(ir,unit,optimized=optimized)
+    from package_notebook_target import validate as validate_package_notebook
+    validate_package_notebook(ir,unit,optimized=optimized)
     from paper_next import validate as validate_paper_next
     from paper_executed import validate as validate_paper_executed
     from paper_wire import validate as validate_paper_wire
@@ -5257,6 +5320,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
         raise Core0Error("LLVM IO fence calling convention differs")
     from closed_inline import validate as validate_closed_inline
     inline_report = validate_closed_inline(ir, unit, optimized=optimized)
+    from surface_word_inline import validate as validate_surface_word_inline
+    surface_inline_report = validate_surface_word_inline(ir,unit,optimized=optimized)
     from managed_records import validate as validate_managed_records
     records_report = validate_managed_records(ir, unit, optimized=optimized)
     from arithmetic_execution_identity import validate as validate_execution_identity
@@ -5338,6 +5403,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             "optimizer_intrinsics": sorted(declarations & intrinsic), "device_operations": actual_device_operations,
             "memory_access_counts": memory_access_counts, "readonly_optimizer_tables": readonly_tables,
             "checked_inline": inline_report, "managed_records": records_report,
+            **({"surface_word_inline_v1":surface_inline_report} if surface_inline_report is not None else {}),
             **({"task_entry_borrow_v2":entry_borrow_report} if entry_borrow_report is not None else {}),
             **({"arithmetic_execution_identity":execution_report} if execution_report is not None else {}),
             **({"managed_sums":sums_report} if sums_report is not None else {}),

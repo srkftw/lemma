@@ -8,6 +8,13 @@ SOFTWARE_DEPLOYMENT={'contract_version':'lemma-course-mounted-await-bulk-deploym
 BOOT_ROOTS=dict(zip(CONFIGURATIONS,('siliconCourseAwaitBoot','siliconCourseAwaitInitializeMedium')))
 STORE_ROOT='Lemma.Services.Store.ServerAwait.main'
 INSTALLER_ROOT='Lemma.Courses.PackageInstaller.mainAwait'
+from package_closure_deployment import (CONFIGURATIONS as PACKAGE_CONFIGURATIONS,
+ SOFTWARE_DEPLOYMENT as PACKAGE_SOFTWARE_DEPLOYMENT)
+ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS
+def software_deployment_for(configuration):
+ if configuration in CONFIGURATIONS:return SOFTWARE_DEPLOYMENT
+ if configuration in PACKAGE_CONFIGURATIONS:return PACKAGE_SOFTWARE_DEPLOYMENT
+ raise ValueError('Unknown exact Await software tuple')
 
 def library_source_allowed(role,source,image):
  """Only this exact Store root borrows the old engine/dispatcher library.
@@ -67,17 +74,24 @@ def validate_mount_reply(ir,unit,*,optimized):
  rows=unit.get('functions',[])
  actual=[r for r in rows if _canonical(r.get('source',''))==RESULT_SOURCE]
  if not actual:return None
- if (len(actual)!=1 or unit.get('configuration') not in CONFIGURATIONS or
-     unit.get('role')!='user' or unit.get('image_key')!='course' or
-     type(unit.get('image_id')) is not int or unit['image_id']!=4 or
+ installer=(unit.get('image_key')=='course' and type(unit.get('image_id')) is int and
+     unit['image_id']==4 and unit.get('contract_version')=='core0-user-v0.1' and
+     unit.get('boot_role')=='course-installer' and
+     [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
+       [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}])
+ package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS and
+     unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
+     unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
+     unit.get('boot_role')=='notebook' and
+     [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
+       [{'source':'Lemma.Applications.Notebook.mainPackageClosureBulk','id':1,'args':['u64']}])
+ if (len(actual)!=1 or unit.get('configuration') not in ALL_CONFIGURATIONS or
+     unit.get('role')!='user' or not (installer or package_notebook) or
      type(unit.get('schema_version')) is not int or unit['schema_version']!=2 or
-     unit.get('contract_version')!='core0-user-v0.1' or
      unit.get('artifact_category')!='development-user-unit' or
-     unit.get('boot_role')!='course-installer' or unit.get('used_device_ops')!=[] or
-     unit.get('software_deployment')!=SOFTWARE_DEPLOYMENT or
-     [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]!=
-       [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}]):
-  raise Core0Error('mount-result owner escapes exact Await/User1 installer authority')
+     unit.get('used_device_ops')!=[] or
+     unit.get('software_deployment')!=software_deployment_for(unit.get('configuration'))):
+  raise Core0Error('mount-result owner escapes exact installer/Package notebook authority')
  names={r['symbol']:_canonical(r.get('source','')) for r in rows}
  selected={}
  for source in (RESULT_SOURCE,RESULT_CALLER):
@@ -96,8 +110,14 @@ def validate_mount_reply(ir,unit,*,optimized):
   if optimized and kind=='i8' and value>=128:value-=256
   if _normalized(_body(ir,matches[0]['symbol']),names)!=f'entry: ret {kind} {value}':
    raise Core0Error('mount-result exact constant differs: '+source)
+ removed=set()
+ if optimized:
+  from surface_word_inline import validate as validate_surface_word_inline, removed_symbols
+  if validate_surface_word_inline(ir,unit,optimized=True) is not None:
+   removed=removed_symbols(unit)
  callers=[]
  for r in rows:
+  if r['symbol'] in removed:continue
   if re.search(r'\bcall[^@\n]*@'+re.escape(selected[RESULT_SOURCE])+r'\(',_body(ir,r['symbol'])):
    callers.append(_canonical(r['source']))
  if callers!=[RESULT_CALLER]:raise Core0Error('mount-result escaped its single exact framing validator')

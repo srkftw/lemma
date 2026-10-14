@@ -13,6 +13,25 @@
     },
     "seconds": 1.3587930910289288
   },
+  "artifact_guards_current": {
+    "helper_sha256": "28c1b834d9bc40c80d186f0abca3f6352a8889163eb7acf82bc8634653389525",
+    "jti_negatives": 102,
+    "metadata_and_body_negatives": 24,
+    "original_source_authority": {
+      "input_inventory_sha256": "cdb5f783971ce4eb12053e619fa03e48ac69c2508093aab21ef25455bef74a98",
+      "producer_head": "ff48d048519bfaa78dd05466106bd1df75496789",
+      "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-production-archival-source-a1/consumed-source-root",
+      "scope": "complete original producer bytes; source origin is preserved, current observer is separate",
+      "source_count": 315
+    },
+    "readonly_negatives": 67,
+    "result": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/jti-artifact-guards-a3.json",
+      "sha256": "c7013e336d5d2355009b7f8dbec37905cd6061733ea90e188eecf1525c3f3f35"
+    },
+    "scope": "same genuine original production817 pre/post and object; complete189 ownership followed by independent CFG/table/machine-cell checks",
+    "seconds": 18.566117523936555
+  },
   "component": {
     "artifacts": {
       "component/normalized.txt": "b516f8d05ef43c8fbd66bff1a6ed907c8ea2cd875c6f7fc8b1f0276a34eaf3c5",
@@ -45,6 +64,25 @@
       "lemma_exec_syscall"
     ]
   },
+  "jti_supplement": {
+    "actual_cell_negatives": 78,
+    "scope": "mandatory complete189 body/caller/signature/config/profile authority; exact source-domain and emitted fullmachine/cell relations before ordinary unsigned/localrelocation/byte checks; no generic pure-table grant",
+    "sources": {
+      "Lemma.Applications.Notebook.packageConfigureStep": {
+        "caller_fold_words": 9,
+        "cells": 8
+      },
+      "Lemma.Courses.PackageReader.step": {
+        "canceled_result": 94,
+        "cells": 6
+      },
+      "Lemma.Courses.PackageRender.glyph": {
+        "cells": 64,
+        "explicit_cases": 14,
+        "fallback_cells": 50
+      }
+    }
+  },
   "observer_correction": {
     "corrected": {
       "path": "build/courses/task006-notebook-package-integration-draft-a1/artifact-guards-a2.json",
@@ -56,6 +94,15 @@
       "sha256": "cbf15a39340b1e5e87b2dcdf580387a527fcd6c4b39478194aba5f190bc1117e"
     }
   },
+  "original_producer_source_archive": {
+    "result": {
+      "path": "build/courses/task006-package-production-archival-source-a1/result.json",
+      "sha256": "6b6001c08ecfed290cb5aa50b6e93302ea9454b5b31af1a0d29dfa9efd737797"
+    },
+    "scope": "complete byte-identical original producer source; recovered exact old KernelExport10c4143f without changing maintained tree; current observers remain separate",
+    "source_count": 315,
+    "source_head": "ff48d048519bfaa78dd05466106bd1df75496789"
+  },
   "original_runtime_paths_preserved": true,
   "preserved_failures": [
     {
@@ -65,15 +112,113 @@
     {
       "path": "build/courses/task006-notebook-package-integration-draft-a1/production-first-guard-a1.json",
       "sha256": "643299a26605a88e45d9c69112b7d83f7792f38f17e0f8dfed460add40df799e"
+    },
+    {
+      "path": "build/courses/task006-package-notebook-object-a1/result.json",
+      "sha256": "8d76e833a0b44e5dfbff59970b1aa839f505a2a912a5f4a639f9bf461365e355"
+    },
+    {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/jti-artifact-guards-a1.json",
+      "sha256": "35c4526d1fa938cd8026604faccfe5e1507132d6f71e709fcb0dee9c0ada9df0"
+    },
+    {
+      "path": "build/courses/task006-package-notebook-object-a2/result.json",
+      "sha256": "2b5a484ff213598e017d163b21c1216545fa19718bdd3d9de2d16415da41ba9b"
+    },
+    {
+      "path": "build/courses/task006-package-notebook-object-suffix-a1/result.json",
+      "sha256": "4be173773e0d89da3d4213b3f9f73e81426a0388e4d9b57bc0e399bf5bdd58bf"
+    },
+    {
+      "path": "build/courses/task006-package-notebook-object-suffix-a2/result.json",
+      "sha256": "3ce46cb0d530cd5604e9484954213fc59f030ce169ea09f44e60b44d214235b4"
+    },
+    {
+      "path": "build/courses/task006-package-notebook-object-suffix-a3/result.json",
+      "sha256": "b8ab0b402cad24ad204b5a50871c05e49d5f12a81f9422d654b24adf3992569e"
     }
   ],
-  "qualification_scope": "actual imported Actions, complete genuine User2 main LLVM/O2/RV64 and selected role artifact admission; whole images/connected CPU/Store durability/cold recovery NOT_RUN",
+  "qualification_scope": "actual imported Actions, complete genuine User2 main LLVM/O2/RV64 component, selected production817 owned-body and readonly/JTI/object admission; whole images/connected CPU/Store durability/cold recovery NOT_RUN",
+  "raw_launch_host_fixture": {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests/courses",
+      "-p",
+      "test_package_notebook_launch.py",
+      "-v"
+    ],
+    "scope": "exact six historical/new raw UART configurations; eight lookalikes and wrong mode/backend/schema/profile/ELF reject before raw request; no CPU, installation or document mutation",
+    "status": "PASS",
+    "test_source": {
+      "path": "tests/courses/test_package_notebook_launch.py",
+      "sha256": "bbcc3fcc18522b72ae92a47db98975b3d32e70c3330dac9e44b05481d9545e02"
+    },
+    "tests": 1
+  },
+  "readonly_supplement": {
+    "all_table_cells_mutated": 25,
+    "direct_structural_negatives": 17,
+    "helper_sha256": "64343b42c99248bcfad22a679fa9424deedf9684ed1d1c717fe56fcd18e62af6",
+    "independent_review": "Array read-only source/artifact review found no concrete admission gap; no test or proof implied",
+    "negative_count": 67,
+    "physical_load_sites": [
+      4142,
+      4152,
+      4288,
+      35612
+    ],
+    "result": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/readonly-guards-a2.json",
+      "sha256": "c1969d1cc6fe6133d0f83574ed952a869fb61a9f58642a2c63c373033375cf4a"
+    },
+    "scope": "exact selected Package User2 only; mandatory189completebody/caller gate followed by independent table/CFG/pointer checks, no target changes",
+    "seconds": 8.710628252010792,
+    "tables": 6
+  },
   "remaining": [
     "full source/tool/profile-bound four-role normal/initializer build and ordinary audits",
     "real guest install/selection/rendering/exact Protocol7 check/Doc8 evidence/workspace Save/hint/review and resource failures",
     "independent cold record and complete expected controller pixel recovery",
     "browser/publication, generic runtime/proof-kernel, fast timing/exact checkpoint and physical obligations separate"
   ],
+  "retained_selected_object": {
+    "actual_artifacts": {
+      "program.ll": "677306d2bf35e56161924a328092673490c05b7d9efcc6b9879d968dd8892caa",
+      "program.o": "c2c15c0158854d6155e0750566110bba271e4ab72a1592e0ab72ea7d39796900",
+      "program.opt.ll": "3064efc4577b0ca62bcbaaa0418002c70cdbb0930ae318e4b16237e4d00b5370",
+      "unit.json": "80747181cb4e4ccd8a5e4497a923fabe233aa10ff3b7ebdae6239a3e11ee6a07"
+    },
+    "bounds": {
+      "address_space_bytes": 17179869184,
+      "per_command_seconds": 60,
+      "total_seconds": 80
+    },
+    "full_jti_observation": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-notebook-object-suffix-a3/result.json",
+      "scope": "full18JTI already executed against exact same object/companion; no positive rerun",
+      "sha256": "b8ab0b402cad24ad204b5a50871c05e49d5f12a81f9422d654b24adf3992569e"
+    },
+    "jump_tables": 18,
+    "literal_provenance_negatives": 24,
+    "machine": "PASS ordinary validate_machine with --no-show-raw-insn",
+    "observer_current_equal_before": true,
+    "observer_inventory_sha256": "6a947a433e6f38b116a5986107223594a68f557259b69d7043cbbe5369f51394",
+    "readonly_tables": 11,
+    "result": {
+      "path": "build/courses/task006-package-notebook-object-suffix-a4/result.json",
+      "sha256": "2a0e6c9e50c07c64e91b95fb3e4daa2d8a272b726fd89055bee6fcc526395082"
+    },
+    "scope": "original retained productionobject and auditcompanion; no exporter/optimizer/productionobject regeneration or CPU; corrected finaldisassembly observer and actual object source/symbol/extent/value negatives",
+    "seconds": 3.599626110983081,
+    "unresolved": [
+      "U",
+      "lemma_exec_syscall"
+    ]
+  },
   "root": "Lemma.Applications.Notebook.mainPackageClosureBulk",
   "schema": "lemma-installed-package-notebook/1",
   "selected_production": {
@@ -107,10 +252,23 @@
     "seconds": 208.81098335492425,
     "source_head": "ff48d048519bfaa78dd05466106bd1df75496789"
   },
+  "selected_surface_inventory": {
+    "metadata_functions": 817,
+    "owned_package_functions_unchanged": 189,
+    "post_bodies": 815,
+    "removed_callbacks": 2,
+    "result": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/new-surface-owned-guards-a1.json",
+      "sha256": "d1f05822d0a2f20e24ec7f9650ea79ce2b256c7b748a14abf37d8eb66b03a717"
+    },
+    "scope": "strict Surface validator and exact removed_symbols before postinventory subtraction; full new ordinary object/backend qualification belongs to separate Surface receipt",
+    "seconds": 1.1147895420435816,
+    "status": "PASS_ACTUAL_NEW_SURFACE_189_OWNED_BODIES_CALLERS"
+  },
   "software_deployment": {
     "contract_version": "lemma-package-closure-entry2-bulk-deployment-v1",
     "silicon_profile": "lemma-silicon-dev/0.3.0"
   },
-  "status": "PASS_COMPONENT_AND_SELECTED_ROLE_ARTIFACT_GUARDS",
+  "status": "PASS_COMPONENT_SELECTED_ROLE_AND_RETAINED_OBJECT_GUARDS",
   "target_helper_changes": "None; test-only exporter record syntax and empty Action effect observer corrected, original failures retained."
 }

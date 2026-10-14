@@ -1,0 +1,201 @@
+{
+  "schema": "lemma-surface-word-inline-qualification/1",
+  "contract_version": "lemma-surface-word-inline-v1",
+  "status": "QUALIFIED_COMPONENT_NO_CPU",
+  "configurations": [
+    "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+    "lemmasim-silicon-package-closure-entry2-bulk-initialize"
+  ],
+  "actually_exported_configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+  "profile": "core0-user-v0.2",
+  "root": "Lemma.Applications.Notebook.mainPackageClosureBulk",
+  "selection": "only tileLoadWordStep and bulkCopyWord excluded from preserveCalls after genuine whole checked-source/signature/effect/caller validation; existing LLVM O2 naturally inlines internal nounwind functions",
+  "source_semantics": "historical Surface and Notebook bodies unchanged; no grouped-function clone, target foreign helper, new primitive or accepted-language expansion",
+  "actual_source_inventory": {
+    "count": 384,
+    "producer_archive": "build/managed/surface-word-inline-production-a1/consumed-source-root",
+    "producer_head": "0b1f80ce92be0aa7c2b6416603b7830c409c63aa",
+    "producer_current_and_archive_exact": true,
+    "observer_archive": "build/managed/surface-word-inline-production-suffix-a1/observer-source-root",
+    "observer_delta": {
+      "scripts/course_await_deployment.py": {
+        "producer": "1cf9109608ebfd1b74d0cc54e8cc53f536971646208b6e85c8b5ced667605f23",
+        "observer": "919724bc0162e6594f80678727146e3f5135709812b2fb997903e9e18db502bb"
+      }
+    },
+    "unchanged_original_artifacts": true
+  },
+  "genuine_artifacts": {
+    "build/managed/surface-word-inline-production-a1/users/notebook/program.opt.ll": "246395a61d9fefe14339e4e6c55acb32f38f5119c5212b1143b1f75724bac1d2",
+    "build/managed/surface-word-inline-production-a1/users/notebook/symbols.txt": "ec268c9160d6e6d9ef4e4cf5422e40caf11176bd9760f8e26a6ffb2d277ba3d6",
+    "build/managed/surface-word-inline-production-a1/users/notebook/normalized.txt": "2a11909f7cd8e8791d3d5b39767efbb21ee0f2e53becb05b442c6e8fc825e3eb",
+    "build/managed/surface-word-inline-production-a1/users/notebook/unit.json": "cbbb30519a539ed569001e90b62cdea69f88e1817e6b0c85c1a7fa599031879c",
+    "build/managed/surface-word-inline-production-a1/users/notebook/program.ll": "c16d44b2ea2fab29a3d9388d2bc44ff5f7de4a920cb1094a49f0d68a77e526a8"
+  },
+  "selected_object": {
+    "path": "build/managed/surface-word-inline-production-suffix-a1/users/notebook/program.o",
+    "sha256": "0229e88226bf861ce8430e7cf319f5cb3788dadcc7e454a5f253a5f854b08a83",
+    "functions": 815,
+    "ISA": "RV64IM_Zicsr_Zifencei/lp64; no RVC/A/FP/V/relax",
+    "undefined": [
+      "lemma_exec_syscall"
+    ],
+    "ordinary_backend_jump_tables": 18,
+    "readonly_tables": 11,
+    "all189_package_owned_body_and_caller_gates": "PASS with unchanged pins"
+  },
+  "checks": {
+    "genuine_source_guard_and_ordinary_preIR": "PASS",
+    "complete_surface_pre_and_postIR": "PASS, original diagnostic complete pins unchanged",
+    "independent_postCFG_dataflow": {
+      "tile_loop_iterations": 64,
+      "copy_loop_iterations": 64,
+      "tile_write_after_successful_gather": true,
+      "copy_read_before_checked_write": true,
+      "gather_aligned_and_two_word_fault_prefix": true,
+      "volatile_element_bits": 64,
+      "constant_tile_span": [
+        132352,
+        132864
+      ],
+      "write_range_error": 7,
+      "hardware_permission_and_faults": "unchanged actual volatile instructions"
+    },
+    "ordinary_postIR": "PASS after exact2 mount caller composition",
+    "object_relocations_sections_readonly_JTI_companion_text": "PASS on actual generated object",
+    "metadata_catalog_host_tests": 5,
+    "actual_IR_metadata_negatives": 104,
+    "independent_CFG_dataflow_negatives": 42,
+    "recorded_nm_and_symbol_table_reobservation_negatives": 8
+  },
+  "retained_failures": [
+    {
+      "path": "build/managed/surface-word-inline-production-a1/result.json",
+      "sha256": "bbe817701bc61624d399188c5140935e7a43aa696f474c74b235f94e3f1aa203",
+      "seconds": 103.7813872739207,
+      "bound_seconds": 180,
+      "reason": "Core0Error('mount-result LLVM owner missing/duplicated: lemma_user_notebook_core0_action_61')",
+      "completed": "genuine export/O2, Surface pre/post and ordinary pre passed; ordinary post initially demanded removed callback body"
+    },
+    {
+      "path": "build/managed/surface-word-inline-production-suffix-a1/result.json",
+      "sha256": "0ce56967c67de285acd491e19e12506b9d5cb5e96194348440a550c86b82fbeb",
+      "seconds": 41.32847972493619,
+      "bound_seconds": 120,
+      "reason": "AssertionError([\"warning: Git tree '/home/sreekumaar/Downloads/lemma' is dirty\", '                 U lemma_exec_syscall'])",
+      "completed": "ordinary post and actual RV64/readonly/JTI gates passed; final merged Nix warning was misread as nm symbol"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/actual-ir-mutations-a1.json",
+      "sha256": "a1007f5308f6073e99918bfe42c7d11eed902a090711c7ee90322169b29d29b9",
+      "reason": "fixture assumed typed literal form absent in the real bulkCopyWord body; corrected only literal coordinate selection"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/post-safety-a1.json",
+      "sha256": "401fe34d40dba4fbec3e52b9b06aa8ab23d64733037706be7a2ca3960bbc2d17",
+      "reason": "initial host CFG parser API mismatch"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/post-safety-a2.json",
+      "sha256": "92d24d3eab0c68f38cd2c58b0f8dd1e3a34760e9ee8a86254487bd4a2d794740",
+      "reason": "initial host volatile-load counting assumed a space before the actual LLVM comma"
+    }
+  ],
+  "observations": [
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/actual-ir-mutations-a2.json",
+      "sha256": "d577c878a44aa22f7b32154caf239355a62d591224875e31031eabfaecf46412"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/undefined-reobservation-a1.json",
+      "sha256": "3e158c87808d9240bf8e3386935b189f0af9a92c0b95b643f2bae89908627240"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/actual-rv64-static-cost-a1.json",
+      "sha256": "fb4c9a2f675aeaf5e8ac432c3bc4ef392c62088509533a51f26200c8ae1e63a4"
+    },
+    {
+      "path": "build/managed/surface-word-inline-qualification-a1/post-safety-a3.json",
+      "sha256": "5c1805222a044657c2eddf10ea4f2683a82debe5ffc29ea753f50a393a7a9d3a"
+    }
+  ],
+  "static_RV64_cost": {
+    "scope": "actual pinned LLVM20.1.8 RV64IM object function extents; all branch paths counted, no dynamic instruction/cycle/CPU/speed measurement",
+    "rows": [
+      {
+        "source": "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.tileLoadWordStep",
+        "baseline_function_bytes": 168,
+        "selected_function_bytes": null,
+        "baseline_instruction_words": 42,
+        "selected_instruction_words": null
+      },
+      {
+        "source": "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkCopyWord",
+        "baseline_function_bytes": 100,
+        "selected_function_bytes": null,
+        "baseline_instruction_words": 25,
+        "selected_instruction_words": null
+      },
+      {
+        "source": "Lemma.Ink.Surface.loadTile",
+        "baseline_function_bytes": 216,
+        "selected_function_bytes": 304,
+        "baseline_instruction_words": 54,
+        "selected_instruction_words": 76
+      },
+      {
+        "source": "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.bulkPrepareStep",
+        "baseline_function_bytes": 696,
+        "selected_function_bytes": 720,
+        "baseline_instruction_words": 174,
+        "selected_instruction_words": 180
+      },
+      {
+        "source": "_private.Lemma.Ink.Surface.0.Lemma.Ink.Surface.gatherWord",
+        "baseline_function_bytes": 136,
+        "selected_function_bytes": 136,
+        "baseline_instruction_words": 34,
+        "selected_instruction_words": 34
+      }
+    ],
+    "total_function_text_bytes": {
+      "baseline": 155080,
+      "selected": 154924,
+      "delta": -156
+    },
+    "full_tile_callback_invocations": {
+      "baseline": 128,
+      "selected": 0,
+      "gather_calls": 64
+    },
+    "canonical_source_derived_callback_removals": {
+      "full_tile_load_words": 221952,
+      "all_tile_copy_words": 229632,
+      "total": 451584
+    }
+  },
+  "unchanged_sources": {
+    "Lemma/Ink/Surface.lean": "5613de495a2b4ea109cbdd7b985393fbc624e026d33443886699f84702fc4d25",
+    "Lemma/Applications/Notebook.lean": "a119834036b8b381acc60d066381c8d282805bcd581de3587a3457db199a06cf"
+  },
+  "baseline_original_KernelExport_recovery": {
+    "path": "build/managed/surface-transfer-prototype-a1/original-kernel-export-10c4143f.lean",
+    "sha256": "10c4143f360cb60e38ec336683b500b5bb32eeccaed8903173b5e6788f009bbf",
+    "method": "inverse only the three initial Surface policy additions; exact original recorded hash matched, no maintained rollback"
+  },
+  "not_claimed": [
+    "fresh full whole-machine pair",
+    "selected initializer role compilation",
+    "new target CPU execution",
+    "Undo completion or CPU speedup",
+    "compiler correctness proof",
+    "physical display conformance"
+  ],
+  "original_undo_failure": {
+    "checkpoint": "build/managed/task-entry2-connected-edit-a1/failed-undo-checkpoint/machine.chk",
+    "cycles": 925000000,
+    "phase_bound_cycles": 200000000,
+    "status": "FAIL retained; no ACK30 or timeout extension"
+  },
+  "ownership": "Surface policy/helper/tests/contract/evidence owned by Array; shared audit/build/closed_inline hooks Root; Package inventory and mount caller composition Course/Root"
+}
