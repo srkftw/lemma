@@ -730,8 +730,8 @@
     },
     {
       "path": "docs/evidence/006-browser-readable-paused.json",
-      "bytes": 2708,
-      "sha256": "07c1c73bb036061161d114cd7ac0b5226fc8c4af1ce39db3c25ffbb2e1895dae",
+      "bytes": 4224,
+      "sha256": "29dc75192b13a5968d3e0c1cbab4b33f9019c4d381b1b94ee1ad957dfada2713",
       "status": "PASS_REAL_BROWSER_UI_AND_HOST_PROTOCOL",
       "scope": "Readable presentation and zero-clock opening over existing exact portable RTL Machine, auditedArray RV64, real controller output and isolated backing. No new emulator, cold result or managed checker claim."
     }

@@ -48,7 +48,45 @@
   "commands": [
     "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --wasm-input-bundle build/browser/task006-capture-u64-simd-a1 --reuse-wasm --output-dir build/browser/task006-display-scale-a2",
     "./scripts/lemmasim browser-serve --bundle build/browser/task006-display-scale-a2 --port 8783",
-    "python3 -m unittest discover -s tests/lemmasim -p test_browser*.py -v"
+    "python3 -m unittest discover -s tests/lemmasim -p test_browser*.py -v",
+    "./scripts/lemmasim browser-serve --bundle build/browser/task006-raw-batch-a1 --port 8784"
   ],
-  "remaining": "Complete fixedcore browser math/check/save/durable reload, native C++ relation, full caches/Pending, browser compiler/permissions/redistribution remain separate."
+  "remaining": "Complete fixedcore browser math/check/save/durable reload, native C++ relation, full caches/Pending, browser compiler/permissions/redistribution remain separate.",
+  "raw_batch": {
+    "plan": {
+      "path": "build/browser/task006-raw-batch-ui-a1/plan.json",
+      "bytes": 809,
+      "sha256": "1af38e47849853308e0e16e40f3d2284115ed727ddac0c2ed1512a58c3391b50"
+    },
+    "actual": {
+      "path": "build/browser/task006-raw-batch-ui-a1/result.json",
+      "bytes": 806,
+      "sha256": "ef389383322652abaf17ddbe41b4214aa28a28f996a47618bd65413bfe36a9eb"
+    },
+    "capture": {
+      "path": "build/browser/task006-raw-batch-ui-a1/events.json",
+      "bytes": 239,
+      "sha256": "c61747dd2ebdd617a4bedcd232078a6366675b92d0ba7c3b09505b2e0ab44b10"
+    },
+    "host_suite": {
+      "path": "build/browser/task006-display-scale-ui-a1/batch-host-suite.log",
+      "bytes": 2324,
+      "sha256": "5d110f4d4ecc55773ba72fe41fb4f9c65c761dec231fd53187a343235a58483c"
+    },
+    "status": "PASS_ACTUAL_CONTROLLER_ADMISSION_NO_GUEST_CLOCK",
+    "bound": "65536characters,1\u20131024rows,256characters/row; existing1M capture limit",
+    "actual_cycle": 0,
+    "retired": 0,
+    "simulation_call_seconds": 0,
+    "queue": 3,
+    "successful_batch": 2,
+    "rejected_batch_accepted_prefix": 1,
+    "actual_error": "pen sample field outside admitted range",
+    "full64_times": [
+      "9007199254740993",
+      "9007199254740994",
+      "9007199254740995"
+    ],
+    "semantics": "raw transport, individually authoritative accepted prefix; no rollback/atomicity or guest processing claim"
+  }
 }

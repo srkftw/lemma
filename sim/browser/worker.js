@@ -34,12 +34,24 @@ function panel(force=false){const s=state();if(force||s.panel_completed!==panelS
 function admit(e){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');if(capture.length>=1000000)throw Error('Raw capture exceeds its event bound');const s=state();
  const row=e.action==='pen'?`${s.cycle} pen ${s.ticks} ${e.x} ${e.y} ${e.pressure} ${e.flags} ${e.tool} 0`:`${s.cycle} button ${e.level}`;
  check('lemma_event',['string'],[row]);capture.push(row);}
-function admitRaw(text){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
+function admitRaw(text,observe=true){if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
  if(typeof text!=='string'||text.length>256||capture.length>=1000000)throw Error('Raw event exceeds its bound');
  const fields=text.trim().split(/\s+/),s=state();
  if(!['pen','button','uart'].includes(fields[1]))throw Error('Raw input admits pen, button or uart only');
  if(fields[0]==='now')fields[0]=s.cycle;if(fields[1]==='pen'&&fields[2]==='now')fields[2]=s.ticks;
- const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);sendState();}
+ const row=fields.join(' ');check('lemma_event',['string'],[row]);capture.push(row);if(observe)sendState();}
+function admitBatch(text){
+ if(typeof text!=='string'||text.length>65536)throw Error('Raw batch exceeds 65536 characters');
+ const rows=text.split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
+ if(rows.length===0||rows.length>1024||rows.some(row=>row.length>256)||capture.length+rows.length>1000000)
+  throw Error('Raw batch requires 1–1024 bounded events within the capture limit');
+ // Each accepted device event is authoritative. A later rejection cannot
+ // retract its prefix; report it exactly and leave the machine paused.
+ let accepted=0;try{for(const row of rows){admitRaw(row,false);accepted++;}}
+ catch(e){postMessage({type:'raw-admission',accepted,total:rows.length,error:String(e)});
+  throw Error(`Raw batch rejected after ${accepted} of ${rows.length} events: ${e}`);}
+ sendState();postMessage({type:'raw-admission',accepted,total:rows.length,error:null});
+}
 function step(){if(!running)return;try{
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
  const before=state(),cycle=uint64(before.cycle);
@@ -145,6 +157,7 @@ onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage 
   const initial=state(),next=new RunBudget(initial.cycle,m.cycles,m.stopOnReady??false,m.hostSeconds??null,performance.now(),m.stopOnPanel?initial.panel_completed:null);pause(null);budget=next;running=true;sendState();scheduleStep();}
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
+ else if(m.action==='raw-batch'){admitBatch(m.rows);}
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
  else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){pause('snapshot');const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);

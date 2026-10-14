@@ -927,4 +927,26 @@ serves the validated prepared bundle. Import an opaque raw medium under a new
 name, select Open paused, then Open/restore for inspection. This exact private
 continuation is distinct from the separately recorded canonical cold boot.
 
+## Browser raw batching and exact course-catalog observer
+
+The same [browser controls receipt](../evidence/006-browser-readable-paused.json)
+now includes bounded native raw batches. Actual runtime0c22430e accepts two
+literal UInt64 rows above Number precision, then accepts one prefix row before
+rejecting a real out-of-range pen field. CPUcycle/retired remain0, queue/capture
+contain exactly those three rows, and the rejected/remainder rows never enter.
+All seven browser host tests pass; bounds and partial-error/capture semantics
+are explicit. This is device admission, not guest ink execution.
+
+Fresh CI38515295625 at670325b passes its repaired foundation host step, but
+Kernel A–E fails its kernel-host step:401tests identify only the arithmetic
+catalog's omitted two newly declared course names. The preserved artifact ZIP
+11872226261 has SHA70783fccff0aeb19017c26055220247e3f670a7f587e8949f20a2d3ab9765497.
+The narrow observer correction retains every historical three-image assertion,
+requires the exact course four-image roles/roots/profile/User1 installer, and
+rejects omitted/swapped/unguarded/wrong-authority images and invented names.
+Four catalog tests and all402 kernel host tests pass locally (10.344s). The
+existing intentional late-contradiction negative printsFAIL; its test passes and
+the complete suite exits0. Original remoteFAIL and skipped guest acceptance
+remain unqualified; the next candidate needs its own CI.
+
 -->

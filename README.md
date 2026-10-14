@@ -613,6 +613,9 @@ coordinates; changing scale cancels any held contact before the transform change
 WebGPU presents those pixels, with a same-byte2D fallback. Mouse pressure is
 synthetic. The Laboratory raw-input control uses the native pen/button/UART
 event contract; `now` selects the current exact virtual cycle/device time.
+The Laboratory raw batch control admits up to1024 bounded native rows. Admission
+executes no guest clock. A rejected row retains the accepted prefix, reports its
+exact count and pauses the machine; exporting raw events preserves those rows.
 
 Pause, checkpoint export, private-fork restore, backing export, cold/warm reset
 and recorded-suffix replay operate on the same machine. Restore cannot resume

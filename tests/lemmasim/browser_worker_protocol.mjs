@@ -8,7 +8,7 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,onRun}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,onRun,onEvent}={}){
  let now=0,nextTimer=0,generation=0,finished=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
@@ -24,7 +24,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"paper_busy":${paper.busy??0},"panel_power":${paper.power??0},"finished":${finished}}`;
   case 'lemma_paper_inspect':return JSON.stringify(paper);
   case 'lemma_run':{const n=BigInt(args[0]);assert(n>0n&&n<=50000n);current+=n;now+=5;core.backing.read(new Uint8Array(1),{at:0});return onRun?.({n,current,generation,setUART:x=>{uart=x;},setPaper:x=>{paper=x;},setCycle:x=>{current=x;},finish:()=>{finished=true;}})??0;}
-  case 'lemma_event':events.push(args[0]);return 0;
+  case 'lemma_event':{const error=onEvent?.(args[0])??0;if(!error)events.push(args[0]);return error;}
   case 'lemma_pixels':return 0;
   case 'lemma_pixel_count':return 1;
   case 'lemma_capture_path':return '/capture.io';
@@ -62,6 +62,27 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  assert.equal(f.state().running,false);assert.equal(f.state().pauseReason,'opened-paused');
  await f.send('inspect');assert.equal(f.cycle(),0n);assert.equal(f.timers.size,0);
  await f.send('run',{cycles:'1'});await f.drain();assert.equal(f.cycle(),1n);
+}
+
+// Batching remains raw transport: clocks stay literal and each real machine
+// rejection retains precisely the accepted prefix, including in capture.
+{
+ const f=await fixture({paused:true,onEvent:row=>row.includes('reject')?1:0}),origin=f.cycle();
+ const rows=`${origin} button 1\r\n\nnow pen now 1 2 3 3 1 0`;
+ await f.send('raw-batch',{rows});assert.equal(f.cycle(),origin);assert.equal(f.timers.size,0);
+ assert.deepEqual(f.events,[`${origin} button 1`,`${origin} pen ${origin} 1 2 3 3 1 0`]);
+ assert.equal(f.messages.at(-1).accepted,2);assert.equal(f.messages.at(-1).error,null);
+ for(const bad of ['',123,'x'.repeat(65537),'now button 1\n'.repeat(1025),'x'.repeat(257)]){
+  const count=f.events.length;await f.send('raw-batch',{rows:bad});assert.equal(f.events.length,count);
+  assert.equal(f.messages.at(-1).type,'error');assert.equal(f.cycle(),origin);
+ }
+ await f.send('raw-batch',{rows:'now button 0\nnow uart reject\nnow button 1'});
+ const receipt=f.messages.filter(m=>m.type==='raw-admission').at(-1);
+ assert.equal(receipt.accepted,1);assert.equal(receipt.total,3);assert.match(receipt.error,/fake machine error/);
+ assert.equal(f.events.length,3);assert.equal(f.events.at(-1),`${origin} button 0`);
+ assert.equal(f.state().pauseReason,'error');assert.equal(f.timers.size,0);
+ await f.send('events');const log=JSON.parse(decoder.decode(f.exports().at(-1).bytes));
+ assert.deepEqual(log.events,f.events);assert.equal(log.until,String(origin));
 }
 
 // UInt64 values above Number precision, exact tail, and worker cancellation.

@@ -42,6 +42,7 @@ document.querySelector('#initialize').onclick=()=>send('open',{name:document.que
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>send(b.dataset.action));
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
+document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});
 document.querySelector('#warm').onclick=()=>send('reset',{cold:false});document.querySelector('#cold').onclick=()=>send('reset',{cold:true});
 document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
 document.querySelector('#pending-outcomes').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
@@ -74,6 +75,7 @@ worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
  if(m.type==='closed')status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
+ if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
  if(m.type==='state'){status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
  if(m.type==='panel')present(m);
