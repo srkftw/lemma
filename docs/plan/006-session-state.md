@@ -893,4 +893,21 @@ opens the real local machine. Existing malformed oldSIMD tape and wholePending
 30M/600s failure remain failures. Fullcourse/check/Save/newcold at this fixed
 identity continues; original oldArray privatecourse observations stay separate.
 
+## Candidate20ebc CI and narrow log-observer correction
+
+Actual [run38510431433](https://github.com/srkftw/lemma/actions/runs/38510431433)
+completedFAILURE: nine other jobs passed, while Metadata and host-only suites
+failed its foundation step. The actual467-test log identifies only
+`test_every_logged_pipeline_fails_closed_with_explicit_pipefail`: its expected
+log tuple omitted `metadata/owned-table-prefix.log`, added with the real
+owned-table check. The workflow still has explicit `set -euo pipefail`, bounded
+execution and retained output for that step. The correction adds exactly that
+expected log; pipefail and malformed-pipeline negatives remain unchanged.
+
+All13 focused workflow tests and the full467 foundation tests now pass locally
+(35.035s), with original remote log and run/job/step metadata retained under
+`build/ci/task006-20ebc/`. Subsequent metadata steps in the failed remote job
+were skipped and remain unqualified by that run. This local correction needs a
+fresh candidate CI result; run38482551670 still qualifies only its earlier head.
+
 -->
