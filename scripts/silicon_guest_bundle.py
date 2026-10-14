@@ -60,7 +60,10 @@ STRING_CONFIGURATIONS={"notebook":"lemmasim-silicon-string-bulk-notebook",
 COURSE_DEPLOYMENT="lemma-course-array-bulk-deployment-v1"
 COURSE_CONFIGURATIONS={"notebook":"lemmasim-silicon-course-bulk-notebook",
                        "initializer":"lemmasim-silicon-course-bulk-initialize"}
-SOFTWARE_DEPLOYMENTS={COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+CLOSURE_DEPLOYMENT="lemma-managed-closure-bulk-deployment-v1"
+CLOSURE_CONFIGURATIONS={"notebook":"lemmasim-silicon-closure-bulk-notebook",
+                        "initializer":"lemmasim-silicon-closure-bulk-initialize"}
+SOFTWARE_DEPLOYMENTS={CLOSURE_DEPLOYMENT:CLOSURE_CONFIGURATIONS,COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
                       SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
@@ -709,6 +712,8 @@ def bundle_configurations(manifest):
 
 
 ARITHMETIC_LAB_CONFIGURATIONS=frozenset({
+    'lemmasim-silicon-closure-arithmetic-oom-development',
+    'lemmasim-silicon-closure-arithmetic-fault-development',
     'lemmasim-silicon-string-arithmetic-oom-development',
     'lemmasim-silicon-array-arithmetic-oom-development',
     'lemmasim-silicon-bytes-arithmetic-oom-development',
@@ -737,18 +742,20 @@ def development_configuration(profile,workload,configuration,mode):
 
 
 def laboratory_guest_archive(base, source_root, profile, configuration, mode):
-    """Complete original canonical Array/String OOM authority; no ROOT fallback."""
+    """Exact original canonical failure-image authority; no ROOT fallback."""
     import silicon_guest as guest
     archived_configurations = {
-        'lemmasim-silicon-array-arithmetic-oom-development': 'Array',
-        'lemmasim-silicon-string-arithmetic-oom-development': 'String',
+        'lemmasim-silicon-array-arithmetic-oom-development': 'Array OOM',
+        'lemmasim-silicon-string-arithmetic-oom-development': 'String OOM',
+        'lemmasim-silicon-closure-arithmetic-oom-development': 'Closure OOM',
+        'lemmasim-silicon-closure-arithmetic-fault-development': 'Closure fault',
     }
     if (profile != 'lemma-silicon-dev/0.3.0' or mode != 'laboratory' or
             configuration not in archived_configurations):
-        raise ValueError('Archived development guest requires canonical Laboratory Array OOM or String OOM')
+        raise ValueError('Archived development guest requires an exact canonical Laboratory failure image')
     return _audited_guest_archive(base,source_root,configuration,
         'lemma-laboratory-guest-source-archive/1',
-        'unchanged fully audited canonical Laboratory ' + archived_configurations[configuration] + ' OOM guest; complete original source/tool/object closure')
+        'unchanged fully audited canonical Laboratory ' + archived_configurations[configuration] + ' guest; complete original source/tool/object closure')
 
 
 def canonical_guest_archive(base, source_root, profile, workload):

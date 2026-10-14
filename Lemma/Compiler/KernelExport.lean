@@ -2,6 +2,7 @@ import Lean
 import Lemma.Compiler.CFGLower
 import Lemma.Compiler.Format
 import Lemma.Compiler.DeploymentCatalog
+import Lemma.Compiler.ManagedClosureMetadata
 import Lemma.Mathematics.ExecutionIdentity
 import Lemma.Mathematics.ExecutionIdentityV2
 import Lemma.Mathematics.ExecutionIdentityV4
@@ -33,10 +34,10 @@ private def roleProfile (role : String) (configuration : String)
       if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
-      if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration) &&
+  | "user" => .ok (if isClosureNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+      if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) &&
       image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
       (image?.any (fun image => image.key == "arithmetic") &&
        (configuration == "lemmasim-silicon-power-notebook" ||
@@ -82,7 +83,13 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "lemmasim-silicon-wifi-common-read-probe" then
+  | "kernel" => if isClosureNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-closure-bulk-notebook" then "siliconClosureBoot"
+         else if configuration == "lemmasim-silicon-closure-bulk-initialize" then "siliconClosureInitializeMedium"
+         else if configuration == "lemmasim-silicon-closure-arithmetic-oom-development" then "siliconClosureOOMBoot"
+         else "siliconClosureFaultBoot"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if configuration == "lemmasim-silicon-wifi-common-read-probe" then
       #["Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.boot", "Lemma.Platform.Silicon.Development.WiFiCommonReadProbe.dispatch"]
     else if configuration == "lemmasim-silicon-wifi-common-probe" then
       #["Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot", "Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch"]
@@ -339,7 +346,7 @@ private def deviceJson (lowered : LoweredActionSuite) (operation : Device.Op) : 
     ("fence_after", .bool spec.fenceAfter), ("sites", .arr (deviceSites lowered operation))]
 
 private def closedInlineFor (configuration : String) : Bool :=
-  isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
+  isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration ||
   #["lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize",
     "lemmasim-silicon-power-arithmetic-oom-development",
     "lemmasim-silicon-power-arithmetic-fault-development",
@@ -357,7 +364,7 @@ private def closedInlineFields (configuration : String) (lowered : LoweredAction
     ("wrappers", .arr (lowered.inlineWrappers.map fun row => Json.mkObj [
       ("source", .str row.source.toString), ("symbol", .str row.symbol),
       ("operation", .str row.operation.stableId)]))] ++
-    (if !(isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration) then [] else [
+    (if !(isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) then [] else [
       ("user_wrapper_contract", .str "lemma-checked-user-word-wrapper-v1"),
       ("user_wrappers", .arr (lowered.inlineUserWrappers.map fun row => Json.mkObj [
         ("source", .str row.source.toString), ("symbol", .str row.symbol),
@@ -373,7 +380,7 @@ private def managedRecordFields (env : Environment) (configuration : String)
   if suite.contractVersion != Profile.user_v0_2.contractVersion then
     unless entries.isEmpty do throw "Managed closure crossed a legacy User profile"
     return []
-  if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
+  if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
     unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
@@ -732,6 +739,9 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← managedBytesFields env configuration image? suite lowered) ++
       (← managedArrayFields env configuration image? suite lowered) ++
       (← managedStringFields env configuration image? suite lowered) ++
+      (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
+      (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration)
+        (image?.any (·.key == "arithmetic")) role suite) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
       (← arithmeticBytesExecutionFields configuration role image? suite) ++
@@ -766,7 +776,7 @@ historical configurations and non-User roles keep their original source name. -/
 def llvmModuleSourceName (configuration role : String)
     (image? : Option UserImageSpec := none) : String :=
   if role == "user" && (configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
-      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration) then
+      isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) then
     match image? with
     | some image => "Lemma lemma-silicon-dev/0.3.0 user " ++ image.root.toString
     | none => "Lemma " ++ configuration ++ " " ++ role
@@ -825,7 +835,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
     inlineLiteralConstants := closedInlineFor configuration,
     inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" && !isProductNotebookConfiguration configuration,
-    inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6) }
+    inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then
@@ -872,13 +882,13 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
 
 private def frameCountFor (configuration : String) : Nat :=
   if isWiFiCommonConfiguration configuration || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
-      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
+      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
   if isWiFiCommonConfiguration configuration || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
-      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then
+      isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then
     (Lemma.Platform.Silicon.BindingPower.frame_pool_base + Lemma.Platform.Silicon.BindingPower.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then
     (Lemma.Platform.Silicon.BindingFull.frame_pool_base + Lemma.Platform.Silicon.BindingFull.frame_pool_bytes).toNat
@@ -1181,6 +1191,9 @@ elab_rules : command
       if key == "arithmetic" &&
           (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_6 then
         liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedStringSubmission.compareFiveSix]
+      if key == "arithmetic" &&
+          (← liftIO <| IO.ofExcept (roleProfile "user" configuration (some image))) == .user_v0_7 then
+        liftCoreM <| Lean.Compiler.compile #[`Lemma.Mathematics.ManagedClosureSubmission.compareFiveSix]
       liftIO <| exportUnit (← getEnv) configuration "user" names (System.FilePath.mk output / image.directory) (some image)
       logInfo m!"Lemma exported the genuine {configuration} user image {key}"
 

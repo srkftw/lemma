@@ -16,6 +16,8 @@ ARRAY_EXECUTION_IDENTITIES = (0x0005000100000001, 0x0005000000000001,
                              0x0001000300000001, 0x000300000000001f)
 STRING_EXECUTION_IDENTITIES = (0x0006000100000001, 0x0006000000000001,
                               0x0001000400000001, 0x000400000000001f)
+CLOSURE_EXECUTION_IDENTITIES = (0x0007000100000001, 0x0007000000000001,
+                               0x0001000500000001, 0x000500000000001f)
 
 def result(goal, n, d, p0, p1, p2, budget):
     if goal == 1:
@@ -36,7 +38,7 @@ def inspect(payload, namespace, object_id):
         raise ValueError('mathematical record length differs')
     words = struct.unpack('<'+str(len(payload)//8)+'Q', payload)
     version=words[1]
-    if version not in (1,2,3,4,5,6,7) or len(payload)!={1:832,2:1856,3:2496,4:2496,5:2496,6:2496,7:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
+    if version not in (1,2,3,4,5,6,7,8) or len(payload)!={1:832,2:1856,3:2496,4:2496,5:2496,6:2496,7:2496,8:2496}[version] or words[:4] != (MAGIC, version, IDENTITY, namespace) or object_id != 0x8000 + words[4]:
         raise ValueError('mathematical package/namespace/page identity differs')
     if not 1 <= words[4] <= 64 or not 1 <= words[5] <= 0x7ffffffffffffffe:
         raise ValueError('mathematical anchor/revision differs')
@@ -74,7 +76,7 @@ def inspect(payload, namespace, object_id):
             'page': words[4], 'revision': words[5], 'goal': words[6],
             'answer': list(words[7:12]), 'outcome': words[12], 'evidence_revision': words[13],
             'budget': words[17], 'attempts': attempts, 'hints': hints, 'history': history}
-    if version in (2,3,4,5,6,7):
+    if version in (2,3,4,5,6,7,8):
         identity,mode,count,uncertain,event_version,show_reason=words[22:28]
         if identity!=IDENTITY or mode>4 or count>64 or uncertain!=1 or event_version!=1 or show_reason>1 or any(words[28:32]):
             raise ValueError('learner policy identity/bounds/uncertainty differs')
@@ -118,18 +120,19 @@ def inspect(payload, namespace, object_id):
         else:action,reason='support','unsupported-or-resource'
         record['learner']={'policy':'lemma-offline-review/1','mode':mode,'understanding':'uncertain',
             'recommendation':action,'reason':reason,'show_reason':bool(show_reason),'events':events}
-    if version in (3,4,5,6,7):
-        if words[232:240] != (EXECUTION_MAGIC,{3:1,4:2,5:3,6:4,7:5}[version],0,0,0,0,0,0):
+    if version in (3,4,5,6,7,8):
+        if words[232:240] != (EXECUTION_MAGIC,{3:1,4:2,5:3,6:4,7:5,8:6}[version],0,0,0,0,0,0):
             raise ValueError('execution extension header/version/reserved differs')
         def execution(slot,budget,active):
             if slot==(0,)*8:
                 return {'origin':'Unknown'}
             request,implementation,lowering,runtime,resources,actual_budget,status,origin=slot
             admitted = (origin==2 and (implementation,lowering,runtime,resources)==EXECUTION_IDENTITIES) or \
-                (version in (4,5,6,7) and origin==3 and (implementation,lowering,runtime,resources)==SUMS_EXECUTION_IDENTITIES) or \
-                (version in (5,6,7) and origin==4 and (implementation,lowering,runtime,resources)==BYTES_EXECUTION_IDENTITIES) or \
-                (version in (6,7) and origin==5 and (implementation,lowering,runtime,resources)==ARRAY_EXECUTION_IDENTITIES) or \
-                (version==7 and origin==6 and (implementation,lowering,runtime,resources)==STRING_EXECUTION_IDENTITIES)
+                (version in (4,5,6,7,8) and origin==3 and (implementation,lowering,runtime,resources)==SUMS_EXECUTION_IDENTITIES) or \
+                (version in (5,6,7,8) and origin==4 and (implementation,lowering,runtime,resources)==BYTES_EXECUTION_IDENTITIES) or \
+                (version in (6,7,8) and origin==5 and (implementation,lowering,runtime,resources)==ARRAY_EXECUTION_IDENTITIES) or \
+                (version in (7,8) and origin==6 and (implementation,lowering,runtime,resources)==STRING_EXECUTION_IDENTITIES) or \
+                (version==8 and origin==7 and (implementation,lowering,runtime,resources)==CLOSURE_EXECUTION_IDENTITIES)
             if not active or not 1<=request<=0x7ffffffffffffffe or not admitted or \
                 actual_budget!=budget or status!=0:
                 raise ValueError('execution request/implementation/lowering/runtime/resource/status differs')
@@ -142,7 +145,9 @@ def inspect(payload, namespace, object_id):
                    5:('IsolatedArray','lemma-isolated-arithmetic-array-v1',
                       'core0-user-v0.5/lemma-managed-array-v1','lemma-owned-arena-array-graph-v1','lemma-arithmetic-array-resource-v1'),
                    6:('IsolatedString','lemma-isolated-arithmetic-string-v1',
-                      'core0-user-v0.6/lemma-managed-string-v1','lemma-owned-arena-string-graph-v1','lemma-arithmetic-string-resource-v1')}
+                      'core0-user-v0.6/lemma-managed-string-v1','lemma-owned-arena-string-graph-v1','lemma-arithmetic-string-resource-v1'),
+                   7:('IsolatedClosure','lemma-isolated-arithmetic-closure-v1',
+                      'core0-user-v0.7/lemma-managed-closure-v1','lemma-owned-arena-closure-graph-v1','lemma-arithmetic-closure-resource-v1')}
             origin_name,implementation_name,lowering_name,runtime_name,resource_name=names[origin]
             return {'origin':origin_name,'request':request,'implementation':implementation_name,
                     'lowering':lowering_name,'runtime':runtime_name,'resources':resource_name,

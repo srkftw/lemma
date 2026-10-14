@@ -7,6 +7,7 @@ compiler correctness or establish actual notebook execution/performance.
 """
 import hashlib
 from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 import re
 from core0_common import Core0Error
 CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
@@ -19,7 +20,7 @@ NEXT_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-next-bulk-notebook','lemmas
 WIRE_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 CONFIGURATIONS |= WIRE_CONFIGURATIONS
 EXECUTED_CONFIGURATION='lemmasim-silicon-product-executed-bulk-notebook'
-CONFIGURATIONS |= ARRAY | NEXT_CONFIGURATIONS | {EXECUTED_CONFIGURATION}
+CONFIGURATIONS |= frozenset(CLOSURE_CONFIGURATIONS) | ARRAY | NEXT_CONFIGURATIONS | {EXECUTED_CONFIGURATION}
 PRODUCT='lemmasim-silicon-product-bulk-notebook'
 USB=frozenset({'lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize'})
 BYTES=frozenset({'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'})
@@ -74,8 +75,10 @@ def validate(ir,unit,*,optimized):
    special='ModernBulk' in source or 'ProductBulk' in source or 'USBBulk' in source
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
+  if unit['configuration'] in CLOSURE_CONFIGURATIONS:
+   selected['Lemma.Applications.Notebook.mainClosureBulk']='435236b7dba59e7ff115a510fce38c4157b1e8c120e07695bacfa937b9cabf82'
   for source in list(selected):
-   if source.endswith('.mainArrayBulk') and unit['configuration'] not in ARRAY or source.endswith('.mainBytesBulk') and unit['configuration'] not in BYTES or source.endswith('.mainSumsBulk') and unit['configuration'] in BYTES | ARRAY:del selected[source]
+   if source.endswith('.mainArrayBulk') and unit['configuration'] not in ARRAY or source.endswith('.mainBytesBulk') and unit['configuration'] not in BYTES or source.endswith('.mainSumsBulk') and unit['configuration'] in BYTES | ARRAY | frozenset(CLOSURE_CONFIGURATIONS):del selected[source]
  observed={}
  for source,expected in selected.items():
   if source not in by:raise Core0Error('Surface-v2 source closure missing: '+source)

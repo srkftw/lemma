@@ -129,6 +129,30 @@ class NativeBundleBoundary(unittest.TestCase):
         self.assertEqual(origin_destination(manifest,path,old),'old')
         with self.assertRaises(ValueError):origin_destination(manifest,path,new)
 
+    def test_closure_pair_and_failures_have_separate_exact_authority(self):
+        from silicon_guest_bundle import CLOSURE_DEPLOYMENT, CLOSURE_CONFIGURATIONS
+        expected={'notebook':'lemmasim-silicon-closure-bulk-notebook',
+                  'initializer':'lemmasim-silicon-closure-bulk-initialize'}
+        self.assertEqual(CLOSURE_CONFIGURATIONS,expected)
+        manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
+                  'software_deployment':{'contract_version':CLOSURE_DEPLOYMENT,
+                                         'configurations':dict(expected)}}
+        self.assertEqual(bundle_configurations(manifest),expected)
+        for role in expected:
+            for family in ('string','array','sums','course'):
+                bad=copy.deepcopy(manifest)
+                suffix='notebook' if role=='notebook' else 'initialize'
+                bad['software_deployment']['configurations'][role]=f'lemmasim-silicon-{family}-bulk-{suffix}'
+                with self.assertRaises(ValueError):bundle_configurations(bad)
+        for kind in ('oom','fault'):
+            configuration=f'lemmasim-silicon-closure-arithmetic-{kind}-development'
+            self.assertIn(configuration,ARITHMETIC_LAB_CONFIGURATIONS)
+            self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0','notebook',configuration,'laboratory'),configuration)
+            bad=copy.deepcopy(manifest);bad['software_deployment']['configurations']['notebook']=configuration
+            with self.assertRaises(ValueError):bundle_configurations(bad)
+            for mode in ('student','developer',None):
+                with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.3.0','notebook',configuration,mode)
+
     def test_development_configuration_requires_exact_laboratory_admission(self):
         profile='lemma-silicon-dev/0.3.0'
         for configuration in ARITHMETIC_LAB_CONFIGURATIONS:

@@ -28,6 +28,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
 from course_deployment import CONFIGURATIONS as COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
+from closure_deployment import CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as CLOSURE_SOFTWARE_DEPLOYMENT
 from build_kernel import NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
@@ -257,6 +258,15 @@ LEMMASIM_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 POWER_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 
+CLOSURE_NOTEBOOK_IMAGES=(NOTEBOOK_USER_IMAGES[0],
+    {**NOTEBOOK_USER_IMAGES[1],'source':'Lemma.Applications.Notebook.mainClosureBulk'},
+    {**ARITHMETIC_NOTEBOOK_IMAGES[2],'module':'Lemma.Services.Arithmetic.ServerV7',
+      'source':'Lemma.Services.Arithmetic.ServerV7.main'})
+MULTI_USER_CONFIGURATIONS.update({configuration:CLOSURE_NOTEBOOK_IMAGES for configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS})
+LEMMASIM_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+POWER_CONFIGURATIONS |= frozenset(CLOSURE_NOTEBOOK_CONFIGURATIONS)
+
 COURSE_NOTEBOOK_IMAGES=({**ARRAY_NOTEBOOK_IMAGES[0],"source":"Lemma.Services.Store.Server.courseMain"},
     *ARRAY_NOTEBOOK_IMAGES[1:], {"key":"course","id":4,"module":"Lemma.Courses.PackageInstaller",
     "source":"Lemma.Courses.PackageInstaller.main","args":["u64"],"symbol_prefix":"lemma_user_course_",
@@ -264,6 +274,8 @@ COURSE_NOTEBOOK_IMAGES=({**ARRAY_NOTEBOOK_IMAGES[0],"source":"Lemma.Services.Sto
 MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for configuration in COURSE_NOTEBOOK_CONFIGURATIONS})
 
 def software_deployment_fields(configuration):
+    if configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS:
+        return {"software_deployment":CLOSURE_SOFTWARE_DEPLOYMENT}
     if configuration in COURSE_NOTEBOOK_CONFIGURATIONS:
         return {"software_deployment":COURSE_SOFTWARE_DEPLOYMENT}
     if configuration in STRING_NOTEBOOK_CONFIGURATIONS:
@@ -3204,7 +3216,9 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     from arithmetic_array_identity import FIELD as array_execution_field, selected as array_execution_selected, contract as array_execution_contract
     from managed_string import FIELD as string_field, allowed as string_allowed, contract as string_contract
     from arithmetic_string_identity import FIELD as string_execution_field, selected as string_execution_selected, contract as string_execution_contract
-    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()) | ({array_field} if array_field in unit and array_allowed(unit) else set()) | ({array_execution_field} if array_execution_field in unit and array_execution_selected(unit) else set()) | ({string_field} if string_field in unit and string_allowed(unit) else set()) | ({string_execution_field} if string_execution_field in unit and string_execution_selected(unit) else set()), "unit")
+    from arithmetic_closure_identity import FIELD as closure_execution_field, selected as closure_allowed, contract as closure_contract
+    from managed_closure import contract as managed_closure_contract
+    _keys(unit, keys | ({"image_key", "image_id"} if multi_user else set()) | case_field | set(expected_managed) | set(software_deployment_fields(configuration)) | ({inline_field} if inline_field in unit and inline_selected(unit) else set()) | ({records_field} if records_field in unit and records_allowed(unit) else set()) | ({execution_field} if execution_field in unit and execution_selected(unit) else set()) | ({sums_field} if sums_field in unit and sums_allowed(unit) else set()) | ({sums_execution_field} if sums_execution_field in unit and sums_execution_selected(unit) else set()) | ({bytes_field} if bytes_field in unit and bytes_allowed(unit) else set()) | ({bytes_execution_field} if bytes_execution_field in unit and bytes_execution_selected(unit) else set()) | ({array_field} if array_field in unit and array_allowed(unit) else set()) | ({array_execution_field} if array_execution_field in unit and array_execution_selected(unit) else set()) | ({string_field} if string_field in unit and string_allowed(unit) else set()) | ({string_execution_field} if string_execution_field in unit and string_execution_selected(unit) else set()) | ({"managed_closure",closure_execution_field} if closure_allowed(unit) else set()), "unit")
     if any(unit.get(key) != value for key, value in {**expected_managed, **software_deployment_fields(configuration)}.items()):
         raise Core0Error("unit managed policy/boot role differs")
     category = ("production" if configuration in {"normal", "service-normal"} else "development") + f"-{role}-unit"
@@ -3212,6 +3226,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
             or unit.get("artifact_category") != category or unit.get("configuration") != configuration
             or unit.get("role") != role or unit.get("contract_version") !=
                 (kernel_contract(configuration) if role == "kernel" else
+                 'core0-user-v0.7' if closure_allowed(unit) else
                  'core0-user-v0.6' if string_allowed(unit) else
                  'core0-user-v0.5' if array_allowed(unit) else
                  'core0-user-v0.4' if bytes_allowed(unit) else
@@ -3273,6 +3288,8 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
     array_execution_contract(unit)
     string_contract(unit)
     string_execution_contract(unit)
+    closure_contract(unit)
+    managed_closure_contract(unit)
     bytes_contract(unit)
     bytes_execution_contract(unit)
     for root in roots:
@@ -4721,13 +4738,13 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 if source.endswith('DescriptorDTB.literalWordExecuted'):
                     return (row['values'],row['bytes'])==([0x78652c616d6d656c,0x722d646574756365,0x687365726665],24)
             if source=='Lemma.Applications.Notebook.openCourse':
-                # This actual 24-byte object is admitted only after the
-                # separate version2..4 bound/read/complete-owner LLVM check.
+                # These exact versioned objects are admitted only after the
+                # separate version2..8 bound/read/complete-owner LLVM check.
                 from lemmasim_readonly import DOCUMENT4_NOTEBOOK_PROFILES
                 return (unit.get('configuration') in DOCUMENT4_NOTEBOOK_PROFILES
                         and unit['role']=='user' and unit.get('contract_version')==DOCUMENT4_NOTEBOOK_PROFILES[unit['configuration']]
                         and unit.get('image_key')=='notebook'
-                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32),([1856,2496,2496,2496,2496],40),([1856,2496,2496,2496,2496,2496],48)])
+                        and (row['values'],row['bytes']) in [([1856,2496,2496],24),([1856,2496,2496,2496],32),([1856,2496,2496,2496,2496],40),([1856,2496,2496,2496,2496,2496],48),([1856,2496,2496,2496,2496,2496,2496],56)])
             if source=='Lemma.USB.Control.descriptorWord':
                 return (unit.get('configuration') in USB_CONFIGURATIONS | PRODUCT_CONFIGURATIONS and unit['role']=='kernel'
                         and unit.get('contract_version')==kernel_contract(unit['configuration']) and row['values'] in
@@ -4840,8 +4857,11 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 spec=clocked_specs[source]
             if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
                 from arithmetic_string_identity import notebook_jump_spec
-                string_spec=notebook_jump_spec(optimized_ir,unit,source,owner['name'])
-                if string_spec is not None:spec=string_spec
+                from arithmetic_closure_identity import notebook_jump_spec as closure_notebook_jump_spec
+                closure_spec=closure_notebook_jump_spec(optimized_ir,unit,source,owner['name'])
+                string_spec=None if closure_spec is not None else notebook_jump_spec(optimized_ir,unit,source,owner['name'])
+                if closure_spec is not None:spec=closure_spec
+                elif string_spec is not None:spec=string_spec
             if executed_token:
                 from paper_executed import validate as validate_executed
                 validate_executed(optimized_ir,unit,optimized=True)
@@ -4916,7 +4936,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 image_authority={**image_authority,source:image_authority[source] | {'course'}}
             if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
                 from arithmetic_string_identity import NOTEBOOK_JUMPS
-                if source in NOTEBOOK_JUMPS:image_authority={**image_authority,source:{'notebook'}}
+                from arithmetic_closure_identity import NOTEBOOK_JUMPS as CLOSURE_NOTEBOOK_JUMPS
+                if source in set(NOTEBOOK_JUMPS) | set(CLOSURE_NOTEBOOK_JUMPS):image_authority={**image_authority,source:{'notebook'}}
             if unit['role']=='user' and (source not in image_authority or unit.get('image_key') not in image_authority[source]):
                 raise Core0Error('User backend table escapes its exact selected image: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
@@ -5167,6 +5188,10 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     string_report = validate_managed_string(ir, unit, optimized=optimized)
     from arithmetic_string_identity import validate as validate_string_execution_identity
     string_execution_report = validate_string_execution_identity(ir, unit, optimized=optimized)
+    from arithmetic_closure_identity import validate as validate_closure_execution_identity
+    closure_execution_report = validate_closure_execution_identity(ir,unit,optimized=optimized)
+    from managed_closure import validate as validate_managed_closure
+    closure_report=validate_managed_closure(ir,unit,optimized=optimized)
     from arithmetic_bytes_identity import validate as validate_bytes_execution_identity
     bytes_execution_report = validate_bytes_execution_identity(ir, unit, optimized=optimized)
     validate_kernel_uart_initialize(ir, unit, optimized=optimized)
@@ -5238,6 +5263,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"arithmetic_array_execution_identity":array_execution_report} if array_execution_report is not None else {}),
             **({"managed_string":string_report} if string_report is not None else {}),
             **({"arithmetic_string_execution_identity":string_execution_report} if string_execution_report is not None else {}),
+            **({"arithmetic_closure_execution_identity":closure_execution_report} if closure_execution_report is not None else {}),
+            **({"managed_closure":closure_report} if closure_report is not None else {}),
             **({"managed_bytes":bytes_report} if bytes_report is not None else {}),
             **({"arithmetic_bytes_execution_identity":bytes_execution_report} if bytes_execution_report is not None else {}),
             **({"ble_header_intrinsic":ble_header} if ble_header else {}),

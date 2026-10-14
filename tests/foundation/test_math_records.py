@@ -169,6 +169,38 @@ class MathematicsEvidenceTests(unittest.TestCase):
             words=self.record();words[offset]=value
             with self.assertRaises(ValueError):self.inspect(words)
 
+    def test_closure_record_retains_prior_authority_and_rejects_forged_applicability(self):
+        # Literal independent Doc8 authority; do not build this expectation
+        # from the implementation registry or infer trust from outcome1.
+        words=self.current_record(True);words[1]=8;words[233]=6
+        historical=[(2,(0x0002000100000001,0x0002000000000001,0x0001000000000001,0x000100000000001f)),
+                    (3,(0x0003000100000001,0x0003000000000001,0x0001000100000001,0x000100000000001f)),
+                    (4,(0x0004000100000001,0x0004000000000001,0x0001000200000001,0x000200000000001f)),
+                    (5,(0x0005000100000001,0x0005000000000001,0x0001000300000001,0x000300000000001f)),
+                    (6,(0x0006000100000001,0x0006000000000001,0x0001000400000001,0x000400000000001f))]
+        for origin,identities in historical:
+            slot=[50,*identities,8,0,origin]
+            words[240:248]=slot;words[248:256]=slot
+            self.assertNotEqual(self.inspect(words)['execution']['active']['origin'],'IsolatedClosure')
+        slot=[51,0x0007000100000001,0x0007000000000001,
+              0x0001000500000001,0x000500000000001f,8,0,7]
+        words[240:248]=slot;words[248:256]=slot
+        observed=self.inspect(words)
+        self.assertEqual((observed['execution']['active']['origin'],
+                          observed['execution']['active']['resources']),
+                         ('IsolatedClosure','lemma-arithmetic-closure-resource-v1'))
+        for index in [1,233,14,15,16,17,*range(240,256)]:
+            changed=list(words);changed[index]+=1
+            with self.assertRaises(ValueError):self.inspect(changed)
+        for version,extension in [(3,1),(4,2),(5,3),(6,4),(7,5)]:
+            changed=list(words);changed[1]=version;changed[233]=extension
+            with self.assertRaises(ValueError):self.inspect(changed)
+        changed=list(words);changed[5]=12;changed[8]=7;changed[12]=changed[13]=0
+        changed[240:248]=[0]*8
+        self.assertEqual(self.inspect(changed)['execution']['history'],observed['execution']['history'])
+        changed[240:248]=slot
+        with self.assertRaises(ValueError):self.inspect(changed)
+
     def test_unsupported_and_resource_outcomes_are_distinct(self):
         self.assertEqual(math_oracle.result(3,5,6,1,2,1,8),4)
         self.assertEqual(math_oracle.result(1,5,6,0,0,0,0),5)

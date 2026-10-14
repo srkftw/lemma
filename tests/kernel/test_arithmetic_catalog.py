@@ -42,7 +42,10 @@ class ArithmeticCatalog(unittest.TestCase):
         # Course installation has an independently specified fourth process;
         # historical deployments retain their exact three-image assertions.
         self.assertEqual(set(ARITHMETIC_CONFIGURATIONS),set(expected)|{
-            'lemmasim-silicon-course-bulk-notebook','lemmasim-silicon-course-bulk-initialize'})
+            'lemmasim-silicon-course-bulk-notebook','lemmasim-silicon-course-bulk-initialize',
+            'lemmasim-silicon-closure-bulk-notebook','lemmasim-silicon-closure-bulk-initialize',
+            'lemmasim-silicon-closure-arithmetic-oom-development',
+            'lemmasim-silicon-closure-arithmetic-fault-development'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)

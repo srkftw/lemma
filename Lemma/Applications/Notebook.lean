@@ -8,6 +8,8 @@ import Lemma.Courses.Arithmetic
 import Lemma.Services.Arithmetic.ClientV2
 import Lemma.Services.Arithmetic.ClientV3
 import Lemma.Services.Arithmetic.ClientV5
+import Lemma.Services.Arithmetic.ClientV7
+import Lemma.Documents.MathematicsClosure
 import Lemma.Services.Arithmetic.ClientV6
 import Lemma.Documents.MathematicsString
 import Lemma.Documents.MathematicsArray
@@ -681,7 +683,8 @@ private def allocateCourse : Action :=
 -- Main initialization sets it before any course request or document load.
 private def pollArithmetic (transaction incoming outgoing request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 6 then Lemma.Services.Arithmetic.ClientV6.pollCall transaction incoming outgoing request
+  if selection = 7 then Lemma.Services.Arithmetic.ClientV7.pollCall transaction incoming outgoing request
+  else if selection = 6 then Lemma.Services.Arithmetic.ClientV6.pollCall transaction incoming outgoing request
   else if selection = 5 then Lemma.Services.Arithmetic.ClientV5.pollCall transaction incoming outgoing request
   else if selection = 4 then Lemma.Services.Arithmetic.ClientV4.pollCall transaction incoming outgoing request
   else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.pollCall transaction incoming outgoing request
@@ -689,7 +692,8 @@ private def pollArithmetic (transaction incoming outgoing request : UInt64) : Ac
 
 private def callArithmetic (endpoint outgoing document request : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 6 then Lemma.Services.Arithmetic.ClientV6.beginCall endpoint outgoing document request
+  if selection = 7 then Lemma.Services.Arithmetic.ClientV7.beginCall endpoint outgoing document request
+  else if selection = 6 then Lemma.Services.Arithmetic.ClientV6.beginCall endpoint outgoing document request
   else if selection = 5 then Lemma.Services.Arithmetic.ClientV5.beginCall endpoint outgoing document request
   else if selection = 4 then Lemma.Services.Arithmetic.ClientV4.beginCall endpoint outgoing document request
   else if selection = 3 then Lemma.Services.Arithmetic.ClientV3.beginCall endpoint outgoing document request
@@ -697,7 +701,8 @@ private def callArithmetic (endpoint outgoing document request : UInt64) : Actio
 
 private def completeArithmetic (revision goal outcome request budget : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 6 then Lemma.Documents.MathematicsString.completeExecution mathematics revision goal outcome request budget
+  if selection = 7 then Lemma.Documents.MathematicsClosure.completeExecution mathematics revision goal outcome request budget
+  else if selection = 6 then Lemma.Documents.MathematicsString.completeExecution mathematics revision goal outcome request budget
   else if selection = 5 then Lemma.Documents.MathematicsArray.completeExecution mathematics revision goal outcome request budget
   else if selection = 4 then Lemma.Documents.MathematicsBytes.completeExecution mathematics revision goal outcome request budget
   else if selection = 3 then Lemma.Documents.Mathematics.completeExecutionSums mathematics revision goal outcome request budget
@@ -705,7 +710,8 @@ private def completeArithmetic (revision goal outcome request budget : UInt64) :
 
 private def createArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 6 then Lemma.Documents.MathematicsString.create mathematics ns page
+  if selection = 7 then Lemma.Documents.MathematicsClosure.create mathematics ns page
+  else if selection = 6 then Lemma.Documents.MathematicsString.create mathematics ns page
   else if selection = 5 then Lemma.Documents.MathematicsArray.create mathematics ns page
   else if selection = 4 then Lemma.Documents.MathematicsBytes.create mathematics ns page
   else if selection = 3 then Lemma.Documents.Mathematics.createSums mathematics ns page
@@ -713,7 +719,10 @@ private def createArithmetic (ns page : UInt64) : Action :=
 
 private def upgradeArithmetic (ns page : UInt64) : Action :=
   .bind (get 576) fun s selection => if statusFailed s = true then .done s 0 else
-  if selection = 6 then
+  if selection = 7 then
+  .bind (Lemma.Documents.MathematicsClosure.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
+  Lemma.Documents.MathematicsClosure.upgrade mathematics
+  else if selection = 6 then
   .bind (Lemma.Documents.MathematicsString.validate mathematics ns page) fun s _ => if statusFailed s = true then .done s 0 else
   Lemma.Documents.MathematicsString.upgrade mathematics
   else if selection = 5 then
@@ -816,6 +825,7 @@ private def openCourse : Action :=
       else if version = 3 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 4 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 5 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
+      else if version = 8 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 7 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else if version = 6 then readObject (Lemma.Documents.Mathematics.object page) mathematics Lemma.Documents.Mathematics.currentBytes
       else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -1154,7 +1164,7 @@ private def initializeMedium : Action :=
 
 private def mainWithExecution (bootArgument selection bulkMode : UInt64) : Action :=
   if 3 < bootArgument then failed else
-  if (if selection = 2 then true else if selection = 3 then true else if selection = 4 then true else if selection = 5 then true else selection = 6) = false then failed else
+  if (if selection = 2 then true else if selection = 3 then true else if selection = 4 then true else if selection = 5 then true else if selection = 6 then true else selection = 7) = false then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 selection) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 584 bulkMode) fun s _ => if statusFailed s = true then .done s 0 else
@@ -1231,6 +1241,12 @@ hexadecimal UTF-8 String roundtrip in the separate arithmetic process. -/
 def mainStringBulk (bootArgument : UInt64) : Action :=
   if bootArgument = 2 then mainWithExecution bootArgument 6 1 else
   if bootArgument = 3 then mainWithExecution bootArgument 6 1 else failed
+
+/-- Explicit development closure deployment: Protocol7/Document8 with real
+scalar capture graphs in the separately linked User7 arithmetic authority. -/
+def mainClosureBulk (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithExecution bootArgument 7 1 else
+  if bootArgument = 3 then mainWithExecution bootArgument 7 1 else failed
 
 /-! Additive failure policy. No historical root calls these Actions. A genuine
 Store error retains the exact staged owned record; status inspection is never a
