@@ -90,6 +90,143 @@
     "--output-dir",
     "build/courses/task006-package-qualified-a5"
   ],
+  "cooperative_reader_selection_binding_component": {
+    "actual_actions": {
+      "applicability_mismatches": 8,
+      "binding_commit_tag_partial_fault_rejected": true,
+      "binding_mutations": 15,
+      "cancel_discards_accepted_reply": true,
+      "crc_corruption_rejected": true,
+      "exact_bound_goals": [
+        1,
+        2
+      ],
+      "maximum_io_operations_per_step": 1,
+      "opaque_package_bytes": 4040,
+      "ordered_partial_copy_fault_positions": [
+        0,
+        1,
+        7,
+        8,
+        127
+      ],
+      "ordered_read_count": 32,
+      "original_package_and_store_effects_unchanged": true,
+      "pending_bytes_handle_preserved": true,
+      "read_context_guards": 8,
+      "transport_reply_failures": 4,
+      "unsupported_presentation_or_goal_nodes": 6
+    },
+    "artifacts": {
+      "normalized.txt": "63e2945cbdb938101b0e2a0888c47a3cd01920c0eada167706ad7b0d5f9be660",
+      "program.ll": "82fb49423e8e0c6ee20c0a170cc67b27821ba909ae02c385ecb60304a57270c3",
+      "program.o": "2d061d7acac58b9931c220f96703aa5548df275577220f2ccbfb19ac1c1a68d6",
+      "program.opt.ll": "82a413db150e1c0e05ab9c8a7ff22c534388c3ba221eac8544660b2e998f108b",
+      "unit.json": "ccf99653812b749b1224dfc2369fe94763531132c5e1c0c97b10e78142568200"
+    },
+    "bounds": {
+      "address_space_bytes": 17179869184,
+      "command_seconds": 180,
+      "generated_file_bytes": 1073741824,
+      "whole_seconds": 600
+    },
+    "commands": [
+      "nix develop --no-write-lock-file --command python3 scripts/check_course_reader.py --output-dir build/courses/task006-reader-qualified-a1 --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp",
+      "nix develop --no-write-lock-file --command python3 scripts/check_course_reader.py --output-dir build/courses/task006-reader-qualified-a2 --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp --retained-dir build/courses/task006-reader-qualified-a1"
+    ],
+    "contracts": [
+      "lemma-course-reader/1",
+      "lemma-course-selection-binding/1"
+    ],
+    "corrected_observation": {
+      "child_peak_rss_kib": 123436,
+      "corrected_observer": {
+        "path": "scripts/check_course_reader.py",
+        "sha256": "526fb9e6d55a164dd9d30b0cbfef3b7482a5c59e02ae548e33f15ce091ae3a13"
+      },
+      "result": "build/courses/task006-reader-qualified-a2/result.json",
+      "sha256": "75c22be1f55b6bf747a9eebef58f80e5f4961be6aed55b251330f5ca5b641b0e",
+      "target_recompilation": false,
+      "wall_seconds": 36.982228112989105
+    },
+    "function_count": 120,
+    "observer_correction": "The original host effect observer expected the nonexistent label syscall. The already-declared primitive uses user-syscall/io-order/privilege-transition in addition to checked virtual memory effects. Only this literal known-effect list changed; original59 source/LLVM/Action capture and FAIL preserved, missing O2/object gates observed from unchanged original LLVM.",
+    "original_capture": {
+      "child_peak_rss_kib": 1613348,
+      "error": "Core0Error('empty/foreign reader effect closure')",
+      "result": "build/courses/task006-reader-qualified-a1/result.json",
+      "sha256": "f53a34dc170ccf13925f259d2f61e16c0969e758d8db5363f07f1b0f18488761",
+      "status": "FAIL",
+      "successful_commands": [
+        {
+          "argv": [
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+            "build",
+            "Lemma.Compiler.CourseReaderExport"
+          ],
+          "label": "build",
+          "returncode": 0,
+          "wall_seconds": 0.16528329893480986
+        },
+        {
+          "argv": [
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+            "env",
+            "lean",
+            "-j2",
+            "--run",
+            "tests/courses/Reader.lean"
+          ],
+          "label": "actions",
+          "returncode": 0,
+          "wall_seconds": 3.293365252087824
+        },
+        {
+          "argv": [
+            "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+            "env",
+            "lean",
+            "-j2",
+            "tests/courses/ReaderExport.lean"
+          ],
+          "label": "export",
+          "returncode": 0,
+          "wall_seconds": 5.554417239036411
+        }
+      ],
+      "wall_seconds": 9.251288800034672
+    },
+    "original_source_archive": "build/courses/task006-reader-qualified-a2/consumed-source-root",
+    "reference_package": {
+      "bytes": 4040,
+      "independent_crc32": 1743257817,
+      "original": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-qualified-a5/package/arithmetic.lcp",
+      "sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf"
+    },
+    "remaining": [
+      "Full validation is bounded32768-byte Action, not incremental or measured responsiveness.",
+      "No active-package publication/document/evidence mutation from reader/binder alone.",
+      "No installed Notebook selection/render/actual-attempt binding or durable save/cold result.",
+      "Builtin mathematical identity remains exact; source binding supplements it and creates no proof evidence.",
+      "Fresh Await whole pair and unchanged60MReady/100MLoad remain pending after measured Array target checkpoint."
+    ],
+    "roots": [
+      "Lemma.Courses.PackageReader.start",
+      "Lemma.Courses.PackageReader.step",
+      "Lemma.Courses.PackageReader.finish",
+      "Lemma.Courses.PackageReader.cancel",
+      "Lemma.Courses.PackageBinding.capture",
+      "Lemma.Courses.PackageBinding.validate",
+      "Lemma.Courses.PackageBinding.applicable"
+    ],
+    "scope": "Imported Actions + genuine checked User2 LLVM/O2/RV64 object; installed Notebook/root/CPU/durable binding NOT_RUN",
+    "source_count": 59,
+    "source_inventory_sha256": "7f3b7396e51caa27365914f85235f897f5a42040f04deb08dba2afbdbd543985",
+    "status": "PASS_GENUINE_COURSE_READER_BINDING_COMPONENT",
+    "unresolved_boundary": [
+      "lemma_exec_syscall"
+    ]
+  },
   "decoder": {
     "function_count": 38,
     "llvm_sha256": "cbe97ca8b92f2873e6953ccb1525b454df0e06c1ed3ac79dabf1ee00f8951833",
