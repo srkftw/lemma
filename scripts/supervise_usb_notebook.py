@@ -17,6 +17,7 @@ import sys
 import time
 
 ROOT=Path(__file__).resolve().parents[1]
+from check_guest_usb_notebook import PROFILE_WORKLOADS, source_authority_valid
 MAX_SECONDS=65000  # Nine declared7200s phases plus200s startup/cleanup overhead.
 
 
@@ -98,16 +99,15 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest='action',required=True)
     launch=sub.add_parser('launch')
     for name in ('host-prepared','formatted-peer','formatted-outbox','work-dir'):launch.add_argument('--'+name,type=Path,required=True)
-    launch.add_argument('--profile',choices=('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'),default='lemma-silicon-dev/0.6.0')
+    launch.add_argument('--profile',choices=tuple(PROFILE_WORKLOADS),default='lemma-silicon-dev/0.6.0')
     launch.add_argument('--native-bundle',type=Path)
     launch.add_argument('--rtl-source-root',type=Path)
     launch.add_argument('--guest-source-root',type=Path)
     worker=sub.add_parser('_run');worker.add_argument('manifest',type=Path)
     a=p.parse_args()
     if a.action=='_run':return supervise(a.manifest)
-    if not ((a.native_bundle is None and a.rtl_source_root is not None and a.guest_source_root is not None) or
-            (a.profile=='lemma-silicon-dev/0.8.0' and a.native_bundle is not None and a.rtl_source_root is None and a.guest_source_root is None)):
-        p.error('explicit complete source archives or one USB8 immutable bundle required')
+    if not source_authority_valid(a):
+        p.error('explicit complete source archives or one USB8/USB11 immutable bundle required')
     work=a.work_dir.resolve();supervision=work.with_name(work.name+'.supervision')
     if work.exists() or supervision.exists() or not work.is_relative_to(ROOT/'build'):p.error('unused owned campaign and supervision outputs under build required')
     supervision.mkdir(parents=True,mode=0o700)

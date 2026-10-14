@@ -1,13 +1,46 @@
 """Old autosave output cannot replace the newly admitted explicit Save."""
 from pathlib import Path
 import sys
+import json
+import tempfile
+from unittest import mock
+from types import SimpleNamespace
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts'))
-from check_guest_usb_notebook import explicit_save_completed, initial_publication_completed
+from check_guest_usb_notebook import (explicit_save_completed, initial_publication_completed,
+                                       source_authority_valid, PROFILE_WORKLOADS, validated_host_context)
 
 
 class ExplicitSaveObservation(unittest.TestCase):
+    def test_wire_workload_requires_explicit_complete_single_authority(self):
+        self.assertEqual(PROFILE_WORKLOADS['lemma-silicon-dev/0.11.0'],
+                         'usb-wire-bulk-notebook')
+        def authority(profile='lemma-silicon-dev/0.11.0', bundle=None, rtl=None, guest=None):
+            return source_authority_valid(SimpleNamespace(profile=profile, native_bundle=bundle,
+                                                           rtl_source_root=rtl, guest_source_root=guest))
+        self.assertTrue(authority(bundle=Path('immutable')))
+        self.assertTrue(authority(rtl=Path('native-source'), guest=Path('guest-source')))
+        self.assertTrue(authority(profile='lemma-silicon-dev/0.8.0', bundle=Path('immutable')))
+        self.assertTrue(authority(profile='lemma-silicon-dev/0.6.0', rtl=Path('native'), guest=Path('guest')))
+        for kwargs in ({}, {'rtl': Path('native')}, {'guest': Path('guest')},
+                       {'bundle': Path('immutable'), 'rtl': Path('native')},
+                       {'bundle': Path('immutable'), 'guest': Path('guest')},
+                       {'profile': 'lemma-silicon-dev/0.6.0', 'bundle': Path('immutable')},
+                       {'profile': 'lemma-silicon-dev/0.12.0', 'bundle': Path('immutable')}):
+            with self.subTest(kwargs=kwargs): self.assertFalse(authority(**kwargs))
+
+    def test_unrecognized_host_policy_never_falls_back_to_another_validator(self):
+        with tempfile.TemporaryDirectory() as raw:
+            prepared=Path(raw)/'prepared.json'
+            for schema in ('lemma-usb-host-dev/2', 'lemma-usb-host-dev/5', None):
+                prepared.write_text(json.dumps({'schema': schema}))
+                with mock.patch('check_guest_usb_notebook.validate_host3') as old, \
+                     mock.patch('check_guest_usb_notebook.validate_host4') as current:
+                    with self.assertRaisesRegex(ValueError, 'unsupported explicitly versioned'):
+                        validated_host_context(prepared)
+                    old.assert_not_called();current.assert_not_called()
+
     def test_ready_or_unrelated_saved_is_not_initial_root_acknowledgment(self):
         ready=(0x420,1650 | (2200 << 32),1,1,1)
         pending=(0x423,2,1,1,1);saved=(0x421,2,1,1,0)

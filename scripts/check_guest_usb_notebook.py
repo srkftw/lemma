@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Connected native USB6 Surface-v2 notebook, durable peer and cold recovery.
+"""Connected native USB Surface-v2 notebook, durable peer and cold recovery.
 
 Only raw pen input and raw transport faults enter the machine. Opaque peer
 bytes are inspected offline, never interpreted or repaired for the guest.
@@ -22,7 +22,8 @@ import time
 from check_guest_usb_store import opaque_log
 from check_guest_usb_link import ROOT, crc64, decode_capture, guest_events, request, require, sha
 from lemmasim_companion import initialize, peer_info, validate as validate_companion
-from lemmasim_usb import validate as validate_host
+from lemmasim_usb import validate as validate_host3
+from lemmasim_usb_pending import validate as validate_host4
 sys.path.insert(0, str(ROOT / 'conformance/lemmasim'))
 from check_live_notebook import observe_workflow
 from check_notebook_workflow import committed_bytes, visible_pixels
@@ -30,6 +31,45 @@ from check_canonical_pen_pixels import expected_stroke
 from notebook_input import Input
 from notebook_pixels import empty_pixels
 from store_oracle import recover
+
+
+WIRE_MAX_TREE_RSS_KIB = 4 * 1024 * 1024
+WIRE_MAX_DISK_BYTES = 12_000_000_000
+
+PROFILE_WORKLOADS = {
+    'lemma-silicon-dev/0.6.0': 'usb-bulk-notebook',
+    'lemma-silicon-dev/0.8.0': 'usb-next-bulk-notebook',
+    'lemma-silicon-dev/0.11.0': 'usb-wire-bulk-notebook',
+}
+
+
+def source_authority_valid(args):
+    """A bundle and complete explicit source roots are mutually exclusive."""
+    return (args.profile in PROFILE_WORKLOADS and
+            ((args.native_bundle is None and args.rtl_source_root is not None and
+              args.guest_source_root is not None) or
+             (args.profile in ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0') and
+              args.native_bundle is not None and args.rtl_source_root is None and
+              args.guest_source_root is None)))
+
+
+def validated_host_context(prepared):
+    """Select an explicitly versioned host; its strict validator owns authority."""
+    prepared = Path(prepared).resolve()
+    schema = json.loads(prepared.read_text()).get('schema')
+    if schema == 'lemma-usb-host-dev/3':
+        record = validate_host3(prepared)
+        legacy = record
+    elif schema == 'lemma-usb-host-dev/4':
+        record = validate_host4(prepared)
+        legacy = json.loads(Path(record['legacy_prepared']['path']).read_text())
+    else:
+        raise ValueError('unsupported explicitly versioned USB host policy')
+    item = legacy['companion_prepared']
+    companion = Path(item['path'])
+    require(sha(companion) == item['sha256'], 'bound companion dependency identity changed')
+    validate_companion(companion)
+    return record, companion
 
 
 def copy_opaque_peer(source, destination, outbox_source, outbox_destination):
@@ -155,7 +195,7 @@ class NativeUSBSession:
         self.view_generation, self.view = None, None
         args = checker.args
         cmd = [sys.executable, str(ROOT / 'scripts/lemmasim'), 'session', '--backend', 'rtl',
-               '--profile', args.profile, '--workload', 'usb-next-bulk-notebook' if args.profile=='lemma-silicon-dev/0.8.0' else 'usb-bulk-notebook',
+               '--profile', args.profile, '--workload', PROFILE_WORKLOADS[args.profile],
                '--session-dir', str(self.directory), '--mode', 'laboratory', '--headless',
                '--paused', '--timeout', '120', '--quantum', '1000', '--trace-limit', '0',
                '--usb-host-prepared', str(args.host_prepared.resolve()),
@@ -274,8 +314,12 @@ class Checker:
                          'cold_host_seconds': args.cold_deadline, 'ink_cycles': args.ink_cycles,
                          'redraw_save_cycles': args.action_cycles, 'action_host_seconds': args.action_deadline},
                        'bound_classification': 'resource ceilings declared before launching; not WCET',
-                       'not_qualified': ['physical USB PHY/full USB', 'USB whole-machine snapshots',
-                                         'browser hosted peer', 'owner authentication'],
+                       'not_qualified': (['normative USB PHY source jitter/full USB',
+                                         'privately live USB peer continuation', 'QEMU cached-state continuation',
+                                         'browser hosted peer', 'owner authentication']
+                                         if args.profile == 'lemma-silicon-dev/0.11.0' else
+                                         ['physical USB PHY/full USB', 'USB whole-machine snapshots',
+                                          'browser hosted peer', 'owner authentication']),
                        'raw_capture_format': 'native-seven-text; sequence/epoch from actual guest raw objects',
                        'host_prepared': {'path': str(args.host_prepared.resolve()),
                                          'sha256': sha(args.host_prepared)},
@@ -285,16 +329,21 @@ class Checker:
                                            if args.native_bundle is None else
                                            {'native_bundle': str(args.native_bundle.resolve()),
                                             'manifest_sha256': sha(args.native_bundle/'bundle.json')})}
+        if args.profile == 'lemma-silicon-dev/0.11.0':
+            self.report['bounds'].update({'maximum_owned_tree_rss_kib': WIRE_MAX_TREE_RSS_KIB,
+                                         'maximum_owned_disk_bytes': WIRE_MAX_DISK_BYTES})
 
     def update(self):
         self.report['host_seconds'] = time.monotonic() - self.started
         (self.out / 'result.json').write_text(json.dumps(self.report, indent=2) + '\n')
 
     def sample_resources(self):
+        current_owned_rss = 0
         for name, process in ([(s.name, s.process) for s in self.sessions] +
                               [('peer', self.peer_process)]):
             if process is None or process.poll() is not None: continue
             sample = owned_resources(process)
+            current_owned_rss += sample['sampled_resident_kib']
             observed = self.report.setdefault('host_resources', {}).setdefault(name, {})
             observed['sampled_tree_peak_resident_kib'] = max(
                 observed.get('sampled_tree_peak_resident_kib', 0), sample['sampled_resident_kib'])
@@ -302,6 +351,18 @@ class Checker:
                 observed.get('sampled_tree_peak_threads', 0), sample['sampled_threads'])
             observed['last_sample'] = sample
         self.report['observer_self_maxrss_kib'] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if self.args.profile == 'lemma-silicon-dev/0.11.0':
+            # Prospective campaign-only host bounds. Each sample includes only
+            # this observer and its current owned machine/peer descendants.
+            current_owned_rss += int(next(line.split()[1] for line in
+                Path('/proc/self/status').read_text().splitlines() if line.startswith('VmRSS:')))
+            disk_bytes = sum(p.stat().st_size for p in self.out.rglob('*')
+                             if p.is_file() and not p.is_symlink())
+            measured = self.report.setdefault('owned_resource_samples', {})
+            measured['peak_rss_kib'] = max(measured.get('peak_rss_kib', 0), current_owned_rss)
+            measured['peak_apparent_disk_bytes'] = max(measured.get('peak_apparent_disk_bytes', 0), disk_bytes)
+            require(current_owned_rss <= WIRE_MAX_TREE_RSS_KIB, 'declared owned host RAM ceiling')
+            require(disk_bytes <= WIRE_MAX_DISK_BYTES, 'declared owned host disk ceiling')
 
     def start_peer(self, drop=0):
         with self.peer_lock:
@@ -309,7 +370,7 @@ class Checker:
             return self._start_peer(drop)
 
     def _start_peer(self, drop):
-        companion = self.args.host_prepared.resolve().parent / 'companion/prepared.json'
+        _, companion = validated_host_context(self.args.host_prepared)
         validate_companion(companion)
         log = (self.out / ('peer-' + str(len(self.peer_logs)) + '.log')).open('xb')
         self.peer_logs.append(log)
@@ -345,7 +406,9 @@ class Checker:
                          self.args.action_deadline)
 
     def execute(self):
-        validate_host(self.args.host_prepared)
+        host, companion = validated_host_context(self.args.host_prepared)
+        self.report['host_policy'] = {'schema': host['schema'], 'policy_version': host['policy_version'],
+                                      'companion_prepared': str(companion), 'companion_sha256': sha(companion)}
         writer = copy_opaque_peer(self.args.formatted_peer.resolve(), self.peer,
                                   self.args.formatted_outbox.resolve(), self.outbox)
         self.report['writer'] = writer
@@ -496,7 +559,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('host-prepared', 'formatted-peer', 'formatted-outbox', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
-    parser.add_argument('--profile', choices=('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'), default='lemma-silicon-dev/0.6.0')
+    parser.add_argument('--profile', choices=tuple(PROFILE_WORKLOADS), default='lemma-silicon-dev/0.6.0')
     parser.add_argument('--native-bundle', type=Path)
     parser.add_argument('--rtl-source-root', type=Path)
     parser.add_argument('--guest-source-root', type=Path)
@@ -506,9 +569,8 @@ def main():
     parser.add_argument('--action-cycles', type=int, default=1600000000)
     parser.add_argument('--action-deadline', type=int, default=7200)
     args = parser.parse_args()
-    require((args.native_bundle is None and args.rtl_source_root is not None and args.guest_source_root is not None) or
-            (args.profile=='lemma-silicon-dev/0.8.0' and args.native_bundle is not None and args.rtl_source_root is None and args.guest_source_root is None),
-            'explicit complete source archives or one USB8 immutable bundle required')
+    require(source_authority_valid(args),
+            'explicit complete source archives or one USB8/USB11 immutable bundle required')
     require(1 <= args.ink_cycles <= 200000000 and
             1 <= args.cold_cycles <= 1600000000 and 1 <= args.action_cycles <= 1600000000 and
             30 <= args.cold_deadline <= 7200 and 30 <= args.action_deadline <= 7200,
