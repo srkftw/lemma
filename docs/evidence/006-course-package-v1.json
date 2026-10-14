@@ -379,6 +379,201 @@
     "scaffold_host_suite": "PASS18 tests"
   },
   "milestone": "typed offline course package and actual guest Store loader component",
+  "mounted_await_component": {
+    "child_peak_rss_kib": 1627848,
+    "commands": [
+      {
+        "argv": [
+          "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+          "--version"
+        ],
+        "label": "version-lean",
+        "returncode": 0,
+        "wall_seconds": 0.06048053898848593
+      },
+      {
+        "argv": [
+          "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+          "--version"
+        ],
+        "label": "version-lake",
+        "returncode": 0,
+        "wall_seconds": 0.05376982898451388
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+          "--version"
+        ],
+        "label": "version-opt",
+        "returncode": 0,
+        "wall_seconds": 0.023133535054512322
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+          "--version"
+        ],
+        "label": "version-llc",
+        "returncode": 0,
+        "wall_seconds": 0.021217237110249698
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+          "--version"
+        ],
+        "label": "version-llvm-nm",
+        "returncode": 0,
+        "wall_seconds": 0.0179646770702675
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+          "--version"
+        ],
+        "label": "version-llvm-readelf",
+        "returncode": 0,
+        "wall_seconds": 0.017568383016623557
+      },
+      {
+        "argv": [
+          "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+          "build",
+          "Lemma.Compiler.CourseAwaitExport"
+        ],
+        "label": "build",
+        "returncode": 0,
+        "wall_seconds": 0.16506949695758522
+      },
+      {
+        "argv": [
+          "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+          "env",
+          "lean",
+          "-j2",
+          "--run",
+          "tests/courses/Await.lean"
+        ],
+        "label": "await-actions",
+        "returncode": 0,
+        "wall_seconds": 2.455658709979616
+      },
+      {
+        "argv": [
+          "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+          "env",
+          "lean",
+          "-j2",
+          "tests/courses/AwaitExport.lean"
+        ],
+        "label": "await-export",
+        "returncode": 0,
+        "wall_seconds": 9.089514118037187
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt",
+          "-S",
+          "-passes=default<O2>",
+          "-verify-each",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.ll",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.opt.ll"
+        ],
+        "label": "await-opt",
+        "returncode": 0,
+        "wall_seconds": 3.7452870960114524
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+          "-mtriple=riscv64-unknown-none-elf",
+          "-mattr=+m,-a,-f,-d,-c",
+          "-relocation-model=static",
+          "-filetype=obj",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.opt.ll",
+          "-o",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.o"
+        ],
+        "label": "await-object",
+        "returncode": 0,
+        "wall_seconds": 0.23604447592515498
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+          "--undefined-only",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.o"
+        ],
+        "label": "await-undefined",
+        "returncode": 0,
+        "wall_seconds": 0.018139812047593296
+      },
+      {
+        "argv": [
+          "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+          "-h",
+          "-A",
+          "-r",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-qualified-a1/await/program.o"
+        ],
+        "label": "await-elf",
+        "returncode": 0,
+        "wall_seconds": 0.01751784107182175
+      }
+    ],
+    "components": {
+      "await": {
+        "artifacts": {
+          "normalized.txt": "d53bae81c9169b25d55b4fcad8bbfe1ea50ac7da66ec69e7668bee74b3224341",
+          "program.ll": "b6bc590e4a773e81a505791ee6bc85de27e5678c5f500c1ccad50c031e7b5e3a",
+          "program.o": "ada8f59d6c79ed250e64ae0b8061edf1c503c2e5ee2b412c7be34cf06935513c",
+          "program.opt.ll": "b140f42bcced984656d27a1b9b8a6284f19007e85816b14bc6ae5ad7ed68855f",
+          "unit.json": "04eb5c60b2361c9239e858f6e76044c7b0d0dfda8700040d90e2fcc25ebcdac5"
+        },
+        "function_count": 278,
+        "roots": [
+          "Lemma.Courses.PackageAwaitClient.call",
+          "Lemma.Courses.PackageAwaitClient.beginCall",
+          "Lemma.Courses.PackageAwaitClient.pollCall",
+          "Lemma.Courses.PackageAwaitClient.cancel",
+          "Lemma.Services.Store.ServerAwait.main"
+        ],
+        "unresolved_boundary": [
+          "lemma_exec_syscall"
+        ]
+      }
+    },
+    "contract": "docs/contracts/006-course-mounted-await-v1.md",
+    "invocation": [
+      "timeout",
+      "120s",
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "python3",
+      "scripts/check_course_await.py",
+      "--output-dir",
+      "build/courses/task006-course-await-qualified-a1"
+    ],
+    "protocol": "lemma-course-mounted-await/1",
+    "remaining": "Append-only four-image deployment/full ordinary audits/actual60MReady+100MLoad, then cooperative Notebook package selection/render/evidence binding. No component-to-machine PASS inheritance.",
+    "result": {
+      "path": "build/courses/task006-course-await-qualified-a1/result.json",
+      "sha256": "7e275b3a514048a1aab1941563923a05cf9f4b7998d854cf77b34e3a6d514f6e"
+    },
+    "scope": "actual bounded waiter/client Actions and genuinely elaborated LLVM/RV64 object; registered deployment/CPU/mount completion NOT_RUN",
+    "source_count": 68,
+    "source_inputs": {
+      "path": "build/courses/task006-course-await-qualified-a1/source-inputs.json",
+      "sha256": "0f86f7f247f289712c8175316c055cedc1a545195b0d16402cff9f49fd518651"
+    },
+    "source_root": "build/courses/task006-course-await-qualified-a1/consumed-source-root",
+    "status": "PASS_COURSE_MOUNTED_AWAIT_COMPONENT",
+    "wall_seconds": 15.95888241007924
+  },
   "observed_action_outputs": {
     "author-edition": "COURSE_PACKAGE_PUBLISH:PASS 4058 bytes,8 original typed nodes\nCOURSE_AUTHOR_EDITION:PASS changed lesson/hint/source/edition; unchanged target decoder selects pinned goal1 and new hint bytes",
     "genuine-export": "COURSE_PACKAGE_EXPORT:PASS genuine read-only User2 source/LLVM closure",
@@ -902,6 +1097,69 @@
   "source_count": 64,
   "source_inputs": "build/courses/task006-package-qualified-a5/source-inputs.json",
   "source_inputs_sha256": "c5d43d0e9c34cba2d9220d2973fa2a35ed8c51ee668db13bdd3f92d80ce6e6ce",
+  "startup2_fresh_whole_and_cold": {
+    "actual_cold": {
+      "path": "build/courses/task006-course-startup2-cold-a1/result.json",
+      "sha256": "e5bbdd91c68a92babf3e84d504d9abfefd43a603740fd8d3c8594f227752ee67"
+    },
+    "actual_host_sources": {
+      "count": 292,
+      "inventory_sha256": "5bcaa9c0ee7294eb7a80aa2528497bd4305604c52ed94d8acf0672a2f3e130f8",
+      "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-startup2-cold-a1/host-source-root",
+      "scope": "full conservative project host-code corpus; imported paths held stable throughout actual actor",
+      "unchanged_after_actor": true
+    },
+    "child_peak_rss_kib": 152180,
+    "cold_seconds": 189.6998047119705,
+    "cold_status": "FAIL",
+    "fresh_whole": {
+      "path": "build/courses/task006-course-startup2-whole-a1/result.json",
+      "sha256": "31e0959a72f384a5c9a76f97408e9896af6b72eabdb5b602c158c4d7cf4f453e"
+    },
+    "initializer_elf_sha256": "0a6fdcb642a8ce26c1e48374747b3801c7c8460d8003f9333647856499008516",
+    "interpretation": "Both original60M failures remain FAIL; measured progress is not causal timing proof; no larger cold deadline or restored-state recovery substituted.",
+    "measured_60M": {
+      "Load_admitted": false,
+      "barriers": 0,
+      "body_progressed": 8,
+      "completed_reads": 23,
+      "engine_mode": 0,
+      "engine_phase": 3,
+      "owned_loaded_zero_bytes": 4040,
+      "prior_1ms_completed_reads": 7,
+      "prior_1ms_status_requests": 11,
+      "sector": 28,
+      "sequence": 2,
+      "status_requests": 3,
+      "write_outcomes": 0
+    },
+    "native_bundle": {
+      "path": "build/native/task006-course-startup2-a1/bundle.json",
+      "sha256": "ba58d7b9a3fe776d05884295e6a1f299076d11fff8192ef8e98e383231222d6d"
+    },
+    "native_runtime_sha256": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+    "notebook_elf_sha256": "127740e32c02b7d30c531377d2732b63090a0ed5319f27b58fd79a5f2ffb1265",
+    "observational_boundary": {
+      "path": "build/courses/task006-course-startup2-cold-a1/validated-boundary.json",
+      "sha256": "469816019c1da18373f59811ce86ece5aac5c0801eacdb02b9bb17fd99b4686b"
+    },
+    "observational_decoder": {
+      "path": "build/courses/task006-course-startup2-cold-a1/validate-boundary.py",
+      "sha256": "bfbbf6a04828901deb52b55f09baee859bacdb46a2b490f2a51e2c2f69e68988"
+    },
+    "original_bounds": {
+      "cold_target_cycles": 60000000,
+      "maximum_declared_cycles": 260000000,
+      "per_load_command_cycles": 100000000,
+      "whole_host_seconds": 1800
+    },
+    "source_archive_origin_commit": "ca8be95f6bada14a8a8060d751a9dfd47bb555d0",
+    "status": "FULL_PAIR_PASS_ACTUAL_COLD_60M_FAIL",
+    "whole_original_source_root": "build/managed/usercopy-closure-whole-pair-a2/consumed-source-root",
+    "whole_seconds": 363.75340684701223,
+    "whole_source_count": 362,
+    "whole_source_inventory_sha256": "f4fe85ff703dc26656ac29cdc24b475195e0c8657c1745faeefd0a0282a7b9f8"
+  },
   "status": "PASS_TYPED_PACKAGE_AND_GENUINE_RV64_COMPONENTS",
   "store_loader": {
     "store_function_count": 92,
