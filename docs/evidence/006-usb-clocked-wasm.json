@@ -272,5 +272,6 @@
     "portable architectural migration API",
     "new native cold prefix",
     "full browser presentation/backing workflow"
-  ]
+  ],
+  "prefix_execution_scope": "No long CPU prefix was rerun to reach the retained cuts. The startup cut is cycle0 and explicitly executes its declared5000-cycle captured suffix; eight other cuts execute their declared3000/5000-cycle suffixes. This is not a new whole notebook boot or cold recovery."
 }

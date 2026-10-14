@@ -237,6 +237,9 @@ partial physical-clock state and rejected further run or snapshot publication.
 Peak supervised RSS was 1,384,208KiB; retained output was 2,620,295,607 bytes;
 all owned children were reaped. An independent read-only review separately
 compared every byte of the a3 outputs and complete producer with no finding.
+No long CPU prefix was rerun to reach these cuts. The cycle0 startup cut
+explicitly executes its declared 5000-cycle captured suffix; it does not
+establish a new whole notebook boot or cold recovery.
 
 The original a1 UART observer failure remains retained: equal empty bytes had
 different JavaScript `Uint8Array`/`Buffer` prototypes. An independent byte
