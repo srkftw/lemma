@@ -202,8 +202,14 @@ the outbox has no pending transaction and materialized bytes equal the actual
 acknowledged guest bytes. No owner, peer or guest is polled, drained or paused.
 A separately supervised new CPU uses that archive through policy4 under the
 original1.6B/7200 cold bound,4GiB/12GB caps and a7400second absolute deadline
-including startup/cleanup. This cold run is RUNNING and has no recovery claim
-until its full controller pixels, acknowledged bytes and unchanged peer receipt
-state are observed. Normative USB/full MAC/physical conformance remain separate.
+including startup/cleanup. The actual new CPU reached Ready at 740M cycles in
+3946.213 seconds; whole supervision completed in 3954.955 seconds. All 3.63M
+controller pixels and acknowledged opaque bytes matched the final Save11
+artifact, all 42 opaque transactions were READs, and the peer receipt log stayed
+unchanged. No new Save or snapshot restore occurred, and all owned children were
+reaped. A separate read-only artifact check compares the complete live/cold P5
+files and before/after medium hashes. The original live campaign's terminal
+HELLO failure remains unchanged. Wire11 unsuccessful Save after disconnect is
+still unqualified; normative USB/full MAC/physical conformance remain separate.
 
 -->

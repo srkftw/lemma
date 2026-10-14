@@ -1,7 +1,7 @@
 {
   "schema": "lemma-usb-wire-saved11-evidence/1",
-  "status": "PASS_RETAINED_LIVE_OBSERVATION_COLD_RUNNING",
-  "scope": "Real immutable Wire11 notebook Ready/ink/lost durable barrier reply/independent peer restart/Undo/Redo/navigation/Save11. Strict recorded-transport and peer/outbox reobservation after original terminal observer FAIL; no CPU prefix rerun. New independent cold is separately RUNNING.",
+  "status": "PASS_RETAINED_LIVE_OBSERVATION_AND_INDEPENDENT_COLD",
+  "scope": "Real immutable Wire11 notebook Ready/ink/lost durable barrier reply/independent peer restart/Undo/Redo/navigation/Save11. Strict recorded-transport and peer/outbox reobservation after original terminal observer FAIL; no live CPU prefix rerun. A separate new CPU cold recovery from the fully acknowledged Saved11 boundary passed all controller pixels and exact opaque bytes.",
   "identity": {
     "backend": "rtl",
     "profile": "lemma-silicon-dev/0.11.0",
@@ -257,7 +257,6 @@
     ]
   ],
   "remaining": [
-    "Separate Wire11 Saved11 independent cold full pixels/bytes (RUNNING)",
     "Wire11 unsuccessful Save after disconnect",
     "Clocked13 full notebook Ready/Save/cold (separate RUNNING campaign)",
     "normative USB source jitter/full MAC/timing/topology/electrical/analog CDC conformance",
@@ -270,5 +269,59 @@
     "sha256": "18ca5d7ce131261047ff97acab4504fb9bd79b2e940fe0bce4cbff4ba5f5fd4a",
     "status": "PASS_INDEPENDENT_SOURCE_AND_RETAINED_HELLO_REVIEW",
     "scope": "Read-only source/object/hash/checksum and recorded wire observation; no CPU or source edits"
+  },
+  "separate_cold_result": {
+    "status": "PASS",
+    "result": {
+      "path": "build/usb/wire-final-saved11-cold-a1/result.json",
+      "sha256": "77cc62d8b2c739ccb2653dad7640974753816dab306fbe1c332dbf82dc1a3a04"
+    },
+    "supervision": {
+      "path": "build/usb/wire-final-saved11-cold-a1.supervision/supervision.json",
+      "sha256": "2dcc7eae8caac272bd51aa232032629d107404a8216123f8fe81074e8037f784"
+    },
+    "ready_cycle": 740000000,
+    "ready_host_seconds": 3946.2129693489987,
+    "whole_host_seconds": 3954.9552599570015,
+    "new_cpu": true,
+    "snapshot_restore": false,
+    "exact_acknowledged_bytes": true,
+    "complete_controller_pixel_count": 3630000,
+    "complete_controller_pixels_equal": true,
+    "clean_load_without_new_save": true,
+    "peer_receipt_state_unchanged": true,
+    "all_opaque_transactions_are_reads": true,
+    "opaque_read_transactions": 42,
+    "accepted_raw_rows": 58879,
+    "saved_sequence": 11,
+    "peer_high_water": 72,
+    "cold_hello_initial_sequence": 73,
+    "wire_sha256": "1a16777a8e6a82126b07e769caf36d470826d98bf2907dcc98b2b76abff918fe",
+    "before_raw": {
+      "path": "build/usb/wire-final-saved11-cold-a1/before.raw",
+      "sha256": "97c763f23eb15bd951d2325edfe30b845c96ea049d28e23e5652f91c0cd019e4"
+    },
+    "after_raw": {
+      "path": "build/usb/wire-final-saved11-cold-a1/after.raw",
+      "sha256": "97c763f23eb15bd951d2325edfe30b845c96ea049d28e23e5652f91c0cd019e4"
+    },
+    "full_controller_panel": {
+      "path": "build/usb/wire-final-saved11-cold-a1/cold/observed.ppm",
+      "sha256": "ff7bfc3a9219fc48aa17fe44fb421c59f2fb1745d4fcf4048a5880c51c227def"
+    },
+    "peer_log": {
+      "path": "build/usb/wire-final-saved11-cold-a1/peer/opaque.log",
+      "sha256": "fd495252f88ad9b50d7cc15405f9fa318b953e410b08d2a5d5b8af5ed2abe10a"
+    },
+    "peak_sampled_owned_tree_rss_kib": 283616,
+    "peak_observer_rss_kib": 292004,
+    "peak_sampled_disk_bytes": 538568499,
+    "owned_children_reaped": true,
+    "owned_survivors": [],
+    "bounds_unchanged": true,
+    "read_only_artifact_confirmation": {
+      "path": "build/usb/wire-final-saved11-cold-observation-a2/result.json",
+      "sha256": "4ae91113b4e56d8b66f2c4de914f79edacf4ae9616c1eb23435a13b65623a7f4"
+    }
   }
 }
