@@ -1,0 +1,68 @@
+{
+  "schema": "lemma-clocked-cold-admission-evidence/1",
+  "status": "PASS_ADMISSION_ONLY_COLD_NOT_RUN",
+  "profile": "lemma-silicon-dev/0.13.0",
+  "scope": "strict real schema6 package and actual prior nominal clock facts; no peer, CPU, cold run or medium mutation",
+  "actual_host_observation": {
+    "path": "build/usb/clocked-cold-admission-a2/result.json",
+    "sha256": "4ac070de0f4bea1e3a645f3023b4e5ad6558a01848d5c71ac02addf1a2838c5c"
+  },
+  "strict_package_manifest_sha256": "29f9f2db667eb0d4297f762b3058b93d15cae31f752d6af9e7603aef91bff7e1",
+  "actual_nominal_clock_milestone": 600000000,
+  "guards": {
+    "focused_tests": 5,
+    "historical_deployment_tests": 4,
+    "existing_atomic_archive_tests": 10,
+    "scope": "host admission and failure tests; no new CPU or cold recovery",
+    "clock_fields": [
+      "quantum_hz",
+      "controller_hz",
+      "nominal_phy_hz",
+      "position",
+      "host_ppm",
+      "chip_ppm",
+      "host_initial_phase",
+      "chip_initial_phase"
+    ],
+    "nominal_values": [
+      2400000000,
+      100000000,
+      48000000,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "implementation_inputs": {
+    "scripts/archive_companion_boundary.py": "ab1d448d3190af9c021f5cdbf0193f58f6d133b1ca7c1487bc887a2c14a245d5",
+    "scripts/check_usb_cold_boundary.py": "dbec4013f8c9642b1ec4c123dcbb05c1ec35911f99bc7dd40d5215f4765fe61c",
+    "tests/lemmasim/test_clocked_cold_admission.py": "bde0e5ae7f7bc2adcfd06431b18acdc1dc65f5ee83ba053861b22f2815807e96"
+  },
+  "launch_obligation": "Actual terminal Saved11/high-water72 retained workflow and complete passive archive must qualify first. No second live prefix or cold launch from this admission result.",
+  "prospective_bounds": {
+    "cold_cycles": 1600000000,
+    "cold_host_seconds": 7200,
+    "whole_host_seconds": 7400,
+    "maximum_owned_tree_rss_kib": 4194304,
+    "maximum_owned_disk_bytes": 12000000000,
+    "automatic_restart": false
+  },
+  "frozen_full_workflow_observers": {
+    "scripts/check_guest_usb_clocked_notebook.py": "d3753164231f8604257e1dc71bb9977a09aab7dafd60889fd8095ecfc3fb55b7",
+    "scripts/supervise_usb_clocked_notebook.py": "205d0cfd28e98df6467c7d2ffc8acb2af554a60391e1a7adb73d28ed7d2c5aa8",
+    "scripts/check_guest_usb_notebook.py": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869",
+    "scripts/supervise_usb_notebook.py": "6c1af6b08702a7481ceec656d5528447138a1010aa61c78fb2c33e1ee0df67ee"
+  },
+  "remaining": [
+    "Clocked13 full live terminal verdict",
+    "Clocked13 Saved11 passive acknowledged archive",
+    "Clocked13 new-CPU cold full pixels and unchanged journal/peer state"
+  ],
+  "earlier_admission_observation": {
+    "path": "build/usb/clocked-cold-admission-a1/result.json",
+    "sha256": "86e607dfcc693b4c1bea772998cde366d362b66c9465e6219f69b64585f30379",
+    "scope": "same admission scope before explicit integer-only fact type guards; original result retained"
+  }
+}

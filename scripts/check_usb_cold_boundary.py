@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cold USB8 or explicit Wire11 recovery from an acknowledged opaque archive.
+"""Cold USB8 or explicit Wire11/Clocked13 recovery from an opaque archive.
 
 Historical USB8 remains the default; all original cold/pixel/byte oracles and
 resource bounds remain active. This starts a new CPU, never a restored machine.
@@ -22,6 +22,8 @@ from lemmasim_usb_pending import validate
 from archive_companion_boundary import validate_archive_files
 
 ROOT = Path(__file__).resolve().parents[1]
+CLOCKED_PROFILE = 'lemma-silicon-dev/0.13.0'
+COLD_PROFILES = ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0', CLOCKED_PROFILE)
 
 
 def validate_cold_binding(args, boundary):
@@ -29,10 +31,39 @@ def validate_cold_binding(args, boundary):
             boundary['high_water'] == args.high_water and boundary['saved_sequence'] == args.saved_sequence and
             (args.saved_sequence, args.high_water) in ((5, 36), (11, 72)),
             'unqualified acknowledged archive boundary')
-    require(args.profile in ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0') and
+    require(args.profile in COLD_PROFILES and
             boundary.get('profile', 'lemma-silicon-dev/0.8.0') == args.profile and
             (args.profile == 'lemma-silicon-dev/0.8.0' or (args.saved_sequence, args.high_water) == (11, 72)),
             'cold boundary does not belong to this explicit deployment')
+
+
+def validate_clocked_deployment(args):
+    if args.profile != CLOCKED_PROFILE:
+        return
+    require(args.native_bundle is not None and
+            getattr(args, 'rtl_source_root', None) is None and
+            getattr(args, 'guest_source_root', None) is None,
+            'Clocked cold requires one complete immutable package')
+    from silicon_guest_bundle import prepared
+    prepared(args.native_bundle, 'rtl', 'usb-clocked-bulk-notebook', CLOCKED_PROFILE)
+
+
+def validate_clocked_facts(state):
+    facts = state.get('usb_clocks', {})
+    require(isinstance(facts, dict), 'cold Clocked clock facts are not an object')
+    values = tuple(facts.get(key) for key in
+        ('quantum_hz', 'controller_hz', 'nominal_phy_hz', 'position',
+         'host_ppm', 'chip_ppm', 'host_initial_phase', 'chip_initial_phase'))
+    require(all(type(value) is int for value in values) and values ==
+        (2400000000, 100000000, 48000000, 0, 0, 0, 0, 0),
+        'cold Clocked hardware clocks differ from the declared nominal origins')
+
+
+class ClockedColdSession(NativeUSBSession):
+    def boot(self, expected):
+        state = super().boot(expected)
+        validate_clocked_facts(state)
+        return state
 
 
 class ColdChecker(Checker):
@@ -57,13 +88,15 @@ class ColdChecker(Checker):
 
 def execute(args):
     require(args.expected_source_sha == sha(__file__), 'cold observer source differs from supervised manifest')
-    require(args.profile in ('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'),
+    require(args.profile in COLD_PROFILES,
             'cold recovery deployment is not qualified')
+    validate_clocked_deployment(args)
     args.cold_cycles, args.cold_deadline = 1600000000, 7200
     args.ink_cycles, args.action_cycles, args.action_deadline = 200000000, 1600000000, 7200
     checker = ColdChecker(args)
     checker.report.update(schema=('lemma-usb8-acknowledged-cold/1' if args.profile == 'lemma-silicon-dev/0.8.0'
-                                  else 'lemma-usb-wire-acknowledged-cold/2'),
+                                  else ('lemma-usb-clocked-acknowledged-cold/1' if args.profile == CLOCKED_PROFILE
+                                        else 'lemma-usb-wire-acknowledged-cold/2')),
         scope='new CPU cold recovery from current observational opaque receipt boundary; policy4 actual guest transport; no snapshot restore',
         observer_sha256=sha(__file__), status='RUNNING')
     before = time.monotonic()
@@ -99,7 +132,12 @@ def execute(args):
             independently_observed_black_points=points, initial_peer_log_sha256=sha(checker.peer / 'opaque.log'),
             host_policy='lemma-usb-pending-policy/4')
         checker.start_peer()
-        cold = NativeUSBSession(checker, 'cold', checker.peer, checker.outbox)
+        if args.profile == CLOCKED_PROFILE:
+            import check_guest_usb_notebook as notebook
+            notebook.PROFILE_WORKLOADS[CLOCKED_PROFILE] = 'usb-clocked-bulk-notebook'
+            cold = ClockedColdSession(checker, 'cold', checker.peer, checker.outbox)
+        else:
+            cold = NativeUSBSession(checker, 'cold', checker.peer, checker.outbox)
         require(cold.identity == expected_identity, 'cold machine changed admitted guest/native identities')
         checker.report['identity'] = cold.identity; checker.report['argv'] = cold.argv
         checker.update()
@@ -140,7 +178,7 @@ def main():
     parser.add_argument('--expected-source-sha')
     parser.add_argument('--saved-sequence', type=int, default=5)
     parser.add_argument('--high-water', type=int, default=36)
-    parser.add_argument('--profile', choices=('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'),
+    parser.add_argument('--profile', choices=COLD_PROFILES,
                         default='lemma-silicon-dev/0.8.0')
     args = parser.parse_args()
     if args.action == '_run': return execute(args)

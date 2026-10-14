@@ -247,4 +247,27 @@ microstate migration, privately live peer continuation and full USB MAC,
 electrical or analog CDC conformance. The exact commands, source/tool hashes,
 failures and separate review identities are in
 `docs/evidence/006-usb-clocked-wasm.json`.
+
+## Prospective acknowledged cold admission
+
+The explicit `--profile lemma-silicon-dev/0.13.0` path in
+`archive_companion_boundary.py` admits only a separately observed terminal
+Saved11/high-water72 workflow with complete captured effects and unchanged
+acknowledged bytes. `check_usb_cold_boundary.py launch` validates the complete
+schema6 notebook package before creating observer files, then requires the
+matching profile boundary and all archive files before creating any peer.
+Its process-local workload registration
+does not change the frozen full-workflow observer or historical USB8/Wire11
+defaults. After an actual cold Ready, all eight clock facts must equal
+2.4GHz/100MHz/48MHz, position0, zero ppm and zero initial phases.
+
+The admission-only host result validates the actual strict Clocked package and
+already observed nominal clock state, with five new failure/routing tests and
+the existing four deployment and ten atomic-archive guards. It executes no CPU
+or peer and changes no formatted-medium bytes. Clocked independent cold recovery
+remains NOT_RUN until the current live scenario terminates and the actual
+Saved11 archive qualifies. Prospective bounds remain 1.6B cycles/7200 seconds,
+4GiB/12GB and a 7400-second absolute supervisor deadline with no automatic
+restart. The result and source hashes are in
+`docs/evidence/006-usb-clocked-cold-admission.json`.
 -->

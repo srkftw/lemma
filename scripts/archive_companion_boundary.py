@@ -16,7 +16,8 @@ from check_guest_usb_store import opaque_log
 from lemmasim_companion import initialize, peer_info
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW_PROFILES = frozenset(('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0'))
+WORKFLOW_PROFILES = frozenset(('lemma-silicon-dev/0.8.0', 'lemma-silicon-dev/0.11.0',
+                              'lemma-silicon-dev/0.13.0'))
 BOUNDARY_FILES = frozenset(('peer/base.img', 'peer/opaque.log', 'peer/peer.json',
                            'outbox/outbox', 'acknowledged.raw', 'reference.raw'))
 FILE_LIMITS = {'peer/base.img': (268435456, 268435456),
