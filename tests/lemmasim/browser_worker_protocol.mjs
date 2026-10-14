@@ -8,7 +8,7 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,onRun}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,onRun}={}){
  let now=0,nextTimer=0,generation=0,finished=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
@@ -50,8 +50,18 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  async function tick(){const first=timers.entries().next().value;assert(first,'worker failed to schedule');timers.delete(first[0]);first[1]();await settle();}
  async function drain(){for(let i=0;timers.size&&i<30;i++)await tick();assert.equal(timers.size,0,'fixture run did not pause');}
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
- await send('open',{name:'test',initialize});await send('pause');
+ await send('open',{name:'test',initialize,paused});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// A paused open loads real artifacts/backing through the same constructor,
+// without scheduling a guest prefix before checkpoint restore or inspection.
+{
+ const f=await fixture({cycle:0n,paused:true});
+ assert.equal(f.cycle(),0n);assert.equal(f.timers.size,0);
+ assert.equal(f.calls.filter(x=>x[0]==='lemma_run').length,0);
+ assert.equal(f.state().running,false);assert.equal(f.state().pauseReason,'opened-paused');
+ await f.send('inspect');assert.equal(f.cycle(),0n);assert.equal(f.timers.size,0);
+ await f.send('run',{cycles:'1'});await f.drain();assert.equal(f.cycle(),1n);
 }
 
 // UInt64 values above Number precision, exact tail, and worker cancellation.

@@ -605,6 +605,11 @@ checkout edits. This admission does not establish notebook Ready or acceptance.
 Create a new named medium through the actual
 Lean initializer, or import an existing256MiB raw medium under a new name.
 Open performs cold guest boot; controller output supplies the entire display.
+Select **Open paused** before opening to load the same machine at cycle0 without
+executing a boot prefix, then inspect it or restore a private checkpoint. The
+**Display scale** control provides fit,100%,150% and200% presentation with a
+scrollable viewport. It keeps the canonical controller plane and raw pen
+coordinates; changing scale cancels any held contact before the transform changes.
 WebGPU presents those pixels, with a same-byte2D fallback. Mouse pressure is
 synthetic. The Laboratory raw-input control uses the native pen/button/UART
 event contract; `now` selects the current exact virtual cycle/device time.

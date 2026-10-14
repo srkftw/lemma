@@ -8,9 +8,9 @@ const source=await fs.readFile('sim/browser/app.js','utf8');
 const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};};
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function appFixture(gpu){
- const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[];let worker,current;
+ const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[];let worker,current,rect={left:0,top:0,width:100,height:100};
  const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){}});return nodes.get(id);};
- function canvas(){const c={width:3,height:1,setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>({left:0,top:0,width:100,height:100}),
+ function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
    if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
@@ -27,7 +27,24 @@ async function appFixture(gpu){
   worker.onmessage({data:{type:'panel',pixels:new Uint8Array([0,8,15]),width:3,height:1}});
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
- exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current};
+ exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,setRect:r=>rect=r};
+}
+// View scaling cannot advance a clock or change controller pixels. Scrolled,
+// scaled geometry still supplies raw normalized device coordinates; a held
+// contact is cancelled before the transform changes.
+{
+ const f=await appFixture(undefined),count=f.sent.length,pixels=f.images.at(-1);
+ f.node('#display-scale').value='2';f.node('#display-scale').onchange();
+ assert.equal(f.canvas().style.width,'6px');assert.equal(f.sent.length,count);
+ assert.deepEqual(f.images.at(-1),pixels);
+ f.setRect({left:120,top:-80,width:400,height:800});
+ f.canvas().onpointerdown({pointerId:9,pointerType:'mouse',clientX:220,clientY:520});
+ assert.equal(Object.keys(f.sent.at(-1)).sort().join(','),'action,flags,pressure,tool,x,y');
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'pen',x:16384,y:49151,pressure:2048,flags:3,tool:0});
+ f.node('#display-scale').value='fit';f.node('#display-scale').onchange();
+ assert.equal(f.canvas().style.width,'');
+ assert.equal(Object.keys(f.sent.at(-1)).sort().join(','),'action,flags,pressure,tool,x,y');
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'pen',x:16384,y:49151,pressure:0,flags:10,tool:0});
 }
 // A GPU implementation may leave either capability promise pending forever.
 for(const phase of ['adapter','device']){

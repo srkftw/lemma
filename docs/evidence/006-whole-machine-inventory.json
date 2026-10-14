@@ -727,6 +727,13 @@
       "sha256": "d29d5bae36243f789e4779be20b7f4f1993730f1f6ad03ad8498395fa2277cb5",
       "status": "PASS",
       "scope": "Actualbrowserarbitrarycourseboundary and1,000,003-clock same-Wasm suffix; entirecontainerexact/nooriginalbacking/masks; notnewC++Wasm orcached-state wholequalification"
+    },
+    {
+      "path": "docs/evidence/006-browser-readable-paused.json",
+      "bytes": 2708,
+      "sha256": "07c1c73bb036061161d114cd7ac0b5226fc8c4af1ce39db3c25ffbb2e1895dae",
+      "status": "PASS_REAL_BROWSER_UI_AND_HOST_PROTOCOL",
+      "scope": "Readable presentation and zero-clock opening over existing exact portable RTL Machine, auditedArray RV64, real controller output and isolated backing. No new emulator, cold result or managed checker claim."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",

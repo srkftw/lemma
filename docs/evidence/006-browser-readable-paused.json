@@ -1,0 +1,54 @@
+{
+  "schema": "lemma-browser-readable-paused/1",
+  "status": "PASS_REAL_BROWSER_UI_AND_HOST_PROTOCOL",
+  "scope": "Readable presentation and zero-clock opening over existing exact portable RTL Machine, auditedArray RV64, real controller output and isolated backing. No new emulator, cold result or managed checker claim.",
+  "implementation": "four browser UI/worker source files; original core0c22430e/guest437224dd immutable inputs reused",
+  "ui_plan": {
+    "path": "build/browser/task006-display-scale-ui-a1/plan.json",
+    "bytes": 1018,
+    "sha256": "de29a27c86c0fe3dbdb438eb6a1ab0802e71c8c2812bc8c8f883f09431b0c1c8"
+  },
+  "ui_result": {
+    "path": "build/browser/task006-display-scale-ui-a1/result.json",
+    "bytes": 951,
+    "sha256": "7f4d308ac33cf1a6d70859977f9b4943ea65b14663d7fa2a320107d17c132b50"
+  },
+  "host_suite": {
+    "path": "build/browser/task006-display-scale-ui-a1/host-suite.log",
+    "bytes": 2324,
+    "sha256": "2461c5e2b23e5824ea0d46845e60e9e771ce8c17da8ff279922b7aae86f1662a"
+  },
+  "actual_ui": {
+    "opened_cycle": 0,
+    "retired": 0,
+    "simulation_call_seconds": 0,
+    "private_restored_cycle": 985250003,
+    "controller_completed": 2,
+    "tested_scales": [
+      "100%",
+      "150%",
+      "Fit display"
+    ],
+    "canvas": [
+      1650,
+      2200
+    ],
+    "entire_unchanged_checkpoint_bytes": 145648644,
+    "entire_checkpoint_sha256": "69886cd83b67f8189325db013386aba9c70ebf9466148a218112f6c1d14011b1",
+    "classification": "private exact continuation, not cold recovery"
+  },
+  "host_properties": [
+    "scaled/scrolled normalized pen coordinates",
+    "held contact actual raw cancellation before transform",
+    "unchanged controller plane/no CPU action from scale",
+    "paused open no scheduled timer/no lemma_run, first bounded1clock works",
+    "pending GPU and device loss preserve input/controls",
+    "prior VMrealm Objectprototype observer assertion failed; exact raw keys/values checked with JSONtransport normalization; production bytes unchanged"
+  ],
+  "commands": [
+    "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --wasm-input-bundle build/browser/task006-capture-u64-simd-a1 --reuse-wasm --output-dir build/browser/task006-display-scale-a2",
+    "./scripts/lemmasim browser-serve --bundle build/browser/task006-display-scale-a2 --port 8783",
+    "python3 -m unittest discover -s tests/lemmasim -p test_browser*.py -v"
+  ],
+  "remaining": "Complete fixedcore browser math/check/save/durable reload, native C++ relation, full caches/Pending, browser compiler/permissions/redistribution remain separate."
+}

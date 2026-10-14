@@ -7,9 +7,15 @@ let active=null,activeTool=0,last={x:0,y:0};
 // Controls and worker observation always start with a usable 2D canvas.
 // An unresolved adapter/device promise cannot block their registration.
 let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
+const displayScale=document.querySelector('#display-scale');
+function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
+ canvas.style.width=factor?`${canvas.width*factor}px`:'';}
 function cancelContact(){if(active===null)return;const pointer=active;active=null;
  send('pen',{...last,pressure:0,flags:10,tool:activeTool});
  try{canvas.releasePointerCapture(pointer);}catch(e){} }
+// Zoom presents the existing controller plane. Cancel an active contact before
+// changing its coordinate transform, just as for a display-device replacement.
+displayScale.onchange=()=>{cancelContact();scaleDisplay();};
 function fallback(){cancelContact();gpu=null;pipeline=null;device=null;
  const next=canvas.cloneNode(false);canvas.replaceWith(next);canvas=next;context=canvas.getContext('2d');bindPointer();
  if(lastPlane)present(lastPlane);status.textContent='Display device lost; controller pixels now use the 2D fallback.';}
@@ -31,7 +37,7 @@ async function initializeGPU(){if(!navigator.gpu)return;
 }
 function send(action,rest={},transfer=[]){worker.postMessage({action,...rest},transfer);}
 function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value});
+document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,paused:document.querySelector('#open-paused').checked});
 document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,initialize:true});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>send(b.dataset.action));
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
@@ -57,7 +63,7 @@ function bindPointer(){canvas.onpointerdown=e=>{if(active!==null)return;active=e
 canvas.onpointermove=e=>{if(e.pointerId===active)point(e,true);};
 canvas.onpointerup=e=>{if(e.pointerId===active){point(e,false);active=null;}};
 canvas.onpointercancel=e=>{if(e.pointerId===active){point(e,false,true);active=null;}};}bindPointer();
-function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.textContent='Invalid controller pixel plane';return;}canvas.width=m.width;canvas.height=m.height;
+function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.textContent='Invalid controller pixel plane';return;}canvas.width=m.width;canvas.height=m.height;scaleDisplay();
  if(gpu)try{const renderer=device,texture=device.createTexture({size:[m.width,m.height],format:'r8unorm',usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
   device.queue.writeTexture({texture},m.pixels,{bytesPerRow:m.width},[m.width,m.height]);const encoder=device.createCommandEncoder();
   const pass=encoder.beginRenderPass({colorAttachments:[{view:gpu.getCurrentTexture().createView(),loadOp:'clear',storeOp:'store'}]});pass.setPipeline(pipeline);

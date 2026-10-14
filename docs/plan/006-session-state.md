@@ -910,4 +910,21 @@ All13 focused workflow tests and the full467 foundation tests now pass locally
 were skipped and remain unqualified by that run. This local correction needs a
 fresh candidate CI result; run38482551670 still qualifies only its earlier head.
 
+## Readable browser presentation and paused opening
+
+[The actual UI result](../evidence/006-browser-readable-paused.json) loads the
+same auditedArray guest/core at cycle0 without a scheduled CPU call, then
+restores a private course boundary at985250003. Fit/100%/150% presentation and
+scrolling leave the entire145648644-byte checkpoint exactly unchanged. The
+1650×2200 controller plane remains authoritative; CSS scaling never builds ink.
+Held contact is cancelled through a raw pressure0/flags10 event before changing
+the transform. All seven browser host tests pass, including GPU fallback and
+scaled/scrolled pen coordinates. The original cross-realm fixture assertion
+failure remains distinct from its narrow exact-key/value observer correction.
+
+`./scripts/lemmasim browser-serve --bundle build/browser/task006-display-scale-a2 --port 8783`
+serves the validated prepared bundle. Import an opaque raw medium under a new
+name, select Open paused, then Open/restore for inspection. This exact private
+continuation is distinct from the separately recorded canonical cold boot.
+
 -->

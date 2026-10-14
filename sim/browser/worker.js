@@ -83,6 +83,7 @@ async function openMedium(name,initialize){
  return next;
 }
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
+ if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');
  manifest=await(await fetch('./bundle.json')).json();if(manifest.schema!=='lemmasim-browser-bundle/1')throw Error('Unsupported bundle');
  if(!navigator.storage?.getDirectory)throw Error('Browser OPFS persistence is required');
  handle=await openMedium(message.name,!!message.initialize);
@@ -98,7 +99,7 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();sendState();panel(true);running=true;pauseReason=null;scheduleStep();
+  }else check('lemma_create');loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
  }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
