@@ -170,3 +170,62 @@ remain separate required work; a successful Wasm build or boot prefix is not
 those results.
 
 -->
+
+## Typed course installation on the existing browser machine
+
+The optional `lemma-course-console-command/1` transport is now exposed in
+Developer and Laboratory modes. A bundle advertises it only for a complete,
+exact Course, CourseAwait or PackageClosure initializer/notebook deployment;
+the launch validator checks both inventoried build identities. Student requests
+reject before a machine read, pause, clock or storage operation. This adds an
+owner input control to browser session contract2 and does not grant new guest
+capabilities or implement teacher identity/authentication.
+
+Select an `.lcp` file and a positive decimal transaction, then choose **Send to
+guest installer**. The browser copies the untrusted declared identity, edition
+and CRC32 into the existing 64-byte little-endian command frame and appends the
+exact file bytes. The guest checks the package, immutable publication rules and
+Store durability. The host performs only the transport's 128–32768-byte and
+field-range admission. It neither computes a successful integrity result nor
+installs an object in the journal. Transactions through `2^63-1` and virtual
+cycles through `2^64-1` retain exact BigInt/string values.
+
+Admission pauses scheduling and queues ordered112-byte UART events at one
+observed virtual cycle. Every event retains the existing256-character bound
+and enters ordinary raw capture. It advances no guest clock and completes no
+backing operation. Resume lets the real guest installer run. A rejection reports
+the exact accepted prefix; that prefix remains queued. After a partial packet,
+the typed control requires Close and a new cold Open before retry. It also
+requires cold Open before a new installation from a restored continuation,
+because the resumed parser can already contain an admitted prefix. The existing
+raw-event replay continues those bytes without resending the operation. This
+is an explicit external-input policy, not a flush/drain or a restriction on
+authoritative machine snapshot capture.
+
+The UI reports transport admission separately from the latest complete new
+guest installer `0x4b1` report. Only operation1/status0 with a nonzero durable
+sequence displays **Guest reports installed**. Error reports remain failures;
+load/delete records, partial lines and retained pre-reset history cannot claim
+installation. Identity, edition, sequence and CRC remain exact decimal strings.
+This observer reports the guest's result and does not manufacture a receipt.
+
+The prepared four-process local package is launched with:
+
+```sh
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --reuse-wasm --wasm-build build/wasm/task006-canonical-native-port-a1 \
+  --wasm-input-bundle build/browser/task006-surface-bulk-closure-a4 \
+  --guest-bundle build/native/task006-package-closure-entry2-a1 \
+  --output-dir build/browser/AN_UNUSED_PACKAGE_BUNDLE
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-package-closure-entry2-a1 --port 8790
+```
+
+This preserves the exact existing RTL/Wasm core and packages the freshly
+elaborated/audited Kernel4, Store1, Notebook2, Closure7 and PackageInstaller1
+images. The native helper builds the guest; this is not browser compilation.
+The current new-CPU browser cold run and installed-course acceptance are
+unfinished. Fifteen browser host checks and the full293-test pinned simulator
+host suite passed; these do not establish guest installation or cold Ready.
+The original failed4948899 CI host expectation and skipped target acceptance
+remain retained separately from its narrow owner-mode fixture correction.

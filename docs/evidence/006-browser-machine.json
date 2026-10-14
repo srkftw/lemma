@@ -94,5 +94,62 @@
     "Product boot/update, watchdog/brownout, USB/radio, managed runtime and proof kernel",
     "Distribution installers, permission modes, browser-local compiler and redistribution license",
     "All physical qualifications remain separate and incomplete"
-  ]
+  ],
+  "typed_course_console_control": {
+    "schema": "lemma-browser-course-console-control-observation/1",
+    "status": "PASS_HOST_CONTROL_AND_PREPARED_STATIC_BUNDLE",
+    "scope": "actual maintained browserworker/app/transport fixtures and immutable fourprocess staticpack; real newguestcold/install/course/browserrecovery/suffix unfinished",
+    "source_parent": "4948899c699868e253d9ab3658e73e3dd08683a0",
+    "sources": {
+      "scripts/lemmasim_browser.py": "ec7e599501da41744a1209f668a9ffd7c210ba59296b52edac03f0042287f805",
+      "sim/browser/app.js": "5792a85d531d8a6e523dee2f622b92e6e7683751a7a95c84b1032b2932d870bf",
+      "sim/browser/guest_records.js": "63cb9478d6dacb250a032de5d2e904ded47e6152a9e34672cb6ba2606d445d37",
+      "sim/browser/index.html": "998525f2ac09ce07c8c09f2bf9c5bcc53935243cd6551b26990859edbb5b30ab",
+      "sim/browser/worker.js": "f71c5954ead70c9dadaa1b4f0a3df6f1e335c58eeafa79820e4cf2ad85ba4c4a",
+      "sim/browser/course_transport.js": "d0a2cf9e467c1ce097e8112baf5aea69245354f3e335e16d7f4070a8f292d29a",
+      "tests/lemmasim/browser_app_startup.mjs": "bd7aec72ffa1870a014b0ae5ef7600cd8a6ee60990acfde9f2da79376df4b9bb",
+      "tests/lemmasim/browser_worker_protocol.mjs": "6c76f50b1fc161e62ca792fe542b8e3ccb53c313a2d131174513f12f10582199",
+      "tests/lemmasim/test_browser_bundle.py": "7f61849636428801bae004ff0faeedfe2891014089cc0fc177f52bb4c9b7ae23",
+      "tests/lemmasim/test_browser_guest_records.py": "f946ad7a88b52fc6af3beed4dfb24a3b3438860afd40174e987dd3168cdaaabe",
+      "tests/lemmasim/test_browser_course_transport.py": "286b6e43f2b8be231adea012a859f82e0eb55eb29bad6df53965c03f9f555914"
+    },
+    "focused_tests": {
+      "actual_tests": 15,
+      "status": "PASS",
+      "log": "/home/sreekumaar/Downloads/lemma/build/browser/task006-package-control-draft-a1/browser-host-tests-final.log",
+      "log_sha256": "1920e53162920e5c5d00297ff8eaa26f3a7d37802d181a1bc4fb9327f21a8ea5"
+    },
+    "pinned_full_host_suite": {
+      "actual_tests": 293,
+      "status": "PASS",
+      "log": "/home/sreekumaar/Downloads/lemma/build/browser/task006-package-control-draft-a1/all-host-tests.log",
+      "log_sha256": "0450c00a877580ecc4aa4abeb1698d6abdc5b13b16db686bd8e31254f63dc67a"
+    },
+    "scaffold": {
+      "metadata": "PASS7gates56software6physical",
+      "unit_tests": 18,
+      "status": "PASS"
+    },
+    "bundle": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/browser/task006-package-closure-entry2-a1",
+      "sha256": "3928a03f6f29c3b7948aa6e2fe0e575693f70abff7ca22e7f5df063757033c02",
+      "native_manifest_sha256": "5c55696dfacf2d01978a9eadde3c9751ff8686117fb0a6b082867519d76bc7e2"
+    },
+    "genuine_guest_pair": "build/courses/task006-package-closure-whole-a1/result.json",
+    "cold": {
+      "status": "RUNNING_UNQUALIFIED",
+      "plan": "build/browser/task006-package-connected-owner-a1/plan.json",
+      "launch": "build/browser/task006-package-connected-owner-a1/launch.json"
+    },
+    "original_ci_failure": {
+      "run_id": 38644955941,
+      "job_id": 116129411377,
+      "artifact_id": 11932915765,
+      "zip_sha256": "2f41eaf64d8eaf6b59affb8897a5147ee19d8e57c4321aaf5133b13a31db226e",
+      "host_log_sha256": "11c6fc24bc2ceee5beddace3abd08d8a1763f1f091d846bb6dd164088fe4758a",
+      "repair": "build/ci/task006-494-native-fixture-repair-a1/result.json",
+      "target_acceptance": "NOT_RUN_AFTER_HOST_FAILURE"
+    },
+    "qualification_receipt_sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6"
+  }
 }

@@ -1407,3 +1407,43 @@ SUCCESS10/10 with no skipped steps, including foundation, realNotebookO0/O2,
 literalRTL/power and architectural/source-negative qualification. This does
 not qualify newer uncommitted Package/Surface compiler integration. DraftPR9
 remains unmerged; earlier24b/7cec candidate failures retain their meanings.
+
+### October14 connected PackageClosure whole pair and browser transport
+
+Implementation4948899 genuinely builds both complete four-process images from
+the same384-input source archive. Initializer build104.144s/audit184.602s and
+Notebook build107.751s/audit187.939s allPASS; each ELF is691736B. The original
+2500s aggregate deadline is unchanged: pair584.576s/external588.170s, peakowned
+RSS1.913GB/minimumavailable11.137GB, outputs126.84MB and no owned survivors.
+`build/courses/task006-package-closure-whole-a1/{result.json,source-seal.json}`
+and its separate supervisor retain complete source/tool identities. This closes
+whole compilation/audit, not the installed-course or browser guest scenario.
+
+Native bundle5c55696d at`build/native/task006-package-closure-entry2-a1` retains
+the exact cf76f4 backends/3d265e RTL core and new matched guest pair. It packages
+Kernel4, Store1, Notebook2, Closure7 and PackageInstaller1. Browser bundle3928a03
+at`build/browser/task006-package-closure-entry2-a1` retains the original
+source-validated Wasm core and the same guest artifacts. ELF preload, native
+compiler helper, browser-origin barriers and redistribution limits remain
+explicit. The browser newCPU0 run imported the untouched acknowledged-edition1/2
+medium into new origin`task006_pkg_closure_cold_a1`; it runs under predeclared
+2B/7200 bounds with actualReady/completed-panel observation, not a checkpoint or
+initializer. Native fresh-install/course/check/learner acceptance is being
+prepared against that same public bundle. Both guest scenarios remain OPEN.
+
+The browser Developer/Laboratory file control sends the existing course frame
+and opaque bytes through modeled UART; exact BigInt transaction/cycle values,
+partial-admission capture and cold-reopen retry policy are enforced. Student
+denies before effects. A complete new guest0x4b1 report is the only installation
+result shown; transport admission cannot produce success. Focused15 browser,
+full pinned293 simulator host and18 scaffold testsPASS. The existing browser
+contract/evidence contains actual commands and the source-bound host receipts.
+
+Actual4948899 CI38644955941 completedFAILURE9/10. Foundation, metadata/host,
+literalRTL/power, legacy and Task003 lanesPASS. The notebook job's289-test host
+step failed before target work: the ordinary-mode fixture omitted precisely
+the two owner-installer PackageClosure names. Its original ZIP2f41eaf6/log11c6fc24
+and skipped candidate-observation step remain retained. The exact fixture
+extension plus explicit newpair authority negatives passes13 focused and the
+full293 suite locally; maintained admission is unchanged. A successor candidate
+still requires its own CI. DraftPR9 remains unmerged.

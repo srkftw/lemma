@@ -125,4 +125,31 @@ for(const phase of ['adapter','device']){
  assert.equal(f.canvases.length,3);assert.equal(f.sent.at(-1).flags,10);assert.equal(f.sent.at(-1).tool,0);assert.equal(f.sent.at(-1).pressure,0);
  assert.deepEqual(f.images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
 }
+
+// The file form moves only opaque bytes and a decimal transaction. It never
+// invents an Installed receipt and Close clears the previous launch's label.
+{
+ const f=await appFixture(undefined),bytes=new ArrayBuffer(4040);
+ f.node('#course-package').files=[{size:4040,arrayBuffer:async()=>bytes}];
+ f.node('#course-transaction').value='9007199254740993';
+ await f.node('#install-course').onclick();
+ assert.equal(f.sent.at(-1).action,'course-install');assert.equal(f.sent.at(-1).bytes,bytes);
+ assert.equal(f.sent.at(-1).transaction,'9007199254740993');
+ f.worker.onmessage({data:{type:'course-admission',accepted:37,total:37,bytes:4040,error:null}});
+ assert.match(f.node('#course-admission').textContent,/Admitted 4040 package bytes/);
+ assert.match(f.node('#course-admission').textContent,/awaiting a guest receipt/);
+ const emit=guestCourse=>f.worker.onmessage({data:{type:'state',guestCourse,state:{cycle:'1'},running:false,guestObservation:'boot',readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit(null);assert.match(f.node('#course-result').textContent,/No installation result/);
+ emit({state:'installed',identity:'1',edition:'2',sequence:'9007199254740993'});
+ assert.match(f.node('#course-result').textContent,/Guest reports installed package 1, edition 2, durable sequence 9007199254740993/);
+ emit({state:'failed',identity:'1',edition:'2',status:'223'});
+ assert.match(f.node('#course-result').textContent,/failure \(223\)/);
+ f.worker.onmessage({data:{type:'course-admission',accepted:2,total:37,bytes:4040,error:'queue exhausted'}});
+ assert.match(f.node('#course-admission').textContent,/Admitted 2 of 37/);assert.match(f.node('#course-admission').textContent,/Close and cold-open/);
+ f.worker.onmessage({data:{type:'closed'}});assert.match(f.node('#course-result').textContent,/No running guest/);
+ for(const size of [127,32769]){
+  const count=f.sent.length;f.node('#course-package').files=[{size,arrayBuffer:async()=>{throw Error('must not read unbounded file');}}];
+  await f.node('#install-course').onclick();assert.equal(f.sent.length,count);
+ }
+}
 console.log('PASS actual app host fixture: unresolved GPU leaves controls, worker observation and exact Gray4 fallback functional; qualified switch/loss safely cancel contact');

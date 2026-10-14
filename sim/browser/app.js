@@ -50,6 +50,12 @@ document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.queryS
 document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});
 document.querySelector('#warm').onclick=()=>{cancelContact();send('reset',{cold:false});};
 document.querySelector('#cold').onclick=()=>{cancelContact();send('reset',{cold:true});};
+document.querySelector('#install-course').onclick=async()=>{
+ const file=document.querySelector('#course-package').files[0];
+ if(!file||file.size<128||file.size>32768){document.querySelector('#course-admission').textContent='Choose a course package containing 128 to32768 bytes.';return;}
+ try{const bytes=await file.arrayBuffer();send('course-install',{bytes,transaction:document.querySelector('#course-transaction').value},[bytes]);}
+ catch(e){document.querySelector('#course-admission').textContent=String(e);}
+};
 document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
 document.querySelector('#pending-outcomes').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
 document.querySelector('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,mode:sessionMode.value,bytes},[bytes]);};
@@ -82,10 +88,13 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed'){displayedMediumName=null;document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='closed'){displayedMediumName=null;document.querySelector('#course-result').textContent='No running guest. Open runs recovery from backing bytes.';document.querySelector('#course-admission').textContent='';document.querySelector('#retry-private').disabled=true;document.querySelector('#backing-status').textContent='No active medium. The displayed name is retained for reopen.';commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
+ if(m.type==='course-admission')document.querySelector('#course-admission').textContent=m.error?`Admitted ${m.accepted} of ${m.total} raw events; rejected remainder: ${m.error}. The accepted prefix remains queued. Close and cold-open backing before retrying.`:`Admitted ${m.bytes} package bytes to the guest. Resume the machine; installation is awaiting a guest receipt.`;
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
  if(m.type==='state'){const reported=m.guestCommit??null;
+  const course=m.guestCourse??null;
+  document.querySelector('#course-result').textContent=course===null?'No installation result observed in this guest launch.':course.state==='installed'?`Guest reports installed package ${course.identity}, edition ${course.edition}, durable sequence ${course.sequence}.`:`Guest reports installation failure (${course.status}) for package ${course.identity}, edition ${course.edition}.`;
   const backing=m.backingMedium;
   if(backing&&typeof backing.name==='string'){
    document.querySelector('#retry-private').disabled=backing.ready;

@@ -35,7 +35,9 @@ class NativeBundleBoundary(unittest.TestCase):
         course = {'lemmasim-silicon-course-bulk-notebook',
                   'lemmasim-silicon-course-bulk-initialize',
                   'lemmasim-silicon-course-await-bulk-notebook',
-                  'lemmasim-silicon-course-await-bulk-initialize'}
+                  'lemmasim-silicon-course-await-bulk-initialize',
+                  'lemmasim-silicon-package-closure-entry2-bulk-notebook',
+                  'lemmasim-silicon-package-closure-entry2-bulk-initialize'}
         for role,configuration in [item for configurations in SOFTWARE_DEPLOYMENTS.values() for item in configurations.items()]:
             if configuration in course:
                 continue
@@ -88,6 +90,49 @@ class NativeBundleBoundary(unittest.TestCase):
         for field,value in (('profile','lemma-silicon-dev/0.2.0'),('schema',SCHEMA_WITH_SOURCE_VERSIONS)):
             bad=copy.deepcopy(manifest);bad[field]=value
             with self.assertRaises(ValueError):bundle_configurations(bad)
+
+    def test_package_closure_owner_installer_pair_has_exact_mode_authority(self):
+        from silicon_guest_bundle import PACKAGE_CLOSURE_CONFIGURATIONS, PACKAGE_CLOSURE_DEPLOYMENT
+        expected = {'notebook': 'lemmasim-silicon-package-closure-entry2-bulk-notebook',
+                    'initializer': 'lemmasim-silicon-package-closure-entry2-bulk-initialize'}
+        self.assertEqual(PACKAGE_CLOSURE_CONFIGURATIONS, expected)
+        self.assertEqual(PACKAGE_CLOSURE_DEPLOYMENT, 'lemma-package-closure-entry2-bulk-deployment-v1')
+        manifest = {'profile': 'lemma-silicon-dev/0.3.0', 'schema': SCHEMA_WITH_SOFTWARE_DEPLOYMENT,
+                    'software_deployment': {'contract_version': PACKAGE_CLOSURE_DEPLOYMENT,
+                                            'configurations': dict(expected)}}
+        self.assertEqual(bundle_configurations(manifest), expected)
+        for role, configuration in expected.items():
+            for mode in ('developer', 'laboratory'):
+                with self.subTest(role=role, mode=mode):
+                    self.assertEqual(development_configuration(
+                        'lemma-silicon-dev/0.3.0', role, configuration, mode), configuration)
+            for mode in ('student', None, 'Developer', 'debug', True):
+                with self.subTest(role=role, rejected_mode=mode), self.assertRaises(ValueError):
+                    development_configuration('lemma-silicon-dev/0.3.0', role, configuration, mode)
+            other = 'initializer' if role == 'notebook' else 'notebook'
+            for wrong_role in (other, 'course', None):
+                for mode in ('developer', 'laboratory'):
+                    with self.subTest(role=role, wrong_role=wrong_role, mode=mode), self.assertRaises(ValueError):
+                        development_configuration('lemma-silicon-dev/0.3.0', wrong_role, configuration, mode)
+            for profile in ('lemma-silicon-dev/0.2.0', 'lemma-silicon-dev/0.4.0', 'lemma-silicon-dev/0.13.0'):
+                for mode in ('developer', 'laboratory'):
+                    with self.subTest(role=role, profile=profile, mode=mode), self.assertRaises(ValueError):
+                        development_configuration(profile, role, configuration, mode)
+            for lookalike in (configuration + '-invented', configuration + ' ',
+                              configuration.replace('-entry2-', '-entry3-'),
+                              configuration.replace('-package-', '-packages-')):
+                for mode in ('developer', 'laboratory'):
+                    with self.subTest(role=role, lookalike=lookalike, mode=mode), self.assertRaises(ValueError):
+                        development_configuration('lemma-silicon-dev/0.3.0', role, lookalike, mode)
+            for wrong_configuration in (expected[other], configuration.replace('-package', ''), configuration + '-invented'):
+                bad = copy.deepcopy(manifest)
+                bad['software_deployment']['configurations'][role] = wrong_configuration
+                with self.subTest(role=role, mixed_manifest=wrong_configuration), self.assertRaises(ValueError):
+                    bundle_configurations(bad)
+        for field, value in (('profile', 'lemma-silicon-dev/0.2.0'), ('schema', SCHEMA_WITH_SOURCE_VERSIONS)):
+            bad = copy.deepcopy(manifest); bad[field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                bundle_configurations(bad)
 
     def test_sums_deployment_does_not_relabel_the_prior_record_runtime(self):
         manifest={'profile':'lemma-silicon-dev/0.3.0','schema':SCHEMA_WITH_SOFTWARE_DEPLOYMENT,

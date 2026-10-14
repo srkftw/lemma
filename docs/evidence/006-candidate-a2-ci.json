@@ -144,7 +144,7 @@
       "retained_original": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2",
       "correction_commit": "16c3846",
       "correction_evidence": "docs/evidence/006-usercopy-kernel3-initializer-observer-v1.json",
-      "correction": "Exact closed cfg→root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
+      "correction": "Exact closed cfg\u2192root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
       "new_ci": "NOT_RUN"
     }
   },
@@ -377,5 +377,118 @@
       }
     ],
     "scope": "Actual published 0b1 candidate only; no qualification inherited by newer uncommitted Package/Surface integration; PR9 remains draft/unmerged."
+  },
+  "subsequent_candidate_494": {
+    "source_commit": "4948899c699868e253d9ab3658e73e3dd08683a0",
+    "actual_ci_run": 38644955941,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "6d80cdf0e481ac8207399867a7cdc30aa2f354e4",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 116129411242,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411377,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 116129411450,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411475,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411521,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411564,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411565,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411571,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411611,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116129411713,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failed_host_tests": 289,
+    "actual_failure": {
+      "job_id": 116129411377,
+      "test": "test_managed_guest_override_is_exact_and_available_in_ordinary_modes",
+      "error": "The literal owner-installer exclusion map omits exactly two new PackageClosure configurations; Student correctly rejects in maintained development_configuration.",
+      "artifact_id": 11932915765,
+      "zip_sha256": "2f41eaf64d8eaf6b59affb8897a5147ee19d8e57c4321aaf5133b13a31db226e",
+      "log_sha256": "11c6fc24bc2ceee5beddace3abd08d8a1763f1f091d846bb6dd164088fe4758a",
+      "job_log_sha256": "2c23664ce90dcc66bff3fc8b5573667ee68fdffabcca71021f11bce004426ae8",
+      "target_acceptance": "NOT_RUN_AFTER_HOST_FAILURE",
+      "subsequent_step": "skipped"
+    },
+    "corrected_fixture": {
+      "receipt": "build/ci/task006-494-native-fixture-repair-a1/result.json",
+      "receipt_sha256": "943313db4a544b177db19a0b752c5ffd60d02267c7481fbae42edbd2e395776e",
+      "focused_tests": 13,
+      "full_pinned_tests": 293,
+      "scope": "exact two literal exclusions plus explicit newpair owner-role/profile/lookalike rejection checks; production guard unchanged; no CI result inferred from local pass"
+    }
   }
 }

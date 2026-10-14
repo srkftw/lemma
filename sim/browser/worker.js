@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
-import {guestRecord,guestPageReady,guestCommitState} from './guest_records.js';
+import {guestRecord,guestPageReady,guestCommitState,guestCourseInstallState} from './guest_records.js';
+import {courseInstallFrame,courseInstallRows} from './course_transport.js';
 import {RunBudget,uint64} from './run_budget.js';
 let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
 let activeMediumName=null;
@@ -11,7 +12,7 @@ let guestObservation='boot';
 let sessionMode='student';
 const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
 const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','restore','bind','close']);
-const developerActions=new Set(['replay','run','raw','raw-batch','inspect','outcomes','events','capture','capture-outcomes']);
+const developerActions=new Set(['replay','run','raw','raw-batch','course-install','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
  const opening=['open','replay','import'].includes(message.action);
@@ -26,13 +27,14 @@ function admission(message){
   throw Error(developerActions.has(message.action)?'This control requires Developer or Laboratory mode':'Unsupported browser action');
  return mode;
 }
+let courseInputPartial=false;
 let budget=null,stepTimer=null,pauseReason=null,timing=null,inRun=false;
 const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',b)),x=>x.toString(16).padStart(2,'0')).join('');
 // Preserve every 64-bit JSON integer literally. Number is used only for
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),guestCourse:guestCourseInstallState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -70,6 +72,20 @@ function admitBatch(text){
  catch(e){postMessage({type:'raw-admission',accepted,total:rows.length,error:String(e)});
   throw Error(`Raw batch rejected after ${accepted} of ${rows.length} events: ${e}`);}
  sendState();postMessage({type:'raw-admission',accepted,total:rows.length,error:null});
+}
+function admitCourseInstall(message){
+ if(!loaded||!backingReady)throw Error('Open the package-enabled machine first');
+ if(manifest.course_install_contract!=='lemma-course-console-command/1')throw Error('This bundle does not expose the guest package installer');
+ if(courseInputPartial||guestObservation==='continuation')throw Error('Close and cold-open backing before sending another package after a partial admission or restored continuation');
+ if(replayUntil!==null)throw Error('Offline replay accepts its recorded events only');
+ const packet=courseInstallFrame(message.bytes,message.transaction);
+ const rows=courseInstallRows(packet,state().cycle);
+ if(capture.length+rows.length>1000000)throw Error('Course input exceeds the raw capture limit');
+ pause('course-input');
+ let accepted=0;
+ try{for(const row of rows){admitRaw(row,false);accepted++;}}
+ catch(e){courseInputPartial=accepted>0;postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:String(e)});throw e;}
+ sendState();postMessage({type:'course-admission',accepted,total:rows.length,bytes:packet.length-64,error:null});
 }
 function step(){if(!running)return;try{
  if(budget?.hostExpired(performance.now())){pause('host-limit');panel(true);sendState();return;}
@@ -140,7 +156,7 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    const until=BigInt(log.until);if(until<BigInt(state().cycle)||until>18446744073709551615n)throw Error('Invalid replay end');
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
-  }else check('lemma_create');loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
+  }else check('lemma_create');courseInputPartial=false;loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
  }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;activeMediumName=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
@@ -196,6 +212,7 @@ onmessage=async({data:m})=>{
  else if(m.action==='pen'||m.action==='button'){admit(m);}
  else if(m.action==='raw'){admitRaw(m.row);}
  else if(m.action==='raw-batch'){admitBatch(m.rows);}
+ else if(m.action==='course-install')admitCourseInstall(m);
  else if(m.action==='inspect'){sendState();postMessage({type:'uart',text:new TextDecoder().decode(core.FS.readFile('/uart.bin'))});}
  else if(m.action==='reset'){if(!backingReady)throw Error('Private backing is incomplete');if(replayUntil!==null)throw Error('Reset is outside this recorded suffix');pause('reset');budget=null;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation='boot';check('lemma_reset',['number'],[m.cold?1:0]);capture=[];checkpoints={};readyAt=null;sendState();panel(true);}
  else if(m.action==='snapshot'){pause('snapshot');const path='/snapshot-'+loops+'.bin';check('lemma_snapshot',['string'],[path]);

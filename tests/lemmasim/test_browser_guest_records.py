@@ -6,6 +6,23 @@ import unittest
 ROOT=Path(__file__).resolve().parents[2]
 
 class BrowserGuestRecords(unittest.TestCase):
+    def test_only_complete_current_installation_receipt_can_present_success(self):
+        script=r"""
+import {guestCourseInstallState} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const encode=x=>new TextEncoder().encode(x);
+const row=(outcome=1n,sequence=9007199254740993n,object=0x20001n,crc=0x12345678n)=>'K1 '+[0x4b1n,outcome,sequence,object,crc].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+const receipt=row();
+assert.deepEqual(guestCourseInstallState(encode(receipt),0),{authority:'compiled-guest-report',state:'installed',status:'0',identity:'1',edition:'2',sequence:'9007199254740993',crc32:'305419896'});
+assert.equal(guestCourseInstallState(encode(receipt),receipt.length),null);
+for(const text of [receipt.slice(0,-1),'prefix'+receipt,row(2n),row(1n,0n),row(0x10001n),row(1n,1n,0x20000n),row(1n,1n,1n),row(1n,1n,1n<<48n),row(1n,1n,0x20001n,1n<<32n)])assert.equal(guestCourseInstallState(encode(text),0),null);
+const failure=guestCourseInstallState(encode(row(0xdf01n,0n)),0);
+assert.equal(failure.state,'failed');assert.equal(failure.status,'223');assert.equal(failure.sequence,'0');
+assert.equal(guestCourseInstallState(encode(receipt+row(0xe301n,0n)),0).status,'227');
+"""
+        run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
     def test_reset_history_partial_and_unrelated_records_cannot_claim_ready(self):
         script=r"""
 import {guestRecord,guestRecordFields,guestPageReady} from './sim/browser/guest_records.js';

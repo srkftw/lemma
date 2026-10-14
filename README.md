@@ -1117,3 +1117,56 @@ These checks execute the real Machine core and generated circuitry, with no
 guest image, notebook, journal recovery or full USB conformance claim.
 
 -->
+
+## Current Task006 package and browser development path
+
+The prepared four-process PackageClosure deployment uses the canonical
+1650×2200 Gray4 machine,128MiB simulation RAM and the real32MiB/8192-frame
+guest pool. Kernel4 runs isolated Store1, Notebook2, Closure7 arithmetic and
+PackageInstaller1 images. Both matched images have passed genuine Lean/LLVM
+compilation and full RV64 audits. The new installed-course native/browser
+user scenarios are still being executed; compilation is not their acceptance.
+
+Launch the prepared native machine on a privately backed existing medium:
+
+```sh
+./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-package-closure-entry2-a1 \
+  --workload notebook --mode developer --paused \
+  --session-dir build/AN_UNUSED_PACKAGE_SESSION --disk YOUR_PRIVATE_MEDIUM.raw
+./scripts/lemmasim course-install --session-dir build/AN_UNUSED_PACKAGE_SESSION \
+  --package YOUR_ORIGINAL_COURSE.lcp --transaction 1
+./scripts/lemmasim session-control --session-dir build/AN_UNUSED_PACKAGE_SESSION \
+  --request '{"action":"run","cycles":100000000}'
+```
+
+The course command sends raw UART bytes. `RAW_COMMAND_ADMITTED` is not a durable
+installation. The guest validates the package and reports its actual `0x4b1`
+result after Store publication. Use the existing course authoring path; keep
+the original transaction for reconciliation after an uncertain outcome.
+
+The prepared browser runs the same audited guest on the existing RTL/Wasm core:
+
+```sh
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-package-closure-entry2-a1 --port 8790
+```
+
+At `http://127.0.0.1:8790/`, select Developer before opening, import an existing
+raw medium under a new name, then Open. **Install a course package** sends the
+selected `.lcp` through the modeled UART and pauses for ordered admission;
+Resume runs the guest installer. The installation label observes only complete
+new guest reports. Student mode rejects this owner control. Partial input
+requires a cold Close/Open before retry; generic raw capture retains its exact
+accepted prefix. Save, checking, course reading and learner events remain guest
+operations. Checkpoint restore is a private continuation; Close/Open from
+backing bytes performs real cold recovery. OPFS barriers qualify origin storage,
+with eviction and physical power-loss guarantees still unresolved.
+
+Exact build/package commands, source/tool identities and retained failures are
+in [the current checkpoint](docs/plan/006-session-state.md) and
+[browser contract](docs/contracts/006-browser-machine-v1.md). These are local
+development bundles with ELF preload and a native build helper. Browser-local
+compilation, production authentication, full teacher/tutor permissions,
+proof-kernel closure, exact fast timing and physical signoff remain unfinished;
+the project-wide redistribution license is unresolved.

@@ -762,9 +762,47 @@
       "sha256": "b3e36f5bb914eb5565147aceaaa3f45dd306c93401f66cf404f4e20cb923e999",
       "status": "FAIL",
       "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/courses/task006-package-closure-whole-a1/result.json",
+      "bytes": 2835,
+      "sha256": "4ac0714cade637e4e89cb0ec3c4545886c1ec7181010370547e7985412c21fe9",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "scope": "fresh genuinely compiled whole PackageClosure normal/initializer and full ordinary artifact audits; cold mountedReady/Load/Notebook integration NOT_RUN"
+    },
+    {
+      "path": "build/courses/task006-package-closure-whole-supervision-a1/result.json",
+      "bytes": 5861,
+      "sha256": "5fa7900514459702e2cf3a8d715dcfe73cca4dcfca65aa0f8709054c1f832766",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "scope": "bounded external whole-pair build/audit supervision; guest and physical acceptance separate"
+    },
+    {
+      "path": "build/courses/task006-package-closure-nativepack-a1/result.json",
+      "bytes": 15155,
+      "sha256": "30437721c87c60725d4f7402e42c784d51a1d2139c2f4076c703b523de49e3c7",
+      "status": "PASS_IMMUTABLE_NATIVE_BUNDLE_ADMISSION",
+      "scope": "validated existingcf76 backends/source identities plus fresh matched384-input Package guests; no CPU/backend recompilation/guest acceptance"
+    },
+    {
+      "path": "build/browser/task006-package-control-draft-a1/result.json",
+      "bytes": 3259,
+      "sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6",
+      "status": "PASS_HOST_CONTROL_AND_PREPARED_STATIC_BUNDLE",
+      "scope": "actual maintained browserworker/app/transport fixtures and immutable fourprocess staticpack; real newguestcold/install/course/browserrecovery/suffix unfinished"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Aligned checksum actual RTL cold890M/allpixels with retained observerFAIL independently corrected; packed course21 genuine functions and9.557% fewer fast actioncycles, Save/newcold/failure and complete303-input prepared pair qualified; oldArray private browser actualUnsupported/OPFSSaved38 plus new native cold fullpixels. USB8 finalSaved11 independent cold735M/no republish qualified; USBWire11 wholeguest and same-machineWiFi12 continue. Corrected9076 CI38467033782 SUCCESS10jobs with stale two-step API resolved against actual execution logs; laterlocal changes notqualifiedbyCI. Digital, fast/checkpoint, distribution and physical obligations remain separate."
+  "continuation_note": "Aligned checksum actual RTL cold890M/allpixels with retained observerFAIL independently corrected; packed course21 genuine functions and9.557% fewer fast actioncycles, Save/newcold/failure and complete303-input prepared pair qualified; oldArray private browser actualUnsupported/OPFSSaved38 plus new native cold fullpixels. USB8 finalSaved11 independent cold735M/no republish qualified; USBWire11 wholeguest and same-machineWiFi12 continue. Corrected9076 CI38467033782 SUCCESS10jobs with stale two-step API resolved against actual execution logs; laterlocal changes notqualifiedbyCI. Digital, fast/checkpoint, distribution and physical obligations remain separate.",
+  "package_closure_milestone": {
+    "implementation_source": "4948899c699868e253d9ab3658e73e3dd08683a0",
+    "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
+    "model_rtl": "unchanged canonical0.3 shared Machine and controllers",
+    "guest_artifacts": "matched complete fourprocess pair genuine compilation/full ordinary audits PASS584.576s/384inputs",
+    "guest_execution": "new installed-course native/browser workflows not yet qualified",
+    "distribution": "prepared exact native5c55696d/browser3928a03; typed browserowner transport host-qualified; nativecompiler helper/no browsercompiler",
+    "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
+    "physical": "unchanged unresolved fullphysical closure"
+  }
 }

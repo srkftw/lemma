@@ -31,6 +31,42 @@ def fixture(root):
     return m
 
 class BrowserBundleBoundary(unittest.TestCase):
+    def test_course_control_requires_exact_complete_guest_deployment(self):
+        from silicon_guest_bundle import SOFTWARE_DEPLOYMENTS, COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            def course(version):
+                m=fixture(root)
+                m['course_install_contract']='lemma-course-console-command/1'
+                (root/'course_transport.js').write_bytes(b'raw host transport fixture')
+                m['files']['course_transport.js']=hashlib.sha256((root/'course_transport.js').read_bytes()).hexdigest()
+                for role, configuration in SOFTWARE_DEPLOYMENTS[version].items():
+                    name=role+'/build.json'
+                    (root/name).write_text(json.dumps({'configuration':configuration}))
+                    digest=hashlib.sha256((root/name).read_bytes()).hexdigest()
+                    m['files'][name]=digest
+                    m['workloads'][role]['qualification']={'build':{'path':name,'sha256':digest}}
+                (root/'bundle.json').write_text(json.dumps(m))
+                return m
+            for version in (COURSE_DEPLOYMENT, COURSE_AWAIT_DEPLOYMENT, PACKAGE_CLOSURE_DEPLOYMENT):
+                course(version)
+                validated_bundle(root)
+            for mutation in ('unknown-contract','missing-module','missing-build','unbound-build','mixed-roles','lookalike'):
+                m=course(PACKAGE_CLOSURE_DEPLOYMENT)
+                if mutation=='unknown-contract':m['course_install_contract']='lemma-course-console-command/2'
+                elif mutation=='missing-module':del m['files']['course_transport.js']
+                elif mutation=='missing-build':del m['workloads']['initializer']['qualification']
+                elif mutation=='unbound-build':m['workloads']['initializer']['qualification']['build']['sha256']='a'*64
+                else:
+                    name='initializer/build.json'
+                    configuration=SOFTWARE_DEPLOYMENTS[COURSE_DEPLOYMENT]['initializer'] if mutation=='mixed-roles' else SOFTWARE_DEPLOYMENTS[PACKAGE_CLOSURE_DEPLOYMENT]['initializer']+'-invented'
+                    (root/name).write_text(json.dumps({'configuration':configuration}))
+                    digest=hashlib.sha256((root/name).read_bytes()).hexdigest()
+                    m['files'][name]=digest
+                    m['workloads']['initializer']['qualification']['build']['sha256']=digest
+                (root/'bundle.json').write_text(json.dumps(m))
+                with self.subTest(mutation=mutation),self.assertRaises(ValueError):validated_bundle(root)
+
     def test_versioned_controls_preserve_archives_and_reject_unknown_versions(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);m=fixture(root)

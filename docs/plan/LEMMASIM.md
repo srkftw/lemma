@@ -73,3 +73,15 @@ physical column. Detailed routing, complete SG13G2 rule coverage, process
 DRC/LVS, extraction and post-route timing remain separate required results.
 
 -->
+
+October14 connected implementation update: the existing PackageClosure
+four-process deployment now has complete genuine matched initializer/notebook
+compilation and full ordinary audits (384 inputs,584.576s, both691736B ELFs).
+It is prepared on the same native and browser machine cores. The browser's
+Developer/Laboratory course file control sends opaque bytes through modeled
+UART and displays only complete guest installation reports. Host transport
+and permission checks pass; new installed-course guest and browser acceptance
+are running/prepared and remain open. This advances G2/G4–G7 and S4–S6 without
+closing general runtime, proof-kernel, tutor transport, whole distribution,
+exact fast/checkpoint or physical obligations. The current checkpoint and
+existing capability inventory retain those separate statuses.

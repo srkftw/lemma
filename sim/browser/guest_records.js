@@ -45,3 +45,18 @@ export function guestCommitState(bytes,start){
  }
  return result;
 }
+
+// Observe only complete guest installer reports. Transport admission, parsing
+// and a queued write never establish installation or durability here.
+export function guestCourseInstallState(bytes,start){
+ const fields=guestRecordFields(bytes,start,'00000000000004b1');
+ if(fields===null)return null;
+ const [outcome,sequence,object,crc]=fields.map(value=>BigInt('0x'+value));
+ const operation=outcome&255n,status=outcome>>8n;
+ if(operation!==1n||status>255n||object>>48n||crc>0xffffffffn)return null;
+ const identity=object&65535n,edition=object>>16n;
+ if(identity===0n||edition===0n||(status===0n&&sequence===0n))return null;
+ return {authority:'compiled-guest-report',state:status===0n?'installed':'failed',
+  status:status.toString(),identity:identity.toString(),edition:edition.toString(),
+  sequence:sequence.toString(),crc32:crc.toString()};
+}
