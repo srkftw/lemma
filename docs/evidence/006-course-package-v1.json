@@ -516,6 +516,244 @@
     "scaffold_host_suite": "PASS18 tests"
   },
   "milestone": "typed offline course package and actual guest Store loader component",
+  "mounted_await_cold_complete": {
+    "actual_result": {
+      "path": "build/courses/task006-course-await-cold-a4/result.json",
+      "sha256": "e7ba8357fee0c785df6d1bb071a2aac4903b17354eb99f170fec5c432b500f13"
+    },
+    "bounds": {
+      "cold_target_cycles": 60000000,
+      "maximum_declared_cycles": 260000000,
+      "per_load_command_cycles": 100000000,
+      "whole_host_seconds": 1800
+    },
+    "child_peak_rss_kib": 152320,
+    "cold_backing": {
+      "bytes": 268435456,
+      "original": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-ipc-guest-a1/durable.raw",
+      "private": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-cold-a4/durable.raw",
+      "sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829"
+    },
+    "command": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "python3",
+      "scripts/check_course_cold.py",
+      "--native-bundle",
+      "build/native/task006-course-await-a3",
+      "--notebook-build",
+      "build/kernel/task006-course-await-workspace-a2/target/build/kernel/notebook",
+      "--source-root",
+      "build/courses/task006-course-await-whole-a3/consumed-source-root",
+      "--package",
+      "build/courses/task006-package-qualified-a5/package/arithmetic.lcp",
+      "--author-package",
+      "build/courses/task006-package-qualified-a5/author-package/arithmetic.lcp",
+      "--writer-result",
+      "build/courses/task006-course-ipc-guest-a1/result.json",
+      "--medium",
+      "build/courses/task006-course-ipc-guest-a1/durable.raw",
+      "--work-dir",
+      "build/courses/task006-course-await-cold-a4"
+    ],
+    "host_envelope": {
+      "address_space_limit_bytes": 4294967296,
+      "lean_num_threads": 2,
+      "python_cache_scope": "unused prefix set before Python startup",
+      "whole_host_seconds": 1800
+    },
+    "host_source": {
+      "count": 301,
+      "inventory_sha256": "0068f29dccc1d993f80564603c509d3f11b9b9381b3779ce53d4a276e81c01f6",
+      "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-cold-a4/host-source-root",
+      "scope": "full conservative project host-code corpus; imported paths held stable throughout actual actor",
+      "unchanged_after_actor": true
+    },
+    "host_tool_envelope_qualification": {
+      "path": "build/courses/task006-course-cold-host-tools-a1/result.json",
+      "scope": "eight actual pinned version outputs under independently declared 4 GiB/two-thread host envelope",
+      "sha256": "d05d2dad80cf376d951043dc4d457e9d3a3df79ef6989620774f1e633525fea7"
+    },
+    "loads": [
+      {
+        "actual_guest_outcome": [
+          1201,
+          2,
+          0,
+          65537,
+          1743257817
+        ],
+        "admission_cycle": 55000000,
+        "all_owned_bytes": {
+          "bytes": 4040,
+          "cycle": 154000000,
+          "every_byte_equal": true,
+          "installer_descriptor": 8358,
+          "loaded_sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf",
+          "machine_sha256": "ed23c5da78472510ab06cd4addd159936bbc224ef7bfbf2711cd5c17b02a4392",
+          "model_crc64": 16733828363661367407,
+          "owned_mappings": [
+            {
+              "bytes": 4040,
+              "handle": 8420,
+              "owner": 5,
+              "permissions": 3,
+              "physical": 2181971968,
+              "pte": 545493207,
+              "va": 294912
+            }
+          ],
+          "ram_crc32_observed": 3439936847,
+          "scope": "read-only after actual cold Load; no restore, journal or mathematical authority",
+          "snapshot": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-cold-a4/loaded-edition1",
+          "source_inventory_sha256": "b26c0ccab6f2b15b08a4ca10a0894babd2c2c63ccd59feaa17c9b9614a5c7cff",
+          "wrapper_crc64": 12369366549780594942
+        },
+        "completion_cycle": 154000000,
+        "present": [
+          1202,
+          4040,
+          1743257817,
+          1,
+          1
+        ],
+        "selected": [
+          1203,
+          2,
+          1,
+          1743257817,
+          1
+        ],
+        "target_cycles": 99000000
+      },
+      {
+        "actual_guest_outcome": [
+          1201,
+          2,
+          0,
+          131073,
+          1253124339
+        ],
+        "admission_cycle": 154000000,
+        "all_owned_bytes": {
+          "bytes": 4058,
+          "cycle": 253000000,
+          "every_byte_equal": true,
+          "installer_descriptor": 8358,
+          "loaded_sha256": "dcde9241f0a8f611e07d94fa6fb7ee453be301d197704e9fe8162496576f5f4c",
+          "machine_sha256": "30f2b75bfc396af7cdc591c95b304a3171b8b5bbc52b5e23168d9944d17dbf16",
+          "model_crc64": 14484025537396395771,
+          "owned_mappings": [
+            {
+              "bytes": 4058,
+              "handle": 8420,
+              "owner": 5,
+              "permissions": 3,
+              "physical": 2181971968,
+              "pte": 545493207,
+              "va": 294912
+            }
+          ],
+          "ram_crc32_observed": 2791761002,
+          "scope": "read-only after actual cold Load; no restore, journal or mathematical authority",
+          "snapshot": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-cold-a4/loaded-edition2",
+          "source_inventory_sha256": "b26c0ccab6f2b15b08a4ca10a0894babd2c2c63ccd59feaa17c9b9614a5c7cff",
+          "wrapper_crc64": 13422836163511179624
+        },
+        "completion_cycle": 253000000,
+        "present": [
+          1202,
+          4058,
+          1253124339,
+          1,
+          2
+        ],
+        "selected": [
+          1203,
+          2,
+          1,
+          1253124339,
+          2
+        ],
+        "target_cycles": 99000000
+      }
+    ],
+    "mounted_ready_observed_cycle": 55000000,
+    "native_bundle": {
+      "path": "build/native/task006-course-await-a3/bundle.json",
+      "sha256": "edd84b717dcd1be41a63797231d6799ef7891560be125ce4228be42967e56bd9"
+    },
+    "no_new_guest_write_or_barrier": true,
+    "original_target_source_archive": {
+      "inputs": 372,
+      "inventory_sha256": "b26c0ccab6f2b15b08a4ca10a0894babd2c2c63ccd59feaa17c9b9614a5c7cff",
+      "path": "build/courses/task006-course-await-whole-a3/consumed-source-root"
+    },
+    "original_writer": {
+      "installed": [
+        {
+          "artifact_sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf",
+          "cycle": 141000000,
+          "outcome": [
+            1201,
+            1,
+            1,
+            65537,
+            1743257817
+          ]
+        },
+        {
+          "artifact_sha256": "dcde9241f0a8f611e07d94fa6fb7ee453be301d197704e9fe8162496576f5f4c",
+          "cycle": 224000000,
+          "outcome": [
+            1201,
+            1,
+            2,
+            131073,
+            1253124339
+          ]
+        }
+      ],
+      "original_failed_cold_status": [
+        [
+          1201,
+          59138,
+          0,
+          65537,
+          1743257817
+        ]
+      ],
+      "result": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-ipc-guest-a1/result.json",
+      "runtime": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+      "scope": "opaque medium from two actual acknowledged installs in the retained failed scenario; no journal parsing",
+      "sha256": "9eec5d7042f05e5b7aeee834e1d4297ff4282385e15b511fa6d8b96c79a71e1d",
+      "status": "FAIL"
+    },
+    "owned_survivors": [],
+    "retained_failures": [
+      {
+        "path": "build/courses/task006-course-await-cold-a3/result.json",
+        "sha256": "b6e5cf550d547c5f9b629163dada4826495e24e1468fcd006daf2cb34920fa41"
+      },
+      {
+        "path": "build/courses/task006-course-await-missing-notebook-a2/result.json",
+        "sha256": "bea9c04e4f80e080b839dd5f0546f189cd69ddeb320913d82fa49e79cc5d9eaa"
+      }
+    ],
+    "scope": "new ordinary Developer/Laboratory cold package load/selection via actual guest Store; Notebook rendering/evidence and arbitrary new checker goals remain unqualified",
+    "snapshot_count": 2,
+    "source_workspace_milestone": "1e6cbb4e3faa5af08c8cb3d1ab28bf31ec9c4c89",
+    "status": "PASS_ACTUAL_COLD_COURSE_SELECTION_AFTER_GUEST_MOUNT_WAIT",
+    "supervisor": {
+      "path": "build/courses/task006-course-await-cold-supervised-a4/result.json",
+      "sha256": "c597711ef47cca0b799c633b3ceeac44ad680029de386dc1bb95171557b707d9"
+    },
+    "supervisor_child_peak_rss_kib": 407092,
+    "supervisor_wall_seconds": 769.9346478939988,
+    "wall_seconds": 765.239255718072
+  },
   "mounted_await_component": {
     "child_peak_rss_kib": 1627848,
     "commands": [

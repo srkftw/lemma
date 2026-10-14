@@ -6,8 +6,8 @@
 `Store/ServerAwait.lean`. Its operation16/wire version2 is separate from
 historical Store status8 and recovery14/15. All historical Store, kernel,
 compiler and Notebook definitions retain their behavior. Its new root has
-passed component qualification; selecting and booting it in a full machine
-remains required.
+separate component and actual cold-machine qualification described below;
+Notebook integration remains required.
 
 The request is64 copied bytes: Store magic, version2, operation16, namespace,
 object0, initializer flag0/1, reserved0, reserved0. Existing endpoint Call grants
@@ -66,7 +66,7 @@ independent literal envelope/reference mutations reject. LLVM O2 and a real
 RV64IM object pass with only the declared syscall bridge unresolved. This does
 not establish CPU execution, a completed guest mount or new cold Ready/Load.
 
-The separately retained startup2 cold run failed at the original60-million-
+The separately retained startup2 cold run failed at the original 60-million-
 cycle Ready boundary in189.700s. It completed23 reads and issued3 status RPCs,
 versus7 reads/11 RPCs in the earlier1ms failure. It was still mounting its final
 header; no Load was admitted and no write/barrier occurred. Those failures
@@ -141,6 +141,35 @@ the corrected full ordinary audit in115.741seconds;39000 actual ordinary Lean
 predicate cases and60 actual authority/IR/instruction/cell mutations qualify
 that correction. These are source/artifact observations, not CPU Ready.
 
-The missing notebook image and actual cold mountedReady/Load remain pending. Installed-course Notebook rendering, source-bound submission/evidence
-and a cooperative chunk reader remain separate required connected work.
+The missing notebook 647504-byte image was genuinely compiled from the unchanged
+original 372-source archive through the bounded archived compiler interface.
+Its original 281.886-second command/CWD audit FAIL remains retained. The exact
+corrected observer passed the full ordinary audit of the unchanged image in
+101.413 seconds. The initializer retains its separate original 8590507 identity;
+the copied notebook records its actual parent Git observation a55d2ff rather
+than retagging the archive. The native bundle retains the original 32282772
+canonical RTL runtime and those independently audited guest identities.
+
+Actual independent cold execution now reaches guest mountedReady at the sampled
+55-million-cycle boundary, within the original 60-million bound. Two subsequent
+Load commands finish 55→154 million and 154→253 million: 99 million cycles each,
+within their separately declared 100-million bounds. The guest decodes 4040 and
+4058 bytes from the previously acknowledged opaque medium, checks their real
+CRCs 1743257817 and 1253124339, and selects node 2/goal 1 for each original edition.
+Two observational checkpoints taken only after Load verify every published
+byte against the independent publisher artifacts and independently validate
+their owned Sv39 mappings. No checkpoint supplies the cold reader state.
+
+The actual actor completes in 765.239 seconds under its original 1800-second
+ceiling; the supervisor closes in 769.935 seconds with no owned survivors. All 301
+original host-source hashes remain exact. A prior pre-CPU 2 GiB host-tool failure
+is retained separately: it executed no guest cycles. The prospective successor
+uses an independently qualified 4 GiB host address-space limit with two Lean host
+threads; all eight pinned tool-version outputs match. This changes neither
+canonical guest RAM/frame capacity nor the guest cycle/deadline contract.
+
+This closes the Developer/Laboratory installed-package cold decode/selection
+path through the real Store. Installed-course Notebook rendering, revision-bound
+submission/evidence, cooperative user-facing reads and teacher publishing
+experience remain separate required connected work.
 -->
