@@ -1319,4 +1319,25 @@ scenario. Exact authorities/commands/results are in the existing recovery
 receipt and new006-notebook-closure-recovery-v3.md; no fullUSB, productionboot,
 proofkernel, fasttiming or physical completion is inferred.
 
+
+## October14 Saved29 control2 cold reopen qualified
+
+The originalcontrol2 coldrun reaches actualReady732M/4135.304 launchelapsed
+seconds/3682.301 simulation-call seconds/192MiB within2B/7200s/2GiB.
+Every256MiB backing byte and3.63M controller pixel equals acknowledgedSaved29,
+with174READs and zeroWRITE/BARRIER. Actualcold snapshot874b70ef... is exported
+onlyafterReady, never inputto thisCPU. All174 returned bytes/IDs/errors/times
+match the unchanged independently derived pre-runread plan (JSONoffset digest
+c92ae04b...; the same literaloffsets packedlittleendianu64 digest01f19d...); no
+oracle expansion. Coldobserver89d46e... passes23.252s. Doc8 revision12/Invalid12,
+Verified11 history, attempts2/hints2 and manualreviewreason/uncertainstate persist.
+
+This directly follows actualStudent privatecopy/flush/rebind/name publication
+andClose/newCPUcycle0 Open of that sameexistingOPFSfork. The priorStudentrestore
+phase staysexplicitlyseparate: no restore/import/initializer enters the newCPU.
+No newcourse-open/check is claimed here. The existing browserworkflowreceipt
+binds actualprepared3966 bundle,97547 medium, completepixel reference andexports.
+Original732M versus712.45M uses Saved29 versus Saved26/174 versus163reads;
+no guest/simulator speedup is inferred from those different workloads.
+
 -->

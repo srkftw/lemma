@@ -670,15 +670,19 @@
       "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
       "pixel_sha256": "894a717212bcf022ff98e52023f5a1ac8f83e353abb0b1b13497cf73b753ae93",
       "retained_observer_failure": "Originalresult-a1 expected10rowtokens; actualnative pen row has9. Correcteda2 admits exactly9/rejects20missing/extra-field vectors; no machine/input/CPU rerun.",
-      "independent_cold_of_saved29": "NOT_RUN"
+      "independent_cold_of_saved29": {
+        "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+        "reference": "active_browser_medium_name.durable_only_reopen",
+        "scope": "Student publicrestore/privatecopy/name phase followedbyClose/newCPUcycle0 Open sameexistingOPFSfork. PriorStudentrestoreexplicitlyseparate; no restore/import/initializer enters thisnewCPU."
+      }
     }
   },
   "active_browser_medium_name": {
-    "status": "PASS_ACTUAL_STUDENT_PRIVATE_COPY_AND_NAME_COLD_REOPEN_RUNNING",
+    "status": "PASS_ACTUAL_STUDENT_PRIVATE_COPY_NAME_AND_NEW_CPU_COLD",
     "control_contract": "lemma-browser-session-modes/2",
     "behavior": "Publish actualprivate OPFSname only after fullopaque copy/flush/rebind; preserve nameafterClose forfreshCPUOpen, keepusernext-name edits; Student canretryincompleteopaqueprivatecopy, capturedoutcomebinding staysprivileged.",
     "host_checks": "5browser distribution +2 actualapp/worker protocol fixtures PASS, scaffold metadata/18tests PASS. Existing control1 bundles preserved.",
-    "browser_execution": "Actualcontrol2 Student publicrestore/privatecopy/name/Close PASS; then newCPU cycle0 Open samepersistentname, instrumentedcold2B/7200s RUNNING. Priorrestorephase is explicit, not input to newCPU.",
+    "browser_execution": "Actualcontrol2 Student copy/name/Close thenindependentnewCPUcycle0 Open samepersistentname: coldReady/all256MiB/all3.63Mpixels/exact174preplannedreads PASS. Priorrestorephase retainedexplicitly.",
     "guest_or_machine_core_changes": false,
     "source_input_boundary": "BrowserJS/builder/contract notconsumed by377targetcompiler sourceinputs.",
     "actual_student": {
@@ -692,7 +696,51 @@
       "new_open_cycle": "0",
       "result": "build/browser/control2-private-reopen-owner-a1/student-restore-result-a1.json",
       "cold_plan": "build/browser/control2-private-reopen-owner-a1/plan.json",
-      "cold_status": "RUNNING"
+      "cold_status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS"
+    },
+    "durable_only_reopen": {
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Student publicrestore/privatecopy/name phase followedbyClose/newCPUcycle0 Open sameexistingOPFSfork. PriorStudentrestoreexplicitlyseparate; no restore/import/initializer enters thisnewCPU.",
+      "bundle": "build/browser/task006-surface-bulk-closure-a4",
+      "bundle_sha256": "396665e2e0832cc5dcf38f06fad6bd6b54048ee5436514d83340e4e84809f8c9",
+      "origin": "http://127.0.0.1:8788",
+      "medium_name": "fork_cefe735fda6f48899d9031cb5df9ca29",
+      "ready_cycle": 732000000,
+      "ready_launch_elapsed_seconds": 4135.303924999952,
+      "simulation_call_seconds": 3682.3008150002966,
+      "heap_bytes": 201326592,
+      "reads": 174,
+      "writes": 0,
+      "barriers": 0,
+      "all_durable_bytes": 268435456,
+      "complete_pixels": 3630000,
+      "journal_sequence": 29,
+      "doc8_revision": 12,
+      "outcome": "Invalid",
+      "history": [
+        "Verified11",
+        "Invalid12"
+      ],
+      "attempts": 2,
+      "hints": 2,
+      "review": "manualPractice/reason/uncertain preserved",
+      "medium_sha256": "97547b5176d9cc807fc387f74db51ecb7409cf6729fdd4131a6153616fe10421",
+      "snapshot_sha256": "874b70ef88f8eef5200b99083d1f7651d6a56b4a7172efaa5b21f55e5a734c9d",
+      "reference_normalized_pixels_sha256": "f0a07581acda1411a03ea48fd076888ec4c48702709857c9d57a0d7352cd2db9",
+      "result": "build/browser/control2-private-reopen-owner-a1/cold-result-a1.json",
+      "result_sha256": "89d46e273c1463c1a6bf26ece2077fbcfbd97eea187e564b6a38c740f1d9b745",
+      "observer_seconds": 23.251642777002417,
+      "pre_run_read_plan_exact": true,
+      "pre_run_plan_result": "build/browser/control2-private-reopen-owner-a1/pre-run-plan-result-a1.json",
+      "pre_run_json_offsets_sha256": "c92ae04bcbc75d9ee76e16aaabc05d40d725dadcb9c584ec0a151f23e5d29167",
+      "little_endian_u64_offsets_sha256": "01f19d819df853195f5f4902949ba684313bca2266df253144cd3a2be303825e",
+      "offset_digest_scope": "Same174 literaloffsets under two explicit encodings; originalpre-runplan unchanged.",
+      "original_bounds": {
+        "cycles": 2000000000,
+        "host_seconds": 7200,
+        "heap_bytes": 2147483648
+      },
+      "remaining": "No newcourse-open or mathematicalcheck claimed on thiscoldCPU; journalDoc8 validated passively, controllerink/toolbar pixels complete."
     }
   },
   "restore_validation_control_repair": {
