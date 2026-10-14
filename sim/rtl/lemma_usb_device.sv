@@ -1,7 +1,7 @@
 // lemma-usb-device/1: full-speed EP0 + bulk IN1/OUT2 at decoded packet-byte
 // boundary. External bytes retain PID, token CRC5 and DATA CRC16. NRZI,
 // bit stuffing, electrical attach and recovered 12MHz PHY are separate.
-module lemma_usb_device #(parameter bit PHY_ABORT=0) (
+module lemma_usb_device #(parameter bit PHY_ABORT=0,CLOCKED_PHY=0) (
  input logic clk,reset,enabled,connected,bus_reset,
  input logic valid,write,input logic [9:0] addr,input logic [2:0] size,
  input logic [63:0] wdata,output logic [63:0] rdata,
@@ -58,7 +58,7 @@ module lemma_usb_device #(parameter bit PHY_ABORT=0) (
  endtask
  assign ready=1;
  assign access_ok=size==3&&addr[2:0]==0;
- assign known=addr<=168||(addr>=256&&addr<=376)||(addr>=512&&addr<=632);
+ assign known=addr<=168||(CLOCKED_PHY&&addr>=176&&addr<=216)||(addr>=256&&addr<=376)||(addr>=512&&addr<=632);
  assign write_ok=(addr==40&&wdata<=63)||(addr==48&&wdata==0)||(addr==56&&wdata[63:16]==0&&wdata[15:8]<=2&&wdata[7:0]>=1&&wdata[7:0]<=5)||
    ((addr==64||addr==72)&&wdata<=64)||(addr==96&&wdata<=127)||(addr==104&&wdata<=1)||
    addr==168||(addr>=256&&addr<=376);
@@ -83,6 +83,10 @@ module lemma_usb_device #(parameter bit PHY_ABORT=0) (
     144:rdata={54'b0,config_pending,pending_configuration,address_pending,pending_address};
     152:rdata={57'b0,halt_out,halt_in,out_toggle,in_toggle};
     160:rdata=setup_generation;168:rdata=expected_setup;
+    // Clocked-v2 immutable identity/nominal-rate contract, not measured clocks.
+    // Historical bindings retain unknown-address errors for these offsets.
+    176:rdata=2;184:rdata=48000000;192:rdata=100000000;
+    200:rdata=1;208:rdata=128;216:rdata=67;
     default:begin
       if(addr>=256&&addr<=376)for(integer b=0;b<8;b=b+1)rdata[b*8+:8]=tx_stage[addr>=320][int'(addr[5:0])+b];
       if(addr>=512&&addr<=632&&rx_pending[addr>=576])for(integer b=0;b<8;b=b+1)rdata[b*8+:8]=rx_head[addr>=576][int'(addr[5:0])+b];

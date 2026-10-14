@@ -32,8 +32,14 @@ USB_WIRE_PROFILE='lemma-silicon-dev/0.11.0'
 USB_WIRE_DEPLOYMENT='lemma-managed-sums-bulk-usb-wire-deployment-v1'
 USB_WIRE_CONFIGURATIONS={'usb-wire-bulk-notebook':'lemmasim-silicon-usb-wire-bulk-notebook',
                          'usb-wire-bulk-initializer':'lemmasim-silicon-usb-wire-bulk-initialize'}
+SCHEMA_USB_CLOCKED='lemmasim-native-bundle/6'
+USB_CLOCKED_PROFILE='lemma-silicon-dev/0.13.0'
+USB_CLOCKED_DEPLOYMENT='lemma-managed-sums-bulk-usb-clocked-deployment-v1'
+USB_CLOCKED_CONFIGURATIONS={'usb-clocked-bulk-notebook':'lemmasim-silicon-usb-clocked-bulk-notebook',
+                            'usb-clocked-bulk-initializer':'lemmasim-silicon-usb-clocked-bulk-initialize'}
 USB_NATIVE_DEPLOYMENTS={USB_NEXT_PROFILE:(SCHEMA_USB_NEXT,USB_NEXT_DEPLOYMENT,USB_NEXT_CONFIGURATIONS),
-                        USB_WIRE_PROFILE:(SCHEMA_USB_WIRE,USB_WIRE_DEPLOYMENT,USB_WIRE_CONFIGURATIONS)}
+                        USB_WIRE_PROFILE:(SCHEMA_USB_WIRE,USB_WIRE_DEPLOYMENT,USB_WIRE_CONFIGURATIONS),
+                        USB_CLOCKED_PROFILE:(SCHEMA_USB_CLOCKED,USB_CLOCKED_DEPLOYMENT,USB_CLOCKED_CONFIGURATIONS)}
 MANAGED_DEPLOYMENT='lemma-managed-notebook-deployment-v1'
 MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
                       'initializer':'lemmasim-silicon-managed-initialize'}
@@ -73,7 +79,7 @@ def origin_destination(manifest,path,digest):
     origins=manifest.get('origins')
     if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
     entry=origins.get(str(Path(path).resolve()))
-    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
+    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
         if not isinstance(entry,dict):raise ValueError('Missing versioned archived origin: '+str(path))
         destination=entry.get(digest)
     elif manifest.get('schema')==SCHEMA:
@@ -413,6 +419,7 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
                 add(build / path, 'workloads/' + role + '/' + path, digest)
     runtime = copy.deepcopy(data)
     runtime.pop('rtl_source_archive', None)
+    runtime.pop('binding_profile', None)
     runtime['workloads'] = entries
     for key in ('binary', 'rom', 'rom_audit', 'rtl_build'):
         item = data[key]
@@ -446,6 +453,7 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
 def validate_usb_runtime(directory, manifest, data, runtime):
     """Reconstruct the entire consumed native closure and implementation ID."""
     import hashlib
+    import silicon_guest as guest
     origin = Path(manifest.get('original_repository_root', ''))
     if not origin.is_absolute() or '..' in origin.parts:
         raise ValueError('USB8 original source-root authority missing')
@@ -474,6 +482,10 @@ def validate_usb_runtime(directory, manifest, data, runtime):
             raise ValueError('USB8 native input identity missing')
         add(item['path'], item['sha256'])
     add(Path(runtime['host_include_dir']) / 'lemma_silicon_binding.h', runtime['host_binding_sha256'])
+    if manifest.get('schema')==SCHEMA_USB_CLOCKED:
+        if runtime.get('profile')!=USB_CLOCKED_PROFILE:
+            raise ValueError('Clocked native manifest selected profile differs')
+        add(origin/guest.USB_CLOCKED_PROFILE_FILE,runtime['profile_sha256'])
     dependency = str(origin / 'tooling/silicon/dependencies.json')
     if dependency not in data['rtl_sources']:
         raise ValueError('USB8 native dependency input missing')
@@ -544,12 +556,18 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
             raise ValueError('USB8 prepared identity contradicts inventory')
         return {'path': str(directory / item['path']), 'sha256': item['sha256']}
 
+    selected_profile_path=(Path(manifest['original_repository_root'])/guest.USB_CLOCKED_PROFILE_FILE
+                           if selected_profile==USB_CLOCKED_PROFILE else profile_path(selected_profile))
+    selected_definition=directory/origin_destination(manifest,selected_profile_path,data['profile_sha256'])
     if (data.get('schema_version') != 1 or data.get('profile') != selected_profile or
-            data.get('profile_sha256') != guest.sha(profile_path(selected_profile)) or
+            (selected_profile!=USB_CLOCKED_PROFILE and data.get('profile_sha256') != guest.sha(profile_path(selected_profile))) or
             set(data.get('workloads', {})) != set(selected_configurations) or
             'rtl_source_archive' in data):
         raise ValueError('USB8 prepared machine authority differs')
-    origin_destination(manifest, profile_path(selected_profile), data['profile_sha256'])
+    if selected_profile==USB_CLOCKED_PROFILE:
+        definition=read_json(selected_definition)
+        if definition.get('profile')!=selected_profile or definition.get('schema_version')!=1:
+            raise ValueError('Clocked packaged profile namespace differs')
     for path, digest in data['rtl_sources'].items():
         origin_destination(manifest, path, digest)
     dependencies = manifest['host_dependencies']['rtl']
@@ -566,7 +584,7 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
         build = read_json(base / 'build.json')
         guest.verify_guest_build(base, selected_configurations[role], build['optimization'],
                                  source_root=directory / 'source')
-        if role in ('usb-next-bulk-notebook','usb-wire-bulk-notebook'):
+        if role in ('usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook'):
             capacity = read_json(Path(data['workloads'][role]['capacity']['path']))
             if capacity.get('status') != 'PASS' or capacity.get('configuration') != selected_configurations[role]:
                 raise ValueError('USB8 notebook capacity authority differs')
@@ -582,13 +600,16 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
     for key in ('source', 'assembly', 'object', 'elf', 'binary'):
         origin_destination(manifest, audit[key]['path'], audit[key]['sha256'])
     runtime = read_json(Path(data['rtl_build']['path']))
-    if runtime.get('binary_sha256') != data['binary']['sha256'] or runtime.get('profile') != selected_profile:
+    if (runtime.get('binary_sha256') != data['binary']['sha256'] or runtime.get('profile') != selected_profile or
+            runtime.get('profile_sha256') != data['profile_sha256']):
         raise ValueError('USB8 native implementation differs')
     validate_usb_runtime(directory, manifest, data, runtime)
+    if selected_profile==USB_CLOCKED_PROFILE:data['binding_profile']=guest.identified(selected_definition)
     data['native_bundle'] = {'schema': selected_schema, 'manifest_sha256': guest.sha(directory / 'bundle.json'),
                              'source_commit': manifest['source_commit'],
                              'scope': 'complete original consumed '+selected_profile+' sources and artifacts; RTL only',
                              'software_deployment': copy.deepcopy(manifest['software_deployment'])}
+    if selected_profile==USB_CLOCKED_PROFILE:data['native_bundle']['path']=str(directory)
     return data
 
 
@@ -597,7 +618,7 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
-    if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
+    if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
         return prepared_usb_next(directory, m, backend, workload, name)
     if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
         raise ValueError('Unsupported/mismatched native bundle')
@@ -661,7 +682,7 @@ def prepared(directory,backend,workload,name=None):
 def bundle_configurations(manifest):
     """An immutable package selects both guest roles under one closed contract."""
     import silicon_guest as guest
-    if manifest.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE):
+    if manifest.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
         selected=USB_NATIVE_DEPLOYMENTS.get(manifest.get('profile'))
         if selected is None or manifest.get('schema')!=selected[0] or manifest.get('software_deployment')!={'contract_version':selected[1],'configurations':selected[2]}:
             raise ValueError('USB immutable deployment authority differs')

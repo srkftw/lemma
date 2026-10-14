@@ -48,6 +48,13 @@ int main(int argc,char** argv){try{
  need(argc==2,"device WORKDIR");std::filesystem::path dir=argv[1];std::filesystem::create_directories(dir);
  need((crc(Bytes{'1','2','3','4','5','6','7','8','9'},16,0x8005)^0xffff)==0xb4c8,"CRC16 USB independent known answer");
  auto t=token(0xe1,0,0);need(t==Bytes({0xe1,0,0x10}),"CRC5 default OUT literal");
+ // New Clocked2 facts cannot leak into this default historical controller.
+ Device identity;
+ for(unsigned offset=176;offset<=216;offset+=8){
+  identity.top.addr=offset;identity.top.valid=1;identity.top.write=0;identity.top.eval();
+  need(identity.top.error&&identity.top.rdata==0,"historical controller acquired Clocked2 identity");
+  identity.top.valid=0;need(!identity.write(offset,0),"historical unknown identity accepted write");
+ }
  // Staging, token cursor and partial DATA are saved without completing RX.
  Device prefix;prefix.packet(token(0x2d,0,0));auto pending=data(false,Bytes{0,5,7,0,0,0,0,0});
  for(unsigned i=0;i<4;i++){prefix.top.rx_valid=1;prefix.top.rx_byte=pending[i];prefix.top.rx_last=0;prefix.step();}

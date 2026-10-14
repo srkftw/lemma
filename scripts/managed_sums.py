@@ -2,10 +2,11 @@
 import re
 from core0_common import Core0Error
 FIELD='managed_sums'
+CLOCKED_USB=frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'))
 WIRE_USB=frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 NEXT_USB=frozenset(('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'))
 NEXT_PRODUCT=frozenset(('lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook',))
-BULK_CONFIGURATIONS=WIRE_USB | NEXT_USB | NEXT_PRODUCT | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
+BULK_CONFIGURATIONS=CLOCKED_USB | WIRE_USB | NEXT_USB | NEXT_PRODUCT | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize'))
 CONFIGURATIONS=frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | BULK_CONFIGURATIONS
 ENTRY='Lemma.Mathematics.ManagedResult.compareFiveSix'
 PREFIX='Lemma.Mathematics.ManagedResult.'
@@ -22,6 +23,7 @@ USB_BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,
 PRODUCT_NEXT_BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,'contract_version':'lemma-managed-sums-bulk-product-next-deployment-v1','silicon_profile':'lemma-silicon-dev/0.9.0'}
 USB_NEXT_BULK_SOFTWARE_DEPLOYMENT={**SOFTWARE_DEPLOYMENT,'contract_version':'lemma-managed-sums-bulk-usb-next-deployment-v1','silicon_profile':'lemma-silicon-dev/0.8.0'}
 def software_deployment_for(configuration):
+ if configuration in CLOCKED_USB:return {**SOFTWARE_DEPLOYMENT,'contract_version':'lemma-managed-sums-bulk-usb-clocked-deployment-v1','silicon_profile':'lemma-silicon-dev/0.13.0'}
  if configuration in WIRE_USB:return {**SOFTWARE_DEPLOYMENT,'contract_version':'lemma-managed-sums-bulk-usb-wire-deployment-v1','silicon_profile':'lemma-silicon-dev/0.11.0'}
  if configuration=='lemmasim-silicon-product-executed-bulk-notebook':return {'contract_version':'lemma-managed-sums-bulk-product-executed-deployment-v1','silicon_profile':'lemma-silicon-dev/0.10.0','user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.3'}}
  if configuration not in CONFIGURATIONS:raise Core0Error('Unknown exact managed sums deployment')

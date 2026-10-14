@@ -33,7 +33,8 @@ class ArithmeticCatalog(unittest.TestCase):
             (('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'), 'ServerV3',8,6),
             (('lemmasim-silicon-product-next-bulk-notebook',), 'ServerV3',9,7),
             (('lemmasim-silicon-product-executed-bulk-notebook',), 'ServerV3',10,7),
-            (('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'), 'ServerV3',11,6)]
+            (('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'), 'ServerV3',11,6),
+            (('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'), 'ServerV3',13,6)]
         for names,server,profile,kernel in groups:
             for name in names:
                 self.assertNotIn(name,expected)

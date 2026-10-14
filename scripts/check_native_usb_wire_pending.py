@@ -121,7 +121,10 @@ def main():
     for name in ('rtl-build', 'rtl-source-root', 'native-bundle', 'host-prepared',
                  'formatted-peer', 'formatted-outbox', 'work-dir'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--profile', choices=(PROFILE, 'lemma-silicon-dev/0.13.0'), default=PROFILE)
     args = parser.parse_args()
+    selected_profile = args.profile
+    workload = 'usb-clocked-bulk-initializer' if selected_profile == 'lemma-silicon-dev/0.13.0' else WORKLOAD
     out = args.work_dir.resolve()
     if out.exists() or not out.is_relative_to(ROOT / 'build'):
         parser.error('unused owned output under build required')
@@ -134,6 +137,9 @@ def main():
                    'external_host_response_timeout_ms': 60000,
                    'maximum_fixture_tree_rss_kib': 4194304,
                    'maximum_owned_apparent_bytes': 12000000000},
+        'profile': selected_profile,
+        'fixed_phy_clocks': ({'host_ppm':2500,'chip_ppm':-2500,'host_phase':7,'chip_phase':38}
+                             if selected_profile == 'lemma-silicon-dev/0.13.0' else None),
         'external_process_policy': 'restored forks have no USB process; strict implementation-bound checksum/prefix/horizon tape only'}
     try:
         # Linux host-only harness: orphaned grandchildren become ours to reap.
@@ -141,9 +147,9 @@ def main():
         if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0):
             raise OSError(ctypes.get_errno(), 'host fixture subreaper setup')
         machine, _, native_archive = native_source_archive(
-            args.rtl_build, args.rtl_source_root, PROFILE)
-        guest = prepared(args.native_bundle, 'rtl', WORKLOAD, PROFILE)
-        entry = guest['workloads'][WORKLOAD]
+            args.rtl_build, args.rtl_source_root, selected_profile)
+        guest = prepared(args.native_bundle, 'rtl', workload, selected_profile)
+        entry = guest['workloads'][workload]
         if guest['binary']['sha256'] != machine['binary_sha256']:
             raise ValueError('Guest bundle and original native binary differ')
         host = validate_host(args.host_prepared)
@@ -181,6 +187,7 @@ def main():
         inputs[str(source)] = sha(source)
         binary = out / 'test'
         run(['c++', '-O2', '-std=c++17', '-Wall', '-Wextra', '-Werror',
+             '-DUSB_CLOCKED_TEST='+str(int(selected_profile == 'lemma-silicon-dev/0.13.0')),
              '-I', args.rtl_source_root.resolve() / 'sim/rtl/host', '-I', obj,
              '-isystem', prefix / 'include', '-isystem', prefix / 'include/vltstd',
              source, *[obj / name for name in names], '-pthread', '-o', binary],
@@ -214,8 +221,8 @@ def main():
         for path, digest in inputs.items():
             if sha(path) != digest:
                 raise ValueError('Compiled property input changed: ' + path)
-        native_source_archive(args.rtl_build, args.rtl_source_root, PROFILE)
-        prepared(args.native_bundle, 'rtl', WORKLOAD, PROFILE)
+        native_source_archive(args.rtl_build, args.rtl_source_root, selected_profile)
+        prepared(args.native_bundle, 'rtl', workload, selected_profile)
         result.update(status='PASS', cases=rows,
             files={path.name: {'bytes': path.stat().st_size, 'sha256': sha(path)}
                    for path in sorted(out.iterdir())

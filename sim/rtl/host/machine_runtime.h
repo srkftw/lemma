@@ -5,6 +5,7 @@
 #include "verilated.h"
 #include "../../host/backing_io.h"
 #include "../../host/panel_pending.h"
+#include "../../host/usb_clock.h"
 #ifndef __EMSCRIPTEN__
 #include "../../radio/ble_peer_transport.h"
 #endif
@@ -28,6 +29,8 @@ struct Options {
  uint64_t trace_limit=10000,stop_panels=0,fail_flush=0,observer_cycle=0;
  unsigned deadline=120,host_threads=1;
  unsigned ble_peer_timeout_ms=10000,usb_peer_timeout_ms=60000;
+ int32_t usb_host_clock_ppm=0,usb_chip_clock_ppm=0;
+ uint32_t usb_host_clock_phase=0,usb_chip_clock_phase=0;
  std::string usb_peer_executable,usb_capture_path;
  std::string boot_capture_path,boot_replay_path;
  std::vector<std::string> usb_peer_arguments;
@@ -36,6 +39,11 @@ struct Options {
  std::vector<std::string> ble_peer_arguments;
  uint64_t memory_latency=0;
  bool quiet_uart=false;
+ // Host conformance reference only: retain the redundant evaluation of the
+ // disabled USB stub. This never skips a clock or changes device transactions.
+ // Keep the maintained/default schedule until representative measurements
+ // warrant enabling the alternative; the paired host fixture selects both.
+ bool reference_disabled_usb_eval=true;
  std::string uart_path,trace_path,panel_path,block_trace_path,input_capture_path,stop_marker,drive_trace_path,fork_directory,backing_capture_path,backing_replay_path;
 };
 struct BleOutcome {
@@ -88,6 +96,8 @@ struct State {
  uint64_t usb_attached=0,usb_connected=0,usb_terminal=0,usb_next_id=1;
  uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0;
  uint64_t usb_records=0,usb_record_hash=14695981039346656037ULL;
+ UsbClockDomain usb_host_clock,usb_chip_clock;
+ uint32_t usb_clock_position=0;
  uint64_t ble_attached=0,ble_ready=0,ble_coex=1,ble_next_id=1,ble_poll_cycle=0,ble_pending=0;
  uint64_t ble_request_cycle=0,ble_request_header=0;
  std::vector<uint8_t> ble_request_payload;
@@ -120,6 +130,8 @@ class Machine {
  void usb_before_edge(bool);
  void usb_disconnect(const std::string&);
  void usb_after_edge();
+ void usb_capture_main_beat();
+ void usb_clock_advance(uint32_t,bool);
  void usb_record(uint64_t,uint64_t,const std::string&);
  bool usb_reply(const std::string&);
  void usb_accept_command(const UsbRawCommand&);

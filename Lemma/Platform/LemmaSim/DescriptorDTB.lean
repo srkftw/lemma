@@ -1639,4 +1639,232 @@ with no boot-NV node or authority. No filtering or synthesized descriptor. -/
 def validateSiliconWiFiCommon (pointer expectedBytes width height pressure : UInt64) : Action :=
   validateBindingCommonCore 12 pointer expectedBytes width height pressure
 
+-- Clocked13 keeps the declared development MAC but validates independent PHY/CDC facts.
+private def literalLengthClocked (code : UInt64) : UInt64 :=
+  if code = 92 then 26 else
+  if code = 93 then 18 else
+  if code = 94 then 24 else
+  if code = 95 then 19 else
+  if code = 65 then 18 else
+  if code = 66 then 20 else
+  if code = 67 then 17 else
+  if code = 68 then 22 else
+  if code = 96 then 28 else
+  literalLengthExecuted code
+
+private def literalWordClocked (code index : UInt64) : UInt64 :=
+  if code = 92 then
+    if index = 0 then 0x6f632c616d6d656c else
+    if index = 1 then 0x72656c6c6f72746e else
+    if index = 2 then 0x682d6b636f6c632d else
+    if index = 3 then 0x7a else
+    0 else
+  if code = 93 then
+    if index = 0 then 0x64632c616d6d656c else
+    if index = 1 then 0x6f69737265762d63 else
+    if index = 2 then 0x6e else
+    0 else
+  if code = 94 then
+    if index = 0 then 0x64632c616d6d656c else
+    if index = 1 then 0x632d6f6669662d63 else
+    if index = 2 then 0x79746963617061 else
+    0 else
+  if code = 95 then
+    if index = 0 then 0x61702c616d6d656c else
+    if index = 1 then 0x7479622d74656b63 else
+    if index = 2 then 0x7365 else
+    0 else
+  if code = 65 then
+    if index = 0 then 0x68702c616d6d656c else
+    if index = 1 then 0x6f69737265762d79 else
+    if index = 2 then 0x6e else
+    0 else
+  if code = 66 then
+    if index = 0 then 0x68702c616d6d656c else
+    if index = 1 then 0x656c706d61732d79 else
+    if index = 2 then 0x7a682d else
+    0 else
+  if code = 67 then
+    if index = 0 then 0x68702c616d6d656c else
+    if index = 1 then 0x7a682d7469622d79 else
+    if index = 2 then 0x0 else
+    0 else
+  if code = 68 then
+    if index = 0 then 0x65642c616d6d656c else
+    if index = 1 then 0x6e656d706f6c6576 else
+    if index = 2 then 0x63616d2d74 else
+    0 else
+  if code = 96 then
+    if index = 0 then 0x73752c616d6d656c else
+    if index = 1 then 0x6563697665642d62 else
+    if index = 2 then 0x64656b636f6c632d else
+    if index = 3 then 0x32762d else
+    0 else
+  literalWordExecuted code index
+
+private def matchStepClocked (i _ : UInt32) (acc address code _ _ : UInt64) : Action :=
+  .bind (Access.read8 (address + i.toUInt64)) fun s byte =>
+  if s = 0 then
+    let expected := (literalWordClocked code (i.toUInt64 / 8) >>> ((i.toUInt64 % 8) * 8)) &&& 255
+    if byte = expected then .done 0 acc else .done 10 0
+  else .done s 0
+
+private def equalLiteralClocked (address bytes code : UInt64) : Action :=
+  if bytes = literalLengthClocked code then
+    .boundedFoldU64 32 matchStepClocked bytes.toUInt32 1 address code 0 0 fun s same =>
+    if s = 10 then .done 0 0 else .done s same
+  else .done 0 0
+
+private def findStepClocked (i _ : UInt32) (acc address bytes start _ : UInt64) : Action :=
+  let code := start + i.toUInt64
+  .bind (equalLiteralClocked address bytes code) fun s same =>
+  if s = 0 then if same = 1 then .done 10 code else .done 0 acc else .done s 0
+
+private def findCodeClocked (address bytes start count : UInt64) : Action :=
+  if count ≤ 24 then
+    .boundedFoldU64 24 findStepClocked count.toUInt32 0 address bytes start 0 fun s code =>
+    if s = 10 then .done 0 code else .done s code
+  else .done invalid 0
+
+
+private def leafPropertyClocked (data bytes code role : UInt64) : Action :=
+  if role = 13 then
+    if code = 32 then
+      .bind (equalLiteralClocked data bytes 96) fun s same => if s = 0 then
+      if same = 1 then mark 2 else .done invalid 0 else .done s 0
+    else if code = 58 then fixedCell data bytes 0 256 else
+    if code = 65 then fixedCell data bytes 2 512 else
+    if code = 66 then fixedCell data bytes 48000000 1024 else
+    if code = 67 then fixedCell data bytes 12000000 2048 else
+    if code = 68 then fixedCell data bytes 1 4096 else
+    if code = 92 then fixedCell data bytes 100000000 8192 else
+    if code = 93 then fixedCell data bytes 1 16384 else
+    if code = 94 then fixedCell data bytes 128 32768 else
+    if code = 95 then fixedCell data bytes 67 65536 else
+    leafProperty data bytes code role
+  else leafPropertyExecuted data bytes code role
+
+private def endNodeClocked (cursor depth : UInt64) : Action :=
+  if 0 < depth then
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if s = 0 then
+  .bind (if leaf role = 1 then
+    .bind (get 64) fun s flags => if s = 0 then
+    if flags = (if role = 1 then 1023 else if role = 13 then 131071 else requiredFlags role) then .done 0 0 else .done invalid 0 else .done s 0
+  else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 32 (depth - 1)) fun s _ => if s = 0 then put 0 (cursor + 4) else .done s 0
+  else .done s 0 else .done s 0 else .done invalid 0
+
+
+private def propertyClocked (cursor depth limit : UInt64) : Action :=
+  if depth = 0 then .done invalid 0 else if limit < cursor + 12 then .done invalid 0 else
+  .bind (BootInfo.readBE32 (cursor + 4)) fun s bytes => if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (cursor + 8)) fun s nameOffset => if failed s = true then .done s 0 else
+  .bind (get 16) fun s strings => if failed s = true then .done s 0 else
+  .bind (get 24) fun s stringsEnd => if failed s = true then .done s 0 else
+  if stringsEnd - strings ≤ nameOffset then .done invalid 0 else
+  let data := cursor + 12
+  if limit - data < bytes then .done invalid 0 else
+  .bind (BootInfo.readBoundedName (strings + nameOffset) stringsEnd) fun s nameEnd => if failed s = true then .done s 0 else
+  .bind (findCodeClocked (strings + nameOffset) (nameEnd - strings - nameOffset) 32 24) fun s firstCode => if failed s = true then .done s 0 else
+  .bind (if firstCode = 0 then findCodeClocked (strings + nameOffset) (nameEnd - strings - nameOffset) 56 13 else .done 0 firstCode) fun s code => if failed s = true then .done s 0 else
+  .bind (if code = 0 then findCodeClocked (strings + nameOffset) (nameEnd - strings - nameOffset) 92 4 else .done 0 code) fun s code => if failed s = true then .done s 0 else
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
+  .bind (if leaf role = 1 then leafPropertyClocked data bytes code role else
+    if role = 10 then containerProperty data bytes code role else
+    if role = 11 then containerProperty data bytes code role else
+    if role = 12 then containerProperty data bytes code role else
+    if code = 33 then
+      if 2 ≤ depth then if depth ≤ 3 then
+        .bind (get (256 + (depth - 2) * 8)) fun s parent => if s = 0 then
+        if parent = 12 then otherReg data bytes else
+        if parent = 10 then otherReg data bytes else .done 0 0 else .done s 0
+      else
+        .bind (get 264) fun s ancestor => if s = 0 then
+        if ancestor = 12 then .done invalid 0 else .done 0 0 else .done s 0
+      else .done 0 0
+    else if code = 32 then unknownCompatible data bytes else .done 0 0) fun s _ => if failed s = true then .done s 0 else
+  let next := (data + bytes + 3) &&& 0xfffffffffffffffc
+  if next ≤ limit then put 0 next else .done invalid 0
+
+
+private def tokenStepClocked (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (get 40) fun s ended => if s = 0 then if ended = 1 then .done 0 acc else
+  .bind (get 0) fun s cursor => if s = 0 then
+  .bind (get 8) fun s limit => if s = 0 then
+  .bind (get 32) fun s depth => if s = 0 then
+  if cursor + 4 ≤ limit then
+  .bind (BootInfo.readBE32 cursor) fun s token => if s = 0 then
+  if token = 1 then beginNode cursor depth limit else if token = 2 then endNodeClocked cursor depth else
+  if token = 3 then propertyClocked cursor depth limit else if token = 4 then put 0 (cursor + 4) else
+  if token = 9 then if depth = 0 then if cursor + 4 = limit then put 40 1 else .done invalid 0 else .done invalid 0
+  else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0
+
+
+private def clockedUSBIdentity (index : UInt64) : UInt64 :=
+  if index = 0 then 2 else if index = 1 then 48000000 else
+  if index = 2 then 100000000 else if index = 3 then 1 else
+  if index = 4 then 128 else if index = 5 then 67 else 0
+
+private def actualUSBClockedStep (index _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (IO.read64 (0x10010a00 + 176 + index.toUInt64 * 8)) fun s value =>
+  if s = 0 then
+    if value = clockedUSBIdentity index.toUInt64 then .done 0 acc else .done invalid 0
+  else .done s 0
+
+private def actualUSBClocked : Action :=
+  .boundedFoldU64 6 actualUSBClockedStep 6 1 0 0 0 0 fun s value => .done s value
+
+private def validateBindingClockedCore (binding pointer expectedBytes width height pressure : UInt64) : Action :=
+  .bind BootInfo.validate fun s actual =>
+  if failed s = true then .done s 0 else if actual = pointer then
+  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes =>
+  if failed s = true then .done s 0 else if bytes = expectedBytes then
+  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put 0 (pointer + structureOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 16 (pointer + stringsOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 104 width) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 112 height) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 120 pressure) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 176 binding) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 4096 tokenStepClocked 4096 0 0 0 0 0 fun s _ => if failed s = true then .done s 0 else
+  .bind (get 40) fun s ended => if failed s = true then .done s 0 else
+  .bind (get 48) fun s seen => if failed s = true then .done s 0 else
+  .bind (get 72) fun s parent => if failed s = true then .done s 0 else
+  .bind (get 80) fun s plic => if failed s = true then .done s 0 else
+  .bind (get 184) fun s socFlags => if failed s = true then .done s 0 else
+  .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
+  .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
+  if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
+  if ended = 1 then if seen = 0x3f7e then
+  if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
+  .bind actualDevicesExecuted fun s _ => if s = 0 then
+  .bind (if 4 ≤ binding then actualBLE else .done 0 1) fun s _ => if s = 0 then
+  .bind actualUSB fun s _ => if s = 0 then
+  .bind actualUSBClocked fun s _ => if s = 0 then
+  .done 0 pointer
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0
+
+
+/-- Clocked13 ABI14: Paper3, PHY2/48MHz, controller100MHz and CDC1; no boot NV. -/
+def validateSiliconUSBClocked (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBindingClockedCore 12 pointer expectedBytes width height pressure
+
+
+
 end Lemma.Platform.LemmaSim.DescriptorDTB

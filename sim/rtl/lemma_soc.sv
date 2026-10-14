@@ -29,6 +29,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic ble_peer_tx_active,ble_peer_rx_active,
  // Decoded USB packet-byte boundary; all control policy remains guest/host Lean.
  input logic usb_connected,usb_bus_reset,usb_rx_valid,usb_rx_last,usb_tx_ready,
+ input logic usb_host_phy_clk,usb_chip_phy_clk,
  input logic [7:0] usb_rx_byte,
  output logic usb_rx_ready,usb_tx_valid,usb_tx_last,usb_irq_out,usb_busy,
  output logic [7:0] usb_tx_byte,
@@ -258,6 +259,22 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
      assign usb_wire_line=usb_bus_reset?2'b00:
        usb_wire_host_oe&&usb_wire_chip_oe&&host_line!=chip_line?2'b11:
        usb_wire_host_oe?host_line:usb_wire_chip_oe?chip_line:2'b01;
+     if(USB_CLOCKED_ENABLED!=0)begin: independent_clocks
+     lemma_usb_fs_bridge host_phy(.clk,.phy_clk(usb_host_phy_clk),.reset,.enabled(1'b1),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(usb_rx_valid),.tx_last(usb_rx_last),.tx_byte(usb_rx_byte),.tx_ready(usb_rx_ready),
+       .tx_oe(usb_wire_host_oe),.tx_busy(usb_wire_host_busy),.line_out(host_line),
+       .rx_valid(usb_tx_valid),.rx_last(usb_tx_last),.rx_byte(usb_tx_byte),.rx_ready(usb_tx_ready),
+       .rx_abort(usb_wire_host_abort),.bus_reset(usb_wire_reset),.controller_busy(host_phy_busy),
+       .sample_ticks(usb_phy_host_samples),.tx_packets(usb_phy_host_tx_packets),.rx_packets(usb_phy_host_rx_packets),
+       .stuff_errors(usb_phy_host_stuff_errors),.line_errors(usb_phy_host_line_errors),.underflows(usb_phy_host_underflows));
+     lemma_usb_fs_bridge chip_phy(.clk,.phy_clk(usb_chip_phy_clk),.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
+       .tx_oe(usb_wire_chip_oe),.tx_busy(usb_wire_chip_busy),.line_out(chip_line),
+       .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),
+       .rx_abort(chip_rx_abort),.bus_reset(chip_bus_reset),.controller_busy(chip_phy_busy),
+       .sample_ticks(usb_phy_chip_samples),.tx_packets(usb_phy_chip_tx_packets),.rx_packets(usb_phy_chip_rx_packets),
+       .stuff_errors(usb_phy_chip_stuff_errors),.line_errors(usb_phy_chip_line_errors),.underflows(usb_phy_chip_underflows));
+     end else begin: rational_enable
      lemma_usb_fs_phy host_phy(.clk,.reset,.enabled(1'b1),.connected(usb_connected),.line_in(usb_wire_line),
        .tx_valid(usb_rx_valid),.tx_last(usb_rx_last),.tx_byte(usb_rx_byte),.tx_ready(usb_rx_ready),
        .tx_oe(usb_wire_host_oe),.tx_busy(usb_wire_host_busy),.line_out(host_line),
@@ -272,6 +289,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
        .rx_abort(chip_rx_abort),.bus_reset(chip_bus_reset),.controller_busy(chip_phy_busy),
        .sample_ticks(usb_phy_chip_samples),.tx_packets(usb_phy_chip_tx_packets),.rx_packets(usb_phy_chip_rx_packets),
        .stuff_errors(usb_phy_chip_stuff_errors),.line_errors(usb_phy_chip_line_errors),.underflows(usb_phy_chip_underflows));
+     end
      // Both real codec phases count as pending digital work for Power-v2.
      assign usb_busy=endpoint_busy||host_phy_busy||chip_phy_busy;
    end else begin: decoded_packet_boundary
@@ -287,7 +305,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
      assign usb_phy_host_underflows=0;assign usb_phy_chip_underflows=0;
      assign host_phy_busy=0;assign chip_phy_busy=0;
    end
-   lemma_usb_device #(.PHY_ABORT(USB_PHY_ENABLED!=0)) endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.bus_reset(chip_bus_reset),
+   lemma_usb_device #(.PHY_ABORT(USB_PHY_ENABLED!=0),.CLOCKED_PHY(USB_CLOCKED_ENABLED!=0)) endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.bus_reset(chip_bus_reset),
      .valid(dev_valid&&usb_sel),.write(dev_write),.addr(10'(dev_addr-USB_BASE)),.size(dev_size),.wdata(dev_wdata),
      .rdata(usb_rdata),.ready(usb_ready),.error(usb_error),.irq(usb_irq),.controller_busy(endpoint_busy),
      .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),.rx_abort(chip_rx_abort),

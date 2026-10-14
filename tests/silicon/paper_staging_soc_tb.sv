@@ -1,7 +1,7 @@
 module paper_collision_tb;
 logic clk=0,reset=1,valid=0,write=1;logic[31:0]address=0;logic[63:0]data=0;logic[2:0]size=3;logic[63:0]actual;bit collecting=0;integer pixel_count=0;
 always #5 clk=~clk;
-lemma_soc dut(.clk,.reset,.raw_power_good(1'b1),.raw_brownout(1'b0),.raw_button_level(1'b0),.power_reset_cause(3'd1),.ble_coex_allow(1'b1),.usb_connected(1'b1),.usb_bus_reset(1'b0),.usb_rx_valid(1'b0),.usb_rx_last(1'b0),.usb_rx_byte(8'd0),.usb_tx_ready(1'b1),.external_media_busy(1'b0),.external_boot_media_busy(1'b0),.ble_peer_enabled(1'b0),.ble_peer_reset(1'b1),.ble_rx_sample_valid(1'b0),.ble_rx_sample_bit(1'b0),.sample_valid(1'b0),.mem_ready(1'b1),.mem_error(1'b0),.fb_ready(1'b1),.fb_error(1'b0),.media_ready(1'b0),.panel_ready(1'b1),.uart_rx_valid(1'b0));
+lemma_soc dut(.clk,.reset,.usb_host_phy_clk(1'b0),.usb_chip_phy_clk(1'b0),.raw_power_good(1'b1),.raw_brownout(1'b0),.raw_button_level(1'b0),.power_reset_cause(3'd1),.ble_coex_allow(1'b1),.usb_connected(1'b1),.usb_bus_reset(1'b0),.usb_rx_valid(1'b0),.usb_rx_last(1'b0),.usb_rx_byte(8'd0),.usb_tx_ready(1'b1),.external_media_busy(1'b0),.external_boot_media_busy(1'b0),.ble_peer_enabled(1'b0),.ble_peer_reset(1'b1),.ble_rx_sample_valid(1'b0),.ble_rx_sample_bit(1'b0),.sample_valid(1'b0),.mem_ready(1'b1),.mem_error(1'b0),.fb_ready(1'b1),.fb_error(1'b0),.media_ready(1'b0),.panel_ready(1'b1),.uart_rx_valid(1'b0));
 function automatic logic[63:0] pattern(input integer row);
  return 64'hfedcba9876543210 ^ (64'h0101010101010101*64'(row));
 endfunction

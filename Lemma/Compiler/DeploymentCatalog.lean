@@ -79,6 +79,11 @@ def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-next-bulk-initialize"
 
+/-- Clocked13 uses distinct PHY2/CDC1 identity with K6 and Paper3. -/
+def isUSBClockedNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-bulk-initialize"
+
 /-- USBWire11 binds the digital full-speed PHY and Paper3 without boot NV. -/
 def isUSBWireNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-wire-bulk-notebook" ||
@@ -93,7 +98,7 @@ def isProductNextNotebookConfiguration (configuration : String) : Bool :=
 
 /-- USB6 transport with the original isolated arithmetic User-v0.2 image. -/
 def isUSBNotebookConfiguration (configuration : String) : Bool :=
-  isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
+  isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
     configuration == "lemmasim-silicon-usb-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-bulk-initialize"
@@ -123,7 +128,7 @@ def isBytesNotebookConfiguration (configuration : String) : Bool :=
 
 /-- The bounded owned-page Surface ABI is a separate software selection. -/
 def isBulkNotebookConfiguration (configuration : String) : Bool :=
-  isUSBWireNotebookConfiguration configuration || isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
+  isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isProductExecutedNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || isProductNextNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isBytesNotebookConfiguration configuration ||
   configuration == "lemmasim-silicon-bulk-notebook" ||
     configuration == "lemmasim-silicon-bulk-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
@@ -158,8 +163,8 @@ def softwareDeploymentFields (configuration : String) : List (String × Json) :=
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.4")])])]
   else   if isSumsNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
-    ("contract_version", .str (if isUSBWireNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-wire-deployment-v1" else if isProductExecutedNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-executed-deployment-v1" else if isProductNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-next-deployment-v1" else if isUSBNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-next-deployment-v1" else if configuration == "lemmasim-silicon-product-bulk-notebook" then "lemma-managed-sums-bulk-product-deployment-v1" else if isUSBNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-deployment-v1" else if isBulkNotebookConfiguration configuration then "lemma-managed-sums-bulk-deployment-v1" else "lemma-managed-sums-deployment-v1")),
-    ("silicon_profile", .str (if isUSBWireNotebookConfiguration configuration then "lemma-silicon-dev/0.11.0" else if isProductExecutedNotebookConfiguration configuration then "lemma-silicon-dev/0.10.0" else if isProductNextNotebookConfiguration configuration then "lemma-silicon-dev/0.9.0" else if isUSBNextNotebookConfiguration configuration then "lemma-silicon-dev/0.8.0" else if isProductNotebookConfiguration configuration then "lemma-silicon-dev/0.7.0" else if isUSBNotebookConfiguration configuration then "lemma-silicon-dev/0.6.0" else "lemma-silicon-dev/0.3.0")),
+    ("contract_version", .str (if isUSBClockedNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-clocked-deployment-v1" else if isUSBWireNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-wire-deployment-v1" else if isProductExecutedNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-executed-deployment-v1" else if isProductNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-product-next-deployment-v1" else if isUSBNextNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-next-deployment-v1" else if configuration == "lemmasim-silicon-product-bulk-notebook" then "lemma-managed-sums-bulk-product-deployment-v1" else if isUSBNotebookConfiguration configuration then "lemma-managed-sums-bulk-usb-deployment-v1" else if isBulkNotebookConfiguration configuration then "lemma-managed-sums-bulk-deployment-v1" else "lemma-managed-sums-deployment-v1")),
+    ("silicon_profile", .str (if isUSBClockedNotebookConfiguration configuration then "lemma-silicon-dev/0.13.0" else if isUSBWireNotebookConfiguration configuration then "lemma-silicon-dev/0.11.0" else if isProductExecutedNotebookConfiguration configuration then "lemma-silicon-dev/0.10.0" else if isProductNextNotebookConfiguration configuration then "lemma-silicon-dev/0.9.0" else if isUSBNextNotebookConfiguration configuration then "lemma-silicon-dev/0.8.0" else if isProductNotebookConfiguration configuration then "lemma-silicon-dev/0.7.0" else if isUSBNotebookConfiguration configuration then "lemma-silicon-dev/0.6.0" else "lemma-silicon-dev/0.3.0")),
     ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
       ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.3")])])]
   else if !isManagedNotebookConfiguration configuration then [] else

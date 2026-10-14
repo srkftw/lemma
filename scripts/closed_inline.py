@@ -16,6 +16,7 @@ CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebo
 USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-managed-initialize',
  'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'} | set(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize', 'lemmasim-silicon-usb-next-bulk-notebook', 'lemmasim-silicon-usb-next-bulk-initialize', 'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
 USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
+USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'))
 BYTES_CONFIGURATIONS={"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"}
 ARRAY_CONFIGURATIONS={"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"}
 STRING_CONFIGURATIONS={"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}

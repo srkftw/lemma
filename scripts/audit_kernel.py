@@ -27,7 +27,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
-from build_kernel import NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS
+from build_kernel import NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -194,7 +194,7 @@ BLE_CONFIGURATIONS = frozenset({'lemmasim-silicon-ble-link-probe'})
 USB_PROBE_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-link-probe'})
 USB_NOTEBOOK_CONFIGURATIONS = frozenset({'lemmasim-silicon-usb-notebook',
     'lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize'})
-USB_NOTEBOOK_CONFIGURATIONS |= frozenset(USB_WIRE_NOTEBOOK_CONFIGURATIONS)
+USB_NOTEBOOK_CONFIGURATIONS |= frozenset(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | frozenset(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS)
 USB_CONFIGURATIONS = USB_PROBE_CONFIGURATIONS | USB_NOTEBOOK_CONFIGURATIONS
 PRODUCT_NOTEBOOK_CONFIGURATIONS=frozenset(('lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
 PRODUCT_CONFIGURATIONS = frozenset({'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-notebook',
@@ -1599,10 +1599,11 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
     for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
         gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
+    clocked_binding=unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
     executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS
     next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -1629,9 +1630,9 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
     if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
-        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
-        binding=11 if wire_binding else 10 if executed_binding else (9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
-        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconUSBWireInitializeMedium' if binding==11 and unit['configuration'].endswith('-initialize') else 'siliconUSBWireBoot' if binding==11 else 'siliconProductExecutedBoot' if binding==10 else 'siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
+        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootClocked' if clocked_binding else 'bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
+        binding=13 if clocked_binding else 11 if wire_binding else 10 if executed_binding else (9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
+        wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconUSBClockedInitializeMedium' if binding==13 and unit['configuration'].endswith('-initialize') else 'siliconUSBClockedBoot' if binding==13 else 'siliconUSBWireInitializeMedium' if binding==11 and unit['configuration'].endswith('-initialize') else 'siliconUSBWireBoot' if binding==11 else 'siliconProductExecutedBoot' if binding==10 else 'siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
         if boot not in names or wrapper not in names:
             raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
         constructor_callers=[];boot_callers=[]
@@ -4690,6 +4691,9 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
     sim_literals = unit.get('configuration') in LEMMASIM_CONFIGURATIONS
     if sim_literals:
         from lemmasim_readonly import canonical_specs, ble_specs, usb_specs, product_specs, BLE_CONFIGURATIONS, USB_CONFIGURATIONS, PRODUCT_CONFIGURATIONS
+        if unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS:
+            from paper_clocked import validate as validate_clocked
+            validate_clocked(optimized_ir,unit,optimized=True)
         extra = usb_specs() if unit.get("configuration") in USB_CONFIGURATIONS else ble_specs() if unit.get("configuration") in BLE_CONFIGURATIONS else canonical_specs()
         modern = ble_specs(); usb_modern = usb_specs(); product_modern=product_specs()
         def admitted_literal(row):
@@ -4722,11 +4726,11 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 # This exact24-byte pool comes only from the independently
                 # content/bound/use-checked post-LLVM Paper2 owner. No generic
                 # readonly pool or historical declaration authority is added.
-                return (unit.get('configuration') in set(NEXT_NOTEBOOK_CONFIGURATIONS) | set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS)
+                return (unit.get('configuration') in set(NEXT_NOTEBOOK_CONFIGURATIONS) | set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS)
                         and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
                         and (row['values'],row['bytes'])==([0x74732c616d6d656c,0x666f2d676e696761,0x74657366],24))
             if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordExecuted':
-                return (unit.get('configuration') in set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS)
+                return (unit.get('configuration') in set(PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS) | set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(USB_CLOCKED_NOTEBOOK_CONFIGURATIONS)
                         and unit['role']=='kernel' and unit.get('contract_version')==kernel_contract(unit['configuration'])
                         and (row['values'],row['bytes'])==([0x78652c616d6d656c,0x722d646574756365,0x687365726665],24))
             if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordWire':
@@ -4734,6 +4738,15 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 if unit.get('configuration') not in USB_WIRE_NOTEBOOK_CONFIGURATIONS or unit['role']!='kernel' or unit.get('contract_version')!='core0-kernel-v0.6':return False
                 validate_wire(optimized_ir,unit,optimized=True)
                 return row['bytes']==24 and row['values'] in list(LITERALS.values())
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordClocked':
+                from paper_clocked import LITERALS
+                return (unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
+                        and unit['role']=='kernel' and unit.get('contract_version')=='core0-kernel-v0.6'
+                        and row['values'] in list(LITERALS.values()) and row['bytes']==8*len(row['values']))
+            if source=='Lemma.Platform.LemmaSim.DescriptorDTB.clockedUSBIdentity':
+                return (unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
+                        and unit['role']=='kernel' and unit.get('contract_version')=='core0-kernel-v0.6'
+                        and (row['values'],row['bytes'])==([2,48000000,100000000,1,128,67],48))
             if source in literal_contracts:
                 return unit['role']=='kernel' and literal_contracts[source]==row['values']
             specs=[s[source] for s in (extra,modern,usb_modern,product_modern) if source in s]
@@ -4795,13 +4808,25 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             wire_owner=unit.get('configuration') in set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(COMMON_CONFIGURATIONS) and source in wire_specs
             wire_token=(unit.get('configuration') in set(USB_WIRE_NOTEBOOK_CONFIGURATIONS) | set(COMMON_CONFIGURATIONS)
                         and source=='Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepWire')
+            clocked_specs={
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthClocked':('kernel',32,['u64'],[],[65,66,67,68,92,93,94,95,96]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.literalWordClocked':('kernel',32,['u64','u64'],[],[65,66,67,68,92,93,94,95,96]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyClocked':('kernel',64,['u64']*4,['checked-access','physical-read','physical-write'],[32,58,65,66,67,68,92,93,94,95]),
+                'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepClocked':('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
+            }
+            clocked_owner=unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS and source in clocked_specs
             common_specs={
                 'Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyCommon':('kernel',60,['u64']*4,['checked-access','physical-read','physical-write'],[32,33,34,35,38,53,90,91]),
                 'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepCommon':('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
             }
             common_owner=unit.get('configuration') in COMMON_CONFIGURATIONS and source in common_specs
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner)
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            if clocked_owner:
+                # Complete actual pre/post owner/caller authority was checked
+                # before literal provenance above. These four measured domains
+                # still pass ordinary relocation/byte/case/unsigned guard checks.
+                spec=clocked_specs[source]
             if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
                 from arithmetic_string_identity import notebook_jump_spec
                 string_spec=notebook_jump_spec(optimized_ir,unit,source,owner['name'])
@@ -4991,7 +5016,7 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     boot = factored_boot or by_source.get("Lemma.Kernel.Entry.bootServices")
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
-        boot = normalized.get("Lemma.Platform.Silicon.Development."+("WiFiCommonReadProbe.boot" if unit["configuration"]=="lemmasim-silicon-wifi-common-read-probe" else "WiFiCommonProbe.boot")) if unit["configuration"] in COMMON_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootWire") if unit["configuration"] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted") if unit["configuration"] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        boot = normalized.get("Lemma.Platform.Silicon.Development."+("WiFiCommonReadProbe.boot" if unit["configuration"]=="lemmasim-silicon-wifi-common-read-probe" else "WiFiCommonProbe.boot")) if unit["configuration"] in COMMON_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootClocked") if unit["configuration"] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootWire") if unit["configuration"] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted") if unit["configuration"] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -5028,7 +5053,7 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
         return
     names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
     by={source:symbol for symbol,source in names.items()}
-    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
         'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
         'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
     if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
@@ -5056,11 +5081,13 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     from paper_next import validate as validate_paper_next
     from paper_executed import validate as validate_paper_executed
     from paper_wire import validate as validate_paper_wire
+    from paper_clocked import validate as validate_paper_clocked
     from wifi_common import validate as validate_common
     common_report=validate_common(ir,unit,optimized=optimized)
-    paper_wire_report=validate_paper_wire(ir,unit,optimized=optimized) if common_report is None else None
-    paper_executed_report=validate_paper_executed(ir,unit,optimized=optimized) if paper_wire_report is None and common_report is None else None
-    paper_next_report=validate_paper_next(ir,unit,optimized=optimized) if paper_executed_report is None and paper_wire_report is None and common_report is None else None
+    paper_clocked_report=validate_paper_clocked(ir,unit,optimized=optimized)
+    paper_wire_report=validate_paper_wire(ir,unit,optimized=optimized) if common_report is None and paper_clocked_report is None else None
+    paper_executed_report=validate_paper_executed(ir,unit,optimized=optimized) if paper_wire_report is None and common_report is None and paper_clocked_report is None else None
+    paper_next_report=validate_paper_next(ir,unit,optimized=optimized) if paper_executed_report is None and paper_wire_report is None and common_report is None and paper_clocked_report is None else None
     validate_modern_power_selection(ir,unit,optimized=optimized)
     from paper_bulk import validate as validate_surface_v2
     validate_surface_v2(ir,unit,optimized=optimized)
@@ -5188,6 +5215,7 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
             **({"arithmetic_sums_execution_identity":sums_execution_report} if sums_execution_report is not None else {}),
             **({"common_ofdm_kernel8_v1":common_report} if common_report is not None else {}),
             **({"usb_fullspeed_discovery_v1":paper_wire_report} if paper_wire_report is not None else {}),
+            **({"usb_clocked_discovery_v1":paper_clocked_report} if paper_clocked_report is not None else {}),
             **({"paper_executed_v3":paper_executed_report} if paper_executed_report is not None else {}),
             **({"paper_staging_v2":paper_next_report} if paper_next_report is not None else {}),
             **({"managed_array":array_report} if array_report is not None else {}),
