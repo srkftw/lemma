@@ -489,4 +489,61 @@ def deferredUSBRecovery : Action :=
   .bind deferred fun s _ => if s = 0 then
   .bind usbCompletionRecovery fun s _ => if s = 0 then Lemma.Drivers.PLIC.enableUSB else fatal else fatal
 
+
+/-- The descriptor base comes only from the freshly captured context in the
+same nonpreemptible dispatch. Capability/object/header/rights checks remain
+fresh; only the duplicate whole AS structural scan is borrowed. -/
+private def authorizeAt (descriptor descriptorBase handle offset : UInt64) : Action :=
+  .bind (Capability.lookupAt descriptor descriptorBase handle CapabilityABI.endpointType
+    CapabilityABI.endpointCall) fun s key =>
+  if s = 0 then
+  .bind (get offset) fun s expected => if s = 0 then
+  if key = expected then .done 0 key else .done CapabilityABI.denied 0
+  else fatal else .done s 0
+
+private def bulkUploadStepAt (i _ : UInt32) (acc handle base _ _ : UInt64) : Action :=
+  let fields := base + 32 + i.toUInt64 * 32
+  .bind (Access.read64 fields) fun s x => if s = 0 then
+  .bind (Access.read64 (fields + 8)) fun s y => if s = 0 then
+  .bind (Access.read64 (fields + 16)) fun s w => if s = 0 then
+  .bind (Access.read64 (fields + 24)) fun s h => if s = 0 then
+  .bind (Lemma.Drivers.Paper.uploadOffsetAt handle (256 + i.toUInt64 * 512) x y w h) fun s _ =>
+  if s = 0 then .done 0 (acc + 1) else .done s acc
+  else fatal else fatal else fatal else fatal
+
+private def uploadBulkAt (descriptor descriptorBase pointer count : UInt64) : Action :=
+  if count = 0 then .done Lemma.User.ABI.invalidArgument 0 else
+  if 7 < count then .done Lemma.User.ABI.invalidArgument 0 else
+  if pointer % 4096 = 0 then
+  .bind (get 24) fun s handle => if s = 0 then
+  if handle = descriptor then .done Lemma.User.ABI.invalidArgument 0 else
+  .bind (UserCopy.copyFromUserAt descriptorBase pointer handle 0 (256 + count * 512)) fun s _ => if s = 0 then
+  .bind (Frames.resolvePurpose 1 handle 1) fun s base => if s = 0 then
+  .bind (Access.read64 base) fun s version => if s = 0 then if version = 2 then
+  .bind (Access.read64 (base + 8)) fun s actual => if s = 0 then if actual = count then
+  .bind (Access.read64 (base + 16)) fun s reserved0 => if s = 0 then if reserved0 = 0 then
+  .bind (Access.read64 (base + 24)) fun s reserved1 => if s = 0 then if reserved1 = 0 then
+  .bind Lemma.Drivers.Paper.dimensions fun s geometry => if s = 0 then
+  .boundedFoldU64 7 bulkValidateStep count.toUInt32 0 base (geometry &&& 0xffffffff) (geometry >>> 32) 0 fun s _ => if s = 0 then
+  .boundedFoldU64 7 bulkUploadStepAt count.toUInt32 0 base base 0 0 fun s uploaded => .done s uploaded
+  else .done s 0 else .done s 0 else .done Lemma.User.ABI.invalidArgument 0
+  else fatal else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else .done Lemma.User.ABI.invalidArgument 0 else fatal
+  else fatal else .done s 0 else fatal
+  else .done Lemma.User.ABI.invalidRange 0
+
+
+/-- Kernel-only borrowed Surface-v2 op5. Reserved/error order is unchanged.
+No schedule, descriptor/cap/frame mutation or overlapping DMA may intervene
+between checked capture and this private caller chain. Legacy entrypoints
+keep their complete independent admission and do not accept arbitrary bases. -/
+def surfaceV2At (descriptor descriptorBase handle op pointer count reserved : UInt64) : Action :=
+  if op = 5 then
+    if reserved = 0 then
+    .bind (authorizeAt descriptor descriptorBase handle 0) fun s _ =>
+    if s = 0 then uploadBulkAt descriptor descriptorBase pointer count else .done s 0
+    else .done Lemma.User.ABI.invalidArgument 0
+  else surface descriptor handle op pointer count reserved
+
 end Lemma.Platform.LemmaSim.DeviceService

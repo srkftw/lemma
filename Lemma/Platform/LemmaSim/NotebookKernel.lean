@@ -427,6 +427,37 @@ def deviceCallBulk (descriptor context pc number : UInt64) : Action :=
   else Process.syscallReply context pc status result
   else fatal else fatal else fatal else fatal else fatal
 
+/-- Captured context is exactly base+2048. Capture validates frame/stack/AS
+before copying only36 disjoint saved-context words; PC lookup and device
+arguments read metadata without mutation. The borrow ends before syscallReply
+or scheduling and never becomes cross-entry authority. -/
+private def deviceCallBulkAt (descriptor context pc number : UInt64) : Action :=
+  .bind (Access.read64 (context + 80)) fun s a => if s = 0 then
+  .bind (Access.read64 (context + 88)) fun s b => if s = 0 then
+  .bind (Access.read64 (context + 96)) fun s c => if s = 0 then
+  .bind (Access.read64 (context + 104)) fun s d => if s = 0 then
+  .bind (Access.read64 (context + 112)) fun s e => if s = 0 then
+  .bind (if number = 64 then DeviceService.surfaceV2At descriptor (context - AddressSpace.userContextOffset) a b c d e else
+    if number = 65 then DeviceService.input descriptor a b c d e else
+    if number = 66 then DeviceService.block descriptor a b c d e else
+    if number = 68 then PowerControl.call descriptor a b c d e else
+    if d ||| e = 0 then IPC.tryCallWait descriptor a b c else .done 16 0) fun status result =>
+  if status = DeviceService.waitStatus then
+    .bind MachineServices.time fun s now => if s = 0 then
+    if 0xffffffffffffffff - 10000000 < now then fatal else
+    .bind (Process.syscallReply context pc 174 0) fun s _ => if s = 0 then
+    .bind (Task.sleep descriptor (now + 10000000) pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 3 pc else fatal else fatal else fatal
+  else if status = 255 then fatal else
+  if number = 68 then if b = 1 then if status = 0 then
+    .bind (Process.syscallReply context pc status result) fun s _ => if s = 0 then
+    .bind (Task.ready descriptor 2 pc) fun s _ => if s = 0 then
+    Scheduler.returnKernel descriptor 2 pc else fatal else fatal
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else Process.syscallReply context pc status result
+  else fatal else fatal else fatal else fatal else fatal
+
 def dispatchBulk (frame cause value : UInt64) : Action :=
   if cause = 0x8000000000000009 then
     .bind (Access.read64 Process.control) fun s descriptor => if s = 0 then
@@ -443,10 +474,10 @@ def dispatchBulk (frame cause value : UInt64) : Action :=
     .bind (Task.capture descriptor frame) fun s context => if s = 0 then
     .bind (Access.read64 (context + 256)) fun s pc => if s = 0 then
     if pc % 4 = 0 then
-    .bind (AddressSpace.lookup descriptor pc 4) fun s _ => if s = 0 then
+    .bind (AddressSpace.lookupAt (context - AddressSpace.userContextOffset) pc 4) fun s _ => if s = 0 then
     .bind (Access.read64 (context + 136)) fun s number => if s = 0 then
     if (if number = 64 then true else if number = 65 then true else if number = 66 then true else if number = 67 then true else if number = 68 then true else false) = true then
-      deviceCallBulk descriptor context pc number
+      deviceCallBulkAt descriptor context pc number
     else Scheduler.callWithIPCLimit IPCABI.lemmaSimMaximumTicks descriptor context pc
     else fatal else fatal else fatal else fatal else fatal else fatal
   else

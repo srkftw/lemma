@@ -1,0 +1,213 @@
+{
+  "schema": "lemma-surface-bulk-critical-borrow-evidence/1",
+  "status": "PASS_COMPONENT",
+  "implementation_contract": "lemma-surface-bulk-critical-borrow-v1",
+  "scope": "Genuine maintained ordinary Lean\u2192checked Kernel4 CFG/LLVM/O2/RV64 plus finite actual-Action ordered effect/fault comparison and strict production artifact guards. No fresh linked image, guest cycle/performance or workflow acceptance claim.",
+  "observed_head": "a2a695f19c0f5976197421b0fad05a0f4cdcb492",
+  "sources": {
+    "Lemma/Drivers/Paper.lean": "dbefbefa0607a32a6150f31a59228e22e70474a9398be9e2b7caec994a886db8",
+    "Lemma/Kernel/Capability.lean": "f90d0cff7e95e57291e152485116a9d65149cc0130ec833e668b46302a24438f",
+    "Lemma/Kernel/Memory/UserCopy.lean": "ca7b54c4c23fa0d7a5f39883c029e6da4e025707f34c4777a9579b815f9d5a66",
+    "Lemma/Platform/LemmaSim/DeviceService.lean": "8ebacb2855512cdda32bc24bab8d8487b790ced0cd8b4dd72b23b7a8f06e0f3c",
+    "Lemma/Platform/LemmaSim/NotebookKernel.lean": "8b0a39c45e9ff520563cacdef9ebd85ccd552606306fe3e6b242867c890fb0ee",
+    "tests/kernel/SurfaceBulkBorrow.lean": "5b88449887e7a561bcd1991bc0880e5c1931b4335d3f80653e384ec7258f0768",
+    "tests/kernel/SurfaceBulkBorrowLower.lean": "5807faf0ed2dc889aa4fc259a4ab40d3a364fe64d5fe6678dc200cae33e50136",
+    "tests/kernel/surface_bulk_borrow_mutations.py": "6279029ecb27ece2fc35b9624f0486924a158e3a6a2bac7cdb5817fb73f4d49a",
+    "scripts/surface_bulk_borrow.py": "189baded7d6e1c77505fd0f8196bbab9b43fe65cdb662d53fd8d15191c045980",
+    "scripts/paper_bulk.py": "ff5b7dd7957bf19125268a8d4384fa6c840ca5ed05b9f9d1bbf029efc9dce5e5",
+    "scripts/usercopy_page_words.py": "3b61f9c195f78ba4150015b00ad7943ef0be6ce2b535134154cc929707cbf096",
+    "scripts/build_kernel.py": "8fcc5b4d71ef94e60927f67a5ab5af3b71a063750ca354abf59bd53a58341528",
+    "docs/contracts/006-surface-bulk-critical-borrow-v1.md": "fa6737fda785182f6d5fe7bb1c8e989b031da735b82e2ef8210cbfdfcea2a3f1"
+  },
+  "source_identity": {
+    "diagnostic_complete_imports": 100,
+    "before_after_inventory": "936e0b6a18bb33bd59cd840869eaede541ae99c8ac27d2a18d2c56ffc5f6b997",
+    "selected_export_imports": 112,
+    "selected_export_review_inventory": "4e1efd85541368c3a9b32befc3567dba613f165120ca706984cb648b2e229710",
+    "selected_extra_source_review": "16 additional committed imports byte-match cf3dadf export-start blob; original100-source before/after seal preserved. No whole-image source claim."
+  },
+  "bounds": {
+    "action_command_seconds": 300,
+    "action_primitive_limit_each_execution": 4000000,
+    "genuine_lowering_command_seconds": 360,
+    "selected_export_command_seconds": 150,
+    "target_execution": "NOT_RUN",
+    "artifact_inspection_command_seconds": 60,
+    "llvm_generation_command_seconds": 90
+  },
+  "observations": {
+    "legacy": {
+      "pool": 512,
+      "requests_before": 2421,
+      "requests_after": 2324,
+      "as_block_reads": 23,
+      "removed_as_blocks": 3,
+      "frame_block_reads": 4,
+      "removed_frame_blocks": 7,
+      "callbacks_before": 569,
+      "callbacks_after": 177,
+      "stable_address_read_write_fault_cases": 2308
+    },
+    "expanded": {
+      "pool": 8192,
+      "requests_before": 2729,
+      "requests_after": 2464,
+      "as_block_reads": 79,
+      "removed_as_blocks": 3,
+      "frame_block_reads": 4,
+      "removed_frame_blocks": 7,
+      "callbacks_before": 615,
+      "callbacks_after": 199,
+      "stable_address_read_write_fault_cases": 2420
+    },
+    "paper": {
+      "direct_shape_cases": 1156,
+      "offset_cases": 9,
+      "pool_edge_cases": 4,
+      "representative_word_fault_cases": 1728,
+      "old_tile_callbacks": 64,
+      "new_tile_callbacks": 8,
+      "optimized_group_volatile_reads": 8,
+      "optimized_group_volatile_writes": 8,
+      "optimized_group_io_fences": 16,
+      "retained_direct_requests": "EXACT_ORDER_VALUE_STATUS_AND_PREFIX",
+      "removed_physical_or_pio_operations": 0
+    },
+    "lowered_functions": {
+      "bulk_diagnostic": 273,
+      "dispatch_diagnostic": 837,
+      "actual_production_kernel": 1202
+    },
+    "strict_observer": {
+      "complete_authority_bodies_each_phase": 28,
+      "private_caller_chains": 14,
+      "actual_ir_mutation_rejections": 274,
+      "suffix_preservation": "Known exact catalog callee symbols in LLVM exit labels are rebound one-to-one; instructions/operands/label suffixes and references are never removed. Unknown labels remain exact."
+    }
+  },
+  "failure_semantics": "All retained checked-status/global-fault/partial-copy/PIO-prefix outcomes are preserved. Stable address faults test the initial retained checks. No equivalence claim for a transient fault that first arises only at a removed duplicate metadata read. Architectural faults are traps, not fabricated Action success/status.",
+  "legacy_regression": "Actual historical cf5250 pre/post legacy page-word and Paper observer routes pass unchanged; earlier Kernel1/2 and User1/7 reject the new physical/device code.",
+  "artifacts": [
+    {
+      "path": "build/managed/bulk_borrow_a1/component-source-direct-a1/source-seal.json",
+      "bytes": 11345,
+      "sha256": "0250d18615916aa3db5bc4fe305d666509b525e46aa0d144821a5c3112e2bd39"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-source-review-a1/result.json",
+      "bytes": 14379,
+      "sha256": "75fc13bb38985cb3867462b72c750705864352a53b1d98362153b691dfeb11b4"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/group-direct-actions-a1.log",
+      "bytes": 708,
+      "sha256": "ffd7c7e811717f7b80744bc9c8ca430719768dc297ec719c1b58ba7bc821631e"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/group-direct-lower-a1.log",
+      "bytes": 287,
+      "sha256": "434521ea4a0e42421aa37e7a89e85eed31a1a4d7a5e4e5394623f519754dbc49"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/llvm-group-direct-a1/object-result.json",
+      "bytes": 6477,
+      "sha256": "c70c0e49659137000ac02262d6cbc497e884fd5429aecf505c01205e4da3ee87"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-kernel-a1/unit.json",
+      "bytes": 294242,
+      "sha256": "65174173aa4f3b1b3ebfa9543c4677f597ae727c422277906ca89dba547d9596"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-kernel-a1/pre-ir-audit.json",
+      "bytes": 91559,
+      "sha256": "67d975b7fc35347d0fb12dda0f72c9a1be4dae4fac1d0bc9276f3b7c9fe798d7"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-kernel-a1/post-ir-audit-a2.json",
+      "bytes": 109486,
+      "sha256": "b294c48562cd501193b3bb395894da4ec92f153e94acf181287616d16873814a"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-object-a2/result.json",
+      "bytes": 99079,
+      "sha256": "cc29910a6f68a1458617a19af16ef97257dd9e9910283fa13251bb9ada281f67"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/mutations-a2.json",
+      "bytes": 69477,
+      "sha256": "459011e7e3ed5c15200635e0c94809160e32b2c2992ba6d0a9b447f0b2882a69"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/legacy-observer-a1.json",
+      "bytes": 7105,
+      "sha256": "af13a5feadca711cefa7694c523f4c2fa1b7286a7b98dfb425a763d4e82dc999"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/tool-identities-a1.json",
+      "bytes": 1365,
+      "sha256": "da4506afa7821ee35e2e3fd71fc0637541962867313174c61b12fa45c83375ea"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/scaffold-a1.log",
+      "bytes": 185,
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/scaffold-tests-a1.log",
+      "bytes": 1811,
+      "sha256": "e41bcfb4bb25fd4ab8ebfbcaf7a7d89cdb5bad18e6079a18d5318d29cd3daec9"
+    }
+  ],
+  "retained_failures": [
+    {
+      "path": "build/managed/bulk_borrow_a1/actions-a1.log",
+      "bytes": 537,
+      "sha256": "f5283f9d597bdc777d4145d5bbe470850e739ccd64c68588396f4294742d5b8d"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/actions-a2.log",
+      "bytes": 333,
+      "sha256": "173226099eba0677eb0b7c0c78cdac472f50a7c3ebce85c985c24f466b78f052"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/actions-a3.log",
+      "bytes": 118,
+      "sha256": "d336a04bf8f24f8718c7878e5f3a18de81c476359f36d4452f10d9b0a100bff3"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/actions-a4.log",
+      "bytes": 153,
+      "sha256": "7f9d434efbba17acdac127a4775bffa5396ace40a89d9c6fb1a1da4a5fa07856"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/lower-a1.log",
+      "bytes": 153,
+      "sha256": "8a07ac2616c94bb7783d0af47bc5aa5a5e82c146ca285c2d828b06ac5a3bc38c"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/group-actions-a1.log",
+      "bytes": 539,
+      "sha256": "95077f1e33e919481f3d77121a5f316775bb61035f2948c4169cdcd5ed17f302"
+    },
+    {
+      "path": "build/managed/bulk_borrow_a1/selected-post-observer-a1-fail.log",
+      "bytes": 549,
+      "sha256": "3de0aac8497736db6d3e653f1fbbd75acd376d84a3c32adc9625c8ff22974672"
+    }
+  ],
+  "retained_prior_qualified_components": [
+    "build/managed/bulk_borrow_a1/metadata-only-checkpoint/result.json",
+    "build/managed/bulk_borrow_a1/group-checked-io-checkpoint/result.json"
+  ],
+  "original_canonical_native_failure": {
+    "status": "FAIL",
+    "boot_clocks": 500000000,
+    "input_events": 0,
+    "reply_ready": "ABSENT",
+    "path": "build/managed/usercopy-native-connected-a3/workflow/result.json",
+    "retained_resumable_cut_cycle": 452500000,
+    "cut_sha256": "90f67ebd061d31e4a6371d2c0c5621446e6e56e46ccb6235b71e9366394a8ec0",
+    "scope": "Separate original guestcf5250/runtime6cab; no relabeling, no new boot claim."
+  }
+}

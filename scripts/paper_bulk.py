@@ -49,6 +49,9 @@ def canonical(source):
  return re.sub(r'^_private\..*?\.[0-9]+\.','',source)
 
 def validate(ir,unit,*,optimized):
+ from surface_bulk_borrow import validate_if_present as validate_critical_borrow
+ critical_borrow=validate_critical_borrow(ir,unit,optimized=optimized)
+ if critical_borrow is not None:return critical_borrow
  if optimized or unit.get('configuration') not in CONFIGURATIONS:return None
  role=unit.get('role')
  if role=='user' and unit.get('image_key')!='notebook':return None

@@ -83,7 +83,12 @@ def validate(ir, unit, *, optimized):
             if target in incoming:
                 incoming[target].add(source)
     for suffix, sources in CALLERS.items():
-        if incoming[BASE+suffix] != {BASE+s for s in sources}:
+        expected_sources = {BASE+s for s in sources}
+        if suffix == 'copyFromPages' and BASE+'copyFromUserAt' in rows:
+            # The mandatory Surface observer binds its complete Kernel4 family
+            # and sole private caller. Every historical caller set is exact.
+            expected_sources.add(BASE+'copyFromUserAt')
+        if incoming[BASE+suffix] != expected_sources:
             raise Core0Error('page-word private helper caller closure differs: '+suffix)
     operations = None
     if optimized:

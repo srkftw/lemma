@@ -319,4 +319,35 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
     else .done s 0
   else .done s 0
 
+/-- Same pure range/request precedence as checkedBase. The caller has just
+performed complete descriptor validation, and every intervening write is disjoint. -/
+private def checkedBorrowedBase (address pointer permission : UInt64) : Action :=
+  if AddressSpace.addressValid pointer = false then .done Lemma.User.ABI.invalidRange 0 else
+  if AddressSpace.requestValid permission = false then .done Lemma.User.ABI.permissionDenied 0 else
+  .done 0 address
+
+def copyFromUserAt (descriptorBase pointer kernelHandle offset length : UInt64) : Action :=
+  if length = 0 then .done 0 0 else
+  if maximumLength < length then .done Lemma.User.ABI.invalidArgument 0 else
+  .bind (scratch kernelHandle offset length) fun s destination =>
+  if s = 0 then
+    if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
+    .bind (checkedBorrowedBase descriptorBase pointer 1) fun s address =>
+    if s = 0 then
+    .bind (checkedLookupAt address pointer 1) fun s first =>
+    if s = 0 then
+      let split := firstLength pointer length
+      .bind (if length ≤ split then .done 0 0 else checkedLookupAt address (pointer + split) 1) fun s second =>
+      if s = 0 then
+        if wordsAligned first second destination split length = true then
+          .bind (copyFromPages first second destination split length) fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+        else
+          .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
+          if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
+      else .done s 0
+    else .done s 0
+    else .done s 0
+  else .done s 0
+
 end Lemma.Kernel.Memory.UserCopy

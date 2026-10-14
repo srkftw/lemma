@@ -728,4 +728,55 @@ def inspect (descriptor managerHandle subject field : UInt64) : Action :=
     if field = 3 then Objects.retiredCount else .done CapabilityABI.invalidArgument 0
   else .done CapabilityABI.invalidArgument 0
 
+/-- Private same-critical-section borrow; capability metadata remains live. -/
+private def requireActiveAt (descriptor address : UInt64) : Action :=
+  .bind (headerAt descriptor address) fun s base =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (base + headerOffset + 24)) fun s state =>
+  if failed s = true then fatal else
+  if state = active then .done 0 base else .done CapabilityABI.invalidHandle 0
+
+private def lookupEntryAt (descriptor base handle : UInt64) : Action :=
+  if handleValid handle = false then .done CapabilityABI.invalidHandle 0 else
+  .bind (requireActiveAt descriptor base) fun s base =>
+  if failed s = true then .done s 0 else
+  let address := entry base (handleSlot handle)
+  .bind (Objects.get address) fun s state =>
+  if failed s = true then fatal else
+  if state = entryLive then
+  .bind (Objects.get (address + 8)) fun s serial =>
+  if failed s = true then fatal else
+  if serial = handleSerial handle then
+  .bind (Objects.get (address + 16)) fun s key =>
+  if failed s = true then fatal else
+  .bind (Objects.resolve key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (object + 16)) fun s kind =>
+  if failed s = true then fatal else
+  .bind (Objects.get (address + 24)) fun s rights =>
+  if failed s = true then fatal else
+  if CapabilityABI.rightsValid kind rights = true then .done 0 address else fatal
+  else .done CapabilityABI.invalidHandle 0
+  else if state = entryFree then .done CapabilityABI.invalidHandle 0 else fatal
+
+def lookupAt (descriptor base handle kind rights : UInt64) : Action :=
+  if CapabilityABI.typeValid kind = false then .done CapabilityABI.invalidArgument 0 else
+  if CapabilityABI.rightsSubset rights CapabilityABI.knownRights = false then
+    .done CapabilityABI.invalidArgument 0 else
+  .bind (lookupEntryAt descriptor base handle) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (address + 16)) fun s key =>
+  if failed s = true then fatal else
+  .bind (Objects.resolve key) fun s object =>
+  if failed s = true then .done s 0 else
+  .bind (Objects.get (object + 16)) fun s actualKind =>
+  if failed s = true then fatal else
+  if actualKind = kind then
+  .bind (Objects.get (address + 24)) fun s available =>
+  if failed s = true then fatal else
+  if CapabilityABI.rightsSubset rights available = true then .done 0 key
+  else .done CapabilityABI.denied 0
+  else .done CapabilityABI.wrongType 0
+
+
 end Lemma.Kernel.Capability
