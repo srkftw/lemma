@@ -14,11 +14,12 @@ async function appFixture(gpu){
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
    if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
  current=canvas();const actions=['pause','resume','snapshot','export','capture-outcomes','events','bind','inspect','close'].map(action=>({dataset:{action}}));
+ node('#session-mode').value='student';
  const document={querySelector:id=>id==='canvas'?current:node(id),querySelectorAll:()=>actions,createElement:()=>({click(){}})};
  const context=vm.createContext({document,navigator:{gpu},Worker:class{constructor(){worker=this;}postMessage(m){sent.push(m);}},Uint8Array,URL:{createObjectURL:()=>'/local-blob',revokeObjectURL(){}},Blob,setTimeout(){},console,GPUTextureUsage:{TEXTURE_BINDING:1,COPY_DST:2}});
  const module=new vm.SourceTextModule(source,{context});await module.link(()=>{throw Error('unexpected app import');});
  let watchdog;try{await Promise.race([module.evaluate(),new Promise((_resolve,reject)=>{watchdog=setTimeout(()=>reject(Error('renderer initialization blocked actual app registration')),250);})]);}finally{clearTimeout(watchdog);}
- function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');
+ function exercise(){node('#medium').value='owned';node('#open').onclick();assert.equal(sent.at(-1).action,'open');assert.equal(sent.at(-1).name,'owned');assert.equal(sent.at(-1).mode,'student');
   actions.find(n=>n.dataset.action==='inspect').onclick();assert.equal(sent.at(-1).action,'inspect');
   node('#run-cycles').value='9007199254740993';node('#run-bounded').onclick();assert.equal(sent.at(-1).cycles,'9007199254740993');
   node('#import').onchange({target:{files:[]}});assert.equal(typeof node('#import').onchange,'function');
@@ -28,6 +29,16 @@ async function appFixture(gpu){
   assert.deepEqual(images.at(-1),[0,0,0,255,136,136,136,255,255,255,255,255]);
  }
  exercise();return {exercise,sent,images,canvases,gpuBytes,worker,canvas:()=>current,node,setRect:r=>rect=r};
+}
+{
+ const f=await appFixture(undefined);
+ f.node('#session-mode').value='developer';f.node('#session-mode').onchange();
+ f.node('#open').onclick();assert.equal(f.sent.at(-1).mode,'developer');
+ f.worker.onmessage({data:{type:'state',mode:'developer',state:{cycle:'0'},running:false,
+  guestObservation:'boot',readyAt:null,heapBytes:1048576,pauseReason:'opened-paused',
+  timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ assert.equal(f.node('#session-mode').disabled,true);
+ f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
 }
 // View scaling cannot advance a clock or change controller pixels. Scrolled,
 // scaled geometry still supplies raw normalized device coordinates; a held

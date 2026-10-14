@@ -128,6 +128,7 @@ def bundle(args):
     result={'schema':'lemmasim-browser-bundle/1','profile':args.profile,'width':1650,'height':2200,
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
+            'session_control_contract':'lemma-browser-session-modes/1',
             'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
     if guest_archive is not None:
         result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),

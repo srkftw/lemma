@@ -49,7 +49,9 @@
     "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --wasm-input-bundle build/browser/task006-capture-u64-simd-a1 --reuse-wasm --output-dir build/browser/task006-display-scale-a2",
     "./scripts/lemmasim browser-serve --bundle build/browser/task006-display-scale-a2 --port 8783",
     "python3 -m unittest discover -s tests/lemmasim -p test_browser*.py -v",
-    "./scripts/lemmasim browser-serve --bundle build/browser/task006-raw-batch-a1 --port 8784"
+    "./scripts/lemmasim browser-serve --bundle build/browser/task006-raw-batch-a1 --port 8784",
+    "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --wasm-input-bundle build/browser/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --reuse-wasm --output-dir build/browser/session-modes-NEW",
+    "./scripts/lemmasim browser-serve --bundle build/browser/task006-session-modes-a1 --port 8785"
   ],
   "remaining": "Complete fixedcore browser math/check/save/durable reload, native C++ relation, full caches/Pending, browser compiler/permissions/redistribution remain separate.",
   "raw_batch": {
@@ -88,5 +90,46 @@
       "9007199254740995"
     ],
     "semantics": "raw transport, individually authoritative accepted prefix; no rollback/atomicity or guest processing claim"
+  },
+  "session_modes": {
+    "contract": "lemma-browser-session-modes/1",
+    "status": "PASS_ACTUAL_STUDENT_PRIVATE_RESTORE_AND_DEVELOPER_CONTROLLER_INPUT",
+    "bundle": {
+      "path": "build/browser/task006-session-modes-a1/bundle.json",
+      "bytes": 94509,
+      "sha256": "c140c0942de15918f95033bb35272bd14e866a3067111dfa86518f83b8e19fef"
+    },
+    "plan": {
+      "path": "build/browser/task006-session-modes-ui-a1/plan.json",
+      "bytes": 1227,
+      "sha256": "1a7d843fff0dfb0c48cecd06b479f45db321e495b732e8e934f8c82344fd8202"
+    },
+    "student": {
+      "path": "build/browser/task006-session-modes-ui-a1/student-result.json",
+      "bytes": 725,
+      "sha256": "dccac88f07f76ae726c91159c6b0790281f4f46f0fc812d3fa950865215eb402"
+    },
+    "developer": {
+      "path": "build/browser/task006-session-modes-ui-a1/developer-result.json",
+      "bytes": 1046,
+      "sha256": "afb4e13c0b234d3e3749cc6d15b1ed1e79bd821d837f175a1fb6c80ca14a76a0"
+    },
+    "host_suite": {
+      "path": "build/browser/task006-session-modes-ui-a1/browser-host.log",
+      "bytes": 2324,
+      "sha256": "64a20cb723f90159dbfdff98af8d2ef5fc69ea2c9efdae3c2d77f68d1f6c0b48"
+    },
+    "student_checkpoint_bytes": 145648644,
+    "student_checkpoint_sha256": "69886cd83b67f8189325db013386aba9c70ebf9466148a218112f6c1d14011b1",
+    "actual_properties": [
+      "defaultStudentzeroCPUopen; all10advancedgroupshidden; modefixeduntilClose",
+      "actualStudentcourseprivate restore matches every original authoritative checkpoint byte; nosynthesizedReady",
+      "Close permits explicitDeveloper; realraw0button1queuedwithoutCPUadvance",
+      "exact1clock boundconsumes event; actualPowerbutton1, no retiredinstructions/backing/UART",
+      "workerforgedcontrols/unknownmodes/escalationrejectbeforemachineclocks/inspection/pause/backing; hostprotocolqualified"
+    ],
+    "scope": "operator controls ofthe sameRV64 machine; notauthentication/teacher/tutor capability authority",
+    "laboratory": "explicitselection admitted; noadditional browser faultinputs onprofile0.3",
+    "remaining": "actualpermissionedguestteacher/tutor/coursepackageworkflow, browsercompiler andredistribution remainunfinished"
   }
 }

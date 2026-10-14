@@ -20,6 +20,22 @@ resynchronization flags. Coordinate conversion has bounded integer results.
 
 ## Time and observational state
 
+`lemma-browser-session-modes/1` is an additive browser control admission
+contract. New sessions default to Student; the operator explicitly selects
+Developer or Laboratory before opening. The worker fixes that selection until
+Close. Sending another mode on a live control, an unknown mode or an unlisted
+action rejects before a machine read, clock, pause or backing operation.
+Ordinary pointer/power input, cold/warm reset, pause/resume, checkpoint/private
+restore and opaque backing import/export remain available in every mode.
+Developer and Laboratory additionally admit bounded runs, typed raw input,
+inspection, raw/outcome capture, pending-outcome binding/retry and offline replay.
+The UI hides those controls in Student mode; the worker independently enforces
+admission even for direct messages. Laboratory has no additional browser fault
+inputs on this profile yet; unsupported faults reject. This selects operator
+tools, not an identity/authentication system or additional guest capabilities.
+All modes retain the same guest isolation, mathematical checker and assessment
+authority. Teacher/tutor permissions remain a separate unfinished guest workflow.
+
 One worker owns the machine. A 50000-cycle run quantum yields cooperatively;
 animation frames and tab scheduling do not advance virtual time. All clocks,
 addresses and operation IDs cross the JavaScript interface as literal decimal

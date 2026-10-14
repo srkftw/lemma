@@ -8,7 +8,7 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,onRun,onEvent}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent}={}){
  let now=0,nextTimer=0,generation=0,finished=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
@@ -50,8 +50,35 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  async function tick(){const first=timers.entries().next().value;assert(first,'worker failed to schedule');timers.delete(first[0]);first[1]();await settle();}
  async function drain(){for(let i=0;timers.size&&i<30;i++)await tick();assert.equal(timers.size,0,'fixture run did not pause');}
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
- await send('open',{name:'test',initialize,paused});if(!paused)await send('pause');
+ await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
  return {send,tick,drain,state,exports,messages,timers,calls,events,cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// Reject restricted controls before even observing/mutating the machine.
+// Pointer input and ordinary persistence/recovery remain in the same worker.
+{
+ const f=await fixture({cycle:0n,mode:'student'});
+ assert.equal(f.state().mode,'student');await f.send('resume');
+ const clocks=f.cycle(),calls=f.calls.length,timers=f.timers.size;
+ for(const action of ['run','raw','raw-batch','inspect','bind','outcomes','events','capture','capture-outcomes','replay']){
+  await f.send(action,{cycles:'1',row:'now button 1',rows:'now button 1',name:'test',bytes:new ArrayBuffer(1)});
+  assert.match(f.messages.at(-1).error,/requires Developer or Laboratory/);
+  assert.equal(f.cycle(),clocks);assert.equal(f.calls.length,calls);assert.equal(f.timers.size,timers);
+ }
+ for(const message of [{action:'raw',mode:'laboratory'}, {action:'open',mode:'developer'},
+                       {action:'pause',mode:'student'}, {action:'open',mode:'teacher'},
+                       {action:'unsupported'}]){
+  await f.send(message.action,Object.fromEntries(Object.entries(message).filter(([key])=>key!=='action')));
+  assert.equal(f.messages.at(-1).type,'error');assert.equal(f.calls.length,calls);
+  assert.equal(f.cycle(),clocks);assert.equal(f.timers.size,timers);
+ }
+ await f.send('pen',{x:1,y:2,pressure:3,flags:3,tool:1});assert.equal(f.events.length,1);
+ await f.send('button',{level:1});assert.equal(f.events.length,2);
+ await f.send('pause');await f.send('snapshot');const checkpoint=f.exports().at(-1).bytes;
+ await f.send('restore',{bytes:checkpoint.buffer});assert.equal(f.cycle(),0n);
+ assert.equal(f.state().mode,'student');assert.equal(f.timers.size,0);
+ await f.send('close');await f.send('open',{name:'test',paused:true,mode:'laboratory'});
+ assert.equal(f.state().mode,'laboratory');await f.send('raw',{row:'now button 0'});
+ assert.equal(f.messages.at(-1).mode,'laboratory');
 }
 // A paused open loads real artifacts/backing through the same constructor,
 // without scheduling a guest prefix before checkpoint restore or inspection.

@@ -1007,4 +1007,36 @@ checked implementation metadata differs. This is an18.7% host-time reduction
 for that workload, with no guest-cycle reduction. Full changed-guest browser
 cold Ready and mathematics/course acceptance are still running separately.
 
+The [repaired browser capture and cold receipt](docs/evidence/006-browser-fixed-cold.json)
+now independently reaches actual Ready at878.55M clocks/5332.565worker seconds,
+with all250 recorded reads, unchanged acknowledged bytes and every expected
+controller pixel. Its same cold machine opens the course, edits to5/6 and
+receives isolated guest Verified atrevision22 followed by Saved41/barrier298.
+The subsequent hint/edit/resource/review and final durable-only reopen remain
+separate ongoing checks; the full proof kernel remains unfinished.
+
+The current prepared browser controls use Student mode by default. Select
+Developer or Laboratory before Open for raw event batches, bounded runs,
+inspection, outcome binding and offline replay. Mode is fixed until Close and
+enforced by the worker. All modes use the same guest ownership and checker;
+these operator tools do not grant teacher or tutor authority. Student retains
+writing, power, reset, opaque backup import/export and private checkpoint restore.
+Choose100%/150%/200% display scale and scroll the notebook to read at full size.
+Open paused prepares the machine without executing a cold prefix.
+
+```sh
+./scripts/lemmasim browser-serve --bundle build/browser/task006-session-modes-a1 --port 8785
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --wasm-build build/wasm/task006-capture-u64-simd-a1 --reuse-wasm \
+  --wasm-input-bundle build/browser/task006-capture-u64-simd-a1 \
+  --guest-bundle build/native/task006-array-table-prefix-a2 \
+  --output-dir build/browser/session-modes-NEW
+```
+
+[Actual mode observations](docs/evidence/006-browser-readable-paused.json)
+retain the complete unchanged Student private course checkpoint and the real
+Developer raw-button/one-clock controller boundary. Host fixtures additionally
+reject restricted direct messages without changing clocks, pending timers or
+backing. New cold guest acceptance and teacher/tutor permissions are distinct.
+
 -->

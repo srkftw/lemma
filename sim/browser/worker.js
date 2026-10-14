@@ -7,13 +7,30 @@ let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=fa
 let busy=false,backingReady=true,replayUntil=null;
 let guestOutputStart=0;
 let guestObservation='boot';
+let sessionMode='student';
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','restore','close']);
+const developerActions=new Set(['replay','run','raw','raw-batch','inspect','bind','outcomes','events','capture','capture-outcomes']);
+function admission(message){
+ if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
+ const opening=['open','replay','import'].includes(message.action);
+ if(!opening&&message.mode!==undefined)throw Error('Session mode is fixed until the machine is closed');
+ if(opening&&message.mode!==undefined&&!['student','developer','laboratory'].includes(message.mode))
+  throw Error('Unknown browser session mode');
+ if(opening&&loaded&&message.mode!==undefined&&message.mode!==sessionMode)
+  throw Error('Session mode is fixed until the machine is closed');
+ const mode=opening&&!loaded?(message.mode??'student'):sessionMode;
+ if(!['student','developer','laboratory'].includes(mode))throw Error('Unknown browser session mode');
+ if(!ordinaryActions.has(message.action)&&!(mode!=='student'&&developerActions.has(message.action)))
+  throw Error(developerActions.has(message.action)?'This control requires Developer or Laboratory mode':'Unsupported browser action');
+ return mode;
+}
 let budget=null,stepTimer=null,pauseReason=null,timing=null,inRun=false;
 const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',b)),x=>x.toString(16).padStart(2,'0')).join('');
 // Preserve every 64-bit JSON integer literally. Number is used only for
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,running,guestObservation,heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:'lemma-browser-session-modes/1',running,guestObservation,heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -138,10 +155,14 @@ async function restore(bytes){
  // is complete. On storage failure, retry binding or export its actual bytes.
  backingReady=false;await bindPrivate();
 }
-onmessage=async({data:m})=>{if(busy){postMessage({type:'error',error:'A storage or restore operation is pending'});return;}
+onmessage=async({data:m})=>{
+ // Admission is outside the mutation/error-pause path. A denied control must
+ // not cancel scheduled clocks, touch backing storage or alter live state.
+ let nextMode;try{nextMode=admission(m);}catch(e){postMessage({type:'error',error:String(e)});return;}
+ if(busy){postMessage({type:'error',error:'A storage or restore operation is pending'});return;}
  busy=true;try{
  if(m.action==='open'||m.action==='replay'){if(loaded)throw Error('Close this machine before opening another');capture=[];checkpoints={};replayUntil=null;backingReady=true;budget=null;readyAt=null;loops=0;panelSequence='-1';
-  await load({...m,replay:m.action==='replay',initialize:m.action==='replay'||m.initialize});return;}
+  sessionMode=nextMode;await load({...m,replay:m.action==='replay',initialize:m.action==='replay'||m.initialize});return;}
  if(m.action==='import'){
   if(loaded)throw Error('Close this machine before importing another medium');
   const b=new Uint8Array(m.bytes);if(b.length!==268435456)throw Error('Expected a 256 MiB raw medium');

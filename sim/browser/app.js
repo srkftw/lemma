@@ -8,6 +8,9 @@ let active=null,activeTool=0,last={x:0,y:0};
 // An unresolved adapter/device promise cannot block their registration.
 let context=canvas.getContext('2d'),gpu=null,pipeline=null,device=null;
 const displayScale=document.querySelector('#display-scale');
+const sessionMode=document.querySelector('#session-mode');
+function modeControls(){document.querySelectorAll('[data-developer]').forEach(control=>{control.hidden=sessionMode.value==='student';});}
+sessionMode.onchange=modeControls;modeControls();
 function scaleDisplay(){const factor=({'1':1,'1.5':1.5,'2':2})[displayScale.value]||0;
  canvas.style.width=factor?`${canvas.width*factor}px`:'';}
 function cancelContact(){if(active===null)return;const pointer=active;active=null;
@@ -37,8 +40,8 @@ async function initializeGPU(){if(!navigator.gpu)return;
 }
 function send(action,rest={},transfer=[]){worker.postMessage({action,...rest},transfer);}
 function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,paused:document.querySelector('#open-paused').checked});
-document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,initialize:true});
+document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});
+document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>send(b.dataset.action));
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
@@ -46,13 +49,13 @@ document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:docume
 document.querySelector('#warm').onclick=()=>send('reset',{cold:false});document.querySelector('#cold').onclick=()=>send('reset',{cold:true});
 document.querySelector('#restore').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>805306368){status.textContent='Checkpoint exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('restore',{bytes},[bytes]);};
 document.querySelector('#pending-outcomes').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>268435456){status.textContent='Outcome tape exceeds the machine bound';return;}const bytes=await file.arrayBuffer();send('outcomes',{bytes},[bytes]);};
-document.querySelector('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,bytes},[bytes]);};
+document.querySelector('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size!==268435456){status.textContent='Expected a 256 MiB raw medium';return;}const bytes=await file.arrayBuffer();send('import',{name:document.querySelector('#medium').value,mode:sessionMode.value,bytes},[bytes]);};
 document.querySelector('#replay').onclick=async()=>{try{
  const c=document.querySelector('#replay-checkpoint').files[0],io=document.querySelector('#replay-io').files[0],raw=document.querySelector('#replay-events').files[0];
  if(!c||!io||!raw)throw Error('Select checkpoint, backing outcomes and raw event capture');
  if(c.size>805306368||io.size>268435456||raw.size>268435456)throw Error('Replay input exceeds its bound');
  const checkpoint=await c.arrayBuffer(),replayLog=await io.arrayBuffer(),events=JSON.parse(await raw.text());
- send('replay',{name:document.querySelector('#medium').value,checkpoint,replayLog,events},[checkpoint,replayLog]);
+ send('replay',{name:document.querySelector('#medium').value,mode:sessionMode.value,checkpoint,replayLog,events},[checkpoint,replayLog]);
  }catch(e){status.textContent=String(e);}};
 const power=document.querySelector('#power');power.onpointerdown=e=>{power.setPointerCapture(e.pointerId);send('button',{level:1});};power.onpointerup=power.onpointercancel=()=>send('button',{level:0});
 function point(e,contact,cancel=false){const r=canvas.getBoundingClientRect();
@@ -73,10 +76,10 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed')status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';
+ if(m.type==='closed'){sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
- if(m.type==='state'){status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
+ if(m.type==='state'){if(m.mode){sessionMode.value=m.mode;sessionMode.disabled=true;modeControls();}status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
  if(m.type==='panel')present(m);
  if(m.type==='uart')document.querySelector('#uart').textContent=m.text;
