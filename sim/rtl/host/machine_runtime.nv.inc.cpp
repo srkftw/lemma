@@ -21,7 +21,7 @@ void Machine::open_boot_medium(const std::string&path){
  try{attach_boot_backing(std::make_shared<PosixBacking>(fd));}catch(...){close(fd);throw;}boot_medium=fd;
 }
 void Machine::capture_boot(uint64_t tag,const std::vector<uint8_t>&wire){
- if(boot_capture<0)return;if(wire.size()+16>MAX_BACKING_LOG-boot_capture_bytes)throw std::runtime_error("boot outcome capture full");uint8_t header[16];for(unsigned i=0;i<8;i++){header[i]=tag>>(8*i);header[8+i]=wire.size()>>(8*i);}
+ if(boot_capture<0)return;if(wire.size()+16>MAX_BACKING_LOG-boot_capture_bytes)throw std::runtime_error("boot outcome capture full");uint8_t header[16];for(unsigned i=0;i<8;i++){header[i]=tag>>(8*i);header[8+i]=uint64_t(wire.size())>>(8*i);}
  if(pwrite(boot_capture,header,16,boot_capture_bytes)!=16||pwrite(boot_capture,wire.data(),wire.size(),boot_capture_bytes+16)!=ssize_t(wire.size()))throw std::runtime_error("boot outcome capture failed");boot_capture_bytes+=wire.size()+16;
 }
 void Machine::observe_boot(const BackingRecord&record){

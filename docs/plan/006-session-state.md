@@ -779,7 +779,7 @@ or cross-identity restore occurred. Peak comparisonRSS1012174848bytes includes
 two host modules; each machine heap192MiB. These are prefix/performance results,
 not full notebook Ready or arbitrary-boundary continuation. New staticbundlea2
 records the optional SIMD dependency and fresh-host/original-guest provenance.
-Actual local newCourseWord cold on tab11/port8778 is RUNNING under the original
+Actual local newCourseWord cold on tab11/port8778 subsequently reached Ready under the original
 2B/7200s acceptance bounds, from original opaqueDoc6 bytes027b26c9… . Ordinary
 Open started the real CPU; remaining budgets preserve the same cold machine,
 absolute2Bcyclelimit and a conservative7170s whole-worker deadline. No snapshot,
@@ -824,5 +824,27 @@ pixels and all medium bytes match;250READs and zero writes/barriers. Original
 This is cold recovery. A new wholeRTLpen/save scenario at this exact identity
 remains separate. Current new increments do not inherit dfbcb3b's actual ten-job
 CI38482551670 success; a new candidate push must qualify them.
+
+
+## Wasm backing-capture length repair
+
+[Actual portability repair](../evidence/006-wasm-capture-portability.json) fixes
+all five32-bit size shifts in the host capture paths. The real32-bit CABI runs
+WRITE512/barrier/READ512 with complete LMIOLOG1/2 lengths and CRCs; restoring
+the old shifts triggers UBSan at exponent32. Public pinned command:
+`python3 scripts/check_wasm_capture_lengths.py --work-dir build/wasm/capture-new`.
+Three native backing regressions pass; an initial outside-Nix invocation failed
+closed for missing C++, and remains an independently recorded failure.
+
+The earlier SIMD/CourseWord browser cold is independently qualified at
+889.75M clocks/5535.347worker seconds/5424.640simulation-call seconds/192MiB heap.
+All3.63M controller pixels and medium bytes match, without a restored CPU. Its
+old outcome tape is malformed and remainsFAIL; there is no replay acceptance
+from that tape. The live actor remains usable and now opens the guest course.
+A new full fixed Wasm build passes124.673s and strict static preparation at
+`build/browser/task006-capture-u64-simd-a1`. Its existing30M/600s initializer
+pending test fails before firstWRITE at30M/226.633s; the actual boundary is
+retained. This remains a failure, with no extended bound or wholepending claim.
+Newcore full browser cold/OPFS and applicable native comparison remain separate.
 
 -->

@@ -36,7 +36,7 @@ void write_exact(int fd,const void *raw,uint64_t n,uint64_t offset) {
 void capture_entry(Owner& owner,uint64_t tag,const std::vector<uint8_t>& wire) {
   if(owner.capture<0)return;
   if(wire.size()+16>capture_bound-owner.captured)throw std::runtime_error("backing capture entry bound");
-  uint8_t header[16];for(unsigned i=0;i<8;++i) {header[i]=tag>>(8*i);header[8+i]=wire.size()>>(8*i);}
+  uint8_t header[16];for(unsigned i=0;i<8;++i) {header[i]=tag>>(8*i);header[8+i]=uint64_t(wire.size())>>(8*i);}
   write_exact(owner.capture,header,sizeof header,owner.captured);
   write_exact(owner.capture,wire.data(),wire.size(),owner.captured+16);
   owner.captured+=wire.size()+16;
@@ -156,7 +156,7 @@ extern "C" int lemma_backing_execute(void *raw,uint64_t kind,uint64_t boundary,
     lemma::validate_backing_record(record);
     if(owner->capture>=0) {
       auto wire=lemma::encode_backing_record(record);uint8_t count[8];
-      for(unsigned i=0;i<8;++i)count[i]=wire.size()>>(8*i);
+      for(unsigned i=0;i<8;++i)count[i]=uint64_t(wire.size())>>(8*i);
       write_exact(owner->capture,wire.data(),wire.size(),slot+8);write_exact(owner->capture,count,8,slot);
       owner->captured+=wire.size()+8;
     }

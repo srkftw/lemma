@@ -1,7 +1,7 @@
 {
   "schema": "lemma-browser-original-rtl-host-compilation/1",
   "status": "PASS_BUILD_SOURCE_ADMISSION_AND_EXACT_PREFIX_COMPARISON",
-  "scope": "OptionalSIMD/LTOfreshhostcompile ofcompleteoriginal maintainedRTLMachine; genuineCourseWordguestsunchanged. Prefixcomparison is not coldReady, wholebrowsermath, arbitrarycontinuation orUSB/radiobrowseracceptance. Fullnewcold remainsRUNNING underoriginalbounds.",
+  "scope": "OptionalSIMD/LTOfreshhostcompile ofcompleteoriginal maintainedRTLMachine; genuineCourseWordguestsunchanged. Prefixcomparison is not coldReady, wholebrowsermath, arbitrarycontinuation orUSB/radiobrowseracceptance. The actualnewcold reachedReady underoriginalbounds; independentlyqualifiedfullpixels/medium. Its outcome capture is malformed and remainsFAIL, so no replayclaim. See006-wasm-capture-portability.json foractual32-bitrepair/component andnewwholependingFAIL.",
   "implementation": {
     "scripts/silicon_wasm.py": {
       "path": "scripts/silicon_wasm.py",
@@ -117,5 +117,19 @@
     "Browsercompiler/installers/roles/redistribution",
     "FastexacttimingandQEMUcachedcontinuation",
     "Physicalrouting/process/memory/domain/RF/panelclosure"
-  ]
+  ],
+  "later_actual_cold": {
+    "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+    "ready_cycle": 889750000,
+    "ready_host_seconds": 5535.346620000005,
+    "simulation_call_seconds": 5424.6398899987935,
+    "heap_bytes": 201326592,
+    "complete_pixels": 3630000,
+    "outcome_tape": {
+      "status": "FAIL",
+      "error": "timed entry bound",
+      "sha256": "5b0b607483d40d687b2dea73b2cacc06f9b094032b1c596376deacb359447d23",
+      "bytes": 168072
+    }
+  }
 }

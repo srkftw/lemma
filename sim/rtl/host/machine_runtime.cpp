@@ -142,7 +142,7 @@ void Machine::initial_uart(const std::vector<uint8_t>&b){if(b.size()>MAX_UART-s.
 void Machine::capture_backing(uint64_t tag,const std::vector<uint8_t>&wire){
  if(backing_capture<0)return;
  if(wire.size()+16>MAX_BACKING_LOG-backing_capture_bytes)throw std::runtime_error("backing outcome capture full");
- uint8_t header[16];for(int i=0;i<8;i++){header[i]=tag>>(8*i);header[8+i]=wire.size()>>(8*i);}
+ uint8_t header[16];for(int i=0;i<8;i++){header[i]=tag>>(8*i);header[8+i]=uint64_t(wire.size())>>(8*i);}
  if(pwrite(backing_capture,header,16,backing_capture_bytes)!=16||pwrite(backing_capture,wire.data(),wire.size(),backing_capture_bytes+16)!=ssize_t(wire.size()))throw std::runtime_error("backing outcome capture write failed");
  backing_capture_bytes+=wire.size()+16;
 }
@@ -462,7 +462,7 @@ struct Temp { std::string path; explicit Temp(const std::string&prefix){std::str
 struct PrivateCapture {
  int fd=-1;std::string path;bool retained=false;
  ~PrivateCapture(){if(fd>=0)close(fd);if(!retained&&!path.empty())unlink(path.c_str());}
- void create(const std::string&base,uint64_t branch,const std::optional<BackingRequest>&pending,const char*magic="LMIOLOG2"){std::string pattern=base+".fork-"+std::to_string(branch)+"-XXXXXX";std::vector<char>name(pattern.begin(),pattern.end());name.push_back(0);fd=mkstemp(name.data());if(fd<0)throw std::runtime_error("cannot create private backing capture");path=name.data();backing_header(fd,magic);if(pending){auto wire=encode_backing_request(*pending);uint8_t entry[16]{};for(int i=0;i<8;i++)entry[8+i]=wire.size()>>(8*i);if(write(fd,entry,16)!=16||write(fd,wire.data(),wire.size())!=ssize_t(wire.size()))throw std::runtime_error("private pending capture failed");}}
+ void create(const std::string&base,uint64_t branch,const std::optional<BackingRequest>&pending,const char*magic="LMIOLOG2"){std::string pattern=base+".fork-"+std::to_string(branch)+"-XXXXXX";std::vector<char>name(pattern.begin(),pattern.end());name.push_back(0);fd=mkstemp(name.data());if(fd<0)throw std::runtime_error("cannot create private backing capture");path=name.data();backing_header(fd,magic);if(pending){auto wire=encode_backing_request(*pending);uint8_t entry[16]{};for(int i=0;i<8;i++)entry[8+i]=uint64_t(wire.size())>>(8*i);if(write(fd,entry,16)!=16||write(fd,wire.data(),wire.size())!=ssize_t(wire.size()))throw std::runtime_error("private pending capture failed");}}
 };
 struct PrivateMedium {
  int fd=-1;std::string path;bool retained=false;

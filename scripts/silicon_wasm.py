@@ -101,7 +101,7 @@ def main():
         prepare(dep);m=source_manifest(dep,a.profile)
         source_paths=m['sources'];include_paths=m['include_dirs']
         shell=ROOT/'tooling/silicon/wasm.nix';host_root=ROOT
-    portable=[ROOT/'sim/host/panel_pending.h',ROOT/'sim/browser/wasm_machine.cpp',ROOT/'sim/host/backing_io.h',
+    portable=[ROOT/'sim/host/panel_pending.h',ROOT/'sim/host/usb_clock.h',ROOT/'sim/browser/wasm_machine.cpp',ROOT/'sim/host/backing_io.h',
               ROOT/'sim/host/backing_io.cpp',ROOT/'sim/host/backing_io_posix.h',ROOT/'sim/host/backing_io_posix.cpp',
               ROOT/'sim/rtl/host/machine_runtime.cpp',ROOT/'sim/rtl/host/machine_runtime.h',
               ROOT/'tooling/silicon/wasm.nix',Path(__file__).resolve()]
