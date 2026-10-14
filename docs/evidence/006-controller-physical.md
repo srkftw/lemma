@@ -267,4 +267,28 @@ The second run reuses its exact validated mapping rather than rebuilding it.
 focused positive/negative results and resumable global-route artifacts. The
 maintained full256 private-ingress source2bab7e33 remains unchanged.
 
+The later per-bank refill-control experiment is also **unadopted**. Its actual
+mapped global refill state reaches none of the 2,896 bank-register D cones,
+compared with all 2,896 for the maintained implementation. Sixteen independent
+source 2-bit controllers map to 48 physical one-hot flip-flops; the generated
+serializer includes every controller. Every-edge public observations, complete
+256-entry literal cases and private-state invariants pass. A negative coverage
+gap was retained and repaired with a distinct queued-two-sample watchdog/ACK
+case; dropping loss priority, the count guard or the bank-read edge then fails.
+
+The single changed-source 100MHz/IHP-TT attempt nevertheless has global setup
+WNS **−1.828133ns FAIL**, 0.095385ns worse than maintained −1.732748ns, and hold
+WNS +0.029138ns. Its actual worst path is sample_y35→head_entry38, the packed
+x bit1; raw validation/acceptance remains dominant. The original 900s flow expires
+in pin access at 100,000 groups, before a completed route. The separately declared
+8GiB aggregate RSS limit is not reached: peak 4,615,282,688 bytes, minimum machine
+available 7,810,490,368 bytes. Supervisor 903.947s includes Nix/cleanup inside its
+original 1000s bound; owned processes are reaped and all consumed inputs remain
+unchanged. This is a deadline failure, distinct from the prior 4GiB resource
+failures. Router/full-process DRC, LVS, routed PEX, post-route timing and full-chip
+closure remain unreached. No clock/rule waiver or subsequent unchanged route
+was used. [The separate receipt](006-pen-local-refill.json) preserves all source,
+map, waveform, mutation, serializer, flow and partial-route identities. The
+maintained pen remains 2bab7e33; all older results keep their original meanings.
+
 -->

@@ -1,0 +1,163 @@
+{
+  "schema": "lemma-pen-local-refill-experiment/1",
+  "status": "UNADOPTED_FINITE_RTL_MAP_PASS_PHYSICAL_TIMEOUT",
+  "decision": "No maintainedRTL adoption: actual globalsetup is0.095385ns worse thanmaintainedprivate ingress. Onechanged-sourceflow only; no unchangedretry orclock/rule waiver.",
+  "scope": "standalone full256 pen circuit; finite everyedge+literal/privateinvariant qualification, mapped connectivity and generatedserializer participation; not wholeSoC/guest/physicalsignoff",
+  "maintained_source_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+  "candidate": {
+    "path": "build/silicon/pen-local-refill-owner-a1/lemma_pen.sv",
+    "sha256": "54595b0639eb6b4bd4ad8341d8ef9fe92593e193330d25e6861d044410960539"
+  },
+  "physical_source_commit": "ff48d048519bfaa78dd05466106bd1df75496789",
+  "logical_change": "16 private2bit controllers retain exactpublic2\u21921\u21920 refill/ACK/loss/reset schedule and localize each181bit bankenable. No ports/capacity/fieldwidth/register timing changes.",
+  "qualification": {
+    "positive": {
+      "path": "build/silicon/pen-local-refill-qualification-a2/result.json",
+      "sha256": "ee5820ef6e20100484330c31d68a829e380e230027552c1704af0390eea667fa"
+    },
+    "source_logical_bits": 32,
+    "mapped_physical_onehot_ffs": 48,
+    "mapped_distinct_controllers": 16,
+    "mapped_bank_data_ffs": 2896,
+    "global_refill_bank_D_reach": {
+      "maintained": 2896,
+      "candidate": 0
+    },
+    "each_local_controller_bank_D_reach": 181,
+    "mapped_proof": {
+      "path": "build/silicon/pen-local-refill-owner-a1/mapped-control-proof-a1.json",
+      "sha256": "20ddf35c809b86af8fb14a9aa6e54c1f6fd028f8a250c92c660721a8990a50b7"
+    },
+    "serializer": {
+      "path": "build/silicon/pen-local-refill-owner-a1/savable-fields-proof-a1.json",
+      "sha256": "b410493b6bb5a4b62843c35fb12b507082b36fe7032fb4850af5f66a5c04ad48",
+      "all16actual_generated_save_load_fields": true,
+      "actualsnapshotrestore": "NOT_RUN",
+      "oldarchivecompatibility": "NOT_CLAIMED"
+    },
+    "mutants": {
+      "watchdog-negative-a2": {
+        "path": "build/silicon/pen-local-refill-watchdog-negative-a2/result.json",
+        "sha256": "177e3a2b11d81666f5b7688a0a6d2536573ce497adbe6f49abd85432a0c99cfb"
+      },
+      "count-negative-a1": {
+        "path": "build/silicon/pen-local-refill-count-negative-a1/result.json",
+        "sha256": "f72249fb17ccf52bd24d157621e7873baf9e81c40d77eb311dfacb2e6a56a338"
+      },
+      "late-negative-a1": {
+        "path": "build/silicon/pen-local-refill-late-negative-a1/result.json",
+        "sha256": "f7e214151832ddfbd9d86f3aa00f5fd49d471631d529aa426611ffb5f1b7330b"
+      }
+    }
+  },
+  "retained_fixture_gap": {
+    "path": "build/silicon/pen-local-refill-owner-a1/negative-observer-gap-a1.json",
+    "sha256": "de4808f0a86705a5314968f58481c75871ea80586fb0169ff8c71e9472427cea",
+    "actual_accepted_mutant": "build/silicon/pen-local-refill-watchdog-negative-a1/result.json",
+    "cause": "originalwatchdogcase count1 separatelysuppressedrefill; added distinctqueued2sample watchdog+ACK boundary; no candidateRTL/mapping change"
+  },
+  "map": {
+    "path": "build/silicon/physical/pen-local-refill-map-a1/result.json",
+    "sha256": "2259c4b579406a9b7b924d8b2fe58f202d3ccaa2106b499a49050637cc1af559",
+    "cells": 185797,
+    "flipflops": 50150,
+    "area_um2": 4361385.583798,
+    "residual_memory_bits": 0,
+    "latches": 0,
+    "unresolved_cells": []
+  },
+  "prospective_bounds": {
+    "flow_seconds": 900,
+    "outer_seconds": 1000,
+    "aggregate_tree_RSS_bytes": 8589934592,
+    "disk_bytes": 12884901888,
+    "minimum_machine_available_bytes": 2147483648,
+    "clock_ns": 10,
+    "corner": "IHP SG13G2typ1.20V25C provisional",
+    "all_io_timing_repair_route_process_rules": "UNCHANGED"
+  },
+  "physical": {
+    "status": "FAIL",
+    "error": "Deadline exceeded: /nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad; retained /home/sreekumaar/Downloads/lemma/build/silicon/physical/pen-local-refill-a1/layout.log",
+    "supervisor_seconds": 903.9470244820695,
+    "openroad_seconds": 897.924,
+    "peak_tree_rss_bytes": 4615282688,
+    "minimum_machine_available_bytes": 7810490368,
+    "owned_survivors": {},
+    "flow_inputs_unchanged": true,
+    "supervisor_receipt": {
+      "path": "build/silicon/pen-local-refill-owner-a1/physical-supervision.json",
+      "sha256": "fc2abe70725ea1335d004521e8fcaafa4de417d75f1bc1b30d3d4b6f7fe23cdf"
+    },
+    "flow_receipt": {
+      "path": "build/silicon/physical/pen-local-refill-a1/result.json",
+      "sha256": "872407f9fd9642252dfbebbd3c25e749c3c0e56d11e1a0f9ef43608c7dec3098"
+    },
+    "global": {
+      "cell_area_um2": 5120710.3584,
+      "core_area_um2": 17428952.2176,
+      "utilization_percent": 29.3804830862353,
+      "instances": 239609,
+      "clock_period_ns": 10,
+      "timing_model": "global-route RC estimate before detailed signal routing",
+      "power_grid": "NOT_IMPLEMENTED",
+      "process_drc": "NOT_RUN",
+      "lvs": "NOT_RUN"
+    },
+    "setup_wns_ns": -1.828133,
+    "hold_wns_ns": 0.029138,
+    "worst_path": "sample_y35\u2192head_entry38 (packed xbit1), actual mappedcell268313; rawvalidation/acceptance remainsdominant",
+    "timing_kind": "globalrouteRC estimate before incomplete detailedrouting; not extractedpostroute",
+    "pin_access_completed_groups": 100000,
+    "unique_patterns": 79,
+    "metal1_region_shapes": 8838951,
+    "DRT": "FAIL_TIMEOUT original900s bound; no completedroute",
+    "router_DRC": "NOT_RUN",
+    "full_process_DRC": "NOT_RUN",
+    "LVS": "NOT_RUN",
+    "routed_PEX": "NOT_RUN",
+    "postroute_timing": "NOT_RUN",
+    "powergrid": "NOT_IMPLEMENTED",
+    "fullchip": "NOT_QUALIFIED",
+    "foundry_signoff": "UNVERIFIED"
+  },
+  "tools": {
+    "yosys_path": "/nix/store/4sxr7d1kf8v1wjkfkxhv7d0ssmvd64nf-yosys-0.69/bin/yosys",
+    "yosys_version": "Yosys 0.69+post (git sha1 v0.69, Release, GNU /nix/store/j1938gsbvbhkyz4kbmvjk56r479mkw3s-gcc-wrapper-16.2.0/bin/g++ 16.2.0)",
+    "openroad_path": "/nix/store/52lmb0xv2vfcjybjnq3bjfmhkg8w1ign-openroad-26Q2/bin/openroad",
+    "openroad_version": "26Q2"
+  },
+  "PDK": {
+    "revision": "5e6d592e4002946a4616f798c357f0f3c06cf3b6",
+    "collateral": {
+      "ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib": "7677a8918689f452e80405ad16a83e744709342574f2aedcc507c2758986b396",
+      "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_tech.lef": "054f5b7b24d72365b4b1088be1331e04c1c2e3805de9f99c37e71938ed231efc",
+      "ihp-sg13g2/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef": "c9bbc02d0c2cba3b15cd89a208750d25de882f02a2927ae78ba6422109fb01d0"
+    },
+    "corner": "typical 1.20 V 25 C"
+  },
+  "flow_inputs": {
+    "scripts/silicon_synth.py": "dcfe5afb5e702ae9db970541b145f94af7d9cc58a75a2f6e5776e1ce1d37f330",
+    "tooling/silicon/eda.nix": "0158c908ff067cf45a90c40ce8fb6a6616b846a7a8059b4d0a6446f6afcac8ca",
+    "tooling/silicon/layout.tcl": "e703a8f8dcaa7c2ead503c5512d2b377e664034b8669e1b3e1fe0a0980b9f87b",
+    "tooling/silicon/process.tcl": "d5315c189ae13032d50cfa7f75a0ace0a4900baf3ae7eb5a32fbf9037ed66718",
+    "tooling/silicon/extract.tcl": "51b8563e25f76032a5c4f824ce43899e45e7b8ac6e0df0244fd3ce16e6567839",
+    "tooling/silicon/physical-lock.json": "13275a90aaf90b4d208125eb53f36be4c4a9920aaf4aa7d8893326432ff50a28",
+    "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d",
+    "build/silicon/pen-local-refill-owner-a1/lemma_pen.sv": "54595b0639eb6b4bd4ad8341d8ef9fe92593e193330d25e6861d044410960539"
+  },
+  "historical_setup_wns_ns": {
+    "historical": -3.542208,
+    "maintained_private_ingress": -1.732748,
+    "unadopted_handoff": -3.519758,
+    "unadopted_isolatedhead": -2.89679
+  },
+  "resume_artifacts": {
+    "build/silicon/physical/pen-local-refill-a1/global-route.odb": "338e426edf13a9d857015b1b67b1c6945bddfe6db39642ba2bb285b077276ac4",
+    "build/silicon/physical/pen-local-refill-a1/global-route.def": "9d185c4abf94b8d538f4780c58911f3810cd2793348003532f595ab43c5dc2d7",
+    "build/silicon/physical/pen-local-refill-a1/global-route-estimated.spef": "f879a2356bf1967e0ab3be0021c1ec118bb38aa7bcfb1abaf93dea6fc39fa653",
+    "build/silicon/physical/pen-local-refill-a1/global-setup.rpt": "eb62a6dbad2cc7cfddbf51959bdb9befaab6fd72eb106911a4d91a1b1f1b30a2",
+    "build/silicon/physical/pen-local-refill-a1/layout.log": "888b0195b154477636d45abf7da7af52bb94185e89c5225223000220bdd85ae4"
+  },
+  "remaining": "Actualheadacceptance validation/fanout and incompletepinaccess remainloadbearing; unsupportedrules coverage is notestablishedas timeoutcause."
+}
