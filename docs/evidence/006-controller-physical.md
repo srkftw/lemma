@@ -199,6 +199,40 @@ speed measurements. This prototype remains unadopted; placement, routing and
 physical STA are NOT_RUN. Its exact sources, tests and mapped artifacts are
 included in the same receipt for the next physical inspection.
 
+The subsequent separate-counter experiment is also **not adopted**. Its exact
+accepted-sample enable preserved the same 28,457-edge external-interface
+corpus and all 32,768 finite guard combinations. Removing `sample_ready` from
+the enable compiled, then failed at edge 24,137. These are bounded RTL tests,
+not formal proofs or new guest execution.
+
+One fresh mapping and physical attempt kept the same 900-second overall bound,
+100 MHz constraints, corner and repair recipe. Mapping produced 184,075 cells,
+50,102 flip-flops and 4,354,297.781398 µm² area, with no unresolved cells,
+latches or residual memory. The shorter static counter cone did not improve
+placed timing: global-route setup WNS was **−3.229613 ns FAIL**, 1.496865 ns
+worse than the retained private-ingress design. Hold WNS was **+0.031813 ns**,
+with all 128 clock-buffer fanout violations still unwaived. The worst path
+moved to `sample_y[35]` through validation/acceptance control to
+`head_entry[156]`, arriving at 15.056982 ns against 11.827369 ns required.
+These are global-route estimated parasitics, not routed extraction.
+
+Detailed routing timed out in pin access after 80,000 reported groups;
+OpenROAD was terminated and reaped. Router DRC, process DRC/LVS, routed
+extraction and post-route timing were NOT_RUN. Geometry and group counts do
+not establish normalized routing speed, and the unresolved enclosure/CUTCLASS
+gap is not established as the timeout cause.
+
+The tested `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`
+pen source was restored again. The exact counter candidate, patch, focused
+checker and test inputs remain archived under
+`build/silicon/pen-task006-sequence-enable-owner-a1`; the failed physical
+checkpoint is under `build/silicon/physical/pen-task006-sequence-enable-a1`.
+[The successor experiment receipt](006-pen-sequence-enable.json) retains the
+actual timing regression and all earlier failures. No unchanged follow-up
+route was launched. The observed validation-to-head-publication path and
+remaining pin-access demand require a separately qualified physical change
+before another attempt; no next candidate or physical closure is claimed.
+
 Reproduce with unused output paths:
 
 ```sh
