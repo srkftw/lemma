@@ -40,6 +40,35 @@ USB_CLOCKED_CONFIGURATIONS={'usb-clocked-bulk-notebook':'lemmasim-silicon-usb-cl
 USB_NATIVE_DEPLOYMENTS={USB_NEXT_PROFILE:(SCHEMA_USB_NEXT,USB_NEXT_DEPLOYMENT,USB_NEXT_CONFIGURATIONS),
                         USB_WIRE_PROFILE:(SCHEMA_USB_WIRE,USB_WIRE_DEPLOYMENT,USB_WIRE_CONFIGURATIONS),
                         USB_CLOCKED_PROFILE:(SCHEMA_USB_CLOCKED,USB_CLOCKED_DEPLOYMENT,USB_CLOCKED_CONFIGURATIONS)}
+SCHEMA_USB_RECOVERY='lemmasim-native-bundle/7'
+USB_RECOVERY_CONFIGURATIONS={'usb-clocked-retry-bulk-notebook':'lemmasim-silicon-usb-clocked-retry-bulk-notebook',
+                             'usb-clocked-retry-bulk-initializer':'lemmasim-silicon-usb-clocked-retry-bulk-initialize'}
+USB_RECOVERY_SOFTWARE={'contract_version':'lemma-usb-clocked-recovery-deployment-v1',
+    'silicon_profile':USB_CLOCKED_PROFILE,
+    'user_profiles':{'store':'core0-user-v0.2','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.3'}}
+USB_RECOVERY_CONTROL={'usb_recovery':'lemma-usb-live-recovery/1'}
+
+
+def usb_native_deployment(profile, *, schema=None, recovery=False):
+    if recovery or schema==SCHEMA_USB_RECOVERY:
+        if profile!=USB_CLOCKED_PROFILE or schema not in (None,SCHEMA_USB_RECOVERY):
+            raise ValueError('Recovery native package requires Clocked13 and schema7')
+        return SCHEMA_USB_RECOVERY,USB_RECOVERY_SOFTWARE['contract_version'],USB_RECOVERY_CONFIGURATIONS
+    selected=USB_NATIVE_DEPLOYMENTS.get(profile)
+    if selected is None or schema not in (None,selected[0]):
+        raise ValueError('USB package profile/schema association differs')
+    return selected
+
+
+def usb_software_deployment(schema, version, configurations):
+    base=copy.deepcopy(USB_RECOVERY_SOFTWARE) if schema==SCHEMA_USB_RECOVERY else {'contract_version':version}
+    return {**base,'configurations':dict(configurations)}
+
+
+def require_recovery_runtime(runtime):
+    controls=runtime.get('runtime_control_contracts')
+    if not isinstance(controls,dict) or controls.get('usb_recovery')!=USB_RECOVERY_CONTROL['usb_recovery']:
+        raise ValueError('Recovery package requires its exact native live recovery control contract')
 MANAGED_DEPLOYMENT='lemma-managed-notebook-deployment-v1'
 MANAGED_CONFIGURATIONS={'notebook':'lemmasim-silicon-managed-notebook',
                       'initializer':'lemmasim-silicon-managed-initialize'}
@@ -85,7 +114,7 @@ def origin_destination(manifest,path,digest):
     origins=manifest.get('origins')
     if not isinstance(origins,dict) or not origins:raise ValueError('Missing archived origin inventory')
     entry=origins.get(str(Path(path).resolve()))
-    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
+    if manifest.get('schema') in (SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT,SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED,SCHEMA_USB_RECOVERY):
         if not isinstance(entry,dict):raise ValueError('Missing versioned archived origin: '+str(path))
         destination=entry.get(digest)
     elif manifest.get('schema')==SCHEMA:
@@ -180,6 +209,8 @@ def bundle(args):
     import lemmasim_fast as fast
     from build_kernel import source_inputs
     name=args.profile
+    if getattr(args,'usb_recovery_deployment',False) and name!=USB_CLOCKED_PROFILE:
+        raise ValueError('Recovery native package requires Clocked13 and schema7')
     if name in USB_NATIVE_DEPLOYMENTS:
         return bundle_usb_next(args, name)
     if getattr(args,'initializer_guest_source_root',None) is not None:
@@ -348,7 +379,8 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
     native_root = getattr(args, 'rtl_source_root', None)
     guest_root, initializer_root = usb_archive_roots(args)
     if selected_profile not in USB_NATIVE_DEPLOYMENTS:raise ValueError('Unsupported USB native package profile')
-    selected_schema, selected_deployment, selected_configurations=USB_NATIVE_DEPLOYMENTS[selected_profile]
+    selected_schema, selected_deployment, selected_configurations=usb_native_deployment(
+        selected_profile,recovery=getattr(args,'usb_recovery_deployment',False))
     roles = tuple(selected_configurations)
     data = guest.prepared(roles[0], selected_profile, rtl_source_root=native_root,
                           guest_source_root=guest_root)
@@ -360,6 +392,8 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
     selected_build = getattr(args, 'rtl_build', None)
     if selected_build is not None and Path(data['rtl_build']['path']).parent != selected_build.resolve():
         raise ValueError('USB8 package selected RTL implementation differs')
+    if selected_schema==SCHEMA_USB_RECOVERY:
+        require_recovery_runtime(read_json(Path(data['rtl_build']['path'])))
     guest.reset_rom_audit(data)
     origin = Path(guest_root).resolve() if guest_root is not None else ROOT
     initializer_origin = Path(initializer_root).resolve() if initializer_root is not None else ROOT
@@ -373,6 +407,8 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
             raise ValueError('USB8 guest roles differ from the complete selected source tree')
         guest.verify_guest_build(build, configuration, read_json(build / 'build.json')['optimization'],
                                  source_root=origin)
+        if selected_schema==SCHEMA_USB_RECOVERY and read_json(build/'audit.json').get('software_deployment')!=USB_RECOVERY_SOFTWARE:
+            raise ValueError('Recovery guest software identity differs from its exact deployment')
     out = args.output_dir.resolve()
     out.mkdir(parents=True, exist_ok=False)
     manifest = {'schema': selected_schema, 'profile': selected_profile,
@@ -381,8 +417,7 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
                 'compiler': 'genuine pinned Lean/LLVM; complete original consumed source versions',
                 'source_commit': read_json(Path(data['workloads'][roles[0]]['provenance']['path']))['source_commit'],
                 'sources': sources, 'origins': {}, 'host_dependencies': {}, 'backends': {},
-                'software_deployment': {'contract_version': selected_deployment,
-                                        'configurations': dict(selected_configurations)}}
+                'software_deployment': usb_software_deployment(selected_schema,selected_deployment,selected_configurations)}
 
     def add(source, destination, digest, *, executable=False, original=None):
         source = Path(source)
@@ -488,7 +523,7 @@ def validate_usb_runtime(directory, manifest, data, runtime):
             raise ValueError('USB8 native input identity missing')
         add(item['path'], item['sha256'])
     add(Path(runtime['host_include_dir']) / 'lemma_silicon_binding.h', runtime['host_binding_sha256'])
-    if manifest.get('schema')==SCHEMA_USB_CLOCKED:
+    if manifest.get('schema') in (SCHEMA_USB_CLOCKED,SCHEMA_USB_RECOVERY):
         if runtime.get('profile')!=USB_CLOCKED_PROFILE:
             raise ValueError('Clocked native manifest selected profile differs')
         add(origin/guest.USB_CLOCKED_PROFILE_FILE,runtime['profile_sha256'])
@@ -540,15 +575,16 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
     from silicon_profile import profile_path
     selected_profile=manifest.get('profile')
     if selected_profile not in USB_NATIVE_DEPLOYMENTS:raise ValueError('Unsupported USB native package profile')
-    selected_schema, selected_deployment, selected_configurations=USB_NATIVE_DEPLOYMENTS[selected_profile]
+    selected_schema, selected_deployment, selected_configurations=usb_native_deployment(
+        selected_profile,schema=manifest.get('schema'))
     if manifest.get('schema')!=selected_schema:raise ValueError('USB package profile/schema association differs')
     if (manifest.get('profile') != selected_profile or name not in (None, selected_profile) or
             backend != 'rtl' or workload not in selected_configurations):
         raise ValueError('USB8 native package requires its exact RTL profile/workload')
     if (set(manifest.get('backends', {})) != {'rtl'} or
             set(manifest.get('host_dependencies', {})) != {'rtl'} or
-            manifest.get('software_deployment') != {'contract_version': selected_deployment,
-                                                   'configurations': selected_configurations}):
+            manifest.get('software_deployment') != usb_software_deployment(
+                selected_schema,selected_deployment,selected_configurations)):
         raise ValueError('USB8 native deployment/implementation authority differs')
     inventory(directory, manifest)
     if manifest.get('sources') != source_inputs(directory / 'source'):
@@ -590,7 +626,9 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
         build = read_json(base / 'build.json')
         guest.verify_guest_build(base, selected_configurations[role], build['optimization'],
                                  source_root=directory / 'source')
-        if role in ('usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook'):
+        if selected_schema==SCHEMA_USB_RECOVERY and read_json(base/'audit.json').get('software_deployment')!=USB_RECOVERY_SOFTWARE:
+            raise ValueError('Recovery guest software identity differs from its exact deployment')
+        if role in ('usb-next-bulk-notebook','usb-wire-bulk-notebook','usb-clocked-bulk-notebook','usb-clocked-retry-bulk-notebook'):
             capacity = read_json(Path(data['workloads'][role]['capacity']['path']))
             if capacity.get('status') != 'PASS' or capacity.get('configuration') != selected_configurations[role]:
                 raise ValueError('USB8 notebook capacity authority differs')
@@ -609,6 +647,8 @@ def prepared_usb_next(directory, manifest, backend, workload, name):
     if (runtime.get('binary_sha256') != data['binary']['sha256'] or runtime.get('profile') != selected_profile or
             runtime.get('profile_sha256') != data['profile_sha256']):
         raise ValueError('USB8 native implementation differs')
+    if selected_schema==SCHEMA_USB_RECOVERY:
+        require_recovery_runtime(runtime)
     validate_usb_runtime(directory, manifest, data, runtime)
     if selected_profile==USB_CLOCKED_PROFILE:data['binding_profile']=guest.identified(selected_definition)
     data['native_bundle'] = {'schema': selected_schema, 'manifest_sha256': guest.sha(directory / 'bundle.json'),
@@ -624,7 +664,7 @@ def prepared(directory,backend,workload,name=None):
     from build_kernel import source_inputs
     from silicon_profile import profile_path
     directory=Path(directory).resolve();m=read_json(directory/'bundle.json')
-    if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
+    if m.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED,SCHEMA_USB_RECOVERY):
         return prepared_usb_next(directory, m, backend, workload, name)
     if m.get('schema') not in (SCHEMA,SCHEMA_WITH_SOURCE_VERSIONS,SCHEMA_WITH_SOFTWARE_DEPLOYMENT) or m.get('profile')!='lemma-silicon-dev/0.3.0' or name not in (None,m['profile']):
         raise ValueError('Unsupported/mismatched native bundle')
@@ -688,9 +728,9 @@ def prepared(directory,backend,workload,name=None):
 def bundle_configurations(manifest):
     """An immutable package selects both guest roles under one closed contract."""
     import silicon_guest as guest
-    if manifest.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED):
-        selected=USB_NATIVE_DEPLOYMENTS.get(manifest.get('profile'))
-        if selected is None or manifest.get('schema')!=selected[0] or manifest.get('software_deployment')!={'contract_version':selected[1],'configurations':selected[2]}:
+    if manifest.get('schema') in (SCHEMA_USB_NEXT,SCHEMA_USB_WIRE,SCHEMA_USB_CLOCKED,SCHEMA_USB_RECOVERY):
+        selected=usb_native_deployment(manifest.get('profile'),schema=manifest.get('schema'))
+        if manifest.get('software_deployment')!=usb_software_deployment(*selected):
             raise ValueError('USB immutable deployment authority differs')
         return dict(selected[2])
     if manifest.get('profile')!='lemma-silicon-dev/0.3.0':
