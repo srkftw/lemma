@@ -43,6 +43,27 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [63:0] usb_phy_host_stuff_errors,usb_phy_chip_stuff_errors,
  output logic [63:0] usb_phy_host_line_errors,usb_phy_chip_line_errors,
  output logic [63:0] usb_phy_host_underflows,usb_phy_chip_underflows,
+ // Optional profile12 CommonOFDM aligned DATA boundary. Independent peer
+ // circuitry is part of digital environmental state; host moves raw PIO/IQ only.
+ input logic wifi_rx_sample_valid,wifi_coex_allow,
+ input logic signed [15:0] wifi_rx_i,wifi_rx_q,
+ output logic wifi_tx_sample_valid,wifi_busy,
+ output logic signed [15:0] wifi_tx_i,wifi_tx_q,
+ output logic [63:0] wifi_ticks,wifi_tx_packets,wifi_rx_packets,wifi_tx_wire_samples,wifi_rx_wire_samples,
+ output logic wifi_tx_active,wifi_rx_active,output logic [7:0] wifi_last_fault,output logic [9:0] wifi_last_metric,
+ input logic wifi_peer_reset,wifi_peer_enabled,wifi_peer_coex_allow,wifi_peer_valid,wifi_peer_write,
+ input logic [9:0] wifi_peer_addr,input logic [2:0] wifi_peer_size,input logic [63:0] wifi_peer_wdata,
+ output logic [63:0] wifi_peer_rdata,output logic wifi_peer_ready,wifi_peer_error,wifi_peer_irq,wifi_peer_busy,
+ input logic wifi_peer_rx_sample_valid,input logic signed [15:0] wifi_peer_rx_i,wifi_peer_rx_q,
+ output logic wifi_peer_tx_sample_valid,output logic signed [15:0] wifi_peer_tx_i,wifi_peer_tx_q,
+ output logic [63:0] wifi_peer_ticks,wifi_peer_tx_packets,wifi_peer_rx_packets,wifi_peer_tx_wire_samples,wifi_peer_rx_wire_samples,
+ output logic wifi_peer_tx_active,wifi_peer_rx_active,output logic [7:0] wifi_peer_last_fault,output logic [9:0] wifi_peer_last_metric,
+ // Paused observation taps, wired directly to retained controller registers.
+ // They do not read PIO, acknowledge a head, or publish a peer result.
+ output logic wifi_head_valid,wifi_peer_head_valid,
+ output logic [4:0] wifi_head_length,wifi_peer_head_length,
+ output logic [2:0] wifi_events,wifi_peer_events,
+ output logic [127:0] wifi_head_bytes,wifi_peer_head_bytes,
  // Product boot medium has its own captured external-operation namespace.
  input logic boot_media_ready,external_boot_media_busy,
  input logic [63:0] boot_media_result,boot_reset_origin,
@@ -129,14 +150,14 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  logic dma_valid,dma_write,dma_ready,dma_error;
  logic [63:0] dma_addr,dma_wdata,dma_rdata;
  logic [2:0] dma_size;
- logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata,boot_nv_rdata;
+ logic [63:0] pen_rdata,paper_rdata,block_rdata,power_rdata,ble_rdata,usb_rdata,boot_nv_rdata,wifi_rdata;
  logic pen_ready,paper_ready,block_ready,pen_error,paper_error,block_error;
  logic pen_irq,paper_irq,block_irq,power_irq,power_ready,power_bus_error,paper_busy,block_busy,pen_sample_ready;
- logic ble_ready,ble_error,ble_irq,usb_ready,usb_error,usb_irq,boot_nv_ready,boot_nv_error,boot_nv_irq;
+ logic ble_ready,ble_error,ble_irq,usb_ready,usb_error,usb_irq,boot_nv_ready,boot_nv_error,boot_nv_irq,wifi_ready,wifi_error,wifi_irq;
  logic [5:0] power_busy_sources;
  logic [1:0] power_event_flags;
  logic [31:0] irqs;
- logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,usb_sel,boot_nv_sel,dma_grant,dma_alignment,dma_span;
+ logic pen_sel,paper_sel,block_sel,power_sel,ble_sel,usb_sel,boot_nv_sel,wifi_sel,dma_grant,dma_alignment,dma_span;
  logic external_ready,external_error;
  logic [63:0] external_rdata;
  logic port_held,held_dma,held_write;
@@ -163,13 +184,14 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  assign power_sel=POWER_ENABLED!=0&&dev_addr>=POWER_BASE&&dev_addr<POWER_BASE+POWER_SPAN;
  assign ble_sel=BLE_ENABLED!=0&&dev_addr>=BLE_BASE&&dev_addr<BLE_BASE+BLE_SPAN;
  assign usb_sel=USB_ENABLED!=0&&dev_addr>=USB_BASE&&dev_addr<USB_BASE+USB_SPAN;
+ assign wifi_sel=WIFI_ENABLED!=0&&dev_addr>=WIFI_BASE&&dev_addr<WIFI_BASE+WIFI_SPAN;
  assign boot_nv_sel=BOOT_NV_ENABLED!=0&&dev_addr>=BOOT_NV_BASE&&dev_addr<BOOT_NV_BASE+BOOT_NV_SPAN;
  assign paper_sel=dev_addr>=PAPER_BASE&&dev_addr<PAPER_BASE+PAPER_SPAN&&!power_sel&&!ble_sel&&!usb_sel;
  assign block_sel=dev_addr>=BLOCK_BASE&&dev_addr<BLOCK_BASE+BLOCK_SPAN;
- assign dev_rdata=boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
- assign dev_ready=boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
- assign dev_error=boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
- assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ);
+ assign dev_rdata=wifi_sel?wifi_rdata:boot_nv_sel?boot_nv_rdata:power_sel?power_rdata:usb_sel?usb_rdata:ble_sel?ble_rdata:pen_sel?pen_rdata:paper_sel?paper_rdata:block_rdata;
+ assign dev_ready=wifi_sel?wifi_ready:boot_nv_sel?boot_nv_ready:power_sel?power_ready:usb_sel?usb_ready:ble_sel?ble_ready:pen_sel?pen_ready:paper_sel?paper_ready:block_sel?block_ready:1'b1;
+ assign dev_error=wifi_sel?wifi_error:boot_nv_sel?boot_nv_error:power_sel?power_bus_error:usb_sel?usb_error:ble_sel?ble_error:pen_sel?pen_error:paper_sel?paper_error:block_sel?block_error:1'b1;
+ assign irqs=(32'(pen_irq)<<PEN_IRQ)|(32'(paper_irq)<<PAPER_IRQ)|(32'(block_irq)<<BLOCK_IRQ)|(32'(power_irq)<<POWER_IRQ)|(32'(ble_irq)<<BLE_IRQ)|(32'(usb_irq)<<USB_IRQ)|(32'(boot_nv_irq)<<BOOT_NV_IRQ)|(32'(wifi_irq)<<WIFI_IRQ);
  lemma_compute compute(
    .clk,.reset(domain_reset),.mem_valid(cpu_mem_valid),.mem_write(cpu_mem_write),.mem_addr(cpu_mem_addr),
    .mem_wdata(cpu_mem_wdata),.mem_strb(cpu_mem_strb),.mem_rdata(cpu_mem_rdata),
@@ -286,6 +308,42 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  end endgenerate
  assign usb_irq_out=usb_irq;
 
+ generate if(WIFI_ENABLED!=0)begin: sampled_wifi
+   lemma_wifi_ofdm_data endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.coex_allow(wifi_coex_allow),
+     .valid(dev_valid&&wifi_sel),.write(dev_write),.addr(10'(dev_addr-WIFI_BASE)),.size(dev_size),.wdata(dev_wdata),
+     .rdata(wifi_rdata),.ready(wifi_ready),.error(wifi_error),.irq(wifi_irq),.controller_busy(wifi_busy),
+     .rx_sample_valid(wifi_rx_sample_valid),.rx_i(wifi_rx_i),.rx_q(wifi_rx_q),
+     .tx_sample_valid(wifi_tx_sample_valid),.tx_i(wifi_tx_i),.tx_q(wifi_tx_q),
+     .ticks(wifi_ticks),.tx_packets(wifi_tx_packets),.rx_packets(wifi_rx_packets),
+     .tx_wire_samples(wifi_tx_wire_samples),.rx_wire_samples(wifi_rx_wire_samples),
+     .tx_active(wifi_tx_active),.rx_active(wifi_rx_active),.last_fault(wifi_last_fault),.last_metric(wifi_last_metric));
+   lemma_wifi_ofdm_data peer(.clk,.reset(wifi_peer_reset),.enabled(wifi_peer_enabled),.coex_allow(wifi_peer_coex_allow),
+     .valid(wifi_peer_valid),.write(wifi_peer_write),.addr(wifi_peer_addr),.size(wifi_peer_size),.wdata(wifi_peer_wdata),
+     .rdata(wifi_peer_rdata),.ready(wifi_peer_ready),.error(wifi_peer_error),.irq(wifi_peer_irq),.controller_busy(wifi_peer_busy),
+     .rx_sample_valid(wifi_peer_rx_sample_valid),.rx_i(wifi_peer_rx_i),.rx_q(wifi_peer_rx_q),
+     .tx_sample_valid(wifi_peer_tx_sample_valid),.tx_i(wifi_peer_tx_i),.tx_q(wifi_peer_tx_q),
+     .ticks(wifi_peer_ticks),.tx_packets(wifi_peer_tx_packets),.rx_packets(wifi_peer_rx_packets),
+     .tx_wire_samples(wifi_peer_tx_wire_samples),.rx_wire_samples(wifi_peer_rx_wire_samples),
+     .tx_active(wifi_peer_tx_active),.rx_active(wifi_peer_rx_active),.last_fault(wifi_peer_last_fault),.last_metric(wifi_peer_last_metric));
+   assign wifi_head_valid=endpoint.rx_pending;assign wifi_peer_head_valid=peer.rx_pending;
+   assign wifi_head_length=endpoint.head_length;assign wifi_peer_head_length=peer.head_length;
+   assign wifi_events=endpoint.events;assign wifi_peer_events=peer.events;
+   for(genvar octet=0;octet<16;octet++)begin: retained_observation
+     assign wifi_head_bytes[octet*8+:8]=endpoint.rx_head[octet];
+     assign wifi_peer_head_bytes[octet*8+:8]=peer.rx_head[octet];
+   end
+ end else begin: no_sampled_wifi
+   assign wifi_rdata=0;assign wifi_ready=1;assign wifi_error=0;assign wifi_irq=0;assign wifi_busy=0;
+   assign wifi_tx_sample_valid=0;assign wifi_tx_i=0;assign wifi_tx_q=0;assign wifi_ticks=0;
+   assign wifi_tx_packets=0;assign wifi_rx_packets=0;assign wifi_tx_wire_samples=0;assign wifi_rx_wire_samples=0;
+   assign wifi_tx_active=0;assign wifi_rx_active=0;assign wifi_last_fault=0;assign wifi_last_metric=0;
+   assign wifi_peer_rdata=0;assign wifi_peer_ready=1;assign wifi_peer_error=0;assign wifi_peer_irq=0;assign wifi_peer_busy=0;
+   assign wifi_peer_tx_sample_valid=0;assign wifi_peer_tx_i=0;assign wifi_peer_tx_q=0;assign wifi_peer_ticks=0;
+   assign wifi_peer_tx_packets=0;assign wifi_peer_rx_packets=0;assign wifi_peer_tx_wire_samples=0;assign wifi_peer_rx_wire_samples=0;
+   assign wifi_peer_tx_active=0;assign wifi_peer_rx_active=0;assign wifi_peer_last_fault=0;assign wifi_peer_last_metric=0;
+   assign wifi_head_valid=0;assign wifi_peer_head_valid=0;assign wifi_head_length=0;assign wifi_peer_head_length=0;
+   assign wifi_events=0;assign wifi_peer_events=0;assign wifi_head_bytes=0;assign wifi_peer_head_bytes=0;
+ end endgenerate
  generate if(BOOT_NV_ENABLED!=0) begin: product_boot_medium
    lemma_boot_nv #(.CAPACITY_SECTORS(BOOT_NV_CAPACITY_SECTORS)) boot_store(
      .clk,.reset_n(!domain_reset),.valid(dev_valid&&boot_nv_sel&&!power_suspended),.write(dev_write),
@@ -301,7 +359,7 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign boot_media_wdata=0;assign boot_media_cancel=0;assign boot_media_origin=0;
  end endgenerate
  assign sample_ready=pen_sample_ready&&!power_suspended&&!power_cancel_pen&&!domain_reset;
- assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy)};
+ assign power_busy_sources={(media_valid||external_media_busy||boot_media_valid||external_boot_media_busy),(dma_valid||!pen_ready),port_held,block_irq,block_busy,(paper_busy||ble_busy||usb_busy||wifi_busy)};
  generate if(POWER_ENABLED!=0) begin: control_domain
    lemma_power #(.SAFETY(POWER_SAFETY!=0)) power(.clk,.reset,.reset_cause(power_reset_cause),.raw_button_level,.raw_power_good,.raw_brownout,
      .busy_sources(power_busy_sources),.valid(dev_valid&&power_sel),.write(dev_write),

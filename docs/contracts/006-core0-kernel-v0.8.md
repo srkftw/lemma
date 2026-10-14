@@ -1,0 +1,40 @@
+<!--
+# core0-kernel-v0.8 — CommonOFDM12 owned packet boundary
+
+This opt-in profile inherits exactly Kernel6 scalar, Action, UART and physical
+memory semantics. It adds aligned64-bit accesses inside0x10013000..0x100133ff
+and the32-bit PLIC priority18 word0x0c000048..0x0c00004b. Priority17, BootNV and
+boot scratch remain denied. Kernel7's separately versioned NV authority remains.
+No new syntax, managed operation, arbitrary CSR, foreign runtime or User radio
+interface is accepted. The selected standalone development configuration is
+`lemmasim-silicon-wifi-common-probe`; all other configurations reject its roots.
+
+Normal supervisor startup has a default-false CommonOFDM selector, mutually
+exclusive with ProductBoot. Historical PMP entries0..7 remain unchanged. Entry8
+alone grants NAPOT0x10013000/1024bytes, RW/NX/unlocked, with every other pmpcfg2
+byte zero. M startup checks real pmpaddr8/pmpcfg2 WARL readbacks and reaches machine
+fatal on mismatch, followed by a global SFENCE.VMA. Actual CSR observations are
+stored at0x804e01f0/1f8 and checked by compiled S policy before Wi-Fi MMIO or queue
+clear. The independent linked-code audit checks seven CSR operations, both fatal
+branches, the NAPOT interval and exact scratch-address/doubleword stores.
+Twelve actual artifact/body/selector mutations were rejected. These checks are
+necessary artifact evidence, not a compiler correctness proof or generic PMP proof.
+
+The295 genuine Kernel8 routines pass complete pre/post LLVM authority, actual
+readonly-table/guard/relocation, reachable stack, ELF and undefined-symbol audits.
+The full image was built/audited with311 unchanged consumed inputs and an exact
+source archive. Retained Wire11 and Product10 startup outputs were independently
+re-rendered byte-identical; finite fixtures also reject Common+Product, bootstrap,
+non-LemmaSim and machine-origin selectors. Existing profiles keep their meanings.
+
+The same-machine native probe actually validated the complete descriptor/DTB,
+allocated owned frames, enforced purpose/full-queue/pinned-release errors, sent
+eight ordered16-byte packets and received a reverse16-byte peer packet into owned
+RAM. It observed nine polled PLIC18 claims/completions and returned every frame;
+all8192 owner/pin cells were independently clear. Full private checkpoint suffixes
+match byte-for-byte from an active queue/pending-IQ cut without flushing the original.
+See `docs/evidence/006-wifi-common-same-machine.json` for exact bounds, hashes,
+source/tool identities and retained failures. No S external-trap/User API claim
+follows from polled PLIC policy. HE/acquisition/MAC/RF, integrated fault recovery,
+fast/browser counterparts and physical conformance remain unfinished.
+-->

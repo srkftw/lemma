@@ -29,7 +29,7 @@ private def roleProfile (role : String) (configuration : String)
     (image? : Option UserImageSpec := none) : Except String Profile :=
   match role with
   | "firmware" => .ok .firmware_v0_1
-  | "kernel" => .ok (if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
+  | "kernel" => .ok (if configuration == "lemmasim-silicon-wifi-common-probe" then .kernel_v0_8 else if isProductNotebookConfiguration configuration then .kernel_v0_7 else if configuration == "lemmasim-silicon-usb-link-probe" || isUSBNotebookConfiguration configuration then .kernel_v0_6 else
       if configuration == "lemmasim-silicon-ble-link-probe" then .kernel_v0_5 else
       if configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" ||
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
@@ -47,7 +47,7 @@ private def roleProfile (role : String) (configuration : String)
 private def readConfiguration : IO String := do
   let some configuration ← IO.getEnv "LEMMA_KERNEL_CONFIGURATION"
     | throw <| IO.userError "LEMMA_KERNEL_CONFIGURATION must select an admitted exact configuration"
-  unless isProductNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
+  unless configuration == "lemmasim-silicon-wifi-common-probe" || isProductNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "lemmasim-bringup" || configuration == "lemmasim-notebook" ||
       configuration == "lemmasim-initialize" || configuration == "normal" || configuration == "frames-development" ||
       configuration == "machine-origin-development" || configuration == "user-isolation-development" ||
       configuration == "user-csr-development" || configuration == "user-nx-development" ||
@@ -70,7 +70,7 @@ private def userStartupCase (configuration : String) : Lemma.Platform.RiscV.Exec
   else (singletonInstructionCase? configuration).getD .none
 
 private def requiresSupervisor (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
+  configuration == "lemmasim-silicon-wifi-common-probe" ||   configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" || configuration == "lemmasim-silicon-power-probe" || configuration == "lemmasim-silicon-power-safety-probe" || configuration == "lemmasim-silicon-devices" || configuration == "user-isolation-development" || configuration == "user-csr-development" ||
     configuration == "user-nx-development" || configuration == "user-kernel-fetch-development" ||
     configuration == "user-misaligned-development" || configuration == "user-syscall-development" ||
     (singletonInstructionCase? configuration).isSome || isMultiImageConfiguration configuration
@@ -82,7 +82,9 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if configuration == "lemmasim-silicon-devices" then
+  | "kernel" => if configuration == "lemmasim-silicon-wifi-common-probe" then
+      #["Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot", "Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch"]
+    else if configuration == "lemmasim-silicon-devices" then
       #["Lemma.Platform.Silicon.Development.DeviceEntry.boot", "Lemma.Platform.Silicon.Development.DeviceEntry.dispatch"]
     else if configuration == "lemmasim-silicon-usb-link-probe" then
       #["Lemma.Platform.Silicon.Development.USBLink.boot", "Lemma.Platform.Silicon.Development.USBLink.dispatch"]
@@ -196,6 +198,8 @@ private def developmentModules (configuration role : String) (image? : Option Us
     #["Lemma.Platform.Silicon.Development.PowerSafety"]
   else if configuration == "lemmasim-silicon-usb-link-probe" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.USBLink"]
+  else if configuration == "lemmasim-silicon-wifi-common-probe" && role == "kernel" then
+    #["Lemma.Platform.Silicon.Development.WiFiCommonProbe"]
   else if configuration == "lemmasim-silicon-ble-link-probe" && role == "kernel" then
     #["Lemma.Platform.Silicon.Development.BLELink"]
   else if configuration == "lemmasim-silicon-devices" && role == "kernel" then
@@ -858,13 +862,13 @@ private def bootClearFields (configuration : String) : List (String × Json) :=
     ("phase", .str "M-startup-before-boot-handoff")])] else []
 
 private def frameCountFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
+  if configuration == "lemmasim-silicon-wifi-common-probe" || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
       isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then Lemma.Platform.Silicon.BindingPower.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then Lemma.Platform.Silicon.BindingFull.frame_count.toNat
   else if configuration.startsWith "lemmasim-silicon-" then Lemma.Platform.Silicon.Binding.frame_count.toNat
   else if configuration.startsWith "lemmasim-" then 8192 else Layout.frameCount
 private def framePoolLimitFor (configuration : String) : Nat :=
-  if configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
+  if configuration == "lemmasim-silicon-wifi-common-probe" || configuration.startsWith "lemmasim-silicon-power-" || configuration == "lemmasim-silicon-usb-link-probe" || configuration == "lemmasim-silicon-ble-link-probe" ||
       isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isUSBNotebookConfiguration configuration || isProductNotebookConfiguration configuration then
     (Lemma.Platform.Silicon.BindingPower.frame_pool_base + Lemma.Platform.Silicon.BindingPower.frame_pool_bytes).toNat
   else if configuration.startsWith "lemmasim-silicon-full-" then
@@ -1077,7 +1081,7 @@ private def exportBootFiles (directory : System.FilePath) (configuration : Strin
   let kernel ← readRootSymbol directory configuration "kernel" 0
   let dispatcher ← readRootSymbol directory configuration "kernel" 1
   let config : Lemma.Platform.RiscV.ExecutionPrimitives.Configuration := {
-    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
+    stage, lemmasim := configuration.startsWith "lemmasim-", productBoot := isProductNotebookConfiguration configuration, commonOFDM := configuration == "lemmasim-silicon-wifi-common-probe", startupCase := startupCase configuration, userStartupCase := userStartupCase configuration,
     kernelMain := kernel, firmwareDispatcher := firmware, supervisorDispatcher := dispatcher }
   let startup ← IO.ofExcept <| Lemma.Platform.RiscV.ExecutionPrimitives.renderStartup config
   if isMultiImageConfiguration configuration then

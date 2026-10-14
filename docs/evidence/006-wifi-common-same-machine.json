@@ -1,0 +1,267 @@
+{
+  "schema": "lemma-common-ofdm-same-machine-evidence/1",
+  "status": "PASS_SCOPED_NATIVE_KERNEL8_QUEUE_IRQ_IQ_CONTINUATION",
+  "scope": "Common aligned legacy20MHz BPSK/r1/2 DATA construction dependency; genuine Kernel8 policy on the existing CVW/LemmaSim machine and registered RTL peer. Not full Wi-Fi6/HE/acquisition/MAC/RF/User radio or physical conformance.",
+  "contracts": [
+    "docs/contracts/006-wifi-common-ofdm-data-v1.md",
+    "docs/contracts/006-wifi-same-machine-v1.md",
+    "docs/contracts/006-core0-kernel-v0.8.md"
+  ],
+  "qualified_dependency_commit": "07402f5",
+  "binding": {
+    "profile": "lemma-silicon-dev/0.12.0",
+    "descriptor_abi": 13,
+    "features": 47,
+    "common_feature_bit": 32,
+    "wifi_mmio": [
+      268513280,
+      268514304
+    ],
+    "irq": 18,
+    "clock_hz": 100000000,
+    "sample_hz": 20000000,
+    "ram_bytes": 134217728,
+    "frame_count": 8192,
+    "frame_pool_bytes": 33554432,
+    "geometry": [
+      1650,
+      2200
+    ],
+    "pixel_format": "Gray4",
+    "boot_nv": false,
+    "inherited_usb_phy": "version0.11: digital raw/fullspeed slice; inherited sample-jitter gap remains"
+  },
+  "native": {
+    "receipt": "build/silicon/task006-wifi-native12-a3/result.json",
+    "receipt_sha256": "675f30e44895157f014fdd29e132ec2d165077c474814f0b44cb005d58cd14d0",
+    "input_count": 251,
+    "complete_source_archive": "build/silicon/task006-wifi-native12-a3/consumed-source-root",
+    "runtime_identity": "bd6c0efb1f3cfd56aeec96255d8c55e684f227d5276e54b13b672dcd9405b87c",
+    "binary_sha256": "a8403e785b509b64eca6e3c0084169bad873b8b922e41691b4ad03ebd81ce21d",
+    "build_seconds": 64.59176896401914,
+    "manifest_sha256": "053857c4b3ead3834b6fc469044c1704e81570f01de41edb302f091b9f37a473",
+    "wrapper_version": 9
+  },
+  "guest": {
+    "receipt": "build/kernel/task006-wifi-common-whole-a1/result.json",
+    "receipt_sha256": "137bd30a14fe2615d4d236de721db82a5b071403945ecf99b9e095a87ce80997",
+    "complete_source_archive": "build/kernel/task006-wifi-common-whole-a1/consumed-source-root",
+    "source_count": 312,
+    "source_inventory_sha256": "1d80bc3d354eaab9c21c586e5f2900a2cf2a1e0ce77885d432840e157b6b99bf",
+    "configuration": "lemmasim-silicon-wifi-common-probe",
+    "stage": "supervisor",
+    "contract": "core0-kernel-v0.8",
+    "genuine_build_full_audit_seconds": 49.840661854017526,
+    "elf_sha256": "634e59b2066b375203123645514f681a6118be0318901c4cdc9abd85e6d4577a",
+    "audit_sha256": "3692843f80c6ae4b365f738b47ef82a66fd8d21e944691ffbcf0ba60b733d8ec",
+    "function_count": 295,
+    "maximum_compiled_kernel_frame_bytes": 112,
+    "pmp": {
+      "base": 268513280,
+      "bytes": 1024,
+      "contract_version": "lemma-common-pmp-v1",
+      "csr_instructions": 7,
+      "entry": 8,
+      "permissions": "RW/NX",
+      "readback_fatal_branches": 2,
+      "readback_ram": 2152595952,
+      "scope": "actual checked startup grant/readback stores; live queue/IRQ qualification separate"
+    },
+    "undefined_symbols": []
+  },
+  "initial_actual_cpu": {
+    "original_failed_observer": "build/silicon/task006-wifi-common-guest-a2/result.json",
+    "corrected_readonly_receipt": "build/silicon/task006-wifi-common-guest-a3-observation/result.json",
+    "corrected_readonly_sha256": "af3f721b0d66b2e284b73986ac6d6a0a838a0eaeb61830d3c79e8e2ca696c47d",
+    "cycle": 12175051,
+    "original_clock_bound": 20000000,
+    "original_host_bound_seconds": 300,
+    "original_campaign_wall_seconds": 125.74425816105213,
+    "VmHWM_kib": 151824,
+    "cut": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-wifi-common-guest-a2/active-owned-tx.chk",
+    "cut_sha256": "f266742c5a209fe4a529a70f7cb3689075e395f7d47682d0ef70d2f1941d4303",
+    "cut_bytes": 145212350,
+    "pending_actual_complex_sample": true,
+    "chip_samples": 64,
+    "queue_count": 4,
+    "queue_active": 1,
+    "kernel_owned_frames": 5,
+    "queue_pins": 4,
+    "initial_purpose4_generation1_literals_verified": true,
+    "no_CPU_prefix_repeat": true,
+    "no_already_owned_input_reinjection": true
+  },
+  "exact_continuation": {
+    "receipt": "build/silicon/task006-wifi-common-suffix-a1/result.json",
+    "receipt_sha256": "c5a39d7cbaf0f5ace263a53eed92fb23e4f891eee91409f46f386a442bca3318",
+    "plan": "build/silicon/task006-wifi-common-suffix-a1/plan.json",
+    "plan_sha256": "df6d7cc126826dadb1aaca49a9954a509f0c6a3e4b3ce0a445e21c5e11f36006",
+    "inventory": "build/silicon/task006-wifi-common-suffix-a1/inventory.json",
+    "inventory_sha256": "e0bc45ac525e69d7ca69709bb65908c6849b50a197e8ad69d4203c5f7154b199",
+    "start_cycle": 12175051,
+    "end_cycle": 13175054,
+    "delta": 1000003,
+    "host_bound_seconds": 120,
+    "wall_seconds": 53.988387643999886,
+    "VmHWM_kib_by_owner": {
+      "private-parent": 297144,
+      "private-fork": 297252
+    },
+    "snapshot_bytes": 145215438,
+    "entire_snapshot_sha256": "87fd5700b3ec7fdc642e24c080d4c9b520e8ec639deb23038e1dc14331da2550",
+    "comparison": "Entire native wrapper plus generated logicalRTL plus full128MiBRAM/display planes byte-identical; externalUART suffix identical. No field masks/tolerances, migration, reset/flush/drain or clean-boundary prerequisite.",
+    "original_cut_unchanged": true,
+    "raw_peer_pio_new_rows": 56,
+    "raw_peer_pio_total_beats": 59,
+    "chip_complex_samples": 5120,
+    "peer_complex_samples": 640,
+    "chip_TX_packets": 8,
+    "chip_RX_packets": 1,
+    "peer_TX_packets": 1,
+    "peer_RX_packets": 8,
+    "ordered_payloads_hex": [
+      "00112233445566778899aabbccddeeff",
+      "01102332455467768998abbacddceffe",
+      "02132031465764758a9ba8b9cedfecfd",
+      "03122130475665748b9aa9b8cfdeedfc",
+      "04152637405162738c9daebfc8d9eafb",
+      "05142736415063728d9cafbec9d8ebfa",
+      "06172435425360718e9facbdcadbe8f9",
+      "07162534435261708f9eadbccbdae9f8"
+    ],
+    "reverse_owned_RX_payload_hex": "ffeeddccbbaa99887766554433221100",
+    "actual_guest_PLIC18_claim_completion_records": 9,
+    "PLIC_TX_event1_records": 8,
+    "PLIC_RX_event2_records": 1,
+    "M_timer_traps": 36,
+    "S_external_trap_claim": false,
+    "all8192_frame_owner_and_pin_cells_zero": true,
+    "available_frames": 8192,
+    "queue_count": 0,
+    "queue_active": 0,
+    "queue_completed": 8,
+    "retained_peer_TX_event1": true
+  },
+  "public_checker": {
+    "path": "scripts/check_wifi_common_guest.py",
+    "sha256": "7f9e01d67aa26deedf238679af40bd59d3e67f2141d0327157d90c7d925fc158",
+    "receipt": "build/silicon/task006-wifi-common-public-a1/result.json",
+    "receipt_sha256": "222bdaeece243cdf6e3aa39dd49a97a36a1466191a88a5784fb1979f0da8daa2",
+    "actual_resume_command": [
+      "python3",
+      "scripts/check_wifi_common_guest.py",
+      "--native-build",
+      "build/silicon/task006-wifi-native12-a3",
+      "--target-capture",
+      "build/kernel/task006-wifi-common-whole-a1",
+      "--rom-bundle",
+      "build/native/task006-arithmetic-a3",
+      "--resume-observation",
+      "build/silicon/task006-wifi-common-guest-a3-observation/result.json",
+      "--work-dir",
+      "build/silicon/task006-wifi-common-public-a1"
+    ],
+    "total_wall_seconds": 52.68445373699069,
+    "continuation_wall_seconds": 48.72710358898621,
+    "same_entire_snapshot_sha256": "87fd5700b3ec7fdc642e24c080d4c9b520e8ec639deb23038e1dc14331da2550",
+    "fresh_initial_command": "Use the same input flags, omit --resume-observation and choose an unused --work-dir. The public fresh-initial branch preserves the actual run algorithm with the corrected BLE-state observer; no second cold prefix was run for publication."
+  },
+  "host_checks": {
+    "old11_generated_bindings_exact": true,
+    "historical_Wire11_Product10_startup_sources_exact": true,
+    "PMP_actual_artifact_mutants_rejected": [
+      "BootNVaddress",
+      "entry9CSR",
+      "executepermission",
+      "WARLaddressbranch",
+      "translationFence",
+      "readbackStoreAlias",
+      "observationWrongCSR",
+      "wrongAssemblyGrant",
+      "readbackAliasAssembly",
+      "wrongSelector",
+      "oldflag128-program.ll",
+      "oldflag128-program.opt.ll"
+    ],
+    "profile_test_log": "build/task006-wifi-profile12-plan-a1/profile-host-a2.log",
+    "PMP_fixture_log": "build/task006-wifi-profile12-plan-a1/pmp-host-a2.log",
+    "checker_negative_log": "build/task006-wifi-profile12-plan-a1/public-host-negatives-a2.log",
+    "radio_suite_log": "build/task006-wifi-profile12-plan-a1/radio-host-final-a1.log",
+    "scaffold_log": "build/task006-wifi-profile12-plan-a1/scaffold-final-a1.log",
+    "scaffold_host_log": "build/task006-wifi-profile12-plan-a1/scaffold-host-final-a1.log"
+  },
+  "retained_original_failures": [
+    {
+      "path": "build/silicon/task006-wifi-native12-state-a1/result.json",
+      "sha256": "625b0ad98ae6475b29bf73265ab1ba4e3b13168957897bdb806d86a1d465d346",
+      "reason": "beforeCPU admission: old ROM-manifest field name"
+    },
+    {
+      "path": "build/silicon/task006-wifi-native12-state-a2/result.json",
+      "sha256": "329a63096ac6fb77f7326ffa9428912e79d27baac1b91a2df926a3cb08789b3b",
+      "reason": "actual version9 restore rejected13-byte raw event under inherited8-byte kind bound; repaired only whenWiFi enabled"
+    },
+    {
+      "path": "build/silicon/task006-wifi-native12-state-a3/result.json",
+      "sha256": "517fa2cc67bf73bce5f9c35eedc90fb49ac9a613d8e4679aa73532c86404450b",
+      "reason": "observer compared public owner capabilities against isolated fork"
+    },
+    {
+      "path": "build/silicon/task006-wifi-common-guest-a1/result.json",
+      "sha256": "8b3eadc2edacd7a787b11f4969b4236dfca40b740f7bec1657c0ca0550dbd98b",
+      "reason": "beforeCPU admission: observer expected PASS instead of builder schema BUILT"
+    },
+    {
+      "path": "build/silicon/task006-wifi-common-guest-a2/result.json",
+      "sha256": "01ff1cb321f2989aa6a48571ef06e3fd4c163d5e25b975dc18325c1894f985ee",
+      "reason": "readonly RAM observer omitted inherited25BLE scalars; retained same successfulCPU cut independently reobserved"
+    },
+    {
+      "path": "build/task006-wifi-profile12-plan-a1/pmp-host-a1.log",
+      "sha256": "53e1ca3c7912252435586e6a589fd1b9505da68a7633dc1521a064f527e4341d",
+      "reason": "host fixture syntax failure before checks"
+    },
+    {
+      "path": "build/task006-wifi-profile12-plan-a1/object-a2-diagnosis4.log",
+      "sha256": "5535945ed3946d131320eff32d5e0fc65748a6155d166bb5c9735dbb6aa15f66",
+      "reason": "new Common backend table initially expected22entries; actual LLVM table has60 exact code32..91 entries"
+    },
+    {
+      "path": "build/task006-wifi-profile12-plan-a1/public-host-negatives-a1.log",
+      "sha256": "f1ee550e84460fa14a9b346e58a6f2d74afadd7a58660c97d804f63e79c1346d",
+      "reason": "host negative fixture syntax failure before checks"
+    }
+  ],
+  "remaining_gaps": [
+    "Complete legacy preamble/PLCP and signal acquisition; aligned start/length/seed are external metadata.",
+    "HE20/SU and other802.11ax PHY, MAC/contention/retries/security/association, RF/analog/antenna and physical timing/conformance.",
+    "Integrated loss/corruption recovery, broader reset/coexistence/radio service and User API/notebook/companion traffic. Leaf corruption/loss fixtures retain their earlier narrower07402f5 scope.",
+    "QEMU/fast/browser profile12 counterpart and cross-backend migration are NOT_RUN; default and archived older backend identities retain their meanings.",
+    "PLIC18 claims/completions are real polled guest policy; S-mode external interrupt trap servicing is not claimed."
+  ],
+  "public_target_capture": {
+    "path": "scripts/check_wifi_common_target.py",
+    "sha256": "e7ce1bf5137d7d9b3dd947fcfdc0c28446093d6294538c41c450d29e2065dc56",
+    "status": "PASS_WHOLE_AUDIT_ONLY",
+    "receipt": "build/kernel/task006-wifi-common-public-target-a1/result.json",
+    "receipt_sha256": "ee11092069ed34a694e683110ec540903fab6ba8cac61f95a66a591dbf6ddc74",
+    "source_count": 312,
+    "complete_source_archive": "build/kernel/task006-wifi-common-public-target-a1/consumed-source-root",
+    "source_inventory_sha256": "1d80bc3d354eaab9c21c586e5f2900a2cf2a1e0ce77885d432840e157b6b99bf",
+    "wall_seconds": 64.44091179798124,
+    "elf_sha256": "634e59b2066b375203123645514f681a6118be0318901c4cdc9abd85e6d4577a",
+    "audit_sha256": "331206788d473a42fc18b62ebe0aea2d1464628c7b8c7bf8dc15e15764163ed4",
+    "same_ELF_as_actual_CPU_image": true,
+    "scope": "One actual public entrypoint genuine build/full ordinary audit qualification, no additional CPU or cold prefix",
+    "actual_command": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "python3",
+      "scripts/check_wifi_common_target.py",
+      "--work-dir",
+      "build/kernel/task006-wifi-common-public-target-a1"
+    ]
+  }
+}

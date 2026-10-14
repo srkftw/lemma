@@ -1420,4 +1420,223 @@ def validateSiliconUSBWire (pointer expectedBytes width height pressure : UInt64
   validateBindingWireCore 10 pointer expectedBytes width height pressure
 
 
+-- CommonOFDM12 is an additive full-tree family. Wire/Next/Executed stay pinned.
+private def literalLengthCommon (code : UInt64) : UInt64 :=
+  if code = 22 then 27 else
+  if code = 82 then 31 else
+  if code = 90 then 16 else
+  if code = 91 then 24 else
+  literalLengthWire code
+
+private def literalWordCommon (code index : UInt64) : UInt64 :=
+  if code = 22 then
+    if index = 0 then 0x69772d616d6d656c else
+    if index = 1 then 0x6f6d6d6f632d6966 else
+    if index = 2 then 0x303331303031406e else
+    if index = 3 then 0x3030 else
+    0 else
+  if code = 82 then
+    if index = 0 then 0x69772c616d6d656c else
+    if index = 1 then 0x6f6d6d6f632d6966 else
+    if index = 2 then 0x642d6d64666f2d6e else
+    if index = 3 then 0x31762d617461 else
+    0 else
+  if code = 90 then
+    if index = 0 then 0x61732c616d6d656c else
+    if index = 1 then 0x7a682d656c706d else
+    0 else
+  if code = 91 then
+    if index = 0 then 0x6c612c616d6d656c else
+    if index = 1 then 0x61642d64656e6769 else
+    if index = 2 then 0x796c6e6f2d6174 else
+    0 else
+  literalWordWire code index
+
+private def matchStepCommon (i _ : UInt32) (acc address code _ _ : UInt64) : Action :=
+  .bind (Access.read8 (address + i.toUInt64)) fun s byte =>
+  if s = 0 then
+    let expected := (literalWordCommon code (i.toUInt64 / 8) >>> ((i.toUInt64 % 8) * 8)) &&& 255
+    if byte = expected then .done 0 acc else .done 10 0
+  else .done s 0
+
+private def equalLiteralCommon (address bytes code : UInt64) : Action :=
+  if bytes = literalLengthCommon code then
+    .boundedFoldU64 32 matchStepCommon bytes.toUInt32 1 address code 0 0 fun s same =>
+    if s = 10 then .done 0 0 else .done s same
+  else .done 0 0
+
+private def findStepCommon (i _ : UInt32) (acc address bytes start _ : UInt64) : Action :=
+  let code := start + i.toUInt64
+  .bind (equalLiteralCommon address bytes code) fun s same =>
+  if s = 0 then if same = 1 then .done 10 code else .done 0 acc else .done s 0
+
+private def findCodeCommon (address bytes start count : UInt64) : Action :=
+  if count ≤ 24 then
+    .boundedFoldU64 24 findStepCommon count.toUInt32 0 address bytes start 0 fun s code =>
+    if s = 10 then .done 0 code else .done s code
+  else .done invalid 0
+private def leafCommon (role : UInt64) : UInt64 := if role = 15 then 1 else leaf role
+private def nodeRoleCommon (parent code : UInt64) : UInt64 :=
+  if parent = 12 then if code = 22 then 15 else nodeRole parent code else nodeRole parent code
+private def protectedOverlapCommon (base bytes : UInt64) : UInt64 :=
+  if bytes = 0 then 0 else if base ≤ 0xffffffffffffffff-bytes then
+  if base < 0x10013400 then if 0x10012000 < base+bytes then 1 else protectedOverlap base bytes
+  else protectedOverlap base bytes else 1
+private def otherRegCommonStep (i _ : UInt32) (acc data _ _ _ : UInt64) : Action :=
+  .bind (BootInfo.readBE64 (data + i.toUInt64 * 16)) fun s base => if s = 0 then
+  .bind (BootInfo.readBE64 (data + i.toUInt64 * 16 + 8)) fun s bytes => if s = 0 then
+  if protectedOverlapCommon base bytes = 0 then .done 0 acc else .done invalid 0
+  else .done s 0 else .done s 0
+private def otherRegCommon (data bytes : UInt64) : Action :=
+  if bytes % 16 = 0 then if bytes ≤ 256 then
+  .boundedFoldU64 16 otherRegCommonStep (bytes / 16).toUInt32 0 data 0 0 0 fun s v => .done s v
+  else .done invalid 0 else .done invalid 0
+private def leafPropertyCommon (data bytes code role : UInt64) : Action :=
+  if role = 15 then
+    if code = 32 then
+      .bind (equalLiteralCommon data bytes 82) fun s same => if s = 0 then
+      if same = 1 then mark 2 else .done invalid 0 else .done s 0
+    else if code = 33 then
+      if bytes = 16 then
+      .bind (BootInfo.readBE64 data) fun s base => if s = 0 then
+      .bind (BootInfo.readBE64 (data+8)) fun s span => if s = 0 then
+      if base = 0x10013000 then if span = 1024 then mark 1 else .done invalid 0 else .done invalid 0
+      else .done s 0 else .done s 0 else .done invalid 0
+    else if code = 34 then fixedCell data bytes 18 4 else
+    if code = 35 then parentCell data bytes else
+    if code = 38 then fixedCell data bytes 1 16 else
+    if code = 53 then fixedCell data bytes 16 32 else
+    if code = 90 then fixedCell data bytes 20000000 64 else
+    if code = 91 then fixedCell data bytes 1 128 else .done 0 0
+  else if role = 4 then if code = 48 then fixedCell data bytes 18 32
+    else leafPropertyWire data bytes code role
+  else leafPropertyWire data bytes code role
+
+private def beginNodeCommon (cursor depth limit : UInt64) : Action :=
+  if depth < 16 then
+  .bind (BootInfo.readBoundedName (cursor + 4) limit) fun s endName => if s = 0 then
+  .bind (findCodeCommon (cursor + 4) (endName - cursor - 4) 1 22) fun s code => if s = 0 then
+  .bind (if depth = 0 then .done 0 0 else get (256 + (depth - 1) * 8)) fun s parent => if s = 0 then
+  if leafCommon parent = 0 then
+  let role := nodeRoleCommon parent code
+  .bind (get 48) fun s seen => if s = 0 then
+  if role = 0 then
+    .bind (put (256 + depth * 8) 0) fun s _ => if s = 0 then
+    .bind (put 32 (depth + 1)) fun s _ => if s = 0 then put 0 ((endName + 3) &&& 0xfffffffffffffffc) else .done s 0 else .done s 0
+  else if seen &&& ((1 : UInt64) <<< role) = 0 then
+    .bind (put 48 (seen ||| ((1 : UInt64) <<< role))) fun s _ => if s = 0 then
+    .bind (put (256 + depth * 8) role) fun s _ => if s = 0 then
+    .bind (if leafCommon role = 1 then put 64 0 else .done 0 0) fun s _ => if s = 0 then
+    .bind (put 32 (depth + 1)) fun s _ => if s = 0 then put 0 ((endName + 3) &&& 0xfffffffffffffffc) else .done s 0
+    else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done s 0
+  else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0
+private def endNodeCommon (cursor depth : UInt64) : Action :=
+  if 0 < depth then
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if s = 0 then
+  .bind (if leafCommon role = 1 then
+    .bind (get 64) fun s flags => if s = 0 then
+    if flags = (if role = 15 then 255 else if role = 1 then 1023 else if role = 13 then 8191 else requiredFlags role) then .done 0 0 else .done invalid 0 else .done s 0
+  else .done 0 0) fun s _ => if s = 0 then
+  .bind (put 32 (depth - 1)) fun s _ => if s = 0 then put 0 (cursor + 4) else .done s 0
+  else .done s 0 else .done s 0 else .done invalid 0
+private def propertyCommon (cursor depth limit : UInt64) : Action :=
+  if depth = 0 then .done invalid 0 else if limit < cursor + 12 then .done invalid 0 else
+  .bind (BootInfo.readBE32 (cursor + 4)) fun s bytes => if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (cursor + 8)) fun s nameOffset => if failed s = true then .done s 0 else
+  .bind (get 16) fun s strings => if failed s = true then .done s 0 else
+  .bind (get 24) fun s stringsEnd => if failed s = true then .done s 0 else
+  if stringsEnd - strings ≤ nameOffset then .done invalid 0 else
+  let data := cursor + 12
+  if limit - data < bytes then .done invalid 0 else
+  .bind (BootInfo.readBoundedName (strings + nameOffset) stringsEnd) fun s nameEnd => if failed s = true then .done s 0 else
+  .bind (findCodeCommon (strings + nameOffset) (nameEnd - strings - nameOffset) 32 24) fun s firstCode => if failed s = true then .done s 0 else
+  .bind (if firstCode = 0 then findCodeCommon (strings + nameOffset) (nameEnd - strings - nameOffset) 56 13 else .done 0 firstCode) fun s secondCode => if failed s = true then .done s 0 else
+  .bind (if secondCode = 0 then findCodeCommon (strings + nameOffset) (nameEnd - strings - nameOffset) 90 2 else .done 0 secondCode) fun s code => if failed s = true then .done s 0 else
+  .bind (get (256 + (depth - 1) * 8)) fun s role => if failed s = true then .done s 0 else
+  .bind (if leafCommon role = 1 then leafPropertyCommon data bytes code role else
+    if role = 10 then containerProperty data bytes code role else
+    if role = 11 then containerProperty data bytes code role else
+    if role = 12 then containerProperty data bytes code role else
+    if code = 33 then
+      if 2 ≤ depth then if depth ≤ 3 then
+        .bind (get (256 + (depth - 2) * 8)) fun s parent => if s = 0 then
+        if parent = 12 then otherRegCommon data bytes else
+        if parent = 10 then otherRegCommon data bytes else .done 0 0 else .done s 0
+      else
+        .bind (get 264) fun s ancestor => if s = 0 then
+        if ancestor = 12 then .done invalid 0 else .done 0 0 else .done s 0
+      else .done 0 0
+    else if code = 32 then unknownCompatible data bytes else .done 0 0) fun s _ => if failed s = true then .done s 0 else
+  let next := (data + bytes + 3) &&& 0xfffffffffffffffc
+  if next ≤ limit then put 0 next else .done invalid 0
+private def tokenStepCommon (_ _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
+  .bind (get 40) fun s ended => if s = 0 then if ended = 1 then .done 0 acc else
+  .bind (get 0) fun s cursor => if s = 0 then
+  .bind (get 8) fun s limit => if s = 0 then
+  .bind (get 32) fun s depth => if s = 0 then
+  if cursor + 4 ≤ limit then
+  .bind (BootInfo.readBE32 cursor) fun s token => if s = 0 then
+  if token = 1 then beginNodeCommon cursor depth limit else if token = 2 then endNodeCommon cursor depth else
+  if token = 3 then propertyCommon cursor depth limit else if token = 4 then put 0 (cursor + 4) else
+  if token = 9 then if depth = 0 then if cursor + 4 = limit then put 40 1 else .done invalid 0 else .done invalid 0
+  else .done invalid 0
+  else .done s 0 else .done invalid 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0
+private def actualWiFiCommon : Action :=
+  .bind (IO.read64 0x10013000) fun s identity => if s = 0 then
+  .bind (IO.read64 0x10013008) fun s version => if s = 0 then
+  .bind (IO.read64 0x10013088) fun s capacity => if s = 0 then
+  if identity = 0x31415441444d4657 then if version = 1 then if capacity = 16 then .done 0 1
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done s 0 else .done s 0 else .done s 0
+
+private def validateBindingCommonCore (binding pointer expectedBytes width height pressure : UInt64) : Action :=
+  .bind BootInfo.validate fun s actual =>
+  if failed s = true then .done s 0 else if actual = pointer then
+  .bind (BootInfo.readBE32 (pointer + 4)) fun s bytes =>
+  if failed s = true then .done s 0 else if bytes = expectedBytes then
+  .bind (BootInfo.readBE32 (pointer + 8)) fun s structureOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 12)) fun s stringsOffset =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 32)) fun s stringsBytes =>
+  if failed s = true then .done s 0 else
+  .bind (BootInfo.readBE32 (pointer + 36)) fun s structureBytes =>
+  if failed s = true then .done s 0 else
+  .boundedFoldU64 64 clearStep 64 0 0 0 0 0 fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (put 0 (pointer + structureOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 8 (pointer + structureOffset + structureBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 16 (pointer + stringsOffset)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 24 (pointer + stringsOffset + stringsBytes)) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 104 width) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 112 height) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 120 pressure) fun s _ => if failed s = true then .done s 0 else
+  .bind (put 176 binding) fun s _ => if failed s = true then .done s 0 else
+  .boundedFoldU64 4096 tokenStepCommon 4096 0 0 0 0 0 fun s _ => if failed s = true then .done s 0 else
+  .bind (get 40) fun s ended => if failed s = true then .done s 0 else
+  .bind (get 48) fun s seen => if failed s = true then .done s 0 else
+  .bind (get 72) fun s parent => if failed s = true then .done s 0 else
+  .bind (get 80) fun s plic => if failed s = true then .done s 0 else
+  .bind (get 184) fun s socFlags => if failed s = true then .done s 0 else
+  .bind (get 192) fun s timebase => if failed s = true then .done s 0 else
+  .bind (get 168) fun s rootIdentity => if failed s = true then .done s 0 else
+  if (if 0 < binding then if rootIdentity = 1 then true else false else true) = true then
+  if ended = 1 then if seen = 0xbf7e then
+  if parent = plic then if 0 < plic then if socFlags = 15 then if timebase = 1 then
+  .bind actualDevicesExecuted fun s _ => if s = 0 then
+  .bind (if 4 ≤ binding then actualBLE else .done 0 1) fun s _ => if s = 0 then
+  .bind (if 5 ≤ binding then actualUSB else .done 0 1) fun s _ => if s = 0 then
+  .bind actualWiFiCommon fun s _ => .done s pointer
+  else .done s 0 else .done s 0 else .done s 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0 else .done invalid 0
+  else .done invalid 0 else .done invalid 0
+/-- ABI13/features47: entire Wire/Paper3 tree plus CommonOFDM15/IRQ18,
+with no boot-NV node or authority. No filtering or synthesized descriptor. -/
+def validateSiliconWiFiCommon (pointer expectedBytes width height pressure : UInt64) : Action :=
+  validateBindingCommonCore 12 pointer expectedBytes width height pressure
+
 end Lemma.Platform.LemmaSim.DescriptorDTB

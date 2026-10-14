@@ -10,6 +10,7 @@ import hashlib
 from pathlib import Path
 from core0_common import Core0Error, load_json
 
+COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe'}
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
 DTB_LITERALS = {
     1: '', 2: 'cpus', 3: 'soc', 4: 'lemma-paper@10010000', 5: 'lemma-pen@10011000',
@@ -305,25 +306,32 @@ def _lookup_schema(ir: str, unit: dict):
 
 def lookup_schema(ir: str, unit: dict):
     specs,words,schema=_lookup_schema(ir,unit)
-    if unit.get('configuration') in PAPER_NEXT_CONFIGURATIONS:
+    if unit.get('configuration') in PAPER_NEXT_CONFIGURATIONS | COMMON_CONFIGURATIONS:
         specs=dict(specs)
         # literal63 includes its NUL in the final little-endian word. Literal79
         # consists of two immediate words; it introduces no readonly table.
         specs[PREFIX+'DescriptorDTB.literalWordNext']=('kernel',['u64','u64'],[],
             [[0x74732c616d6d656c,0x666f2d676e696761,0x74657366]])
-    if unit.get('configuration')=='lemmasim-silicon-product-executed-bulk-notebook' or unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS:
+    if unit.get('configuration')=='lemmasim-silicon-product-executed-bulk-notebook' or unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS | COMMON_CONFIGURATIONS:
         specs=dict(specs)
         # Independent UTF-8 bytes for the exact Paper3 executed-refresh property.
         specs[PREFIX+'DescriptorDTB.literalWordExecuted']=('kernel',['u64','u64'],[],
             [[0x78652c616d6d656c,0x722d646574756365,0x687365726665]])
-    if unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS:
+    if unit.get('configuration') in PAPER_WIRE_CONFIGURATIONS | COMMON_CONFIGURATIONS:
         specs=dict(specs)
         from paper_wire import LITERALS
         specs[PREFIX+'DescriptorDTB.literalWordWire']=('kernel',['u64','u64'],[],[LITERALS[code] for code in (65,66,68,81)])
+    if unit.get("configuration") in COMMON_CONFIGURATIONS:
+        from wifi_common import literal_values
+        specs=dict(specs)
+        specs[PREFIX+"DescriptorDTB.literalWordCommon"]=("kernel",["u64","u64"],[],[literal_values("Common",c) for c in (22,82,91)])
     return specs,words,schema
 
 def validate_devices(ir: str, unit: dict, optimized: bool) -> tuple[set[int],list[dict]]:
     from audit_kernel import _ir_definition_body, _line_functions
+    if unit.get("configuration") in COMMON_CONFIGURATIONS:
+        from wifi_common import validate_devices as common_devices
+        return common_devices(ir,unit,optimized)
     if unit.get('configuration') not in CONFIGURATIONS: return set(),[]
     if unit['role']!='kernel':
         if any(row['stable_id'].startswith('lemmasim.device-') for row in unit['used_execution_ops']):
@@ -462,7 +470,8 @@ def course_literal_link_options(directory: Path) -> tuple[str, ...]:
     return ('--discard-none',) if rows[0]['literal_schema'] in ('document-v5-length-v1','document-v6-length-v1') else ()
 
 
-CONFIGURATIONS |= PAPER_WIRE_CONFIGURATIONS
+CONFIGURATIONS |= PAPER_WIRE_CONFIGURATIONS | COMMON_CONFIGURATIONS
+USB_CONFIGURATIONS |= COMMON_CONFIGURATIONS
 USB_CONFIGURATIONS |= PAPER_WIRE_CONFIGURATIONS
 PAPER_NEXT_CONFIGURATIONS |= PAPER_WIRE_CONFIGURATIONS
 DOCUMENT4_NOTEBOOK_CONFIGURATIONS |= PAPER_WIRE_CONFIGURATIONS
@@ -532,7 +541,7 @@ def _validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]
         if len(geps)!=1: raise Core0Error('Lemmasim literal lacks one exact typed pointer derivation')
         pointer,operand=geps[0]
         argument,shift={
-            PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0), PREFIX+'DescriptorDTB.literalWordNext':('%arg1',0), PREFIX+'DescriptorDTB.literalWordExecuted':('%arg1',0), PREFIX+'DescriptorDTB.literalWordWire':('%arg1',0),
+            PREFIX+'DescriptorDTB.literalLength':('%arg0',-1), PREFIX+'DescriptorDTB.literalWord':('%arg1',0), PREFIX+'DescriptorDTB.literalWordNext':('%arg1',0), PREFIX+'DescriptorDTB.literalWordExecuted':('%arg1',0), PREFIX+'DescriptorDTB.literalWordWire':('%arg1',0), PREFIX+'DescriptorDTB.literalWordCommon':('%arg1',0),
             PREFIX+'DescriptorDTB.nodeRole':('%arg1',-4), PREFIX+'DescriptorDTB.compatibleCode':('%arg0',-1),
             PREFIX+'DescriptorDTB.requiredFlags':('%arg0',-1), PREFIX+'DescriptorDTB.expectedIRQ':('%arg0',-1),
             PREFIX+'DescriptorDTB.expectedBase':('%arg0',-1), PREFIX+'DescriptorDTB.expectedSpan':('%arg0',-4),
@@ -575,8 +584,8 @@ def _validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]
             parent=re.search(r'switch i64 %arg0, label %(\S+) \[\s*i64 0, label %(\S+)\s*i64 10, label %(\S+)\s*i64 12, label %(\S+)\s*\]',body)
             if parent is None or not _structured_reachable(successors,parent[4],load_block) or any(_structured_reachable(successors,parent[i],load_block) for i in (1,2,3)):
                 raise Core0Error('Power node-role lookup escaped its exact soc parent12 gate')
-        if source.endswith(('literalWord','literalWordNext','literalWordExecuted','literalWordWire')):
-            guard=guards[0];code=(65,66,68,81)[index] if source.endswith('literalWordWire') else 64 if source.endswith('literalWordExecuted') else 63 if source.endswith('literalWordNext') else word_codes[index]
+        if source.endswith(('literalWord','literalWordNext','literalWordExecuted','literalWordWire','literalWordCommon')):
+            guard=guards[0];code=(22,82,91)[index] if source.endswith('literalWordCommon') else (65,66,68,81)[index] if source.endswith('literalWordWire') else 64 if source.endswith('literalWordExecuted') else 63 if source.endswith('literalWordNext') else word_codes[index]
             if len(re.findall(r'i64 '+str(code)+r', label %'+re.escape(guard)+r'(?![A-Za-z0-9_.$-])',body))!=1:
                 raise Core0Error('FDT word table is not bound to its exact literal code')
         if source.endswith('statusCharacter'):
@@ -610,6 +619,22 @@ def validate_lookup(ir: str, unit: dict) -> tuple[set[int],list[dict],set[str]]:
     # LLVM's module-wide numeric suffix has no device meaning. Only the exact
     # four independently content/owner/use-checked Wire pools may be renamed
     # in this observer copy; the actual backend/object names remain recorded.
+    if unit.get('configuration') in COMMON_CONFIGURATIONS and unit.get('role')=='kernel':
+        from wifi_common import literal_aliases
+        aliases=literal_aliases(ir,unit);rows={re.sub(r'^_private\..*?\.[0-9]+\.','',r['source']):r for r in unit['functions']};mapping={}
+        for raw,stable in aliases.items():
+            family,_,code=stable.split('.');codes=(65,66,68,81) if family=='wire' else (22,82,91)
+            source=PREFIX+'DescriptorDTB.literalWord'+('Wire' if family=='wire' else 'Common');ordinal=codes.index(int(code));base='switch.table.'+rows[source]['symbol'];mapping[raw]=base+('.'+str(ordinal) if ordinal else '')
+        rebound=ir
+        for raw,name in sorted(mapping.items(),key=lambda r:-len(r[0])):rebound=re.sub(r'@'+re.escape(raw)+r'(?![A-Za-z0-9_.$-])','@'+name,rebound)
+        sites,known,removed=_validate_lookup(rebound,unit);reverse={v:k for k,v in mapping.items()}
+        for row in known:row['global']=reverse.get(row['global'],row['global'])
+        actual=set()
+        for line in removed:
+            for name,raw in sorted(reverse.items(),key=lambda r:-len(r[0])):line=re.sub(r'@'+re.escape(name)+r'(?![A-Za-z0-9_.$-])','@'+raw,line)
+            actual.add(line)
+        return sites,known,actual
+
     if unit.get('configuration') not in PAPER_WIRE_CONFIGURATIONS:
         return _validate_lookup(ir,unit)
     from paper_wire import literal_aliases

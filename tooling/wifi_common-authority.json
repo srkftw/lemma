@@ -1,0 +1,3208 @@
+{
+  "body_scope": "complete295function closed source/signature/effect/normalized LLVM corpus; not a compiler proof",
+  "configuration": "lemmasim-silicon-wifi-common-probe",
+  "contract_version": "core0-kernel-v0.8",
+  "corrected_component": {
+    "path": "build/kernel/task006-wifi-common-component-a3",
+    "scope": "only inherited leafPropertyWire128-to256 repair; other294 complete bodies unchanged"
+  },
+  "functions": {
+    "Lemma.Core0.Device.UART.lsrErrorMask": {
+      "args": [],
+      "effects": [],
+      "post": "823d537c10c704edd2db7608b5c0a9d0d32795a3c43d4bfa7cd3fdb6659483ee",
+      "pre": "823d537c10c704edd2db7608b5c0a9d0d32795a3c43d4bfa7cd3fdb6659483ee"
+    },
+    "Lemma.Core0.Device.UART.lsrThrEmpty": {
+      "args": [],
+      "effects": [],
+      "post": "cbeeda3cef09ac51b96747ebd7635e96bdf045efbb210945db733a767d2cf943",
+      "pre": "cbeeda3cef09ac51b96747ebd7635e96bdf045efbb210945db733a767d2cf943"
+    },
+    "Lemma.Core0.Memory.Status.iterationStop": {
+      "args": [],
+      "effects": [],
+      "post": "c46e1643af1d10fcd45d8e769f5599c308d9224bb3a984c046e812bc22d557f1",
+      "pre": "c46e1643af1d10fcd45d8e769f5599c308d9224bb3a984c046e812bc22d557f1"
+    },
+    "Lemma.Core0.Memory.Status.lineError": {
+      "args": [],
+      "effects": [],
+      "post": "0ab34be0c448e00adfbd4ae049bb6f6958f56ef9294571e72a5516af99050d9b",
+      "pre": "0ab34be0c448e00adfbd4ae049bb6f6958f56ef9294571e72a5516af99050d9b"
+    },
+    "Lemma.Core0.Memory.Status.ok": {
+      "args": [],
+      "effects": [],
+      "post": "75ff39cc1c6b1041f28e0cb458b2b6e80016d18d3bc608b05e833467cf0c7b35",
+      "pre": "75ff39cc1c6b1041f28e0cb458b2b6e80016d18d3bc608b05e833467cf0c7b35"
+    },
+    "Lemma.Core0.Memory.Status.txTimeout": {
+      "args": [],
+      "effects": [],
+      "post": "8eb0faf9dd6a35e0f01a5e3f04c2b7393748b109ce43af43251c99e4571a0200",
+      "pre": "8eb0faf9dd6a35e0f01a5e3f04c2b7393748b109ce43af43251c99e4571a0200"
+    },
+    "Lemma.Kernel.BootInfo.be32": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "ed644869c1d44e2d19823489370229f9789fd509750664c4472f7af09b8ba812",
+      "pre": "601641673d808b5e673d367fd7f13304eff73aeb9b199449311731cd1c677863"
+    },
+    "Lemma.Kernel.BootInfo.be64": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "5ecee4dcccf3fcf26a2c57a29096d8ea432a1242df59db2e6a5b7093cef0fb3b",
+      "pre": "723d7654fa7cc1d67679b21df1904cb40450645c48521ea7ea7ba3c2d4189d15"
+    },
+    "Lemma.Kernel.BootInfo.beginNode": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "cdcadfcb138edd78e075cfd8711532e5528e25f17fabfa1d1432dc6e397153b1",
+      "pre": "73cb684f5619856d4e1c348b7099cfeba82396f99142cc76ec20242022bbf37f"
+    },
+    "Lemma.Kernel.BootInfo.bootRecord": {
+      "args": [],
+      "effects": [],
+      "post": "1dea0991a5eb8a30ed41093853062806217a6a6bcaec16eb41bf5f0fa054c1a9",
+      "pre": "1dea0991a5eb8a30ed41093853062806217a6a6bcaec16eb41bf5f0fa054c1a9"
+    },
+    "Lemma.Kernel.BootInfo.cellsProperty": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "743e182ac9eebbb9425dfebc40aa42f6fcfdbb11a849f0a6b7a0564663ed4dd0",
+      "pre": "3c9bcc899ac4b668a6ce4ba84781f54dbb7b5e9156dd4308b7ce24002537c5d1"
+    },
+    "Lemma.Kernel.BootInfo.clearStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "6acb1695877925e48bbf1c3dab1799a2f4eb48a71334eeee02a52491d7e5b530",
+      "pre": "fd90a3f6d65cd0a15f88e076e2b9b70a16e6b6ec5fe3b8ee6ad116225772c30e"
+    },
+    "Lemma.Kernel.BootInfo.denyAdditionalMemoryType": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "e7d636573ea38bdf311b37c87f64ad51a824caf7154c44e5260f20066584cea3",
+      "pre": "2df719cdc13c27b8ef54c4afb0cb7e415e5bedc48a89175c171f507dacaaa079"
+    },
+    "Lemma.Kernel.BootInfo.dtbLower": {
+      "args": [],
+      "effects": [],
+      "post": "37fa9324850f1a089abdfee26edc61e676ac8d915f62c6d325bcf011d590d6d1",
+      "pre": "37fa9324850f1a089abdfee26edc61e676ac8d915f62c6d325bcf011d590d6d1"
+    },
+    "Lemma.Kernel.BootInfo.dtbUpper": {
+      "args": [],
+      "effects": [],
+      "post": "26846bef9939d4b1a4be14dfc5cf76946722d6b63efe7f1dc0c3612b2ca9aaa4",
+      "pre": "26846bef9939d4b1a4be14dfc5cf76946722d6b63efe7f1dc0c3612b2ca9aaa4"
+    },
+    "Lemma.Kernel.BootInfo.endNode": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a8d2920813c7e32beb23cce97a1925a49e8594ec8f9fc6cf881e3c77bd7767c4",
+      "pre": "7615cfeddaad745ead29d0a6aed879fb36f694b258229930c4595d4b869a349f"
+    },
+    "Lemma.Kernel.BootInfo.finishTree": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "949a0127fefd5035cdf5922e93c550728a5b3528637d7ed9276dbe17810fc51d",
+      "pre": "e91669ddf66fc4a2e6b49ad52ac725ae8d47245eb6ca53949c7318dd1331cd11"
+    },
+    "Lemma.Kernel.BootInfo.get": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "1f9ab159ea291ee126d7b2cbe820419cd5f847e8db15868ff4bf0f20203fe288",
+      "pre": "88ba55734529993554ecb3a14fac17aec1f79b78933e2f3e202f3911a55cd3bd"
+    },
+    "Lemma.Kernel.BootInfo.header": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "1b6da5bde47965819ef5d4c8d319ce3700952ebb60e8f1de0fa1b056a098f938",
+      "pre": "f4e63ebdd04e006d1fcd37f8075cd645e3872121d1faf5ba5bf9462fc81164dc"
+    },
+    "Lemma.Kernel.BootInfo.invalidHeader": {
+      "args": [],
+      "effects": [],
+      "post": "7ad0907ca5fb02ee622b4c93cf430e964e931ff22cdc767d2eeb1e5a24f7c2a8",
+      "pre": "7ad0907ca5fb02ee622b4c93cf430e964e931ff22cdc767d2eeb1e5a24f7c2a8"
+    },
+    "Lemma.Kernel.BootInfo.invalidMemory": {
+      "args": [],
+      "effects": [],
+      "post": "81082b3715c5f09a51d81f2655988e9b64ecc7cae78d24f81aca0aa864f74704",
+      "pre": "81082b3715c5f09a51d81f2655988e9b64ecc7cae78d24f81aca0aa864f74704"
+    },
+    "Lemma.Kernel.BootInfo.invalidStructure": {
+      "args": [],
+      "effects": [],
+      "post": "f2979628007569fd48d724e40c32c5c0d47b369d49b375a8b32adc5bd4d5c030",
+      "pre": "f2979628007569fd48d724e40c32c5c0d47b369d49b375a8b32adc5bd4d5c030"
+    },
+    "Lemma.Kernel.BootInfo.memoryName": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "2af88682c5f9cd0cd5573ae42e3714d529764459b85fea60d0580cf827be7f8d",
+      "pre": "edea303e750d7ed933bbb6f7398bfbd95ae1884633478142397d80ea1cee1ab6"
+    },
+    "Lemma.Kernel.BootInfo.memoryReg": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "c64db87e742408f028916cae0ef51aa0f08ddb42c8bdd1d3272a5f3f54daf765",
+      "pre": "6b008ce1e2f31e838a6aa05845e52f0a34d4327097002412613a6a5a57ae0437"
+    },
+    "Lemma.Kernel.BootInfo.memoryType": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "392e9e110ceecc933bd57e27ab86326a32acdbc85e3375dd1817b4d2108694b1",
+      "pre": "6669affa789344b640776b6a92400a85813063fb4cc2caef5edd60391c857f4f"
+    },
+    "Lemma.Kernel.BootInfo.nameStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "4ba4fa7c34339a020d113e4507ad501f5a3c29266433c51566546ad2d0b52027",
+      "pre": "ecc4833e7356742acb7553509a4939900503027b9f6cac56f6cd43244b1d92d0"
+    },
+    "Lemma.Kernel.BootInfo.nodeOrder": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "dbd632b27512b86fcdc2f41b94944ae96e2bd7d4b898091e4d4e3017cc90e6d6",
+      "pre": "3da5bc2f2f6352aebb5b5bc30272a11904fca62431d95dd64d06f4bd639aedf2"
+    },
+    "Lemma.Kernel.BootInfo.orderedProperty": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "e2bcbd16f576bfeb6299b8831637bff580abcae87f8fd6894d1685a69779de54",
+      "pre": "2194f2a6caa1266ef1e2340e1503b3bbef3471a0a617352ebaaa7e148dfda4c7"
+    },
+    "Lemma.Kernel.BootInfo.padding": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "e64ff1d1dd264c4045123f7295c61d1d45adb237b63f6d7b1eb97c93d715a45f",
+      "pre": "aebf5e93d05051f18bb4e0c6cbdb553d56d2bd9b41cbe4dbd27ef42affe0884c"
+    },
+    "Lemma.Kernel.BootInfo.paddingStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "07b2f055da7944ae46d660a66de85e4a093785624c1ac2f2fd0b71b06e767349",
+      "pre": "fd2e90b604bf43e440f56891b3d9b10f39ac437c445cf6259122a68227a60357"
+    },
+    "Lemma.Kernel.BootInfo.parseTree": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "1fef0c536507c9f78814062a1eac1c2951cc9fa37754347f094dacd8d809391e",
+      "pre": "448a357d8e01634f58444e6ea6dbc90c9816c645c92bcc94d98fd3cd16275441"
+    },
+    "Lemma.Kernel.BootInfo.property": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "4d3497ecad4036e38986e35cb851ddf0a88905d099901253660366bbe0c841bc",
+      "pre": "ea69a67f80776d730ac36059b8ec757170a98a0d7d114064428c874ee577d5c5"
+    },
+    "Lemma.Kernel.BootInfo.propertyKind": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "a0224d9cf4a2c4e4a4dd274e92f51c2b566a190d34e29773e706c68ad57104b9",
+      "pre": "98ee5defb772885148ed2ebe5257773982b531bbc60a289a7d5d95e297b26786"
+    },
+    "Lemma.Kernel.BootInfo.put": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "e37054d4e25a2a395d122963e4441b1ce4b70fe050420de2fd47f604b120a1b3",
+      "pre": "6b2393dbda76c1e54669fbb22f1b7f982aa718f7d51b250fb5e84a2b09a645e1"
+    },
+    "Lemma.Kernel.BootInfo.ramBase": {
+      "args": [],
+      "effects": [],
+      "post": "af404a606e70dc570ac33d392725952c7f6b835d1412f61c2c0c62fe754c578d",
+      "pre": "af404a606e70dc570ac33d392725952c7f6b835d1412f61c2c0c62fe754c578d"
+    },
+    "Lemma.Kernel.BootInfo.ramBytes": {
+      "args": [],
+      "effects": [],
+      "post": "ae3af5a054ef81b22275653e06024dc166c55991097df4a13ab9800a59fd61ae",
+      "pre": "ae3af5a054ef81b22275653e06024dc166c55991097df4a13ab9800a59fd61ae"
+    },
+    "Lemma.Kernel.BootInfo.readBE32": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "cb72fd41acfe8d173b40c4cc99f64eb81391553f520d7550151b6388fb958acf",
+      "pre": "7287bf0441380619bb7b380de7c807ac962a0973dacecde11c7a77f8836123a6"
+    },
+    "Lemma.Kernel.BootInfo.readBE64": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "dd561b79299a9e3fb7db712e3311e93716999d5ab39327aa59c08b2bf39e390c",
+      "pre": "36dfd37188ba3b3ecb2aba636a1bfacb23e05fff80f0fcece006c04cdfcff4cf"
+    },
+    "Lemma.Kernel.BootInfo.readBoundedName": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "11d3245e1efa35e7861528995c72d28836a9b935e205ca210497015205298181",
+      "pre": "6d604308bcd1d7a654e8b929e6b313a854a7805f77c697228d0c6dc9bc3a09a2"
+    },
+    "Lemma.Kernel.BootInfo.readName": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "7c45f5558395f587962e8674a140b2af01f194daf5f6e7c7fc34c10c8cf6d764",
+      "pre": "0fee32380902abf002eaa72b870c4d7e2459e249fe0d68c47dcd41cb2d7074cb"
+    },
+    "Lemma.Kernel.BootInfo.reservedMemoryName": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "f2ab5a154fa41cf1093b83369e8bac34c3258b5648852661fabd1c2a2ec2d3b5",
+      "pre": "9714df1eaf809e52a1b55d1f76826dff757a569714965e9ef86d208a34d00322"
+    },
+    "Lemma.Kernel.BootInfo.resourceLimit": {
+      "args": [],
+      "effects": [],
+      "post": "b51865b6fee33a4d9506b419c5d84bdfd5e209e53c995b8e09fc5435b89f5456",
+      "pre": "b51865b6fee33a4d9506b419c5d84bdfd5e209e53c995b8e09fc5435b89f5456"
+    },
+    "Lemma.Kernel.BootInfo.scratch": {
+      "args": [],
+      "effects": [],
+      "post": "8817ad29efe4a2f5860b0a5a8ba30d1470771e2d4934f60c27f923d5d6b6ddb5",
+      "pre": "8817ad29efe4a2f5860b0a5a8ba30d1470771e2d4934f60c27f923d5d6b6ddb5"
+    },
+    "Lemma.Kernel.BootInfo.tokenStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a780d2d4b68c303bb5a7402111b0fff150fa6992332e6e7a30b472b36c6e4c98",
+      "pre": "1c2fefdd2ad6bbd923d8addf791a7b626f7827fa60ea62055444291ff649dc17"
+    },
+    "Lemma.Kernel.BootInfo.unsupported": {
+      "args": [],
+      "effects": [],
+      "post": "0e02a1a766d20537d016069a3548f4e22c65fc7edc2a70a7de9ecddb41814f27",
+      "pre": "0e02a1a766d20537d016069a3548f4e22c65fc7edc2a70a7de9ecddb41814f27"
+    },
+    "Lemma.Kernel.BootInfo.validate": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "4258b51284ad58f42f52484956f1a45a49bbbd4e6afe2ac1c2d8702acbb7279d",
+      "pre": "b5e996f3e8028d40929a8490012a5e334d3a4dc151af49d7a6ef8bedfc2a39fb"
+    },
+    "Lemma.Kernel.Console.failed": {
+      "args": [
+        "u8"
+      ],
+      "effects": [],
+      "post": "e28625dd8e778884a50467a8a413b3b0b3b06f160a6efbe788235d7b5b325b8e",
+      "pre": "020d096e7004ebd3fec13c5b6288a9795d58ea44b24c70d88cdd69273f72c288"
+    },
+    "Lemma.Kernel.Console.hexDigit": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "6162d64a91c192703f677275d96667dd29d15670cd68d70947404d589a00e398",
+      "pre": "c75384772febedc2c2433a8efae3d0bdd9d892f2b6ce136295ee1847206a83f1"
+    },
+    "Lemma.Kernel.Console.hexStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "2fe35ffe94aa0dc776dbb452d245b7750678158823eb9969dc6be0cee011c138",
+      "pre": "e9cf2b9a9a98646a9e6f5255fb3724a7a84da666bfef1dfa52c9c0aa1490025a"
+    },
+    "Lemma.Kernel.Console.putWord": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "7140df6b1f8c4333a3b27ffd5355a707ee250de35d1728f8afb55d43b0475554",
+      "pre": "17f1f1617eef4e6e92a92ad6a03d3edb4c20dec084cd9e57011be286ae89606e"
+    },
+    "Lemma.Kernel.Console.record": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "380f23a42715245a226e45c5c5cc00109c2b1b242c6bbd2b04a622c8333a8c1e",
+      "pre": "9c6c6d1ddc130a0f6ef3f27b71ae608dd9f3223511b6a6b6752d9c3e0194b659"
+    },
+    "Lemma.Kernel.Console.spaceWord": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "eda543e4a9fb56219d54a64ba63148769759f2e9f3fd669333b0e871e34ddabe",
+      "pre": "0d61bee79bcdb3cd58df3a12fd0b9c01abd93c92bfefe54d244f1ef921785f21"
+    },
+    "Lemma.Kernel.MachineServices.call": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "io-order",
+        "machine-state",
+        "firmware-call"
+      ],
+      "post": "9fb0281f97525a68f69557c5df0de16e25900bd10ae28afb105d07fb39090bf3",
+      "pre": "ba9d6f3951f257aed17f2b4215354e5e0134ffb2ca55bd6c927df2598458473e"
+    },
+    "Lemma.Kernel.MachineServices.expectedPmp": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "9e26dc8c8678f9b3c474c4b64944b3eafa0556be14bb3d03a06b73965a66732c",
+      "pre": "1f82e85e17c10912ea2e16dee236e4e598a82d1eed5e55d265a552e08b1630fa"
+    },
+    "Lemma.Kernel.MachineServices.rearmRelative": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "io-order",
+        "machine-state",
+        "firmware-call"
+      ],
+      "post": "df3155b4008459bdcdb693b108387847a23a06e2bab3cdc8e90c375ed49c71ed",
+      "pre": "7f3dbba0b4ef6ce0ebe204766e129c552ec145b77695f9034bde140baa08afc6"
+    },
+    "Lemma.Kernel.MachineServices.wait": {
+      "args": [],
+      "effects": [
+        "interrupt-state",
+        "wait-state"
+      ],
+      "post": "2168c023a1aa50a920f8e5237263546b271e33758ce2e5d0ad1c49445dc05944",
+      "pre": "6e3b5b06a6d057bee3993e879945e1f07860bbdc7a05567dbe4f0f6243c6cb45"
+    },
+    "Lemma.Kernel.Memory.Access.read64": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "6a0f5422de6a03e7536369e4c4374cb381e7a7f3e988895ae9dd75a28f91251c",
+      "pre": "a3b1e8f8feb5c3438947ec81390b7a10838d7343c7919d331d93c227502aefe0"
+    },
+    "Lemma.Kernel.Memory.Access.read8": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "ff1c7c59b16e7beb0f8dff063bf7b37a713e3196d14722ba9eb48bb1de9b57f1",
+      "pre": "adb5530e1882023a57b7b4fc241e6f235aafde3949a62a52044888a33505da4b"
+    },
+    "Lemma.Kernel.Memory.Access.write64": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "5514177af0d9f0958b0df50aa6d849eadd525739e01313ade6cd474b6a2fe02e",
+      "pre": "1acf4a8c51e720d5fb4db09e84d0d70bb10b0d3975b08766395337c83ded748a"
+    },
+    "Lemma.Kernel.Memory.Access.write8": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "2bcefaf91949cc5ef0420ce3950ef9a4f07019b225d1a0bbb4c13b9a5612a331",
+      "pre": "78ee810b64fcd68ce166264aa235ec5722270e8d1907e9cffa06f586f421e78e"
+    },
+    "Lemma.Kernel.Memory.Frames.accounting": {
+      "args": [],
+      "effects": [],
+      "post": "760435a027508daa80ae2c0a75b0b49eb4f1244ed5f656d98b2152ee4a02193a",
+      "pre": "f2ffd2f7a7d20d5653ade272a55ab60bdd16d18fad4d2ebb1997041de4c9c655"
+    },
+    "Lemma.Kernel.Memory.Frames.address": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "3b78fde1404e67e7d707111b1e0bb0e299217a347a666ebec944fd4e1ba990bb",
+      "pre": "1d63fa98fc4209dc94b3505c8084e3d303e8a3cf1a5aa2b973d56f4a08b62741"
+    },
+    "Lemma.Kernel.Memory.Frames.allocate": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "075a6d3f09b5878532b8ba7864c2fefd8127f91ee360c9709b6c732303f4a886",
+      "pre": "f28f090afd66babd3b4d8fc4903ae208d099f7e2b8fd0382deb6eba92ebe9a84"
+    },
+    "Lemma.Kernel.Memory.Frames.badOwner": {
+      "args": [],
+      "effects": [],
+      "post": "cbeeda3cef09ac51b96747ebd7635e96bdf045efbb210945db733a767d2cf943",
+      "pre": "cbeeda3cef09ac51b96747ebd7635e96bdf045efbb210945db733a767d2cf943"
+    },
+    "Lemma.Kernel.Memory.Frames.bytes": {
+      "args": [],
+      "effects": [],
+      "post": "7331bb9fb1dd139d9e8225242332bbe07421d2f2ed320a6c4234bb75167149ba",
+      "pre": "b186f52405b31051fc9de0313bd2349f696b357deec63801e6e9610f5117c3cb"
+    },
+    "Lemma.Kernel.Memory.Frames.checkQuota": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "d20836b268a132ba3a8cd07422c63a3fdcdfb46af2a74b0dac2f102b8c798056",
+      "pre": "af6bc81d594135ab39b9aedbbd5da702f9905aa68a9ba0b879c1a43d7d61bc1e"
+    },
+    "Lemma.Kernel.Memory.Frames.configuration": {
+      "args": [],
+      "effects": [],
+      "post": "6b11cd39189cd778de8b493110259eb16ade6873a714677548f07a1d1cbfa976",
+      "pre": "6b11cd39189cd778de8b493110259eb16ade6873a714677548f07a1d1cbfa976"
+    },
+    "Lemma.Kernel.Memory.Frames.configure": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "82deeab5a04c5e0d835ab4089a9932bc39a5bc2dc56876b133045f9f87cda600",
+      "pre": "a1e8122434a18711b2f8493c0cbd0336ebe1c158c9cdd3620d2d74bea8fe6b54"
+    },
+    "Lemma.Kernel.Memory.Frames.count": {
+      "args": [],
+      "effects": [],
+      "post": "d3b23a2c44267aa60c934c2338aa1a1f645f1582721ec0b8091b55cdfaa65397",
+      "pre": "a4c80b09c03fee23fd0d4808d7ee05a4f60542e7aa78060d26f2f40e0c89c509"
+    },
+    "Lemma.Kernel.Memory.Frames.dataPurpose": {
+      "args": [],
+      "effects": [],
+      "post": "6320654d8ae9b68332211e8ab1bc19e50a961da27c95873751e9430842394c46",
+      "pre": "6320654d8ae9b68332211e8ab1bc19e50a961da27c95873751e9430842394c46"
+    },
+    "Lemma.Kernel.Memory.Frames.exhausted": {
+      "args": [],
+      "effects": [],
+      "post": "da38e9c83a9bbd6b00c93ece23a95c433a32e1c0d4b48fc378083f88a07d4f92",
+      "pre": "da38e9c83a9bbd6b00c93ece23a95c433a32e1c0d4b48fc378083f88a07d4f92"
+    },
+    "Lemma.Kernel.Memory.Frames.expandedPoolLimit": {
+      "args": [],
+      "effects": [],
+      "post": "4e63996043758f58822ad0dbb3a52c64522a02fe448f5de096f3ba20e16932e0",
+      "pre": "4e63996043758f58822ad0dbb3a52c64522a02fe448f5de096f3ba20e16932e0"
+    },
+    "Lemma.Kernel.Memory.Frames.failed": {
+      "args": [
+        "u8"
+      ],
+      "effects": [],
+      "post": "e28625dd8e778884a50467a8a413b3b0b3b06f160a6efbe788235d7b5b325b8e",
+      "pre": "020d096e7004ebd3fec13c5b6288a9795d58ea44b24c70d88cdd69273f72c288"
+    },
+    "Lemma.Kernel.Memory.Frames.findFree": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "4eac46f70b41f34f1c5eab9d7cab884f159a7790b805fa24950614ac69ce39b7",
+      "pre": "c14e5278991d7b34b9fb38bf40141ef7b1ab60a2bccdcdd67f0c2d51096b5157"
+    },
+    "Lemma.Kernel.Memory.Frames.findStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "e0eb4a59b952a02708499d64c713c98e7378f8fd1541a998c4aa103e05a5b61b",
+      "pre": "80b24abca901410f30064f4878ef9c71b1047e89a7ee115021d7b3e358c7fa04"
+    },
+    "Lemma.Kernel.Memory.Frames.firstFree": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "51459a06ee2853b84b56347dff6d13eb45d492692960d28a361caca5bdbb70de",
+      "pre": "86ae00a6f237af5984c08473151948e900140323e8db9edc2a6fdc2168784b4c"
+    },
+    "Lemma.Kernel.Memory.Frames.frameAddressValid": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "8cb41f97feb0536183b4e86fb0d87a87fda60e52bfebe525509b200f7f0cab0a",
+      "pre": "2ea8b98fb801cd2bbbbf8314452fd5528aa9d04c830e7ae851433f4dab8ef717"
+    },
+    "Lemma.Kernel.Memory.Frames.freeCursor": {
+      "args": [],
+      "effects": [],
+      "post": "729dd465b3c56114961e2e759b4feba0e3342b6dd7dae03780f760395d73a0c0",
+      "pre": "b6d95504903edca7c6ebc972371775a3754605282fce431ec63632d1c4b74ce9"
+    },
+    "Lemma.Kernel.Memory.Frames.generationExhausted": {
+      "args": [],
+      "effects": [],
+      "post": "961414c315e8db1245ca2733e8b88f7b994876164e9ab4d374ffe074a6017beb",
+      "pre": "961414c315e8db1245ca2733e8b88f7b994876164e9ab4d374ffe074a6017beb"
+    },
+    "Lemma.Kernel.Memory.Frames.grantValid": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "529ac06f4e954116ee3c306562c1abc882bc131aeea28145bcab2e706820aff9",
+      "pre": "38c68ed5e144788c498582d61b8528c58b72510108d078c7ee7ec73908e661b1"
+    },
+    "Lemma.Kernel.Memory.Frames.handleGeneration": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "1bdbf384aa4a0a9f6db4ccd9b7a16b77ba3e41a48494c60264dc22796e7a71a3",
+      "pre": "985f5af3a8514d85466ab8ea45d8fa6d33a4ff7b210d296dc6b8b0573af90508"
+    },
+    "Lemma.Kernel.Memory.Frames.handleValid": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "b1affb735306e1d75bdb946a9351d4a223ca09953a2708df1d1ee8f053fc1025",
+      "pre": "baca33a95877f36d23554cc7e5b851ceff0307d7cd3120cdea842829bc6f2aab"
+    },
+    "Lemma.Kernel.Memory.Frames.indexTransaction": {
+      "args": [],
+      "effects": [],
+      "post": "a88942fd412bf0fb58092c86d701fddaba0e834c331f40cad5207be482bf77c0",
+      "pre": "8ba9dd2a514c130407913e1f52a7d0c2d53a9788f0bed264fe387684ca6377ca"
+    },
+    "Lemma.Kernel.Memory.Frames.indexedOwner": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "901e66286e6bac632dcdb663bc1e9d3eda7acbf9475b6218badddedd57ba5e3a",
+      "pre": "7fa440098c2648d5397c83904670e26d42067483bfa28e7915d9d0a05d529583"
+    },
+    "Lemma.Kernel.Memory.Frames.indexedOwnerLimit": {
+      "args": [],
+      "effects": [],
+      "post": "0f7086fb89008a4c9faf19467b0f108b8e643afb180028b8e7bc8a5b1ab86138",
+      "pre": "0f7086fb89008a4c9faf19467b0f108b8e643afb180028b8e7bc8a5b1ab86138"
+    },
+    "Lemma.Kernel.Memory.Frames.init": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "15f33d153fe846252752466ad6aeaeaf25fddd73a9cfd5327cdbf278e008a3a4",
+      "pre": "0afc895bd63e7c54105ddc29bc7693bfaadc2148668f4d100a3330d112d70b9a"
+    },
+    "Lemma.Kernel.Memory.Frames.initOwnerStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "768fb13f04070cd6bd45b4fefe2ae1e791a75d627958d6041754188d2eac9de8",
+      "pre": "8c1f7be701994c4f486e6de2bc897081e8de3fab50283001ddff7c356d6181e0"
+    },
+    "Lemma.Kernel.Memory.Frames.initStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "be05c91b66fdec285ecbcbf801a5a9846cc513a4acff71d018a3f7c918f16693",
+      "pre": "5f576dfc0707164b3c3d8f6c3744137d33482c2b9683086c30684baca215181e"
+    },
+    "Lemma.Kernel.Memory.Frames.invalidFrame": {
+      "args": [],
+      "effects": [],
+      "post": "28558c898ab8477d48bc486e1bd8efe5627571a2bc6b413d3059b0fcd06240d8",
+      "pre": "28558c898ab8477d48bc486e1bd8efe5627571a2bc6b413d3059b0fcd06240d8"
+    },
+    "Lemma.Kernel.Memory.Frames.invariantFailure": {
+      "args": [],
+      "effects": [],
+      "post": "e633bc252ccbb31c6219022a672d079b1fdd40a5b43e669e1756efbb4252ca58",
+      "pre": "e633bc252ccbb31c6219022a672d079b1fdd40a5b43e669e1756efbb4252ca58"
+    },
+    "Lemma.Kernel.Memory.Frames.kernelOwner": {
+      "args": [],
+      "effects": [],
+      "post": "b9963e51661245c86a7c5e0253149c979ec3a62256c38ccd8f75340e59643817",
+      "pre": "b9963e51661245c86a7c5e0253149c979ec3a62256c38ccd8f75340e59643817"
+    },
+    "Lemma.Kernel.Memory.Frames.mapped": {
+      "args": [],
+      "effects": [],
+      "post": "b5aaf6818841f183332b423d217604174354d1b2e236a9e2c4f0a2c37758e9bf",
+      "pre": "b5aaf6818841f183332b423d217604174354d1b2e236a9e2c4f0a2c37758e9bf"
+    },
+    "Lemma.Kernel.Memory.Frames.mappingCount": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "758ca06355039d6e5c475a30038e52c4aeccdc017ffc8b0267e43a11af402edc",
+      "pre": "55ef625d48addbdd0ad7e7fefb48f9f56f1e4bbece75c39151b37c464d4e6bf3"
+    },
+    "Lemma.Kernel.Memory.Frames.maximumCount": {
+      "args": [],
+      "effects": [],
+      "post": "db390c132e89695295b1ab9b45eb214f493c7f9c7efabe2753b560e02005cc23",
+      "pre": "db390c132e89695295b1ab9b45eb214f493c7f9c7efabe2753b560e02005cc23"
+    },
+    "Lemma.Kernel.Memory.Frames.notOwned": {
+      "args": [],
+      "effects": [],
+      "post": "a0123a5561dd27d575387cb6c449757cb710390bd86e08fe9fd488cd0e8598cd",
+      "pre": "a0123a5561dd27d575387cb6c449757cb710390bd86e08fe9fd488cd0e8598cd"
+    },
+    "Lemma.Kernel.Memory.Frames.ownedCount": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "2064918a0e025fa9d139de050e5451f40dd871fb2b059c3468c275732b388e6a",
+      "pre": "53f3640c6946532c5cdd658f7b110f0ddf04a8aeffd7fcc3b6c2ff7a06833bf5"
+    },
+    "Lemma.Kernel.Memory.Frames.ownedStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "50f0e0d8cfae6271e902393fdbb43ad5ff12850bef9c08441656e4c804386147",
+      "pre": "857ff0fbcd170072226e7dff9530162d06caa4384d0edb834cddfaa786acfd6d"
+    },
+    "Lemma.Kernel.Memory.Frames.ownerCountCell": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "ba8ecc789f9bdbe50ab4e32616e8de6b27115ae838bac18052aca59207c89d04",
+      "pre": "3d7b78f38bd5006e0c32e533c9af624327e737f023be5d3f667cdf9bc09c4372"
+    },
+    "Lemma.Kernel.Memory.Frames.ownerCounts": {
+      "args": [],
+      "effects": [],
+      "post": "b50d87c9242a758aac2085961e4df2f246f48feec13f3be847521692d6beb117",
+      "pre": "012e894fdcaaeec0289e1e98f4db51214559acbd26d5c060d7e87b8dee67c3de"
+    },
+    "Lemma.Kernel.Memory.Frames.ownerValid": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "d3e249b86cd0b07f5b05e8b6f0f488bb5d34eab961a9b811fee7601b841e26c1",
+      "pre": "717b661885c205a38c2774b9d848e3f442f6fa25700879e72fd0ca84fdb16638"
+    },
+    "Lemma.Kernel.Memory.Frames.pin": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "20caa89dd641b34e33272685d2784676bc6b2bc09d10e4149500b3dc388082fc",
+      "pre": "cefe78031f4f5b148f0015c9041925cc5f2f41dd90da61213ee908ffdf2d02be"
+    },
+    "Lemma.Kernel.Memory.Frames.pool": {
+      "args": [],
+      "effects": [],
+      "post": "4da5e885519c9bbae4224f9d953c99d0a9ccddc9fd15ddef283db98522e1689a",
+      "pre": "9903d6ea157db156505fb25573be399690a2f520ad060061f0a3be81799f167a"
+    },
+    "Lemma.Kernel.Memory.Frames.prepareIndex": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "47de44355c4d3799a21dc8a663401f51110ef7e3113f99fb5dbd345090b04b4d",
+      "pre": "7b29cdfc6f5915a15b7dadffec7f2446ec481bdfcfee9ee3cd44195f1faa7f27"
+    },
+    "Lemma.Kernel.Memory.Frames.publishIndex": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "1e62bb0cdc445215ecd4bd29a2d87e3eedb0db20a650f3ffac7678c06eaf1398",
+      "pre": "77e13c3c52a86e1b71145b8c33016780d9235b15784fd1abd54bc247ed3b1b01"
+    },
+    "Lemma.Kernel.Memory.Frames.purposeDenied": {
+      "args": [],
+      "effects": [],
+      "post": "d3520aea209f82997cb0038e906533cb3612edeabfac96f72d0253907da26eca",
+      "pre": "d3520aea209f82997cb0038e906533cb3612edeabfac96f72d0253907da26eca"
+    },
+    "Lemma.Kernel.Memory.Frames.purposeValid": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "d2d6c463e43921bb34107ac05c2b13465780ad4b0e90ffad14590c1c24ea0bda",
+      "pre": "aaebb37e17687d038f36caa35fcb643ae250581087fc23eb8f8e9376e218f0e6"
+    },
+    "Lemma.Kernel.Memory.Frames.quotaByOwnership": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "289bc400f8f83681318e2766900a4eaf7ca977e35ce2bfd2b9def8b80ff446f2",
+      "pre": "aef3dbbbef23aa1921244de0e43986447af5e23dbc90f64e5dddabbebb58d56b"
+    },
+    "Lemma.Kernel.Memory.Frames.quotaExceeded": {
+      "args": [],
+      "effects": [],
+      "post": "85951179aa3b90dcbb4d0bce8ffe394303ebcf190da742d20f79040b3b39958b",
+      "pre": "85951179aa3b90dcbb4d0bce8ffe394303ebcf190da742d20f79040b3b39958b"
+    },
+    "Lemma.Kernel.Memory.Frames.record": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "6cd34d8b566b307958bdd09853b22f09ce14d9c87795a3b645a20f26d2881ee7",
+      "pre": "590ff9d0214ff20e67475e5caa7ba4aac615dc35f1a00f06ba303f7a6a7dc63e"
+    },
+    "Lemma.Kernel.Memory.Frames.records": {
+      "args": [],
+      "effects": [],
+      "post": "bff27864740be185b13ca634b0f385c6a7313f808d5d5762e55da5796446db23",
+      "pre": "b355ab78cb0be861c7a59b13f8eb008e39a02e383cf440a9f39d3a52fb7c1ad2"
+    },
+    "Lemma.Kernel.Memory.Frames.release": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a804baf0e557316350f91ae466d65031152399779eb5edd755b8ee6ae2fd09fe",
+      "pre": "751b6d0cfd13719d0aa4ff887ad47a93838a2ccee3618c95c31685b512fe364b"
+    },
+    "Lemma.Kernel.Memory.Frames.releaseIndex": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "c79cdc534b21a623ca8eb63d9633fc162a665ab9b69f1d939b1dc11d03a4cc1a",
+      "pre": "2536f197ecf15618e9ed8618959f94d957c2421f275119b2bb7e71ecbb01f98c"
+    },
+    "Lemma.Kernel.Memory.Frames.remainingValid": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "7abec2e4e7ab324f9d29a0e09c4e0c96b744c38a6cdb91004a8fc69c4f56623b",
+      "pre": "44eae17e62abccc1ba85a71effca72258456335bd0b561a278dd5291925bb2dd"
+    },
+    "Lemma.Kernel.Memory.Frames.resolve": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "bf805633464a6a2c85d729616617c6501016eee16846856730573121183c0687",
+      "pre": "0a4a0fcfe8e2c57bbd250a7438f43e7dddbed03f58f9fd912a3e6cad75dc0dc6"
+    },
+    "Lemma.Kernel.Memory.Frames.resolvePurpose": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "cf97600010e0cf60343b706bc00c7fb3aeeec55cfebefd7b3619c55ff22cfa1b",
+      "pre": "99dc881018d7a6e94ee4fc7f76f9d4102edca366dd3ab7d29a1e88f2c81cbb3a"
+    },
+    "Lemma.Kernel.Memory.Frames.resolveRecord": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "016b91890669284bcaf0b28e361a0527a6a87c633592ce5f36be7d28793d7a30",
+      "pre": "17b0e7c1b3372a20bd8dbd4802eb9c787fafefd04d8e442b3fb562f21edb5755"
+    },
+    "Lemma.Kernel.Memory.Frames.resolveValid": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "c699853c5b06707d2f324a5337c977a960263ea70d8b00602058e01882da6a5f",
+      "pre": "afbd96535432465428e2aa10da37e5ef3ac50a4e5b120c88c782438a70e5149d"
+    },
+    "Lemma.Kernel.Memory.Frames.restoreFreeRecord": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "c9f6ae4e279c3b7a47d294d2e473549d3508553936cb9a200476ac0422ecf3c8",
+      "pre": "5dd06b54e665478ac269b8ffdcf2e1311acc456431d19e1510cce8b25d0a6d39"
+    },
+    "Lemma.Kernel.Memory.Frames.retiredOwner": {
+      "args": [],
+      "effects": [],
+      "post": "df4436174c0c7a1a1054fa1946057e4cb02465d201c109f39551baaa7d438c31",
+      "pre": "a67f1192c8d53445a6e819aa99c5df4e21088147e60d3c6a8f795b3427c364bd"
+    },
+    "Lemma.Kernel.Memory.Frames.rollbackIndex": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "95b4dffb5f971ba5faa5f3587eacffcd0b18a17c54ceacb85d1b56197d250ab6",
+      "pre": "55d0f8b6523bc577426f9a043840b31dbdc652015f5cb99a9fdc1d5bb7c4ae3d"
+    },
+    "Lemma.Kernel.Memory.Frames.rollbackRelease": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "3715a4458d8bd87320338e0a79c8c82f4a6ccead9aa993dca527e46bc86f0b0c",
+      "pre": "d8620e896d0d73719841d4eae8b8892995de8a20269f2acd9f32e7a35c5bddec"
+    },
+    "Lemma.Kernel.Memory.Frames.rollbackSingle": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "cb5076b6f75c2c0f51eeb30dbd318cd66604b4bd45f6156ad57cc34763399808",
+      "pre": "3e0019aaee9b0ef02344c4b496abda16e9987ef6b66aa386233e3828aa090e64"
+    },
+    "Lemma.Kernel.Memory.Frames.runtimeCount": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "b931cf04ee5a1d4bc6d9dcabd42d0e13f81c3579b7d81693bdb68b8574e34d94",
+      "pre": "b7d0ef58121b169dcb18934f75a6a2ec18f0ffce8b0d5f7ee7cfbe157b9ec47f"
+    },
+    "Lemma.Kernel.Memory.Frames.runtimeQuota": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "bd894cbf0438cb0568aea425c9312c02f3146d7b26c933f953678c93f47ce3ca",
+      "pre": "fe875daccfa08bd90d7fc374f8a6853c17a4d76434452450e604ac8b5805c0dd"
+    },
+    "Lemma.Kernel.Memory.Frames.tablePurpose": {
+      "args": [],
+      "effects": [],
+      "post": "190b92608d387b74ef344553ce04f931e877ab14721a8cebc906354671cef0a6",
+      "pre": "190b92608d387b74ef344553ce04f931e877ab14721a8cebc906354671cef0a6"
+    },
+    "Lemma.Kernel.Memory.Frames.unpin": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "4dc88ee7eeddf952f45265c606d8141989b95be3d844b455c08b82b314a4d1d6",
+      "pre": "83cf273d9891b6371b70a46118aa31128f439266f084b6740e46ca250a9168b6"
+    },
+    "Lemma.Kernel.Memory.Frames.zero": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "6bbf2ced577ed19c882e8a5d6452f43c6e15a7a5c5313712dc08e6d70406f64d",
+      "pre": "a03ed7ab779e4709604559dda6accc3440f1f31d4d3da784dc699c74077325e9"
+    },
+    "Lemma.Kernel.Memory.Frames.zeroGenericStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "671f007dfcff98938989db379d0915e19edf51b982da644b505f55149e19ae5f",
+      "pre": "c8005f13a29c3ca11a02ee0a623f9b7f9c047628937fe57de33258c6013c5d6e"
+    },
+    "Lemma.Kernel.Memory.Frames.zeroStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "d502098d69e05dafe9c77acfe219ca40678f6034a0bd30e32e5fce22e0a1abf9",
+      "pre": "7bebba988503b4e380439f0dee7c29e51107d34893fc477e48f26e61e148c041"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.base": {
+      "args": [],
+      "effects": [],
+      "post": "bc6c25b5933ff4483aa3cb1eee714611368dc8c0a73dace12b029c51577cb693",
+      "pre": "bc6c25b5933ff4483aa3cb1eee714611368dc8c0a73dace12b029c51577cb693"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.expected": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "37deccb06643e5ed0767eb02068c24db94eb07893c530e9553ca577af273e7dd",
+      "pre": "d0737ffdfa04e82454c008024f39d17767381d6cd15cf2a57fbc46bbffad4708"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.expectedBindingCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "0a29cdf3880f4dee56e5c9962c8cc5b2ed5b505888c329577c7ec380b0cc6081",
+      "pre": "0b4d2e72d6879bf6253586ae4d60c5af1c16fd372401769ac4e4ce7539bf3364"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.failed": {
+      "args": [
+        "u8"
+      ],
+      "effects": [],
+      "post": "e28625dd8e778884a50467a8a413b3b0b3b06f160a6efbe788235d7b5b325b8e",
+      "pre": "020d096e7004ebd3fec13c5b6288a9795d58ea44b24c70d88cdd69273f72c288"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.fieldsStepCommon": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "d78ac889d10188c635f5bd8d00c35b83402a0ff45a5cffd0e410357abba4547d",
+      "pre": "674f4586c71280f737857159f1622be7fa7d40365db77d052639edbd54426061"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.fieldsStepCommon.compare": {
+      "args": [
+        "u64",
+        "u32",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "0a5fb402b1f3b1ca243222bd13293281d2e7046d21322041c1c82840df303686",
+      "pre": "1628b5c18923ed028cbcacf963c8ef2ba56f3437a24976001217049a43d54a69"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.geometryCommon": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "c70e1591724c4da4d2e852e8b7510cab3f217fb3515bcb45c830b6b6d4dd19f6",
+      "pre": "21d2e07bbe25a7982a2a428e772bcac9f04d9ae07dbfbed6e5f84ea51665b370"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.invalid": {
+      "args": [],
+      "effects": [],
+      "post": "9e01eb97e5f86d2bbcaba291287654aa693ee837d00002eb27fc66da5d3a270e",
+      "pre": "da98307bfd0d377a878d7f70a27f05ae20615db29e9227b3301efa5c1433cbf3"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.sumStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "c5952f3e2596b68720794c8301e77f1864100fb175f50d0aff02c3d0e0284059",
+      "pre": "483786ec8466a3a56035bd0cae0b484faac38b4ac17a14cc994a31f5383f7893"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.validateBindingCommon": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "e718b0e2e70551ac22974ffef261cd6fcbfc72a793f99631072e5ebde2a70831",
+      "pre": "9040946112d2fd8fc3f140874d611ff4795f7db595806bc67c33612d01d884bb"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.validateBindingCommon.admitted": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "78e3403e29d5baaf5a68e1d8a87f4e44cf08bcf496cadbb379e37f9f3c37fde8",
+      "pre": "85a75098a1c7f5c873b0678c1256298fa7ffc1f49e617228cc094c5c7eaed8b4"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.validateSiliconWiFiCommon": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "83c8d0d4b1da4753af80a58eb5d49955aea83a641d81d9e18781b82203309438",
+      "pre": "dca86fc81f3bd57a09087d753c3e39927d03a3d0ed25ea004177be7e1818ddd5"
+    },
+    "Lemma.Platform.LemmaSim.Descriptor.word": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "07a7a02581a50178430002c7e9ddfc21183fb4c89a7fce978689630c29cd0fae",
+      "pre": "c1835a11cb48a465ed958861605e0b078b7a583c1e63e6347dca261707067bd4"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.actualBLE": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "2d804052d78064898ee1b145b6345a4c1827b176613db9e30938efe55205907f",
+      "pre": "05ba5f9699043b1307d4cdf9d372ef46e35c49be38094d58d02f0ad46cc6e968"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.actualDevicesExecuted": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "92522a39058d1c4fdc69ee0bcc477dac32393a6d9ed22cc40a07842f3def2974",
+      "pre": "80f67127d43b3fb76e5c4437d92c4e280a49404139e3040f9fc033f5b5505b9f"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.actualUSB": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "293cf86784a405c1836c315f823a62ca05e467c8d365850b4ad9d31036916e73",
+      "pre": "1d8c546a61e8ea8bc7942c61356ad688fa9bafb52c36388b17522ff610805c1a"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.actualWiFiCommon": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "90c09fe71de933a39063496e08d019f33c085ca55f05d0c0a163f88cc832024e",
+      "pre": "f634b2499fa85e99d1f55f556aae467799aa4b57d27df1fe45d7f567e51bb8ea"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.beginNodeCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "52c464020c33b407e4070ed483b65f2321aa9db92e27ddaa1b5515e892893ab7",
+      "pre": "2552cde4858b714af07b68d76fb335d9a4003b73f7ad7f8b270124f9bcdc3f5b"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.clearStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "6ac156d6fdc32c5243d5c00d90e992dc0866365c538ef40f75bce97750180841",
+      "pre": "171f00c0f1aa29c329bd4c92e0d2a8af1f4c1f769e4e7a6eeb5549423afbc5f3"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.compatibleBinding": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "0eb30c334caa4dd9d4a9fe5e4afc56109ad2b1b93be0a7865d8f69f2c84de24f",
+      "pre": "2c2225e31d2154317e39a5ff517c77e0358e15c0fba984a76a060e698e11bb4e"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.compatibleCode": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "b0e30dbc878d05fcab06bd5008909863d0c7ad0e9ce09315b8e2d67ea5fa9945",
+      "pre": "a261058a243dfd917e2297a31f141a6315ec3515e183206226f613b67e487739"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.containerProperty": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "bd76eb14f6d5a3f9dfc3381fd91545a07929673a0c3ad4a9ef802d0f2b16d0fe",
+      "pre": "899d87ac39e50865e705014c4bf990c0c19857d515e2cb4bca2aca2bed63a072"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.descriptorProperty": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "5f80749e965062694c9a78f333e949d140d3ff71781cf67e4a5d2bf832a5bb86",
+      "pre": "d8837e8eefe55a7d7ba494b4b9db93cd04ef5867ccccaa8f9c2230443b0a1983"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.dynamicCell": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "e82d54dff9a2f86e82b5faf051a43529375329e260641c2b6f35b92ddc75b124",
+      "pre": "c579921e189ec2b569c14bfb4ef7859cb8496e42854b08652b06ce6a2242084c"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.endNodeCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "ead002e85f131aaf111d218627fb1b4efa873d70e6fdd2d49fc3cf7b7a93c26d",
+      "pre": "4aa3567d3f8cc275d35e486ee302387179a161b54c6df03ddf17a9ee74011e52"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.equalLiteral": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "e6640d5893d364e97b88f9d75536ace4caf258e71d1cb680fe5dd7c685fde8e7",
+      "pre": "5364d29349ae6b4ca5cce3826b2bb38e4be4e13a8ffddf5af748626fc388ded1"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.equalLiteralCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "c3607f55470eaf2a788438a31b8a71143a2e5991b6ab9a08345b4850a204a1c2",
+      "pre": "700958a8815435e94f677d1721b60e705d6068e34b15130e8a0315f498799cfb"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.equalLiteralExecuted": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "7913b75af7a61ce954d3148231dc70e7c4d6b2fb740354be35e6c0752053a248",
+      "pre": "1d230e487fc11c829f03ad46f46ff2aad5ae81984e62133f7257d654f8dfb022"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.equalLiteralWire": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "9127d030a04c06dc289d619c77f0df69ddf4eb254677fab9b467d252df0559fb",
+      "pre": "a246e45d095b406f3f5c3c460bd4b447ec5e40cccc6cb070f59ed8d50f1663c5"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.executedProperty": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "02d954fed44a774bc6e5a5840927b8dfe8c17c95673d446021d3591f3eb30144",
+      "pre": "88657bf15fdd712589ca239e3cf0514afc49371f1b9ff100b27a175f995e3adb"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.executedRegisterStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "88fefdfe7900a27a215a09cd08724ef8530f53f4972d4eed3ea63bf5a0630ad3",
+      "pre": "0c6cdfc24e53fc4bae22930ff9ffcb7aec369106b00c74153134dfc11823c0f4"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.expectedBase": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "153c59b7f91ed6c24eba24b045df678ab10b7ddfa1f0ffeae4f5af3445de71fb",
+      "pre": "1d8d3fb667db597a5f31ed25ca08d1ffd178a911fdcaa73f73bf75c470e9f742"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.expectedIRQ": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "bb34c1a6a6becf3de6036b6a3ab2eba0b7a225b06093d58beba32ceb387eee47",
+      "pre": "42fae88d0601aa060ca294668b8ef3f1b30411b767a689a49a61b7b4b49483bf"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.expectedSpan": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "982888039fdcab4f28e30ea5d101a5e5eba33b18b913b9130a97ccfe45d49062",
+      "pre": "cfd3dd4bb4d138916f930e84bfe2a4fd646fe531cf7838b0899ad77028c4c2ce"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.failed": {
+      "args": [
+        "u8"
+      ],
+      "effects": [],
+      "post": "e28625dd8e778884a50467a8a413b3b0b3b06f160a6efbe788235d7b5b325b8e",
+      "pre": "020d096e7004ebd3fec13c5b6288a9795d58ea44b24c70d88cdd69273f72c288"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.findCodeCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "c8da1f7beb9b79f62b576612dc6206f19ac0a1042525d62ed6d3e26f9c52a991",
+      "pre": "c528e86e1d6b675ee4a69d18902769d4a03aaef47d6013f5958a186e18ba9942"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.findStepCommon": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "af62736c886c19f615c8e73255fefc72f98a5a8c6fc2ce3e140c89dd1479c3a0",
+      "pre": "e2d274279ea346f429010eaba1b9596306186d73a36f03a37d1e3408dbd5fb3e"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.fixedCell": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "6a234e29586ff5d65a22b60a231cc0b061e96f2458bb55115d4b05942417e29c",
+      "pre": "78f57c66404d1caa30399b4c09f481f4ec9ea546f717b48963442fb37498cb67"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.get": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "47ff09842ebb0510a6a9f6c16ed7e3d6572f0d7f5beaae6e20deb9d532e06b75",
+      "pre": "b37040db1dca748d383a116ab1d1125179cdd4231a87126fdaff2860904be3d6"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.interruptContext": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "310b4c8b569f36765a1d349552d404f38dcbd891fce372ec6ceedbdf68861943",
+      "pre": "7256cca7bc70f812994d2d06ee25b930e8805d7c78d53209a12a34c5dbfcaeb5"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.invalid": {
+      "args": [],
+      "effects": [],
+      "post": "9e01eb97e5f86d2bbcaba291287654aa693ee837d00002eb27fc66da5d3a270e",
+      "pre": "da98307bfd0d377a878d7f70a27f05ae20615db29e9227b3301efa5c1433cbf3"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leaf": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "6658fceecc813d6a3ceca3d1e9f69d75a5c5a4383ad0076edbfababc0e80018e",
+      "pre": "35afad1cc2927e42998d1338ec0ee5973478d0ca396b6db64d32d697cfdce4f8"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leafCommon": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "65ef1b3ed8ec57ae0417215c416b26515b987edbbc6b44f44a9a172bfbe004fe",
+      "pre": "f44e6955d061caf63b7fb8271be542176db960f5dc97e0243b6943c6b61843cb"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leafProperty": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "608b778cafe0dcd914a104169c10b56b02794396fef4d7c066ac08804b52b28d",
+      "pre": "a190f3bc971eda4981a558abf02f4c4d216f2f06a0fcb60bc2900b0fde741ce2"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "9a1aa58ad15dd13214bb61aa77d121172cffe9c3afd1e6fc19501a33b7f542c5",
+      "pre": "76b4df1aa6f317f8acabe945f8a4240d7b58baf0beaf9b69f91cb7abf747c539"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyExecuted": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "1cf3441d346d4fe601a5d6e451989d9fa659cbedf81dd6789e8f1fe7c968678c",
+      "pre": "0892f4074e915b8030ee99ea6bbd2ce2f450b1f3a57503666f6a4aeb92417ce0"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.leafPropertyWire": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "0ccc2a7082b7474b4721333a551951b225a6cc10e920bbfc8bc0c461f1acd11f",
+      "pre": "8f7e32b0fb6b2a0ee87f3aa54ebdf583061db9f3c2397a6716848a14934fd3ca"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalLength": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "725d0145d812b462ee626b4876d284b77716fa8c1d820cb50f95981f77b17261",
+      "pre": "3b29d5d4e8605650ddb8d7a65ba1fe5deb272dcba7e9cc535d939f6306dd2ccc"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthCommon": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "3126257fcdb9772ff7d6bad468931b61aa0c4a594fc366df56845bcd67dbf572",
+      "pre": "a6bbf24a1964ab5eac60522390eaa1ccc53ae66a13c40f868b83054b388dad56"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthExecuted": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "d371316e921a182f068afb25eed8a21cc32e9a76c419f16fb1d5e6e963368760",
+      "pre": "c441f3bfa30e93a0ef2d1233a6c23d1a6da68a7a01c45f0ef61f8e85be291480"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthNext": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "0431978d2b4e2b35100e09db0d1985fc2685a858f28ba45dbd28c226dbedd80a",
+      "pre": "2cb065efbb0087aadcee02aba000d1d6b75d2cbff429d610ab68af76a4fcafe2"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalLengthWire": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "d44fd538eeba50e3aaf76770cfeea8f42339d9eddcf7f520451e8d1743998b2d",
+      "pre": "da92951a5f446d7162dd201f8d54f4d74ec9613f93877ee40c4979783e3eb263"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalWord": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "0f84ebf03aa2b555ae37f00ef4e1d4262c7dafc6e04e092badc9ff2a5e1fb1e5",
+      "pre": "f1e7b6bcae3a5cbd961ae1063f252b6548084ba9f54944e3c3d0144efc482495"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalWordCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "d0e37d8bed83e2649da70a8799a5b7db6d3a62d0e6250a6f7d9e0a7e23b7da5e",
+      "pre": "6f1e6ef1dbc359934fae07a142afd97d47b486e14a99e8f71536deecffb80291"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalWordExecuted": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "afda9cb57bfd8bf57e72284f067aef8265b418f252406c5afa28f8388c0e94e1",
+      "pre": "08876c2db152ac8c6eda246718539f42b54699aad09cac165a193c728617711e"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalWordNext": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "76ee9df2fdb1ee7da34261be64bf5d392ffc98d20d590d380846720346d07b1a",
+      "pre": "ada856e4b2c73bc306023c4690ba4617d77f04f15c1f8dd388cbedbfac99807f"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.literalWordWire": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "8e7a1db13634de5ffd63a5fd262c0c040bea2009b1a95b9dcc75b7130e212835",
+      "pre": "0653f4d181ee26c427eeb847dc86fd5d80023eae53e98c122f83db264d64a6d1"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.mark": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "bb95a0cb8171b010a0c65644ab7dbb30b609c9fe5e7bcb400f850390257ce0fd",
+      "pre": "af0fd163c9991c593733b60314c4149e4d77da6b37c8d5b7f7b9c3dcfcfa8a75"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.matchStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "807856f438dbe38422a08ba08f9caef06b32d3e7897f0404019f78dd7e26b05e",
+      "pre": "aebf862b3c611d5214b9ac9fe8145ce380ae8c6abd8f7cc20de73af69a8bc278"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.matchStepCommon": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "ba94aea7e64aa5b6405da7df1a0b6f8e804c384976de565933c9ad6b31f3899f",
+      "pre": "f3c899818dfc942df4c12558ff93a8bf8d3d5de9fcf72314bf61476d4e3c2868"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.matchStepExecuted": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "8062b78435bd289317e5b954225c3b9e040a6bd984c7e9dadce5b67434528b28",
+      "pre": "21a08bcb119018e8bd1132a60b43ce74ac539d5538ed8fe37595c940633329b9"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.matchStepWire": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "8e8667f43ccde4250ab31b82ae1d37ade6ff05a7822118a18ec13884c2ecc770",
+      "pre": "01792a5ca21a91fa1e05824cb16d436393bf6ee5c25fbf9ac60dca8bbde43624"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.nodeRole": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "1cfcfe640c35b600c705e96a1f25f71d3d3739994382fd3834910d17c7ae99bd",
+      "pre": "94d8b607109c99f3883ef1579e70cf7d871392d64ef32af219c0ef7b191034e7"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.nodeRoleCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "3b193cc12f3ceefc4aa5b673374e39fa5591dad6ade8de38dc239d8a45d0ef0f",
+      "pre": "ccd4560b9106b2eadcc1ed53563d61fab2500f3285106433ec2ddf8d6508d89f"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.otherRegCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "c86ab0fe1d221a2ea6ee3008f63546fff3884ece339f936cee03b1a7ccab1bd0",
+      "pre": "98df149bdede656c5553eda353eafafb7af1b33d718d0e39c7fea5bbd291df8f"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.otherRegCommonStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "6b979d256455b5369985aad6678f87d6be3aaa68f3fb23e291ec78d48008f5ae",
+      "pre": "7a29c5a55b731b96a48af88669b06a4fea37a373e1dbae5990969cdab85154b3"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.ownedReg": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "d680d71a8caf14f993f71e294396a002e3ab1f51889f1eaac41d7810d3293670",
+      "pre": "bf9f5ac463360df13379f7fd87f3ce271a41e83ffc9bb94ce73f385faadc6530"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.parentCell": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "f06aa622ed2908822a27e9bc0253321299c8ce4cf4a10f8fdeea33dc63566243",
+      "pre": "01ba6ae31b07dd028a4fa3f3810c8089f770e0da43a9f22171251aa280ced8be"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.propertyCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "36e62e876ce74308f4481750c1e616eca64eb9d0e70c6ad57b723d06f0ad271d",
+      "pre": "72f0afe6d3da4f2a9693a45ebd7615bf3ba37d2e038256ad31003e849bd73c84"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.protectedOverlap": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "0b0ad857f9156e93db45744c2a21c74342a8b7cf14f79444939ce92d8fc39278",
+      "pre": "21e264640685e4b0b3945e3abbed574de87277796b49d3c8548ad03d9753515f"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.protectedOverlapCommon": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "c46d5f0a59f25e3ebecdb089272c2646931d0c31b192e47dd18b1f8f48d8c83c",
+      "pre": "b6a4392ec376e97dbfcb23d0f0048bd11bfeea406d964a53d1afde1dd942eac9"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.put": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "ec5f6d12014873ee276cc1224aa29f69ecfd5bcd0dd890d2b403ca0acb78f05f",
+      "pre": "aca4aa5b9dc97294818a48ea9a9cfb0f0aab2f8e13ff1eba37ca8cebc06cd8a0"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.requiredFlags": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "e2531a7cfc2ee5343972f5e0e50556195dda29e5ae52da940ec86db4b93f889e",
+      "pre": "3062c2fe9d428690c546f23f24d9bf068cddce233337e49e1ddb9c01cf9fcc7d"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.scratch": {
+      "args": [],
+      "effects": [],
+      "post": "da86a1ca7185576db1e5208e684aa701210a9821d9bcbee701c5ddf6491e444c",
+      "pre": "da86a1ca7185576db1e5208e684aa701210a9821d9bcbee701c5ddf6491e444c"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepCommon": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "86b008e5836a561c173e42232a23b193526531628c7b9e5a27425070d4b7387a",
+      "pre": "8e94d4ce5ff3b63450e8507285c8f71997fde05cb02861951dc2e3f2a54c3877"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.unknownCompatible": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "685dd5550c325d1fcec8031c9e577a0b6114a684dda14790174c514c520abcb5",
+      "pre": "348a91740ec301e7a4be723929279ed941e79ee8f259a69c0350a66eebf2a7cb"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.validateBindingCommonCore": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "1270a3fa1d6c923319f16d164daa0de4063f41e7d55fb72b17cbc7d61db6eecf",
+      "pre": "35d0d4d2a246de26cb8214f781fb45fa9115142f50c4d9069f9046ccb504b3eb"
+    },
+    "Lemma.Platform.LemmaSim.DescriptorDTB.validateSiliconWiFiCommon": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a266747ee4c0627d84a2333af79bf0968f7f5a2e68efcac2ff31627a90fb5972",
+      "pre": "314135db1d9be9a68e49c6323d4103307f590492da095e6df0923ed4b64d737b"
+    },
+    "Lemma.Platform.LemmaSim.DeviceABI.paperMagic": {
+      "args": [],
+      "effects": [],
+      "post": "f6bc5b2af3899a4c3eebe789bf1984104e2b2e07d16c8fc650bccc83d72342aa",
+      "pre": "f6bc5b2af3899a4c3eebe789bf1984104e2b2e07d16c8fc650bccc83d72342aa"
+    },
+    "Lemma.Platform.LemmaSim.DeviceABI.penMagic": {
+      "args": [],
+      "effects": [],
+      "post": "73f25c4409b9f2c61a9348ded61550e07104f3464f25a6a54f8027359cc315b5",
+      "pre": "73f25c4409b9f2c61a9348ded61550e07104f3464f25a6a54f8027359cc315b5"
+    },
+    "Lemma.Platform.LemmaSim.IO.read32": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "fe5e145fb99e4dad24e1e31d31ed8615742e590afee4e5e50bed9b794f4f8926",
+      "pre": "b12381db300eafd216d9242a0a73701f7998f3c2dd8627b1e3d61f067947643e"
+    },
+    "Lemma.Platform.LemmaSim.IO.read64": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "8c3fd7a5abf5cd110685d8225b8a210f76aa74c59a9fbbd5dcc7350139b42f2f",
+      "pre": "8415336f9439c8a5e428ae03da58afa7fb1253515d36c56673e0595efd31eee2"
+    },
+    "Lemma.Platform.LemmaSim.IO.write32": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "80f52fde936088cf9addf0380b229b66f82df6293e0ef88872e6dc7ca584f4e8",
+      "pre": "83458861a14c9111eff2234f8102213fbaf583104d60dede328d6e0389414953"
+    },
+    "Lemma.Platform.LemmaSim.IO.write64": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "e75cacc0936f6adf8bfd852e6b6c0dfcb2dfef3f5d8c0d1f46f639d6f71d83a4",
+      "pre": "fe2343cfea85f7bfd40c2d36002985c1b6074d5fcbfda418ca7d142adbae0806"
+    },
+    "Lemma.Platform.LemmaSim.MachineServices.expected": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "6ca543dec69faf10b03efa7ff7b1eee0c21844dd610878d459f4c2c77b64019a",
+      "pre": "0e4d952cde3a61b92bf067f34a8a51b74bff0f599f0c6596ca6f2f9c6feb24a6"
+    },
+    "Lemma.Platform.LemmaSim.MachineServices.pmpStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "b1047783f2f39ebc5e5e7117411a64aec5a1de2bc7faab6e134274ed9af31c2e",
+      "pre": "585a9fa40ed0dffe58022bb36c9ab42b753f427569284084de4786b19278f097"
+    },
+    "Lemma.Platform.LemmaSim.MachineServices.validateFor": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "io-order",
+        "machine-state",
+        "physical-read",
+        "firmware-call"
+      ],
+      "post": "bfae46653425fbc62beda64fe1fa174d0d685e217a5a7373e3f55a1f76d4eadc",
+      "pre": "0207b676f273a419e02dd60494db0dd53d9d9d65218449e6b3591755d9a61278"
+    },
+    "Lemma.Platform.LemmaSim.MachineServices.validateSilicon": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "io-order",
+        "machine-state",
+        "physical-read",
+        "firmware-call"
+      ],
+      "post": "702025443d2f66fc5ecc1de1a3b5467ab39ee5889741de2d106a06b086ba4408",
+      "pre": "022028be90d119cb80e75b22b9a1b5a3412995dd17084ac31117d3995790a06f"
+    },
+    "Lemma.Platform.LemmaVM.ConsoleDevice.initialize14": {
+      "args": [],
+      "effects": [
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "4e8199cc949a696336a6aa5187fc29586f1b08f1426cf642598ced792b9b8c30",
+      "pre": "03855bd778d36830290fa9c47715352d422dc28da1228a7b9ba045c1e4859b35"
+    },
+    "Lemma.Platform.LemmaVM.ConsoleDevice.pollBudget": {
+      "args": [],
+      "effects": [],
+      "post": "5a890c1e05a0ccb6fac9b8d566f720eacb03230455357b0781da7fbf4c50920e",
+      "pre": "5a890c1e05a0ccb6fac9b8d566f720eacb03230455357b0781da7fbf4c50920e"
+    },
+    "Lemma.Platform.LemmaVM.ConsoleDevice.sendByte": {
+      "args": [
+        "u8"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "cd1da07168e9619acbbe14a820e21621792e30f824bddcd31c8121627fed43a4",
+      "pre": "d8d424a368ac7c384ea01571c44906f7ab7c9fce4beb34f33c6864399488ce9a"
+    },
+    "Lemma.Platform.LemmaVM.ConsoleDevice.transmitPollStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "4139582c1657327b2bb71f3237221c954b3b2846d6b551c61ee0fb50deef86a6",
+      "pre": "84c2fa7125b0906b44be0ca5aaa017b14d0425655839e97948ec3045f15c8009"
+    },
+    "Lemma.Platform.LemmaVM.Layout.frameBytesValue": {
+      "args": [],
+      "effects": [],
+      "post": "7331bb9fb1dd139d9e8225242332bbe07421d2f2ed320a6c4234bb75167149ba",
+      "pre": "7331bb9fb1dd139d9e8225242332bbe07421d2f2ed320a6c4234bb75167149ba"
+    },
+    "Lemma.Platform.LemmaVM.Layout.frameCountValue": {
+      "args": [],
+      "effects": [],
+      "post": "d3b23a2c44267aa60c934c2338aa1a1f645f1582721ec0b8091b55cdfaa65397",
+      "pre": "d3b23a2c44267aa60c934c2338aa1a1f645f1582721ec0b8091b55cdfaa65397"
+    },
+    "Lemma.Platform.LemmaVM.Layout.metadataValue": {
+      "args": [],
+      "effects": [],
+      "post": "1dea0991a5eb8a30ed41093853062806217a6a6bcaec16eb41bf5f0fa054c1a9",
+      "pre": "1dea0991a5eb8a30ed41093853062806217a6a6bcaec16eb41bf5f0fa054c1a9"
+    },
+    "Lemma.Platform.LemmaVM.Layout.poolValue": {
+      "args": [],
+      "effects": [],
+      "post": "4da5e885519c9bbae4224f9d953c99d0a9ccddc9fd15ddef283db98522e1689a",
+      "pre": "4da5e885519c9bbae4224f9d953c99d0a9ccddc9fd15ddef283db98522e1689a"
+    },
+    "Lemma.Platform.Silicon.Binding.clock_hz": {
+      "args": [],
+      "effects": [],
+      "post": "5b82e526bbd3ef1b1677b26aae9342cc43be68c89d18208c242f62f39d7fb391",
+      "pre": "5b82e526bbd3ef1b1677b26aae9342cc43be68c89d18208c242f62f39d7fb391"
+    },
+    "Lemma.Platform.Silicon.Binding.frame_quota": {
+      "args": [],
+      "effects": [],
+      "post": "f095663e5670debbe5ba276d6a4051ac794b52c55ce3324cb55afe0914ff79f9",
+      "pre": "f095663e5670debbe5ba276d6a4051ac794b52c55ce3324cb55afe0914ff79f9"
+    },
+    "Lemma.Platform.Silicon.Binding.height": {
+      "args": [],
+      "effects": [],
+      "post": "4e34eacc90d17c387015725577bd9fd4bb7684ef21d6155323ef91f508f706a2",
+      "pre": "4e34eacc90d17c387015725577bd9fd4bb7684ef21d6155323ef91f508f706a2"
+    },
+    "Lemma.Platform.Silicon.Binding.plic_sources": {
+      "args": [],
+      "effects": [],
+      "post": "422f189eaf341f04747790c457f46ca378e512546239ccee9c50e74e495a6a96",
+      "pre": "422f189eaf341f04747790c457f46ca378e512546239ccee9c50e74e495a6a96"
+    },
+    "Lemma.Platform.Silicon.Binding.width": {
+      "args": [],
+      "effects": [],
+      "post": "d3b23a2c44267aa60c934c2338aa1a1f645f1582721ec0b8091b55cdfaa65397",
+      "pre": "d3b23a2c44267aa60c934c2338aa1a1f645f1582721ec0b8091b55cdfaa65397"
+    },
+    "Lemma.Platform.Silicon.BindingFull.height": {
+      "args": [],
+      "effects": [],
+      "post": "9acfbe9eca1b9315c803550e0132c991b345fb8a143aa4351d34f77268c28c11",
+      "pre": "9acfbe9eca1b9315c803550e0132c991b345fb8a143aa4351d34f77268c28c11"
+    },
+    "Lemma.Platform.Silicon.BindingFull.width": {
+      "args": [],
+      "effects": [],
+      "post": "d940314b398c887c17113b8bcc8f8fc04e3a7d9b7d38754f1f8a260986f9ea39",
+      "pre": "d940314b398c887c17113b8bcc8f8fc04e3a7d9b7d38754f1f8a260986f9ea39"
+    },
+    "Lemma.Platform.Silicon.BindingPower.height": {
+      "args": [],
+      "effects": [],
+      "post": "9acfbe9eca1b9315c803550e0132c991b345fb8a143aa4351d34f77268c28c11",
+      "pre": "9acfbe9eca1b9315c803550e0132c991b345fb8a143aa4351d34f77268c28c11"
+    },
+    "Lemma.Platform.Silicon.BindingPower.plic_sources": {
+      "args": [],
+      "effects": [],
+      "post": "b305f6e280b53b8926c8fe57fb6003cb0f296a86149cf9049e1e2be89e1ec60a",
+      "pre": "b305f6e280b53b8926c8fe57fb6003cb0f296a86149cf9049e1e2be89e1ec60a"
+    },
+    "Lemma.Platform.Silicon.BindingPower.width": {
+      "args": [],
+      "effects": [],
+      "post": "d940314b398c887c17113b8bcc8f8fc04e3a7d9b7d38754f1f8a260986f9ea39",
+      "pre": "d940314b398c887c17113b8bcc8f8fc04e3a7d9b7d38754f1f8a260986f9ea39"
+    },
+    "Lemma.Platform.Silicon.BindingWiFiCommon.frame_pool_bytes": {
+      "args": [],
+      "effects": [],
+      "post": "4fa0acfd3ce320ff2bf0018f7650ae87545467117c0507cfd364346ccf03e8df",
+      "pre": "4fa0acfd3ce320ff2bf0018f7650ae87545467117c0507cfd364346ccf03e8df"
+    },
+    "Lemma.Platform.Silicon.BindingWiFiCommon.power_base": {
+      "args": [],
+      "effects": [],
+      "post": "f9ec268ee18f606b275f97360decd953bffbfb7cab1d3fc2c49187a6b436e9a8",
+      "pre": "f9ec268ee18f606b275f97360decd953bffbfb7cab1d3fc2c49187a6b436e9a8"
+    },
+    "Lemma.Platform.Silicon.BindingWiFiCommon.wifi_base": {
+      "args": [],
+      "effects": [],
+      "post": "d9052aabf305ed291081b885a3709e53df58d05f709ed49eebd3f84a61296ad4",
+      "pre": "d9052aabf305ed291081b885a3709e53df58d05f709ed49eebd3f84a61296ad4"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.awaitReceive": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "physical-read",
+        "physical-write",
+        "firmware-call",
+        "wait-state",
+        "may-diverge"
+      ],
+      "post": "2bd9e4edd6ca3c56f94327e4ae279b34be465ef9bdce29372bc5b081336126e5",
+      "pre": "dad5e8981e260aa00ac1268c1e55bd48d65fe75648b21cb78424daffe75d9856"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.base": {
+      "args": [],
+      "effects": [],
+      "post": "d9052aabf305ed291081b885a3709e53df58d05f709ed49eebd3f84a61296ad4",
+      "pre": "6396317afa0909aec5c0b70ececcb5645fe8481556db8b80ce94585580dea917"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.boot": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "physical-read",
+        "physical-write",
+        "firmware-call",
+        "wait-state",
+        "may-diverge"
+      ],
+      "post": "980c5a11da7dc34f22a836ebfbde713cb30315339a7f39e38bf30c2a82317ae7",
+      "pre": "e176022e460e091f5684e1e52a885a156c4e2bf9fd3c91b683cb63de04a481f8"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.compareStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "09651af762fa93a9587542db729cc77e7b287da7ebc90e919fe5c169294ab569",
+      "pre": "0e468ad39e98ff60113215977d80c7881bf290b45b26115b790850d1cdcb1af2"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.configureIRQ": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "c868284f3450ab8152dcd32fea5e49342e451166748db6a1086d0c5474d5829c",
+      "pre": "67e5e66e847ff146cf09a93c3823caf5d513fe96a6df85d1896097d120e99318"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.dispatch": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "5f955aaf723739297987ac5ab91f9b23c0f546ec1d899c3798170aee34b71056",
+      "pre": "c08a473cb6778442db645a2ae746e9c3107c5bf2bc974b1ec9c0f99df65befc9"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.emit": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "72973402df1bf45f321c19e8f3cfc4050c5c87ef3ee836af0dd0733ed36b229d",
+      "pre": "b606131344cd43d6ee2d4123c7791ee7a353d6729b76a6effa04d0b02208ac8a"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.fatal": {
+      "args": [],
+      "effects": [],
+      "post": "5f955aaf723739297987ac5ab91f9b23c0f546ec1d899c3798170aee34b71056",
+      "pre": "da94f53a786c57203b98af76fbbfee542178a211ceb4f30054a413ecb2a0ed77"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.fill": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "9d20bc91ddd5df9fffa1751964ab89c7cef46da9db1a9ff7a4a8da66077242ae",
+      "pre": "ec75e5f295a6a85414a85afba7642c3f2d1225f3d1c27d9985510b1d11ac044d"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.fillStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "58affd2e71a913ee727f07efa6796d9beb0149aada302e76b94aa059260ceb87",
+      "pre": "882857536ac1d7c6168cb76395dfdc8749ee1d8c73acba1f87e863164d9eacef"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.finish": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "physical-read",
+        "firmware-call",
+        "wait-state",
+        "may-diverge"
+      ],
+      "post": "05ba449500408dc73315930c49b965995fa9412ff167e9a7d3045c30598b03e1",
+      "pre": "bb1ff54391f41898ab02e899f63187603f1885473848798a88a05a5ce242f4b1"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.fullCheck": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "3c82fbfa9c1115864c3d056a06722e847ab2e1fccecc058c7f0ebd38ce0a438c",
+      "pre": "28484c9fb2dd5693376aa6cded355e782c4d03f36adda524a17eea5db342ebb5"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.irq": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "31dc64e9e4bf74555b4c3f3972831010c2ec4117bb1a2b5ce5ec003b5b635c81",
+      "pre": "5a0f556db0369f23cb7fd667e4d3f6e07f8a0ab8df3489d7e5ba38640120e833"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.payload": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "256916d1774fcf31610fcf21b8a52266c8b6c314a2edf6f8d683aba212d0b12e",
+      "pre": "bb1edf362d67a2b6c272f03e0e6bb04271c26059b69ccc25abd97819423fe374"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.payloadStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "2ba35fe7153baabba093530626ccac0c2821ea84019ce8bd428a0ae1a30f1e36",
+      "pre": "0dffc32a81dd08f4e9dd00a6e4d85983d36804061641cea729f66acfac516b6a"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.pinCheck": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "ca746f7ce9ad2bc883cd142dd33d01e5b7f0490435b2f6e1d76bffab2aacde0b",
+      "pre": "7de0a4f94b287c7a086da9e8465aea7b3b5162e66f475a39529fc44bce54be8a"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.progress": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "physical-read",
+        "physical-write",
+        "firmware-call",
+        "wait-state",
+        "may-diverge"
+      ],
+      "post": "8507c948e81810b2b14ff35418f5b2590df631dbfcbfdf9600daee41b7e50583",
+      "pre": "3b3af2db9f8b52a5f976cce1f84333fe344ff4e15bcce575a750090db2797235"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.receive": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "0f338c4c430458fca28192cb99d1e186060347468245d59251fa2668be182317",
+      "pre": "f63a63b9e3485e1d756f3b41050600b65c574b8d1df1e1a20e40a952e8b321bc"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.received": {
+      "args": [],
+      "effects": [],
+      "post": "4da5786b9040f8b63384769692bb3d2bd3f59b3d4c2d63e5e9e6b3aad8b7b85a",
+      "pre": "41291b5af45c46b98c49ee489db73aa66bdc0f13869994345c278f91cbc1a249"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.rxArmed": {
+      "args": [],
+      "effects": [],
+      "post": "2d4f0f696430e5225f1c446b7c3e4dc80b828aa7860afd1949d01826add98cbc",
+      "pre": "70ccb0658204c623cb09a2ce75b8c16af6182eda26f31a511ecace78c1193736"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.rxHandle": {
+      "args": [],
+      "effects": [],
+      "post": "8b7176a792ab43c463eecdd21d61d6b0b405dbc9a0973a6098c7e6df27d986bd",
+      "pre": "e211f7d056a35d6efa44f43e135812f67c758c80a2e4c0060cada57300fa33a9"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.secondBatch": {
+      "args": [],
+      "effects": [],
+      "post": "dea856b64674c9cc620987ca812ae7013cd6e357ff34b22cd121c1004b28a5a1",
+      "pre": "3d355b25ce8c7e18e179ac65edc30e6d052152ba1ea99f7f28bca24e3b86f07b"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.transaction": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "physical-read",
+        "physical-write",
+        "firmware-call",
+        "wait-state",
+        "may-diverge"
+      ],
+      "post": "1563d75d7d768ee98a9fccdbbaa3578c348e75b95799250c1e4da734c459ee83",
+      "pre": "de6a48a9ebb938a4fe5aa3f57cfd5ec0af58f60396369482253393effaa9e999"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.transmit": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "0e6423aa9e189791f97ea3e4962e2da3cf667d7b6489d3f7b9dc2b36c3f9107c",
+      "pre": "9e43c8dd7ea12f061881f14ec79a102c870f267be472e04f1a0ef39f83d9c39e"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.validatePmp": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "996bd5a153d408e58f095a07dd55c1233d3b9387e703f4de24f314ce72daffcb",
+      "pre": "c05c7b98ea292ee470bba27276e96f6f5d068c7321b861b69a99352b1993a3c7"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.waitStep": {
+      "args": [],
+      "effects": [
+        "io-order",
+        "machine-state",
+        "interrupt-state",
+        "firmware-call",
+        "wait-state"
+      ],
+      "post": "a94de7624580d9b2f6b5197b47d7151a2fb9aac1be20c53f2190dbdf365d3087",
+      "pre": "10c2ccec554334e8573f8603bec0940e3a77c00a2afab757f3c9c043fbca9078"
+    },
+    "Lemma.Platform.Silicon.Development.WiFiCommonProbe.wrongPurposeCheck": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "54889552b6c56e6b3d42c9bba87d7c0b1517bb93ee78c86c1e0d8e3a0d1016c2",
+      "pre": "49cf2ea0c10012967175c16ee197bc50592ba5c9245a12f43866ba5e6b754e34"
+    },
+    "Lemma.Radio.WiFi.Controller.acknowledge": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "1bf2b8effb5f2990040003a2ee6e26d317db6380bc7c47f99ddcf974e1aa9590",
+      "pre": "b56841b2c253aea63dcee5e694044edddc0a05f55cec144e30076ab60a3440f9"
+    },
+    "Lemma.Radio.WiFi.Controller.arm": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "0a1093b1931ac33ffa07997a2dc165d86561f10d720ea325e7da98f18401a808",
+      "pre": "b831bc32e812f42784ff58751dcdf426e0b276b56cb0cd7bdb6f59f6a4996b88"
+    },
+    "Lemma.Radio.WiFi.Controller.busy": {
+      "args": [],
+      "effects": [],
+      "post": "9f416da4f9f8836f9e1d8f44fb4a758178012539d59335e47e611e2bcaf83bca",
+      "pre": "2baa9d69cccb76016512471e0c8ed68d1f27d5a9af493c73f1e15a02c3e5fa19"
+    },
+    "Lemma.Radio.WiFi.Controller.descriptorValid": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [],
+      "post": "774eed81d6265eb1ff0479dad3a92674370cd2b922935b075ad56dd1460b73cf",
+      "pre": "58970220902a5b1303d7e8e4f92a77c241a8f45597340f94252f0f1e83726038"
+    },
+    "Lemma.Radio.WiFi.Controller.events": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "43be24532b0eb53f76fe1f0b95b26d1a3642c994b464f1d4c61b50f5d1c3f2c9",
+      "pre": "503efbc62c0c32b7a678170f32548c4e313cb469633b97e6ad90021989877935"
+    },
+    "Lemma.Radio.WiFi.Controller.initialize": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "613e4084a7e7e9c0c872f8748d40372876cce8583417bdb01a5f2ce59265dab1",
+      "pre": "9ab4ed100fe815cafe77dd5db72ff7eb84d8dbe5d1388f95c13a450e16073e8e"
+    },
+    "Lemma.Radio.WiFi.Controller.invalid": {
+      "args": [],
+      "effects": [],
+      "post": "0e2eac2058fb5b3db3cfc32f4efc79a785414147618d6f787132f3bf01e1c346",
+      "pre": "d29143d3f32801045e2141489163a46cd2b2d047bd510f2a5eccc4338e646a1a"
+    },
+    "Lemma.Radio.WiFi.Controller.read": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order"
+      ],
+      "post": "b994d4ea85daf8267ee4167e321f50de5a2f9e624f401190651ad0a15349d990",
+      "pre": "ff3e15a2bef8379f1c5113c6d7f5dc198b7665bee72634f2894cf0466ad73482"
+    },
+    "Lemma.Radio.WiFi.Controller.receiveOwned": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "0fe875b9a12ded83da71952a65620222abdb442636d3ff331581730a634cf7fc",
+      "pre": "1ee4d7034de64612092511790db2bdb2618c4b54c4224c430c6356b3614f698d"
+    },
+    "Lemma.Radio.WiFi.Controller.receiveStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-write"
+      ],
+      "post": "336ec8a9428816fb82dd1df5b2a9963e417ab741a65073ab48b19fe9c8452a54",
+      "pre": "c87d63cef5b4692a2a8442feaf021e8fec656bb64fc147fa1592f3336bf7c74f"
+    },
+    "Lemma.Radio.WiFi.Controller.releaseHead": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "084bebdf690161063b5a5fbe9ae6ccefd1d5bfa36a2b2ab4f91d18979953b6c4",
+      "pre": "56444934bdea07eda38edda0525769564767cc658d25c7147770776ef8e15066"
+    },
+    "Lemma.Radio.WiFi.Controller.stageStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order",
+        "physical-read"
+      ],
+      "post": "25024ff6f42fc6a40846c4db70403225bc55eebc37e996ec7a875dedfaf5cd5e",
+      "pre": "36d7c8bd590d8db7d60a7e8b7784c9c22654528473aae6f9eb85a55ca1cc1489"
+    },
+    "Lemma.Radio.WiFi.Controller.submitPinned": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read"
+      ],
+      "post": "61ac3e27525c9799aec1236c6a00c97009a52fb8d4995cca999c38075e08e3ad",
+      "pre": "84f9445480f4dee646d171f9ad81a1a93f39ef0034a8706b0259e6630e69caa2"
+    },
+    "Lemma.Radio.WiFi.Controller.write": {
+      "args": [
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-write",
+        "io-order"
+      ],
+      "post": "aa4acdba50be2cf6c1a63cbb6811398ab7bd2e812b818a9c930669aff69e56f0",
+      "pre": "c773e35e115865769a6d575d0aef3aad2d85beeb8913f1bbd609eb547c1871e6"
+    },
+    "Lemma.Radio.WiFi.Queue.clearStep": {
+      "args": [
+        "u32",
+        "u32",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "445596b77d40e55a9107ffa70c0d5dafee5b062ec76aab495eece76c420694ec",
+      "pre": "4bc70bbfa4891d25fda0309818d4a699a4afff4943c144d559cf33d3126102d6"
+    },
+    "Lemma.Radio.WiFi.Queue.complete": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "b6f723daa85231009ddecd42f847b81849b4305d21eeec80c0a8a96179ac8fd5",
+      "pre": "bf3d12e18975db887a29b33a3e77b5f5aa61d74b6ddebff11e031705ccbe467e"
+    },
+    "Lemma.Radio.WiFi.Queue.enqueue": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a71e4993fa11e4aeac2e710cc6d8b26a70656ec5033ed12c3367c2ab2669b03d",
+      "pre": "3a13d6c0a5cf994cb98f26bd5d4568940d4abc68114943fd4cda3173371465f0"
+    },
+    "Lemma.Radio.WiFi.Queue.finish": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "c9d141353654bb3a04d76ecfc8b9839df9cae1e839bfb24a2780e6e650adb005",
+      "pre": "46af1cc40399916e8719d37b4061500f4f8e5bb57bd3d2d0d6f5eae60c6d0aeb"
+    },
+    "Lemma.Radio.WiFi.Queue.full": {
+      "args": [],
+      "effects": [],
+      "post": "0c2e413e9561b8457eb5d613cfd031b11c8f14c98282f303642b6067c9a7171f",
+      "pre": "741a554ba8711c40c9bfd1b940a0029c3ee61edf00fdb476f4eb6d7ee3424055"
+    },
+    "Lemma.Radio.WiFi.Queue.initialize": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "38e299843016d80b6871cf23b1b932a6b004ed5598a40f3ec1e548ad4266025d",
+      "pre": "33fe1dad6c3856b289cb74f4f169d82de02fc628a84617b60ae5f5603c53f0e9"
+    },
+    "Lemma.Radio.WiFi.Queue.install": {
+      "args": [
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "7464225c69d64734ce29c46723ecfb1a0a9a963d429ecb4d6fb453b6c6ad39b6",
+      "pre": "41d28590162abdcdb3c658d594db549ef0909a487699b18b31152695e87e1ea4"
+    },
+    "Lemma.Radio.WiFi.Queue.kick": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "mmio-read",
+        "mmio-write",
+        "io-order",
+        "physical-read",
+        "physical-write"
+      ],
+      "post": "a31819809a5bcdc79f35a818492b888445ac2ec7039293bc2223669b1bcee4a2",
+      "pre": "af835f62387f5cf44bda8d0d4f57f9f85971968d5cc33e04f542d3973ddcae59"
+    },
+    "Lemma.Radio.WiFi.Queue.magic": {
+      "args": [],
+      "effects": [],
+      "post": "84ea51bb972b47704f72bbc6b4bfe0d1720bc11bfea5b4c588d62e9f4ffea32a",
+      "pre": "84ea51bb972b47704f72bbc6b4bfe0d1720bc11bfea5b4c588d62e9f4ffea32a"
+    },
+    "Lemma.Radio.WiFi.Queue.poison": {
+      "args": [
+        "u8"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "0a95f13d80e9843107b2a21f6ee5a338e4b8831ed507e65f930bcc728091093b",
+      "pre": "c3ea2c7bb8cbf716acf8d6ee4f41a93b28655eed061ac093b1a610cad4e7b8cf"
+    },
+    "Lemma.Radio.WiFi.Queue.quarantined": {
+      "args": [],
+      "effects": [],
+      "post": "2ed1af4e3f838093ae822615276b719940a9972b6d9e79814de1c866316549dc",
+      "pre": "33b18bf929f94890df77997cad4d860bce1696c3aa55f05bd1ca6c7dfcbeff5b"
+    },
+    "Lemma.Radio.WiFi.Queue.read": {
+      "args": [
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "04e105703f4fe9d9cd445e24bc251eb08afa9248d67efed5b8527fb35ae50d8f",
+      "pre": "5767af643efa97bd034f91b9b8a39f21ac7629a89fa2a0867c230e491b45a25a"
+    },
+    "Lemma.Radio.WiFi.Queue.slot": {
+      "args": [
+        "u64"
+      ],
+      "effects": [],
+      "post": "40b2e191ec0d2f94ae39ce854a4b724654d8ce13cec2316e6dff83339d4be7f6",
+      "pre": "df88f44a7cef2f41932be293bafd44f89dfd6d930dfb19d7726814883c6b734e"
+    },
+    "Lemma.Radio.WiFi.Queue.state": {
+      "args": [],
+      "effects": [],
+      "post": "b45c26b01910748437bcfddac16f55db526a696b479ae4ba3490ae38d58a0823",
+      "pre": "b45c26b01910748437bcfddac16f55db526a696b479ae4ba3490ae38d58a0823"
+    },
+    "Lemma.Radio.WiFi.Queue.valid": {
+      "args": [],
+      "effects": [
+        "checked-access",
+        "physical-read"
+      ],
+      "post": "f1e13869b2e4291a9f94b1be322970859612149caee97fef947f12edf6e5194b",
+      "pre": "dc0d453a3afade634f52a0952c61d2f87df2ce1047b17d0e5ab5c649c6bf8f31"
+    },
+    "Lemma.Radio.WiFi.Queue.write": {
+      "args": [
+        "u64",
+        "u64"
+      ],
+      "effects": [
+        "checked-access",
+        "physical-write"
+      ],
+      "post": "1ae4a57c68526ab263de9df259c0144829efdba1374183416c60f5ce1ec02a64",
+      "pre": "31b8a18681a9274227f2d6b81311a13eef6b7c021fe95e7086c895fa0ae1b0ce"
+    }
+  },
+  "post_ir_sha256": "6218cbb4ffff38ad20d2ca3e5a1e6e7772147f2c49c0a1b365c89bf120f662cf",
+  "pre_ir_sha256": "9bd72de11092611ff53122d6bd08114ac53d89da3811e473a98a91273b70b730",
+  "schema": "lemma-common-kernel8-authority/1",
+  "source_component_result_sha256": "2e1ee95acde1a8e37d0104afb2deaccb44478b28fa024df5e64ef0996d6271fa"
+}

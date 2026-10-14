@@ -98,6 +98,12 @@ struct State {
  uint64_t ble_raw_valid=0,ble_raw_bit=0,ble_ack_pending=0,ble_ack_header=0;
  uint64_t ble_chip_samples=0,ble_peer_samples=0,ble_rx_heads=0,ble_accepted_replies=0;
  std::deque<std::array<uint64_t,2>> ble_pio;
+ // Optional CommonOFDM raw environmental bus/wire phase, no host coding policy.
+ uint64_t wifi_coex=1,wifi_raw_valid=0,wifi_raw_i=0,wifi_raw_q=0;
+ uint64_t wifi_to_chip_valid=0,wifi_to_chip_i=0,wifi_to_chip_q=0;
+ uint64_t wifi_to_peer_valid=0,wifi_to_peer_i=0,wifi_to_peer_q=0;
+ uint64_t wifi_chip_samples=0,wifi_peer_samples=0,wifi_peer_beats=0;
+ std::deque<std::array<uint64_t,2>> wifi_pio;
 };
 class Machine {
  std::unique_ptr<VerilatedContext> context;
@@ -124,6 +130,9 @@ class Machine {
  std::ofstream ble_capture,ble_wire;
  std::string active_ble_capture;
  uint64_t ble_capture_bytes=0,ble_capture_branch=0;
+ void wifi_before_edge();
+ void wifi_after_edge();
+ std::string wifi_inspect() const;
  void ble_before_edge();
  void ble_after_edge();
  uint64_t ble_read(uint64_t);
