@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "PASS_COMPONENT_AND_AUDITED_INPUTS_ORIGINAL_CALLBACK_DEFECT_RETAINED",
-  "scope": "Paper3 circuitry/health component and original audited Product10 inputs remain qualified in their stated scope. The original image3fdf has a copied callback argument9, so it is not trial-confirmation qualified. Initial real install/status/handoff passed; ordinary initial cold Ready is running. A genuine component-qualified callback10 repair requires a fresh full image and actual trial.",
+  "status": "PASS_PRODUCT10_HEALTHY_TRIAL_CONFIRMATION_ORIGINAL_FAILURES_RETAINED",
+  "scope": "Paper3 circuitry and genuinely compiled Product10 ROM/kernel now connect real installation, full canonical Ready and healthy trial confirmation. Original callback9 image remains not confirmable; callback10 replacement ID2 is confirmed through actual NV WRITE/BARRIER after full executed quality scan. A separate read-only same-cycle observer corrects the tape-export API error while retaining its original runner FAIL. CRC integrity only; interruption/fallback and authentication remain separate.",
   "profile": "lemma-silicon-dev/0.10.0",
   "descriptor_abi": 11,
   "paper_version": 3,
@@ -74,6 +74,16 @@
     {
       "path": "build/task006-product-executed-image-a1.log",
       "cause": "pack_elf compatibility guard omitted explicit new10 value, corrected narrowly and independently tested"
+    },
+    {
+      "path": "build/boot/task006-product-executed-trial-a1/ready-result-a1.json",
+      "sha256": "29a4f3796a9192df9813a1156787730f31e34b961d71af0ac986d9c19af45202",
+      "cause": "Original same-trial Ready observer interrupted after missing user_sha256 plan alias; exact paused state retained and original aggregate bounds preserved."
+    },
+    {
+      "path": "build/boot/task006-product-executed-trial-a1/ready-result-a2.json",
+      "sha256": "e76f6dde625afe1437f7181264066f5a8d8be2b79ed876cf0406b39b1858f588",
+      "cause": "After actual full Ready, target health and CRC-valid confirmation, observer incorrectly used boot-outcomes (replay binding) as an export. Original FAIL and checkpoint retained; separate same-cycle reobserver copies already-recorded tape without target advancement."
     }
   ],
   "full_guest": {
@@ -107,7 +117,7 @@
     "source_inputs": 244
   },
   "actual_product_campaign": {
-    "status": "RUNNING_INITIAL_READY_NOT_CONFIRMABLE_ORIGINAL_CALLBACK9",
+    "status": "PASS_INITIAL_READY_NOT_CONFIRMABLE_ORIGINAL_CALLBACK9",
     "path": "build/boot/task006-product-executed-boot-a1",
     "prepared": "build/boot/task006-product-executed-prepared-a1",
     "package": "build/boot/task006-product-executed-image-a2",
@@ -148,6 +158,25 @@
         "status": 0,
         "value": 2147483648
       }
+    },
+    "initial_ready": {
+      "status": "PASS_INITIAL_PRODUCT10_READY",
+      "receipt": "build/boot/task006-product-executed-boot-a1/ready-result-a1.json",
+      "additional_cycles": 898000000,
+      "host_seconds": 4237.241305804986,
+      "origin_cycle": 153530000,
+      "final_cycle": 1051530000,
+      "full_pixels_sha256": "331fac60128165e6b01f73573da0297f123a51e0be9d282b6e1e309b32ef643a",
+      "documents_unchanged": true,
+      "panel_sequence": 1,
+      "panel_completed": 1,
+      "observational_snapshot_cycle": 1051530000,
+      "health_rows": [],
+      "scope": "Fresh immutable recovery established first image. Full live services/controller/document health observed here. Original callback9 cannot confirm a trial; corrected replacement image is required and its actual trial remains separate."
+    },
+    "original_idle_owner_retention": {
+      "path": "build/boot/task006-product-executed-boot-a1/idle-owner-retention-a1.json",
+      "sha256": "180f1b43141ed102a46c8d682ca38802efbac099849c80d841993482fa62c413"
     }
   },
   "commands": [
@@ -157,7 +186,6 @@
     "nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py build/kernel/product10-notebook-new"
   ],
   "remaining": [
-    "Actual Product10 full canonical Ready and durable trial confirmation",
     "Product10 interruption/fallback after known-good10 and exact full-machine suffixes around new health",
     "Authentication and anti-rollback (CRC32 integrity only)",
     "Attached-live-USB plus BootNV exact snapshot admission",
@@ -176,7 +204,101 @@
     "unchanged_body_authorities": 115,
     "explicit_independent_guard": "the actual maintained emitted callback must directly call modernExecutedStep(i64 10)",
     "actual_mutants_rejected": 29,
-    "current_whole_corrected_guest": "NOT_BUILT",
-    "current_corrected_trial": "NOT_RUN"
+    "current_whole_corrected_guest": {
+      "status": "PASS_GENUINE_WHOLE_BUILD_AND_STRICT_AUDIT",
+      "path": "build/kernel/task006-product-executed-bulk-notebook-a2",
+      "image_sha256": "4f4383f53f9cfd386eda7484a3a7c43047f94a79998c7e2d8bbf969dad75f524",
+      "source_inputs": 310,
+      "archive_manifest_sha256": "1c5b6848ce44ec79a01164ff05a0783642b8a08519bc6948a0389e680849c08d",
+      "audit_sha256": "3e5ee76649a890735de398b5c6b438eb387f65bf465b04a618c04ab6d7666b81",
+      "scope": "Fresh callback10 image includes same-pixel CourseWord renderer; actual replacement trial remains separate"
+    },
+    "current_corrected_trial": {
+      "status": "PASS_CORRECTED_PRODUCT10_TRIAL_CONFIRMATION_REOBSERVER",
+      "path": "build/boot/task006-product-executed-trial-a1",
+      "package": "build/boot/task006-product-executed-image-a3",
+      "image_id": "0xa000000000002",
+      "slot": 1,
+      "private_source": "Original Product10 initial Ready exact exported boot/user media; original callback9 owner was closed only after complete checkpoint retention validation. Corrected confirmed owner remains paused; no user-media cleanup.",
+      "bounds": "install250M/3600,handoff100M/1200,healthyReady2B/7200; allprospectivelydeclared beforetransfer",
+      "receipt": {
+        "path": "build/boot/task006-product-executed-trial-a1/confirmed-reobserver-a3.json",
+        "sha256": "26f6266ba6e8f9cf471ce6cf917301f12587a47934f01e354387273504daab09"
+      },
+      "origin_cycle": 154820000,
+      "final_cycle": 1053820000,
+      "additional_cycles": 899000000,
+      "host_seconds_to_observed_health": 4994.503591124027,
+      "read_only_observer_host_seconds": 5.662441702967044,
+      "health_rows": [
+        [
+          1139,
+          0,
+          1,
+          1,
+          0
+        ]
+      ],
+      "full_pixels_sha256": "331fac60128165e6b01f73573da0297f123a51e0be9d282b6e1e309b32ef643a",
+      "documents_unchanged": true,
+      "confirmed_source_slot0_unchanged": true,
+      "metadata": {
+        "sector": 1,
+        "generation": 4,
+        "confirmed_slot": 1,
+        "confirmed_image_id": "0x000a000000000002",
+        "trial_slot": 2,
+        "trial_image_id": 0,
+        "attempts": 0,
+        "maximum_attempts": 3,
+        "crc32": 3412322454
+      },
+      "actual_confirmation": [
+        {
+          "id": 4359,
+          "request_cycle": 1053256443,
+          "accepted_cycle": 1053256443,
+          "kind": "WRITE",
+          "offset": 512,
+          "length": 512,
+          "transferred": 512,
+          "error": 0,
+          "request_payload_sha256": "9a421885d7d32d420fe8fb25f9672363a38ae4246c6c1fe1df402bca240cba9c",
+          "actual_prefix_sha256": "9a421885d7d32d420fe8fb25f9672363a38ae4246c6c1fe1df402bca240cba9c"
+        },
+        {
+          "id": 4360,
+          "request_cycle": 1053257699,
+          "accepted_cycle": 1053257699,
+          "kind": "BARRIER",
+          "offset": 0,
+          "length": 0,
+          "transferred": 0,
+          "error": 0,
+          "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actual_prefix_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "tape": {
+        "path": "build/boot/task006-product-executed-trial-a1/confirmed-boot-outcomes-a3.nvio",
+        "bytes": 3671880,
+        "sha256": "b86a1b932dc0fcfb7f94d44719b000ade5c20c08cdfd1b954cd54f85a7d37575"
+      },
+      "tape_before_after_equal": true,
+      "observational_checkpoint": {
+        "path": "build/boot/task006-product-executed-trial-a1/confirmed-checkpoint-a3/machine.chk",
+        "bytes": 146002718,
+        "sha256": "5cd60568ce7475cc1aaf2fcfb53180a9beea11c76d47083dbe1aed38177af962"
+      },
+      "no_cpu_advance": true,
+      "controller_origins": {
+        "initial_host_lifetime_completed": 0,
+        "initial_controller_sequence": 0,
+        "initial_power_reset_epoch": 0,
+        "initial_boot_reset_origin": 1,
+        "final_boot_reset_origin": 1
+      },
+      "qualification": "Actual corrected callback10 ROM-loaded trial: full canonical quality scan, target health receipt, real NV WRITE4359/BARRIER4360, CRC-valid durable generation4 confirming slot1/ID2. Read-only same-cycle reobserver preserves original runner FAIL; no replay binding, CPU run, drain, guest barrier, reset or deadline extension. CRC integrity only; authentication and anti-rollback remain open."
+    }
   }
 }
