@@ -1,0 +1,250 @@
+{
+  "schema": "lemma-usb-fullspeed-pending-evidence/1",
+  "status": "PASS",
+  "scope": "Genuine audited RV64 Wire initializer, two distinct RTL PHYs and complete same-backend observational snapshots. Private forks consume exact captured raw outcomes through a validated horizon; no original peer contact or external action resubmission. No privately live peer, QEMU cache, normative jitter/MAC timing or notebook Ready/Save/cold claim.",
+  "identity": {
+    "native": "20a35cbef6956b25f3ad6ab1c16d0914124d29b2f013b1b549151a8e73fe179a",
+    "implementation": "605f45337d317039f4fc3a026e397bb1f863f491b4685f20ba0323ce0ff7f1f2",
+    "guest": "f46730799404d8f866ae3f3ba8d8c7294000669078088bbc73defd94bca4f261",
+    "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+    "dtb": "0b606e67baacf2790ea97640557abf2b4810760d80fcf8885b78882a0656c978",
+    "descriptor": "d273b9213eb3db6218125560aa5958d7b5d3d2b31b360dbd101534f4309d20d3"
+  },
+  "profile": "lemma-silicon-dev/0.11.0",
+  "native_source_archive": {
+    "schema": "lemma-explicit-rtl-source-archive/1",
+    "source_root": "/home/sreekumaar/Downloads/lemma/build/usb/native11-consumed-source-archive-a1/source",
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/native11-consumed-source-archive-a1/consumed-source-archive.json",
+      "sha256": "4c89d18f6426b50585fe4f11923a0af29ec2799bd53645a56ab5eb4a1dbdcc6c"
+    },
+    "original_receipt": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/usb/native11-consumed-source-archive-a1/consumed-runtime-receipt.json",
+      "sha256": "403312deeff50c9768765e0f5160c827d43a8a5064c9f47cff35d35fdb581449"
+    },
+    "native_manifest": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-wire-runtime-a1/build.json",
+      "sha256": "aac8e5a67700ede20591e4dc52446b4278e42752636f31d19714c7d700869881"
+    },
+    "snapshot_identity": "605f45337d317039f4fc3a026e397bb1f863f491b4685f20ba0323ce0ff7f1f2",
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/silicon/task006-usb-wire-runtime-a1/obj/lemma-rtl",
+      "sha256": "20a35cbef6956b25f3ad6ab1c16d0914124d29b2f013b1b549151a8e73fe179a"
+    },
+    "inputs": 246,
+    "scope": "unchanged archived native USBWire11 machine; newly prepared guests retain their own source and audit identities"
+  },
+  "guest_complete_source_inputs": 312,
+  "guest_cohort": {
+    "path": "build/managed/usb-wire-current-cohort-a3.json",
+    "sha256": "5abba0f5b19e3b3474af7e46da6026bab3fc40f6949ea1e59a1e78e8d97b3040"
+  },
+  "bundle": {
+    "path": "build/native/task006-usb-wire-a2/bundle.json",
+    "sha256": "152572a9c95528bac3257a3c4ca3b258d9a7237d26b47e6ea3bad5497ed80662",
+    "schema": "lemmasim-native-bundle/5",
+    "files": 733
+  },
+  "actual_result": {
+    "path": "build/usb/wire-pending-a2/result.json",
+    "sha256": "75ed005aa7bff894539a7268f452dec2e95d75e11a04986d061cf7cd0a781cce"
+  },
+  "actual_supervision": {
+    "path": "build/usb/wire-pending-a2/run.supervision.json",
+    "sha256": "0ad69cfc14d301963f28c3d300ea14396e0833081944a609c47e024fb08ae01e",
+    "owned_survivors": [],
+    "automatic_restart": false
+  },
+  "bounds": {
+    "target_cycles": 70000000,
+    "fixture_host_seconds": 1800,
+    "external_host_response_timeout_ms": 60000,
+    "maximum_fixture_tree_rss_kib": 4194304,
+    "maximum_owned_apparent_bytes": 12000000000
+  },
+  "measurements": {
+    "host_seconds": 137.630519918981,
+    "last_boundary_cycle": 9480061,
+    "peak_fixture_rss_kib": 1024644,
+    "sampled_owned_process_tree_peak_rss_kib": 1007196,
+    "owned_disk": {
+      "apparent_bytes": 6822526955,
+      "allocated_bytes": 6554353664
+    }
+  },
+  "cases": [
+    {
+      "case": "startup",
+      "snapshot_cycle": 0,
+      "suffix_cycles": 5000,
+      "host_seconds": 6.20801,
+      "peak_rss_kib": 989940,
+      "captured_host_tx_state": 0,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 0,
+      "captured_incoming_bytes": 0,
+      "pending_command": 2
+    },
+    {
+      "case": "reset",
+      "snapshot_cycle": 5000,
+      "suffix_cycles": 3000,
+      "host_seconds": 6.32601,
+      "peak_rss_kib": 989940,
+      "captured_host_tx_state": 0,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 0,
+      "captured_incoming_bytes": 0,
+      "pending_command": 2
+    },
+    {
+      "case": "physical-send",
+      "snapshot_cycle": 5002003,
+      "suffix_cycles": 5000,
+      "host_seconds": 7.06963,
+      "peak_rss_kib": 989940,
+      "captured_host_tx_state": 1,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 3,
+      "captured_incoming_bytes": 3,
+      "pending_command": 8
+    },
+    {
+      "case": "physical-receive",
+      "snapshot_cycle": 5009067,
+      "suffix_cycles": 5000,
+      "host_seconds": 6.78845,
+      "peak_rss_kib": 989948,
+      "captured_host_tx_state": 2,
+      "captured_chip_rx_state": 2,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 3,
+      "captured_incoming_bytes": 3,
+      "pending_command": 0
+    },
+    {
+      "case": "physical-guard",
+      "snapshot_cycle": 5017294,
+      "suffix_cycles": 5000,
+      "host_seconds": 8.09856,
+      "peak_rss_kib": 989948,
+      "captured_host_tx_state": 0,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 1,
+      "captured_guard_samples": 8,
+      "captured_cursor": 3,
+      "captured_incoming_bytes": 3,
+      "pending_command": 0
+    },
+    {
+      "case": "physical-chip-send",
+      "snapshot_cycle": 5025311,
+      "suffix_cycles": 5000,
+      "host_seconds": 7.8179,
+      "peak_rss_kib": 989948,
+      "captured_host_tx_state": 0,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 1,
+      "captured_guard_samples": 0,
+      "captured_cursor": 0,
+      "captured_incoming_bytes": 0,
+      "pending_command": 0
+    },
+    {
+      "case": "owned-submit",
+      "snapshot_cycle": 9360000,
+      "suffix_cycles": 5000,
+      "host_seconds": 7.1895,
+      "peak_rss_kib": 1024644,
+      "captured_host_tx_state": 0,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 0,
+      "captured_incoming_bytes": 0,
+      "pending_command": 0
+    },
+    {
+      "case": "owned-receive",
+      "snapshot_cycle": 9372426,
+      "suffix_cycles": 5000,
+      "host_seconds": 6.24185,
+      "peak_rss_kib": 1024644,
+      "captured_host_tx_state": 6,
+      "captured_chip_rx_state": 0,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 35,
+      "captured_incoming_bytes": 35,
+      "pending_command": 3293
+    },
+    {
+      "case": "domain-reset",
+      "snapshot_cycle": 9477061,
+      "suffix_cycles": 3000,
+      "host_seconds": 6.04831,
+      "peak_rss_kib": 1024644,
+      "captured_host_tx_state": 2,
+      "captured_chip_rx_state": 1,
+      "captured_chip_tx_state": 0,
+      "captured_guard_samples": 0,
+      "captured_cursor": 3,
+      "captured_incoming_bytes": 3,
+      "pending_command": 0
+    }
+  ],
+  "case_field_scope": "captured_* fields describe the snapshot cut; pending_command is the original suffix-end request ID, as emitted by the exact executed fixture.",
+  "properties": [
+    "actual guest descriptor stage2 and stage3 status0, physical controller discovery and owner-checked transmit/receive",
+    "all nine required startup/reset/physical/guard/owned queue/domain-reset cuts",
+    "snapshot and raw tape export leave original inspect state and capture prefix unchanged",
+    "full initial restored snapshots and full applicable final snapshot bytes exactly equal",
+    "missing tape and horizon+1 reject before a clock",
+    "corrupt snapshot/tape and incompatible identity reject without adopting state",
+    "original capture/inspect unchanged by private replay",
+    "all owned fixture children reaped within original fixed deadline, no automatic restart"
+  ],
+  "sources": {
+    "fixture": {
+      "path": "tests/lemmasim/native_usb_wire_pending.cpp",
+      "sha256": "c63b5b0702425e8a76b72b83b7df9f3f438f591b20b89c64b870470216ec24ea"
+    },
+    "observer": {
+      "path": "scripts/check_native_usb_wire_pending.py",
+      "sha256": "562ef00fb29c8c2d3619d04bcc7be23f53ef91638d932bce0e0af668620999f1"
+    },
+    "test_binary_sha256": "ae2b1a6ce3b54683209ceda0e1dad4cbe23af9742fca8b338d4363f2103d23e8"
+  },
+  "command": "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_wire_pending.py --rtl-build build/silicon/task006-usb-wire-runtime-a1 --rtl-source-root build/usb/native11-consumed-source-archive-a1/source --native-bundle build/native/task006-usb-wire-a2 --host-prepared build/usb/host-pending-policy4-a3/prepared.json --formatted-peer build/usb/store-initialize-a3/peer --formatted-outbox build/usb/store-initialize-a3/outbox --work-dir UNUSED_OWNED_BUILD_PATH'",
+  "retained_failures": [
+    {
+      "path": "build/usb/wire-pending-a1/result.json",
+      "sha256": "a094fb404aefb3644af0f84e6c9c8b24cb47fec96534261f3e3e65ecd92c6c0b",
+      "meaning": "Actual stage2/status169 before USB service; no target or host deadline exhausted."
+    },
+    {
+      "path": "build/usb/wire-pending-a1/diagnosis-a2.json",
+      "sha256": "29cd6c427db01941c1c7aa642960fbfca78519cdc4eb86bb9892190dfa98108e",
+      "meaning": "Exact consumed source reused reset flag128 for boundary; existing duplicate guard returns169. Static flag aggregation is not a captured runtime state."
+    },
+    {
+      "path": "build/usb/wire-cut-readonly-diagnosis-a1/result.json",
+      "sha256": "fed39053bda470b6db29c46134fadb9d640799149991dedeb091297ec6e94869",
+      "meaning": "Zero-clock retained-prefix restore showed idle observer could miss a complete310-clock SEND. Poll-boundary sampling repair changes no machine clocks, ordering, deadline or oracle."
+    }
+  ],
+  "remaining": [
+    "The 100MHz source lattice does not qualify USB normative source jitter; finer clock-domain implementation is needed.",
+    "Development token/ACK/poll timing, SOF/suspend/resume/remote wake/hubs/isochronous/other speeds/fullUSB/electrical certification remain unfinished.",
+    "Whole Wire notebook Ready/raw ink/durable Save/lost ACK/cold recovery remain separate.",
+    "Exact captured suffixes require recorded external outcomes and finite horizon; no unrestricted privately live peer continuation.",
+    "QEMU omitted-cache exact-continuation gap remains separate."
+  ]
+}

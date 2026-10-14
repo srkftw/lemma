@@ -22,6 +22,7 @@ REGISTRY = {
                'heap_objects':31,'semantic_budgets':[0,8],'deadline_ticks':10000000},
 }
 CONFIGURATIONS = frozenset({'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'}) | frozenset(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
+CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 ROOT = 'Lemma.Services.Arithmetic.ServerV3.main'
 PROTOCOL = 'Lemma.Services.Arithmetic.ProtocolV3.'
 # Independently inspected source-bound genuine User3 Arithmetic probe binds

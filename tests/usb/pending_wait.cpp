@@ -10,6 +10,7 @@ int main() {
     VerilatedContext context;
     context.threads(1);
     Vlemma_usb_device model(&context);
+    model.rx_abort=0;
     model.enabled=1; model.connected=1; model.bus_reset=0;
     model.valid=0; model.write=0; model.rx_valid=0; model.tx_ready=0;
     auto tick=[&]() { model.clk=0;model.eval();model.clk=1;model.eval(); };

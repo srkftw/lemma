@@ -170,6 +170,8 @@ def bundle(args):
     name=args.profile
     if name in USB_NATIVE_DEPLOYMENTS:
         return bundle_usb_next(args, name)
+    if getattr(args,'initializer_guest_source_root',None) is not None:
+        raise ValueError('Separate initializer source archives support only USB native schemas')
     if getattr(args,'rtl_source_root',None) is not None:
         raise ValueError('Explicit native source archives are admitted only by USB native schemas')
     if name!='lemma-silicon-dev/0.3.0':raise ValueError('Native bundle v1 admits canonical0.3 only')
@@ -310,6 +312,15 @@ def bundle(args):
     print(out/'bundle.json')
 
 
+def usb_archive_roots(args):
+    """Select explicit per-role archives without introducing a ROOT fallback."""
+    notebook = getattr(args, 'guest_source_root', None)
+    initializer = getattr(args, 'initializer_guest_source_root', None)
+    if initializer is not None and notebook is None:
+        raise ValueError('Separate initializer archive requires explicit notebook guest archive')
+    return notebook, initializer if initializer is not None else notebook
+
+
 def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
     """Pack one independently validated USB8 RTL/guest pair; no fast backend.
 
@@ -323,14 +334,14 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
            ('base_bundle', 'notebook_build', 'initializer_build')):
         raise ValueError('USB8 package requires its prepared exact pair; canonical backend replacement is separate')
     native_root = getattr(args, 'rtl_source_root', None)
-    guest_root = getattr(args, 'guest_source_root', None)
+    guest_root, initializer_root = usb_archive_roots(args)
     if selected_profile not in USB_NATIVE_DEPLOYMENTS:raise ValueError('Unsupported USB native package profile')
     selected_schema, selected_deployment, selected_configurations=USB_NATIVE_DEPLOYMENTS[selected_profile]
     roles = tuple(selected_configurations)
     data = guest.prepared(roles[0], selected_profile, rtl_source_root=native_root,
                           guest_source_root=guest_root)
     other = guest.prepared(roles[1], selected_profile, rtl_source_root=native_root,
-                           guest_source_root=guest_root)
+                           guest_source_root=initializer_root)
     for key in ('binary', 'rom', 'rom_audit', 'rtl_build', 'rtl_sources'):
         if data[key] != other[key]:
             raise ValueError('USB8 package roles have different machine implementations')
@@ -339,7 +350,10 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
         raise ValueError('USB8 package selected RTL implementation differs')
     guest.reset_rom_audit(data)
     origin = Path(guest_root).resolve() if guest_root is not None else ROOT
+    initializer_origin = Path(initializer_root).resolve() if initializer_root is not None else ROOT
     sources = source_inputs(origin)
+    if source_inputs(initializer_origin) != sources:
+        raise ValueError('USB guest archives have different complete consumed source inventories')
     for role, configuration in selected_configurations.items():
         build = Path(data['workloads'][role]['build']['path']).parent
         provenance = read_json(build / 'provenance.json')
@@ -421,7 +435,7 @@ def bundle_usb_next(args, selected_profile=USB_NEXT_PROFILE):
         'ELF preload is development boot; physical conformance UNVERIFIED.\n')
     manifest['files'] = {str(path.relative_to(out)): {'sha256': guest.sha(path), 'bytes': path.stat().st_size,
                         'executable': os.access(path, os.X_OK)} for path in sorted(out.rglob('*')) if path.is_file()}
-    if source_inputs(origin) != sources:
+    if source_inputs(origin) != sources or source_inputs(initializer_origin) != sources:
         raise ValueError('USB8 source inputs changed during pack')
     (out / 'bundle.json').write_text(json.dumps(manifest, indent=2) + '\n')
     for role in roles:

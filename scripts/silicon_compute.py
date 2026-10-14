@@ -54,7 +54,7 @@ def source_manifest(dep, profile_name=None):
     binding.write_text('// Generated from '+str(profile_path(profile_name).relative_to(ROOT))+'\npackage lemma_silicon_binding;\n'+''.join(f"  localparam logic [63:0] {k.upper()} = 64'h{v:016x};\n" for k,v in fields.items())+'endpackage\n')
     header=generated/'lemma_silicon_binding.h'
     header.write_text('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items()))
-    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
+    paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_usb_fs_phy.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
             'core_license':'Apache-2.0 WITH SHL-2.1 and six preserved MIT-notice files','top':'lemma_soc',
             'host_toolchain_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'tooling/silicon/sim.nix',ROOT/'flake.lock')},

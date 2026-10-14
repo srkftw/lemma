@@ -11,7 +11,7 @@ PREPARED=ROOT/'build/lemmasim/rtl-prepared.json'
 MAX_RUN_SECONDS=7200
 CONFIGURATIONS={'service':'silicon-service-development', 'notebook':'lemmasim-silicon-notebook',
                 'initializer':'lemmasim-silicon-initialize','devices':'lemmasim-silicon-devices'}
-NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook'})
+NOTEBOOK_WORKLOADS=frozenset({'notebook','managed-notebook','usb-bulk-notebook','usb-next-bulk-notebook','usb-wire-bulk-notebook'})
 POWER_CONFIGURATIONS={'managed-notebook':'lemmasim-silicon-managed-notebook','managed-initializer':'lemmasim-silicon-managed-initialize','notebook':'lemmasim-silicon-power-notebook','initializer':'lemmasim-silicon-power-initialize','power':'lemmasim-silicon-power-probe'}
 FULL_CONFIGURATIONS={'notebook':'lemmasim-silicon-full-notebook', 'initializer':'lemmasim-silicon-full-initialize'}
 BLE_CONFIGURATIONS={'ble':'lemmasim-silicon-ble-link-probe'}
@@ -21,14 +21,16 @@ USB_NEXT_CONFIGURATIONS={'usb-next-bulk-notebook':'lemmasim-silicon-usb-next-bul
                          'usb-next-bulk-initializer':'lemmasim-silicon-usb-next-bulk-initialize'}
 PRODUCT_EXECUTED_CONFIGURATIONS={'product-executed-bulk-notebook':'lemmasim-silicon-product-executed-bulk-notebook'}
 PRODUCT_NEXT_CONFIGURATIONS={'product-next-bulk-notebook':'lemmasim-silicon-product-next-bulk-notebook'}
-USB_ARCHIVE_PROFILES=frozenset({'lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'})
+USB_WIRE_CONFIGURATIONS={'usb-wire-bulk-notebook':'lemmasim-silicon-usb-wire-bulk-notebook',
+                         'usb-wire-bulk-initializer':'lemmasim-silicon-usb-wire-bulk-initialize'}
+USB_ARCHIVE_PROFILES=frozenset({'lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0'})
 SAFETY_CONFIGURATIONS={'power':'lemmasim-silicon-power-safety-probe'}
 def configurations(name=None):
     profile(name)
-    return PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
+    return USB_WIRE_CONFIGURATIONS if name=='lemma-silicon-dev/0.11.0' else PRODUCT_EXECUTED_CONFIGURATIONS if name=='lemma-silicon-dev/0.10.0' else PRODUCT_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.9.0' else USB_NEXT_CONFIGURATIONS if name=='lemma-silicon-dev/0.8.0' else USB_CONFIGURATIONS if name=='lemma-silicon-dev/0.6.0' else BLE_CONFIGURATIONS if name=='lemma-silicon-dev/0.5.0' else SAFETY_CONFIGURATIONS if name=='lemma-silicon-dev/0.4.0' else POWER_CONFIGURATIONS if name=='lemma-silicon-dev/0.3.0' else FULL_CONFIGURATIONS if name=='lemma-silicon-dev/0.2.0' else CONFIGURATIONS
 def prepared_path(name=None):
     profile(name)
-    return ROOT/'build/lemmasim/rtl-prepared-0.10.0.json' if name=='lemma-silicon-dev/0.10.0' else ROOT/'build/lemmasim/rtl-prepared-0.9.0.json' if name=='lemma-silicon-dev/0.9.0' else ROOT/'build/lemmasim/rtl-prepared-0.8.0.json' if name=='lemma-silicon-dev/0.8.0' else ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
+    return ROOT/'build/lemmasim/rtl-prepared-0.11.0.json' if name=='lemma-silicon-dev/0.11.0' else ROOT/'build/lemmasim/rtl-prepared-0.10.0.json' if name=='lemma-silicon-dev/0.10.0' else ROOT/'build/lemmasim/rtl-prepared-0.9.0.json' if name=='lemma-silicon-dev/0.9.0' else ROOT/'build/lemmasim/rtl-prepared-0.8.0.json' if name=='lemma-silicon-dev/0.8.0' else ROOT/'build/lemmasim/rtl-prepared-0.6.0.json' if name=='lemma-silicon-dev/0.6.0' else ROOT/'build/lemmasim/rtl-prepared-0.5.0.json' if name=='lemma-silicon-dev/0.5.0' else ROOT/'build/lemmasim/rtl-prepared-0.4.0.json' if name=='lemma-silicon-dev/0.4.0' else ROOT/'build/lemmasim/rtl-prepared-0.3.0.json' if name=='lemma-silicon-dev/0.3.0' else ROOT/'build/lemmasim/rtl-prepared-0.2.0.json' if name=='lemma-silicon-dev/0.2.0' else PREPARED
 
 def sha(path):
     value=hashlib.sha256()
@@ -80,7 +82,7 @@ def native_source_archive(build,source_root,name):
     checked against their own current maintained Lean source inventory.
     """
     if name not in USB_ARCHIVE_PROFILES:
-        raise ValueError('Explicit RTL source archives support only USB6 or USB8; Product uses its separate ROM validator')
+        raise ValueError('Explicit RTL source archives support only USB6, USB8 or USBWire11; Product uses its separate ROM validator')
     build=Path(build).resolve();source_root=Path(source_root).resolve()
     manifest_path=build/'build.json';m=_read_unique_json(manifest_path)
     sidecar=source_root.parent/'consumed-source-archive.json'
@@ -163,7 +165,7 @@ def native_source_archive(build,source_root,name):
               'archive':identified(sidecar),'original_receipt':identified(receipt_path),
               'native_manifest':identified(manifest_path),'snapshot_identity':m['snapshot_identity'],
               'binary':identified(binary),'inputs':len(expected),
-              'scope':('unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.6.0' else 'unchanged archived native USB8 machine; newly prepared guests retain their own source and audit identities')}
+              'scope':('unchanged archived native USB6 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.6.0' else 'unchanged archived native USB8 machine; newly prepared guests retain their own source and audit identities' if name=='lemma-silicon-dev/0.8.0' else 'unchanged archived native USBWire11 machine; newly prepared guests retain their own source and audit identities')}
     return m,{str(ROOT/path):digest for path,digest in expected.items()},evidence
 
 def guest_source_archive(guest,source_root,configuration,optimization,name):
@@ -227,7 +229,7 @@ def guest_source_archive(guest,source_root,configuration,optimization,name):
             'source_commit':v['source_commit'],'dirty_paths':v['dirty_paths'],'inputs':len(expected),
             'configuration':configuration,'optimization':optimization,'tools':observed_tools,
             'lean_source_realization':realization,
-            'scope':('unchanged archived genuine USB6 guest and original strict audit; newly prepared host adapter, not fresh target compilation' if name=='lemma-silicon-dev/0.6.0' else 'unchanged archived genuine USB8 guest and original strict audit; newly prepared host adapter, not fresh target compilation')}
+            'scope':('unchanged archived genuine USB6 guest and original strict audit; newly prepared host adapter, not fresh target compilation' if name=='lemma-silicon-dev/0.6.0' else 'unchanged archived genuine USB8 guest and original strict audit; newly prepared host adapter, not fresh target compilation' if name=='lemma-silicon-dev/0.8.0' else 'unchanged archived genuine USBWire11 guest and original strict audit; newly prepared host adapter, not fresh target compilation')}
 
 def prepared(workload,name=None,*,rtl_source_root=None,guest_source_root=None):
     selected=configurations(name)

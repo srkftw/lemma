@@ -14,10 +14,11 @@ def main():
     p.add_argument('--rtl-build',type=Path,required=True)
     p.add_argument('--rtl-source-root',type=Path,required=True)
     p.add_argument('--work-dir',type=Path,required=True)
+    p.add_argument('--profile',choices=('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0'),default='lemma-silicon-dev/0.6.0')
     a=p.parse_args();build=a.rtl_build.resolve();origin=a.rtl_source_root.resolve();out=a.work_dir.resolve()
     if out.exists() or not out.is_relative_to(guest.ROOT/'build'):raise ValueError('Use an unused owned build output')
     out.mkdir(parents=True);started=time.monotonic();report={'schema':'lemma-native-source-archive-check/1','status':'FAIL','scope':__doc__,'cases':[]}
-    profile='lemma-silicon-dev/0.6.0'
+    profile=a.profile
     try:
         _,sources,evidence=guest.native_source_archive(build,origin,profile);report['original']=evidence
         private=out/'private';root=private/'consumed-source-root';shutil.copytree(origin,root)

@@ -1,0 +1,95 @@
+{
+  "schema": "lemma-usb-fullspeed-milestone/1",
+  "status": "COMPONENT_PASS_NATIVE_BUILT_GUEST_PENDING",
+  "scope": "real digital full-speed PHY/controller component and complete native build; guest/whole-machine suffix/standardMAC/electrical USB remain separate",
+  "component": {
+    "path": "build/usb/fullspeed-component-a2/result.json",
+    "sha256": "62b554a377a94ea348fd1239ec9e8ba3f9b57b7f103fcab3b7a1a48ad2f1abac",
+    "host_seconds": 31.09918722801376,
+    "binary_sha256": "6a731433bf888deaa3b9480d69923348890c4851c2a73bc787d00be3e0e8218b",
+    "source_inputs": {
+      "sim/rtl/lemma_usb_fs_phy.sv": "3ce744093f06a25580835fbb3f1353fcc0d4418db456bc22f80a20cf12f57d61",
+      "sim/rtl/lemma_usb_device.sv": "51384d7d185e55127d5b8ea37564223d91e94d0f107209b5faaac09d7bdc548c",
+      "conformance/silicon/USBFullSpeed.sv": "39801edf905dc4ec712e39b7fb481d30951a33da961c075786f588f4b93ca587",
+      "tests/usb/fs_phy.cpp": "5cb731bdc1a0c6a22440acd17f1e5234ec711a21cfee2f8d6063204a099c7876",
+      "scripts/check_usb_fullspeed.py": "ea5e4f594ba0ff2457f621aa1e897b35a66524b962050f293ae3a4e696831886",
+      "scripts/check_silicon.py": "c9cdbbdc8314db379581a0263795b40227fcc9a3d7661e4fb693daa25228459a",
+      "tooling/silicon/sim.nix": "81cb84fdab6c36979c9b40d492840ba53e0076d3bbe5a93ecb7247cba0cd271c",
+      "flake.lock": "fc1b32a4099ea3bd47553bab95c29d89f8fcf113706235885d7f13f6a6e76b2d"
+    },
+    "resources": {
+      "largest_reaped_child_peak_rss_kib": 345788,
+      "reaped_children_user_seconds": 52.579546,
+      "reaped_children_system_seconds": 3.117647
+    }
+  },
+  "legacy_packet_regression": {
+    "path": "build/usb/fullspeed-legacy-packet-a1/result.json",
+    "sha256": "eae85d0fd83402bfb0e04c7567389ab9d8c4edbd969e431e664ed976a9c09809",
+    "host_seconds": 27.624831493012607
+  },
+  "native": {
+    "path": "build/silicon/task006-usb-wire-runtime-a1/build.json",
+    "sha256": "aac8e5a67700ede20591e4dc52446b4278e42752636f31d19714c7d700869881",
+    "binary_sha256": "20a35cbef6956b25f3ad6ab1c16d0914124d29b2f013b1b549151a8e73fe179a",
+    "snapshot_identity": "605f45337d317039f4fc3a026e397bb1f863f491b4685f20ba0323ce0ff7f1f2",
+    "profile": "lemma-silicon-dev/0.11.0",
+    "consumed_archive": "build/usb/native11-consumed-source-archive-a1/source",
+    "consumed_inputs": 246,
+    "archive_status": "PASS complete compiled-native source/tool/core/binary/implementation association; guest association pending"
+  },
+  "retained_failures": {
+    "prototype-a6": "malformed SYNC resynchronized inside same physical packet; corrected quarantine",
+    "prototype-a8": "independent stuffed-zero locator omitted finalSYNCone; observer repair",
+    "prototype-a11": "malformed shortEOP left valid following packet quarantined; bounded idle-J recovery",
+    "maintained-component-a1": "strict filename/module mismatch; renamed fixture module without suppression",
+    "wire-pending-compile-a1": "default development shell lacks Verilator; no circuit/guest execution",
+    "wire-pending-compile-a2": "strict fixture inherited upstream header warnings; use pinned vendor system headers and retain fixture Werror"
+  },
+  "remaining": [
+    "actual RV64 guest/controller/peer route and notebook workflow",
+    "whole-machine profile11 captured pending suffix",
+    "standards-timed autonomous hostMAC and device packet deadlines",
+    "fullUSB feature/conformance and physical qualification",
+    "USB source-jitter envelope:100MHz TX lattice gives80/90ns symbols; normative consecutive2ns/paired1ns limits require finer clock/domain/CDC semantics. Existing \u00b11systemclock waveform oracle is explicitly narrower scope."
+  ],
+  "native_archive_qualification": {
+    "path": "build/usb/native11-source-archive-check-a1/result.json",
+    "sha256": "0b353f1acfa2ada639e7442d3f6499e664d2b31c3a7843ca9dbd5ea802fa9c66",
+    "status": "PASS",
+    "consumed_inputs": 246,
+    "actual_rejected_mutants": 10,
+    "host_seconds": 1.0009328440064564
+  },
+  "host_checks": {
+    "silicon_suite": {
+      "path": "build/task006-usb-wire-silicon-host-a1.log",
+      "sha256": "65998e1f1aa3ffc0d164185867ae24e56953995820b26e004c595c989ba92ecd",
+      "status": "PASS",
+      "tests": 190
+    },
+    "owned_child_cleanup": {
+      "path": "build/task006-usb-wire-fixture-host-a1.log",
+      "sha256": "77d3b96239930667cd36363ea57e223069557835a10757b9847d14f4e70f003e",
+      "status": "PASS",
+      "tests": 2,
+      "scope": "actual host process cleanup and preservation of unrelated child; no guest property claim"
+    },
+    "wire_profile_after_canonical_bundle_repair": {
+      "path": "build/task006-usb-wire-profile-after-bundle-a1.log",
+      "sha256": "b67cccef497b946934b541165e6c5964ae9b235f3f31d95a4d87ecb0ac9d76a3",
+      "status": "PASS",
+      "tests": 4,
+      "scope": "closed schema/profile/deployment selection and unchanged historical Lean bindings; no Wire guest execution"
+    }
+  },
+  "whole_machine_pending_fixture": {
+    "path": "build/usb/wire-pending-compile-a3/result.json",
+    "sha256": "d69d0fac601ce328179e01e63c27800bd49b1a05260f19b053996a490597841e",
+    "status": "COMPILED_NOT_EXECUTED",
+    "host_seconds": 2.208368727006018,
+    "test_binary_sha256": "8fd52b5e1f7b607cbd9fa8f65eadbbc14ecb5b1ee37c177097744d65e3493fb9",
+    "fixture_sha256": "a30798f8a00ce911b794e764116162d824004227d8bfe00101216d36d1e90b69",
+    "prospective_scope": "genuine Wire initializer startup/reset/physical SEND/RX/chipTX/guard/ownedRX/TX cuts and isolated exact applicable suffixes"
+  }
+}

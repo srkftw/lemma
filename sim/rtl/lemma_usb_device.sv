@@ -1,12 +1,12 @@
 // lemma-usb-device/1: full-speed EP0 + bulk IN1/OUT2 at decoded packet-byte
 // boundary. External bytes retain PID, token CRC5 and DATA CRC16. NRZI,
 // bit stuffing, electrical attach and recovered 12MHz PHY are separate.
-module lemma_usb_device (
+module lemma_usb_device #(parameter bit PHY_ABORT=0) (
  input logic clk,reset,enabled,connected,bus_reset,
  input logic valid,write,input logic [9:0] addr,input logic [2:0] size,
  input logic [63:0] wdata,output logic [63:0] rdata,
  output logic ready,error,irq,controller_busy,
- input logic rx_valid,rx_last,input logic [7:0] rx_byte,
+ input logic rx_valid,rx_last,rx_abort,input logic [7:0] rx_byte,
  output logic rx_ready,
  output logic tx_valid,tx_last,output logic [7:0] tx_byte,input logic tx_ready,
  output logic [63:0] ticks,rx_packets,tx_packets,packet_errors,
@@ -237,6 +237,7 @@ module lemma_usb_device (
          end
        end
      end
+     if(PHY_ABORT&&rx_abort)begin rx_count<=0;rx_overflow<=0;token_pending<=0;packet_errors<=packet_errors+1;fault<=1;events<=event_base|32;end
    end
  end
 endmodule

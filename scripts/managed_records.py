@@ -48,6 +48,7 @@ SOFTWARE_DEPLOYMENT = {'contract_version':'lemma-managed-notebook-deployment-v1'
  'silicon_profile':'lemma-silicon-dev/0.3.0',
  'user_profiles':{'store':'core0-user-v0.1','notebook':'core0-user-v0.2','arithmetic':'core0-user-v0.2'}}
 
+SUMS_NOTEBOOK_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 BYTES_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"})
 
 STRING_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"})

@@ -34,6 +34,15 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
  output logic [7:0] usb_tx_byte,
  output logic [63:0] usb_ticks,usb_rx_packets,usb_tx_packets,usb_packet_errors,
  output logic [6:0] usb_address,output logic usb_configured,
+ // Optional profile11: both endpoints are real registered FS codecs. The raw
+ // process transports packet bytes into the host codec, never a success flag.
+ output logic usb_wire_host_busy,usb_wire_chip_busy,usb_wire_host_abort,usb_wire_reset,usb_wire_host_oe,usb_wire_chip_oe,
+ output logic [1:0] usb_wire_line,
+ output logic [63:0] usb_phy_host_samples,usb_phy_chip_samples,
+ output logic [63:0] usb_phy_host_tx_packets,usb_phy_host_rx_packets,usb_phy_chip_tx_packets,usb_phy_chip_rx_packets,
+ output logic [63:0] usb_phy_host_stuff_errors,usb_phy_chip_stuff_errors,
+ output logic [63:0] usb_phy_host_line_errors,usb_phy_chip_line_errors,
+ output logic [63:0] usb_phy_host_underflows,usb_phy_chip_underflows,
  // Product boot medium has its own captured external-operation namespace.
  input logic boot_media_ready,external_boot_media_busy,
  input logic [63:0] boot_media_result,boot_reset_origin,
@@ -219,11 +228,48 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign ble_peer_rx_packets=0;assign ble_peer_crc_errors=0;assign ble_peer_rx_errors=0;assign ble_peer_tx_active=0;assign ble_peer_rx_active=0;
  end endgenerate
  generate if(USB_ENABLED!=0) begin: packet_usb
-   lemma_usb_device endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.bus_reset(usb_bus_reset),
+   logic chip_rx_valid,chip_rx_last,chip_rx_ready,chip_rx_abort,chip_bus_reset;
+   logic chip_tx_valid,chip_tx_last,chip_tx_ready,endpoint_busy,host_phy_busy,chip_phy_busy;
+   logic [7:0] chip_rx_byte,chip_tx_byte;
+   if(USB_PHY_ENABLED!=0)begin: full_speed_wire
+     logic [1:0] host_line,chip_line;
+     assign usb_wire_line=usb_bus_reset?2'b00:
+       usb_wire_host_oe&&usb_wire_chip_oe&&host_line!=chip_line?2'b11:
+       usb_wire_host_oe?host_line:usb_wire_chip_oe?chip_line:2'b01;
+     lemma_usb_fs_phy host_phy(.clk,.reset,.enabled(1'b1),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(usb_rx_valid),.tx_last(usb_rx_last),.tx_byte(usb_rx_byte),.tx_ready(usb_rx_ready),
+       .tx_oe(usb_wire_host_oe),.tx_busy(usb_wire_host_busy),.line_out(host_line),
+       .rx_valid(usb_tx_valid),.rx_last(usb_tx_last),.rx_byte(usb_tx_byte),.rx_ready(usb_tx_ready),
+       .rx_abort(usb_wire_host_abort),.bus_reset(usb_wire_reset),.controller_busy(host_phy_busy),
+       .sample_ticks(usb_phy_host_samples),.tx_packets(usb_phy_host_tx_packets),.rx_packets(usb_phy_host_rx_packets),
+       .stuff_errors(usb_phy_host_stuff_errors),.line_errors(usb_phy_host_line_errors),.underflows(usb_phy_host_underflows));
+     lemma_usb_fs_phy chip_phy(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.line_in(usb_wire_line),
+       .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
+       .tx_oe(usb_wire_chip_oe),.tx_busy(usb_wire_chip_busy),.line_out(chip_line),
+       .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),
+       .rx_abort(chip_rx_abort),.bus_reset(chip_bus_reset),.controller_busy(chip_phy_busy),
+       .sample_ticks(usb_phy_chip_samples),.tx_packets(usb_phy_chip_tx_packets),.rx_packets(usb_phy_chip_rx_packets),
+       .stuff_errors(usb_phy_chip_stuff_errors),.line_errors(usb_phy_chip_line_errors),.underflows(usb_phy_chip_underflows));
+     // Both real codec phases count as pending digital work for Power-v2.
+     assign usb_busy=endpoint_busy||host_phy_busy||chip_phy_busy;
+   end else begin: decoded_packet_boundary
+     assign chip_rx_valid=usb_rx_valid;assign chip_rx_last=usb_rx_last;assign chip_rx_byte=usb_rx_byte;
+     assign usb_rx_ready=chip_rx_ready;assign usb_tx_valid=chip_tx_valid;assign usb_tx_last=chip_tx_last;assign usb_tx_byte=chip_tx_byte;
+     assign chip_tx_ready=usb_tx_ready;assign chip_rx_abort=0;assign chip_bus_reset=usb_bus_reset;
+     assign usb_busy=endpoint_busy;
+     assign usb_wire_host_busy=0;assign usb_wire_chip_busy=0;assign usb_wire_host_abort=0;assign usb_wire_reset=0;assign usb_wire_host_oe=0;assign usb_wire_chip_oe=0;assign usb_wire_line=2'b01;
+     assign usb_phy_host_samples=0;assign usb_phy_chip_samples=0;
+     assign usb_phy_host_tx_packets=0;assign usb_phy_host_rx_packets=0;assign usb_phy_chip_tx_packets=0;assign usb_phy_chip_rx_packets=0;
+     assign usb_phy_host_stuff_errors=0;assign usb_phy_chip_stuff_errors=0;
+     assign usb_phy_host_line_errors=0;assign usb_phy_chip_line_errors=0;
+     assign usb_phy_host_underflows=0;assign usb_phy_chip_underflows=0;
+     assign host_phy_busy=0;assign chip_phy_busy=0;
+   end
+   lemma_usb_device #(.PHY_ABORT(USB_PHY_ENABLED!=0)) endpoint(.clk,.reset(domain_reset),.enabled(!power_suspended),.connected(usb_connected),.bus_reset(chip_bus_reset),
      .valid(dev_valid&&usb_sel),.write(dev_write),.addr(10'(dev_addr-USB_BASE)),.size(dev_size),.wdata(dev_wdata),
-     .rdata(usb_rdata),.ready(usb_ready),.error(usb_error),.irq(usb_irq),.controller_busy(usb_busy),
-     .rx_valid(usb_rx_valid),.rx_last(usb_rx_last),.rx_byte(usb_rx_byte),.rx_ready(usb_rx_ready),
-     .tx_valid(usb_tx_valid),.tx_last(usb_tx_last),.tx_byte(usb_tx_byte),.tx_ready(usb_tx_ready),
+     .rdata(usb_rdata),.ready(usb_ready),.error(usb_error),.irq(usb_irq),.controller_busy(endpoint_busy),
+     .rx_valid(chip_rx_valid),.rx_last(chip_rx_last),.rx_byte(chip_rx_byte),.rx_ready(chip_rx_ready),.rx_abort(chip_rx_abort),
+     .tx_valid(chip_tx_valid),.tx_last(chip_tx_last),.tx_byte(chip_tx_byte),.tx_ready(chip_tx_ready),
      .ticks(usb_ticks),.rx_packets(usb_rx_packets),.tx_packets(usb_tx_packets),.packet_errors(usb_packet_errors),
      .device_address(usb_address),.configured(usb_configured));
  end else begin: no_packet_usb
@@ -231,6 +277,12 @@ module lemma_soc #(parameter bit REGISTER_RAM=0) (
    assign usb_rx_ready=0;assign usb_tx_valid=0;assign usb_tx_last=0;assign usb_tx_byte=0;
    assign usb_ticks=0;assign usb_rx_packets=0;assign usb_tx_packets=0;assign usb_packet_errors=0;
    assign usb_address=0;assign usb_configured=0;
+   assign usb_wire_host_busy=0;assign usb_wire_chip_busy=0;assign usb_wire_host_abort=0;assign usb_wire_reset=0;assign usb_wire_host_oe=0;assign usb_wire_chip_oe=0;assign usb_wire_line=2'b01;
+   assign usb_phy_host_samples=0;assign usb_phy_chip_samples=0;
+   assign usb_phy_host_tx_packets=0;assign usb_phy_host_rx_packets=0;assign usb_phy_chip_tx_packets=0;assign usb_phy_chip_rx_packets=0;
+   assign usb_phy_host_stuff_errors=0;assign usb_phy_chip_stuff_errors=0;
+   assign usb_phy_host_line_errors=0;assign usb_phy_chip_line_errors=0;
+   assign usb_phy_host_underflows=0;assign usb_phy_chip_underflows=0;
  end endgenerate
  assign usb_irq_out=usb_irq;
 

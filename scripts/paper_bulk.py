@@ -15,6 +15,8 @@ CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
  'lemmasim-silicon-bytes-arithmetic-oom-development'})
 ARRAY=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
 NEXT_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-next-bulk-notebook'))
+WIRE_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
+CONFIGURATIONS |= WIRE_CONFIGURATIONS
 EXECUTED_CONFIGURATION='lemmasim-silicon-product-executed-bulk-notebook'
 CONFIGURATIONS |= ARRAY | NEXT_CONFIGURATIONS | {EXECUTED_CONFIGURATION}
 PRODUCT='lemmasim-silicon-product-bulk-notebook'
@@ -54,6 +56,9 @@ def validate(ir,unit,*,optimized):
  names={row['symbol']:canonical(row['source']) for row in unit['functions']}
  by={source:symbol for symbol,source in names.items()}
  selected=dict(EXPECTED[role])
+ if role=='kernel' and unit['configuration'] in WIRE_CONFIGURATIONS:
+  from paper_wire import validate as validate_wire
+  return validate_wire(ir,unit,optimized=optimized)
  if role=='kernel' and unit['configuration']==EXECUTED_CONFIGURATION:
   from paper_executed import validate as validate_executed
   return validate_executed(ir,unit,optimized=optimized)

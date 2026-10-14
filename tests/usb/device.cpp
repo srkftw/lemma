@@ -31,7 +31,7 @@ static Bytes token(uint8_t pid,unsigned address,unsigned ep){
 struct Device {
  struct Context:VerilatedContext{Context(){threads(1);}} context;
  Vlemma_usb_device top{&context};uint64_t cycles=0;
- Device(){top.enabled=1;top.connected=1;top.tx_ready=1;top.size=3;top.reset=1;step();top.reset=0;}
+ Device(){top.rx_abort=0;top.enabled=1;top.connected=1;top.tx_ready=1;top.size=3;top.reset=1;step();top.reset=0;}
  void step(){top.clk=0;top.eval();top.clk=1;top.eval();cycles++;}
  uint64_t read(unsigned addr){top.addr=addr;top.valid=1;top.write=0;top.eval();need(!top.error,"MMIO read");auto v=top.rdata;step();top.valid=0;return v;}
  bool write(unsigned addr,uint64_t value){top.addr=addr;top.wdata=value;top.valid=1;top.write=1;top.eval();bool ok=!top.error;step();top.valid=0;top.write=0;return ok;}

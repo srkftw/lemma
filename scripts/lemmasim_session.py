@@ -349,10 +349,10 @@ class RTL:
             if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
         elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
         usb_prepared=getattr(args,'usb_host_prepared',None)
-        if self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and getattr(args,'restore',None) and usb_prepared is not None:
+        if self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0') and getattr(args,'restore',None) and usb_prepared is not None:
             raise ValueError('Restored USB raw fork cannot launch a live host')
         if usb_prepared is not None:
-            if self.data['profile'] not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'):raise ValueError('USB packet host requires binding6')
+            if self.data['profile'] not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0'):raise ValueError('USB packet host requires binding6')
             import lemmasim_usb
             from lemmasim_companion import peer_info
             if json.loads(usb_prepared.read_text()).get('schema') == 'lemma-usb-host-dev/4':
@@ -380,7 +380,7 @@ class RTL:
                         '--companion-writer', str(peer['writer']),
                         '--companion-helper', str(ROOT/'sim/companion/os_io.py')]
         if args.workload != 'service':
-            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb') and not (self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and getattr(args,'restore',None)):
+            if args.disk is None and companion is None and usb_prepared is None and args.workload not in ('power','ble','usb') and not (self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0') and getattr(args,'restore',None)):
                 raise ValueError('This workload requires an existing --disk or companion backing')
             command += ['--descriptor', entry['descriptor']['path']]
             if args.disk is not None:
@@ -395,7 +395,7 @@ class RTL:
         self.pending = bytearray()
         self.timeout = args.timeout
         self.argv = command
-        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile'] in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0') else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
+        self.input_kinds={'pen','uart','button','pgood','brownout','ble-rx','ble-coex'} if self.data['profile'] in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.11.0') else {'pen','uart','button','pgood','brownout'} if self.data['profile']=='lemma-silicon-dev/0.4.0' else {'pen','uart','button'} if self.data['profile']=='lemma-silicon-dev/0.3.0' else {'pen','uart'}
         # The first operation validates that the actual executable supports the
         # runtime interface; an old prepared harness cannot become a session.
         try:self.checkpoint_identity=self.call('inspect')['snapshot_identity']
@@ -430,7 +430,7 @@ class RTL:
         # Each selected binding admits only its declared container schema; the
         # exact runtime identity and CRC/state checks still apply below.
         profile=getattr(self,'identity',{}).get('profile')
-        versions=(6,) if profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        versions=(8,) if profile=='lemma-silicon-dev/0.11.0' else (6,) if profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0') else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
         # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
@@ -767,7 +767,7 @@ class Session:
             self.presentation_generation += 1
             return result
         if action in ('usb-outcomes','export-usb-replay'):
-            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0'):raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
+            if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0'):raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
             path=Path(value['path']).resolve()
             if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
             result=self.machine.call(action+' '+str(path))
@@ -838,7 +838,7 @@ def serve(args, machine_type=None, session_type=None):
             session.restore(args.restore)
             if getattr(args,'usb_replay',None) is not None:
                 session.dispatch({'action':'usb-outcomes','path':str(args.usb_replay.resolve())})
-            if getattr(args,'profile',None) in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0') and args.paused:session.automatic=False
+            if getattr(args,'profile',None) in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0') and args.paused:session.automatic=False
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener, selectors.DefaultSelector() as ready:
             listener.bind(address)
             control.bound()
