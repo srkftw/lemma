@@ -1,7 +1,7 @@
 {
   "schema": "lemma-usb-recovery-target-evidence/1",
-  "status": "PASS_COMPONENT_ARTIFACT_AND_FRESH_WHOLE_PAIR_ONLY",
-  "scope": "Separately selected Clocked13 recovery software: genuine component/Action observations, complete IR/object/table authority, then fresh matched Kernel6/Store2/Notebook2/Arithmetic3 whole images and ordinary full audits with complete original source archives. Connected EOF/reattach/remount/retry/Saved/cold NOT_RUN.",
+  "status": "PASS_SCOPED_LIVE_LOST_ACK_RECOVERY_AND_INDEPENDENT_COLD",
+  "scope": "Separately selected Clocked13 Sums recovery software: genuine component and closed full-image audits, source-derived retained live observation of real lost receipt/EOF/offline ink/reattach/dedup/barrier/shadow remount, then one independent new-CPU Saved17 cold with all acknowledged bytes and controller pixels unchanged. The original live observer cancellation/failure is preserved.",
   "configurations": [
     "lemmasim-silicon-usb-clocked-retry-bulk-notebook",
     "lemmasim-silicon-usb-clocked-retry-bulk-initialize"
@@ -102,9 +102,10 @@
   "limits": [
     "Action receipts are explicitly posed boundary outcomes, not peer durability",
     "complete artifact admission is not a compiler proof",
-    "connected recovery and independent cold NOT_RUN",
     "no full USB MAC/electrical/physical conformance",
-    "Fresh full image audits do not establish actual guest recovery; connected scenario remains NOT_RUN"
+    "Live success is a separate source-bound retained observation after the original frozen fixture was cancelled for independently demonstrated object/Saved-literal mismatches; no live prefix was rerun.",
+    "Recovery deployment is Sums3-only; Closure7/Doc8 mathematical storage/retry integration remains NOT_RUN.",
+    "Digital same-machine USB transport/PHY evidence does not establish full USB MAC/electrical timing or physical durability."
   ],
   "executed_checker": {
     "path": "build/usb/recovery-artifact-qualification-a4/consumed-source-root/scripts/check_usb_recovery_target.py",
@@ -186,6 +187,183 @@
       "path": "build/usb/notebook-retry-draft-a1/schema7-package-validation-a1.json",
       "sha256": "be1036593107daeef4d88bdad5f3388e83f9e2b12cc879b6fd0f842a02688523"
     },
-    "connected_guest": "NOT_RUN"
+    "connected_guest": "PASS_SCOPED_RETAINED_LIVE_PLUS_NEW_CPU_COLD"
+  },
+  "connected_recovery": {
+    "native_core_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+    "native_binary_sha256": "6cbd9cad4b208909aefe62e151a83fb02c3042a2b1b3efa86c8594b681159e63",
+    "guest_image_sha256": "1aa1e715cac81d8ade7cca00d0e9c4db5727018b62532313c0b8a1232f8fefb4",
+    "original_fixture": {
+      "path": "build/usb/recovery-connected-a2/result.json",
+      "sha256": "bb418a81f17642ab24e72ff546920451833cc4dd2d48c0e955f14a6f81f4a5a7",
+      "status": "FAIL",
+      "error": "KeyboardInterrupt('original supervisor cancellation 15')",
+      "scope": "Original unchanged fixture cancelled at a completed public-command boundary after actual completed Saved17/full pixels; expected object65549 and tuple trailing0 were source errors, retained unchanged."
+    },
+    "source_diagnosis": {
+      "path": "build/usb/recovery-observer-source-diagnosis-a1/result.json",
+      "sha256": "1a889e686bbcbfbe2cb0f0f08b582fc3a343a1dcb56fa5b5d30f8a8d89d6dccd"
+    },
+    "retained_capture": {
+      "path": "build/usb/recovery-observer-correction-a1/result.json",
+      "sha256": "6bd4531255eafd13ef73ca9358a128a867ea2f3ad318ebe74f9525583f268762",
+      "first_completed_boundary_cycle": 1166000000,
+      "already_issued_quantum_cycles": 5000000,
+      "export_cycle": 1171000000,
+      "extra_export_clocks": 0,
+      "host_seconds": 52.69647552608512
+    },
+    "retained_observation": {
+      "path": "build/usb/recovery-retained-observation-a1/result.json",
+      "sha256": "ec67b9109819eaa076fcc1b722963aa0949855ddc188ca63d5694cf3c70ae887",
+      "status": "PASS_RETAINED_LIVE_RECOVERY_COLD_NOT_RUN",
+      "host_seconds": 23.646060354891233,
+      "source_sha256": "52f4fcc8e1a48e602a0a9d5b78f169d063e1736aac700cba948d3f6150015ec2",
+      "cpu_or_peer_actions": 0,
+      "actual_mutants": [
+        {
+          "case": "checksum-correct-wrong-raw-object",
+          "status": "REJECTED",
+          "reason": "source-derived raw/page/root object identities or revisions differ"
+        },
+        {
+          "case": "checksum-correct-wrong-inner-stroke",
+          "status": "REJECTED",
+          "reason": "exact raw envelope/stroke/calibration/every original sample differs"
+        },
+        {
+          "case": "wrong-Saved-inner-stroke-zero",
+          "status": "REJECTED",
+          "reason": "exact Saved17 innerstroke13/no fatal"
+        },
+        {
+          "case": "checksum-correct-duplicate-original-effect78",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-extra-effect110",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-missing-new-durability-barrier79",
+          "status": "REJECTED",
+          "reason": "full109 accepted effects, no duplicate/missing/extra effect"
+        },
+        {
+          "case": "checksum-correct-wrong-HELLO-writer",
+          "status": "REJECTED",
+          "reason": "actual HELLO identity"
+        },
+        {
+          "case": "actual-packet-CRC16-corruption",
+          "status": "REJECTED",
+          "reason": "data CRC16"
+        },
+        {
+          "case": "wrong-initial-HELLO-sequence-one",
+          "status": "REJECTED",
+          "reason": "actual initial retained outbox next73 differs"
+        }
+      ]
+    },
+    "failed_save": {
+      "cycle": 761000000,
+      "error": 227,
+      "full_failed_controller_pixels": true,
+      "no_new_saved": true,
+      "partial_persistence": "Exact original raw12 already persisted; failure is not rollback."
+    },
+    "offline_ink": {
+      "cycle": 786000000,
+      "samples": 3,
+      "peer_log_and_outbox_unchanged": true
+    },
+    "reattach": {
+      "cycle": 786000000,
+      "extra_clocks": 0,
+      "connection_epoch": 2,
+      "global_next_request": 33768,
+      "guest_configured_at_attach": 0,
+      "namespace_binding": "bf3a5f82dbda45be842be9299df0b77f57cfa1b2f9356d23e8e6ef9698cc61ba"
+    },
+    "durability": {
+      "lost_original_barrier_sequence": 78,
+      "exact_retransmission_sequence": 78,
+      "new_post_shadow_barrier_sequence": 79,
+      "unique_peer_effects": 109,
+      "outbox_next": 110,
+      "no_duplicate_original_record": true,
+      "shadow_read_durable_effects": 0
+    },
+    "saved_tuple": [
+      1057,
+      17,
+      1,
+      1,
+      13
+    ],
+    "source_derived_offline_raw": {
+      "object": 65551,
+      "journal_sequence": 15,
+      "inner_stroke": 13
+    },
+    "acknowledged_medium_sha256": "77341fd75d2939392ba99949ca491af0c6b5cd3b779fb827082665a61cab74a8",
+    "full_pixels_sha256": "6574a6451e6d793558ea79fb447473482f214a395205380722b731601503f618",
+    "all_pixels": 3630000,
+    "original_owned_children_reaped": true,
+    "pre_clock_identity_failure": {
+      "path": "build/usb/recovery-connected-a1/result.json",
+      "sha256": "d2def2b63744dc085c4d4cbf1ce19c34772d7c282a68119bf2c117882101fe72",
+      "status": "FAIL",
+      "error": "ValueError('actual reset/recovery/native authority')",
+      "scope": "Original observer confused native binary and core snapshot IDs before the first machine advance; later distinct IDs are checked separately."
+    }
+  },
+  "independent_cold": {
+    "path": "build/usb/recovery-corrected-final-cold-a1/result.json",
+    "sha256": "648dc856175dc37568976df8519d646c358ac468d63ddd5cde0db0a55ac79180",
+    "status": "PASS",
+    "new_cpu": true,
+    "restored": false,
+    "ready_cycles": 800000000,
+    "ready_host_seconds": 4030.7025530450046,
+    "whole_host_seconds": 4039.5893997800304,
+    "bounds": {
+      "cold_cycles": 1600000000,
+      "cold_host_seconds": 7200,
+      "ink_cycles": 200000000,
+      "redraw_save_cycles": 1600000000,
+      "action_host_seconds": 7200,
+      "maximum_owned_tree_rss_kib": 4194304,
+      "maximum_owned_disk_bytes": 12000000000
+    },
+    "read_transactions": 64,
+    "write_and_barrier_transactions": 0,
+    "hello": [
+      3544405832420773196,
+      83,
+      110,
+      268435456
+    ],
+    "peer_high_water": 109,
+    "outbox_next": 110,
+    "medium_sha256": "77341fd75d2939392ba99949ca491af0c6b5cd3b779fb827082665a61cab74a8",
+    "full_pixels_sha256": "6574a6451e6d793558ea79fb447473482f214a395205380722b731601503f618",
+    "original_boundary_unchanged": true,
+    "supervisor": {
+      "path": "build/usb/recovery-corrected-final-cold-a1.supervision/supervision.json",
+      "sha256": "95e3b43efb5c3d85c1e0f01e84903ba1c1966d715e9ee0c47347ed44859f5289",
+      "observer_exit_code": 0,
+      "owned_survivors": []
+    },
+    "actor_source_manifest": {
+      "path": "build/usb/recovery-corrected-final-cold-a1.supervision/manifest.json",
+      "sha256": "a02377ae96b897ed2d228c9a96681e30d3366f159eaff8409e0f72c8df36f33c"
+    },
+    "actor_source_sha256": "f142f314fdbb69618b293ffdeebeba934f4c0669e81890be906243ab79588d6c",
+    "inherited_base_checker_sha256": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869",
+    "source_identity_note": "The result inherits base checker observer_sha256; the frozen nine-file supervisor manifest separately binds the actual cold adapter. No original receipt was rewritten."
   }
 }

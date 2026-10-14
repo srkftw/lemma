@@ -95,8 +95,39 @@ prospective900-second aggregate (533.012 seconds). The first whole build's
 96.125-second Arithmetic registry failure remains retained; only the exact new
 configuration pair was added to the existing full implementation identity gate.
 The strict schema7 package binds those guest archives and original native64d255
-inputs. These results establish build/package authority; connected recovery,
-full new Saved and new-CPU cold remain NOT_RUN in this receipt. The later
+inputs. These source-bound build/package results precede the separately recorded
+connected observations below. The later
 historical component checker correctly rejected newly added unrelated Course
 modules outside its original input inventory; no broad new-file grant was made.
+
+
+The actual connected recovery used those unchanged images and native64d. It
+lost the genuine final peer receipt 78 after the raw12 publication persisted,
+then observed real child EOF, visible Failed with all controller pixels, and
+three offline samples in the other buffer. Zero-clock explicit reattachment
+created connection epoch2 without configuring the guest. Real reset/endpoint0
+negotiation and the exact old 78 receipt dedup preceded shadow READs and a new
+guest durability BARRIER79. The original raw12 record completed once without
+another PUT; page13/root14 and offline raw15/page16/root17 then acknowledged
+Saved17. The peer retained exactly 109 unique effects and outbox next110.
+
+The frozen live fixture had two independently demonstrated host expectations
+wrong: offline object65549 and Saved tuple trailing0. Exact original Notebook
+source derives object65551 from journal14 and reports the retained inner
+stroke13 in the final root tuple. Once actual Saved17 and every controller pixel
+completed at 1166M, only the observer was suspended; its already-issued5M quantum
+finished at1171M. Snapshot, tapes, pixels and fully acknowledged private backing
+were exported there with zero further clocks. The original fixture remains
+FAIL/CANCELLED_ORACLE_MISMATCH. A separate source-bound retained observer passed
+all bytes/effects/pixels and nine actual checksum-correct object/stroke,
+receipt/duplicate/barrier, HELLO and packet mutants; it did not rerun the prefix.
+
+One independent new-CPU cold from that acknowledged private peer state passed
+Ready and all 3.63M pixels at 800M/4030.703 seconds under the original 1.6B/7200
+ceiling. It completed 64 READs, no WRITE or BARRIER, preserved every acknowledged
+medium byte and receipt state, and reaped all owned children. This separately
+closes the Sums recovery scenario. Closure7/Doc8 mathematical publication and
+retry require a new versioned software integration and remain outside this
+receipt. Exact result/source hashes and retained failures are recorded in
+[Recovery evidence](../evidence/006-notebook-recovery-target.json).
 -->

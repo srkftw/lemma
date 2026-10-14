@@ -1176,4 +1176,30 @@ checked-call shape from Kernel4 inlinedvolatile shapes, including the original
 genuine CI unit/IR and140actual rejecting mutations. OriginalCI logs/artifacts and failure are
 retained in006-candidate-a2-ci.json; no later candidate inherits an earlierpass.
 
+## October14 Clocked13 failed Save, live recovery and Saved17 cold
+
+[The existing Recovery receipt](../evidence/006-notebook-recovery-target.json)
+now records actual Sums3/Kernel6 recovery on native64d and the unchanged audited
+362-input schema7 guest pair. A genuine persisted final receipt 78 was lost;
+real child EOF produced Failed with complete controller pixels. Three further
+raw samples remained responsive offline. Zero-clock explicit epoch2 reattach
+was followed by real reset/configuration, exact78 dedup, shadow READs and a new
+guest durability BARRIER79. The retained record completed without duplicatePUT;
+page/root and offline raw/page/root then produced Saved17, 109 unique peer
+effects and outbox next110. Every acknowledged byte and all 3.63M pixels qualify.
+
+The unchanged live fixture remains FAIL/CANCELLED_ORACLE_MISMATCH: its object
+65549 and Saved trailing0 expectations were independently disproved by exact
+consumed Notebook source (object65551; innerstroke13). First full completion
+was observed 1166M; one already-issued5M quantum finished 1171M before zero-clock
+exports and owned cleanup. The separate retained reobserver passes 23.646s with
+nine actual checksum-correct object/stroke/effect/receipt/barrier/HELLO/packet
+negatives. No live prefix was repeated. One independently backed new-CPU cold
+then passes 800M/4030.703s under original 1.6B/7200 limits:64 READs, zeroWRITE or
+BARRIER, complete pixels, unchanged medium/peer/outbox and all children reaped.
+Cold result SHA 648dc856175dc37568976df8519d646c358ac468d63ddd5cde0db0a55ac79180
+is separate from the original cancellation and corrected live observation.
+Closure7/Doc8 mathematical retry integration, full USB MAC/timing/physical
+conformance and general cross-backend migration remain unfinished.
+
 -->
