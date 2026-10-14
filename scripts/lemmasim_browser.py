@@ -128,7 +128,7 @@ def bundle(args):
     result={'schema':'lemmasim-browser-bundle/1','profile':args.profile,'width':1650,'height':2200,
             'boot':'ELF-preload development boot','compiler':'native pinned Lean/LLVM helper; no browser compiler',
             'persistence':'OPFS SyncAccessHandle.flush; origin eviction and physical power loss unqualified',
-            'session_control_contract':'lemma-browser-session-modes/1',
+            'session_control_contract':'lemma-browser-session-modes/2',
             'wasm_build_sha256':sha(source/'build.json'),'wasm_project_root':str(ROOT),'workloads':{}}
     if guest_archive is not None:
         result['guest_archive']={'manifest_sha256':sha(guest_archive/'bundle.json'),
@@ -189,6 +189,8 @@ def validated_bundle(directory):
     m=read_json(manifest_path)
     if m.get('schema')!='lemmasim-browser-bundle/1' or m.get('profile')!='lemma-silicon-dev/0.3.0' or (m.get('width'),m.get('height'))!=(1650,2200):
         raise ValueError('Unsupported browser machine bundle')
+    if m.get('session_control_contract') not in (None, 'lemma-browser-session-modes/1', 'lemma-browser-session-modes/2'):
+        raise ValueError('Unsupported browser control contract')
     files=m.get('files')
     if not isinstance(files,dict) or not 1<=len(files)<=2048:raise ValueError('Invalid browser inventory')
     total=0

@@ -3,13 +3,15 @@ import createMachine from './machine.mjs';
 import {guestRecord,guestPageReady,guestCommitState} from './guest_records.js';
 import {RunBudget,uint64} from './run_budget.js';
 let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
+let activeMediumName=null;
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
 let busy=false,backingReady=true,replayUntil=null;
 let guestOutputStart=0;
 let guestObservation='boot';
 let sessionMode='student';
-const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','restore','close']);
-const developerActions=new Set(['replay','run','raw','raw-batch','inspect','bind','outcomes','events','capture','capture-outcomes']);
+const SESSION_CONTROL_CONTRACT='lemma-browser-session-modes/2';
+const ordinaryActions=new Set(['open','import','pause','resume','pen','button','reset','snapshot','export','restore','bind','close']);
+const developerActions=new Set(['replay','run','raw','raw-batch','inspect','outcomes','events','capture','capture-outcomes']);
 function admission(message){
  if(!message||typeof message!=='object'||typeof message.action!=='string')throw Error('Invalid browser request');
  const opening=['open','replay','import'].includes(message.action);
@@ -30,7 +32,7 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:'lemma-browser-session-modes/1',running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:SESSION_CONTROL_CONTRACT,running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),backingMedium:{name:activeMediumName,private:s.isolated_medium===true,ready:backingReady},heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}
@@ -101,7 +103,7 @@ async function getBytes(item){const r=await fetch(item.path);if(!r.ok)throw Erro
  const b=new Uint8Array(await r.arrayBuffer());
  if(await hash(b)!==item.sha256)throw Error('Artifact hash mismatch: '+item.path);return b;}
 async function openMedium(name,initialize){
- if(!/^[a-zA-Z0-9_-]{1,64}$/.test(name))throw Error('Use a medium name with letters, digits, underscores or hyphens');
+ if(typeof name!=='string'||!/^[a-zA-Z0-9_-]{1,64}$/.test(name))throw Error('Use a medium name with letters, digits, underscores or hyphens');
  const root=await navigator.storage.getDirectory();let file;
  if(initialize){try{await root.getFileHandle(name+'.raw');throw Error('Medium already exists; initialization refuses to format it');}
   catch(e){if(e.name!=='NotFoundError')throw e;}file=await root.getFileHandle(name+'.raw',{create:true});}
@@ -122,8 +124,10 @@ async function openMedium(name,initialize){
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
  if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');
  manifest=await(await fetch('./bundle.json')).json();if(manifest.schema!=='lemmasim-browser-bundle/1')throw Error('Unsupported bundle');
+ if(manifest.session_control_contract!==SESSION_CONTROL_CONTRACT)throw Error('Browser control contract differs from this worker');
  if(!navigator.storage?.getDirectory)throw Error('Browser OPFS persistence is required');
  handle=await openMedium(message.name,!!message.initialize);
+ activeMediumName=message.name;
  try{timing={started:performance.now(),runSeconds:0,backingSeconds:0,backingRunSeconds:0};core=await createMachine();core.backing=timedBacking(handle);core.FS.mkdir('/forks');
   const workload=manifest.workloads[message.initialize&&!message.replay?'initializer':'notebook'];
   for(const [path,item]of [['/image.elf',workload.image],['/machine.dtb',workload.dtb],['/descriptor.bin',workload.descriptor],['/boot.bin',manifest.rom]])core.FS.writeFile(path,await getBytes(item));
@@ -137,7 +141,7 @@ async function load(message){if(loaded)throw Error('Close this machine before op
    for(const row of log.events.slice(boundary.eventCount)){if(typeof row!=='string'||row.length>256)throw Error('Invalid bounded raw event');const cycle=BigInt(row.split(' ')[0]);if(cycle<BigInt(state().cycle)||cycle>until)throw Error('Replay event outside suffix');check('lemma_event',['string'],[row]);}
    replayUntil=String(until);
   }else check('lemma_create');loaded=true;guestOutputStart=core.FS.readFile('/uart.bin').length;guestObservation=message.replay?'continuation':'boot';initializing=!!message.initialize&&!message.replay;started=performance.now();running=!message.paused;pauseReason=message.paused?'opened-paused':null;sendState();panel(true);if(running)scheduleStep();
- }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;loaded=false;throw e;}}
+ }catch(e){pause('error');core?.ccall('lemma_destroy',null,[],[]);handle?.close();handle=null;activeMediumName=null;loaded=false;throw e;}}
 async function launchNotebook(){busy=true;try{core.ccall('lemma_destroy',null,[],[]);
  const w=manifest.workloads.notebook;
  for(const [path,item]of [['/image.elf',w.image],['/machine.dtb',w.dtb],['/descriptor.bin',w.descriptor]])core.FS.writeFile(path,await getBytes(item));
@@ -147,13 +151,14 @@ async function bindPrivate(){
  // Copy opaque backing bytes, including observed unacknowledged changes.
  // No guest journal is interpreted by this transport.
  const path='/private-'+loops+'.raw';check('lemma_export_private',['string'],[path]);
- let next,stream;try{next=await openMedium('fork_'+crypto.randomUUID().replaceAll('-',''),true);
+ const nextName='fork_'+crypto.randomUUID().replaceAll('-','');
+ let next,stream;try{next=await openMedium(nextName,true);
   const size=core.FS.stat(path).size;if(size!==268435456)throw Error('Invalid private backing capacity');
   stream=core.FS.open(path,'r');const chunk=new Uint8Array(1048576);
   for(let i=0;i<size;i+=chunk.length){const length=Math.min(chunk.length,size-i);
    if(core.FS.read(stream,chunk,0,length,i)!==length||next.write(chunk.subarray(0,length),{at:i})!==length)
     throw Error('Private medium copy failed');}
-  next.flush();core.backing=timedBacking(next);check('lemma_rebind_private');const old=handle;handle=next;next=null;backingReady=true;old.close();
+  next.flush();core.backing=timedBacking(next);check('lemma_rebind_private');const old=handle;handle=next;activeMediumName=nextName;next=null;backingReady=true;old.close();
  }finally{if(stream)core.FS.close(stream);core.FS.unlink(path);next?.close();if(!backingReady)core.backing=timedBacking(handle);}
 }
 async function restore(bytes){
@@ -204,6 +209,6 @@ onmessage=async({data:m})=>{
  else if(m.action==='capture'||m.action==='capture-outcomes'){pause('capture');const path=core.ccall('lemma_capture_path','string',[],[]);if(!path)throw Error('This replay instance does not capture live outcomes');
   const b=core.FS.readFile(path);postMessage({type:'export',name:'lemma-backing.io',bytes:b},[b.buffer]);
   if(m.action==='capture')exportEvents();sendState();}
- else if(m.action==='close'){pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();loaded=false;handle=null;postMessage({type:'closed'});}
+ else if(m.action==='close'){pause('close');core.ccall('lemma_destroy',null,[],[]);handle.close();loaded=false;handle=null;activeMediumName=null;postMessage({type:'closed'});}
  else throw Error('Unsupported browser action');
  }catch(e){pause('error');if(loaded)sendState();postMessage({type:'error',error:String(e)});}finally{busy=false;}};

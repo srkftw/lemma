@@ -147,5 +147,114 @@
       "correction": "Exact closed cfg\u2192root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
       "new_ci": "NOT_RUN"
     }
+  },
+  "subsequent_candidate_7cec": {
+    "source_commit": "7cec5096b282cd5cc8fd14c38a6ff5e271fd597d",
+    "actual_ci_run": 38598060895,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "c00a58d2384a7bd32aa9f2d379ba37b0456357b0",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 115969808693,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808700,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808777,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808858,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808861,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969808958,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809119,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 115969809144,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809207,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115969809446,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failure": {
+      "job_id": 115969809119,
+      "artifact_id": 11913248984,
+      "artifact_bytes": 18063837,
+      "artifact_sha256": "f832ca7a1b472516cb0af96faae78124cd55a166a0afcd7d4f9bac602a5c765c",
+      "retained": "build/ci/task006-7cec-failures-a1/writing.zip",
+      "selective_extraction": "All893 bounded entries retained; eleven256MiB raw media entries remain inside the complete original ZIP, not extracted.",
+      "actual_error": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+      "affected_configuration": "lemmasim-notebook",
+      "optimization": "O0",
+      "notebook_O2_audit": "PASS",
+      "initializer_O2_audit": "PASS",
+      "following_acceptance": "SKIPPED",
+      "diagnosis": "Actual O0 post differs in predecessor comments and typed i1 Boolean print spelling; strict independently qualified observer correction is being prepared. Original failure retained; no candidate rerun/pass inferred."
+    }
   }
 }

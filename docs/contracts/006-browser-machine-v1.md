@@ -20,6 +20,19 @@ resynchronization flags. Coordinate conversion has bounded integer results.
 
 ## Time and observational state
 
+`lemma-browser-session-modes/2` preserves contract1's guest authority and adds
+ordinary retry of an incomplete opaque private backing copy. Captured-outcome
+binding, typed raw input, inspection and offline replay remain privileged.
+New workers require their matching version2 bundle; archived version1 frontend
+bundles remain version1. The worker reports the active OPFS medium name and
+whether its private copy is ready. A successful copy/flush/rebind publishes the
+new name; a failed copy keeps the old name and blocks clocks. The frontend
+adopts a new active name once, preserves later next-name edits, and retains the
+name after Close. Open then constructs a new CPU and runs guest recovery from
+that persistent file. Exposing a name never creates a guest Saved receipt.
+Student retry copies opaque bytes and never interprets a document or journal.
+
+
 `lemma-browser-session-modes/1` is an additive browser control admission
 contract. New sessions default to Student; the operator explicitly selects
 Developer or Laboratory before opening. The worker fixes that selection until

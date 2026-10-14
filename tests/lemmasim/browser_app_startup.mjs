@@ -52,6 +52,21 @@ async function appFixture(gpu){
  state(null);assert.match(f.node('#commit-status').textContent,/No save result observed/);
  state({...reported,state:'saved'});f.worker.onmessage({data:{type:'closed'}});assert.match(f.node('#commit-status').textContent,/No running guest/);
 }
+// A completed fork updates the reopen name once; ordinary observations do
+// not overwrite the user's next-name edit. Failure never publishes a new name.
+{
+ const f=await appFixture(undefined);
+ const emit=backingMedium=>f.worker.onmessage({data:{type:'state',backingMedium,state:{cycle:'17'},running:false,guestObservation:'continuation',readyAt:null,heapBytes:1048576,pauseReason:'restore',timing:{elapsedSeconds:1,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
+ emit({name:'original',private:false,ready:true});assert.equal(f.node('#medium').value,'original');
+ emit({name:'unbound',private:true,ready:false});assert.equal(f.node('#medium').value,'original');
+ assert.equal(f.node('#retry-private').disabled,false);assert.match(f.node('#backing-status').textContent,/incomplete/);
+ emit({name:'fork_123',private:true,ready:true});assert.equal(f.node('#medium').value,'fork_123');
+ assert.equal(f.node('#retry-private').disabled,true);assert.match(f.node('#backing-status').textContent,/Active private medium: fork_123/);
+ f.node('#medium').value='next';emit({name:'fork_123',private:true,ready:true});assert.equal(f.node('#medium').value,'next');
+ f.node('#medium').value='fork_123';f.worker.onmessage({data:{type:'closed'}});
+ assert.equal(f.node('#medium').value,'fork_123');assert.equal(f.node('#retry-private').disabled,true);
+ f.node('#open').onclick();assert.equal(f.sent.at(-1).name,'fork_123');
+}
 // An implicit capture loss ends exactly the held raw contact. A stale loss
 // after pointerup cannot cancel a new pointer, and lifecycle controls release
 // contact before asking the worker to close or reset the digital machine.

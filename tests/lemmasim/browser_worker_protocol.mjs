@@ -8,21 +8,21 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false}={}){
- let now=0,nextTimer=0,generation=0,finished=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false,controlContract='lemma-browser-session-modes/2'}={}){
+ let now=0,nextTimer=0,generation=0,finished=false,isolated=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
- const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',width:1,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
+ const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',session_control_contract:controlContract,width:1,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
  const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
  const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
  const root={async getFileHandle(name,options={}){if(!mediumNames.has(name)&&!options.create){const e=Error('missing');e.name='NotFoundError';throw e;}mediumNames.add(name);return {async createSyncAccessHandle(){return medium;}};}};
  const core={HEAPU8:new Uint8Array(16),FS:{mkdir(){},writeFile(p,b){files.set(p,new Uint8Array(b));},readFile(p){if(p==='/uart.bin')return encoder.encode(uart);if(!files.has(p))throw Error('missing '+p);return new Uint8Array(files.get(p));},unlink(p){files.delete(p);},stat(){return {size:268435456};},open(){return {};},read(_stream,_chunk,_offset,length){return length;},close(){}},
  ccall(name,_return,_types,args=[]){calls.push([name,...args]);switch(name){
-  case 'lemma_create':case 'lemma_create_mode':{const cold=generation++!==0;current=cold?0n:cycle;if(cold)uart='';finished=false;return 0;}
+  case 'lemma_create':case 'lemma_create_mode':{const cold=generation++!==0;current=cold?0n:cycle;isolated=false;if(cold)uart='';finished=false;return 0;}
   case 'lemma_destroy':return undefined;
-  case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"paper_busy":${paper.busy??0},"panel_power":${paper.power??0},"finished":${finished}}`;
+  case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"paper_busy":${paper.busy??0},"isolated_medium":${isolated},"panel_power":${paper.power??0},"finished":${finished}}`;
   case 'lemma_paper_inspect':return JSON.stringify(paper);
   case 'lemma_run':{const n=BigInt(args[0]);assert(n>0n&&n<=50000n);current+=n;now+=5;core.backing.read(new Uint8Array(1),{at:0});return onRun?.({n,current,generation,setUART:x=>{uart=x;},setPaper:x=>{paper=x;},setCycle:x=>{current=x;},finish:()=>{finished=true;}})??0;}
   case 'lemma_event':{const error=onEvent?.(args[0])??0;if(!error)events.push(args[0]);return error;}
@@ -30,7 +30,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
   case 'lemma_pixel_count':return 1;
   case 'lemma_capture_path':return '/capture.io';
   case 'lemma_snapshot':files.set(args[0],encoder.encode(String(current)));return 0;
-  case 'lemma_restore':current=BigInt(decoder.decode(files.get(args[0])));return 0;
+  case 'lemma_restore':isolated=true;current=BigInt(decoder.decode(files.get(args[0])));return 0;
   case 'lemma_export':case 'lemma_export_private':files.set(args[0],encoder.encode('opaque'));return 0;
   case 'lemma_rebind_private':case 'lemma_backing_outcomes':return 0;
   case 'lemma_reset':current=0n;return 0;
@@ -52,7 +52,41 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  async function drain(){for(let i=0;timers.size&&i<30;i++)await tick();assert.equal(timers.size,0,'fixture run did not pause');}
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
- return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+ return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,mediumNames,setStorageFault:x=>{storageFault=x;},cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+}
+// A fork publishes its actual persistent name only after copy/flush/rebind.
+// Closing and opening that name creates a fresh CPU, never a state restore.
+{
+ const f=await fixture({cycle:0n,paused:true,mode:'student'});
+ assert.deepEqual(JSON.parse(JSON.stringify(f.state().backingMedium)),{name:'test',private:false,ready:true});
+ assert.equal(f.state().modeContract,'lemma-browser-session-modes/2');
+ await f.send('restore',{bytes:encoder.encode('17').buffer});
+ const fork=f.state().backingMedium.name;
+ assert.match(fork,/^fork_[0-9a-f]{32}$/);assert(f.mediumNames.has(fork+'.raw'));
+ assert.equal(f.state().backingMedium.private,true);assert.equal(f.state().backingMedium.ready,true);
+ assert.equal(f.cycle(),17n);assert.equal(f.timers.size,0);
+ await f.send('close');await f.send('open',{name:fork,paused:true,mode:'student'});
+ assert.equal(f.state().backingMedium.name,fork);assert.equal(f.state().backingMedium.private,false);
+ assert.equal(f.cycle(),0n);assert.equal(f.state().guestCommit,null);assert.equal(f.timers.size,0);
+}
+// Student can retry only its opaque private copy. Captured-outcome binding
+// stays privileged; neither a failed copy nor retry executes a guest clock.
+{
+ const f=await fixture({cycle:0n,paused:true,mode:'student',storageFault:'flush'});
+ await f.send('restore',{bytes:encoder.encode('19').buffer});
+ assert.equal(f.state().backingMedium.name,'test');assert.equal(f.state().backingMedium.ready,false);
+ assert.equal(f.cycle(),19n);assert.equal(f.timers.size,0);
+ f.setStorageFault(null);await f.send('bind');
+ assert.match(f.state().backingMedium.name,/^fork_[0-9a-f]{32}$/);
+ assert.equal(f.state().backingMedium.ready,true);assert.equal(f.state().mode,'student');
+ assert.equal(f.cycle(),19n);assert.equal(f.timers.size,0);
+ const count=f.calls.length;await f.send('outcomes',{bytes:new ArrayBuffer(0)});
+ assert.equal(f.calls.length,count);assert.match(f.messages.at(-1).error,/Developer or Laboratory/);
+}
+{
+ const f=await fixture({paused:true,controlContract:'lemma-browser-session-modes/1'});
+ assert.equal(f.state(),undefined);assert.equal(f.mediumCalls.length,0);assert.equal(f.calls.length,0);
+ assert.match(f.messages.at(-1).error,/control contract differs/);
 }
 // A failed cold backing open releases its acquired exclusive handle, keeps
 // the original error and creates no CPU, timer or durable-success observation.
@@ -79,7 +113,7 @@ for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush'
  const f=await fixture({cycle:0n,mode:'student'});
  assert.equal(f.state().mode,'student');await f.send('resume');
  const clocks=f.cycle(),calls=f.calls.length,timers=f.timers.size;
- for(const action of ['run','raw','raw-batch','inspect','bind','outcomes','events','capture','capture-outcomes','replay']){
+ for(const action of ['run','raw','raw-batch','inspect','outcomes','events','capture','capture-outcomes','replay']){
   await f.send(action,{cycles:'1',row:'now button 1',rows:'now button 1',name:'test',bytes:new ArrayBuffer(1)});
   assert.match(f.messages.at(-1).error,/requires Developer or Laboratory/);
   assert.equal(f.cycle(),clocks);assert.equal(f.calls.length,calls);assert.equal(f.timers.size,timers);

@@ -1229,4 +1229,37 @@ all body/authority pins remain. Originalbothrole artifacts and280actual mutants
 qualify; no newCI pass inferred. Originalcandidate failures remain in the existing
 006-candidate-a2-ci.json. No merge performed.
 
+## October14 bulk browser durable-only reopen
+
+New a520/9187 freshly elaborated whole pair, preparednativeec008 and executed
+browser07a, actually coldReady712.45M/3146.484 guest-launch elapsed seconds/
+3012.981 simulation-call seconds/192MiB. Same origin/name OPFS reopening uses
+no initializer/import/restore; all256MiB backing bytes,3.63M pixels and163 exact
+READ outcomes pass, zeroWRITE/BARRIER. Original2B/7200s/2GiB unchanged.
+Course opening on that sameCPU passes at814.45M:102M added,696.919s conservative
+phaseelapsed including paused exports,508.511s simulation calls,171 totalREADs,
+zeroWRITE/BARRIER. Every2496 ownedDoc8 byte equals Saved26; Invalid12/Verified11
+history, attempts2/hints2/manual-practice reason and allpixels persist. No new
+mathematical check is claimed. The older713.85M result uses a different medium
+and124reads; no speedup is inferred from those unlike workloads.
+
+Prepared frontend018b includes launch-local save reports and failed-open handle
+cleanup. Actual mouse pointerdown/up is admitted through its canvas in an isolated
+a520Ready private fork, not anothercold. Pending27 is visibly truthful beforebacking work at panels2/3. ActualSaved29
+follows barrier181 and panel4 at770.05M:57.6M/951.784s conservativeelapsed/
+247.212s simulation/330MiB; all2rawsamples/immutablepriorobjects/3.63Mpixels pass
+under original200M/1800s/2GiB. Originalobserver10-tokenexpectationFAIL retained,
+exact9-token correction and20missing/extra-field negatives pass withoutCPU rerun.
+IndependentcoldSaved29 remainsNOT_RUN. Newbrowsercontrol2 exposes activeOPFS
+private-name afterfullcopy/flush/rebind, retainsitforClose/Open and permitsStudent
+opaque-copyretry;7hostchecks pass, newcontrol2 browserexecutionNOT_RUN.
+Original user media are preserved. Exact paths/commands/results are in the existing
+006-browser-closure-workflow.json; originalnative500M/deadline/pixel failures remain.
+
+Published7cec candidate38598060895 finished FAILURE:9jobs pass. Both NotebookO2
+and initializerO2 audits pass; nextNotebookO0 rejects UserCopy.copyWord/post,
+subsequentexactcandidateacceptanceSKIPPED. Actualcheckoutc00a58d..., originalZIP
+f832ca7a.../18,063,837B and retainedunit/IR/log preserve thefailure. Independently
+qualified correction is being prepared; no rerun or candidatePASS inferred.
+
 -->

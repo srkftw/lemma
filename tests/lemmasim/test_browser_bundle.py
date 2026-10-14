@@ -31,6 +31,18 @@ def fixture(root):
     return m
 
 class BrowserBundleBoundary(unittest.TestCase):
+    def test_versioned_controls_preserve_archives_and_reject_unknown_versions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);m=fixture(root)
+            for version in (None,'lemma-browser-session-modes/1','lemma-browser-session-modes/2'):
+                if version is None:m.pop('session_control_contract',None)
+                else:m['session_control_contract']=version
+                (root/'bundle.json').write_text(json.dumps(m));validated_bundle(root)
+            for version in ('lemma-browser-session-modes/3',2,False):
+                m['session_control_contract']=version
+                (root/'bundle.json').write_text(json.dumps(m))
+                with self.subTest(version=version),self.assertRaises(ValueError):validated_bundle(root)
+
     def test_reuse_checks_generator_policy_and_portable_runtime_not_only_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);source=root/'built';source.mkdir()
