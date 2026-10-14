@@ -66,6 +66,17 @@ def validate_ipc_call_borrow(unit,ir):
    S+'setReplyAt':{P+'callBeginWithLimit'},S+'queueEnqueueAt':{P+'callBeginWithLimit'},
    S+'commitWaitAt':{P+'callBeginWithLimit'},
    S+'transactionRowAt':{S+'stagePayloadAt',S+'packetAt',S+'setReplyAt',S+'commitWaitAt'}}
+ rpc_borrow=None
+ if P+'replyLocal' in names or S+'queueCopyToUserAt' in names:
+  # Additional callers are admitted only after the complete new sixteen-body
+  # guard establishes their fresh same-Action base witnesses and exact graph.
+  from ipc_rpc_borrow import validate_ipc_rpc_borrow
+  rpc_borrow=validate_ipc_rpc_borrow(unit,ir)
+  expected[S+'prepareAt']|={P+'beginReceiveAt',P+'stageReplyAt'}
+  expected[P+'stageAt']|={P+'stageReplyAt'}
+  expected[S+'packetAt']|={P+'receiveResultAt',P+'stageReplyAt'}
+  expected[S+'commitWaitAt']|={P+'beginReceiveAt'}
+  expected[S+'transactionRowAt']|={S+'abortAt',S+'completeAt',S+'takeAt'}
  callers={}
  for helper,wanted in expected.items():
   actual={source for source,symbol in names.items() if names[helper] in parse_definitions_and_calls(_ir_definition_body(ir,symbol))[2]}
@@ -85,6 +96,7 @@ def validate_ipc_call_borrow(unit,ir):
  stage=_ir_definition_body(ir,names[P+'stageAt'])
  gates.append(validate_failed_call_gate(stage,names[S+'stagePayloadAt'],names[P+'stamp'],failed,failed_body))
  return {'version':'lemma-ipc-call-base-reuse/1','pinned_genuine_shapes':shapes,'exact_callers':callers,
+  **({'rpc_borrow':rpc_borrow} if rpc_borrow is not None else {}),
   'validated_metadata':metadata,'derived_base_values':sorted(base_values),'fresh_success_gates':gates,
   'additional_pending_callers':[S+'prepareAt',S+'transactionRowAt',S+'queueEnqueueAt'],
   'scope':'same nonpreemptible syscall Action only; mutable IPC words and UserCopy/queue/object checks remain fresh; no cross-syscall or User alias'}

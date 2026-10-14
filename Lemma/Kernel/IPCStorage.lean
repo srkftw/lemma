@@ -580,9 +580,12 @@ def queueCancelReply (handle key replyKey transaction : UInt64) : Action :=
 
 /-! Borrowed IPC transaction helpers. A caller must obtain `base` from a fresh
 successful `AddressSpace.base` in the same single-hart nonpreemptible Action.
-Only IPC tail and disjoint object/queue writes may intervene; descriptor
-identity/root/grants/registry, frame ownership/generation/pins and page tables
-cannot change. These helpers
+Only IPC tail and disjoint object/queue/capability-row writes may intervene.
+All fields read by AddressSpace.base (descriptor identity/root/layout/leaf
+registry, frame ownership/generation/pins and page tables) remain unchanged.
+Capability grant/revocation rows are disjoint from that protected base closure;
+all capability headers/rows and object/queue fields are checked afresh by their
+ordinary operations. No alias may survive a mapping, frame or descriptor change. These helpers
 never retain an alias or cross a suspension boundary. Every mutable IPC field
 is freshly validated by pendingAt, and ordinary UserCopy validates both pages
 and the scratch handle afresh before any payload byte changes. Public legacy
@@ -716,5 +719,64 @@ def queueEnqueueAt (handle key descriptor descriptorBase replyKey : UInt64) : Ac
   if failed s = true then fatal else put address 1
   else fatal
   else .done IPCABI.inFlight 0
+
+def abortAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReserved then reset address else .done IPCABI.inFlight 0
+
+def completeAt (descriptor base transaction status bytes sender replyHandle : UInt64) : Action :=
+  if 255 < status then fatal else
+  if maximumPacket < bytes then fatal else
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReady then .done IPCABI.alreadyCompleted 0 else
+  if state = stateWaiting then
+  .bind (put (address + resultStatusOffset) status) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultBytesOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultSenderOffset) sender) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (address + resultReplyOffset) replyHandle) fun s _ =>
+  if failed s = true then fatal else put (address + stateOffset) stateReady
+  else .done IPCABI.inFlight 0
+
+private def takeAt (descriptor base transaction : UInt64) : Action :=
+  .bind (transactionRowAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = stateReady then .done 0 address else .done IPCABI.wouldBlock 0
+
+def finishAt (descriptor base transaction : UInt64) : Action :=
+  .bind (takeAt descriptor base transaction) fun s address =>
+  if failed s = true then .done s 0 else reset address
+
+def queueCopyToUserAt (handle key descriptor receiverBase userVA capacity localReplyHandle : UInt64) : Action :=
+  if capacity < IPCABI.headerBytes then .done IPCABI.invalidArgument 0 else
+  if maximumPacket < capacity then .done IPCABI.invalidArgument 0 else
+  .bind (UserCopy.validateWrite descriptor userVA capacity) fun s _ =>
+  if failed s = true then .done s 0 else
+  .bind (queuePeek handle key) fun s address =>
+  if failed s = true then .done s 0 else
+  .bind (get (address + queueSlotBytesOffset)) fun s bytes =>
+  if failed s = true then fatal else
+  if capacity < bytes then .done IPCABI.bufferTooSmall 0 else
+  .bind (get (address + queueSlotReplyOffset)) fun s replyKey =>
+  if failed s = true then fatal else
+  if (if replyKey = 0 then if localReplyHandle = 0 then true else false
+      else if 0 < localReplyHandle then true else false) = true then
+  .bind (copyBytes (address + queueSlotPacketOffset) (receiverBase + packetOffset) bytes) fun s _ =>
+  if failed s = true then fatal else
+  .bind (put (receiverBase + packetOffset + IPCABI.replyOffset) localReplyHandle) fun s _ =>
+  if failed s = true then fatal else
+  UserCopy.copyToUser descriptor userVA descriptor packetOffset bytes
+  else fatal
+
 
 end Lemma.Kernel.IPCStorage
