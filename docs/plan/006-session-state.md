@@ -1131,4 +1131,49 @@ running only to compare exact713.85M state; it cannot relabel the native500M
 cold failure. The UI lost-pointer-capture/reset/Close cancellation fix is
 committed and host-qualified, but the currentb17 pack predates it.
 
+
+
+### Browser fresh checking and in-flight Save continuation
+
+The same originalb17/fe167/cf5250 machine now performs a new edited submission.
+Save23 stores revision12/5/7/Unchecked and removes current evidence applicability,
+while preserving the old Verified11 attempt and its Closure identity. The
+original6/6 expectation remains a retained plan failure: original acknowledged
+selected-field64 chooses the denominator; PLUS correctly increments6→7. No
+machine rerun, deadline, guest source or pixel tolerance changed. Complete
+owned2496 bytes, every retained ink object and all3.63M pixels pass.
+
+An actual raw CHECK enters isolated Arithmetic as request84/revision12/goal1.
+The guest returns status0/Invalid2, binds evidence to revision12 and preserves
+both ordered attempts. Save24 follows actual OPFS barrier170. Every ownedDoc8
+byte and controller pixel passes. Added120.8M clocks take736.097 simulation-call
+seconds and838.884 conservative phase seconds, including pauses, with192MiB
+heap under the original200M/1800s/2GiB bound. This is a fresh guest mathematical
+result, independently checked against exact rational arithmetic; hints/review
+and durable-only reopen continue separately.
+
+The observational977.35M cut retained three volatile sectors and Pending23.
+Recorded-outcome private continuation through eight actual writes/two barriers
+to993.15M/Saved23 matches the identical entire Wasm archive:15.8M clocks,
+107.360s,1857617920 peakRSS bytes, below64M/900s/2GiB. No original backing file,
+flush/drain/fence, clean-cache restriction or masked field enters comparison.
+
+The separate source-bound native452.5M retained cold-origin prefix reached
+713.85M in993.319s. Its entire145579992-byte authoritative wrapper and24942-byte
+RTL model are byte-identical to independently cold Wasm atthatcycle, as are
+allpixels/UART. Native/Wasm identity headers retain their actual distinctIDs.
+This continuation is not a new nativecoldPASS and retains the original500MFAIL.
+The compact observations/commands are in006-browser-closure-workflow.json.
+
+Actual publisheda2a695f candidate38577664110 finished FAILURE at synthetic
+checkout5fa5099092f7b56d28ac87d9190e4c43f7197b48: eight jobs passed, metadata
+failed the silicon host workload-map expectation and Task004 failed genuine
+O2UserCopy.copyWord/post auditing; its next acceptance step was skipped. The
+normal-only map expectation is independently corrected to four exact selectors
+while each prepared schema retains only its own two roles; all198 host tests
+pass. Observer repaireff36fb separately qualifies the historical Kernel3
+checked-call shape from Kernel4 inlinedvolatile shapes, including the original
+genuine CI unit/IR and140actual rejecting mutations. OriginalCI logs/artifacts and failure are
+retained in006-candidate-a2-ci.json; no later candidate inherits an earlierpass.
+
 -->

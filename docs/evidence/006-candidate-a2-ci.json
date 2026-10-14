@@ -1,0 +1,40 @@
+{
+  "schema": "lemma-task006-candidate-observation/1",
+  "source_commit": "a2a695f19c0f5976197421b0fad05a0f4cdcb492",
+  "actual_ci_run": 38577664110,
+  "actual_ci_status": "completed",
+  "actual_ci_conclusion": "failure",
+  "actual_checkout": "5fa5099092f7b56d28ac87d9190e4c43f7197b48",
+  "jobs_passed": 8,
+  "failed_jobs": [
+    {
+      "job_id": 115898926517,
+      "name": "Metadata and host-only suites",
+      "failed_step": "Run silicon host orchestration and observation suite",
+      "actual_tests": 198,
+      "actual_failures": 1,
+      "actual_test": "test_clock_cdc_and_readback_facts_are_closed",
+      "reason": "Original normal-only profile workload-map expectation excludes separately versioned opt-in Recovery selectors. Clock/CDC checks remain unchanged.",
+      "corrected_observer": {
+        "result": "PASS",
+        "actual_tests": 198,
+        "log_sha256": "52c501a6203d7b621d170ff41fac2351089c3128ce9099f777bd3a7fa8239144",
+        "independent_expected_map": "Four exact literal workload names; each prepared deployment still equals only its own two roles.",
+        "producer_runtime_changed": false
+      }
+    },
+    {
+      "job_id": 115898926664,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "failed_step": "Compile, audit and observe real O0/O2 guest ink and cold recovery",
+      "actual_error": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+      "subsequent_acceptance_step": "skipped",
+      "artifact_id": 11902003996,
+      "artifact_sha256": "6abe33ae9d0bb66c52158f4108b537f6cdb77b6fca65e3a270ccf4e973e060af",
+      "diagnosis": "Genuine historical Kernel3 retains ordered checked Access calls; newer Kernel4 audit pins require inlined volatile operations. Separate profile/lowering authority and exact non-inlined bodies are being qualified; no calls normalized away.",
+      "correction_status": "Observer repair eff36fb4f54f93f82dfc894954eed7a7da10332f: original genuine CI ordinary unit+pre/postIR qualification26.672s, exact Kernel3/old+newKernel4 positives and140actual rejecting mutations. No target edit or archived compiled-artifact mutation; originalCI remainsFAIL.",
+      "correction_evidence": "docs/evidence/006-usercopy-kernel3-observer-v1.json"
+    }
+  ],
+  "scope": "Historical candidate terminal observation retained. Corrected host fixture is not an inherited CI pass; a later candidate requires its own actual result."
+}
