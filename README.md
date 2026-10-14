@@ -1012,8 +1012,17 @@ now independently reaches actual Ready at878.55M clocks/5332.565worker seconds,
 with all250 recorded reads, unchanged acknowledged bytes and every expected
 controller pixel. Its same cold machine opens the course, edits to5/6 and
 receives isolated guest Verified atrevision22 followed by Saved41/barrier298.
-The subsequent hint/edit/resource/review and final durable-only reopen remain
-separate ongoing checks; the full proof kernel remains unfinished.
+The same cold machine subsequently acknowledges hint/edit/Invalid and
+history-cap Indeterminate/manual review through Saved46. A new cycle-zero
+browser machine reopens the actual origin data and reaches Ready at952.15M
+clocks/4599.933elapsed seconds, with all313 reference-derived READ offsets and
+returned bytes, every acknowledged object and all3.63M expected controller
+pixels exact. Its reopened course loads all2496 mathematical bytes through
+owned Sv39 pages and presents the saved resource/manual-review labels.
+The original475M close and separate40M diagnostic still fail full closed
+display; cold recovery remains a distinct result. This is the built-in reference
+sequence and restricted exact checker; installed-course frontends and the full
+proof kernel remain unfinished.
 
 The current prepared browser controls use Student mode by default. Select
 Developer or Laboratory before Open for raw event batches, bounded runs,

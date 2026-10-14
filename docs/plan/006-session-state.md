@@ -1052,7 +1052,20 @@ Saved46 durable-only cold now runs from verifiablecycle0/retired0, without
 restore/initialize/import. It uses the already qualified version1 paused UI and
 bit-identical0c Machine/ROM/guest437 artifacts, original2B/7200s/2GiB bounds;
 `.../saved46-durable-reopen-a1/plan.json` andcold-zero.chk preserve its start.
-Ready, reopenedcourse and its final full-pixel/durable result are not yet claimed.
+That independent Saved46 cold now **PASS**es Ready952.15M/4599.933elapsed seconds,
+including206.1s initialpause,4290.258s simulationcalls and192MiB heap. All313
+reference-derived read offsets/returned bytes, every acknowledged object,
+complete Doc6 history/learner state and all3.63M expected cold controller pixels
+match; noWRITE/BARRIER/format/save/restore/import occurs. Actual3raw events then
+open the recovered course in106.75M clocks/453.131s simulationcalls, below the
+predeclared650M/7200s bounds. The full2496mathematicalRAMbytes match acknowledged
+payload through independently checked live frame ownership/generation/purpose,
+expanded metadata and actual Sv39 mappings; controllerglyphs showresourcecap,
+manualoverride/practice/uncertainty. Courseopening changes no durablebyte.
+That partialglyph/fullDoc check does not assert every coursepixel. The original
+475M and40M completeclose failures remain distinct. The first passive reopened
+observer failed beforevalidation on absent optionalPIL; originalscript/failure
+retained, standard-librarypresentation correction runs no guestclocks.
 
 UserCopy grouping and immutable installed-course rendering/polling work are
 separate active guest increments. The new truthful course mounted-Ready60M

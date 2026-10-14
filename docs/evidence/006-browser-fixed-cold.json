@@ -1,7 +1,7 @@
 {
   "schema": "lemma-browser-fixed-capture-cold/1",
-  "status": "PASS_ACTUAL_COLD_READY_AND_APPLICABLE_SAME_WASM_SUFFIX",
-  "scope": "Local browser worker executes canonicalRTL and genuine auditedArray/CourseWord/OwnedTablePrefix RV64. Actualcycle0cold recovery, fullcontrollerpixels and validactualread outcomes; separate arbitrarycourse-workflow same-Wasm suffix. Fullbrowsermath/save/reopen,newnativeC++/Wasm relation and wholePending boundary remain separate.",
+  "status": "PASS_ACTUAL_COLD_COURSE_CHECK_SAVE_REOPEN_WITH_SEPARATE_CLOSE_FAILURES",
+  "scope": "LocalbrowserrealcanonicalRTL and genuine auditedArray/CourseWord/OwnedTablePrefixRV64. Actualcycle0coldReady then rawcourse/edit/check/hint/resource/manualreview/Saved46 and independentactualdurable-onlycycle0reopen/allpixels/completeownedMathRAM. ApplicableearlierarbitrarysameWasm suffix staysseparate. Fullcloseddisplayat original475M/40M boundariesfailed; newnative/WasmClosureexecutionrelation remainsseparate.",
   "profile": "lemma-silicon-dev/0.3.0",
   "runtime": "0c22430ee3939550a8e13deb034746f7e10df7310dc15c1c3c1ac6721199066b",
   "guest": "437224ddd541ce2b3e5acb3678f53a4ff43fcadb6dd39df234c9167b53d4ad63",
@@ -84,17 +84,21 @@
   "retained_failures": [
     "Earlier Array browser7200s coldtimeout unchanged; privatecontinuation mathematics isnotcoldacceptance.",
     "Earlier SIMD/CourseWord coldReady passes independently but itsmalformed32-bitoutcome tape remainsFAIL; no replayfromthat tape.",
-    "Newfixedwholeinitializer30M/600s pendingtest remainsFAILbeforefirstWRITE; no extendedlimit orwholePendingclaim."
+    "Newfixedwholeinitializer30M/600s pendingtest remainsFAILbeforefirstWRITE; no extendedlimit orwholePendingclaim.",
+    "Saved44passiveobserver-a1 wrongflushordinal andobserver-a2 unusedUnknownexecutionslot bothretainFAIL; narrowedobserver-a3passesunchangedactualarchiveswithzeroCPUrerun.",
+    "Original475Mclose/fullpixelsFAIL and separate40M600s diagnosticstillFAIL; neitherretroactivelyextended orusedasclosed-displayPASS.",
+    "ReopenedCourseobserver firstfailedbeforevalidation onmissingoptionalPIL, originalscript/reportretained; standard-libraryPNG presentation andnamedactualbytes/glyph observerpassesunchangedexportswithzeroCPUrerun."
   ],
   "commands": [
     "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-capture-u64-simd-a1 --guest-bundle build/native/task006-array-table-prefix-a2 --reuse-wasm --output-dir build/browser/fixed-capture-new",
     "./scripts/lemmasim browser-serve --bundle build/browser/task006-capture-u64-simd-a1 --port 8780",
     "python3 scripts/check_browser_cold_export.py --directory build/browser/task006-capture-u64-cold-a1 --bundle build/browser/task006-capture-u64-simd-a1 --reference-medium build/task006-array-doc5-migration-a3/cold-course.raw --reference-pixels build/task006-array-doc5-migration-a3/cold-notebook.ppm --result-name new-observation.json",
-    "nix-shell build/browser/task006-capture-u64-simd-a1/wasm-sources/tooling/silicon/wasm.nix --run \"node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-capture-u64-simd-a1 build/browser/task006-capture-u64-cold-a1/course-suffix-a1/prefix.chk build/browser/task006-capture-u64-cold-a1/course-suffix-a1/suffix.chk build/browser/suffix-new\""
+    "nix-shell build/browser/task006-capture-u64-simd-a1/wasm-sources/tooling/silicon/wasm.nix --run \"node conformance/lemmasim/check_wasm_browser_suffix.mjs build/browser/task006-capture-u64-simd-a1 build/browser/task006-capture-u64-cold-a1/course-suffix-a1/prefix.chk build/browser/task006-capture-u64-cold-a1/course-suffix-a1/suffix.chk build/browser/suffix-new\"",
+    "python3 scripts/check_browser_cold_export.py --directory build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1 --bundle build/browser/task006-session-modes-a1 --reference-medium build/browser/task006-capture-u64-cold-a1/close-last-bulk-suffix-a1/saved.raw --reference-pixels build/task006-array-doc5-migration-a3/cold-notebook.ppm --derive-single-page-reads --result-name cold-result-NEW.json"
   ],
-  "remaining": "Samecoldmachine course/check/acknowledgedSave/newcoldreopen stillinprogress; nativeC++ finitecomparison, wholearchitecturalcached-state campaign, Stringbrowserexecution, browsercompiler/installers/permissions/redistribution incomplete. OPFSsuccessqualifiescompletedworkerflush, notunconditionaleviction/physicalpowerloss.",
+  "remaining": "ActualArray/builtinmathematicsbrowserwrite/check/save/durable-onlyreopen nowworks. NewgenuineClosure/UserCopybrowserexecution/native-Wasmrelation, generalruntime/recursion/proofkernel, dynamicpackagefrontends, actualbrowserproductionboot/companion/radios/localcompiler andredistribution unresolved. Completecloseat retainedoriginalbounds remainsFAIL; coldfullpixelsPASS isseparate.",
   "actual_math_after_cold": {
-    "status": "PASS_ACTUAL_COLD_COURSE_EDIT_AND_ISOLATED_VERIFIED_SAVED41",
+    "status": "PASS_ACTUAL_COLD_LINEAGE_CHECK_EDIT_HINT_RESOURCE_REVIEW_SAVED46_AND_NEW_COLD_REOPEN",
     "course_open": {
       "path": "build/browser/task006-capture-u64-cold-a1/course-opened-a1/result.json",
       "bytes": 6808,
@@ -114,13 +118,145 @@
       "actualcold machine openscourse985250003; all3.63Mexpectedpixels andunchangedmedium",
       "rawNext/selectD/minus makes5/6revision22 andrealSaved40",
       "actualisolatedArray request128/status0 producesVerified1revision22, seventhimmutablehistory andrealSaved41/barrier298",
-      "allprior6histories/1hint andallotherrecordpayloadspreserved"
+      "allprior6histories/1hint andallotherrecordpayloadspreserved",
+      "actualguestauthoredhint Saved42, edit5/7revision23 Saved43 invalidatesapplicability, isolatedArray request195/status0 Invalid2 Saved44 afterbarrier328",
+      "all8immutableattempt/executionentries,2hints andallotherdocument/rawinkpayloadsexact; actualreplyloggingprecedesrequestloggingfor195 andisretained"
     ],
     "check_clocks": 124700000,
     "check_completed_cycle": 1574950003,
     "check_max_clocks": 650000000,
     "check_original_host_seconds": 7200,
     "scope": "Restrictedexactrationalguestchecker, nothostLeanoracle orproofkernel. Sameactual0c cold lineage withoutrestore.",
-    "remaining": "Hint/edit/Invalid/resources/review batch continues; finalnewcold/durable reload remains separate."
+    "remaining": "RestrictedexactArraychecker/builtinreferencecourse; ordinaryString/Closurebrowserexecution, installedpackageNotebook integration, live tutor, held-outlearningassessment, generalruntime/proofkernel remainopen.",
+    "hint_edit_invalid": {
+      "path": "build/browser/task006-capture-u64-cold-a1/hint-edit-invalid-saved44-a1/result-a3.json",
+      "bytes": 11962,
+      "sha256": "98337193bde46dda549a73e34dbe38626ff6e0e6bd3230d6ab437fc820f409a1"
+    },
+    "hint_edit_invalid_clocks": 465000000,
+    "hint_edit_invalid_completed_cycle": 2039950003,
+    "hint_edit_invalid_original_max_clocks": 465000000,
+    "hint_edit_invalid_original_host_seconds": 7200
+  },
+  "resource_review": {
+    "result": {
+      "path": "build/browser/task006-capture-u64-cold-a1/resource-review-close-boundary-a1/result-a2.json",
+      "bytes": 9125,
+      "sha256": "bd596522f32aff2b7eff0483021716e552f6e3b95e1c46f528610a0f099e27d9"
+    },
+    "original_completion": {
+      "path": "build/browser/task006-capture-u64-cold-a1/resource-review-close-boundary-a1/completion.json",
+      "bytes": 753,
+      "sha256": "01f0d539c7160de31f68714a2333069538527b4ac4cf076ff9714f83a49f697a"
+    },
+    "read_only_diagnoses": [
+      {
+        "path": "build/managed/usercopy-hotpath-a1/original-boundary.json",
+        "bytes": 9174,
+        "sha256": "8a27074682660033a7967f6b1ea73c8dc3d05aa0871ea97f6f740de184e3c93d"
+      },
+      {
+        "path": "build/managed/usercopy-hotpath-a1/suffix-boundary.json",
+        "bytes": 7867,
+        "sha256": "7e5558ed6fd4b97d9ea51f4bf5a5a99500a9c1c6c6f7dd38f21a342e06962167"
+      }
+    ],
+    "actual_saved": [
+      45,
+      46
+    ],
+    "resource": "historycapIndeterminate; notheapOOM/newcheckerattempt",
+    "review": "manualpractice, reasonshown, understandinguncertain",
+    "prior8attempts_and_execution_history_unchanged": true,
+    "other_objects_and_raw_ink_unchanged": true,
+    "original_close": {
+      "status": "FAIL_AT_ORIGINAL_475M_7200_LIMIT",
+      "differing_closed_pixels": 15620,
+      "actual_queue_read": "independentactualSv39/stack/ELF diagnosis: validstoredinkREAD; no completedredrawclaim"
+    },
+    "separate40M600_diagnostic": {
+      "status": "FAIL_NO_NEW_PANEL_COMPLETION",
+      "actual_current_upload": "independentactualsavedcallargs:7tileuploadnear(1024,256); finalrowpacketwasstale"
+    },
+    "original_unclassified_observer_failure": {
+      "path": "build/browser/task006-capture-u64-cold-a1/resource-review-close-boundary-a1/observer-record-assumption-failure-a1.json",
+      "bytes": 232,
+      "sha256": "c094e114066d3c78f4ff09f69fc7d6c95bec73a40e6d50431b593350313b5a63"
+    }
+  },
+  "durable_only_reopen": {
+    "status": "PASS_ACTUAL_NEW_CPU_COLD_READY_AND_REOPENED_COURSE",
+    "plan": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/plan.json",
+      "bytes": 1907,
+      "sha256": "382a9789eda6ae6e4685c8758fbd8c24cf173a45154c4da59f956e6586c73d3b"
+    },
+    "origin": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/browser-origin-a1.json",
+      "bytes": 961,
+      "sha256": "4816a7329bcd4e873be89b3d48399d2c6136e9d09c2c79a07e5d6bc93e539f8a"
+    },
+    "actual_ready": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/browser-observation-a1.json",
+      "bytes": 1465,
+      "sha256": "7dc59be4e1c747a850a559bf6619ad93ab1bde1f91c2bb55add359461ad95c34"
+    },
+    "reference_reads": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/reference-read-plan-a1.json",
+      "bytes": 4064,
+      "sha256": "35c48fcc5323890a53e9783d0773d26887e2f964b95b866ab7836a88a978601c"
+    },
+    "cold_result": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/cold-result-a1.json",
+      "bytes": 9865,
+      "sha256": "92958498cf647806672988d0417064f7e14bbc62240ca7a35961844420b6dcba"
+    },
+    "reopened_course": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/course-open-a1/result-a2.json",
+      "bytes": 9945,
+      "sha256": "2023bfe20fef95762365cd7f1c8ffa2eb595a655a0466fb1b950bd4e7b02111e"
+    },
+    "course_plan": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/course-open-a1/plan.json",
+      "bytes": 838,
+      "sha256": "3416d194db68c43305dc0171b16346308d3b96a9144fcf7716dac605eb81ef07"
+    },
+    "actual_controller_image": {
+      "path": "build/browser/task006-capture-u64-cold-a1/saved46-durable-reopen-a1/course-open-a1/actual-controller.png",
+      "bytes": 12105,
+      "sha256": "865d4824698ff27a608223ff41a8af74e40424abfd4e2c181ac0fd05ddd5328c"
+    },
+    "ready_cycle": 952150000,
+    "ready_elapsed_seconds": 4599.93288499999,
+    "initial_pause_seconds_included": 206.1,
+    "simulation_call_seconds": 4290.257574990989,
+    "wasm_heap_bytes": 201326592,
+    "medium_sha256": "ab3ec6e21f4db127ed0b5b66fd85f370e0b66de328deeead53b9e6e3dccbd725",
+    "journal_sequence": 46,
+    "actual_read_outcomes": 313,
+    "read_offsets_and_returned_bytes_exact": true,
+    "writes": 0,
+    "barriers": 0,
+    "complete_expected_cold_pixels": 3630000,
+    "restored": false,
+    "initialized": false,
+    "imported": false,
+    "event_replay_used": false,
+    "same_actual_original_opfs_origin": true,
+    "actual_course_open_clocks": 106750000,
+    "actual_course_simulation_seconds": 453.13063999820315,
+    "actual_course_elapsed_upper_seconds": 499.8870700000525,
+    "all_loaded_math_bytes": 2496,
+    "owned_Sv39_and_frame_metadata_checked": true,
+    "independent_controller_glyphs": [
+      "INDETERMINATE",
+      "MANUAL",
+      "PRACTICE",
+      "UNCERTAIN",
+      "OVERRIDE"
+    ],
+    "complete_course_expected_pixels_qualified": false,
+    "ready_exports_advance_clocks": 0,
+    "scope": "ActualoriginOPFScompletedflush durability only; nopowerloss/evictionguarantee. Entirecoldrecoveryexactbytes/pixels separatefromCoursepartialglyph+fulldocumentRAM check."
   }
 }
