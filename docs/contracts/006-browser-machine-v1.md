@@ -118,6 +118,15 @@ unknown/non-prefix changes poison the machine instead of inventing rollback.
 A failed preflight read happens before issuing the write and has a known empty
 changed prefix. Read and barrier errors reach the actual controller.
 
+Opening an origin medium acquires an exclusive handle before a machine exists.
+Failure in initial truncate/flush/size validation attempts to close that handle
+and preserves the original storage error, including when cleanup itself fails.
+No CPU, scheduled run, export or guest success is created by a failed open.
+The newly created file and any bytes already changed remain present; this is
+lease cleanup, not rollback. A wrong-size medium still rejects without format.
+These initialization errors are outside the machine's guest backing-outcome
+tape because no machine operation has been admitted yet.
+
 Backing outcome logs capture before machine publication. Replay constructs a
 new instance with the exact log and restores an isolated checkpoint; its new
 OPFS file receives only recorded effects. It does not execute live I/O against

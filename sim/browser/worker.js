@@ -107,9 +107,17 @@ async function openMedium(name,initialize){
   catch(e){if(e.name!=='NotFoundError')throw e;}file=await root.getFileHandle(name+'.raw',{create:true});}
  else file=await root.getFileHandle(name+'.raw');
  const next=await file.createSyncAccessHandle();
- if(initialize){next.truncate(268435456);next.flush();}
- if(next.getSize()!==268435456){next.close();throw Error('Expected a 256 MiB medium');}
- return next;
+ try{
+  if(initialize){next.truncate(268435456);next.flush();}
+  if(next.getSize()!==268435456)throw Error('Expected a 256 MiB medium');
+  return next;
+ }catch(error){
+  // No machine owns this handle yet. Release its exclusive lease even when
+  // creating/validating the medium failed after changing backing bytes.
+  // A secondary close error cannot replace the original storage outcome.
+  try{next.close();}catch{}
+  throw error;
+ }
 }
 async function load(message){if(loaded)throw Error('Close this machine before opening another');
  if(message.paused!==undefined&&typeof message.paused!=='boolean')throw Error('Open paused must be a Boolean');

@@ -8,13 +8,14 @@ import {webcrypto} from 'node:crypto';
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const MAX=18446744073709551615n;
 const record=(kind,sequence=0n)=>`K1 ${kind.toString(16).padStart(16,'0')} ${sequence.toString(16).padStart(16,'0')} 0000000000000001 0000000000000001 0000000000000000\n`;
-async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent}={}){
+async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,paused=false,mode='developer',onRun,onEvent,storageFault=null,mediumSize=268435456,closeFault=false}={}){
  let now=0,nextTimer=0,generation=0,finished=false,current=cycle,paper={completed:'0',accepted:'0'},uart=initialUART;
  const files=new Map([['/capture.io',encoder.encode('literal captured outcome bytes')]]),messages=[],timers=new Map(),calls=[],events=[];
  const bytes=encoder.encode('hash-validated fake ELF/descriptor/ROM');
  const digest=Buffer.from(await webcrypto.subtle.digest('SHA-256',bytes)).toString('hex');
  const item={path:'artifact.bin',sha256:digest},manifest={schema:'lemmasim-browser-bundle/1',width:1,height:1,rom:item,workloads:{notebook:{image:item,dtb:item,descriptor:item},initializer:{image:item,dtb:item,descriptor:item}}};
- const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){now+=4;},getSize(){return 268435456;},close(){},truncate(){}};
+ const mediumCalls=[];const fault=name=>{mediumCalls.push(name);if(storageFault===name)throw Error('injected '+name+' failure');};
+ const medium={read(b){now+=2;return b.length;},write(b){now+=3;return b.length;},flush(){fault('flush');now+=4;},getSize(){fault('getSize');return mediumSize;},close(){mediumCalls.push('close');if(closeFault)throw Error('secondary close failure');},truncate(){fault('truncate');}};
  const mediumNames=new Set(initialize?[]:['test.raw']);
  const root={async getFileHandle(name,options={}){if(!mediumNames.has(name)&&!options.create){const e=Error('missing');e.name='NotFoundError';throw e;}mediumNames.add(name);return {async createSyncAccessHandle(){return medium;}};}};
  const core={HEAPU8:new Uint8Array(16),FS:{mkdir(){},writeFile(p,b){files.set(p,new Uint8Array(b));},readFile(p){if(p==='/uart.bin')return encoder.encode(uart);if(!files.has(p))throw Error('missing '+p);return new Uint8Array(files.get(p));},unlink(p){files.delete(p);},stat(){return {size:268435456};},open(){return {};},read(_stream,_chunk,_offset,length){return length;},close(){}},
@@ -51,8 +52,27 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  async function drain(){for(let i=0;timers.size&&i<30;i++)await tick();assert.equal(timers.size,0,'fixture run did not pause');}
  const state=()=>messages.filter(m=>m.type==='state').at(-1),exports=()=>messages.filter(m=>m.type==='export');
  await send('open',{name:'test',initialize,paused,mode});if(!paused)await send('pause');
- return {send,tick,drain,state,exports,messages,timers,calls,events,cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
+ return {send,tick,drain,state,exports,messages,timers,calls,events,mediumCalls,cycle:()=>current,advanceWall:n=>{now+=n;},setUART:x=>{uart=x;},setPaper:x=>{paper=x;}};
 }
+// A failed cold backing open releases its acquired exclusive handle, keeps
+// the original error and creates no CPU, timer or durable-success observation.
+// Existing bytes may already have changed; this test promises no rollback.
+for(const [storageFault,expected] of [['truncate',['truncate','close']],['flush',['truncate','flush','close']],['getSize',['truncate','flush','getSize','close']]]){
+ const f=await fixture({cycle:0n,initialize:true,paused:true,storageFault});
+ assert.deepEqual(f.mediumCalls,expected);assert.match(f.messages.at(-1).error,new RegExp('injected '+storageFault+' failure'));
+ assert.equal(f.calls.filter(x=>x[0]==='lemma_create').length,0);assert.equal(f.timers.size,0);assert.equal(f.exports().length,0);assert.equal(f.state(),undefined);
+}
+{
+ const f=await fixture({cycle:0n,initialize:true,paused:true,mediumSize:1});
+ assert.deepEqual(f.mediumCalls,['truncate','flush','getSize','close']);assert.match(f.messages.at(-1).error,/Expected a 256 MiB medium/);
+ assert.equal(f.calls.filter(x=>x[0]==='lemma_create').length,0);assert.equal(f.timers.size,0);
+}
+{
+ const f=await fixture({cycle:0n,initialize:true,paused:true,storageFault:'flush',closeFault:true});
+ assert.deepEqual(f.mediumCalls,['truncate','flush','close']);assert.match(f.messages.at(-1).error,/injected flush failure/);
+ assert.doesNotMatch(f.messages.at(-1).error,/secondary close/);assert.equal(f.state(),undefined);
+}
+
 // Reject restricted controls before even observing/mutating the machine.
 // Pointer input and ordinary persistence/recovery remain in the same worker.
 {

@@ -521,5 +521,22 @@
     "new_browser_pack_execution": "NOT_RUN; ongoing cold pack07a predates this display observer, current machine untouched",
     "independent_read_review": "Array found no falseSaved or hostauthority defect",
     "original_fixture_failure": "Ignored a1 host fixture erased retained initializer UART during its next run; corrected fake cold constructor matches actual Machine constructor ofstream truncation. Observer still rejects truncated history."
+  },
+  "open_medium_failure_cleanup": {
+    "scope": "Host OPFS ownership before machine construction; not guest durability/real browser fault capture qualification",
+    "original_defect": "Acquired exclusive handle leaked when initialization truncate/flush/getSize threw before load adopted it. Original worker fails independently added truncate\u2192close expectation.",
+    "correction": "Wrap acquired-handle validation in try/catch; attempt close and rethrow original error; no rollback or fabricated success. Wrong-size still fails without format.",
+    "qualified_host_cases": [
+      "truncate throw",
+      "flush throw",
+      "getSize throw",
+      "wrong size",
+      "primary flush throw plus secondary close throw"
+    ],
+    "host_worker_and_app_tests": "PASS2 tests1.089s; noCPU/timer/export/result on failed opens; previous scheduling/publication/restore/pointer checks retain meaning",
+    "old_worker_sha256": "fc4494c32f069cc715c89635e19c33d9c0d21cfb0ffb7cccc8c4c82093728699",
+    "new_worker_sha256": "782c8f6274fd93ff52374586307aed7ce0704d207e8f309d3557208a2abb7e93",
+    "independent_read_review": "Array found no primary-error masking or successful-handle premature close",
+    "new_packed_browser_fault_execution": "NOT_RUN; prepared publication pack1154 predates cleanup, actual cold07a unchanged"
   }
 }
