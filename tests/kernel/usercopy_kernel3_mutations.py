@@ -15,7 +15,7 @@ def corpus(ir, unit):
     from usercopy_page_words import BASE, ARGUMENTS
     rows = {canonical(row['source']): row for row in unit['functions']}
     cases = []
-    for field, value in [('configuration', 'lemmasim-initialize'),
+    for field, value in [('configuration', 'lemmasim-initialize' if unit['configuration']=='lemmasim-notebook' else 'lemmasim-notebook'),
                          ('managed_policy', 'lemma-notebook-v2'),
                          ('contract_version', 'core0-kernel-v0.4'),
                          ('schema_version', 2), ('role', 'user')]:

@@ -125,6 +125,11 @@ def validate_if_present(ir, unit, *, optimized):
     return None
 
 
+KERNEL3_ROOTS = {
+    'lemmasim-notebook': 'Lemma.Platform.LemmaSim.NotebookKernel.boot',
+    'lemmasim-initialize': 'Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium',
+}
+
 def validate(ir, unit, *, optimized):
     from audit_kernel import (_ir_definition_body, parse_definitions_and_calls,
                               _local_arithmetic, _local_call_arguments,
@@ -139,11 +144,11 @@ def validate(ir, unit, *, optimized):
     names = {r['symbol']: source for source, r in rows.items()}
     phase = 'post' if optimized else 'pre'
     kernel3=unit.get('contract_version')=='core0-kernel-v0.3'
-    if kernel3 and (unit.get('configuration')!='lemmasim-notebook' or unit.get('managed_policy')!='lemma-notebook-v1' or
+    if kernel3 and (unit.get('configuration') not in KERNEL3_ROOTS or unit.get('managed_policy')!='lemma-notebook-v1' or
                     unit.get('schema_version')!=1 or unit.get('artifact_category')!='development-kernel-unit' or
                     'checked_inline' in unit or
                     [(canonical(row['source']),row['id'],row['args']) for row in unit.get('roots',[])]!=
-                    [('Lemma.Platform.LemmaSim.NotebookKernel.boot',1,[]),
+                    [(KERNEL3_ROOTS.get(unit.get('configuration')),1,[]),
                      ('Lemma.Platform.LemmaSim.NotebookKernel.dispatch',2,['u64','u64','u64'])]):
         raise Core0Error('page-word Kernel3 historical configuration/lowering authority differs')
     observed = {}
