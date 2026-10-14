@@ -268,6 +268,69 @@
     }
   },
   "independent_codec": "four real published-artifact Python/zlib checks PASS; checks CRC, original material, exact references, distinct prerequisite graphs and recomputed-CRC mutations",
+  "ipc_call_base_reuse": {
+    "artifacts": {
+      "production-symbols.txt": "f7c7a43b44079b042639991705e1dcc4f8504cfdd7df8625c2e85b3163cd36fe",
+      "production-unit.json": "ab4b00404769a6970edd298e45c2d8a561c2122a1fbb2e294de35ae78339d7e6",
+      "production.ll": "15ed192b23ebf86de5958b5e8ff6beefea88c79a9229a3954a7ef0d7d47e5445",
+      "production.o": "d8a0510712d5d4ec9af6bbe0db9799a79d204cc5b535d988f0858e7aff28c6fa",
+      "production.opt.ll": "8546697b441b2843f89044184642f919472f5c38ae9df883efbb027e2bd3a7bb"
+    },
+    "child_peak_rss_kib": 1665240,
+    "current_observer_change": "PINNED dictionary formatted after original qualification; original exact observer bytes retained separately; no target recompilation/reclassification",
+    "focused_existing_ipc_host_tests": 18,
+    "independent_observer_negatives": [
+      "wrong derived base",
+      "cross-descriptor binding",
+      "missing current pending/base binding",
+      "unapproved caller"
+    ],
+    "observer_consumed_sources": "build/kernel/task006-ipc-call-borrow-observer-a1-source",
+    "observer_receipt": "build/kernel/task006-ipc-call-borrow-observer-a1.json",
+    "observer_receipt_sha256": "6f76ecc902b3cadaa0298000ea71bb12c6c17039e3189ba8f05a73e46344c5e3",
+    "original_observed_actions": "IPC_CALL_BORROW_ACTIONS:PASS pool512 requests1220->1082, six complete duplicate base checks removed; exact result/RAM/remaining requests, payload/authority/range guards and 518 access-fault cases\nIPC_CALL_BORROW_ACTIONS:PASS pool8192 requests1920->1446, six complete duplicate base checks removed; exact result/RAM/remaining requests, payload/authority/range guards and 630 access-fault cases",
+    "preserved": [
+      "old public CallBegin/Storage bodies",
+      "actual capability/payload/deadline/resource error precedence",
+      "owner/purpose/generation/quota/pinning/zero-before-publication",
+      "complete UserCopy permissions and duplicate rows",
+      "queue/durable publication ordering and128-byte Store protocol",
+      "unknown dynamic kernel mutation/transient ECC fault models unadmitted"
+    ],
+    "receipt": "build/kernel/task006-ipc-call-borrow-a1/result.json",
+    "receipt_sha256": "8c1dc220f52aa7b858a22da0a2b8bf0d75b446df8f4a1076944a85a04b1c74c3",
+    "remaining": [
+      "fresh complete optimized whole image audit",
+      "fresh prospective RTL install/cold bounds and actual target cycle/host measurements",
+      "completed course publication, immutable rejection and independent cold selection",
+      "dynamic notebook lesson rendering and revision/package/source-bound evidence"
+    ],
+    "request_reduction": {
+      "canonical_pool8192": {
+        "after": 1446,
+        "before": 1920,
+        "percent": 24.6875,
+        "removed_duplicate_base_checks": 6
+      },
+      "legacy_pool512": {
+        "after": 1082,
+        "before": 1220,
+        "removed_duplicate_base_checks": 6
+      }
+    },
+    "retained_fixture_elaboration_failure": "initial indexed Request fixture lacked Inhabited; fixed the host test default only, no target correction or pass fabricated",
+    "reuse_precondition": "single same syscall Action after successful complete descriptor base+idle validation; descriptor/root/registry/frame grant and mappings immutable; pending words always reread; no S scheduling, User task, owned DMA or host input can mutate kernel metadata; private M time samples cannot mutate it",
+    "scope": "hosted actual Action counts, exact states/request-order/fault cases and genuine pinned kernel4 LLVM/RV64 component; not target cycles or host emulation speed",
+    "source_archive": "build/kernel/task006-ipc-call-borrow-a1/consumed-source-root",
+    "source_count": 85,
+    "source_inventory_sha256": "1f38f65d59e2faac8bed00e3b571b079d02362a060918381b9d9dbaeed4c8431",
+    "status": "PASS_ACTIONS_GENUINE_RV64_COMPONENT_AND_CLOSED_OBSERVER; WHOLE_IMAGE_RTL_INSTALL_NOT_RUN",
+    "unresolved_boundary": [
+      "lemma_exec_firmware_call"
+    ],
+    "version": "lemma-ipc-call-base-reuse/1",
+    "wall_seconds": 73.65073330001906
+  },
   "metadata": {
     "scaffold": "PASS seven gates/56 software units/six physical units unchanged",
     "scaffold_host_suite": "PASS18 tests"

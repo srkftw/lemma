@@ -139,6 +139,50 @@ unprivileged installer. Its private pages and Console/Store grants never grant
 block or notebook memory authority. This transport is RTL-only in the current
 canonical profile, local-owner integrity only, and does not authenticate a peer.
 
+## Same-Action IPC base reuse
+
+The next internal optimization is `lemma-ipc-call-base-reuse/1`. The existing
+CallBeginWithLimit operation validates capability authority and the complete
+User payload range first, then `idle` validates a fresh full address-space
+base and current IPC metadata. Six later metadata transitions borrow exactly
+that base within this same syscall Action. Every mutable pending state,
+transaction, next ID, operation, endpoint and reply field is reread in its
+original order. UserCopy still resolves the scratch handle and checks live
+ownership/generation, duplicate rows, exact tracked/walked PTEs and complete
+User permissions before copying. Queue checks, object limits, replies and
+publication order remain. Legacy public Storage helpers and CallBegin retain
+their original complete checks. The Store protocol and durable format stay v1.
+
+This borrow cannot cross a return, wait, syscall, scheduling or reset boundary.
+The single hart's S trap disables S interrupts; pending timer notification is
+not scheduler execution. Private M timer service updates timer/notification
+state, never allocator, descriptor, page-table or object memory. Other User
+tasks cannot run during the Action and have no mapping of this kernel metadata.
+DMA ownership checks admit only pinned granted User spans, never these kernel
+purpose1 descriptor frames. Raw host inputs/backing adapters supply device
+samples/bytes and cannot write descriptor RAM. A reset restarts the machine;
+it cannot resume a stale borrowed base. IPC staging touches only the reserved
+IPC tail; object/queue transitions use disjoint frames. None can alter the
+validated descriptor layout, frame grant or mappings between uses.
+
+The exact closed generated helper bodies, caller inventory and checked success
+routes are separately observed. No general cached-pointer interface is admitted.
+The finite fault fixture projects only independently validated identical
+successful duplicate base-read subsequences; every remaining read, failure,
+write, returned count and authoritative byte stays exact. It covers fixed
+address-specific injected failures, alias/range/partial-page cases and both512/
+8192-frame configurations. It does not establish equivalence for an external
+agent mutating kernel metadata or a new transient/ECC read-error profile; such
+models need a separately admitted lifetime/error contract before this borrow
+can be used. Current memory-access alignment/bounds failures remain checked.
+
+The qualified component reduced actual expanded CallBegin boundary requests
+from1920 to1446 (24.6875%), and legacy512-frame requests from1220 to1082. These
+are hosted actual-Action counts, not target cycles or host simulator speed.
+Genuine kernel4 LLVM/RV64 component lowering passed with only the real private
+firmware boundary unresolved. Whole-image requalification, fresh RTL cycle/host
+measurements and completed course install/cold recovery remain required.
+
 ## Actual raw-owner launch and commands
 
 The original fully audited course images and their exact sealed source roots

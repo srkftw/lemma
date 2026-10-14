@@ -131,8 +131,12 @@ def validate_ipc_poll_borrow(unit, ir):
                      r'\) nounwind noinline "disable-tail-calls"="true" \{', ir, re.M) is None:
             raise Core0Error('IPC polling borrow changed emitted helper signature: ' + source)
 
+    pending_callers = {s+'pending',p+'pollAt'}
+    if s+'prepareAt' in n:
+        from ipc_call_borrow import validate_ipc_call_borrow
+        pending_callers |= set(validate_ipc_call_borrow(unit,ir)['additional_pending_callers'])
     callers = {
-        s+'pendingAt': _poll_exact_callers(ir, n, s+'pendingAt', {s+'pending', p+'pollAt'}),
+        s+'pendingAt': _poll_exact_callers(ir, n, s+'pendingAt', pending_callers),
         p+'pollAt': _poll_exact_callers(ir, n, p+'pollAt', {p+'poll', t+'pollIPCStep'}),
     }
     # Do not broaden lookupRecord globally: only this five-body guard admits
@@ -245,7 +249,13 @@ def validate_ipc_pending_public(unit,ir):
             raise Core0Error('IPC pending emitted ABI differs')
     observed={source for source,symbol in n.items() if n[s+'pendingAt'] in
               parse_definitions_and_calls(_ir_definition_body(ir,symbol))[2]}
-    if s+'pending' not in observed or not observed<={s+'pending','Lemma.Kernel.IPC.pollAt'}:
+    allowed = {s+'pending','Lemma.Kernel.IPC.pollAt'}
+    call_borrow = None
+    if s+'prepareAt' in n:
+        from ipc_call_borrow import validate_ipc_call_borrow
+        call_borrow = validate_ipc_call_borrow(unit,ir)
+        allowed |= set(call_borrow['additional_pending_callers'])
+    if s+'pending' not in observed or not observed<=allowed:
         raise Core0Error('IPC pendingAt caller lacks ordinary fresh wrapper or has unapproved borrow')
     gate=validate_capability_base_borrow(_ir_definition_body(ir,n[s+'pending']),n[a],n[s+'pendingAt'],
         n[s+'failed'],_ir_definition_body(ir,n[s+'failed']),{n[s+'failed']})
@@ -263,7 +273,7 @@ def validate_ipc_pending_public(unit,ir):
     if [values.get(args[4:],args[4:]) for args in _local_call_arguments(body,n[s+'get'])]!=[('add',root,k) for k in (24,48,40,32,56)]:
         raise Core0Error('IPC pending helper changed live protocol fields or read order')
     _local_closed_calls(body,{n[source] for source in required if source.startswith(s) and source not in {s+'pending',s+'pendingAt'}})
-    return {'helper':s+'pendingAt','callers':sorted(observed),'fresh_public_wrapper':gate,
+    return {'helper':s+'pendingAt','callers':sorted(observed),'fresh_public_wrapper':gate,'call_borrow':call_borrow,
         'pinned_shapes':_poll_shapes(ir,n,{s+'pendingAt',s+'pending'}),
         'scope':'ordinary pending validates its own descriptor/base; no Task or pollAt requirement'}
 
