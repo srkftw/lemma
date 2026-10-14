@@ -93,7 +93,9 @@ private def rootIdentities (configuration role : String) : Array String :=
     else if configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" then
       #["Lemma.Platform.LemmaSim.NotebookKernel.arithmeticOOMBoot", "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isBulkNotebookConfiguration configuration then
-      if isUSBClockedNotebookConfiguration configuration then
+      if isCourseNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-bulk-notebook" then "siliconCourseBoot" else "siliconCourseInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isUSBClockedNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-bulk-notebook" then "siliconUSBClockedBoot" else "siliconUSBClockedInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBClockedBulk"]
       else if isUSBWireNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-wire-bulk-notebook" then "siliconUSBWireBoot" else "siliconUSBWireInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBWireBulk"]
@@ -270,6 +272,7 @@ private def managedUserSource (configuration role : String) (name : Name) : Bool
 /-- Application/service executable modules are independent linkage roots, not
 shared libraries. Gate J may import only the selected executable namespace. -/
 private def serviceExecutableSource (source : String) : Bool :=
+  source == "Lemma.Courses.PackageInstaller" || source.startsWith "Lemma.Courses.PackageInstaller." ||
   source.startsWith "Lemma.Applications." || source == "Lemma.Services.Store.Server" ||
     source.startsWith "Lemma.Services.Store.Server." || source == "Lemma.Services.Buffer.Server" ||
     source.startsWith "Lemma.Services.Buffer.Server." || source == "Lemma.User.Development.BufferFault" ||
@@ -277,7 +280,7 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if !isServiceConfiguration configuration then true
+  if !isServiceConfiguration configuration && !isCourseNotebookConfiguration configuration then true
   else if !serviceExecutableSource source then true
   else if role != "user" then false
   else image?.any fun image => source == image.moduleName.toString ||

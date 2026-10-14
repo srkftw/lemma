@@ -57,6 +57,216 @@
   "decoder_and_store_objects_match_a4": true,
   "execution_scope": "SIMULATED_HOST_COMPONENT_QUALIFICATION; RV64 CPU/notebook installation NOT_RUN",
   "format": "lemma-course-package/1",
+  "guard_installer_milestone": {
+    "actual_first_attempt": {
+      "path": "build/courses/task006-course-guest-a1/result.json",
+      "sha256": "5637100cf210f72b6659e769e4d2cfcae42143a640e61661f2e71fa1d0af6e2d",
+      "status": "FAIL"
+    },
+    "boot_observer": {
+      "path": "build/courses/task006-course-boot-observer-a1.json",
+      "sha256": "edbac464a1258f0d84e6ac7f6b1fadfaf6dd2cbaab436357a2b8fadc43c4c8a5",
+      "status": "PASS_FOCUSED_COURSE_BOOT_OBSERVERS"
+    },
+    "commands": [
+      "nix develop --no-write-lock-file --command python3 scripts/check_course_install.py --output-dir build/courses/course-install-components-new",
+      "scripts/lemmasim course-install --session-dir SESSION --package PACKAGE --transaction 7",
+      "scripts/lemmasim course-load --session-dir SESSION --identity 1 --edition 1 --crc 1743257817 --node 2",
+      "scripts/lemmasim course-delete-probe --session-dir SESSION --identity 1 --edition 1 --crc 1743257817 --transaction 12"
+    ],
+    "component_objects": {
+      "guard": {
+        "artifacts": {
+          "normalized.txt": "a59dd2724fe28734bf246fb584130ae0fb3ecad63bf4faca22c20961e3912d68",
+          "program.ll": "283a0513a0ef65f0869f2d33df5b8e270b92b95084bb7de52423bbfe6797195c",
+          "program.o": "45dc4ce03dd5a17f974ebad15500828d3959603b0b792b906673beca46de1c3f",
+          "program.opt.ll": "9a71cbfa58e1526067d699bf06509d41641cd27157bcc9690de10676f6e09990",
+          "unit.json": "a33739109fd3d7f8777017a3c0ef74e03ffd0f2c6da3b511a0fd59ca147669f1"
+        },
+        "function_count": 239,
+        "roots": [
+          "Lemma.Services.Store.Server.courseMain"
+        ],
+        "unresolved_boundary": [
+          "lemma_exec_syscall"
+        ]
+      },
+      "install": {
+        "artifacts": {
+          "normalized.txt": "4fd636f8fe75526fa88ef288f1cd402976afa5811bc83b6f934796458a22b2a1",
+          "program.ll": "fc7a2e681fd108bc09b59abe176355b934464c8768c7dcf38708cba8ab78bb2b",
+          "program.o": "ab3d0c0b3cc6158fb4116c8ae6bea01e36c0193228ad69a8158da0f8082f6105",
+          "program.opt.ll": "00a32e3aa6a3f5830df888fe2cd827f658e5a1c047e7cc3d57dcaa52fcd53e80",
+          "unit.json": "7ad03b8c96413a55dc560de4e71831c767d627a94a8abf392b1eebcce894ddcc"
+        },
+        "function_count": 149,
+        "roots": [
+          "Lemma.Courses.PackageStore.install",
+          "Lemma.Courses.PackageInstaller.main"
+        ],
+        "unresolved_boundary": [
+          "lemma_exec_syscall"
+        ]
+      }
+    },
+    "component_receipt": {
+      "path": "build/courses/task006-install-components-a1/result.json",
+      "sha256": "fd2ed0d2a0be8bc8a589b113ed4f3529f73e4d966052f4b5ee69ef9f29e9c140",
+      "status": "PASS_COURSE_INSTALL_GUARD_COMPONENTS"
+    },
+    "component_source_count": 72,
+    "component_wall_seconds": 30.819541487959214,
+    "configurations": [
+      "lemmasim-silicon-course-bulk-notebook",
+      "lemmasim-silicon-course-bulk-initialize"
+    ],
+    "deployment": "lemma-course-array-bulk-deployment-v1",
+    "first_attempt_details": {
+      "bounds": {
+        "cold_target_cycles": 60000000,
+        "install_target_cycles": 100000000,
+        "medium_bytes": 268435456,
+        "whole_host_seconds": 1800
+      },
+      "commands": [
+        [
+          "/home/sreekumaar/Downloads/lemma/scripts/lemmasim",
+          "session",
+          "--backend",
+          "rtl",
+          "--profile",
+          "lemma-silicon-dev/0.3.0",
+          "--workload",
+          "initializer",
+          "--mode",
+          "developer",
+          "--session-dir",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-guest-a1/install",
+          "--disk",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-guest-a1/durable.raw",
+          "--native-bundle",
+          "/home/sreekumaar/Downloads/lemma/build/native/task006-array-table-prefix-a2",
+          "--guest-build",
+          "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-initialize-a3",
+          "--guest-source-root",
+          "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-whole-sources-a1/initializer",
+          "--headless",
+          "--paused",
+          "--quantum",
+          "1000000",
+          "--timeout",
+          "120"
+        ]
+      ],
+      "error": "RuntimeError('declared course target-cycle boundary not reached')",
+      "initializer_ready": {
+        "machine": {
+          "backend": "rtl",
+          "cycle": 56000000,
+          "finished": false,
+          "ticks": 5599999
+        },
+        "running": false
+      },
+      "scope": "actual RTL guest course installer/Store/cold decoder; notebook Ready/UI/evidence binding NOT_RUN",
+      "status": "FAIL",
+      "wall_seconds": 561.8240075539798
+    },
+    "guard_properties": [
+      "reserved-key absence includes tombstones",
+      "Begin/Commit preflight before effects",
+      "Delete ReadOnly223 while free and Busy231 while staged",
+      "full package CRC/reference/key binding before existing Engine commit",
+      "normal object updates and namespaces preserve original behavior",
+      "real access faults retain status and read prefix"
+    ],
+    "installer_properties": [
+      "full private buffer validation before first IPC",
+      "34 actual ordered Begin+32 copied chunks+Commit for4040-byte artifact",
+      "only ready-mode positive-sequence actual Commit reply returns Installed",
+      "uncertain Commit has no automatic abort or retry",
+      "private16 pages and Console/Store-only grants"
+    ],
+    "metadata": {
+      "raw_frame_authority_tests": 2,
+      "scaffold": "PASS",
+      "scaffold_tests": 18
+    },
+    "original_bound_diagnostic": {
+      "actual_outgoing_store_operation": 3,
+      "actual_upload_count": 128,
+      "actual_upload_offset": 1920,
+      "body_desired": 4040,
+      "body_filled": 4040,
+      "cycle": 100000000,
+      "decoder_sha256": "e3ac9cc29cd18e81b0ef9cd5a092f67b93dbc2880f38430aa5dc9b85c929a6fd",
+      "diagnosis": "body drained by66M, actual CRC sampled at66/68M;70..100M mostly kernel Frames/AddressSpace/IPC validation and IPCStorage zeroing, upload about halfway; per-read Console scratch is not the main blocker",
+      "future_qualification": "original install100M failure retained; no longer acceptance timeout, no Installed or cold claim",
+      "observation": "build/courses/task006-course-diagnostic-a1/decoded-boundary.json",
+      "observation_sha256": "3050a391b1845045c5f52935d37442a89d7fa4d7aab2e6ab8d8ee89d79ee7226",
+      "receipt": "build/courses/task006-course-diagnostic-a1/result.json",
+      "receipt_sha256": "285ab639da26f768b5c633713d4610743e289c1b17845e34376d3b688582abf9",
+      "snapshot": "build/courses/task006-course-diagnostic-a1/boundary-100m",
+      "snapshot_is_observational": true,
+      "status": "PASS_OBSERVED_ORIGINAL_FAILURE_BOUNDARY_ONLY",
+      "uart_queue": 0,
+      "wall_seconds": 409.30048076901585
+    },
+    "remaining": [
+      "actual completed publication and independent cold selected package load",
+      "prospective resource bounds after diagnosed real bottleneck fix",
+      "notebook dynamic selection/rendering and package/source edition-bound mathematical evidence",
+      "cooperative interactive package UX and durable learner/tutor integration",
+      "generic goals/proof kernel/full managed runtime/distribution closure"
+    ],
+    "retained_failures": [
+      "initializer-a1 missing checked-inline configuration observer",
+      "initializer-a2 missing readonly configuration observer",
+      "initializer-a3 old FIFO observer assumed bootSelected",
+      "first correction missing exact Course startup ABI owner",
+      "second correction missing Store.Protocol.shape Course caller",
+      "full audit outer wrappers failed after actual PASS on absent source_inputs report field; corrected receipt independently reobserved unchanged original artifacts",
+      "first real install original100M target bound expired; no Commit/outcome or subsequent backing operations"
+    ],
+    "scope": "Lean Action fixtures and genuine LLVM/RV64 components; whole linked artifacts separately audited; no component fixture substitutes for actual publication/cold recovery",
+    "status": "PASS_COMPONENTS_AND_FULL_ARTIFACTS; ACTUAL_INSTALL_100M_FAIL",
+    "whole_roles": {
+      "initializer": {
+        "actual_full_audit_returncode": 0,
+        "actual_full_audit_wall_seconds": 92.59494182898197,
+        "image_sha256": "95ee61ea89b858c589a0d0aab4bf6d54fc59e24aaa412cdf3b29c2befb796cc5",
+        "original_full_audit_path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-initialize-full-a5",
+        "original_image_bytes": 620896,
+        "original_inventory_sha256": "30dcf6e2b3b8f9be1cf0818e87dc3047503371b4a9057dfe1bda90ad6ac4088e",
+        "original_source_count": 331,
+        "receipt": {
+          "path": "build/courses/task006-course-initialize-qualified-a1/result.json",
+          "sha256": "65f0ed5dfbceb784af6a0339a409ba3fa636b4505c77caa780316acfcc694782",
+          "status": "PASS_ORIGINAL_COURSE_FULL_ARTIFACT_AUDIT"
+        },
+        "receipt_reinspection_seconds": 0.14448863500729203,
+        "source_commit": "20ebc6fe3b4ec0464d1b1bb2774ebbf8ccef754d",
+        "source_root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-whole-sources-a1/initializer"
+      },
+      "notebook": {
+        "actual_full_audit_returncode": 0,
+        "actual_full_audit_wall_seconds": 93.92088643700117,
+        "image_sha256": "a7114acf84f32463a88f9feec7667db79ba164abdba60fc779830228ecb875d7",
+        "original_full_audit_path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-notebook-full-a3",
+        "original_image_bytes": 620896,
+        "original_inventory_sha256": "30dcf6e2b3b8f9be1cf0818e87dc3047503371b4a9057dfe1bda90ad6ac4088e",
+        "original_source_count": 331,
+        "receipt": {
+          "path": "build/courses/task006-course-notebook-qualified-a1/result.json",
+          "sha256": "d17ea2e26f049c966b3fcff725f48616febfe9208109d2d6934a237f6b45b5b7",
+          "status": "PASS_ORIGINAL_COURSE_FULL_ARTIFACT_AUDIT"
+        },
+        "receipt_reinspection_seconds": 0.19045527797425166,
+        "source_commit": "20ebc6fe3b4ec0464d1b1bb2774ebbf8ccef754d",
+        "source_root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-whole-sources-a1/notebook"
+      }
+    }
+  },
   "independent_codec": "four real published-artifact Python/zlib checks PASS; checks CRC, original material, exact references, distinct prerequisite graphs and recomputed-CRC mutations",
   "metadata": {
     "scaffold": "PASS seven gates/56 software units/six physical units unchanged",
@@ -82,11 +292,9 @@
     "status": "PASS_TYPED_PACKAGE_AND_GENUINE_RV64_COMPONENTS"
   },
   "remaining": [
-    "Store server append-only package guard and guest installation/durable publication",
-    "actual RV64 Store package loading and notebook package selection/rendering",
-    "cooperative pen-responsive package load instead of this blocking caller API",
-    "package identity/edition/source-node binding in a separately versioned document/evidence format; existing formats unchanged",
-    "durable learner package references, permissioned tutor context, author/package permission model",
+    "actual completed guest installation/durable publication and independent cold selected package read",
+    "notebook package selection/rendering with revision-bound package identity/edition/source anchors",
+    "cooperative pen-responsive package load and durable learner/tutor references",
     "generic goal semantics, managed runtime/proof-kernel/environment closure, distribution licensing and physical qualification"
   ],
   "result": "build/courses/task006-package-qualified-a5/result.json",

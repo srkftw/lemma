@@ -27,6 +27,7 @@ from build_kernel import (BOOT_FILES, BOOT_OBJECTS, CONTRACTS, ROLE_MODULES, ROL
                           validate_configuration_stage, validate_lean_source_realization,
                           LEAN_SOURCE_EXPRESSION, LEAN_UINT_SOURCE_SHA256, SILICON_CONFIGURATIONS,
                           ARITHMETIC_CONFIGURATIONS, ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, SUMS_NOTEBOOK_CONFIGURATIONS, BULK_NOTEBOOK_CONFIGURATIONS, BYTES_NOTEBOOK_CONFIGURATIONS, ARRAY_NOTEBOOK_CONFIGURATIONS, STRING_NOTEBOOK_CONFIGURATIONS)
+from course_deployment import CONFIGURATIONS as COURSE_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_SOFTWARE_DEPLOYMENT
 from build_kernel import NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
@@ -256,7 +257,15 @@ LEMMASIM_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 LEMMASIM_NOTEBOOK_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 POWER_CONFIGURATIONS |= frozenset(STRING_NOTEBOOK_CONFIGURATIONS)
 
+COURSE_NOTEBOOK_IMAGES=({**ARRAY_NOTEBOOK_IMAGES[0],"source":"Lemma.Services.Store.Server.courseMain"},
+    *ARRAY_NOTEBOOK_IMAGES[1:], {"key":"course","id":4,"module":"Lemma.Courses.PackageInstaller",
+    "source":"Lemma.Courses.PackageInstaller.main","args":["u64"],"symbol_prefix":"lemma_user_course_",
+    "startup_case":"none","directory":"users/course","boot_role":"course-installer"})
+MULTI_USER_CONFIGURATIONS.update({configuration:COURSE_NOTEBOOK_IMAGES for configuration in COURSE_NOTEBOOK_CONFIGURATIONS})
+
 def software_deployment_fields(configuration):
+    if configuration in COURSE_NOTEBOOK_CONFIGURATIONS:
+        return {"software_deployment":COURSE_SOFTWARE_DEPLOYMENT}
     if configuration in STRING_NOTEBOOK_CONFIGURATIONS:
         from managed_string import software_deployment_for
         return {"software_deployment":software_deployment_for(configuration)}
@@ -1603,7 +1612,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
     executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS
     next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -3114,7 +3123,9 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
                 re.fullmatch(r"users/(store|notebook|isolation)/(startup\.o|image\.elf)", object_file) is not None)
     arithmetic_file = (configuration in ARITHMETIC_CONFIGURATIONS and
                 re.fullmatch(r"users/arithmetic/(startup\.o|image\.elf)",object_file) is not None)
-    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file and not arithmetic_file:
+    course_file = (configuration in COURSE_NOTEBOOK_CONFIGURATIONS and
+                re.fullmatch(r"users/course/(startup\.o|image\.elf)",object_file) is not None)
+    if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file and not arithmetic_file and not course_file:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
     linked = object_file.endswith("/image.elf")
     section, address, alignment = (".data", 0x20000, 4096) if linked else (".data.user_abi", 0, 8)
@@ -3235,7 +3246,7 @@ def validate_unit(value: object, role: str, *, configuration: str = "normal", im
         if configuration in MANAGED_POLICIES and role == "user" and re.search(r"(?:^|\.[0-9]+\.)Lemma\.(?:Kernel|Compiler)\.", source):
             raise Core0Error("managed user source reaches privileged/compiler code")
         normalized_source = re.sub(r"^_private\..*?\.[0-9]+\.", "", source)
-        if configuration in SERVICE_CONFIGURATIONS and service_executable_module(normalized_source):
+        if configuration in (*SERVICE_CONFIGURATIONS, *COURSE_NOTEBOOK_CONFIGURATIONS) and service_executable_module(normalized_source):
             if role != "user" or not normalized_source.startswith(image["module"] + "."):
                 raise Core0Error("service unit reaches another executable namespace")
         if ".Development." in source:
@@ -4900,6 +4911,9 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
+            if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS and
+                    source == 'Lemma.Services.Store.Protocol.shape'):
+                image_authority={**image_authority,source:image_authority[source] | {'course'}}
             if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
                 from arithmetic_string_identity import NOTEBOOK_JUMPS
                 if source in NOTEBOOK_JUMPS:image_authority={**image_authority,source:{'notebook'}}
@@ -5017,6 +5031,8 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
     if unit.get("configuration") in LEMMASIM_CONFIGURATIONS:
         normalized = {re.sub(r"^_private\..*?\.[0-9]+\.", "", source): symbol for source,symbol in by_source.items()}
         boot = normalized.get("Lemma.Platform.Silicon.Development."+("WiFiCommonReadProbe.boot" if unit["configuration"]=="lemmasim-silicon-wifi-common-read-probe" else "WiFiCommonProbe.boot")) if unit["configuration"] in COMMON_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootClocked") if unit["configuration"] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootWire") if unit["configuration"] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernExecuted") if unit["configuration"] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModernNext") if unit["configuration"] in NEXT_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootModern") if unit["configuration"] in MODERN_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.USBLink.boot") if unit["configuration"] in USB_PROBE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.BLELink.boot") if unit["configuration"] in BLE_CONFIGURATIONS else normalized.get("Lemma.Platform.Silicon.Development.PowerSafety.boot") if unit["configuration"]=="lemmasim-silicon-power-safety-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.siliconPowerProbe") if unit["configuration"] == "lemmasim-silicon-power-probe" else normalized.get("Lemma.Platform.LemmaSim.NotebookKernel.bootSelected") if unit["configuration"] in LEMMASIM_NOTEBOOK_CONFIGURATIONS else normalized.get("Lemma.Platform.LemmaSim.Entry.initializeBinding")
+        if unit['configuration'] in COURSE_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelected')
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -5737,7 +5753,11 @@ def audit_standalone_user(*, root: Path, output_dir: Path, timeout_seconds: floa
         write_json(output_dir / "audit-failure.json", {"schema_version": 2, "status": "FAIL", "error": str(error), "commands": logs})
         raise
 
-def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
+def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_root: Path | None = None) -> dict:
+    # The workspace still owns every output and original command path. An
+    # explicit immutable source root changes only the exact consumed source,
+    # import-closure and tool-lock provider for a retained artifact re-audit.
+    source_origin = root if source_root is None else source_root.resolve()
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -5780,7 +5800,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         if (type(build.get("schema_version")) is not int or type(provenance.get("schema_version")) is not int
                 or build.get("schema_version") != (2 if multi else 1) or provenance.get("schema_version") != (2 if multi else 1)):
             raise Core0Error("build/provenance schema differs from selected configuration")
-        pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+        pin = _object(load_json(source_origin / "tooling/toolchain-lock.json"), "toolchain lock")
         llvm_store = pin.get("tools", {}).get("llvm", {}).get("store_path")
         if pin.get("status") != "pinned" or not isinstance(llvm_store, str) or any(not path.startswith(llvm_store + "/") for path in tools.values()):
             raise Core0Error("artifact inspection tools differ from the immutable LLVM store output")
@@ -5832,28 +5852,36 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         if not mandatory <= set(artifacts):
             raise Core0Error("mandatory artifact hash inventory is incomplete")
         source_hashes = _object(provenance.get("source_inputs"), "source input hashes")
-        if source_hashes != source_inputs(root):
+        if source_root is not None:
+            archive_inventory = load_json(source_origin / 'source-inputs.json')
+            paths = set()
+            for path in source_origin.rglob('*'):
+                if path.is_symlink():raise Core0Error('retained source archive contains a symlink')
+                if path.is_file():paths.add(path.relative_to(source_origin).as_posix())
+            if archive_inventory != source_hashes or paths != set(source_hashes) | {'source-inputs.json'}:
+                raise Core0Error('retained source archive is not the exact complete original inventory')
+        if source_hashes != source_inputs(source_origin):
             raise Core0Error("complete current compiler/production source hash inventory differs")
         for name, digest in source_hashes.items():
-            path = root / name
+            path = source_origin / name
             if not path.is_file() or sha256(path) != digest:
                 raise Core0Error(f"current source differs from built input: {name}")
         for role, module in configuration_modules(configuration).items():
             allowed = development_modules(configuration, role)
-            closure = module_closure(root, module, allow_development=bool(allowed), development_modules=allowed,
+            closure = module_closure(source_origin, module, allow_development=bool(allowed), development_modules=allowed,
                                      selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
             if any("/Development/" in path and path not in {selected.replace(".", "/") + ".lean" for selected in allowed} for path in closure):
                 raise Core0Error("dependency imports another configuration's development module")
             if closure != provenance.get("target_module_closures", {}).get(role):
                 raise Core0Error("production import closure missing/stale")
         if multi:
-            expected_users = {image["key"]: user_module_closure(root, image, configuration) for image in images}
+            expected_users = {image["key"]: user_module_closure(source_origin, image, configuration) for image in images}
             if configuration in MANAGED_POLICIES and any(path.startswith(("Lemma/Kernel/", "Lemma/Compiler/")) for closure in expected_users.values() for path in closure):
                 raise Core0Error("managed user target dependency closure contains privileged/compiler code")
             if any("/Development/" in path and path != image["module"].replace(".", "/") + ".lean"
                    for image in images for path in expected_users[image["key"]]):
                 raise Core0Error("per-image dependency imports another development module")
-            if provenance.get("target_module_closures") != {**{role: module_closure(root, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
+            if provenance.get("target_module_closures") != {**{role: module_closure(source_origin, module, allow_development=development_role(configuration, role), development_modules=development_modules(configuration, role), selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None) for role, module in configuration_modules(configuration).items()}, "users": expected_users}:
                 raise Core0Error("exact full per-image source dependency inventory differs")
         command_rows = _array(provenance.get("commands"), "build commands")
         if not command_rows or any(not isinstance(row, dict) or row.get("returncode") != 0 for row in command_rows):
@@ -6046,7 +6074,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
         startup = (output_dir / "startup.S").read_text()
         user_source = output_dir / (images[0]["directory"] + "/startup.S" if multi else "user-startup.S")
         user_startup = user_source.read_text()
-        user_audits = {image["key"]: audit_user_image(root=root, output_dir=output_dir / image["directory"], catalog=catalog,
+        user_audits = {image["key"]: audit_user_image(root=source_origin, output_dir=output_dir / image["directory"], catalog=catalog,
                                                    image_key=image["key"], optimization=optimization, timeout_seconds=timeout_seconds)
                        for image in images}
         for value in user_audits.values():
@@ -6158,7 +6186,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60) -> dict:
                               {'managed_service':managed_service} if configuration in SERVICE_CONFIGURATIONS else {'managed_ipc':managed_ipc})
         else:
             record["user_image_sha256"] = sha256(output_dir / "user/image.elf")
-        if source_inputs(root) != source_hashes:
+        if source_inputs(source_origin) != source_hashes:
             raise Core0Error("compiler/production source changed during artifact audit")
         write_json(result_path, record)
         return record

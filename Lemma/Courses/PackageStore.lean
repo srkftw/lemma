@@ -7,7 +7,8 @@ outgoing8(192 bytes), incoming16(256 bytes), namespace24, package identity32,
 edition40, staging48, capacity56, first request ID64; word72 is reserved zero.
 All spans must be disjoint. Failure leaves only unpublished staging bytes; the
 caller keeps its active package/document intact. No host journal parser is used.
-This module does not install packages or enforce Store immutability by itself. -/
+Installation below uses ordinary Store transactions and requires the explicitly
+selected course-store-guard/1 endpoint to enforce immutable editions. -/
 namespace Lemma.Courses.PackageStore
 open Lemma.Core0.Memory
 open Lemma.Courses.PackageFormat
@@ -88,6 +89,98 @@ def load (context : UInt64) : Action :=
   if actualIdentity = identity then if actualEdition = edition then .done 0 length else .done malformed 0 else .done malformed 0
   else .done s 0 else .done s 0 else .done s 0
   else .done malformed 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0
+
+private def uploadPiece (context offset count transaction requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s source => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (Client.call endpoint outgoing incoming 3 ns (object identity edition) transaction offset count (source + offset) (request + requestOffset))
+    fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s accepted => if s = 0 then
+  if accepted = offset + count then .done 0 count else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def uploadStep (i _ : UInt32) (copied context length transaction _ : UInt64) : Action :=
+  let offset := i.toUInt64 * 128
+  let count := minimum 128 (length - offset)
+  .bind (uploadPiece context offset count transaction (i.toUInt64 + 1)) fun s bytes =>
+  if s = 0 then .done 0 (copied + bytes) else .done s 0
+
+private def transactionCall (context operation transaction count requestOffset : UInt64) : Action :=
+  .bind (field context 0) fun s endpoint => if s = 0 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  Client.call endpoint outgoing incoming operation ns (object identity edition) transaction 0 count 0 (request + requestOffset)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+private def abortStage (context transaction : UInt64) (status : UInt8) : Action :=
+  -- Abort only an uncommitted staging upload. Its bounded result never
+  -- converts the primary error into success; a lost reply is not a retry.
+  .bind (transactionCall context 9 transaction 0 258) fun _ _ => .done status 0
+
+private def publish (context length transaction incoming : UInt64) : Action :=
+  .bind (transactionCall context 2 transaction length 0) fun s _ => if s = 0 then
+  .bind (Client.responseField incoming 48) fun s detail => if s = 0 then
+  if detail = 0 then
+  .boundedFoldU64 256 uploadStep ((length + 127) / 128).toUInt32 0 context length transaction 0 fun s copied =>
+  if s = 0 then if copied = length then
+    -- No abort/retry follows Commit: an error may have left persistence or
+    -- in-flight backing work. Only the ordinary Store durable reply warrants
+    -- Installed; a later load/recovery is a separately labelled observation.
+    .bind (transactionCall context 4 transaction 0 257) fun s sequence => if s = 0 then
+    .bind (Client.responseField incoming 48) fun s mode => if s = 0 then
+    if mode = 1 then if 0 < sequence then .done 0 sequence else .done malformed 0 else .done malformed 0
+    else .done s 0 else .done s 0
+  else abortStage context transaction malformed
+  else abortStage context transaction s
+  else abortStage context transaction malformed
+  else abortStage context transaction s
+  else .done s 0
+
+/-- Install a fully validated caller-owned package through ordinary Begin,
+ordered copied chunks and Commit. This requires the explicitly selected
+course-store-guard/1 endpoint; it does not confer a grant or change namespaces.
+The returned positive sequence is an actual Store durability receipt. No new
+receipt is manufactured after error, cancellation or an uncertain Commit. -/
+def install (context length transaction : UInt64) : Action :=
+  if context % 8 = 0 then if context ≤ 0xffffffffffffffff - 80 then
+  .bind (field context 8) fun s outgoing => if s = 0 then
+  .bind (field context 16) fun s incoming => if s = 0 then
+  .bind (field context 24) fun s ns => if s = 0 then
+  .bind (field context 32) fun s identity => if s = 0 then
+  .bind (field context 40) fun s edition => if s = 0 then
+  .bind (field context 48) fun s source => if s = 0 then
+  .bind (field context 56) fun s capacity => if s = 0 then
+  .bind (field context 64) fun s request => if s = 0 then
+  .bind (field context 72) fun s reserved => if s = 0 then
+  if reserved = 0 then if Protocol.namespaceValid ns = 1 then
+  if identity = 0 then .done malformed 0 else if maximumIdentity < identity then .done malformed 0 else
+  if edition = 0 then .done malformed 0 else if maximumEdition < edition then .done malformed 0 else
+  if length < headerBytes then .done malformed 0 else if capacity < length then .done resourceLimit 0 else
+  if maximumBytes < capacity then .done resourceLimit 0 else
+  if transaction = 0 then .done malformed 0 else if Format.maximumSequence < transaction then .done malformed 0 else
+  if request = 0 then .done malformed 0 else if Format.maximumSequence - 258 < request then .done resourceLimit 0 else
+  if contextValid context outgoing incoming source capacity = 1 then
+  .bind (PackageTarget.validate source length) fun s _ => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (source + 24)) fun s actualIdentity => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (source + 32)) fun s actualEdition => if s = 0 then
+  if actualIdentity = identity then if actualEdition = edition then publish context length transaction incoming
+  else .done malformed 0 else .done malformed 0
+  else .done s 0 else .done s 0 else .done s 0
   else .done malformed 0 else .done malformed 0 else .done malformed 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
   else .done s 0 else .done s 0 else .done s 0 else .done s 0

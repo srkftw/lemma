@@ -39,7 +39,7 @@ inductive ManagedBootRole where
   | capabilities | peer | busy | tamper
   | ipcServer | ipcClientA | ipcClientB | backgroundNoGrants | ipcFaultClient
   | bufferServer | bufferCLI | bufferPeer | bufferFaultClient
-  | storeServer | notebook | notebookIsolation | arithmeticServer
+  | storeServer | notebook | notebookIsolation | arithmeticServer | courseInstaller
   deriving BEq, Repr
 
 def ManagedBootRole.stableId : ManagedBootRole → String
@@ -60,6 +60,7 @@ def ManagedBootRole.stableId : ManagedBootRole → String
   | .notebook => "notebook"
   | .notebookIsolation => "notebook-isolation-client"
   | .arithmeticServer => "arithmetic-server"
+  | .courseInstaller => "course-installer"
 
 def arithmeticDevelopmentMode? (configuration : String) : Option UInt64 :=
   if configuration == "lemmasim-silicon-power-arithmetic-oom-development" || configuration == "lemmasim-silicon-sums-arithmetic-oom-development" || configuration == "lemmasim-silicon-bytes-arithmetic-oom-development" || configuration == "lemmasim-silicon-array-arithmetic-oom-development" || configuration == "lemmasim-silicon-string-arithmetic-oom-development" then some 1 else
@@ -114,9 +115,15 @@ def isStringNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-string-bulk-initialize" ||
     configuration == "lemmasim-silicon-string-arithmetic-oom-development"
 
+/-- Course package installation is an additive software deployment; hardware
+and existing notebook/checker bodies remain the canonical silicon0.3 binding. -/
+def isCourseNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-course-bulk-notebook" ||
+    configuration == "lemmasim-silicon-course-bulk-initialize"
+
 /-- Bounded full-width arrays have their own isolated User5 software authority. -/
 def isArrayNotebookConfiguration (configuration : String) : Bool :=
-  configuration == "lemmasim-silicon-array-bulk-notebook" ||
+  isCourseNotebookConfiguration configuration || configuration == "lemmasim-silicon-array-bulk-notebook" ||
     configuration == "lemmasim-silicon-array-bulk-initialize" ||
     configuration == "lemmasim-silicon-array-arithmetic-oom-development"
 
@@ -143,7 +150,14 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isStringNotebookConfiguration configuration then
+  if isCourseNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-course-array-bulk-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.1"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.5"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isStringNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-managed-string-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -301,6 +315,15 @@ def arrayNotebookImages : Array UserImageSpec := #[
   {key := "arithmetic", id := 3, moduleName := `Lemma.Services.Arithmetic.ServerV5,
     root := `Lemma.Services.Arithmetic.ServerV5.main, bootRole? := some .arithmeticServer}]
 
+/-- No host package preinstallation: the separately linked course process
+receives raw bytes through owned Console and publishes through Store calls. -/
+def courseNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.Server,
+    root := `Lemma.Services.Store.Server.courseMain, bootRole? := some .storeServer},
+  arrayNotebookImages[1]!, arrayNotebookImages[2]!,
+  {key := "course", id := 4, moduleName := `Lemma.Courses.PackageInstaller,
+    root := `Lemma.Courses.PackageInstaller.main, bootRole? := some .courseInstaller}]
+
 def stringNotebookImages : Array UserImageSpec := #[
   notebookImages[0]!,
   {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
@@ -324,7 +347,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isStringNotebookConfiguration configuration then .ok stringNotebookImages
+  if isCourseNotebookConfiguration configuration then .ok courseNotebookImages
+  else if isStringNotebookConfiguration configuration then .ok stringNotebookImages
   else if isArrayNotebookConfiguration configuration then .ok arrayNotebookImages
   else if isBytesNotebookConfiguration configuration then .ok bytesNotebookImages
   else if isBulkNotebookConfiguration configuration then .ok bulkNotebookImages else

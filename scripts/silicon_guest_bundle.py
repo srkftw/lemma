@@ -57,7 +57,10 @@ ARRAY_CONFIGURATIONS={"notebook":"lemmasim-silicon-array-bulk-notebook", "initia
 STRING_DEPLOYMENT="lemma-managed-string-bulk-deployment-v1"
 STRING_CONFIGURATIONS={"notebook":"lemmasim-silicon-string-bulk-notebook",
                        "initializer":"lemmasim-silicon-string-bulk-initialize"}
-SOFTWARE_DEPLOYMENTS={STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
+COURSE_DEPLOYMENT="lemma-course-array-bulk-deployment-v1"
+COURSE_CONFIGURATIONS={"notebook":"lemmasim-silicon-course-bulk-notebook",
+                       "initializer":"lemmasim-silicon-course-bulk-initialize"}
+SOFTWARE_DEPLOYMENTS={COURSE_DEPLOYMENT:COURSE_CONFIGURATIONS,STRING_DEPLOYMENT:STRING_CONFIGURATIONS,ARRAY_DEPLOYMENT:ARRAY_CONFIGURATIONS,BYTES_DEPLOYMENT:BYTES_CONFIGURATIONS,MANAGED_DEPLOYMENT:MANAGED_CONFIGURATIONS,
                       SUMS_DEPLOYMENT:SUMS_CONFIGURATIONS,BULK_DEPLOYMENT:BULK_CONFIGURATIONS}
 MAX_FILES=2048
 MAX_BYTES=1024*1024*1024
@@ -722,6 +725,8 @@ def development_configuration(profile,workload,configuration,mode):
     if workload not in selected:raise ValueError('Workload is not admitted by the selected hardware profile')
     ordinary=selected[workload]
     if configuration==ordinary:return ordinary
+    if configuration in COURSE_CONFIGURATIONS.values() and mode not in ("developer","laboratory"):
+        raise ValueError("Course installer deployment requires Developer or Laboratory mode")
     if (profile=='lemma-silicon-dev/0.3.0' and
             any(configuration==configurations.get(workload) for configurations in SOFTWARE_DEPLOYMENTS.values())
             and mode in ('student','developer','laboratory')):

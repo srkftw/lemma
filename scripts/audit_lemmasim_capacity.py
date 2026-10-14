@@ -15,6 +15,7 @@ from audit_kernel import (machine_frame, parse_stack_sizes, weighted_stack_graph
                           optimizer_intrinsics, validate_layout,
                           validate_fresh_descriptor_helpers)
 from core0_common import Core0Error, load_json, require_tools, run_bounded, sha256, write_json
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 
 CAPACITY = 16352
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
@@ -22,7 +23,7 @@ ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
     'lemmasim-silicon-power-arithmetic-fault-development',
     'lemmasim-silicon-power-arithmetic-stall-development',
 })
-POWER_CONFIGURATIONS=frozenset({'lemmasim-silicon-string-bulk-notebook',
+POWER_CONFIGURATIONS=frozenset(COURSE_CONFIGURATIONS) | frozenset({'lemmasim-silicon-string-bulk-notebook',
                               'lemmasim-silicon-string-bulk-initialize',
                               'lemmasim-silicon-string-arithmetic-oom-development',
                               'lemmasim-silicon-array-bulk-notebook',

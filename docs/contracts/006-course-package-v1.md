@@ -110,12 +110,70 @@ acknowledgement. Failure may leave partial staging bytes; the caller retains its
 active package/document separately. This first loader is blocking per caller;
 cooperative notebook publication and pen-responsive package UI remain open.
 
-Generic Store currently permits replacements. The reserved range is therefore
-a loader convention, not an enforced immutable-media policy yet. Guest package
-installation must add an append-only server guard, durable publication and
-normal transport/permission handling before claiming immutable installed
-editions. Host publication refuses an existing output directory but does not
-install or recover a guest journal. No disk format or notebook format changes.
+The opt-in `Server.courseMain` endpoint enforces append-only editions in this
+reserved key range. The historical Store main/step/application remain unchanged.
+Before Begin or Commit, the guard searches the real current index, including
+retained tombstones. An existing key returns ReadOnly223 before staging or
+backing changes; Delete always returns ReadOnly223 when the stage is free, or
+Busy231 when owned. Invalid keys reject before index reads. Commit validates
+the entire package and exact key identity/edition before entering the existing
+Engine append path. Ordinary object updates and namespace authority retain
+existing behavior. This is endpoint policy, not physical write protection.
+
+`PackageStore.install(context,bytes,transaction)` validates its complete private
+buffer before Begin, sends at most256 copied128-byte chunks with exact count and
+accepted-offset checks, and calls real Commit. Only an application-success
+reply in ready mode with a positive durable sequence returns Installed. The
+original Engine performs both barriers before publishing its index/receipt.
+A failed barrier may leave observed unacknowledged backing bytes. Upload
+failure may abort its bounded uncommitted stage once; uncertain Commit never
+causes automatic retry/abort or an Installed receipt. No durable format changes.
+
+`lemma-course-command/1` is a local owner raw-console frame of eight aligned
+little-endian words: magic `31504b43414d454c`, version1, operation, package
+identity, edition, payload bytes, transaction-or-node and expected CRC32.
+Install1 carries128..32768 exact body bytes and a positive transaction; Load2
+has no body and a node ordinal0..15; DeleteProbe3 has no body and a positive
+transaction. Unsupported framing reports its status and terminates only the
+unprivileged installer. Its private pages and Console/Store grants never grant
+block or notebook memory authority. This transport is RTL-only in the current
+canonical profile, local-owner integrity only, and does not authenticate a peer.
+
+## Actual raw-owner launch and commands
+
+The original fully audited course images and their exact sealed source roots
+can launch through the ordinary native machine. Use an unused session directory
+and a new medium for the initializer; never initialize existing user media:
+
+```sh
+python3 -c 'from pathlib import Path; f=Path("build/courses/course-medium-new.raw").open("xb"); f.truncate(268435456); f.close()'
+scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
+  --workload initializer --mode developer --headless --paused \
+  --session-dir build/courses/course-session-new \
+  --disk build/courses/course-medium-new.raw \
+  --native-bundle build/native/task006-array-table-prefix-a2 \
+  --guest-build build/kernel/task006-course-initialize-a3 \
+  --guest-source-root build/courses/task006-course-whole-sources-a1/initializer
+# In a second terminal, after the first publishes its session directory:
+scripts/lemmasim session-control --session-dir build/courses/course-session-new \
+  --request '{"action":"resume"}'
+scripts/lemmasim course-install --session-dir build/courses/course-session-new \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --transaction 7
+scripts/lemmasim course-load --session-dir build/courses/course-session-new \
+  --identity 1 --edition 1 --crc 1743257817 --node 2
+scripts/lemmasim course-delete-probe --session-dir build/courses/course-session-new \
+  --identity 1 --edition 1 --crc 1743257817 --transaction 12
+```
+
+The exclusive raw-medium creation refuses an existing path. These commands
+admit raw bytes only. Their
+`RAW_COMMAND_ADMITTED` status is not a storage acknowledgement. Actual guest
+K1 records distinguish installerReady4b0, outcome4b1, validatedPresent4b2 and
+selectedReference4b3. An Install outcome must have application status0 and a
+positive durable sequence. A validated reference is not verification evidence.
+For a cold read, launch workload notebook with the notebook build/source role
+on the already initialized medium; do not use a snapshot or initialize again.
 
 ## Evidence and remaining integration
 
@@ -150,12 +208,28 @@ publisher library exports no competing root `main`. A new immutable edition
 changes artifact data; it does not change the checker goal semantics or target
 decoder. Publication refuses retained output directories.
 
-Current component checks do not establish CPU execution, notebook selection,
-guest installation, durable cold reopen or full G2/G4-G7 completion. Any future
+The additive `lemma-course-array-bulk-deployment-v1` has exact canonical0.3
+notebook/initializer configurations, preserving the older image roots. It links
+existing notebook and checker processes, guarded Store, and a fourth separately
+linked installer. Both original whole images have passed the ordinary complete
+artifact audit against sealed331-input roots. Their original failed observers
+are retained. This audit establishes linked provenance and admitted code;
+actual installer/Store startup is separately observed at56 million RTL cycles.
+
+The first actual4040-byte install failed to produce a Commit/outcome at its
+original100-million-cycle bound (561.824 seconds). No backing I/O followed input
+admission. A second observation at the same declared100M boundary preserved an
+observational checkpoint: all4040 bytes had been received/validated, the UART
+queue was empty, and the next copied Store chunk was offset1920/count128. Body
+input drained by66M; subsequent samples mostly execute kernel frame/page-table/
+IPC checks and zeroing. The per-read Console allocation is not the main blocker.
+This retained failure is not Installed or cold recovery. A future change needs
+its own prospective workload bound and actual completed scenario. Notebook package selection,
+durable cold reopen and full G2/G4-G7 completion remain unqualified. Any future
 evidence must bind the exact package identity, edition, integrity value, node
 source anchor, original goal, document/submission revision and existing checker
 environment. Current submission formats remain untouched; no legacy evidence
-is relabelled as dynamically package-bound. Immutable installation, package
+is relabelled as dynamically package-bound. Actual completed immutable installation, package
 selection/rendering in the existing notebook, durable learner references,
 permissioned tutor context, general course declarations and proof-kernel
 closure remain separate work.

@@ -854,6 +854,16 @@ def main():
     p.add_argument('--memory-latency',type=int,default=0,help='RTL external-memory extra clocks,0..1024')
     p.add_argument('--fail-flush',type=int,help='Laboratory: fail this actual FLUSH ordinal')
     p.add_argument('--tablet',type=Path,help='Linux evdev pen; literal reported samples, no synthetic mouse pressure')
+    p=sub.add_parser('course-install',help='Send a typed package to the guest owned-console installer; admission is not durability')
+    p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--package',type=Path,required=True)
+    p.add_argument('--transaction',type=int,required=True);p.add_argument('--cycle',type=int)
+    for name in ('course-load','course-delete-probe'):
+        p=sub.add_parser(name,help='Send an ordinary guest Store package load or immutable deletion probe')
+        p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--identity',type=int,required=True)
+        p.add_argument('--edition',type=int,required=True);p.add_argument('--crc',type=int,required=True)
+        p.add_argument('--cycle',type=int)
+        if name=='course-load':p.add_argument('--node',type=int,required=True)
+        else:p.add_argument('--transaction',type=int,required=True)
     p=sub.add_parser('session-control',help='Control a persistent session using a bounded JSON lifecycle request')
     p.add_argument('--session-dir',type=Path,required=True);p.add_argument('--request',required=True)
     p=sub.add_parser('button',help='Inject a raw power-button level; the guest decides suspend/wake')
@@ -881,6 +891,10 @@ def main():
     if getattr(args,'timeout',None) is not None and not 0<args.timeout<=timeout_limit:
         parser.error(f'timeout must be1..{timeout_limit} seconds')
     try:
+        if args.command in ('course-install','course-load','course-delete-probe'):
+            import lemmasim_course
+            print(json.dumps(lemmasim_course.send(args),indent=2))
+            return 0
         if args.command in ('build','run') and getattr(args,'profile',None) in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
         if args.command=='build' and args.rtl_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') or args.rtl_build is None):raise Failure('--rtl-source-root requires USB6/8/11/13 RTL and an explicit --rtl-build')
         if args.command=='build' and args.guest_source_root is not None and (args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') or args.guest_build is None):raise Failure('--guest-source-root requires USB6/8/11/13 RTL and an explicit --guest-build')
@@ -927,7 +941,12 @@ def main():
                 if args.guest_source_root is not None:
                     usb_archive=(args.backend=='rtl' and args.profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and args.native_bundle is None)
                     lab_archive=(args.profile=='lemma-silicon-dev/0.3.0' and args.mode=='laboratory' and args.workload=='notebook' and args.native_bundle is not None and args.guest_build is not None)
-                    if not (usb_archive or lab_archive):raise Failure('--guest-source-root requires USB6/8/11/13 RTL preparation or a canonical Laboratory Array/String OOM native-bundle guest override')
+                    course_archive=False
+                    if (args.profile=='lemma-silicon-dev/0.3.0' and args.mode in ('developer','laboratory') and
+                            args.workload in ('notebook','initializer') and args.native_bundle is not None and args.guest_build is not None):
+                        from silicon_guest_bundle import COURSE_CONFIGURATIONS
+                        course_archive=json.loads((args.guest_build/'build.json').read_text()).get('configuration')==COURSE_CONFIGURATIONS[args.workload]
+                    if not (usb_archive or lab_archive or course_archive):raise Failure('--guest-source-root requires USB6/8/11/13 RTL preparation, an exact canonical course guest, or a canonical Laboratory Array/String OOM native-bundle override')
                 if args.guest_build is not None and args.native_bundle is None:raise Failure('--guest-build session override requires --native-bundle')
                 if args.profile not in (None,'lemma-silicon-dev/0.1.0','lemma-silicon-dev/0.2.0','lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0','lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0'):raise Failure('Persistent session requires the declared silicon-development binding')
                 lemmasim_session.bounded(args.quantum,1,1000000,'Quantum')

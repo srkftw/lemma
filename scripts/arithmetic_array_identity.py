@@ -7,6 +7,7 @@ source/tool/ELF correspondence remains in the ordinary strict artifact audit.
 """
 from __future__ import annotations
 import hashlib
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 import json
 import re
 from core0_common import Core0Error
@@ -21,7 +22,7 @@ REGISTRY = {
  'resources': {'name':'lemma-arithmetic-array-resource-v1','id':0x000300000000001f,
                'heap_objects':31,'maximum_elements':6,'semantic_budgets':[0,8],'deadline_ticks':10000000},
 }
-CONFIGURATIONS = frozenset(('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize','lemmasim-silicon-array-arithmetic-oom-development'))
+CONFIGURATIONS = frozenset(COURSE_CONFIGURATIONS) | frozenset(('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize','lemmasim-silicon-array-arithmetic-oom-development'))
 ROOT = 'Lemma.Services.Arithmetic.ServerV5.main'
 PROTOCOL = 'Lemma.Services.Arithmetic.ProtocolV5.'
 # Independently inspected source-bound genuine User5 Arithmetic probe binds

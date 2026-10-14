@@ -6,6 +6,7 @@ inlining. Historical units have no catalog and may not acquire alwaysinline.
 """
 from __future__ import annotations
 import hashlib,re
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 from core0_common import Core0Error
 
 CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
@@ -18,7 +19,7 @@ USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-manag
 USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'))
 BYTES_CONFIGURATIONS={"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"}
-ARRAY_CONFIGURATIONS={"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"}
+ARRAY_CONFIGURATIONS=set(COURSE_CONFIGURATIONS) | {"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"}
 STRING_CONFIGURATIONS={"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}
 USER_CONFIGURATIONS |= BYTES_CONFIGURATIONS | ARRAY_CONFIGURATIONS | STRING_CONFIGURATIONS
 CONFIGURATIONS |= USER_CONFIGURATIONS

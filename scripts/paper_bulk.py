@@ -6,6 +6,7 @@ owner/generation/purpose checks and exact PIO/error prefixes. They do not prove
 compiler correctness or establish actual notebook execution/performance.
 """
 import hashlib
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 import re
 from core0_common import Core0Error
 CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
@@ -13,7 +14,7 @@ CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',
  'lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize',
  'lemmasim-silicon-bytes-bulk-notebook','lemmasim-silicon-bytes-bulk-initialize',
  'lemmasim-silicon-bytes-arithmetic-oom-development'})
-ARRAY=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
+ARRAY=frozenset(COURSE_CONFIGURATIONS) | frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
 NEXT_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-next-bulk-notebook'))
 WIRE_CONFIGURATIONS=frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 CONFIGURATIONS |= WIRE_CONFIGURATIONS

@@ -53,7 +53,8 @@ SUMS_NOTEBOOK_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-bulk-no
 BYTES_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"})
 
 STRING_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"})
-ARRAY_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
+ARRAY_NOTEBOOK_CONFIGURATIONS=frozenset(COURSE_CONFIGURATIONS) | frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
 
 def notebook_profile_allowed(unit):
  return (unit.get('role')=='user' and unit.get('image_key')=='notebook' and

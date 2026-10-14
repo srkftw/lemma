@@ -1,8 +1,9 @@
 """Independent closed Array production admission; no target execution oracle."""
 import re
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as COURSE_DEPLOYMENT
 from core0_common import Core0Error
 FIELD='managed_array'
-CONFIGURATIONS=frozenset(('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize','lemmasim-silicon-array-arithmetic-oom-development'))
+CONFIGURATIONS=frozenset(COURSE_CONFIGURATIONS) | frozenset(('lemmasim-silicon-array-bulk-notebook','lemmasim-silicon-array-bulk-initialize','lemmasim-silicon-array-arithmetic-oom-development'))
 ENTRY='Lemma.Mathematics.ManagedArraySubmission.compareFiveSix'
 PREFIX='Lemma.Mathematics.ManagedArraySubmission.'
 GENERATED=ENTRY+'.__lemma_managed_array_v05.'
@@ -22,7 +23,7 @@ def require(value,message):
  if not value:raise Core0Error(message)
 def software_deployment_for(configuration):
  require(configuration in CONFIGURATIONS,'Unknown exact Array deployment')
- return SOFTWARE_DEPLOYMENT
+ return COURSE_DEPLOYMENT if configuration in COURSE_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
 def allowed(unit):
  return unit.get('role')=='user' and unit.get('image_key')=='arithmetic' and unit.get('configuration') in CONFIGURATIONS
 
@@ -31,7 +32,7 @@ def contract(unit):
  if unit.get('contract_version')!='core0-user-v0.5':
   require(FIELD not in unit and not generated,'Historical profile acquired Array authority');return None
  require(allowed(unit),'Array User5 escaped its exact isolated Arithmetic deployment')
- require(unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,'Array software deployment differs')
+ require(unit.get('software_deployment')==software_deployment_for(unit.get('configuration')),'Array software deployment differs')
  require(not any(name in unit for name in ('managed_records','managed_sums','managed_bytes','arithmetic_execution_identity','arithmetic_sums_execution_identity','arithmetic_bytes_execution_identity')),'Array deployment impersonates older implementation authority')
  c=unit.get(FIELD)
  require(isinstance(c,dict) and set(c)=={'contract_version','compiler_revision','allocator','entry','maximum_elements','element_bits','slots','array_payload_bytes','array_cookie','element_layout','get_out_of_bounds','set_out_of_bounds','functions','default_initializers'},'Array catalog malformed')

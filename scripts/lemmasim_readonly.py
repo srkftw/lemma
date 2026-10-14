@@ -9,6 +9,7 @@ import struct
 import hashlib
 from pathlib import Path
 from core0_common import Core0Error, load_json
+from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
 
 COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'}
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
@@ -204,7 +205,7 @@ LEGACY_NOTEBOOK_CONFIGURATIONS = {
     'lemmasim-silicon-product-notebook'} | ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 BYTES_NOTEBOOK_CONFIGURATIONS = {'lemmasim-silicon-bytes-bulk-notebook',
     'lemmasim-silicon-bytes-bulk-initialize','lemmasim-silicon-bytes-arithmetic-oom-development'}
-ARRAY_NOTEBOOK_CONFIGURATIONS = {"lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development"}
+ARRAY_NOTEBOOK_CONFIGURATIONS = set(COURSE_CONFIGURATIONS) | {"lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development"}
 STRING_NOTEBOOK_CONFIGURATIONS = {"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}
 CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS
 POWER_CONFIGURATIONS |= BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS
