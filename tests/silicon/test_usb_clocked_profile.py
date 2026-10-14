@@ -60,7 +60,7 @@ class USBClockedProfile(unittest.TestCase):
         self.assertEqual(p['usb_clocked_registers'],
                          dict(phy_version=176, phy_nominal_hz=184, controller_nominal_hz=192,
                               cdc_version=200, fifo_bytes=208, packet_bytes=216))
-        # Profile13 exposes both explicitly selected software deployments.
+        # Profile13 exposes three explicitly selected software deployments.
         # A prepared bundle still grants only its own exact two role names.
         normal = {
             'usb-clocked-bulk-notebook': 'lemmasim-silicon-usb-clocked-bulk-notebook',
@@ -70,9 +70,14 @@ class USBClockedProfile(unittest.TestCase):
             'usb-clocked-retry-bulk-notebook': 'lemmasim-silicon-usb-clocked-retry-bulk-notebook',
             'usb-clocked-retry-bulk-initializer': 'lemmasim-silicon-usb-clocked-retry-bulk-initialize',
         }
+        closure_recovery = {
+            'usb-clocked-closure-retry-bulk-notebook': 'lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook',
+            'usb-clocked-closure-retry-bulk-initializer': 'lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize',
+        }
         self.assertEqual(bundle.USB_CLOCKED_CONFIGURATIONS, normal)
         self.assertEqual(bundle.USB_RECOVERY_CONFIGURATIONS, recovery)
-        self.assertEqual(guest.configurations(p['profile']), {**normal, **recovery})
+        self.assertEqual(bundle.USB_CLOSURE_RECOVERY_CONFIGURATIONS, closure_recovery)
+        self.assertEqual(guest.configurations(p['profile']), {**normal, **recovery, **closure_recovery})
         self.assertNotEqual(guest.prepared_path(p['profile']), guest.prepared_path(bundle.USB_WIRE_PROFILE))
         for key, value in [('usb_clocked_enabled', 0), ('usb_clocked_quantum_hz', 100000000),
                            ('usb_clocked_ppm_bound', 0), ('usb_clocked_cdc_version', 0),

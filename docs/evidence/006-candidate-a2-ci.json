@@ -256,5 +256,46 @@
       "following_acceptance": "SKIPPED",
       "diagnosis": "Actual O0 post differs in predecessor comments and typed i1 Boolean print spelling; strict independently qualified observer correction is being prepared. Original failure retained; no candidate rerun/pass inferred."
     }
+  },
+  "subsequent_candidate_24b": {
+    "source_commit": "24b688d9447ca0faf602989c078df74351753f45",
+    "actual_ci_run": 38621272240,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "87ad70d1a84e3115bb4b26ffb57fec758074566c",
+    "jobs_passed": 9,
+    "jobs_total": 10,
+    "previous_real_notebook_O0_O2_and_foundation": "SUCCESS on this actual candidate; not inherited from older runs",
+    "failure": {
+      "job_id": 116049109600,
+      "name": "Metadata and host-only suites",
+      "actual_test": "test_clock_cdc_and_readback_facts_are_closed",
+      "actual_tests": 198,
+      "actual_failures": 1,
+      "retained_log": "build/ci/task006-24b-failures-a1/job-116049109600.log",
+      "retained_log_sha256": "3ecbcc358c7eb84e50bc1784ef04941e3516af8efb97976e730822cd03103175",
+      "reason": "Exact test map included normal and Sums Recovery2, but omitted the two committed Closure Recovery3 roles. Hardware/profile production checks were already correct."
+    },
+    "subsequent_host_observer": {
+      "result": "PASS",
+      "test_path": "tests/silicon/test_usb_clocked_profile.py",
+      "test_sha256": "9cc5638f0c78f3a1e6cd3fc922efc3efcef4293d2d1a899275bb15789e00c7af",
+      "original_test_sha256": "2c502af4f42e2af9e99e2760b6c6a34cd574eba26900abbbe069fae221b22fe1",
+      "change": "Adds two exact Closure Recovery3 workload/configuration literals and exact family-map equality. All clock/CDC/readback, historical bindings and malformed-profile guards retained.",
+      "focused_tests": 7,
+      "focused_seconds": 0.008,
+      "focused_log_sha256": "edd4536e96c38e6654865a83f7957f9d3fc5ba12ad688cd056372d7056252175",
+      "full_current_host_tests": 201,
+      "full_test_seconds": 1.639,
+      "full_subprocess_seconds": 2.4197731260210276,
+      "full_log": "build/usb/clocked-ci-configuration-expectation-a1/whole.log",
+      "full_log_sha256": "7ba0160ebcf2845132c3f6961a4184a051a0969ceb2a172c499e330897473ab3",
+      "result_path": "build/usb/clocked-ci-configuration-expectation-a1/whole-result.json",
+      "result_sha256": "638d906048d88abd26c11c36dc4d110e996536b8b4a6bc54df08f31b7206ee9c",
+      "fresh_python_cache": "/home/sreekumaar/Downloads/lemma/build/usb/clocked-ci-configuration-expectation-a1/whole-python-cache",
+      "production_or_actor_changed": false,
+      "new_ci": "NOT_RUN",
+      "scope": "Local host tests only; original candidate remains actual FAIL, no new guest or circuit acceptance."
+    }
   }
 }
