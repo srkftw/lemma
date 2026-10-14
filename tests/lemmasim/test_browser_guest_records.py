@@ -45,4 +45,28 @@ assert.equal(guestPageReady(encode(ready+opened('0000000000000000')),0,{complete
                            capture_output=True,text=True,timeout=15)
         self.assertEqual(run.returncode,0,run.stdout+run.stderr)
 
+    def test_guest_publication_is_complete_ordered_and_launch_local(self):
+        script=r"""
+import {guestCommitState} from './sim/browser/guest_records.js';
+import assert from 'node:assert/strict';
+const encode=x=>new TextEncoder().encode(x);
+const row=(kind,value,page=1n,ns=1n,detail=0x8001n)=>'K1 '+[kind,value,page,ns,detail].map(x=>x.toString(16).padStart(16,'0')).join(' ')+'\n';
+const pending=row(0x423n,26n),saved=row(0x421n,26n),failed=row(0x424n,227n);
+for(const text of ['',saved.slice(0,-1),'prefix'+saved,saved.replace('0000000000000421','0000000000000425'),saved.replace('000000000000001a','00000000000000xz')])
+ assert.equal(guestCommitState(encode(text),0),null);
+assert.equal(guestCommitState(encode(saved),saved.length),null);
+assert.equal(guestCommitState(encode(saved+pending),saved.length).state,'pending');
+assert.equal(guestCommitState(encode(pending+saved+failed),0).state,'failed');
+assert.equal(guestCommitState(encode(saved+failed+pending),0).state,'pending');
+assert.deepEqual(guestCommitState(encode(pending+failed+saved),0),{authority:'compiled-guest-report',state:'saved',recordKind:'0000000000000421',value:'26',page:'1',namespace:'1',detail:'32769'});
+assert.equal(guestCommitState(encode(saved.replace('\n','\r\n')),0).value,'26');
+const largest=guestCommitState(encode(row(0x421n,18446744073709551615n,9007199254740993n)),0);
+assert.equal(largest.value,'18446744073709551615');assert.equal(largest.page,'9007199254740993');
+for(const bad of [-1,0.5,Infinity,'0',100000])assert.throws(()=>guestCommitState(encode(saved),bad));
+assert.throws(()=>guestCommitState(saved,0));
+"""
+        run=subprocess.run(['node','--input-type=module','-e',script],cwd=ROOT,
+                           capture_output=True,text=True,timeout=15)
+        self.assertEqual(run.returncode,0,run.stdout+run.stderr)
+
 if __name__=='__main__':unittest.main()

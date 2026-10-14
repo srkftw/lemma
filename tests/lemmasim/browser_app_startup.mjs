@@ -40,6 +40,18 @@ async function appFixture(gpu){
  assert.equal(f.node('#session-mode').disabled,true);
  f.worker.onmessage({data:{type:'closed'}});assert.equal(f.node('#session-mode').disabled,false);
 }
+// Presentation labels only newly emitted guest reports; a missing result,
+// restored continuation or Close cannot inherit an earlier Saved label.
+{
+ const f=await appFixture(undefined);
+ const state=guestCommit=>f.worker.onmessage({data:{type:'state',guestCommit,state:{cycle:'9007199254740993'},running:false,guestObservation:'continuation',readyAt:null,heapBytes:1048576,pauseReason:'user',timing:{elapsedSeconds:12,simulationCallSeconds:2,backingCallSecondsDuringRun:1}}});
+ const reported={authority:'compiled-guest-report',value:'9007199254740993',page:'1',namespace:'1',detail:'32769'};
+ state({...reported,state:'pending'});assert.match(f.node('#commit-status').textContent,/Guest save pending 9007199254740993/);
+ state({...reported,state:'saved'});assert.match(f.node('#commit-status').textContent,/Guest reports Saved 9007199254740993/);
+ state({...reported,state:'failed',value:'227'});assert.match(f.node('#commit-status').textContent,/Guest save failed \(227\)/);
+ state(null);assert.match(f.node('#commit-status').textContent,/No save result observed/);
+ state({...reported,state:'saved'});f.worker.onmessage({data:{type:'closed'}});assert.match(f.node('#commit-status').textContent,/No running guest/);
+}
 // An implicit capture loss ends exactly the held raw contact. A stale loss
 // after pointerup cannot cancel a new pointer, and lifecycle controls release
 // contact before asking the worker to close or reset the digital machine.

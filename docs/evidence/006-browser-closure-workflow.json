@@ -1,7 +1,7 @@
 {
   "schema": "lemma-browser-closure-connected-workflow/1",
-  "status": "PASS_COLD_RAW_SAVE_COURSE_EDIT_FRESH_CHECK_AND_EXACT_SUFFIXES",
-  "scope": "Fresh audited Closure7/Doc8/UserCopy pair on the canonical original RTL Machine compiled to localWasm. Actual independent cold recovery, new controller raw ink/Saved22, complete3.63M pixels, complete loadedDoc8 plus full original course pixels, and exact same-Wasm arbitrary continuation. Fresh mathematical submission, hint/review and durable-only newcold are ongoing, not inherited from the recovered Verified record. Finished G2/G4\u2013G7/runtime/browser product/physical gates remain incomplete.",
+  "status": "PASS_COLD_RAW_SAVE_COURSE_EDIT_CHECK_HINT_REVIEW_AND_EXACT_SUFFIXES",
+  "scope": "Actual canonical local RTL/Wasm guest cold/raw ink/Save/course/edit/fresh Invalid12/hint/manual review, complete Doc8/controller pixels and distinct exact authoritative/suffix checks. New bulk guest durable-only cold is running within its original bound, not yet accepted. Finished G2/G4\u2013G7, proof kernel, runtime, distribution and physical gates remain incomplete.",
   "profile": "lemma-silicon-dev/0.3.0",
   "bundle": {
     "path": "build/browser/task006-usercopy-closure-a1",
@@ -136,7 +136,7 @@
     "suffix_observer": "a1 rejected atzero restored clocks: completedphase2 was routed through Pending-only latebinder. Existing replay constructor-before-restore selects savednextID; unchanged actual capsules/tape a2 pass exactwholearchive, no deadline widening.",
     "edit_plan": "Original edit-plan-a1 expected6/6 but original selected denominator64 yields5/7; edit-plan-correction-a1 preserves the failure, source-derived a2 observer qualifies unchanged execution."
   },
-  "native_500M_failure": "build/managed/usercopy-native-connected-a3/workflow/result.json remains FAIL. A separate isolated continuation from actual452.5M retainedprefix is running solely to compare exact native713.85M state; not nativecoldPASS.",
+  "native_500M_failure": "Original usercopy-native-connected-a3 remains FAIL; separately observed private452.5M\u2192713.85M native continuation matches independent browser authoritative Ready, not a new native cold pass. New a520 bulk native a4 also retained FAIL at500M/1746.450s; its480M cut is diagnostic, not Ready.",
   "commands": {
     "browser_pack": "./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 --wasm-build build/wasm/task006-canonical-native-port-a1 --reuse-wasm --wasm-input-bundle build/native/task006-usercopy-closure-a1 --guest-bundle build/native/task006-usercopy-closure-a1 --output-dir NEW_OUTPUT",
     "launch": "./scripts/lemmasim browser-serve --bundle build/browser/task006-usercopy-closure-a1 --port 8786",
@@ -146,7 +146,7 @@
   "qualified_host_checks": {
     "indexed_page_read_observer": "3 tests PASS0.054s, checksum-correct duplicate/missing/wrongstroke/page/calibration/version/provenance and wrongtape bytes/ID/offset/time/identity negatives",
     "metadata": "PASS7gates/56software/6physical;18 scaffold tests PASS6.852s",
-    "candidate_ci": "Publisheddd5 actual38524024216 SUCCESS; later local commits need newcandidateCI. NoCI inherited."
+    "candidate_ci": "Actual published415c38585591262 terminalFAILURE,9/10jobs; Task004 initializer historicalKernel3cfg\u2192root observer rejected. NotebookO2 passes, subsequent exactcandidate stepSKIPPED. Narrow observer16c3846 qualifies originalbothroles plus280actual mutants, no newCI pass."
   },
   "retained_artifacts": {
     "plan.json": {
@@ -280,6 +280,30 @@
     "observe-course-transition-a1.py": {
       "bytes": 8296,
       "sha256": "7f9a0c32175da802d6b87d0da63a28940778e221650e61d0895aa7a01d8c485c"
+    },
+    "hint-plan-a1.json": {
+      "bytes": 841,
+      "sha256": "7dd7f817aeb3affb349ae613a702d122685bb996467afc7bb4c26de70eb12094"
+    },
+    "hint-saved25-result.json": {
+      "bytes": 5177,
+      "sha256": "5abfdb2085b6cdf31d2571fa7452285fc38358df1f1705ffb08d3dcfb81fe173"
+    },
+    "hint-saved25-observation.json": {
+      "bytes": 666,
+      "sha256": "1d27d07f99532bd4fb17af152c53a97b65d074fe1b2e2ab7154ecf6b21a6c33a"
+    },
+    "review-plan-a1.json": {
+      "bytes": 893,
+      "sha256": "94ef905ac441942d9d3c6b33d8a449cdd7ed3241b45a884c882b2db43df280ca"
+    },
+    "review-saved26-result.json": {
+      "bytes": 5309,
+      "sha256": "5a30aa274842b80413bc8a6891d786d7f77a58f8ca990f7f2e284e3605369afb"
+    },
+    "review-saved26-observation.json": {
+      "bytes": 652,
+      "sha256": "abafc9d4c6cb8d9a8f172c74b3f38b68c75d13d5d35dad40c927e6da02cd2680"
     }
   },
   "remaining": "Fresh bounded course hint/review and actual durable-only reopen running; current pointer-fix pack, installed-course UI, full managed runtime/proof kernel, exact fast cached state/timing, full device/radio/distribution/physical closure.",
@@ -416,5 +440,86 @@
     "raw_events": 0,
     "host_seconds": 45.169771731016226,
     "continuation_host_seconds": 993.3191172000952
+  },
+  "durable_hint_and_review": {
+    "hint": {
+      "cycles": 116800000,
+      "phase_host_seconds": 1777.7429900000097,
+      "simulation_call_seconds": 608.911499994505,
+      "heap_bytes": 201326592,
+      "saved_row": [
+        1057,
+        25,
+        1,
+        1,
+        32769
+      ],
+      "checkpoint_sha256": "1b500b72706511d22ccf08708eef86e08fb70ce8fc02023d9c24e957622f9877",
+      "medium_sha256": "af7b605e8793601ad8f4641fd2eb0805b5880f684b9472dc9beef4427fe0f2a6",
+      "gray_sha256": "e7332e597aaa743bea3ed5eb6a28ed9bd67cf9480ed1b0a0d24c2271f2c160ac",
+      "observer_sha256": "0cf23add32027a2264491342c2f0e79aa7abebad15cfa1fc64813162133b1797",
+      "observer_seconds": 23.66742365702521,
+      "all_loaded_bytes": 2496,
+      "complete_controller_pixels": 3630000,
+      "old_evidence_history_preserved": true,
+      "all_prior_ink_unchanged": true
+    },
+    "manual_review": {
+      "cycles": 116850000,
+      "phase_host_seconds": 1054.8483299999243,
+      "simulation_call_seconds": 646.3349499999222,
+      "heap_bytes": 201326592,
+      "saved_row": [
+        1057,
+        26,
+        1,
+        1,
+        32769
+      ],
+      "checkpoint_sha256": "17775572bba9911c205a0cc86baa38c88fce8c3ec134f6bb33eadcea1281a48b",
+      "medium_sha256": "14df41bcb9caa8b897cdd46e0a6473ade5e2a6f2d0f78471379a3d7847c04a44",
+      "gray_sha256": "e3a42ad2db53faba048ffaa1912375e80f3c5d7b20ef64090d4d962f0a0c641c",
+      "observer_sha256": "e8889eae25dd6e82f3b57bd0aa8214c99fd516026a81e060d3bbdc5ace1cc9f9",
+      "observer_seconds": 16.594765675021335,
+      "all_loaded_bytes": 2496,
+      "complete_controller_pixels": 3630000,
+      "old_evidence_history_preserved": true,
+      "all_prior_ink_unchanged": true
+    },
+    "revision": 12,
+    "answer": [
+      5,
+      7
+    ],
+    "outcome": "Invalid",
+    "evidence_revision": 12,
+    "attempts": 2,
+    "hints": 2,
+    "history_revisions": [
+      11,
+      12
+    ],
+    "execution_origin": "IsolatedClosure",
+    "execution_request": 84,
+    "review_policy": "lemma-offline-review/1",
+    "review_mode": "manual-practice",
+    "understanding": "uncertain",
+    "reason_visible": true,
+    "local_hint_provider": "authored offline reference material; not a live model or transport qualification",
+    "prior_ink_preserved": true,
+    "original_each_phase_limits": {
+      "cycles": 200000000,
+      "host_seconds": 1800,
+      "heap_bytes": 2147483648
+    },
+    "independent_durable_reopen": "RUNNING; new audited a520 guest, same originalOPFS medium/origin, noinitializer/import/restore, max2B/7200s/2GiB"
+  },
+  "ordinary_guest_publication_display": {
+    "scope": "Complete newly emitted guest UART421/423/424 presentation only; no journal, recovery, mathematical authority or backing barrier in host UI. Null after reset/restore/newlaunch; literal64bit strings; Close clears label.",
+    "host_protocol_tests": "PASS4 tests in0.982s systemNode; complete/partial/order/reset/restore/Student/largeUInt64 and GPU/startup/pointer regressions",
+    "actual_guest_rows": "Read-only actual oldSaved23/24/25/26 UART captures yield exact recordkind,value,page,namespace,detail; source and existing execution receipts remain separate",
+    "new_browser_pack_execution": "NOT_RUN; ongoing cold pack07a predates this display observer, current machine untouched",
+    "independent_read_review": "Array found no falseSaved or hostauthority defect",
+    "original_fixture_failure": "Ignored a1 host fixture erased retained initializer UART during its next run; corrected fake cold constructor matches actual Machine constructor ofstream truncation. Observer still rejects truncated history."
   }
 }

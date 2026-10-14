@@ -29,3 +29,19 @@ export function guestPageReady(bytes,start,paper){
  const sequence=BigInt('0x'+opened[0]);
  return sequence>0n&&BigInt(paper.completed)>=sequence&&BigInt(paper.accepted)>=sequence;
 }
+
+// Publication is presented only as a complete newly emitted guest report.
+// This observer neither inspects documents nor completes a backing barrier.
+export function guestCommitState(bytes,start){
+ if(!(bytes instanceof Uint8Array)||!Number.isSafeInteger(start)||start<0||start>bytes.length)
+  throw Error('Guest UART history was truncated or has an invalid observation boundary');
+ const text=new TextDecoder().decode(bytes.subarray(start));
+ const record=/(?:^|\n)K1 (000000000000042[134]) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16}) ([0-9a-f]{16})\r?(?=\n)/g;
+ let result=null,match;
+ while((match=record.exec(text))!==null){
+  const fields=match.slice(2).map(value=>BigInt('0x'+value).toString());
+  result={authority:'compiled-guest-report',state:match[1].endsWith('1')?'saved':match[1].endsWith('3')?'pending':'failed',
+   recordKind:match[1],value:fields[0],page:fields[1],namespace:fields[2],detail:fields[3]};
+ }
+ return result;
+}

@@ -48,6 +48,17 @@ and cold reset retain UART history, whose previous Ready is excluded. Restoring
 a continuation does not infer readiness from that retained history. These
 presentation observations never create a guest milestone or advance time.
 
+The ordinary UI additionally presents the latest complete newly emitted guest
+publication record: `0x423` is Pending, `0x421` is Saved and `0x424` is Failed.
+Its value, page, namespace and detail remain literal decimal strings. This
+`compiled-guest-report` observation does not inspect a journal, complete I/O,
+create a receipt or establish that every current edit is saved. A backing
+completion without a corresponding guest report cannot produce a Saved label.
+Initialization-to-notebook replacement, reset and restore establish a new UART
+observation boundary; retained history cannot authorize a new publication.
+Close clears the label. Developer inspection retains the original kind and
+all four fields; ordinary presentation explicitly says “Guest reports Saved”.
+
 Snapshot exports use the unchanged `LMSSRTL1` state contract. MEMFS lacks hard
 links, so Wasm exclusively creates the artifact and copies it in bounded chunks;
 this artifact publication is separate from a medium barrier. Snapshotting does

@@ -19,7 +19,7 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  const root={async getFileHandle(name,options={}){if(!mediumNames.has(name)&&!options.create){const e=Error('missing');e.name='NotFoundError';throw e;}mediumNames.add(name);return {async createSyncAccessHandle(){return medium;}};}};
  const core={HEAPU8:new Uint8Array(16),FS:{mkdir(){},writeFile(p,b){files.set(p,new Uint8Array(b));},readFile(p){if(p==='/uart.bin')return encoder.encode(uart);if(!files.has(p))throw Error('missing '+p);return new Uint8Array(files.get(p));},unlink(p){files.delete(p);},stat(){return {size:268435456};},open(){return {};},read(_stream,_chunk,_offset,length){return length;},close(){}},
  ccall(name,_return,_types,args=[]){calls.push([name,...args]);switch(name){
-  case 'lemma_create':case 'lemma_create_mode':current=generation++===0?cycle:0n;finished=false;return 0;
+  case 'lemma_create':case 'lemma_create_mode':{const cold=generation++!==0;current=cold?0n:cycle;if(cold)uart='';finished=false;return 0;}
   case 'lemma_destroy':return undefined;
   case 'lemma_inspect':return `{"cycle":${current},"ticks":${current},"panel_completed":${paper.completed},"paper_busy":${paper.busy??0},"panel_power":${paper.power??0},"finished":${finished}}`;
   case 'lemma_paper_inspect':return JSON.stringify(paper);
@@ -110,6 +110,24 @@ async function fixture({cycle=9007199254740993n,initialUART='',initialize=false,
  assert.equal(f.state().pauseReason,'error');assert.equal(f.timers.size,0);
  await f.send('events');const log=JSON.parse(decoder.decode(f.exports().at(-1).bytes));
  assert.deepEqual(log.events,f.events);assert.equal(log.until,String(origin));
+}
+
+// A completed backing operation without a guest record cannot produce Saved.
+// Publication is a launch-local observation and never advances the machine.
+{
+ const f=await fixture({cycle:0n,mode:'student',paused:true}),origin=f.cycle();
+ assert.equal(f.state().guestCommit,null);
+ const pending=record(0x423,9007199254740993n),saved=record(0x421,9007199254740993n),failed=record(0x424,227n);
+ f.setUART(pending);await f.send('pause');
+ assert.equal(f.state().guestCommit.state,'pending');assert.equal(f.state().guestCommit.value,'9007199254740993');
+ f.setUART(pending+saved.slice(0,-1));await f.send('pause');assert.equal(f.state().guestCommit.state,'pending');
+ f.setUART(pending+saved);await f.send('pause');assert.equal(f.state().guestCommit.state,'saved');
+ f.setUART(pending+saved+failed);await f.send('pause');assert.equal(f.state().guestCommit.state,'failed');
+ assert.equal(f.state().guestCommit.value,'227');assert.equal(f.cycle(),origin);assert.equal(f.timers.size,0);
+ await f.send('snapshot');const snapshot=f.exports().at(-1).bytes;
+ await f.send('restore',{bytes:snapshot.buffer});assert.equal(f.state().guestCommit,null);
+ assert.equal(f.cycle(),origin);assert.equal(f.timers.size,0);
+ await f.send('reset',{cold:true});assert.equal(f.state().guestCommit,null);
 }
 
 // UInt64 values above Number precision, exact tail, and worker cancellation.

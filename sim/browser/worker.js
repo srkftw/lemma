@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import createMachine from './machine.mjs';
-import {guestRecord,guestPageReady} from './guest_records.js';
+import {guestRecord,guestPageReady,guestCommitState} from './guest_records.js';
 import {RunBudget,uint64} from './run_budget.js';
 let core, handle, running=false, loaded=false, manifest, panelSequence='-1';
 let loops=0, capture=[], checkpoints={}, readyAt=null, started=0,initializing=false;
@@ -30,7 +30,7 @@ const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-25
 // bounded geometry, byte lengths and run quanta, never clocks or addresses.
 function state(){return JSON.parse(core.ccall('lemma_inspect','string',[],[]).replace(/"(?:\\.|[^"\\])*"|(-?\d+)/g,(s,n)=>n===undefined?s:JSON.stringify(n)));}
 function check(name,types=[],args=[]){if(core.ccall(name,'number',types,args))throw Error(core.ccall('lemma_error','string',[],[]));}
-function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:'lemma-browser-session-modes/1',running,guestObservation,heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
+function sendState(){const s=state();postMessage({type:'state',state:s,mode:sessionMode,modeContract:'lemma-browser-session-modes/1',running,guestObservation,guestCommit:guestCommitState(core.FS.readFile('/uart.bin'),guestOutputStart),heapBytes:core.HEAPU8.byteLength,readyAt,hostSeconds:(performance.now()-started)/1000,
  pauseReason,budget:budget?.inspection()??null,timing:{scope:'opened-worker-session',elapsedSeconds:(performance.now()-timing.started)/1000,
  simulationCallSeconds:timing.runSeconds,backingCallSeconds:timing.backingSeconds,backingCallSecondsDuringRun:timing.backingRunSeconds,
  simulationOutsideBackingSeconds:Math.max(0,timing.runSeconds-timing.backingRunSeconds)}});return s;}

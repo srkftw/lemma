@@ -1202,4 +1202,31 @@ is separate from the original cancellation and corrected live observation.
 Closure7/Doc8 mathematical retry integration, full USB MAC/timing/physical
 conformance and general cross-backend migration remain unfinished.
 
+## October14 browser guest publication, hint and review
+
+Actual oldClosure browser hint Saved25 passes116.8M/1777.743s phaseelapsed/
+608.911s simulation; manual review Saved26 passes116.85M/1054.848s phaseelapsed/
+646.335s simulation. Each preserves all2496 ownedDoc8 bytes,3.63M controller
+pixels and priorink under original200M/1800s/2GiB. Rev12 5/7/Invalid12 retains
+twoattempts, Verified11 history and isolatedClosure84; hints become2. Explicit
+manual-practice override records onelearner event, visible reason and uncertain
+understanding. Authored offline hints are not a live provider. New a520 bulk
+guest actually cold-boots from this sameOPFS medium/origin without initializer,
+import or restore inside2B/7200s; zero-clock archive/plan retained, reopen active.
+
+Ordinary browser presentation now exposes complete newly emitted guest Pending,
+Saved and Failed reports with full-width strings and launch-local boundaries.
+It never interprets a journal or acknowledges a barrier. Reset/restore/newlaunch
+exclude history; Close clears the label. Four focused host tests, actual read-only
+Saved23–26 captures and independent Array source review qualify the observer.
+The live07a pack predates this UI addition. A fake replacement constructor was
+corrected to actualofstream UART truncation; originalfixtureFAIL retained.
+
+Published415c38585591262 finished FAILURE:9jobs pass, genuine initializerO2
+historicalKernel3 root admission rejects, NotebookO2 passes, next exactcandidate
+stepSKIPPED. Exact observer16c3846 adds only the closed two cfg→root siblings;
+all body/authority pins remain. Originalbothrole artifacts and280actual mutants
+qualify; no newCI pass inferred. Originalcandidate failures remain in the existing
+006-candidate-a2-ci.json. No merge performed.
+
 -->

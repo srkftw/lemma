@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-const worker=new Worker('./worker.js',{type:'module'}),status=document.querySelector('#status');
+const worker=new Worker('./worker.js',{type:'module'}),status=document.querySelector('#status'),commitStatus=document.querySelector('#commit-status');
 let canvas=document.querySelector('canvas'),lastPlane=null;
 let active=null,activeTool=0,last={x:0,y:0};
 // WebGPU only presents controller-produced Gray4 bytes. Device loss selects
@@ -81,10 +81,12 @@ function present(m){lastPlane=m;if(m.pixels.length!==m.width*m.height){status.te
  else if(context){const image=context.createImageData(m.width,m.height);for(let i=0;i<m.pixels.length;i++){const gray=m.pixels[i]*17;image.data[4*i]=image.data[4*i+1]=image.data[4*i+2]=gray;image.data[4*i+3]=255;}context.putImageData(image,0,0);}}
 worker.onmessage=({data:m})=>{
  if(m.type==='error')status.textContent=m.error;
- if(m.type==='closed'){sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
+ if(m.type==='closed'){commitStatus.textContent='No running guest. Open runs recovery from backing bytes.';sessionMode.disabled=false;status.textContent='Machine closed. Reopen runs guest recovery from actual backing bytes.';}
  if(m.type==='imported')status.textContent='Durable medium imported. Open it to run real cold guest recovery.';
  if(m.type==='raw-admission')document.querySelector('#raw-result').textContent=m.error?`Accepted ${m.accepted} of ${m.total} events; rejected remainder: ${m.error}`:`Admitted ${m.accepted} raw events.`;
- if(m.type==='state'){if(m.mode){sessionMode.value=m.mode;sessionMode.disabled=true;modeControls();}status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
+ if(m.type==='state'){const reported=m.guestCommit??null;
+  commitStatus.textContent=reported===null?'No save result observed in this guest launch.':reported.state==='saved'?`Guest reports Saved ${reported.value} · page ${reported.page} · namespace ${reported.namespace}`:reported.state==='pending'?`Guest save pending ${reported.value} · page ${reported.page} · namespace ${reported.namespace}`:`Guest save failed (${reported.value}) · page ${reported.page} · namespace ${reported.namespace}`;
+  if(m.mode){sessionMode.value=m.mode;sessionMode.disabled=true;modeControls();}status.textContent=`Cycle ${m.state.cycle} · ${m.readyAt?'Guest Ready observed at '+m.readyAt.cycle:m.guestObservation==='continuation'?'Restored continuation; Ready not observed':'Booting'} · ${m.running?'running':'paused'+(m.pauseReason?' ('+m.pauseReason+')':'')} · ${Math.round(m.heapBytes/1048576)} MiB Wasm heap · ${m.timing.elapsedSeconds.toFixed(1)} s elapsed · ${m.timing.simulationCallSeconds.toFixed(1)} s simulation calls (${m.timing.backingCallSecondsDuringRun.toFixed(1)} s backing)`;
   document.querySelector('#inspection').textContent=JSON.stringify(m,null,2);}
  if(m.type==='panel')present(m);
  if(m.type==='uart')document.querySelector('#uart').textContent=m.text;

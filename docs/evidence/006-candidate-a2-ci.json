@@ -36,5 +36,116 @@
       "correction_evidence": "docs/evidence/006-usercopy-kernel3-observer-v1.json"
     }
   ],
-  "scope": "Historical candidate terminal observation retained. Corrected host fixture is not an inherited CI pass; a later candidate requires its own actual result."
+  "scope": "Historical candidate terminal observation retained. Corrected host fixture is not an inherited CI pass; a later candidate requires its own actual result.",
+  "subsequent_candidate_415c": {
+    "source_commit": "415c4e5e11072844b9fcde0587373403b755da18",
+    "actual_ci_run": 38585591262,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "actual_checkout": "7be37fe30f6c45ac3e96945314944b2d94d9f246",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 115926607511,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607512,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Compile, audit and observe real O0/O2 guest ink and cold recovery"
+        ],
+        "skipped_steps": [
+          "Require exact-candidate observations rather than a scoped empty pass"
+        ]
+      },
+      {
+        "id": 115926607553,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607656,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926607695,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926652902,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926669689,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926745129,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926794400,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 115926864893,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "failure": {
+      "job_id": 115926607512,
+      "configuration": "lemmasim-initialize",
+      "contract": "core0-kernel-v0.3",
+      "managed_policy": "lemma-notebook-v1",
+      "root": "NotebookKernel.initializeMedium",
+      "actual_error": "page-word Kernel3 historical configuration/lowering authority differs",
+      "original_notebook_O2_audit": "PASS",
+      "subsequent_exact_candidate_step": "SKIPPED",
+      "artifact_id": 11906830937,
+      "artifact_sha256": "ff87b692a533307fe6b0f5d8b4a3a97a9f7a903c5bf594adc1aa012f7cfdbde0",
+      "retained_original": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2",
+      "correction_commit": "16c3846",
+      "correction_evidence": "docs/evidence/006-usercopy-kernel3-initializer-observer-v1.json",
+      "correction": "Exact closed cfg\u2192root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
+      "new_ci": "NOT_RUN"
+    }
+  }
 }
