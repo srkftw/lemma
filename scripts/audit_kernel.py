@@ -4894,8 +4894,12 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 'Lemma.Platform.LemmaSim.DescriptorDTB.tokenStepCommon':('kernel',9,['u32','u32',*(['u64']*5)],['checked-access','physical-read','physical-write'],[1,2,3,4,9]),
             }
             common_owner=unit.get('configuration') in COMMON_CONFIGURATIONS and source in common_specs
-            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner)
+            from course_await_deployment import RESULT_SOURCE, result_jump_spec, validate_result_split
+            course_result_spec=result_jump_spec(optimized_ir,unit,source,owner['name'])
+            course_result_owner=course_result_spec is not None
+            sim_source=unit.get('configuration') in LEMMASIM_CONFIGURATIONS and (source in LEMMASIM_BACKEND_JUMP_TABLES or next_token or executed_token or wire_token or wire_owner or common_owner or clocked_owner or course_result_owner)
             spec=(LEMMASIM_BACKEND_JUMP_TABLES if sim_source else BACKEND_JUMP_TABLES).get(source)
+            if course_result_owner:spec=course_result_spec
             if clocked_owner:
                 # Complete actual pre/post owner/caller authority was checked
                 # before literal provenance above. These four measured domains
@@ -4977,6 +4981,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             if source in BACKEND_JUMP_TABLE_CONFIGURATIONS and unit.get('configuration') not in BACKEND_JUMP_TABLE_CONFIGURATIONS[source]:
                 raise Core0Error('diagnostic backend table escapes its exact selected configuration: '+source)
             image_authority=LEMMASIM_JUMP_TABLE_USER_IMAGES if sim_source else BACKEND_JUMP_TABLE_USER_IMAGES
+            if course_result_owner:image_authority={**image_authority,RESULT_SOURCE:{'course'}}
             if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS and
                     source == 'Lemma.Services.Store.Protocol.shape'):
                 image_authority={**image_authority,source:image_authority[source] | {'course'}}
@@ -4988,7 +4993,11 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 raise Core0Error('User backend table escapes its exact selected image: '+source)
             switch_sets=[sorted(int(value) for value in re.findall(r'i\d+ (-?\d+), label',block)) for block in re.findall(r'switch i\d+ [^\n]+\[([^]]+)\]',_ir_definition_body(optimized_ir,owner['name']),re.S)]
             split_common=(common_owner and source.endswith('.leafPropertyCommon'))
-            if split_common:
+            split_result_report=None
+            if course_result_owner:
+                code,labels=_jump_assembly_function(assembly,owner['name'])
+                split_result_report=validate_result_split(optimized_ir,unit,assembly,owner['name'],name,targets,code,labels)
+            elif split_common:
                 if switch_sets!=[[4,15],spec[4]] or len(targets)!=60:raise Core0Error('Common split switch escaped exact full domain/table extent')
             elif switch_sets.count(spec[4])!=1 or max(spec[4])-min(spec[4])+1!=len(targets):raise Core0Error('backend table lacks its exact genuine LLVM switch domain')
             default = (_jump_switch_default(_ir_definition_body(optimized_ir,owner['name']), assembly,
@@ -5018,7 +5027,8 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
             guard=_jump_assembly_guard(assembly,owner['name'],name,targets,len(targets),min(spec[4]),
                                        source=source,configuration=unit.get('configuration'),image_key=unit.get('image_key'))
             observed.append(dict(source=source_row['source'],function=owner['name'],symbol=name,offset=start,bytes=size,entries=entries,guard=guard,reference_pc=references[0]['offset'],function_base=owner['value'],function_bytes=owner['size'],
-                                 **({'switch_default': default} if default is not None else {})))
+                                 **({'switch_default': default} if default is not None else {}),
+                                 **({'course_mount_reply_split':split_result_report} if split_result_report is not None else {})))
             extents.append((start,start+size,'jump-table'))
     for row in literal:
         start=row['offset'];end=start+row['bytes']
@@ -5163,6 +5173,8 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
         raise Core0Error("IR audit optimization level differs from closed pipeline")
     from usercopy_page_words import validate_if_present as validate_page_words
     validate_page_words(ir,unit,optimized=optimized)
+    from course_await_deployment import validate_mount_reply
+    validate_mount_reply(ir,unit,optimized=optimized)
     from paper_next import validate as validate_paper_next
     from paper_executed import validate as validate_paper_executed
     from paper_wire import validate as validate_paper_wire

@@ -128,7 +128,19 @@ were then genuinely exported for both configurations with ordinary pre/post IR,
 O2 and RV64 checks in22.585s;62 actual metadata mutations reject. Whole images
 and CPU execution are separate obligations.
 
-Full initializer/notebook image audits and actual cold mountedReady/Load remain
-pending. Installed-course Notebook rendering, source-bound submission/evidence
+The actual initializer647504-byte image reached a whole audit failure at the
+new pure resultValid backend table. The original201.776-second FAIL and372-source
+archive remain unchanged. Pinned LLVM partitions six source cases into a
+12-cell status220..231 cluster with seven rejecting holes and separate0/93
+paths. An exact Await/User1/course4/mainAwait observer now binds the complete
+pre/post predicate, sole framing caller, constants, all30 machine instructions
+and all12 cells before ordinary unsigned bounds, local targets, relocations
+and identical companion/real code bytes can admit this table. No other pure
+owner/profile/image gains admission. The unchanged original initializer passes
+the corrected full ordinary audit in115.741seconds;39000 actual ordinary Lean
+predicate cases and60 actual authority/IR/instruction/cell mutations qualify
+that correction. These are source/artifact observations, not CPU Ready.
+
+The missing notebook image and actual cold mountedReady/Load remain pending. Installed-course Notebook rendering, source-bound submission/evidence
 and a cooperative chunk reader remain separate required connected work.
 -->
