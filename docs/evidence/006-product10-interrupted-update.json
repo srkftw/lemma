@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "status": "PASS_PRODUCT10_PARTIAL_UPDATE_BROWNOUT_AND_FIXED_ATTEMPT_FALLBACK",
+  "scope": "Actual owner-local CRC-integrity Product10 ID3 update cuts and fixed-limit ROM fallback from private forks of genuinely confirmedID2. The original metadata-cut observer FAIL is retained and independently corrected from its exact checkpoint; no repeated installation. All target selection, WRITE/BARRIER and image loading are real Lean ROM/guest execution. This does not qualify authentication, antirollback, torn-sector durability, watchdog or interrupted full-health confirmation.",
+  "profile": "lemma-silicon-dev/0.10.0",
+  "compatibility": "0x000a000300010001",
+  "known_good": {
+    "image_id": "0x000a000000000002",
+    "confirmed_slot": 1,
+    "generation": 4,
+    "receipt": {
+      "path": "build/boot/task006-product-executed-trial-a1/confirmed-reobserver-a3.json",
+      "bytes": 18388,
+      "sha256": "26f6266ba6e8f9cf471ce6cf917301f12587a47934f01e354387273504daab09"
+    },
+    "documents": {
+      "path": "build/boot/task006-product-executed-trial-a1/confirmed-user-a3.raw",
+      "bytes": 268435456,
+      "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+    },
+    "original_owner": "remains paused and untouched; all case-owned processes reaped"
+  },
+  "candidate": {
+    "image_id": "0x000a000000000003",
+    "inactive_slot": 0,
+    "package": {
+      "path": "build/boot/task006-product-executed-image-id3-a1/package.json",
+      "bytes": 2736,
+      "sha256": "05db00db3e2738c0befb86afa99effb6dfa618c9781ca191d5c34028d000b40a"
+    },
+    "payload": {
+      "path": "build/boot/task006-product-executed-image-id3-a1/image.bin",
+      "bytes": 370688,
+      "sha256": "f22c16b7096e81a6140fa26ce210f07c159a20d53ce99602a8b0e43d72430abe"
+    }
+  },
+  "partial_payload": {
+    "status": "PASS_PRODUCT10_ID3_PARTIAL_PAYLOAD_BROWNOUT_CONFIRMED_SELECTION",
+    "receipt": {
+      "path": "build/boot/task006-product10-id3-payload-brownout-a1/result.json",
+      "bytes": 15543,
+      "sha256": "0e97838b2e15caf6dedb7cb62d698144314f82899f9ae88c47c9258ed381cff1"
+    },
+    "bounds": {
+      "startup_host_seconds": 120,
+      "recovery_beacon_cycles": 1000000,
+      "payload_cycles": 10000000,
+      "recovery_cycles": 100000000,
+      "host_seconds": 1200,
+      "brownout_asserted_cycles": 200,
+      "first_handoff_observation_cycles": 35000000
+    },
+    "host_seconds": 208.7057226850302,
+    "actual_acknowledged_sectors": 8,
+    "metadata_publication": false,
+    "recovery": "real brownout/RAM loss and35M ROM reload confirmedslot1/ID2; all documents and confirmed payload unchanged"
+  },
+  "publication_cut": {
+    "status": "PASS_REOBSERVED_PUBLICATION_CUT_AND_PRODUCT10_BROWNOUT_TRIAL_SELECTION",
+    "receipt": {
+      "path": "build/boot/task006-product10-id3-publication-brownout-reobserver-a2/result.json",
+      "bytes": 11516,
+      "sha256": "2259fba9120329b0316d1bebe7db7d048ce68045d1e3a1324aece3dda18d21c5"
+    },
+    "original_failure": {
+      "path": "build/boot/task006-product10-id3-publication-brownout-a1/result.json",
+      "bytes": 2105270,
+      "sha256": "f9fb6858017156f1c1ed4dc1a41e5cb606f70475f529e448cf2e0ab36c694638"
+    },
+    "original_error": "AssertionError('WRITE-before-BARRIER cut was missed; retain failure')",
+    "observer_correction": "finishInstall issues payload BARRIER before verification/metadata WRITE. Original oracle compared staging barrier to latest barrier and incorrectly rejected the actual cut. Separate same-cycle exact tape/metadata observer proves WRITE7260 after payload BARRIER6535 and before publication BARRIER/reply. Original FAIL unchanged.",
+    "read_only_cut": {
+      "path": "build/boot/task006-product10-id3-publication-brownout-reobserver-a2/cut-reobserver.json",
+      "bytes": 1818,
+      "sha256": "413ce67506d40be1df362b8089e006686a026b63435d6699642f7335fd327f74"
+    },
+    "actual_payload_acknowledged_sectors": 724,
+    "metadata_before_brownout": "generation5/confirmedslot1/ID2/trialslot0/ID3/attempt0",
+    "after_real_brownout": "generation6/trialID3/attempt1; exact candidate RX and DTB loaded, confirmed image and all document bytes unchanged",
+    "original_aggregate_host_seconds_bound": 3600,
+    "conservative_aggregate_host_seconds": 1898.6083448608988,
+    "suffix_host_seconds": 143.44476096500875
+  },
+  "attempt_exhaustion": {
+    "status": "PASS_PRODUCT10_REAL_ROM_ATTEMPT_EXHAUSTION_CONFIRMED_FALLBACK",
+    "receipt": {
+      "path": "build/boot/task006-product10-id3-attempt-fallback-a1/result.json",
+      "bytes": 16762,
+      "sha256": "9269f534dc9d34fc95bac0efd21aa03ff557dcb98afb924f2a2e7398cbaa5568"
+    },
+    "bounds": {
+      "startup_host_seconds": 120,
+      "host_seconds": 900,
+      "aggregate_cycles": 105000600,
+      "reset_asserted_cycles": 200,
+      "rom_cycles_per_stage": 35000000
+    },
+    "host_seconds": 651.3911816729815,
+    "maximum_attempts": 3,
+    "source_checkpoint": {
+      "path": "build/boot/task006-product10-id3-publication-brownout-reobserver-a2/brownout-handoff-checkpoint-a1/snapshot.json",
+      "bytes": 1342,
+      "sha256": "4271f20006da650fee6314f218db6ca88ddb203915b5096b948a9d1c793a9b6e"
+    },
+    "stages": [
+      {
+        "index": 1,
+        "cycles": 35000000,
+        "actual_rom_context": [
+          3555684553644131660,
+          1,
+          0,
+          2814749767106563,
+          7,
+          1
+        ],
+        "metadata": [
+          7,
+          1,
+          2814749767106562,
+          0,
+          2814749767106563,
+          2,
+          3
+        ],
+        "nv": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage1-boot.raw",
+          "bytes": 33558528,
+          "sha256": "867caeba5c0d5fc1a87bf656b2954192b9aea848c280b93ccf8f7b7378c63396"
+        },
+        "documents": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage1-user.raw",
+          "bytes": 268435456,
+          "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+        },
+        "checkpoint": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage1-handoff-checkpoint/machine.chk",
+          "bytes": 146032746,
+          "sha256": "8e76ddea208cce9bb486ad4c0f05081d74f38e7c8596b497125940e0e1969295"
+        }
+      },
+      {
+        "index": 2,
+        "cycles": 35000000,
+        "actual_rom_context": [
+          3555684553644131660,
+          1,
+          0,
+          2814749767106563,
+          8,
+          1
+        ],
+        "metadata": [
+          8,
+          1,
+          2814749767106562,
+          0,
+          2814749767106563,
+          3,
+          3
+        ],
+        "nv": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage2-boot.raw",
+          "bytes": 33558528,
+          "sha256": "391ba43e97bbd53258b77c68441c3085144c2d31be8af272a30cb80406ca16de"
+        },
+        "documents": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage2-user.raw",
+          "bytes": 268435456,
+          "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+        },
+        "checkpoint": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage2-handoff-checkpoint/machine.chk",
+          "bytes": 146033098,
+          "sha256": "226cb5c53151bccaa6c34c81f33575b3a161c256e98f4aab86d079cb56ac61f0"
+        }
+      },
+      {
+        "index": 3,
+        "cycles": 35000000,
+        "actual_rom_context": [
+          3555684553644131660,
+          1,
+          1,
+          2814749767106562,
+          8,
+          0
+        ],
+        "metadata": [
+          8,
+          1,
+          2814749767106562,
+          0,
+          2814749767106563,
+          3,
+          3
+        ],
+        "nv": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage3-boot.raw",
+          "bytes": 33558528,
+          "sha256": "391ba43e97bbd53258b77c68441c3085144c2d31be8af272a30cb80406ca16de"
+        },
+        "documents": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage3-user.raw",
+          "bytes": 268435456,
+          "sha256": "c7d09a627136cca164562936480041eb181f12c713569a826c14bc96c99ba88f"
+        },
+        "checkpoint": {
+          "path": "build/boot/task006-product10-id3-attempt-fallback-a1/stage3-handoff-checkpoint/machine.chk",
+          "bytes": 146033450,
+          "sha256": "465ff560b0cf6c7402993b3da02cab1d509012379c311b29b35cc14dbba6ae8a"
+        }
+      }
+    ],
+    "actual_metadata_writes": [
+      {
+        "id": 7991,
+        "request_cycle": 1252312790,
+        "accepted_cycle": 1252312790,
+        "kind": "WRITE",
+        "offset": 0,
+        "length": 512,
+        "transferred": 512,
+        "error": 0,
+        "request_payload_sha256": "9185fdb9c2be908edf366e5d4017ad5c51ec91e043ac36e571fa99b26b54dbbf",
+        "actual_prefix_sha256": "9185fdb9c2be908edf366e5d4017ad5c51ec91e043ac36e571fa99b26b54dbbf"
+      },
+      {
+        "id": 8719,
+        "request_cycle": 1287313011,
+        "accepted_cycle": 1287313011,
+        "kind": "WRITE",
+        "offset": 512,
+        "length": 512,
+        "transferred": 512,
+        "error": 0,
+        "request_payload_sha256": "471a922bf6d1794a2b226168e4a81d3d471b05a31c557bc083a4a971e6c320f3",
+        "actual_prefix_sha256": "471a922bf6d1794a2b226168e4a81d3d471b05a31c557bc083a4a971e6c320f3"
+      }
+    ],
+    "actual_metadata_barriers": [
+      {
+        "id": 7992,
+        "request_cycle": 1252313165,
+        "accepted_cycle": 1252313165,
+        "kind": "BARRIER",
+        "offset": 0,
+        "length": 0,
+        "transferred": 0,
+        "error": 0,
+        "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_prefix_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "id": 8720,
+        "request_cycle": 1287313386,
+        "accepted_cycle": 1287313386,
+        "kind": "BARRIER",
+        "offset": 0,
+        "length": 0,
+        "transferred": 0,
+        "error": 0,
+        "request_payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actual_prefix_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "tape": {
+      "path": "build/boot/task006-product10-id3-attempt-fallback-a1/session/boot.nvio.fork-1-zy1GUw",
+      "bytes": 1467400,
+      "sha256": "2e9a5c29b819ff4a63b44edfcbe1aa08ef2ce927f0af37d73cc70af7f2891bbc"
+    },
+    "final_selection": "confirmedslot1/ID2, generation8, trial-context0; attempts3 remains; no third metadata mutation; no reinstall or format"
+  },
+  "implementation": {
+    "native": "build/silicon/task006-product-executed-runtime-a1",
+    "native_implementation": "efa66f430fcf3d0e7c9085421d7d5a0c94f6e320feecc7393d5005049c14fa83",
+    "native_complete_source_archive": "build/silicon/task006-product-executed-runtime-a1/consumed-source-root",
+    "rom": "build/boot/task006-product-executed-rom-a1",
+    "rom_complete_source_archive": "build/boot/task006-product-executed-rom-a1/consumed-source-root",
+    "guest": "build/kernel/task006-product-executed-bulk-notebook-a2",
+    "guest_sha256": "4f4383f53f9cfd386eda7484a3a7c43047f94a79998c7e2d8bbf969dad75f524"
+  },
+  "open": {
+    "full_id3_ready_and_health_confirmation_interruption": "NOT_RUN",
+    "watchdog": "NOT_RUN; no host MMIO arm",
+    "torn_sector_and_failed_barrier_cut": "NOT_RUN",
+    "authentication": "OPEN; CRC integrity only; standalone SHA/HMAC component is not this boot policy",
+    "antirollback": "OPEN",
+    "physical_nonvolatile_conformance": "UNVERIFIED"
+  }
+}
