@@ -11,6 +11,7 @@ from build_kernel import configuration_roots,managed_policy,user_module_closure
 from silicon_profile import configuration_profile
 from silicon_guest_bundle import development_configuration
 from course_await_deployment import library_source_allowed
+from managed_records import profile_allowed as record_profile_allowed, contract as record_contract, FIELD as RECORD_FIELD
 from core0_common import Core0Error
 
 class CourseAwaitCatalog(unittest.TestCase):
@@ -103,5 +104,22 @@ class CourseAwaitCatalog(unittest.TestCase):
                     with self.assertRaisesRegex(Core0Error,error):
                         user_module_closure(root,image,config)
                     source(root,'Lemma.Services.Store.Engine')
+
+    def test_new_notebook_profile_is_exact_and_has_no_record_heap_inventory(self):
+        for config in ('lemmasim-silicon-course-await-bulk-notebook',
+                       'lemmasim-silicon-course-await-bulk-initialize'):
+            unit={'role':'user','image_key':'notebook','configuration':config,
+                  'contract_version':'core0-user-v0.2','functions':[],
+                  **software_deployment_fields(config)}
+            self.assertTrue(record_profile_allowed(unit))
+            self.assertIsNone(record_contract(unit))
+            for bad in ({**unit,'image_key':'store'},{**unit,'image_key':'course'},
+                        {**unit,'image_key':'arithmetic'},{**unit,'role':'kernel'},
+                        {**unit,'configuration':'lemmasim-silicon-course-await-any'}):
+                self.assertFalse(record_profile_allowed(bad))
+            for bad in ({**unit,RECORD_FIELD:{}},
+                        {**unit,'functions':[{'source':'Lemma.Managed.__lemma_managed_v02.allocate'}]},
+                        {**unit,'software_deployment':software_deployment_fields('lemmasim-silicon-course-bulk-notebook')['software_deployment']}):
+                with self.assertRaises(Core0Error):record_contract(bad)
 
 if __name__=='__main__':unittest.main()

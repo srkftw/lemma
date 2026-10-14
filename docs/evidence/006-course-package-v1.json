@@ -711,6 +711,169 @@
     "status": "PASS_COURSE_MOUNTED_AWAIT_COMPONENT",
     "wall_seconds": 15.95888241007924
   },
+  "mounted_await_notebook_profile_followup": {
+    "actual_metadata_mutants_rejected": 62,
+    "focused_profile_import_contract_tests": {
+      "no_heap_inventory_mutants": "REJECT",
+      "seconds": 0.016,
+      "status": "PASS",
+      "tests": 5
+    },
+    "fresh_actual_units": [
+      {
+        "artifacts": {
+          "program.ll": "60136b31078069dab966056ef45448969167fd9d8b53f627da9cd5dd3a68242e",
+          "program.o": "8dd8f75fe18a4c9a27e271628ee3649b4cff16177de306372b31feb4ce736c08",
+          "program.opt.ll": "a471c33b11a5bae5c65fc920ae63d05fd318d3513b62e6b29fab222ba9a7b4b3",
+          "unit.json": "c4da62e1a26f748328950e1c911a2443f24acd40cd1f971073b88addd66ae74e"
+        },
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-user-v0.5",
+        "functions": 167,
+        "key": "arithmetic",
+        "root": "Lemma.Services.Arithmetic.ServerV5.main"
+      },
+      {
+        "artifacts": {
+          "program.ll": "2e90537c66d9b891e90c58933d441e16cf5f980353349f7d57eafb64bf9e3a99",
+          "program.o": "58f3a37bcb9a5b88c901ac52d8b71ba5f7c0ed9519b5b4f0afb951233c6db5d3",
+          "program.opt.ll": "76a954be4f017c0b71a51ed79dd8f23c233737cf93dae8f0d4a023f4fc2b690e",
+          "unit.json": "1aca9a4e1670c2858fc859b8c3f351019bb0d456772432bd9432915a88b9f2e7"
+        },
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-user-v0.1",
+        "functions": 169,
+        "key": "course",
+        "root": "Lemma.Courses.PackageInstaller.mainAwait"
+      },
+      {
+        "artifacts": {
+          "program.ll": "60136b31078069dab966056ef45448969167fd9d8b53f627da9cd5dd3a68242e",
+          "program.o": "8dd8f75fe18a4c9a27e271628ee3649b4cff16177de306372b31feb4ce736c08",
+          "program.opt.ll": "a471c33b11a5bae5c65fc920ae63d05fd318d3513b62e6b29fab222ba9a7b4b3",
+          "unit.json": "477bfe65e09fbbda61d3d8b28d68b2d317c1084d71b282379ce42337256c24ba"
+        },
+        "configuration": "lemmasim-silicon-course-await-bulk-notebook",
+        "contract_version": "core0-user-v0.5",
+        "functions": 167,
+        "key": "arithmetic",
+        "root": "Lemma.Services.Arithmetic.ServerV5.main"
+      },
+      {
+        "artifacts": {
+          "program.ll": "2e90537c66d9b891e90c58933d441e16cf5f980353349f7d57eafb64bf9e3a99",
+          "program.o": "58f3a37bcb9a5b88c901ac52d8b71ba5f7c0ed9519b5b4f0afb951233c6db5d3",
+          "program.opt.ll": "76a954be4f017c0b71a51ed79dd8f23c233737cf93dae8f0d4a023f4fc2b690e",
+          "unit.json": "4c276551627562e2cb7937f4efc7649e03ad655b355701cdfd176b6f54021b2e"
+        },
+        "configuration": "lemmasim-silicon-course-await-bulk-notebook",
+        "contract_version": "core0-user-v0.1",
+        "functions": 169,
+        "key": "course",
+        "root": "Lemma.Courses.PackageInstaller.mainAwait"
+      }
+    ],
+    "genuine_role_preflight": {
+      "path": "build/courses/task006-course-await-role-preflight-a1/result.json",
+      "sha256": "ffb911bd5ec0671542e02adf378be952f9b9b65e5962b77451b5f45fd413c360"
+    },
+    "genuine_role_seconds": 22.585235062986612,
+    "kernel_host": {
+      "exit_code": 0,
+      "log": {
+        "path": "build/courses/task006-course-await-role-preflight-a1/kernel-host.log",
+        "sha256": "ddc0f515c03a9df373289e86e03a7ebdcfb54b7e0985f97f7b544662f9ef3b9e"
+      },
+      "seconds": 6.648,
+      "status": "PASS",
+      "tests": 411
+    },
+    "ordinary_pre_post_ir_and_rv64": "PASS for all four fresh genuine units; only declared syscall unresolved",
+    "original_source_inventory_sha256": "49cd5f84489e30a0a81561d321434780705c86167f0425066f74a1354579fbec",
+    "original_source_seal": {
+      "path": "build/courses/task006-course-await-whole-a2/source-seal.json",
+      "sha256": "7f852d86a1e7ca497975ec72e7d8b99d5c4aed765f16a83bd2d3ccdd38e3b592"
+    },
+    "original_whole_error": "Core0Error('user unit identity/version differs')",
+    "original_whole_failure": {
+      "path": "build/courses/task006-course-await-whole-a2/result.json",
+      "sha256": "6800507930935c3c225b91bbd46bf7e819f3fbee035ef297c6b26de6768023c7"
+    },
+    "original_whole_seconds": 91.90327012795024,
+    "peak_rss_kib": 1608428,
+    "registry_scope": "Only exact Await2 user/notebook selects existing User2; managed-record field/generated inventory remains empty, other roles/configurations reject",
+    "remaining": "Fresh complete initializer/notebook ordinary audits, unchanged60M mountedReady/100M each Load, and subsequent installed-course Notebook/UI/evidence integration",
+    "retained_actual_units": [
+      {
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-firmware-v0.1",
+        "functions": 18,
+        "key": null,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-await-initializer-a2/firmware/unit.json",
+        "role": "firmware",
+        "scope": "Original actual unit unchanged; corrected metadata observer only",
+        "unit_sha256": "d2f21f21390f699cb0e598db19afa5f15e1ecd4f529fbdfe651ddaaf70d24239"
+      },
+      {
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-kernel-v0.4",
+        "functions": 1202,
+        "key": null,
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-await-initializer-a2/kernel/unit.json",
+        "role": "kernel",
+        "scope": "Original actual unit unchanged; corrected metadata observer only",
+        "unit_sha256": "505c0fd43166c99c945bd14be2f07e40b142bbc0cd7cbb0df5fd797ce61f07bc"
+      },
+      {
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-user-v0.1",
+        "functions": 259,
+        "key": "store",
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-await-initializer-a2/users/store/unit.json",
+        "role": "user",
+        "scope": "Original actual unit unchanged; corrected metadata observer only",
+        "unit_sha256": "ed99a212ad448c4ae7982f151d7d665ea7935d846147d342076288b370948e65"
+      },
+      {
+        "configuration": "lemmasim-silicon-course-await-bulk-initialize",
+        "contract_version": "core0-user-v0.2",
+        "functions": 644,
+        "key": "notebook",
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-await-initializer-a2/users/notebook/unit.json",
+        "role": "user",
+        "scope": "Original actual unit unchanged; corrected metadata observer only",
+        "unit_sha256": "4508bb734fd631bfd680bf13d98c1894dd5dd94e4e01e49347559982d07e37f2"
+      },
+      {
+        "configuration": "lemmasim-silicon-course-await-bulk-notebook",
+        "contract_version": "core0-user-v0.1",
+        "functions": 169,
+        "key": "course",
+        "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-deployment-component-a2/users/course/unit.json",
+        "role": "user",
+        "scope": "Original actual unit unchanged; corrected metadata observer only",
+        "unit_sha256": "4c276551627562e2cb7937f4efc7649e03ad655b355701cdfd176b6f54021b2e"
+      }
+    ],
+    "scaffold": {
+      "metadata": "PASS",
+      "status": "PASS",
+      "tests": 18
+    },
+    "scope": "Exact Await2 Notebook profile registry correction; genuine all-role metadata/missing-role component, not whole image or CPU success",
+    "source_count": 371,
+    "source_delta": {
+      "scripts/managed_records.py": {
+        "new": "94db2aa7455006756b836a0a817fc01a31d57d52e8adf57be38f58c55fc4f505",
+        "old": "e9d81f3df8a3605daf10c80500f0300e0f033e711a3e8221c296496c3c1f90fa"
+      }
+    },
+    "source_inventory_sha256": "8aae64c66582695495f1965917717c69cd9daf06d4dfdfa8fdbd337394679e4f",
+    "source_seal": {
+      "path": "build/courses/task006-course-await-role-preflight-a1/source-seal.json",
+      "sha256": "46f8ea3ccf13537898b6d8659a6cc5bc3a688242200eb5b3b3d49aaf5af3e7e0"
+    }
+  },
   "mounted_await_selected_deployment": {
     "configuration_names": [
       "lemmasim-silicon-course-await-bulk-notebook",

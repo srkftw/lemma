@@ -118,6 +118,16 @@ FAIL: a generic ordinary-mode observer excluded only the old restricted course
 pair. Its correction adds the exact new restriction and independent package
 map/permission negatives; the valid mode gate remains unchanged.
 
+The exact Await2 Notebook names also select the existing User2 profile in the
+independent host registry. This admits no managed-record field or generated
+heap inventory. Other image roles/unknown configurations still reject. The
+whole build's genuine Store/Notebook outputs exposed the missing registry name;
+that91.903s failure remains retained. Corrected observation validates the
+original actual units unchanged. Both missing Arithmetic5 and installer1 roles
+were then genuinely exported for both configurations with ordinary pre/post IR,
+O2 and RV64 checks in22.585s;62 actual metadata mutations reject. Whole images
+and CPU execution are separate obligations.
+
 Full initializer/notebook image audits and actual cold mountedReady/Load remain
 pending. Installed-course Notebook rendering, source-bound submission/evidence
 and a cooperative chunk reader remain separate required connected work.
