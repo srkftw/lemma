@@ -264,5 +264,11 @@
     "privately live external peer continuation",
     "QEMU cached-state continuation",
     "browser hosted peer and owner authentication"
-  ]
+  ],
+  "independent_review": {
+    "path": "build/usb/wire-hello-independent-review-a1/result.json",
+    "sha256": "18ca5d7ce131261047ff97acab4504fb9bd79b2e940fe0bce4cbff4ba5f5fd4a",
+    "status": "PASS_INDEPENDENT_SOURCE_AND_RETAINED_HELLO_REVIEW",
+    "scope": "Read-only source/object/hash/checksum and recorded wire observation; no CPU or source edits"
+  }
 }
