@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
 from lemmasim_course import frame
 from check_course_guest import Machine
-from check_course_cold import admitted_writer
+from check_course_cold import admitted_writer, capture_failure
 from core0_common import sha256
 from unittest.mock import patch
 from silicon_guest_bundle import development_configuration
@@ -49,6 +49,24 @@ class CourseCommandBudgets(unittest.TestCase):
   with self.assertRaises(ValueError):machine.outcome(0,1,0,1)
 
 class CourseColdAdmission(unittest.TestCase):
+ def test_failure_reuses_same_boundary_and_never_creates_a_third_snapshot(self):
+  from types import SimpleNamespace
+  machine=SimpleNamespace(directory=Path('/unit-only-session'))
+  state={'cycle':100,'retired':27,'event_queue':0}
+  latest=Path('/unit-only-loaded-edition2')
+  with patch('check_course_cold.request',return_value={'machine':state}) as request:
+   observation,count=capture_failure(machine,Path('/unit-only-work'),2,latest,state)
+   self.assertEqual(count,2);self.assertEqual(observation['snapshot']['snapshot'],str(latest))
+   self.assertEqual(request.call_count,1)
+  with patch('check_course_cold.request',return_value={'machine':dict(state,cycle=101)}) as request:
+   observation,count=capture_failure(machine,Path('/unit-only-work'),2,latest,state)
+   self.assertEqual(count,2);self.assertIn('snapshot_error',observation)
+   self.assertEqual(request.call_count,1)
+  with patch('check_course_cold.request',side_effect=[{'machine':dict(state,cycle=101)},TimeoutError('ambiguous checkpoint reply')]) as request:
+   observation,count=capture_failure(machine,Path('/unit-only-work'),1,latest,state)
+   self.assertEqual(count,2);self.assertIn('ambiguous checkpoint reply',observation['snapshot_error'])
+   self.assertEqual(request.call_count,2)
+
  def test_only_exact_acknowledged_artifacts_and_medium_admit(self):
   with tempfile.TemporaryDirectory() as temporary:
    root=Path(temporary);medium=(root/'actual.raw').resolve();packages=[];installed=[]

@@ -186,6 +186,23 @@ The failed receipt is preserved. This flag changes no Core0 language/profile,
 guest runtime or target resource policy; host-generated C remains outside RV64
 images.
 
+The additive cold observer compares every actual loaded package byte against
+its acknowledged publisher artifact only after the guest has completed Load.
+It validates the exact native2 identity, complete source seal and declared
+frame/descriptor layout, whole snapshot SHA256, and both complete CRC64
+components covering all RAM and generated model state. It then checks live
+frame ownership/generations/purposes/pins and the actual Sv39 User RW/NX/A/D
+leaf against the tracked mapping. It reads raw owned bytes without interpreting
+the journal or granting mathematical authority. Unknown state/layout fails.
+
+There are at most two observational snapshots in one cold actor. A failed byte
+observation reuses an already captured unchanged paused boundary. No snapshot
+boots the reader or completes guest work, and the original60M Ready/100M each
+Load/1800s host bounds include these checks. The retained failed60M capsule
+passed integrity and mapping observation in16.931s; its4040 staging bytes were
+all zero and correctly rejected against the publisher. This is an observer
+qualification; the actual cold Load remains failed until a new scenario passes.
+
 ## Same-Action IPC base reuse
 
 The next internal optimization is `lemma-ipc-call-base-reuse/1`. The existing

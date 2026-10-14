@@ -11,6 +11,7 @@ from pathlib import Path
 from check_course_guest import Machine,ROOT,rows
 from core0_common import sha256,write_json
 from lemmasim_session import request
+from course_snapshot_bytes import observe as observe_loaded_bytes
 
 def host_inputs():
  # Conservative complete project host-code inventory. Native runtime/tool
@@ -39,6 +40,24 @@ def admitted_writer(receipt,packages,medium):
   raise ValueError('opaque backing path differs from acknowledged writer')
  return prior
 
+def capture_failure(machine,work_dir,snapshots,latest_snapshot,latest_machine):
+ # Count attempts before creation: a failed/ambiguous reply may still have
+ # produced checkpoint bytes. It must not make room for an extra full copy.
+ boundary=request(machine.directory,{'action':'inspect'},timeout=130)
+ observation={'inspect':boundary}
+ if latest_snapshot is not None and boundary['machine']==latest_machine:
+  observation['snapshot']={'snapshot':str(latest_snapshot),'machine':latest_machine,
+   'scope':'reuse the already captured unchanged paused boundary; no additional snapshot'}
+ elif snapshots<2:
+  snapshots+=1
+  try:
+   observation['snapshot']=request(machine.directory,{'action':'snapshot','path':str(work_dir/'failed-boundary')},timeout=130)
+  except BaseException as error:
+   observation['snapshot_error']=repr(error)
+ else:
+  observation['snapshot_error']='two-snapshot bound reached; inspect retained without another snapshot'
+ return observation,snapshots
+
 def main():
  p=argparse.ArgumentParser(description=__doc__,allow_abbrev=False)
  for name in ('native-bundle','notebook-build','source-root','package','author-package','writer-result','medium','work-dir'):
@@ -48,6 +67,7 @@ def main():
  if a.work_dir.exists() or not a.work_dir.is_relative_to(ROOT/'build/courses'):p.error('unused build/courses directory required')
  if not a.medium.is_file() or a.medium.stat().st_size!=268435456:p.error('actual canonical backing missing/wrong size')
  a.work_dir.mkdir();a.started=time.monotonic();a.initializer_build=a.notebook_build;a.host_seconds=1800;owned=[]
+ snapshots=0;latest_snapshot=None;latest_machine=None
  report={'status':'FAIL','scope':'actual independent RTL cold decode/selection from acknowledged bytes; new writer, notebook Ready/UI and evidence binding NOT_RUN',
  'bounds':{'whole_host_seconds':1800,'cold_target_cycles':60000000,'per_load_command_cycles':100000000,'maximum_declared_cycles':260000000},'commands':[]}
  try:
@@ -59,7 +79,7 @@ def main():
   report['actual_host_source']={'scope':'full conservative project host-code corpus; imported paths held stable throughout actual actor',
    'count':len(before),'root':str(host_archive),'inventory_sha256':sha256(host_archive/'source-inputs.json'),
    'unchanged_after_actor':False}
-  observer_names=('check_course_cold.py','check_course_guest.py','lemmasim','lemmasim_session.py',
+  observer_names=('check_course_cold.py','check_course_guest.py','course_snapshot_bytes.py','lemmasim','lemmasim_session.py',
    'lemmasim_course.py','course_deployment.py','silicon_guest.py','silicon_guest_bundle.py','silicon_profile.py','core0_common.py')
   report['selected_observer_inputs']={name:sha256(ROOT/'scripts'/name) for name in observer_names}
   archive=a.work_dir/'selected-observer-source';archive.mkdir()
@@ -88,7 +108,21 @@ def main():
    selected=next((row for row in observed if row[0]==0x4b3),None)
    if outcome[2]!=0 or present!=(0x4b2,package.stat().st_size,crc,1,edition) or selected!=(0x4b3,2,1,crc,edition):
     raise RuntimeError('cold guest package length/CRC/identity/edition/reference differs')
-   loads.append({'admission_cycle':admission,'completion_cycle':machine.cycles,'command':command,'outcome':outcome,'present':present,'selected':selected})
+   # Observe only after the actual cold guest completed Load. These snapshots
+   # never supply the reader's state or initiate a storage flush/completion.
+   # The exact native2 decoder separately validates complete source/capsule
+   # integrity and every owned Sv39 mapping before comparing all raw bytes.
+   boundary=request(machine.directory,{'action':'inspect'},timeout=130)
+   installer=next(row[1] for row in rows(machine.directory) if row[0]==0x4b5)
+   snapshot=a.work_dir/f'loaded-edition{edition}'
+   snapshots+=1
+   made=request(machine.directory,{'action':'snapshot','path':str(snapshot)},timeout=130)
+   latest_snapshot=snapshot;latest_machine=made['machine']
+   loaded=observe_loaded_bytes(snapshot,boundary['identity'],boundary['machine']['snapshot_identity'],
+    a.source_root,installer,package)
+   if loaded['cycle']!=machine.cycles:raise RuntimeError('loaded-byte observation changed virtual boundary')
+   if time.monotonic()-a.started>1800:raise RuntimeError('original whole cold1800s ceiling including byte observation')
+   loads.append({'admission_cycle':admission,'completion_cycle':machine.cycles,'command':command,'outcome':outcome,'present':present,'selected':selected,'loaded_bytes':loaded})
   report.update(status='PASS_ACTUAL_COLD_COURSE_SELECTION_AFTER_GUEST_MOUNT_WAIT',cold_loads=loads,
    cold_machine_identity=json.loads((machine.directory/'session.json').read_text())['identity'],
    final_inspect=request(machine.directory,{'action':'inspect'},timeout=130))
@@ -97,8 +131,7 @@ def main():
   for machine in owned:
    if machine.process.poll() is None:
     try:
-     report['failed_boundary']={'inspect':request(machine.directory,{'action':'inspect'},timeout=130),
-      'snapshot':request(machine.directory,{'action':'snapshot','path':str(a.work_dir/'failed-boundary')},timeout=130)}
+     report['failed_boundary'],snapshots=capture_failure(machine,a.work_dir,snapshots,latest_snapshot,latest_machine)
     except BaseException as observer:report['observation_error']=repr(observer)
   raise
  finally:
@@ -110,6 +143,7 @@ def main():
     report['status']='FAIL'
     report['host_source_error']='actual host-code corpus changed during actor'
   report['wall_seconds']=time.monotonic()-a.started
+  report['snapshot_count']=snapshots
   report['child_peak_rss_kib']=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
   write_json(a.work_dir/'result.json',report)
  if report['status']=='FAIL':raise RuntimeError(report.get('host_source_error','actual cold course scenario failed'))

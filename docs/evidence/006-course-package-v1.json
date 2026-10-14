@@ -37,6 +37,49 @@
     "new Saved acknowledgement",
     "G2/G4-G7 completion"
   ],
+  "cold_loaded_byte_observer": {
+    "actual_new_cold": "NOT_RUN; original60Mcold stillFAIL; these snapshots never provide recovery state",
+    "actual_unpublished_bytes": 4040,
+    "actual_unpublished_sha256": "bf45005795ffa8764d42f0a53d8ebc6e2068469ef97f4b0b6310e3d22063185c",
+    "expected_publisher_mismatch": "observer every loaded package byte equals publisher artifact",
+    "focused_host_tests": {
+      "course_command": 6,
+      "snapshot_guards": 5,
+      "status": "PASS"
+    },
+    "metadata": {
+      "scaffold": "PASS",
+      "scaffold_host_tests": 18,
+      "scaffold_host_wall_seconds": 3.73
+    },
+    "native_scope": "exact322827 canonical native2 only; full source/layout identity, header/fileSHA256 and complete wrapper/modelCRC64; originalfailure remainsFAIL",
+    "properties": [
+      "all actual owned bytes compared to immutable publisher artifact after guest Loadsuccess",
+      "runtime8192 pool and protected descriptor header, owner, generation, purpose, pin and directory/table disjointness",
+      "complete live-row uniqueness and actual Sv39 User RW/NX/A/D tracked PTE/physical ownership",
+      "source/capsule mutation or unknown native/layout fails closed",
+      "atmosttwo observational snapshot creationattempts, including ambiguous failed replies; exact unchanged failure boundary reuses alreadycaptured output",
+      "unchanged60MReady/100MperLoad/1800host bounds, including completebyteobservation"
+    ],
+    "receipt": {
+      "path": "build/courses/task006-course-byte-observer-a1/result.json",
+      "sha256": "c33bcaca80b26b2154d0846077f665a27d687ec77aea1162ac1b798e794bd88b",
+      "status": "PASS_RETAINED_FAILED_SNAPSHOT_OBSERVER_ONLY"
+    },
+    "scope": "read-only originalfailed60M snapshot integrity+owned byte observer; actualcoldReady/Load remainsFAIL and no CPU/run/restore/journal parse",
+    "snapshot": {
+      "cycle": 60000000,
+      "machine_sha256": "dcfea88e4e9f13984f85caa718ed2514dd04ffcb10618974f829b349c2143cf3",
+      "model_crc64": 6779592362643177344,
+      "ram_crc32_observed": 2692456753,
+      "snapshot": "build/courses/task006-course-published-cold-a1/failed-boundary",
+      "source_inventory_sha256": "0a28f62d22e884ec9ac79eeb2b708c301b69c78d6f816004ec0653c4a95121c4",
+      "wrapper_crc64": 7331085411733775087
+    },
+    "source_sha256": "91188de33aee7eb32363acf9b0823387c78ccbf30706f6e9782f8c7643cb997b",
+    "status": "PASS_RETAINED_FAILURE_OBSERVER_AND_HOST_GUARDS; NEW_ACTUAL_COLD_LOAD_NOT_RUN",
+    "wall_seconds": 16.93102444591932
+  },
   "command": [
     "nix",
     "develop",
