@@ -241,4 +241,30 @@ nix-shell tooling/silicon/eda.nix --run 'python3 scripts/check_openroad_journal.
 nix-shell tooling/silicon/eda.nix --run 'python3 scripts/silicon_synth.py --top lemma_pen --source sim/rtl/lemma_pen.sv --map --layout --output-dir build/silicon/physical/pen-006-new --deadline 900'
 ```
 
+
+The later first-head handoff and isolated-head-register prototypes are both
+**unadopted**. The focused corpus now checks all first-edge head fields, the
+immediate next-edge ACK, and watchdog expiry taking priority over that ACK.
+The maintained pen also passes the strengthened corpus. The stale-ACK mutant
+fails at edge10; dropping the watchdog guard fails at edge24389.
+
+The handoff prototype still has a raw sample_y41→head_entry31 critical path,
+with100MHz global setup WNS−3.519758ns. Separating retained-head updates removes
+raw sample ancestors from all181 mapped D cones (17→14 maximum cell stages),
+but its actual global WNS is still−2.896790ns, worse than the maintained
+−1.732748ns. Its critical path is first_head_pending→head_entry123.
+Neither static cone counts nor the0.622968ns prototype-to-prototype improvement
+establish timing closure. Hold WNS is+0.032611ns and+0.034214ns respectively.
+
+Both runs stop during detailed-router region-query initialization at the
+predeclared4GiB aggregate RSS ceiling (498.657s/4,329,902,080bytes and
+489.839s/4,305,465,344bytes). All owned processes are reaped. These are retained
+resource-limit **FAILs**, not900s deadline timeouts. No router/process DRC,
+LVS, routed extraction or post-route timing is reached; unsupported enclosure/
+CUTCLASS coverage remains separate and is not established as the limit cause.
+The second run reuses its exact validated mapping rather than rebuilding it.
+[The receipt](006-pen-head-register.json) preserves source, patch, tools,
+focused positive/negative results and resumable global-route artifacts. The
+maintained full256 private-ingress source2bab7e33 remains unchanged.
+
 -->

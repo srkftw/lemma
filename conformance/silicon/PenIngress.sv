@@ -60,6 +60,28 @@ module PenIngress;
   logic [63:0] seed=64'h11223344ffffffe0;
   initial begin
     reset_machine();
+    // Observe every first-head field within the first accepted edge, then
+    // ACK at the immediately following edge. A delayed private head must
+    // supply the public ACK comparator as well as the read multiplexer.
+    @(negedge clk);sample_valid=1;fields(1);tick();
+    if(!sample_accepted)$fatal(1,"first edge sample not accepted");
+    valid=1;write=0;
+    for(int field=0;field<8;field++)begin
+      addr=12'(256+field*8);#0.1;
+      case(field)
+        0: if(rdata!==64'd1)$fatal(1,"first edge sequence");
+        1: if(rdata!==64'h1234000000000001)$fatal(1,"first edge time");
+        2: if(rdata!==64'd127)$fatal(1,"first edge x");
+        3: if(rdata!==64'd65504)$fatal(1,"first edge y");
+        4: if(rdata!==64'd53)$fatal(1,"first edge pressure");
+        5: if(rdata!==64'd2)$fatal(1,"first edge flags");
+        6,7: if(rdata!==64'd1)$fatal(1,"first edge tool/buttons");
+      endcase
+    end
+    @(negedge clk);sample_valid=0;valid=1;write=1;addr=88;wdata=1;
+    tick();clear_bus();expect_word(32,0);expect_word(256,0);expect_word(24,0);
+    $display("PEN-INGRESS first-edge all-fields immediate-next-edge ACK PASS");
+    reset_machine();
     // An explicit white-box seed exercises upper sequence bits and the 32-bit
     // carry. All observations afterward use external MMIO and literal values.
     @(negedge clk);pen.next_sequence=seed;prior.next_sequence=seed;
@@ -110,6 +132,17 @@ module PenIngress;
       expect_word(32,0);expect_word(256,0);
       @(negedge clk);sample_valid=1;fields(3);tick();clear_bus();expect_head(3,1);
     end
+    // Watchdog expiry wins over an otherwise correct immediate head ACK.
+    // The retained public head must survive until explicit loss recovery.
+    reset_machine();
+    @(negedge clk);sample_valid=1;fields(0);st=100;sf=1;tick();
+    @(negedge clk);sample_valid=0;valid=1;write=1;addr=88;wdata=1;
+    now_ticks=10000100;tick();clear_bus();
+    expect_word(32,1);expect_word(256,1);expect_word(264,100);
+    expect_word(272,0);expect_word(280,65535);expect_word(296,1);
+    expect_word(16,7);expect_word(40,2);
+    put(96,2);expect_word(32,0);expect_word(256,0);
+    $display("PEN-INGRESS watchdog wins immediate ACK and recovery clears head PASS");
     // Idle payload changes are deliberately aggressive: only the strobe owns
     // storage. Then exercise arbitrary public collisions with both machines.
     for(int i=0;i<2048;i++)begin

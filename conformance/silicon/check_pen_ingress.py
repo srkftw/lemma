@@ -24,23 +24,30 @@ def main():
     p.add_argument('--output-dir', type=Path, required=True)
     p.add_argument('--timeout', type=int, default=600)
     p.add_argument('--jobs', type=int, default=2)
+    p.add_argument('--candidate-source', type=Path,
+                   default=ROOT/'sim/rtl/lemma_pen.sv')
+    p.add_argument('--reference', choices=('pre-ingress','retained-ingress'),
+                   default='pre-ingress')
     a = p.parse_args()
     if not 1 <= a.timeout <= 600 or not 1 <= a.jobs <= 4:
         p.error('Declared bounds must be timeout1..600 and jobs1..4')
     out = a.output_dir.resolve()
     out.mkdir(parents=True)
-    paths = ('sim/rtl/lemma_pen.sv', 'conformance/silicon/PenIngress.sv',
+    paths = (str(a.candidate_source.resolve()), 'conformance/silicon/PenIngress.sv',
              'conformance/silicon/PenBanks.sv', 'conformance/silicon/check_pen_ingress.py',
              'scripts/check_silicon.py', 'tooling/silicon/sim.nix', 'flake.lock')
     before = {name: sha(ROOT / name) for name in paths}
+    reference_commit, reference_sha = (BASE_COMMIT, BASE_SHA) if a.reference=='pre-ingress' else (
+        'a69aadab6585b64b096185a826108a2beb4252f3',
+        '2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3')
     r = {'status': 'FAIL', 'scope': 'bounded every-edge external-interface miter plus independent literal full-depth pen corpus; not proof, guest execution or physical closure',
-         'source_inputs': before, 'reference_commit': BASE_COMMIT, 'reference_sha256': BASE_SHA,
+         'source_inputs': before, 'reference_commit': reference_commit, 'reference_sha256': reference_sha,
          'plan': {'compile_seconds_per_command': a.timeout, 'simulation_seconds_per_command': 30, 'jobs': a.jobs},
          'commands': []}
     try:
-        raw = subprocess.check_output(['git', 'show', BASE_COMMIT + ':sim/rtl/lemma_pen.sv'], cwd=ROOT)
+        raw = subprocess.check_output(['git', 'show', reference_commit + ':sim/rtl/lemma_pen.sv'], cwd=ROOT)
         original = out / 'original.sv'; original.write_bytes(raw)
-        if sha(original) != BASE_SHA or raw.count(b'module lemma_pen #(') != 1:
+        if sha(original) != reference_sha or raw.count(b'module lemma_pen #(') != 1:
             raise RuntimeError('Unknown prior pen source identity')
         reference = out / 'reference.sv'
         reference.write_bytes(raw.replace(b'module lemma_pen #(', b'module lemma_pen_reference #('))
@@ -50,6 +57,8 @@ def main():
         for top, sources, markers in (
             ('PenIngress', [ROOT / paths[0], reference, ROOT / paths[1]],
              ['PEN-INGRESS literal full256 fields high64 sequence/time consecutive/wrap PASS',
+              'PEN-INGRESS first-edge all-fields immediate-next-edge ACK PASS',
+              'PEN-INGRESS watchdog wins immediate ACK and recovery clears head PASS',
               'PEN-INGRESS every-edge old/new invalid full ACK reset collision PASS edges']),
             ('PenBanks', [ROOT / paths[0], ROOT / paths[2]],
              ['PEN-BANKS full-capacity all-fields two-wrap and ingress bypass PASS',
