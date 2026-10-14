@@ -5698,14 +5698,32 @@ def audit_user_image(*, root: Path, output_dir: Path, catalog: dict, image_key: 
 
 
 def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, images: list[dict],
-                            optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development") -> None:
+                            optimization: str, roles: dict, standalone: bool, configuration: str = "tasks-development",
+                            compiler_source_workspace: dict | None = None, source_root: Path | None = None) -> None:
     rows = _array(rows, "multi-image construction commands")
     if not rows or any(not isinstance(row, dict) or type(row.get("returncode")) is not int or row["returncode"] != 0
                        or not isinstance(row.get("argv"), list) or not row["argv"]
                        or any(not isinstance(arg, str) for arg in row["argv"]) or not isinstance(row.get("cwd"), str)
                        for row in rows):
         raise Core0Error("multi-image command corpus is empty, malformed or failed")
-    base = str(output_dir.relative_to(root))
+    construction_root, pin_origin = root, root
+    realization_expression, realization_cwds = LEAN_SOURCE_EXPRESSION, [".", "."]
+    if compiler_source_workspace is not None:
+        # This alternate CWD relation is admitted only with the same complete
+        # original inventory and bounded realization metadata checked by audit.
+        # It does not accept an arbitrary caller-provided expression or base.
+        if standalone or source_root is None:
+            raise Core0Error("archived multi-image commands require their complete original source root")
+        from kernel_source_workspace import PATH_SOURCE_EXPRESSION, validate_record
+        validate_record(compiler_source_workspace, source_origin=source_root,
+                        output_dir=output_dir, source_inputs=source_inputs)
+        if root.resolve() != Path(compiler_source_workspace["parent_git_root"]).resolve():
+            raise Core0Error("archived construction command parent differs")
+        construction_root = Path(compiler_source_workspace["source_workspace"]).resolve()
+        pin_origin = source_root
+        realization_expression = PATH_SOURCE_EXPRESSION
+        realization_cwds = [compiler_source_workspace["realization_cwd"], "."]
+    base = str(output_dir.relative_to(construction_root))
     def compile_unit(directory):
         return [("opt", ["-S", f"-passes={OPT_PASSES[optimization]}", "program.ll", "-o", "program.opt.ll"], base + "/" + directory),
                 ("llc", [*LLC_ARGUMENTS, "-stack-size-section", f"-{optimization}", "program.opt.ll", "-o", "program.o"], base + "/" + directory)]
@@ -5731,7 +5749,7 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
               if tool_name(row["argv"][0]) in {"opt", "llc", "clang", "ld.lld", "llvm-objcopy"} and row["argv"][1:] != ["--version"]]
     if actual != expected:
         raise Core0Error("multi-image actual tool/arguments/working-directory closure differs")
-    pin = _object(load_json(root / "tooling/toolchain-lock.json"), "toolchain lock")
+    pin = _object(load_json(pin_origin / "tooling/toolchain-lock.json"), "toolchain lock")
     stores = {name: pin["tools"]["llvm"]["store_path"] for name in ("opt", "llc", "llvm-objcopy")}
     stores.update({"clang": pin["tools"]["llvm"]["outputs"]["clang_unwrapped"]["store_path"], "ld.lld": pin["tools"]["lld"]["store_path"],
                    "lean": pin["tools"]["lean"]["store_path"], "lake": pin["tools"]["lean"]["store_path"]})
@@ -5740,8 +5758,10 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
         if name in stores and not row["argv"][0].startswith(stores[name] + "/"):
             raise Core0Error("multi-image compiler executable differs from its pinned store")
     source_path = pin["tools"]["lean"]["source_path"]
-    nix = [row["argv"][1:] for row in rows if Path(row["argv"][0]).name == "nix"]
-    if nix != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION], ["path-info", "--json", source_path]]:
+    nix_rows = [row for row in rows if Path(row["argv"][0]).name == "nix"]
+    nix = [row["argv"][1:] for row in nix_rows]
+    if ([row["cwd"] for row in nix_rows] != realization_cwds or
+            nix != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", realization_expression], ["path-info", "--json", source_path]]):
         raise Core0Error("multi-image immutable Lean source realization commands differ")
     consumers = {"CatalogExport.lean": "import Lemma.Compiler.KernelExport\n\n#lemma_export_user_catalog\n"}
     for image in images:
@@ -5761,6 +5781,17 @@ def validate_multi_commands(rows: object, *, root: Path, output_dir: Path, image
     expected_exports = [base + "/CatalogExport.lean", *(base + "/" + role + "/Export.lean" for role in roles),
                         *(base + "/" + image["directory"] + "/Export.lean" for image in images),
                         base + ("/UserFilesExport.lean" if standalone else "/BootExport.lean")]
+    if compiler_source_workspace is not None:
+        lake_rows = [row for row in rows if Path(row["argv"][0]).name == "lake"
+                     and row["argv"][1:] != ["--version"]]
+        build_modules = [*configuration_modules(configuration).values(),
+                         *(image["module"] for image in images), "Lemma.Compiler.KernelExport"]
+        expected_lake = [["build", "Lemma.Compiler.KernelExport"],
+                         ["env", "lean", expected_exports[0]], ["build", *build_modules],
+                         *(["env", "lean", path] for path in expected_exports[1:])]
+        if ([row["argv"][1:] for row in lake_rows] != expected_lake or
+                any(row["cwd"] != "." for row in lake_rows)):
+            raise Core0Error("archived complete Lake build/elaboration closure differs")
     if [row["argv"][3:] for row in exports] != [[path] for path in expected_exports] or any(row["cwd"] != "." for row in exports):
         raise Core0Error("genuine Lean elaboration invocation/working-directory evidence differs")
 
@@ -5980,10 +6011,23 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
                          and row["argv"] and Path(row["argv"][0]).name == "lake"]
         if not lake_commands or any(not path.startswith(lean_pin["store_path"] + "/") for path in lake_commands):
             raise Core0Error("genuine Lean elaboration must use the immutable pinned Lake executable")
-        nix_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
-                        and row["argv"] and Path(row["argv"][0]).name == "nix"]
-        if nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION],
-                            ["path-info", "--json", lean_pin["source_path"]]]:
+        nix_rows = [row for row in command_rows if isinstance(row.get("argv"), list)
+                    and row["argv"] and Path(row["argv"][0]).name == "nix"]
+        realization_expression = LEAN_SOURCE_EXPRESSION
+        workspace_report = None
+        workspace = provenance.get('compiler_source_workspace')
+        if workspace is not None:
+            if source_root is None:raise Core0Error('archived compiler workspace requires its explicit original source root')
+            from kernel_source_workspace import PATH_SOURCE_EXPRESSION, validate_record
+            workspace_report = validate_record(workspace,source_origin=source_origin,output_dir=output_dir,source_inputs=source_inputs)
+            if workspace['parent_git_head'] != provenance.get('source_commit'):
+                raise Core0Error('archive compiler Git observation was retagged')
+            realization_expression = PATH_SOURCE_EXPRESSION
+        expected_nix_cwds = [workspace['realization_cwd'] if workspace is not None else '.', '.']
+        nix_commands = [row['argv'][1:] for row in nix_rows]
+        if ([row.get('cwd') for row in nix_rows] != expected_nix_cwds or
+                nix_commands != [["build", "--no-link", "--print-out-paths", "--impure", "--expr", realization_expression],
+                            ["path-info", "--json", lean_pin["source_path"]]]):
             raise Core0Error("Lean source realization command evidence is missing or differs")
         compile_commands = [row["argv"][1:] for row in command_rows if isinstance(row.get("argv"), list)
                             and row["argv"] and Path(row["argv"][0]).name in {"llc", "opt", "ld.lld", "clang", "clang-20", "llvm-objcopy"}
@@ -6016,7 +6060,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
                               [*STARTUP_ARGUMENTS, "startup.S", "-o", "startup.o"],
                               ["-m", "elf64lriscv", "--no-relax", "-T", "link.ld", "-Map=image.map", *BOOT_OBJECTS, "-o", "image.elf"]]
         if multi:
-            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration)
+            validate_multi_commands(command_rows, root=root, output_dir=output_dir, images=images, optimization=optimization, roles=roles, standalone=False, configuration=configuration, compiler_source_workspace=workspace, source_root=source_origin if workspace is not None else None)
         if compile_commands != expected_commands:
             raise Core0Error("actual compiler/link command closure differs")
         for map_file, allowed in ((("image.map", BOOT_OBJECTS),) if multi else (("image.map", BOOT_OBJECTS), ("user/image.map", USER_OBJECTS))):
@@ -6241,6 +6285,7 @@ def audit(*, root: Path, output_dir: Path, timeout_seconds: float = 60, source_r
                   "stage": stage, "optimization": optimization, "source_commit": provenance["source_commit"],
                   "dirty_paths": provenance["dirty_paths"], "image_sha256": sha256(output_dir / "image.elf"),
                   "lean_source_realization": realization,
+                  **({"compiler_source_workspace":workspace_report} if workspace_report is not None else {}),
                   "boot_package_sha256": sha256(output_dir / "audit-package.bin"),
                   "unit_ir": ir, "readonly_optimizer_object_sections": readonly_objects, "backend_readonly_objects": backend_objects, "elf": inspections, "commands": logs,
                   "stack_bounds": {"capacities": capacities, "roles": stacks, "dynamic_stack": False},
@@ -6289,16 +6334,19 @@ def main() -> int:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("output_dir", type=Path)
     parser.add_argument("--timeout", type=float, default=60)
+    parser.add_argument("--source-root",type=Path,help="Complete immutable original source archive for a retained boot build")
     ns = parser.parse_args()
     root = repo_root()
     try:
         directory = (root / ns.output_dir).resolve()
         if (directory / "user-build.json").exists():
+            if ns.source_root is not None:raise Core0Error('retained boot source archive is not an independent-user audit')
             if (directory / "build.json").exists():
                 raise Core0Error("ambiguous boot/independent-user build category")
             record = audit_standalone_user(root=root, output_dir=directory, timeout_seconds=ns.timeout)
         else:
-            record = audit(root=root, output_dir=directory, timeout_seconds=ns.timeout)
+            record = audit(root=root, output_dir=directory, timeout_seconds=ns.timeout,
+                           source_root=(root/ns.source_root).resolve() if ns.source_root is not None else None)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL AUDIT FAIL: {error}", file=sys.stderr)
         return 1

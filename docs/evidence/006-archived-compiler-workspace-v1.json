@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "contract_version": "lemma-archived-compiler-workspace-v1",
+  "status": "ARTIFACT_AND_NATIVE_PACK_PASS_COLD_PRECPU_HOST_FAILURE_RETAINED",
+  "scope": "genuine missing whole notebook compilation from original archive plus unchanged-image corrected full audit; course guest cold/UI NOT_RUN after pre-CPU launch failure",
+  "original_archive": {
+    "path": "build/courses/task006-course-await-whole-a3/consumed-source-root",
+    "inputs": 372,
+    "inventory_sha256": "b26c0ccab6f2b15b08a4ca10a0894babd2c2c63ccd59feaa17c9b9614a5c7cff",
+    "original_initializer_commit": "859050754bcb1c3c8fa322d1fbf3b6570368765d"
+  },
+  "missing_notebook": {
+    "path": "build/kernel/task006-course-await-workspace-a2/target/build/kernel/notebook",
+    "image_sha256": "388633f23da36670542c75d0fced38e9d6a9d7a91e593c8dec3d3cd175b1a4e0",
+    "image_bytes": 647504,
+    "provenance_sha256": "420102ad06009ac7787dcefdf7aed080f69952faafbb7256c549f6542e6131ac",
+    "actual_parent_git_head": "a55d2ff6e4de8be368eeeebff60528c0d5dfa8d0",
+    "build_seconds": 209.58885526796803,
+    "original_failed_stage_seconds": 281.88618294801563,
+    "original_failure": "Core0Error('multi-image actual tool/arguments/working-directory closure differs')",
+    "original_result": {
+      "path": "build/courses/task006-course-await-missing-notebook-a2/result.json",
+      "sha256": "bea9c04e4f80e080b839dd5f0546f189cd69ddeb320913d82fa49e79cc5d9eaa"
+    },
+    "host_inputs": {
+      "count": 71,
+      "inventory_sha256": "e91c1d148738d6078383fb75b37121772ee60fd60e41c53cf5084229c450e290",
+      "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-missing-notebook-a2/host-source-root",
+      "scope": "actualcurrentconservative non-Lean input corpus; distinct from original372 target/compiler copy"
+    },
+    "source_and_host_unchanged": true
+  },
+  "corrected_observation": {
+    "full_audit_result": "build/courses/task006-course-archive-full-audit-a1/result.json",
+    "full_audit_result_sha256": "ccc0dad8dddd16789ca342078c836428a0f34c13053c4e8ee1a300b6be626288",
+    "status": "PASS_CORRECTED_OBSERVER_FULL_ORDINARY_ARCHIVED_NOTEBOOK",
+    "seconds": 101.41252293204889,
+    "audit_sha256": "99df72b316e3c238a173d4e93d2935e9b2fccf877bc9311e328d55a7b847be11",
+    "observer_sha256": "80eebc15bfa59f12c5fdd79063826202fd60b37ffb0091bd045583aae20babf5",
+    "command_mutants": 96,
+    "legacy_actual_initializer_command_relation": "PASS",
+    "host_guard_tests": 8,
+    "legacy_multi_image_host_tests": 18,
+    "target_recompiled": false
+  },
+  "reused_initializer": {
+    "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-await-initializer-a3",
+    "image_sha256": "3568e230e5e1ed2a7ee9415c59501c5a34b32a15caba5da52c08a5d1466831ae",
+    "original_source_commit": "859050754bcb1c3c8fa322d1fbf3b6570368765d",
+    "qualified_audit": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-jump-qualified-a1/corrected-original-audit.json",
+    "qualified_audit_sha256": "9b7322f4e9312b0a4ae376afe193d714c6779ca228f8375895656c9a59fd4a49"
+  },
+  "native_pack": {
+    "manifest": "build/native/task006-course-await-a3/bundle.json",
+    "manifest_sha256": "edd84b717dcd1be41a63797231d6799ef7891560be125ce4228be42967e56bd9",
+    "status": "PASS",
+    "schema": "lemmasim-native-bundle/3",
+    "rtl_runtime_sha256": "32282772a5cc60a5b52abacd05ae3bf3a952167025a5bb6a787a94e852002e77",
+    "profile": "lemma-silicon-dev/0.3.0",
+    "guest_source_origin": "original372 archive, roles retain separate actual producer Git observations"
+  },
+  "cold_pre_cpu_failure": {
+    "result": "build/courses/task006-course-await-cold-a3/result.json",
+    "sha256": "b6e5cf550d547c5f9b629163dada4826495e24e1468fcd006daf2cb34920fa41",
+    "status": "FAIL",
+    "seconds": 1.7425415629986674,
+    "reason": "pinned host Lake --version SIGABRT under prospective 2GiB address-space cap",
+    "session_published": false,
+    "run_commands": 0,
+    "inputs": 0,
+    "host_inputs": {
+      "count": 301,
+      "inventory_sha256": "0b72c6fc11ef4dacf62ba3e6452dc801c06214fcfc01e12f7ec8035f3f406a85",
+      "root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-await-cold-a3/host-source-root",
+      "scope": "full conservative project host-code corpus; imported paths held stable throughout actual actor",
+      "unchanged_after_actor": true
+    },
+    "owned_processes_reaped": true,
+    "original_bounds": {
+      "cold_target_cycles": 60000000,
+      "maximum_declared_cycles": 260000000,
+      "per_load_command_cycles": 100000000,
+      "whole_host_seconds": 1800
+    }
+  },
+  "host_resource_successor_qualification": {
+    "result": "build/courses/task006-course-cold-host-tools-a1/result.json",
+    "sha256": "d05d2dad80cf376d951043dc4d457e9d3a3df79ef6989620774f1e633525fea7",
+    "status": "PASS_HOST_PINNED_TOOL_VERSIONS_BOUNDED4G_TWO_THREADS",
+    "seconds": 0.2144543589092791,
+    "child_peak_rss_kib": 123364,
+    "bounds": {
+      "host_seconds": 60,
+      "address_space_limit_bytes": 4294967296,
+      "lean_num_threads": 2
+    },
+    "all_eight_pinned_versions_exact": true,
+    "failed_2g_trials_preserved": [
+      "build/courses/task006-course-cold-host-thread-a1/result.json",
+      "build/courses/task006-course-cold-host-thread-a2/result.json"
+    ]
+  },
+  "not_qualified": [
+    "actual mounted Ready or cold Load in new Await machine",
+    "Notebook installed-package selection/rendering/checking/save/reopen",
+    "production boot or update",
+    "new managed language/runtime or proof-kernel completion"
+  ]
+}

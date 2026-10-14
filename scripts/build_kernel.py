@@ -321,7 +321,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
+    for helper in ("kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
@@ -521,7 +521,7 @@ def validate_service_user_quota(layout: dict, image: dict, text_bytes: int) -> d
             "text_pages": pages, "reserved_arena_pages": reserve, "owner_quota": 32}
 
 
-def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
+def realize_toolchain(root: Path, tools: dict, invoke, *, realization_dir: Path | None = None) -> tuple[dict, dict]:
     versions = {}
     expected_versions = {"lean": "4.34.1", "lake": "5.0.0-src", "opt": "20.1.8", "llc": "20.1.8",
                          "clang": "20.1.8", "ld.lld": "20.1.8", "qemu-system-riscv64": "11.1.1", "dtc": "1.8.1"}
@@ -533,7 +533,12 @@ def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
     pin = load_json(root / "tooling/toolchain-lock.json")
     if not isinstance(pin, dict) or pin.get("status") != "pinned":
         raise Core0Error("toolchain lock is not pinned")
-    source_output = invoke(("nix", "build", "--no-link", "--print-out-paths", "--impure", "--expr", LEAN_SOURCE_EXPRESSION), root).decode(errors="strict")
+    if realization_dir is None:
+        expression, realization_cwd = LEAN_SOURCE_EXPRESSION, root
+    else:
+        from kernel_source_workspace import PATH_SOURCE_EXPRESSION
+        expression, realization_cwd = PATH_SOURCE_EXPRESSION, realization_dir
+    source_output = invoke(("nix", "build", "--no-link", "--print-out-paths", "--impure", "--expr", expression), realization_cwd).decode(errors="strict")
     lean_pin = pin["tools"]["lean"]
     source_info = json.loads(invoke(("nix", "path-info", "--json", lean_pin["source_path"]), root))
     source_realization = validate_lean_source_realization(lean_pin, source_output, source_info)
@@ -552,7 +557,7 @@ def realize_toolchain(root: Path, tools: dict, invoke) -> tuple[dict, dict]:
 
 
 def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstrap-m", configuration: str = "normal",
-          clean: bool = False, timeout_seconds: float = 300) -> dict[str, object]:
+          clean: bool = False, timeout_seconds: float = 300, archive_source_root: Path | None = None) -> dict[str, object]:
     try:
         output_relative = output_dir.resolve().relative_to((root / "build/kernel").resolve())
     except ValueError as error:
@@ -580,7 +585,13 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                                             selected_executable_module="" if configuration in SERVICE_CONFIGURATIONS else None)
                         for role, module in modules.items()}
         source_before = source_inputs(root)
-        versions, source_realization = realize_toolchain(root, tools, invoke)
+        workspace, realization_dir, orchestrator_before = None, None, None
+        if archive_source_root is not None:
+            from kernel_source_workspace import prepare, host_inputs
+            workspace, realization_dir = prepare(root, output_dir, archive_source_root, repo_root(), source_inputs)
+            orchestrator_before = host_inputs(repo_root(), source_inputs)
+        versions, source_realization = (realize_toolchain(root, tools, invoke) if workspace is None else
+                                       realize_toolchain(root, tools, invoke, realization_dir=realization_dir))
         images = []
         if configuration in MULTI_CONFIGURATIONS:
             invoke(("lake", "build", "Lemma.Compiler.KernelExport"), root)
@@ -645,6 +656,14 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
             raise Core0Error("compiler/production inputs changed during build")
         commit = invoke(("git", "rev-parse", "HEAD"), root).decode().strip()
         dirty = invoke(("git", "status", "--porcelain=v1", "--untracked-files=all"), root).decode().splitlines()
+        if workspace is not None:
+            from kernel_source_workspace import host_inputs, validate_flake_input
+            if host_inputs(repo_root(), source_inputs) != orchestrator_before:
+                raise Core0Error("archive compiler host orchestrator changed during build")
+            validate_flake_input(realization_dir, workspace['flake_input_sha256'])
+            workspace.update(parent_git_root=invoke(("git", "rev-parse", "--show-toplevel"), root).decode().strip(),
+                             parent_git_prefix=invoke(("git", "rev-parse", "--show-prefix"), root).decode().strip(),
+                             parent_git_head=commit, host_orchestrator_inputs=orchestrator_before)
         artifacts = {str(path.relative_to(output_dir)): sha256(path) for path in sorted(output_dir.rglob("*"))
                      if path.is_file() and path.name not in {"commands.json", "build.json", "provenance.json"}}
         linked_inputs = ({"boot": list(BOOT_OBJECTS), "users": {image["key"]: [f'{image["directory"]}/startup.o', f'{image["directory"]}/program.o'] for image in images}}
@@ -661,6 +680,7 @@ def build(*, root: Path, output_dir: Path, opt_level: str, stage: str = "bootstr
                       **image_startup_fields, **managed_fields,
                       "lean_source_realization": source_realization,
                       "stage": stage, "optimization": opt_level, "source_commit": commit, "dirty_paths": dirty,
+                      **({"compiler_source_workspace": workspace} if workspace is not None else {}),
                       "source_inputs": source_before, "target_module_closures": dependencies, "tools": versions,
                       "commands": commands, "generated_by_lean": generated_files,
                       "linked_inputs": linked_inputs, "artifacts": artifacts, "unit_contracts": unit_contracts}
@@ -685,13 +705,22 @@ def main() -> int:
     parser.add_argument("--stage", choices=("bootstrap-m", "supervisor"), default="bootstrap-m")
     parser.add_argument("--configuration", choices=CONFIGURATIONS, default="normal")
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--source-archive", type=Path, help="Complete original source-input archive; requires an unused --source-workspace")
+    parser.add_argument("--source-workspace", type=Path, help="Unused private compiler copy under build/kernel; --output-dir is relative to this copy")
     parser.add_argument("--clean", action="store_true")
     parser.add_argument("--timeout", type=float, default=300)
     ns = parser.parse_args()
     root = repo_root()
-    output = (root / ns.output_dir).resolve()
+    if (ns.source_archive is None) != (ns.source_workspace is None):
+        parser.error("--source-archive and --source-workspace must be provided together")
     try:
-        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout)
+        source_archive = None
+        if ns.source_archive is not None:
+            from kernel_source_workspace import copy_inputs
+            source_archive = (root / ns.source_archive).resolve()
+            root = copy_inputs(source_archive, (root / ns.source_workspace).resolve(), root, source_inputs)
+        output = (root / ns.output_dir).resolve()
+        result = build(root=root, output_dir=output, opt_level=ns.opt_level, stage=ns.stage, configuration=ns.configuration, clean=ns.clean, timeout_seconds=ns.timeout, archive_source_root=source_archive)
     except (Core0Error, OSError, ValueError, KeyError, TypeError) as error:
         print(f"KERNEL BUILD FAIL: {error}", file=sys.stderr)
         return 1
