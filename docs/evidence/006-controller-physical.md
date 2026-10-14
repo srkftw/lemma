@@ -153,6 +153,52 @@ The [new source/tool/result receipt](006-pen-private-ingress.json) preserves
 the exact candidate, bounded tests, failed flow and global ODB/DEF/estimated
 SPEF as a resumable checkpoint. No unchanged follow-up route was launched.
 
+The later free-running bank-read experiment is **not adopted**. Its private
+read registers captured each clock while the existing two refill edges still
+controlled public head publication. The 28,457-edge comparison against the
+retained private-ingress source and independent full-depth/two-wrap corpus
+passed; a quarantined wrong-row read failed at edge 1,131. All 256 entries,
+fields, ordering, ACK/loss/reset and refill observations were preserved in
+these finite tests. Private capture ran on more clock edges; dynamic power was
+not measured.
+
+One changed-source attempt used the same 900-second bound, 100 MHz constraints,
+corner and repair recipe. Mapping produced 167,864 cells, the same 50,102
+flip-flops and 4,273,921.637998 µm² area, with no unresolved cells, latches or
+residual memories. Area fell 1.856186%, but global-route setup WNS worsened by
+0.288327 ns to **−2.021075 ns FAIL**. Hold WNS was **+0.030106 ns**; all 128
+clock-buffer fanout violations remained unwaived. Global geometry contained
+217,626 instances and 4,978,085.8176 µm² cell area. These are estimated
+global-route parasitics, not routed extraction.
+
+Detailed routing timed out in pin access after 80,000 reported groups;
+OpenROAD was terminated and reaped. No router DRC, process DRC/LVS, routed
+extraction or post-route timing was reached. Group counts and geometry differ
+between designs, so they do not establish normalized routing speed. The
+enclosure/CUTCLASS gap remains unqualified and is not established as the
+timeout cause.
+
+The tested private-ingress pen source `2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3`
+was restored. The exact candidate, patch, focused test sources, mutation and
+failed physical outputs remain archived under
+`build/silicon/pen-task006-read-capture-owner-a1` and
+`build/silicon/physical/pen-task006-read-capture-a1`.
+[The unadopted experiment receipt](006-pen-read-capture.json) retains both the
+area improvement and timing regression, with all original failures unchanged.
+No second route was launched. The new worst path runs from `sample_y[21]`
+through validation/acceptance control to `next_sequence[59]`.
+
+A separate ignored prototype isolates the sequence counter's synchronous
+reset and exact accepted-sample enable. The same external-interface corpus
+and 32,768 finite guard combinations passed. One map-only observation retained
+50,102 flip-flops and produced 184,075 cells. The mapped `next_sequence[63]`
+data cone has 17 rather than 18 maximum cell stages; its `sample_y[21]` path
+has 12 rather than 13, and the direct `refill[2]` path is absent under the same
+observed one-hot FSM encoding. These are static graph counts, not timing or
+speed measurements. This prototype remains unadopted; placement, routing and
+physical STA are NOT_RUN. Its exact sources, tests and mapped artifacts are
+included in the same receipt for the next physical inspection.
+
 Reproduce with unused output paths:
 
 ```sh
