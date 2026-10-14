@@ -195,4 +195,56 @@ launch evidence only: Ready, full pixels, Save, lost-reply reconciliation and
 independent cold recovery require actual terminal observations. The original
 Wire11 terminal HELLO decoder failure and its separately observed Save11 are
 retained; this adapter does not relabel that failure or claim its cold recovery.
+
+## Finite native/Wasm recorded-outcome relation
+
+`scripts/silicon_wasm.py --profile lemma-silicon-dev/0.13.0 --native-build
+NATIVE13 --native-source-root COMPLETE_SCHEMA2_ARCHIVE --output-dir UNUSED
+--host-optimization simd-lto` compiles the complete original 255-input native
+circuit and Machine into Wasm. The portable C ABI and host build recipe are
+separately declared inputs. Explicit native admission is Clocked13 only and
+never substitutes current profile or RTL files. Original native tool and source
+maps, selected JSON and generated header remain checked before and after build.
+
+The two additive C ABI methods `lemma_create_usb_private` and
+`lemma_usb_outcomes` create an unused Clocked Machine without a guest load or
+external backing, then bind recorded outcomes through the normal runtime API.
+They do not contact a live peer or change snapshot identity validation.
+
+`python3 scripts/check_wasm_clocked_pending.py --wasm-build PORTABLE
+--rtl-build NATIVE13 --rtl-source-root COMPLETE_SCHEMA2_ARCHIVE --native-bundle
+SCHEMA6_PACKAGE --native-result ORIGINAL_NINE_CUT_RESULT --work-dir UNUSED`
+revalidates the complete original producer, pinned tools, portable outputs and
+actual guest/implementation association before consuming captured inputs. The
+standalone observer also checks exactly nine named cuts and all module, snapshot,
+tape and UART hashes. Empty corpora and changed modules reject before Machine
+creation. Bounds are 1800 seconds, 70M suffix cycles, 4GiB RSS and 12GB output,
+with owned-child reaping and no automatic restart.
+
+This conformance fixture predeclares exactly one identity adaptation: snapshot
+header bytes [16,80) and the tape's first-line implementation identity. Normal
+production restore still rejects the original native identity. Every other
+serialized byte, component CRC, captured row and actual UART byte must match.
+Original captures are immutable; no public migration API accepts adapted files.
+
+Actual final qualification at `build/usb/clocked-wasm-pending-a4/result.json`
+passed all nine startup/reset, physical transfer/guard, owned buffer and domain
+reset cuts in 54.425 seconds, with 41,000 valid suffix cycles and all 18 complete
+prefix/final checkpoints equal under that declared identity relation. Foreign
+identity, corrupt snapshot/tape, missing tape and insufficient/crossed horizons
+rejected unchanged. A checksum-valid wrong future reply exposed the actual
+partial physical-clock state and rejected further run or snapshot publication.
+Peak supervised RSS was 1,384,208KiB; retained output was 2,620,295,607 bytes;
+all owned children were reaped. An independent read-only review separately
+compared every byte of the a3 outputs and complete producer with no finding.
+
+The original a1 UART observer failure remains retained: equal empty bytes had
+different JavaScript `Uint8Array`/`Buffer` prototypes. An independent byte
+fixture qualified normalization before strict byte comparison. No circuit,
+state mask or production behavior changed. The finite relation is separate from
+full Clocked notebook/browser execution, portable architectural or QEMU
+microstate migration, privately live peer continuation and full USB MAC,
+electrical or analog CDC conformance. The exact commands, source/tool hashes,
+failures and separate review identities are in
+`docs/evidence/006-usb-clocked-wasm.json`.
 -->

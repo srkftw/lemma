@@ -1,0 +1,276 @@
+{
+  "schema": "lemma-usb-clocked-native-wasm-evidence/1",
+  "status": "PASS_FINITE_SAME_CIRCUIT_RECORDED_SUFFIX_RELATION",
+  "profile": "lemma-silicon-dev/0.13.0",
+  "scope": "finite same-circuit native/Wasm serialization and recorded-outcome suffix relation at nine actual guest cuts; no cold prefix run or live peer",
+  "identity_adaptation": {
+    "predeclared": true,
+    "snapshot_header_bytes": [
+      16,
+      80
+    ],
+    "tape": "first-line implementation identity only",
+    "production_foreign_identity_rejected": true,
+    "all_other_serialized_bytes_and_component_crcs_exact": true
+  },
+  "native": {
+    "build": {
+      "path": "build/silicon/task006-usb-clocked-runtime-a2/build.json",
+      "sha256": "29067696a956b0b09b19b7aba6bbba19520585cbc6670d72eab42741b159b2cc"
+    },
+    "binary_sha256": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401",
+    "snapshot_identity": "1613b2347fad50b7874a8791e7088b48913284db9a839c3506941060daaaa3cb",
+    "complete_archive": {
+      "path": "build/usb/native13-consumed-source-archive-a3/consumed-source-archive.json",
+      "sha256": "ff3a65bf4b3aa02206314c1eded7b9cb376a19eeba3bba26917c4b39295fa274"
+    },
+    "inputs": 255
+  },
+  "portable": {
+    "build": {
+      "path": "build/wasm/task006-usb-clocked-native-port-a1/build.json",
+      "sha256": "49b63ee66f7539f9a965d86f06061314900d7c7d42d2fea91afcc9482cbd6c58"
+    },
+    "snapshot_identity": "b8b38fe69987c373314638d417b85eb4a0e23879a734b367646e8095806d65f1",
+    "outputs": {
+      "machine.mjs": "1c2582c33a306a193012f2c3d3df9895232423ee67ebe8711a873eafb3a9719e",
+      "machine.wasm": "7f5cd76a2c785d7cca9bb00e6fb0ad192112589df51fcdbb099952e979bebc38"
+    },
+    "host_optimization": {
+      "schema": "lemma-wasm-host-compilation/1",
+      "preset": "simd-lto",
+      "flags": [
+        "-msimd128",
+        "-flto"
+      ],
+      "scope": "integer SIMD and LLVM LTO; no fast-math, circuit or virtual-time changes"
+    },
+    "tool_versions": {
+      "verilator": "Verilator 5.052 2026-09-05 rev v5.052\n",
+      "em++": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.9-git\nCopyright (C) 2026 the Emscripten authors (see AUTHORS.txt)\nThis is free and open source software under the MIT license.\nThere is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "node": "v24.21.0\n"
+    },
+    "original_source_policy": "complete original Clocked13 native archive; separately declared portable host C ABI/build recipe; no current RTL/profile fallback or fresh target compilation",
+    "build_seconds": 142.29942787397886,
+    "build_supervision": {
+      "path": "build/usb/clocked-wasm-build-a1.supervision.json",
+      "sha256": "d354fcbac7554a2e4527ba92677d89469d1664333c1b4bbd24aadfb56b950921"
+    },
+    "supervised_seconds": 145.49872481799684,
+    "peak_tree_rss_kib": 1105380,
+    "owned_survivors": []
+  },
+  "actual": {
+    "gate": {
+      "path": "build/usb/clocked-wasm-pending-a4/result.json",
+      "sha256": "a6fbd94dc8ee9d922c84b98f65ebbc554bdfc5e0657d158a1e11d8ba0b06e74e"
+    },
+    "authority": {
+      "path": "build/usb/clocked-wasm-pending-a4/authority.json",
+      "sha256": "df17187aedceafc18b3ad5b874e3ebbc619735519753ad27252fe4c2840161de"
+    },
+    "result": {
+      "path": "build/usb/clocked-wasm-pending-a4/actual/result.json",
+      "sha256": "28fd6f79748cc9be486e33c6615242b30183d71c5a184054220b2f05614bbe5b"
+    },
+    "supervision": {
+      "path": "build/usb/clocked-wasm-pending-a4/run.supervision.json",
+      "sha256": "a7aedc835415afbf3cd5295515702003c463967bf0aba9a77c6e5bd72a6f19ae"
+    },
+    "host_seconds": 54.425195589999994,
+    "supervised_seconds": 56.68473890196765,
+    "peak_tree_rss_kib": 1384208,
+    "total_valid_suffix_cycles": 41000,
+    "cases": [
+      {
+        "name": "startup",
+        "snapshot_cycle": 0,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568304,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "reset",
+        "snapshot_cycle": 5000,
+        "suffix_cycles": 3000,
+        "checkpoint_bytes": 145568333,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "physical-send",
+        "snapshot_cycle": 5002017,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568422,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "physical-receive",
+        "snapshot_cycle": 5009079,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568422,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "physical-guard",
+        "snapshot_cycle": 5017304,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568422,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "physical-chip-send",
+        "snapshot_cycle": 5025315,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568422,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "owned-submit",
+        "snapshot_cycle": 9604000,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568568,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "owned-receive",
+        "snapshot_cycle": 9616434,
+        "suffix_cycles": 5000,
+        "checkpoint_bytes": 145568694,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      },
+      {
+        "name": "domain-reset",
+        "snapshot_cycle": 9721069,
+        "suffix_cycles": 3000,
+        "checkpoint_bytes": 145568731,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_no_tape_corrupt_horizon_reject_unchanged": true,
+        "actual_uart_suffix_equal": true
+      }
+    ],
+    "physical_send_semantic_error_exposes_partial_clock_and_rejects_further_run_or_snapshot": true,
+    "retained_apparent_bytes": 2620295607,
+    "owned_survivors": []
+  },
+  "negative_scope": {
+    "metadata": {
+      "path": "build/usb/clocked-wasm-metadata-negatives-a1/result.json",
+      "sha256": "4a33ec198dcc8dc46a9e1eff1fbefad2d52aab4a2eaf0cec92dce13089687473"
+    },
+    "rejected_before_machine_creation": [
+      "empty nine-case corpus",
+      "changed portable module hash"
+    ],
+    "host_admission": {
+      "path": "build/usb/clocked-wasm-port-host-a1.log",
+      "sha256": "31c0be016df4f3e027c73058607c7124cc3a3586f37d9c75f6a6b2b65a3e6210"
+    },
+    "host_checks": 2,
+    "existing_archive_source_path": {
+      "test": "tests/lemmasim/test_wasm_recompile.py",
+      "observed_host_checks": 1,
+      "scope": "existing complete portable archive resolution and no-checkout-fallback regression; separate from actual CPU"
+    },
+    "runtime": "foreign identity, corrupt snapshot/tape, no tape, prefix-only horizon and crossing final horizon all reject without logical state change"
+  },
+  "original_failure": {
+    "gate": {
+      "path": "build/usb/clocked-wasm-pending-a1/result.json",
+      "sha256": "700dcf13c693f440a1e34c4fba575f37076531e2909dd57c0d37c7d167a85467"
+    },
+    "actual": {
+      "path": "build/usb/clocked-wasm-pending-a1/actual/result.json",
+      "sha256": "774616daa72b0f514a756bfff904ecd54ab62e346ed38e818f65e99b9157c238"
+    },
+    "error": "AssertionError [ERR_ASSERTION]: exact actual guest UART suffix\n+ actual - expected\n\n+ Uint8Array(0) []\n- Buffer(0) [Uint8Array] []\n",
+    "correction": "exact UART bytes normalized to Buffer before strict equality; no bytes, state tolerance or production behavior changed",
+    "independent_uart_byte_observer": {
+      "path": "build/usb/clocked-wasm-uart-observer-a1.log",
+      "sha256": "779418889901a3208248ee24a1118e6b3e814eb108a854941a1bafbf1e216b64"
+    }
+  },
+  "independent_review": {
+    "result": {
+      "path": "build/usb/clocked-wasm-independent-review-a1/result.json",
+      "sha256": "68805f1f21eabf3ee80a21efcd14d6204f9939f0648c1bfe7f72f8451b25f5b6"
+    },
+    "reviewed_actual": {
+      "path": "build/usb/clocked-wasm-pending-a3/actual/result.json",
+      "sha256": "5bd20d246d30c671305d4cfc8cd55d94def430aba7e6f368cc5916e26311e4c2"
+    },
+    "scope": "read-only original producer/source/mask and all18 full checkpoint comparisons; no CPU/Node/peer run; final a4 additionally enforces standalone exact corpus/module/input metadata",
+    "findings": []
+  },
+  "commands": {
+    "build": [
+      "env",
+      "EMCC_CORES=2",
+      "python3",
+      "scripts/silicon_wasm.py",
+      "--profile",
+      "lemma-silicon-dev/0.13.0",
+      "--native-build",
+      "build/silicon/task006-usb-clocked-runtime-a2",
+      "--native-source-root",
+      "build/usb/native13-consumed-source-archive-a3/source",
+      "--output-dir",
+      "build/wasm/task006-usb-clocked-native-port-a1",
+      "--host-optimization",
+      "simd-lto"
+    ],
+    "qualify": [
+      "python3",
+      "scripts/check_wasm_clocked_pending.py",
+      "--wasm-build",
+      "build/wasm/task006-usb-clocked-native-port-a1",
+      "--rtl-build",
+      "build/silicon/task006-usb-clocked-runtime-a2",
+      "--rtl-source-root",
+      "build/usb/native13-consumed-source-archive-a3/source",
+      "--native-bundle",
+      "build/native/task006-usb-clocked-a4",
+      "--native-result",
+      "build/usb/clocked-pending-a1/result.json",
+      "--work-dir",
+      "build/usb/clocked-wasm-pending-a4"
+    ]
+  },
+  "implementation_inputs": {
+    "scripts/silicon_wasm.py": "ea296f7439309d29512c420aa19cf5acb1771858648b4c431e9e18c9230049cf",
+    "sim/browser/wasm_machine.cpp": "5042870f132834abfdfc808cdfb1fd8291c433c0c77c2b9b5be922ece5e76a29",
+    "scripts/check_wasm_clocked_pending.py": "08a4e37e38fa9860e0ab1b3979fb641d66493c0be6a169c37caab5e0b8481619",
+    "scripts/check_wasm_clocked_pending.mjs": "76c18777a0157d8e4e3fa8961272dece4b1969c8dc36df95aefee6fc405eaff8",
+    "tests/lemmasim/test_wasm_native_port.py": "1515671ee6b818fd47c90c2e7d342a8a6073af15a9f036b53191b968d60a32c9"
+  },
+  "bounds": {
+    "host_seconds": 1800,
+    "total_suffix_cycles": 70000000,
+    "maximum_rss_kib": 4194304,
+    "maximum_output_bytes": 12000000000
+  },
+  "excluded": [
+    "arbitrary host/QEMU microstate migration",
+    "full Clocked notebook or browser workflow",
+    "full USB MAC/timing/topology/electrical/analog CDC",
+    "privately live peer continuation",
+    "portable architectural migration API",
+    "new native cold prefix",
+    "full browser presentation/backing workflow"
+  ]
+}

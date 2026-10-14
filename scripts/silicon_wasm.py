@@ -75,6 +75,40 @@ def host_flags(preset):
     if preset == 'simd-lto':return ['-msimd128','-flto']
     raise ValueError('Unknown portable host optimization')
 
+def archived_native_build(build, source_root, selected_profile):
+    """Port only the complete original Clocked13 producer, never current RTL.
+
+    The native archive closes all original inputs and its separately bound
+    selected JSON. The portable C ABI and build recipe are new host inputs;
+    neither is represented as an input to the historical native compilation.
+    """
+    from silicon_guest import native_source_archive, USB_CLOCKED_PROFILE_NAME
+    if selected_profile != USB_CLOCKED_PROFILE_NAME:
+        raise ValueError('Native-to-portable source admission is Clocked13 only')
+    source_root = Path(source_root).resolve()
+    manifest, inputs, evidence = native_source_archive(build, source_root, selected_profile)
+    def resolve(path):
+        path = Path(path)
+        if not path.is_absolute(): path = ROOT/path
+        try: relative = path.relative_to(ROOT).as_posix()
+        except ValueError: raise ValueError('Unarchived native portable input: '+str(path))
+        expected = inputs.get(str(ROOT/relative))
+        if expected is None: raise ValueError('Missing native portable input: '+relative)
+        actual = source_root/relative
+        if digest(actual) != expected: raise ValueError('Changed native portable input: '+relative)
+        return actual
+    header = resolve(Path(manifest['host_include_dir'])/'lemma_silicon_binding.h').read_text()
+    if digest(resolve(Path(manifest['host_include_dir'])/'lemma_silicon_binding.h')) != manifest['host_binding_sha256']:
+        raise ValueError('Original native host binding differs')
+    original = {key:value for key,value in manifest.items() if key not in
+                ('runtime_identity_header','build_argv','build_jobs','binary_sha256','snapshot_identity')}
+    return original, resolve, header, {
+        'schema':'lemma-wasm-native-source-port/1',
+        'native':evidence,
+        'original_snapshot_identity':manifest['snapshot_identity'],
+        'native_source_inputs':inputs,
+        'scope':'fresh portable host compilation of the complete original Clocked13 circuit and Machine; no fresh guest compilation'}
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output-dir',type=Path,required=True)
@@ -82,11 +116,39 @@ def main():
     p.add_argument('--profile',default='lemma-silicon-dev/0.3.0')
     p.add_argument('--source-bundle',type=Path,
                    help='complete original static browser source bundle; never mix with current RTL')
+    p.add_argument('--native-build',type=Path,
+                   help='original Clocked13 native build; requires its complete source archive')
+    p.add_argument('--native-source-root',type=Path,
+                   help='complete selected-profile Clocked13 native source archive; no checkout fallback')
     p.add_argument('--host-optimization',choices=('scalar','simd-lto'),default='scalar',
                    help='host compilation only; RTL clocks, scheduling and guest work are unchanged')
-    a=p.parse_args();out=a.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
+    a=p.parse_args()
+    if bool(a.native_build)!=bool(a.native_source_root) or (a.source_bundle and a.native_build):
+        p.error('native build/archive must be paired and cannot be mixed with a portable source bundle')
+    out=a.output_dir.resolve();out.mkdir(parents=True,exist_ok=False)
     dep=a.deps.resolve()
-    if a.source_bundle:
+    if a.native_build:
+        m,resolve,archived_header,recompilation=archived_native_build(a.native_build,a.native_source_root,a.profile)
+        m['source_recompilation']=recompilation
+        source_paths=[resolve(name) for name in m['sources']]
+        include_paths=[resolve(next(name for name in m['configuration_includes']
+                                    if Path(name).parent==Path(directory))).parent
+                       if any(Path(name).parent==Path(directory) for name in m['configuration_includes'])
+                       else a.native_source_root.resolve()/Path(directory).relative_to(ROOT)
+                       for directory in m['include_dirs']]
+        shell=ROOT/'tooling/silicon/wasm.nix'
+        host_root=out/'portable-host';host_root.mkdir()
+        # Relative Machine includes stay intact inside this bounded private
+        # support tree. Every copied historical input was already validated.
+        used=[*m['host_runtime'], 'flake.lock']
+        for name in used:
+            source=resolve(name);target=host_root/name
+            target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,target)
+        for name in ('sim/browser/wasm_machine.cpp','tooling/silicon/wasm.nix'):
+            target=host_root/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target)
+        # wasm.nix resolves the original immutable flake lock through this tree.
+        shell=host_root/'tooling/silicon/wasm.nix'
+    elif a.source_bundle:
         m,resolve,archived_header,recompilation=archived_build(a.source_bundle,a.profile)
         for key in ('status','scope','snapshot_identity','wall_seconds','outputs','portable_compilation'):
             m.pop(key,None)
@@ -105,7 +167,11 @@ def main():
               ROOT/'sim/host/backing_io.cpp',ROOT/'sim/host/backing_io_posix.h',ROOT/'sim/host/backing_io_posix.cpp',
               ROOT/'sim/rtl/host/machine_runtime.cpp',ROOT/'sim/rtl/host/machine_runtime.h',
               ROOT/'tooling/silicon/wasm.nix',Path(__file__).resolve()]
-    if a.source_bundle:
+    if a.native_build:
+        m['portable_inputs']={str(x.relative_to(ROOT)):digest(host_root/x.relative_to(ROOT))
+                              for x in portable if x!=Path(__file__).resolve()}
+        m['portable_inputs']['scripts/silicon_wasm.py']=digest(Path(__file__))
+    elif a.source_bundle:
         m['portable_inputs']['scripts/silicon_wasm.py']=digest(Path(__file__))
     else:m['portable_inputs']={str(x.relative_to(ROOT)):digest(x) for x in portable}
     if a.host_optimization != 'scalar':
@@ -151,7 +217,7 @@ def main():
     m['portable_verilator_patch']={name:digest(runtime/name) for name in ('verilatedos_c.h','verilated_threads.cpp')}
     identity=hashlib.sha256(json.dumps(snapshot_inputs(m,dep),sort_keys=True,separators=(',',':')).encode()).hexdigest()
     (gen/'lemma_runtime_identity.h').write_text('#pragma once\n#define LEMMA_RUNTIME_IDENTITY "'+identity+'"\n')
-    if a.source_bundle:
+    if a.source_bundle or a.native_build:
         host_binding=out/'binding';host_binding.mkdir()
         (host_binding/'lemma_silicon_binding.h').write_text(archived_header)
     else:host_binding=Path(m['host_include_dir'])
@@ -173,10 +239,12 @@ def main():
         actual=ROOT/name if name=='scripts/silicon_wasm.py' else host_root/name
         if digest(actual)!=want:raise RuntimeError('Portable source changed during build: '+name)
     for name,want in m['sha256'].items():
-        if digest(resolve(name) if a.source_bundle else name)!=want:raise RuntimeError('RTL source changed during build: '+name)
+        if digest(resolve(name) if a.source_bundle or a.native_build else name)!=want:raise RuntimeError('RTL source changed during build: '+name)
     if a.source_bundle:
         from lemmasim_browser import validated_bundle
         validated_bundle(a.source_bundle)
+    if a.native_build:
+        archived_native_build(a.native_build,a.native_source_root,a.profile)
     for x in (ROOT/'sim/browser').glob('*'):
         if x.suffix in ('.html','.js','.css'):shutil.copyfile(x,out/x.name)
     m.update(status='BUILT',scope='real RTL Machine Wasm build; execution acceptance separate',

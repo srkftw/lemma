@@ -125,6 +125,17 @@ EMSCRIPTEN_KEEPALIVE int lemma_create_mode(unsigned replay){return checked([=]{
  next->attach_backing(std::make_shared<BrowserBacking>());next->prepare();machine.swap(next);
  });}
 EMSCRIPTEN_KEEPALIVE int lemma_create(){return lemma_create_mode(0);}
+// Recorded Clocked13 transport only. The caller must independently admit its
+// archived producer; this API never adopts an external process or live peer.
+EMSCRIPTEN_KEEPALIVE int lemma_create_usb_private(){return checked([]{
+ if(!LEMMA_USB_CLOCKED_ENABLED||machine)throw std::runtime_error("private USB create requires an unused Clocked instance");
+ lemma::Options o;o.uart_path="/uart.bin";o.quiet_uart=true;o.deadline=120;o.trace_limit=0;o.fork_directory="/forks";
+ machine=std::make_unique<lemma::Machine>(o);
+ });}
+EMSCRIPTEN_KEEPALIVE int lemma_usb_outcomes(const char*path){return checked([=]{
+ if(!machine||!LEMMA_USB_CLOCKED_ENABLED)throw std::runtime_error("no Clocked private machine");
+ machine->bind_usb_replay(path);
+ });}
 EMSCRIPTEN_KEEPALIVE int lemma_run(unsigned cycles){return checked([=]{if(!machine||cycles>1000000)throw std::runtime_error("invalid bounded browser run");machine->run(cycles);});}
 EMSCRIPTEN_KEEPALIVE const char* lemma_inspect(){if(!machine)return "{}";result=machine->inspect();return result.c_str();}
 // Presentation reads the actual controller's completed sequence. An accepted
