@@ -172,4 +172,27 @@ complete authority before using the bound host load/clock facts. The API vectors
 stop before subprocess/capture, and are not new CPU replay results. Only already
 validated guest-source metadata is skipped by the raw artifact loop. Historical
 profile/schema branches keep their previous semantics.
+
+## Bounded ordinary notebook launch
+
+`scripts/supervise_usb_clocked_notebook.py launch --native-bundle PACKAGE
+--host-prepared HOST --formatted-peer PEER --formatted-outbox OUTBOX --work-dir
+UNUSED` validates the strict schema6 package before creating a peer or changing
+medium bytes. The Clocked adapter registers only this immutable deployment and
+inherits the exact frozen ordinary notebook workflow and supervisor. Actual
+six clock facts must match nominal48MHz/100MHz/2.4GHz, origin0 and0ppm; other
+clocks retain the separately qualified Pending scope. Four host checks and a
+no-peer/no-media preflight qualify only admission, inherited oracles and bounds.
+
+The supervised actual Clocked run `build/usb/clocked-notebook-workflow-a1` was
+launched with an independent copy of the already guest-formatted opaque peer
+and outbox. Its original1.6B/7200 cold and full-action bounds,200M ink bound,
+4GiB/12GB resource ceilings and65000second absolute whole deadline remain fixed.
+Neither agent/tool interruption nor machine pause extends a deadline; actual
+60second host-process inactivity can disconnect a paused owner. Owned processes
+are reaped on failure or cancellation; there is no automatic restart. This is
+launch evidence only: Ready, full pixels, Save, lost-reply reconciliation and
+independent cold recovery require actual terminal observations. The original
+Wire11 terminal HELLO decoder failure and its separately observed Save11 are
+retained; this adapter does not relabel that failure or claim its cold recovery.
 -->

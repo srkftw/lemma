@@ -1,0 +1,123 @@
+{
+  "schema": "lemma-usb-clocked-notebook-launch-evidence/1",
+  "status": "PASS_LAUNCH_SUPPORT_ONLY",
+  "implementation_commit": "a69aadab6585b64b096185a826108a2beb4252f3",
+  "scope": "Strict immutable Clocked13 package admission and source-pinned bounded host adapter launch. Full Notebook Ready/Save/cold remains RUNNING, not qualified by this receipt.",
+  "native_bundle": {
+    "schema": "lemmasim-native-bundle/6",
+    "manifest_sha256": "29f9f2db667eb0d4297f762b3058b93d15cae31f752d6af9e7603aef91bff7e1",
+    "source_commit": "02367b8a6b7a6858adaf38c33bfc899ff23b1f78",
+    "scope": "complete original consumed lemma-silicon-dev/0.13.0 sources and artifacts; RTL only",
+    "software_deployment": {
+      "contract_version": "lemma-managed-sums-bulk-usb-clocked-deployment-v1",
+      "configurations": {
+        "usb-clocked-bulk-notebook": "lemmasim-silicon-usb-clocked-bulk-notebook",
+        "usb-clocked-bulk-initializer": "lemmasim-silicon-usb-clocked-bulk-initialize"
+      }
+    },
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4"
+  },
+  "binary": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/runtime/rtl/lemma-rtl",
+    "sha256": "90638d9213a153daaed48b343f0be7880143a286bc40f753b002d0f3836ac401"
+  },
+  "guest": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/workloads/usb-clocked-bulk-notebook/image.elf",
+    "sha256": "c5bf79c3981a5cff321205d6d4ec2f6854508c65bf779a6295ca73c3eaf93473"
+  },
+  "binding_profile": {
+    "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4/backend-sources/431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f",
+    "sha256": "431b5eeec21994c7be38ff1d00af8c9f409d645f4d11f425053c2760561a672f"
+  },
+  "observer": {
+    "path": "scripts/check_guest_usb_clocked_notebook.py",
+    "sha256": "d3753164231f8604257e1dc71bb9977a09aab7dafd60889fd8095ecfc3fb55b7",
+    "base_path": "scripts/check_guest_usb_notebook.py",
+    "base_sha256": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869"
+  },
+  "supervisor": {
+    "path": "scripts/supervise_usb_clocked_notebook.py",
+    "sha256": "205d0cfd28e98df6467c7d2ffc8acb2af554a60391e1a7adb73d28ed7d2c5aa8",
+    "base_path": "scripts/supervise_usb_notebook.py",
+    "base_sha256": "6c1af6b08702a7481ceec656d5528447138a1010aa61c78fb2c33e1ee0df67ee"
+  },
+  "host_tests": {
+    "path": "build/usb/clocked-workflow-adapter-host-a2.log",
+    "sha256": "bcdd58037b783e59de424e37c6e58bb96bf4a49cc7677e9c2c8dbd2c53a04e6e",
+    "passed": 4,
+    "scope": "host registration, strict role admission, unchanged original bound/oracle inheritance; no CPU execution"
+  },
+  "preflight": {
+    "path": "build/usb/clocked-workflow-preflight-a2/adapter-preflight.json",
+    "sha256": "5e97a004dfee116fc8b7c2b59a27b2e5604664b8e03b6ed0df2effd7fcde1fe7",
+    "status": "PASS_PREFLIGHT_ONLY",
+    "owned_sessions": 0,
+    "peer_started": false,
+    "disk_or_guest_work": false
+  },
+  "actual_launch": {
+    "status_at_observation": "RUNNING",
+    "work_dir": "build/usb/clocked-notebook-workflow-a1",
+    "manifest": "build/usb/clocked-notebook-workflow-a1.supervision/manifest.json",
+    "manifest_sha256": "96fd668b54ef708f726685f09b00c79c7e9c1ffc53d51a499e0c3a79a6403a98",
+    "supervisor": {
+      "pid": 1030031,
+      "start_ticks": 51465068
+    },
+    "absolute_deadline_unix_ns": 1792013158252633581,
+    "whole_host_ceiling_seconds": 65000,
+    "argv": [
+      "/run/current-system/sw/bin/python3",
+      "/home/sreekumaar/Downloads/lemma/scripts/check_guest_usb_clocked_notebook.py",
+      "--profile",
+      "lemma-silicon-dev/0.13.0",
+      "--native-bundle",
+      "/home/sreekumaar/Downloads/lemma/build/native/task006-usb-clocked-a4",
+      "--host-prepared",
+      "/home/sreekumaar/Downloads/lemma/build/usb/host-pending-policy4-a3/prepared.json",
+      "--formatted-peer",
+      "/home/sreekumaar/Downloads/lemma/build/usb/store-initialize-a3/peer",
+      "--formatted-outbox",
+      "/home/sreekumaar/Downloads/lemma/build/usb/store-initialize-a3/outbox",
+      "--work-dir",
+      "/home/sreekumaar/Downloads/lemma/build/usb/clocked-notebook-workflow-a1"
+    ],
+    "policy": {
+      "automatic_restart": false,
+      "virtual_time": "inherited original bounded machine quanta and oracles",
+      "external_wall_timeout": "actual60s USB process inactivity remains; paused owner may disconnect",
+      "pause": "no automatic pause or deadline extension; supervisor survives tool/inference interruption",
+      "cancellation": "SIGTERM supervisor; inherited owned-child cleanup and original180s deadline grace"
+    }
+  },
+  "bounds": {
+    "cold_cycles": 1600000000,
+    "cold_host_seconds": 7200,
+    "ink_cycles": 200000000,
+    "redraw_save_cycles": 1600000000,
+    "action_host_seconds": 7200,
+    "maximum_owned_tree_rss_kib": 4194304,
+    "maximum_owned_disk_bytes": 12000000000
+  },
+  "preserved_failures": [
+    {
+      "path": "build/usb/clocked-workflow-adapter-host-a1.log",
+      "sha256": "ebb66f339b2ba1714c1ccb0805f4556b08685b4b8087b20ff285ab120767a95f",
+      "error": "host import used the wrong original session class name; corrected to NativeUSBSession without changing the frozen base workflow"
+    },
+    {
+      "path": "build/usb/wire-notebook-workflow-a2/result.json",
+      "sha256": "849602d726e16b544211ab112d374076a64d166061c12865c72fd54d1375b45e",
+      "status": "FAIL",
+      "scope": "independent immutable Wire11 workload reached full Undo/Redo/navigation/Save11 but decoder rejected actual HELLO; diagnosis separate, cold NOT_RUN"
+    }
+  ],
+  "not_qualified": [
+    "Clocked Notebook Ready/raw ink/Save/lost reply/restart/cold/failed Save until actual terminal observation",
+    "full USB MAC/token/topology/electrical/analog CDC conformance",
+    "privately live external-peer continuation",
+    "QEMU cached-state continuation",
+    "browser hosted peer",
+    "owner authentication"
+  ]
+}
