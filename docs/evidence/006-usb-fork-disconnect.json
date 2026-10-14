@@ -1,0 +1,146 @@
+{
+  "schema": "lemma-usb-fork-disconnect-evidence/1",
+  "scope": "Wire11 Laboratory branch-local actual private EOF; unsuccessful autosave and blocked explicit retry separately observed",
+  "qualified": {
+    "private_transport_eof": {
+      "path": "build/usb/wire-private-eof-a1/result.json",
+      "sha256": "5c4043944cea612b1cf8f4904a0917b064add8b71f8a0b31a9c8d5984065f70c",
+      "status": "PASS",
+      "host_seconds": 7.309720233082771,
+      "replies": 0,
+      "opaque_operations": 0,
+      "before_after_private_state_equal": true,
+      "owned_children_reaped": true
+    },
+    "native_zero_cycle_admission": {
+      "path": "build/usb/wire-fork-fault-admission-a1/result.json",
+      "sha256": "eb0465df035c5a322ce0c64a8f631e3fa67b9999860df34735e020a8c4734e9b",
+      "status": "PASS_ADMISSION_ONLY",
+      "host_seconds": 20.94936762796715,
+      "target_cycles": 0,
+      "actual_native_horizon_rejection": true,
+      "no_tape_historical_sidecar_duplicate_fault_rejected": true,
+      "every_before_edge_checkpoint_byte_equal": true
+    },
+    "unsuccessful_autosave_retained_observation": {
+      "path": "build/usb/wire-unsuccessful-save-observation-a1/result.json",
+      "sha256": "5540ee620e7584f502dac535500d803c4a1bec845dc51e1e1255df838ee51fbd",
+      "status": "PASS_OBSERVED_UNSUCCESSFUL_AUTOSAVE_AND_BLOCKED_TOOLBAR",
+      "target_boundary": 2810000001,
+      "additional_target_cycles": 40000000,
+      "host_seconds": 202.242326225969,
+      "actual_guest_rows": [
+        [
+          1059,
+          12,
+          1,
+          1,
+          65548
+        ],
+        [
+          1060,
+          227,
+          1,
+          1,
+          65548
+        ]
+      ],
+      "all_3630000_failed_pixels_equal": true,
+      "new_saved_records": 0,
+      "toolbar_down_up_admitted": true,
+      "new_explicit_store_attempt": false,
+      "private_receipt_and_full_durable_bytes_equal": true,
+      "rollback_assumed": false,
+      "observer_cpu_cycles": 0,
+      "observer_peer_processes": 0
+    }
+  },
+  "identities": {
+    "native_package": {
+      "path": "build/native/task006-usb-wire-a2/bundle.json",
+      "sha256": "152572a9c95528bac3257a3c4ca3b258d9a7237d26b47e6ea3bad5497ed80662"
+    },
+    "parent_snapshot": {
+      "path": "build/usb/wire-notebook-workflow-a2/live-failure.snapshot/snapshot.json",
+      "sha256": "5d07822593549fc935d3388d68350914487cd878ad118fe56714fd59a1eb5a9b"
+    },
+    "parent_machine": {
+      "path": "build/usb/wire-notebook-workflow-a2/live-failure.snapshot/machine.chk",
+      "sha256": "068ec90f184741a7ccda4d653a39fc9041e0671f2fab7bdd517abf982ddfe9e6"
+    },
+    "original_prefix": {
+      "path": "build/usb/wire-notebook-workflow-a2/live-failure.usb.tape",
+      "sha256": "95a4de82bd69327bbcbf7c3c784a885fe1fb92f207c75b92cd1c856886e6e478"
+    },
+    "acknowledged_boundary": {
+      "path": "build/usb/wire-final-saved11-boundary-a1/boundary.json",
+      "sha256": "1bd73dc9d09df24186691d42fe63688832d0806e96ca833adbd2847caef93214"
+    },
+    "guest_native": {
+      "backend": "rtl",
+      "profile": "lemma-silicon-dev/0.11.0",
+      "runtime": "20a35cbef6956b25f3ad6ab1c16d0914124d29b2f013b1b549151a8e73fe179a",
+      "rom": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2",
+      "guest": "d18880e20ecfd15d15de67eab122762fca2655b7e879fe9c45cea0666a7cda3c",
+      "dtb": "0b606e67baacf2790ea97640557abf2b4810760d80fcf8885b78882a0656c978",
+      "descriptor": "d273b9213eb3db6218125560aa5958d7b5d3d2b31b360dbd101534f4309d20d3"
+    },
+    "runtime_implementation": "605f45337d317039f4fc3a026e397bb1f863f491b4685f20ba0323ce0ff7f1f2"
+  },
+  "retained_failures": {
+    "read_only_wrong_manifest_filename": {
+      "path": "build/usb/wire-failed-save-design-a1/result.json",
+      "sha256": "6043d0ea29195f54bb6e0da67a4a26c0a2834832fd6833a1c0a7315f118f59ec"
+    },
+    "initial_private_base_path_guard": {
+      "path": "build/usb/wire-unsuccessful-save-fork-a1/result.json",
+      "sha256": "f1ca38d98323d079ad120eda3c5f24381da1765adc660925bb4393dd7104818e"
+    },
+    "explicit_retry_fixture_cancelled": {
+      "path": "build/usb/wire-unsuccessful-save-fork-a2/result.json",
+      "sha256": "628e6f2212653f2ead55408afe10c00ede45299d105a375a55c3cbbe0b409605"
+    },
+    "cancelled_supervision": {
+      "path": "build/usb/wire-unsuccessful-save-fork-a2.supervision/supervision.json",
+      "sha256": "de96c60e211215b0acb39d7c093617005797a7b9d3925b417cc6b950296c963e"
+    }
+  },
+  "limits": [
+    "Injected fault fork, not an original historical suffix or privately live external host restore",
+    "No native implementation or snapshot identity rewrite",
+    "No new CPU cold recovery after failed autosave; private durable bytes unchanged and original independent Saved11 cold is separate",
+    "Existing notebook blocks all contacts/toolbar at Failed; actual new manual retry is not qualified",
+    "Failed operations in general may persist bytes; this pre-operation detach observed no new external effect",
+    "USB physical/electrical/standards MAC and QEMU microstate migration remain unqualified"
+  ],
+  "host_checks": {
+    "four_prefix_mode_tests": "PASS",
+    "two_unsuccessful_result_negative_tests": "PASS",
+    "scaffold_metadata": "PASS",
+    "scaffold_tests": 18,
+    "lifecycle_failure_regressions": 46,
+    "historical_usb_public_controls": 3
+  },
+  "retry_successor": {
+    "status": "DESIGN_ONLY",
+    "scope": "explicit new Lean policy root; bounded exact retained data and metadata, responsive finite offline ink, explicit maximum3 retries, no old Inspect ACK as dirty Saved"
+  },
+  "source_observations": {
+    "executed_fault_api_sha256": "7c21e74608d19b6906f619dc5908ade68830f25599c8376a5cd2794ebfeaf63c",
+    "executed_session_adapter_sha256": "1d87721567cc75d97dcc8b005df1e98966c49e77fe2c99f8570d4cf5b25ff1b6",
+    "executed_failed_live_fixture_sha256": "366bdaf3e30628e7a184cac57599f0777b9ebe700e0e9ec23243ad37931b2a49",
+    "current_corrected_live_checker": {
+      "path": "scripts/check_usb_fork_disconnect.py",
+      "sha256": "cb90d13a54822ee4fbf33852b197383de1cb9c0388c273c3faad8c3ce7c83897",
+      "execution": "NOT_RUN; retained original FAIL is not relabeled"
+    },
+    "retained_observer": {
+      "path": "scripts/check_usb_fork_failure_observation.py",
+      "sha256": "cf542676f56aa01d647707876bf3c587d871f79d38a9c3217c2067a3f5525ff5"
+    },
+    "zero_cycle_admission": {
+      "path": "scripts/check_usb_fork_fault_admission.py",
+      "sha256": "eb52617b2bfdee2b22224be80d7ae5228c13e25fd3d45cbaaedf77c05608d99c"
+    }
+  }
+}

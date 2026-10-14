@@ -483,6 +483,7 @@ class Session:
         self.last_error = None
         self.capture_uncertain = False
         self.presentation_generation = 0
+        self.restored_parent = None
 
     def ensure_capture_certain(self):
         if self.capture_uncertain:
@@ -602,6 +603,7 @@ class Session:
         self.quantum = quantum
         self.event_cursor = cursor
         self.presentation_generation += 1
+        self.restored_parent = source
         return {'restored': str(source), 'machine': result,
                 'medium': 'isolated snapshot fork', 'external_event_cursor': manifest['external_event_cursor']}
 
@@ -714,7 +716,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -772,6 +774,17 @@ class Session:
             if any(c in str(path) for c in ('\n','\r')):raise ValueError('Outcome path contains a command delimiter')
             result=self.machine.call(action+' '+str(path))
             return {'machine':result,'outcome_tape':str(path),'scope':'captured native USB6 raw suffix only; no live peer resubmission or newly durable external commit'}
+        if action == 'usb-fault':
+            if self.mode != 'laboratory' or self.automatic or self.restored_parent is None:
+                raise ValueError('Injected USB fault requires a paused restored Laboratory fork')
+            from usb_fork_fault import validate as validate_usb_fault
+            state = self.machine.call('inspect')
+            fault, bridge = validate_usb_fault(value['path'], self.restored_parent,
+                                                state, self.machine.identity)
+            result = self.external(value, state, 'usb-outcomes ' + str(bridge))
+            return {'machine': result, 'fault': fault['fault'],
+                    'fault_sidecar': str(Path(value['path']).resolve()),
+                    'scope': 'injected disconnect fault fork; no historical outcome or external commit claim'}
         if action=='ble-outcomes':
             if self.mode not in ('developer','laboratory') or self.machine.identity.get('profile')!='lemma-silicon-dev/0.5.0':raise ValueError('BLE outcome binding requires binding5 Developer or Laboratory mode')
             path=Path(value['path']).resolve()

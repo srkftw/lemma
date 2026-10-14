@@ -984,4 +984,16 @@ other documents. That check/commit executes124.7Mclocks within the original
 prospective465M/7200s batch covers authored hint, edit and actual Invalid check;
 final resource/review/newcold and full G2/G4–G7 remain unfinished.
 
+The [injected USB disconnect fork](../evidence/006-usb-fork-disconnect.json)
+preserves the exact Wire11 Saved11 checkpoint/native identity and admits only
+a new private transport's actual EOF at its pending stateless WAIT boundary.
+Real new raw ink produced Pending12 then Failed227, with all3.63M FAILED pixels
+and zero Saved at40M additional clocks/202s. Independent private durable bytes
+and receipt state remain unchanged. The later toolbar gesture was consumed but
+issued no Store retry because the compiled Failed policy blocks contacts.
+Original pre-clock and cancelled-fixture FAILs remain; a zero-cycle native
+admission/horizon check and independent retained-state observer qualify their
+separate scopes. The corrected live checker is NOT_RUN. Bounded explicit retry
+with retained owned bytes is a separate Lean successor, not a host workaround.
+
 -->
