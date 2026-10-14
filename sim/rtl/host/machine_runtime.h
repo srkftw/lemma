@@ -29,6 +29,10 @@ struct Options {
  uint64_t trace_limit=10000,stop_panels=0,fail_flush=0,observer_cycle=0;
  unsigned deadline=120,host_threads=1;
  unsigned ble_peer_timeout_ms=10000,usb_peer_timeout_ms=60000;
+ // Additive native Clocked13 transport recovery. Historical containers/tapes
+ // retain their exact layout when this explicitly selected scope is absent.
+ bool usb_recovery=false;
+ std::string usb_recovery_binding;
  int32_t usb_host_clock_ppm=0,usb_chip_clock_ppm=0;
  uint32_t usb_host_clock_phase=0,usb_chip_clock_phase=0;
  std::string usb_peer_executable,usb_capture_path;
@@ -52,7 +56,7 @@ struct BleOutcome {
  std::string frame;
 };
 struct UsbRawRecord { uint64_t cycle=0,tag=0,id=0; std::string frame; };
-struct UsbReplayTape { std::vector<UsbRawRecord> rows; uint64_t horizon=0; };
+struct UsbReplayTape { std::vector<UsbRawRecord> rows; uint64_t horizon=0; bool recovery=false; };
 struct State {
  BackingState backing,boot_backing;
  std::map<uint64_t,std::array<uint8_t,512>> accepted_boot_medium;
@@ -96,6 +100,8 @@ struct State {
  uint64_t usb_attached=0,usb_connected=0,usb_terminal=0,usb_next_id=1;
  uint64_t usb_cursor=0,usb_until=0,usb_reset_until=0,usb_next_poll=0;
  uint64_t usb_records=0,usb_record_hash=14695981039346656037ULL;
+ uint64_t usb_recovery=0,usb_connection_epoch=0;
+ std::string usb_recovery_binding;
  UsbClockDomain usb_host_clock,usb_chip_clock;
  uint32_t usb_clock_position=0;
  uint64_t ble_attached=0,ble_ready=0,ble_coex=1,ble_next_id=1,ble_poll_cycle=0,ble_pending=0;
@@ -126,6 +132,7 @@ class Machine {
  UsbReplayTape usb_replay;
  uint64_t usb_replay_cursor=0,usb_capture_bytes=0;
  bool usb_fork_suspended=false,usb_replaying=false,usb_rx_transfer=false,usb_tx_transfer=false;
+ bool usb_capture_failed=false;
  std::ofstream usb_capture;
  void usb_before_edge(bool);
  void usb_disconnect(const std::string&);
@@ -135,6 +142,7 @@ class Machine {
  void usb_record(uint64_t,uint64_t,const std::string&);
  bool usb_reply(const std::string&);
  void usb_accept_command(const UsbRawCommand&);
+ void usb_accept_attach(uint64_t);
  void usb_validate_tape(const UsbReplayTape&) const;
  std::vector<BleOutcome> ble_replay;
  uint64_t ble_replay_cursor=0;
@@ -221,6 +229,9 @@ public:
  // Observational raw suffix export and private replay; no external reissue.
  void export_usb_replay(const std::string&) const;
  void bind_usb_replay(const std::string&);
+ // A new explicitly selected live connection, never a restored branch. Only
+ // raw transport attachment changes; real reset/control traffic configures it.
+ void reconnect_usb(uint64_t,uint64_t);
  const std::string& ble_capture_path() const {return active_ble_capture;}
  void panel(const std::string&) const;
  void export_medium(const std::string&) const;

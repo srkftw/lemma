@@ -996,4 +996,68 @@ admission/horizon check and independent retained-state observer qualify their
 separate scopes. The corrected live checker is NOT_RUN. Bounded explicit retry
 with retained owned bytes is a separate Lean successor, not a host workaround.
 
+## October14 connected Closure, Clocked cold and native raw recovery
+
+Published `dd5c93f64defbba4d39be8f9b0aa5a58994a317b` has actual candidate
+[CI38524024216](https://github.com/srkftw/lemma/actions/runs/38524024216)
+**SUCCESS**, all ten jobs/all reported steps. Actual checked merge is
+`2b5753a7959c9f8860172928815265168c1f765a`, merging that head into
+`b2fe214258345f9e48ae1f836fd80b0773d933a6`; see
+[the retained receipt](../evidence/006-candidate-dd5-ci.json).
+Draft successor [PR9](https://github.com/srkftw/lemma/pull/9) remains unmerged.
+Later local code, including72ad3d0 scoped IPC,9838fde retry/remount components,
+7f3173e Clocked receipt andfbd0bf3 Closure integration, needs its own candidate.
+Original reviewed foundation failure38245370738 and later failed CI runs remain
+failures; no skipped work is counted passed.
+
+[Closure7/Doc8](../evidence/006-managed-closure-mathematics-v1.json) now has
+actual isolated ordinary Lean closures, rational andQ[x] results, mixed Doc7→8
+history migration, OOM237 and verifier-death96 containment. Normal178.653s,
+migration70.317s, OOM56.059s and death63.509s pass; death returns40 frames.
+Both failure cases preserve mathematics and pass subsequent rawink/Save/newcold
+with all controller pixels. The original44-pixel early-export failure remains;
+actual private snapshots establish queued guest framebuffer work and the
+corrected observer waits real progress and independently checks queue0. General
+runtime, recursion and proof-kernel/environment closure remain unfinished.
+
+[Clocked13](../evidence/006-usb-clocked-notebook-workflow.json) has complete
+actual live Saved11, lost-barrier-reply/peer restart, editing/navigation and
+independent new-CPU cold725M/3390.580s. Cold performs42READ/zeroWRITE/BARRIER and
+matches every acknowledged byte and all3.63M pixels. The original terminal
+HELLO-observer failure and its independently established initial outbox7 are
+retained; no prefix was rerun for the corrected observation.
+
+[Native raw recovery](../evidence/006-usb-live-recovery.json) supplies an opt-in
+Clocked13 manifest control contract, container11, durable pre-effect reattach
+capture, monotonic connection/global request identities and private recorded
+continuation. Runtime64d7d234 builds35.687s/192165505 outputbytes. Three exact
+whole-archive suffixes cross Pending actualEOF and zero-clock attach; eight
+checksum-correct malformed state/tape cases reject unchanged. Actual public
+prepared launch with genuine policy4 accepts epoch2 atcycle4000, reaches a real
+reset stillpending atcycle7000, and changes no peer/outbox bytes. Package is
+`build/native/task006-usb-live-recovery-a1`. The full pinned host suite passes270
+checks57.938s after a corrected legacy header identity access and exact Closure
+rejection-text tests; both original failed runs remain. Guest recovery successor
+components are still separate from whole-image/failed-save/retry acceptance.
+
+The fixed browser cold lineage has actual Saved42–44 after hint/edit/isolated
+Invalid, followed by actual history-cap Indeterminate/manual review Saved45–46.
+The475M close batch **FAIL**s full closed display; a separate40M diagnostic
+suffix also fails. Complete read-only Sv39/stack/ELF checks establish the first
+boundary in a stored ink READ and the suffix in full redraw upload nearrow256;
+the earlier final-row bulk packet was stale and never establishes completed
+close. Both exact boundaries remain under
+`build/browser/task006-capture-u64-cold-a1`. An independent actual same-origin
+Saved46 durable-only cold now runs from verifiablecycle0/retired0, without
+restore/initialize/import. It uses the already qualified version1 paused UI and
+bit-identical0c Machine/ROM/guest437 artifacts, original2B/7200s/2GiB bounds;
+`.../saved46-durable-reopen-a1/plan.json` andcold-zero.chk preserve its start.
+Ready, reopenedcourse and its final full-pixel/durable result are not yet claimed.
+
+UserCopy grouping and immutable installed-course rendering/polling work are
+separate active guest increments. The new truthful course mounted-Ready60M
+cold remains a retained failure, not an extended deadline or completed G6.
+Native/browser distribution, full fast cached-state parity, radios and physical
+closure remain unfinished in the original inventory.
+
 -->

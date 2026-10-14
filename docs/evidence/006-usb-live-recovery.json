@@ -1,0 +1,105 @@
+{
+  "schema": "lemma-native-usb-live-recovery/1",
+  "status": "PASS_OPT_IN_RAW_RECOVERY_PRIVATE_SUFFIXES_PUBLIC_CONTROL",
+  "scope": "Native Clocked13 raw process ownership/control; no guest receipt reconciliation, journal remount, configured/authenticated session, retry Saved or fullUSB conformance claim",
+  "native_identity": "64d7d234d5fe35401de2ebfb4e2b2e5cd3699ff7451cdbbd0c992c1b5c525962",
+  "native_binary_sha256": "6cbd9cad4b208909aefe62e151a83fb02c3042a2b1b3efa86c8594b681159e63",
+  "native_manifest_sha256": "2a9d6e631102c077ec68e07723c23ac519bb8fabf2c36020ed86549fd2886b4c",
+  "native_build": {
+    "path": "build/usb/native-recovery-owner-a1/result.json",
+    "sha256": "131f98a8c01670fb195b8d7e1fec61d2c63353fad8f5e211ec7302239c153043",
+    "status": "PASS_ACTUAL_NATIVE_BUILD"
+  },
+  "build_seconds": 35.68725813308265,
+  "build_apparent_bytes": 192165505,
+  "raw_component": {
+    "path": "build/usb/native-recovery-component-a1/result.json",
+    "sha256": "18d81ae58bb22dc71a8f0e1d9dc4a2690dce23af788d6c6bba8fec806c136015",
+    "status": "PASS_RAW_NATIVE_RECOVERY_COMPONENT"
+  },
+  "raw_component_seconds": 17.484799865982495,
+  "actual_first_attach_cycle": 10000,
+  "actual_final_cycle": 18003,
+  "real_reset_pending": true,
+  "exact_complete_private_suffix_boundaries": [
+    "pending actual EOF",
+    "terminal before zero-clock reattach",
+    "just accepted reattach at current horizon"
+  ],
+  "validation": {
+    "path": "build/usb/native-recovery-maintained-check-a2/result.json",
+    "sha256": "5d6d89ad55a9cbb46e7104a5c41c88c7532c9a332214aa8c124a248d51110adc",
+    "status": "PASS_RAW_RECOVERY_AND_EIGHT_EXACT_REJECTIONS"
+  },
+  "validation_seconds": 94.58243496902287,
+  "validation_clocks": 0,
+  "checksum_correct_structural_negatives": 8,
+  "reused_live_prefix": true,
+  "original_live_processes_after_private_replays": 2,
+  "prepared_package": {
+    "path": "build/usb/native-recovery-package-owner-a1/result.json",
+    "sha256": "2fee2cd47d53f4d6050b95771c132c526c7a79aed1eea9445ba8dcd901b63ed9",
+    "status": "PASS_PREPARED_NATIVE_RECOVERY_PACKAGE"
+  },
+  "package_seconds": 18.712452326901257,
+  "native_bundle": "build/native/task006-usb-live-recovery-a1",
+  "bundle_sha256": "8b18190171ef5cb03aebea650bd1805ebd3fc4b6b42a4f3996a6bf6ac36e68c6",
+  "actual_public_command": {
+    "path": "build/usb/native-recovery-public-command-a2/result.json",
+    "sha256": "b0e708cf6866666257fc20df95324374fc1dadb58b62ea0eaa4580716c43873c",
+    "status": "PASS_ACTUAL_PREPARED_LAUNCH_AND_PUBLIC_RECONNECT"
+  },
+  "public_command_seconds": 2.094247984001413,
+  "actual_public_terminal_cycle": 4000,
+  "actual_public_reattach_cycle": 4000,
+  "actual_public_reset_pending_cycle": 7000,
+  "actual_public_global_next_request": 5,
+  "genuine_policy": "lemma-usb-pending-policy/4",
+  "public_peer_writer": 83,
+  "public_original_and_private_peer_outbox_unchanged": true,
+  "qualification_commands": [
+    "nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_recovery.py --rtl-build build/silicon/task006-usb-live-recovery-a1 --retained-component build/usb/native-recovery-component-a1 --work-dir build/usb/native-recovery-maintained-check-a2'",
+    "python3 build/usb/native-recovery-public-command-a2/run.py"
+  ],
+  "host_suite": {
+    "command": "nix develop --no-write-lock-file --command python3 -m unittest discover -s tests/lemmasim -v",
+    "path": "build/usb/native-recovery-maintained-host-nix-a2.log",
+    "sha256": "74f44d2f313f04c50a31492e11e1579b47ee539b481afe2ce925a153993c8726",
+    "tests": 270,
+    "seconds": 57.938,
+    "status": "PASS"
+  },
+  "retained_failures": [
+    {
+      "path": "build/usb/native-recovery-maintained-host-a1.log",
+      "cause": "Outside pinned tool shell: missing Lean/cc; also legacy header identity and stale Closure rejection-text observer failures"
+    },
+    {
+      "path": "build/usb/native-recovery-maintained-host-nix-a1.log",
+      "cause": "Pinned269 predecessor: one legacy header identity implementation regression and six unchanged scope rejections with stale exact wording; corrected implementation/observer are separate"
+    },
+    {
+      "path": "build/usb/native-recovery-maintained-check-a1/result.json",
+      "cause": "Checker hashed post-build metadata into pre-build identity; independently corrected to actual compiler identity recipe, before any CPU/I/O"
+    },
+    {
+      "path": "build/usb/native-recovery-rejections-a1/result.json",
+      "cause": "Default Lean shell omits Verilator; before fixture"
+    },
+    {
+      "path": "build/usb/native-recovery-rejections-a1/result-a2.json",
+      "cause": "Observer reused a snapshot destination; native correctly refused overwrite; corrected unique destinations qualified at validation-a3/result.json"
+    },
+    {
+      "path": "build/usb/native-recovery-public-command-a1/result.json",
+      "cause": "Owner fixture substring matched parent argv and actualhost; corrected exact argv0 ownership; no process kill or reconnect in original failed run"
+    }
+  ],
+  "open": [
+    "Registered recovery guest successors still need wholebuild and real failed-save/reattach/receipt/remount/retry/cold acceptance",
+    "Original arbitrary-boundary QEMU cached executable/TB/jump state gap remains",
+    "Captured external USB continuation is separate from live restored peer continuation or remote medium snapshots",
+    "Browser live process adapter not supplied",
+    "FullUSBstandards/physical qualification unfinished"
+  ]
+}

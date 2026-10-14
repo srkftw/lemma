@@ -837,6 +837,7 @@ def main():
     p.add_argument('--backing-replay',type=Path,help='Actual backing outcome log; requires an isolated --restore (QEMU excludes unresolved peer retry controls)')
     p.add_argument('--usb-replay',type=Path,help='USB6/8/11/13 RTL: complete captured raw outcome tape; isolated --restore only, no live peer')
     p.add_argument('--usb-host-prepared',type=Path,help='RTL binding6: exact prepared genuine hosted Lean USB packet host')
+    p.add_argument('--usb-recovery',action='store_true',help='Opt-in Clocked13 Developer/Laboratory live reconnect contract; container11/raw tape3, policy4 only')
     p.add_argument('--usb-peer-directory',type=Path,help='Independent opaque durable peer directory; no guest document interpretation')
     p.add_argument('--usb-peer-socket',type=Path)
     p.add_argument('--usb-host-state',type=Path,help='Durable opaque transaction outbox; retain across host restart')
@@ -924,6 +925,11 @@ def main():
             if args.command=='session':
                 if args.profile in ('lemma-silicon-dev/0.5.0','lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.9.0','lemma-silicon-dev/0.10.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and args.backend!='rtl':raise Failure('BLE binding5 requires the exact RTL backend')
                 usb_options=(args.usb_host_prepared,args.usb_peer_directory,args.usb_peer_socket,args.usb_host_state)
+                if args.usb_recovery:
+                    if args.backend != 'rtl' or args.profile != 'lemma-silicon-dev/0.13.0' or args.mode not in ('developer','laboratory'):
+                        raise Failure('USB recovery requires Clocked13 RTL Developer or Laboratory mode')
+                    if args.restore is None and args.usb_host_prepared is None:
+                        raise Failure('Live USB recovery requires exact policy4 and a persistent peer/outbox namespace')
                 if any(x is not None for x in usb_options):
                     if args.backend!='rtl' or args.profile not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') or args.workload not in ('usb','notebook','initializer','usb-bulk-notebook','usb-bulk-initializer','usb-next-bulk-notebook','usb-next-bulk-initializer','usb-wire-bulk-notebook','usb-wire-bulk-initializer','usb-clocked-bulk-notebook','usb-clocked-bulk-initializer') or args.mode not in ('developer','laboratory'):
                         raise Failure('USB packet host requires USB6/8/11/13 RTL probe, notebook or initializer in Developer or Laboratory mode')

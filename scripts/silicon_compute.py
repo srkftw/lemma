@@ -56,6 +56,7 @@ def source_manifest(dep, profile_name=None):
     header.write_text('// Generated from the same authoritative binding as RTL and Lean.\n#pragma once\n'+f'#define LEMMA_USB_CLOCKED_ENABLED {fields.get("usb_clocked_enabled",0)}\n'+''.join(f'constexpr uint64_t BINDING_{k.upper()} = {v}ULL;\n' for k,v in fields.items()))
     paths=[binding]+sources(dep,patched=True)+[ROOT/'tooling/silicon/config.vh',ROOT/'sim/rtl/lemma_compute.sv',ROOT/'sim/rtl/lemma_soc.sv',ROOT/'sim/rtl/lemma_pen.sv',ROOT/'sim/rtl/lemma_paper.sv',ROOT/'sim/rtl/lemma_block.sv',ROOT/'sim/rtl/lemma_power.sv',ROOT/'sim/rtl/lemma_ble_packet.sv',ROOT/'sim/rtl/lemma_usb_device.sv',ROOT/'sim/rtl/lemma_usb_fs_phy.sv',ROOT/'sim/rtl/lemma_usb_fs_phy_clocked.sv',ROOT/'sim/rtl/lemma_usb_cdc_fifo.sv',ROOT/'sim/rtl/lemma_usb_fs_bridge.sv',ROOT/'sim/rtl/lemma_wifi_math.sv',ROOT/'sim/rtl/lemma_wifi_bcc_symbol.sv',ROOT/'sim/rtl/lemma_wifi_ofdm_data.sv',ROOT/'sim/rtl/lemma_boot_nv.sv',ROOT/'sim/rtl/lemma_register_ram.sv']
     return {'core_repository':'https://github.com/openhwfoundation/cvw','core_revision':REV,
+            **({'runtime_control_contracts':{'usb_recovery':'lemma-usb-live-recovery/1'}} if fields.get('usb_clocked_enabled') else {}),
             'core_license':'Apache-2.0 WITH SHL-2.1 and six preserved MIT-notice files','top':'lemma_soc',
             'host_toolchain_inputs':{str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'tooling/silicon/sim.nix',ROOT/'flake.lock')},
             'build_options':BUILD_OPTIONS,

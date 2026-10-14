@@ -1,0 +1,92 @@
+{
+  "schema": "lemma-candidate-ci-terminal/1",
+  "status": "SUCCESS",
+  "candidate": "dd5c93f64defbba4d39be8f9b0aa5a58994a317b",
+  "run_id": 38524024216,
+  "url": "https://github.com/srkftw/lemma/actions/runs/38524024216",
+  "actual_checkout": "2b5753a7959c9f8860172928815265168c1f765a",
+  "actual_checkout_description": "Merge dd5c93f64defbba4d39be8f9b0aa5a58994a317b into b2fe214258345f9e48ae1f836fd80b0773d933a6",
+  "jobs": [
+    {
+      "id": 115720038641,
+      "name": "Metadata and host-only suites",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 17,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720038857,
+      "name": "Foundation Gates 1-9 and clean qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720038873,
+      "name": "Legacy Core0 RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 8,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720038939,
+      "name": "Task 003 Buffer service RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720038946,
+      "name": "Task 003 architectural containment RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720039021,
+      "name": "Task 003 Gates F-I RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720039031,
+      "name": "Task 003 source-negative RV64 qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720039090,
+      "name": "Task 003 implemented Gates A-E RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 9,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720039095,
+      "name": "RTL device and digital power conformance with literal host stimuli",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 11,
+      "all_reported_steps_success": true
+    },
+    {
+      "id": 115720039101,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "reported_steps": 10,
+      "all_reported_steps_success": true
+    }
+  ],
+  "scope": "Actual terminal candidate CI, all ten jobs. Later local implementation increments do not inherit this result; original failed runs and skipped work remain retained. Draft PR9 remains unmerged."
+}

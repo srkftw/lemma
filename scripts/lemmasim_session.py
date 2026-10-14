@@ -315,6 +315,15 @@ class RTL:
                          'guest': self.data['workloads'][args.workload]['image']['sha256'],
                          'dtb': self.data['workloads'][args.workload]['dtb']['sha256'],
                          'descriptor': self.data['workloads'][args.workload]['descriptor']['sha256']}
+        self.usb_recovery_spec = None
+        if getattr(args, 'usb_recovery', False):
+            from usb_recovery import CONTRACT
+            if self.data['profile'] != 'lemma-silicon-dev/0.13.0' or args.mode not in ('developer', 'laboratory'):
+                raise ValueError('USB recovery requires Clocked13 Developer or Laboratory mode')
+            manifest = json.loads(silicon_guest.validate(self.data['rtl_build']).read_text())
+            if manifest.get('runtime_control_contracts') != {'usb_recovery': CONTRACT}:
+                raise ValueError('Prepared native implementation does not admit USB recovery')
+            self.identity['usb_recovery_contract'] = CONTRACT
         if self.data.get('rtl_source_archive') is not None:
             self.identity['runtime_source_archive']={key:self.data['rtl_source_archive'][key] for key in ('archive','original_receipt','native_manifest','snapshot_identity','inputs','scope')}
         override_archive=self.data.get('guest_override',{}).get('source_archive')
@@ -349,6 +358,10 @@ class RTL:
             if ble_replay is not None:command += ['--ble-replay',str(ble_replay.resolve())]
         elif ble_peer is not None or ble_replay is not None:raise ValueError('BLE peer requires optional binding5')
         usb_prepared=getattr(args,'usb_host_prepared',None)
+        if getattr(args, 'usb_recovery', False):
+            command += ['--usb-recovery']
+            if usb_prepared is None and not getattr(args, 'restore', None):
+                raise ValueError('Live USB recovery requires a validated host and durable peer namespace')
         if self.data['profile'] in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') and getattr(args,'restore',None) and usb_prepared is not None:
             raise ValueError('Restored USB raw fork cannot launch a live host')
         if usb_prepared is not None:
@@ -361,6 +374,12 @@ class RTL:
             else:
                 host=lemmasim_usb.validate(usb_prepared)
             peer=peer_info(args.usb_peer_directory)
+            if getattr(args, 'usb_recovery', False):
+                from usb_recovery import binding
+                self.usb_recovery_spec = (usb_prepared, args.usb_peer_directory,
+                    args.usb_peer_socket, args.usb_host_state, ROOT/'sim/companion/os_io.py')
+                digest, _ = binding(*self.usb_recovery_spec)
+                command += ['--usb-recovery-binding', digest]
             command += ['--usb-peer',host['binary']['path'],'--usb-capture',str(directory/'usb.raw'),
                         '--usb-peer-timeout-ms',str(args.usb_peer_timeout_ms)]
             for item in (str(args.usb_peer_socket.resolve()),str(args.usb_host_state.resolve()),str(peer['writer']),str(ROOT/'sim/companion/os_io.py')):
@@ -429,8 +448,13 @@ class RTL:
     def preflight_checkpoint(self, path, expected_cycle):
         # Each selected binding admits only its declared container schema; the
         # exact runtime identity and CRC/state checks still apply below.
-        profile=getattr(self,'identity',{}).get('profile')
+        identity=getattr(self,'identity',{})
+        profile=identity.get('profile')
         versions=(10,) if profile=='lemma-silicon-dev/0.13.0' else (8,) if profile=='lemma-silicon-dev/0.11.0' else (6,) if profile in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0') else (5,) if profile=='lemma-silicon-dev/0.5.0' else (3,) if profile=='lemma-silicon-dev/0.4.0' else (1,2)
+        if identity.get('usb_recovery_contract') == 'lemma-usb-live-recovery/1':
+            if profile != 'lemma-silicon-dev/0.13.0':
+                raise ValueError('USB recovery checkpoint profile differs')
+            versions = (11,)
         # LMSSRTL1's wrapper follows its 112-byte container header.
         # event_index is the first u64; cycle is the second. Session has
         # already verified the complete file's length and SHA256 inventory.
@@ -716,7 +740,7 @@ class Session:
         if not isinstance(value, dict):
             raise ValueError('Session request must be an object')
         action = value.get('action')
-        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault'):
+        if action in ('run','resume','inject','warm-reset','cold-cycle','snapshot','restore','replay','companion-retry','backing-outcomes','ble-outcomes','usb-outcomes','export-usb-replay','usb-fault','usb-reconnect'):
             self.ensure_capture_certain()
         if value.get('source')=='tablet' and (not self.adapter or not self.adapter().get('tablet',{}).get('connected')):
             raise ValueError('Live tablet is disconnected; use recorded replay or reconnect explicitly')
@@ -768,6 +792,32 @@ class Session:
             result = self.external(value, state, action)
             self.presentation_generation += 1
             return result
+        if action == 'usb-reconnect':
+            if (self.mode not in ('developer', 'laboratory') or self.automatic or
+                    self.restored_parent is not None or
+                    self.machine.identity.get('backend') != 'rtl' or
+                    self.machine.identity.get('profile') != 'lemma-silicon-dev/0.13.0' or
+                    self.machine.identity.get('usb_recovery_contract') != 'lemma-usb-live-recovery/1' or
+                    getattr(self.machine, 'usb_recovery_spec', None) is None):
+                raise ValueError('USB reconnect requires a paused original Clocked13 recovery owner')
+            if set(value) != {'action', 'epoch', 'next_request', 'binding'}:
+                raise ValueError('USB reconnect requires exact epoch/request/namespace binding')
+            epoch = bounded(value['epoch'], 2, (1 << 64)-1, 'USB connection epoch')
+            next_request = bounded(value['next_request'], 1, (1 << 64)-2, 'USB next request')
+            from usb_recovery import binding
+            digest, identity = binding(*self.machine.usb_recovery_spec)
+            if value['binding'] != digest:
+                raise ValueError('USB recovery process/namespace binding changed')
+            state = self.machine.call('inspect')
+            usb = state.get('usb', {})
+            if (not usb.get('recovery') or not usb.get('terminal') or
+                    usb.get('connection_epoch') != epoch-1 or
+                    usb.get('next_request') != next_request or
+                    usb.get('namespace_binding') != digest):
+                raise ValueError('USB reconnect state/epoch/request/binding differs')
+            result = self.external(value, state, f'usb-reconnect {epoch} {next_request}')
+            return {'machine': result, 'connection_binding': identity,
+                    'scope': 'new raw transport epoch only; real guest USB reset/control and receipt/journal recovery remain required'}
         if action in ('usb-outcomes','export-usb-replay'):
             if self.mode not in ('developer','laboratory') or self.machine.identity.get('backend')!='rtl' or self.machine.identity.get('profile') not in ('lemma-silicon-dev/0.6.0','lemma-silicon-dev/0.8.0','lemma-silicon-dev/0.11.0','lemma-silicon-dev/0.13.0'):raise ValueError('USB raw outcomes require USB6 RTL Developer or Laboratory mode')
             path=Path(value['path']).resolve()

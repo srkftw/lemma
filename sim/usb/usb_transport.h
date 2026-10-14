@@ -15,7 +15,7 @@ struct UsbTransportFailure : std::runtime_error { using std::runtime_error::runt
 struct UsbRawCommand { uint64_t id;std::string frame; };
 class UsbProcessTransport {
  public:
-  UsbProcessTransport(const std::string& executable,const std::vector<std::string>& arguments,unsigned timeout_ms=10000);
+  UsbProcessTransport(const std::string& executable,const std::vector<std::string>& arguments,unsigned timeout_ms=10000,uint64_t first_request_id=1);
   ~UsbProcessTransport();
   UsbProcessTransport(const UsbProcessTransport&)=delete;
   UsbProcessTransport& operator=(const UsbProcessTransport&)=delete;

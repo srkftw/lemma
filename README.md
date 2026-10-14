@@ -1039,4 +1039,51 @@ Developer raw-button/one-clock controller boundary. Host fixtures additionally
 reject restricted direct messages without changing clocks, pending timers or
 backing. New cold guest acceptance and teacher/tutor permissions are distinct.
 
+### Opt-in native live USB reattachment
+
+The prepared `build/native/task006-usb-live-recovery-a1` package admits
+`lemma-usb-live-recovery/1` on unchanged Clocked13 circuitry. Its original
+Clocked notebook and initializer guests retain their separate audits. This
+operator control reconnects the raw process after actual EOF; guest failed-save
+reconciliation and shadow journal remount still require their new software
+successor. It never sets configured, authenticated or Saved state.
+
+The following launches use the independent opaque Saved11 peer/outbox retained
+by the qualified public-control scenario. Use an unused session directory and
+run the peer in a separate terminal:
+
+```sh
+./scripts/lemmasim companion serve \
+  --prepared build/usb/host-pending-policy3-a1/companion/prepared.json \
+  --directory build/usb/native-recovery-public-command-a2/peer \
+  --socket build/usb/native-recovery-public-command-a2/peer.sock
+./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.13.0 \
+  --workload usb-clocked-bulk-notebook --mode developer --paused \
+  --native-bundle build/native/task006-usb-live-recovery-a1 \
+  --session-dir build/user-usb-recovery-new \
+  --usb-recovery --usb-host-prepared build/usb/host-pending-policy4-a3/prepared.json \
+  --usb-peer-directory build/usb/native-recovery-public-command-a2/peer \
+  --usb-peer-socket build/usb/native-recovery-public-command-a2/peer.sock \
+  --usb-host-state build/usb/native-recovery-public-command-a2/outbox
+./scripts/lemmasim session-control --session-dir build/user-usb-recovery-new \
+  --request '{"action":"inspect"}'
+```
+
+A paused original owner with terminal transport may submit `usb-reconnect` with
+exact `epoch`, `next_request` and `binding` values from inspection. The tested
+operator request was epoch2/request3 atcycle4000; values are validated before
+capture or child creation. Restored forks use recorded outcomes and never
+launch a replacement peer. See [the versioned contract](docs/contracts/006-usb-live-recovery-v1.md)
+and [actual qualification](docs/evidence/006-usb-live-recovery.json).
+
+The reusable structural check can consume the sealed earlier raw prefix:
+
+```sh
+nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_usb_recovery.py --rtl-build build/silicon/task006-usb-live-recovery-a1 --retained-component build/usb/native-recovery-component-a1 --work-dir build/usb/recovery-check-new'
+```
+
+Omitting `--retained-component` runs a new bounded raw lifecycle fixture first.
+These checks execute the real Machine core and generated circuitry, with no
+guest image, notebook, journal recovery or full USB conformance claim.
+
 -->

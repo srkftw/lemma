@@ -13,7 +13,8 @@ void require(bool value,const char* text){if(!value)throw std::runtime_error(tex
 void external(bool value,const char* text){if(!value)throw UsbTransportFailure(text);}
 bool bounded(const std::string& frame){return !frame.empty()&&frame.size()<=160&&frame.find_first_of("\n\r\0",0,3)==std::string::npos;}
 }
-UsbProcessTransport::UsbProcessTransport(const std::string& executable,const std::vector<std::string>& arguments,unsigned timeout_ms):timeout_ms_(timeout_ms),activity_(std::chrono::steady_clock::now()){
+UsbProcessTransport::UsbProcessTransport(const std::string& executable,const std::vector<std::string>& arguments,unsigned timeout_ms,uint64_t first_request_id):timeout_ms_(timeout_ms),next_(first_request_id),activity_(std::chrono::steady_clock::now()){
+ require(first_request_id&&first_request_id!=UINT64_MAX,"USB process request namespace");
  require(!executable.empty()&&executable.size()<=4096&&executable.find('\0')==std::string::npos&&arguments.size()<=32&&timeout_ms>=100&&timeout_ms<=60000,"USB process arguments");
  std::vector<char*> argv;argv.push_back(const_cast<char*>(executable.c_str()));
  for(const auto& value:arguments){require(value.size()<=4096&&value.find('\0')==std::string::npos,"USB process argument bound");argv.push_back(const_cast<char*>(value.c_str()));}

@@ -21,8 +21,19 @@ class LaboratoryArchiveBoundary(unittest.TestCase):
             (PROFILE,CONFIG,None),('lemma-silicon-dev/0.2.0',CONFIG,'laboratory'),
             ('lemma-silicon-dev/0.8.0',CONFIG,'laboratory'),
             (PROFILE,'lemmasim-silicon-bytes-arithmetic-oom-development','laboratory')]:
-            with self.subTest(profile=profile,configuration=configuration,mode=mode),self.assertRaisesRegex(ValueError,'canonical Laboratory Array OOM'):
+            with self.subTest(profile=profile,configuration=configuration,mode=mode),self.assertRaisesRegex(ValueError,'exact canonical Laboratory failure image'):
                 bundle.laboratory_guest_archive('/missing','/missing',profile,configuration,mode)
+
+    def test_closure_failure_archives_keep_exact_profile_and_laboratory_scope(self):
+        for configuration in ('lemmasim-silicon-closure-arithmetic-oom-development',
+                              'lemmasim-silicon-closure-arithmetic-fault-development'):
+            for profile, mode in ((PROFILE, 'student'), (PROFILE, 'developer'),
+                                  ('lemma-silicon-dev/0.2.0', 'laboratory')):
+                with self.subTest(configuration=configuration, profile=profile, mode=mode):
+                    with self.assertRaisesRegex(ValueError, 'exact canonical Laboratory failure image'):
+                        bundle.laboratory_guest_archive('/missing', '/missing', profile, configuration, mode)
+            with self.assertRaises(FileNotFoundError):
+                bundle.laboratory_guest_archive('/missing', '/missing', PROFILE, configuration, 'laboratory')
 
     def test_string_archive_requires_same_canonical_laboratory_boundaries_before_io(self):
         for profile,mode in [(PROFILE,'student'),(PROFILE,'developer'),(PROFILE,None),
