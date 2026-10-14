@@ -1,0 +1,159 @@
+{
+  "author_edition": {
+    "author_edition": 2,
+    "author_package_bytes": 4058,
+    "author_package_crc32": 1253124339,
+    "author_package_sha256": "dcde9241f0a8f611e07d94fa6fb7ee453be301d197704e9fe8162496576f5f4c",
+    "command": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "flock",
+      "build/task006-lake.lock",
+      "lake",
+      "env",
+      "lean",
+      "--run",
+      "tests/courses/Author.lean",
+      "--output-dir",
+      "build/courses/course-author-new"
+    ],
+    "scope": "ordinary hosted Lean declaration changes source/edition/hint bytes; unchanged actual guest decoder Actions validate/select; no OS component changes and no guest notebook installation"
+  },
+  "bounds": {
+    "address_space_bytes": 17179869184,
+    "command_seconds": 300,
+    "generated_file_bytes": 1073741824,
+    "package_bytes": 32768,
+    "whole_seconds": 1200
+  },
+  "child_peak_rss_kib": 1616708,
+  "claims_excluded": [
+    "host journal recovery",
+    "host mathematical checking",
+    "production authentication",
+    "repository license change",
+    "new Saved acknowledgement",
+    "G2/G4-G7 completion"
+  ],
+  "command": [
+    "nix",
+    "develop",
+    "--no-write-lock-file",
+    "--command",
+    "python3",
+    "scripts/build_course_package.py",
+    "--output-dir",
+    "build/courses/task006-package-qualified-a5"
+  ],
+  "decoder": {
+    "function_count": 38,
+    "llvm_sha256": "cbe97ca8b92f2873e6953ccb1525b454df0e06c1ed3ac79dabf1ee00f8951833",
+    "object_sha256": "5d04caba3485dc5ed8bc982185f027fff482b91830774f8729adb22777ea9d39",
+    "optimized_llvm_sha256": "80aae11ec03ef0f86d6ca3ce422f3bfd451fdfc385f6c6b68b2687b0069352f3",
+    "unit_sha256": "2e464eb1b2090a0e2ebcd5b9f7d9e405f677ea9c9757c6499ceb06fdf8091152"
+  },
+  "decoder_and_store_objects_match_a4": true,
+  "execution_scope": "SIMULATED_HOST_COMPONENT_QUALIFICATION; RV64 CPU/notebook installation NOT_RUN",
+  "format": "lemma-course-package/1",
+  "independent_codec": "four real published-artifact Python/zlib checks PASS; checks CRC, original material, exact references, distinct prerequisite graphs and recomputed-CRC mutations",
+  "metadata": {
+    "scaffold": "PASS seven gates/56 software units/six physical units unchanged",
+    "scaffold_host_suite": "PASS18 tests"
+  },
+  "milestone": "typed offline course package and actual guest Store loader component",
+  "observed_action_outputs": {
+    "author-edition": "COURSE_PACKAGE_PUBLISH:PASS 4058 bytes,8 original typed nodes\nCOURSE_AUTHOR_EDITION:PASS changed lesson/hint/source/edition; unchanged target decoder selects pinned goal1 and new hint bytes",
+    "genuine-export": "COURSE_PACKAGE_EXPORT:PASS genuine read-only User2 source/LLVM closure",
+    "guest-actions": "COURSE_PACKAGE_ACTIONS:PASS 4040 real bytes,8 nodes,11 valid-CRC shape failures,3 corruption/text failures,7 exact read-fault prefixes,4 argument guards,5 typed-authoring rejections; no writes",
+    "store-actions": "COURSE_PACKAGE_STORE_ACTIONS:PASS 32 genuine ordered READ calls,4040 exact bytes,4 reply/transport failures without failed-copy/retry,7 context guards; no install or checker authority",
+    "store-genuine-export": "COURSE_PACKAGE_STORE_EXPORT:PASS genuine User2 copied-IPC/source/LLVM closure"
+  },
+  "package": {
+    "node_count": 8,
+    "package_bytes": 4040,
+    "package_crc32": 1743257817,
+    "package_sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf"
+  },
+  "previous_component_receipt": {
+    "path": "build/courses/task006-package-qualified-a4/result.json",
+    "reason": "completed component qualification before reusable host publisher/CLI separation; original receipt preserved",
+    "status": "PASS_TYPED_PACKAGE_AND_GENUINE_RV64_COMPONENTS"
+  },
+  "remaining": [
+    "Store server append-only package guard and guest installation/durable publication",
+    "actual RV64 Store package loading and notebook package selection/rendering",
+    "cooperative pen-responsive package load instead of this blocking caller API",
+    "package identity/edition/source-node binding in a separately versioned document/evidence format; existing formats unchanged",
+    "durable learner package references, permissioned tutor context, author/package permission model",
+    "generic goal semantics, managed runtime/proof-kernel/environment closure, distribution licensing and physical qualification"
+  ],
+  "result": "build/courses/task006-package-qualified-a5/result.json",
+  "result_sha256": "612070e46b14dfaafdc03ae3733698a4886fa7f9224a2115b836c6e7e3438c2a",
+  "retained_failures": [
+    {
+      "path": "build/courses/task006-package-qualified-a1/result.json",
+      "reason": "pinned Lake failed to create a thread under4GiB virtual-address cap; actual child peak124676KiB; no target execution",
+      "status": "FAIL"
+    },
+    {
+      "path": "build/courses/task006-package-qualified-a2/result.json",
+      "reason": "independent ELF observer expected readelf RISC-V presentation, but pinned resolved binary was readobj with EM_RISCV; real Action/LLVM/object checks had passed; original FAIL retained",
+      "status": "FAIL"
+    },
+    {
+      "reason": "host field example/target variable end were reserved tokens; corrected before component acceptance",
+      "scope": "initial own source elaboration",
+      "status": "FAIL"
+    },
+    {
+      "reason": "expected wrapper identity instead of actual declared Execution.Op virtualRead64; replaced with exact admitted operation identities",
+      "scope": "initial exact operation observer",
+      "status": "FAIL"
+    },
+    {
+      "reason": "record-update multiline parser ambiguity; replaced by equivalent local binding before acceptance",
+      "scope": "initial own Store fixture elaboration",
+      "status": "FAIL"
+    },
+    {
+      "path": "tests/courses/Author.lean initial invocation",
+      "reason": "imported publisher library also exported root main; moved CLI to PackagePublishMain while retaining reusable ordinary typed publisher; no target change",
+      "status": "FAIL"
+    }
+  ],
+  "schema_version": 1,
+  "source_archive": "build/courses/task006-package-qualified-a5/consumed-source-root",
+  "source_count": 64,
+  "source_inputs": "build/courses/task006-package-qualified-a5/source-inputs.json",
+  "source_inputs_sha256": "c5d43d0e9c34cba2d9220d2973fa2a35ed8c51ee668db13bdd3f92d80ce6e6ce",
+  "status": "PASS_TYPED_PACKAGE_AND_GENUINE_RV64_COMPONENTS",
+  "store_loader": {
+    "store_function_count": 92,
+    "store_llvm_sha256": "2dfb9f16940524d24e8057456bb432b3a37df59d8c2bceabec9c275f8c4b7924",
+    "store_object_sha256": "fdbd27f40655042c274c8cd4ff00a04f412e2fe9dc97e704fad09e3f9dd6cdf5",
+    "store_optimized_llvm_sha256": "98cc8c0b6fbfb9fbf8a5cc33af4d57b01fb86e558d2faf7fe35e3375911345b5",
+    "store_unit_sha256": "2aed52d9fe4ca88ddab17630309f474f7892e191c967a1c84a93e563affe928d",
+    "store_unresolved_boundary": [
+      "lemma_exec_syscall"
+    ]
+  },
+  "tools": {
+    "lake": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lake",
+    "lean": "/nix/store/ysdqz5kaw8paig5v5q8d94yg6lkk0pkf-lean4-4.34.1/bin/lean",
+    "llc": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llc",
+    "llvm-nm": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-nm",
+    "llvm-readelf": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/llvm-readobj",
+    "opt": "/nix/store/2rqn5n8cihb3nkhbk5vwbygbpipz0xaq-llvm-20.1.8/bin/opt"
+  },
+  "versions": {
+    "lake": "Lake version 5.0.0-src (Lean version 4.34.1)",
+    "lean": "Lean (version 4.34.1, Release)",
+    "llc": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake\n\n  Registered Targets:\n    aarch64     - AArch64 (little endian)\n    aarch64_32  - AArch64 (little endian ILP32)\n    aarch64_be  - AArch64 (big endian)\n    amdgcn      - AMD GCN GPUs\n    arm         - ARM\n    arm64       - ARM64 (little endian)\n    arm64_32    - ARM64 (little endian ILP32)\n    armeb       - ARM (big endian)\n    avr         - Atmel AVR Microcontroller\n    bpf         - BPF (host endian)\n    bpfeb       - BPF (big endian)\n    bpfel       - BPF (little endian)\n    hexagon     - Hexagon\n    lanai       - Lanai\n    loongarch32 - 32-bit LoongArch\n    loongarch64 - 64-bit LoongArch\n    mips        - MIPS (32-bit big endian)\n    mips64      - MIPS (64-bit big endian)\n    mips64el    - MIPS (64-bit little endian)\n    mipsel      - MIPS (32-bit little endian)\n    msp430      - MSP430 [experimental]\n    nvptx       - NVIDIA PTX 32-bit\n    nvptx64     - NVIDIA PTX 64-bit\n    ppc32       - PowerPC 32\n    ppc32le     - PowerPC 32 LE\n    ppc64       - PowerPC 64\n    ppc64le     - PowerPC 64 LE\n    r600        - AMD GPUs HD2XXX-HD6XXX\n    riscv32     - 32-bit RISC-V\n    riscv64     - 64-bit RISC-V\n    sparc       - Sparc\n    sparcel     - Sparc LE\n    sparcv9     - Sparc V9\n    spirv       - SPIR-V Logical\n    spirv32     - SPIR-V 32-bit\n    spirv64     - SPIR-V 64-bit\n    systemz     - SystemZ\n    thumb       - Thumb\n    thumbeb     - Thumb (big endian)\n    ve          - VE\n    wasm32      - WebAssembly 32-bit\n    wasm64      - WebAssembly 64-bit\n    x86         - 32-bit X86: Pentium-Pro and above\n    x86-64      - 64-bit X86: EM64T and AMD64\n    xcore       - XCore",
+    "llvm-nm": "llvm-nm, compatible with GNU nm\nLLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.",
+    "llvm-readelf": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.",
+    "opt": "LLVM (http://llvm.org/):\n  LLVM version 20.1.8\n  Optimized build.\n  Default target: x86_64-unknown-linux-gnu\n  Host CPU: meteorlake"
+  },
+  "wall_seconds": 12.392886358953547
+}
