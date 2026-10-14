@@ -79,6 +79,19 @@ both original and expanded pools. `SurfaceBulkBorrowLower.lean` checks genuine
 Kernel4 source closures and emits complete LLVM for O2/RV64 object inspection;
 the old Kernel1/2 and User1/7 profiles reject this physical/device code.
 
+The whole-package capability-header observer preserves its original `header`
+and `managed` fresh-base checks and exhaustive incoming-call inventory. The
+additional private `requireActiveAt` caller is admitted only when the complete
+selected Surface borrow family passes its28 source/body authority pins and14
+closed caller chains. Its `headerAt` operands must remain exactly descriptor
+argument0 and captured base argument1. Missing or changed family members, new
+callers, altered operands and authority bodies fail closed. Historical units
+without this family keep exactly the original two routes. The original first
+whole-pair audit failure on the missing caller admission is retained; the
+corrected full observer uses the unchanged compiled initializer and original
+371-source archive with a separate receipt. This observation is not a fresh
+target build or a successful matched pair.
+
 The metadata-only checkpoint measured2421→2324 primitive requests in the
 legacy pool and2729→2464 in the expanded fixture: exactly three full-AS read
 blocks plus seven repeated frame-resolve blocks disappear. Grouping preserves

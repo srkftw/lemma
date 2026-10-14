@@ -98,3 +98,49 @@ def corpus(ir, unit, *, optimized):
     inserted = '  %borrow.extra = call { i64, i64 } @'+target+'(i64 2181038080, i64 64)\n'+match[0]
     mutations.append(('extra-private-caller', ir.replace(body, body.replace(match[0], inserted, 1), 1), unit))
     return mutations
+
+
+def header_corpus(ir, unit):
+    """Negative-only actual pre-IR cases for the conditional header caller.
+
+    The historical header and managed routes retain their original checker.
+    The selected third route must be admitted through the complete private
+    family, with exact operands; every other header caller still rejects.
+    """
+    from audit_kernel import _ir_definition_body
+    rows = {canonical(row['source']): row for row in unit['functions']}
+    mutations = []
+    target = rows[CAP+'headerAt']['symbol']
+    source = CAP+'requireActiveAt'
+    body = _ir_definition_body(ir, rows[source]['symbol'])
+    token = '@'+target+'(i64 %arg0, i64 %arg1)'
+    if body is None or body.count(token) != 1:
+        raise AssertionError('actual borrowed header argument site absent/nonunique')
+    for label, altered in [('descriptor-substituted', '(i64 %arg1, i64 %arg1)'),
+                           ('base-substituted', '(i64 %arg0, i64 0)')]:
+        mutations.append(('header-'+label,
+                          ir.replace(body, body.replace(token, '@'+target+altered), 1), unit))
+    for source in sorted(FAMILY):
+        absent = copy.deepcopy(unit)
+        absent['functions'] = [row for row in absent['functions']
+                               if canonical(row['source']) != source]
+        mutations.append(('header-missing-family-'+source, ir, absent))
+    for field, value in [('role', 'user'), ('contract_version', 'core0-kernel-v0.3')]:
+        wrong = copy.deepcopy(unit); wrong[field] = value
+        mutations.append(('header-wrong-'+field, ir, wrong))
+    for source in (CAP+'headerAt', CAP+'requireActiveAt', NOTEBOOK+'dispatchBulk',
+                   'Lemma.Kernel.Task.capture'):
+        body = _ir_definition_body(ir, rows[source]['symbol'])
+        match = re.search(r'(?m)^\s*ret \{ i64, i64 \} %[-\w.]+$', body)
+        if match is None:
+            raise AssertionError('actual header authority return absent: '+source)
+        altered = body.replace(match[0], '  ret { i64, i64 } zeroinitializer', 1)
+        mutations.append(('header-authority-body-'+source, ir.replace(body, altered, 1), unit))
+    source = 'Lemma.Kernel.Memory.Access.read8'
+    body = _ir_definition_body(ir, rows[source]['symbol'])
+    match = re.search(r'(?m)^\s*ret \{ i64, i64 \} %[-\w.]+$', body)
+    if match is None:
+        raise AssertionError('actual extra header caller site absent')
+    inserted = '  %header.extra = call { i64, i64 } @'+target+'(i64 8258, i64 2181308416)\n'+match[0]
+    mutations.append(('header-extra-caller', ir.replace(body, body.replace(match[0], inserted, 1), 1), unit))
+    return mutations

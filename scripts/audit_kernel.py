@@ -1221,6 +1221,10 @@ def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
     c='Lemma.Kernel.Capability.';o='Lemma.Kernel.Objects.'
     a='Lemma.Kernel.Memory.AddressSpace.base';v='Lemma.User.CapabilityABI.invalidHandle'
     helper=c+'headerAt';callers={c+'header',c+'managed'}
+    from surface_bulk_borrow import validate_if_present
+    surface_borrow=validate_if_present(pre_ir,unit,optimized=False)
+    borrowed_caller=c+'requireActiveAt'
+    if surface_borrow is not None: callers.add(borrowed_caller)
     required={helper,*callers,a,v,c+'failed',o+'get',o+'registryDescriptor',c+'headerOffset',
               c+'zeroHeaderStep',c+'fatal',c+'active',c+'magic',c+'constructing',c+'capacity',o+'registryCapacity'}
     if unit.get('role')!='kernel' or not required <= names.keys():
@@ -1251,10 +1255,17 @@ def validate_capability_header_helpers(unit: dict, pre_ir: str) -> dict:
         if names[helper] not in parse_definitions_and_calls(caller)[2]: continue
         if source not in callers: raise Core0Error('capability header helper has an unapproved caller')
         observed.add(source)
+        if source==borrowed_caller:
+            if _local_call_arguments(caller,names[helper])!=['i64 %arg0, i64 %arg1']:
+                raise Core0Error('capability header borrow substituted descriptor/base operands')
+            gates.append({'source':source,'borrowed_fields':['descriptor_arg0','captured_base_arg1'],
+                          'complete_body_sha256':surface_borrow['body_identities'][source],
+                          'authority_contract':surface_borrow['contract_version']})
+            continue
         allowed=({v,c+'failed'} if source==c+'header' else
                  {c+'failed',o+'get',c+'headerOffset',c+'zeroHeaderStep',c+'fatal',c+'active'})
         gates.append({'source':source,**validate_capability_base_borrow(caller,names[a],names[helper],names[c+'failed'],failed_body,{names[item] for item in allowed})})
-    if observed!=callers: raise Core0Error('capability header helper lacks both validated entry routes')
+    if observed!=callers: raise Core0Error('capability header helper lacks every exact validated entry route')
     return {'helper':helper,'borrowed_fields':['caller_descriptor','fresh_checked_base'],
             'header_read_offsets':list(range(0,64,8)), 'checked_cfg_gates':gates,
             'scope':'same nonpreemptible Action; no writes, scheduling or cross-entry cache'}
