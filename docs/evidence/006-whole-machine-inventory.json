@@ -741,6 +741,27 @@
       "sha256": "37e194ade8bc50fa52de428d719dd50a98271c6ac56d6b705a0c2b770f762566",
       "status": "PASS_ACTUAL_COLD_GUEST_ISOLATED_VERIFIED_SAVED41",
       "scope": "ActualrepairedRTL/Wasm cold\u2192rawcourse/edit\u2192isolatedArray5/6 Verifiedrevision22\u2192realSaved41; nofinalnewcold/wholeproofkernel claim"
+    },
+    {
+      "path": "build/managed/task-entry2-saved29-cold-a3/cold/result.json",
+      "bytes": 10230,
+      "sha256": "6dfa8ad608bee0275db58f8230bea1bea19306c233f5c1c6200ae39040e19fbc",
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/managed/task-entry2-failed-save-observer-suffix-a2/result.json",
+      "bytes": 1397,
+      "sha256": "a5298cd86cc08f80ff7dc52fd06d90d8bdeef333bac4850f2564a8b80dc21a65",
+      "status": "PASS_RAW_FAILED_NEW_SAVE_PRIOR_DURABILITY_AND_ALL_PIXELS",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
+    },
+    {
+      "path": "build/managed/task-entry2-failed-save-a4/result.json",
+      "bytes": 7951,
+      "sha256": "b3e36f5bb914eb5565147aceaaa3f45dd306c93401f66cf404f4e20cb923e999",
+      "status": "FAIL",
+      "scope": "Original377-input Entry2/canonical0.3 guest/native3d: actual independent Saved29 cold or failedrawSave/missing-onlyobserver. Earlier Undo200MFAIL retained; not current Package compilation, fullmachine, timingparity or physical completion."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",

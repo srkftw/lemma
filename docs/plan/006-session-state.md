@@ -1372,3 +1372,38 @@ silicon/scaffold18 pass locally. Existing CI evidence retains the original log
 3ecbcc... and actual failure. DraftPR9 stays unmerged; no CI pass is inherited.
 
 -->
+
+### October14 Entry2 independent Saved29 cold and failed new Save
+
+The original377-input/cf76f4 native deployment independently recovered the
+acknowledged f1a9f6 medium at actualReady688M clocks/2438.845s/193340KiB peak
+native treeRSS, with174READs and zeroWRITE/BARRIER. Every256MiB backing byte and
+3.63M controllerpixel matches the acknowledged rawSave29 result. This newCPU
+used no checkpoint, initializer or host document recovery. Its predeclared
+Laboratory first-flush failure remained unused during recovery.
+
+An existing clean Save status query correctly returned known sequence29 with
+zero newflushes; the contrary ignored observer is retained as FAIL. Actual new
+raw ink then reached Pending30 and Failed227 at754M, +59M clocks/203.832s within
+the original200M/1800s. No Saved30 appeared. All prior durable bytes/Doc8 remain
+identical, every expected new-ink/FAILED pixel matches, and three changed sectors
+remain volatile. This injected controller failure happened before any backing
+write/barrier; it is not livePOSIX failure or a failed-write rollback claim.
+The observational e64a6b checkpoint retains those sectors. Its original receipt
+failed on treating the snapshot directory as a file; the independently checked
+missing-only receipt passes2.290s without clock/input/snapshot repetition.
+Raw tuple and cycle0 observer failures remain retained. Original Undo200MFAIL
+and incomplete current navigation/ScenarioA remain OPEN.
+
+Reproduce the actual load-bearing observations with the original prepared
+bundle and preserved inputs/actors; do not reuse their output directories:
+`build/managed/task-entry2-saved29-cold-plan-a3/run-cold-a1.py`,
+`build/managed/task-entry2-failed-save-plan-a4/actor.py`, and the read-only
+`build/managed/task-entry2-failed-save-observer-suffix-a2/check.py`.
+The existing Entry2 evidence receipt records actual commands and exact hashes.
+
+Published0b1f80ce92be0aa7c2b6416603b7830c409c63aa CI38636060344 is now
+SUCCESS10/10 with no skipped steps, including foundation, realNotebookO0/O2,
+literalRTL/power and architectural/source-negative qualification. This does
+not qualify newer uncommitted Package/Surface compiler integration. DraftPR9
+remains unmerged; earlier24b/7cec candidate failures retain their meanings.

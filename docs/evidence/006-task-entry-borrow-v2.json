@@ -80,7 +80,7 @@
   "resource_execution": {
     "original_canonical_new_bulk_boot_500M": "FAIL_RETAINED",
     "new_entry2_whole_link": "PASS_MATCHED_ORIGINAL_PRODUCTION_CURRENT_FULL_AUDITS",
-    "new_entry2_connected_rv64": "PASS_COLD_READY_AND_RAW_SAVED29; FAIL_UNDO_200M; remaining navigation/cold/failure acceptance open",
+    "new_entry2_connected_rv64": "PASS_COLD_READY_RAW_SAVED29_INDEPENDENT_COLD_AND_FAILED_NEW_SAVE; FAIL_UNDO_200M; current navigation/completeScenarioA OPEN",
     "cycle_speedup": "Same Saved26 medium/full display first-observed Ready669M versus prior canonical Wasm712.45M; resolution1M versus50k. Native and Wasm host durations are not a simulator-speed comparison."
   },
   "receipts": {
@@ -105,7 +105,12 @@
     "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result-a2.json": "716b8a2d8eea3368ee859cf415135b866a0fc8afc90532bc250b5db1b7575e15",
     "build/managed/task-entry2-connected-cold-a1/cold/result.json": "24e7959142d4805093e467cd2f813eb6c4e547e6264b260fdb9534134a548ee0",
     "build/managed/task-entry2-connected-edit-a1/result.json": "65442b94488879bb4818e3a9726c21d86cf3fcc189319fce48c52087991f5930",
-    "build/managed/task-entry2-connected-cold-a1/supervision.json": "d77b2ffefa1b93a994b62c0a96aded02357169d8d07821f06d2c7dcb5dc1def3"
+    "build/managed/task-entry2-connected-cold-a1/supervision.json": "d77b2ffefa1b93a994b62c0a96aded02357169d8d07821f06d2c7dcb5dc1def3",
+    "build/managed/task-entry2-saved29-cold-a3/cold/result.json": "6dfa8ad608bee0275db58f8230bea1bea19306c233f5c1c6200ae39040e19fbc",
+    "build/managed/task-entry2-saved29-cold-a3/supervision.json": "c0cca720a15cedcaa6bc87b1e0dc34007e1cd6603bdee696484f2ee0011e64bd",
+    "build/managed/task-entry2-failed-save-observer-suffix-a2/result.json": "a5298cd86cc08f80ff7dc52fd06d90d8bdeef333bac4850f2564a8b80dc21a65",
+    "build/managed/task-entry2-failed-save-a4/result.json": "b3e36f5bb914eb5565147aceaaa3f45dd306c93401f66cf404f4e20cb923e999",
+    "build/managed/task-entry2-failed-save-plan-a4/plan.json": "086b57403e8fc907ed99d404ac7e397ab357005e6a85871501eba646bd44a478"
   },
   "note": "Tests, mathematical layout lemma, artifact audits and physical/RTL observations have distinct meanings; no full runtime/recursion/proof-kernel or G2\u2013G7 completion claim",
   "full_host_regression": {
@@ -320,7 +325,7 @@
       "snapshot_not_cold_recovery": true
     },
     "saved29_independent_cold": {
-      "status": "RUNNING_NOT_YET_QUALIFIED",
+      "status": "PASS_COLD_READY_MEDIA_AND_ALL_PIXELS",
       "directory": "build/managed/task-entry2-saved29-cold-a3",
       "bounds_cycles": 2000000000,
       "bounds_seconds": 7200,
@@ -329,8 +334,45 @@
         "build/managed/task-entry2-saved29-cold-a1/supervision.json",
         "build/managed/task-entry2-saved29-cold-a2/supervision.json"
       ],
-      "original_owned_processes_reaped": true
+      "original_owned_processes_reaped": true,
+      "ready_cycle": 688000000,
+      "host_seconds": 2438.8452643700875,
+      "process_tree_peak_rss_kib": 193340,
+      "read_outcomes": 174,
+      "write_outcomes": 0,
+      "barrier_outcomes": 0,
+      "complete_pixels": 3630000,
+      "medium_unchanged": true,
+      "fresh_cpu_not_restore": true
     },
-    "ordinary_navigation_and_complete_scenario_A": "OPEN"
+    "ordinary_navigation_and_complete_scenario_A": "OPEN",
+    "failed_new_save": {
+      "status": "PASS_RAW_FAILED_NEW_SAVE_PRIOR_DURABILITY_AND_ALL_PIXELS",
+      "cycles": 59000000,
+      "actual_execution_wall_seconds": 203.83152394602075,
+      "native_tree_peak_rss_kib": 195480,
+      "journal_sequence": 29,
+      "failed_receipt": [
+        1060,
+        227,
+        1,
+        1,
+        65566
+      ],
+      "no_new_saved_ack": true,
+      "medium_sha256": "f1a9f6b6d65dbb71e9dec221edc4c5fd675a970090f548578a1c10196cc5e30f",
+      "complete_pixels": 3630000,
+      "pixels_sha256": "09344804ae3a9ee76e3c9fc8dad8e6dfb4c899deeb3b54e38207af42045f0b41",
+      "checkpoint_sha256": "e64a6bf1bcef2b5036f2fa9327f179ed1f22a519b0f5a787f28db905dbdfde0d",
+      "volatile_sectors": 3,
+      "failure_model": "Predeclared first controller-flush injection before any backing write/barrier; existing medium unchanged, three changed sectors remain volatile in observational snapshot. Not live POSIX failure or failed-write rollback claim.",
+      "initial_cycle": 695000000,
+      "terminal_cycle": 754000000,
+      "original_checkpoint_path_observer_failure": "build/managed/task-entry2-failed-save-a4/result.json",
+      "missing_only_observer": "build/managed/task-entry2-failed-save-observer-suffix-a2/result.json",
+      "old_clean_save_observer_failure": "build/managed/task-entry2-failed-save-a2/result.json",
+      "clean_save_explanation": "Store.Server.application operation8 is an unchanged durable-status query. Same alreadyacknowledged29/zero flushes is correct, not attempted newflush failure.",
+      "raw_tuple_observer_failure": "build/managed/task-entry2-failed-save-observer-suffix-a1/result.json"
+    }
   }
 }

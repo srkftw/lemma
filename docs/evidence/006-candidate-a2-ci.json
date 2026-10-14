@@ -144,7 +144,7 @@
       "retained_original": "build/ci/task006-415c-failures-a1/retained/kernel/ci-writing-lemmasim-initialize-O2",
       "correction_commit": "16c3846",
       "correction_evidence": "docs/evidence/006-usercopy-kernel3-initializer-observer-v1.json",
-      "correction": "Exact closed cfg\u2192root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
+      "correction": "Exact closed cfg→root notebook.boot and initializer.initializeMedium map. Body pins, authority/status/access checks and target artifacts unchanged. Both originalCI ordinary roles/pre-post and both Kernel4 profiles pass;280actual mutations reject.",
       "new_ci": "NOT_RUN"
     }
   },
@@ -297,5 +297,85 @@
       "new_ci": "NOT_RUN",
       "scope": "Local host tests only; original candidate remains actual FAIL, no new guest or circuit acceptance."
     }
+  },
+  "subsequent_candidate_0b1": {
+    "head": "0b1f80ce92be0aa7c2b6416603b7830c409c63aa",
+    "run_id": 38636060344,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/srkftw/lemma/actions/runs/38636060344",
+    "jobs": [
+      {
+        "id": 116099415124,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415472,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415474,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415477,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415566,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415643,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415653,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415667,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415754,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      },
+      {
+        "id": 116099415963,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "skipped_steps": []
+      }
+    ],
+    "scope": "Actual published 0b1 candidate only; no qualification inherited by newer uncommitted Package/Surface integration; PR9 remains draft/unmerged."
   }
 }
