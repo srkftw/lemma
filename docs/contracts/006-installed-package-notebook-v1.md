@@ -10,9 +10,12 @@ profiles, Doc8 bytes, ink records and Store journal formats remain unchanged.
 It does not grant teacher/tutor authority or arbitrary new checker domains.
 
 The full main has genuine checked LLVM/RV64 component qualification. Production
-role LLVM and strict artifact admission have separate receipts. Whole-image
-build/audit, connected CPU workflow, durability and cold recovery of this new
-Notebook path remain NOT_RUN until their own observations are recorded.
+role LLVM and strict artifact admission have separate receipts. The fresh matched
+four-role normal/initializer pair passed both whole builds and complete ordinary
+audits in584.576 seconds at4948899, with384 exact original inputs. Its prepared
+native bundle binds that pair and the existing native3d runtime. Connected CPU
+workflow, durability and cold recovery of this new Notebook path require their
+own observations; the bounded native campaign is running, without a Ready claim.
 
 ## Guest workflow
 
@@ -47,15 +50,18 @@ service and snapshots the applicable package selection. Only an independently
 admitted terminal reply for the same immutable request can add a known attempt.
 Edits invalidate applicability while preserving old evidence/anchor histories.
 Explicit builtin NEXT/LIMIT changes current provenance to Unknown without
-removing older known package rows. HINT and REVIEW retain the existing local
-simulated-provider/uncertain learner-policy semantics and ordered event log.
+removing older known package rows. HINT records assistance and displays an
+authored local template; no provider or permissioned tutor transport is present.
+REVIEW cycles manual recommendations, disabled mode and AUTO, preserving the
+ordered learner-event log and explainable uncertain baseline policy.
 
 Publication stages a validated3712-byte `PackageWorkspace` in the existing owned
 Save page. The old Store transaction/commit/barrier path alone publishes Saved.
 Raw pen records are stored separately through the original ink path. Package
 text presentation does not recognize ink or construct a mathematical answer.
 An actual new connected workflow and exact expected reopened pixels remain
-required; component fixtures do not establish this user acceptance result.
+required; whole artifact audits and component fixtures do not establish this
+user acceptance result.
 
 ## Resources, cancellation and boot
 

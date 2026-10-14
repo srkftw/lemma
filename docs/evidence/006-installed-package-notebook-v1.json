@@ -64,6 +64,21 @@
       "lemma_exec_syscall"
     ]
   },
+  "connected_native_campaign": {
+    "actor_pid": 1416762,
+    "deadline_utc": "2026-10-15T00:44:50Z",
+    "prospective_bounds": {
+      "address_space_and_owned_rss_bytes": 4294967296,
+      "aggregate_cycles": 6000000000,
+      "course_open_cycles": 400000000,
+      "each_publication_cycles": 100000000,
+      "host_seconds": 7200,
+      "phase_ready_and_independent_cold_cycles": 1000000000
+    },
+    "scope": "private copy of actual guest-installed editions1/2, fresh edition3 through public raw guest installer, raw course/math/learner/ink and separate independent cold; accepted user behavior has no implied pass before terminal results",
+    "started_utc": "2026-10-14T22:44:50Z",
+    "status": "RUNNING_NO_READY_CLAIM"
+  },
   "jti_supplement": {
     "actual_cell_negatives": 78,
     "scope": "mandatory complete189 body/caller/signature/config/profile authority; exact source-domain and emitted fullmachine/cell relations before ordinary unsigned/localrelocation/byte checks; no generic pure-table grant",
@@ -83,6 +98,7 @@
       }
     }
   },
+  "local_hint_scope": "authored local template and durable assistance counter/event; no provider, live model or permissioned tutor transport",
   "observer_correction": {
     "corrected": {
       "path": "build/courses/task006-notebook-package-integration-draft-a1/artifact-guards-a2.json",
@@ -104,6 +120,11 @@
     "source_head": "ff48d048519bfaa78dd05466106bd1df75496789"
   },
   "original_runtime_paths_preserved": true,
+  "prepared_native_bundle": {
+    "manifest_sha256": "5c55696dfacf2d01978a9eadde3c9751ff8686117fb0a6b082867519d76bc7e2",
+    "path": "build/native/task006-package-closure-entry2-a1",
+    "scope": "strict native package with the unchanged native3d core and fresh384-source matched four-role guest; preparation is not CPU acceptance"
+  },
   "preserved_failures": [
     {
       "path": "build/courses/task006-notebook-package-component-a1/result.json",
@@ -138,7 +159,7 @@
       "sha256": "b8ab0b402cad24ad204b5a50871c05e49d5f12a81f9422d654b24adf3992569e"
     }
   ],
-  "qualification_scope": "actual imported Actions, complete genuine User2 main LLVM/O2/RV64 component, selected production817 owned-body and readonly/JTI/object admission; whole images/connected CPU/Store durability/cold recovery NOT_RUN",
+  "qualification_scope": "actual imported Actions, complete genuine User2 main LLVM/O2/RV64 component, selected production817 owned-body and readonly/JTI/object admission plus fresh matched whole four-role builds/full audits; connected CPU/Store durability/cold recovery require independent results",
   "raw_launch_host_fixture": {
     "command": [
       "python3",
@@ -180,7 +201,6 @@
     "tables": 6
   },
   "remaining": [
-    "full source/tool/profile-bound four-role normal/initializer build and ordinary audits",
     "real guest install/selection/rendering/exact Protocol7 check/Doc8 evidence/workspace Save/hint/review and resource failures",
     "independent cold record and complete expected controller pixel recovery",
     "browser/publication, generic runtime/proof-kernel, fast timing/exact checkpoint and physical obligations separate"
@@ -269,6 +289,68 @@
     "contract_version": "lemma-package-closure-entry2-bulk-deployment-v1",
     "silicon_profile": "lemma-silicon-dev/0.3.0"
   },
-  "status": "PASS_COMPONENT_SELECTED_ROLE_AND_RETAINED_OBJECT_GUARDS",
-  "target_helper_changes": "None; test-only exporter record syntax and empty Action effect observer corrected, original failures retained."
+  "status": "PASS_WHOLE_PAIR_AND_PREPARED_NATIVE_CONNECTED_GUEST_RUNNING",
+  "target_helper_changes": "None; test-only exporter record syntax and empty Action effect observer corrected, original failures retained.",
+  "whole_pair": {
+    "bounds": {
+      "aggregate_host_seconds": 2500,
+      "per_audit_command_seconds": 300,
+      "per_build_command_seconds": 300
+    },
+    "child_peak_rss_kib": 1651524,
+    "driver_inputs": {
+      "expected-source-inputs.json": "2eed3713aa4334221a00666a260d2043e1334bb7cafa6b854ebabab85a09d0a5",
+      "pair.py": "f33ece5864b6c6ad392146c14b2f688d55a8484bb392d184a39a8fb4cb15baae",
+      "plan.json": "db3541f5771999096c8dab7e7bbda7e7d8894e629d12de3c3213b7c083ebd2fd",
+      "source-authority.json": "16d1d575ffdd5d3fad18ee92aa9a21d4a1474e813be4ead464f56e6274b99aa5",
+      "supervisor.py": "fce3c51fab77280eadb0d8acaad6288448e5aff2b6109d1b72c9df6b95e8a08e"
+    },
+    "host_environment": {
+      "LEAN_NUM_THREADS": "2",
+      "lake_weakLeanArgs": [
+        "-j2"
+      ]
+    },
+    "original_failure_reports": [
+      "build/courses/task006-notebook-package-component-a1/result.json",
+      "build/courses/task006-package-production-initializer-a1/result.json"
+    ],
+    "result": {
+      "path": "build/courses/task006-package-closure-whole-a1/result.json",
+      "sha256": "4ac0714cade637e4e89cb0ec3c4545886c1ec7181010370547e7985412c21fe9"
+    },
+    "roles": {
+      "initializer": {
+        "audit_seconds": 184.60243331396487,
+        "audit_sha256": "90fd2017e8db114d68ee371533f6d6cd065e014ceaf2f9eb0be0da22081e5de5",
+        "audit_status": "PASS",
+        "build_seconds": 104.1442580340663,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-closure-initializer-a1",
+        "image_bytes": 691736,
+        "image_sha256": "0c728e6f365addedfd8e68bbade1fe869dde8eb3d67ab8feb09e32bdda5bf981",
+        "provenance_sha256": "6c9e5ba6ee1dcc4579f64071a692fd13082f79286874e406c86b0f49899b0f51"
+      },
+      "notebook": {
+        "audit_seconds": 187.93852384900674,
+        "audit_sha256": "3361006ed202675d1d92d88ebfb8d2b4ff8dbad8bcb6741f178134ce8a81b66f",
+        "audit_status": "PASS",
+        "build_seconds": 107.75070129602682,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-closure-notebook-a1",
+        "image_bytes": 691736,
+        "image_sha256": "6cf511c85b40d11c6d696a2b0b3578d4a8376b7a1b5899bee6a74558bc0d595a",
+        "provenance_sha256": "709f4178c254f9114eaeacae3a796e0ba0d3d7c8b1ceab53a0e8d35f39410e0a"
+      }
+    },
+    "scope": "fresh genuinely compiled whole PackageClosure normal/initializer and full ordinary artifact audits; cold mountedReady/Load/Notebook integration NOT_RUN",
+    "source_commit": "4948899c699868e253d9ab3658e73e3dd08683a0",
+    "source_count": 384,
+    "source_inventory_sha256": "6a947a433e6f38b116a5986107223594a68f557259b69d7043cbbe5369f51394",
+    "source_root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-closure-whole-a1/consumed-source-root",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "wall_seconds": 584.5756074349629
+  }
 }

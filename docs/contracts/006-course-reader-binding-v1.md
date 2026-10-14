@@ -25,6 +25,9 @@ without another request. A partial staging write preserves the actual ordered
 prefix/error from the existing Format.copy contract; failed bytes never permit
 publication. Under aligned64-bit copying, an admitted failed word publishes
 none of that word. These are existing copy semantics, not a new optimization.
+Injected checked-access outcomes qualify the Action error/order interface.
+Architectural User page/access faults retain the existing isolated-process
+trap behavior; this component has not exercised those faults on a CPU.
 
 At most256 READs each have the existing30-second IPC ceiling. The integrating
 caller also owns its workflow deadline and invokes cancellation on leaving or
