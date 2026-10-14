@@ -4,7 +4,7 @@ import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts'))
-from audit_kernel import image_specs,kernel_contract,managed_fields,validate_user_image_catalog
+from audit_kernel import image_specs,kernel_contract,managed_fields,software_deployment_fields,validate_user_image_catalog
 from build_kernel import ARITHMETIC_CONFIGURATIONS,ARITHMETIC_DEVELOPMENT_CONFIGURATIONS,configuration_roots,managed_policy
 from silicon_profile import configuration_profile
 from core0_common import Core0Error
@@ -39,7 +39,10 @@ class ArithmeticCatalog(unittest.TestCase):
             for name in names:
                 self.assertNotIn(name,expected)
                 expected[name]=(server,profile,kernel)
-        self.assertEqual(set(ARITHMETIC_CONFIGURATIONS),set(expected))
+        # Course installation has an independently specified fourth process;
+        # historical deployments retain their exact three-image assertions.
+        self.assertEqual(set(ARITHMETIC_CONFIGURATIONS),set(expected)|{
+            'lemmasim-silicon-course-bulk-notebook','lemmasim-silicon-course-bulk-initialize'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)
@@ -50,6 +53,36 @@ class ArithmeticCatalog(unittest.TestCase):
                 self.assertEqual(managed_fields(config)['managed_policy'],'lemma-notebook-arithmetic-v1')
                 self.assertEqual(configuration_profile(config),f'lemma-silicon-dev/0.{profile}.0')
                 self.assertEqual(kernel_contract(config),f'core0-kernel-v0.{kernel}')
+    def test_exact_course_names_select_guarded_store_and_independent_installer(self):
+        deployment={'contract_version':'lemma-course-array-bulk-deployment-v1',
+            'silicon_profile':'lemma-silicon-dev/0.3.0','user_profiles':{
+                'store':'core0-user-v0.1','notebook':'core0-user-v0.2',
+                'arithmetic':'core0-user-v0.5','course':'core0-user-v0.1'}}
+        for config,boot in (('lemmasim-silicon-course-bulk-notebook','siliconCourseBoot'),
+                            ('lemmasim-silicon-course-bulk-initialize','siliconCourseInitializeMedium')):
+            with self.subTest(configuration=config):
+                rows=list(image_specs(config))
+                self.assertEqual([(r['key'],r['id'],r['source'],r['boot_role']) for r in rows],[
+                    ('store',1,'Lemma.Services.Store.Server.courseMain','store-server'),
+                    ('notebook',2,'Lemma.Applications.Notebook.mainArrayBulk','notebook'),
+                    ('arithmetic',3,'Lemma.Services.Arithmetic.ServerV5.main','arithmetic-server'),
+                    ('course',4,'Lemma.Courses.PackageInstaller.main','course-installer')])
+                self.assertEqual(configuration_profile(config),'lemma-silicon-dev/0.3.0')
+                self.assertEqual(kernel_contract(config),'core0-kernel-v0.4')
+                self.assertEqual(configuration_roots(config)['kernel'][0][0],
+                    'Lemma.Platform.LemmaSim.NotebookKernel.'+boot)
+                self.assertEqual(managed_policy(config),'lemma-notebook-arithmetic-v1')
+                self.assertEqual(software_deployment_fields(config),{'software_deployment':deployment})
+                value={'schema_version':1,'contract_version':'lemma-user-image-catalog-v1',
+                    'configuration':config,'stage':'supervisor','image_count':4,'images':rows,
+                    'managed_policy':'lemma-notebook-arithmetic-v1','software_deployment':deployment}
+                validate_user_image_catalog(value)
+                for images in (rows[:3],rows[:2]+[rows[3],rows[2]],
+                               rows[:3]+[{**rows[3],'boot_role':'arithmetic-server'}],
+                               [{**rows[0],'source':'Lemma.Services.Store.Server.main'}]+rows[1:]):
+                    with self.assertRaises(Core0Error):validate_user_image_catalog({**value,'images':images})
+        for name in ('lemmasim-silicon-course-notebook','lemmasim-silicon-course-bulk-any-development'):
+            with self.assertRaises(Core0Error):configuration_roots(name)
     def test_lab_root_cannot_be_freeform_or_escape_ordinary_catalog(self):
         for config,root in zip(ARITHMETIC_DEVELOPMENT_CONFIGURATIONS,('arithmeticOOMBoot','arithmeticFaultBoot','arithmeticStallBoot')):
             self.assertEqual(configuration_roots(config)['kernel'][0][0],'Lemma.Platform.LemmaSim.NotebookKernel.'+root)
