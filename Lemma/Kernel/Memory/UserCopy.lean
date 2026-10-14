@@ -115,6 +115,126 @@ private def wordsAligned (first second scratch split length : UInt64) : Bool :=
   if split % 8 = 0 then if length % 8 = 0 then true else false else false
   else false else false else false
 
+/-- Copy one preflighted page at a time: preserving each
+ordered read64/write64 pair. Eight-word straight-line blocks remove seven fold
+callbacks and repeated page-choice tests; a bounded tail keeps exact accesses.
+This does not change lookup, frame/purpose/generation validation or primitives. -/
+private def copyWord (source destination : UInt64) : Action :=
+  .bind (Access.read64 source) fun s word => if s = 0 then
+  .bind (Access.write64 destination word) fun s _ => if s = 0 then .done 0 0
+    else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+
+private def copyWordGenericBlockStep (i _ : UInt32) (acc source destination _ _ : UInt64) : Action :=
+  let offset := i.toUInt64 * 64
+  let a := source + offset
+  let b := destination + offset
+  .bind (Access.read64 a) fun s word0 => if s = 0 then
+  .bind (Access.write64 b word0) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 8)) fun s word1 => if s = 0 then
+  .bind (Access.write64 (b + 8) word1) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 16)) fun s word2 => if s = 0 then
+  .bind (Access.write64 (b + 16) word2) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 24)) fun s word3 => if s = 0 then
+  .bind (Access.write64 (b + 24) word3) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 32)) fun s word4 => if s = 0 then
+  .bind (Access.write64 (b + 32) word4) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 40)) fun s word5 => if s = 0 then
+  .bind (Access.write64 (b + 40) word5) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 48)) fun s word6 => if s = 0 then
+  .bind (Access.write64 (b + 48) word6) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 56)) fun s word7 => if s = 0 then
+  .bind (Access.write64 (b + 56) word7) fun s _ => if s = 0 then
+  .done 0 (acc + 64)
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+
+/-- Pure local bounds expose the already checked physical-memory proof to
+LLVM. The same Access primitives still perform every ordered word operation.
+Inputs outside this bounded/aligned pool span keep the complete generic path. -/
+private def copyWordBlockStep (i count : UInt32) (acc source destination c2 c3 : UInt64) : Action :=
+  let offset := i.toUInt64 * 64
+  let a := source + offset
+  let b := destination + offset
+  if Frames.pool ≤ a then if a ≤ Frames.expandedPoolLimit - 64 then if a % 8 = 0 then
+  if Frames.pool ≤ b then if b ≤ Frames.expandedPoolLimit - 64 then if b % 8 = 0 then
+  .bind (Access.read64 a) fun s word0 => if s = 0 then
+  .bind (Access.write64 b word0) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 8)) fun s word1 => if s = 0 then
+  .bind (Access.write64 (b + 8) word1) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 16)) fun s word2 => if s = 0 then
+  .bind (Access.write64 (b + 16) word2) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 24)) fun s word3 => if s = 0 then
+  .bind (Access.write64 (b + 24) word3) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 32)) fun s word4 => if s = 0 then
+  .bind (Access.write64 (b + 32) word4) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 40)) fun s word5 => if s = 0 then
+  .bind (Access.write64 (b + 40) word5) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 48)) fun s word6 => if s = 0 then
+  .bind (Access.write64 (b + 48) word6) fun s _ => if s = 0 then
+  .bind (Access.read64 (a + 56)) fun s word7 => if s = 0 then
+  .bind (Access.write64 (b + 56) word7) fun s _ => if s = 0 then
+  .done 0 (acc + 64)
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+  else .done Lemma.User.ABI.kernelFatal 0
+
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+  else copyWordGenericBlockStep i count acc source destination c2 c3
+
+private def copyWordTailStep (i _ : UInt32) (acc source destination _ _ : UInt64) : Action :=
+  .bind (copyWord (source + i.toUInt64 * 8) (destination + i.toUInt64 * 8)) fun s _ =>
+  if s = 0 then .done 0 (acc + 8) else .done s 0
+
+private def copyPageWords (source destination length : UInt64) : Action :=
+  .boundedFoldU64 64 copyWordBlockStep (length / 64).toUInt32 0 source destination 0 0 fun s copied =>
+  if s = 0 then
+  let offset := length / 64 * 64
+  .boundedFoldU64 7 copyWordTailStep ((length % 64) / 8).toUInt32 copied
+    (source + offset) (destination + offset) 0 0 fun s copied => .done s copied
+  else .done s 0
+
+private def copyFromPages (first second destination split length : UInt64) : Action :=
+  .bind (copyPageWords first destination split) fun s firstCopied => if s = 0 then
+  .bind (copyPageWords second (destination + split) (length - split)) fun s secondCopied =>
+  if s = 0 then .done 0 (firstCopied + secondCopied) else .done s 0 else .done s 0
+
+private def copyToPages (first second source split length : UInt64) : Action :=
+  .bind (copyPageWords source first split) fun s firstCopied => if s = 0 then
+  .bind (copyPageWords (source + split) second (length - split)) fun s secondCopied =>
+  if s = 0 then .done 0 (firstCopied + secondCopied) else .done s 0 else .done s 0
+
 /-- A kernel scratch handle must name a live owner-1 purpose-1 frame. All
 spanned user leaves are checked before the bounded copy changes scratch. -/
 private def copyFromUserResult (aliasResult descriptor pointer kernelHandle offset length : UInt64) : Action :=
@@ -131,7 +251,7 @@ private def copyFromUserResult (aliasResult descriptor pointer kernelHandle offs
       .bind (if length ≤ split then .done 0 0 else checkedLookupAt address (pointer + split) 1) fun s second =>
       if s = 0 then
         if wordsAligned first second destination split length = true then
-          .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 first second destination split fun s copied =>
+          .bind (copyFromPages first second destination split length) fun s copied =>
           if s = 0 then .done 0 (if aliasResult = 1 then first else copied) else .done Lemma.User.ABI.kernelFatal 0
         else
           .boundedFoldU64 4096 fromStep length.toUInt32 0 first second destination split fun s copied =>
@@ -164,7 +284,7 @@ def copyFromUserReusingReadPage (descriptor reference first pointer kernelHandle
       if validRange pointer length = false then .done Lemma.User.ABI.invalidRange 0 else
       let source := first - reference % 4096 + pointer % 4096
       if wordsAligned source 0 destination length length = true then
-        .boundedFoldU64 512 fromWordStep (length / 8).toUInt32 0 source 0 destination length fun s copied =>
+        .bind (copyPageWords source destination length) fun s copied =>
         if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
       else
         .boundedFoldU64 4096 fromStep length.toUInt32 0 source 0 destination length fun s copied =>
@@ -189,7 +309,7 @@ def copyToUser (descriptor pointer kernelHandle offset length : UInt64) : Action
       .bind (if length ≤ split then .done 0 0 else checkedLookupAt address (pointer + split) 2) fun s second =>
       if s = 0 then
         if wordsAligned first second source split length = true then
-          .boundedFoldU64 512 toWordStep (length / 8).toUInt32 0 first second source split fun s copied =>
+          .bind (copyToPages first second source split length) fun s copied =>
           if s = 0 then .done 0 copied else .done Lemma.User.ABI.kernelFatal 0
         else
           .boundedFoldU64 4096 toStep length.toUInt32 0 first second source split fun s copied =>
