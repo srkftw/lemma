@@ -281,15 +281,18 @@ private def tableAt (address index : UInt64) : Action :=
   else .done resourceLimit 0
 
 private def memberStep (i _ : UInt32) (acc address wanted _ _ : UInt64) : Action :=
-  if i < 8 then .done 0 acc else
-    .bind (tableAt address i.toUInt64) fun s table =>
-    if failed s = true then .done s 0 else
-    .done 0 (if table = wanted then 1 else acc)
+  .bind (tableAt address (i.toUInt64 + 8)) fun s table =>
+  if failed s = true then .done s 0 else
+  .done 0 (if table = wanted then 1 else acc)
 private def ownedTable (address table : UInt64) : Action :=
   .bind (get address 40) fun s amount =>
   if failed s = true then .done s 0 else
   if amount ≤ 32 then
-    .boundedFoldU64 32 memberStep amount.toUInt32 0 address table 0 0 fun s found =>
+    -- Slots0..7 are fixed supervisor tables and cannot be a user child.
+    -- Their former callbacks were pure. Enumerate the same complete dynamic
+    -- suffix, preserving every ordered read and every later-handle error.
+    if amount ≤ 8 then .done invalidPte 0 else
+    .boundedFoldU64 24 memberStep (amount - 8).toUInt32 0 address table 0 0 fun s found =>
     if failed s = true then .done s 0 else
     if found = 1 then .done 0 table else .done invalidPte 0
   else .done invalidDescriptor 0

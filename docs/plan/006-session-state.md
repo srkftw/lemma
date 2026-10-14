@@ -803,4 +803,26 @@ three passing partial suffixes remain, corrected genuine pair is in progress.
 Same-machineCommon12 raw pendingPIO/IQ exact private suffixes passed after a real
 new-event reader-bound repair; its K8 guest/ownedqueue/IRQ path is still pending.
 
+
+## Owned child-table prefix, connected increment
+
+[Owned-table prefix](../evidence/006-owned-table-prefix.json) removes eight pure
+supervisor-slot callbacks while preserving all ordered dynamic reads and later
+authority/error checks. Genuine Kernel3 lowering and independent read/fault
+traces pass. Both whole Array/CourseWord roles pass full audits with312 consumed
+inputs; user/startup objects are byte-identical to the previous CourseWord pair.
+The full actual QEMU course/check/edit/hint/Save/cold/failure scenario passes33
+actions and5 isolated requests. Matched first30 instruction-count clocks fall
+1,287,000,171→1,283,000,165(0.31%); host wall time increases under contention.
+This is no general simulator speedup or RTL timing comparison.
+
+Fresh canonical RTL cold from the original mixedDoc6 medium reaches Ready at
+879M clocks/4325.293s, peak process-tree189940KiB. All3.63M expected controller
+pixels and all medium bytes match;250READs and zero writes/barriers. Original
+2B/7200s/512MiB bounds pass. Immutable bundle:
+`build/native/task006-array-table-prefix-a2`, guest437224ddd541ce2b3e5acb3678f53a4ff43fcadb6dd39df234c9167b53d4ad63.
+This is cold recovery. A new wholeRTLpen/save scenario at this exact identity
+remains separate. Current new increments do not inherit dfbcb3b's actual ten-job
+CI38482551670 success; a new candidate push must qualify them.
+
 -->
