@@ -1,0 +1,91 @@
+<!--
+# Fixed counter progression diagnostic: counter-su-progress/1
+
+This additive development diagnostic uses the existing `core0-counter-su-v0.1`
+language, fixed CSR/context primitives and immutable executable/private-memory
+envelopes. It adds no instruction, CSR selector, arbitrary entry address,
+production deployment, foreign target runtime or mathematical authority.
+The original CounterSuPolicy 404-case diagnostic remains unchanged. Its seven
+export files are compared against the exact hashes established by the original
+genuine exporter and a fresh ordinary elaboration.
+
+CounterSuProgressPolicy has ordinary Lean `main`, `probe` and `trap` roots.
+The closed exporter checks and lowers their actual source closure to LLVM;
+the build audits both IR stages, stack partitions, primitive instruction bytes,
+linked symbols, attributes, relocations and the two-object freestanding link.
+The inherited renderer transports only fixed machine access and privilege/trap
+context. All corpus selection, permissions, record creation and verdicts are
+compiled Lean Actions. Host code only supplies clocks and observes guest RAM.
+
+The 112-case corpus has 16 groups. Each begins with an actual S-mode scounteren
+write followed immediately by a scounteren read in that same compiled lower-mode
+routine. The input words are low masks0..7, then all high bits set with each low
+mask0..7. The selected no-HPM implementations retain exactly bits0..2. M never
+rewrites scounteren between that S-owned update and the following three S-mode
+and three U-mode alias reads. M counteren stays7. Thus S reads remain admitted
+and U reads depend on the newly written S bits. There are exactly24 illegal
+instruction traps,112 actual ECALLs and136 total traps. Trap cause, tval, linked
+fault/ECALL PC and actual origin privilege are independently checked.
+
+The first56 cases inhibit CY/IR with mcountinhibit5, preserving distinct
+full64-bit sentinels exactly. The last56 cases clear inhibit and bracket each
+actual lower-mode cycle/instret/time read with compiled M-mode observations.
+Uninhibited CY/IR must advance strictly across each bracket. TIME must advance
+in both phases and remain inside its own observed MTIME bracket. No expected
+instruction schedule or cross-backend counter/time equality is manufactured.
+The inherited M-counter diagnostic separately retains its counter-write/wrap
+qualification; this successor does not expand that claim.
+
+The fixed private record capacity is32KiB: a256-byte header,112 rows of144 bytes,
+and guest-cleared reserved bytes. Each row retains mask input/readback, actual
+result and trap fields, complete CY/IR/MTIME brackets and actual inhibit. The
+guest performs the entire4096-word clear. The build consumes only the recursive
+project imports plus declared tool/helper inputs: originally124 files including
+49 project Lean files, excluding Notebook, NotebookKernel and PackageRender.
+The copied source inventory retains its actual producer identity; it is not a
+whole-repository seal.
+
+The prospective limit is5M native clocks and120 host seconds for the complete
+native original/private-fork backend, and50M virtual nanoseconds/120 host seconds
+for fast execution. The native boundary is a real U-mode cycle-read instruction
+on fixed executable code. No original flush, drain or register mutation occurs.
+Its full authoritative original/fork archives must be identical. This finite
+counter/pipeline continuation is independent of the still-open arbitrary QEMU
+cached-instruction continuation problem; fast is not restored in this test.
+
+Observed original run: new guest ELF50cc88a31f333912446534da0de362c682942d8fe47099d9430461d06a287515
+passed all112 cases on canonical RTL identity6cab32ec… and declared fast
+binary2874932d…. Native completed at707678 clocks/381528 retired; MTIME brackets
+were24245→70710 versus fast12148→30668. These different observations are retained.
+The full145145686-byte native original/fork archives are byte-equal. The genuine
+build/audit took12.305894s and the backend campaign9.092649s. No backend repair
+was needed. Evidence is in `docs/evidence/006-guest-counter-progress.json`.
+
+Final review found a host orchestration defect in the new copied checker: its
+fork initially obtained a separate120s timer. The corrected checker shares one
+backend deadline and verifies final elapsed time. Its fixed-operation metadata
+also requires complete source/ABI identities, and its historical exporter
+regression uses closed hashes without depending on an ignored local directory.
+The original actual run was already within120s. Original producer/execution and
+corrected observer hashes remain separate;515 mutations of actual records,
+metadata and linked CSR bytes rejected under the corrected observer. No guest
+rerun was used to relabel the original evidence.
+
+Timer interrupts/WFI suffixes, broader reset-duration/peripheral retention,
+other CSR forms, exhaustive ISA coverage, pipeline parity and physical claims
+remain open. Fast's immediate RESET and RTL's eight reset edges already have
+distinct declared semantics. The rejected cached-instruction guest experiment
+was neither saved nor executed and is not retried by this counter diagnostic.
+
+Reusable local command with an unused output:
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_guest_counter_progress.py \
+  --work-dir build/silicon/counter-progress-new \
+  --native-bundle build/native/task006-arithmetic-a3 --fast
+```
+
+The legacy bundle above supplies independently validated backend bytes; the
+diagnostic guest is freshly compiled. Artifact reuse does not imply new runtime
+compilation, product cold recovery or a processor timing comparison.
+-->

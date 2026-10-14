@@ -1,0 +1,199 @@
+{
+  "schema": "lemma-guest-counter-progress-evidence/1",
+  "status": "PASS_ARCHITECTURAL_BOTH",
+  "profile": "core0-counter-su-v0.1",
+  "probe_version": "counter-su-progress/1",
+  "scope": "genuine ordinary Lean S-owned scounteren WARL/readback, following S/U permissions, inhibited full64 and uninhibited own-backend brackets; no new language/primitive/backend repair",
+  "guest_sha256": "50cc88a31f333912446534da0de362c682942d8fe47099d9430461d06a287515",
+  "producer_head": "24b688d9447ca0faf602989c078df74351753f45",
+  "producer_receipt": "build/silicon/task006-counter-progress-a1/producer-result.json",
+  "producer_audit_sha256": "b15a9f1adc70822b97bc937126bab54347038bc6f66b719b62bdde17252207d1",
+  "producer_inputs": {
+    "total": 124,
+    "project_lean": 49,
+    "archive": "build/silicon/task006-counter-progress-a1/consumed-source-root",
+    "origin": "original actual producer; unrelated Notebook/PackageRender absent from recursive import closure"
+  },
+  "plan": {
+    "fast_seconds": 120,
+    "fast_virtual_ns": 50000000,
+    "native_clocks": 5000000,
+    "native_seconds": 120,
+    "records_bytes": 32768
+  },
+  "cases": {
+    "total": 112,
+    "S_owned_write_readbacks": 16,
+    "full64_mask_inputs": "low0..7 and all high bits set | low0..7",
+    "S_alias_reads": 48,
+    "U_alias_reads": 48,
+    "inhibited_cases": 56,
+    "uninhibited_cases": 56,
+    "illegal_traps": 24,
+    "ECALLs": 112,
+    "total_traps": 136
+  },
+  "rtl": {
+    "runtime_identity": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "binary": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usercopy-closure-a1/runtime/rtl/lemma-rtl",
+      "sha256": "3d265e97e1ad1d0271430d51f8a051993408327f37193f18959de05f046305e2"
+    },
+    "ROM": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/native/task006-usercopy-closure-a1/runtime/rtl/boot.bin",
+      "sha256": "4847f734666cc197a8e94c2ab2146cc45f0536a41f83376af8ddbadca737a1a2"
+    },
+    "boundary_cycle": 259835,
+    "boundary_pc": 2147483940,
+    "boundary_privilege": 0,
+    "final_cycle": 707678,
+    "final_retired": 381528,
+    "final_ticks": 70767,
+    "finish_code": 21845,
+    "header": [
+      4851309477825169153,
+      4851309477926683905,
+      2148548464,
+      112,
+      112,
+      24,
+      8,
+      2147484560,
+      0,
+      0,
+      24245,
+      70710,
+      5,
+      0,
+      1234605616436738235,
+      2464388554683926769,
+      0,
+      7,
+      0,
+      136,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "record_sha256": "217828ddc0e9eed41423b4549ed5173d85d45889224774f689886d4dbaa4ef79",
+    "full_original_fork_archive_sha256": "0ab71a03013c8d9233c5e927a5a3a606cd3910c03d76b91b439be8caa7d1c700",
+    "archive_bytes": 145145686
+  },
+  "fast": {
+    "binary_sha256": "2874932d1816b47d98ed5884a124087bbcd41a6d57c212be624b4dbcc4537716",
+    "header": [
+      4851309477825169153,
+      4851309477926683905,
+      2148548464,
+      112,
+      112,
+      24,
+      8,
+      2147484560,
+      0,
+      0,
+      12148,
+      30668,
+      5,
+      0,
+      1234605616436600380,
+      2464388554683926770,
+      0,
+      7,
+      0,
+      136,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "record_sha256": "16e600088a32c30586080d00fac20c9fa426cf2e6876606c443496c00d674cb8",
+    "elapsed_seconds": 0.08964724093675613,
+    "scope": "genuine sameELF architectural observations only; no QEMU restore/cache experiment or timing relation"
+  },
+  "execution_seconds": 9.092649398022331,
+  "execution_receipt": "build/silicon/task006-counter-progress-a1/execution-result.json",
+  "execution_receipt_sha256": "630d34e2085e9044ace38ea26dbbf5e716b088fe7b4209a64d7a768bf88c618b",
+  "verification": {
+    "source_fixture": "tests/kernel/CounterProgressExecutionCompile.lean genuine checked18-op closure and25 old-profile rejections PASS",
+    "host_fixtures": "7 CounterProgress+historicCounterSu tests PASS",
+    "read_only_mutations": {
+      "status": "PASS_READ_ONLY_QUALIFICATION",
+      "count": 515,
+      "receipt": "build/silicon/task006-counter-progress-a1/observer-qualification-a1.json",
+      "receipt_sha256": "0ff43afd6158e22dc28dabea081a5b726fab9207dd9db1bafa68fe2fe3c413ac"
+    },
+    "historic404_export_files": {
+      "layout.json": "6af05ac90596a4201e007181cbcb1627eba214fee3c38f8864d8571bb9421c79",
+      "link.ld": "2c130400086e31c72c5df954a87aed6fcbbff63d7f209b0df5906471904f86f9",
+      "normalized.txt": "fb570ed12123448dc154b3df4960d4e0bee69aa2e69725bddcb5687843cfc604",
+      "program.ll": "cbf11a42fad71b7bedf7078769ca6952fd398ec1532704c7c8f08f172cc9c59b",
+      "startup.S": "c37ef7aa30b16ff5ed3e4dface6b7ca5492356f8fad760547a986797a21e956d",
+      "symbols.txt": "b81a9eab61166efba7a531e6645349bb98c56165ba8119e8b0385fd637dba5d9",
+      "unit.json": "60035457ea0e8f8fefb056ba869fa8733ade5da812febda64fc157c9096803e4"
+    },
+    "deadline_defect": {
+      "receipt": "build/silicon/task006-counter-progress-observer-a1/deadline-defect.json",
+      "sha256": "67308c1775ec4f81cc530909c9b979f80cccf6bca58a51b33d4248e974cc8ee4",
+      "scope": "actual original/new host methods with mocked processes; not target execution"
+    },
+    "scaffold": "metadata7/56/6 and18 scaffold tests PASS; diffcheck PASS"
+  },
+  "original_failures": [
+    {
+      "receipt": "build/managed/counter-su-progress-prototype-a1/export-a1.log",
+      "result": "FAIL",
+      "cause": "ordinary source inferred Proposition Action-let; never executed"
+    },
+    {
+      "receipt": "build/managed/counter-su-progress-prototype-a1/export-a2.log",
+      "result": "FAIL",
+      "cause": "ordinary generic bne outside admitted source subset; never executed"
+    }
+  ],
+  "observer_delta": {
+    "original_execution_checker_sha256": "aa2c3852f93cc6093e06535c177ab54756e3df42ba2f9ad723bbf1bdf0b2740b",
+    "corrected_checker_sha256": "a75ad296c24900b4f00f42c3044d127316f54a6f53035ccef3af78ae1b7e9a38",
+    "changes": "shared original/fork120s backend deadline, complete fixed operation metadata, closed historical404 export hashes instead of ignored localfile dependency; read-only real records requalified without CPU rerun",
+    "requalification_receipt": "build/silicon/task006-counter-progress-observer-a1/result.json",
+    "requalification_receipt_sha256": "e5919277568757511366efae08b6d620cf90b0cc2463f493b83266628d10603b",
+    "requalification_status": "PASS_CURRENT_OBSERVER_ORIGINAL_IMMUTABLE_PRODUCER",
+    "requalification_seconds": 0.18711191904731095,
+    "observer_archive": "build/silicon/task006-counter-progress-observer-a1/observer-source-root",
+    "target_recompile": "NOT_RUN original all target artifacts unchanged",
+    "additional_CPU_execution": "NOT_RUN"
+  },
+  "remaining": [
+    "interrupt/timer/WFI suffixes",
+    "reset duration/peripheral retention qualification beyond historical finite reset tests",
+    "other CSR instruction forms and exhaustive privilege/ISA coverage",
+    "arbitrary QEMU cachedinstruction/TB/jump-cache continuation GAP_CONFIRMED; rejected prototype not performed",
+    "cross-backend pipeline/state/timing parity",
+    "physical conformance"
+  ],
+  "owned_source_inputs": {
+    "Lemma/Platform/RiscV/Development/CounterSuProgressPolicy.lean": "034ca4bc923500dc804bc5d8dff3f8baf6c994622b258282c53ea26c6fae2875",
+    "Lemma/Compiler/CounterSuProgressExport.lean": "75c39f756b8a8cb8d2a1ab6d172c85e0cd762d493b535ea05281c84671d8768b",
+    "scripts/check_guest_counter_progress.py": "a75ad296c24900b4f00f42c3044d127316f54a6f53035ccef3af78ae1b7e9a38",
+    "tests/kernel/CounterProgressExecutionCompile.lean": "3d491490ba25c94c0e635cf4505031c52ab478309105b07c2859671215b53323",
+    "tests/silicon/test_counter_progress.py": "8dcd1af48df3d2ce333e666506247561be9fc58aad59fd04568e13e440da3ee5",
+    "docs/contracts/006-guest-counter-progress-v1.md": "e9b51cc645aad7d1665e0255e1d2fb7ad620ef49257e8f124b63484f33476c16"
+  }
+}
