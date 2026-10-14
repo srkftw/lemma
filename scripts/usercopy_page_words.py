@@ -32,10 +32,12 @@ CALLERS = {'copyWord': {'copyWordTailStep'}, 'copyWordTailStep': {'copyPageWords
 # Exact retained Task004 O2 Kernel3 non-inlined alternatives. All other
 # pre/post bodies retain the original immutable pins. The historical metadata
 # does not claim the separately selected checked-inline lowering contract.
+KERNEL3_O0_POST = {'copyWord': '3fc01ca9b198462cab50212418a5d7bac024decb6b5c99850eb3d2933d9cbad8', 'copyWordTailStep': '98004326c04acac6598a15b2f3e9e02871d3466e4a819ba3cf60665b5052206d', 'copyWordGenericBlockStep': '26a8abdd1fe07b4e0d4bbaebfab00e7415023faca09f9ba01d9d1b6a77856d54', 'copyWordBlockStep': '5377934f7a9430939653420e4b7e8d6490d58dd70c787ecbe49087e8cf43e3e8', 'copyPageWords': 'aa47c6cd695d5502e67505e483c8c74642782f20fb340af9d9932f0ca6cc3d72', 'copyFromPages': '3d31610a251eb11de90ae84eee50c901b4bf2ff5a899091ebefeed6dc0e9357b', 'copyToPages': 'a3f53dcb7033e28fe9f03f933c8bba9c856dffd1aac9643a3842440d6cd5f37a', 'copyFromUserResult': '1d66a51e1d32cdbd699fabff7a2cd4ff668ff8b20ccb4ac73b8e09cef71cb986', 'copyFromUserReusingReadPage': '69daac959c57433357b799f56682b10f026f10889e5a46ad21babb7dafa9c9db'}
+
 KERNEL3_POST = {'copyWord': '4d27ef720a282b05999fa6a7e2b12e8dfcd0b5e8f57ea239135c46d6b743eabd', 'copyWordGenericBlockStep': 'c6c53a66388b0054f19412e2e9701681adaf75de1164aec0539d09be9d4004bc', 'copyWordBlockStep': 'c27e6ad0412ced85faea38707d733fec9b98e48fed2833633c7a94796df4191d'}
 
 
-def _kernel3_checked_pairs(body, rows, *, pairs, block):
+def _kernel3_checked_pairs(body, rows, *, pairs, block, unoptimized=False):
     from audit_kernel import (_local_checked_result, validate_boolean_gate,
                               _structured_ir_blocks)
     access = 'Lemma.Kernel.Memory.Access.'
@@ -64,6 +66,9 @@ def _kernel3_checked_pairs(body, rows, *, pairs, block):
         m = re.fullmatch(r'\s*(%[-\w.]+) = shl(?: nuw)?(?: nsw)? i64 (%[-\w.]+), 6',line)
         if m:
             terms,constant=affine(m[2]);operands[m[1]]=({k:v*64 for k,v in terms.items()},constant*64);continue
+        m = re.fullmatch(r'\s*(%[-\w.]+) = mul i64 (%[-\w.]+), 64',line)
+        if m:
+            terms,constant=affine(m[2]);operands[m[1]]=({k:v*64 for k,v in terms.items()},constant*64);continue
         m = re.fullmatch(r'\s*(%[-\w.]+) = add(?: nuw)?(?: nsw)? i64 ([^,]+), ([^ ]+)',line)
         if m:
             left,a=affine(m[2]);right,b=affine(m[3]);combined=left.copy()
@@ -89,7 +94,12 @@ def _kernel3_checked_pairs(body, rows, *, pairs, block):
         statuses=re.findall(r'(%[-\w.]+) = extractvalue \{ i64, i64 \} '+re.escape(result)+r', 0$',body,re.M)
         if len(statuses)!=1:
             raise Core0Error('page-word Kernel3 checked status extraction absent')
-        comparisons=re.findall(r'(%[-\w.]+) = icmp eq i64 '+re.escape(statuses[0])+r', 0$',body,re.M)
+        tested=statuses[0]; width='i64'
+        if unoptimized:
+            narrowed=re.findall(r'(%[-\w.]+) = trunc i64 '+re.escape(tested)+r' to i8$',body,re.M)
+            if len(narrowed)!=1:raise Core0Error('page-word O0 original status narrowing absent')
+            tested=narrowed[0];width='i8'
+        comparisons=re.findall(r'(%[-\w.]+) = icmp eq '+width+' '+re.escape(tested)+r', 0$',body,re.M)
         if len(comparisons)!=1:
             raise Core0Error('page-word Kernel3 original zero-status test differs')
         comparison=comparisons[0]
@@ -97,6 +107,23 @@ def _kernel3_checked_pairs(body, rows, *, pairs, block):
             next_result,next_target,_=calls[index+1]
             gates.append(validate_boolean_gate(parsed,comparison,next_target,
                                                protected_scope={owners[next_result]}))
+        elif unoptimized:
+            fatal_source='Lemma.User.ABI.kernelFatal'
+            if fatal_source not in rows or (rows[fatal_source]['args'],rows[fatal_source]['effects'])!=([],[]):
+                raise Core0Error('page-word O0 fatal source metadata differs')
+            fatal=rows[fatal_source]['symbol']
+            branch=re.findall(r'br i1 '+re.escape(comparison)+r', label %([-\w.]+), label %([-\w.]+)',parsed)
+            if len(branch)!=1:raise Core0Error('page-word O0 final status branch differs')
+            yes,no=branch[0];failure='\n'.join(blocks[no])
+            result=re.findall(r'(%[-\w.]+) = call zeroext i8 @'+re.escape(fatal)+r'\(\)',failure)
+            if len(result)!=1:raise Core0Error('page-word O0 final actual fatal call absent')
+            gates.append(validate_boolean_gate(parsed,comparison,fatal,success_when_true=False,protected_scope={no}))
+            phi=r'phi i8 \[ 0, %'+re.escape(yes)+r' \], \[ '+re.escape(result[0])+r', %'+re.escape(no)+r' \]'
+            if len(re.findall(phi,parsed))!=1:raise Core0Error('page-word O0 final success/fatal status phi differs')
+            if block:
+                values=[name for name,value in operands.items() if value==({'%arg2':1},64)]
+                phi=r'phi i64 \[ '+re.escape(values[0] if len(values)==1 else 'ABSENT')+r', %'+re.escape(yes)+r' \], \[ 0, %'+re.escape(no)+r' \]'
+                if len(values)!=1 or len(re.findall(phi,parsed))!=1:raise Core0Error('page-word O0 final64-byte prefix accumulator differs')
         else:
             if len(re.findall(r'select i1 '+re.escape(comparison)+r', i64 0, i64 255$',body,re.M))!=1:
                 raise Core0Error('page-word Kernel3 final checked success/fatal outcome differs')
@@ -110,7 +137,7 @@ def _kernel3_checked_pairs(body, rows, *, pairs, block):
             'scope':'Real non-inlined checked wrapper calls, exact original addresses/values/status order; primitive hardware contract audited separately'}
 
 
-def validate_if_present(ir, unit, *, optimized):
+def validate_if_present(ir, unit, *, optimized, optimization=None):
     from paper_next import canonical
     sources = {canonical(row['source']) for row in unit.get('functions', [])}
     new_family = any(BASE+name in sources for name in CALLERS)
@@ -121,7 +148,7 @@ def validate_if_present(ir, unit, *, optimized):
     if new_family and surface_borrow:
         # A selected family with a missing member reaches validate and fails;
         # it cannot fall through to historical callback admission.
-        return validate(ir, unit, optimized=optimized)
+        return validate(ir, unit, optimized=optimized, optimization=optimization)
     return None
 
 
@@ -130,7 +157,7 @@ KERNEL3_ROOTS = {
     'lemmasim-initialize': 'Lemma.Platform.LemmaSim.NotebookKernel.initializeMedium',
 }
 
-def validate(ir, unit, *, optimized):
+def validate(ir, unit, *, optimized, optimization=None):
     from audit_kernel import (_ir_definition_body, parse_definitions_and_calls,
                               _local_arithmetic, _local_call_arguments,
                               _local_checked_result, _local_closed_calls)
@@ -151,6 +178,7 @@ def validate(ir, unit, *, optimized):
                     [(KERNEL3_ROOTS.get(unit.get('configuration')),1,[]),
                      ('Lemma.Platform.LemmaSim.NotebookKernel.dispatch',2,['u64','u64','u64'])]):
         raise Core0Error('page-word Kernel3 historical configuration/lowering authority differs')
+    o0_post=kernel3 and optimized and optimization=='O0'
     observed = {}
     def body(source):
         result = _ir_definition_body(ir, rows[source]['symbol'])
@@ -164,7 +192,7 @@ def validate(ir, unit, *, optimized):
             raise Core0Error('page-word exact signature/effects differ: '+source)
         normalized = ' '.join(re.sub(r'@([^ (]+)', lambda m: '@'+names.get(m[1], m[1]), body(source)).split())
         digest = hashlib.sha256(normalized.encode()).hexdigest()
-        expected=KERNEL3_POST.get(suffix,PINS[phase][suffix]) if kernel3 and optimized else PINS[phase][suffix]
+        expected=KERNEL3_O0_POST[suffix] if o0_post else KERNEL3_POST.get(suffix,PINS[phase][suffix]) if kernel3 and optimized else PINS[phase][suffix]
         if digest != expected:
             raise Core0Error('page-word complete checked body differs: '+source+'/'+phase)
         observed[source] = digest
@@ -186,7 +214,7 @@ def validate(ir, unit, *, optimized):
         if incoming[BASE+suffix] != expected_sources:
             raise Core0Error('page-word private helper caller closure differs: '+suffix)
     operations = None
-    if optimized and kernel3:
+    if optimized and kernel3 and not o0_post:
         gates={suffix:_kernel3_checked_pairs(body(BASE+suffix),rows,pairs=1 if suffix=='copyWord' else 8,block=suffix!='copyWord')
                for suffix in KERNEL3_POST}
         operations={'block_words':8,'ordered_checked_accesses':16,'word_bits':64,'lowering':'historical Kernel3 non-inlined checked wrappers',
@@ -204,7 +232,7 @@ def validate(ir, unit, *, optimized):
         operations = {'block_words': 8, 'ordered_volatile_accesses': 16,
                       'word_bits': 64, 'alignment_bytes': 8,
                       'scope': 'Actual optimized volatile operations; complete pins retain guards, tails and global-fault prefixes'}
-    if not optimized:
+    if not optimized or o0_post:
         access = 'Lemma.Kernel.Memory.Access.'
         required = {access+'read64', access+'write64', 'Lemma.User.ABI.kernelFatal',
                     'Lemma.Kernel.Memory.Frames.pool', 'Lemma.Kernel.Memory.Frames.expandedPoolLimit'}
@@ -214,7 +242,7 @@ def validate(ir, unit, *, optimized):
         writes = rows[access+'write64']['symbol']
         fatal = rows['Lemma.User.ABI.kernelFatal']['symbol']
         for suffix in ('copyWordGenericBlockStep', 'copyWordBlockStep'):
-            text = body(BASE+suffix)
+            text = operation_view(body(BASE+suffix))
             arithmetic = _local_arithmetic(text, {})
             ordered = [(names.get(called, called), arguments)
                        for called, arguments in re.findall(r'call \{ i64, i64 \} @([-A-Za-z0-9_.$]+)\(([^\n]*)\)', text)
@@ -241,7 +269,7 @@ def validate(ir, unit, *, optimized):
                             rows['Lemma.Kernel.Memory.Frames.pool']['symbol'],
                             rows['Lemma.Kernel.Memory.Frames.expandedPoolLimit']['symbol']}
             _local_closed_calls(text, allowed)
-        page = body(BASE+'copyPageWords')
+        page = operation_view(body(BASE+'copyPageWords'))
         if not re.search(r'icmp ule i32 %[-\w.]+, 64$', page, re.M) or not re.search(r'icmp ule i32 %[-\w.]+, 7$', page, re.M):
             raise Core0Error('page-word exact64-block/7-word-tail budgets absent')
         if len(_local_call_arguments(page, rows[BASE+'copyWordBlockStep']['symbol'])) != 1 or len(_local_call_arguments(page, rows[BASE+'copyWordTailStep']['symbol'])) != 1:
@@ -249,10 +277,21 @@ def validate(ir, unit, *, optimized):
         for suffix in ('copyFromPages', 'copyToPages'):
             if len(_local_call_arguments(body(BASE+suffix), rows[BASE+'copyPageWords']['symbol'])) != 2:
                 raise Core0Error('page-word ordered two-span callback inventory differs')
+        if o0_post:
+            fatal_body=_ir_definition_body(ir,fatal)
+            if re.fullmatch(r'\s*entry:\s*ret i8 (?:255|-1)\s*',fatal_body) is None:raise Core0Error('page-word O0 actual fatal scalar differs')
+            gates={suffix:_kernel3_checked_pairs(operation_view(body(BASE+suffix)),rows,pairs=1 if suffix=='copyWord' else 8,block=suffix!='copyWord',unoptimized=True) for suffix in KERNEL3_POST}
         operations = {'block_words': 8, 'ordered_checked_accesses': 16,
                       'maximum_blocks': 64, 'maximum_tail_words': 7,
-                      'first_page_before_second': True, 'no_new_primitive_or_effect': True}
+                      'first_page_before_second': True, 'no_new_primitive_or_effect': True, **({'lowering':'historical Kernel3 O0 checked wrappers','checked_call_gates':gates} if o0_post else {})}
     return {'contract_version': 'lemma-user-copy-page-word-artifact-v1', 'phase': phase,
             'complete_shapes': observed, 'private_callers': {s: sorted(c) for s,c in incoming.items()},
             'operations': operations,
             'scope': 'Genuine complete checked pre/post artifact shapes and actual ordered accesses; finite Action equivalence separate, no compiler-correctness/guest-speed claim'}
+
+
+def operation_view(body):
+    # Presentation-only view for independent gates. Complete literal actual O0
+    # pin hashing above removes no comments, instructions, labels or operands.
+    text='\n'.join(line.split(';',1)[0].rstrip() for line in body.splitlines())
+    return re.sub(r'(icmp eq i1 %[-\w.]+, )(true|false)\b',lambda m:m[1]+('1' if m[2]=='true' else '0'),text)

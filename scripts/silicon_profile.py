@@ -94,11 +94,12 @@ def profile_path(name=None):
     raise ValueError('unsupported silicon binding')
 
 def configuration_profile(configuration):
-    from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+    from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
     if configuration in CLOSURE_CONFIGURATIONS:return "lemma-silicon-dev/0.3.0"
     from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
     if configuration in COURSE_AWAIT_CONFIGURATIONS:return "lemma-silicon-dev/0.3.0"
     if configuration in ("lemmasim-silicon-course-bulk-notebook","lemmasim-silicon-course-bulk-initialize"):return "lemma-silicon-dev/0.3.0"
+    if configuration in ('lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook','lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize'):return 'lemma-silicon-dev/0.13.0'
     if configuration in ('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'):return 'lemma-silicon-dev/0.13.0'
     if configuration in ('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'):return 'lemma-silicon-dev/0.13.0'
     if configuration in ("lemmasim-silicon-wifi-common-probe","lemmasim-silicon-wifi-common-read-probe"):return "lemma-silicon-dev/0.12.0"

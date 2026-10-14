@@ -21,7 +21,7 @@ REGISTRY = {
  'resources': {'name':'lemma-arithmetic-closure-resource-v1','id':0x000500000000001f,
                'heap_objects':31,'maximum_captures':4,'maximum_targets':8,'ordinary_peak_objects':9,'semantic_budgets':[0,8],'deadline_ticks':10000000},
 }
-from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+from closure_deployment import ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 CONFIGURATIONS = frozenset(CLOSURE_CONFIGURATIONS)
 ROOT = 'Lemma.Services.Arithmetic.ServerV7.main'
 PROTOCOL = 'Lemma.Services.Arithmetic.ProtocolV7.'

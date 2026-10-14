@@ -9,7 +9,8 @@ import hashlib,re
 from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
 from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
 COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
-from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
 from core0_common import Core0Error
 
 CONFIGURATIONS={'lemmasim-silicon-product-notebook','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize',
@@ -21,7 +22,7 @@ USER_CONFIGURATIONS={'lemmasim-silicon-managed-notebook','lemmasim-silicon-manag
  'lemmasim-silicon-sums-notebook','lemmasim-silicon-sums-initialize','lemmasim-silicon-sums-arithmetic-oom-development'} | set(('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize', 'lemmasim-silicon-usb-next-bulk-notebook', 'lemmasim-silicon-usb-next-bulk-initialize', 'lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'))
 USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'))
 USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'))
-USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'))
+USER_CONFIGURATIONS |= frozenset(('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')) | frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS)
 BYTES_CONFIGURATIONS={"lemmasim-silicon-bytes-bulk-notebook","lemmasim-silicon-bytes-bulk-initialize","lemmasim-silicon-bytes-arithmetic-oom-development"}
 ARRAY_CONFIGURATIONS=set(COURSE_CONFIGURATIONS) | {"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"}
 STRING_CONFIGURATIONS={"lemmasim-silicon-string-bulk-notebook","lemmasim-silicon-string-bulk-initialize","lemmasim-silicon-string-arithmetic-oom-development"}
@@ -96,8 +97,8 @@ def catalog(unit):
  for r in c.get('user_wrappers',[]):
   require(isinstance(r,dict) and set(r)=={'source','symbol','operation'},'user-word catalog row keys differ')
   f=by.get(r.get('symbol'));op=USER_WORD.get(r.get('operation'))
-  require(unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS) and
-   (unit.get('image_key') in {'notebook','arithmetic'} or unit.get('image_key')=='store' and unit.get('configuration') in {'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'}) and f is not None and op is not None and
+  require(unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS + USB_CLOSURE_RECOVERY_CONFIGURATIONS) and
+   (unit.get('image_key') in {'notebook','arithmetic'} or unit.get('image_key')=='store' and unit.get('configuration') in {'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize'} | set(USB_CLOSURE_RECOVERY_CONFIGURATIONS)) and f is not None and op is not None and
    r['source']==f['source'] and (f['args'],f['effects'])==op[:2],
    'user-word source/signature/effects/authority differs')
   require(any(o['stable_id']==r['operation'] and o['primitive_symbol'] is None and o['returnkind']=='word'
@@ -160,7 +161,7 @@ def validate(ir,unit,*,optimized):
   digest=hashlib.sha256(_body(ir,sym).encode()).hexdigest()
   require(digest==PHYSICAL_PREIMAGE[op],'wrapper changed complete physical interval/alignment/error/volatile/result guard')
  user_expected=set()
- if unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS) and unit.get('configuration') in USER_CONFIGURATIONS:
+ if unit['role']=='user' and (unit['contract_version'] in {'core0-user-v0.2','core0-user-v0.3'} or unit['contract_version']=='core0-user-v0.4' and unit.get('configuration') in BYTES_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.5' and unit.get('configuration') in ARRAY_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.6' and unit.get('configuration') in STRING_CONFIGURATIONS or unit['contract_version']=='core0-user-v0.7' and unit.get('configuration') in CLOSURE_CONFIGURATIONS + USB_CLOSURE_RECOVERY_CONFIGURATIONS) and unit.get('configuration') in USER_CONFIGURATIONS:
   for f in unit['functions']:
    if any((f['args'],f['effects'])==op[:2] and hashlib.sha256(_body(ir,f['symbol']).encode()).hexdigest()==op[2]
           for op in USER_WORD.values()):user_expected.add(f['symbol'])

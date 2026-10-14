@@ -143,7 +143,7 @@ def validate_ipc_poll_borrow(unit, ir):
     # the new caller, while existing capture/lookups retain their own guard.
     lookup_callers = {source for source, symbol in n.items()
                       if n[t+'lookupRecord'] in parse_definitions_and_calls(_ir_definition_body(ir, symbol))[2]}
-    if t+'pollIPCStep' not in lookup_callers or not lookup_callers <= {t+'lookup', t+'contextAt', t+'pollIPCStep'}:
+    if t+'pollIPCStep' not in lookup_callers or not lookup_callers <= ({t+'lookup', t+'contextAt', t+'pollIPCStep'} | _entry2_lookup_record_callers(unit,ir)):
         raise Core0Error('IPC polling borrow has an unvalidated lookupRecord caller')
     callers[t+'lookupRecord'] = sorted(lookup_callers)
 
@@ -310,6 +310,13 @@ def validate_ipc_poll_public(unit,ir):
         'scope':'public poll validates its own base; Task borrow grants no authority until full five-body guard'}
 
 
+def _entry2_lookup_record_callers(unit,ir):
+    from task_entry_borrow import validate_if_present
+    selected=validate_if_present(ir,unit,optimized=False)
+    return ({'Lemma.Kernel.Task.entryContextV2','Lemma.Kernel.Task.entryDispatchesV2'}
+            if selected is not None else set())
+
+
 def task_lookup_record_allowed_callers(unit, ir):
     """Capture hook extends only an actual fully witnessed Task→pollAt edge.
 
@@ -319,6 +326,7 @@ def task_lookup_record_allowed_callers(unit, ir):
     _,n=_poll_rows(unit)
     pending='Lemma.Kernel.IPCStorage.pendingAt';poll='Lemma.Kernel.IPC.pollAt';task='Lemma.Kernel.Task.pollIPCStep'
     old={'Lemma.Kernel.Task.lookup','Lemma.Kernel.Task.contextAt'}
+    old |= _entry2_lookup_record_callers(unit,ir)
     if pending in n:validate_ipc_pending_public(unit,ir)
     if poll in n:validate_ipc_poll_public(unit,ir)
     if poll in n and task in n and n[poll] in parse_definitions_and_calls(_ir_definition_body(ir,n[task]))[2]:

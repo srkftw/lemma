@@ -1,0 +1,279 @@
+{
+  "schema": "lemma-task-entry-borrow-v2-component/1",
+  "status": "PASS_GENUINE_COMPONENT_SELECTED_GUARDS_AND_MATCHED_WHOLE_FULL_AUDITS",
+  "scope": "Ordinary Lean Actions/layout lemma, genuine selected LLVM20O2/RV64 objects and matched whole-image ordinary audits; new CPU execution/performance NOT_RUN",
+  "target_sources": {
+    "Lemma/Kernel/Task.lean": "f25dbbf093f922cb0fb8b35829b404fb737e181b38861b805db312419a256660",
+    "Lemma/Kernel/Scheduler.lean": "5f1355442a13a79db974d81f56acb210b4e8d09ab9dce644bd906e6660d00bfa"
+  },
+  "historical_target_api_prefixes": "BYTE_IDENTICAL",
+  "same_action_borrow": {
+    "first_complete_descriptor_validation": "retained before running-state read",
+    "context_writes": [
+      2048,
+      2312,
+      2328
+    ],
+    "borrow_ends": "before typed U entry",
+    "return_continuation": "independent current/kernel-root/active-root reads",
+    "no_cache_across_syscalls": true,
+    "removed_duplicate_descriptor_scans": 3,
+    "temporal_fault_limit": "No equivalence for a new transient RAM fault arising only at an omitted duplicate read; stable-address failures and remaining effects compared separately from hardware timestamps"
+  },
+  "action_fixture": {
+    "finite_failure_corruption_boundary_cases": 1352,
+    "expanded_requests_before": 410,
+    "expanded_requests_after": 173,
+    "legacy_requests_before": 362,
+    "legacy_requests_after": 293
+  },
+  "o2_static_sites": {
+    "Lemma.Kernel.Task.context": {
+      "instructions": 213,
+      "calls": 14,
+      "volatile_load_sites": 3,
+      "volatile_store_sites": 9
+    },
+    "Lemma.Kernel.Task.entryContextV2": {
+      "instructions": 86,
+      "calls": 12,
+      "volatile_load_sites": 3,
+      "volatile_store_sites": 3
+    },
+    "Lemma.Kernel.Scheduler.enter": {
+      "instructions": 89,
+      "calls": 17,
+      "volatile_load_sites": 4,
+      "volatile_store_sites": 2
+    },
+    "Lemma.Kernel.Scheduler.entryV2": {
+      "instructions": 83,
+      "calls": 15,
+      "volatile_load_sites": 4,
+      "volatile_store_sites": 2
+    }
+  },
+  "genuine_capture": {
+    "original_five_role_capture": "FAIL",
+    "original_seconds": 256.31306155305356,
+    "original_failure": "Store export original120s command limit while waiting shared Lake lock",
+    "source_inputs": 376,
+    "serial_missing_role_suffix": "PASS_MISSING_ROLES_ONLY",
+    "suffix_seconds": 35.988850007997826,
+    "kernel_roles_reused_from_original": true,
+    "producer_forest_relabelled": false
+  },
+  "guard_qualification": {
+    "original_composed_observer": "FAIL_STALE_IGNORED_PYTHON_BYTECODE",
+    "corrected_source_import_same_target_artifacts": "PASS_COMPLETE_FIVE_ROLE_IR",
+    "component_mutants": 131,
+    "selected_boot_body_caller_argument_mutants": 100,
+    "maintained_composed_stack_poll_capture_incoming": {
+      "status": "PASS_GENUINE_ENTRY2_COMPOSED_STACK_POLL_CAPTURE_INCOMING_GUARDS",
+      "seconds": 76.7526985569857,
+      "historical_callers_unchanged": true,
+      "specific_foreign_stack_and_lookup_callers_rejected": true,
+      "polling_body_mutants": 9,
+      "metadata_and_foreign_callers": 8
+    }
+  },
+  "resource_execution": {
+    "original_canonical_new_bulk_boot_500M": "FAIL_RETAINED",
+    "new_entry2_whole_link": "PASS_MATCHED_ORIGINAL_PRODUCTION_CURRENT_FULL_AUDITS",
+    "new_entry2_connected_rv64": "NOT_RUN",
+    "cycle_speedup": "NOT_MEASURED"
+  },
+  "receipts": {
+    "build/managed/task-entry-borrow-a2/component-result-a1.json": "046811f3a997d8a02f6be9d97d1e1e3a791549f9b79e1898ff8d53693715e7ac",
+    "build/managed/task-entry2-selected-a1/result.json": "6095c78f43ccf37997a29d0a22d766147d0ac9c4af110ad67ffbd77e38992847",
+    "build/managed/task-entry2-selected-a1/source-terminal-seal-a1.json": "309544ab1578320dcc95575d093117bbb9b013738400e9e14e45d90bc05c8474",
+    "build/managed/task-entry2-selected-suffix-a1/result.json": "4e82fe146017b0ebfcb71734c48495ff7708f4cb7431243106b251cabb6f223f",
+    "build/managed/task-entry2-selected-suffix-a1/qualified-installed-a2.json": "86c5fe6d7d9213577252ae62429920f0b919dba7363bdd21e6202ee4082448b2",
+    "build/managed/task-entry2-selected-a1/production-mutants-maintained-a1.json": "651e2108f52081706717f7d02875d538451aeb4877f3e780c0c2f1830e50df41",
+    "build/managed/task-entry-borrow-a2/mutations-maintained-a5/result.json": "ed3dffd7400d2d40a12dcf287402a74b91b5c08a9f1aea9ee9738cae60b09ef8",
+    "build/managed/task-entry2-selected-a1/current-observer-seal-a1.json": "b86f7a8b26f34fdc78e2cfc3dfbe69ef626cbea3e364425ba9e053bc0e9b822c",
+    "build/managed/task-entry2-whole-pair-a1/result.json": "8a0475d70ce86fcad85414e80802c592937397c601924da67dd53470671840b4",
+    "build/managed/task-entry2-whole-pair-a1/source-terminal-seal.json": "ba99d4f11240e229415866979ee2e848cc2a6aab4bd36377eee15caa905b7e1e",
+    "build/managed/task-entry2-whole-missing-notebook-a1/result.json": "73ec666ed36dba5cb9291b4f4937980ac20f132ff774aa30bd547a6ee14cd0a5",
+    "build/managed/task-entry2-stack-observer-prototype-a1/result-a3.json": "6352ea90f8781ceb369c3c11222f32e07a200be1b3d9c7a1b48d22d0700ac8cd",
+    "build/managed/task-entry2-stack-observer-prototype-a1/composed-result-a1.json": "5b17515face0122e67d608f41becd8f99756a6492ff43ef9d0630cb0d2cd8359",
+    "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result-a3.json": "ab33b3b54dee58c8d807b9cd7d2ac6ba97cdcd9aa8476795764239832454c176",
+    "build/managed/task-entry2-whole-qualification-a1/result.json": "95053c1f08d19a5653a46099c5d9709cc18ef5af15ac8ca9aec851070b9a0e97",
+    "build/managed/task-entry2-stack-observer-prototype-a1/maintained-result-a1.json": "aac863dc3bc2f2669a53c9da475650b3865394dbe736953d89a28e70efe1ee05",
+    "build/managed/task-entry2-whole-observer-a1/result.json": "8ddac43f49c7fa6a1dba13094087e39e4b6700c092b366bff5eb41c6308a4cdc",
+    "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result.json": "1eddb004c1fa60a8bbc90d6f569b6db6f52e65cc9cb0b9db4afe5dcbe4e8552e",
+    "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result-a2.json": "716b8a2d8eea3368ee859cf415135b866a0fc8afc90532bc250b5db1b7575e15"
+  },
+  "note": "Tests, mathematical layout lemma, artifact audits and physical/RTL observations have distinct meanings; no full runtime/recursion/proof-kernel or G2\u2013G7 completion claim",
+  "full_host_regression": {
+    "kernel_tests": 419,
+    "status": "PASS",
+    "seconds": 9.864,
+    "fresh_python_cache_before_startup": true,
+    "original_stale_catalog_fixture_failure": "RETAINED",
+    "log": "build/managed/task-entry2-whole-qualification-a1/kernel-host-final-a1.log",
+    "log_sha256": "816ed91d65ba5f295c38de87af00e7e746005da48386538f029581e7357a5ab5",
+    "metadata_gates": 7,
+    "software_inventory_units": 56,
+    "physical_inventory_units": 6,
+    "scaffold_tests": 18
+  },
+  "whole_production": {
+    "original_pair": "FAIL_IGNORED_ARCHIVE_LAYOUT",
+    "original_seconds": 88.19629335100763,
+    "original_initializer_build_seconds": 87.88486649701372,
+    "initializer_image_sha256": "534b10c06c363d83ed8f9e8c56cbeee1b0751f27d66d0fb6199e421a2e49ad02",
+    "initializer_image_bytes": 624120,
+    "missing_notebook_build": "PASS_BUILD_ONLY",
+    "missing_notebook_build_seconds": 93.11556648102123,
+    "producer_source_inputs": 377,
+    "producer_source_inventory_sha256": "a178dcd5a135eaa9a8e25f305264968460e382b8a7229876118c32ebe76aa990",
+    "target_recompiled_for_observer": false,
+    "qualified_new_incoming_callers": {
+      "Process.validateStackAt": [
+        "Task.entryContextV2"
+      ],
+      "Task.lookupRecord": [
+        "Task.entryContextV2",
+        "Task.entryDispatchesV2"
+      ]
+    },
+    "strict_entry2_gate_before_admission": true,
+    "ordinary_current_initializer_audit": "PASS",
+    "ordinary_current_notebook_audit": "PASS",
+    "current_full_audit_seconds": 242.40502105199266,
+    "roles": {
+      "initializer": {
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-closure-entry2-initializer-a1",
+        "source_commit": "1e6cbb4e3faa5af08c8cb3d1ab28bf31ec9c4c89",
+        "dirty_paths": [
+          " M Lemma/Applications/Notebook.lean",
+          " M Lemma/Compiler/DeploymentCatalog.lean",
+          " M Lemma/Compiler/KernelExport.lean",
+          " M Lemma/Kernel/Scheduler.lean",
+          " M Lemma/Kernel/Task.lean",
+          " M Lemma/Platform/LemmaSim/NotebookKernel.lean",
+          " M docs/contracts/006-course-reader-binding-v1.md",
+          " M scripts/arithmetic_closure_identity.py",
+          " M scripts/audit_kernel.py",
+          " M scripts/audit_lemmasim_capacity.py",
+          " M scripts/build_kernel.py",
+          " M scripts/closed_inline.py",
+          " M scripts/closure_deployment.py",
+          " M scripts/lemmasim_readonly.py",
+          " M scripts/managed_closure.py",
+          " M scripts/managed_records.py",
+          " M scripts/paper_bulk.py",
+          " M scripts/paper_clocked.py",
+          " M scripts/silicon_profile.py",
+          " M scripts/usercopy_page_words.py",
+          " M tests/kernel/test_arithmetic_catalog.py",
+          "?? Lemma/Notebook/RetryClosurePolicy.lean",
+          "?? docs/contracts/006-task-entry-borrow-v2.md",
+          "?? docs/evidence/006-task-entry-borrow-v2.json",
+          "?? docs/evidence/006-usercopy-kernel3-o0-observer-v1.json",
+          "?? scripts/check_usb_closure_recovery_target.py",
+          "?? scripts/task_entry_borrow.py",
+          "?? scripts/usb_closure_recovery_deployment.py",
+          "?? scripts/usb_closure_recovery_target.py",
+          "?? tests/ink/NotebookClosureRecoverable.lean",
+          "?? tests/ink/NotebookRetryClosurePolicy.lean",
+          "?? tests/kernel/TaskEntryBorrow.lean",
+          "?? tests/kernel/TaskEntryBorrowLower.lean",
+          "?? tests/kernel/task_entry_borrow_mutations.py",
+          "?? tests/kernel/usb_closure_recovery_mutations.py",
+          "?? tests/kernel/usercopy_kernel3_o0_mutations.py",
+          "?? tooling/usb-closure-recovery-target-authority.json"
+        ],
+        "build_sha256": "0f38b2e3c3f3b6814feb2c63cd06fe83aadf16aaa9dde03f54c4ad2cc7c98547",
+        "provenance_sha256": "4adb7a8636443753191aba860a65d21d9609127d22fd59ff897c18195b60eb12",
+        "image_sha256": "534b10c06c363d83ed8f9e8c56cbeee1b0751f27d66d0fb6199e421a2e49ad02",
+        "image_bytes": 624120,
+        "status": "PASS_ORDINARY_CURRENT_FULL_AUDIT_ORIGINAL_PRODUCTION",
+        "audit_sha256": "a6f20450696e84a116b98a087f780d4b2db54f235bd9179a35879dcf0fa45639",
+        "audit_seconds": 124.97065226000268
+      },
+      "notebook": {
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-closure-entry2-notebook-a1",
+        "source_commit": "1e6cbb4e3faa5af08c8cb3d1ab28bf31ec9c4c89",
+        "dirty_paths": [
+          " M Lemma/Applications/Notebook.lean",
+          " M Lemma/Compiler/DeploymentCatalog.lean",
+          " M Lemma/Compiler/KernelExport.lean",
+          " M Lemma/Kernel/Scheduler.lean",
+          " M Lemma/Kernel/Task.lean",
+          " M Lemma/Platform/LemmaSim/NotebookKernel.lean",
+          " M docs/contracts/006-course-mounted-await-v1.md",
+          " M docs/contracts/006-course-reader-binding-v1.md",
+          " M docs/evidence/006-course-package-v1.json",
+          " M scripts/arithmetic_closure_identity.py",
+          " M scripts/audit_kernel.py",
+          " M scripts/audit_lemmasim_capacity.py",
+          " M scripts/build_kernel.py",
+          " M scripts/closed_inline.py",
+          " M scripts/closure_deployment.py",
+          " M scripts/lemmasim",
+          " M scripts/lemmasim_readonly.py",
+          " M scripts/managed_closure.py",
+          " M scripts/managed_records.py",
+          " M scripts/paper_bulk.py",
+          " M scripts/paper_clocked.py",
+          " M scripts/silicon_guest.py",
+          " M scripts/silicon_guest_bundle.py",
+          " M scripts/silicon_profile.py",
+          " M scripts/usercopy_page_words.py",
+          " M tests/kernel/test_arithmetic_catalog.py",
+          "?? Lemma/Notebook/RetryClosurePolicy.lean",
+          "?? docs/contracts/006-task-entry-borrow-v2.md",
+          "?? docs/evidence/006-task-entry-borrow-v2.json",
+          "?? docs/evidence/006-usercopy-kernel3-o0-observer-v1.json",
+          "?? scripts/check_usb_closure_recovery_target.py",
+          "?? scripts/task_entry_borrow.py",
+          "?? scripts/usb_closure_recovery_deployment.py",
+          "?? scripts/usb_closure_recovery_target.py",
+          "?? tests/ink/NotebookClosureRecoverable.lean",
+          "?? tests/ink/NotebookRetryClosurePolicy.lean",
+          "?? tests/kernel/TaskEntryBorrow.lean",
+          "?? tests/kernel/TaskEntryBorrowLower.lean",
+          "?? tests/kernel/task_entry_borrow_mutations.py",
+          "?? tests/kernel/usb_closure_recovery_mutations.py",
+          "?? tests/kernel/usercopy_kernel3_o0_mutations.py",
+          "?? tooling/usb-closure-recovery-target-authority.json"
+        ],
+        "build_sha256": "448611246da3ef346da51f01a030ecd5da0012975567e259c14ce5519e1932cb",
+        "provenance_sha256": "032bce3508098fefe6123574984cbccf8848213799fb78f792db0282f550207d",
+        "image_sha256": "2e231da8ca51aa691e1611907183c9e208dac7d4da737e9867690fca2e11f248",
+        "image_bytes": 624120,
+        "status": "PASS_ORDINARY_CURRENT_FULL_AUDIT_ORIGINAL_PRODUCTION",
+        "audit_sha256": "1f1df3c01e77b20b8036f38f8d433ff6c8d22dc960bd1d763c9d29a01162916c",
+        "audit_seconds": 117.33982317196205
+      }
+    },
+    "current_observer_sources": {
+      "scripts/audit_kernel.py": "a0964cf3e61f4b338ac84f76859141d235ecb36779d54719ac70b74f40fbe553",
+      "scripts/ipc_poll_borrow.py": "b979f4d982a16d3d5f2051cc4d4a3c064ce4c810bcc86c81b197072234f17a30",
+      "scripts/task_entry_borrow.py": "5ec5d83db24e9789d07aa2c4db026216f70f943b5a74ce998b3d6b56860433a1",
+      "scripts/usercopy_page_words.py": "de8ac1c4caa7fee6a101fbb22bba6d8c9c9ac8c2c16ca9f9098bc50d6c76611a"
+    },
+    "observer_delta_from_original377": {
+      "scripts/audit_kernel.py": {
+        "producer_sha256": "38a09b64fe936e977e9f0b81531afd01835580e09d7f97ac5b7b5d8726d8a30e",
+        "observer_sha256": "a0964cf3e61f4b338ac84f76859141d235ecb36779d54719ac70b74f40fbe553"
+      },
+      "scripts/ipc_poll_borrow.py": {
+        "producer_sha256": "52120a8342ad66be8baa42f04c88ca8e0266d84d22ad54b5da5ee213fd8560a4",
+        "observer_sha256": "b979f4d982a16d3d5f2051cc4d4a3c064ce4c810bcc86c81b197072234f17a30"
+      }
+    },
+    "original_producer_head": "1e6cbb4e3faa5af08c8cb3d1ab28bf31ec9c4c89",
+    "missing_notebook_image_sha256": "2e231da8ca51aa691e1611907183c9e208dac7d4da737e9867690fca2e11f248",
+    "matched_archive": "build/managed/task-entry2-whole-missing-notebook-a1/consumed-source-root",
+    "complete_original_inventory_plus_manifest": true
+  },
+  "retained_whole_observer_failures": [
+    "original driver omitted required archive source-inputs.json (88.196s)",
+    "first corrected archive exposed original stack incoming-caller omission",
+    "first ignored full-audit prototype loaded an indirect historical auditor alias (33.791s)",
+    "stack-only prototype exposed original IPC lookup incoming-caller omission (59.339s)"
+  ]
+}

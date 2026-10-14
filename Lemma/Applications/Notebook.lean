@@ -1,5 +1,6 @@
 import Lemma.Services.Store.RecoveryClient
 import Lemma.Notebook.RetryPolicy
+import Lemma.Notebook.RetryClosurePolicy
 import Lemma.Ink.Surface
 import Lemma.Ink.Rasterizer
 import Lemma.Documents.Ink
@@ -1967,5 +1968,511 @@ acknowledge data; the ordinary publication chain is still mandatory. -/
 def mainRecoverableSumsBulk (bootArgument : UInt64) : Action :=
   if bootArgument = 2 then mainWithRecoverableExecution bootArgument 3 1 else
   if bootArgument = 3 then mainWithRecoverableExecution bootArgument 3 1 else failed
+
+/-! Append-only Recovery3 family. Existing roots and all definitions
+above remain literal; this new family selects Closure7/Doc8 only. -/
+
+def closureRecoverableVersion : UInt64 := 3
+
+/-- The new stage3 path binds the actual still-current namespace/page and
+validates a literal Doc8 snapshot before any retry or completion. Historical
+raw/page/root checks remain the existing scalar policy. This is neither an
+execution result nor a durability receipt. -/
+private def closureRecoverableValidateRecord (source bytes object stage : UInt64) : Action :=
+  if Lemma.Notebook.RetryClosurePolicy.retainedRecordValid source bytes object stage = false then
+    .done 234 0
+  else if stage = 3 then
+    .bind (get 72) fun s ns =>
+      if statusFailed s = true then .done s 0 else
+      .bind (get 80) fun s page =>
+        if statusFailed s = true then .done s 0 else
+        if object = Lemma.Documents.Mathematics.object page then
+          .bind (get 536) fun s checking =>
+            if statusFailed s = true then .done s 0 else
+            if checking = 0 then
+              .bind (Lemma.Documents.Mathematics.field source 8) fun s version =>
+                if statusFailed s = true then .done s 0 else
+                if version = 8 then Lemma.Documents.MathematicsClosure.validate source ns page
+                else .done 234 0
+            else .done 234 0
+        else .done 234 0
+  else .done 0 0
+
+def closureRecoverableRetainFailure (knownSequence : UInt64) : Action :=
+  .bind (get 424) fun s error => if statusFailed s = true then .done s 0 else
+  .bind (get 208) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (get 216) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (get 224) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 200) fun s stage => if statusFailed s = true then .done s 0 else
+  if Lemma.Notebook.RetryClosurePolicy.retainableFailure error source bytes object stage = false then .done 0 0 else
+  .bind (closureRecoverableValidateRecord source bytes object stage) fun s _ => if statusFailed s = true then saveFailure s else
+  .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then put 640 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 600 source) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 608 bytes) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 616 object) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 624 stage) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 632 knownSequence) fun s _ => if statusFailed s = true then .done s 0 else
+  put 648 1
+
+def closureRecoverableTransactionPump : Action :=
+  .bind (get 160) fun s before => if statusFailed s = true then .done s 0 else
+  if before = 7 then saveFailure 234 else
+  .bind (get 200) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s known => if statusFailed s = true then .done s 0 else
+  .bind pumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s after => if statusFailed s = true then .done s 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if after = 0 then if status = 2 then
+    .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+    if retained = 0 then closureRecoverableRetainFailure known else
+    if before = 1 then closureRecoverableRetainFailure known else
+    if before = 2 then closureRecoverableRetainFailure known else
+    if before = 3 then closureRecoverableRetainFailure known else .done 0 0
+  else if before = 3 then if Lemma.Notebook.RetryClosurePolicy.publicationEnds stage = true then
+    .bind (put 648 0) fun s _ => if statusFailed s = true then .done s 0 else put 640 0
+  else .done 0 0 else .done 0 0 else .done 0 0
+
+private def closureRecoverableIssueControl (operation : UInt64) : Action :=
+  .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 680) fun s ticket => if statusFailed s = true then .done s 0 else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.RecoveryClient.beginCall endpoint outgoing operation ns ticket request) fun s token =>
+  if statusFailed s = true then .done s 0 else
+  .bind (put 168 token) fun s _ => if statusFailed s = true then .done s 0 else put 232 operation
+
+def closureRecoverableBegin : Action :=
+  .bind (get 600) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (get 608) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (get 616) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 624) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 640) fun s attempts => if statusFailed s = true then .done s 0 else
+  let allowed := Lemma.Notebook.RetryClosurePolicy.retryStatus attempts source bytes object stage
+  if statusFailed allowed = true then saveFailure allowed else
+  .bind (closureRecoverableValidateRecord source bytes object stage) fun s _ => if statusFailed s = true then saveFailure s else
+  .bind (get 680) fun s ticket => if statusFailed s = true then .done s 0 else
+  if ticket = 0 then saveFailure 234 else
+  .bind (put 640 (attempts+1)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 160 8) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 632) fun s known => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x423 known object) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (closureRecoverableIssueControl 14) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
+
+private def closureRecoverableResubmit : Action :=
+  .bind (get 600) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (get 608) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (get 616) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 624) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 696) fun s observed => if statusFailed s = true then .done s 0 else
+  if Lemma.Notebook.RetryClosurePolicy.retainedRecordValid source bytes object stage = false then saveFailure 234 else
+  .bind (closureRecoverableValidateRecord source bytes object stage) fun s _ => if statusFailed s = true then saveFailure s else
+  .bind (put 128 observed) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (startSave source bytes object stage) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
+
+/-- The remount receipt follows a real durability barrier. Full exact READ/EOF
+of known+1 reconciles the original record once; it never issues another PUT for
+that record. Only subsequent page/root stages use new ordinary transactions. -/
+
+private def closureRecoverableFinishRetained : Action :=
+  .bind (get 600) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (get 608) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (get 616) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 624) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 632) fun s known => if statusFailed s = true then .done s 0 else
+  .bind (get 696) fun s observed => if statusFailed s = true then .done s 0 else
+  if Lemma.Notebook.RetryClosurePolicy.retainedRecordValid source bytes object stage = false then saveFailure 234 else
+  .bind (closureRecoverableValidateRecord source bytes object stage) fun s _ => if statusFailed s = true then saveFailure s else
+  if known = 0x7fffffffffffffff then saveFailure 234 else
+  if observed = known+1 then
+  .bind (put 128 observed) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 208 source) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 216 bytes) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 224 object) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 200 stage) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 384 observed) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind finishRecord fun s result => if statusFailed s = true then saveFailure s else
+  if Lemma.Notebook.RetryClosurePolicy.publicationEnds stage = true then
+    .bind (put 648 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 640 0) fun s _ => if statusFailed s = true then .done s 0 else put 672 observed
+  else .done 0 result
+  else saveFailure 234
+
+private def closureRecoverableIssueRead : Action :=
+  .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 616) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 608) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind (get 600) fun s source => if statusFailed s = true then .done s 0 else
+  .bind (get 624) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 704) fun s offset => if statusFailed s = true then .done s 0 else
+  if Lemma.Notebook.RetryClosurePolicy.retainedRecordValid source bytes object stage = false then .done 234 0 else
+  if offset % 8 = 0 then
+  if offset < bytes then
+  let count := minimum 128 (bytes-offset)
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.beginCall endpoint outgoing 5 ns object 0 offset count 0 request) fun s token =>
+  if statusFailed s = true then .done s 0 else
+  .bind (put 168 token) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 448 count) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 232 5) fun s _ => if statusFailed s = true then .done s 0 else put 160 10
+  else .done 234 0 else .done 234 0
+
+private def closureRecoverableIssueEndRead : Action :=
+  .bind (get 16) fun s endpoint => if statusFailed s = true then .done s 0 else
+  .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
+  .bind (get 616) fun s object => if statusFailed s = true then .done s 0 else
+  .bind (get 608) fun s bytes => if statusFailed s = true then .done s 0 else
+  .bind nextRequest fun s request => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Services.Store.Client.beginCall endpoint outgoing 5 ns object 0 bytes 8 0 request) fun s token =>
+  if statusFailed s = true then .done s 0 else
+  .bind (put 168 token) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 448 8) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 232 5) fun s _ => if statusFailed s = true then .done s 0 else put 160 11
+
+private def closureRecoverableCompareStep (i _ : UInt32) (acc source offset _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (source+offset+i.toUInt64*8)) fun s expected => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (incoming+128+i.toUInt64*8)) fun s observed => if statusFailed s = true then .done s 0 else
+  if expected = observed then .done 0 (acc+8) else .done 234 0
+
+def closureRecoverablePollRead : Action :=
+  .bind (get 168) fun s token =>
+    if s = 0 then
+      .bind (get 72) fun s ns =>
+        if s = 0 then
+          .bind (get 616) fun s object =>
+            if s = 0 then
+              .bind (get 176) fun s request =>
+                if s = 0 then
+                  .bind (get 448) fun s expectedCount =>
+                    if s = 0 then
+                      .bind (Lemma.Services.Store.Client.pollCall token incoming 5 ns object request expectedCount) fun replyStatus sequence =>
+                        if replyStatus = IPCABI.wouldBlock then
+                          .done 0 0
+                        else
+                          if replyStatus = 0 then
+                            .bind (get 696) fun s mounted =>
+                              if s = 0 then
+                                if sequence = mounted then
+                                  .bind (Lemma.Services.Store.Client.responseField incoming 56) fun s count =>
+                                    if s = 0 then
+                                      .bind (get 160) fun s phase =>
+                                        if s = 0 then
+                                          if phase = 11 then
+                                            if count = 0 then
+                                              closureRecoverableFinishRetained
+                                            else
+                                              saveFailure 234
+                                          else
+                                            if count = expectedCount then
+                                              if 0 < count then
+                                                if count ≤ 128 then
+                                                  if count % 8 = 0 then
+                                                    .bind (get 600) fun s source =>
+                                                      if s = 0 then
+                                                        .bind (get 704) fun s offset =>
+                                                          if s = 0 then
+                                                            .bind (get 608) fun s bytes =>
+                                                              if s = 0 then
+                                                                if offset ≤ bytes then
+                                                                  if count ≤ bytes-offset then
+                                                                    .boundedFoldU64 16 closureRecoverableCompareStep (count/8).toUInt32 0 source offset 0 0 fun s compared =>
+                                                                      if s = 0 then
+                                                                        if compared = count then
+                                                                          .bind (put 704 (offset+count)) fun s _ =>
+                                                                            if s = 0 then
+                                                                              if offset+count = bytes then
+                                                                                .bind closureRecoverableIssueEndRead fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
+                                                                              else
+                                                                                .bind closureRecoverableIssueRead fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
+                                                                            else .done s 0
+                                                                        else
+                                                                          saveFailure 234
+                                                                      else
+                                                                        saveFailure s
+                                                                  else
+                                                                    saveFailure 234
+                                                                else
+                                                                  saveFailure 234
+                                                              else .done s 0
+                                                          else .done s 0
+                                                      else .done s 0
+                                                  else
+                                                    saveFailure 234
+                                                else
+                                                  saveFailure 234
+                                              else
+                                                saveFailure 234
+                                            else
+                                              saveFailure 234
+                                        else .done s 0
+                                    else .done s 0
+                                else
+                                  saveFailure 234
+                              else .done s 0
+                          else
+                            saveFailure replyStatus
+                    else .done s 0
+                else .done s 0
+            else .done s 0
+        else .done s 0
+    else .done s 0
+
+def closureRecoverablePollControl : Action :=
+  .bind (get 168) fun s token =>
+    if s = 0 then
+      .bind (get 72) fun s ns =>
+        if s = 0 then
+          .bind (get 176) fun s request =>
+            if s = 0 then
+              .bind (get 232) fun s operation =>
+                if s = 0 then
+                  .bind (Lemma.Services.Store.RecoveryClient.pollCall token incoming operation ns request) fun replyStatus sequence =>
+                    if replyStatus = IPCABI.wouldBlock then
+                      .done 0 0
+                    else
+                      if replyStatus = 0 then
+                        .bind (Lemma.Services.Store.Client.responseField incoming 48) fun s detail =>
+                          if s = 0 then
+                            if detail = 1 then
+                              .bind (put 160 9) fun s _ => if statusFailed s = true then .done s 0 else
+                              .bind (closureRecoverableIssueControl 15) fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
+                            else
+                              if detail = 2 then
+                                .bind (Memory.read64 (incoming+128)) fun s epoch =>
+                                  if s = 0 then
+                                    .bind (get 688) fun s priorEpoch =>
+                                      if s = 0 then
+                                        .bind (get 632) fun s known =>
+                                          if s = 0 then
+                                            .bind (get 672) fun s saved =>
+                                              if s = 0 then
+                                                if priorEpoch < epoch then
+                                                  if saved ≤ known then
+                                                    if saved ≤ sequence then
+                                                      if known ≤ sequence then
+                                                        .bind (put 688 epoch) fun s _ =>
+                                                          if s = 0 then
+                                                            .bind (put 696 sequence) fun s _ =>
+                                                              if s = 0 then
+                                                                if sequence = known then closureRecoverableResubmit else if sequence = known+1 then
+                                                                  .bind (put 704 0) fun s _ => if statusFailed s = true then .done s 0 else
+                                                                  .bind closureRecoverableIssueRead fun s _ => if statusFailed s = true then saveFailure s else .done 0 0
+                                                                else saveFailure 234
+                                                              else .done s 0
+                                                          else .done s 0
+                                                      else
+                                                        saveFailure 234
+                                                    else
+                                                      saveFailure 234
+                                                  else
+                                                    saveFailure 234
+                                                else
+                                                  saveFailure 234
+                                              else .done s 0
+                                          else .done s 0
+                                      else .done s 0
+                                  else .done s 0
+                              else
+                                saveFailure 234
+                          else .done s 0
+                      else
+                        saveFailure replyStatus
+                else .done s 0
+            else .done s 0
+        else .done s 0
+    else .done s 0
+
+def closureRecoverablePumpSave : Action :=
+  .bind (get 160) fun s before => if statusFailed s = true then .done s 0 else
+  if before = 8 then closureRecoverablePollControl else if before = 9 then closureRecoverablePollControl else
+  if before = 10 then closureRecoverablePollRead else if before = 11 then closureRecoverablePollRead else
+  .bind (get 200) fun s stage => if statusFailed s = true then .done s 0 else
+  .bind (get 176) fun s failureTicket => if statusFailed s = true then .done s 0 else
+  .bind closureRecoverableTransactionPump fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s after => if statusFailed s = true then .done s 0 else
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  .bind (get 424) fun s error => if statusFailed s = true then .done s 0 else
+  if after = 0 then
+  if (if before = 1 then (1 : UInt64) else if before = 2 then 1 else if before = 3 then 1 else 0) = 1 then
+  if status = 2 then if error = 227 then put 680 failureTicket else .done 0 0 else
+  if before = 3 then if Lemma.Notebook.RetryClosurePolicy.publicationEnds stage = true then
+    .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else put 672 sequence
+  else .done 0 0 else .done 0 0
+  else .done 0 0 else .done 0 0
+
+def closureRecoverableToolbar (button : UInt64) : Action :=
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if status < 2 then toolbar button else
+  if button = 7 then
+  .bind (get 424) fun s error => if statusFailed s = true then .done s 0 else
+  if (if error = 227 then (1 : UInt64) else if error = 234 then 1 else 0) = 1 then
+  .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s contact => if statusFailed s = true then .done s 0 else
+  if retained = 1 then if phase ||| checking ||| contact = 0 then closureRecoverableBegin else .done 0 0
+  else .done 0 0 else .done 0 0 else .done 0 0
+
+def closureRecoverableInputSample : Action :=
+  .bind (Memory.read64 raw) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 8)) fun s time => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 16)) fun s x => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 24)) fun s y => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 40)) fun s flags => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 (raw + 64)) fun s epoch => if statusFailed s = true then .done s 0 else
+  .bind (get 288) fun s previousEpoch => if statusFailed s = true then .done s 0 else
+  .bind (get 296) fun s previousSequence => if statusFailed s = true then .done s 0 else
+  .bind (get 304) fun s previousTime => if statusFailed s = true then .done s 0 else
+  if different previousSequence 0 = true then
+    if (if different epoch previousEpoch = true then true else if different sequence (previousSequence + 1) = true then true else if time < previousTime then true else false) = true then
+      retryCancelInput
+    else acceptSample sequence time x y flags epoch
+  else acceptSample sequence time x y flags epoch
+where
+  acceptSample (sequence time x y flags epoch : UInt64) : Action :=
+    .bind (put 288 epoch) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 296 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 304 time) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 408) fun s previousContact => if statusFailed s = true then .done s 0 else
+    .bind (put 408 (flags &&& 1)) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+    if different active 0 = true then retryAppendRaw else
+    if flags &&& 1 = 0 then .done 0 0 else if previousContact = 1 then .done 0 0 else
+    .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+    .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+    .bind (get 48) fun s maxX => if statusFailed s = true then .done s 0 else
+    .bind (get 56) fun s maxY => if statusFailed s = true then .done s 0 else
+    let px := Geometry.pixel (Geometry.normalized x maxX) width
+    let py := Geometry.pixel (Geometry.normalized y maxY) height
+    if py < 128 then closureRecoverableToolbar (minimum 8 (px / (width / 9))) else
+    .bind (get 432) fun s cancelled => if statusFailed s = true then .done s 0 else
+    if cancelled = 1 then .done 0 0 else
+    .bind (get 112) fun s queued => if statusFailed s = true then .done s 0 else
+    if different queued 0 = true then .done 0 0 else
+    .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+    .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+    if retained = 1 then
+      if py < 160 then .done 0 0 else
+      .bind (get 120) fun s buffer => if statusFailed s = true then .done s 0 else
+      .bind (get 144) fun s pinned => if statusFailed s = true then .done s 0 else
+      if Lemma.Notebook.RetryPolicy.offlineBufferAvailable buffer pinned 0 = false then .done 0 0 else
+      .bind beginStroke fun s _ => if statusFailed s = true then saveFailure s else
+      .bind (put 136 status) fun s _ => if statusFailed s = true then .done s 0 else retryAppendRaw
+    else if 2 ≤ status then .done 0 0 else
+    if py < 160 then if 132 ≤ py then if 288 ≤ px then if px < 360 then toggleCourse else .done 0 0
+      else .done 0 0 else .done 0 0 else
+    .bind (get 512) fun s course => if statusFailed s = true then .done s 0 else
+    if course = 1 then if py < 320 then if 24 ≤ px then if px < 408 then coursePress px py else
+      .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+      else .done 0 0 else .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+    else
+    .bind beginStroke fun s _ => if statusFailed s = true then failWriting s else appendRaw
+
+def drainClosureRecoverableInput (input : UInt64) : Action :=
+  .boundedFoldU64 8 drainStep 8 0 input 0 0 0 fun s consumed =>
+    if s = Status.iterationStop then .done 0 consumed else .done s consumed
+where
+  drainStep (_ _ : UInt32) (consumed input _ _ _ : UInt64) : Action :=
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    .bind (get 648) fun s retained => if statusFailed s = true then .done s consumed else
+    if (if count = 384 then if retained = 0 then (1 : UInt64) else 0 else 0) = 1 then .done Status.iterationStop consumed else
+    .bind (Syscall.call 65 input 1 raw 0 0) fun s _ =>
+    if s = 174 then .done Status.iterationStop consumed else
+    if s = 175 then
+      .bind retryCancelInput fun s _ =>
+      if statusFailed s = true then .done s consumed else .done Status.iterationStop consumed
+    else if statusFailed s = true then .done s consumed else
+    .bind closureRecoverableInputSample fun s _ => if statusFailed s = true then .done s consumed else
+    .bind (get 104) fun s active => if statusFailed s = true then .done s consumed else
+    if active = 0 then .done Status.iterationStop (consumed + 1) else
+    .bind (get 112) fun s count => if statusFailed s = true then .done s consumed else
+    if count = 384 then .done Status.iterationStop (consumed + 1) else
+    .done 0 (consumed + 1)
+
+def closureRecoverableStep : Action :=
+  .bind closureRecoverablePumpSave fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpArithmetic fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 648) fun s retained => if statusFailed s = true then .done s 0 else
+  .bind (if retained = 0 then pumpCancelledRedraw else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
+  .bind (get 664) fun s overflow => if statusFailed s = true then .done s 0 else
+  .bind (if overflow = 1 then .done 0 0 else if retained = 1 then .done 0 0 else if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
+  if (if count = 384 then if retained = 0 then (1 : UInt64) else 0 else 0) = 1 then Syscall.sleep 10000 else
+  .bind (get 8) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s dirtyX => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if (if checking = 0 then if pending = 0 then if recovery = 0 then if dirtyX = 0xffff then true else false else false else false else false) = true then
+    .bind (Syscall.call 65 input 2 raw 0 0) fun s _ =>
+    if s = 175 then retryCancelInput else if s = 174 then Syscall.sleep 10000 else
+    if statusFailed s = true then .done s 0 else closureRecoverableInputSample
+  else .bind (drainClosureRecoverableInput input) fun s consumed =>
+    if statusFailed s = true then .done s 0 else
+    if consumed = 0 then Syscall.sleep 10000 else .done 0 consumed
+
+private def mainWithClosureRecoverableExecution (bootArgument selection bulkMode : UInt64) : Action :=
+  if 3 < bootArgument then failed else
+  if (if selection = 7 then true else false) = false then failed else
+  .boundedFoldU64 96 clearStep 96 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 592 closureRecoverableVersion) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 576 selection) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 584 bulkMode) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 1) fun s input => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 2) fun s documents => if statusFailed s = true then .done s 0 else
+  .bind (Capability.bootGrant 3) fun s console => if statusFailed s = true then .done s 0 else
+  .bind (put 0 surface) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 8 input) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 16 documents) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 24 console) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if 2 ≤ bootArgument then Capability.bootGrant 5 else .done 0 0) fun s arithmetic => if statusFailed s = true then .done s 0 else
+  .bind (put 528 arithmetic) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind waitForMount fun s _ => if statusFailed s = true then .done s 0 else
+  if bootArgument % 2 = 1 then initializeMedium else
+  .bind (Surface.geometry surface) fun s geometry => if statusFailed s = true then .done s 0 else
+  let width := geometry &&& 0xffffffff
+  let height := geometry >>> 32
+  if width < 512 then failed else if 4096 < width then failed else
+  if height < 320 then failed else if 4096 < height then failed else
+  .bind (put 32 width) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 40 height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 3 0 0 0) fun s maxX => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 4 0 0 0) fun s maxY => if statusFailed s = true then .done s 0 else
+  .bind (Syscall.call 65 input 0 0 0 0) fun s pressure => if statusFailed s = true then .done s 0 else
+  .bind (put 48 maxX) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 56 maxY) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 64 pressure) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 80 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 120 ink0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 272 512) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 41 allocateStep 41 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (if bulkMode = 1 then Surface.allocateBulk else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.allocate width height) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (loadNotebook 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 128) fun s floor => if statusFailed s = true then .done s 0 else
+  .bind (put 672 floor) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 416) fun s create => if statusFailed s = true then .done s 0 else
+  .bind (if create = 1 then savePage 1 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefresh fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Surface.acceptedSequence surface) fun s accepted => if statusFailed s = true then .done s 0 else
+  .bind (CapabilityConsole.record console 0x420 geometry 1 1 accepted) fun s _ =>
+  if statusFailed s = true then .done s 0 else .loop closureRecoverableStep
+
+/-- Recovery software root, version3. Host attach and control receipts do not
+acknowledge data; the ordinary publication chain is still mandatory. -/
+
+def mainRecoverableClosureBulk (bootArgument : UInt64) : Action :=
+  if bootArgument = 2 then mainWithClosureRecoverableExecution bootArgument 7 1 else
+  if bootArgument = 3 then mainWithClosureRecoverableExecution bootArgument 7 1 else failed
 
 end Lemma.Applications.Notebook

@@ -745,4 +745,52 @@ def prepareManagedProduct (image argument : UInt64) : Action :=
     .bind (Access.write64 (record + managedOffset) 1) fun s _ =>
     if failed s = true then fatal else .done 0 descriptor
 
+
+/-- Entry-borrow v2. The original context API above remains unchanged. This
+successor performs the first complete descriptor validation before reading the
+running state, retaining its fault precedence. Only saved-context zero, status
+and scratch words are written; descriptor authority, directory/frame metadata
+and the task row are disjoint. No scheduling, mapping, release, DMA or reset may
+intervene before the sole Scheduler.entryV2 caller enters U. The borrow ends at
+that hardware boundary and is never used by the returning continuation. -/
+def entryContextV2 (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  .bind (AddressSpace.base descriptor) fun s base =>
+  if failed s = true then fatal else
+  -- These pure bounds follow from the first complete Frames/AS validation.
+  -- They expose the fixed owned-page range to LLVM without removing an access.
+  if Frames.pool ≤ base then if base ≤ Frames.expandedPoolLimit - Frames.bytes then
+  if base % Frames.bytes = 0 then
+  .bind (Access.read64 (record + stateOffset)) fun s state =>
+  if failed s = true then fatal else
+  if state = running then
+    let saved := base + AddressSpace.userContextOffset
+    .bind (Access.read64 (base + 72)) fun s translation =>
+    if failed s = true then fatal else
+    .bind (Access.read64 (saved + 272)) fun s actual =>
+    if failed s = true then fatal else
+    if actual = translation then
+      .bind (Process.validateStackAt base) fun s top =>
+      if failed s = true then fatal else
+      .bind (Access.write64 saved 0) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 264) 0x200000020) fun s _ =>
+      if failed s = true then fatal else
+      .bind (Access.write64 (saved + 280) top) fun s _ =>
+      if failed s = true then fatal else .done 0 saved
+    else fatal
+  else fatal
+  else fatal else fatal else fatal
+
+
+/-- Only Scheduler.entryV2 may call this after entryContextV2 in the same
+nonpreemptible Action. The original row lookup and dispatch-counter read stay
+ordered; the repeated descriptor scan alone is omitted. No User profile admits
+this physical operation. A caller-chain audit must reject all other callers. -/
+def entryDispatchesV2 (descriptor : UInt64) : Action :=
+  .bind (lookupRecord descriptor) fun s record =>
+  if failed s = true then fatal else
+  Access.read64 (record + dispatchOffset)
+
 end Lemma.Kernel.Task

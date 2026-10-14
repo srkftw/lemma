@@ -7,7 +7,7 @@ compiler correctness or establish actual notebook execution/performance.
 """
 import hashlib
 from course_deployment import CONFIGURATIONS as COURSE_CONFIGURATIONS
-from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS
+from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 import re
 from core0_common import Core0Error
 CONFIGURATIONS=frozenset({'lemmasim-silicon-bulk-notebook',

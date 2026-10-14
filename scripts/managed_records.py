@@ -57,7 +57,8 @@ STRING_NOTEBOOK_CONFIGURATIONS=frozenset({"lemmasim-silicon-string-bulk-notebook
 from course_deployment import CONFIGURATIONS as LEGACY_COURSE_CONFIGURATIONS
 from course_await_deployment import CONFIGURATIONS as COURSE_AWAIT_CONFIGURATIONS
 COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
-from closure_deployment import CONFIGURATIONS as CLOSURE_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as CLOSURE_SOFTWARE_DEPLOYMENT
+from closure_deployment import (ALL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS, RECOVERY3_CONFIGURATIONS,
+                                software_deployment_for as closure_software_deployment_for)
 ARRAY_NOTEBOOK_CONFIGURATIONS=frozenset(COURSE_CONFIGURATIONS) | frozenset({"lemmasim-silicon-array-bulk-notebook","lemmasim-silicon-array-bulk-initialize","lemmasim-silicon-array-arithmetic-oom-development"})
 
 def notebook_profile_allowed(unit):
@@ -66,7 +67,7 @@ def notebook_profile_allowed(unit):
 
 def recovery_store_profile_allowed(unit):
  from managed_sums import RECOVERY_USB
- return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in RECOVERY_USB
+ return unit.get('role')=='user' and unit.get('image_key')=='store' and unit.get('configuration') in RECOVERY_USB | frozenset(RECOVERY3_CONFIGURATIONS)
 
 def profile_allowed(unit):
  return allowed(unit) or notebook_profile_allowed(unit) or recovery_store_profile_allowed(unit)
@@ -85,7 +86,7 @@ def contract(unit):
    from managed_array import software_deployment_for
   if unit.get("configuration") in STRING_NOTEBOOK_CONFIGURATIONS:
    from managed_string import software_deployment_for
-  expected=CLOSURE_SOFTWARE_DEPLOYMENT if unit.get('configuration') in CLOSURE_CONFIGURATIONS else software_deployment_for(unit.get('configuration')) if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
+  expected=closure_software_deployment_for(unit.get('configuration')) if unit.get('configuration') in CLOSURE_CONFIGURATIONS else software_deployment_for(unit.get('configuration')) if unit.get('configuration') in SUMS_NOTEBOOK_CONFIGURATIONS | BYTES_NOTEBOOK_CONFIGURATIONS | ARRAY_NOTEBOOK_CONFIGURATIONS | STRING_NOTEBOOK_CONFIGURATIONS else SOFTWARE_DEPLOYMENT
   require(unit.get('software_deployment')==expected,
    'Managed Notebook software deployment differs from its exact versioned selection')
   require(FIELD not in unit and not generated,

@@ -1286,4 +1286,37 @@ an arbitrary pending cachedstate suffix. Realactive-run rejection and OPFSfault
 are not separately claimed; active scheduling and private-copyfailure are host
 boundary checks. No guest/core/stateformat changed.
 
+
+## October14 checked entry scheduling and closure recovery integration
+
+Entry2 preserves the first full address-space/owned-context validation and uses
+its validated row/base for this nonpreemptible entry only. Original bodies stay
+historical. Finite1352 Action cases and exact selected root/caller/artifact guards
+pass; matched original377 whole initializer534b10c0 and Notebook2e231da8 both
+ordinary audits pass242.405s under420. The unchanged initializer was not rebuilt:
+original layout/incoming-caller FAILs are retained beside separately qualified
+observer corrections. K3O0 also has a narrow actual-artifact correction (165
+mutants/retained oldO2 regressions); published7cec CI is stillFAIL, not rerunPASS.
+Final kernel419/metadata/scaffold checks pass; no CPU gain follows from static
+410-to173 Action requests or213-to86 O2 context instruction sites.
+
+NativeEntry2 package cf76f4bc... is prepared from that original377 pair and the
+validated existing canonical backends. ActualnewCPU cold is now RUNNING at
+build/managed/task-entry2-connected-cold-a1/session on a private byte-identical
+Saved26/14df medium with8bf60d completepixel reference, the same workload as
+actuala520Wasm712.45M cold. Original2B/7200s/512MiB nativeRSS bounds apply.
+Comparable targetcycles and distinct native/Wasm hostdurations will be reported
+only after actualReady; no longer prefix is classified as acceptance.
+
+ClosureRecovery3 adds compiled Lean Doc8 known-sequence/ACK-floor recovery,
+full2496byte READ/EOF equality, a real new shadowbarrier and one originalstage3
+finish; it sends no duplicate math PUT or check. OriginalSums recovery is intact.
+Genuine component/Action/130mutants and fresh377 wholepair pass395.222s under900.
+New distinct native schema8 bundle4141a1e8... uses unchangednative64d255; actual
+public prepare/pack pass27.623s/600 and10package negatives, existinghostchecks.
+Connected lostACK/math/ink/newcold CPU remainsNOT_RUN until a separate actual
+scenario. Exact authorities/commands/results are in the existing recovery
+receipt and new006-notebook-closure-recovery-v3.md; no fullUSB, productionboot,
+proofkernel, fasttiming or physical completion is inferred.
+
 -->

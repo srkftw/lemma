@@ -2,7 +2,7 @@
 from __future__ import annotations
 import re
 from core0_common import Core0Error
-from closure_deployment import CONFIGURATIONS,SOFTWARE_DEPLOYMENT
+from closure_deployment import ALL_CONFIGURATIONS as CONFIGURATIONS, software_deployment_for
 FIELD='managed_closure'
 PREFIX='Lemma.Mathematics.ManagedClosureSubmission.'
 ENTRY=PREFIX+'compareFiveSix'
@@ -130,7 +130,7 @@ def contract(unit):
  if unit.get('contract_version')!='core0-user-v0.7':
   require(FIELD not in unit and not generated,'Historical profile acquired Closure authority');return None
  require(allowed(unit),'User7 closure escaped its exact isolated Arithmetic deployment')
- require(unit.get('software_deployment')==SOFTWARE_DEPLOYMENT,'Closure software deployment differs')
+ require(unit.get('software_deployment')==software_deployment_for(unit.get('configuration')),'Closure software deployment differs')
  require(not any(k in unit for k in ('managed_records','managed_sums','managed_bytes','managed_array','managed_string',
    'arithmetic_execution_identity','arithmetic_sums_execution_identity','arithmetic_bytes_execution_identity',
    'arithmetic_array_execution_identity','arithmetic_string_execution_identity')),'Closure deployment impersonates another implementation authority')

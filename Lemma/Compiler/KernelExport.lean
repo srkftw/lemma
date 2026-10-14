@@ -36,8 +36,8 @@ private def roleProfile (role : String) (configuration : String)
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if isUSBRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store") then .user_v0_2 else if isClosureNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
-      if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) &&
+  | "user" => .ok (if (isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+      if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) &&
       image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
       (image?.any (fun image => image.key == "arithmetic") &&
        (configuration == "lemmasim-silicon-power-notebook" ||
@@ -83,7 +83,10 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isClosureNotebookConfiguration configuration then
+  | "kernel" => if isClosureEntry2NotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-closure-entry2-bulk-notebook" then "siliconClosureEntry2Boot" else "siliconClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+    else if isClosureNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-closure-bulk-notebook" then "siliconClosureBoot"
          else if configuration == "lemmasim-silicon-closure-bulk-initialize" then "siliconClosureInitializeMedium"
@@ -104,6 +107,8 @@ private def rootIdentities (configuration role : String) : Array String :=
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-await-bulk-notebook" then "siliconCourseAwaitBoot" else "siliconCourseAwaitInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
       else if isCourseNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-course-bulk-notebook" then "siliconCourseBoot" else "siliconCourseInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
+      else if isUSBClosureRecoveryNotebookConfiguration configuration then
+        #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook" then "siliconUSBClosureRecoveryBoot" else "siliconUSBClosureRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBClosureRecoveryBulk"]
       else if isUSBRecoveryNotebookConfiguration configuration then
         #["Lemma.Platform.LemmaSim.NotebookKernel." ++ (if configuration == "lemmasim-silicon-usb-clocked-retry-bulk-notebook" then "siliconUSBRecoveryBoot" else "siliconUSBRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBRecoveryBulk"]
       else if isUSBClockedNotebookConfiguration configuration then
@@ -379,7 +384,7 @@ private def closedInlineFields (configuration : String) (lowered : LoweredAction
     ("wrappers", .arr (lowered.inlineWrappers.map fun row => Json.mkObj [
       ("source", .str row.source.toString), ("symbol", .str row.symbol),
       ("operation", .str row.operation.stableId)]))] ++
-    (if !(isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) then [] else [
+    (if !(isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) then [] else [
       ("user_wrapper_contract", .str "lemma-checked-user-word-wrapper-v1"),
       ("user_wrappers", .arr (lowered.inlineUserWrappers.map fun row => Json.mkObj [
         ("source", .str row.source.toString), ("symbol", .str row.symbol),
@@ -395,10 +400,10 @@ private def managedRecordFields (env : Environment) (configuration : String)
   if suite.contractVersion != Profile.user_v0_2.contractVersion then
     unless entries.isEmpty do throw "Managed closure crossed a legacy User profile"
     return []
-  if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
+  if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
     unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
     return []
-  if isUSBRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse) then
+  if (isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse) then
     unless entries.isEmpty do throw "Recovery scalar Store may not acquire managed heap authority"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do
@@ -758,7 +763,7 @@ private def unitManifest (env : Environment) (configuration role : String) (suit
       (← managedArrayFields env configuration image? suite lowered) ++
       (← managedStringFields env configuration image? suite lowered) ++
       (← ManagedClosureMetadata.managedClosureFields env (image?.any (·.key == "arithmetic")) suite lowered) ++
-      (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration)
+      (← ManagedClosureMetadata.executionFields (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration)
         (image?.any (·.key == "arithmetic")) role suite) ++
       (← arithmeticArrayExecutionFields configuration role image? suite) ++
       (← arithmeticStringExecutionFields configuration role image? suite) ++
@@ -853,7 +858,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     preserveCalls := preserved, symbolPrefix := image?.map (·.symbolPrefix) |>.getD ("lemma_" ++ role ++ "_"),
     inlineLiteralConstants := closedInlineFor configuration,
     inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" && !isProductNotebookConfiguration configuration,
-    inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
+    inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then

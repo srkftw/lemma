@@ -250,4 +250,65 @@ def step : Action :=
   if failed s = true then fatal else
   if descriptor = 0 then idle now else enter descriptor now
 
+
+/-- Versioned same-Action entry borrow. The first complete descriptor, task
+state, translation and owned-stack validations precede every context write.
+Those three writes cannot alias the root/registry/frame/task authority reused
+below. The typed U-entry ends the borrow: traps and resets never resume with
+borrowed metadata, and the continuation independently reads current/root state
+exactly as the original entry does. Original enter/step definitions are retained.
+Transient faults arising only on an omitted duplicate read are not an admitted
+equivalence premise; initial faults and every remaining operation stay ordered. -/
+private def entryV2 (descriptor now : UInt64) : Action :=
+  .bind (Task.entryContextV2 descriptor) fun s context =>
+  if failed s = true then fatal else
+  let base := context - AddressSpace.userContextOffset
+  .bind (Access.read64 (base + 64)) fun s root =>
+  if failed s = true then fatal else
+  .bind (Task.entryDispatchesV2 descriptor) fun s dispatches =>
+  if failed s = true then fatal else
+  .bind (schedulingRecord 0xf3 descriptor root dispatches now) fun s _ =>
+  if failed s = true then fatal else
+  .bind (arm now) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Access.write64 Process.control descriptor) fun s _ =>
+  if failed s = true then fatal else
+  .bind (AddressSpace.noteActive root) fun s _ =>
+  if failed s = true then fatal else
+  .platform .enterUser context 0 0 0 0 0 fun s reason =>
+  if failed s = true then fatal else
+  if (if 1 ≤ reason then if reason ≤ 6 then true else false else false) = true then
+    .bind (Access.read64 Process.control) fun s current =>
+    if failed s = true then fatal else
+    if current = descriptor then
+      .bind (Access.read64 (Process.control + 8)) fun s kernelRoot =>
+      if failed s = true then fatal else
+      .bind (Access.read64 AddressSpace.activeRoot) fun s active =>
+      if failed s = true then fatal else
+      if active = kernelRoot then
+        .bind (Access.write64 Process.control 0) fun s _ =>
+        if failed s = true then fatal else
+        .bind Task.reap fun s _ =>
+        if failed s = true then fatal else .done 0 reason
+      else fatal
+    else fatal
+  else fatal
+
+
+/-- Additive v2 scheduler entry; original selection, wake, IPC, reaping, idle
+and quantum policy remains byte-identical. No historical root selects this
+successor until an explicit versioned deployment is qualified. -/
+def stepEntryV2 : Action :=
+  .bind Task.reap fun s _ =>
+  if failed s = true then fatal else
+  .bind MachineServices.time fun s now =>
+  if failed s = true then fatal else
+  .bind (Task.wakeDue now) fun s _ =>
+  if failed s = true then fatal else
+  .bind (Task.pollIPC now) fun s _ =>
+  if failed s = true then fatal else
+  .bind Task.select fun s descriptor =>
+  if failed s = true then fatal else
+  if descriptor = 0 then idle now else entryV2 descriptor now
+
 end Lemma.Kernel.Scheduler

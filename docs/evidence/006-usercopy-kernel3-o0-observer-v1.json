@@ -1,0 +1,52 @@
+{
+  "schema": "lemma-usercopy-kernel3-o0-observer-correction/1",
+  "status": "PASS_NARROW_ACTUAL_ARTIFACT_OBSERVER",
+  "original_ci": {
+    "run_id": 38598060895,
+    "candidate_commit": "7cec5096b282cd5cc8fd14c38a6ff5e271fd597d",
+    "result": "FAIL",
+    "failed_stage": "NotebookO0 ordinary kernel audit",
+    "original_diagnostic": "page-word complete checked body differs: Lemma.Kernel.Memory.UserCopy.copyWord/post",
+    "artifact_path": "build/ci/task006-7cec-failures-a1/writing.zip",
+    "artifact_sha256": "f832ca7a1b472516cb0af96faae78124cd55a166a0afcd7d4f9bac602a5c765c"
+  },
+  "cause": "The observer admitted O2 optimized Kernel3 bodies but omitted the genuine O0 post class. LLVM O0 retains checked wrapper calls/CFG and prints predecessor comments and typed i1 true/false constants.",
+  "correction": {
+    "selector": "actual audit optimization argument O0 plus exact Kernel3 cfg/root/profile/category/no-inline metadata",
+    "new_complete_pins": 9,
+    "existing_pre_kernel4_kernel3_o2_pins": "UNCHANGED",
+    "pin_normalization": "No comments/instructions/operands/edges removed from actual O0 complete pin hashing",
+    "independent_operation_view": "Presentation comments and typed i1 spelling only; actual read-derived stride, loaded values, i8 status/CFG/fatal255/final64-byte prefix,64+7 budgets and exact caller closure remain checked",
+    "helper_sha256": "de8ac1c4caa7fee6a101fbb22bba6d8c9c9ac8c2c16ca9f9098bc50d6c76611a"
+  },
+  "validation": {
+    "complete_original_ci_pre_post_ir": "PASS",
+    "independent_and_complete_mutants": 165,
+    "kernel3_o2_notebook_and_initializer_regressions": "PASS",
+    "kernel4_selected_entry2_full_pre_post_ir": "PASS",
+    "target_recompiled": false,
+    "ci_job_relabelled": false,
+    "fresh_ci": "NOT_RUN",
+    "full_kernel_host_tests": 419,
+    "full_kernel_host_seconds": 9.864,
+    "full_kernel_host_status": "PASS_AFTER_NEW_CALLER_OBSERVERS"
+  },
+  "retained_fixture_failures": [
+    "mutations-a1: fatal scalar textual replacement selected an identical different owner",
+    "mutations-a2: named stride mutated the independent range calculation rather than read-derived offset",
+    "mutations-a3/a4: SSA-definition fixture omitted leading whitespace"
+  ],
+  "receipts": {
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/positive-a1.json": "f85c41acbfb94b79e76eb91efecc699108cd11050803f0d2dc054b8a4352d675",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/complete-ir-a1.json": "838df8a826f6ba8550c9335b990c8c05d55ef9c0a7bffe25db41085eb232dbd0",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-a1.json": "f69021e30411469a28a5a858fc0aaf2518addcb31026880edb28ee2037263762",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-a2.json": "ec809af46317bf8373ba82a0ee5b214f434f6f1d093b9a41cecab85d6b20cfb2",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-a3.json": "dbbaf1d1a686d53d47b26392db7e2becbd19bb44ffe410a921b7d31fe3a7c719",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-a4.json": "8ade62a014039941d8f2e2f6bc93b900c3fa9cd3b354d84806377a8167a10b26",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-a5.json": "8f3c383a0d223c197fb91b3c8d2432129f0e661f69b3f1ae403d524172a797f0",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/mutations-maintained-a1.json": "1882b728593a8efa7bc6ad26fec349d5af899ce067b91c252dad43d328844a39",
+    "build/ci/task006-7cec-failures-a1/pageword-o0-prototype-a1/qualified-current-a1.json": "2598ff65abbb4935f29a8ebcdc0323561d18c5998e2e0171c25eee80b0e6de56",
+    "build/managed/task-entry2-whole-qualification-a1/kernel-host-final-a1.log": "816ed91d65ba5f295c38de87af00e7e746005da48386538f029581e7357a5ab5"
+  },
+  "scope": "Host artifact observation only; no broad O0 exemption, language/runtime extension, new target execution or inherited CI success"
+}
