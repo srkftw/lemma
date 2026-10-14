@@ -147,3 +147,52 @@ def renderSelected (address bytes ordinal role position cache width height : UIn
   else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
 
 end Lemma.Courses.PackageRender
+
+/-! `lemma-course-header-panel/1` is an append-only presentation extension.
+The original node roles0..7 and every renderer definition above stay unchanged.
+Header fields0..3 show actual title/source/edition/rights bytes, without granting
+authentication, mathematical authority or rights to the described material. -/
+namespace Lemma.Courses.PackageRender
+open Lemma.Core0.Memory
+open Lemma.Courses.PackageFormat
+
+/-- The caller owns an immutable package and a disjoint unpublished glyph
+cache. Field/index/position errors precede cache writes. The entire actual
+package is checked before interpreting its header text span. -/
+def prepareHeader (address bytes field position output : UInt64) : Action :=
+  if field < 4 then
+  if output % 8 = 0 then if output ≤ 0xffffffffffffffff - cacheBytes then
+  if address ≤ 0xffffffffffffffff - bytes then
+  if separate address bytes output cacheBytes = 1 then
+  .bind (PackageTarget.validate address bytes) fun s _ => if s = 0 then
+  .bind (Lemma.User.Memory.read64 (address + 96 + field * 8)) fun s descriptor => if s = 0 then
+  let offset := spanOffset descriptor
+  let length := spanLength descriptor
+  if position ≤ length then
+  .boundedFoldU64 512 clearStep 512 0 output 0 0 0 fun s _ => if s = 0 then
+  .boundedFoldU64 512 textStep (length - position).toUInt32 0 (address + offset + position) output 0 0 fun s next =>
+  if s = Status.iterationStop then .done 0 (position + next)
+  else if s = 0 then .done 0 length else .done s 0
+  else .done s 0
+  else .done selectionAbsent 0 else .done s 0 else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done unsupported 0
+
+/-- Validate all source/cache/framebuffer spans before any presentation write.
+Only controller-produced framebuffer publication by the integrating Notebook
+may display these pixels. The canonical typed goal panel is outside this region. -/
+def renderHeaderSelected (address bytes field position cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if address ≤ 0xffffffffffffffff - bytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate address bytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .bind (prepareHeader address bytes field position cache) fun s next => if s = 0 then
+  .bind (render cache width height) fun s _ => if s = 0 then .done 0 next else .done s 0
+  else .done s 0
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+end Lemma.Courses.PackageRender

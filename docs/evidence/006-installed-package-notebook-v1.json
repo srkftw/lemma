@@ -1,0 +1,116 @@
+{
+  "artifact_guards": {
+    "actual_positive_artifacts": [
+      "actual-selected-pre",
+      "actual-selected-post",
+      "actual-kernel-absence"
+    ],
+    "helper_sha256": "1e62873b20c8fc2ffe5d6d02ded5b7f4cf008c7ca5aded67edae6d3cac2b4e64",
+    "negative_count": 24,
+    "result": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/artifact-guards-a2.json",
+      "sha256": "2424ca273823abc713c6d3ce00a5857d709b1c9d9d0e87e3b35bafc4aabb10fc"
+    },
+    "seconds": 1.3587930910289288
+  },
+  "component": {
+    "artifacts": {
+      "component/normalized.txt": "b516f8d05ef43c8fbd66bff1a6ed907c8ea2cd875c6f7fc8b1f0276a34eaf3c5",
+      "component/program-O2.ll": "12cbdb966e051d4fe1a172065f935085fe6e34aace579ee44f4a8b814834fb33",
+      "component/program.ll": "dbbf6b764a82a918c7aa82eb4e3d05aeedfbd9b9538a60adc1bbf74467630711",
+      "component/program.o": "0bb4df7f1c4b4cb968aee21a925f20d12eab898c7c702b83b499060440356aa6",
+      "component/symbols.txt": "bd7f03019db2c60d8ca5bf120fd2c36b35bae74250c1289b597622dd6eff9c6d",
+      "component/unit.json": "8331ff265c280efd94ae055437e0f8bd743e7559115b991fd53c1c2c372142a1"
+    },
+    "bounds": {
+      "address_space_bytes": 17179869184,
+      "command_seconds": 60,
+      "file_bytes": 1073741824,
+      "total_seconds": 180
+    },
+    "genuine_functions": 817,
+    "historical_prefixes": {
+      "notebook": "43a4cb75280a337eb48c2cf57d021dc2125bc070058a8ba5cf2c1e5d3b4b614a",
+      "renderer": "3648a8d19ae64ecad2ed2b42c5714791e138480477c21a820ed465748e4c9a37"
+    },
+    "result": {
+      "path": "build/courses/task006-notebook-package-component-a2/result.json",
+      "sha256": "497628a8c0a34bb50ceec8817b1914b72f3b7a96ede875484c52420e00e1f983"
+    },
+    "seconds": 96.72243960096966,
+    "source_count": 103,
+    "source_head": "1f157250f9c6849cab86850012ef8301ce34d82c",
+    "source_inventory_sha256": "22aaedcfc9d29538b9a20ca8a4743da265e20fd9f29dcf39c72d17a06609ae9d",
+    "unresolved_declared_boundary": [
+      "lemma_exec_syscall"
+    ]
+  },
+  "observer_correction": {
+    "corrected": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/artifact-guards-a2.json",
+      "sha256": "2424ca273823abc713c6d3ce00a5857d709b1c9d9d0e87e3b35bafc4aabb10fc"
+    },
+    "description": "Original named EOF negative hit pending-nonzero guard; corrected independently locates actual responseField56 value and count-zero guard, preserves target bytes and original observation.",
+    "original": {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/artifact-guards-a1.json",
+      "sha256": "cbf15a39340b1e5e87b2dcdf580387a527fcd6c4b39478194aba5f190bc1117e"
+    }
+  },
+  "original_runtime_paths_preserved": true,
+  "preserved_failures": [
+    {
+      "path": "build/courses/task006-notebook-package-component-a1/result.json",
+      "sha256": "238c6cb89d56d218c121e798e2d5f8acafca6e803a6fb4a9c5dd3c3c99bc9042"
+    },
+    {
+      "path": "build/courses/task006-notebook-package-integration-draft-a1/production-first-guard-a1.json",
+      "sha256": "643299a26605a88e45d9c69112b7d83f7792f38f17e0f8dfed460add40df799e"
+    }
+  ],
+  "qualification_scope": "actual imported Actions, complete genuine User2 main LLVM/O2/RV64 and selected role artifact admission; whole images/connected CPU/Store durability/cold recovery NOT_RUN",
+  "remaining": [
+    "full source/tool/profile-bound four-role normal/initializer build and ordinary audits",
+    "real guest install/selection/rendering/exact Protocol7 check/Doc8 evidence/workspace Save/hint/review and resource failures",
+    "independent cold record and complete expected controller pixel recovery",
+    "browser/publication, generic runtime/proof-kernel, fast timing/exact checkpoint and physical obligations separate"
+  ],
+  "root": "Lemma.Applications.Notebook.mainPackageClosureBulk",
+  "schema": "lemma-installed-package-notebook/1",
+  "selected_production": {
+    "appended_notebook_functions": 76,
+    "notebook": {
+      "artifacts": {
+        "program.ll": "677306d2bf35e56161924a328092673490c05b7d9efcc6b9879d968dd8892caa",
+        "program.opt.ll": "3064efc4577b0ca62bcbaaa0418002c70cdbb0930ae318e4b16237e4d00b5370",
+        "unit.json": "80747181cb4e4ccd8a5e4497a923fabe233aa10ff3b7ebdae6239a3e11ee6a07"
+      },
+      "functions": 817,
+      "path": "build/courses/task006-package-production-roles-a1/notebook/users/notebook",
+      "profile": "core0-user-v0.2",
+      "software": {
+        "contract_version": "lemma-package-closure-entry2-bulk-deployment-v1",
+        "silicon_profile": "lemma-silicon-dev/0.3.0",
+        "user_profiles": {
+          "arithmetic": "core0-user-v0.7",
+          "course": "core0-user-v0.1",
+          "notebook": "core0-user-v0.2",
+          "store": "core0-user-v0.1"
+        }
+      }
+    },
+    "optimized_owned_body_differences_from_component": 37,
+    "owned_functions": 189,
+    "producer": {
+      "path": "build/courses/task006-package-production-roles-a1/result.json",
+      "sha256": "7508b98d1c6aacaf3392febef43f88033fe67190bd641f209a73966f3526fe52"
+    },
+    "seconds": 208.81098335492425,
+    "source_head": "ff48d048519bfaa78dd05466106bd1df75496789"
+  },
+  "software_deployment": {
+    "contract_version": "lemma-package-closure-entry2-bulk-deployment-v1",
+    "silicon_profile": "lemma-silicon-dev/0.3.0"
+  },
+  "status": "PASS_COMPONENT_AND_SELECTED_ROLE_ARTIFACT_GUARDS",
+  "target_helper_changes": "None; test-only exporter record syntax and empty Action effect observer corrected, original failures retained."
+}
