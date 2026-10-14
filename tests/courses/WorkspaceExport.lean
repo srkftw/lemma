@@ -1,0 +1,3 @@
+import Lemma.Compiler.CourseWorkspaceExport
+
+#lemma_export_course_workspace

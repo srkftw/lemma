@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "normalized.txt": "451536c30d21e26f5180de8ec29bcb2cc66d81795a2fed90515d2a75c6c7b9a3",
+    "program.ll": "60069598bc9b7c58ea6b6b271357bf542f675c718b44388e311fa90c9d3af9d0",
+    "program.o": "56fd5ab9a0d17e2300b0de6cbcb070350966d4dfa28a1966ae866e162adf8da9",
+    "program.opt.ll": "7e6a405ca4a8270024e39af9aef3216c9c880f699f331982a9d61027e1036a4b",
+    "unit.json": "a9b1002f55e78003efa64c23a89f9bab7853e210178664b06ba3b9ea46e947c2"
+  },
+  "authoritative_source_unchanged": true,
+  "bounds": {
+    "address_space_bytes": 17179869184,
+    "command_seconds": 180,
+    "generated_file_bytes": 1073741824,
+    "whole_seconds": 420
+  },
+  "child_peak_rss_kib": 1629436,
+  "command": [
+    "nix",
+    "develop",
+    "--no-write-lock-file",
+    "--command",
+    "python3",
+    "scripts/check_course_workspace.py",
+    "--output-dir",
+    "build/courses/task006-workspace-component-a1",
+    "--package",
+    "build/courses/task006-package-qualified-a5/package/arithmetic.lcp"
+  ],
+  "contract": "lemma-course-workspace/1",
+  "function_count": 223,
+  "observed": [
+    "old Doc8 imports with explicit Unknown provenance",
+    "one real completed attempt records immutable package provenance",
+    "explicit builtin selection/completion retains older known rows",
+    "individually valid reordered learner-event prefix rejects",
+    "independently valid budget0 Doc8 and original budget8 binding do not become a known package attempt",
+    "source bytes stay exact on staging access error"
+  ],
+  "open": [
+    "selected Notebook loading/rendering from actual Store package bytes",
+    "real Protocol7 request/reply and revision-bound package evidence",
+    "actual wrapper Save/barrier/cold reopen and full controller pixels",
+    "usable teacher author/publish experience and arbitrary new checker goals"
+  ],
+  "reference_package": {
+    "bytes": 4040,
+    "independent_crc32": 1743257817,
+    "original": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-qualified-a5/package/arithmetic.lcp",
+    "sha256": "46256b4a0dcefc31a254c7a1e38f967fe2a0cc139c62dcc64c3aee0047109dcf"
+  },
+  "result": {
+    "path": "build/courses/task006-workspace-component-a1/result.json",
+    "sha256": "3a962a8998ece2eb8a7f00cd0284fd76ccea7de0ae1d6324cf419a5518e21bae"
+  },
+  "retained_draft_failures": [
+    {
+      "path": "build/courses/task006-package-workspace-prototype-a1/actions-run-a3.log",
+      "scope": "negative fixture incorrectly altered the binding budget; PackageBinding itself rejected it before the intended independent workspace check",
+      "sha256": "570932c7b10f807684ab554833633a21730d9ea491be8feeb3e02acd32642f46"
+    }
+  ],
+  "roots": [
+    "Lemma.Courses.PackageWorkspace.create",
+    "Lemma.Courses.PackageWorkspace.validate",
+    "Lemma.Courses.PackageWorkspace.snapshotSelection",
+    "Lemma.Courses.PackageWorkspace.captureSelection",
+    "Lemma.Courses.PackageWorkspace.stageRefresh",
+    "Lemma.Courses.PackageWorkspace.stageCompleted",
+    "Lemma.Courses.PackageWorkspace.stageUnknownSelection",
+    "Lemma.Courses.PackageWorkspace.stageCompletedUnknown"
+  ],
+  "scope": "imported guest Actions and genuine User2 LLVM/RV64 component; Notebook/checker/Store CPU execution and durability NOT_RUN",
+  "source_archive": "build/courses/task006-workspace-component-a1/consumed-source-root",
+  "source_count": 67,
+  "source_inventory_sha256": "8f27c2ef98c62aabb3b9e5260ca34b44e79ed41350dfdac85351730525ae48e4",
+  "status": "PASS_GENUINE_COURSE_WORKSPACE_COMPONENT",
+  "unresolved_boundary": [],
+  "wall_seconds": 16.074339888989925
+}
