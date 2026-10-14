@@ -1,7 +1,7 @@
 {
   "schema": "lemma-task-entry-borrow-v2-component/1",
   "status": "PASS_GENUINE_COMPONENT_SELECTED_GUARDS_AND_MATCHED_WHOLE_FULL_AUDITS",
-  "scope": "Ordinary Lean Actions/layout lemma, genuine selected LLVM20O2/RV64 objects and matched whole-image ordinary audits; new CPU execution/performance NOT_RUN",
+  "scope": "Ordinary Lean/layout and genuine selected whole-image audits, plus actual canonical native cold Ready/raw ink/Saved29/all pixels. Undo retains its original200M-cycle failure; full connected acceptance remains incomplete.",
   "target_sources": {
     "Lemma/Kernel/Task.lean": "f25dbbf093f922cb0fb8b35829b404fb737e181b38861b805db312419a256660",
     "Lemma/Kernel/Scheduler.lean": "5f1355442a13a79db974d81f56acb210b4e8d09ab9dce644bd906e6660d00bfa"
@@ -80,8 +80,8 @@
   "resource_execution": {
     "original_canonical_new_bulk_boot_500M": "FAIL_RETAINED",
     "new_entry2_whole_link": "PASS_MATCHED_ORIGINAL_PRODUCTION_CURRENT_FULL_AUDITS",
-    "new_entry2_connected_rv64": "NOT_RUN",
-    "cycle_speedup": "NOT_MEASURED"
+    "new_entry2_connected_rv64": "PASS_COLD_READY_AND_RAW_SAVED29; FAIL_UNDO_200M; remaining navigation/cold/failure acceptance open",
+    "cycle_speedup": "Same Saved26 medium/full display first-observed Ready669M versus prior canonical Wasm712.45M; resolution1M versus50k. Native and Wasm host durations are not a simulator-speed comparison."
   },
   "receipts": {
     "build/managed/task-entry-borrow-a2/component-result-a1.json": "046811f3a997d8a02f6be9d97d1e1e3a791549f9b79e1898ff8d53693715e7ac",
@@ -102,7 +102,10 @@
     "build/managed/task-entry2-stack-observer-prototype-a1/maintained-result-a1.json": "aac863dc3bc2f2669a53c9da475650b3865394dbe736953d89a28e70efe1ee05",
     "build/managed/task-entry2-whole-observer-a1/result.json": "8ddac43f49c7fa6a1dba13094087e39e4b6700c092b366bff5eb41c6308a4cdc",
     "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result.json": "1eddb004c1fa60a8bbc90d6f569b6db6f52e65cc9cb0b9db4afe5dcbe4e8552e",
-    "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result-a2.json": "716b8a2d8eea3368ee859cf415135b866a0fc8afc90532bc250b5db1b7575e15"
+    "build/managed/task-entry2-stack-observer-prototype-a1/full-audit-result-a2.json": "716b8a2d8eea3368ee859cf415135b866a0fc8afc90532bc250b5db1b7575e15",
+    "build/managed/task-entry2-connected-cold-a1/cold/result.json": "24e7959142d4805093e467cd2f813eb6c4e547e6264b260fdb9534134a548ee0",
+    "build/managed/task-entry2-connected-edit-a1/result.json": "65442b94488879bb4818e3a9726c21d86cf3fcc189319fce48c52087991f5930",
+    "build/managed/task-entry2-connected-cold-a1/supervision.json": "d77b2ffefa1b93a994b62c0a96aded02357169d8d07821f06d2c7dcb5dc1def3"
   },
   "note": "Tests, mathematical layout lemma, artifact audits and physical/RTL observations have distinct meanings; no full runtime/recursion/proof-kernel or G2\u2013G7 completion claim",
   "full_host_regression": {
@@ -275,5 +278,59 @@
     "first corrected archive exposed original stack incoming-caller omission",
     "first ignored full-audit prototype loaded an indirect historical auditor alias (33.791s)",
     "stack-only prototype exposed original IPC lookup incoming-caller omission (59.339s)"
-  ]
+  ],
+  "connected_native": {
+    "status": "PARTIAL_REAL_EXECUTION_WITH_RETAINED_UNDO_FAILURE",
+    "native_bundle": "build/native/task006-closure-entry2-a1",
+    "native_bundle_sha256": "cf76f4bc5c3acc7505979d5a6d86fb4da707ab2b3daab2b9376ff0e636548b65",
+    "guest_sha256": "2e231da8ca51aa691e1611907183c9e208dac7d4da737e9867690fca2e11f248",
+    "runtime_sha256": "3d265e97e1ad1d0271430d51f8a051993408327f37193f18959de05f046305e2",
+    "snapshot_identity": "6cab32ecdc85af48e2c074fbaf8a4e046bea8c25ed5b09a09f60308ff010df11",
+    "medium_sha256": "14df41bcb9caa8b897cdd46e0a6473ade5e2a6f2d0f78471379a3d7847c04a44",
+    "cold_ready": {
+      "cycle": 669000000,
+      "host_seconds": 2452.565681447042,
+      "process_tree_peak_rss_kib": 193324,
+      "read_outcomes": 163,
+      "write_outcomes": 0,
+      "barrier_outcomes": 0,
+      "complete_pixels": 3630000,
+      "medium_unchanged": true,
+      "fresh_cpu_not_restore": true
+    },
+    "raw_ink_saved29": {
+      "cycles": 56000000,
+      "host_seconds": 215.85419104609173,
+      "simulation_seconds": 211.33662280091085,
+      "journal_sequence": 29,
+      "raw_samples": 3,
+      "complete_pixels": 3630000,
+      "all_original_ink_and_doc8_preserved": true,
+      "medium_sha256": "f1a9f6b6d65dbb71e9dec221edc4c5fd675a970090f548578a1c10196cc5e30f",
+      "controller_file_sha256": "a7c1e508dace8e2291ea436d61c0c20d5bb9e4350f94ab0ae4890559873b14e9"
+    },
+    "undo": {
+      "status": "FAIL_ORIGINAL_DECLARED_200M_BOUND",
+      "start_cycle": 725000000,
+      "last_cycle": 925000000,
+      "current_durable_sequence": 29,
+      "paused_observational_checkpoint": "build/managed/task-entry2-connected-edit-a1/failed-undo-checkpoint",
+      "checkpoint_sha256": "710b490e00bf08d273e41f96c81904aea16f07f465da33cb728bfed7b54036c9",
+      "failure_not_reclassified": true,
+      "snapshot_not_cold_recovery": true
+    },
+    "saved29_independent_cold": {
+      "status": "RUNNING_NOT_YET_QUALIFIED",
+      "directory": "build/managed/task-entry2-saved29-cold-a3",
+      "bounds_cycles": 2000000000,
+      "bounds_seconds": 7200,
+      "planned_first_barrier_failure": "Laboratory injected fail-flush1 after actual coldReady; no actualPOSIX failure claim",
+      "prior_cycle0_constructor_observer_failures": [
+        "build/managed/task-entry2-saved29-cold-a1/supervision.json",
+        "build/managed/task-entry2-saved29-cold-a2/supervision.json"
+      ],
+      "original_owned_processes_reaped": true
+    },
+    "ordinary_navigation_and_complete_scenario_A": "OPEN"
+  }
 }

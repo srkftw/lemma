@@ -1340,4 +1340,35 @@ binds actualprepared3966 bundle,97547 medium, completepixel reference andexports
 Original732M versus712.45M uses Saved29 versus Saved26/174 versus163reads;
 no guest/simulator speedup is inferred from those different workloads.
 
+### Entry2 actual native cold/ink milestone; Undo remains FAIL
+
+The prepared cf76f4... canonical native bundle uses the already audited377-input
+matched pair (guest2e231d...), not the current PackageNotebook sources. A fresh
+CPU on the exact existing Saved26 medium14df41... reached actualReady669M clocks
+in2452.566s with193324KiB peak native process-treeRSS,163READ/zeroWRITE/BARRIER,
+unchanged256MiB backing and every3.63M controllerpixel. The same CPU consumed
+three exact raw pen samples and guest-acknowledged Save29 after56M clocks/215.854s
+(211.337 simulation-call seconds); prior raw ink and complete2496-byte Doc8 persist.
+
+Undo hit its ORIGINAL200M-clock bound at925M without acknowledgement30. That
+FAIL and observational710b49... checkpoint are retained; no deadline increase,
+CPU reset/restore or new Ready is inferred. Read-only diagnostics identified the
+8258 Notebook descriptor and partially completed7-tile packets; a sampled kernel
+PC/returned context alone does not establish time attribution. An ignored grouped
+Surface callback prototype is separate and has not changed maintained target code.
+
+An independent newCPU Saved29 cold owner is RUNNING under the original2B/7200s
+limits at build/managed/task-entry2-saved29-cold-a3. Its prospective Laboratory
+first-barrier failure remains NOT_RUN. Two prior cycle0 observer-argument/PNM
+reference-encoding failures were reaped and retained; the corrected reference
+losslessly expands the same complete controllerP5 pixels to requiredP6 RGB.
+The existing Entry2 receipt binds all actual output hashes/commands. Whole
+editing/navigation/cold/unsuccessful-save acceptance remains OPEN.
+
+Published24b candidate38621272240 is FAILURE9/10: foundation and realNotebook
+O0/O2 acceptance nowPASS, silicon host198 fails on an outdated exact USB role
+inventory. ff48d04 adds precisely ClosureRecovery3's two roles;7focused/current201
+silicon/scaffold18 pass locally. Existing CI evidence retains the original log
+3ecbcc... and actual failure. DraftPR9 stays unmerged; no CI pass is inherited.
+
 -->
