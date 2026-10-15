@@ -835,5 +835,74 @@
     "build/courses/task006-package-sparse-fast-a1/result.json": "2b180410850b1d03c44fa94a3a06c9f00382ba484ded05a5ae165f02076a6fad",
     "build/courses/task006-package-sparse-cold-a1/result.json": "79e67c64e0fe8f471b55b75d6a48389e55f2b38ca44a5c007f5e21034355d744",
     "build/courses/task006-package-sparse-cold-supervision-a1/result.json": "f2dce77d40a6ec15e7efad55ef3d262017c4d67fca94cddc5d69ea4060b130ea"
+  },
+  "browser_cold": {
+    "result": "build/browser/task006-package-sparse-cold-a1/result.json",
+    "result_sha256": "62c17801d6ff5b539e9fb786618a795209c98f00b0e89611082960290e3d1c2b",
+    "observation": {
+      "status": "PASS_COLD_OUTPUT_RELATION",
+      "scope": "Software4 browser cold outputs and fully captured opaque effects. Different guest binaries: functional outputs only; no timing or machine-state parity claim.",
+      "bounds": {
+        "observer_seconds": 120,
+        "address_space_bytes": 4294967296
+      },
+      "ready": {
+        "cycle": 801150000,
+        "heap_bytes": 201326592,
+        "host_seconds_since_open": 4920.1,
+        "simulation_call_seconds": 4712.5,
+        "backing_call_seconds_during_run": "public status rounds to0.0s"
+      },
+      "source_of_host_measurements": "Actual public Developer inspection DOM at paused Ready; source plan retains the original Open-paused launch. Elapsed includes pre-run pause, not a native host-speed comparison.",
+      "plan_sha256": "a3c935a5f484f6e603bd916baeba6d2e27b7230c4e0b75d10e0b9a49cf56503a",
+      "portable_identity": "fb15aade4646d035457f5b5e07663ce8235c72bcb4dff3823f2d10c3c165a1c3",
+      "relation_scope": "Different source3 native and source4 browser guests. Operation shapes/effects, all medium bytes and all pixels; exact timing/state relation NOT exercised.",
+      "actual_guest": "3700d81f873bd182a84a327e5a0b44c418ae36a39644529659b8c72957408f27",
+      "checkpoint": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/browser/task006-package-sparse-cold-a1/ready.chk",
+        "sha256": "ec5cb586071870d9e2cd57b31e3f7c8633eeeacff0eeaf63be0c8307876ba7fd"
+      },
+      "source_medium": {
+        "path": "build/courses/task006-course-ipc-guest-a1/durable.raw",
+        "sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829"
+      },
+      "exact_external_outcomes": 35,
+      "native_write_request_ids": [
+        24,
+        25,
+        26,
+        28,
+        30,
+        31,
+        32,
+        34
+      ],
+      "native_barrier_request_ids": [
+        27,
+        29,
+        33,
+        35
+      ],
+      "observed_medium_sha256": "c81f3783c9ac7f49cf91121cf9ea46ac1961986498a8eb05eb3723b76167b5e7",
+      "full_medium_bytes_exact": true,
+      "all_controller_pixels_exact": true,
+      "acknowledged_sequence": 4,
+      "acknowledged_objects": 4,
+      "no_snapshot_restore_for_cold": true,
+      "no_host_document_policy": true,
+      "course_workflow": "NOT_RUN: this is only actual cold Ready and output/effect observation; no browser course input admitted",
+      "observer_sha256": "46fe5208a8d7ef1c6a4130b5abf2585c17e4c9aed8f7868aa392a7e18dd907e4",
+      "observer_host_seconds": 25.393967733951285,
+      "observer_peak_rss_kib": 1063056
+    },
+    "precise_public_ready_observation": {
+      "source": "Actual paused Developer inspection DOM, before new raw batch; finite public64-bit fields",
+      "cycle": 801150000,
+      "host_seconds_since_open": 4919.726840000033,
+      "simulation_call_seconds": 4712.4704049939955,
+      "backing_call_seconds_during_run": 0.009205000281333925,
+      "heap_bytes": 201326592
+    },
+    "subsequent_course_open": "RUNNING separate original400M/3600s at same owner; one remaining observational checkpoint cut; not inferred from coldReady"
   }
 }

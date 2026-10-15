@@ -2015,3 +2015,52 @@ hold is active until the next explicitly sealed producer begins.
 Actual9b18756 CI38691692243 is now terminalSUCCESS10/10 with no skipped steps.
 This does not qualify its separately observed extended course reopen, which
 failed220, or local software6. The corrected candidate needs its ownCI/guest run.
+
+
+## October15 source551628d corrected connected guest milestone
+
+Software6 full matched pair PASS:388 source inputs, notebookd0dd2379/init76fff078,
+588.236s pair/592.730s finalsupervised; earlier intermediate elapsed590.787s
+retained separately. Full ordinary audits and source seals pass, no survivors.
+Prepared native/static task006-packed-row-a1 reuse unchanged exact machine cores.
+Actual fast42-phase course/read/check/editedInvalid/Unsupported/resource0/
+hint/learner/review/rawink/Save/Close/newCPUcold/fullcompact reopen PASS2.649B
+under original3B/900s,218.995s actor/220.609s supervised/387.5MB peak.
+COURSE137M versus4's178M; acknowledged ink1.980B versus2.607B. Cold274M,
+reopen143M, all objects/full256MiB/all controller pixels exact; no new checker.
+Close252M includes the original250M-clock post-input waiting predicate and
+must not be described as252M of redraw CPU work.
+
+Real partial-pwrite/EFBIG workspace Save failure/cold/retry/ink PASS at
+build/courses/task006-packed-row-failed-a3:2 persisted bytes, no new Saved,
+unchanged durable barrier, newCPU oldworkspace/full backing/full pixels,
+one durable hint retry and3 new raw samples Saved.119.386s actor/120.704s
+supervised/788.5MB peak; original1.5B/900s and all phase ceilings unchanged.
+Originala1/a2 FAILs remain. Passive exports isolate Pending/Saved footer
+boundary in1 and invalid demand for new0x421 on clean read-only reopen in2;
+actual2 body/footer complete and no Pending/Failed/Save. Correcteda3 still
+requires new actual Saved for each mutation and exact bytes/pixels/outcomes.
+See006-course-packed-row-restore.json for small receipt hashes.
+
+Canonical native6 is running at build/courses/task006-native-packed-row-a1/actor,
+with original1B cold/400M open/6B aggregate/21600s and owned supervision. The
+new actor validates the original sealed guest archive; only its actual29 host
+imports are frozen. Lean target additions do not change this executing archive.
+Do not edit those frozen host imports or infer a full RTL result from progress.
+Source3 original400M renderer failure remains untouched.
+
+Actual browser4 cold at origin8795/tab26 PASSes Ready801150000, first public
+Ready4919.726840s sinceOpen (includes pre-run pause),4712.470405s simulation,
+192MiB heap, original1B/7200s. Snapshotec5cb586, mediumc81f3783 and35 complete
+outcomes pass passive CRC/full backing/all controller pixels/Saved4 checks.
+Different native3/browser4 source guests compare functional outputs only;
+no timing/microstate parity claim. Downloads57/37/23 retained and hardlinked
+in build/browser/task006-package-sparse-cold-a1. One observational cut used.
+A separate raw COURSE batch (literal801250000/802250000 clocks) was admitted
+with queue2 at unchanged801150000, then Run bounded400M/3600s launched once.
+It remains running; do not repeat, restart or label fullbrowsercourse passed.
+
+Source551628d CI38695753991 is terminal SUCCESS10/10/every step complete,
+no skips. PR9 body updated to observed outcomes and retained failures;
+new local companion composition is not qualified by this CI. PR remains draft,
+unmerged, with no authorization to merge PR9.

@@ -4,7 +4,7 @@
   "producer_parent": "470def4182f73eed523b5e4a753e91801d3a4aec",
   "uncommitted_source_at_component_observation": true,
   "contract": "docs/contracts/006-course-workspace-envelope-v2.md",
-  "scope": "Exact source9b18756 full fresh388-input pair and actual39-phase guest course/checker/learner/ink/Close/newCPUcold; final workspace reopen fails actual220. Source6 repair has component checks; no corrected target PASS yet.",
+  "scope": "Exact source9b18756 full fresh388-input pair and actual39-phase guest course/checker/learner/ink/Close/newCPUcold; final workspace reopen fails actual220. Source6 has a separately qualified full corrected target workflow and real partial-write/cold/retry result; this original software5 failure remains FAIL.",
   "target_sources": {
     "Lemma/Courses/WorkspaceCodec.lean": "f15b83a81c03d64414ecf3105089bc8847d270f9439eda2df42f6570479a84c3",
     "Lemma/Applications/Notebook.lean": "6e3869a7d9c3f6c91477a5df47f84de3dc76a79db06ee8c11029095edd604653"
@@ -661,5 +661,6 @@
     "browser": "build/browser/task006-workspace-codec-a1",
     "limitation": "Full ordinary artifact audit is valid; actual software5 mathematical-course reopen is broken. Do not present as a complete user workflow."
   },
-  "next": "Full corrected software6 target build/audits, same original3B/900s case and real partial-pwrite failed workspace Save/retry/cold"
+  "next": "Full corrected software6 target build/audits, same original3B/900s case and real partial-pwrite failed workspace Save/retry/cold",
+  "corrected_successor": "docs/evidence/006-course-packed-row-restore.json"
 }

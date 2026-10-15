@@ -1222,7 +1222,7 @@ The audited text-delta guest pair is prepared in
 `build/browser/task006-package-delta-a1`. Use these paths with the same native
 session/browser-serve commands above. Actual fast course-header views improve
 to46–49M instruction-clock units; the original3B connected-case limit still
-fails during Close. The canonical RTL course case remains running. Its source,
+fails during Close. The original canonical RTL400M course case failed with rendering unfinished. Its source,
 limits and full audit results are retained in
 [the text-delta receipt](docs/evidence/006-course-text-delta-v1.json).
 
@@ -1245,8 +1245,33 @@ audits and actual saves/cold byte-and-pixel recovery pass, but actual course
 reopen fails220 because it used a512-byte sector-copy helper for3712 bytes.
 That retained failure is repaired by a dedicated464-word private restore in
 source6, alongside a pure packed-row renderer. Complete source/component checks
-pass; corrected linked RV64 execution remains required. Source5 bundles at
+pass. Corrected software6 now passes actual course/check/learner/ink/Close/newCPUcold/full workspace reopen under the original3B/900s fast functional limit (2.649B/218.995s). Real partial-pwrite/EFBIG Failed→cold→ordinary workspace retry→ink also passes; every acknowledged byte and controller pixel is checked. Source5 bundles at
 `build/{native,browser}/task006-workspace-codec-a1` retain this known defect.
 Older development images cannot reopen the new envelope. Migration and staging
 rules are explicit in
 [the envelope contract](docs/contracts/006-course-workspace-envelope-v2.md).
+
+
+The corrected source6 development bundles are
+`build/native/task006-packed-row-a1` and `build/browser/task006-packed-row-a1`.
+Use the native session and static browser commands above with these paths.
+Canonical RTL qualification is running under the original limits; QEMU
+instruction-clock results do not establish pipeline timing. Software4's actual
+local browser cold reached Ready at801.15M cycles/4712.470 simulation seconds
+with192MiB heap and exact complete controller/backing output; its bounded
+course-opening case remains separate. [The corrected guest receipt](docs/evidence/006-course-packed-row-restore.json)
+records the full build identities, retained failures and functional limits.
+
+```sh
+./scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.3.0 \
+  --base-bundle build/native/task006-workspace-codec-a1 \
+  --notebook-build build/kernel/task006-packed-row-notebook-a1 \
+  --initializer-build build/kernel/task006-packed-row-initializer-a1 \
+  --guest-source-root build/courses/task006-packed-row-whole-a1/consumed-source-root \
+  --output-dir build/AN_UNUSED_PACKED_NATIVE_BUNDLE
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --reuse-wasm --wasm-build build/browser/task006-fsize-native-port-a2 \
+  --guest-bundle build/AN_UNUSED_PACKED_NATIVE_BUNDLE \
+  --wasm-input-bundle build/AN_UNUSED_PACKED_NATIVE_BUNDLE \
+  --output-dir build/AN_UNUSED_PACKED_BROWSER_BUNDLE
+```
