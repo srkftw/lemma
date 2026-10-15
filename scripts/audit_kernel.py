@@ -3207,7 +3207,7 @@ def validate_user_abi_data(section_text: str, data: bytes, symbol_text: str,
                 re.fullmatch(r"users/(store|notebook|isolation)/(startup\.o|image\.elf)", object_file) is not None)
     arithmetic_file = (configuration in ARITHMETIC_CONFIGURATIONS and
                 re.fullmatch(r"users/arithmetic/(startup\.o|image\.elf)",object_file) is not None)
-    course_file = (configuration in COURSE_NOTEBOOK_CONFIGURATIONS and
+    course_file = (configuration in COURSE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and
                 re.fullmatch(r"users/course/(startup\.o|image\.elf)",object_file) is not None)
     if object_file not in {"user/startup.o", "user/image.elf"} and multi_file is None and not sim_file and not arithmetic_file and not course_file:
         raise Core0Error("user ABI data lacks its exact startup-object ownership")
