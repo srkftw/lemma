@@ -140,6 +140,7 @@ jobs:
             nix develop --no-write-lock-file --command \
               lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
                 Lemma.Applications.Notebook \
+                Lemma.Services.Store.ServerRecoveryAwait \
                 Lemma.Compiler.KernelExport \
                 Lemma.User.Runtime.Arena Lemma.Mathematics.OwnedSubmission \
                 Lemma.Courses.Arithmetic Lemma.Courses.Package \
@@ -238,6 +239,14 @@ jobs:
             nix develop --no-write-lock-file --command \
               lake env lean --run tests/courses/WorkspaceCodec.lean \
             2>&1 | tee build/ci/metadata/course-workspace-codec.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookRetryWorkspacePolicy.lean \
+            2>&1 | tee build/ci/metadata/workspace-retry-shapes.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/ink/NotebookClosureRecoverable.lean \
+            2>&1 | tee build/ci/metadata/workspace-reconciliation-actions.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
               lake env lean --run tests/courses/Render.lean \

@@ -1,4 +1,5 @@
 import Lemma.Services.Store.ServerRecovery
+import Lemma.Services.Store.ServerRecoveryAwait
 import Lemma.Services.Store.RecoveryClient
 import Std.Data.HashMap
 
@@ -146,7 +147,40 @@ private def application (cell : IO.Ref Model) (version op ns object ticket offse
     return m
   require ((← run cell (ServerRecovery.application 65538 77 64)).1 = 0) "recovery application did not finish its reply"
 
-def check (mediumBytes : ByteArray) : IO Unit := do
+/-- Exercise the actual mounted operation through the joined dispatcher. A
+pending/shadow context must not become Ready merely because a peer attached.
+The same request becomes usable only after the existing real barrier/adoption.
+-/
+private def checkMountPublication (cell : IO.Ref Model) (writable : Bool) : IO Unit := do
+  let before ← cell.get
+  cell.modify fun m => Id.run do
+    let mut m := m
+    for (o,v) in #[(0,Protocol.magic),(8,Lemma.Courses.PackageAwaitProtocol.version),
+        (16,Lemma.Courses.PackageAwaitProtocol.operation),(24,1),(32,0),(40,0),(48,0),(56,0)] do
+      m := write m (Server.incoming+64+o) v
+    return m
+  require ((← run cell (ServerRecoveryAwait.applicationAwait 65538 77 64)).1 = 0)
+    "joined mounted/recovery dispatch failed"
+  let after ← cell.get
+  let (status,fields) := after.replies.back!
+  require (fields.size = 8 && fields[0]! = Protocol.magic &&
+    fields[1]! = Lemma.Courses.PackageAwaitProtocol.version && fields[2]! = 16 &&
+    fields[3]! = 1 && fields[4]! = 0)
+    "joined mounted response changed framing or namespace"
+  require (Lemma.Courses.PackageAwaitProtocol.resultValid status fields[6]! fields[5]! fields[7]! = 1)
+    "joined mounted response is not independently admissible"
+  if writable then
+    require (status = 0 && fields[6]! = 1 && fields[5]! = 11 && fields[7]! > 0)
+      "validated barrier-backed mount not published"
+  else
+    require (status = Format.readOnly.toUInt64 && fields[6]! = 3)
+      "unresolved/shadow recovery manufactured usable mounted success"
+  require (after.calls = before.calls && after.reads = before.reads && after.barriers = before.barriers)
+    "mount observation performed backing I/O"
+  unchanged before after
+
+def check (mediumBytes : ByteArray) (joined : Bool) : IO Unit := do
+  let service := if joined then ServerRecoveryAwait.stepAwait else ServerRecovery.step
   require (mediumBytes.size = 268435456) "retained full opaque medium required"
   let before := initial mediumBytes
   for (o,v) in #[(24,1),(32,1),(40,77),(48,65538),(128,1)] do
@@ -166,8 +200,9 @@ def check (mediumBytes : ByteArray) : IO Unit := do
   require ((← cell.get).calls = #[7,5] && (← cell.get).replies.back! =
     (0,#[Protocol.magic,3,14,1,0,11,1,8,1])) "Pending receipt or raw request identity differs"
   unchanged before (← cell.get)
-  require ((← run cell ServerRecovery.step).1 = 0 && read (← cell.get) (Server.state+24) = 3)
+  require ((← run cell service).1 = 0 && read (← cell.get) (Server.state+24) = 3)
     "unresolved raw receipt made Store writable"
+  if joined then checkMountPublication cell false
   let pending ← cell.get
   let foreign ← IO.mkRef pending
   require ((← run foreign (ServerRecovery.status 65539 77 15 1 91)).1 = 0)
@@ -175,15 +210,15 @@ def check (mediumBytes : ByteArray) : IO Unit := do
   require ((← foreign.get).replies.back!.1 = 232 && (← foreign.get).calls = pending.calls)
     "foreign full sender consumed or advanced recovery"
   let failed ← IO.mkRef {pending with driverFailure := true}
-  require ((← run failed ServerRecovery.step).1 = 0 && read (← failed.get) (Server.state+24) = 3 &&
+  require ((← run failed service).1 = 0 && read (← failed.get) (Server.state+24) = 3 &&
     read (← failed.get) (Server.state+256) = 3) "failed raw reconciliation made Store writable"
   unchanged before (← failed.get)
   cell.modify fun m => {m with driverPending := false}
-  require ((← run cell ServerRecovery.step).1 = 0) "actual reconciled epoch did not start shadow scan"
+  require ((← run cell service).1 = 0) "actual reconciled epoch did not start shadow scan"
   unchanged before (← cell.get)
   let started ← cell.get
   let readFailed ← IO.mkRef {started with readFailure := true}
-  require ((← run readFailed ServerRecovery.step).1 = 0 && (← run readFailed ServerRecovery.step).1 = 0)
+  require ((← run readFailed service).1 = 0 && (← run readFailed service).1 = 0)
     "failed shadow READ did not remain a bounded service result"
   require (read (← readFailed.get) (Server.state+24) = 3 && read (← readFailed.get) (Server.state+256) = 3)
     "failed shadow READ published writable mode"
@@ -196,12 +231,12 @@ def check (mediumBytes : ByteArray) : IO Unit := do
       let observed ← cell.get
       if observed.reads.size = 36 && observed.pendingSector.isSome then finalPending := some observed
       if observed.barrierPending then barrierCut := some observed
-      require ((← run cell ServerRecovery.step).1 = 0) "actual shadow READ/Engine scan failed"
+      require ((← run cell service).1 = 0) "actual shadow READ/Engine scan failed"
       if read (← cell.get) (Server.state+256) = 2 then complete := true else unchanged before (← cell.get)
   require complete "shadow scan exceeded200-step fixture resource bound"
   let some lastCut := finalPending | throw <| IO.userError "actual final shadow READ cut was not observed"
   let finalFailure ← IO.mkRef {lastCut with readFailure := true}
-  require ((← run finalFailure ServerRecovery.step).1 = 0)
+  require ((← run finalFailure service).1 = 0)
     "completed final failed READ did not retain a bounded failed result"
   require (read (← finalFailure.get) (Server.state+24) = 3 &&
     read (← finalFailure.get) (Server.state+256) = 3)
@@ -209,22 +244,23 @@ def check (mediumBytes : ByteArray) : IO Unit := do
   unchanged before (← finalFailure.get)
   let some barrierBoundary := barrierCut | throw <| IO.userError "actual pending barrier cut was not observed"
   let barrierFailure ← IO.mkRef {barrierBoundary with barrierFailure := true}
-  require ((← run barrierFailure ServerRecovery.step).1 = 0 &&
+  require ((← run barrierFailure service).1 = 0 &&
     read (← barrierFailure.get) (Server.state+24) = 3 && read (← barrierFailure.get) (Server.state+256) = 3)
     "failed durability barrier published writable/complete"
   unchanged before (← barrierFailure.get)
   let barrierWaiting ← IO.mkRef {barrierBoundary with barrierWouldBlock := true}
-  require ((← run barrierWaiting ServerRecovery.step).1 = 0 &&
+  require ((← run barrierWaiting service).1 = 0 &&
     read (← barrierWaiting.get) (Server.state+24) = 3 && read (← barrierWaiting.get) (Server.state+256) = 1)
     "pending durability barrier published writable/complete"
   unchanged before (← barrierWaiting.get)
   for fault in #[Remount.current,Remount.current+208,Remount.current+336,Remount.current+4088] do
     let broken ← IO.mkRef {barrierBoundary with writeFault := fault}
-    require ((← run broken ServerRecovery.step).1 != 0)
+    require ((← run broken service).1 != 0)
       "partial shadow adoption fault fell through to normal service/settle"
     require (read (← broken.get) (Server.state+24) = 3 &&
       read (← broken.get) (Server.state+256) = 1)
       "partial shadow adoption fault published ready/complete"
+  if joined then checkMountPublication cell true
   let mounted ← cell.get
   require (mounted.barriers = 1 && mounted.reads.size = 36 && read mounted (Server.state+24) = 1 && read mounted (Server.context+336) = 0 &&
     read mounted (Server.context+40) = 11 && read mounted (Server.context+104) = Server.index1)
@@ -244,4 +280,7 @@ def check (mediumBytes : ByteArray) : IO Unit := do
 end ServerRecoveryTests
 def main (args : List String) : IO Unit := do
   let [path] := args | throw <| IO.userError "one opaque retained medium required"
-  ServerRecoveryTests.check (← IO.FS.readBinFile path)
+  let medium ← IO.FS.readBinFile path
+  ServerRecoveryTests.check medium false
+  ServerRecoveryTests.check medium true
+  IO.println "MOUNT_RECOVERY_JOIN_ACTION:PASS original and joined real shadow/barrier paths; operation16 stays readonly while pending and publishes only actual validated mounted context; no backing operations from mount observation"

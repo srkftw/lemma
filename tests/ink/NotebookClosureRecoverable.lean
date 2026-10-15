@@ -10,6 +10,8 @@ open Lemma.Applications.Notebook
 
 structure Model where
   allowMathSetup : Bool := false
+  workspaceSetup : Bool := false
+  workspaceMode : Bool := false
   words : Std.HashMap UInt64 UInt64 := {}
   operations : Array UInt64 := #[]
   console : Array String := #[]
@@ -129,11 +131,11 @@ partial def run (state : IO.Ref Model) : Action → IO (UInt8 × UInt64)
           if m.readFault != 0 && a = m.readFault then run state (next 1 0) else run state (next 0 (read m a))
       | .virtualRead8 => run state (next 0 (byte (← state.get) a).toUInt64)
       | .virtualWrite64 =>
-          if !ownedWrite a && !((← state.get).allowMathSetup && mathematicsSave ≤ a && a < mathematicsSave+4096) then throw <| IO.userError s!"retry wrote pinned or unowned address {a}"
+          if !ownedWrite a && !((← state.get).allowMathSetup && mathematicsSave ≤ a && a < mathematicsSave+4096) && !((← state.get).workspaceSetup && 0x329000 ≤ a && a < 0x33e000) && !((← state.get).workspaceMode && 0x33d000 ≤ a && a < 0x33e000) then throw <| IO.userError s!"retry wrote pinned or unowned address {a}"
           state.modify fun m => write m a b
           run state (next 0 0)
       | .virtualWrite8 =>
-          if !ownedWrite a && !((← state.get).allowMathSetup && mathematicsSave ≤ a && a < mathematicsSave+4096) then throw <| IO.userError s!"retry wrote pinned or unowned byte {a}"
+          if !ownedWrite a && !((← state.get).allowMathSetup && mathematicsSave ≤ a && a < mathematicsSave+4096) && !((← state.get).workspaceSetup && 0x329000 ≤ a && a < 0x33e000) && !((← state.get).workspaceMode && 0x33d000 ≤ a && a < 0x33e000) then throw <| IO.userError s!"retry wrote pinned or unowned byte {a}"
           state.modify fun m => writeByte m a b
           run state (next 0 0)
       | .syscall =>
@@ -320,7 +322,98 @@ def checkMath : IO Unit := do
     {initialMath with words := initialMath.words.insert (state+536) 1}]
   for model in cases do mustFailMath model
   IO.println s!"CLOSURE_RECOVERY_ACTION:PASS two exact old/known+1 positives; all312 full-word mismatches+312 readfault prefixes+{cases.size} semantic/epoch/length/barrier negatives; immutable2496B semantic/execution history; no duplicate PUT or math RPC; no connected/LLVM/CPU durability claim"
+private def workspaceInitial : IO Model := do
+  let old ← mathInitial
+  let cell ← IO.mkRef {old with workspaceSetup := true}
+  if (← run cell (Lemma.Courses.PackageWorkspace.create 0x33b000 mathematicsSave 1 1)).1 != 0 then
+    throw <| IO.userError "actual Doc8/history workspace creation failed"
+  let (status,length) ← run cell (Lemma.Courses.WorkspaceCodec.encode 0x33b000 mathematicsSave 1 1)
+  if status != 0 then throw <| IO.userError "actual compact workspace staging failed"
+  let mut m ← cell.get
+  for (slot,value) in #[(216,length),(224,0x504b000000000001),(592,4),
+      (608,length),(616,0x504b000000000001),(752,12)] do m := write m (state+slot) value
+  return {m with
+    workspaceSetup := false
+    workspaceMode := true
+    allowSaved := true
+    heldBytes := length
+    heldObject := 0x504b000000000001
+    queryBytes := length}
+
+private def advanceWorkspace (model : Model) : IO Model := do
+  let cell ← IO.mkRef model
+  if (← run cell (packageRecoverableToolbar 7)).1 != 0 then
+    throw <| IO.userError "explicit workspace reconciliation Action failed"
+  for _ in [:64] do
+    if read (← cell.get) (state+160) != 1 && read (← cell.get) (state+136) != 2 then
+      if (← run cell packageRecoverablePumpSave).1 != 0 then
+        throw <| IO.userError "bounded workspace reconciliation pump failed"
+  let after ← cell.get
+  for i in [:model.heldBytes.toNat] do
+    if byte model (mathematicsSave+i.toUInt64) != byte after (mathematicsSave+i.toUInt64) then
+      throw <| IO.userError "workspace recovery changed retained encoded bytes/history"
+  return after
+
+def checkWorkspace : IO Unit := do
+  let original ← workspaceInitial
+  let uncommitted ← advanceWorkspace original
+  if uncommitted.operations != #[14,2] ||
+      uncommitted.puts != #[(original.heldObject,12,original.heldBytes)] ||
+      read uncommitted (state+136) != 1 || read uncommitted (state+648) != 1 ||
+      uncommitted.console.any (·.startsWith "K1 0000000000000421") then
+    throw <| IO.userError "uncommitted workspace did not require its exact ordinary transaction"
+  let committed := {original with mountedSequence := 12}
+  let reconciled ← advanceWorkspace committed
+  let reads := (original.heldBytes+127)/128+1
+  if reconciled.operations != #[14] ++ Array.replicate reads.toNat 5 ||
+      !reconciled.puts.isEmpty || read reconciled (state+704) != original.heldBytes ||
+      read reconciled (state+648) != 0 || read reconciled (state+136) != 0 ||
+      read reconciled (state+128) != 12 || read reconciled (state+672) != 12 ||
+      !reconciled.console.any (·.startsWith "K1 0000000000000421") then
+    throw <| IO.userError "lost-ACK workspace did not compare all encoded bytes/EOF and finish once without PUT"
+  let cases := #[
+    {committed with queryMismatch := true,mismatchAt := 0},
+    {committed with queryMismatch := true,mismatchAt := original.heldBytes/2},
+    {committed with queryMismatch := true,mismatchAt := original.heldBytes-1},
+    {committed with queryBytes := original.heldBytes-8},
+    {committed with queryBytes := original.heldBytes+8},
+    {committed with mountedSequence := 13},
+    {committed with words := committed.words.insert (state+536) 1},
+    {committed with words := committed.words.insert (state+752) 11},
+    {committed with words := committed.words.insert (state+640) 3}]
+  for model in cases do
+    let rejected ← advanceWorkspace model
+    if !rejected.puts.isEmpty || read rejected (state+136) != 2 ||
+        rejected.console.any (·.startsWith "K1 0000000000000421") then
+      throw <| IO.userError "ambiguous/foreign/short/unbounded workspace reconciliation manufactured Saved or PUT"
+  -- Real raw-input Actions remain usable while the mathematical workspace
+  -- source is held. These are posed device samples, not host-created ink.
+  let offline ← IO.mkRef {original with allowSaved := false}
+  for (sequence,time,x,y,pressure,flags) in #[(1,1000,40000,50000,2048,3),
+      (2,2000,40500,50500,2176,3),(3,3000,40500,50500,0,2)] do
+    offline.modify fun m => Id.run do
+      let mut m := m
+      for (offset,value) in #[(0,sequence),(8,time),(16,x),(24,y),(32,pressure),
+          (40,flags),(48,1),(56,0),(64,1)] do m := write m (raw+offset) value
+      return m
+    if (← run offline packageRecoverableInputSample).1 != 0 then
+      throw <| IO.userError "workspace-held offline raw pen Action failed"
+  let drawn ← offline.get
+  if read drawn (state+112) != 3 || read drawn (state+648) != 1 ||
+      read drawn (state+136) != 2 || !drawn.operations.isEmpty ||
+      drawn.console.any (·.startsWith "K1 0000000000000421") then
+    throw <| IO.userError "offline workspace ink mutated storage, lost failure or manufactured Saved"
+  if !drawn.words.toList.any (fun (address,value) =>
+      0x110000 ≤ address && address < 0x124000 && value != 0xffffffffffffffff) then
+    throw <| IO.userError "offline workspace pen samples did not rasterize actual framebuffer pixels"
+  for i in [:original.heldBytes.toNat] do
+    if byte original (mathematicsSave+i.toUInt64) != byte drawn (mathematicsSave+i.toUInt64) then
+      throw <| IO.userError "offline ink changed the held compact workspace/history"
+  IO.println "WORKSPACE_OFFLINE_INK_ACTION:PASS three actual raw samples become guest raster pixels while immutable workspace remains Failed/provisional with no Store call or Saved; component fixture only"
+  IO.println s!"WORKSPACE_RECOVERY_ACTION:PASS actual{original.heldBytes}B encoded Doc8/history; old-sequence resubmit stays Pending; known+1 full READ/EOF finishes once without PUT;9 ambiguity/corruption/resource cases preserve failure and retained bytes. Explicit posed transport/barrier outcomes; no CPU/peer durability claim"
+
 end NotebookClosureRecoverableTests
 def main : IO Unit := do
   NotebookClosureRecoverableTests.checkRawCompatibility
   NotebookClosureRecoverableTests.checkMath
+  NotebookClosureRecoverableTests.checkWorkspace

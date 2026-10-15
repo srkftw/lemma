@@ -53,7 +53,9 @@ class ArithmeticCatalog(unittest.TestCase):
             'lemmasim-silicon-package-closure-entry2-bulk-notebook',
             'lemmasim-silicon-package-closure-entry2-bulk-initialize',
             'lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook',
-            'lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize'})
+            'lemmasim-silicon-usb-clocked-closure-retry-bulk-initialize',
+            'lemmasim-silicon-usb-clocked-package-retry-bulk-notebook',
+            'lemmasim-silicon-usb-clocked-package-retry-bulk-initialize'})
         for config,(server,profile,kernel) in expected.items():
             with self.subTest(configuration=config):
                 rows=image_specs(config)

@@ -36,7 +36,7 @@ private def roleProfile (role : String) (configuration : String)
       configuration == "lemmasim-silicon-power-notebook" || configuration == "lemmasim-silicon-power-initialize" ||
       isArithmeticDevelopmentConfiguration configuration || isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration
       then .kernel_v0_4 else if configuration.startsWith "lemmasim-" then .kernel_v0_3 else .kernel_v0_2)
-  | "user" => .ok (if (isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
+  | "user" => .ok (if (isUSBPackageRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store") then .user_v0_2 else if (isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "arithmetic") then .user_v0_7 else if isStringNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_6 else if isArrayNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_5 else if isBytesNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_4 else if isSumsNotebookConfiguration configuration && image?.any (fun image => image.key == "arithmetic") then .user_v0_3 else
       if ((isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) &&
       image?.any (fun image => image.key == "notebook" || image.key == "arithmetic")) ||
       (image?.any (fun image => image.key == "arithmetic") &&
@@ -83,7 +83,10 @@ private def unitCategory (configuration role : String) : String :=
 private def rootIdentities (configuration role : String) : Array String :=
   match role with
   | "firmware" => #["Lemma.Platform.RiscV.Firmware.dispatch"]
-  | "kernel" => if isPackageClosureNotebookConfiguration configuration then
+  | "kernel" => if isUSBPackageRecoveryNotebookConfiguration configuration then
+      #["Lemma.Platform.LemmaSim.NotebookKernel." ++
+        (if configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" then "siliconUSBPackageRecoveryBoot" else "siliconUSBPackageRecoveryInitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchUSBPackageRecoveryBulk"]
+    else if isPackageClosureNotebookConfiguration configuration then
       #["Lemma.Platform.LemmaSim.NotebookKernel." ++
         (if configuration == "lemmasim-silicon-package-closure-entry2-bulk-notebook" then "siliconPackageClosureEntry2Boot" else "siliconPackageClosureEntry2InitializeMedium"), "Lemma.Platform.LemmaSim.NotebookKernel.dispatchBulk"]
     else if isClosureEntry2NotebookConfiguration configuration then
@@ -299,7 +302,23 @@ private def serviceExecutableSource (source : String) : Bool :=
 
 private def selectedExecutableSource (configuration role source : String)
     (image? : Option UserImageSpec) : Bool :=
-  if isCourseAwaitNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration then
+  if isUSBPackageRecoveryNotebookConfiguration configuration then
+    let executable := serviceExecutableSource source ||
+      source.startsWith "Lemma.Services.Store.ServerRecovery." ||
+      source.startsWith "Lemma.Services.Store.ServerAwait."
+    if !executable then true else
+    if role != "user" then false else
+    image?.any fun image =>
+      source == image.moduleName.toString || source.startsWith (image.moduleName.toString ++ ".") ||
+      (image.key == "store" && image.moduleName == `Lemma.Services.Store.ServerRecoveryAwait &&
+        (((source == "Lemma.Services.Store.ServerRecovery" || source.startsWith "Lemma.Services.Store.ServerRecovery.") &&
+          !#["Lemma.Services.Store.ServerRecovery.mainRecoveryCourse", "Lemma.Services.Store.ServerRecovery.step"].contains source) ||
+         ((source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait.") &&
+          !#["Lemma.Services.Store.ServerAwait.main", "Lemma.Services.Store.ServerAwait.step"].contains source) ||
+         ((source == "Lemma.Services.Store.Server" || source.startsWith "Lemma.Services.Store.Server.") &&
+          !#["Lemma.Services.Store.Server.main", "Lemma.Services.Store.Server.step",
+            "Lemma.Services.Store.Server.courseMain", "Lemma.Services.Store.Server.courseStep"].contains source)))
+  else if isCourseAwaitNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration then
     let executable := serviceExecutableSource source ||
       source == "Lemma.Services.Store.ServerAwait" || source.startsWith "Lemma.Services.Store.ServerAwait."
     if !executable then true else
@@ -377,8 +396,9 @@ private def closedInlineFor (configuration : String) : Bool :=
 
 
 private def surfaceWordInlineSelected (configuration role : String) (image? : Option UserImageSpec) : Bool :=
-  #["lemmasim-silicon-package-closure-entry2-bulk-notebook",
-    "lemmasim-silicon-package-closure-entry2-bulk-initialize"].contains configuration &&
+  (#["lemmasim-silicon-package-closure-entry2-bulk-notebook",
+    "lemmasim-silicon-package-closure-entry2-bulk-initialize"].contains configuration ||
+    isUSBPackageRecoveryNotebookConfiguration configuration) &&
     role == "user" && image?.any (·.key == "notebook")
 
 /-- Closed existing callback inlining. These are actual source-derived checked
@@ -474,7 +494,8 @@ private def managedRecordFields (env : Environment) (configuration : String)
   if (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "notebook") then
     unless entries.isEmpty do throw "Notebook User-v0.2 may not acquire a managed record closure"
     return []
-  if (isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse) then
+  if ((isUSBRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecovery.mainRecoveryCourse)) ||
+      (isUSBPackageRecoveryNotebookConfiguration configuration && image?.any (fun image => image.key == "store" && image.root == `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait)) then
     unless entries.isEmpty do throw "Recovery scalar Store may not acquire managed heap authority"
     return []
   unless entries == #[`Lemma.Mathematics.ManagedRational.compareFiveSix] do

@@ -80,6 +80,11 @@ def isUSBNextNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-next-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-next-bulk-initialize"
 
+/-- Explicit four-role installed-package/recovery4 composition on Clocked13. -/
+def isUSBPackageRecoveryNotebookConfiguration (configuration : String) : Bool :=
+  configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook" ||
+    configuration == "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize"
+
 /-- Exact software successor joins Closure7/Doc8 to existing Clocked13 recovery. -/
 def isUSBClosureRecoveryNotebookConfiguration (configuration : String) : Bool :=
   configuration == "lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook" ||
@@ -109,7 +114,7 @@ def isProductNextNotebookConfiguration (configuration : String) : Bool :=
 
 /-- USB6 transport with the original isolated arithmetic User-v0.2 image. -/
 def isUSBNotebookConfiguration (configuration : String) : Bool :=
-  isUSBClosureRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
+  isUSBPackageRecoveryNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration || isUSBRecoveryNotebookConfiguration configuration || isUSBClockedNotebookConfiguration configuration || isUSBWireNotebookConfiguration configuration || isUSBNextNotebookConfiguration configuration || configuration == "lemmasim-silicon-usb-notebook" ||
     configuration == "lemmasim-silicon-usb-initialize" ||
     configuration == "lemmasim-silicon-usb-bulk-notebook" ||
     configuration == "lemmasim-silicon-usb-bulk-initialize"
@@ -132,7 +137,7 @@ def isClosureEntry2NotebookConfiguration (configuration : String) : Bool :=
 /-- Ordinary captured closures have a distinct isolated User7 authority.
 Only the exact four deployments admit Protocol7/document8; hardware stays0.3. -/
 def isClosureNotebookConfiguration (configuration : String) : Bool :=
-  isPackageClosureNotebookConfiguration configuration || isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
+  isUSBPackageRecoveryNotebookConfiguration configuration || isPackageClosureNotebookConfiguration configuration || isClosureEntry2NotebookConfiguration configuration || #["lemmasim-silicon-closure-bulk-notebook", "lemmasim-silicon-closure-bulk-initialize",
     "lemmasim-silicon-closure-arithmetic-oom-development",
     "lemmasim-silicon-closure-arithmetic-fault-development"].contains configuration
 
@@ -182,7 +187,14 @@ def isSumsNotebookConfiguration (configuration : String) : Bool :=
     configuration == "lemmasim-silicon-sums-arithmetic-oom-development"
 
 def softwareDeploymentFields (configuration : String) : List (String × Json) :=
-  if isPackageClosureNotebookConfiguration configuration then
+  if isUSBPackageRecoveryNotebookConfiguration configuration then
+  [("software_deployment", Json.mkObj [
+    ("contract_version", .str "lemma-package-clocked-recovery4-deployment-v1"),
+    ("silicon_profile", .str "lemma-silicon-dev/0.13.0"),
+    ("user_profiles", Json.mkObj [("store", .str "core0-user-v0.2"),
+      ("notebook", .str "core0-user-v0.2"), ("arithmetic", .str "core0-user-v0.7"),
+      ("course", .str "core0-user-v0.1")])])]
+  else if isPackageClosureNotebookConfiguration configuration then
   [("software_deployment", Json.mkObj [
     ("contract_version", .str "lemma-package-closure-entry2-bulk-deployment-v1"),
     ("silicon_profile", .str "lemma-silicon-dev/0.3.0"),
@@ -436,6 +448,15 @@ def packageClosureNotebookImages : Array UserImageSpec := #[
     root := `Lemma.Applications.Notebook.mainPackageClosureBulk, bootRole? := some .notebook},
   closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
 
+/-- Composes the genuine mounted/recovery Store, package UI, isolated checker
+and installer. No host role parses or recovers documents. -/
+def packageRecoveryNotebookImages : Array UserImageSpec := #[
+  {key := "store", id := 1, moduleName := `Lemma.Services.Store.ServerRecoveryAwait,
+    root := `Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait, bootRole? := some .storeServer},
+  {key := "notebook", id := 2, moduleName := `Lemma.Applications.Notebook,
+    root := `Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk, bootRole? := some .notebook},
+  closureNotebookImages[2]!, courseAwaitNotebookImages[3]!]
+
 /-- Ordinary store/notebook specifications are byte-for-byte the selected
 production peers; only this closed deployment admits the third User fixture. -/
 def notebookIsolationImages : Array UserImageSpec := notebookImages.push {
@@ -452,7 +473,8 @@ def isMultiImageConfiguration (configuration : String) : Bool :=
 
 /-- Closed selection, rather than a file/CLI-supplied module or root. -/
 def imagesFor (configuration : String) : Except String (Array UserImageSpec) :=
-  if isPackageClosureNotebookConfiguration configuration then .ok packageClosureNotebookImages
+  if isUSBPackageRecoveryNotebookConfiguration configuration then .ok packageRecoveryNotebookImages
+  else if isPackageClosureNotebookConfiguration configuration then .ok packageClosureNotebookImages
   else if isUSBClosureRecoveryNotebookConfiguration configuration then .ok closureRecoveryNotebookImages
   else if isUSBRecoveryNotebookConfiguration configuration then .ok recoveryNotebookImages
   else if isClosureNotebookConfiguration configuration then .ok closureNotebookImages

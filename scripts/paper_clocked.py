@@ -11,6 +11,7 @@ from core0_common import Core0Error
 from paper_next import canonical, normalized
 
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 CONFIGURATIONS = frozenset(('lemmasim-silicon-usb-clocked-bulk-notebook',
                            'lemmasim-silicon-usb-clocked-bulk-initialize'))
@@ -503,7 +504,7 @@ def literal_aliases(ir, unit):
     from audit_kernel import _ir_definition_body, _line_functions
     rows=[r for r in unit.get('functions',[]) if canonical(r['source'])=='Lemma.Platform.LemmaSim.DescriptorDTB.literalWordClocked']
     if not rows:return {}
-    if len(rows)!=1 or unit.get('configuration') not in CONFIGURATIONS | frozenset(('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')) | frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS) or unit.get('role')!='kernel' or unit.get('contract_version')!='core0-kernel-v0.6' or (rows[0]['args'],rows[0]['effects'])!=(['u64','u64'],[]):
+    if len(rows)!=1 or unit.get('configuration') not in CONFIGURATIONS | frozenset(('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')) | frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | frozenset(USB_PACKAGE_RECOVERY_CONFIGURATIONS) or unit.get('role')!='kernel' or unit.get('contract_version')!='core0-kernel-v0.6' or (rows[0]['args'],rows[0]['effects'])!=(['u64','u64'],[]):
         raise Core0Error('USBClocked literal source/signature/role escaped exact Kernel6 selection')
     row=rows[0];symbol=row['symbol'];owners=_line_functions(ir.splitlines());result={};found=[]
     pattern=r'^@(switch\.table\.'+re.escape(symbol)+r'(?:\.\d+)?) = private unnamed_addr constant \[([34]) x i64\] \[(.*?)\], align 8$'

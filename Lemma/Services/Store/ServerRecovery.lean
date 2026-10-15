@@ -376,4 +376,19 @@ def mainRecoveryCourse (bootArgument : UInt64) : Action :=
   else
     bad
 
+
+/-- Shared recovery-only phase boundary for the additive mounted Store.
+It performs no receive, normal settlement or mount publication. The caller must
+retain the original read-only context until these existing phases complete. -/
+def pumpRecoveryPhase : Action :=
+  .bind (get 192) fun s phase => if s = 0 then
+  if phase = 1 then resolveFrame else
+  if phase = 2 then
+    .bind shadowPump fun s _ => if s = 0 then
+    .bind (get 192) fun s stillActive => if s = 0 then
+    if stillActive = 2 then shadowValidated else .done 0 0
+    else bad else bad
+  else if phase = 3 then durabilityBarrier else bad
+  else bad
+
 end Lemma.Services.Store.ServerRecovery

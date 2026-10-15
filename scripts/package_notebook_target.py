@@ -45,6 +45,8 @@ def canonical(source):
     return re.sub(r'^_private\..*?\.[0-9]+\.', '', source)
 
 def selected(unit):
+    from package_companion_deployment import CONFIGURATIONS as JOINED
+    if unit.get("configuration") in JOINED:return unit.get("role")=="user" and unit.get("image_key")=="notebook"
     return (unit.get('configuration') in CONFIGURATIONS and
             unit.get('role') == 'user' and unit.get('image_key') == 'notebook')
 
@@ -149,6 +151,10 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers, layout=None, version
             'contract_version': version if version is not None else VERSION}
 
 def validate(ir, unit, *, optimized):
+    from package_companion_deployment import CONFIGURATIONS as JOINED
+    if unit.get("configuration") in JOINED:
+        from package_companion_target import validate as validate_joined
+        return validate_joined(ir, unit, optimized=optimized)
     if contract(unit) is None:
         return None
     require(PRODUCTION_PINS is not None and PRODUCTION_CALLERS is not None,
@@ -340,6 +346,12 @@ def _readonly_lookup_verified(ir, unit):
 
 def readonly_lookup(ir, unit):
     """Exact selected optimized Package User2 readonly supplement only."""
+    from package_companion_deployment import CONFIGURATIONS as JOINED
+    if unit.get('configuration') in JOINED:
+        if not selected(unit):return set(),[],set()
+        from package_companion_target import validate as validate_joined
+        validate_joined(ir, unit, optimized=True)
+        return _readonly_lookup_verified(ir, unit)
     if contract(unit) is None:
         return set(), [], set()
     validate(ir, unit, optimized=True)

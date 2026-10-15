@@ -47,6 +47,7 @@ MANAGED_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-managed-notebook", "lemmasi
 STRING_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-string-bulk-notebook", "lemmasim-silicon-string-bulk-initialize", "lemmasim-silicon-string-arithmetic-oom-development")
 ARRAY_NOTEBOOK_CONFIGURATIONS = LEGACY_COURSE_NOTEBOOK_CONFIGURATIONS + COURSE_AWAIT_CONFIGURATIONS + ("lemmasim-silicon-array-bulk-notebook", "lemmasim-silicon-array-bulk-initialize", "lemmasim-silicon-array-arithmetic-oom-development")
 BYTES_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-bytes-bulk-notebook", "lemmasim-silicon-bytes-bulk-initialize", "lemmasim-silicon-bytes-arithmetic-oom-development")
+from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, BOOT_ROOTS as PACKAGE_RECOVERY_BOOT_ROOTS, DISPATCH_ROOT as PACKAGE_RECOVERY_DISPATCH_ROOT
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
 USB_RECOVERY_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize')
 USB_CLOCKED_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize')
@@ -55,9 +56,9 @@ USB_NEXT_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-usb-next-bulk-notebook','l
 PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-product-executed-bulk-notebook',)
 PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS = ('lemmasim-silicon-product-next-bulk-notebook',)
 NEXT_NOTEBOOK_CONFIGURATIONS = USB_NEXT_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS
-BULK_NOTEBOOK_CONFIGURATIONS = USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + NEXT_NOTEBOOK_CONFIGURATIONS + ('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize') + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS
-SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development") + tuple(x for x in BULK_NOTEBOOK_CONFIGURATIONS if x not in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS)
-USB_NOTEBOOK_CONFIGURATIONS = USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + USB_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize", "lemmasim-silicon-usb-bulk-notebook", "lemmasim-silicon-usb-bulk-initialize")
+BULK_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + NEXT_NOTEBOOK_CONFIGURATIONS + ('lemmasim-silicon-bulk-notebook', 'lemmasim-silicon-bulk-initialize', 'lemmasim-silicon-product-bulk-notebook', 'lemmasim-silicon-usb-bulk-notebook', 'lemmasim-silicon-usb-bulk-initialize') + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS
+SUMS_NOTEBOOK_CONFIGURATIONS = ("lemmasim-silicon-sums-notebook", "lemmasim-silicon-sums-initialize", "lemmasim-silicon-sums-arithmetic-oom-development") + tuple(x for x in BULK_NOTEBOOK_CONFIGURATIONS if x not in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + BYTES_NOTEBOOK_CONFIGURATIONS + ARRAY_NOTEBOOK_CONFIGURATIONS + STRING_NOTEBOOK_CONFIGURATIONS + CLOSURE_NOTEBOOK_CONFIGURATIONS)
+USB_NOTEBOOK_CONFIGURATIONS = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOCKED_NOTEBOOK_CONFIGURATIONS + USB_WIRE_NOTEBOOK_CONFIGURATIONS + USB_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-usb-notebook", "lemmasim-silicon-usb-initialize", "lemmasim-silicon-usb-bulk-notebook", "lemmasim-silicon-usb-bulk-initialize")
 PRODUCT_NOTEBOOK_CONFIGURATIONS = PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS + PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS + ("lemmasim-silicon-product-notebook", "lemmasim-silicon-product-bulk-notebook")
 ARITHMETIC_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS)
 SILICON_MULTI_CONFIGURATIONS = (*PRODUCT_NOTEBOOK_CONFIGURATIONS, *USB_NOTEBOOK_CONFIGURATIONS, *BYTES_NOTEBOOK_CONFIGURATIONS, *ARRAY_NOTEBOOK_CONFIGURATIONS, *STRING_NOTEBOOK_CONFIGURATIONS, *CLOSURE_NOTEBOOK_CONFIGURATIONS, *SUMS_NOTEBOOK_CONFIGURATIONS, *MANAGED_NOTEBOOK_CONFIGURATIONS, *ARITHMETIC_DEVELOPMENT_CONFIGURATIONS, "lemmasim-silicon-power-notebook", "lemmasim-silicon-power-initialize", "silicon-service-development", "lemmasim-silicon-full-notebook", "lemmasim-silicon-full-initialize", "lemmasim-silicon-notebook", "lemmasim-silicon-initialize")
@@ -128,6 +129,10 @@ def validate_lean_source_realization(lean_lock: dict, output: str, info: object)
 def configuration_roots(configuration: str) -> dict:
     if configuration not in CONFIGURATIONS:
         raise Core0Error("unknown kernel configuration")
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        return {"firmware": ROLE_ROOTS["firmware"], "kernel": (
+            ("Lemma.Platform.LemmaSim.NotebookKernel."+PACKAGE_RECOVERY_BOOT_ROOTS[configuration], ()),
+            ("Lemma.Platform.LemmaSim.NotebookKernel."+PACKAGE_RECOVERY_DISPATCH_ROOT, ("u64", "u64", "u64")))}
     if configuration in CLOSURE_NOTEBOOK_CONFIGURATIONS:
         entry=CLOSURE_KERNEL_ENTRIES[configuration]
         return {"firmware":ROLE_ROOTS["firmware"],"kernel":(
@@ -324,7 +329,7 @@ def source_inputs(root: Path) -> dict[str, str]:
     if closed_inline.is_file():inputs.append(closed_inline)
     records = root / "scripts/managed_records.py"
     if records.is_file():inputs.append(records)
-    for helper in ("surface_word_inline.py", "package_closure_deployment.py", "package_notebook_target.py", "task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
+    for helper in ("surface_word_inline.py", "package_closure_deployment.py", "package_notebook_target.py","package_companion_deployment.py","package_companion_target.py", "task_entry_borrow.py", "usb_closure_recovery_deployment.py", "usb_closure_recovery_target.py", "kernel_source_workspace.py","surface_bulk_borrow.py","usercopy_page_words.py","course_deployment.py","course_await_deployment.py","ipc_poll_borrow.py","ipc_call_borrow.py","ipc_rpc_borrow.py", "arithmetic_execution_identity.py", "managed_sums.py", "arithmetic_sums_identity.py", "paper_bulk.py", "managed_bytes.py", "arithmetic_bytes_identity.py", "managed_array.py", "arithmetic_array_identity.py", "managed_string.py", "arithmetic_string_identity.py", "closure_deployment.py", "managed_closure.py", "arithmetic_closure_identity.py", "paper_next.py", "paper_executed.py", "paper_wire.py", "paper_clocked.py", "usb_recovery_target.py", "wifi_common.py", "wifi_owned_read.py"):
         additive = root / "scripts" / helper
         if additive.is_file():inputs.append(additive)
     inputs += [root / "scripts/silicon_profile.py", root / "sim/profiles/lemma-silicon-dev-0.1.0.json", root / "sim/profiles/lemma-silicon-dev-0.2.0.json", root / "sim/profiles/lemma-silicon-dev-0.3.0.json"]
@@ -350,6 +355,8 @@ def source_inputs(root: Path) -> dict[str, str]:
     if common_authority.is_file():inputs.append(common_authority)
     read_authority=root / "tooling/wifi-owned-read-authority.json"
     if read_authority.is_file():inputs.append(read_authority)
+    package_recovery_authority=root / "tooling/package-companion-target-authority.json"
+    if package_recovery_authority.is_file():inputs.append(package_recovery_authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 
@@ -369,7 +376,9 @@ def module_closure(root: Path, module: str, seen: set[str] | None = None, *, all
     seen.add(module)
     if forbid_user_privileged_imports and module.startswith(("Lemma.Kernel.", "Lemma.Compiler.")):
         raise Core0Error(f"managed user dependency imports privileged/compiler code: {module}")
-    recovery_library = (selected_executable_module == "Lemma.Services.Store.ServerRecovery" and module == "Lemma.Services.Store.Server")
+    recovery_library = (selected_executable_module == "Lemma.Services.Store.ServerRecovery" and module == "Lemma.Services.Store.Server") or (
+        selected_executable_module == "Lemma.Services.Store.ServerRecoveryAwait" and
+        module in {"Lemma.Services.Store.ServerRecovery", "Lemma.Services.Store.ServerAwait", "Lemma.Services.Store.Server"})
     # The exact Await Store1 root borrows existing engine/dispatcher source.
     # Full IR admission separately excludes the old executable entry bodies.
     # The flag is derived only from the closed pair/role/root catalog above and

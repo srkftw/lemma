@@ -37,7 +37,8 @@ from closure_deployment import (KERNEL_CONFIGURATIONS as CLOSURE_NOTEBOOK_CONFIG
                                 software_deployment_for as closure_software_deployment_for)
 from build_kernel import USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS, USB_RECOVERY_NOTEBOOK_CONFIGURATIONS, NEXT_NOTEBOOK_CONFIGURATIONS, USB_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS, PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS, USB_WIRE_NOTEBOOK_CONFIGURATIONS, USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
 from usb_closure_recovery_deployment import SOFTWARE_DEPLOYMENT as USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT
-USB_RECOVERY_FAMILIES = USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
+from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT
+USB_RECOVERY_FAMILIES = USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_RECOVERY_NOTEBOOK_CONFIGURATIONS + USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS
 from core0_common import Core0Error, load_json, repo_root, require_tools, run_bounded, sha256, write_json
 from audit_device import (_access_op, _valid_access_alignment, _line_functions, DIRECT_ADDRESS, FENCE_CALL, SITE_MARKER,
                           validate_platform_evidence)
@@ -295,7 +296,14 @@ USB_CLOSURE_RECOVERY_NOTEBOOK_IMAGES=(RECOVERY_NOTEBOOK_IMAGES[0],
     {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverableClosureBulk'}, CLOSURE_NOTEBOOK_IMAGES[2])
 MULTI_USER_CONFIGURATIONS.update({configuration:USB_CLOSURE_RECOVERY_NOTEBOOK_IMAGES for configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS})
 
+PACKAGE_RECOVERY_NOTEBOOK_IMAGES=({**NOTEBOOK_USER_IMAGES[0], 'module':'Lemma.Services.Store.ServerRecoveryAwait','source':'Lemma.Services.Store.ServerRecoveryAwait.mainRecoveryAwait'},
+    {**NOTEBOOK_USER_IMAGES[1], 'source':'Lemma.Applications.Notebook.mainRecoverablePackageClosureBulk'},
+    CLOSURE_NOTEBOOK_IMAGES[2], COURSE_AWAIT_NOTEBOOK_IMAGES[3])
+MULTI_USER_CONFIGURATIONS.update({configuration:PACKAGE_RECOVERY_NOTEBOOK_IMAGES for configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS})
+
 def software_deployment_fields(configuration):
+    if configuration in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        return {"software_deployment":PACKAGE_RECOVERY_SOFTWARE_DEPLOYMENT}
     if configuration in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
         return {'software_deployment':USB_CLOSURE_RECOVERY_SOFTWARE_DEPLOYMENT}
     if configuration in USB_RECOVERY_NOTEBOOK_CONFIGURATIONS:
@@ -1678,7 +1686,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
     executed_binding=unit.get('configuration') in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS
     next_binding=unit.get('configuration') in NEXT_NOTEBOOK_CONFIGURATIONS
-    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
+    construct='Lemma.Platform.LemmaSim.NotebookKernel.'+('constructPackageRecovery' if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructCourse' if unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if recovery_binding else 'constructClocked' if clocked_binding else 'constructWire' if wire_binding else 'constructModernExecuted' if executed_binding else 'constructModernNext' if next_binding else 'constructModern' if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS else 'construct');callers=[];binding_gates=[]
     selected=o+('initArithmetic' if arithmetic else 'initPower')
     for source,symbol in names.items():
         other=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(other)[2]
@@ -4108,7 +4116,9 @@ def validate_readonly_pmp_lookup(ir: str, unit: dict, *, optimized: bool) -> tup
         sim_sites, sim_tables, removed = validate_lookup(ir, unit)
         usb_sites,usb_tables,usb_removed=validate_usb_descriptor_lookup(ir,unit)
         removed |= usb_removed
-        if unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            from package_companion_target import readonly_request_kinds
+        elif unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
             from usb_closure_recovery_target import readonly_request_kinds
         else:
             from usb_recovery_target import readonly_request_kinds
@@ -4733,7 +4743,7 @@ def _jump_assembly_guard(assembly: str, symbol: str, table: str, targets: list[s
                 hoisted={'instruction':'li a5,8','definition_instruction':0,
                          'preserved_register':'a5','normalized_index_register':'a1'}
         elif (source=='Lemma.Courses.PackageReader.step'
-              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
+              and configuration in PACKAGE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and image_key=='notebook'
               and count==6 and minimum==0 and len(code)==48 and use==21 and i==17
               and index==scaled==address=='a0' and base==target=='a2'
               and code[:4]==[('addi',['sp','sp','-16']),('sd',['ra','8(sp)']),
@@ -4821,7 +4831,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
         from package_notebook_target import (CONFIGURATIONS as PACKAGE_NOTEBOOK_CONFIGURATIONS,
                                             readonly_lookup as package_readonly_lookup)
         package_literals=[]
-        if unit.get('configuration') in PACKAGE_NOTEBOOK_CONFIGURATIONS:
+        if unit.get('configuration') in set(PACKAGE_NOTEBOOK_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS):
             _, package_literals, _ = package_readonly_lookup(optimized_ir,unit)
         package_literal_keys={
             (re.sub(r'^_private\..*?\.[0-9]+\.','',table['source']),
@@ -5056,7 +5066,7 @@ def validate_backend_jump_tables(section_text: str, symbol_text: str, relocation
                 # Installer User1 root or selected Package Notebook User2 root.
                 image_authority={**image_authority,RESULT_SOURCE:{unit['image_key']}}
             if package_owner:image_authority={**image_authority,source:{'notebook'}}
-            if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS and
+            if (unit.get('configuration') in COURSE_NOTEBOOK_CONFIGURATIONS + USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS and
                     source == 'Lemma.Services.Store.Protocol.shape'):
                 image_authority={**image_authority,source:image_authority[source] | {'course'}}
             if unit.get('configuration') in LEMMASIM_NOTEBOOK_CONFIGURATIONS:
@@ -5191,6 +5201,8 @@ def validate_kernel_uart_initialize(ir: str, unit: dict, *, optimized: bool) -> 
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2')
         if unit['configuration'] in PACKAGE_NOTEBOOK_CONFIGURATIONS:
             boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootCourseSelectedEntryV2')
+        if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+            boot = normalized.get('Lemma.Platform.LemmaSim.NotebookKernel.bootPackageRecovery')
     if initialize is None or boot is None:
         raise Core0Error("trigger14 FIFO lacks its exact initializer/boot source closure")
     if not optimized:
@@ -5227,7 +5239,7 @@ def validate_modern_power_selection(ir: str, unit: dict, *, optimized: bool) -> 
         return
     names={row['symbol']:re.sub(r'^_private\..*?\.[0-9]+\.','',row['source']) for row in unit['functions']}
     by={source:symbol for symbol,source in names.items()}
-    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
+    required=['Lemma.Platform.LemmaSim.NotebookKernel.'+('constructPackageRecovery' if unit['configuration'] in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'constructRecovery' if unit['configuration'] in USB_RECOVERY_FAMILIES else 'constructClocked' if unit['configuration'] in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS else 'constructWire' if unit['configuration'] in USB_WIRE_NOTEBOOK_CONFIGURATIONS else 'constructModernExecuted' if unit['configuration'] in PRODUCT_EXECUTED_NOTEBOOK_CONFIGURATIONS else 'constructModernNext' if unit['configuration'] in NEXT_NOTEBOOK_CONFIGURATIONS else 'constructModern'),
         'Lemma.Platform.LemmaSim.PowerControl.configureSafety','Lemma.Drivers.PowerSafety.initialize',
         'Lemma.Kernel.Task.activateManaged','Lemma.Kernel.Objects.createEndpoint']
     if not all(source in by for source in required):raise Core0Error('Modern Power-v2 constructor source closure missing')
@@ -5265,7 +5277,9 @@ def validate_ir(ir: str, unit: dict, *, optimized: bool, optimization: str | Non
     from paper_wire import validate as validate_paper_wire
     from paper_clocked import validate as validate_paper_clocked
     from wifi_common import validate as validate_common
-    if unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+    if unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
+        from package_companion_target import validate as validate_recovery
+    elif unit.get('configuration') in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS:
         from usb_closure_recovery_target import validate as validate_recovery
     else:
         from usb_recovery_target import validate as validate_recovery

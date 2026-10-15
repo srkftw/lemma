@@ -15,6 +15,7 @@ COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 COMMON_CONFIGURATIONS={'lemmasim-silicon-wifi-common-probe','lemmasim-silicon-wifi-common-read-probe'}
 CONFIGURATIONS = {'lemmasim-silicon-power-safety-probe','lemmasim-silicon-power-probe', 'lemmasim-silicon-power-notebook', 'lemmasim-silicon-power-initialize', 'lemmasim-silicon-devices','lemmasim-bringup', 'lemmasim-notebook', 'lemmasim-initialize', 'lemmasim-isolation-development', 'lemmasim-silicon-full-notebook', 'lemmasim-silicon-notebook', 'lemmasim-silicon-full-initialize', 'lemmasim-silicon-initialize'}
@@ -36,7 +37,7 @@ DTB_LITERALS = {
 DTB_BYTES = {code: value.encode('ascii') + b'\0' for code,value in DTB_LITERALS.items()}
 WORD_CODES = [18,4,5,6,7,*range(11,18),37,38,43,49,50,67,68,70,72,73]
 PAPER_CLOCKED_CONFIGURATIONS={'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize','lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'}
-PAPER_CLOCKED_CONFIGURATIONS |= set(USB_CLOSURE_RECOVERY_CONFIGURATIONS)
+PAPER_CLOCKED_CONFIGURATIONS |= set(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | set(USB_PACKAGE_RECOVERY_CONFIGURATIONS)
 PAPER_WIRE_CONFIGURATIONS={'lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize'}
 PAPER_NEXT_CONFIGURATIONS={'lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'}
 PREFIX = 'Lemma.Platform.LemmaSim.'

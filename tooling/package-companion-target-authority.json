@@ -1,0 +1,56 @@
+{
+  "schema": "lemma-package-clocked-recovery4-target/1",
+  "origin": "build/courses/task006-package-companion-component-a3",
+  "origin_sha256": "66dd0f0882b1eb3e7318938824d5f9e0cebd4914229b3b6424357b336cc61c3e",
+  "scope": "Fresh actual six-role genuine LLVM/RV64 capture after exact library-module selection repair and shared checked Surface callback inlining. Old prototype and failed component2 remain retained.",
+  "roles": {
+    "kernel": {
+      "catalog_sha256": "10a107e995ab4f65b1240123f4a3cb749e49312f8d62d61023e8471e790a798c",
+      "function_count": 1287,
+      "pre_sha256": "c5c24940195f81259ad6b09cc9cb22f3edf9c095e89f243b4f0c0c0d42e42ea2",
+      "pre_function_count": 1287,
+      "post_sha256": "f0ad15c4b6af60cedf0b8b71c3536eadbd6bc7086b25f5e0784b59d97f0d50cb",
+      "post_function_count": 1287
+    },
+    "kernel-init": {
+      "catalog_sha256": "b325e278ba144a329111e678500314b97f955fad9653a95fd9f66d9041ff6949",
+      "function_count": 1287,
+      "pre_sha256": "48a27e4d96125c8c11a589af795681ef2f67c01f42252cb5df943915329e1acd",
+      "pre_function_count": 1287,
+      "post_sha256": "cdbf8a913da02bab456220ca9df6ada0b075fce54267d86521abbaa7352ee7ea",
+      "post_function_count": 1287
+    },
+    "store": {
+      "catalog_sha256": "b543bcf528b7465f736c663bc4898222ee2c7e91ea6b97e3ddd88e53668664f0",
+      "function_count": 298,
+      "pre_sha256": "f955119df3c12a12e962496fc2e1e99194c694ceba498bdaaf9f93bb3615929b",
+      "pre_function_count": 298,
+      "post_sha256": "4067ca9e6649428e703deabaf72bba606f2c59dc32e55faac4f29b7d52b9257b",
+      "post_function_count": 298
+    },
+    "notebook": {
+      "catalog_sha256": "695812fcac79b161bb5925c8ede6b894f8afc780e59ef414bc4774cf604eab0e",
+      "function_count": 875,
+      "pre_sha256": "c767be40798a1479869143553e5de8b751802c228e7f721eb11735cff1f2e626",
+      "pre_function_count": 875,
+      "post_sha256": "8dc999779d716111b9def2ce5c50af12f5487ad9d86257cf4788c8e09add9a2c",
+      "post_function_count": 873
+    },
+    "arithmetic": {
+      "catalog_sha256": "b47d2eec497fe770fe80d17642097562e5768f6d4a17d8e3021c0feb3c9ad9a1",
+      "function_count": 169,
+      "pre_sha256": "922a8ac084ee0f6623a9503e0b47b6d4ebb8ca0af840ef1b23d9223c4911c081",
+      "pre_function_count": 169,
+      "post_sha256": "0a0a4408d1c114f672b8a169e3e5a5f983f0f843e115f8cf0de75dd2ba8d2517",
+      "post_function_count": 169
+    },
+    "course": {
+      "catalog_sha256": "53ae2711013468c4f562e0837e4796fce7f9d2eb0328c4bc9f8e24f9bdaaed60",
+      "function_count": 169,
+      "pre_sha256": "fd0cfca9d24c9756607dcb973eaab3512223dcc2230288ecaefc5f802e44c35d",
+      "pre_function_count": 169,
+      "post_sha256": "226ee09aa3662b48b1973fcf882c293ca57394b93e60e8178111473b31254487",
+      "post_function_count": 169
+    }
+  }
+}

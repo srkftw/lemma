@@ -29,16 +29,20 @@ def catalog(unit):
     require(isinstance(unit, dict), 'Surface-word unit is not a map')
     if FIELD not in unit:
         return None
-    require(unit.get('configuration') in CONFIGURATIONS and
+    from package_companion_deployment import CONFIGURATIONS as JOINED, SOFTWARE_DEPLOYMENT as JOINED_SOFTWARE, USER_ROOTS
+    joined=unit.get('configuration') in JOINED
+    selected_root=USER_ROOTS['notebook'][1] if joined else NOTEBOOK_ROOT
+    selected_software=JOINED_SOFTWARE if joined else SOFTWARE_DEPLOYMENT
+    require(unit.get('configuration') in CONFIGURATIONS + JOINED and
             unit.get('role') == 'user' and unit.get('contract_version') == 'core0-user-v0.2' and
             type(unit.get('schema_version')) is int and unit.get('schema_version') == 2 and unit.get('artifact_category') == 'development-user-unit' and
             unit.get('managed_policy') == 'lemma-notebook-arithmetic-v1' and
-            unit.get('software_deployment') == SOFTWARE_DEPLOYMENT and
+            unit.get('software_deployment') == selected_software and
             unit.get('image_key') == 'notebook' and type(unit.get('image_id')) is int and unit.get('image_id') == 2 and
             unit.get('boot_role') == 'notebook', 'Surface-word authority escaped Package Notebook/User2')
     roots = unit.get('roots')
     require(isinstance(roots, list) and len(roots) == 1 and isinstance(roots[0], dict) and
-            set(roots[0]) == {'source', 'symbol', 'id', 'args'} and roots[0].get('source') == NOTEBOOK_ROOT and
+            set(roots[0]) == {'source', 'symbol', 'id', 'args'} and roots[0].get('source') == selected_root and
             type(roots[0].get('id')) is int and roots[0].get('id') == 1 and roots[0].get('args') == ['u64'], 'Surface-word selected root differs')
     rows = unit.get('functions')
     require(isinstance(rows, list) and rows and all(isinstance(r, dict) and isinstance(r.get('source'), str) and
@@ -48,8 +52,8 @@ def catalog(unit):
     require(len(by) == len(rows) and len({r.get('symbol') for r in rows}) == len(rows) and
             all(isinstance(r.get('symbol'), str) and re.fullmatch(r'[A-Za-z0-9_.$]+', r['symbol']) for r in rows),
             'Surface-word source/symbol inventory not one-to-one')
-    require(NOTEBOOK_ROOT in by and roots[0]['symbol'] == by[NOTEBOOK_ROOT]['symbol'] and
-            by[NOTEBOOK_ROOT].get('args') == ['u64'], 'Surface-word root is not its genuine declaration')
+    require(selected_root in by and roots[0]['symbol'] == by[selected_root]['symbol'] and
+            by[selected_root].get('args') == ['u64'], 'Surface-word root is not its genuine declaration')
     c = unit[FIELD]
     require(isinstance(c, dict) and set(c) == {'contract_version', 'policy', 'callbacks'} and
             c['contract_version'] == VERSION and c['policy'] == POLICY and

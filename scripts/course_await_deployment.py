@@ -10,8 +10,10 @@ STORE_ROOT='Lemma.Services.Store.ServerAwait.main'
 INSTALLER_ROOT='Lemma.Courses.PackageInstaller.mainAwait'
 from package_closure_deployment import (CONFIGURATIONS as PACKAGE_CONFIGURATIONS,
  SOFTWARE_DEPLOYMENT as PACKAGE_SOFTWARE_DEPLOYMENT)
-ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS
+from package_companion_deployment import CONFIGURATIONS as JOINED_CONFIGURATIONS, SOFTWARE_DEPLOYMENT as JOINED_SOFTWARE_DEPLOYMENT, USER_ROOTS
+ALL_CONFIGURATIONS=CONFIGURATIONS+PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS
 def software_deployment_for(configuration):
+ if configuration in JOINED_CONFIGURATIONS:return JOINED_SOFTWARE_DEPLOYMENT
  if configuration in CONFIGURATIONS:return SOFTWARE_DEPLOYMENT
  if configuration in PACKAGE_CONFIGURATIONS:return PACKAGE_SOFTWARE_DEPLOYMENT
  raise ValueError('Unknown exact Await software tuple')
@@ -79,12 +81,12 @@ def validate_mount_reply(ir,unit,*,optimized):
      unit.get('boot_role')=='course-installer' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
        [{'source':INSTALLER_ROOT,'id':1,'args':['u64']}])
- package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS and
+ package_notebook=(unit.get('configuration') in PACKAGE_CONFIGURATIONS+JOINED_CONFIGURATIONS and
      unit.get('image_key')=='notebook' and type(unit.get('image_id')) is int and
      unit['image_id']==2 and unit.get('contract_version')=='core0-user-v0.2' and
      unit.get('boot_role')=='notebook' and
      [{k:r.get(k) for k in ('source','id','args')} for r in unit.get('roots',[])]==
-       [{'source':'Lemma.Applications.Notebook.mainPackageClosureBulk','id':1,'args':['u64']}])
+       [{'source':USER_ROOTS['notebook'][1] if unit.get('configuration') in JOINED_CONFIGURATIONS else 'Lemma.Applications.Notebook.mainPackageClosureBulk','id':1,'args':['u64']}])
  if (len(actual)!=1 or unit.get('configuration') not in ALL_CONFIGURATIONS or
      unit.get('role')!='user' or not (installer or package_notebook) or
      type(unit.get('schema_version')) is not int or unit['schema_version']!=2 or

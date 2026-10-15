@@ -21,6 +21,7 @@ COURSE_CONFIGURATIONS=LEGACY_COURSE_CONFIGURATIONS+COURSE_AWAIT_CONFIGURATIONS
 from closure_deployment import KERNEL_CONFIGURATIONS as CLOSURE_CONFIGURATIONS
 
 from usb_closure_recovery_deployment import CONFIGURATIONS as USB_CLOSURE_RECOVERY_CONFIGURATIONS
+from package_companion_deployment import CONFIGURATIONS as USB_PACKAGE_RECOVERY_CONFIGURATIONS
 
 CAPACITY = 16352
 ARITHMETIC_DEVELOPMENT_CONFIGURATIONS=frozenset({
@@ -47,7 +48,7 @@ POWER_CONFIGURATIONS=frozenset(CLOSURE_CONFIGURATIONS) | frozenset(COURSE_CONFIG
                               'lemmasim-silicon-bulk-initialize',
                               'lemmasim-silicon-sums-arithmetic-oom-development'})|ARITHMETIC_DEVELOPMENT_CONFIGURATIONS
 USB_CONFIGURATIONS=frozenset({'lemmasim-silicon-usb-clocked-retry-bulk-notebook','lemmasim-silicon-usb-clocked-retry-bulk-initialize','lemmasim-silicon-usb-notebook','lemmasim-silicon-usb-initialize','lemmasim-silicon-usb-bulk-notebook','lemmasim-silicon-usb-bulk-initialize','lemmasim-silicon-usb-next-bulk-notebook','lemmasim-silicon-usb-next-bulk-initialize','lemmasim-silicon-usb-wire-bulk-notebook','lemmasim-silicon-usb-wire-bulk-initialize','lemmasim-silicon-usb-clocked-bulk-notebook','lemmasim-silicon-usb-clocked-bulk-initialize'})
-USB_CONFIGURATIONS |= frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS)
+USB_CONFIGURATIONS |= frozenset(USB_CLOSURE_RECOVERY_CONFIGURATIONS) | frozenset(USB_PACKAGE_RECOVERY_CONFIGURATIONS)
 PRODUCT_CONFIGURATIONS=frozenset({'lemmasim-silicon-product-notebook','lemmasim-silicon-product-bulk-notebook','lemmasim-silicon-product-executed-bulk-notebook','lemmasim-silicon-product-next-bulk-notebook'})
 ADMITTED_CONFIGURATIONS=frozenset({'lemmasim-bringup','lemmasim-notebook',
     'lemmasim-initialize','lemmasim-isolation-development','lemmasim-silicon-devices',

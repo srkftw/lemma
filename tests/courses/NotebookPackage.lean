@@ -209,6 +209,35 @@ def check : IO Unit := do
       pure 3712
     for (a,v) in #[(stateBase+72,1),(stateBase+80,1),(stateBase+752,12),
         (app+96,1),(context+128+56,4)] do set r a v
+    if compact then
+      let baseline ← r.get
+      let validate := notebookAction% "packageRecoverableValidateRecord"
+      let accepted ← run r (validate saved length (PackageWorkspace.object 1) 3)
+      expect (accepted == (0,0) && (← r.get).calls.isEmpty)
+        "joined retry rejected the actual full compact workspace"
+      let immutable := baseline.memory.extract (saved-0x10000).toNat (saved-0x10000+length).toNat
+      expect ((← r.get).memory.extract (saved-0x10000).toNat (saved-0x10000+length).toNat == immutable &&
+          (← r.get).memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat ==
+          baseline.memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat)
+        "retry validation changed its retained bytes or active workspace"
+      for (a,v) in #[(stateBase+752,11),(stateBase+536,1),(stateBase+72,2),
+          (stateBase+80,2),(saved,PackageWorkspace.magic),(saved+16,3704),
+          (saved+88,0x10000)] do
+        r.set baseline
+        set r a v
+        expect ((← run r (validate saved length (PackageWorkspace.object 1) 3)).1 != 0)
+          "foreign/active/corrupt/incomplete workspace acquired retry authority"
+      r.set baseline
+      expect ((← run r (validate saved (length-8) (PackageWorkspace.object 1) 3)).1 != 0)
+        "short compact object acquired retry authority"
+      r.set baseline
+      expect ((← run r (validate saved length 0x8001 3)).1 != 0)
+        "legacy Doc8 shape escaped its separate recovery family"
+      r.set baseline
+      r.modify fun m => {m with fault := some (0x33d000+3704)}
+      expect ((← run r (validate saved length (PackageWorkspace.object 1) 3)).1 == 17)
+        "full decoded workspace scratch fault was hidden"
+      r.set baseline
     r.modify fun m => {m with calls := #[],returns := #[(0,123)]}
     let opened ← run r (notebookAction% "pumpOpenPackageCourse")
     expect (opened == (0,0) && (← word r (app+96)) == 5 &&
