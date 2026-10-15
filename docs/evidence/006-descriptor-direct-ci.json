@@ -1,0 +1,88 @@
+{
+  "schema": "lemma-actual-candidate-ci/1",
+  "source_commit": "b137a35e845d6cbe214859a62d2c785ad428cfa9",
+  "run": {
+    "id": 38678923293,
+    "name": "Lemma pinned acceptance",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 98,
+    "jobs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38678923293/jobs",
+    "logs_url": "https://api.github.com/repos/srkftw/lemma/actions/runs/38678923293/logs",
+    "workflow_id": 378152075
+  },
+  "jobs": [
+    {
+      "id": 116238762473,
+      "name": "Foundation Gates 1-9 and clean qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762645,
+      "name": "Legacy Core0 RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 8
+    },
+    {
+      "id": 116238762688,
+      "name": "RTL device and digital power conformance with literal host stimuli",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 11
+    },
+    {
+      "id": 116238762708,
+      "name": "Task 003 source-negative RV64 qualification",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762762,
+      "name": "Task 003 Buffer service RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762780,
+      "name": "Task 003 architectural containment RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762786,
+      "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 10
+    },
+    {
+      "id": 116238762810,
+      "name": "Task 003 implemented Gates A-E RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762826,
+      "name": "Task 003 Gates F-I RV64 acceptance",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 9
+    },
+    {
+      "id": 116238762836,
+      "name": "Metadata and host-only suites",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": 17
+    }
+  ],
+  "skipped_steps": 0,
+  "scope": "This exact candidate only; subsequent b851850 and later source changes require their own CI."
+}

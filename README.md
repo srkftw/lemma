@@ -1191,3 +1191,28 @@ development bundles with ELF preload and a native build helper. Browser-local
 compilation, production authentication, full teacher/tutor permissions,
 proof-kernel closure, exact fast timing and physical signoff remain unfinished;
 the project-wide redistribution license is unresolved.
+
+The later fully audited descriptor direct-load guest pair is prepared as
+`build/native/task006-descriptor-direct-a1` and
+`build/browser/task006-descriptor-direct-a1`. The same launch commands above
+accept these bundle paths. Their exact reusable packaging commands are:
+
+```sh
+./scripts/lemmasim native-bundle-build --profile lemma-silicon-dev/0.3.0 \
+  --base-bundle build/native/task006-registry-borrow-a1 \
+  --notebook-build build/kernel/task006-descriptor-direct-notebook-a3 \
+  --initializer-build build/kernel/task006-descriptor-direct-initializer-a3 \
+  --guest-source-root build/courses/task006-descriptor-direct-whole-a3/consumed-source-root \
+  --output-dir build/AN_UNUSED_DIRECT_NATIVE_BUNDLE
+./scripts/lemmasim browser-build --profile lemma-silicon-dev/0.3.0 \
+  --reuse-wasm --wasm-build build/browser/task006-fsize-native-port-a2 \
+  --guest-bundle build/AN_UNUSED_DIRECT_NATIVE_BUNDLE \
+  --wasm-input-bundle build/AN_UNUSED_DIRECT_NATIVE_BUNDLE \
+  --output-dir build/AN_UNUSED_DIRECT_BROWSER_BUNDLE
+```
+
+Actual fast guest course/checking/learner/ink interactions and separate cold
+recovery are recorded in [the integrated receipt](docs/evidence/006-descriptor-direct-integrated.json).
+The original connected-run aggregate limit and Pending/Saved footer mismatch
+remain failures. This qualification does not establish a finished browser course
+workflow, pipeline timing parity or arbitrary checkpoint continuation.

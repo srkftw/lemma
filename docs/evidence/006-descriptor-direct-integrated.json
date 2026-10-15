@@ -1,0 +1,443 @@
+{
+  "schema": "lemma-descriptor-direct-integrated-observations/1",
+  "source_commit": "b851850050c45ef44260ba33671173532b1e8018",
+  "scope": "Fresh full audited guest pair; fast instruction-clock course/math/learner/raw-ink interactions; separate cold data and all actual original guest-framebuffer pixels. Original whole-case and course-plane pixel failures are retained. Exact RTL course, browser course and arbitrary checkpoint continuation remain open.",
+  "receipts": {
+    "build/courses/task006-descriptor-direct-whole-a3/result.json": {
+      "sha256": "9ae65658858390817cc98fb425380cba1dbcb6a55fb22ce2827c02f300189bc3",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR"
+    },
+    "build/courses/task006-descriptor-direct-whole-a3/source-seal.json": {
+      "sha256": "0504988575da3500b3b7116493b8575c2798211ccc0c589a0d75f58d55a0f87d",
+      "status": "PASS_SOURCE_SEAL"
+    },
+    "build/courses/task006-descriptor-direct-whole-supervision-a3/result.json": {
+      "sha256": "de9ad4b394b2a5743d853d2ee8b2464253373f52c92f267811dcd8895c4f2756",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "build/courses/task006-descriptor-direct-fast-a1/result.json": {
+      "sha256": "a2e1f53c623509d7198721060a45bf7c09059bf3ae9d704d03e71b047c20d474",
+      "status": "FAIL"
+    },
+    "build/courses/task006-descriptor-direct-fast-supervision-a1/result.json": {
+      "sha256": "f640d62ae186f97b0b43c9ad8eefe051ee776c4a4a98d457716b2f46d331680c",
+      "status": "FAIL"
+    },
+    "build/courses/task006-descriptor-direct-cold-a1/result.json": {
+      "sha256": "debb43167d3d4ef93df6a330db47c523de40aa7c276803dca3ab48b918100337",
+      "status": "FAIL"
+    },
+    "build/courses/task006-descriptor-direct-cold-supervision-a1/result.json": {
+      "sha256": "22fa632bb3f2ff566c404de7af2ee9140a5fb440e3030d5f26b4c52dc0eb5365",
+      "status": "FAIL"
+    },
+    "build/courses/task006-descriptor-direct-cold-a1/pixel-difference.json": {
+      "sha256": "d220f2d0d36ba6e9fdc23e3a37953ab5c49d04a48f891ad374418c82ce0e11f9",
+      "status": null
+    },
+    "build/courses/task006-descriptor-direct-fast-a1/cold-framebuffer-observation-a2.json": {
+      "sha256": "c3f37debac1bf16e0c4d4a48dd6945815ed6a9a913dae2673d7de1a5ffc9ccf2",
+      "status": "PASS_COLD_ALL_ACTUAL_GUEST_FRAMEBUFFER_PIXELS"
+    },
+    "build/ci/task006-I-correlation-fresh-a1/result.json": {
+      "sha256": "77f7fe91f8ce4e6c46db7128f7b2d952573824a2bb76df3e135e7bc6937d1bc1",
+      "status": "PASS_FRESH_COMPLETE_I_O2_O0"
+    }
+  },
+  "fresh_pair": {
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "source_count": 387,
+    "source_inventory_sha256": "749c2bb19d3dae3490dde5daa45752454beaa4a5c5da9e2f6d3efdc95b159716",
+    "wall_seconds": 670.7332675519865,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 212.07782045891508,
+        "audit_sha256": "5859f25fb6cdc34b20d682247fe907641c5e5eed2025c7123afc8c8b1bbeda16",
+        "audit_status": "PASS",
+        "build_seconds": 119.19253589899745,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-descriptor-direct-initializer-a3",
+        "image_bytes": 691984,
+        "image_sha256": "950d3a6e5780012bdb655de8e1796233442f0187b324ca4349f5d3d3c9d979cb",
+        "provenance_sha256": "fa80a14377c1d3cad84a0fcf71f77575cc2e066fa3cbbdc4a9b4b7efaf6da166"
+      },
+      "notebook": {
+        "audit_seconds": 208.23671333899256,
+        "audit_sha256": "2e4e5a1a68e1f2b83d1e11a47afca49b9e72835afcf9450b4dd93a4b3978e139",
+        "audit_status": "PASS",
+        "build_seconds": 131.01044335996266,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-descriptor-direct-notebook-a3",
+        "image_bytes": 691976,
+        "image_sha256": "2107b5c67a93e4c9845682de9c0f0a92d4ebb98649cd26547800db565a5e791b",
+        "provenance_sha256": "d6618a92b582c002e257a6feae11e18a6fb9ec1bf08de5942331dffa9de0bbb0"
+      }
+    },
+    "peak_owned_rss_bytes": 1926918144
+  },
+  "fast_interactions": {
+    "status": "FAIL",
+    "error": "ValueError('prospective fast bound in close-course-controller-work')",
+    "elapsed_seconds": 332.38988261308987,
+    "completed_phases": 39,
+    "original_aggregate": 3000000000,
+    "phases": [
+      {
+        "name": "new-instruction-clock-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 239000006,
+        "instruction_clock_cycles": 239000006,
+        "host_seconds": 24.595579668995924
+      },
+      {
+        "name": "COURSEactualpackage",
+        "initial_cycle": 239000006,
+        "final_cycle": 428000031,
+        "instruction_clock_cycles": 189000025,
+        "host_seconds": 29.506688255933113
+      },
+      {
+        "name": "actual-header-title",
+        "initial_cycle": 428000031,
+        "final_cycle": 492000041,
+        "instruction_clock_cycles": 64000010,
+        "host_seconds": 6.748490402009338
+      },
+      {
+        "name": "actual-header-source",
+        "initial_cycle": 492000041,
+        "final_cycle": 556000048,
+        "instruction_clock_cycles": 64000007,
+        "host_seconds": 6.635146329062991
+      },
+      {
+        "name": "actual-header-edition",
+        "initial_cycle": 556000048,
+        "final_cycle": 620000055,
+        "instruction_clock_cycles": 64000007,
+        "host_seconds": 5.86125397507567
+      },
+      {
+        "name": "actual-header-rights",
+        "initial_cycle": 620000055,
+        "final_cycle": 683000063,
+        "instruction_clock_cycles": 63000008,
+        "host_seconds": 6.9879367609974
+      },
+      {
+        "name": "actual-node-title",
+        "initial_cycle": 683000063,
+        "final_cycle": 747000071,
+        "instruction_clock_cycles": 64000008,
+        "host_seconds": 6.161815152969211
+      },
+      {
+        "name": "actual-node-body",
+        "initial_cycle": 747000071,
+        "final_cycle": 811000080,
+        "instruction_clock_cycles": 64000009,
+        "host_seconds": 6.721686116070487
+      },
+      {
+        "name": "node1",
+        "initial_cycle": 811000080,
+        "final_cycle": 875000086,
+        "instruction_clock_cycles": 64000006,
+        "host_seconds": 6.339577908976935
+      },
+      {
+        "name": "exercise2",
+        "initial_cycle": 875000086,
+        "final_cycle": 939000094,
+        "instruction_clock_cycles": 64000008,
+        "host_seconds": 6.7702264479594305
+      },
+      {
+        "name": "USEactualgoal",
+        "initial_cycle": 939000094,
+        "final_cycle": 1010000102,
+        "instruction_clock_cycles": 71000008,
+        "host_seconds": 6.875811384990811
+      },
+      {
+        "name": "numerator",
+        "initial_cycle": 1010000102,
+        "final_cycle": 1080000112,
+        "instruction_clock_cycles": 70000010,
+        "host_seconds": 7.360637021018192
+      },
+      {
+        "name": "numPLUS0",
+        "initial_cycle": 1080000112,
+        "final_cycle": 1149000120,
+        "instruction_clock_cycles": 69000008,
+        "host_seconds": 7.1722090219845995
+      },
+      {
+        "name": "numPLUS1",
+        "initial_cycle": 1149000120,
+        "final_cycle": 1219000131,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.794379372964613
+      },
+      {
+        "name": "numPLUS2",
+        "initial_cycle": 1219000131,
+        "final_cycle": 1289000142,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.421221785014495
+      },
+      {
+        "name": "numPLUS3",
+        "initial_cycle": 1289000142,
+        "final_cycle": 1358000153,
+        "instruction_clock_cycles": 69000011,
+        "host_seconds": 6.429094085935503
+      },
+      {
+        "name": "numPLUS4",
+        "initial_cycle": 1358000153,
+        "final_cycle": 1428000164,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.287683162954636
+      },
+      {
+        "name": "denominator",
+        "initial_cycle": 1428000164,
+        "final_cycle": 1498000174,
+        "instruction_clock_cycles": 70000010,
+        "host_seconds": 7.228115401929244
+      },
+      {
+        "name": "denPLUS0",
+        "initial_cycle": 1498000174,
+        "final_cycle": 1568000184,
+        "instruction_clock_cycles": 70000010,
+        "host_seconds": 6.83472664700821
+      },
+      {
+        "name": "denPLUS1",
+        "initial_cycle": 1568000184,
+        "final_cycle": 1637000195,
+        "instruction_clock_cycles": 69000011,
+        "host_seconds": 6.949776098015718
+      },
+      {
+        "name": "denPLUS2",
+        "initial_cycle": 1637000195,
+        "final_cycle": 1707000206,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.285106225986965
+      },
+      {
+        "name": "denPLUS3",
+        "initial_cycle": 1707000206,
+        "final_cycle": 1776000217,
+        "instruction_clock_cycles": 69000011,
+        "host_seconds": 5.806333202053793
+      },
+      {
+        "name": "denPLUS4",
+        "initial_cycle": 1776000217,
+        "final_cycle": 1846000227,
+        "instruction_clock_cycles": 70000010,
+        "host_seconds": 7.375673993956298
+      },
+      {
+        "name": "actual-Verified",
+        "initial_cycle": 1846000227,
+        "final_cycle": 1916000239,
+        "instruction_clock_cycles": 70000012,
+        "host_seconds": 7.337537611019798
+      },
+      {
+        "name": "edit5over7",
+        "initial_cycle": 1916000239,
+        "final_cycle": 1986000248,
+        "instruction_clock_cycles": 70000009,
+        "host_seconds": 6.495738934027031
+      },
+      {
+        "name": "actual-Invalid",
+        "initial_cycle": 1986000248,
+        "final_cycle": 2055000259,
+        "instruction_clock_cycles": 69000011,
+        "host_seconds": 6.860986421001144
+      },
+      {
+        "name": "authored-local-hint",
+        "initial_cycle": 2055000259,
+        "final_cycle": 2126000267,
+        "instruction_clock_cycles": 71000008,
+        "host_seconds": 7.30591563298367
+      },
+      {
+        "name": "review-mode0",
+        "initial_cycle": 2126000267,
+        "final_cycle": 2195000278,
+        "instruction_clock_cycles": 69000011,
+        "host_seconds": 6.428708402090706
+      },
+      {
+        "name": "review-mode1",
+        "initial_cycle": 2195000278,
+        "final_cycle": 2265000289,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.211647144984454
+      },
+      {
+        "name": "review-mode2",
+        "initial_cycle": 2265000289,
+        "final_cycle": 2335000300,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.264150234987028
+      },
+      {
+        "name": "review-mode3",
+        "initial_cycle": 2335000300,
+        "final_cycle": 2405000310,
+        "instruction_clock_cycles": 70000010,
+        "host_seconds": 7.757697300054133
+      },
+      {
+        "name": "review-mode4",
+        "initial_cycle": 2405000310,
+        "final_cycle": 2475000321,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 6.807461468037218
+      },
+      {
+        "name": "NEXT-to-Unsupported0",
+        "initial_cycle": 2475000321,
+        "final_cycle": 2543000328,
+        "instruction_clock_cycles": 68000007,
+        "host_seconds": 5.551568683004007
+      },
+      {
+        "name": "NEXT-to-Unsupported1",
+        "initial_cycle": 2543000328,
+        "final_cycle": 2611000339,
+        "instruction_clock_cycles": 68000011,
+        "host_seconds": 7.024907823069952
+      },
+      {
+        "name": "actual-Unsupported",
+        "initial_cycle": 2611000339,
+        "final_cycle": 2679000350,
+        "instruction_clock_cycles": 68000011,
+        "host_seconds": 7.177894440013915
+      },
+      {
+        "name": "NEXT-back-to-rational",
+        "initial_cycle": 2679000350,
+        "final_cycle": 2749000361,
+        "instruction_clock_cycles": 70000011,
+        "host_seconds": 7.166007486986928
+      },
+      {
+        "name": "resource-limit-zero",
+        "initial_cycle": 2749000361,
+        "final_cycle": 2817000372,
+        "instruction_clock_cycles": 68000011,
+        "host_seconds": 6.537377619999461
+      },
+      {
+        "name": "actual-Indeterminate",
+        "initial_cycle": 2817000372,
+        "final_cycle": 2885000383,
+        "instruction_clock_cycles": 68000011,
+        "host_seconds": 7.393874958972447
+      },
+      {
+        "name": "actual-raw-ink-Saved",
+        "initial_cycle": 2885000383,
+        "final_cycle": 2929000389,
+        "instruction_clock_cycles": 44000006,
+        "host_seconds": 3.869113188004121
+      }
+    ],
+    "original_fast100M_view": {
+      "status": "FAIL_ORIGINAL100M",
+      "cycle": 339000019,
+      "scope": "separate original diagnostic; functional continuation prospectively bounded before launch"
+    }
+  },
+  "independent_cold": {
+    "status": "FAIL",
+    "error": "ValueError('complete actual reopened controller pixels differ from original acknowledged view')",
+    "phases": [
+      {
+        "name": "new-CPU-cold-Ready",
+        "initial_cycle": 0,
+        "final_cycle": 314000005,
+        "instruction_clock_cycles": 314000005,
+        "host_seconds": 29.101621325011365
+      },
+      {
+        "name": "cold-open-body",
+        "initial_cycle": 314000005,
+        "final_cycle": 507000031,
+        "instruction_clock_cycles": 193000026,
+        "host_seconds": 23.03859641298186
+      },
+      {
+        "name": "reopen-worked-body",
+        "initial_cycle": 507000031,
+        "final_cycle": 571000038,
+        "instruction_clock_cycles": 64000007,
+        "host_seconds": 5.994081350043416
+      },
+      {
+        "name": "reopen-exercise-body",
+        "initial_cycle": 571000038,
+        "final_cycle": 635000047,
+        "instruction_clock_cycles": 64000009,
+        "host_seconds": 6.633897074032575
+      }
+    ],
+    "cold_medium_all_bytes_exact": true,
+    "all_acknowledged_objects_exact": true,
+    "all_medium_bytes_exact": true,
+    "no_new_math_request": true,
+    "all_controller_pixels_exact": false
+  },
+  "independent_framebuffer_observation": {
+    "status": "PASS_COLD_ALL_ACTUAL_GUEST_FRAMEBUFFER_PIXELS",
+    "scope": "read-only actual original guest framebuffer through fully owned Sv39 leaves vs all actual independentcold Ready controller pixels; no CPU rerun, restoration, host ink construction, pixel mask or tolerance",
+    "source_checkpoint_sha256": "796dcc81d82301151cd025b5739ae271de4bb446024262380f35480d2f099c68",
+    "original_whole_case": "FAIL3B aggregate atClose retained",
+    "original_course_reopen_comparison": "FAIL522 physical Pending vs Saved footer pixels retained",
+    "source_global_state": {
+      "104": 0,
+      "112": 0,
+      "136": 0,
+      "144": 0,
+      "160": 0,
+      "336": 0,
+      "344": 128,
+      "352": 384,
+      "360": 160,
+      "432": 0,
+      "456": 0,
+      "464": 0,
+      "472": 0,
+      "480": 0,
+      "512": 0,
+      "536": 0,
+      "752": 12
+    },
+    "source_framebuffer_pages": 444,
+    "packed_guest_framebuffer_sha256": "7b9ac2dd36976c9f4e5a32122db5c07abcc1c680c6201417c069e348845cd92c",
+    "actual_cold_controller_sha256": "73a229dcaa76fa18cf6643f1c8e48fbe5fa0af01b96aabc9037411e835adb760",
+    "all_pixels_exact": true
+  },
+  "not_claimed": [
+    "QEMU pipeline/cache/bus timing parity",
+    "full connected aggregate-case pass",
+    "original Pending-versus-Saved522-pixel comparison pass",
+    "snapshot restore or arbitrary cached-state continuation",
+    "physical qualification"
+  ]
+}

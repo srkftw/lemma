@@ -141,3 +141,16 @@ retains all exact values and per-transaction order, with fresh full qualificatio
 pending. These advance processor/memory tooling and packaging evidence only;
 G2/G4-G7 installed-course workflow and the separate parity/distribution/physical
 obligations remain open.
+
+The direct-load pair now passes fresh full audits and has prepared native/static
+bundles. Actual fast guest execution connects course text, exact checking,
+revision-bound history, hints/assistance, review controls and acknowledged raw
+ink. Its original3B aggregate still fails during Close. Independent cold boot
+recovers every acknowledged byte/object and every pixel of the actual original
+guest framebuffer; the original Pending-versus-Saved footer comparison remains
+a separate failure. Registry-only RTL coldReady improves978M to847M target
+clocks on the same medium. Complete connected RTL/browser course acceptance,
+general managed/proof runtime, tutor transport and the separate parity,
+distribution and physical obligations remain open. Exact b137 CI passes10/10
+without skips; later source needs its own candidate. See the existing checkpoint
+and006-descriptor-direct-integrated evidence for identities and limitations.

@@ -1796,3 +1796,49 @@ kernel host tests pass9.893s. Shared count admission also independently binds
 the full validator body. A fresh source-held whole a3 follows this audit repair.
 Current b137 CI38678923293 was in progress at the latest observation; PR9's body
 now retains original400M/100M failures and552 FAILURE9/10 rather than stale status.
+
+The exact b137 candidate CI38678923293 is now terminal SUCCESS10/10 with no
+skipped steps. Fresh complete I O2/O0 also passed172.891s. These qualify b137,
+not later source. The subsequent b851 direct-load pair a3 passes both ordinary
+whole builds/full audits in670.733s (676.086s supervised),387 sealed inputs,
+peak1926918144B RSS, no survivors. Initializer950d3a6e/notebook2107b5c6 are
+prepared in build/native/task006-descriptor-direct-a1 and
+build/browser/task006-descriptor-direct-a1, preserving the qualified RTL8e5ce4ee,
+fast188e5447 and portablefb15aade cores. Earlier a1/a2 producer failures remain.
+
+New direct-load fast execution completed39 actual phases: installed-course
+body and four header anchors, worked material/exercise selection, ordinary
+Protocol7 Verified5/6, edited Invalid5/7, Unsupported and budget0 Indeterminate,
+authored local hint/assistance, explainable uncertain review/overrides and six
+raw ink samples with actual durable root/page/chunk. Ready239000006/24.596s;
+original100M course view stillFAILs, actual body completes+189000025/29.507s
+under its separately predeclared functional400M cap. The whole fast case FAILs
+at its original3B aggregate during Close; its cap was not enlarged. The actual
+Doc8 revision17 retains four checker outcomes, Verified revision12 history,
+14 learner events and package/source/edition/rights bindings. No whole-case
+PASS, tutor-model or proof-kernel closure is inferred.
+
+A separate newCPU cold case reaches Ready314000005/29.102s and reopens body
+and worked/exercise nodes. All256MiB backing bytes and every acknowledged
+opaque package/math/learner/ink object match; no new checker request occurs.
+Its original full course-plane comparison FAILs522 footer pixels: source was
+still Pending, cold Saved. Retain that failure. Read-only decoding of the
+original3B observational cut independently verifies current owned Sv39 leaves
+and the exact archived Surface framebuffer address0x110000. All444 owned RW/NX
+framebuffer pages yield precisely every coldReady controller pixel. No CPU
+rerun, restore, mask, fence, drain or image substitution is used. This qualifies
+complete original guest-authored closed ink display recovery while preserving
+both original failures. A rejected first observer used the wrong RX address;
+its permission guard failed before pixels were interpreted. Receipts and
+limits: docs/evidence/006-descriptor-direct-integrated.json and
+006-descriptor-direct-ci.json. Reusable qualification drivers for this longer
+course scenario are still local ignored drafts; publication remains open.
+
+The concurrent registry-only canonical machine now observes actual coldReady
+847M/445578222 retired/3226.663s, edition3 installation72M/249.177s and immutable
+duplicate11M/37.914s. Against the same original Layout2 medium Ready978M, this
+is13.4% fewer target clocks. Host durations have different concurrency. Its
+original400M course actor remains frozen and running; its stale first-title
+expectation must be retained and independently corrected against default body,
+without altering that live actor. Browser tab25/8794 remains running under its
+original1B/7200s cold bounds. No installed-course RTL/browser pass is inferred.
