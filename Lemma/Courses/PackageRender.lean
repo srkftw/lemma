@@ -157,6 +157,13 @@ namespace Lemma.Courses.PackageRender
 open Lemma.Core0.Memory
 open Lemma.Courses.PackageFormat
 
+/-- Pure presentation shortcut: blank glyphs and the five inter-line rows
+have exactly the same sixteen white pixels as panelWord. No memory or cache
+state is consulted, and nonblank words retain the original font operation. -/
+def sparsePanelWord (x y first second : UInt64) : UInt64 :=
+  if 15 ≤ y % 20 then 0xffffffffffffffff else
+  if first ||| second = 0 then 0xffffffffffffffff else panelWord x y first second
+
 private def readByteStep (i _ : UInt32) (acc address _ _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.read8 (address + i.toUInt64)) fun s byte =>
   if s = 0 then .done 0 (acc ||| (byte <<< (i.toUInt64 * 8))) else .done s 0
@@ -172,7 +179,7 @@ private def deltaStep (i _ : UInt32) (acc cache width _ _ : UInt64) : Action :=
   .bind (Lemma.User.Memory.read64 (cache + cell * 8)) fun s first => if s = 0 then
   .bind (if x / 12 + 1 < columns then Lemma.User.Memory.read64 (cache + (cell + 1) * 8)
     else .done 0 0) fun s second => if s = 0 then
-  let word := panelWord x y first second
+  let word := sparsePanelWord x y first second
   let target := Lemma.Ink.Surface.framebuffer + (320 + y) * ((width + 1) / 2) + 12 + x / 2
   .bind (readWord target) fun s previous => if s = 0 then
   if previous = word then .done 0 acc else

@@ -2723,11 +2723,17 @@ private def adoptPackageWorkspace : Action :=
   if copied = Lemma.Documents.Mathematics.currentBytes then
   Memory.write64 packageWorkspace Lemma.Courses.PackageWorkspace.magic else .done 240 0
 
+private def renderPackageCourse : Action :=
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (Lemma.Courses.Arithmetic.renderSparse mathematics width) fun s _ => if statusFailed s = true then .done s 0 else
+  .boundedFoldU64 65 courseTileStep 65 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  dirty 0 160 416 320
+
 private def publishPackageWorkspace : Action :=
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   if pending = 0 then
   .bind adoptPackageWorkspace fun s _ => if statusFailed s = true then .done s 0 else
-  .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 144 1) fun s _ => if statusFailed s = true then .done s 0 else savePackageWorkspace
   else .done 231 0
@@ -2914,7 +2920,7 @@ private def finishOpenPackageCourse (migration : UInt64) : Action :=
   .bind (packagePut 120 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 96 4) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 512 1) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind renderCourse fun s _ => if statusFailed s = true then .done s 0 else
+  .bind renderPackageCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind reportCourse fun s _ => if statusFailed s = true then .done s 0 else
   .bind (if migration = 1 then savePackageWorkspace else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Memory.read64 (packageWorkspace + 48)) fun s mask => if statusFailed s = true then .done s 0 else
@@ -3116,7 +3122,7 @@ private def packageControlStep (i _ : UInt32) (acc width requested shown positio
   let first := Lemma.Courses.PackageRender.glyph (packageControlCharacter (y / 20) column requested shown position)
   let second : UInt64 := if column < 31 then
     Lemma.Courses.PackageRender.glyph (packageControlCharacter (y / 20) (column + 1) requested shown position) else 0
-  let value := Lemma.Courses.PackageRender.panelWord x y first second
+  let value := Lemma.Courses.PackageRender.sparsePanelWord x y first second
   let target := Surface.framebuffer + (640 + y) * ((width + 1) / 2) + 12 + x / 2
   if target % 8 = 0 then .bind (Memory.write64 target value) fun s _ => .done s acc else
   .boundedFoldU64 8 packageControlByte 8 acc target value 0 0 fun s value => .done s value
@@ -3146,7 +3152,7 @@ private def packageIdentityStep (i _ : UInt32) (acc width revision context _ : U
   let first := Lemma.Courses.PackageRender.glyph (packageIdentityCharacter column revision context)
   let second : UInt64 := if column < 31 then
     Lemma.Courses.PackageRender.glyph (packageIdentityCharacter (column + 1) revision context) else 0
-  let word := Lemma.Courses.PackageRender.panelWord x y first second
+  let word := Lemma.Courses.PackageRender.sparsePanelWord x y first second
   let address := Surface.framebuffer + (740 + y) * ((width + 1) / 2) + 12 + x / 2
   if address % 8 = 0 then .bind (Memory.write64 address word) fun s _ => .done s acc else
   .boundedFoldU64 8 packageControlByte 8 acc address word 0 0 fun s value => .done s value

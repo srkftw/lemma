@@ -140,7 +140,11 @@
     "build/courses/task006-package-delta-component-a1/render-host-a3.log": "183a383769997feedb7c907c3fdf810f595363f59dfbe371ce6384cbb8acb42d",
     "build/courses/task006-package-delta-component-a1/kernel-host.log": "e380ebb780095da6ddf055247a65bf1a065d133f54cb4a013185338b379984d2",
     "build/courses/task006-package-delta-component-a1/foundation-host.log": "f2a5cf367d43e90e71204122a759cfed74b423ab59f95b5d54bc68238a1cbf90",
-    "build/courses/task006-package-delta-component-a1/surface-cohort-qualification.json": "672741fe257efb2570dec31b39b9591c6e0945f14ff81adc2347e64f9623d9a5"
+    "build/courses/task006-package-delta-component-a1/surface-cohort-qualification.json": "672741fe257efb2570dec31b39b9591c6e0945f14ff81adc2347e64f9623d9a5",
+    "build/courses/task006-package-delta-whole-a3/result.json": "c74bd1daf60c2f88553734c0c0dbdef3976c15334c18f0ac3a7d46f757e34a77",
+    "build/courses/task006-package-delta-whole-supervision-a3/result.json": "62b62912977af765240b505d35225d6be15c310e13d60d581f9aa0cd970149f1",
+    "build/courses/task006-package-delta-fast-a1/result.json": "68074c6788c0456189f64b6ee83039bfed02b775da69b6981ceb6b517100a131",
+    "build/courses/task006-package-delta-whole-a2/result.json": "c582d53345c0d08e0f1920037e67046c968d8306f2d70b727008071eccd98867"
   },
   "original_failures": [
     "build/courses/task006-descriptor-direct-integration-a1/delta-host-a1.log: fixture syntax error before execution",
@@ -151,7 +155,7 @@
   "language_runtime_extension": false,
   "pixel_cache": false,
   "target_speedup": "NOT_MEASURED",
-  "ordinary_full_audits": "Original attemptFAILon old Surface cohort label; exact unchanged Surface/boot bodies independently qualified; fresh complete retry required",
+  "ordinary_full_audits": "PASS_FRESH_WHOLE_PAIR",
   "original_whole_attempt": {
     "status": "FAIL",
     "error": "Core0Error('Surface-v2 Package source cohort is unknown')",
@@ -215,5 +219,68 @@
         "reason": "Surface-v2 ownership/copy/geometry/PIO/packet/root authority differs: Lemma.Ink.Surface.bulkCopyWord"
       }
     ]
-  }
+  },
+  "whole_pair": {
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "source_commit": "06b2fa9de1390f05fa172bf2709f888cbff1c109",
+    "source_count": 387,
+    "source_inventory_sha256": "746544bd53e14477cc14c667879bb6c9cc70a6ffb75b29ef3e5ca2ab790aecf5",
+    "wall_seconds": 565.2537785619497,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 185.02077564108185,
+        "audit_sha256": "489eb4566b35b6f434f5e85d010442cd8c351fc3a5eddedbdb77449ab3c9223f",
+        "audit_status": "PASS",
+        "build_seconds": 106.97130958002526,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-delta-initializer-a3",
+        "image_bytes": 692728,
+        "image_sha256": "5ac30a45864f655ed4107ec1628ef4a84a1be412c8817cc4a13f355d1503b063",
+        "provenance_sha256": "8b7ede0452d6390299c885ca9010f57e8499394e60fbb94854afd059a81fa240"
+      },
+      "notebook": {
+        "audit_seconds": 168.84228337206878,
+        "audit_sha256": "edf6a70f45dcde4129de5efa810d7b076396157e6fecd458398306c0eebb1dce",
+        "audit_status": "PASS",
+        "build_seconds": 104.27847836702131,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-delta-notebook-a3",
+        "image_bytes": 692720,
+        "image_sha256": "6bdab3070114df4f70d2a3050398f4dd821c5761c0db96b04592c36219d5e8a5",
+        "provenance_sha256": "71e384fb86177776cc3badbd599863974e164bd4f886ece6b6d73490ca66ba73"
+      }
+    }
+  },
+  "whole_supervision": {
+    "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+    "seconds": 569.6241520129843,
+    "peak_owned_rss_bytes": 1935314944,
+    "cleanup": {
+      "reason": "normal orphan reap",
+      "killed": [],
+      "survivors": {}
+    }
+  },
+  "fast_connected": {
+    "status": "FAIL",
+    "error": "ValueError('prospective fast bound in close-course-controller-work')",
+    "completed_phases": 39,
+    "last_complete": {
+      "name": "actual-raw-ink-Saved",
+      "initial_cycle": 2762000356,
+      "final_cycle": 2805000362,
+      "instruction_clock_cycles": 43000006,
+      "host_seconds": 3.22377762501128
+    },
+    "original_aggregate_cycles": 3000000000,
+    "elapsed_seconds": 248.47212243895046,
+    "comparison": "same39 phases through ink2.929B->2.805B instruction-clock units; original3B Close cap stillFAIL; first open189M->191M; title/source/edition/rights views64/64/64/63M->49/47/46/49M. Host durations have different concurrency."
+  },
+  "prepared_bundles": {
+    "native": "build/native/task006-package-delta-a1",
+    "browser": "build/browser/task006-package-delta-a1"
+  },
+  "original_whole_a2": "FAIL before compilation: unused-output guard rejected old dynamic initializer-a1 suffix; source seal passed/no survivors; a3 uses exact predeclared outputs map"
 }

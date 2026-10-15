@@ -154,3 +154,15 @@ general managed/proof runtime, tutor transport and the separate parity,
 distribution and physical obligations remain open. Exact b137 CI passes10/10
 without skips; later source needs its own candidate. See the existing checkpoint
 and006-descriptor-direct-integrated evidence for identities and limitations.
+
+Software3 text-delta now has a fresh full audited pair and prepared native/static
+bundles. Its same39 fast course/math/learner/ink phases use2.805B versus2.929B
+instruction-clock units; original3B Close failure remains. Original-bound RTL
+software3 execution is running. Registry-only browser coldReady846.10M matches
+all35 native I/O boundaries, all backing bytes and every controller pixel. The
+original native400M course failure remains substantive: its package is fully
+read/validated but rendering is unfinished. Software4 pure white-word computation
+now qualifies across text/controls/mathematics with exact pixels and ordered
+memory effects; fresh whole artifacts and performance remain required. This
+advances the existing guest/product lane while all wider G2/G4–G7, exact timing/
+checkpoint, distribution and physical obligations keep their separate status.

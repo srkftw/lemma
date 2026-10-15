@@ -182,6 +182,16 @@ def check : IO Unit := do
     let observed ← run r (tile i.toUInt32 130 0 1650 0 0 0)
     expect (observed.1 == 0) "empty delta projection failed"
   expect ((← r.get).memory == before) "empty delta dirtied pixels or changed the pending queue"
+  r.set ({} : Model)
+  let created ← run r (Lemma.Documents.MathematicsClosure.create doc 1 1)
+  expect (created.1 == 0) "sparse presentation Doc8 setup failed"
+  let old ← IO.mkRef (← r.get)
+  let oldResult ← run old (Lemma.Courses.Arithmetic.render doc 1650)
+  let newResult ← run r (Lemma.Courses.Arithmetic.renderSparse doc 1650)
+  expect (oldResult == newResult && newResult.1 == 0 &&
+      (← old.get).memory == (← r.get).memory && (← old.get).reads == (← r.get).reads &&
+      (← old.get).writes == (← r.get).writes && (← r.get).calls.isEmpty)
+    "sparse math presentation changed actual framebuffer bytes or ordered memory effects"
   IO.println "NOTEBOOK_PACKAGE_ACTIONS:PASS actual private EOF/framing/sequence/wait/fault/cancel/partial-allocation/checker guards; no CPU or durability claim"
 end NotebookPackageTests
 

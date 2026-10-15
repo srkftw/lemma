@@ -84,5 +84,67 @@
     }
   ],
   "skipped_steps": 0,
-  "scope": "This exact candidate only; subsequent b851850 and later source changes require their own CI."
+  "scope": "This exact candidate only; subsequent b851850 and later source changes require their own CI.",
+  "subsequent_actual_candidates": [
+    {
+      "source_commit": "85209b1fb6f7b74243a2b12f18037f6891921400",
+      "run_id": 38683626728,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "id": 116253433472,
+          "name": "Foundation Gates 1-9 and clean qualification",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433618,
+          "name": "Metadata and host-only suites",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433632,
+          "name": "Task 003 implemented Gates A-E RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433727,
+          "name": "Task 003 Buffer service RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433741,
+          "name": "RTL device and digital power conformance with literal host stimuli",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433745,
+          "name": "Legacy Core0 RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433770,
+          "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433791,
+          "name": "Task 003 architectural containment RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433810,
+          "name": "Task 003 Gates F-I RV64 acceptance",
+          "conclusion": "success"
+        },
+        {
+          "id": 116253433852,
+          "name": "Task 003 source-negative RV64 qualification",
+          "conclusion": "success"
+        }
+      ],
+      "skipped_steps": 0,
+      "scope": "This candidate PR run only. Later software3/4 changes require a fresh candidate."
+    }
+  ]
 }

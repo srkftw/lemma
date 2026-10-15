@@ -1,5 +1,6 @@
 import Lemma.Courses.Review
 import Lemma.Ink.Surface
+import Lemma.Courses.PackageRender
 
 /-! Original offline arithmetic sequence, package `lemma-course-arithmetic/1`.
 Source/edition anchor is this maintained module; all prose and exercises are
@@ -185,6 +186,43 @@ def render (buffer width : UInt64) : Action :=
   .bind (Mathematics.field buffer 144) fun s attempts => if bad s = true then .done s 0 else
   .bind (Review.summary buffer) fun s review => if bad s = true then .done s 0 else
   .boundedFoldU64 3840 renderStep 3840 0 width goal
+    (n ||| (d <<< 7) ||| (p0 <<< 14) ||| (p1 <<< 21) ||| (p2 <<< 28))
+    (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
+
+/-- Additive pure word renderer for the installed-package successor. Historical
+render/panelWord retain their own definitions. Blank rows/glyph pairs have the
+same exact pixels, with no document, memory or authority checks removed. -/
+def panelWordSparse (x y goal values displayState : UInt64) : UInt64 :=
+  if x ≤ 368 then if x % 16 = 0 then if y < 160 then
+  if 15 ≤ y % 20 then 0xffffffffffffffff else
+  let first := Lemma.Ink.Surface.letter (panelCharacter (y / 20) (x / 12) goal values displayState)
+  let second := Lemma.Ink.Surface.letter (panelCharacter (y / 20) (x / 12 + 1) goal values displayState)
+  Lemma.Courses.PackageRender.sparsePanelWord x y first second
+  else 0xffffffffffffffff else 0xffffffffffffffff else 0xffffffffffffffff
+
+private def renderSparseStep (i _ : UInt32) (acc width goal values displayState : UInt64) : Action :=
+  let x := (i.toUInt64 % 24) * 16
+  let y := i.toUInt64 / 24
+  let word := panelWordSparse x y goal values displayState
+  let address := Lemma.Ink.Surface.framebuffer + (160 + y) * ((width + 1) / 2) + 12 + x / 2
+  if address &&& 7 = 0 then
+    .bind (Memory.write64 address word) fun s _ => .done s acc
+  else
+    .boundedFoldU64 8 renderByteStep 8 acc address word 0 0 fun s value => .done s value
+
+def renderSparse (buffer width : UInt64) : Action :=
+  .bind (Mathematics.field buffer 48) fun s goal => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 56) fun s n => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 64) fun s d => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 72) fun s p0 => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 80) fun s p1 => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 88) fun s p2 => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 96) fun s outcome => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 152) fun s hints => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 40) fun s revision => if bad s = true then .done s 0 else
+  .bind (Mathematics.field buffer 144) fun s attempts => if bad s = true then .done s 0 else
+  .bind (Review.summary buffer) fun s review => if bad s = true then .done s 0 else
+  .boundedFoldU64 3840 renderSparseStep 3840 0 width goal
     (n ||| (d <<< 7) ||| (p0 <<< 14) ||| (p1 <<< 21) ||| (p2 <<< 28))
     (outcome ||| (hints <<< 3) ||| ((revision % 100) <<< 9) ||| (attempts <<< 16) ||| (review <<< 24)) fun s _ => .done s 0
 

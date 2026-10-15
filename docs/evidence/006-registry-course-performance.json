@@ -1,0 +1,204 @@
+{
+  "schema": "lemma-registry-course-performance/1",
+  "scope": "Source552 registry-count guest717 actual canonical native/browser; original failed course remains failed. No cached-state, browser-course or physical closure.",
+  "native": {
+    "original_status": "FAIL",
+    "error": "ValueError('prospective phase/aggregate resourcebound exceeded in COURSEreadCRCexactEOFandactualtitle')",
+    "phases": [
+      {
+        "name": "canonicalcoldReady",
+        "initial_cycle": 0,
+        "final_cycle": 847000000,
+        "clocks": 847000000,
+        "retired": 445578222,
+        "host_seconds": 3226.6626539420104
+      },
+      {
+        "name": "guestpublicationedition3",
+        "initial_cycle": 847000000,
+        "final_cycle": 919000000,
+        "clocks": 72000000,
+        "retired": 38718100,
+        "host_seconds": 249.17741210001986
+      },
+      {
+        "name": "immutableduplicateedition3",
+        "initial_cycle": 919000000,
+        "final_cycle": 930000000,
+        "clocks": 11000000,
+        "retired": 5911170,
+        "host_seconds": 37.91416099993512
+      }
+    ],
+    "actor_seconds": 5145.682678757003,
+    "supervision_seconds": 5149.881870227051,
+    "peak_owned_rss_bytes": 249864192,
+    "owned_children_reaped": true,
+    "retained_cut": {
+      "status": "PASS_READ_ONLY_RETAINED_CUT_OBSERVATION",
+      "scope": "Read-only original native400M course cut; no CPU/restore/drain/fence.",
+      "original_status": "FAIL",
+      "original_error": "ValueError('prospective phase/aggregate resourcebound exceeded in COURSEreadCRCexactEOFandactualtitle')",
+      "cycle": 1330000000,
+      "checkpoint_sha256": "2aae818a1192f353b519a4c42b4b69723e25d48d410a176c89d82390fdbd603b",
+      "layout_sources": {
+        "Lemma/Kernel/Memory/Frames.lean": "34feeb9fe4982c364204a205a9f5f4033b4e4f1b8b29c729db019eaff3ec89bb",
+        "Lemma/Kernel/Memory/AddressSpace.lean": "142dc1b40c484500d4ec10e034522977c8b4d5f91dbf091439132ffb69b25612",
+        "Lemma/Platform/LemmaVM/Layout.lean": "75c8daa998344f1f49652539a833781faf180586797db804b51a6ba79460d903"
+      },
+      "reader": {
+        "0": 98,
+        "8": 3392000,
+        "16": 3391744,
+        "24": 1,
+        "32": 1,
+        "40": 1,
+        "48": 3350528,
+        "56": 32768,
+        "64": 44,
+        "72": 3,
+        "80": 0,
+        "88": 4040,
+        "96": 4040,
+        "104": 0,
+        "112": 76,
+        "120": 0
+      },
+      "package_state": {
+        "0": 4040,
+        "8": 0,
+        "16": 1,
+        "24": 0,
+        "32": 2,
+        "40": 412641710,
+        "48": 1,
+        "56": 1,
+        "64": 0,
+        "72": 1,
+        "80": 0,
+        "88": 0,
+        "96": 4,
+        "104": 0,
+        "112": 0,
+        "120": 1,
+        "128": 1,
+        "136": 1,
+        "144": 1,
+        "152": 0,
+        "160": 0,
+        "168": 0,
+        "176": 0
+      },
+      "global_state": {
+        "104": 0,
+        "112": 0,
+        "136": 0,
+        "144": 0,
+        "160": 0,
+        "336": 65535,
+        "344": 65535,
+        "352": 0,
+        "360": 0,
+        "432": 0,
+        "456": 0,
+        "464": 153,
+        "472": 153,
+        "480": 0,
+        "512": 1,
+        "536": 0,
+        "752": 12
+      },
+      "mapped_package_pages": [
+        "0x332000",
+        "0x333000",
+        "0x334000",
+        "0x335000",
+        "0x336000",
+        "0x337000",
+        "0x338000",
+        "0x339000",
+        "0x33a000",
+        "0x33b000",
+        "0x33c000",
+        "0x33d000"
+      ],
+      "actual_controller_body": false,
+      "actual_controller_title": false
+    }
+  },
+  "browser": {
+    "status": "PASS_COLD_OUTPUT_RELATION",
+    "scope": "Original browser cold output vs retained actual native I/O/pixels; no machine execution.",
+    "bounds": {
+      "observer_seconds": 120,
+      "address_space_bytes": 4294967296
+    },
+    "ready": {
+      "cycle": 846100000,
+      "heap_bytes": 201326592,
+      "host_seconds_since_open": 5639.7,
+      "simulation_call_seconds": 5532.2,
+      "backing_call_seconds_during_run": "public status rounds to0.0s"
+    },
+    "source_of_host_measurements": "Actual public Developer inspection DOM at paused Ready; source plan retains the original Open-paused launch. Elapsed includes pre-run pause, not a native host-speed comparison.",
+    "plan_sha256": "b155a5ab4a23f57a2a20a6a65df9cd4c7f3a6cc8e0dbb9cb57a1a66255d026be",
+    "portable_identity": "fb15aade4646d035457f5b5e07663ce8235c72bcb4dff3823f2d10c3c165a1c3",
+    "actual_guest": "71742788105bff0eb7801eba081b0c19f77fb38c235a8990b39162641a405462",
+    "checkpoint": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/browser/task006-registry-borrow-cold-a1/ready.chk",
+      "sha256": "8bb4457f44288555799c44f750c294b1c0101af2c0249415e0449fdcce23c6c5"
+    },
+    "source_medium": {
+      "path": "build/courses/task006-course-ipc-guest-a1/durable.raw",
+      "sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829"
+    },
+    "exact_external_outcomes": 35,
+    "native_write_request_ids": [
+      24,
+      25,
+      26,
+      28,
+      30,
+      31,
+      32,
+      34
+    ],
+    "native_barrier_request_ids": [
+      27,
+      29,
+      33,
+      35
+    ],
+    "observed_medium_sha256": "c81f3783c9ac7f49cf91121cf9ea46ac1961986498a8eb05eb3723b76167b5e7",
+    "full_medium_bytes_exact": true,
+    "all_controller_pixels_exact": true,
+    "acknowledged_sequence": 4,
+    "acknowledged_objects": 4,
+    "no_snapshot_restore_for_cold": true,
+    "no_host_document_policy": true,
+    "course_workflow": "NOT_PASSED: separately retained native400M open failure; no browser course input admitted",
+    "observer_sha256": "e49e73c73e62f1274e96a5ba91020819273280891bf59198096920239ae5851d",
+    "observer_host_seconds": 17.989622194087133,
+    "observer_peak_rss_kib": 574360
+  },
+  "independent_browser_identity_binding": {
+    "status": "PASS_INDEPENDENT_PREPARED_BUNDLE_IDENTITY_BINDING",
+    "scope": "Supplement to completed passive output relation; independent expected runtime identity from original qualified prepared bundle, not selected from checkpoint header",
+    "output_observation_sha256": "aec94b760ebdf44a326e9288eff9844a3d518ad710e22e416b1a9b7e868ecf12",
+    "bundle_manifest_sha256": "ca63a2e7a62493e4aa0457346b1e8a770cc2db258866dd6e3c8ff5900f5521b5",
+    "wasm_build_sha256": "91b77536fabdddaa588446d7ddfe57e940b62fb557da99ee3fb951f287a5b420",
+    "portable_identity": "fb15aade4646d035457f5b5e07663ce8235c72bcb4dff3823f2d10c3c165a1c3",
+    "guest_sha256": "71742788105bff0eb7801eba081b0c19f77fb38c235a8990b39162641a405462",
+    "original_observer_limitation": "First observer supplied the header identity read from the same checkpoint. This supplement independently binds that exact observed identity and output receipt to the qualified planned bundle. No CPU or repeated CRC/output run.",
+    "host_measurement_source": "Public main status AX at automatic Ready; displayed values rounded0.1s. Later export elapsed includes additional paused time."
+  },
+  "receipts": {
+    "build/courses/task006-native-registry-borrow-a1/actor/result.json": "fb35a03a99a584a6ea4d46a374c18f3acb0d0c9dabfef7c94246c25625eabc07",
+    "build/courses/task006-native-registry-borrow-a1/result.json": "7c35187ad9bfedf56b39429857308527374ddb896004b5a3be5ce5cf1113736e",
+    "build/courses/task006-native-registry-borrow-a1/actor/retained-cut-observation.json": "85adca980c32b47cfb0a3f02b88bf834de2869307e9c3fbf0c92ad9165d23420",
+    "build/browser/task006-registry-borrow-cold-a1/plan.json": "b155a5ab4a23f57a2a20a6a65df9cd4c7f3a6cc8e0dbb9cb57a1a66255d026be",
+    "build/browser/task006-registry-borrow-cold-a1/result.json": "aec94b760ebdf44a326e9288eff9844a3d518ad710e22e416b1a9b7e868ecf12",
+    "build/browser/task006-registry-borrow-cold-a1/independent-identity-binding.json": "b8944b56c130da66c9453f056890bcc613ca6b5d72c49bc0832f5c30b12388d1"
+  },
+  "comparison": "Same original installed-package medium and canonical geometry/pool. Native first-observed Ready978M->847M, browser977.55M->846.10M. Sampling1M vs50k respectively; host concurrency differs. Original400M course notReady retains failure even with completed package read."
+}

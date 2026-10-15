@@ -1216,3 +1216,12 @@ recovery are recorded in [the integrated receipt](docs/evidence/006-descriptor-d
 The original connected-run aggregate limit and Pending/Saved footer mismatch
 remain failures. This qualification does not establish a finished browser course
 workflow, pipeline timing parity or arbitrary checkpoint continuation.
+
+The audited text-delta guest pair is prepared in
+`build/native/task006-package-delta-a1` and
+`build/browser/task006-package-delta-a1`. Use these paths with the same native
+session/browser-serve commands above. Actual fast course-header views improve
+to46–49M instruction-clock units; the original3B connected-case limit still
+fails during Close. The canonical RTL course case remains running. Its source,
+limits and full audit results are retained in
+[the text-delta receipt](docs/evidence/006-course-text-delta-v1.json).

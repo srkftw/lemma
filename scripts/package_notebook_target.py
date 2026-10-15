@@ -88,8 +88,9 @@ def contract(unit):
     require(set(signature_set(unit)) <= set(rows), 'Package Notebook complete owned source family missing')
     corrected = COUNTER_ADDRESS_SOURCE in rows
     delta = delta_selected(unit)
-    return {'contract_version': DELTA_VERSION if delta else VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
-            'private_layout': DELTA_LAYOUT if delta else PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
+    sparse = sparse_selected(unit)
+    return {'contract_version': SPARSE_VERSION if sparse else DELTA_VERSION if delta else VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
+            'private_layout': SPARSE_LAYOUT if sparse else DELTA_LAYOUT if delta else PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
             'owned_functions': len(signature_set(unit))}
 
 def _bodies(ir):
@@ -161,6 +162,10 @@ def validate(ir, unit, *, optimized):
         callers = {phase: {**{name: value for name, value in values.items() if name not in DELTA_REMOVED},
                            **DELTA_CALLERS[phase]} for phase, values in callers.items()}
         layout, version = DELTA_LAYOUT, DELTA_VERSION
+    if sparse_selected(unit):
+        pins = {phase: {**values, **SPARSE_PINS[phase]} for phase, values in pins.items()}
+        callers = {phase: {**values, **SPARSE_CALLERS[phase]} for phase, values in callers.items()}
+        layout, version = SPARSE_LAYOUT, SPARSE_VERSION
     return _validate_bodies(ir, unit, optimized=optimized, pins=pins,
                            callers=callers, layout=layout, version=version,
                            signatures=signature_set(unit))
@@ -1482,8 +1487,10 @@ def signature_set(unit):
     # emitted catalog. The same catalog must match both pre/post bodies.
     signatures = {**SIGNATURES, COUNTER_ADDRESS_SOURCE: ([], [])} if COUNTER_ADDRESS_SOURCE in _rows(unit) else SIGNATURES
     if delta_selected(unit):
-        return {**{name: value for name, value in signatures.items() if name not in DELTA_REMOVED},
-                **DELTA_SIGNATURES}
+        signatures = {**{name: value for name, value in signatures.items() if name not in DELTA_REMOVED},
+                      **DELTA_SIGNATURES}
+    if sparse_selected(unit):
+        return {**signatures, **SPARSE_SIGNATURES}
     return signatures
 
 # Derived from the separately qualified genuine complete pre/post export.
@@ -1657,3 +1664,71 @@ DELTA_CALLERS = {'post': {'Lemma.Courses.PackageRender.deltaStep': ['Lemma.Cours
                                                   'Lemma.Courses.PackageRender.renderDelta',
                                                   'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
                                                   'Lemma.Courses.PackageRender.renderSelectedDelta']}}
+
+# A separately bound, purely computational successor. No stored state/cache or
+# memory-effect elision is authorized by the white-word shortcut.
+SPARSE_VERSION = 'lemma-installed-package-notebook/4'
+SPARSE_LAYOUT = {**DELTA_LAYOUT, 'white_word_contract': 'lemma-course-white-word/1',
+                 'panels': ['selected-text', 'package-controls', 'mathematics']}
+SPARSE_SIGNATURES = {
+    'Lemma.Courses.PackageRender.sparsePanelWord': (['u64'] * 4, []),
+    'Lemma.Courses.Arithmetic.panelWordSparse': (['u64'] * 5, []),
+    'Lemma.Courses.Arithmetic.renderSparseStep': (['u32', 'u32'] + ['u64'] * 5,
+                                               ['checked-access', 'virtual-write']),
+    'Lemma.Courses.Arithmetic.renderSparse': (['u64', 'u64'],
+                                            ['checked-access', 'virtual-read', 'virtual-write']),
+    'Lemma.Applications.Notebook.renderPackageCourse': ([],
+                                                      ['checked-access', 'virtual-read', 'virtual-write'])}
+
+
+def sparse_selected(unit):
+    rows = _rows(unit)
+    found = set(rows) & set(SPARSE_SIGNATURES)
+    if not found:
+        return False
+    require(found == set(SPARSE_SIGNATURES) and delta_selected(unit),
+            'Package Notebook mixed/incomplete pure white-word cohort')
+    return True
+
+# Exact ordinary Lean white-word cohort, including all new presentation helpers.
+SPARSE_PINS = {'post': {'Lemma.Applications.Notebook.finishOpenPackageCourse': 'c9ef8789a266eb508b4f611ca3257ce93c5e201521c4a158128218e1b54efcbd',
+          'Lemma.Applications.Notebook.packageControlCharacter': 'efebc4397b55a9782e127d727cfcbcee48ed528d81fa809a62963eb2bd519813',
+          'Lemma.Applications.Notebook.packageControlStep': '991ff2e9a9740c85a2a932d0ab4f139bbcb6d7d2d7f7ed07eb2b28ef767f3a81',
+          'Lemma.Applications.Notebook.packageIdentityStep': '71199655130146c959c6d70293a9bcc18d68d67ede4da9ddb030594ea964dc01',
+          'Lemma.Applications.Notebook.publishPackageWorkspace': '9603c1ebfc45e64a43b67039924d154cda6794ff60a84a0393ac9ec4100308b3',
+          'Lemma.Applications.Notebook.renderPackageCourse': '60f4c3a4bf7ceb1278a4c89a5c04dc8f4cec802a8d7a7d574a146d0b33d2f639',
+          'Lemma.Courses.Arithmetic.panelWordSparse': 'b6b0931dd51991491c0e1f2c42fd511e2e964f9a8551ec6a9cc5f0930cf592b0',
+          'Lemma.Courses.Arithmetic.renderSparse': '63daa547a54d5c8ea0ba865332f0f0f1e7c1ac976c665816267901fa6d3b11b5',
+          'Lemma.Courses.Arithmetic.renderSparseStep': '6fb62902c099b16139be11832859c38305ff84dddecb16203d97bcc9d9ea3808',
+          'Lemma.Courses.PackageRender.deltaStep': '033260dc99922676b2cefa4475586377a0e733b1fb4602deeb4beebae909d7fa',
+          'Lemma.Courses.PackageRender.sparsePanelWord': '7ec8ed74198cea2942f68c514bab4e59f13ce7e113cf9ed133199d70b8a12460'},
+ 'pre': {'Lemma.Applications.Notebook.finishOpenPackageCourse': '1cec606671a3265a229bf8de60c26754fffecafb1722e067fd9239e1107cda89',
+         'Lemma.Applications.Notebook.packageControlStep': '9843e05be79e6e9e188d262dd0110b61d2d98ee7ba83ff7492eb50950d49a150',
+         'Lemma.Applications.Notebook.packageIdentityStep': 'a5bb4e50149dc77155d5fc124bb2dc13d157f1d9e9b693d9936ab38b44e0d658',
+         'Lemma.Applications.Notebook.publishPackageWorkspace': '30de2fda487dd69e48b862bc41820ff90a1edc88e2e369fb4ad2bfe394c26d88',
+         'Lemma.Applications.Notebook.renderPackageCourse': '5c53c5cf7242d54b407fdb240d9eace50c4bd8fcaf45f015ba4c5467df58916c',
+         'Lemma.Courses.Arithmetic.panelWordSparse': 'fa3d18de78cf67804c2843decf356b688ac5368f743f3fed6f637755be50ad35',
+         'Lemma.Courses.Arithmetic.renderSparse': '709aeff89573932b09cc265563e73ef797f068d7b274bed65f48ddbaf5eedfbe',
+         'Lemma.Courses.Arithmetic.renderSparseStep': '5d525518bc0c1bc4b2f8e04696b1e62385e42f227a5a14ffb0cceeb13fe84830',
+         'Lemma.Courses.PackageRender.deltaStep': '4bd0011642739018f5f1cffc8b797b7a9a986d5fa236880ab82226673961e8e4',
+         'Lemma.Courses.PackageRender.sparsePanelWord': 'f423e4046206590b865b31cddbe49c2e49fcdd034b56cc61a2437a81dada9c35'}}
+SPARSE_CALLERS = {'post': {'Lemma.Applications.Notebook.renderPackageCourse': ['Lemma.Applications.Notebook.finishOpenPackageCourse',
+                                                              'Lemma.Applications.Notebook.publishPackageWorkspace'],
+          'Lemma.Courses.Arithmetic.panelWordSparse': ['Lemma.Courses.Arithmetic.renderSparseStep'],
+          'Lemma.Courses.Arithmetic.renderSparse': ['Lemma.Applications.Notebook.renderPackageCourse'],
+          'Lemma.Courses.Arithmetic.renderSparseStep': ['Lemma.Courses.Arithmetic.renderSparse'],
+          'Lemma.Courses.PackageRender.panelWord': ['Lemma.Courses.PackageRender.sparsePanelWord'],
+          'Lemma.Courses.PackageRender.sparsePanelWord': ['Lemma.Applications.Notebook.packageControlStep',
+                                                          'Lemma.Applications.Notebook.packageIdentityStep',
+                                                          'Lemma.Courses.Arithmetic.panelWordSparse',
+                                                          'Lemma.Courses.PackageRender.deltaStep']},
+ 'pre': {'Lemma.Applications.Notebook.renderPackageCourse': ['Lemma.Applications.Notebook.finishOpenPackageCourse',
+                                                             'Lemma.Applications.Notebook.publishPackageWorkspace'],
+         'Lemma.Courses.Arithmetic.panelWordSparse': ['Lemma.Courses.Arithmetic.renderSparseStep'],
+         'Lemma.Courses.Arithmetic.renderSparse': ['Lemma.Applications.Notebook.renderPackageCourse'],
+         'Lemma.Courses.Arithmetic.renderSparseStep': ['Lemma.Courses.Arithmetic.renderSparse'],
+         'Lemma.Courses.PackageRender.panelWord': ['Lemma.Courses.PackageRender.sparsePanelWord'],
+         'Lemma.Courses.PackageRender.sparsePanelWord': ['Lemma.Applications.Notebook.packageControlStep',
+                                                         'Lemma.Applications.Notebook.packageIdentityStep',
+                                                         'Lemma.Courses.Arithmetic.panelWordSparse',
+                                                         'Lemma.Courses.PackageRender.deltaStep']}}

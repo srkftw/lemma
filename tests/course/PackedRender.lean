@@ -31,10 +31,14 @@ def check : IO Unit := do
           let expected := referenceWord x y.toUInt64 goal values state
           if panelWord x y.toUInt64 goal values state != expected then
             throw <| IO.userError s!"course word changed pixel order at {x},{y},goal{goal},outcome{outcome}"
+          if panelWordSparse x y.toUInt64 goal values state != expected then
+            throw <| IO.userError s!"sparse course word changed scalar pixels at {x},{y},goal{goal},outcome{outcome}"
           words := words + 1
   for (x,y) in #[(15,0),(369,0),(384,0),(0,160),(0xffffffffffffffff,0)] do
     if panelWord x y 1 0 0 != 0xffffffffffffffff then
       throw <| IO.userError "invalid word geometry was admitted"
+    if panelWordSparse x y 1 0 0 != 0xffffffffffffffff then
+      throw <| IO.userError "sparse word admitted invalid geometry"
   IO.println s!"COURSE_PACKED_RENDER:PASS {words} words,{words*16} exact scalar pixels,5 invalid geometries"
 
 end CoursePackedRender

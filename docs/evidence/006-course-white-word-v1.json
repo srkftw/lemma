@@ -1,0 +1,189 @@
+{
+  "schema": "lemma-course-white-word-component/1",
+  "status": "PASS_GENUINE_COMPLETE_SOFTWARE4_COHORT_AND_HOST_PIXEL_EFFECT_ORACLES",
+  "scope": "Genuinely elaborated/checked LLVM User2; exact finite host pixel/memory observations; whole RV64 audits and actual target performance NOT_RUN",
+  "contract": "docs/contracts/006-course-white-word-v1.md",
+  "target_sources": {
+    "Lemma/Courses/PackageRender.lean": "cbf4d7de9060bac6c36172e78c02bda6c2cb63f668ad641085bdc0fc7707eee7",
+    "Lemma/Courses/Arithmetic.lean": "f0d9f8b82d5bdbbaaeb2963a27b78e788b40b44eca3166743339a7a4c4dc5c2f",
+    "Lemma/Applications/Notebook.lean": "fe864e2abcc81c2b31e694b79267785ea9f51074cf6a47ae016a664aa4c2222a"
+  },
+  "complete_source_relation": {
+    "added": [
+      "Lemma.Applications.Notebook.renderPackageCourse",
+      "Lemma.Courses.Arithmetic.panelWordSparse",
+      "Lemma.Courses.Arithmetic.renderSparse",
+      "Lemma.Courses.Arithmetic.renderSparseStep",
+      "Lemma.Courses.PackageRender.sparsePanelWord"
+    ],
+    "removed": [
+      "Lemma.Applications.Notebook.renderCourse",
+      "Lemma.Courses.Arithmetic.cachedPair",
+      "Lemma.Courses.Arithmetic.cachedPixel",
+      "Lemma.Courses.Arithmetic.panelWord",
+      "Lemma.Courses.Arithmetic.render",
+      "Lemma.Courses.Arithmetic.renderStep"
+    ],
+    "phases": {
+      "pre": {
+        "changed": [
+          "Lemma.Applications.Notebook.finishOpenPackageCourse",
+          "Lemma.Applications.Notebook.packageControlStep",
+          "Lemma.Applications.Notebook.packageIdentityStep",
+          "Lemma.Applications.Notebook.publishPackageWorkspace",
+          "Lemma.Courses.PackageRender.deltaStep"
+        ],
+        "unchanged": 809
+      },
+      "post": {
+        "changed": [
+          "Lemma.Applications.Notebook.finishOpenPackageCourse",
+          "Lemma.Applications.Notebook.packageControlCharacter",
+          "Lemma.Applications.Notebook.packageControlStep",
+          "Lemma.Applications.Notebook.packageIdentityStep",
+          "Lemma.Applications.Notebook.publishPackageWorkspace",
+          "Lemma.Courses.PackageRender.deltaStep"
+        ],
+        "unchanged": 806
+      }
+    }
+  },
+  "qualification": {
+    "status": "PASS_FOUR_GENUINE_COMPLETE_PRE_POST_READONLY_SURFACE_COHORTS",
+    "cohorts": [
+      {
+        "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/1",
+          "post": "lemma-installed-package-notebook/1"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6,
+        "surface_bodies": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea"
+        }
+      },
+      {
+        "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/2",
+          "post": "lemma-installed-package-notebook/2"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6,
+        "surface_bodies": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f"
+        }
+      },
+      {
+        "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/3",
+          "post": "lemma-installed-package-notebook/3"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6,
+        "surface_bodies": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f"
+        }
+      },
+      {
+        "path": "build/courses/task006-package-sparse-component-a1/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/4",
+          "post": "lemma-installed-package-notebook/4"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6,
+        "surface_bodies": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f"
+        }
+      }
+    ]
+  },
+  "mutations": {
+    "status": "PASS_THREE_VALID_LLVM_WHITE_WORD_MUTANTS_AND_FIVE_INCOMPLETE_COHORTS_REJECT",
+    "scope": "actual valid LLVM white-word semantic mutants; complete cohort body gate plus independent byte/table checks remain mandatory",
+    "negative": [
+      {
+        "name": "last-glyph-row-erased",
+        "valid_llvm": true,
+        "sha256": "676e6aa83f07a118ef72dce55748e67b09ae06c71e0d952649f669003f805624",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.sparsePanelWord/post"
+      },
+      {
+        "name": "nonblank-second-glyph-erased",
+        "valid_llvm": true,
+        "sha256": "c22f673b37f61af51380670a50f3405170fad35528796929c2fcdd26940bd917",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.sparsePanelWord/post"
+      },
+      {
+        "name": "wrong-white-pixel",
+        "valid_llvm": true,
+        "sha256": "68999ab13a9b441604e07b15713df14bd765c7cadeed70001224d314565a45f0",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.sparsePanelWord/post"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.PackageRender.sparsePanelWord",
+        "reason": "Package Notebook mixed/incomplete pure white-word cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.Arithmetic.panelWordSparse",
+        "reason": "Package Notebook mixed/incomplete pure white-word cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.Arithmetic.renderSparseStep",
+        "reason": "Package Notebook mixed/incomplete pure white-word cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.Arithmetic.renderSparse",
+        "reason": "Package Notebook mixed/incomplete pure white-word cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Applications.Notebook.renderPackageCourse",
+        "reason": "Package Notebook mixed/incomplete pure white-word cohort"
+      }
+    ]
+  },
+  "receipts": {
+    "build/courses/task006-package-sparse-component-a1/cohort-generation.json": "f1eef887ef1429d890c3b9dc801e8cd18e12c078c8db68d27a009e619a159ebb",
+    "build/courses/task006-package-sparse-component-a1/cohort-qualification.json": "bf1bac7472e75dabde0af0673bd8581bbe50357ad0e35a2abedc943ba5977725",
+    "build/courses/task006-package-sparse-component-a1/mutations.json": "ca84c4172dd4e52963c8cdd2b235f338b5fc1268316d0ba24fe5866244f842b3",
+    "build/courses/task006-package-delta-integration-a1/sparse-render-host-a1.log": "183a383769997feedb7c907c3fdf810f595363f59dfbe371ce6384cbb8acb42d",
+    "build/courses/task006-package-delta-integration-a1/sparse-notebook-host-a1.log": "0db35f456bf73ce86095acb0f27259c457d3a270c09ae93aa7a102705f731f44",
+    "build/courses/task006-package-delta-integration-a1/sparse-packed-host-a1.log": "a548dbe8f5525d765155eb54e3864a05cfd338a15f6752c86339222028ab4730",
+    "build/courses/task006-package-sparse-component-a1/kernel-host.log": "a5bb484ce573dacd2871a7625138c5b65089abd5ab67539f8f6ff045e4c58773",
+    "build/courses/task006-package-sparse-component-a1/foundation-host.log": "c4ce1cad7af239434881e56be83acd9dfb23d879d39b2575e2a4fe9afeb7c31f",
+    "build/courses/task006-package-sparse-component-a1/scaffold.log": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+    "build/courses/task006-package-sparse-component-a1/scaffold-tests.log": "02c05bc86bd014457a051d9db49858aa59f1add5832daadbe2aa9a9ced5a030e"
+  },
+  "ordered_mathematics_action_memory_effects": "exact original/new RAM, reads,writes; no syscalls",
+  "historical_render_definitions": "unchanged and retained; unreachable only in software4 selection",
+  "language_runtime_extension": false,
+  "persistent_pixel_cache": false,
+  "whole_artifacts": "NEXT",
+  "original_observer_setup_failures": [
+    "qualify.py expected one pure preIR call; existing genuine deltaStep actually duplicates that let three times",
+    "qualify-a2.py expected one pure preIR call; original genuine arithmetic renderStep duplicates it twice. qualify-a3 uses these exact old counts and requires otherwise identical complete bodies."
+  ]
+}

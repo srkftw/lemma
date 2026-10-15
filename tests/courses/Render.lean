@@ -97,6 +97,12 @@ private def observe (before : Model) (action : Action) : IO ((UInt8 × UInt64) �
   return (result, ← state.get)
 
 def check : IO Unit := do
+  for x in (#[(0 : UInt64),16,32,368,0xffffffffffffffff]) do
+    for y in (#[(0 : UInt64),14,15,19,20,319,0xffffffffffffffff]) do
+      for (first,second) in #[(0,0),(0,0x2bed),(0x6bae,0),
+          (0x7fff,0x7fff),(0x8000000000000000,0),(0,0xffffffffffffffff)] do
+        if PackageRender.sparsePanelWord x y first second != PackageRender.panelWord x y first second then
+          throw <| IO.userError "pure sparse word changed blank/nonblank/spacing/high-bit pixels"
   let image ← encode "a\nB! jz?$"
   let before : Model := {package := image}
   let (result,prepared) ← observe before (PackageRender.prepare source image.size.toUInt64 0 1 0 cache)

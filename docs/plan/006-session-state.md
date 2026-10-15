@@ -1865,3 +1865,57 @@ are unchanged in software3; their independent three-cohort comparison passes
 and an actual valid-LLVM copy-stride mutation rejects. The gate now admits the
 explicit complete cohort3 with the same original hashes, preserving cohorts1/2.
 Fresh complete compilation/audits remain required; no original FAIL is replaced.
+
+Software3 text-delta now has a complete fresh pair from06b2fa9: ordinary builds/
+full audits PASS565.254s,569.624s supervised,1935314944B peak owned RSS,387 sealed
+inputs and no survivors. Initializer5ac30a45/notebook6bdab307 are prepared at
+build/native/task006-package-delta-a1 and build/browser/task006-package-delta-a1
+with the same qualified machine cores. Whole a2 stopped before compilation on
+an old dynamic output suffix; its unused-output guard preserved prior artifacts.
+Whole a3 derives actual role directories from the exact predeclared plan map.
+Both earlier failures/source seals remain retained.
+
+Actual software3 fast execution completes the same39 course/math/learner/ink
+phases through acknowledged ink2.805000362B versus prior2.929000389B instruction-
+clock units. Header views fall64/64/64/63M to49/47/46/49M. First open rises189M
+to191M. The original3B aggregate stillFAILs during Close (248.472s actor,
+249.399s supervised/no survivors); no limit changes or cold PASS. The new exact
+RTL actor build/courses/task006-native-package-delta-a1/actor is running from
+newCPU0 under the original1B cold/400M open/6B aggregate/21600s bounds. Its
+29 consumed host files remain frozen; source-archived guests permit independent
+Lean/compiler work. Correct body/load/reopen expectations are declared before
+launch in build/courses/task006-package-delta-integration-a1/native-plan.json.
+
+The prior registry-only RTL actor remains FAILat its original400M open cap,
+cycle1330M, elapsed5145.683s (5149.882s supervised/no survivors). Read-only
+whole-CRC/owned-frame/Sv39 inspection finds4040/4040 bytes, completed validation,
+no pending read/storage, and text rendering still in progress. Neither title
+nor body reaches controller pixels. The title/body observer bug does not erase
+this substantive failure. Original snapshot2aae818a and observation are at
+build/courses/task006-native-registry-borrow-a1/actor.
+
+Registry-only browser cold nowPASSes actual Ready846.10M under original1B/7200s,
+192MiB heap,5532.2s simulation calls,5639.7s since Open (rounded public status;
+includes pre-run pause). All35 native external outcomes/boundaries, all256MiB
+opaque backing effects and every controller pixel match. Startup actually
+writes8 sectors and completes4 barriers to Saved4. No restore or browser course
+input. Public exports checkpoint8bb4457f/backingc81f3783 and result are retained
+in build/browser/task006-registry-borrow-cold-a1; independent prepared-bundle
+identity binding supplements the first observer's self-selected header identity
+without repeating CPU/CRC/output execution. Original downloads remain intact.
+Tab25 is paused; one of its two observational checkpoint cuts is used.
+
+The next genuine software4 increment is white-word1 across text, package
+controls and mathematics. It skips only pure font computation for known white
+words; no memory effect, pixel, controller work or authority is removed. Full
+canonical/header/odd-stride/fault Actions,1,474,560 scalar mathematics pixels and
+exact original/new mathematics RAM/read/write traces pass. Five existing preIR
+bodies differ only by exact presentation-callee substitutions; three new Action
+wrappers retain exact old bodies after the same substitution. All809 other
+shared preIR bodies are identical. Four complete genuine pre/post/readonly/
+Surface cohorts qualify, three actual valid LLVM semantic mutants and five
+incomplete cohorts reject.433 kernel/468 foundation/18 scaffold tests pass.
+Original pure-call-count observer setup failures remain retained. Contract and
+component evidence:006-course-white-word-v1. Full fresh pair/execution remain
+required. Exact85209b1 CI38683626728 is terminal SUCCESS10/10 with no skips;
+later software3/4 source requires its own candidate.
