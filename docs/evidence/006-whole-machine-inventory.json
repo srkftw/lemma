@@ -790,6 +790,41 @@
       "sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6",
       "status": "PASS_HOST_CONTROL_AND_PREPARED_STATIC_BUNDLE",
       "scope": "actual maintained browserworker/app/transport fixtures and immutable fourprocess staticpack; real newguestcold/install/course/browserrecovery/suffix unfinished"
+    },
+    {
+      "path": "build/courses/task006-native-installed-package-a1/cold-gate-result.json",
+      "bytes": 12363,
+      "sha256": "6ada45079f734ce2249c8197aedda73f85b64dfb12c24ae82ace674a13dd2171",
+      "status": "PASS_ACTUAL_ORIGINAL_COLD_READY_THEN_OBSERVATIONAL_CHECKPOINT",
+      "scope": "actual new4-role native resetCPU -> canonical cold Ready; suffix separate"
+    },
+    {
+      "path": "build/browser/task006-package-connected-owner-a1/cold-retained-closure.json",
+      "bytes": 908,
+      "sha256": "8e58442e42d66e37afa413ee60121b818939364a6a164bae7d3653d2b0d87541",
+      "status": "PASS_RETAINED_BYTE_ASSERTIONS_ONLY",
+      "scope": "actual browser coldReady; exact whole medium and controller equality, retained observer process failures explicit"
+    },
+    {
+      "path": "build/usb/recovery-closure-independent-cold-a1/result.json",
+      "bytes": 138596,
+      "sha256": "caf9de55cc512921622ce6d861bffc96a039fd9581acf4f0134692f7dc479f88",
+      "status": "PASS",
+      "scope": "newCPU copied independent companion peer/outbox cold: full raw/course/Doc8/READ-only"
+    },
+    {
+      "path": "build/managed/wfi-timer-native-retained-observer-a1/result.json",
+      "bytes": 22263,
+      "sha256": "a8e5591cca9725e7cc93ec2e8adab579368727657d17d19d17799bd8752bfab5",
+      "status": "FAIL_GUEST_REBOOT_COMPLETION_ORIGINAL_600K",
+      "scope": "real guest WFI/native private fork and reset edges qualify separately; original reboot completion windows fail"
+    },
+    {
+      "path": "build/silicon/task006-wfi-timer-fast-a3/result.json",
+      "bytes": 46845,
+      "sha256": "0d4b359d98e63afa602c0be0cf58fb95f9ab81cd96ca6ac20b624c82c7cca52d",
+      "status": "PASS_FAST_GUEST_WFI_IMMEDIATE_RESET_SCOPE",
+      "scope": "same genuine ELF fast guest records and immediate reset; no timing/cache parity"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
@@ -800,8 +835,8 @@
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
     "model_rtl": "unchanged canonical0.3 shared Machine and controllers",
     "guest_artifacts": "matched complete fourprocess pair genuine compilation/full ordinary audits PASS584.576s/384inputs",
-    "guest_execution": "new installed-course native/browser workflows not yet qualified",
-    "distribution": "prepared exact native5c55696d/browser3928a03; typed browserowner transport host-qualified; nativecompiler helper/no browsercompiler",
+    "guest_execution": "Actual native coldReady978M and browser newCPU coldReady977.55M; complete media/controller bytes match across distinct sampled cuts. Native edition3 durable install84M and immutable duplicate11M observed; full installed-course/check/learner/cold workflow remains open.",
+    "distribution": "Strict native5c55696d/browser3928a03; actual browser cold run; typed owner transport still awaiting guest receipt; native compiler helper, browser compilation/redistribution remain open.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure"
   }

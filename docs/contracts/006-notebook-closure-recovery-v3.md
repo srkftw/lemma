@@ -63,13 +63,54 @@ Both fresh whole images then passed ordinary full audits and equal complete377
 source archives in395.222 seconds under the original900/build300/audit180 limits.
 The actual schema8 public prepare/package passed using those two archives and
 the unchanged complete255 native64d archive. These are artifact/distribution
-results. Connected RV64 math publication, unsuccessful Save, lost-ACK recovery,
-complete controller pixels and independent new-CPU cold remain NOT_RUN until
-separate actual observations qualify them. Exact hashes, bounds and retained
-failures are recorded in the ClosureRecovery3 section of the existing
+results. Actual connected execution reached Ready800M, initial Doc8 Saved18,
+one isolated Invalid2 request, Failed19 after persisted final BARRIER129 lost its
+receipt, responsive offline raw ink, genuine epoch2 attach, exact old129 dedup,
+new guest durability BARRIER130, original math Saved19, and raw20/page21/root22.
+The original observer expected raw pen event7 as the final stroke field. Exact
+archived `beginStroke` derives innerstroke19 from known Saved18; `enqueue` retains
+that header field and stage2 `finishRecord` publishes it. The unchanged original
+observer was canceled at a completed command boundary and remains FAIL. One
+already-issued5M quantum finished at1719M; all subsequent inspect/panel/snapshot/
+tape/private-byte exports added zero clocks and completed within the fixed55s
+observation bound. All its owned processes were reaped.
+
+A separate retained-only observation passed under180s/3GiB, rejecting eight
+actual mutants, including checksum-correct wrong stroke7, raw object, Doc revision,
+duplicate129, missing new130 and receipt-next changes. It validates all148 actual
+durable effects/outbox149, every retained2496 byte and the single original math
+request/reply/attempt, raw65556/header19/page21/root22, and every controller pixel
+against the source-owned FAILED→SAVED footer plus exact offline ink relation.
+Its first generic materializer rejected copied metadata retaining the original
+base path; that failure is preserved. The successor reconstructs only an offline
+observation from the immutable base and checksummed effect log, without changing
+original peer metadata or feeding documents to a guest.
+
+One independently copied peer/outbox and new zero-cycle CPU is now RUNNING under
+the original1.6B/7200 per-phase bounds. It must recover the complete independently
+derived raw page, then accept raw COURSE input and match the complete retained
+course frame/full Doc8 while issuing READ-only traffic. This cold gate is open.
+The original unexecuted live close-course action remains NOT_RUN. No snapshot is
+called cold recovery. Exact hashes, bounds and retained failures are recorded in
+the ClosureRecovery3 section of the existing
 [recovery evidence](../evidence/006-notebook-recovery-target.json).
 
 These observations do not certify general mathematics/proof checking, full USB
 MAC/electrical timing, physical durability, live historical-peer forks, browser
 companion integration or QEMU/RTL microstate migration.
 -->
+
+
+## Independent ClosureRecovery3 cold result
+
+The previously running independent gate passed with a genuinely new CPU and
+private copied peer/outbox, without restore. Cold Ready occurred at885000000
+cycles in4413.964 seconds. Raw COURSE input then completed the entire retained
+course frame and all2496 Doc8 bytes at1005000000 cycles, adding120000000 clocks
+and806.006 seconds. Total observer duration was5230.386 seconds. Every raw and
+course controller pixel matched the independent expectation; journal22/math19,
+peer high-water148 and outbox149 remained unchanged. Recovery issued no WRITE,
+BARRIER or extra mathematical RPC. Sampled owned peak was342692KiB; all owned
+processes were reaped. The existing recovery evidence binds the exact result,
+source identities and original bounds. The original live close-course action
+remains NOT_RUN; this new cold interaction is recorded separately.

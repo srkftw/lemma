@@ -137,9 +137,42 @@
     },
     "genuine_guest_pair": "build/courses/task006-package-closure-whole-a1/result.json",
     "cold": {
-      "status": "RUNNING_UNQUALIFIED",
-      "plan": "build/browser/task006-package-connected-owner-a1/plan.json",
-      "launch": "build/browser/task006-package-connected-owner-a1/launch.json"
+      "status": "ACTUAL_NEWCPU_COLD_READY_AND_RETAINED_COMPLETE_BYTE_ASSERTIONS",
+      "plan": {
+        "path": "build/browser/task006-package-connected-owner-a1/plan.json",
+        "sha256": "b37e2ea09765e9325f3606f9a427ddde98f3493008b8ad7ece769b043dd00f89"
+      },
+      "visible_ready": {
+        "path": "build/browser/task006-package-connected-owner-a1/cold-ready-observed.json",
+        "sha256": "afcd1f37beab4273326828e2eea4e0861cb26d8e23d28100da98b656ae31d967"
+      },
+      "byte_observation": {
+        "path": "build/browser/task006-package-connected-owner-a1/cold-result-a3.json",
+        "sha256": "3e1809e7ce6682ac29bb322bd8dff8793902b9e60593802e216f991f409513a3"
+      },
+      "retained_closure": {
+        "path": "build/browser/task006-package-connected-owner-a1/cold-retained-closure.json",
+        "sha256": "8e58442e42d66e37afa413ee60121b818939364a6a164bae7d3653d2b0d87541"
+      },
+      "cycle": "977550000",
+      "retired": "503905647",
+      "heap_bytes": 201326592,
+      "simulation_call_seconds": 5265.483715004221,
+      "ready_elapsed_seconds": 5429.657095000029,
+      "all_medium_bytes_match_independent_native": true,
+      "all_controller_pixels_match_independent_native": true,
+      "two_original_opaque_packages_preserved": true,
+      "guest_created_missing_notebook_sequence": 4,
+      "original_observer_failures": [
+        "a1 last-UART-row425 expectation contradicts actual420/425 thenSaved4 in both native/browser",
+        "a2 compared snapshot Gray4 bytes directly to expanded RGB pixels",
+        "a3 all exact byte assertions passed, then final diagnostic print failed on renamed digest key; process failure retained"
+      ],
+      "scope_excludes": [
+        "same-boundary native/Wasm microstate or replay comparison",
+        "new installed-course/math/learner user workflow acceptance"
+      ],
+      "actual_installation": "4063 bytes admitted through modeled UART; actual guest receipt still pending at observation"
     },
     "original_ci_failure": {
       "run_id": 38644955941,
@@ -150,6 +183,10 @@
       "repair": "build/ci/task006-494-native-fixture-repair-a1/result.json",
       "target_acceptance": "NOT_RUN_AFTER_HOST_FAILURE"
     },
-    "qualification_receipt_sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6"
+    "qualification_receipt_sha256": "2bbebf3d791694956b48fc9b2f44916ec2757fa65f6b113990c17aa51e57dab6",
+    "workflow_plan": {
+      "path": "build/browser/task006-package-connected-owner-a1/workflow-plan.json",
+      "sha256": "6448afcc8d57426ea6ce84bae4a4d16f79cbc8a89a3bbdf011826fc40c82f51a"
+    }
   }
 }

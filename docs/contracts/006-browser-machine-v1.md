@@ -229,3 +229,19 @@ unfinished. Fifteen browser host checks and the full293-test pinned simulator
 host suite passed; these do not establish guest installation or cold Ready.
 The original failed4948899 CI host expectation and skipped target acceptance
 remain retained separately from its narrow owner-mode fixture correction.
+
+
+The new package-enabled browser cold gate has now reached actual Ready at
+977550000 cycles,503905647 retired,192MiB heap and5265.484 seconds in machine
+calls (5429.657 elapsed, including host pauses). It imported the untouched
+edition1/2 medium into a new origin and ran fromCPU0 without restore or
+initialization. The guest created the missing notebook through four actual
+backing barriers. Its entire256MiB result and all3.63M controller pixels match
+the independently observed native cold result at978M. The snapshot stores
+Gray4 values; equality uses the declared exact17*n display-channel mapping.
+The first last-UART-row and pixel-representation observers failed; the corrected
+byte assertions completed, then their diagnostic print failed on a renamed
+key. That process failure and its retained completed observations are explicit
+in the existing evidence. This is no exact same-boundary suffix comparison.
+The typed new4063-byte edition3 request is now admitted and executing; admission
+still does not claim guest installation or complete course/math acceptance.

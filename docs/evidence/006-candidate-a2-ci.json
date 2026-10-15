@@ -490,5 +490,78 @@
       "full_pinned_tests": 293,
       "scope": "exact two literal exclusions plus explicit newpair owner-role/profile/lookalike rejection checks; production guard unchanged; no CI result inferred from local pass"
     }
+  },
+  "subsequent_candidate_d64": {
+    "source_commit": "d64b7ab4f96c9f84b213d929b6f0404028eef1eb",
+    "actual_ci_run": 38648367594,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "failed_jobs": [],
+    "skipped_steps": [],
+    "observation": "GitHub workflow run and every job/step retrieved after terminal completion on 2026-10-14; original494 failure remains retained. Report-only successor da218 has no separate CI claim.",
+    "jobs": [
+      {
+        "id": 116140772624,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772876,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772941,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772957,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140772964,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773006,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773014,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773019,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773045,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116140773121,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Exact pushed candidate CI; does not certify new installed-course/browser workflows or unfinished whole-machine gates."
   }
 }

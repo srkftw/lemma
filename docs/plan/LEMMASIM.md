@@ -85,3 +85,19 @@ are running/prepared and remain open. This advances G2/G4–G7 and S4–S6 witho
 closing general runtime, proof-kernel, tutor transport, whole distribution,
 exact fast/checkpoint or physical obligations. The current checkpoint and
 existing capability inventory retain those separate statuses.
+
+
+Current connected observations: the package-enabled canonical native cold guest
+reaches Ready978M, and the identical guest on the existing browserRTL/Wasm
+worker reaches coldReady977.55M with192MiB heap. Complete acknowledged medium
+and controller pixels match at their separately observed Ready cuts. Native
+edition3 installation and immutable duplicate rejection execute in84M and11M
+additional cycles; full course/check/learner/cold acceptance remains open.
+ClosureRecovery3's independent copied-peer newCPU cold gate nowPASSes at885M
+Ready plus120M for rawCOURSE/full2496-byte mathematics and controller recovery,
+with no new write/barrier/math request and peer148/outbox149 unchanged.
+Guest S-WFI/M-timer/native waiting-fork and fast immediate-reset semantics have
+separate evidence; original native600k reboot completion failures remain. These
+advances do not close any broader digital, fast-timing/checkpoint, distribution
+or physical obligation. Exact receipts remain in the existing capability
+inventory and006-session-state.md.

@@ -367,8 +367,8 @@
     "source_identity_note": "The result inherits base checker observer_sha256; the frozen nine-file supervisor manifest separately binds the actual cold adapter. No original receipt was rewritten."
   },
   "closure_recovery3": {
-    "status": "PASS_SOURCE_COMPONENT_ARTIFACT_DISTRIBUTION_CPU_NOT_RUN",
-    "scope": "Append-only Closure7/Doc8 mathematical publication and retained retry on unchanged Clocked13/Kernel6/native live recovery1. Whole linked images and schema8 distribution qualified; new connected CPU/math/failed Save/lostACK/retry/cold unqualified until separately observed. Historical Sums evidence above is unchanged.",
+    "status": "PASS_SOURCE_ARTIFACT_DISTRIBUTION_REOBSERVED_LIVE_COLD_RUNNING",
+    "scope": "Append-only Closure7/Doc8 mathematical publication and retained retry on unchanged Clocked13/Kernel6/native live recovery1. Genuine linked pair/schema8 qualified. Original wrong-event-number workflow observer FAIL preserved; independent source-derived live observation PASS. One independent newCPU cold is RUNNING and remains required. Historical Sums evidence above is unchanged.",
     "software_deployment": {
       "contract_version": "lemma-usb-clocked-closure-recovery-deployment-v1",
       "silicon_profile": "lemma-silicon-dev/0.13.0",
@@ -498,10 +498,10 @@
       "public_negative_vectors": 16
     },
     "connected_workflow": {
-      "status": "NOT_RUN",
+      "status": "ORIGINAL_FIXTURE_FAIL_RETAINED_INDEPENDENT_LIVE_PASS_COLD_RUNNING",
       "prospective_plan": {
-        "path": "build/usb/recovery-closure-connected-proposal-a1/plan-a1.json",
-        "sha256": "56fac337922d1727b7b468acfa0a4b0cb4197e89d8b5063db07257ebd2d40882"
+        "path": "build/usb/recovery-closure-connected-proposal-a1/plan-a3.json",
+        "sha256": "76578d52475b4ad55fa333eaa7d60465d23abf9702c9f005ca7d2f493266d361"
       },
       "scope": "Real single isolated Invalid2 attempt +Doc8 lost finalB129 receipt, actual EOF/Failed/offline raw/reattach, exact old129 dedup/newbarrier130/fullDoc8+EOF, original stage3 completion then offline raw20/page21/root22 and independent cold. No host document input.",
       "predeclared_expected_final": {
@@ -511,7 +511,135 @@
       },
       "ready_action_cycles": 1600000000,
       "ready_action_host_seconds": 7200,
-      "ink_cycles": 200000000
+      "ink_cycles": 200000000,
+      "supervision": {
+        "manifest": "build/usb/recovery-closure-connected-a1.supervision/manifest.json",
+        "supervisor_pid": 1343948,
+        "supervisor_start_ticks": "57165844",
+        "absolute_deadline_unix_ns": 1792062966008801662,
+        "whole_host_ceiling_seconds": 57800,
+        "automatic_restart": false,
+        "startup_only_host_source_count": 284,
+        "startup_sources_equal": true,
+        "guest_image_sha256": "2f684e547efa8664817d12d1d0cf906a7816dfdfa014dba3433cbae2f920b48e"
+      },
+      "observed_scope": "Actual initial Ready800M, Doc8 Saved18, one Invalid2 request56, failed uncertain Doc8 publication19, responsive offline raw, epoch2 attach/exact old129 dedup/newB130, Saved19 and raw20/page21/root22 complete. Independent observation derives innerstroke19 from archived source; final tuple(0x421,22,1,1,19). Original fixture expected rawevent7 and was canceled after one already-issued5M command finished; unexecuted live close-course NOT_RUN. Single newCPU cold from independently copied acknowledged peer is RUNNING.",
+      "original_terminal": {
+        "path": "build/usb/recovery-closure-connected-a1/result.json",
+        "sha256": "b3a2d33e44ddbdeaef7c2917fd8710986864ff25e7e10f10d190e6adcd1fc6c6",
+        "status": "FAIL"
+      },
+      "original_supervisor_terminal": {
+        "path": "build/usb/recovery-closure-connected-a1.supervision/supervision.json",
+        "sha256": "e724612e19ec19cc67c333d4035c1f45f16523929ef22b5cd28ef0bf624f61ee",
+        "status": "FAIL"
+      },
+      "original_cleanup": {
+        "supervisor_observer_passive_owners_reaped": true,
+        "owned_survivors": []
+      },
+      "frozen_executed_actor_sha256": "927ae22793e2fb3063e2bf9c06f959bf5bff9f2119f6936cd8ce046e43e9abd3",
+      "inherited_close_report_observer_sha256": "5e3d138686d1e0704f3100dd26c978af622c7e813e1fbcccfb18762eb28fa869",
+      "zero_clock_capture": {
+        "path": "build/usb/recovery-closure-oracle-capture-a1/result.json",
+        "sha256": "84360dae50be1eee33212356d7f537c58f81e5ba8a3bce6e44920e8b76323f5c",
+        "status": "PASS_ZERO_CLOCK_OWNED_OBSERVATION"
+      },
+      "capture_scope": {
+        "cycle": 1719000000,
+        "already_issued_quantum_cycles": 5000000,
+        "export_cycles": 0,
+        "paused_observation_seconds": 18.900862738024443,
+        "paused_bound_seconds": 55
+      },
+      "independent_live_observation": {
+        "path": "build/usb/recovery-closure-retained-reobserver-a2/result.json",
+        "sha256": "9e25e19c1749dc19cc473733b23629934379f7984a027b0eee82a8bf1f89f00f",
+        "status": "PASS_RETAINED_LIVE_COLD_NOT_RUN"
+      },
+      "reobserver": {
+        "host_seconds": 6.956228794995695,
+        "host_bound_seconds": 180,
+        "actual_mutants_rejected": 8,
+        "source_inner_stroke": 19,
+        "original_expected_raw_event_number": 7,
+        "journal_sequence": 22,
+        "math_record_sequence": 19,
+        "math_payload_bytes": 2496,
+        "math_attempts": 1,
+        "math_request_reply_count": 1,
+        "old_uncertain_barrier": 129,
+        "deduplicated_old129_extra_effects": 0,
+        "new_durability_barrier": 130,
+        "peer_high_water": 148,
+        "outbox_next": 149,
+        "raw_object": 65556,
+        "raw_record_sequence": 20,
+        "page_record_sequence": 21,
+        "root_record_sequence": 22,
+        "acknowledged_medium_sha256": "8ad8c2898541ecfe165223a3ddbf615da02996c8e3d9a839223974bcb34c7e7e",
+        "full_course_controller_pixels_sha256": "d2df743c9be1559f486d8eefb28bcef0605705cef7b08aaadb74594f2ee045c7",
+        "pixel_relation": "Complete retained FAILED/INVALID controller frame, independently generated source-owned SAVED footer, exact offline raster; every other pixel identical",
+        "no_cpu_or_peer_actions": true
+      },
+      "retained_reobserver_failure": {
+        "path": "build/usb/recovery-closure-retained-reobserver-a1/result.json",
+        "sha256": "7cb73d613061c012b607c798168270ee04a150aaab8198f0b40c45ce9d2c84ac",
+        "status": "FAIL"
+      },
+      "reobserver_failure_scope": "Copied original peer.json correctly names original base path; generic live-peer materializer rejected archive relocation. Separate offline reconstruction uses immutable base+checksummed actual log without rewriting original peer metadata; first capture base.raw/base.img omission corrected separately after all original writers were reaped.",
+      "independent_cold": {
+        "status": "PASS",
+        "directory": "build/usb/recovery-closure-independent-cold-a1",
+        "plan": {
+          "path": "build/usb/recovery-closure-cold-proposal-a1/plan.json",
+          "sha256": "205f3ad3b9c68bea8d6b1ca83437328a73dd7466f63a7eda26ec081eaae16969"
+        },
+        "supervisor_pid": 1393564,
+        "supervisor_start_ticks": 58102961,
+        "absolute_deadline_unix_ns": 1792029137187188561,
+        "per_phase_cycles": 1600000000,
+        "per_phase_host_seconds": 7200,
+        "whole_host_seconds": 14600,
+        "raw_pixels": "independently derived complete original+offline canonical raw page",
+        "course_pixels": "raw COURSE toggle must equal full actual retained course controller frame",
+        "new_cpu": true,
+        "restored": false,
+        "live_close_course": "NOT_RUN",
+        "automatic_restart": false,
+        "timeout_extension": false,
+        "result": {
+          "path": "build/usb/recovery-closure-independent-cold-a1/result.json",
+          "sha256": "caf9de55cc512921622ce6d861bffc96a039fd9581acf4f0134692f7dc479f88"
+        },
+        "host_seconds": 5230.385533770081,
+        "source_medium_sha256": "8ad8c2898541ecfe165223a3ddbf615da02996c8e3d9a839223974bcb34c7e7e",
+        "journal_sequence": 22,
+        "math_record_sequence": 19,
+        "peer_high_water": 148,
+        "outbox_next": 149,
+        "no_write_barrier_or_math_rpc": true,
+        "full_Doc8_history_execution_exact": true,
+        "full_raw_pixels": true,
+        "full_course_pixels": true,
+        "raw_pixels_sha256": "eadbe91c48396df3e9ac10d8121f77b7cd60af59ef2895b627d1e47c217cd72e",
+        "course_pixels_sha256": "d2df743c9be1559f486d8eefb28bcef0605705cef7b08aaadb74594f2ee045c7",
+        "sampled_owned_peak_rss_kib": 342692,
+        "owned_final_apparent_bytes": 814050040,
+        "all_owned_processes_reaped": true,
+        "milestones": {
+          "cold/cold-ready": {
+            "cycle": 885000000,
+            "target_cycles": 885000000,
+            "host_seconds": 4413.963543271064
+          },
+          "cold/raw-COURSE-load-complete-original2496-and-controller": {
+            "cycle": 1005000000,
+            "target_cycles": 120000000,
+            "host_seconds": 806.0055489060469
+          }
+        }
+      }
     },
     "retained_observer_fixtures": {
       "scope": "Read-only legacy retained Doc8/pixel/UART prefix host observation only; no new CPU claim",
@@ -521,7 +649,15 @@
         "status": "PASS_READ_ONLY_OBSERVER_POSITIVE_AND12_NEGATIVES"
       },
       "actual_negatives": 12,
-      "original_import_prefix_history_and_glyph_failures": "Retained under build/usb/recovery-closure-connected-proposal-a1; no earlier receipt rewritten."
+      "original_import_prefix_history_and_glyph_failures": "Retained under build/usb/recovery-closure-connected-proposal-a1; no earlier receipt rewritten.",
+      "prospective_source_window_adaptation": {
+        "scope": "Separate actual per-session host source version/fresh cache; target/native/package unchanged",
+        "qualification": {
+          "path": "build/usb/recovery-closure-connected-proposal-a1/observer-qualification-a6.json",
+          "sha256": "b7d52b2788fa824704afab2b91a8532c686b6bda8a5b090960c9b0ca30522bc9",
+          "status": "PASS_READ_ONLY_OBSERVER_POSITIVE_AND12_NEGATIVES"
+        }
+      }
     },
     "limits": [
       "General G5 mathematics/proof authority incomplete",

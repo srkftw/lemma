@@ -77,7 +77,58 @@
     },
     "scope": "private copy of actual guest-installed editions1/2, fresh edition3 through public raw guest installer, raw course/math/learner/ink and separate independent cold; accepted user behavior has no implied pass before terminal results",
     "started_utc": "2026-10-14T22:44:50Z",
-    "status": "RUNNING_NO_READY_CLAIM"
+    "status": "ORIGINAL_OBSERVER_INTERRUPTED_BEFORE_INPUT; ACTUAL_ORIGINAL_COLD_READY_PASS; PRIVATE_CORRECTED_SUFFIX_RUNNING",
+    "original_interruption": {
+      "path": "build/courses/task006-native-installed-package-a1/original-actor-interruption.json",
+      "sha256": "db60bba6541791bb543fbb3fa514416155930d2e082a516795dc53782d0d6266"
+    },
+    "cold_ready": {
+      "path": "build/courses/task006-native-installed-package-a1/cold-gate-result.json",
+      "sha256": "6ada45079f734ce2249c8197aedda73f85b64dfb12c24ae82ace674a13dd2171"
+    },
+    "cold_ready_cycle": 978000000,
+    "cold_ready_host_seconds_since_original_start": 3560.6561720371246,
+    "private_corrected_suffix": {
+      "status": "RUNNING",
+      "directory": "build/courses/task006-native-installed-package-a2",
+      "actor_pid": 1431014,
+      "absolute_deadline_unchanged": "2026-10-15T00:44:50Z",
+      "initial_cold_scope": "actual original cold is qualified before observational checkpoint; corrected suffix is explicitly private continuation",
+      "source": {
+        "path": "build/courses/task006-notebook-package-integration-draft-a1/check-native-package-a2.py",
+        "sha256": "6d43c86d4689d0a12fa2a4fe011890ec080fcadbfffc4242d6ee62fa37675196"
+      },
+      "consumed_host_sources": {
+        "path": "build/courses/task006-native-installed-package-a2/actor/consumed-host-inputs.json",
+        "sha256": "0c4660bb86c23c87a81996d32a5a8f20ae05a326115599e71b3f95468d265317"
+      },
+      "actual_install_receipt": [
+        1201,
+        1,
+        5,
+        196609,
+        2699972611
+      ],
+      "observed_phases": [
+        {
+          "name": "guestpublicationedition3",
+          "initial_cycle": 978000000,
+          "final_cycle": 1062000000,
+          "clocks": 84000000,
+          "retired": 44070022,
+          "host_seconds": 287.5718723880127
+        },
+        {
+          "name": "immutableduplicateedition3",
+          "initial_cycle": 1062000000,
+          "final_cycle": 1073000000,
+          "clocks": 11000000,
+          "retired": 5844038,
+          "host_seconds": 31.50845115305856
+        }
+      ],
+      "remaining": "course reading/binding/check/revision/learner/ink/cold workflow not yet qualified"
+    }
   },
   "jti_supplement": {
     "actual_cell_negatives": 78,

@@ -1447,3 +1447,47 @@ and skipped candidate-observation step remain retained. The exact fixture
 extension plus explicit newpair authority negatives passes13 focused and the
 full293 suite locally; maintained admission is unchanged. A successor candidate
 still requires its own CI. DraftPR9 remains unmerged.
+
+
+### Continuation: terminal candidate CI and independent companion recovery
+
+Pushedd64b7ab4f96c9f84b213d929b6f0404028eef1eb CI38648367594 completed
+SUCCESS: all10 jobs and every step passed, including foundation host and actual
+notebook acceptance. Original494 failure/skipped target observation remains
+retained in006-candidate-a2-ci.json. Report-onlyda218 has no separate CI claim;
+draftPR9 remains unmerged.
+
+ClosureRecovery3 independent newCPU coldPASS: Ready885M/4413.964s; actual raw
+COURSE completes at1005M, additional120M/806.006s. Full raw/course pixels and
+2496 Doc8 bytes match, no write/barrier/new math RPC, peer148/outbox149 unchanged.
+Result: build/usb/recovery-closure-independent-cold-a1/result.json. Original live
+close-course remains NOT_RUN. The retained complete live lost-ACK/reconnect and
+this separate cold result are both bound in the existing recovery evidence.
+
+New genuine S-WFI/M-timer guest diagnostic7a9c5e has full121-source/45-project-Lean
+audit. Native waiting462k -> original/fork600k suffix matches145145686 bytes.
+Reset edges/retentionPASS, full guest reboot600k windowsFAIL and retained. The
+same ELF passes fast original/warm/newcold records at24000012 virtualns, with
+actual immediate reset observations; this is no timing-parity/cache claim.
+See006-wfi-timer-execution-v1 contract/evidence. All diagnostic children reaped.
+
+The package-enabled original native newCPU reached actual cold Ready978M,
+504135609 retired,3560.656s from original start, and complete panel1. An
+observational checkpoint did not change the machine and had input cursor0.
+The original actor was interrupted before input because its future controls
+after unsupported-reference241 needed an explicit course reopen. Original
+actorFAIL is preserved and all original processes reaped. A separately sealed
+private same-backend a2 suffix now runs from that exact Ready checkpoint under
+the original aggregate6B and absolute2026-10-15T00:44:50Z deadline. Its course
+installation/math/learner/cold workflow remains RUNNING, not accepted.
+
+
+Package browser cold result: actualReady977550000/503905647 retired,192MiB,
+5265.484s machine calls/5429.657s elapsed. Original imported two packages survive;
+actual guest creates missing notebook, Saved4/barrier35. Entire256MiB equals
+independent nativeReady output and every Gray4 pixel maps exactly to its native
+PPM value. Retained byte assertions passed; original observer failures, including
+a final renamed-key diagnostic print error, remain explicit. No exact different-
+cut microstate comparison is claimed. Owner: build/browser/task006-package-
+connected-owner-a1. Typed edition3 input4063B admitted via real modeledUART;
+installation receipt and complete workflow remain pending.
