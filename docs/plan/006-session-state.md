@@ -2526,8 +2526,7 @@ from/tmp runs the new audited initializer in25000000 instruction clocks/0.986s,
 real durability acknowledgment and independently empty store sequence0. Logs
 and views are outside the immutable package. Existing licensing/new-host and
 optional adapter limits remain. Browser serves its extracted package from/tmp
-at8798; tab29 uses unique OPFS dirty-retained9-a1 and actual acknowledged raw
-notebook+packages SHA25a4eb97..., imported without target RAM or snapshot.
+at8798; tab29 uses unique OPFS dirty-retained9-a1 and actual acknowledged packages-only raw medium SHA25a4eb97..., imported without target RAM or snapshot. The later independent census below corrects the original notebook description.
 Initial cycle0/openpaused was observed before the single bounded1B/7200s run.
 This retained input differs from source8 browser's packages-only input; no
 matched browser cold-performance claim follows. Exact RTL source9 is also
@@ -2618,3 +2617,42 @@ terminal result, or label their incomplete workflows passed. Fast timing,
 QEMUcachedtranslation/instructionvisibility, full browser workflow, new-host
 licensing/distribution and digital/physical completion remain separate gaps.
 PR9 remains draft/unmerged; Task006 PR8 authorization does not authorize PR9.
+
+
+Extracted native distribution2 now includes the ordinary dual-backend course
+wrapper. Actual prototype extracted Python-I commands from/tmp pass fresh
+initializer -> pending UART/private fork -> guest install -> newCPUcold ->
+course-load:208.201s actor/214.547s supervised,417,026,048B peak,548,000,078
+post-init fast clock units plus25M initializer. Prototypea1 retained its
+format1 label and is not relabeled. Final explicit format2a2 archive28513435B,
+SHA4090c81a0386271b7c66e4dfd48134c826c78e9c017cefef115d5610bff95c3d,
+manifest3b733265..., launcher a554b485..., prepared27.444s, has its own actual
+retained pending-cut install/load qualification:34.247s actor/36.229s supervised,
+215,801,856B peak. Its three phases advance26,000,001+26,000,000+21,000,001
+nominal fast clocks. This is retained continuation, not another cold result.
+The new verifier also reads the unchanged historical version1 inventory.
+No new-host runtime import/install or license resolution is claimed. See
+[distribution evidence](../evidence/006-local-native-distribution-v1.json).
+
+The single actual browser source9 cold run stopped at Ready806,000,000 RTL
+cycles,6999.819675s host/6894.836645s simulation calls,192MiB Wasm heap, within
+its original1B/7200s. Independent census corrects the original owner/input
+description: source SHA25a4eb97... is sequence2 and ONLY two opaque package
+objects, not a saved notebook. Guest legitimately creates the initial empty
+page/root and reaches sequence4. This qualifies cold boot/initial notebook
+creation, not prior saved-ink recovery. Full128MiBRAM, ROM, every controller
+pixel/array, UART, all43 wrapper scalars and generated model payload match the
+independently retained nativeRTL Ready cut at the same806M cycles. Headers
+legitimately retain different native/Wasm identities. Original passive FAIL
+misread field10(flushes) as busy; missing-only observer corrected against actual
+serialization index35/38, without rerunning CPU or repeating fullCRC work.
+Original report and source-description error remain recorded. Exports and
+corrected receipt:build/browser/task006-dirty-batch-cold-ready-export-a1/.
+The subsequent authored course panel case has its own original400M/absolute
+2026-10-15T20:33:15.020525Z bound; full browser workflow remains open.
+
+Candidate53d1da9 CI38789151262 finishedSUCCESS11/11; every reported step
+succeeded, no skips. It covers the committed rawUART milestone, not the local
+native-distribution2 or proposed restored-batch10 changes. PR9 stays draft and
+unmerged. The latter has component-only qualification; no admitted whole10
+artifact, measured boot improvement or guest10 execution yet.

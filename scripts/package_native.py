@@ -36,6 +36,7 @@ python3 -I /path/to/extracted/run.py init --backend qemu --profile lemma-silicon
 python3 -I /path/to/extracted/run.py session --backend rtl --profile lemma-silicon-dev/0.3.0 --disk /outside/package/new.raw --session-dir /outside/package/live --mode developer --paused --headless
 python3 -I /path/to/extracted/run.py session-control --session-dir /outside/package/live --request '{"action":"run","cycles":1000000}'
 python3 -I /path/to/extracted/run.py snapshot --session-dir /outside/package/live --to /outside/package/cut
+python3 -I /path/to/extracted/run.py course-install --session-dir /outside/package/live --package /outside/package/course.lcp --transaction 1
 ```
 
 Session/init creates a persistent sibling .bundle directory and .relocation.json
@@ -45,6 +46,9 @@ are preserved. The original prepared bundle remains immutable. Session-control,
 snapshot, restore, replay, raw button and course commands use the same maintained
 host front end and guest permissions. Supported commands forward ordinary CLI
 arguments; run COMMAND --help for details. No compile/build command is provided.
+Course commands select the exact RTL guest path or a negotiated canonical fast
+raw UART1 bundle. Pause a Developer/Laboratory session first. Admission is not
+Installed/Saved; only the actual guest receipt after its backing barrier counts.
 
 Restoring a checkpoint creates a private continuation, not cold recovery. For a
 new restored session omit --disk and supply --restore /path/to/cut. Guest Saved
@@ -129,7 +133,7 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
     shutil.copytree(bundle / 'source', output / 'host')
     inputs = {}
     selected = [p for p in (ROOT / 'scripts').rglob('*')
-                if p.is_file() and (p.suffix == '.py' or p.name == 'lemmasim')]
+                if p.is_file() and (p.suffix == '.py' or p.name in ('lemmasim', 'lemmasim-course'))]
     selected += list((ROOT / 'conformance/lemmasim').rglob('*.py'))
     selected += list((ROOT / 'sim/profiles').glob('*.json'))
     for source in sorted(set(selected)):
@@ -166,7 +170,7 @@ def package(bundle, output, archive=None, include_nix_runtime=False):
              for p in sorted(output.rglob('*')) if p.is_file()}
     if len(files) > 8192 or sum(row['bytes'] for row in files.values()) > 2 << 30:
         raise ValueError('Native package exceeds declared file/byte bound')
-    manifest = {'schema': 'lemma-local-native-distribution/1',
+    manifest = {'schema': 'lemma-local-native-distribution/2',
                 'scope': 'Prepared canonical machine, extracted host front end and exact source-location aliases; external Nix libraries required',
                 'source_bundle_sha256': sha(bundle / 'bundle.json'),
                 'producer_sha256': sha(Path(__file__)), 'host_inputs': inputs, 'files': files}

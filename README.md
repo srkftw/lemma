@@ -1482,8 +1482,9 @@ The matching extracted static browser archive is
 `build/distribution/task006-dirty-batch-browser-a1.tar.gz`. Run its standalone
 launcher with `python3 -I /path/to/lemmasim-browser/serve.py --port 8798`.
 It uses the exact new RV64 guest and existing RTL Wasm machine, not a browser
-notebook implementation. The active retained-medium cold case is at8798 with
-private medium `dirty-retained9-a1`; its original1B/7200s result is still pending.
+notebook implementation. The actual packages-only cold case at8798 reached Ready at806M RTL cycles in
+6999.82s within its original1B/7200s bound. It created the initial notebook;
+prior saved-ink cold recovery and the full browser course workflow remain open.
 
 The canonical fast machine can now install an authored course on an empty
 guest-initialized medium through actual guest UART instructions. The same
@@ -1554,3 +1555,34 @@ LEMMA_FAST_RAW_UART=1 ./scripts/lemmasim native-bundle-build --refresh-fast \
   --expected-fast-sha256 97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7 \
   --output-dir build/native/AN_UNUSED_RAW_UART_BUNDLE
 ```
+
+
+The extracted native version2 archive includes that raw-UART backend and the
+same course command surface:
+
+```sh
+tar -xzf build/distribution/task006-raw-uart-native-a2.tar.gz -C /your/extraction
+cd /tmp
+python3 -I /your/extraction/lemmasim-native/run.py init --backend qemu \
+  --profile lemma-silicon-dev/0.3.0 --disk /your/media/new.raw
+python3 -I /your/extraction/lemmasim-native/run.py session --backend qemu \
+  --profile lemma-silicon-dev/0.3.0 --disk /your/media/new.raw \
+  --session-dir /your/sessions/new --mode developer --paused --headless
+```
+
+In a second terminal use the same `run.py session-control` commands above,
+then `run.py course-install --session-dir /your/sessions/new --package
+/your/course.lcp --transaction 1`. Version2 also supplies `course-load` and
+`course-delete-probe`. Their help gives the explicit edition/CRC/node fields.
+All mutable paths must be outside the extracted directory; preserve the
+session's sibling bundle view. Python3.10+ and the inventoried Nix runtime
+remain prerequisites. The optional runtime export requires an explicit import
+on a compatible host. New-host installation and redistribution rights remain
+unresolved. Exact archive identities and the actual extracted guest/cold and
+retained-suffix qualifications are in the
+[native distribution evidence](docs/evidence/006-local-native-distribution-v1.json).
+
+The same real-guest UART conformance checker accepts `--launcher
+/absolute/path/to/lemmasim-native/run.py` instead of `--native-bundle`, with the
+same `--package` and an unused `--work-dir`. Every machine/init/course command
+then executes the extracted launcher from/tmp with isolated Python-I.

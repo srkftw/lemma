@@ -12,7 +12,7 @@ def verify(root):
     if any(p.is_symlink() for p in (root, *root.parents)):
         raise ValueError('Symlinked native package path')
     data = json.loads((root / 'package.json').read_text())
-    if data.get('schema') != 'lemma-local-native-distribution/1':
+    if data.get('schema') not in ('lemma-local-native-distribution/1', 'lemma-local-native-distribution/2'):
         raise ValueError('Unsupported native distribution')
     files = data.get('files')
     if not isinstance(files, dict) or not 8 <= len(files) <= 8192:
@@ -33,6 +33,8 @@ def verify(root):
             raise ValueError('Native distribution byte bound/identity failed')
     required = {'run.py', 'bundle/bundle.json', 'host/scripts/lemmasim',
                 'host/scripts/native_bundle_relocation.py', 'NOTICE.txt', 'README.md'}
+    if data['schema'] == 'lemma-local-native-distribution/2':
+        required |= {'host/scripts/lemmasim-course', 'host/scripts/lemmasim_course_fast.py'}
     actual = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
     if (not required <= files.keys() or actual != files.keys() | {'package.json'}
             or any(p.is_symlink() for p in root.rglob('*'))
@@ -44,7 +46,7 @@ def verify(root):
 def main():
     root = Path(__file__).absolute().parent
     try:
-        verify(root)
+        distribution = verify(root)
         args = sys.argv[1:]
         sys.dont_write_bytecode = True
         sys.path.insert(0, str(root / 'host/scripts'))
@@ -79,7 +81,13 @@ def main():
             from native_bundle_relocation import create_view
             create_view(root / 'bundle', view, root / 'host')
             args += ['--native-bundle', str(view)]
-        script = root / 'host/scripts/lemmasim'
+        course = {'course-install': 'install', 'course-load': 'load',
+                  'course-delete-probe': 'delete-probe'}
+        if distribution['schema'] == 'lemma-local-native-distribution/2' and args[0] in course:
+            args = [course[args[0]], *args[1:]]
+            script = root / 'host/scripts/lemmasim-course'
+        else:
+            script = root / 'host/scripts/lemmasim'
         sys.argv = [str(script), *args]
         runpy.run_path(str(script), run_name='__main__')
     except (OSError, ValueError, KeyError, TypeError, ImportError) as error:

@@ -379,18 +379,71 @@
     "execution": "NOT_YET_RUN with new9 companion guests; original Saved12 recovery actor uses unchanged older6 bundle and keeps its own meaning"
   },
   "candidate_ci": {
-    "ad897e1": {
-      "run": 38770831309,
-      "status": "SUCCESS",
-      "jobs": 11,
-      "all_reported_steps": "success; no skips"
+    "commit": "53d1da928904dbd13427a6289b24e17bab019b45",
+    "run": 38789151262,
+    "status": "SUCCESS",
+    "jobs": 11,
+    "every_reported_step": "success",
+    "skipped_steps": 0,
+    "scope": "Committed rawUART milestone only; local native2/restored10 work not covered"
+  },
+  "browser_cold_ready": {
+    "status": "PASS_ACTUAL_COLD_INITIAL_NOTEBOOK_READY_AND_NATIVE_STATE_EQUAL",
+    "scope": "Packages-only raw medium, no snapshot/RAM initialization. Actual browser cold Ready, initial guest notebook creation; no prior saved-ink recovery or full browser workflow claim.",
+    "precise_observation": {
+      "source": "Actual exposed #inspection DOM JSON read while same worker remained alive; readyAt preserved its original cold milestone. The later elapsedSeconds includes paused/export time.",
+      "ready_cycle": "806000000",
+      "ready_host_seconds": 6999.819674999952,
+      "cold_simulation_call_seconds": 6894.836644998198,
+      "heap_bytes": 201326592,
+      "input_correction": "Original medium sequence2 only two package objects; guest created initial notebook."
     },
-    "3912103": {
-      "run": 38780426144,
-      "status": "SUCCESS",
-      "jobs": 11,
-      "all_reported_steps": "success; no skips"
+    "passive_missing_only_correction": {
+      "status": "PASS_ACTUAL_BROWSER_COLD_READY_ALL_PIXELS_MEDIA_NATIVE_WRAPPER",
+      "scope": "Passive cold Ready comparison; no machine clock, restore or guest writes.",
+      "observer_sha256": "f3e1eac0ce013daf34659fe9eb53f8f7eae7b2b49f0db578e2b0ec4c0549ec24",
+      "retained_failure": "result.json; original full CRC/everywrapper scalar/UART/visible equality passed before invalid flushes[10]==0 assumption. Primary STATE_SCALARS proves10isflushes, notbusy. Original owner plan input description also overstated: exact source medium contains only two packages; guestcreatesinitial notebook. No retained-notebook recovery claim.",
+      "ready_cycle": 806000000,
+      "ready_host_seconds": 7000.2,
+      "simulation_call_seconds": 6894.8,
+      "heap_bytes": 201326592,
+      "all_wrapper_scalar_fields_exact": true,
+      "guest_uart_exact": true,
+      "ram_rom_and_controller_arrays_exact": true,
+      "all_pixels": 3630000,
+      "original_package_bytes_exact": true,
+      "guest_initial_notebook_created": true,
+      "input_sequence": 2,
+      "sequence": 4,
+      "objects": 4,
+      "generated_model_bytes_equal": true,
+      "model_bytes": {
+        "browser": 24942,
+        "native": 24942
+      },
+      "observer_stop_labels": {
+        "browser": "",
+        "native": ""
+      },
+      "native_snapshot_identity": "7a59b9e6067ac1fd2990aa31f311c157586d8b5fc83cce5416af10790e3ecc9c",
+      "browser_implementation": "fb15aade4646d035457f5b5e07663ce8235c72bcb4dff3823f2d10c3c165a1c3",
+      "snapshot_sha256": "b48195b8011d632912834808c663c552cd1ccdd7d81f056e3812471420d43320",
+      "medium_sha256": "c81f3783c9ac7f49cf91121cf9ea46ac1961986498a8eb05eb3723b76167b5e7",
+      "original_owner_plan_sha256": "841e0ce4257bc9cf4eb4353c1f16edca3b639ab150584374444759b002e1a6c2",
+      "not_run": [
+        "full browser course/math/ink/save/durable notebook reopen",
+        "applicable cross-native/Wasm event suffix",
+        "general state/timing or physical closure"
+      ],
+      "seconds": 3.491492448025383
     },
-    "qualification": "These runs precede local uncommitted rawUART code; no inferred CI pass for it. PR9 remains draft/unmerged."
+    "receipts": {
+      "ready-precise-exposed-observation-a1.json": "6bc6a895e3d7ed91a61e44e68e188d3cedd32054377df09d2691051926d9178a",
+      "result.json": "d89c089e04b1e865b8056a145c493808b890e1e4d51e4dca4245a5b1fccc40b2",
+      "missing-only-result-a2.json": "1a84ecbed35a2061a4c3b8b5268d398a7370887eca3d7a389422052bf0d7f266",
+      "check-missing-only-a2.py": "f3e1eac0ce013daf34659fe9eb53f8f7eae7b2b49f0db578e2b0ec4c0549ec24"
+    },
+    "original_failure_retained": "Original full-state/CRC passive observer used field10 as busy and original owner overstated input as saved notebook. Corrected from primary serialization and actual medium census, no CPU rerun or hidden boundary action.",
+    "next_case": "Original400M/absolute2026-10-15T20:33:15.020525Z authored body observation is running; no current pass."
   }
 }

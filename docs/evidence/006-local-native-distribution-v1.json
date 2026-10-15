@@ -255,5 +255,148 @@
     "guest_seconds": 0.9569003699580207,
     "guest_sha256": "0ace19d4884cf3e5dc8240a41f3b2cb9e128c2ad997bca520731c632e1e9bd5a",
     "source_scope": "CurrentA4 only; actual initializerguest/barrier, independent sequence0/noobjects; no host formatter; no explicit session-dir. Session/init --help pass and entire package remains exactly inventoried after operation."
+  },
+  "successor_v2": {
+    "status": "PASS_EXTRACTED_RAW_UART_GUEST_INSTALL_PENDING_FORK_COLD_LOAD_AND_FINAL_V2_RETAINED_SUFFIX",
+    "scope": "Actual Linux x86-64 Python-I launches from /tmp. Unchanged genuine dirtybatch9 RV64 pair and opt-in rawUART1. Prototype full fresh/cold qualification and final format2 retained-suffix qualification are distinct.",
+    "implementation_inputs": {
+      "scripts/package_native.py": "04edb338f7b552f110b824ab42e872f78a18fe3f754a12c2fb713753a7461806",
+      "sim/native/run_local.py": "a554b48585311d7af93b5a62496cebcafe3301d994082d6fb9afdcdba663a259",
+      "conformance/lemmasim/check_fast_uart_ingress.py": "d999a2ef83e6e1f455f4101f3b056a6300f7ea441c6c9ab6495613a576ccca47"
+    },
+    "final_package": {
+      "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-raw-uart-native-a2",
+      "manifest_sha256": "3b733265b2051f287574e24cb4661fc50421b6940f022e4720edf719ea6ab9b1",
+      "source_bundle_sha256": "e82b6ed5414dbedb4199de90bf4bdfe65fddb3002f1f660cde7bfca6ade2b7d1",
+      "files": 1584,
+      "bytes": 138630806,
+      "ordinary_both_backend_both_guest_admission": true,
+      "host_dependencies": "Exact external Nix files retained as prerequisites",
+      "guest_execution": "NOT_EXERCISED_BY_PACKAGING",
+      "host_runtime_archive": {
+        "format": "nix-store-export",
+        "path": "runtime-closure.nar",
+        "sha256": "17d6dda95ff936f788902e3ab6b69146b69fb827bf8b1401cc1e7fd55ae91245",
+        "bytes": 49253648,
+        "store_roots": [
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib"
+        ],
+        "complete_requisites": [
+          "/nix/store/g60m3aky9f59wgy1gi0y06xwmbw19d6m-xgcc-16.2.0-libgcc",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib",
+          "/nix/store/jp8ql2fnd61xhvb4vsfp0bqwrzf16qrp-libunistring-1.4.2",
+          "/nix/store/q0lbdx5yv93a3md74kjhm0v2kljjii89-libidn2-2.3.8",
+          "/nix/store/q2mkz6ca1alqfqf750dygvakmq8kjrwz-gcc-16.2.0-libgcc"
+        ],
+        "dependency_files": {
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libc.so.6": "ef3843ed24108fc3cfde4095cdb12e0643b9953f4b902bad8152d002fc0cbbe3",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libm.so.6": "935fd3fa15c35746041cfa475003571dc51b9ce0c395034ac9d50bb8e1583919",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/libpthread.so.0": "244961bf4e6c9211890bf0fe41689e3d7e7ee4eb3d6c58c3eb3841178384f529",
+          "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib64/ld-linux-x86-64.so.2": "e2e9975273f65f7cb730f4fcc8a9a5aae62763b6263de877a8b896311819d7b6",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libatomic.so.1": "f6e57bb416b74bdc6a0c7c61efd2c6670f666e53a658092b68414668640416d0",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libgcc_s.so.1": "e80a9d87e1a0b8249700f459767b257b01969c79bee3c8fb15e35e1e9c4da055",
+          "/nix/store/j7qx4s4mr17j1wqgvqdzj33lmrnzb387-gcc-16.2.0-lib/lib/libstdc++.so.6": "47c4e32721428eb2078bb9fb0670805f94821b21601f2b191bea4a1f1b223e2d"
+        },
+        "tool": {
+          "path": "/run/current-system/sw/bin/nix-store",
+          "binary": "/nix/store/yhbbi1pjdkxss2f6k5pgg4gv0r8fva7f-nix-2.31.2/bin/nix",
+          "sha256": "6bd632acf71ef7bcb98c61019e557fea959f2d8c1b2d9918702dfc8e5c66fdf0"
+        },
+        "scope": "Existing host runtime files only; no import, download, trust change or guest runtime linkage"
+      },
+      "archive": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-raw-uart-native-a2.tar.gz",
+        "sha256": "4090c81a0386271b7c66e4dfd48134c826c78e9c017cefef115d5610bff95c3d",
+        "bytes": 28513435
+      },
+      "seconds": 27.444050058024004
+    },
+    "prototype_full_guest_case": {
+      "path": "build/uart/task006-raw-uart-native-conformance-a1/result.json",
+      "sha256": "ea5706584dbb5abc020255af6eddfaec4a4d0e3d3ff4bc832ae6a966e1a37c7c",
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+      "seconds": 208.20094437210355,
+      "phases": [
+        {
+          "name": "cold-Ready",
+          "clocks": 236000006,
+          "seconds": 70.73962481494527
+        },
+        {
+          "name": "actual-raw-guest-installation",
+          "clocks": 26000001,
+          "seconds": 13.865415925974958
+        },
+        {
+          "name": "independent-cold-Ready",
+          "clocks": 239000005,
+          "seconds": 74.12928139104042
+        },
+        {
+          "name": "cold-guest-package-load",
+          "clocks": 21000001,
+          "seconds": 7.470555732026696
+        }
+      ]
+    },
+    "prototype_supervision": {
+      "path": "build/uart/task006-raw-uart-native-conformance-supervision-a1/result.json",
+      "sha256": "989746a00699be0ae8831e99421134e85293a5880598163a88ab6ec7177e64fc",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "seconds": 214.54657334205694,
+      "owned_peak_rss_bytes": 417026048
+    },
+    "final_v2_actual_suffix": {
+      "path": "build/uart/task006-raw-uart-native-v2-a1/result.json",
+      "sha256": "ef6b60468d7ca6b76dc46933a1af45664a2bdc8fdc95ff7a8cfbb4d4bdaf8359",
+      "status": "PASS_ACTUAL_EXTRACTED_V2_INSTALL_LOAD_FROM_RETAINED_CUT",
+      "seconds": 34.2466647910187,
+      "phases": [
+        {
+          "name": "retained-actual-package1-publication",
+          "clocks": 26000001,
+          "seconds": 9.337365385028534
+        },
+        {
+          "name": "packaged-actual-edition2-install",
+          "clocks": 26000000,
+          "seconds": 8.488136733998545
+        },
+        {
+          "name": "packaged-actual-edition2-load",
+          "clocks": 21000001,
+          "seconds": 3.6174129699356854
+        }
+      ]
+    },
+    "final_v2_supervision": {
+      "path": "build/uart/task006-raw-uart-native-v2-supervision-a1/result.json",
+      "sha256": "8b4cf73d60c62e73593b6229ee3d3348d5f690b6f04de3b554fee1c05d05e3f6",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "seconds": 36.22915817901958,
+      "owned_peak_rss_bytes": 215801856
+    },
+    "historical_v1_reader": {
+      "path": "build/uart/task006-raw-uart-native-v2-plan-a1/legacy-v1-reader.json",
+      "sha256": "b6d744ee26e5fa0362f8bb1455308611e3004a50fc63719107fe593a8c776204",
+      "status": "PASS_HISTORICAL_NATIVE_V1_INVENTORY_READER"
+    },
+    "prototype_note": "Prototype a1 genuinely ran all init/session/course commands from the extracted package, but retained the format1 label. Final a2 explicitly emits format2 and has its own actual retained pending-cut installation/load; no new cold run is claimed for final a2.",
+    "limits": [
+      "Fast instruction-clock functional scope; no pipeline timing parity",
+      "General softTLB/TB/jump-cache/instruction-visibility continuation remains open",
+      "Existing-runtime export is not new-host installation qualification",
+      "Project/upstream redistribution obligations remain unresolved",
+      "Optional product-boot/companion/radio adapters are not packaged"
+    ],
+    "host_checks": {
+      "silicon": "215 tests PASS, build/uart/task006-raw-uart-native-v2-plan-a1/silicon-host.log",
+      "scaffold": "18 tests PASS10.071s, build/uart/task006-raw-uart-native-v2-plan-a1/scaffold-host.log",
+      "metadata": "PASS seven gates/56 software/six physical units; metadata only"
+    }
   }
 }

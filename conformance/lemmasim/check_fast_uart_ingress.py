@@ -43,6 +43,18 @@ class Case(Checker):
                                ROOT/'scripts/lemmasim-course',
                                *sorted((ROOT/'conformance/lemmasim').glob('*.py'))]}
         self.report['host_source_inputs'] = self.source_inputs
+        if args.launcher:
+            self.report['external_launcher'] = dict(path=str(args.launcher),
+                sha256=sha(args.launcher),
+                package_manifest_sha256=sha(args.launcher.parent/'package.json'))
+
+    def launch(self, args, **kwargs):
+        if not self.args.launcher:
+            return super().launch(args, **kwargs)
+        command = [sys.executable, '-I', str(self.args.launcher), *args]
+        self.commands.write(json.dumps(command)+'\n')
+        self.commands.flush()
+        return subprocess.Popen(command, cwd='/tmp', **kwargs)
 
     def write(self):
         (self.directory/'result.json').write_text(json.dumps(self.report, default=str, indent=2)+'\n')
@@ -97,10 +109,12 @@ class Case(Checker):
         require(self.args.package.stat().st_size <= 32768, 'bounded authored package required')
         disk = self.directory/'initialized.raw'
         # This is the ordinary actual initializer, never a host formatter.
-        self.command(['init', '--backend', 'qemu',
-            '--profile', self.profile, '--native-bundle', str(self.args.native_bundle),
+        command = ['init', '--backend', 'qemu', '--profile', self.profile,
             '--disk', str(disk), '--session-dir', str(self.directory/'initializer'),
-            '--timeout', str(self.args.timeout)])
+            '--timeout', str(self.args.timeout)]
+        if self.args.native_bundle:
+            command += ['--native-bundle', self.args.native_bundle]
+        self.command(command)
         self.report['initializer'] = json.loads((self.directory/'initializer/result.json').read_text())
         require(self.report['initializer']['status'] == 'ACKNOWLEDGED_GUEST_INITIALIZATION'
                 and self.report['initializer']['medium_sha256'] == sha(disk),
@@ -239,12 +253,15 @@ class Case(Checker):
         # consumed through Store and the Lean package validator after reset.
         # Exercise the installed ordinary command surface, not a host-side
         # Store parser or a replacement package loader.
-        command = [sys.executable, str(ROOT/'scripts/lemmasim-course'), 'load',
+        command = ([sys.executable, '-I', str(self.args.launcher), 'course-load']
+                   if self.args.launcher else
+                   [sys.executable, str(ROOT/'scripts/lemmasim-course'), 'load']) + [
                    '--session-dir', str(cold.directory), '--identity', str(identity),
                    '--edition', str(edition), '--node', '0', '--crc', str(crc)]
         self.commands.write(json.dumps(command)+'\n')
         self.commands.flush()
-        completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+        completed = subprocess.run(command, cwd='/tmp' if self.args.launcher else ROOT,
+                                   capture_output=True, text=True,
                                    timeout=min(120, self.deadline-time.monotonic()), check=True)
         admission = json.loads(completed.stdout)
         require(admission['status'] == 'RAW_COMMAND_ADMITTED' and admission['operation'] == 2,
@@ -263,7 +280,9 @@ class Case(Checker):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--native-bundle', required=True, type=Path)
+    frontend = parser.add_mutually_exclusive_group(required=True)
+    frontend.add_argument('--native-bundle', type=Path)
+    frontend.add_argument('--launcher', type=Path, help='Extracted native run.py; launches from /tmp with Python -I')
     parser.add_argument('--package', required=True, type=Path)
     parser.add_argument('--work-dir', required=True, type=Path)
     parser.add_argument('--timeout', type=int, default=120)
@@ -271,7 +290,8 @@ def main():
     args = parser.parse_args()
     require(1 <= args.timeout <= 120 and 1 <= args.deadline <= 600, 'bounded host deadlines required')
     args.durable_suffix_from = None
-    args.native_bundle = str(args.native_bundle.resolve())
+    args.native_bundle = str(args.native_bundle.resolve()) if args.native_bundle else None
+    args.launcher = args.launcher.resolve() if args.launcher else None
     args.checkpoint_relation = 'raw-uart-observations-and-applicable-suffix-only'
     resource.setrlimit(resource.RLIMIT_AS, (4 << 30, 4 << 30))
     resource.setrlimit(resource.RLIMIT_FSIZE, (1 << 30, 1 << 30))

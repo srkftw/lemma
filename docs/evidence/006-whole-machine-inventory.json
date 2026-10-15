@@ -980,7 +980,7 @@
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
     "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
-    "candidate_ci": "ad897e1 CI38770831309 and3912103 CI38780426144 terminalSUCCESS11/11/allreportedsteps/no skips. Local uncommitted UART extension not covered. Original failures/cancel/skips retained; PR9 draft/unmerged.",
+    "candidate_ci": "ad897e1,3912103 and53d1da9 terminalSUCCESS11/11/allreportedsteps/no skips. Latest local distribution2/restored-batch10 work not covered. Original failures/cancel/skips retained; PR9 draft/unmerged.",
     "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2.",
     "companion_guest_artifacts": "Fresh complete408input companion9 pair/full audits PASS1074.274s actor/1080.066s supervised, peak1,928,642,560B; initializer cd9c4a7f..., notebook33351fbc.... Immutable build/native/task006-dirty-batch-companion-a1 reuses original validated Clocked13RTL6cbd9cad.../64d7d234.... New9 execution pending; original older6 Saved12 case not relabeled."
   },
@@ -990,9 +990,16 @@
     "model": "Existing pinned QEMU core opt-in derived host transport97ab475e...; defaultderivation and historicalbundleidentities retained. Serial ordinary16550callback/FIFO/IRQ, no debuggerRBR/MMIO injection. RequireddeviceVMState4 retains raw ring/deadlines/timer/accounting and storedhostlifecycle.",
     "rtl": "Existing exactRTL path unchanged; this is a fast functional port, not UART/core timing parity.",
     "state": "Actual nonempty FIFO+4090externalpending, strict everyexposedfield/original-privatefork suffix/allbytes/pixels pass; validouterhash/missingrequiredversion3 rejects actualprivateVMState without live mutation. Offline13realoutcome rows match accepted boundaries with original mutable medium absent. GeneralQEMUcachedstate remains open.",
-    "distribution": "Prepared local raw bundlea2; earlier extractednative/static packages keep earlier cores and do not acquire this port. Newhost/license/browser obligations open.",
+    "distribution": "Extracted native format2 rawUART archive a2 now prepared and actual install/load from retained nonempty pending cut passes34.247s; prototype actual fresh/cold conformance passes208.201s actor. Current verifier preserves format1 archives. Optional adapters, new-host execution and licensing remain open. See local-native-distribution evidence.",
     "performance": "Full44phase+pendingprefix/suffix2,615,000,200actualnominalfastclockunits/397.221sactor/399.444ssupervised,418.9MBpeak; originalactor requested-suffix accounting offby1 retained and independently corrected from actual phases/states. Separate maintainedconformance548,000,078clockunits+25Minitializer/216.671ssupervised,279.7MBpeak. Not RTL cycles or matched workload speedup.",
     "physical": "No new physical claim.",
     "evidence": "docs/evidence/006-fast-uart-ingress-v1.json"
+  },
+  "browser_cold_ready_milestone": {
+    "behavior": "Actual source9 packages-only cold boot creates initial notebook and Ready806MRTLcycles; not recovery of prior saved notebook/ink.",
+    "performance": "6999.819675s host/6894.836645s simulation calls,192MiBWasmheap within original1B/7200s.",
+    "native_relation": "All43wrapper scalars/fullRAM/ROM/UART/controller arrays/every pixel/generated model payload equal independently retained native806MReady cut. Different archive headers/identities retained.",
+    "evidence": "build/browser/task006-dirty-batch-cold-ready-export-a1/missing-only-result-a2.json",
+    "gaps": "Full browser course/math/ink/Save/durable-onlyreopen and broader continuation remain open; original source-description and passive-field10 observer errors retained."
   }
 }

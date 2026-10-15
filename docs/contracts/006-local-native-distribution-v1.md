@@ -57,3 +57,22 @@ execution. Both restored suffix branches can share a checkpoint omission;
 their equality does not close arbitrary-boundary continuation. No package
 preparation result establishes cold Ready, mathematical correctness, fast
 timing parity, new-host installation or physical conformance.
+
+
+`lemma-local-native-distribution/2` adds the ordinary dual-backend course
+command wrapper and its fast UART adapter to the immutable inventory. The
+packaged `run.py course-install|course-load|course-delete-probe` commands use
+that wrapper only for version2. Version1 archives retain their original
+command dispatch; the current verifier accepts both versions and requires
+the extra wrapper files only for version2. The selected backend must expose
+its admitted transport; packaging never manufactures controller readiness
+or a guest receipt. Raw UART1 follows its separately versioned contract.
+
+A version2 archive containing the unchanged genuine dirty-batch9 guest pair
+and opt-in raw-UART fast machine has passed extracted Python-I initialization,
+nonempty pending-input continuation, actual guest installation, independent
+cold recovery and course load from /tmp. A separately built final version2
+archive passed installation/load from the retained pending-input cut. The
+first prototype archive retained a version1 label and is recorded separately;
+it is not relabeled as version2. These observations qualify the specified
+functional path, not general QEMU cached-state continuation or fast timing.
