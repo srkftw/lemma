@@ -139,6 +139,7 @@ jobs:
           timeout --foreground --signal=TERM --kill-after=30s 20m \
             nix develop --no-write-lock-file --command \
               lake build Lemma Lemma.Platform.LemmaSim.NotebookKernel \
+                Lemma.Applications.Notebook \
                 Lemma.Compiler.KernelExport \
                 Lemma.User.Runtime.Arena Lemma.Mathematics.OwnedSubmission \
                 Lemma.Courses.Arithmetic \

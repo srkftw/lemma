@@ -749,5 +749,119 @@
       }
     },
     "replacement_ci": "NOT_RUN for this unpushed repair; original candidate remains FAILURE."
+  },
+  "subsequent_candidate_f609": {
+    "source_commit": "f609fd054fdf59fbf1f9886c7d2361b35bfcd82f",
+    "actual_ci_run": 38664945609,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "jobs_passed": 9,
+    "jobs": [
+      {
+        "id": 116194624064,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Qualify IPC authority and managed notebook lowering"
+        ],
+        "skipped_steps": [
+          "Run kernel host-harness suite",
+          "Run silicon host orchestration and observation suite"
+        ]
+      },
+      {
+        "id": 116194624220,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624280,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624282,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624319,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624373,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624475,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624493,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624512,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116194624618,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "original_log": {
+      "path": "build/ci/task006-f609-failure-a1/metadata-job.log",
+      "sha256": "f28ab5eb86941de4d96b4b08c985e31c44a3704e8dad3c82b8b5609507a002fa"
+    },
+    "cause": "Fresh CI did not build Lemma.Applications.Notebook.olean before the actual NotebookPackage.lean import. Foundation passed; the subsequent kernel and silicon host steps were skipped. Nine other jobs passed, including actual notebook O0/O2 and cold recovery.",
+    "repair": "Build the explicitly imported Notebook module in the existing bounded Lake step, and assert that dependency ordering in the workflow guard. No test, timeout, pipefail or required observation is removed.",
+    "local_validation": {
+      "status": "PASS",
+      "workflow_guard_tests": 13,
+      "actual_Lean_module_and_regression": "65 Lake jobs plus actual NotebookPackage.lean regression",
+      "guard_log": {
+        "path": "build/ci/task006-f609-failure-a1/workflow-guard-repaired.log",
+        "sha256": "a83bb356d2b0f64768a62c7ae1cf49b4ce309b793d7832c01eec9ea33499a612"
+      },
+      "actual_Lean_log": {
+        "path": "build/ci/task006-f609-failure-a1/notebook-module-and-regression.log",
+        "sha256": "b17211810c2b7190723504c6023f4cb1d91e86a65bf1eec8e1c42051ff761d64"
+      }
+    },
+    "replacement_ci": "NOT_RUN for the unpushed dependency repair; original candidate remains FAILURE."
   }
 }
