@@ -1,0 +1,264 @@
+{
+  "schema": "lemma-fast-uart-ingress-evidence/1",
+  "status": "PASS_ACTUAL_GUEST_INSTALL_PENDING_SUFFIX_COURSE_MATH_INK_COLD",
+  "scope": "Opt-in canonical fast raw byte ingress on the existing QEMU machine; no host guest policy, new target language/runtime, timing parity or arbitrary cached-state continuation. Original default derivation and immutable historical bundles stay distinct.",
+  "contract": "docs/contracts/006-fast-uart-ingress-v1.md",
+  "feature": "lemma-raw-uart/1",
+  "adapter": "lemmasim-fast-adapter/5",
+  "required_device_state_version": 4,
+  "backend": {
+    "path": "/nix/store/b16yg2x2wyjblw63x5kln24z9n6m2s2r-lemmasim-qemu-raw-uart-v1-11.1.1/bin/qemu-system-riscv64",
+    "sha256": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7"
+  },
+  "derivation": {
+    "path": "/nix/store/0gkh4mxn9cksrwp549qlxy37qwm1aqcg-lemmasim-qemu-raw-uart-v1-11.1.1.drv",
+    "sha256": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745"
+  },
+  "guest_pair": {
+    "notebook": "8ab77e837697507f860078c21842c7815727f78b9611bdf266a7192ae84e3778",
+    "initializer": "8b3e3f3cac1980e024a1e2c992a37e2a9ad3006375b06f0ff4dd8ad612991ccf",
+    "scope": "Unchanged genuine full audited dirtybatch9 Lean/RV64 artifacts; new host backend, not fresh target compilation"
+  },
+  "local_immutable_bundle": "build/native/task006-dirty-batch-raw-uart-a2/bundle.json",
+  "build": {
+    "path": "build/uart/task006-raw-uart-owner-a4/result.json",
+    "sha256": "37bd589965e68e6c01fcde25d67b2ee645059f1082a456df8a891d87358cba4e",
+    "status": "PASS_ACTUAL_CORRECTED_BACKEND_COMPILE_PREPARATION_ONLY",
+    "source_files_frozen": 41,
+    "sources_equal": true,
+    "resources": {
+      "bounds": {
+        "compile_jobs": 2,
+        "minimum_available_bytes": 2147483648,
+        "owned_disk_bytes": 12884901888,
+        "per_child_address_space_bytes": 2147483648,
+        "per_file_bytes": 2147483648,
+        "seconds": 2400,
+        "tree_rss_bytes": 6442450944
+      },
+      "maximum_generated_file_bytes": 33137631,
+      "minimum_available_bytes": 7853363200,
+      "owned_survivors": {},
+      "peak_source_and_build_bytes": 964049103,
+      "peak_tree_rss_bytes": 1081225216,
+      "scope": "Bound the actual local Nix UART backend compile/link process tree.\n\nRuns inside the builder, so daemon-owned compilers are included. No guest runs.\n",
+      "seconds": 465.75233518797904,
+      "status": "PASS_HOST_UART_BACKEND_COMPILE_ONLY"
+    }
+  },
+  "connected_case": {
+    "path": "build/uart/task006-raw-uart-connected-a2/result.json",
+    "sha256": "569d6fa380decd5cbc3e0aae96b7c6b6000847357fd2e4687ec7c8d70c20c6e4",
+    "status": "PASS_RAW_UART_FRESH_COURSE_PENDING_FORK_MATH_INK_COLD",
+    "supervision": {
+      "path": "build/uart/task006-raw-uart-connected-supervision-a2/result.json",
+      "sha256": "dc3359d18054d3386fef25f3e5f0f02c3dc45045cee00290d2f1df28b6d8abe6",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "actor_seconds": 397.22090162697714,
+    "supervised_seconds": 399.44402725598775,
+    "peak_owned_rss_bytes": 418885632,
+    "phases": 44,
+    "actual_nominal_clock_units": 2615000200,
+    "passive_accounting": {
+      "path": "build/uart/task006-raw-uart-connected-derived-a2/result.json",
+      "sha256": "fa8c2c45c1bc08114edb662440d25e32db0e85d8813df4ade51178b9aca10028",
+      "status": "PASS_PASSIVE_ACTUAL_CLOCK_ACCOUNTING_ONLY"
+    },
+    "raw_cut": {
+      "enabled": true,
+      "pending": 4090,
+      "head": 14,
+      "reset_epoch": 2,
+      "accepted": 4107,
+      "delivered": 14,
+      "canceled": 3,
+      "earliest_ns": 2360000382,
+      "first_due_ns": 2360000160,
+      "timer_pending": true,
+      "timer_expires_ns": 2360000702,
+      "serial_can_receive": 0
+    },
+    "real_barrier_before": 15,
+    "real_barrier_after": 28,
+    "same_backend_pending_suffix": {
+      "observational_snapshot": true,
+      "pending_and_offered_bytes": true,
+      "same_backend_only": true,
+      "authoritative_final_state_exact": true,
+      "guest_uart_suffix_exact": true,
+      "whole_medium_exact": true,
+      "all_controller_pixels_exact": true,
+      "original_backing_unchanged": true,
+      "instruction_clock_steps": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "scope": "Actual partial external queue and any guest/frontend state reached at this cut. Actual serial frontend capacity0 independently establishes nonempty hardware backpressure at the cut. General cached-state arbitrary continuation remains open."
+    },
+    "independent_cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "cold_reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    },
+    "source_inputs_equal": true,
+    "mathematics": "Real guest5/6Verified, edited5/7Invalid, authored hint/learner/review, Unsupported and budget0Indeterminate; rawinkSaved and independentcold allbytes/pixels. General proofkernel/tutor/learninggain gates remain open.",
+    "original_fast100M_diagnostic": {
+      "status": "FAIL_ORIGINAL100M",
+      "cycle": 341000014,
+      "scope": "separate original diagnostic; functional continuation prospectively bounded before launch"
+    }
+  },
+  "maintained_conformance": {
+    "path": "build/uart/task006-raw-uart-conformance-a2/result.json",
+    "sha256": "de7de49ab6d7b9283b833997cbf0524b87c5619aa7b913cbc684af4a7b36e09a",
+    "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+    "command": "nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_fast_uart_ingress.py --native-bundle build/native/task006-dirty-batch-raw-uart-a2 --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp --work-dir build/uart/AN_UNUSED_FAST_UART_CHECK",
+    "supervision": {
+      "path": "build/uart/task006-raw-uart-conformance-supervision-a2/result.json",
+      "sha256": "2d0234f8b1c3c3fe30ab34b6b936742366d4ea81333705a705a540672b409977",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "supervised_seconds": 216.6706248029368,
+    "peak_owned_rss_bytes": 279736320,
+    "clocks_excluding_separate_initializer": 548000078,
+    "initializer": {
+      "status": "ACKNOWLEDGED_GUEST_INITIALIZATION",
+      "scope": "guest initialization, not host formatting",
+      "medium": "/home/sreekumaar/Downloads/lemma/build/uart/task006-raw-uart-conformance-a2/initialized.raw",
+      "identity": {
+        "backend": "qemu",
+        "profile": "lemma-silicon-dev/0.3.0",
+        "runtime": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+        "adapter": "lemmasim-fast-adapter/5",
+        "derivation": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+        "guest": "8b3e3f3cac1980e024a1e2c992a37e2a9ad3006375b06f0ff4dd8ad612991ccf",
+        "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+        "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+        "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+        "icount_shift": 3
+      },
+      "guest_ack": "K1 000000000000041f 0000000000000000 0000000000000000 0000000000000000 0000000000000000",
+      "cycle": 25000000,
+      "elapsed_seconds": 1.0797816729173064,
+      "medium_sha256": "c79dca00a597781d134ffdc3573eb1edc01915244b9c78efb7cac1eb6c188f46"
+    },
+    "phases": [
+      {
+        "name": "cold-Ready",
+        "clocks": 236000006,
+        "seconds": 81.734842563048
+      },
+      {
+        "name": "actual-raw-guest-installation",
+        "clocks": 26000001,
+        "seconds": 16.115917057963088
+      },
+      {
+        "name": "independent-cold-Ready",
+        "clocks": 239000005,
+        "seconds": 83.10203526495025
+      },
+      {
+        "name": "cold-guest-package-load",
+        "clocks": 21000001,
+        "seconds": 8.147379636997357
+      }
+    ],
+    "bounded_queue": {
+      "bytes": 65536,
+      "rejected_without_mutation": true,
+      "capture_quarantined": true,
+      "no_guest_clocks": true
+    },
+    "required_uart_state_rejection": "{'class': 'GenericError', 'desc': \"Lemma machine state restore failed: error while loading state for instance 0x0 of device 'lemma-paper-pen/1': lemma-paper-pen/1: incoming version_id 3 is too old for local minimum version_id 4\"}",
+    "host_sources_unchanged": true
+  },
+  "host_checks": {
+    "silicon": "215PASS3.521s",
+    "scaffold": "18PASS9.371s",
+    "metadata": "PASS; planning only"
+  },
+  "retained_failures": [
+    {
+      "report": "build/uart/task006-raw-uart-owner-a2/result.json",
+      "meaning": "Actual compile missing stable Nix-prefixed helper include names. Fixed explicit destinations, not job waiver."
+    },
+    {
+      "report": "build/uart/task006-raw-uart-connected-a1/result.json",
+      "meaning": "Actual raw guest publication passes26M; strict restored machine state fails. Saved globalstate literallypaused, customloader leftprelaunch. C now restores stored lifecycle via pinned valid transitions without clocks/drain/reset/fence. Same strict comparison passes; originalFAIL remains."
+    },
+    {
+      "report": "build/uart/task006-raw-uart-conformance-a1/result.json",
+      "meaning": "Host observer parsed text init stdout asJSON. Actual initializerACK/hash/emptyStore retained; corrected observer reads ordinary result.json before further testing."
+    }
+  ],
+  "state_limit": "Exact tested nonempty UART/queue continuation and applicable suffix only. QEMU softTLB/TB/jumpcache/instructionvisibility and full timing remain open; no masked fields or enlarged tolerances.",
+  "distribution_limit": "New bundle local prepared only; older extracted native/static distributions retain original runtimes. Browser raw UART/companion distribution and new-host/license obligations remain open.",
+  "candidate_ci": "3912103 CI38780426144 SUCCESS11/11/allsteps; this precedes UART source and does not qualify its future candidate.",
+  "primary_source": "Pinned QEMU11.1.1 tarball5fncyn7h...; serial_can_receive is pure frontend capacity. global_state_post_load decodes storedrunstate; originalcustomloader omitted applying it. runstate.c validprelaunch->finish_migrate->paused transitions update hostlifecycle without CPUexecution/deviceflush. Audited immutable source excerpts retained under build/uart/task006-raw-uart-source-a1.",
+  "observed_utc": "2026-10-15T18:43:39.490797+00:00",
+  "offline_backing_replay": {
+    "path": "build/uart/task006-raw-uart-offline-replay-a1/result.json",
+    "sha256": "089e598f27d0b1dee2a42d582e3e60e2742df790435fafdf213ba8a9fdcc0597",
+    "status": "PASS_RETAINED_UART_OFFLINE_BACKING_REPLAY",
+    "supervision": {
+      "path": "build/uart/task006-raw-uart-offline-replay-supervision-a1/result.json",
+      "sha256": "6b9e0432bda5de2f7f21c5035edc36ebff43aebbf4dbb5bd5949fc4b10d6cc6d",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "actor_seconds": 12.819642779999413,
+    "supervised_seconds": 14.304430424934253,
+    "peak_owned_rss_bytes": 231419904,
+    "selected_actual_outcomes": 13,
+    "accepted_io_rows_and_boundaries_exact": true,
+    "all_exposed_final_state_exact": true,
+    "guest_bytes_full_medium_and_pixels_exact": true,
+    "original_mutable_medium_absent_during_replay": true,
+    "original_medium_restored_unchanged_afterward": true,
+    "scope": "Existing retained UART snapshot, actual selected13 LMIOLOG2 outcomes, ordinary --restore/--backing-replay and session-replay; no cold prefix, original network/peer/medium consultation or new timing/cache claim. Original external medium was privately renamed during replay and restored unchanged in finally."
+  },
+  "implementation_inputs": {
+    "scripts/lemmasim_fast.py": "51a088ff91e518cb0ff85b793c63f3dd5d950475baf1adb453b17bc92f7c2540",
+    "scripts/lemmasim-course": "0a3596405856484646220a37f4d6d7fff14b0c964c0b8a8a8aecf018ec97bea5",
+    "scripts/lemmasim_course_fast.py": "c62abd7048b4be5dcd926cf3f53e78acd75a0b8e61887e77bab768912f8ef430",
+    "conformance/lemmasim/check_fast_uart_ingress.py": "3916faf31074642819b46c93160553fe0814c055cbb576f2f91f29287d25869a",
+    "sim/host/lemma_uart_ingress.h": "e274efbb77b8c5fc1c6e80b6c7bcd0e63962e706ab53adc84e38e597ff2e1058",
+    "sim/host/lemma_uart_qemu.inc.c": "d4e1b89906ae7581ef23257d2e72c1aca19503329575d49ade3723507f05d164",
+    "tooling/lemmasim/patch_uart_ingress.py": "a200daefff797c0b7d8367b33e31466758c1a0f7f978f8fe827d21d6fc6e16f9",
+    "tooling/lemmasim/qemu_uart.nix": "ba9cfd0cb12f1848519c5be23febcb10e565dc99d0567b814072292d4e0dd866",
+    "tooling/lemmasim/uart_build_budget.py": "526cd6aec00b17ede376e6273eb077a4a671dacc4c21c67dc4c738306a00ace1",
+    "tests/silicon/test_fast_course.py": "b4b518187797e1f7cd6532cc5fbebfaace62e49e16a53a06a71a7afa0c802d68",
+    "tests/silicon/test_fast_transport.py": "7a9d7ac2ef1050d4f16175e15c2a42cfa1851fe7199a59a3e4bedfc1f9b6a7d0"
+  }
+}

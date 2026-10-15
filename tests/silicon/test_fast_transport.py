@@ -21,6 +21,7 @@ stream.write(b'{"QMP":{"scope":"independent lifecycle transport fixture"}}\\n')
 for line in stream:
     request=json.loads(line);command=request['execute'];reply={'id':request['id'],'return':{}}
     if command=='query-status':reply['return']={'status':'paused','running':False}
+    if command=='qom-list':reply['return']=[]
     if command=='qom-get':
         reply['return']='0' if request['arguments']['property']=='virtual-time' else '{}'
     if command=='human-monitor-command':
@@ -107,6 +108,36 @@ class FastTransport(unittest.TestCase):
                 fast.Fast(self.args, self.directory)
         self.assertIsNotNone(self.children[0].poll())
         self.assertFalse(self.sockets[0].parent.exists())
+
+    def test_malformed_feature_inventory_fails_closed_and_reaps_child(self):
+        execute = fast.QMP.execute
+        for inventory in ({}, [None], [{'name':'raw-uart-version'}],
+                          [{'name':7,'type':'str'}]):
+            with self.subTest(inventory=inventory):
+                def reply(peer, command, arguments=None):
+                    if command == 'qom-list':
+                        return inventory
+                    return execute(peer, command, arguments)
+                with mock.patch.object(fast.QMP, 'execute', reply):
+                    with self.assertRaisesRegex(ValueError, 'Malformed backend property'):
+                        fast.Fast(self.args, self.directory)
+                self.assertIsNotNone(self.children[-1].poll())
+                self.assertFalse(self.sockets[-1].parent.exists())
+
+    def test_unknown_advertised_uart_version_fails_closed(self):
+        execute = fast.QMP.execute
+        self.args.profile = self.data['profile'] = 'lemma-silicon-dev/0.3.0'
+        def reply(peer, command, arguments=None):
+            if command == 'qom-list':
+                return [{'name':'raw-uart-version','type':'str'}]
+            if command == 'qom-get' and arguments['property']=='raw-uart-version':
+                return 'lemma-raw-uart/unknown'
+            return execute(peer, command, arguments)
+        with mock.patch.object(fast.QMP, 'execute', reply):
+            with self.assertRaisesRegex(ValueError, 'Unsupported raw UART'):
+                fast.Fast(self.args, self.directory)
+        self.assertIsNotNone(self.children[-1].poll())
+        self.assertFalse(self.sockets[-1].parent.exists())
 
     def test_preflight_failure_allocates_no_socket_directory_or_child(self):
         self.args.memory_latency = 1

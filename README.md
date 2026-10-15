@@ -1472,10 +1472,10 @@ python3 -I /path/to/lemmasim-native/run.py session --backend qemu \
 The graphical native presentation needs host Python/Tk; the existing
 `--headless` and Developer raw-control paths remain available. Snapshot,
 private restore and replay use the same commands documented above. The current
-course-install command uses RTL Developer/Laboratory transport; fast raw UART
-installation remains unsupported. Copy an existing guest-acknowledged course
-medium privately to use its installed courses in fast mode. No host document
-or journal reconstruction supplies the guest. Native package v1 still excludes
+`lemmasim course-install` spelling uses RTL Developer/Laboratory transport.
+The new `lemmasim-course` command also supports the opt-in fast UART bundle
+below. Earlier extracted archives retain their original fast runtime. No host
+document or journal reconstruction supplies the guest. Native package v1 excludes
 optional product/USB/radio adapters, and new-host/licensing limits remain.
 
 The matching extracted static browser archive is
@@ -1484,3 +1484,73 @@ launcher with `python3 -I /path/to/lemmasim-browser/serve.py --port 8798`.
 It uses the exact new RV64 guest and existing RTL Wasm machine, not a browser
 notebook implementation. The active retained-medium cold case is at8798 with
 private medium `dirty-retained9-a1`; its original1B/7200s result is still pending.
+
+The canonical fast machine can now install an authored course on an empty
+guest-initialized medium through actual guest UART instructions. The same
+maintained notebook then reads courses, checks answers, records learner events,
+writes ink and recovers acknowledged bytes/pixels after cold boot. This is a
+functional fast transport; exact RTL timing and general QEMU cached-state
+continuation remain open. See the [contract](docs/contracts/006-fast-uart-ingress-v1.md)
+and [actual qualification](docs/evidence/006-fast-uart-ingress-v1.json).
+
+The prepared opt-in pair is `build/native/task006-dirty-batch-raw-uart-a2`.
+Use new media and session paths; `init` executes the RV64 initializer:
+
+```sh
+./scripts/lemmasim init --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-dirty-batch-raw-uart-a2 \
+  --disk build/my-raw-uart.raw --session-dir build/my-raw-uart-initialize
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-dirty-batch-raw-uart-a2 \
+  --disk build/my-raw-uart.raw --session-dir build/my-raw-uart-session \
+  --mode developer --paused --headless
+```
+
+In a second terminal, advance the machine and inspect actual Ready/controller
+completion before installing. Course commands require a paused Developer or
+Laboratory owner. Admission is provisional; only the guest's K1/4b1 outcome
+after its backing barrier is an installation receipt.
+
+```sh
+./scripts/lemmasim session-control --session-dir build/my-raw-uart-session \
+  --request '{"action":"run","cycles":300000000}'
+./scripts/lemmasim session-control --session-dir build/my-raw-uart-session \
+  --request '{"action":"inspect"}'
+./scripts/lemmasim-course install --session-dir build/my-raw-uart-session \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --transaction 1
+./scripts/lemmasim session-control --session-dir build/my-raw-uart-session \
+  --request '{"action":"run","cycles":100000000}'
+./scripts/lemmasim snapshot --session-dir build/my-raw-uart-session --to build/my-raw-uart-cut
+```
+
+The same `lemmasim-course` command supports `load` and `delete-probe`; its help
+lists required identity/edition/CRC/node or transaction fields. Use the existing
+session restore/replay commands with this exact `--native-bundle`. Snapshots
+retain pending bytes and UART backpressure; cold recovery uses raw media.
+The reusable real-guest conformance command, including an independent cold load,
+is:
+
+```sh
+nix develop --no-write-lock-file --command python3 conformance/lemmasim/check_fast_uart_ingress.py \
+  --native-bundle build/native/task006-dirty-batch-raw-uart-a2 \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --work-dir build/uart/AN_UNUSED_RAW_UART_CHECK
+```
+
+To rebuild this opt-in backend against an unchanged audited guest bundle, run
+each role explicitly, then seal an unused bundle. The default QEMU recipe and
+previous immutable bundles retain their original scope.
+
+```sh
+LEMMA_FAST_RAW_UART=1 nix develop --no-write-lock-file --command ./scripts/lemmasim build \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --workload notebook \
+  --guest-bundle build/native/task006-dirty-batch-notebook-a1 --opt-level O2
+LEMMA_FAST_RAW_UART=1 nix develop --no-write-lock-file --command ./scripts/lemmasim build \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --workload initializer \
+  --guest-bundle build/native/task006-dirty-batch-notebook-a1 --opt-level O2
+LEMMA_FAST_RAW_UART=1 ./scripts/lemmasim native-bundle-build --refresh-fast \
+  --profile lemma-silicon-dev/0.3.0 --base-bundle build/native/task006-dirty-batch-notebook-a1 \
+  --expected-fast-sha256 97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7 \
+  --output-dir build/native/AN_UNUSED_RAW_UART_BUNDLE
+```

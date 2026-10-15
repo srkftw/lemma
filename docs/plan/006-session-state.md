@@ -2547,3 +2547,74 @@ that is not a full CI pass. Original22fbd06 CI11/11 remains separate. PR9 stays
 draft/unmerged. Companion Saved12 remains under its original owned supervision;
 no live peer attaches to restored forks. Broader digital/runtime/proof/tutor/
 radio, exact fast/checkpoint, distribution and physical obligations remain open.
+
+
+The companion dirty-batch9 full408-input pair now passes ordinary linked audits:
+1074.274s actor/1080.066s supervised,1,928,642,560B peak, no survivors. Images
+cd9c4a7f... initializer and33351fbc... notebook are sealed in
+`build/native/task006-dirty-batch-companion-a1` against the unchanged original
+Clocked13 core6cbd9cad.../state64d7d234.... Its new9 guest execution is not run;
+the active Saved12 actor still uses its original older6 bundle. Candidate
+ad897e1 CI38770831309 and3912103 CI38780426144 both finishedSUCCESS11/11,
+every reported step success/no skips. These precede the UART increment below.
+
+Fast raw UART1 is now a real integrated path on the same canonical0.3 machine.
+The opt-in derivation compiles the existing pinned QEMU core with an external
+byte queue, ordinary16550receive/FIFO/IRQ callbacks and required device state4.
+No guest parser, package publication, document/recovery/math policy moves to
+host code. New `scripts/lemmasim-course` selects the existingRTL path or actual
+negotiated fast-adapter5; it checks the exact guest/profile/local-owner mode,
+paused machine and complete available queue before raw admission. Original
+`lemmasim course-install` retains its RTL spelling/guard. Neither host command
+issues Installed/Saved. README has actual build, launch and qualification commands.
+
+The new immutable local bundle is `build/native/task006-dirty-batch-raw-uart-a2`,
+QEMU97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7,
+unchanged genuine Notebook8ab77.../initializer8b3e... pair. Backend build465.752s,
+1,081,225,216B peak actual builder RSS; all41 consumed inputs unchanged, no
+survivors. The first compile's stable-header filename failure and first real
+pending restore FAIL remain retained. That test actually installed package1,
+but savedglobalstate was paused while the custom loader leftprelaunch. The
+opt-in C loader now applies its stored paused/prelaunch lifecycle through pinned
+valid transitions without CPU clocks, reset, fence, device drain or flush.
+The strict all-field comparison remains unchanged. No cache field is masked.
+
+Actual fresh-empty-medium install -> pendingUART/fork -> second installation
+through the normal course command -> course/5over6Verified/edited5over7Invalid/
+authoredhint/learnerreview/Unsupported/budget0Indeterminate/rawink/Saved -> newCPU
+cold allbytes/pixels -> reopen passes397.221s actor/399.444s supervised,
+418,885,632B peak with all consumed host sources unchanged. There are44 phases
+plus actual pending prefix/original/fork suffixes:2,615,000,200 nominal fast
+clock units. The retained actor's total is one unit short because it adds the
+requested26M restored run, whose retained fractional phase actually advances
+26,000,001 units. A passive derivation from saved actual states and44 phase
+deltas records this observer discrepancy; no execution or tolerance changed.
+The separate original fast100M first-view diagnostic remainsFAIL.
+
+Reusable `conformance/lemmasim/check_fast_uart_ingress.py` independently passes
+216.671s supervised/279,736,320B peak: genuine initializer25M clocks, post-init
+548,000,078 clocks,65536-byte capacity rejection/quarantined capture without
+machine mutation, reset cancellation, nonempty receive backpressure plus4090
+pending external bytes, observational snapshot, mandatory stateversion3 rejected
+by actualVMState4 with valid outer hashes/live unchanged, strict applicable
+original/fork states/guestbytes/wholemedium/pixels, newCPUcold and actual guest
+load through the normal course command. Original stdout-as-JSON observerFAIL
+before notebookboot remains; correction reads the genuine initializer result.
+The215 silicon host tests/18 scaffold tests/metadata pass.
+
+A separate retained-snapshot offline replay passes14.304s supervised,231,419,904B
+peak:13 actualLMIOLOG2 request/outcome rows and accepted event boundaries exact,
+all exposed finalstate/guestbytes/wholemedium/controllerpixels exact, original
+mutable source medium absent during replay and restored unchanged afterward.
+It uses ordinary --restore/--backing-replay/session-replay and private forks,
+not another cold prefix or a live peer. The original C/guest/process identities,
+plans, failures and resources are in
+[UART evidence](../evidence/006-fast-uart-ingress-v1.json).
+
+Canonical source9RTL, retained-medium browser and older6 Saved12companion cases
+remain running under their original bounds. Preserve their source holds and
+owners; do not restart their prefixes, turn default in-progressFAIL into a
+terminal result, or label their incomplete workflows passed. Fast timing,
+QEMUcachedtranslation/instructionvisibility, full browser workflow, new-host
+licensing/distribution and digital/physical completion remain separate gaps.
+PR9 remains draft/unmerged; Task006 PR8 authorization does not authorize PR9.

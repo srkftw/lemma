@@ -895,11 +895,81 @@
       "status": "PASS_FRESH_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
       "bytes": 17207,
       "scope": "Same maintained Lean Notebook batches dirty FIFO tiles through existing owned Surface-v2. Fresh full audited images and42phase fast mathematical/course/learner/ink/newcold/reopen plus real partial-write failure/cold/retry pass. New exactRTL/browser campaigns remain running; no timing parity/whole-machine closure."
+    },
+    {
+      "path": "build/courses/task006-dirty-batch-companion-whole-a1/result.json",
+      "bytes": 2865,
+      "sha256": "fdfb166721af31e495dd1cfd103f3dc6ab0aa79c005d44436f1d5d99e8155e2e",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "scope": "Fresh408input complete companion9 initializer/notebook pair and full audits; same maintained Notebook/Surface batch. New immutable0.13 bundle prepared on unchanged original Clocked13RTL. New9 guest execution not yet run; old Saved12 actor separate."
+    },
+    {
+      "path": "build/courses/task006-dirty-batch-companion-whole-supervision-a1/result.json",
+      "bytes": 5713,
+      "sha256": "f1fbfcbcc436238127c352eaaa45aeaa3ee8b379322a3aed99dea97caf1547cf",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "scope": "Fresh408input complete companion9 initializer/notebook pair and full audits; same maintained Notebook/Surface batch. New immutable0.13 bundle prepared on unchanged original Clocked13RTL. New9 guest execution not yet run; old Saved12 actor separate."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-owner-a4/result.json",
+      "sha256": "37bd589965e68e6c01fcde25d67b2ee645059f1082a456df8a891d87358cba4e",
+      "bytes": 8285,
+      "status": "PASS_ACTUAL_CORRECTED_BACKEND_COMPILE_PREPARATION_ONLY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-a2/result.json",
+      "sha256": "569d6fa380decd5cbc3e0aae96b7c6b6000847357fd2e4687ec7c8d70c20c6e4",
+      "bytes": 101216,
+      "status": "PASS_RAW_UART_FRESH_COURSE_PENDING_FORK_MATH_INK_COLD",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-supervision-a2/result.json",
+      "sha256": "dc3359d18054d3386fef25f3e5f0f02c3dc45045cee00290d2f1df28b6d8abe6",
+      "bytes": 919,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-conformance-a2/result.json",
+      "sha256": "de7de49ab6d7b9283b833997cbf0524b87c5619aa7b913cbc684af4a7b36e09a",
+      "bytes": 50672,
+      "status": "PASS_REAL_RAW_UART_INSTALL_PENDING_FORK_COLD_LOAD",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-conformance-supervision-a2/result.json",
+      "sha256": "2d0234f8b1c3c3fe30ab34b6b936742366d4ea81333705a705a540672b409977",
+      "bytes": 817,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-connected-derived-a2/result.json",
+      "sha256": "fa8c2c45c1bc08114edb662440d25e32db0e85d8813df4ade51178b9aca10028",
+      "bytes": 1463,
+      "status": "PASS_PASSIVE_ACTUAL_CLOCK_ACCOUNTING_ONLY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-offline-replay-a1/result.json",
+      "sha256": "089e598f27d0b1dee2a42d582e3e60e2742df790435fafdf213ba8a9fdcc0597",
+      "bytes": 20345,
+      "status": "PASS_RETAINED_UART_OFFLINE_BACKING_REPLAY",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
+    },
+    {
+      "path": "build/uart/task006-raw-uart-offline-replay-supervision-a1/result.json",
+      "sha256": "6b9e0432bda5de2f7f21c5035edc36ebff43aebbf4dbb5bd5949fc4b10d6cc6d",
+      "bytes": 693,
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "scope": "Actual opt-in same canonical fast machine UART guest installation/nonempty pending exact applicable fork/offline backing replay/course/math/ink/newCPUcold; exact individual scope in UART evidence, no general cached-state/timing closure."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate.",
+  "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate. New opt-in rawUART1 now enables actual fresh guestcourseinstallation in same fastmachine; full44phase math/ink/cold, nonemptyUART/queue privatefork and offline13outcome replay pass. See fast_uart_milestone; timing/cache/fullproduct gates stayopen.",
   "package_closure_milestone": {
     "implementation_source": "ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b",
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
@@ -910,7 +980,19 @@
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
     "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
-    "candidate_ci": "ad897e1 CI38770831309 inprogress:8jobsSUCCESS/3active, no reported failure/skips at last inspection. Prior22fbd06 CI38763196031SUCCESS11/11/allsteps. Other originalfailures/cancel/skips retained.",
-    "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2."
+    "candidate_ci": "ad897e1 CI38770831309 and3912103 CI38780426144 terminalSUCCESS11/11/allreportedsteps/no skips. Local uncommitted UART extension not covered. Original failures/cancel/skips retained; PR9 draft/unmerged.",
+    "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2.",
+    "companion_guest_artifacts": "Fresh complete408input companion9 pair/full audits PASS1074.274s actor/1080.066s supervised, peak1,928,642,560B; initializer cd9c4a7f..., notebook33351fbc.... Immutable build/native/task006-dirty-batch-companion-a1 reuses original validated Clocked13RTL6cbd9cad.../64d7d234.... New9 execution pending; original older6 Saved12 case not relabeled."
+  },
+  "fast_uart_milestone": {
+    "behavior": "New ordinary lemmasim-course install/load over negotiated rawUART1, exactguest/mode/queue admission; guest alone validates/installs/acknowledges. Same maintained course/math/learner/ink workflow and independentcold on genuinely empty input now pass.",
+    "guest": "Unchanged genuine dirtybatch9 pair8ab77/8b3e; no new target language or host notebook.",
+    "model": "Existing pinned QEMU core opt-in derived host transport97ab475e...; defaultderivation and historicalbundleidentities retained. Serial ordinary16550callback/FIFO/IRQ, no debuggerRBR/MMIO injection. RequireddeviceVMState4 retains raw ring/deadlines/timer/accounting and storedhostlifecycle.",
+    "rtl": "Existing exactRTL path unchanged; this is a fast functional port, not UART/core timing parity.",
+    "state": "Actual nonempty FIFO+4090externalpending, strict everyexposedfield/original-privatefork suffix/allbytes/pixels pass; validouterhash/missingrequiredversion3 rejects actualprivateVMState without live mutation. Offline13realoutcome rows match accepted boundaries with original mutable medium absent. GeneralQEMUcachedstate remains open.",
+    "distribution": "Prepared local raw bundlea2; earlier extractednative/static packages keep earlier cores and do not acquire this port. Newhost/license/browser obligations open.",
+    "performance": "Full44phase+pendingprefix/suffix2,615,000,200actualnominalfastclockunits/397.221sactor/399.444ssupervised,418.9MBpeak; originalactor requested-suffix accounting offby1 retained and independently corrected from actual phases/states. Separate maintainedconformance548,000,078clockunits+25Minitializer/216.671ssupervised,279.7MBpeak. Not RTL cycles or matched workload speedup.",
+    "physical": "No new physical claim.",
+    "evidence": "docs/evidence/006-fast-uart-ingress-v1.json"
   }
 }

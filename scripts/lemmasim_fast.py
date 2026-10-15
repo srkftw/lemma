@@ -20,6 +20,7 @@ from lemmasim_session import digest, write_json, ROOT, MAX_REQUEST
 
 CPU = 'rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0'
 ADAPTER = 'lemmasim-fast-adapter/4'
+RAW_UART_ADAPTER = 'lemmasim-fast-adapter/5'
 MAX_NS = (1 << 63) - 1
 CLOCK_SCHEMA = 'lemmasim-fast-clock/1'
 
@@ -44,14 +45,32 @@ def read_clock(path):
     return origin
 
 
+def raw_uart_selected(name):
+    value = os.environ.get('LEMMA_FAST_RAW_UART', '')
+    if value not in ('', '1'):
+        raise ValueError('LEMMA_FAST_RAW_UART admits only the explicit value1')
+    if value and profile(name)['profile'] != 'lemma-silicon-dev/0.3.0':
+        raise ValueError('Raw UART backend1 admits only canonical0.3')
+    return value == '1'
+
+
+def qemu_recipe(name):
+    return ROOT / ('tooling/lemmasim/qemu_uart.nix' if raw_uart_selected(name)
+                   else 'tooling/lemmasim/qemu.nix')
+
+
 def prepared_path(name=None):
     version = profile(name)['profile'].split('/')[1]
-    return ROOT / f'build/lemmasim/fast-prepared-{version}.json'
+    prefix = 'fast-uart1' if raw_uart_selected(name) else 'fast'
+    return ROOT / f'build/lemmasim/{prefix}-prepared-{version}.json'
 
 
 def sources(name):
     paths = [ROOT/'tooling/lemmasim/qemu.nix', ROOT/'tooling/lemmasim/apply_qemu.py',
              ROOT/'flake.lock', profile_path(name)]
+    if raw_uart_selected(name):
+        paths += [qemu_recipe(name), ROOT/'tooling/lemmasim/patch_uart_ingress.py',
+                  ROOT/'tooling/lemmasim/uart_build_budget.py']
     if profile(name)['profile'] in ('lemma-silicon-dev/0.3.0','lemma-silicon-dev/0.4.0'):
         paths.append(ROOT/'tooling/lemmasim/patch_counter_clock.py')
     if profile(name)['profile']=='lemma-silicon-dev/0.4.0':paths += [ROOT/'tooling/lemmasim/patch_power_safety.py',ROOT/'scripts/silicon_power_guest_archive.py']
@@ -73,12 +92,14 @@ def build(args):
         archived=archived_guest(archive_path,workload,name)
         archived_build=json.loads(Path(archived['workloads'][workload]['build']['path']).read_text())
         if archived_build['optimization']!=args.opt_level:raise ValueError('Archived guest optimization differs')
-    link = ROOT / ('build/lemmasim/qemu-fast-' + name.split('/')[1])
-    guest.run_command(['nix-build', 'tooling/lemmasim/qemu.nix', '--arg', 'siliconProfile',
+    link = ROOT / ('build/lemmasim/qemu-fast-' + ('uart1-' if raw_uart_selected(name) else '') + name.split('/')[1])
+    recipe = qemu_recipe(name)
+    before = sources(name)
+    limits = ['--cores', '2', '--max-jobs', '1', '--builders', ''] if raw_uart_selected(name) else []
+    guest.run_command(['nix-build', recipe, *limits, '--arg', 'siliconProfile',
                        profile_path(name), '-o', link], timeout=2400)
     binary = link.resolve()/'bin/qemu-system-riscv64'
-    before = sources(name)
-    expression = 'let q = import (builtins.toPath ' + json.dumps(str(ROOT/'tooling/lemmasim/qemu.nix')) + ') { siliconProfile = builtins.path { path = builtins.toPath ' + json.dumps(str(profile_path(name))) + '; }; }; in { output = q.outPath; derivation = q.drvPath; }'
+    expression = 'let q = import (builtins.toPath ' + json.dumps(str(recipe)) + ') { siliconProfile = builtins.path { path = builtins.toPath ' + json.dumps(str(profile_path(name))) + '; }; }; in { output = q.outPath; derivation = q.drvPath; }'
     evaluated = subprocess.run(['nix-instantiate', '--eval', '--strict', '--json', '--expr', expression],
                                cwd=ROOT, capture_output=True, text=True, timeout=120, check=True)
     closure = json.loads(evaluated.stdout)
@@ -309,6 +330,25 @@ class Fast:
             self.log=(self.directory/'machine.log').open('ab')
             self.process=subprocess.Popen(command,cwd=ROOT,stdout=self.log,stderr=self.log,start_new_session=True)
             self.qmp=QMP(path,self.process,self.args.timeout)
+            # Negotiate the actual immutable backend feature at reset, before
+            # any target clock. Old prepared binaries keep adapter4 unchanged.
+            properties = self.qmp.execute('qom-list', {'path':'/machine/lemma-hardware'})
+            if (not isinstance(properties, list) or
+                    any(not isinstance(row, dict) or
+                        not isinstance(row.get('name'), str) or
+                        not isinstance(row.get('type'), str) for row in properties)):
+                raise ValueError('Malformed backend property inventory')
+            self.raw_uart = False
+            self.input_kinds = self.input_kinds - {'uart'}
+            self.identity = {**self.identity, 'adapter':ADAPTER}
+            if any(row.get('name') == 'raw-uart-version' for row in properties):
+                if self.data['profile'] != 'lemma-silicon-dev/0.3.0' or self.get('raw-uart-version') != 'lemma-raw-uart/1':
+                    raise ValueError('Unsupported raw UART backend/profile')
+                self.qmp.execute('qom-set', {'path':'/machine/lemma-hardware',
+                                           'property':'enable-raw-uart','value':'lemma-raw-uart/1'})
+                self.raw_uart = True
+                self.input_kinds = self.input_kinds | {'uart'}
+                self.identity = {**self.identity, 'adapter':RAW_UART_ADAPTER}
         except BaseException:
             if self.process is not None:
                 if self.process.poll() is None:os.killpg(self.process.pid,signal.SIGKILL)
@@ -341,6 +381,7 @@ class Fast:
     def inspect(self):
         devices=json.loads(self.get('device-state'))
         if getattr(self,'power_enabled',False):devices['power']=json.loads(self.get('power-state'))
+        if getattr(self,'raw_uart',False):devices['uart_ingress']=json.loads(self.get('raw-uart-state'))
         return {**self.clock(),'devices':devices,
                 'storage':json.loads(self.qmp.execute('qom-get',{'path':'/machine/lemma-block','property':'storage-state'})),
                 'cpu_registers':self.qmp.execute('human-monitor-command',{'command-line':'info registers'})}
@@ -440,6 +481,12 @@ class Fast:
             ns=cycle*1000000000//self.clock_hz
             now=self.time_origin_ns+int(self.get('virtual-time'))
             if not now<=ns<=MAX_NS-7:raise ValueError('Fast event delivery exceeds its virtual time bound')
+            if kind == 'uart':
+                if len(fields) != 3 or not re.fullmatch(r'(?:[0-9a-fA-F]{2}){1,65536}', fields[2]) or ns > MAX_NS-10:
+                    raise ValueError('Fast UART requires bounded raw hexadecimal bytes and time')
+                self.qmp.execute('qom-set', {'path':'/machine/lemma-hardware','property':'external-uart',
+                                           'value':str(ns-self.time_origin_ns)+' '+fields[2]})
+                return self.inspect()
             supply=kind in ('pgood','brownout')
             value=[str(ns-self.time_origin_ns),*(['2' if kind=='pgood' else '3'] if supply else []),*fields[2:]]
             self.qmp.execute('qom-set',{'path':'/machine/lemma-hardware','property':'external-supply' if supply else 'external-button' if kind=='button' else 'external-event',

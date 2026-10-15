@@ -177,7 +177,7 @@
     "host_time": "246.444s new vs336.152s baseline on shared host; observed only, no controlled host speedup attribution",
     "exact_RTL": "RUNNING under unchanged caps; old398M bodyPASS/100MheaderFAIL retained"
   },
-  "remaining": "Canonical complete actual course/Save/independentcold; full browser workflow/durable reload/exact applicable native comparison; companion batch9 whole artifact deployment; wider runtime/digital/checkpoint/distribution/physical obligations.",
+  "remaining": "Canonical complete actual course/Save/independentcold; full browser workflow/durable reload/exact applicable native comparison; new9 companion execution (full audited pair and immutable deployment now prepared); wider runtime/digital/checkpoint/distribution/physical obligations.",
   "implementation_commit": "ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b",
   "actual_failed_write": {
     "path": "build/courses/task006-dirty-batch-notebook-failed-a2/result.json",
@@ -334,5 +334,63 @@
       "origin_verified": "actual imported acknowledged raw, resetcycle0/openpaused then explicit bounded run; no snapshot",
       "input_difference": "This source9 browser raw is the same retained notebook as native. Original source8 browser raw had packages only; no matched cold-performance claim."
     }
+  },
+  "companion_whole_pair": {
+    "path": "build/courses/task006-dirty-batch-companion-whole-a1/result.json",
+    "sha256": "fdfb166721af31e495dd1cfd103f3dc6ab0aa79c005d44436f1d5d99e8155e2e",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "source_commit": "3912103be55dbdc6d264777c70a2ac48f8f11672",
+    "source_inputs": 408,
+    "seconds": 1074.2736891340464,
+    "supervision": {
+      "path": "build/courses/task006-dirty-batch-companion-whole-supervision-a1/result.json",
+      "sha256": "f1fbfcbcc436238127c352eaaa45aeaa3ee8b379322a3aed99dea97caf1547cf",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "seconds": 1080.0657084349077,
+      "peak_owned_rss_bytes": 1928642560
+    },
+    "roles": {
+      "initializer": {
+        "audit_seconds": 292.72412041598,
+        "audit_sha256": "6f182a057e9acadd54fd3e4a95118f36aae059f276e896419d6226832ec97dc6",
+        "audit_status": "PASS",
+        "build_seconds": 266.4485556529835,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-dirty-batch-companion-initializer-a1",
+        "image_bytes": 756904,
+        "image_sha256": "cd9c4a7f061b3c490ae675f6d637bd927657d13a571f682a662cffe73630916d",
+        "provenance_sha256": "49ce5e0b4319d4b6298674941078d13f28372ca7349e8ade8cfefe3f3b710e09"
+      },
+      "notebook": {
+        "audit_seconds": 262.0195166099584,
+        "audit_sha256": "d89a0bdbef8419a2d9142994fe222145c9d72b1d3093c3ccf3d535f2e494f755",
+        "audit_status": "PASS",
+        "build_seconds": 252.89116719993763,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-dirty-batch-companion-notebook-a1",
+        "image_bytes": 756896,
+        "image_sha256": "33351fbc0bb1978c5e3e69ff961c6c737030bb0dae3f964e31fc17af68adaab0",
+        "provenance_sha256": "58b63d6a0f1fb8539eeb5ec421af0d054c4b7f195d5ad36b566db52f9a452d1f"
+      }
+    },
+    "prepared_bundle": "build/native/task006-dirty-batch-companion-a1/bundle.json",
+    "execution": "NOT_YET_RUN with new9 companion guests; original Saved12 recovery actor uses unchanged older6 bundle and keeps its own meaning"
+  },
+  "candidate_ci": {
+    "ad897e1": {
+      "run": 38770831309,
+      "status": "SUCCESS",
+      "jobs": 11,
+      "all_reported_steps": "success; no skips"
+    },
+    "3912103": {
+      "run": 38780426144,
+      "status": "SUCCESS",
+      "jobs": 11,
+      "all_reported_steps": "success; no skips"
+    },
+    "qualification": "These runs precede local uncommitted rawUART code; no inferred CI pass for it. PR9 remains draft/unmerged."
   }
 }
