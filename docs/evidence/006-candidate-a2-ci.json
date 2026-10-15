@@ -863,5 +863,96 @@
       }
     },
     "replacement_ci": "NOT_RUN for the unpushed dependency repair; original candidate remains FAILURE."
+  },
+  "subsequent_candidate_837": {
+    "source_commit": "83719afbd1fa7f51ff2ae3332b196863f57fddb3",
+    "actual_ci_run": 38672256215,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "skipped_steps": [],
+    "jobs": [
+      {
+        "id": 116217857503,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857562,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857566,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857592,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857621,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857676,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857751,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857772,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857786,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      },
+      {
+        "id": 116217857826,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "failed_steps": [],
+        "skipped_steps": []
+      }
+    ],
+    "scope": "Terminal actual job/step observation: both prior inventory and missing-Notebook-module repairs pass. Later native-refresh/registry-count changes require their own candidate; this is not their inherited CI pass."
   }
 }

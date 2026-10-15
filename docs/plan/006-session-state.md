@@ -1682,3 +1682,62 @@ build/browser/task006-package-layout2-fsize-a6; server8793/tool16988/tab24.
 It includes the power-pointer owner fix and new portable barrier behavior.
 It has not started another cold prefix; active tab22 remains on its original
 bundle. Native source hold/actor1456817 and all original phase bounds remain.
+
+The native fast-runtime distribution gap is now closed for this guest pair:
+build/native/task006-package-layout2-matched-fsize-a5, manifestcc85a026, retains
+the exact audited a20c6530/b0d31c3a guests and RTL8e5ce4ee while packaging repaired
+QEMU188e5447, its actual sources/derivation and external Nix host libraries.
+scripts/refresh_native_fast.py checks the complete old bundle and both current
+fast roles, rejects differing guest artifacts or an unexpected binary before
+output, preserves every original version and validates the result through all
+four ordinary backend/role launch checks. The actual existing different-guest
+and wrong-digest inputs reject; normal RTL and QEMU bundled sessions both open
+paused atCPU0 with the expected identities, then close/reap. PASS4.340s is
+packaging/startup evidence, not another guest cold run. No frozen host file was
+changed. Historical fsize-a4 remains unchanged with its original fast binary.
+
+Implementation83719af is pushed and PR9 remains draft/unmerged. Its actual
+candidate CI38672256215 is IN_PROGRESS; the latest observation has two completed
+jobs (legacy and RTL digital power) passing and eight still running. No current
+candidate overall pass or skipped-suite success is inferred. The native refresh
+helper and its concise evidence are a subsequent local increment.
+
+CI83719af/38672256215 is now terminal SUCCESS10/10 with no skipped steps.
+This closes that exact candidate's CI only. Native-refresh and registry-count
+changes below are later local implementation, requiring their own candidate.
+
+Native Layout2 actor a3 ended FAIL at1473000000: the original400M COURSE phase
+did not finish its package read/title. Ready978M, install84M and duplicate11M
+remain separate successful observations. The observational failure checkpoint
+SHA109d71d8 at build/courses/task006-native-package-layout2-a3/actor/failure-
+observational-checkpoint retains all state; all owned children were reaped and
+the29-source hold has ended. Original RAM shows2944/4040 bytes copied, all12
+package pages allocated, no reader error and a drained dirty queue. A separate
+private1M-clock trace from that cut spends978675 clocks in S,16219 in M and5106
+in U. Frame/address-space/IPC validation dominates; dynamic division accounts
+for17154 clocks. No deadline was enlarged or cold prefix rerun for that diagnosis.
+
+Independent browser Layout2 cold PASS: newCPU0 to actual Ready977550000,
+503894909 retired,192MiB heap,5953.546s since Open (includes original paused
+launch time),5619.734s simulation calls. Its original1B/7200s bounds remain.
+All35 actual backing outcomes/boundaries equal the native cold prefix; all
+256MiB observed bytes and all3.63M controller pixels match. Boot appends page/
+root records3/4 with8 sector writes and4 barriers after recovering the two
+installed packages. This is actual guest startup, not an unchanged-medium or
+preinitialized Notebook claim. The original observer's12-write expectation was
+wrong against Store's actual short-record protocol; its FAIL is retained. The
+corrected observer runs no CPU and changes only that expectation. Tab22 stays
+paused with its observational Ready checkpoint (one of two cuts used), actual
+backing and captured tape exported under build/browser/task006-package-layout2-
+cold-a1. No browser course input or installed-course acceptance is inferred.
+
+The current registry-count borrow is a measured-bottleneck implementation in
+progress: Frames.resolveRegistry8192 and its sole registry callback borrow only
+the fresh immutable count inside one S Action. All per-frame live authority,
+physical address, duplicate and pin checks remain. Host semantics pass,
+including boundary generations and authority mutations; whole descriptor count
+reads fall11 to3. Genuine old/new complete selected pre/post bodies pass their
+separate strict cohorts, and10 valid-LLVM semantic/caller mutants reject. The
+original guard and host/mutator observer failures remain retained. Contract:
+docs/contracts/006-task-entry-borrow-v2.md. No target speedup or new Ready/course
+pass is claimed before full fresh matched compilation/audits and execution.

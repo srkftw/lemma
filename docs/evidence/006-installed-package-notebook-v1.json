@@ -535,5 +535,143 @@
       "whole_target_cap": 6000000000,
       "whole_host_seconds": 21600
     }
+  },
+  "layout2_native_open_bound": {
+    "status": "FAIL",
+    "result": {
+      "path": "build/courses/task006-native-package-layout2-a3/actor/result.json",
+      "sha256": "2f1bb3d9f05bf2fe8721d6e220abd1e8729091b561b28dfa8835ba668a7ff844"
+    },
+    "source_hold_ended": true,
+    "failure_checkpoint": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-native-package-layout2-a3/actor/failure-observational-checkpoint",
+      "observational": true,
+      "cycle": 1473000000
+    },
+    "error": "ValueError('prospective phase/aggregate resourcebound exceeded in COURSEreadCRCexactEOFandactualtitle')",
+    "successful_phases": [
+      {
+        "name": "canonicalcoldReady",
+        "initial_cycle": 0,
+        "final_cycle": 978000000,
+        "clocks": 978000000,
+        "retired": 504126228,
+        "host_seconds": 3894.1091529980768
+      },
+      {
+        "name": "guestpublicationedition3",
+        "initial_cycle": 978000000,
+        "final_cycle": 1062000000,
+        "clocks": 84000000,
+        "retired": 44069426,
+        "host_seconds": 332.98140889091883
+      },
+      {
+        "name": "immutableduplicateedition3",
+        "initial_cycle": 1062000000,
+        "final_cycle": 1073000000,
+        "clocks": 11000000,
+        "retired": 5844570,
+        "host_seconds": 42.56578353093937
+      }
+    ],
+    "actual_ram": {
+      "path": "build/courses/task006-native-package-layout2-a3/actor/original-failure-ram-observation.json",
+      "sha256": "07cf0b9c5b553825fcd161b9b7a62cb6ea16de3d7b0b46b49a6e42595f0ef437"
+    },
+    "reader": {
+      "0": 98,
+      "8": 3392000,
+      "16": 3391744,
+      "24": 1,
+      "32": 1,
+      "40": 1,
+      "48": 3350528,
+      "56": 32768,
+      "64": 44,
+      "72": 0,
+      "80": 0,
+      "88": 2944,
+      "96": 4040,
+      "104": 0,
+      "112": 67,
+      "120": 0
+    },
+    "dirty_queue_drained": true,
+    "all12_package_pages_allocated": true,
+    "diagnostic_trace": {
+      "path": "build/courses/task006-native-package-profile-a1/retained-trace-observation.json",
+      "sha256": "7876e92b86a65e64928d412c73d2e586d2b0c04144f48e05d9d770184df1aa1a"
+    },
+    "one_million_diagnostic_clocks": {
+      "1": 978675,
+      "3": 16219,
+      "0": 5106
+    },
+    "scope": "Original400M open bound remains FAIL at1473M total; not another Ready/course/check pass. Retained private1M trace ran no cold prefix or input; original envelope observer error retained."
+  },
+  "layout2_browser_cold": {
+    "status": "PASS_COLD_OUTPUT_RELATION",
+    "scope": "Original browser cold output vs retained actual native I/O/pixels; no machine execution.",
+    "bounds": {
+      "observer_seconds": 120,
+      "address_space_bytes": 4294967296
+    },
+    "ready": {
+      "cycle": 977550000,
+      "retired": 503894909,
+      "heap_bytes": 201326592,
+      "host_seconds_since_open": 5953.5461949999335,
+      "simulation_call_seconds": 5619.733565003402,
+      "backing_call_seconds_during_run": 0.012960000038146973
+    },
+    "source_of_host_measurements": "Actual public Developer inspection DOM at paused Ready; source plan retains the original Open-paused launch. Elapsed includes pre-run pause, not a native host-speed comparison.",
+    "plan_sha256": "354ed8ea9ec908a31305447e768cda58ae4c7bf55aeb696e9075777daaf5757d",
+    "actual_guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+    "checkpoint": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/browser/task006-package-layout2-cold-a1/ready.chk",
+      "sha256": "18914ca8c13612936370e7aa30e8723132ac8a9b239e4b9d24dd4c1ca4db1c3f"
+    },
+    "source_medium": {
+      "path": "build/courses/task006-course-ipc-guest-a1/durable.raw",
+      "sha256": "25a4eb977cfebfeb5843f4b58651387021a8475acae9d6f03b42903f22826829"
+    },
+    "exact_external_outcomes": 35,
+    "native_write_request_ids": [
+      24,
+      25,
+      26,
+      28,
+      30,
+      31,
+      32,
+      34
+    ],
+    "native_barrier_request_ids": [
+      27,
+      29,
+      33,
+      35
+    ],
+    "observed_medium_sha256": "c81f3783c9ac7f49cf91121cf9ea46ac1961986498a8eb05eb3723b76167b5e7",
+    "full_medium_bytes_exact": true,
+    "all_controller_pixels_exact": true,
+    "acknowledged_sequence": 4,
+    "acknowledged_objects": 4,
+    "no_snapshot_restore_for_cold": true,
+    "no_host_document_policy": true,
+    "course_workflow": "NOT_PASSED: separately retained native400M open failure; no browser course input admitted",
+    "observer_sha256": "07b2ed00db9874c1a97fcd642ff62bba4571ac21c764077dfd651ed3d725ade1",
+    "observer_host_seconds": 17.370359482010826,
+    "observer_peak_rss_kib": 574396,
+    "result": {
+      "path": "build/browser/task006-package-layout2-cold-a1/result.json",
+      "sha256": "3250384714a058171bdd83f317ca66f2103cf49fa976704bcee269dd3b0eb406"
+    },
+    "original_observer_failure": {
+      "path": "build/browser/task006-package-layout2-cold-a1/original-observer-failure.json",
+      "sha256": "6ec24544f0ac37d96e7f0c27f31dc87d557b04690a367208d70f1af1ddfc06eb"
+    },
+    "observer_correction": "Store emits4 sector writes+2 barriers per short publication. Actual startup publishes2 records:8 writes,4 barriers. Only erroneous12-write count changed; complete exact outcome vectors, all medium bytes/pixels and original bounds remain enforced."
   }
 }

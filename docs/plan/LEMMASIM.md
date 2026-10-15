@@ -114,3 +114,15 @@ retain the same audited Layout2 guest. These advance the existing local-storage,
 checkpoint and S4-S6 columns; full new package-course/browser cold acceptance,
 archived-fast refresh, general fast timing/caches, distribution rights and
 physical qualification remain separate open obligations.
+
+The later Layout2 browser cold now reaches actual Ready977.55M within its
+original bound, with all35 external outcome boundaries, all256MiB observed
+bytes and all controller pixels matching the retained native cold prefix.
+The native installed-course open remains FAIL at its original400M cap: its
+retained RAM had copied2944/4040 bytes. A private diagnostic identifies repeated
+kernel registry validation as a major cost. The new count-borrow component
+retains live frame authority and passes host/genuine-LLVM guards; complete
+fresh target qualification and a course speedup are still pending. Repaired
+fast and RTL runtimes can now be packed with an unchanged audited guest pair
+through the normal native-bundle-build command. These observations retain the
+existing separate digital, timing/checkpoint, distribution and physical gaps.
