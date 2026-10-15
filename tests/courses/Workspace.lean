@@ -1,4 +1,5 @@
 import Lemma.Courses.PackageWorkspace
+import Lemma.Courses.WorkspaceCodec
 
 /-! Independent bounded RAM fixture executing the imported guest Actions.
 Prepared negative records are fixture inputs, never published guest evidence.
@@ -107,6 +108,14 @@ def check : IO Unit := do
   expect ((← word state (wrap1+48)) == 2) "builtin completion inherited a package or lost history"
   expect ((← word state (wrap1+PackageWorkspace.attempts+256)) == 0) "builtin new row not Unknown"
   let actualGood ← state.get
+  -- Lossless envelope2 retains both actual Known and Unknown provenance, all
+  -- source anchors and the complete Doc8/learner history, not only live fields.
+  for original in #[wrap0,wrap1,wrap2] do
+    let length ← ok state (WorkspaceCodec.encode original 0x48000 1 1)
+    let _ ← ok state (WorkspaceCodec.decode 0x48000 length 0x4a000 1 1)
+    for i in [:464] do
+      expect ((← word state (original+i.toUInt64*8)) == (← word state (0x4a000+i.toUInt64*8)))
+        "compact envelope lost Known/Unknown provenance or document/history bytes"
   -- The resource override is a real revision of an independently valid Doc8.
   -- The package remains its original declared budget8; changing that binding
   -- to0 would already fail PackageBinding v1, so it is not an independent oracle.

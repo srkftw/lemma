@@ -1,0 +1,230 @@
+{
+  "schema": "lemma-workspace-envelope-component/2",
+  "status": "PASS_COMPONENT_GENUINE_SOFTWARE5_COHORT_AND_LEAN_ACTIONS",
+  "producer_parent": "470def4182f73eed523b5e4a753e91801d3a4aec",
+  "uncommitted_source_at_component_observation": true,
+  "contract": "docs/contracts/006-course-workspace-envelope-v2.md",
+  "scope": "Full genuine833-function User2 export, all14 codec helpers and5 changed originalfunctions including opening cancellation; independent component semantics, not RV64 execution/durable Save",
+  "target_sources": {
+    "Lemma/Courses/WorkspaceCodec.lean": "f15b83a81c03d64414ecf3105089bc8847d270f9439eda2df42f6570479a84c3",
+    "Lemma/Applications/Notebook.lean": "6e3869a7d9c3f6c91477a5df47f84de3dc76a79db06ee8c11029095edd604653"
+  },
+  "complete_source_relation": {
+    "status": "PASS_GENUINE_WORKSPACE_ENVELOPE_COMPLETE_COHORT",
+    "scope": "genuine complete User2 pre/post source/body/caller software5 cohort; codec semantics and real target durability separate",
+    "old_functions": 819,
+    "new_functions": 833,
+    "added": [
+      "Lemma.Courses.WorkspaceCodec.clearStep",
+      "Lemma.Courses.WorkspaceCodec.countStep",
+      "Lemma.Courses.WorkspaceCodec.decode",
+      "Lemma.Courses.WorkspaceCodec.decodeStep",
+      "Lemma.Courses.WorkspaceCodec.encode",
+      "Lemma.Courses.WorkspaceCodec.encodeStep",
+      "Lemma.Courses.WorkspaceCodec.headerBytes",
+      "Lemma.Courses.WorkspaceCodec.magic",
+      "Lemma.Courses.WorkspaceCodec.maximumBytes",
+      "Lemma.Courses.WorkspaceCodec.read",
+      "Lemma.Courses.WorkspaceCodec.recordLength",
+      "Lemma.Courses.WorkspaceCodec.separate",
+      "Lemma.Courses.WorkspaceCodec.version",
+      "Lemma.Courses.WorkspaceCodec.write"
+    ],
+    "removed": []
+  },
+  "phases": {
+    "pre": {
+      "changed": [
+        "Lemma.Applications.Notebook.cancelPackageWork",
+        "Lemma.Applications.Notebook.openPackageCourse",
+        "Lemma.Applications.Notebook.packageBusy",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Applications.Notebook.savePackageWorkspace"
+      ],
+      "unchanged_complete_bodies": 814
+    },
+    "post": {
+      "changed": [
+        "Lemma.Applications.Notebook.cancelPackageWork",
+        "Lemma.Applications.Notebook.openPackageCourse",
+        "Lemma.Applications.Notebook.packageBusy",
+        "Lemma.Applications.Notebook.packageControlCharacter",
+        "Lemma.Applications.Notebook.pumpOpenPackageCourse",
+        "Lemma.Applications.Notebook.savePackageWorkspace",
+        "Lemma.Courses.PackageBinding.captureField"
+      ],
+      "unchanged_complete_bodies": 810
+    }
+  },
+  "host_tests": {
+    "kernel": 433,
+    "foundation": 468,
+    "scaffold": 18,
+    "codec_raw_and_roundtrip_bytes": 3712,
+    "encoded_fixture_bytes": [
+      272,
+      520,
+      656,
+      792,
+      928
+    ],
+    "known_unknown_package_history": "PASS actual complete Workspace Action fixture",
+    "opener": "PASS actual raw/compact header to fullread/independentEOF phase5 and busy guard"
+  },
+  "mutations": {
+    "status": "PASS_FOUR_VALID_LLVM_CODEC_MUTANTS_AND_FOURTEEN_INCOMPLETE_COHORTS_REJECT",
+    "scope": "actual verifier-valid semantic codec LLVM mutants plus incomplete source families; no CPU claim",
+    "negative": [
+      {
+        "name": "unsafe-overlap",
+        "valid_llvm": true,
+        "sha256": "2ab29b7c439f8813b3414fc0cbaf8a55ad6fa706b1e35d08c575e66f79bb0460",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.separate/post"
+      },
+      {
+        "name": "wrong-maximum",
+        "valid_llvm": true,
+        "sha256": "c5b3669f34ba9b851f70a7a5c31260d521372db5b7d04f6fc593402c11f598b7",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.maximumBytes/post"
+      },
+      {
+        "name": "lost-value",
+        "valid_llvm": true,
+        "sha256": "82a8192e94ad5bb5a544dd639f9e4a6c4e504b3ab784791efb585160ad467350",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.encodeStep/post"
+      },
+      {
+        "name": "consumed-overrun",
+        "valid_llvm": true,
+        "sha256": "3637ee42352f6e51520c9d5b63bd053950549bb9903c8e609d3422cb0d095694",
+        "reason": "Package Notebook complete checked body differs: Lemma.Courses.WorkspaceCodec.decodeStep/post"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.clearStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.countStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.decode",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.decodeStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.encode",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.encodeStep",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.headerBytes",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.magic",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.maximumBytes",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.read",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.recordLength",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.separate",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.version",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      },
+      {
+        "name": "incomplete-Lemma.Courses.WorkspaceCodec.write",
+        "reason": "Package Notebook mixed/incomplete workspace-envelope cohort"
+      }
+    ]
+  },
+  "all_historical_cohorts": [
+    {
+      "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/1",
+        "post": "lemma-installed-package-notebook/1"
+      }
+    },
+    {
+      "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/2",
+        "post": "lemma-installed-package-notebook/2"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/3",
+        "post": "lemma-installed-package-notebook/3"
+      }
+    },
+    {
+      "path": "build/courses/task006-package-sparse-component-a1/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/4",
+        "post": "lemma-installed-package-notebook/4"
+      }
+    },
+    {
+      "path": "build/courses/task006-workspace-codec-component-a2/users/notebook",
+      "phases": {
+        "pre": "lemma-installed-package-notebook/5",
+        "post": "lemma-installed-package-notebook/5"
+      }
+    }
+  ],
+  "runtime_language_extension": false,
+  "extra_package_pages": 0,
+  "whole_rv64": "NEXT fullfresh pair/audits and real Save/newcold/failedSave required",
+  "compatibility": "Reads raw1/envelope2; writes2 on next actual ordinary save. Software1-4 cannot read2. No format/journal/rawink migration or rollback guarantee.",
+  "receipts": {
+    "build/courses/task006-workspace-codec-component-a1/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-workspace-codec-component-a1/cohort-generation.json": "ad3909663ecd6ca13555bb3a1371a1fc1f342beac9ab647e7b4f2e505a57cd4d",
+    "build/courses/task006-workspace-codec-component-a1/all-cohorts-a1-failure.json": "a1785b36b3d6490cddc0150b63c5dab9ce320c8fb187c37541bf048ccf4b4ee4",
+    "build/courses/task006-workspace-codec-component-a1/all-cohorts-a2.json": "d98713d4cc43bbf7d324104c16159d956f3ab733196f6898279ce8703f0ac49d",
+    "build/courses/task006-workspace-codec-component-a1/mutations.json": "e86663624185280c5bc8dad1f6850e7271457f6c78bca41f2ee91a17596c8a49",
+    "build/courses/task006-workspace-codec-component-a1/kernel-host.log": "e45bacd480e0d90667aa065b9976bef64be36572940885596678dde18a4a08ad",
+    "build/courses/task006-workspace-codec-component-a1/foundation-host.log": "a10b06e03fb0c65faa2216cee5a9bbf0dfa51fd0c32319c6fc1c9cd9f7d0810c",
+    "build/courses/task006-workspace-codec-component-a1/scaffold.log": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c",
+    "build/courses/task006-workspace-codec-component-a1/scaffold-tests.log": "5d4abb4b52cd095d8d4e0ef3ded1aa342cda402ab453551c31b55415380150db",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/program.ll": "984520164e55a2126b713433965d0eae1289c1efee855efb15835706082e90ab",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/program.opt.ll": "06bfea2daf28c8adec528d4fb0b0d79a1b96ef7cba626dfdea1ab56ffad04a4c",
+    "build/courses/task006-workspace-codec-component-a1/users/notebook/unit.json": "2638ae53623e9228a96b8c6a8229074b134a19c2b2dca5e6b179c6bcd518b3fc",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a1.log": "f2a676d8c718a2f973cecf386345007ff9909712d009aae26c52b9ce632ca420",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a2.log": "f2a676d8c718a2f973cecf386345007ff9909712d009aae26c52b9ce632ca420",
+    "build/courses/task006-package-sparse-integration-a1/codec-test-a3.log": "0166e2e3eae0f5c541ee745c5f1e22ac47ae31ed92c4aef93cd4fb4894ede7e9",
+    "build/courses/task006-package-sparse-integration-a1/codec-notebook-actions-a1.log": "64c68f904c7ffda61d4ca57a6e1ad6f20e78982b1904d89721d8338d3080775d",
+    "build/courses/task006-package-sparse-integration-a1/codec-known-workspace-a1.log": "aa3624594e03a6dec366d82470755a7876a8c113b4781503ec8502562ed1d39f",
+    "build/courses/task006-package-sparse-integration-a1/ci-dependency-fix-a1.log": "fbaf70fdb6081e4bffd9b0c34ca9c76044763f0fa66d7104f5f4dcd79d6091e5",
+    "build/courses/task006-workspace-codec-component-a2/export.log": "0b445282539808a638b97ba0ca28a7339af6a16bf9fb7a5dbc029ae5376d9aca",
+    "build/courses/task006-workspace-codec-component-a2/cohort-generation.json": "4c0673d3c8ebd0924f59b16a53201dfa2f9ae88906e04c592b693b7ebb2f0a16",
+    "build/courses/task006-workspace-codec-component-a2/mutations.json": "72a75016472d69c10db0f113eca164c7a2fed41c6eda5083bd973c8af529ea04",
+    "build/courses/task006-workspace-codec-component-a2/all-cohorts.json": "237273778d615ecfa8aa98e8dd0d960d986876d8dcb293eab5a9236a98588bf9",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/unit.json": "2638ae53623e9228a96b8c6a8229074b134a19c2b2dca5e6b179c6bcd518b3fc",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/program.ll": "6b22173ed53e15d363028bf04355ed36e205ad20528be7dbcc0964aa2323eb18",
+    "build/courses/task006-workspace-codec-component-a2/users/notebook/program.opt.ll": "1a8f8d5b3eeaeb557563c62eaf53f7ba5a1fef939907d01e64652fc96cf3448a",
+    "build/courses/task006-package-sparse-integration-a1/codec-notebook-actions-a2.log": "951f36a1a8234b821495b3aa8014ffb65b828006a2ea350d057ba849def55c36"
+  },
+  "opening_cancellation": "Actual phase5 pending transaction canceled/consumed exactlyonce before rawink; immutable live workspace retained. New integration hole found/fixed before fullpair."
+}

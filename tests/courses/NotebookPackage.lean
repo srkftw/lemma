@@ -192,7 +192,42 @@ def check : IO Unit := do
       (← old.get).memory == (← r.get).memory && (← old.get).reads == (← r.get).reads &&
       (← old.get).writes == (← r.get).writes && (← r.get).calls.isEmpty)
     "sparse math presentation changed actual framebuffer bytes or ordered memory effects"
-  IO.println "NOTEBOOK_PACKAGE_ACTIONS:PASS actual private EOF/framing/sequence/wait/fault/cancel/partial-allocation/checker guards; no CPU or durability claim"
+  -- The actual opener classifies only a64-byte prefix, then schedules a full
+  -- exact-length object read. New phase5 must retain the ordinary busy guard.
+  for compact in #[false,true] do
+    r.set ({} : Model)
+    let _ ← run r (Lemma.Documents.MathematicsClosure.create doc 1 1)
+    let made ← run r (PackageWorkspace.create workspace doc 1 1)
+    expect (made.1 == 0) "workspace header opener setup failed"
+    let saved : UInt64 := 0x32a000
+    let length ← if compact then do
+      let encoded ← run r (WorkspaceCodec.encode workspace saved 1 1)
+      expect (encoded.1 == 0) "compact header setup failed"
+      pure encoded.2
+    else do
+      for i in [:8] do set r (saved+i.toUInt64*8) (← word r (workspace+i.toUInt64*8))
+      pure 3712
+    for (a,v) in #[(stateBase+72,1),(stateBase+80,1),(stateBase+752,12),
+        (app+96,1),(context+128+56,4)] do set r a v
+    r.modify fun m => {m with calls := #[],returns := #[(0,123)]}
+    let opened ← run r (notebookAction% "pumpOpenPackageCourse")
+    expect (opened == (0,0) && (← word r (app+96)) == 5 &&
+        (← word r (context+128+16)) == length && (← word r (context+128+8)) == saved &&
+        (← word r (context+128+88)) == 0 && (← word r (context+128+56)) == 0)
+      "actual raw/compact header bypassed full exact reader or independent EOF"
+    let busy ← run r (notebookAction% "packageBusy")
+    expect (busy == (0,1)) "full workspace read phase5 exposed idle writing policy"
+    set r (context+128+32) 99
+    let immutable := (← r.get).memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat
+    r.modify fun m => {m with calls := #[],returns := #[(0,0),(0,128)]}
+    let canceled ← run r (notebookAction% "cancelPackageWork")
+    expect (canceled == (0,0) && (← word r (app+96)) == 0 &&
+        (← word r (context+128+32)) == 0 && (← word r (context+128+56)) == 5 &&
+        (← r.get).calls.map (·.1) == #[25,67])
+      "new opening phase failed to cancel/consume its actual transaction before ink"
+    expect ((← r.get).memory.extract (workspace-0x10000).toNat (workspace-0x10000+3712).toNat == immutable)
+      "opening cancellation published or damaged active workspace"
+  IO.println "NOTEBOOK_PACKAGE_ACTIONS:PASS actual private EOF/framing/sequence/wait/fault/cancel/partial-allocation/checker/header/busy guards; no CPU or durability claim"
 end NotebookPackageTests
 
 def main : IO Unit := NotebookPackageTests.check

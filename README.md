@@ -1225,3 +1225,23 @@ to46–49M instruction-clock units; the original3B connected-case limit still
 fails during Close. The canonical RTL course case remains running. Its source,
 limits and full audit results are retained in
 [the text-delta receipt](docs/evidence/006-course-text-delta-v1.json).
+
+The newer audited white-word guest is prepared at
+`build/native/task006-package-sparse-a1` and
+`build/browser/task006-package-sparse-a1`. It retains the same actual pixels
+and reduces pure font work. Its fast39-phase course/checking/learner/ink case
+reaches acknowledged ink at2.607B instruction-clock units and completes Close
+at2.859B. The original3B aggregate fails during the subsequent cold boot.
+A separate new-CPU cold case recovers all256MiB and every controller pixel,
+then reopens the worked material and exercise without a new checker request.
+Use the ordinary native session and local browser commands above with these
+bundle paths. This is development preload; the browser course workflow and
+fast pipeline timing parity remain open. See
+[the white-word receipt](docs/evidence/006-course-white-word-v1.json).
+
+The next guest increment reads legacy raw workspaces and saves a lossless
+compact workspace envelope through the existing journal/barrier path. Its
+complete checked source cohort and component tests pass; full RV64 execution
+is still required. Older development images cannot reopen the new envelope.
+Its migration and staging rules are explicit in
+[the envelope contract](docs/contracts/006-course-workspace-envelope-v2.md).

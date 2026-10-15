@@ -1,6 +1,7 @@
 import Lemma.Courses.PackageReader
 import Lemma.Courses.PackageRender
 import Lemma.Courses.PackageWorkspace
+import Lemma.Courses.WorkspaceCodec
 import Lemma.Courses.PackageAwaitClient
 import Lemma.Services.Store.RecoveryClient
 import Lemma.Notebook.RetryPolicy
@@ -2695,9 +2696,9 @@ private def savePackageWorkspace : Action :=
   if pending = 0 then
   .bind (get 72) fun s ns => if statusFailed s = true then .done s 0 else
   .bind (get 80) fun s page => if statusFailed s = true then .done s 0 else
-  .bind (Lemma.Courses.PackageWorkspace.validate mathematicsSave ns page) fun s _ =>
+  .bind (Lemma.Courses.WorkspaceCodec.encode packageWorkspace mathematicsSave ns page) fun s length =>
   if statusFailed s = true then .done s 0 else
-  .bind (startSave mathematicsSave Lemma.Courses.PackageWorkspace.bytes (Lemma.Courses.PackageWorkspace.object page) 3)
+  .bind (startSave mathematicsSave length (Lemma.Courses.PackageWorkspace.object page) 3)
     fun s _ => if statusFailed s = true then saveFailure s else publishStatus
   else .done 231 0
 
@@ -2951,7 +2952,7 @@ private def openPackageCourse : Action :=
   .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 152 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 512 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (startPackageRecord (Lemma.Courses.PackageWorkspace.object page) mathematicsSave Lemma.Courses.PackageWorkspace.bytes 0)
+  .bind (startPackageRecord (Lemma.Courses.PackageWorkspace.object page) mathematicsSave 64 1)
     fun s _ => if statusFailed s = true then packageCourseError s else packagePut 96 1
 
 /-- Reopen reads only through the actual Store endpoint. Missing workspace
@@ -2978,8 +2979,22 @@ private def pumpOpenPackageCourse : Action :=
   else if statusFailed result = true then packageCourseError result else
   if recordPhase = 4 then
     if phase = 1 then
-      .bind (Lemma.Courses.PackageWorkspace.validate mathematicsSave ns page) fun s _ =>
-      if statusFailed s = true then packageCourseError s else finishOpenPackageCourse 0
+      .bind (Lemma.Courses.WorkspaceCodec.recordLength mathematicsSave) fun s length =>
+      if statusFailed s = true then packageCourseError s else
+      .bind (startPackageRecord (Lemma.Courses.PackageWorkspace.object page) mathematicsSave length 0)
+        fun s _ => if statusFailed s = true then packageCourseError s else packagePut 96 5
+    else if phase = 5 then
+      .bind (Memory.read64 mathematicsSave) fun s tag => if statusFailed s = true then packageCourseError s else
+      .bind (if tag = Lemma.Courses.PackageWorkspace.magic then
+        Lemma.Courses.PackageWorkspace.validate mathematicsSave ns page
+      else
+        .bind (recordGet 16) fun s length => if statusFailed s = true then .done s 0 else
+        .bind (Lemma.Courses.WorkspaceCodec.decode mathematicsSave length packageBytes ns page) fun s _ =>
+        if statusFailed s = true then .done s 0 else
+        .bind (Lemma.Services.Store.Format.copy packageBytes mathematicsSave Lemma.Courses.PackageWorkspace.bytes) fun s copied =>
+        if statusFailed s = true then .done s 0 else
+        if copied = Lemma.Courses.PackageWorkspace.bytes then .done 0 0 else .done 240 0)
+        fun s _ => if statusFailed s = true then packageCourseError s else finishOpenPackageCourse 0
     else if phase = 2 then
       .bind (Lemma.Documents.Mathematics.field packageDocumentStage 8) fun s version => if statusFailed s = true then .done s 0 else
       let length := if version = 1 then Lemma.Documents.Mathematics.legacyBytes else
@@ -3066,10 +3081,11 @@ private def cancelPackageWork : Action :=
   if allocated = 12 then
   .bind cancelPackageRead fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 96) fun s opening => if statusFailed s = true then .done s 0 else
-  .bind (if 0 < opening then if opening < 4 then
+  let active := if opening = 5 then (1 : UInt64) else if 0 < opening then if opening < 4 then 1 else 0 else 0
+  .bind (if active = 1 then
     .bind cancelPackageRecord fun s _ => if s = IPCABI.canceled then .done 0 0 else .done s 0
-    else .done 0 0 else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (packagePut 96 (if opening < 4 then 0 else opening)) fun s _ => .done s 0
+    else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 96 (if active = 1 then 0 else opening)) fun s _ => .done s 0
   else .done 0 0
 
 
@@ -3390,6 +3406,7 @@ private def packageBusy : Action :=
   .bind (packageGet 72) fun s text => if statusFailed s = true then .done s 0 else
   .bind (packageGet 144) fun s controls => if statusFailed s = true then .done s 0 else
   .bind (packageGet 152) fun s automatic => if statusFailed s = true then .done s 0 else
+  if opening = 5 then .done 0 1 else
   if 0 < opening then if opening < 4 then .done 0 1 else done reading text controls automatic
   else done reading text controls automatic
   else .done 0 0

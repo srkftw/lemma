@@ -1919,3 +1919,51 @@ Original pure-call-count observer setup failures remain retained. Contract and
 component evidence:006-course-white-word-v1. Full fresh pair/execution remain
 required. Exact85209b1 CI38683626728 is terminal SUCCESS10/10 with no skips;
 later software3/4 source requires its own candidate.
+
+Software4 now has a complete fresh source470def4 pair: initializer6c32ff7a
+692320B/notebook3700d81f692312B, full ordinary audits PASS593.558s,597.807s
+supervised,1922621440B peak owned RSS,387 sealed inputs/no survivors. Prepared
+native/static bundles: build/{native,browser}/task006-package-sparse-a1. Fast
+39-phase course/checking/learner/hint/review/rawinkSaved completes2.607000370B;
+actualClose completes2.859000377B. Original3B FAIL during independentcold prefix
+is retained (253.262s actor), without changed bounds. A separate predeclared
+2B/900s case from that actual closed source passes: newCPUcoldReady314000008,
+all256MiB/allopaqueobjects/allcontrollerpixels exact, actualcourse/body/worked/
+exercise reopen and no new0x459 request;570000044 total,72.043s actor/76.031s
+supervised,497709056B peak/no survivors. These are separate actual observations,
+not a relabeled whole-case PASS or checkpoint continuation.
+
+Software3 canonical RTL nowReady802M/415848643retired/2581.513s, installation68M
+and duplicate rejection10M, under unchanged bounds. The400M course attempt
+continues with29 host inputs frozen. New software4 browser tab26/8795 opened an
+independentCPU0 on an imported two-package opaque medium, then began its original
+1B/7200s cold case; no browser Ready/course pass yet. Preserve tabs25/26.
+
+Actual470def4 CI38687430744 FAILED9/10: host metadata's new Render fixture lacked
+Lemma.Courses.Package.olean. Foundation host itself passed; kernel/silicon host
+steps after the failing qualifier were SKIPPED. Add the explicit Package build
+target rather than weakening/skipping the fixture.13 exact workflow regressions
+and both actual renderer fixtures now pass locally. Retained failed job116265386169
+and complete candidate metadata are in006-descriptor-direct-ci.json. New candidate
+CI is not inferred from those local results.
+
+Next software5 implements ordinary Lean lossless workspace envelope2, preserving
+all3712 decoded bytes and unchanged Store journal/barrier semantics. New opener
+classifies64 bytes then requires a full exact object and independentEOF; phase5
+retains busy policy. Raw1 remains readable. Decode uses existing private package
+staging before publication; encode uses validated live workspace and frozen save
+staging. Same12 pages and authority checks. Explicit migration limitation: old
+software1-4 cannot read envelope2; keep pre-migration exports, no boot rollback
+compatibility claim. Contracts/evidence006-course-workspace-envelope-v2 record
+833 genuine functions (14 added,5 original preIR functions changed,814 unchanged),
+five exact historical pre/post/readonly/Surface cohorts,4 valid LLVM mutants and
+14 partial-family rejections, raw/Known/Unknown/history/fault/overlap checks,
+468 foundation/433 kernel/18 scaffold PASS. Initial fixture transition and receipt
+serialization errors remain retained. Full fresh RV64 pair/audits, actual Save,
+newcold and unsuccessful Save remain NEXT; component tests establish none of those.
+
+Before full compilation, review caught phase5 missing from the old opening
+cancellation condition. The guest now cancels/consumes that actual transaction
+before rawink; the unchanged live workspace and exact two-syscall cancellation
+pass the maintained Action fixture. Complete genuine source qualification was
+regenerated in workspace-codec-component-a2; previous component receipts remain.

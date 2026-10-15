@@ -142,7 +142,7 @@ jobs:
                 Lemma.Applications.Notebook \
                 Lemma.Compiler.KernelExport \
                 Lemma.User.Runtime.Arena Lemma.Mathematics.OwnedSubmission \
-                Lemma.Courses.Arithmetic \
+                Lemma.Courses.Arithmetic Lemma.Courses.Package \
                 Lemma.Services.Arithmetic.Server Lemma.Services.Arithmetic.Client \
                 Lemma.Services.Arithmetic.ClientV2 \
             2>&1 | tee build/ci/metadata/lake-build.log
@@ -234,6 +234,10 @@ jobs:
             nix develop --no-write-lock-file --command \
               lake env lean --run tests/courses/NotebookPackage.lean \
             2>&1 | tee build/ci/metadata/notebook-package-state-layout.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean --run tests/courses/WorkspaceCodec.lean \
+            2>&1 | tee build/ci/metadata/course-workspace-codec.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
               lake env lean --run tests/courses/Render.lean \

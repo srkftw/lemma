@@ -834,12 +834,13 @@
     "implementation_source": "06b2fa9de1390f05fa172bf2709f888cbff1c109",
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
     "model_rtl": "unchanged canonical0.3 shared Machine and controllers",
-    "guest_artifacts": "Fresh387-input text-delta software3 initializer/notebook full builds/audits PASS565.254s,569.624s supervised,1.935GB peak/no survivors; software4 pure white-word component qualified, full pair pending.",
-    "guest_execution": "Registry-only native Ready847M/install72M/duplicate11M, original400M openFAILwith complete validated bytes but unfinished rendering. Browser registry-only coldReady846.10M/all35 native I/O boundaries/all bytes/pixels PASS. Software3 fast39 phases through ink2.805B vs2.929B; original3B CloseFAILretained. New software3 canonical RTL scenario running.",
-    "distribution": "Prepared software3 native/static task006-package-delta-a1; browser tab25 actual registry-only coldReady paused; full browser course/compiler/permissions/redistribution remain open.",
+    "guest_artifacts": "Software4 full fresh387-input initializer6c32ff7a/notebook3700d81f builds/audits PASS593.558s/597.807s supervised/1.923GB peak/no survivors; software5 lossless workspace envelope component qualified; whole target pair/execution NEXT.",
+    "guest_execution": "Software3 actual canonical RTL coldReady802M/415848643retired/2581.513s, edition3install68M/duplicate10M; original400M course cap remains running. Software4 fast39 interactions2.607B and actualClose2.859B, original3B FAIL during newcold retained. Separate actualnewCPUcold314M/full256MiB/allpixels/course worked+exercise reopen PASS76.031s supervised. No fullRTL/browsercourse PASS.",
+    "distribution": "Prepared software4 native/static task006-package-sparse-a1; browser tab26 newCPU0 importedactualmedium boundedcold running. Full browser course/compiler/permissions/redistribution remain open.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
     "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json",
-    "candidate_ci": "85209b1 candidate38683626728 SUCCESS10/10 with no skipped steps; later software3/4 source requires ownCI"
+    "candidate_ci": "470def4 run38687430744 FAILURE9/10: new Render fixture missing Package.olean; laterkernel/siliconhoststepsSKIPPED. Explicit missing buildtarget fixed; actual13CItests/bothrendererfixtures pass locally. Newcandidate notrun yet.",
+    "workspace_envelope": "Software5 component: raw3712B lossless encode/decode, five revisionfixtures272-928B, exact Known/Unknown histories and legacyread. Explicit migration/oldimage limitation. Store journal/barrier/authority unchanged. WholeRV64/execution NEXT."
   }
 }
