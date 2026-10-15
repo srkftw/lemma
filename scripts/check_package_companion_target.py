@@ -5,7 +5,7 @@ unit, IR, readonly and RV64 object/jump-table guards. No linked/CPU/peer claim.
 import argparse,copy,json,os,resource,shutil,sys,time,re
 from pathlib import Path
 from core0_common import Core0Error,run_bounded,sha256,require_tools
-from audit_kernel import validate_unit,validate_ir,alloc_section_names,inspect_backend_jump_tables,parse_definitions_and_calls
+from audit_kernel import validate_unit,validate_ir,validate_object_budget,alloc_section_names,inspect_backend_jump_tables,parse_definitions_and_calls
 from lemmasim_readonly import validate_object
 from package_companion_target import AUTHORITY,VERSION,validate,canonical
 ROOT=Path(__file__).resolve().parents[1]
@@ -41,6 +41,7 @@ def main():
    unit=json.loads((d/'unit.json').read_text());validate_unit(unit,unit['role'],configuration=unit['configuration'],image_key=unit.get('image_key'))
    pre=(d/'program.ll').read_text();post=(d/'program.opt.ll').read_text()
    audits={phase:validate_ir(ir,unit,optimized=phase=='post',optimization='O2') for phase,ir in [('pre',pre),('post',post)]}
+   object_budget=validate_object_budget(unit,pre) if unit['role']=='kernel' else None
    def inspect(tool,args,label):return run(role+'-'+label,[tools[tool],*(['--elf-output-style=GNU'] if tool=='llvm-readelf' else []),*args],d)
    undefined=inspect('llvm-nm',['--undefined-only','program.o'],'undefined')
    declarations=parse_definitions_and_calls(post)[1]
@@ -52,7 +53,7 @@ def main():
      name=section[1:]+'.bin';inspect('llvm-objcopy',['-O','binary','--only-section='+section,'program.o',name],name);raws[section]=(d/name).read_bytes()
    readonly=validate_object(sections,symbols,relocs,raws,audits['post']['readonly_optimizer_tables'],'program.o')
    backend=inspect_backend_jump_tables(inspect,d,object_file='program.o',section_text=sections,symbol_text=symbols,relocation_text=relocs,unit=unit,optimization='O2',readonly_tables=readonly['readonly_tables'])
-   report['roles'][role]={'status':'PASS','functions':len(unit['functions']),'external_primitives':sorted(expected),'pre':audits['pre'],'post':audits['post'],'readonly':readonly,'backend':backend}
+   report['roles'][role]={'status':'PASS','functions':len(unit['functions']),'external_primitives':sorted(expected),'object_budget':object_budget,'pre':audits['pre'],'post':audits['post'],'readonly':readonly,'backend':backend}
    print(role,'PASS_GENERIC_UNIT_IR_OBJECT',len(unit['functions']),flush=True)
    (out/'progress.json').write_text(json.dumps(report,indent=2)+'\n')
   from audit_kernel import _ir_definition_body

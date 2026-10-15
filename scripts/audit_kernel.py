@@ -1681,6 +1681,7 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         gates.append(validate_failed_call_gate(body,names[before],names[after],names[o+'failed'],failed_body))
     for before,after in (('version','limit'),('limit','magic'),('magic','publish')):
         gates.append(validate_failed_call_gate(aliased,'objects_init_'+before,'objects_init_'+after,names[o+'failed'],failed_body))
+    package_recovery_binding=unit.get('configuration') in USB_PACKAGE_RECOVERY_NOTEBOOK_CONFIGURATIONS
     recovery_binding=unit.get('configuration') in USB_RECOVERY_FAMILIES
     clocked_binding=recovery_binding or unit.get('configuration') in USB_CLOCKED_NOTEBOOK_CONFIGURATIONS
     wire_binding=unit.get('configuration') in USB_WIRE_NOTEBOOK_CONFIGURATIONS
@@ -1713,9 +1714,13 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
         binding_gates.extend(admitted[0]);callers.append(source)
     if selected in names and callers!=[construct]:raise Core0Error('Objects power initializer has no exact constructor')
     if unit.get('configuration') in MODERN_NOTEBOOK_CONFIGURATIONS:
-        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootRecovery' if recovery_binding else 'bootClocked' if clocked_binding else 'bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
+        boot='Lemma.Platform.LemmaSim.NotebookKernel.'+('bootPackageRecovery' if package_recovery_binding else 'bootRecovery' if recovery_binding else 'bootClocked' if clocked_binding else 'bootWire' if wire_binding else 'bootModernExecuted' if executed_binding else 'bootModernNext' if next_binding else 'bootModern')
         binding=13 if clocked_binding else 11 if wire_binding else 10 if executed_binding else (9 if unit['configuration'] in PRODUCT_NEXT_NOTEBOOK_CONFIGURATIONS else 8) if next_binding else 7 if unit['configuration'] in PRODUCT_CONFIGURATIONS else 6
         wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+('siliconUSBClosureRecoveryInitializeMedium' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS and unit['configuration'].endswith('-initialize') else 'siliconUSBClosureRecoveryBoot' if unit['configuration'] in USB_CLOSURE_RECOVERY_NOTEBOOK_CONFIGURATIONS else 'siliconUSBRecoveryInitializeMedium' if recovery_binding and unit['configuration'].endswith('-initialize') else 'siliconUSBRecoveryBoot' if recovery_binding else 'siliconUSBClockedInitializeMedium' if binding==13 and unit['configuration'].endswith('-initialize') else 'siliconUSBClockedBoot' if binding==13 else 'siliconUSBWireInitializeMedium' if binding==11 and unit['configuration'].endswith('-initialize') else 'siliconUSBWireBoot' if binding==11 else 'siliconProductExecutedBoot' if binding==10 else 'siliconProductNextBoot' if binding==9 else 'siliconUSBNextInitializeMedium' if binding==8 and unit['configuration'].endswith('-initialize') else 'siliconUSBNextBoot' if binding==8 else 'siliconProductBoot' if binding==7 else 'siliconUSBInitializeMedium' if unit['configuration'].endswith('-initialize') else 'siliconUSBBoot')
+        if package_recovery_binding:
+            from package_companion_deployment import BOOT_ROOTS
+            wrapper='Lemma.Platform.LemmaSim.NotebookKernel.'+BOOT_ROOTS[unit['configuration']]
+        constructor_arguments=['i64 %arg0'] if package_recovery_binding else ['i64 %arg0, i64 %arg1']
         if boot not in names or wrapper not in names:
             raise Core0Error('modern Objects-v3 selection omits its genuine boot wrapper')
         constructor_callers=[];boot_callers=[]
@@ -1723,13 +1728,18 @@ def validate_object_initialization(unit: dict, pre_ir: str, names: dict[str,str]
             body=_ir_definition_body(pre_ir,symbol);calls=parse_definitions_and_calls(body)[2]
             if names[construct] in calls:
                 constructor_callers.append(source)
-                if source!=boot or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[construct])+r'\(([^\n]*)\)',body)!=['i64 %arg0, i64 %arg1']:
+                if source!=boot or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[construct])+r'\(([^\n]*)\)',body)!=constructor_arguments:
                     raise Core0Error('modern Objects-v3 constructor has an undeclared binding caller')
             if names[boot] in calls:
                 boot_callers.append(source)
                 initialization=1 if unit['configuration'].endswith('-initialize') else 0
-                if source!=wrapper or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[boot])+r'\(([^\n]*)\)',body)!=[f'i64 {initialization}, i64 {binding}']:
+                boot_arguments=[f'i64 {initialization}'] if package_recovery_binding else [f'i64 {initialization}, i64 {binding}']
+                if source!=wrapper or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[boot])+r'\(([^\n]*)\)',body)!=boot_arguments:
                     raise Core0Error('modern Objects-v3 boot lacks its fixed selected binding')
+        if package_recovery_binding:
+            descriptor='Lemma.Platform.LemmaSim.Descriptor.validateBindingClocked'
+            if descriptor not in names or re.findall(r'call \{ i64, i64 \} @'+re.escape(names[descriptor])+r'\(([^\n]*)\)',_ir_definition_body(pre_ir,names[boot]))!=['i64 13']:
+                raise Core0Error('package Objects-v3 boot lost its exact Clocked13 descriptor validation')
         if constructor_callers!=[boot] or boot_callers!=[wrapper]:
             raise Core0Error('modern Objects-v3 constructor/boot caller closure differs')
         binding_gates.append({'selected_binding':binding,'initialization':initialization,'boot_wrapper':wrapper,'constructor_caller':boot})
