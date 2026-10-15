@@ -16,10 +16,11 @@ private def effects (value : EffectSet) : Json :=
     let interior := String.ofList (value.render.toList.drop 1 |>.reverse |>.drop 1 |>.reverse)
     .arr ((interior.splitOn ",").toArray.map Json.str)
 
-def exportFiles (env : Environment) (directory : System.FilePath) : IO Unit := do
+def exportFiles (env : Environment) (directory : System.FilePath) (aligned : Bool := false) : IO Unit := do
   if ← directory.pathExists then throw <| IO.userError "course decoder exporter refuses retained output"
-  let roots := #[``Lemma.Courses.PackageRender.prepare, ``Lemma.Courses.PackageRender.render,
-    ``Lemma.Courses.PackageRender.renderSelected]
+  let roots := if aligned then #[``Lemma.Courses.PackageRender.renderAlignedDelta] else
+    #[``Lemma.Courses.PackageRender.prepare, ``Lemma.Courses.PackageRender.render,
+      ``Lemma.Courses.PackageRender.renderSelected]
   let suite ← match checkAndLowerActionSuiteForProfile env .user_v0_2 roots with
     | .ok value => pure value | .error error => throw <| IO.userError error.render
   unless suite.usedDeviceOps.isEmpty do throw <| IO.userError "course decoder acquired device effects"
@@ -72,7 +73,7 @@ def exportFiles (env : Environment) (directory : System.FilePath) : IO Unit := d
     ("schema_version", toJson (1 : Nat)),
     ("artifact_category", .str "course-package-text-render-component"),
     ("contract_version", .str suite.contractVersion), ("package_format", .str "lemma-course-package/1"),
-    ("render_format", .str "lemma-course-text-panel/1"),
+    ("render_format", .str (if aligned then "lemma-course-text-aligned-delta/2" else "lemma-course-text-panel/1")),
     ("roots", .arr selected), ("functions", .arr functions),
     ("used_execution_ops", .arr <| suite.usedExecutionOps.map fun spec => Json.mkObj [
       ("stable_id", .str spec.stableId), ("source_identity", .str spec.sourceIdentity.toString),
@@ -95,5 +96,13 @@ elab_rules : command
       | throwError "LEMMA_COURSE_RENDER_OUT must name an unused output directory"
     liftIO <| exportFiles (← getEnv) (System.FilePath.mk output)
     logInfo "COURSE_RENDER_EXPORT:PASS genuine bounded User2 source/LLVM closure"
+
+syntax (name := lemmaExportCourseAlignedRender) "#lemma_export_course_aligned_render" : command
+elab_rules : command
+  | `(#lemma_export_course_aligned_render) => do
+    let some output ← liftIO <| IO.getEnv "LEMMA_COURSE_RENDER_OUT"
+      | throwError "LEMMA_COURSE_RENDER_OUT must name an unused output directory"
+    liftIO <| exportFiles (← getEnv) (System.FilePath.mk output) true
+    logInfo "COURSE_ALIGNED_RENDER_EXPORT:PASS genuine bounded User2 source/LLVM closure"
 
 end Lemma.Compiler.CourseRenderExport

@@ -322,3 +322,68 @@ def renderHeaderSelectedDelta (address bytes field position cache width height :
   else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
 
 end Lemma.Courses.PackageRender
+
+/-! `lemma-course-text-aligned-delta/2` retains the exact384x320 byte
+footprint. Each row uses a byte prefix, aligned words and a byte suffix. It
+never reads or writes neighbouring pixels to obtain alignment. Failed reads
+precede that chunk's first write; failures retain ordered earlier chunks. -/
+namespace Lemma.Courses.PackageRender
+open Lemma.Core0.Memory
+open Lemma.Courses.PackageFormat
+
+/-- Eight consecutive packed bytes starting at an even pixel within a row.
+The admitted renderer supplies byte offsets0..191. Three adjacent glyphs
+cover the only three-cell case, a start at byte5 of a six-byte cell. -/
+def alignedSpanWord (offset y first second third : UInt64) : UInt64 :=
+  let row := y % 20
+  if 15 ≤ row then 0xffffffffffffffff else
+  let shift := offset % 6 * 8
+  let a := packedCellRow first row
+  let b := packedCellRow second row
+  let c := packedCellRow third row
+  (a >>> shift) ||| (b <<< (48 - shift)) |||
+    (if shift = 40 then c <<< 56 else 0)
+
+private def alignedDeltaStep (i _ : UInt32) (acc cache width _ _ : UInt64) : Action :=
+  let chunk := i.toUInt64 % 25
+  let y := i.toUInt64 / 25
+  let start := Lemma.Ink.Surface.framebuffer + (320 + y) * ((width + 1) / 2) + 12
+  let prefixBytes := if start % 8 = 0 then 8 else 8 - start % 8
+  let offset := if chunk = 0 then 0 else prefixBytes + (chunk - 1) * 8
+  let count := if chunk = 0 then prefixBytes else if chunk = 24 then 8 - prefixBytes else 8
+  if count = 0 then .done 0 acc else
+  let cell := y / 20 * columns + offset / 6
+  .bind (Lemma.User.Memory.read64 (cache + cell * 8)) fun s first => if s = 0 then
+  .bind (if 6 < offset % 6 + count then Lemma.User.Memory.read64 (cache + (cell + 1) * 8)
+    else .done 0 0) fun s second => if s = 0 then
+  .bind (if 12 < offset % 6 + count then Lemma.User.Memory.read64 (cache + (cell + 2) * 8)
+    else .done 0 0) fun s third => if s = 0 then
+  let mask := if count = 8 then 0xffffffffffffffff else ((1 : UInt64) <<< (count * 8)) - 1
+  let word := alignedSpanWord offset y first second third &&& mask
+  let target := start + offset
+  .bind (if count = 8 then Lemma.User.Memory.read64 target else
+    .boundedFoldU64 8 readByteStep count.toUInt32 0 target 0 0 0 fun s value => .done s value)
+    fun s previous => if s = 0 then
+  if previous = word then .done 0 acc else
+  let changed := acc ||| ((1 : UInt64) <<< ((24 + offset * 2) / 32)) |||
+    ((1 : UInt64) <<< ((23 + (offset + count) * 2) / 32)) |||
+    ((1 : UInt64) <<< (13 + y / 32))
+  if count = 8 then
+    .bind (Lemma.User.Memory.write64 target word) fun s _ => .done s changed
+  else .boundedFoldU64 8 renderByteStep count.toUInt32 changed target word 0 0 fun s value => .done s value
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Same shape, disjointness and error admission as text-delta1. On success
+it returns the same conservative column/row tile projection, computed from
+actual differing chunks. The decomposition visits each of the192 row bytes
+exactly once, with no retained cache or device/storage authority. -/
+def renderAlignedDelta (cache width height : UInt64) : Action :=
+  if 416 ≤ width then if width ≤ 4096 then if 640 ≤ height then if height ≤ 4096 then
+  if cache % 8 = 0 then if cache ≤ 0xffffffffffffffff - cacheBytes then
+  let framebufferBytes := ((width + 1) / 2) * height
+  if separate cache cacheBytes Lemma.Ink.Surface.framebuffer framebufferBytes = 1 then
+  .boundedFoldU64 8000 alignedDeltaStep 8000 0 cache width 0 0 fun s changed => .done s changed
+  else .done malformed 0 else .done malformed 0 else .done malformed 0
+  else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0 else .done resourceLimit 0
+
+end Lemma.Courses.PackageRender

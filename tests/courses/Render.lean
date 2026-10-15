@@ -250,6 +250,53 @@ def check : IO Unit := do
     let (bad,rejected) ← observe before action
     if bad.1 == 0 || !rejected.reads.isEmpty || !rejected.writes.isEmpty then
       throw <| IO.userError "delta selection admission consumed invalid/aliased source or display"
+  -- Aligned-delta2 is compared against the original scalar pixel renderer,
+  -- including every byte outside the192-byte row footprint. Different strides
+  -- exercise all prefix lengths; no neighbouring aligned-word read is allowed.
+  for w in (#[(1650 : UInt64),1651,1663]) do
+    let initial : Model := {prepared with framebuffer := ByteArray.mk (Array.replicate (((w+1)/2)*640).toNat 0xaa)}
+    let (reference,oldPixels) ← observe initial (PackageRender.render cache w height)
+    let (result,newPixels) ← observe initial (PackageRender.renderAlignedDelta cache w height)
+    if reference != (0,0) || result.1 != 0 || result.2 >>> 23 != 0 ||
+        oldPixels.framebuffer != newPixels.framebuffer || newPixels.package != initial.package ||
+        newPixels.glyphs != initial.glyphs then
+      throw <| IO.userError "aligned delta changed full scalar framebuffer/source/cache"
+    let stride := (w+1)/2
+    let framebufferReads := newPixels.reads.filter (fun r => r.1 ≥ Lemma.Ink.Surface.framebuffer)
+    if w == 1650 && (framebufferReads.size != 9640 || newPixels.writes.size != 9640) then
+      throw <| IO.userError "canonical aligned byte/word operation count changed"
+    for (address,count) in framebufferReads ++ newPixels.writes do
+      let offset := address-Lemma.Ink.Surface.framebuffer
+      let y := offset/stride
+      let x := offset%stride
+      if y < 320 || 640 ≤ y || x < 12 || 204 < x+count ||
+          (count != 1 && (count != 8 || address%8 != 0)) then
+        throw <| IO.userError "aligned delta touched neighbouring bytes or unaligned words"
+    if (newPixels.writes.foldl (fun n r => n+r.2) 0) != 61440 then
+      throw <| IO.userError "aligned delta did not write exact full row-byte footprint"
+    let (same,unchanged) ← observe newPixels (PackageRender.renderAlignedDelta cache w height)
+    if same != (0,0) || !unchanged.writes.isEmpty || unchanged.framebuffer != newPixels.framebuffer then
+      throw <| IO.userError "aligned delta retained a stale changed mask or rewrote same pixels"
+    for y in [:320] do
+      for x in [:384] do
+        if result.2 &&& (1 <<< ((24+x)/32).toUInt64) == 0 ||
+            result.2 &&& (1 <<< (13+y/32).toUInt64) == 0 then
+          throw <| IO.userError "aligned delta omitted actual changed-tile coverage"
+  let (alignedRepair,alignedRepaired) ← observe damaged (PackageRender.renderAlignedDelta cache width height)
+  if alignedRepair != (0,8193) || alignedRepaired.framebuffer != differential.framebuffer ||
+      alignedRepaired.writes != #[(target,1),(target+1,1),(target+2,1),(target+3,1)] then
+    throw <| IO.userError "aligned prefix repair lost exact actual footprint/tile projection"
+  let (prefixReadFault,prefixNoWrite) ← observe {damaged with readFault := target+1}
+    (PackageRender.renderAlignedDelta cache width height)
+  if prefixReadFault != (71,0) || !prefixNoWrite.writes.isEmpty || prefixNoWrite.framebuffer != damaged.framebuffer then
+    throw <| IO.userError "aligned prefix read failure wrote or lost actual status"
+  let (prefixWriteFault,prefixPartial) ← observe {damaged with writeFault := target+1}
+    (PackageRender.renderAlignedDelta cache width height)
+  if prefixWriteFault.1 != 72 || prefixPartial.writes != #[(target,1),(target+1,1)] ||
+      prefixPartial.framebuffer[offset]! != differential.framebuffer[offset]! ||
+      prefixPartial.framebuffer[offset+1]! != damaged.framebuffer[offset+1]! then
+    throw <| IO.userError "aligned prefix write failure lost ordered partial effects"
+  IO.println "COURSE_ALIGNED_DELTA2:PASS exact scalar full pixels/all footprint bytes/strides/9640 canonical reads and writes versus54720 original reads; unchanged/repair/fault prefixes; component only"
   IO.println "COURSE_RENDER_ACTIONS:PASS actual immutable package text, explicit pagination, independent glyph/cell and528000-byte Gray4 oracle,CRC/authority/fault/partial-effect guards; component only"
   IO.println "COURSE_RENDER_DELTA:PASS all actual pixels/pagination, changed-tile coverage, no unchanged framebuffer writes, crossed-tile repair and real read/write fault prefixes; component only"
 
