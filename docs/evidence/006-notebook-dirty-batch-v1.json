@@ -379,13 +379,13 @@
     "execution": "NOT_YET_RUN with new9 companion guests; original Saved12 recovery actor uses unchanged older6 bundle and keeps its own meaning"
   },
   "candidate_ci": {
-    "commit": "53d1da928904dbd13427a6289b24e17bab019b45",
-    "run": 38789151262,
-    "status": "SUCCESS",
+    "commit": "a4217e6b97346e070c453e662e7223ffd800531d",
+    "run": 38805996213,
+    "conclusion": "SUCCESS",
     "jobs": 11,
-    "every_reported_step": "success",
     "skipped_steps": 0,
-    "scope": "Committed rawUART milestone only; local native2/restored10 work not covered"
+    "all_reported_steps": "SUCCESS",
+    "scope": "Committed restored Surface milestone, excludes local11 course Save change"
   },
   "browser_cold_ready": {
     "status": "PASS_ACTUAL_COLD_INITIAL_NOTEBOOK_READY_AND_NATIVE_STATE_EQUAL",
@@ -447,7 +447,7 @@
     "next_case": "Original400M/absolute2026-10-15T20:33:15.020525Z authored body observation is running; no current pass."
   },
   "restored_surface_cohort10": {
-    "status": "PASS_COMPLETE_COMPILER_ARTIFACTS_LINKED_IMAGES_AND_GUEST_NOT_RUN",
+    "status": "PASS_WHOLE_LINKED_AND42_PHASE_FAST_FUNCTIONAL",
     "contract": "docs/contracts/006-restored-surface-notebook-v1.md",
     "behavior": "The ordinary maintained Lean Package loops submit up to four consecutive restoration tiles through the existing owned Surface-v2 packet. Cursor advances by actual completed prefix, inactive lanes are zero, refresh waits for complete restoration and dirty work. Geometry/capacity/ownership/journal/profile unchanged.",
     "sources": {
@@ -546,16 +546,216 @@
       "initial typed literal fixture",
       "inactive-lane tail check (corrected mask; original check retained)",
       "four-role180s compiler collection timeout",
-      "A5 supervisor retained900s hard stop while declared1800s; three closed roles reused, missing fourth finished within original absolute1800s deadline"
+      "A5 supervisor retained900s hard stop while declared1800s; three closed roles reused, missing fourth finished within original absolute1800s deadline",
+      "matched10 plan-generation metadata key error, no actor; subsequent wrong copied plan filename after paused CPU creation,0 clocks; corrected first-clock execution retains original900s absolute cutoff"
     ],
     "build_diagnostics": "Opt-in host-only LEMMA_EXPORT_TRACE=1 and optional LEMMA_EXPORT_TRACE_FILE expose actual genuine compiler stages. Canonical export published194.855s; existing maintained whole build command bound300s retained. No guest deadline change.",
     "reproduce": "nix develop --no-write-lock-file --command python3 scripts/check_dirty_batch_notebook_target.py --component build/courses/task006-restored-batch-notebook-component-a6 --work-dir build/courses/restored-batch-artifact-recheck-unused",
     "remaining": [
-      "fresh linked whole images/full audits",
-      "actual source10 guest execution and comparable performance",
-      "browser mathematics/save/durable reopen",
-      "exact fast timing and arbitrary cached-state continuation",
-      "physical panel and whole-chip closure"
+      "actual exact RTL/source10 controller-loss restoration",
+      "browser source10 execution/distribution",
+      "canonical cold speedup not established",
+      "general fast timing/cache continuation and physical closure"
+    ],
+    "whole_images": {
+      "path": "build/courses/task006-restored-batch-notebook-whole-a1/result.json",
+      "sha256": "f73042f6eda20cec5591b8dffd437c00ce7be5b896f012d13efd8323a978b1c6",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "source_commit": "a4217e6b97346e070c453e662e7223ffd800531d",
+      "source_count": 408,
+      "source_inventory_sha256": "07706cabc893ea93c30e31f38cee521e2d3477eb75bfe142bd3a35295a1523b7",
+      "wall_seconds": 1212.3434162720805,
+      "roles": {
+        "initializer": {
+          "audit_seconds": 281.21665793296415,
+          "audit_sha256": "76140881aa086d31f7de4c6fd04ddea951dd1930e3ed60d4c6a1202978077be7",
+          "audit_status": "PASS",
+          "build_seconds": 341.3250364490086,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-restored-batch-notebook-initializer-a1",
+          "image_bytes": 702760,
+          "image_sha256": "1250c622275dad25fdc7d6bfd57911e1fefecaa95cf31ec8dde168bd319c0985",
+          "provenance_sha256": "24f7fd89df304a02ccd9965a57672075a10448683a90a256141f4e2edebc168e"
+        },
+        "notebook": {
+          "audit_seconds": 270.32283943507355,
+          "audit_sha256": "938989f452bf6fb8f81ac322e2a97dc0febe744c22eb5b87eb46e84325d8d4cb",
+          "audit_status": "PASS",
+          "build_seconds": 319.2205844570417,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-restored-batch-notebook-notebook-a1",
+          "image_bytes": 702752,
+          "image_sha256": "234b986d7a1947542f686bfc1046f905f118ef496b18a0f94038f78c901fe643",
+          "provenance_sha256": "842375fc1c042347272874527eaf3251077f9571060d68be995b34bc1fb19392"
+        }
+      }
+    },
+    "whole_supervision": {
+      "path": "build/courses/task006-restored-batch-notebook-whole-supervision-a1/result.json",
+      "sha256": "21e521f02fe18b88fc0c8ebc7c2a75d35c74d3bdd37ede1298d766734e0303bb",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "seconds": 1218.3789935449604,
+      "peak_owned_rss_bytes": 1923903488,
+      "cleanup": {
+        "reason": "normal orphan reap",
+        "killed": [],
+        "survivors": {}
+      },
+      "independent_source_seal": {
+        "current_files_equal_expected": true,
+        "archived_files_equal_expected": true,
+        "source_count": 408
+      }
+    },
+    "prepared_bundles": {
+      "raw_uart97": "build/native/task006-restored-batch-notebook-a1/bundle.json",
+      "matched_fast188": "build/native/task006-restored-batch-notebook-a2/bundle.json"
+    },
+    "fast_functional": {
+      "path": "build/courses/task006-restored-batch-notebook-fast-a2/result.json",
+      "sha256": "117ffc60865e249c03059bfd2688517fe6f5720b7b320a16711aac54b6abc9f0",
+      "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+      "elapsed_seconds": 216.16991663805675,
+      "base_functional_complete": {
+        "cycles": 2179000129,
+        "all_cold_pixels": true,
+        "all_acknowledged_objects": true
+      },
+      "cold_course_reopen": {
+        "actual_body_pixels": true,
+        "exact_workspace_and_all_objects": true,
+        "all_medium_bytes_exact": true,
+        "no_new_checker_request": true
+      }
+    },
+    "fast_supervision": {
+      "path": "build/courses/task006-restored-batch-notebook-fast-supervision-a3/result.json",
+      "sha256": "5a20858031ca768bbc5a546d9fcf8b82f646c9673c420ea97322e9f7f0ba1782",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED",
+      "seconds": 217.73571961501148,
+      "owned_peak_rss_bytes": 373190656
+    },
+    "performance": {
+      "scope": "Same42-phase input/observer/runtime188e5447, sampled nominal fast clock units, not RTL cycles/timing parity. Host loads differ.",
+      "old9_units": 2302000127,
+      "new10_units": 2300000141,
+      "cold_ready_units_both": 239000006,
+      "new10_actor_seconds": 216.16991663805675,
+      "old9_actor_seconds": 246.44385406002402,
+      "attribution": "Cold Ready unchanged; small sampled total change does not establish cold algorithm acceleration. Power-v1 retains panel memory; controller-loss restoration requires a separate actual guest fault case."
+    }
+  },
+  "course_preserving_save11": {
+    "status": "PASS_COMPLETE_ARTIFACTS_GUEST_NOT_RUN",
+    "contract": "docs/contracts/006-course-preserving-save-v1.md",
+    "literal": {
+      "path": "build/courses/task006-course-preserving-save-component-a1/literal-a3.log",
+      "sha256": "3745e6c42e9e0a2e9afcad6cfb0b2cb0b01e4e1a17b1865f8d0e449c2dbf3c9f",
+      "scope": "Allocated12-page completed course context; only value-preserving cancellation bookkeeping and footer pixels; Pending-only admission, busy-slot/read/prepare/admission failures"
+    },
+    "genuine_component": {
+      "path": "build/courses/task006-course-preserving-save-component-a1/result.json",
+      "sha256": "5f880bea9fed86f8b60ffe9f4b4ae1e6ebda91b032aab83f5ffd53291dd419c0",
+      "status": "PASS_GENUINE_COURSE_SAVE_COMPONENT_ONLY",
+      "seconds": 3.036138358991593,
+      "undefined": [
+        "lemma_exec_syscall"
+      ]
+    },
+    "four_role_capture": {
+      "path": "build/courses/task006-course-preserving-save-notebook-component-a1/result.json",
+      "sha256": "a8629e4f952271e35692201a8741b4a8dcc8ad1b54bf877a39edb74106839a06",
+      "status": "PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY",
+      "seconds": 622.2748591459822,
+      "source_inputs_equal": true,
+      "archive_equal": true
+    },
+    "capture_supervision": {
+      "path": "build/courses/task006-course-preserving-save-notebook-component-supervision-a1/result.json",
+      "sha256": "d014b4b6116568d0ff09a2fccf4727cf4399f2446059664c6e02f6a3a6370ef9",
+      "status": "PASS_GENUINE_COMPONENT_SOURCE_AND_RESOURCES_SUPERVISED",
+      "seconds": 623.2785866559716,
+      "owned_peak_rss_bytes": 1847066624
+    },
+    "common_body_comparison": {
+      "path": "build/courses/task006-course-preserving-save-authority-draft-a1/common-body-result.json",
+      "sha256": "5bb50a0e9fb78659f35649b0f40cf38fc520d2940ccfbcab3b639dc0084d6071",
+      "status": "PASS_GENUINE_COMMON_BODY_COMPARISON",
+      "deployments": {
+        "canonical": {
+          "added": [
+            "Lemma.Applications.Notebook.packageRequestSave"
+          ],
+          "removed": [],
+          "changed_original": [
+            "Lemma.Applications.Notebook.packageToolbar"
+          ],
+          "all_other_original_pre_bodies_args_effects_equal": true,
+          "original_pre_globals_equal": true,
+          "semantics": "Complete relation collected; explicit new ordinary toolbar/Pending/Store request validation follows before admission"
+        },
+        "companion": {
+          "added": [
+            "Lemma.Applications.Notebook.packageRequestSave"
+          ],
+          "removed": [],
+          "changed_original": [
+            "Lemma.Applications.Notebook.packageToolbar"
+          ],
+          "all_other_original_pre_bodies_args_effects_equal": true,
+          "original_pre_globals_equal": true,
+          "semantics": "Complete relation collected; explicit new ordinary toolbar/Pending/Store request validation follows before admission"
+        }
+      }
+    },
+    "all9_10_11_authorities": {
+      "path": "build/courses/task006-course-preserving-save-authority-draft-a1/direct-validation.json",
+      "sha256": "0cff7f2c5eed4fe1b124e104b733507494abd5aba2f3461e4e3a0101334e82f3",
+      "status": "PASS_COMPLETE_HISTORICAL9_RESTORED10_COURSE_SAVE11_COHORTS",
+      "seconds": 32.26058705593459
+    },
+    "generic_artifacts": {
+      "path": "build/courses/task006-course-preserving-save-notebook-artifacts-a1/result.json",
+      "sha256": "125f82ae5444c733911ab160d6ffec4ea8eacea44ae0835e1ddedbef2c61d9e2",
+      "status": "PASS_COURSE_PRESERVING_SAVE_NOTEBOOK_ARTIFACTS_ONLY",
+      "seconds": 275.5614718690049,
+      "mutants": [
+        {
+          "name": "wrong-save-operation",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "1af95c3a47424be62a33de26c14964ac061098f11248b3cb0ab0794b653425c5"
+        },
+        {
+          "name": "premature-save-acknowledgment",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "875a9b83281c252b325f03b0075e92ec6691575e7c48398d427d9b3bbc127e48"
+        },
+        {
+          "name": "missing-save-completion-wait",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "29c6e3564cba4dc55a95525ecf0def5cfe9085ac656722db1548cf1e80bc00d2"
+        }
+      ],
+      "observer_inputs_equal": true
+    },
+    "host_checks": {
+      "foundation_tests": 469,
+      "foundation_seconds": 29.404,
+      "kernel_tests": 433,
+      "kernel_seconds": 8.977,
+      "scaffold_tests": 18,
+      "scaffold_seconds": 7.14,
+      "metadata": "PASS"
+    },
+    "remaining": [
+      "fresh linked11 normal/initializer and full audits",
+      "actual idle-course Save detail0 and complete SAVED/controller/course/annotation pixels",
+      "companion and browser11 execution"
     ]
   }
 }

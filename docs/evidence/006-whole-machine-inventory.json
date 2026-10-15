@@ -1003,11 +1003,11 @@
     "gaps": "Full browser course/math/ink/Save/durable-onlyreopen and broader continuation remain open; original source-description and passive-field10 observer errors retained."
   },
   "restored_surface_milestone": {
-    "status": "COMPLETE_ARTIFACTS_ONLY",
+    "status": "PASS_COMPLETE_LINKED_AND42_PHASE_FAST_FUNCTIONAL",
     "contract": "docs/contracts/006-restored-surface-notebook-v1.md",
     "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
-    "guest_execution": "NOT_RUN",
-    "distribution": "NOT_RUN",
+    "guest_execution": "42-phase fast pass; exact RTL loss/recovery pending",
+    "distribution": "Two immutable native bundles prepared; static browser10 not prepared",
     "physical": "UNVERIFIED"
   },
   "browser_course_body_milestone": {
@@ -1019,12 +1019,52 @@
     "whole_browser_workflow": "OPEN"
   },
   "latest_observed_candidate_ci": {
-    "commit": "616e8db0ea2605136ad02d697ac2f1ac30da4c65",
-    "run": 38798208435,
+    "commit": "a4217e6b97346e070c453e662e7223ffd800531d",
+    "run": 38805996213,
     "conclusion": "SUCCESS",
     "jobs": 11,
-    "every_reported_step": "SUCCESS",
     "skipped_steps": 0,
-    "scope": "Committed native distribution2; local restored-surface10 excluded"
+    "all_reported_steps": "SUCCESS",
+    "scope": "Committed restored Surface milestone, excludes local11 course Save change"
+  },
+  "browser_pointer_ink_milestone": {
+    "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
+    "scope": "Real local browser source9 pointer -> guest raw ink -> barrier-backed automatic Saved8; exact55M native/Wasm suffix and18 actual I/O outcomes. Explicit idle Save subsequently fails and is fixed locally in11, guest11 execution pending.",
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json"
+  },
+  "course_preserving_save_milestone": {
+    "behavior": "IMPLEMENTED",
+    "compiler": "PASS_GENUINE59_AND_COMPLETE850_888_ARTIFACTS",
+    "RTL_guest": "NOT_RUN",
+    "fast_guest": "NOT_RUN",
+    "distribution": "NOT_RUN",
+    "physical": "UNVERIFIED",
+    "contract": "docs/contracts/006-course-preserving-save-v1.md"
+  },
+  "companion_saved12_terminal": {
+    "status": "FAIL_AGGREGATE21600S_DEADLINE",
+    "source_cohort": 6,
+    "result": {
+      "path": "build/usb/task006-package-companion-saved12-a1/result.json",
+      "sha256": "c6cf2c821808ff592442cbf3fde0ee48512680d3479cd2a1e8c204739af1f1f3",
+      "status": "FAIL",
+      "host_seconds": 21627.854750051047,
+      "error": "KeyboardInterrupt('owned supervisor cancellation 15')"
+    },
+    "supervision": {
+      "path": "build/usb/task006-package-companion-saved12-a1.supervision/supervision.json",
+      "sha256": "95524976f345ac0d09b3510c7e2abf4d14c8b6dad00f829c6ca6c2e3e54532d4",
+      "status": "FAIL",
+      "cause": "predeclared absolute supervisor deadline",
+      "owned_survivors": []
+    },
+    "completed": [
+      "initial coldReady1045M",
+      "real lost first-WRITE reply/Failed",
+      "offline ink",
+      "peer restart reconciliation/Saved16",
+      "full original+offline controller pixels at2416M"
+    ],
+    "unfinished": "Independent cold stopped at650M before Ready; original failure and cold-failed snapshot retained. No cold acceptance. Observer snapshot request near cutoff timed out; no additional snapshot is claimed."
   }
 }

@@ -129,7 +129,7 @@ class CiWorkflowTests(unittest.TestCase):
             "metadata": ("metadata/check-scaffold.log", "metadata/scaffold-unittest.log",
                          "metadata/core0-host-unittest.log", "metadata/lake-build.log",
                          "metadata/foundation-host-unittest.log", "metadata/user-copy-scans.log",
-                         "metadata/loader-copy.log", "metadata/power-authority.log",
+                         "metadata/loader-copy.log", "metadata/course-save.log", "metadata/power-authority.log",
                          "metadata/power-object-budget.log", "metadata/power-compiler.log",
                          "metadata/frame-index.log", "metadata/owned-table-prefix.log",
                          "metadata/exact-mathematics.log",

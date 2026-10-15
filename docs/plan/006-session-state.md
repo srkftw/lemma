@@ -2697,3 +2697,54 @@ local restored-surface10 work. PR9 stays draft/unmerged. Current browser pointer
 annotation/Save, canonical9 workflow and older6 companion cases retain their
 original plans, source holds and deadlines; do not treat in-progress default
 FAIL as a terminal result or extend limits.
+
+
+Cohort10 now has fresh canonical whole initializer/notebook full audit PASS:
+1250c622.../234b986d...,1212.343s actor/1218.379s supervised,1,923,903,488B peak,
+all408 consumed inputs sealed, no survivors. Both immutable native bundles are
+prepared: restored-batch-notebook-a1 retains rawUART97; a2 retains matched188.
+The latter's actual42-phase course/math/learner/ink/Save/newCPUcold/reopen passes
+216.170s actor/217.736s supervised,373,190,656B peak. Total nominal fast units
+2,300,000,141 vs source9 same-runtime2,302,000,127; both coldReady239,000,006.
+No cold acceleration or host-speed attribution is established. Ordinary
+Power-v1 retains panel memory, so it does not exercise controller-loss full
+restoration. That actual guest path remains open. Original preclock plan/key
+failures stay retained; first-clock correction uses original absolute900s cap.
+
+The actual source9 browser cold machine accepts ordinary canvas pointer
+contact/release and its Lean notebook durably publishes raw/page/root sequence8.
+At1162M, the55M suffix exactly matches native: full wrapper/generatedRTLpayload,
+UART,256MiB medium, all3630000 controller pixels and18 actual accepted backing
+outcomes. Raw provenance/page visibility/contact825,1100 independently checked.
+This is automatic raw-chunk Saved8/detail6. Original native phase0 observer was
+invalid after I/O (Completed2 is normative); passive missing-only observation
+keeps the same prefix/bounds and preserves original interrupted FAIL.
+Subsequent explicit idle Save fails: browser290s/26.5M prefix and native original
+absolute deadline without detail0 or completed SAVED scan. Diagnostic snapshots
+are retained; no deadline extended. The old toolbar closes/redraws the course
+before Save. New cohort11 keeps the view and uses the existing status request.
+
+Cohort11's added ordinary packageRequestSave and sole changed packageToolbar
+pass literal allocated-course/footer-only/Pending-only/busy/failure observations,
+genuine59-function LLVM/RV64-object closure, all four genuine catalogs850/888,
+and complete generic pre/post/object/readonly/jump validation275.561s. Three
+validLLVM wrong-op/premature-ACK/missing-wait mutants reject. All other common
+bodies/arguments/effects/globals remain identical; all9/10/11 authorities pass.
+Four-role capture622.275s/623.279s supervised,1,847,066,624B peak. Foundation469,
+kernel433,scaffold18/metadata pass; CI now includes the course Save literal check.
+Fresh linked11 images/full audits and actual idle-course Save/controller/browser
+acceptance remain next. Source holds for these closed component checks release.
+The host callable-index experiment is unadopted: its pure-validation timing was
+forced after clock observations, so0ms fields are unqualified, not a speedup.
+
+Older6 Saved12companion campaign is terminalFAIL at original21600s aggregate
+limit (21627.855s including cleanup). Actual lost-WRITE reply/Failed/offlineink/
+peer-restart reconciliation/Saved16/fullcontroller milestones remain valid;
+independent cold stopped650M before Ready. Actor's original cold-failed snapshot
+is retained; an additional near-cutoff observer request timed out and produced
+no new snapshot. Supervisor reaped every owned process. Its14-file source hold
+is released. Do not rerun its old prefix or call cold complete. Native source9
+canonical workflow remains active under its own6B/21600s and30 host-file hold.
+
+Committed a4217e6 CI38805996213 is terminalSUCCESS11/11, every reported step
+success/no skips. It excludes local cohort11 changes. PR9 stays draft/unmerged.

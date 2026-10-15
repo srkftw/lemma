@@ -444,5 +444,68 @@
       "no general QEMU cache/timing parity",
       "browser full math/ink/Save/cold recovery still separately pending"
     ]
+  },
+  "package_cohort9_pointer_save": {
+    "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
+    "result": {
+      "path": "build/browser/task006-pointer-ink-save-browser-export-a1/result.json",
+      "sha256": "8da065920835a2957e4ec4517a8b753f7e34db8d90b8498aac1f20ce67908f84",
+      "status": "PASS_BROWSER_ACTUAL_POINTER_DURABLE_INK_EXACT_NATIVE_SUFFIX",
+      "seconds": 58.89849939290434,
+      "cycle": 1162000000,
+      "clock_units": 55000000,
+      "sequence": 8,
+      "actual_io_records": 18,
+      "all_wrapper_bytes_exact": true,
+      "generated_model_payload_exact": true,
+      "guest_uart_exact": true,
+      "all3630000_controller_pixels_exact": true,
+      "entire_medium_exact": true,
+      "snapshot_sha256": "42e7ed3c39ea0f7ecac239fb238338ae7a703894f0747b539cfa35f5e3983452",
+      "native_snapshot_sha256": "cb7743560352e062a4b0866785d348402ba4588cb4698c780311b7ff3a6e5d5f",
+      "medium_sha256": "c61b0b00f102fc010ec32e617c3dcef9d64da02d04cf916f7ac93456ce251976",
+      "limits": "Actual automatic durable raw-chunk Saved8 detail6. Early toolbar Save was admitted while writing; explicit detail0 Save/final status panel and independent cold recovery are not established here."
+    },
+    "actual_raw_capture": "build/browser/task006-pointer-ink-save-browser-export-a1/events.json",
+    "screenshot": "build/browser/task006-pointer-ink-save-browser-export-a1/browser-saved.jpg",
+    "raw_input": "Actual ordinary browser canvas pointer down/up, synthetic mouse pressure2048/tool0; distinct early Save raw tap; no physical pen claim.",
+    "native_missing_only_observer": {
+      "path": "build/browser/task006-pointer-ink-save-native-observer-a2/result.json",
+      "sha256": "10258c10f25144a903c367d1d7d9289d8801ef38909e4d2ec0897e65b10405a6",
+      "status": "PASS_ACTUAL_NATIVE_POINTER_SAVE_PASSIVE_OBSERVER",
+      "seconds": 100.07815227599349,
+      "clock_units": 55000000,
+      "sequence": 8,
+      "saved": [
+        1057,
+        8,
+        1,
+        1,
+        6
+      ],
+      "contact": [
+        825,
+        1100,
+        true
+      ],
+      "export_observational": true
+    },
+    "observer_correction": "Original native observer erroneously required backing Idle0 after I/O. Completed2 is normative. Passive corrected observer selected the same executed prefix while stopping only its own host observer; original actor was interrupted and retains FAIL. No CPU replay/reset/drain/fence or changed bounds.",
+    "limits": "Automatic raw-chunk Saved8 detail6, not explicit toolbar Saved detail0/final status scan or cold recovery.",
+    "subsequent_explicit_save_failure": {
+      "browser": {
+        "path": "build/browser/task006-explicit-save-after-pointer-plan-a1/browser-host-limit-observation.json",
+        "sha256": "d8fe5597e30cabe8ffe8897c48216a28fe25708d7b622f00a15db69f39f8133a",
+        "status": "FAIL_EXPLICIT_SAVE_OBSERVATION_HOST_LIMIT"
+      },
+      "native": {
+        "path": "build/browser/task006-explicit-save-after-pointer-plan-a1/native-failure-observer-a2.json",
+        "sha256": "731cb45682eb423a7cc387bc2f4a472befbe0ad9d13bb2c5b57db61e5160d4f3",
+        "status": "FAIL_NATIVE_EXPLICIT_SAVE_RESOURCE_DEADLINE"
+      },
+      "diagnostic_native_checkpoint": "build/browser/task006-explicit-save-after-pointer-native-a1/blocked-save-prefix/machine.chk",
+      "diagnostic_browser_checkpoint": "build/browser/task006-explicit-save-after-pointer-plan-a1/browser-failed-prefix.chk",
+      "implementation_cause": "Old packageToolbar calls the ordinary toolbar, which closes/redraws the course before Save. Cohort11 fixes this path; actual guest11 acceptance remains pending."
+    }
   }
 }

@@ -25,7 +25,7 @@ def main():
   return q.stdout.decode()
  try:
   capture=json.loads((origin/'result.json').read_text());authority=json.loads(AUTHORITY.read_text())
-  origins=[authority]+([authority['restored_v1']] if 'restored_v1' in authority else [])
+  origins=[authority]+[authority[key] for key in ('restored_v1','course_save_v1') if key in authority]
   matched=[row for row in origins if row.get('origin',{}).get('sha256')==sha256(origin/'result.json')]
   if capture.get('status')!='PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY' or not capture.get('source_inputs_equal') or not capture.get('archive_equal') or len(matched)!=1:raise Core0Error('complete genuine original capture/authority required')
   if set(capture['roles'])!={'canonical','canonical-init','companion','companion-init'}:raise Core0Error('complete four actual catalog matrix required')
@@ -64,6 +64,14 @@ def main():
     ('over-budget-restoration',restored,r'(call i64 @'+re.escape(minimum)+r'\(i64 )4(, i64 )',r'\g<1>5\2'),
     ('wrong-restoration-prefix',restored,r'add i64 (%action.call.value\d+), %action.call.value\d+',r'add i64 \1, 4'),
     ('wrong-restoration-lane',restored,r'(and i64 )32(, 63)',r'\g<1>31\2')]
+  course_save='Lemma.Applications.Notebook.packageRequestSave'
+  if course_save in rows:
+   prefix='Lemma.Applications.Notebook.'
+   issue=re.escape(rows[prefix+'issue']['symbol']);report=re.escape(rows[prefix+'reportCommitState']['symbol']);put=re.escape(rows[prefix+'put']['symbol'])
+   cases=[
+    ('wrong-save-operation',course_save,r'(call \{ i64, i64 \} @'+issue+r'\(i64 )8(, i64 0, i64 0, i64 0\))',r'\g<1>7\2'),
+    ('premature-save-acknowledgment',course_save,r'(call \{ i64, i64 \} @'+report+r'\(i64 )1059(,)',r'\g<1>1057\2'),
+    ('missing-save-completion-wait',course_save,r'(call \{ i64, i64 \} @'+put+r'\(i64 160, i64 )6(\))',r'\g<1>0\2')]
   for name,source,pattern,replacement in cases:
    body=_ir_definition_body(ir,rows[source]['symbol']);all_sites=name=='over-budget-restoration';bad,n=re.subn(pattern,replacement,body,count=0 if all_sites else 1)
    if n!=(4 if all_sites else 1):raise Core0Error('prospective actual semantic mutation site missing: '+name)
@@ -71,7 +79,7 @@ def main():
    try:validate(changed,u,optimized=False)
    except Core0Error as e:mutants.append({'name':name,'valid_llvm':True,'reason':str(e),'sha256':sha256(f)})
    else:raise Core0Error('actual semantic mutant admitted: '+name)
-  r.update(status='PASS_RESTORED_BATCH_NOTEBOOK_ARTIFACTS_ONLY' if restored in rows else 'PASS_DIRTY_BATCH_NOTEBOOK_ARTIFACTS_ONLY',mutants=mutants)
+  r.update(status='PASS_COURSE_PRESERVING_SAVE_NOTEBOOK_ARTIFACTS_ONLY' if course_save in rows else 'PASS_RESTORED_BATCH_NOTEBOOK_ARTIFACTS_ONLY' if restored in rows else 'PASS_DIRTY_BATCH_NOTEBOOK_ARTIFACTS_ONLY',mutants=mutants)
  except BaseException as e:r['error']=repr(e);raise
  finally:
   r['seconds']=time.monotonic()-start;r['observer_inputs_equal']=all(sha256(ROOT/n)==h for n,h in before.items())

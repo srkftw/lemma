@@ -3431,6 +3431,28 @@ private def packageCloseState : Action :=
   .bind (packagePut 144 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 152 0
   else .done 0 0
 
+/-- Save owns the ordinary Store status request without leaving the current
+course or rebuilding its framebuffer. Only the existing validated response
+pump can subsequently publish Saved; admitting this request publishes Pending.
+Busy raw/checker work keeps its single IPC slot and is never overwritten. -/
+def packageRequestSave : Action :=
+  .bind (get 536) fun s checking => if statusFailed s = true then .done s 0 else
+  if checking = 0 then
+  .bind (get 160) fun s phase => if statusFailed s = true then .done s 0 else
+  .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
+  .bind (get 144) fun s pending => if statusFailed s = true then .done s 0 else
+  if phase ||| rawCount ||| pending = 0 then
+  .bind (get 136) fun s status => if statusFailed s = true then .done s 0 else
+  if 2 ≤ status then .done 0 0 else
+  .bind (get 128) fun s sequence => if statusFailed s = true then .done s 0 else
+  .bind (put 496 sequence) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 224 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 160 6) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 136 1) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (reportCommitState 0x423 sequence 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (issue 8 0 0 0) fun s _ => if statusFailed s = true then saveFailure s else publishStatus
+  else .done 0 0 else .done 0 0
+
 private def packageToolbar (button : UInt64) : Action :=
   .bind cancelPackageWork fun s _ => if statusFailed s = true then .done s 0 else
   .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else
@@ -3438,6 +3460,7 @@ private def packageToolbar (button : UInt64) : Action :=
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
   .bind (get 144) fun s rawPending => if statusFailed s = true then .done s 0 else
   if pending ||| rawCount ||| rawPending = 0 then
+  if button = 7 then packageRequestSave else
   .bind packageCloseState fun s _ => if statusFailed s = true then .done s 0 else toolbar button
   else .done 0 0
 
