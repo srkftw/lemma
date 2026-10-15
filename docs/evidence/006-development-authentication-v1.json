@@ -86,11 +86,11 @@
   "open": [
     "production keyprovisioning/owneridentity/entropy/immutabletrust/antirollback",
     "authenticated interruptedupdate/watchdog/brownout/notebook confirmation campaign",
-    "independent authenticatedcold andconfirmedfallback before thoseactualruns complete",
     "latest managedcourse/kernel integration on Product10",
     "browserauthenticatedboot",
     "same-backend arbitrarycached continuation/fastRTL timing",
-    "full device/radio/distribution/physicalclosure"
+    "full device/radio/distribution/physicalclosure",
+    "fullnotebook independent authenticatedcold after newSaved14 remains RUNNING; cryptoprobe confirmedfallback separatelyPASS"
   ],
   "verification": {
     "lake": {
@@ -114,7 +114,13 @@
       "sha256": "65eefc9434bf30a57c3e243d9a20cb328896fdf5b1bb4a527056acc2713aa271"
     }
   },
-  "candidate_ci": "NOT_RUN for this increment; new separate bounded crypto-rv64 job preserves metadata host-only scope, checks12actualRV64digests/strictROMaudit/layout andretainsfailures. Previousfe87446CI38721862601SUCCESS10/10 is baselineonly.",
+  "candidate_ci": {
+    "commit": "d287d1d",
+    "run": 38736737619,
+    "status": "SUCCESS",
+    "jobs": 11,
+    "scope": "Every job and reported step passed; subsequent b58 also SUCCESS11/11. Active connected cold has its own result."
+  },
   "actual_cold_bad_trial_fallback": {
     "status": "PASS_ACTUAL_AUTHENTICATED_COLD_BAD_TRIAL_CONFIRMED_FALLBACK",
     "source_scope": "Existing immutable authenticated ROMa3/source archive and audited ordinary CryptoProbe; PUBLIC DEVELOPMENT KEY ONLY",
@@ -155,5 +161,33 @@
       "status": "PASS_PASSIVE_CONFIRMED_LOADED_HEADER_AND_CODE"
     },
     "scope_limit": "Trial and confirmed payload code are identical; their headers/identities/tags differ. Actual confirmed loaded header/tag/context and all file bytes verified; arbitrary different-program trial recovery remains separate."
+  },
+  "full_notebook_completed_live_phases": {
+    "path": "build/boot/task006-development-auth-notebook-a2/ready-raw-save-milestone.json",
+    "sha256": "54eacfdcf97cc793d9820eae352399ab6c624f009a16b02d33ec59f35966ebe7",
+    "status": "PASS_ACTUAL_AUTHENTICATED_READY_RAW_SAVE_ONLY_COLD_RUNNING",
+    "source_scope": "Actual older Product10 maintained guest/immutable authenticatedROM/publicdevelopmentkey; not latest Package8",
+    "phases": [
+      {
+        "name": "authenticated-product-canonical-Ready",
+        "initial_cycle": 339800000,
+        "final_cycle": 1237800000,
+        "cycles": 898000000,
+        "seconds": 4649.195430341992
+      },
+      {
+        "name": "actual-raw-ink-and-acknowledged-Save",
+        "initial_cycle": 1237800000,
+        "final_cycle": 1321800000,
+        "cycles": 84000000,
+        "seconds": 458.55837051197886
+      }
+    ],
+    "install_cycles": 339800000,
+    "install_seconds": 1604.1971069580177,
+    "payload_sectors": 724,
+    "acknowledged_sequence": 14,
+    "raw_samples": 3,
+    "scope": "Actual canonical Ready/allpixels followed by guest raw ink and barrier-backed Saved14/allpixels/prior immutable objects; live closed normally, independent no-snapshot authenticated cold running."
   }
 }

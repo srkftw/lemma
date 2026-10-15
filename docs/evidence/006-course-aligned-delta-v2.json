@@ -210,14 +210,66 @@
     }
   },
   "new_canonical_rtl": {
-    "status": "RUNNING_NOT_QUALIFIED",
-    "work_dir": "build/courses/task006-native-aligned-notebook-a1/actor",
-    "bounds": "original1B cold/400M COURSE/6B aggregate/21600s; no automatic restart"
+    "path": "build/courses/task006-native-aligned-notebook-a1/actor/result.json",
+    "sha256": "c9fe94a5ee2d2c96da644f16c51e80b3c33319c5e4f0bf94cbf8291672ff5ca7",
+    "status": "FAIL",
+    "scope": "Original400M COURSE remains terminalFAIL at1280M; coldReady802M/install68M/dedup10M pass. Passive fullCRC/controller state shows WAIT_TIME acceptedrefresh4; no deadline extension."
   },
   "candidate_ci": {
     "commit": "fe87446ec67ab0e9b1f6b7596fb7256095eb2863",
     "run": 38721862601,
-    "status": "IN_PROGRESS_LAST_OBSERVED",
-    "known": "5 completed jobsSUCCESS,5 active; previous07e FAILURE retained"
+    "status": "SUCCESS",
+    "jobs": 10,
+    "scope": "All reported steps pass; later changes require their own candidate."
+  },
+  "same_wasm_failed_course_suffix": {
+    "path": "build/browser/task006-aligned-notebook-replay-a1/result.json",
+    "sha256": "eb4a0ff8c8e22380437bd0b774794f33747c3ed2046ae3845bbfb70152353bc4",
+    "status": "PASS_EXACT_FAILED_COURSE_SUFFIX_RESOURCES_CLEANUP",
+    "scope": "Replay actual exported source7 browser COURSE failure endpoint with same Wasm module on native Node host. Exact applicable suffix equivalence, not a successful400M workflow. No original file/peer consulted; fresh private backing from observational prefix.",
+    "host_seconds": 3590.5275196389994,
+    "peak_owned_rss_bytes": 1807073280,
+    "bounds": {
+      "host_seconds": 3600,
+      "target_suffix_cycles": 400000000,
+      "address_space_bytes": 17179869184,
+      "owned_rss_bytes": 4294967296,
+      "minimum_available_bytes": 2147483648,
+      "owned_output_bytes": 4294967296,
+      "generated_file_bytes": 1073741824,
+      "Wasm_heap_bytes": 536870912,
+      "cleanup_seconds": 30
+    },
+    "inputs": {
+      "build/browser/task006-aligned-notebook-replay-plan-a1/replay.mjs": "c7f1464dd5773d3e0786d128d4b79f19d86fb1d8eae0aaf7d3deb2fbe0a8e811",
+      "build/browser/task006-aligned-notebook-a1/bundle.json": "bfb01f524aa698b6f9fb3d9997e128e89e25504b985d5dd7f858ab27dba5d518",
+      "build/browser/task006-aligned-notebook-cold-a1/ready.chk": "6688ca9175201d0f8f18efef4bc8c4954df3e83839b26ab214687c33b1f04ced",
+      "build/browser/task006-aligned-notebook-course-a1/course.chk": "36a024369da865c9e91c12793ed6d77012b1a343339ed472cfe261174a15bdec",
+      "build/browser/task006-aligned-notebook-course-a1/course.io": "9110cb6e34f9cb30218eb4db1e20b72a9986e98c8ef13acef992cb3c33a08582",
+      "build/browser/task006-aligned-notebook-course-a1/course-events.json": "4cc7184b83c1aaee9d255dc3965e0fae709f0b97a079d3f895462f091736beda"
+    },
+    "actual_argv": [
+      "nix",
+      "develop",
+      "--no-write-lock-file",
+      "--command",
+      "node",
+      "--max-old-space-size=2048",
+      "/home/sreekumaar/Downloads/lemma/build/browser/task006-aligned-notebook-replay-plan-a1/replay.mjs",
+      "build/browser/task006-aligned-notebook-a1",
+      "build/browser/task006-aligned-notebook-cold-a1/ready.chk",
+      "build/browser/task006-aligned-notebook-course-a1/course.chk",
+      "/home/sreekumaar/Downloads/lemma/build/browser/task006-aligned-notebook-replay-a1/native-host",
+      "build/browser/task006-aligned-notebook-course-a1/course.io",
+      "build/browser/task006-aligned-notebook-course-a1/course-events.json"
+    ],
+    "survivors": {},
+    "full_final_archive_sha256": "36a024369da865c9e91c12793ed6d77012b1a343339ed472cfe261174a15bdec",
+    "inner_report": {
+      "path": "build/browser/task006-aligned-notebook-replay-a1/native-host/result.json",
+      "sha256": "3756037feaeb6aea26690cf977c583f8ef0927346a2df8d75d5e927732e5ee01",
+      "status": "PASS"
+    },
+    "limit": "Both runs use identical Wasm module; no C++/Wasm/QEMU migration or failedCOURSE reclassification."
   }
 }

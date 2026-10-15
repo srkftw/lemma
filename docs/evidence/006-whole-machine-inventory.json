@@ -846,22 +846,57 @@
       "sha256": "6745c229e1e4dc3bd9a2f773c36332791ac56fc005ccbbaa1079e38e70378e7d",
       "status": "PASS_AUTH_RTL_SUPERVISED",
       "scope": "Owned resource/deadline/cleanup supervision of actual authenticatedROMcase"
+    },
+    {
+      "path": "docs/evidence/006-local-native-distribution-v1.json",
+      "sha256": "916eac577e4b1ff144026ea1359796e7f4852cc967c64a997442c8e60c510b72",
+      "status": "PASS_EXTRACTED_ADMISSION_RTL_TRANSPORT_PRIVATE_IMPORT_AND_PREPARED_SUFFIX_ONLY",
+      "bytes": 8373,
+      "scope": "New reusable extracted native command package. Unchanged canonical guest/ROM/backends; no new full workflow, new-host execution, arbitrary-boundary continuation or licensing claim."
+    },
+    {
+      "path": "docs/evidence/006-local-browser-distribution-v1.json",
+      "sha256": "eaad6b03f9f1a10955ebf82f5190b18547ecd57685ae890ac6955a0e59c856a5",
+      "status": "PASS_PREPARED_EXTRACTED_LOCAL_LAUNCH_ONLY",
+      "bytes": 3122,
+      "scope": "Reusable packaging of the existing exact static machine and standalone stdlib launcher. Original compiled guest/ROM/Wasm/controller files unchanged; no new full browser workflow, coldReady or distribution-license claim."
+    },
+    {
+      "path": "docs/evidence/006-course-control-aligned-v1.json",
+      "sha256": "a6fb0a22cdea752ecb0f28874a0f064a94d78256643cf81f1339493b4d669bdf",
+      "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+      "bytes": 7861,
+      "scope": "The same maintained Notebook uses control spans1. Both fresh whole images/full ordinary audits and42-phase fast course/math/learner/ink/newcold/reopen plus real partial-pwrite/failure/cold/retry pass. New native/browser actual timing acceptance remains running. No whole-machine completion."
+    },
+    {
+      "path": "docs/evidence/006-course-aligned-delta-v2.json",
+      "sha256": "00f1b750d8de5c9ca0aa220c75e922d896ec2ecf0988f53d841c0b4da8fedcb7",
+      "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+      "bytes": 13619,
+      "scope": "Current same-machine Notebook uses aligned-delta2. Both fresh canonical linked images/full audits and42phase fast workflow plus actual partial-pwrite/failure/cold/retry/ink pass. New native RTL and local browser cold/course campaigns are running; no new400M controller acceptance inferred."
+    },
+    {
+      "path": "docs/evidence/006-development-authentication-v1.json",
+      "sha256": "18a886bf096ad95129ba5f7171ec2bda2bf9dcd64e65c7e28435910fa6559751",
+      "status": "PASS_ACTUAL_RTL_INSTALL_MAC_ENFORCEMENT_AND_HANDOFF_NOTEBOOK_RUNNING",
+      "bytes": 9058,
+      "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Aligned checksum actual RTL cold890M/allpixels with retained observerFAIL independently corrected; packed course21 genuine functions and9.557% fewer fast actioncycles, Save/newcold/failure and complete303-input prepared pair qualified; oldArray private browser actualUnsupported/OPFSSaved38 plus new native cold fullpixels. USB8 finalSaved11 independent cold735M/no republish qualified; USBWire11 wholeguest and same-machineWiFi12 continue. Corrected9076 CI38467033782 SUCCESS10jobs with stale two-step API resolved against actual execution logs; laterlocal changes notqualifiedbyCI. Digital, fast/checkpoint, distribution and physical obligations remain separate.",
+  "continuation_note": "New source8 actual canonical Ready802M/4161.268s, fullfast and actualpartialfailure/cold/retryPASS; RTL fullcourse/independentcold and browser cold/fullworkflow remainrunning. OldProduct10 authenticatedROM install339.8M->Ready898M->rawSaved14in84M complete; newCPUauthenticatedcold running. Companion A2 originalinstallobserverFAIL retained; independent frozen observer proves actualSaved12install, newSaved12 cold/lostACK case running. Native/browser extracted distribution bounded qualification complete as scoped; digital, fast/checkpoint, distribution and physical completion remain separate.",
   "package_closure_milestone": {
-    "implementation_source": "fe87446ec67ab0e9b1f6b7596fb7256095eb2863",
+    "implementation_source": "092bfc072fe87ee4cfb747280f115fce5a6be4e6",
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
-    "model_rtl": "Source6 actual Ready802M/install68M/dedup10M pass; original400M COURSE fails at1280M. Passive fullCRC/ownedRAM shows complete body framebuffer but7dirty tiles remain; full controller body incomplete.",
-    "guest_artifacts": "Aligned2/sourcefe87446 fresh395-input canonical pair/full audits PASS684.389s; final supervisor688.388s/1.946GB/source seals/no survivors. Notebook118354bc, initializerfbd0bda6.",
-    "guest_execution": "Aligned2 actual42phase fast course/checker/learner/ink/Close/newCPUcold/fullreopen PASS2.639B/original3B/900s,306.845s actor/308.348s supervised/423.2MB. Real2byte partialpwrite/EFBIG Failed/noSaved/newcold exactbytespixels/workspace/retry+3raw Saved PASS151.243s/152.749s/774.9MB. Native7 original400M course acceptance remains RUNNING; retained source6 original400M failure is not reclassified.",
-    "distribution": "Matched native/browser aligned2 bundles prepared; actual new browser cold on origin8796/tab27 running under original1B/7200s, not a cold result. Source4 original400M course failure retained.",
+    "model_rtl": "Source8 actual canonical coldReady802M/4161.268s; unchanged400M firstCOURSE acceptance stillrunning. Source7 original400MFAIL retained at1280M. Source7 same-Wasm failedsuffix400M exactarchive replayPASS3590.528s/original3600s.",
+    "guest_artifacts": "Fresh ordinary406-input canonical source8 pair/full audits PASS1007.149s actor/1012.052s supervised, peak1,917,239,296B. Notebook2e6f3d1c/initializer0ace19d4. New alignedControl1 exact partialfailure/repair component qualified.",
+    "guest_execution": "Source8 full42phasefastPASS2,615,000,279clocks/336.152s;0.91% fewer clocks than source7, no hostspeedupclaim. Real2byte pwrite/EFBIG Failed/noSaved/newcold exactfullbytes/pixels/workspace/retry+3rawSavedPASS191.142s. Canonical source8 course/fullcold stillrunning.",
+    "distribution": "Actual extracted static browser package/no-checkout server and native command package/4wayadmission/realRTL1000clock/privateNiximport/exact1MsuffixPASS. Source8 browser1B/7200s cold and fullcourse remainrunning; new-host native install, development-override portability, optionaladapters and redistribution unresolved.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
-    "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json; docs/evidence/006-course-packed-row-restore.json; docs/evidence/006-course-aligned-delta-v2.json",
-    "candidate_ci": "Actualfe87446 run38721862601 inprogress last observed5SUCCESS/5active; previous07e9of10 FAILURE retained. No skipped step called pass.",
+    "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json; docs/evidence/006-course-packed-row-restore.json; docs/evidence/006-course-aligned-delta-v2.json; docs/evidence/006-course-control-aligned-v1.json; docs/evidence/006-local-native-distribution-v1.json; docs/evidence/006-local-browser-distribution-v1.json",
+    "candidate_ci": "b58b1be38751055352SUCCESS11/11/allsteps;092bfc038744503578SUCCESS11/11; new native packaging candidate not yet run. Prior07eFAIL retained.",
     "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2."
   }
 }

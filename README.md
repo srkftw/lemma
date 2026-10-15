@@ -1375,5 +1375,48 @@ records the identities and retained original missing-import failure.
 Keep the chosen port to retain the same browser storage origin, and export raw
 backing bytes for backup. Restoring a checkpoint is continuation; reopening
 raw backing invokes guest cold recovery. Complete browser course/mathematics,
-durable reload and native distribution without external Nix libraries remain
+durable reload and universal native installation remain
 separate unfinished obligations.
+
+The canonical native bundle also has an extracted local command package. It
+retains the original compiled guest and both backends and validates all their
+normal admission checks after relocating source lookup locations. Exact host
+libraries remain at their inventoried Nix paths; an optional offline export
+can supply those paths on a compatible Nix host.
+
+```sh
+python3 scripts/package_native.py \
+  --bundle build/native/task006-control-notebook-a1 \
+  --output-dir build/distribution/AN_UNUSED_NATIVE_PACKAGE \
+  --archive build/distribution/AN_UNUSED_NATIVE_PACKAGE.tar.gz \
+  --include-nix-runtime
+tar -xzf build/distribution/AN_UNUSED_NATIVE_PACKAGE.tar.gz -C YOUR_EXTRACTION_DIRECTORY
+# Only if the inventoried host libraries are absent, using normal Nix permissions:
+nix-store --import < YOUR_EXTRACTION_DIRECTORY/lemmasim-native/runtime-closure.nar
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py --help
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py init \
+  --backend qemu --profile lemma-silicon-dev/0.3.0 --disk /outside/package/new.raw
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py session \
+  --backend rtl --profile lemma-silicon-dev/0.3.0 --disk /outside/package/new.raw \
+  --session-dir /outside/package/live --mode developer --paused --headless
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py session-control \
+  --session-dir /outside/package/live --request '{"action":"run","cycles":1000000}'
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py snapshot \
+  --session-dir /outside/package/live --to /outside/package/cut
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-native/run.py session \
+  --backend rtl --profile lemma-silicon-dev/0.3.0 --restore /outside/package/cut \
+  --session-dir /outside/package/private-fork --mode developer --paused --headless
+```
+
+Keep each session's sibling `.bundle` and `.bundle.relocation.json`. Restored
+media are private; raw-media reopen invokes guest cold recovery. `run.py`
+forwards the usual course/raw-input/replay controls; `COMMAND --help` shows
+their arguments. Explicit development guest overrides may need their original
+build/source environment. This version does not package product boot/update
+or optional companion/radio adapters. The prepared local archive is
+`build/distribution/task006-control-native-a3.tar.gz` (28,413,664 bytes including
+a49,253,648-byte offline runtime export). The
+[native distribution contract](docs/contracts/006-local-native-distribution-v1.md)
+and [actual qualification](docs/evidence/006-local-native-distribution-v1.json)
+separate artifact admission, real RTL transport, private runtime import and
+restored suffix equality from full workflow and clean-host installation.

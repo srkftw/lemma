@@ -2289,3 +2289,77 @@ also SUCCESS11/11; fe CI38721862601 SUCCESS10/10. The new local packaging code
 needs its own candidate checks. PR9 remains draft/unmerged, no authorization to
 merge it. Wider digital functions, exact fast timing/cached-state continuation,
 complete native/browser distribution and full physical closure remain open.
+
+### Extracted native command and retained connected observations
+
+The canonical source8 RTL actor actually reaches Ready802M/4161.267686s,
+415,891,639 retired instructions. Its prospectively retained observational
+cut is actor/ready-observational-boundary/machine.chk SHA5ee5ce82..., unchanged
+by snapshot. The original400M COURSE ceiling and all later workflow/cold
+checks remain active. Browser8 continues its single original1B/7200s cold
+at tab28/origin8797, now served by the extracted static package; no reset or
+new Ready claim. Both owners retain their original source/host seals.
+
+scripts/package_native.py and sim/native/run_local.py now prepare and launch
+the existing canonical bundle outside the checkout. Source-location aliases
+retain every original digest/version and all non-location fields; ordinary
+RTL/QEMU notebook/initializer admission still runs. Actual isolated-Python
+launch from/tmp, existing control inspection, newRTL1000 clocks/retirement,
+private snapshot and prepared-session exact1M suffix pass. Original vs
+extracted suffix whole archive SHA356fadee..., UART/pixels exact,23.761s,
+original snapshot unchanged and children reaped. This is transport/relocation
+qualification, not Ready/cold recovery or omitted checkpoint-state closure.
+
+Prepared build/distribution/task006-control-native-a3.tar.gz is28,413,664B
+SHA9c178543...,1,568 files/137,943,103B extracted. Its optional runtime export
+is49,253,648B SHA17d6dda9..., six complete Nix requisites/eight required library
+files. Actual offline import into unused private local-root store and all
+logical dependency bytes pass without global import/network/trust changes.
+Nix's absolute symlinks are preserved and observed in that private namespace.
+New-host execution/installation remains unqualified. FirstA2 export failed
+because resolving nix-store's multicall symlink selected the nix CLI; retained
+producer/log remain, correctedA3 preserves invocation name. First smoke omitted
+required medium; correctedA2 uses a private exact raw copy. The Ready diagnostic
+override attempt fails before extracted CPU because its real build helper needs
+the original environment; no identity stripped or exception weakened. Ordinary
+prepared-session snapshots need no such override. Three alias checks,211 full
+silicon host tests and18 scaffold tests pass. Read the native distribution
+contract/evidence and README for actual package/session/snapshot commands.
+Optional companion/radio adapters and product boot/update are not packaged by
+this version; original licensing notices and unresolved redistribution remain.
+
+Source7 browser failed400M COURSE suffix now has actual same-Wasm native-host
+exact replay PASS3590.527520s within original3600s. Complete final archive
+SHA36a02436..., peak ownedRSS1,807,073,280B, no survivors. The3 actual raw
+pen samples and captured backing outcomes execute against private prefix
+backing without original file/peer consultation. COURSE remains FAIL; this
+does not establish C++/Wasm/QEMU migration or arbitrary cached-state closure.
+
+The full older Product10 authenticated Notebook has real completed phases:
+installation339.8M/1604.197s, then Ready898M/4649.195s, then raw3samples and
+acknowledged Saved14 in84M/458.558s. Complete expected controller pixels and
+all prior immutable raw objects pass. Live owner closes normally; independent
+newCPU cold from actual acknowledged boot/user media is running, no snapshot.
+The passive ready-raw-save-milestone.json states only these completed phases.
+Cryptoprobe bad-trial/confirmed fallback is its separate already-qualified case.
+
+Companion connectedA2 retains its actual terminal install-observer FAIL at1.1B
+after coldReady1B/6781.004s. Guest package installation actually reports durable
+sequence12, not transaction1; independently frozen missing-only observation
+proves exact installed bytes, old records and sequence12 before the original
+cap. No failure reclassified or bound changed. Newtask006-package-companion-
+saved12-a1 is an independent cold question from private copies of that actual
+guest-acknowledged peer/outbox12; no reinstall or snapshot. It continues the
+original lostACK/offline-input/restart/reconcile/cold protocol under unchanged
+21600s/10B/1.6B phase/7200s bounds. Its final observer prospectively preserves
+old immutable records and ordered page prefix while checking the new real
+raw/page/root records; mutable roots are not incorrectly required byte-identical.
+Restore forks still cannot attach a live irreversible USB peer. Frozen14 actor
+inputs and task-owned supervision remain in its supervision/manifest.json.
+
+b58b1be candidate CI38751055352 is terminalSUCCESS11/11, every reported step
+successful/no skips. The native distribution increment needs its own candidate.
+PR9 remains draft/unmerged. Wider digital functions, general managed runtime,
+proof kernel, permissioned tutor, full radio/USB, fast/checkpoint semantics,
+browser course/cold completion, new-host distribution and physical closure
+remain separate open obligations.
