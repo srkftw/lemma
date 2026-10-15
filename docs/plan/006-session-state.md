@@ -2176,3 +2176,41 @@ companion supervisor1697989 still runs its original four-role acceptance.
 
 Actual candidatefe87446 CI38721862601 was last observed5SUCCESS/5active,
 including active A-E. PR9 remains draft/unmerged; no new merge authorization.
+
+
+## Control spans1 component and four-catalog milestone
+
+The same ordinary Notebook now calls the new Lean-authored ControlRender for
+its exact original controls and revision/domain/assumptions/budget identity.
+Canonical3,615 stores versus20,520, zero framebuffer reads,23,040 exact bytes;
+no geometry/pool/clock/controller-wait reduction. Component/independent scalar
+Action checks, actual partial-write/repair and genuine LLVM/RV64 checks pass.
+All4 ordinary canonical/companion normal/initializer catalogs and full generic
+IR/readonly/RV64 jump-object checks pass. Three actual LLVM-valid semantic
+mutants are rejected. Original artifact observer/schema/literal failures remain
+FAIL; the missing-only corrected observer binds unchanged prefix artifacts and
+reproduces exact optimized IR/object bytes with resolved pinned LLVM tools.
+[Control evidence](../evidence/006-course-control-aligned-v1.json) records exact
+reports. Full linked pair and connected new-source CPU workflows remain pending.
+
+Source7 native original400M COURSE FAIL is terminal/reaped at1280M. Complete
+body RAM/staging/scan are exact; the visible body is old while the actual
+controller is busy in required WAIT_TIME. Do not call it an idle publication
+failure. Browser7 cold is qualified at801.4M/5871.2s elapsed/5755.1s simulation,
+192MiB heap, all3,630,000 pixels and all backing bytes/outcomes exact. Its source
+medium contained only two packages; the actual guest creates notebook root/page
+and Saved4. This is not cold recovery of a previously saved notebook. Browser7
+then reaches its original400M COURSE endpoint1201.4M and FAILs: exact body RAM
+and staging,9 pending dirty tiles and11,835 incorrect visible body pixels. Both
+observational cuts and original raw events/outcomes/backing are retained under
+build/browser/task006-aligned-notebook-{cold,course}-a1. Do not extend this run.
+
+Actual d287d1d20c0e638f0c19a42f32fa013d82c4372b CI38736737619 is terminal
+SUCCESS11/11 with every step successful, including new cryptographic RV64/ROM
+and foundation469 checks. Sourcefe87446 CI38721862601 also finished SUCCESS10/10.
+Neither qualifies the uncommitted control8 changes. The separate authenticated
+full-image notebook and companion4 lost-WRITE-reply scenarios remain running
+under their original bounds; actual image installation/authenticated handoff
+has completed339.8M/1604.197s, not yet Notebook Ready/cold acceptance. Frozen
+actor imports stay unchanged. PR9 remains draft/unmerged; all broader digital,
+fast timing/cached checkpoints, distribution and physical obligations remain open.

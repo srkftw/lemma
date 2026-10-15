@@ -173,8 +173,20 @@ under original3B/900s, including actual course/checker/learner/ink, complete col
 pixels/objects and full cold reopen. Actual2-byte partialpwrite/EFBIG Failed,
 newcold and ordinary retry/rawink also pass. Total instruction clocks2.639B
 versus2.649B with the same actual input/runtime; this does not establish RTL
-timing parity. New native7 and browser7 cold/course campaigns are running.
+timing parity. Native7 cold Ready802M passes, then its original400M COURSE
+bound fails with a required controller WAIT_TIME refresh still active. Browser7
+cold Ready801.4M passes; its original400M COURSE endpoint also fails: body RAM
+and staging are exact, but9 dirty tiles and11,835 body pixels remain incomplete.
 Their prior source6/native and source4/browser400M failures remain failures.
 The separate four-process companion recovery4 acceptance is also running.
 See [aligned2 evidence](../evidence/006-course-aligned-delta-v2.json); all broader
 G2/G4–G7, fast/checkpoint, distribution and physical obligations remain open.
+
+
+Control spans1 is the next additive implementation in the same Notebook, with
+artifact cohort8. Full scalar bytes/footprint/fault repair and genuine component
+checks pass; all four ordinary catalog/IR/object roles and actual LLVM semantic
+mutations are qualified. Canonical controls+identity stores fall20,520→3,615,
+with no framebuffer reads; this is not yet a CPU speedup claim. Fresh whole
+images and actual native/browser controller/workflow qualification remain
+required. See [control spans1 evidence](../evidence/006-course-control-aligned-v1.json).

@@ -91,7 +91,8 @@ def validate(ir,unit,*,optimized):
                                        'lemma-installed-package-notebook/4',
                                        'lemma-installed-package-notebook/5',
                                        'lemma-installed-package-notebook/6',
-                                       'lemma-installed-package-notebook/7'):
+                                       'lemma-installed-package-notebook/7',
+                                       'lemma-installed-package-notebook/8'):
     selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f'
    elif package['contract_version'] == 'lemma-installed-package-notebook/1':
     selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea'

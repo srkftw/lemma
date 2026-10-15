@@ -1,0 +1,65 @@
+{
+  "schema": "lemma-course-control-aligned-evidence/1",
+  "status": "PASS_COMPONENT_AND_FOUR_ORDINARY_ARTIFACTS_WHOLE_WORKFLOW_PENDING",
+  "contract": "docs/contracts/006-course-control-aligned-v1.md",
+  "scope": "Same Notebook controls and identity renderer, no host document authority. Complete linked audits, new CPU/controller performance and workflows remain pending.",
+  "reports": {
+    "component": {
+      "path": "build/courses/task006-control-qualified-a1/result.json",
+      "sha256": "e760211cd11aef086e52d0a530fb471271d0114c8ddf6c2efc3f25616bcac7ef",
+      "status": "PASS_GENUINE_CONTROL_ALIGNED_COMPONENT_ONLY",
+      "seconds": 63.809409386944026
+    },
+    "ordinary_capture": {
+      "path": "build/courses/task006-control-notebook-component-a1/result.json",
+      "sha256": "dc58aa82bc76951c2ddd411e19b2abc74ff58623eacf032988723c5626b11a7b",
+      "status": "PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY",
+      "seconds": 723.798245996004
+    },
+    "generic_prefix_retained_fail": {
+      "path": "build/courses/task006-control-notebook-artifacts-a2/result.json",
+      "sha256": "1a1cc3218f509050bb6b0ee23c7de21ff48d2df423452e54c0c43c7d675b6c1e",
+      "status": "FAIL",
+      "seconds": 345.1543727510143
+    },
+    "missing_only_mutation_qualification": {
+      "path": "build/courses/task006-control-notebook-mutations-a2/result.json",
+      "sha256": "ffe95945d32bc20db288cb4280557a8350230094c91abb285249a321df759386",
+      "status": "PASS_CONTROL_ARTIFACTS_CORRECTED_MUTATION_OBSERVER",
+      "seconds": 91.54622611100785
+    },
+    "historical_bundle_admission": {
+      "path": "build/courses/task006-control-aligned-a1/retained-bundle-admission-a1.json",
+      "sha256": "7bad31f2a1479edc39206ea4f8b7bc8c1909cb7ed2fc9eae15f94c9a4b6ac213",
+      "status": "PASS_RETAINED6_AND7_ADMISSION_WITH8_ROUTING",
+      "seconds": 1.3972866929834709
+    }
+  },
+  "operation_counts": {
+    "canonical_stores": 3615,
+    "previous_canonical_stores": 20520,
+    "reads": 0,
+    "exact_bytes": 23040,
+    "CPU_speedup": "NOT_YET_MEASURED"
+  },
+  "artifact_gate": {
+    "canonical_functions": 839,
+    "companion_functions": 877,
+    "initializer_IR_and_object_bytes_exact_to_each_normal": true,
+    "all4_full_catalog_pre_post_IR": true,
+    "normal_readonly_RV64_jump_objects": true,
+    "three_LLVM_valid_semantic_mutants_rejected": true
+  },
+  "observer_corrections": {
+    "original_generic_prefix": "FAIL at prospective mutation locator after all four roles passed; expected i64 640 but actual optimized layout uses a phi with [640,...]. Original report retained.",
+    "correction": "Literal-token locator corrected; missing-only supplement verifies unchanged original artifacts and all source identities, reproduces exact optimized IR and RV64 objects using pinned LLVM, then runs all three negatives. No original failure relabeled.",
+    "earlier_schema_and_argv_observer_failures_retained": true
+  },
+  "boundaries": {
+    "full_linked_images": "NOT_RUN_AT_THIS_MILESTONE",
+    "actual_guest_workflow": "NOT_RUN_AT_THIS_MILESTONE",
+    "canonical_RTL_400M_course": "RETAINED_SOURCE7_FAILURE_UNCHANGED",
+    "cached_state_fast_parity": "OPEN",
+    "physical_closure": "OPEN"
+  }
+}

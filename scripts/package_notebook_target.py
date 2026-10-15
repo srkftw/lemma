@@ -66,7 +66,7 @@ def contract(unit):
     from aligned_notebook_target import candidate as aligned_candidate, contract as aligned_contract
     if aligned_candidate(unit):
         scope,wanted=aligned_contract(unit)
-        return {'contract_version':'lemma-installed-package-notebook/7','root':unit['roots'][0]['source'],'private_layout':{**PACKED_LAYOUT,'text_delta_contract':'lemma-course-text-aligned-delta/2'},'owned_functions':wanted['pre_function_count']}
+        return {'contract_version':'lemma-installed-package-notebook/'+str(wanted.get('package_notebook_version',7)),'root':unit['roots'][0]['source'],'private_layout':{**PACKED_LAYOUT,'text_delta_contract':'lemma-course-text-aligned-delta/2'},'owned_functions':wanted['pre_function_count']}
     rows = _rows(unit)
     has_family = any(source in OWNED_NOTEBOOK for source in rows)
     if not has_family and not selected(unit):
@@ -276,7 +276,7 @@ def _readonly_lookup_verified(ir, unit):
                        'index_bound': len(values), 'guarded_loads': 1, 'readonly': True,
                        'guard': guard, 'literal_schema': READONLY_SCHEMA, 'selection': selection})
 
-    source = CONTROL_SOURCE; symbol = rows[source]['symbol']; body = bodies[symbol]
+    source = ('Lemma.Courses.ControlRender.character' if 'Lemma.Courses.ControlRender.character' in rows else CONTROL_SOURCE); symbol = rows[source]['symbol']; body = bodies[symbol]
     blocks, successors = _readonly_cfg(body)
     require(len(re.findall(r'%udiv11 = lshr i64 %arg1, 3$', body, re.M)) == 1 and
             len(re.findall(r'%0 = icmp ult i64 %arg1, 24$', body, re.M)) == 1,

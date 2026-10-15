@@ -275,6 +275,15 @@ jobs:
                 --work-dir build/kernel/ci-ipc-poll-borrow --timeout 180 \
             2>&1 | tee build/ci/metadata/ipc-poll-borrow.log
 
+      - name: Qualify exact aligned course controls
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_control_render.py \
+                --work-dir build/courses/ci-control-render \
+            2>&1 | tee build/ci/metadata/control-render.log
+
       - name: Run kernel host-harness suite
         run: |
           set -euo pipefail

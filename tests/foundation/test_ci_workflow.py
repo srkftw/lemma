@@ -148,7 +148,7 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/user-word-inline.log",
                          "metadata/arithmetic-execution-identity.log",
                          "metadata/ipc-poll-borrow.log",
-                         "metadata/kernel-host-unittest.log",
+                         "metadata/control-render.log", "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
             "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
             "legacy-rv64": ("legacy-rv64.log",),

@@ -1,5 +1,6 @@
 import Lemma.Courses.PackageReader
 import Lemma.Courses.PackageRender
+import Lemma.Courses.ControlRender
 import Lemma.Courses.PackageWorkspace
 import Lemma.Courses.WorkspaceCodec
 import Lemma.Courses.PackageAwaitClient
@@ -3177,8 +3178,9 @@ private def renderPackageIdentity (width : UInt64) : Action :=
   .bind (Lemma.Documents.Mathematics.field mathematics 120) fun s domain => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 128) fun s assumptions => if statusFailed s = true then .done s 0 else
   .bind (Lemma.Documents.Mathematics.field mathematics 136) fun s budget => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 480 packageIdentityStep 480 0 width revision (domain ||| (assumptions <<< 8) ||| (budget <<< 16)) 0
-    fun s _ => .done s 0
+  Lemma.Courses.ControlRender.renderIdentity width 760 revision
+    (domain ||| (assumptions <<< 8) ||| (budget <<< 16))
+
 
 private def renderPackageControls : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
@@ -3191,8 +3193,8 @@ private def renderPackageControls : Action :=
   .bind (packageGet 56) fun s loadedEdition => if statusFailed s = true then .done s 0 else
   .bind (packageGet 8) fun s ordinal => if statusFailed s = true then .done s 0 else
   .bind (packageGet 16) fun s role => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 2400 packageControlStep 2400 0 width (identity ||| (edition <<< 16))
-    (if phase = 2 then loadedIdentity ||| (loadedEdition <<< 16) else 0) ((ordinal + (1 : UInt64)) ||| (role <<< 8))
+  .bind (Lemma.Courses.ControlRender.renderControls width height (identity ||| (edition <<< 16))
+    (if phase = 2 then loadedIdentity ||| (loadedEdition <<< 16) else 0) ((ordinal + (1 : UInt64)) ||| (role <<< 8)))
     fun s _ => if statusFailed s = true then .done s 0 else
   .bind (renderPackageIdentity width) fun s _ => if statusFailed s = true then .done s 0 else
   .boundedFoldU64 52 packageControlTile 52 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else dirty 0 640 416 760

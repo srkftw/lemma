@@ -13,8 +13,13 @@ AUTHORITY=Path(__file__).resolve().parents[1]/'tooling/aligned-notebook-target-a
 ADDED=frozenset('Lemma.Courses.PackageRender.'+n for n in ('alignedDeltaStep','alignedSpanWord','renderAlignedDelta','renderAlignedHeaderSelectedDelta','renderAlignedSelectedDelta'))
 REMOVED=frozenset('Lemma.Courses.PackageRender.'+n for n in ('deltaStep','readWord','renderDelta','renderHeaderSelectedDelta','renderSelectedDelta'))
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-def candidate(unit):return bool(ADDED & {canonical(r.get('source','')) for r in unit.get('functions',[])})
+def candidate(unit):
+ from control_notebook_target import candidate as controls_candidate
+ if controls_candidate(unit):return True
+ return bool(ADDED & {canonical(r.get('source','')) for r in unit.get('functions',[])})
 def contract(unit):
+ from control_notebook_target import candidate as controls_candidate,contract as controls_contract
+ if controls_candidate(unit):return controls_contract(unit)
  if not candidate(unit):return None
  config=unit.get('configuration');scope='canonical' if config in CANONICAL else 'companion' if config in COMPANION else None
  if scope is None or unit.get('role')!='user' or unit.get('image_key')!='notebook' or unit.get('image_id')!=2:raise Core0Error('Aligned renderer escaped its exact Notebook User2 deployment')
@@ -47,6 +52,8 @@ def semantics(ir,unit,scope):
  return {'ordinary_Notebook_entry_connected':True,'same_384x320_Gray4_footprint':'qualified separately by real Action/scalar comparison','scope':'source/IR authority, not controller execution'}
 
 def validate(ir,unit,*,optimized):
+ from control_notebook_target import candidate as controls_candidate,validate as controls_validate
+ if controls_candidate(unit):return controls_validate(ir,unit,optimized=optimized)
  found=contract(unit)
  if found is None:return None
  scope,wanted=found
