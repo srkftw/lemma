@@ -1779,3 +1779,20 @@ rejects duplicate packet witnesses. Read-only observation accepts only the
 seven retained actual payloads and rejects six mutations; the original whole
 I FAIL and absent suffix are not passed. Fresh complete I and subsequent
 candidate CI remain required. PR9 stays draft/unmerged; no merge authorized.
+
+
+Fresh b137a35 I O2/O0 nowPASS complete real guest protocols, all13 payloads each,
+in172.891s aggregate with ordinary fresh RV64 builds/audits, live Busy and all
+existing rollback/death/reclamation checks. Original552 CI failure is retained.
+Direct-load whole a1 stopped before compilation on an old generated output name;
+its unused-output guard preserved the earlier files. Whole a2 built initializer
+950d3a6e in122.392s but FAILed its independent Surface base pin; no Notebook was
+built. Both failed reports and cleanup (no survivors) remain. Surface now admits
+the exact new complete base/count cohort, preserving all original pins. Two
+otherwise unchanged O2 caller bodies add only justified nuw/nsw annotations at
++72/+2048. All three old/count/direct genuine Surface pre/post cohorts qualify;
+20 base-mutant observer rejections plus2 mixed-caller rejections pass, and433
+kernel host tests pass9.893s. Shared count admission also independently binds
+the full validator body. A fresh source-held whole a3 follows this audit repair.
+Current b137 CI38678923293 was in progress at the latest observation; PR9's body
+now retains original400M/100M failures and552 FAILURE9/10 rather than stale status.

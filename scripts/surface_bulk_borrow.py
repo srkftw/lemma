@@ -17,6 +17,13 @@ PAPER = 'Lemma.Drivers.Paper.'
 DEVICE = 'Lemma.Platform.LemmaSim.DeviceService.'
 NOTEBOOK = 'Lemma.Platform.LemmaSim.NotebookKernel.'
 
+# Genuine LLVM20 O2 derives nonoverflowing additions from the new bounded
+# descriptor result. Each complete caller body changes only that one add flag.
+DESCRIPTOR_DIRECT_POST_CALLER_PINS = {
+    'Lemma.Kernel.Process.validateFrame': 'b37bdf8b7d913f2b1a4dfc1cc6abc269919b02fcfb97ffef34e262d57d6c11de',
+    'Lemma.Kernel.Task.capture': '4dfc90ac413d381dbdfdb37c2eecc4e2fdbe72b702503b99bedfaca5828f149e',
+}
+
 CALLERS = {
     CAP+'requireActiveAt': {CAP+'lookupEntryAt'},
     CAP+'lookupEntryAt': {CAP+'lookupAt'},
@@ -78,6 +85,7 @@ def validate(ir, unit, *, optimized):
         raise Core0Error('Surface critical borrow has duplicate symbols')
     phase = 'post' if optimized else 'pre'
     observed = {}
+    descriptor_cohort = None
 
     def body(source):
         result = _ir_definition_body(ir, rows[source]['symbol'])
@@ -85,13 +93,26 @@ def validate(ir, unit, *, optimized):
             raise Core0Error('Surface critical borrow actual body missing: '+source)
         return result
 
+    from task_entry_borrow import DESCRIPTOR_DIRECT_PINS, validate_registry_borrow
+    base = 'Lemma.Kernel.Memory.AddressSpace.base'
+    if hashlib.sha256(normalized_body(body(base), names).encode()).hexdigest() == DESCRIPTOR_DIRECT_PINS[phase]:
+        descriptor_cohort = validate_registry_borrow(ir, rows, names, phase)
+        if not descriptor_cohort:
+            raise Core0Error('Surface direct descriptor lacks its complete count authority')
+
     for source, (arguments, effects) in SIGNATURES.items():
         row = rows[source]
         if row['args'] != arguments or row['effects'] != effects:
             raise Core0Error('Surface critical borrow signature/effects differ: '+source)
         normalized = normalized_body(body(source), names)
         digest = hashlib.sha256(normalized.encode()).hexdigest()
-        if digest != PINS[phase][source]:
+        expected = PINS[phase][source]
+        if descriptor_cohort:
+            if source == base:
+                expected = DESCRIPTOR_DIRECT_PINS[phase]
+            elif optimized:
+                expected = DESCRIPTOR_DIRECT_POST_CALLER_PINS.get(source, expected)
+        if digest != expected:
             raise Core0Error('Surface critical borrow complete checked body differs: '+source+'/'+phase)
         observed[source] = digest
 
@@ -188,6 +209,8 @@ def validate(ir, unit, *, optimized):
             if len(re.findall(r'store volatile i64 '+re.escape(value)+r', ptr %[-\w.]+, align 8', block)) != 2:
                 raise Core0Error('Surface critical borrow pre-IR staging stores substitute source value')
     return {'contract_version': 'lemma-surface-bulk-critical-borrow-v1',
+            **({'descriptor_direct_loads': 'lemma-descriptor-direct-loads-v1',
+                'registry_count_borrow': descriptor_cohort} if descriptor_cohort else {}),
             'body_identities': observed, 'phase': phase,
             'scope': 'Genuine checked source/body/caller and ordered physical/PIO grouping audit; no temporal fault or guest timing claim'}
 FAMILY = frozenset(['Lemma.Drivers.Paper.uploadOffsetAt',

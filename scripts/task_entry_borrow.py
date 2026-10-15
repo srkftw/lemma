@@ -40,6 +40,13 @@ def validate_registry_borrow(ir,rows,names,phase):
   body=_ir_definition_body(ir,row['symbol'])
   require(body is not None and hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==REGISTRY_BORROW_PINS[phase][source],
       'complete owned registry-count body differs: '+source+'/'+phase)
+ validator='Lemma.Kernel.Memory.AddressSpace.validateRegistry'
+ require(validator in rows and rows[validator]['args']==['u64']*4 and
+         rows[validator]['effects']==['checked-access','physical-read'],
+         'registry-count validator signature/effects differ')
+ body=_ir_definition_body(ir,rows[validator]['symbol'])
+ require(body is not None and hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==REGISTRY_BORROW_PINS[phase][validator],
+         'complete owned registry-count validator differs: '+phase)
  for target,caller in zip(REGISTRY_BORROW_SOURCES,(REGISTRY_BORROW_SOURCES[1],
                          'Lemma.Kernel.Memory.AddressSpace.validateRegistry')):
   incoming={source for source,row in rows.items()

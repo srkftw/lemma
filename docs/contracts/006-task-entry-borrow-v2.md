@@ -111,3 +111,13 @@ host comparison requires exact ordered physical effects, result and RAM with
 no read projection, including stable access faults and corrupted metadata on
 512/1024/8192-frame configurations. Static call counts are not measured target
 cycles; each linked deployment still requires its own artifact audit and run.
+
+The independent Surface critical-borrow guard admits this same complete base
+cohort without replacing its old pins. LLVM20 O2 also adds `nuw nsw` to one
+addition in `Process.validateFrame` (72) and one in `Task.capture` (2048); the
+bounded pool page and offsets fit both unsigned and signed64. Complete actual
+caller bodies, with no other changed instructions, operands or order, have
+separate pins required only with the complete new descriptor/count family.
+Mixed caller/base cohorts reject; no instruction or flag is normalized away.
+The shared count check independently binds all three full bodies, including
+the validator which establishes8192, before the Surface guard admits it.

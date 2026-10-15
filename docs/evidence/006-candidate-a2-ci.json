@@ -988,6 +988,29 @@
       "path": "build/ci/task006-552-failure-a1/correlation-unit.log",
       "sha256": "29a913317fb7742f997e4077d94f41ea1d9fb2555f346697fef473df73c579c9"
     },
-    "fresh_full_protocol": "NOT_RUN; required before claiming candidate correction passed."
+    "fresh_full_protocol": {
+      "status": "PASS_FRESH_COMPLETE_I_O2_O0",
+      "source_commit": "b137a35e845d6cbe214859a62d2c785ad428cfa9",
+      "result": {
+        "path": "build/ci/task006-I-correlation-fresh-a1/result.json",
+        "sha256": "77f7fe91f8ce4e6c46db7128f7b2d952573824a2bb76df3e135e7bc6937d1bc1"
+      },
+      "seconds": 172.89109323907178,
+      "cases": [
+        {
+          "optimization": "O2",
+          "actual_payloads": 13,
+          "build_seconds": 48.39882495999336,
+          "audit_and_protocol_seconds": 37.32282090897206
+        },
+        {
+          "optimization": "O0",
+          "actual_payloads": 13,
+          "build_seconds": 45.408953684032895,
+          "audit_and_protocol_seconds": 41.52483323891647
+        }
+      ],
+      "scope": "New genuinely compiled and ordinarily audited I guests execute complete copied IPC, packet corpus, blocks, rollback, cancellation/death/reclamation and Busy continuation. No retained prefix relabeled; original failed I remainsFAIL. Subsequent audit-guard correction is separate."
+    }
   }
 }

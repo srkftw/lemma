@@ -447,7 +447,7 @@
     },
     "guard_source": {
       "path": "scripts/task_entry_borrow.py",
-      "sha256": "ea3721810b78a030f14b88537a1cc8fd1609a121cc2a2296606ad9dc6d82c567"
+      "sha256": "fffbf580c14305e40352129d7eb71797d67e840f5bd983f1a5e61cefabdfb53e"
     },
     "host_fixture": {
       "path": "tests/kernel/DescriptorDirectLoads.lean",
@@ -482,8 +482,8 @@
       "meaning": "Static call sites only; no claimed target-cycle speedup."
     },
     "kernel_host_suite": {
-      "path": "build/courses/task006-descriptor-direct-component-a1/kernel-host-suite-a2.log",
-      "sha256": "152dc8a38bb8ce15e2fd68452b58bc5740616dac83316dd25f6a0b9754b0ddc9"
+      "path": "build/courses/task006-descriptor-direct-component-a1/kernel-host-suite-a3.log",
+      "sha256": "07a32a94c955c0e5aa6aa93152175e3c80891d1cd3e91a3f86959ea849cd703f"
     },
     "kernel_host_tests": 433,
     "foundation_host_suite": {
@@ -500,6 +500,38 @@
       "build/courses/task006-registry-borrow-integration-a1/bounded-base-build.log",
       "build/courses/task006-descriptor-direct-component-a1/host-semantics.log"
     ],
-    "target_link_and_execution": "NOT_RUN for direct-load source until fresh full pair; prior registry-only source is independently running."
+    "target_link_and_execution": "NOT_RUN for direct-load source until fresh full pair; prior registry-only source is independently running.",
+    "surface_genuine_whole_cohorts": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/surface-cohort-qualification-a2.json",
+      "sha256": "4a9ff699773c7e7d37a8f546890bdb4da8f87b6dbbc94790f04cb0bc7eb981e5"
+    },
+    "surface_guard": {
+      "path": "scripts/surface_bulk_borrow.py",
+      "sha256": "b8bd974df6756a32542ca852e5720c95b1cd5eb604b671f949fb959b3cd57924"
+    },
+    "surface_scope": "All old/count/direct complete pre/post cohorts pass. Direct O2 Process.validateFrame and Task.capture differ only by one add nuw nsw flag each, at72/2048; all other instructions/operands/order identical. New complete caller pins require the complete direct-base/count cohort; mixed caller cohorts reject. No flags or instructions are masked.",
+    "negative_qualification_both_observers": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/negative-qualification-a2.json",
+      "sha256": "484ee0fa7122b2896f6c504b1a19f66466b79024347ce0d47fbe81ebbeee1ed7"
+    },
+    "negative_scope_both": "Both independent entry/Surface observers reject10 verified real LLVM base mutants each; Surface additionally rejects2 mixed old-caller/new-base variants. Complete3-body count authority is now independently checked by the shared component gate.",
+    "retained_full_attempts": [
+      {
+        "case": "build/courses/task006-descriptor-direct-whole-a1",
+        "status": "FAIL before compilation: old dynamic output name; no previous output changed",
+        "supervision": {
+          "path": "build/courses/task006-descriptor-direct-whole-supervision-a1/result.json",
+          "sha256": "833606933e8b3cf51a053ddae9a83833aa08e48d51835a2c85fc176bb32e7032"
+        }
+      },
+      {
+        "case": "build/courses/task006-descriptor-direct-whole-a2",
+        "status": "FAIL ordinary initializer audit: independent Surface base shape retained original body; notebook not built",
+        "supervision": {
+          "path": "build/courses/task006-descriptor-direct-whole-supervision-a2/result.json",
+          "sha256": "38a0e8891f9abeab2c973d39847dfd8755d013d0956e55c03a9187dbe53d6240"
+        }
+      }
+    ]
   }
 }
