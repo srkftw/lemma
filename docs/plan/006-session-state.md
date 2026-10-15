@@ -2810,7 +2810,7 @@ during finalization. Scaffold18 PASS8.427s, metadata and diff checks PASS. No
 compiler/target/helper source changed after the fresh cohort11 whole builds.
 
 Next guest implementation, ingress-idle policy2: passive samples of the existing
-canonical11 prefix at422M..453M found25/32 in S mode, with registry/object/IPC
+canonical11 prefix at421M..452M found25/32 in S mode, with registry/object/IPC
 validation prominent. These are boundary samples, not exact attribution. The
 installer independently polls an empty UART at1ms. New ordinary Lean helpers
 back off only before the first header byte (requested1..100ms), reset immediately
