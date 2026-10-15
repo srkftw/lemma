@@ -140,6 +140,8 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/descriptor-direct-loads.log",
                          "metadata/notebook-package-state-layout.log",
                          "metadata/course-workspace-codec.log",
+                         "metadata/workspace-retry-shapes.log",
+                         "metadata/workspace-reconciliation-actions.log",
                          "metadata/course-render-delta.log",
                          "metadata/course-packed-words.log",
                          "metadata/managed-notebook-deployment.log",

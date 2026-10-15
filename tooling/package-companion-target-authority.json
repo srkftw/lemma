@@ -30,6 +30,10 @@
   "roles": {
     "arithmetic": {
       "catalog_sha256": "b47d2eec497fe770fe80d17642097562e5768f6d4a17d8e3021c0feb3c9ad9a1",
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "98a172b8c19c75245647d39a0a3eb3adb128e3a639be52cf4440eef3a5e99371",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "b47d2eec497fe770fe80d17642097562e5768f6d4a17d8e3021c0feb3c9ad9a1"
+      },
       "function_count": 169,
       "post_function_count": 169,
       "post_sha256": "0a0a4408d1c114f672b8a169e3e5a5f983f0f843e115f8cf0de75dd2ba8d2517",
@@ -38,6 +42,10 @@
     },
     "course": {
       "catalog_sha256": "53ae2711013468c4f562e0837e4796fce7f9d2eb0328c4bc9f8e24f9bdaaed60",
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "693c42833ef13fbff71686cefc7f187d994853d00b9ea62fe3f460037a8b68bc",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "53ae2711013468c4f562e0837e4796fce7f9d2eb0328c4bc9f8e24f9bdaaed60"
+      },
       "function_count": 169,
       "post_function_count": 169,
       "post_sha256": "226ee09aa3662b48b1973fcf882c293ca57394b93e60e8178111473b31254487",
@@ -78,6 +86,10 @@
     },
     "notebook": {
       "catalog_sha256": "695812fcac79b161bb5925c8ede6b894f8afc780e59ef414bc4774cf604eab0e",
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "9ed6365156d96c397a1fe5cc25dd21379a5bf8fd4e844c2c5d3e8c978d837c2f",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "695812fcac79b161bb5925c8ede6b894f8afc780e59ef414bc4774cf604eab0e"
+      },
       "function_count": 875,
       "post_function_count": 873,
       "post_sha256": "8dc999779d716111b9def2ce5c50af12f5487ad9d86257cf4788c8e09add9a2c",
@@ -86,6 +98,10 @@
     },
     "store": {
       "catalog_sha256": "b543bcf528b7465f736c663bc4898222ee2c7e91ea6b97e3ddd88e53668664f0",
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "1bba924530b0611084184596195a058519e2f614e41c5314681378feada1c3c6",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "b543bcf528b7465f736c663bc4898222ee2c7e91ea6b97e3ddd88e53668664f0"
+      },
       "function_count": 298,
       "post_function_count": 298,
       "post_sha256": "4067ca9e6649428e703deabaf72bba606f2c59dc32e55faac4f29b7d52b9257b",
@@ -94,5 +110,54 @@
     }
   },
   "schema": "lemma-package-clocked-recovery4-target/1",
-  "scope": "Fresh actual six-role genuine LLVM/RV64 capture after exact library-module selection repair and shared checked Surface callback inlining. Old prototype and failed component2 remain retained."
+  "scope": "Fresh actual six-role genuine LLVM/RV64 capture after exact library-module selection repair and shared checked Surface callback inlining. Old prototype and failed component2 remain retained.",
+  "user_initializer_catalog_supplement": {
+    "roles": {
+      "arithmetic": {
+        "exact_equal_original_pre_post_object_sha256": {
+          "program.ll": "f7a4e82f598ba12a49990d4432ac531008fdb82b6160168b48aba508d5005ec5",
+          "program.o": "f7969a938e531b5040d8453d5d6559a069eea08c708d160db6c92ea06c096a17",
+          "program.opt.ll": "85e1f7140461f7d6a6d54787653e0ca239985054ee9059a340e2bd30c79e4413"
+        },
+        "initializer_unit": "build/kernel/task006-package-companion-initializer-a2/users/arithmetic/unit.json",
+        "initializer_unit_sha256": "3c845853f59df278509ccb53a7348d9c30fed784e79447b0498f68f7eafe1de2",
+        "normal_unit_sha256": "e2c907470b85327f4947ae54268f59225f65bc2c9a2374c1f25978ad248b1209",
+        "sole_catalog_difference": "configuration"
+      },
+      "course": {
+        "exact_equal_original_pre_post_object_sha256": {
+          "program.ll": "2e90537c66d9b891e90c58933d441e16cf5f980353349f7d57eafb64bf9e3a99",
+          "program.o": "58f3a37bcb9a5b88c901ac52d8b71ba5f7c0ed9519b5b4f0afb951233c6db5d3",
+          "program.opt.ll": "76a954be4f017c0b71a51ed79dd8f23c233737cf93dae8f0d4a023f4fc2b690e"
+        },
+        "initializer_unit": "build/kernel/task006-package-companion-initializer-a2/users/course/unit.json",
+        "initializer_unit_sha256": "8e2e17b2dcf5ddd8a8e912bdccbb1032f631684626bcbcdf7b0aca62c6ae83e5",
+        "normal_unit_sha256": "3fee54a908b9e157252ec4ebbc474b50e2e1aeaf2865653ee3e87f2ef645fa06",
+        "sole_catalog_difference": "configuration"
+      },
+      "notebook": {
+        "exact_equal_original_pre_post_object_sha256": {
+          "program.ll": "9d25d42eeff663d1db2c23a8fff05ebe46ffa189b7c2b88632971d48c3b096fb",
+          "program.o": "daf2fc7cc992da05a7f5935f4b03937d5ff2fb03855a5b22d82a7d5ac5ce086f",
+          "program.opt.ll": "608ca9293c353052f1f86e4ff420eba07c804338bc0268bb07deb722283b5e95"
+        },
+        "initializer_unit": "build/kernel/task006-package-companion-initializer-a2/users/notebook/unit.json",
+        "initializer_unit_sha256": "8b200a1fcf6b346f9af87258a69b91b6478fb308f3d8fda70fa1fa27e0827faa",
+        "normal_unit_sha256": "e72ea119b67a70950a229453b6e6c198db1dff1452a46a6103e602c99fe0bf06",
+        "sole_catalog_difference": "configuration"
+      },
+      "store": {
+        "exact_equal_original_pre_post_object_sha256": {
+          "program.ll": "ddf6d7dd7606d71aab3ed2946074c2e747c438c5aa96bc759addb699310098f0",
+          "program.o": "0b81db3c4b6d3f7967fd0440da866cdfc67cea0293173edda056fd404954713d",
+          "program.opt.ll": "64f2db5a7c8083e825f9f81ea3f970bfcfb6d6a390e9fe788642de81c01cad81"
+        },
+        "initializer_unit": "build/kernel/task006-package-companion-initializer-a2/users/store/unit.json",
+        "initializer_unit_sha256": "024ef1ba261d7b6f15ef99db1c5c06263179794a20f8f5effea45c0124addbf8",
+        "normal_unit_sha256": "70ea30fa4e6543a20d6922db59169b8f13f0684f18d903bbb3f4bb39c11a4036",
+        "sole_catalog_difference": "configuration"
+      }
+    },
+    "scope": "Actual separately compiled initializer catalogs; no catalog field is erased or normalized. All original preIR/postIR/object bytes match normal genuine captured components exactly."
+  }
 }

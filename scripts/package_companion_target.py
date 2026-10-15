@@ -26,7 +26,13 @@ def contract(unit):
  authority=json.loads(AUTHORITY.read_text())
  if authority.get('schema')!=VERSION or set(authority.get('roles',{}))!={'firmware','firmware-init','kernel','kernel-init',*USER_ROOTS}:raise Core0Error('Package recovery authority schema/roles differ')
  key=role_key(unit);wanted=authority['roles'][key]
- if digest(unit)!=wanted['catalog_sha256']:raise Core0Error('Package recovery complete typed/effect/root catalog differs: '+key)
+ catalogs=wanted.get('catalog_sha256_by_configuration')
+ if unit.get('role')=='user':
+  if not isinstance(catalogs,dict) or set(catalogs)!=set(CONFIGURATIONS) or catalogs[CONFIGURATIONS[0]]!=wanted['catalog_sha256']:
+   raise Core0Error('Package recovery requires both exact genuine user configuration catalogs')
+  expected=catalogs[unit['configuration']]
+ else:expected=wanted['catalog_sha256']
+ if digest(unit)!=expected:raise Core0Error('Package recovery complete typed/effect/root catalog differs: '+key)
  return key,wanted
 
 def semantic_guards(ir,unit):
