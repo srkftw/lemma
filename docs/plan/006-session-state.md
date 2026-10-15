@@ -2808,3 +2808,36 @@ Maintained host-command checks:473 foundation tests PASS31.962s; the final
 stronger4-test observer fixture also passes after modeling a status change only
 during finalization. Scaffold18 PASS8.427s, metadata and diff checks PASS. No
 compiler/target/helper source changed after the fresh cohort11 whole builds.
+
+Next guest implementation, ingress-idle policy2: passive samples of the existing
+canonical11 prefix at422M..453M found25/32 in S mode, with registry/object/IPC
+validation prominent. These are boundary samples, not exact attribution. The
+installer independently polls an empty UART at1ms. New ordinary Lean helpers
+back off only before the first header byte (requested1..100ms), reset immediately
+on successful input, and reuse the original partial receiver/deadline. No
+scheduler/hardware frequency/check/pool/format reduction. Historical main/step/
+receive remain; only current mainAwait selects the new loop. Literal cases and
+genuine existing User1 -> LLVM -> RV64 object PASS171functions;169 common
+pre-IR bodies equal except mainAwait,2 helpers added, only exec_syscall undefined.
+Contract:`docs/contracts/006-course-ingress-idle-v2.md`. Full linked builds and
+actual comparable Ready/UART/Save/cold performance remain next, no speedup claim.
+The a2 exact-source component attempt failed at4GiB virtual AS creating a Lake
+thread; retained. The established16GiB virtual envelope passed in9.705s within
+the original remaining59.857s of the same180s absolute deadline, child maxRSS
+1,627,308KiB (not an aggregate-owned peak claim). Final IR matches original
+component exactly, all408 current source identities match the predeclared map.
+
+Companion11 a1 cold is terminalFAIL35M/290.447s: the actual hosted Lean peer
+aborted creating a thread under its inherited4GiB AS. USB terminal/disconnect and
+guest read-only/Notebook exit223 were correctly detected; no Ready/Saved.
+Original output/tape/media/failure stay intact; supervisor292.069s,338,661,376B
+peak/no survivors. Corrected host-only AS16GiB case a2 is now running in
+`build/usb/task006-course-save-companion-cold-a2`, session6851. Its own loaded
+host-source map is held. Preserve original absolute cold deadline
+2026-10-16T00:33:57.348922Z and only1.565B clocks remain after the failed35M;
+physical aggregate RSS remains4GiB. No whole-machine acceptance is inferred.
+
+Reusable Save command/evidence commit96afbc8e15bbe1d95794fe2e73a84038da71498c
+is pushed; actual CI38818754788 is running at last inspection. PR9 stays draft
+and unmerged. The next idle-policy source increment is local and must receive
+its own whole builds/actual observations; do not cancel that CI for a report edit.

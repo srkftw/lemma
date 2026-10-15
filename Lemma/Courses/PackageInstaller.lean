@@ -158,6 +158,40 @@ def step : Action :=
   else failed else failed
   else failed else failed else failed
 
+/-- `lemma-course-ingress-idle/2` changes only the empty-header boundary.
+State56 is an owned, checkpointed exponent0..7. A successful read resets it;
+partial headers and bodies keep the historical1ms polling/deadline path.
+The maximum requested sleep is100ms; normal scheduler latency still applies.
+No wait acknowledges transport admission or consumes a missing byte. -/
+def receiveIdleHeader : Action :=
+  .bind (get 0) fun s console => if s = 0 then
+  .bind (Capability.consoleRead console header 64) fun status bytes =>
+  if status = ABI.noByte then if bytes = 0 then
+    .bind (get 56) fun s exponent => if s = 0 then
+    if exponent < 8 then
+      let delay := if exponent < 7 then (10000 : UInt64) <<< exponent else 1000000
+      .bind (put 56 (if exponent < 7 then exponent + 1 else exponent)) fun s _ => if s = 0 then
+      .bind (Syscall.sleep delay) fun s _ => if s = 0 then .done 0 0 else failed
+      else failed
+    else failed else failed
+  else failed else
+  if status = 0 then if 0 < bytes then if bytes ≤ 64 then
+    .bind (put 56 0) fun s _ => if s = 0 then
+    .bind (put 16 bytes) fun s _ => if s = 0 then
+    if bytes = 64 then headerComplete else .done 0 0
+    else failed else failed
+  else failed else failed else failed
+  else failed
+
+/-- No backoff applies once any command byte has arrived. Reuse the historical
+receiver and its exact body timeout/error/execute path in that state. -/
+def stepIdle : Action :=
+  .bind (get 32) fun s phase => if s = 0 then
+  .bind (get 16) fun s filled => if s = 0 then
+  if phase = 0 then if filled = 0 then receiveIdleHeader else step
+  else step
+  else failed else failed
+
 def main (initialization : UInt64) : Action :=
   if initialization ≤ 1 then
   .bind (Capability.bootGrant 0) fun s console => if s = 0 then
@@ -182,7 +216,8 @@ def main (initialization : UInt64) : Action :=
 /-! The completion-driven successor preserves historical main and every
 command/Load/Install path. Only startup uses the explicitly selected op16
 Store root. Admission is pending; only its genuine mounted reply reaches4b0.
-The same private pages, capability grants and initialization flag remain. -/
+The same private pages, capability grants and initialization flag remain.
+Idle policy2 backs off only before the first header byte. -/
 def mainAwait (initialization : UInt64) : Action :=
   if initialization ≤ 1 then
   .bind (Capability.bootGrant 0) fun s console => if s = 0 then
@@ -194,15 +229,16 @@ def mainAwait (initialization : UInt64) : Action :=
   .bind (put 8 endpoint) fun s _ => if s = 0 then
   .bind (put 40 6001) fun s _ => if s = 0 then
   .bind reset fun s _ => if s = 0 then
+  .bind (put 56 0) fun s _ => if s = 0 then
   .bind (CapabilityConsole.record console 0x4b5 identity initialization console endpoint) fun s _ => if s = 0 then
   .bind (prepare 1 1 loaded 1) fun s _ => if s = 0 then
   .bind (PackageAwaitClient.call endpoint outgoing incoming 1 initialization 1) fun s generation => if s = 0 then
   if 0 < generation then
   .bind (CapabilityConsole.record console 0x4b0 identity initialization console endpoint) fun s _ =>
-  if s = 0 then .loop step else failed else failed
+  if s = 0 then .loop stepIdle else failed else failed
   else failed else failed else failed
   else failed else failed else failed else failed
   else failed else failed else failed else failed else failed
-  else failed
+  else failed else failed
 
 end Lemma.Courses.PackageInstaller

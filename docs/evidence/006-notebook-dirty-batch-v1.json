@@ -1006,8 +1006,12 @@
       "companion": {
         "plan": "build/usb/task006-course-save-companion-cold-plan-a1/plan.json",
         "work_dir": "build/usb/task006-course-save-companion-cold-a1",
-        "status": "RUNNING",
-        "bounds": "Same original1.6B/7200s cold; new guest CPU, independent private opaque peer/outbox, actual retained Saved16; no snapshot/no new lostACK claim"
+        "status": "FAIL_ORIGINAL_HOST_VIRTUAL_CEILING_CORRECTION_RUNNING",
+        "bounds": "Same original1.6B/7200s cold; new guest CPU, independent private opaque peer/outbox, actual retained Saved16; no snapshot/no new lostACK claim",
+        "original_result": "build/usb/task006-course-save-companion-cold-a1/result.json",
+        "corrected_work_dir": "build/usb/task006-course-save-companion-cold-a2",
+        "corrected_plan": "build/usb/task006-course-save-companion-cold-plan-a2/plan.json",
+        "correction": "Hosted Lean peer aborted under inherited4GiB AS. Corrected16GiB virtual AS retains4GiB owned RSS and original absolute deadline2026-10-16T00:33:57.348922Z, with1.565B remaining clocks after failed35M. No original failure relabeled."
       }
     },
     "native_distribution": {
@@ -1104,6 +1108,32 @@
       },
       "metadata": "PASS",
       "diff_check": "PASS"
+    },
+    "ingress_idle_policy2": {
+      "status": "PASS_LITERAL_GENUINE_COMPONENT_FULL_LINK_EXECUTION_PENDING",
+      "contract": "docs/contracts/006-course-ingress-idle-v2.md",
+      "policy": "Guest empty-header sleep backoff1,2,4,8,16,32,64,100ms requested; first successful byte resets, partial header/body use existing1ms receiver and original timeout. Scheduler quantum, ownership/registry checks, formats and hardware unchanged.",
+      "target_sha256": "47718773f191942c6afb31452403d80d094235a9f3c8b93671b75b0c5010074d",
+      "component": {
+        "path": "build/courses/task006-ingress-idle-component-a3/result.json",
+        "sha256": "eb501a4e2651ee1c486c2d952f8016df7d46a46de2d89daeda59c4f107cc90ed"
+      },
+      "passive_profile": {
+        "path": "build/courses/task006-live-cold-profile-a1/result.json",
+        "sha256": "c485e1c3e3ceacbac8633238d942f7a7d56bdf2161933478ddcffd2589f0783c",
+        "samples": 32,
+        "supervisor_samples": 25,
+        "scope": "Existing canonical11 actual prefix; zero clocks/input admitted by observer, no exact statistical contribution or speedup inferred."
+      },
+      "retained_failures": [
+        "build/courses/task006-ingress-idle-component-a1/literal-original-failure.json",
+        "build/courses/task006-ingress-idle-component-a2/run.log"
+      ],
+      "remaining": [
+        "Fresh whole linked pair/full audits/source seals",
+        "Comparable actual guest Ready/course/Save/cold and raw UART install/backpressure",
+        "Independent exact RTL/native/browser timing/execution as applicable"
+      ]
     }
   }
 }
