@@ -126,3 +126,18 @@ fresh target qualification and a course speedup are still pending. Repaired
 fast and RTL runtimes can now be packed with an unchanged audited guest pair
 through the normal native-bundle-build command. These observations retain the
 existing separate digital, timing/checkpoint, distribution and physical gaps.
+
+
+The registry-count source now has an independently audited matched guest pair
+and prepared native/browser bundles. A new fast CPU improves the comparable
+original-medium Ready from269M to250M instruction-clock units; its100M course
+view stillFAILs. New original-bound canonical native/browser scenarios are
+running, not passed. A subsequent descriptor direct-load component preserves
+all ordered effects and live checks while reducing static O2 base call sites
+34->5; full new target execution remains required. Candidate552 CI isFAIL9/10
+because an independently demonstrated packet/payload observer assumed global
+adjacency across two preemptible Console syscalls. Its corrected correlation
+retains all exact values and per-transaction order, with fresh full qualification
+pending. These advance processor/memory tooling and packaging evidence only;
+G2/G4-G7 installed-course workflow and the separate parity/distribution/physical
+obligations remain open.

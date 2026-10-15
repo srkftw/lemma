@@ -22,6 +22,12 @@ REGISTRY_BORROW_PINS={
          REGISTRY_BORROW_SOURCES[1]:'9ba1dd9537b982a913480f8c02593ccb9b7d8203c7b6e2706adc004bedc8d40b',
          'Lemma.Kernel.Memory.AddressSpace.validateRegistry':'1671c9c7515be795b9625fd124872691a19fcb665f1f357de382214ec4aebc02'}}
 
+# Complete genuinely elaborated/optimized descriptor direct-load bodies.
+# The old bodies above remain admitted without changing any old artifact.
+DESCRIPTOR_DIRECT_PINS={
+ 'pre':'f389f57d3cd9daf05376a18c69b312a5187aa775d0857777158d6717a15d549f',
+ 'post':'3f8dc57b0359e4208f1bb033f3a9baa8681968b0b8c038c89b40a033c43d4966'}
+
 def validate_registry_borrow(ir,rows,names,phase):
  """A complete genuine count-borrow cohort; old artifacts keep their old pins."""
  from audit_kernel import _ir_definition_body,_local_call_arguments
@@ -130,13 +136,16 @@ def validate_component(ir,unit,*,optimized):
  entries=unit.get('functions',[]);rows={canonical(x['source']):x for x in entries}
  require(len(rows)==len(entries) and set(SIGNATURES)<=set(rows),'Entry2 complete authority family missing/duplicated')
  names={x['symbol']:s for s,x in rows.items()};require(len(names)==len(rows),'Entry2 duplicate symbols')
- phase='post' if optimized else 'pre';bodies={}
+ phase='post' if optimized else 'pre';bodies={};direct_descriptor=False
  registry=validate_registry_borrow(ir,rows,names,phase)
  for source,(args,effects) in SIGNATURES.items():
   require(rows[source]['args']==args and rows[source]['effects']==effects,'Entry2 exact signature/effects differ')
   body=_ir_definition_body(ir,rows[source]['symbol']);require(body is not None,'Entry2 actual body missing')
   expected=REGISTRY_BORROW_PINS[phase].get(source,PINS[phase][source]) if registry else PINS[phase][source]
-  require(hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==expected,
+  observed=hashlib.sha256(normalized_body(body,names).encode()).hexdigest()
+  if source=='Lemma.Kernel.Memory.AddressSpace.base' and registry and observed==DESCRIPTOR_DIRECT_PINS[phase]:
+   expected=DESCRIPTOR_DIRECT_PINS[phase];direct_descriptor=True
+  require(observed==expected,
           'Entry2 complete original checked body differs: '+source+'/'+phase);bodies[source]=body
  for target,caller in zip(FAMILY[:3],(FAMILY[2],FAMILY[2],FAMILY[3])):
   incoming=set()
@@ -155,6 +164,7 @@ def validate_component(ir,unit,*,optimized):
  gate_rows=dict(rows);gate_rows['_genuine_ir']={'ir':ir}
  flow=checked_entry_data_flow(bodies[FAMILY[2]],gate_rows,optimized=optimized)
  return {'contract_version':'lemma-scheduler-entry-borrow-v2','body_count':len(SIGNATURES),'phase':phase,'data_flow':flow,
+         **({'descriptor_direct_loads':'lemma-descriptor-direct-loads-v1'} if direct_descriptor else {}),
          **({'registry_count_borrow':registry} if registry else {}),
          'scope':'Component only; actual production boot/cfg admission separately required'}
 

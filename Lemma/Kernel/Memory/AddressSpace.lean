@@ -253,52 +253,76 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
   else .done invalidDescriptor 0
 
 /-- Reject stale descriptors, altered ABI fields, and a root which no longer
-matches the live owned table frame. Loader state at +2400..+2559 is reserved. -/
+matches the live owned table frame. Loader state at +2400..+2559 is reserved.
+The first full frame/purpose/generation resolution bounds the aligned
+physical descriptor page. Expose that numeric fact in this Action so the same
+ordered Access reads lower directly; every registry/root/translation check and
+every returned failure status remains live. No unchecked alias is returned. -/
 def base (descriptor : UInt64) : Action :=
   .bind (Frames.resolvePurpose 1 descriptor 1) fun s address =>
-  if failed s = true then .done s 0 else
-  .bind (get address 0) fun s tag =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  .bind (Access.read64 (address + 0)) fun s tag =>
+  if s = 0 then
   if (if tag = magic then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 8) fun s version =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 8)) fun s version =>
+  if s = 0 then
   if (if version = 1 then false else if version = 2 then false else if version = 3 then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 16) fun s self =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 16)) fun s self =>
+  if s = 0 then
   if (if self = descriptor then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 24) fun s owner =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 24)) fun s owner =>
+  if s = 0 then
   if Frames.ownerValid owner = false then .done invalidDescriptor 0 else
-  .bind (get address 32) fun s state =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 32)) fun s state =>
+  if s = 0 then
   if (if state = 1 then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 40) fun s tables =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 40)) fun s tables =>
+  if s = 0 then
   if tables < (if version = 3 then 14 else 11) then .done invalidDescriptor 0 else
   if 32 < tables then .done invalidDescriptor 0 else
-  .bind (get address 48) fun s leaves =>
-  if failed s = true then .done s 0 else
-  .bind (get address 80) fun s leafCapacity =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 48)) fun s leaves =>
+  if s = 0 then
+  .bind (Access.read64 (address + 80)) fun s leafCapacity =>
+  if s = 0 then
   if leafCapacity < leaves then .done invalidDescriptor 0 else
   .bind (validateRegistry address owner version leafCapacity) fun s _ =>
-  if failed s = true then .done s 0 else
-  .bind (get address 88) fun s tableCapacity =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  .bind (Access.read64 (address + 88)) fun s tableCapacity =>
+  if s = 0 then
   if (if tableCapacity = (if version = 3 then 0x3353415000000020 else 32) then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 56) fun s rootHandle =>
-  if failed s = true then .done s 0 else
-  .bind (get address tableList) fun s firstHandle =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 56)) fun s rootHandle =>
+  if s = 0 then
+  .bind (Access.read64 (address + tableList)) fun s firstHandle =>
+  if s = 0 then
   if (if rootHandle = firstHandle then false else true) = true then .done invalidDescriptor 0 else
   .bind (Frames.resolvePurpose owner rootHandle 2) fun s rootPA =>
-  if failed s = true then .done s 0 else
-  .bind (get address 64) fun s recordedPA =>
-  if failed s = true then .done s 0 else
+  if s = 0 then
+  .bind (Access.read64 (address + 64)) fun s recordedPA =>
+  if s = 0 then
   if (if recordedPA = rootPA then false else true) = true then .done invalidDescriptor 0 else
-  .bind (get address 72) fun s translation =>
-  if failed s = true then .done s 0 else
+  .bind (Access.read64 (address + 72)) fun s translation =>
+  if s = 0 then
   if translation = satpWord rootPA then .done 0 address else .done invalidDescriptor 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done s 0
+  else .done invalidDescriptor 0 else .done invalidDescriptor 0 else .done invalidDescriptor 0
+  else .done s 0
 
 def owner (descriptor : UInt64) : Action :=
   .bind (base descriptor) fun s address =>

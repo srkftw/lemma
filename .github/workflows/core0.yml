@@ -219,6 +219,17 @@ jobs:
       - name: Qualify IPC authority and managed notebook lowering
         run: |
           set -euo pipefail
+          mkdir -p .lake/build/lib/lean/tests/kernel
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 \
+                -o .lake/build/lib/lean/tests/kernel/IPCCallBaseReuse.olean \
+                tests/kernel/IPCCallBaseReuse.lean \
+            2>&1 | tee build/ci/metadata/descriptor-model.log
+          timeout --foreground --signal=TERM --kill-after=10s 5m \
+            nix develop --no-write-lock-file --command \
+              lake env lean -j2 tests/kernel/DescriptorDirectLoads.lean \
+            2>&1 | tee build/ci/metadata/descriptor-direct-loads.log
           timeout --foreground --signal=TERM --kill-after=10s 5m \
             nix develop --no-write-lock-file --command \
               lake env lean --run tests/courses/NotebookPackage.lean \

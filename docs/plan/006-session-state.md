@@ -1741,3 +1741,41 @@ separate strict cohorts, and10 valid-LLVM semantic/caller mutants reject. The
 original guard and host/mutator observer failures remain retained. Contract:
 docs/contracts/006-task-entry-borrow-v2.md. No target speedup or new Ready/course
 pass is claimed before full fresh matched compilation/audits and execution.
+
+
+Registry-only source552d39e now has a complete fresh matched pair: both ordinary
+builds/full audits PASS in479.483s, supervised482.806s, peak1.932GB RSS and no
+survivors. All387 inputs remain sealed; source inventorya50b9537 (formatted
+archive JSON; predeclared compact inventoryaa59b414 has the identical map).
+Normal guest71742788/initializer6e391039 are packaged with repaired RTL8e5ce4ee
+and QEMU188e5447 in build/native/task006-registry-borrow-a1, manifeste8da8098.
+Static build/browser/task006-registry-borrow-a1 manifestca63a2e7 reuses the exact
+qualified portablefb15aade. Fast newCPU Ready250000003/17.482s improves the prior
+269000002 instruction-clock case, but original100M COURSE still FAILs. Fresh
+native build/courses/task006-native-registry-borrow-a1 and browser tab25/8794,
+origin task006_registry_borrow_cold_a1, are running under original1B cold and
+400M native course caps; neither has a new Ready/workflow PASS yet. Native's29
+actual host files stay frozen; archived target sources allow independent work.
+
+A further genuine Lean hot-path change is now component-qualified: descriptor
+base exposes its already resolved page bounds and uses direct checked reads
+and success gates. It preserves every live descriptor/registry/root/translation
+check and all13 read addresses/order. O2 call sites34->5 is static evidence,
+not target timing. Exact host effects/results/RAM pass across512/1024/8192,
+with stable read faults,16 corrupted fields and3 invalid handles per pool. All
+three genuine old/count/direct pre/post cohorts qualify;10 valid-LLVM mutants
+reject. Fresh model compilation and433 kernel/468 foundation/18 scaffold tests
+pass. Original syntax/model setup failures are retained. Contract/evidence are
+006-task-entry-borrow-v2; a fresh matched full direct-load pair is next.
+
+Actual552d39e PR-merge CI38676442848 is terminal FAILURE9/10, with the final
+F-I qualification step skipped. Original I-O2 payload failure is preserved in
+build/ci/task006-552-failure-a1 (artifact11945799676, zipffc4a602). It demonstrates
+an observer adjacency defect: clientB's correct192-byte payload/digest follows
+its own authenticated256-byte packet, but clientA reports during preemption
+between the two real Console syscalls. c8087de correlates the unique prior full
+task/request instead, preserves all exact sender/length/digest/order checks and
+rejects duplicate packet witnesses. Read-only observation accepts only the
+seven retained actual payloads and rejects six mutations; the original whole
+I FAIL and absent suffix are not passed. Fresh complete I and subsequent
+candidate CI remain required. PR9 stays draft/unmerged; no merge authorized.

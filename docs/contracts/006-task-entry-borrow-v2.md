@@ -89,3 +89,25 @@ live, rather than being inherited from the count witness.
 
 Host semantic checks and LLVM artifact admission alone do not establish a
 linked image, target speedup or completion of the installed-course workflow.
+
+
+`lemma-descriptor-direct-loads-v1` exposes the descriptor page's numeric bounds
+inside the first complete `AddressSpace.base` Action. The original successful
+owner1/purpose1/generation frame resolution yields an aligned page in the pool;
+three pure guards make that fact available to checked LLVM lowering. All
+thirteen header/root/translation reads retain their addresses and order. The
+same live registry, owner, version, self handle, state, capacities, root handles,
+root authority, recorded physical address and SATP comparisons still run. Every
+failed Access returns its original status. The added numeric guard failures are
+unreachable after the admitted frame resolver; no arbitrary User pointer gains
+access to this path. No authority is cached and no physical operation is omitted.
+
+The direct `Access.read64` and scalar success gates allow ordinary LLVM O2 to
+remove wrapper calls. The complete separately observed pre/post body pair is
+admitted only alongside the complete registry-count family above. Original
+base bodies and their historical receipts remain admitted by their original
+pins. A changed check, read, status, callee or partial body fails closed. The
+host comparison requires exact ordered physical effects, result and RAM with
+no read projection, including stable access faults and corrupted metadata on
+512/1024/8192-frame configurations. Static call counts are not measured target
+cycles; each linked deployment still requires its own artifact audit and run.

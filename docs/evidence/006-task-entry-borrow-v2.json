@@ -402,6 +402,104 @@
       "sha256": "0af728ddd3058083cfff6a0065304d33a899e75e27fe5165d6441abdd99583c5"
     },
     "semantics": "Fresh protected count8192 once per registry validation; all8 live frame owners/generations/purposes, recorded physical addresses, both duplicate groups and pins remain checked. Whole descriptor config reads3 vs original11; no count cache across Action/syscall. Legacy512/1024 paths retain their original callback.",
-    "scope": "No linked image, target speedup or successful installed-course opening claimed; new complete matched pair and actual canonical workflow remain required."
+    "scope": "No linked image, target speedup or successful installed-course opening claimed; new complete matched pair and actual canonical workflow remain required.",
+    "fresh_whole_pair": {
+      "result": {
+        "path": "build/courses/task006-registry-borrow-whole-a1/result.json",
+        "sha256": "d52e84c2e7717b34b95c737d6fb119b8d1c3289b26731899a5adeab0be94f7a6"
+      },
+      "external_supervision": {
+        "path": "build/courses/task006-registry-borrow-whole-supervision-a1/result.json",
+        "sha256": "19fdf1287af1a5d300b1f68fb31968d634ebedf806a46560d2c4c9a5513da018"
+      },
+      "source_seal": {
+        "path": "build/courses/task006-registry-borrow-whole-a1/source-seal.json",
+        "sha256": "3626142d2afe622e5098e8b2eb9d879cd69843c83f18e6b19a51b9f357f43c3c"
+      },
+      "source_commit": "552d39ece2884224ec9564477057f98a0a59a460",
+      "source_count": 387,
+      "source_inventory_sha256": "a50b9537dfe28589d9dfd0868a53f8faebd1e8762d83f38703085087d34bb905",
+      "seconds": 479.48334118002094,
+      "normal_guest_sha256": "71742788105bff0eb7801eba081b0c19f77fb38c235a8990b39162641a405462",
+      "initializer_guest_sha256": "6e391039ad8a7e32a14d361672227ec0141938612146537ff9e0c3dd9cb5388d",
+      "native_bundle": {
+        "path": "build/native/task006-registry-borrow-a1/bundle.json",
+        "sha256": "e8da8098a4ca0838622b1d57f1a7eb51c57b5de5f58517f3aeb5b1d39102ba95"
+      },
+      "browser_bundle": {
+        "path": "build/browser/task006-registry-borrow-a1/bundle.json",
+        "sha256": "ca63a2e7a62493e4aa0457346b1e8a770cc2db258866dd6e3c8ff5900f5521b5"
+      },
+      "fast_original_bound_observation": {
+        "path": "build/courses/task006-registry-borrow-fast-a1/progress.json",
+        "sha256": "cfc3d2d98ee99425dccd159364509607aa09ba4a90adbf7d154a7fb38e169514"
+      },
+      "fast_scope": "Actual newCPU Ready250000003 units/17.481621s on original two-package medium, vs prior269000002. Original100M COURSE view remains FAIL; no timing parity or full workflow pass.",
+      "native_and_browser": "Original-bound fresh canonical CPU scenarios running, not yet Ready/workflow acceptance."
+    }
+  },
+  "descriptor_direct_loads_v1_component": {
+    "status": "PASS_COMPONENT_AND_HOST_ONLY",
+    "contract": "lemma-descriptor-direct-loads-v1",
+    "target_source": {
+      "path": "Lemma/Kernel/Memory/AddressSpace.lean",
+      "sha256": "57b58a9bf13fc9f65963000023f47be753b7e1ee2279719557b5664f0b6b01e1"
+    },
+    "guard_source": {
+      "path": "scripts/task_entry_borrow.py",
+      "sha256": "ea3721810b78a030f14b88537a1cc8fd1609a121cc2a2296606ad9dc6d82c567"
+    },
+    "host_fixture": {
+      "path": "tests/kernel/DescriptorDirectLoads.lean",
+      "sha256": "0c63cc509c96e82c1cc2450cbcd5c578c0ee3e814f9a3b2099489701d31b446c"
+    },
+    "semantics": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/host-semantics-a3.log",
+      "sha256": "15d546e6f9918cf2a89dcb5bd034d15629484c401b96611e66cf2cc33ca672da"
+    },
+    "fresh_model_compile": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/fresh-model.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "effect_comparison": "Identical complete ordered physical reads, results and RAM; no read projection. Pools512/1024/8192 yield23/79/71 effects. Every distinct read address has a stable fault case;16 metadata corruptions and3 bad handles per pool.",
+    "genuine_qualified_cohorts": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/cohort-qualification.json",
+      "sha256": "721a8ed32d816c0dda87bf1d74849ed20282d379bf6de0d73dc3769a7de95d0d"
+    },
+    "original_guard_rejection": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/original-guard-failure.json",
+      "sha256": "8d6b240cd0f43c92b6e8a4a313825c8ce2378a868ace3dc4062b5feb5406fdb6"
+    },
+    "negative_qualification": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/negative-qualification.json",
+      "sha256": "8fa358bc095adcbd20b015e5e0e98f75cda30babe3286f32e19379b6c1c11b9d"
+    },
+    "negative_scope": "Five verified actual LLVM mutants per pre/post phase: removed self check, wrong frame owner, misdirected recorded physical read, wrong registry address, inverted first-resolution status; all reject.",
+    "llvm_O2_static_base_calls": {
+      "before": 34,
+      "after": 5,
+      "after_direct_volatile_i64_loads": 13,
+      "meaning": "Static call sites only; no claimed target-cycle speedup."
+    },
+    "kernel_host_suite": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/kernel-host-suite-a2.log",
+      "sha256": "152dc8a38bb8ce15e2fd68452b58bc5740616dac83316dd25f6a0b9754b0ddc9"
+    },
+    "kernel_host_tests": 433,
+    "foundation_host_suite": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/foundation-host-suite.log",
+      "sha256": "47a704c77049e3457dc701409df1523481d18f1282655820de307b89998f8b50"
+    },
+    "foundation_host_tests": 468,
+    "scaffold_host_suite": {
+      "path": "build/courses/task006-descriptor-direct-component-a1/scaffold-host-suite.log",
+      "sha256": "1e283131623dfeab62ad762a83786a4b42d4e81d79262b41ccdafd5b2f84b7c2"
+    },
+    "scaffold_host_tests": 18,
+    "retained_setup_failures": [
+      "build/courses/task006-registry-borrow-integration-a1/bounded-base-build.log",
+      "build/courses/task006-descriptor-direct-component-a1/host-semantics.log"
+    ],
+    "target_link_and_execution": "NOT_RUN for direct-load source until fresh full pair; prior registry-only source is independently running."
   }
 }
