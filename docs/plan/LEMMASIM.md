@@ -202,3 +202,16 @@ validator/server; actual isolated launch from/tmp and exact HTTP assets pass.
 This closes that launch dependency only: native runtime relocation, browser-local
 compiler, full browser workflow and redistribution permission remain open.
 See [distribution evidence](../evidence/006-local-browser-distribution-v1.json).
+
+The same canonical G2/course notebook now has an actual fast course-preserving
+explicit Save/cold-reopen slice at cohort11: raw annotation, Pending/Saved detail0,
+complete course/controller pixels and every medium byte survive a new cold CPU.
+The checked-in `scripts/check_course_save.py` is reusable; fast instruction units
+remain distinct from canonical RTL clocks. Both fresh canonical/companion11 whole
+pairs have full audits/source seals. Latest RTL, local Wasm and companion Saved16
+cold cases are running independently; no whole-machine gate is relabeled complete.
+The older9 RTL check reached revision-bound5/6 Verified/workspace20, then failed an
+early controller-label assertion with37 dirty tiles pending. Its private remaining-
+budget suffix displays VERIFIED with unchanged bytes; the full original campaign
+remainsFAIL/incomplete. See the existing
+[dirty-batch/course Save evidence](../evidence/006-notebook-dirty-batch-v1.json).

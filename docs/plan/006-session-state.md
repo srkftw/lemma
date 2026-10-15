@@ -2748,3 +2748,63 @@ canonical workflow remains active under its own6B/21600s and30 host-file hold.
 
 Committed a4217e6 CI38805996213 is terminalSUCCESS11/11, every reported step
 success/no skips. It excludes local cohort11 changes. PR9 stays draft/unmerged.
+
+October15 course Save integration:86f132d now has both fresh fully audited408-input
+canonical11 and Clocked13 companion11 pairs. Canonical pair756.786s,
+760.019s supervised/1,918,271,488B peak; companion952.689s,
+956.747s supervised/1,937,620,992B peak, all source seals pass/no owned survivors.
+Canonical notebook SHA6984ba75820ee715fa6750ff198eee0148766e72c2f63b5739127220df05b532;
+companion notebook d26b38f7d3aec724bf2556c855e23079f3a429b21fae8bf287283af9bffeae2e.
+The build HEAD/index/408-file hold is released. Prepared native and browser11
+bundles retain the exact existing machine cores; no new emulator/physical claim.
+
+Actual fast11 cold from earlier browser-acknowledged ink8 -> authored course ->
+raw annotation -> idle explicit Save Pending/Saved detail0 -> independent cold
+reopen PASS:762,000,035 nominal units,56.506s actor/58.343s supervised,
+752,738,304B peak. All course/controller pixels and complete medium bytes match;
+Save does not close the view. The new maintained `scripts/check_course_save.py`
+command has a separate actual guest PASS at a2:62.904s/64.310s supervised. It uses
+checked-in independent glyph observation and an actual CLI import census. Four
+focused tests reject pending/poisoned/malformed counters, a late shutdown import
+and a finalization failure reported with an otherwise successful execution. The
+post-a2 terminal exit guard is qualified by that host test; a2 retains its exact
+execution source hashes, not relabeled as a fresh final-guard guest run.
+
+Actual canonical RTL11 case RUNNING at
+`build/courses/task006-course-preserving-save-rtl-a1`, supervisor session25255,
+original3B/21600s. Preserve its consumed-host map; do not edit those loaded files.
+Browser11 tab30 at http://127.0.0.1:8799 uses private OPFS `course-save11-a1`,
+actual imported browser ink8, same RTL Wasm core/192MiB heap, original1B/7200s
+cold bound. Plan:`build/browser/task006-course-preserving-save-plan-a1/plan.json`.
+Source9 tab29 remains paused at its explicit Save failure; do not reload/drop it.
+Companion11 independent cold from private actual closed Saved16 peer/outbox is
+RUNNING at`build/usb/task006-course-save-companion-cold-a1`, session99914,
+original1.6B/7200s cold bound. This does not rerun the old6 prefix or claim a new
+lostACK/reconciliation pass. Its loaded host source map is held until closure.
+
+The old9 canonical campaign is now terminalFAIL at3.136B/16154.030s:
+`VERIFIED label did not reach controller pixels`. Real isolated Protocol7 and
+acknowledged workspace20 contain revision12/answer5/6/Verified. Full-CRC retained
+checkpoint observation shows correct owned VERIFIED framebuffer,37 queued dirty
+tiles, old visible UNCHECKED. First diagnosis used a wrong framebuffer address;
+its limitation is retained and corrected via the exact already-CRC-validated hash.
+A private display-only suffix reaches actual VERIFIED after45M/267.452s
+(274.943s supervised/677,937,152B peak), within unused original141M of200M check
+budget and original aggregate deadline. Complete acknowledged medium is unchanged.
+This corrects the early observer phase only; the whole course/math/cold campaign
+remainsFAIL/incomplete. Original30-file campaign hold is released.
+
+The current Save target commit86f132d actual CI38813364210 is terminalSUCCESS,
+11/11 jobs, every reported step success/no skips. It excludes the next maintained
+host-command increment. PR9 was updated to actual observations and stays draft,
+unmerged. Native distribution2 for guest11 is locally prepared at
+`build/distribution/task006-course-preserving-save-native-a1.tar.gz` (11,567,160B,
+SHA13660dea69d16a0ae27805c3bd8c70c18055b98b6f6b34f6c48a014caf633219).
+Packaging validates both backends/roles; extracted latest guest execution,
+clean-host installation and rights remain separate. Existing capability/evidence
+identifiers and original failures retain their meanings.
+
+Maintained host-command checks:473 foundation tests PASS31.962s; the final
+stronger4-test observer fixture also passes after modeling a status change only
+during finalization. Scaffold18 PASS8.427s, metadata and diff checks PASS. No
+compiler/target/helper source changed after the fresh cohort11 whole builds.

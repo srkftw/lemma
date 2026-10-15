@@ -379,13 +379,13 @@
     "execution": "NOT_YET_RUN with new9 companion guests; original Saved12 recovery actor uses unchanged older6 bundle and keeps its own meaning"
   },
   "candidate_ci": {
-    "commit": "a4217e6b97346e070c453e662e7223ffd800531d",
-    "run": 38805996213,
+    "commit": "86f132de844bce28069373be860c1b5f77a15ed9",
+    "run": 38813364210,
     "conclusion": "SUCCESS",
     "jobs": 11,
-    "skipped_steps": 0,
     "all_reported_steps": "SUCCESS",
-    "scope": "Committed restored Surface milestone, excludes local11 course Save change"
+    "skipped_steps": 0,
+    "scope": "Committed Lean course-preserving Save and literal CI addition; excludes next maintained host-command increment"
   },
   "browser_cold_ready": {
     "status": "PASS_ACTUAL_COLD_INITIAL_NOTEBOOK_READY_AND_NATIVE_STATE_EQUAL",
@@ -648,7 +648,7 @@
     }
   },
   "course_preserving_save11": {
-    "status": "PASS_COMPLETE_ARTIFACTS_GUEST_NOT_RUN",
+    "status": "PASS_FRESH_LINKED_PAIRS_AND_FAST_COURSE_SAVE_COLD_RTL_BROWSER_PENDING",
     "contract": "docs/contracts/006-course-preserving-save-v1.md",
     "literal": {
       "path": "build/courses/task006-course-preserving-save-component-a1/literal-a3.log",
@@ -753,9 +753,357 @@
       "metadata": "PASS"
     },
     "remaining": [
-      "fresh linked11 normal/initializer and full audits",
-      "actual idle-course Save detail0 and complete SAVED/controller/course/annotation pixels",
-      "companion and browser11 execution"
-    ]
+      "Actual latest RTL whole Save/cold case still running",
+      "Actual latest Wasm course/Save/math/durable-only reopen pending",
+      "Latest companion independent cold running; new lostACK/reconciliation not inferred",
+      "Latest extracted distribution execution/clean-host and licenses separate",
+      "Unsuccessful explicit course Save actual guest coverage remains; existing literal and original independent partial-write evidence retained",
+      "General machine digital completeness, exact fast cached/timing semantics, managed runtime/proof kernel, tutor/radios and physical closure remain open"
+    ],
+    "implementation_commit": "86f132de844bce28069373be860c1b5f77a15ed9",
+    "canonical_whole": {
+      "path": "build/courses/task006-course-preserving-save-notebook-whole-a1/result.json",
+      "sha256": "77cbc0ec0de692c21cc084d49de9d6bb532dc63540e45192498860faefb53415",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "wall_seconds": 756.7864714839961,
+      "source_commit": "86f132de844bce28069373be860c1b5f77a15ed9",
+      "source_count": 408,
+      "source_inventory_sha256": "6ada44d153f4b8fb73b3726a91fd9ee05eaee568dd85d91590ed87fd545b943c",
+      "roles": {
+        "initializer": {
+          "audit_seconds": 194.90758416696917,
+          "audit_sha256": "fdc80f56e54af8ce9d711c09b88a06b5459453f3a68879c50daed15856176c72",
+          "audit_status": "PASS",
+          "build_seconds": 182.69228759396356,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-initializer-a1",
+          "image_bytes": 703296,
+          "image_sha256": "33572d894dea45527c280094cefead3188ebe950f2f4c8ef5996298d27ec8b0c",
+          "provenance_sha256": "8db02acab5e73264313a23b3986cef33bfd21bf19ebbbc05132b40b1ca0b93d4"
+        },
+        "notebook": {
+          "audit_seconds": 196.12178486096673,
+          "audit_sha256": "40799d80d8e40d65fba666ade1c5d00e866053c38d0539960892aa1571d0ee26",
+          "audit_status": "PASS",
+          "build_seconds": 182.9333516220795,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-notebook-a1",
+          "image_bytes": 703288,
+          "image_sha256": "6984ba75820ee715fa6750ff198eee0148766e72c2f63b5739127220df05b532",
+          "provenance_sha256": "5b712039f57869b5e7d3a70ad7fb8278299962aef490c7055ff235698168a0e9"
+        }
+      }
+    },
+    "companion_whole": {
+      "path": "build/courses/task006-course-preserving-save-companion-whole-a1/result.json",
+      "sha256": "8dca1795220e563af879b29ec0ded0fa3c2d9e7bff488c56c33831f4f839381d",
+      "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+      "wall_seconds": 952.6891163398977,
+      "source_commit": "86f132de844bce28069373be860c1b5f77a15ed9",
+      "source_count": 408,
+      "source_inventory_sha256": "6ada44d153f4b8fb73b3726a91fd9ee05eaee568dd85d91590ed87fd545b943c",
+      "roles": {
+        "initializer": {
+          "audit_seconds": 221.7949450110318,
+          "audit_sha256": "daef20168eb0b00b34895e53ebcb1d1ab1650a24aab51667fd704494c3db7337",
+          "audit_status": "PASS",
+          "build_seconds": 189.322182834032,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-companion-initializer-a1",
+          "image_bytes": 757728,
+          "image_sha256": "b1370115939fcd7fef0b45a273936937cab450b5d908c7e25577e47d49994893",
+          "provenance_sha256": "eccaa3fbe48d73d652dc2a34cb1a9a88320ff59336618dfa39e2d80697eb68e9"
+        },
+        "notebook": {
+          "audit_seconds": 300.3642804370029,
+          "audit_sha256": "2e454aff8a45a95b675e61521e201cedae395ff3896a20d607367a352d3fc99e",
+          "audit_status": "PASS",
+          "build_seconds": 241.0372556440998,
+          "build_status": "BUILT",
+          "configuration": "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook",
+          "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-companion-notebook-a1",
+          "image_bytes": 757720,
+          "image_sha256": "d26b38f7d3aec724bf2556c855e23079f3a429b21fae8bf287283af9bffeae2e",
+          "provenance_sha256": "f672f048de1a456e015137e655f44ff279d688b8741aeb5d386569150164acd9"
+        }
+      }
+    },
+    "canonical_whole_supervision": {
+      "path": "build/courses/task006-course-preserving-save-notebook-whole-supervision-a1/result.json",
+      "sha256": "f8f8a3df01e4770dd7e4c67712ac6202f83b6a0d0d87a7a6b9d39ab51cb2cca9",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "seconds": 760.0186863869894,
+      "peak_owned_rss_bytes": 1918271488,
+      "independent_source_seal": {
+        "current_files_equal_expected": true,
+        "archived_files_equal_expected": true,
+        "source_count": 408
+      }
+    },
+    "companion_whole_supervision": {
+      "path": "build/courses/task006-course-preserving-save-companion-whole-supervision-a1/result.json",
+      "sha256": "b10ef8825b4bc520f49487f2925953ad7126bae1439f301c2b0da58a555d6563",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "seconds": 956.7473700830014,
+      "peak_owned_rss_bytes": 1937620992,
+      "independent_source_seal": {
+        "current_files_equal_expected": true,
+        "archived_files_equal_expected": true,
+        "source_count": 408
+      }
+    },
+    "prototype_fast": {
+      "path": "build/courses/task006-course-preserving-save-fast-a1/result.json",
+      "sha256": "0dbd804c8c94aa6fb8d67fc8dbae70b523325c17d171740c24fc5528a11de10c",
+      "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN",
+      "elapsed_seconds": 56.50647994701285,
+      "total_clock_units": 762000035,
+      "phases": [
+        {
+          "name": "independent-cold-from-browser-Saved8",
+          "initial_cycle": 0,
+          "final_cycle": 249000006,
+          "clock_units": 249000006,
+          "host_seconds": 13.009697224013507
+        },
+        {
+          "name": "actual-course-body",
+          "initial_cycle": 249000006,
+          "final_cycle": 360000015,
+          "clock_units": 111000009,
+          "host_seconds": 6.917053646990098
+        },
+        {
+          "name": "annotation-ack-and-SAVED-course",
+          "initial_cycle": 360000015,
+          "final_cycle": 388000016,
+          "clock_units": 28000001,
+          "host_seconds": 1.9608490779064596
+        },
+        {
+          "name": "idle-explicit-Save-detail0-and-identical-course",
+          "initial_cycle": 388000016,
+          "final_cycle": 397000018,
+          "clock_units": 9000002,
+          "host_seconds": 0.6195849520154297
+        },
+        {
+          "name": "second-new-CPU-cold-recovery",
+          "initial_cycle": 0,
+          "final_cycle": 254000006,
+          "clock_units": 254000006,
+          "host_seconds": 15.513909274945036
+        },
+        {
+          "name": "cold-complete-course-and-annotation-pixels",
+          "initial_cycle": 254000006,
+          "final_cycle": 365000017,
+          "clock_units": 111000011,
+          "host_seconds": 6.157897738972679
+        }
+      ],
+      "explicit_save": {
+        "sequence": 11,
+        "pending_and_saved_detail0": true,
+        "course_and_all_pixels_unchanged": true,
+        "all_medium_bytes_unchanged": true
+      },
+      "identity": {
+        "backend": "qemu",
+        "profile": "lemma-silicon-dev/0.3.0",
+        "runtime": "97ab475eda8da56508c99601c4331cc2b802a7f4f52ac8aace720964a8aaddf7",
+        "adapter": "lemmasim-fast-adapter/5",
+        "derivation": "7ae35b58ef6a976779394f1ee52edbc322345df4125ae646accfa97f422de745",
+        "guest": "6984ba75820ee715fa6750ff198eee0148766e72c2f63b5739127220df05b532",
+        "dtb": "497dfb9f7487806aa23d04429eb646294a920f5db76e9388f3cef966ef5d86da",
+        "descriptor": "f68fdcdc7a639650fd93094b2db9736f89e259d3a39839fc05a390db554b607a",
+        "cpu": "rv64i,m=true,s=true,u=true,mmu=true,pmp=true,sv39=true,zicsr=true,zifencei=true,zicntr=true,zihpm=false,priv_spec=v1.12.0",
+        "icount_shift": 3,
+        "development_guest_source_archive": {
+          "inventory": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-course-preserving-save-notebook-whole-a1/consumed-source-root/source-inputs.json",
+            "sha256": "6ada44d153f4b8fb73b3726a91fd9ee05eaee568dd85d91590ed87fd545b943c"
+          },
+          "build": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-notebook-a1/build.json",
+            "sha256": "1acdcf2a14ea461ce49382589209b9d3a15e8c945eb63a2940bb351bd0573cd8"
+          },
+          "provenance": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-notebook-a1/provenance.json",
+            "sha256": "5b712039f57869b5e7d3a70ad7fb8278299962aef490c7055ff235698168a0e9"
+          },
+          "audit": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-notebook-a1/audit.json",
+            "sha256": "40799d80d8e40d65fba666ade1c5d00e866053c38d0539960892aa1571d0ee26"
+          },
+          "image": {
+            "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-course-preserving-save-notebook-notebook-a1/image.elf",
+            "sha256": "6984ba75820ee715fa6750ff198eee0148766e72c2f63b5739127220df05b532"
+          },
+          "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+          "source_commit": "86f132de844bce28069373be860c1b5f77a15ed9",
+          "dirty_paths": [],
+          "inputs": 408,
+          "scope": "unchanged fully audited canonical notebook; complete original source/tool/object closure"
+        }
+      },
+      "consumed_host_current_equal": true,
+      "complete_controller_pixels_exact": true,
+      "whole_medium_exact": true,
+      "no_snapshot": true
+    },
+    "prototype_fast_supervision": {
+      "path": "build/courses/task006-course-preserving-save-fast-supervision-a1/result.json",
+      "sha256": "b48181ae38c13770e3df6b1e9b9f68175dde1b0c055b544ac7f0220530e4a123",
+      "status": "PASS_COURSE_PRESERVING_SAVE_SUPERVISED",
+      "seconds": 58.343249432975426,
+      "owned_peak_rss_bytes": 752738304
+    },
+    "maintained_command_initial_qualification": {
+      "path": "build/courses/task006-course-save-command-fast-a1/result.json",
+      "sha256": "2610b19f019dc031a1ad01944d864f11fa4900c66dedc1ab0b4c257ed075049b",
+      "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN",
+      "elapsed_seconds": 71.19112898106687,
+      "total_clock_units": 762000035,
+      "explicit_save": {
+        "sequence": 11,
+        "pending_and_saved_detail0": true,
+        "course_and_all_pixels_unchanged": true,
+        "all_medium_bytes_unchanged": true
+      },
+      "consumed_host_current_equal": true
+    },
+    "maintained_command_initial_scope": "Before final counter-schema/post-exit-census guards and synchronized census publication; original PASS retained. Final command qualification is separately running at a2.",
+    "prepared_bundles": {
+      "build/native/task006-course-preserving-save-notebook-a1": {
+        "manifest_sha256": "e532640b0bd4e2ef018e64cbc2622bcb376390d1f1784c415d3e061bbcf3c56f"
+      },
+      "build/browser/task006-course-preserving-save-a1": {
+        "manifest_sha256": "a015f0c35624643b9bbdbdbcc14a86794418f6e02dc912d10652097d14611905"
+      },
+      "build/native/task006-course-preserving-save-companion-a1": {
+        "manifest_sha256": "414dd37c9522e40c7715fc6d370112b33a03027548f891021f3c8e7da1ff9e29"
+      }
+    },
+    "active_cases": {
+      "canonical_RTL": {
+        "plan": "build/courses/task006-course-preserving-save-integration-a1/plan.json",
+        "work_dir": "build/courses/task006-course-preserving-save-rtl-a1",
+        "status": "RUNNING",
+        "bounds": "3B target clocks/21600s aggregate; two independent cold CPUs, raw annotation, explicit Save and all pixels/medium"
+      },
+      "browser": {
+        "plan": "build/browser/task006-course-preserving-save-plan-a1/plan.json",
+        "tab": 30,
+        "origin": "http://127.0.0.1:8799/",
+        "medium": "course-save11-a1",
+        "status": "RUNNING",
+        "bounds": "Original1B/7200s cold phase; new guest, actual browser-acknowledged ink8 copied into private OPFS name; no snapshot"
+      },
+      "companion": {
+        "plan": "build/usb/task006-course-save-companion-cold-plan-a1/plan.json",
+        "work_dir": "build/usb/task006-course-save-companion-cold-a1",
+        "status": "RUNNING",
+        "bounds": "Same original1.6B/7200s cold; new guest CPU, independent private opaque peer/outbox, actual retained Saved16; no snapshot/no new lostACK claim"
+      }
+    },
+    "native_distribution": {
+      "directory": "build/distribution/task006-course-preserving-save-native-a1",
+      "archive": "build/distribution/task006-course-preserving-save-native-a1.tar.gz",
+      "archive_sha256": "13660dea69d16a0ae27805c3bd8c70c18055b98b6f6b34f6c48a014caf633219",
+      "archive_bytes": 11567160,
+      "status": "PASS_PREPARED_EXTRACTED_NATIVE_DISTRIBUTION_NO_CPU",
+      "scope": "Ordinary both-backend/both-role admission; packaging only, actual extracted latest-image execution and clean-host/license qualification remain separate."
+    },
+    "canonical9_retained_failure": {
+      "path": "build/courses/task006-native-dirty-batch-notebook-a1/actor/result.json",
+      "sha256": "91ec04174da29fb4f4e8a4457100b46d8ddae3f8dc5c0dff7e9126acb1473eea",
+      "status": "FAIL",
+      "error": "ValueError('VERIFIED label did not reach controller pixels')",
+      "elapsed_seconds": 16154.029646911076,
+      "failure_checkpoint": {
+        "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-native-dirty-batch-notebook-a1/actor/failure-observational-checkpoint",
+        "observational": true,
+        "cycle": 3136000000
+      },
+      "consumed_host_current_equal": true
+    },
+    "canonical9_verified_diagnosis": {
+      "path": "build/courses/task006-verified-presentation-diagnosis-a1/result-framebuffer-a2.json",
+      "sha256": "cdcb25672832b7194c921f61512fd2ca84b82e4194c633e47109ee5201eafb71",
+      "status": "PASS_READ_ONLY_RETAINED_FAILURE_DIAGNOSIS",
+      "facts": "Actual correct VERIFIED owned framebuffer,37 queued dirty tiles, old UNCHECKED visible controller at3.136B. First read-only observer used wrong framebuffer address; limitation artifact retained, corrected read reuses exact SHA-bound full CRC validation."
+    },
+    "canonical9_verified_controller_suffix": {
+      "path": "build/courses/task006-verified-controller-suffix-a1/result.json",
+      "sha256": "004c620c0d798d9c1f1b0e1c06db23d7a75dd315330d74f3f5aee95e8cca56dd",
+      "status": "PASS_CORRECTED_VERIFIED_CONTROLLER_OBSERVATION_ONLY",
+      "clock_units": 45000000,
+      "host_seconds": 267.4522069400409,
+      "elapsed_seconds": 273.56718990392983,
+      "complete_medium_exact": true,
+      "original_scenario_still": "FAIL",
+      "scope": "45M more real RTL clocks/267.452s to actual VERIFIED within unused original141M of200M check budget; private fork, no new input/hidden drain. Full original campaign remainsFAIL."
+    },
+    "maintained_command_qualification": {
+      "path": "build/courses/task006-course-save-command-fast-a2/result.json",
+      "sha256": "699b4ea1a40d23db002bed16eb5667aa98cc44e6ef0cc1bcbc0726a420ec1350",
+      "status": "PASS_REAL_COURSE_ANNOTATION_IDLE_SAVE_COLD_REOPEN",
+      "elapsed_seconds": 62.90433573606424,
+      "total_clock_units": 762000035,
+      "explicit_save": {
+        "sequence": 11,
+        "pending_and_saved_detail0": true,
+        "course_and_all_pixels_unchanged": true,
+        "all_medium_bytes_unchanged": true
+      },
+      "consumed_host_current_equal": true
+    },
+    "maintained_command_supervision": {
+      "path": "build/courses/task006-course-save-command-fast-supervision-a2/result.json",
+      "sha256": "3ad5a1f4b168f1d4502eec3c5672ae233d7585af8d13a3f8dca2af50b3b35bec",
+      "status": "PASS_COURSE_PRESERVING_SAVE_SUPERVISED",
+      "seconds": 64.31003325094935,
+      "owned_peak_rss_bytes": 744157184
+    },
+    "maintained_command_finalization_guard": {
+      "behavior": "Final CLI exit now rejects failures found during cleanup/final import census, after otherwise successful guest phases. No guest/input/clock/pixel logic changed after a2. Four focused counter/census/exit failure regressions pass.",
+      "files": {
+        "scripts/check_course_save.py": "d20e150d3b8f9a4225df3c69c4db3624a72bdce6755b4ffe26ec5849a7941c17",
+        "scripts/host_import_census.py": "88917dc28d699c300a9b1574713af4acabbf10a6fec34cafdb1303fa5916c19d",
+        "conformance/lemmasim/course_pixel_oracle.py": "f919f03b6d950b93027464e91efc003d80b5640c261add5c4a8916dd6bc5ed24",
+        "tests/foundation/test_course_save_observer.py": "c91a5790e28020e3023b9f66c93147613e489d7e543b712eb5a402d1ef86ff67"
+      },
+      "component_status": "PASS_4_FOCUSED_HOST_FAILURE_CHECKS",
+      "actual_guest_receipt_scope": "a2 exact source hashes retained; post-a2 terminal exit guard qualified by targeted host failure regression, not relabeled as a fresh guest execution."
+    },
+    "canonical9_verified_controller_supervision": {
+      "path": "build/courses/task006-verified-controller-suffix-supervision-a1/result.json",
+      "sha256": "0d548335b43ea0ca4697bdbc8b6779fa8ce3f857ec97c95d2ff9e1372ff9ddfd"
+    },
+    "maintained_command_host_checks": {
+      "foundation": {
+        "status": "PASS",
+        "tests": 473,
+        "seconds": 31.962,
+        "log": "build/courses/task006-course-save-command-qualification-a2/foundation-final.log",
+        "sha256": "c29f5b2bd78d4c8ab1d22d960b9444884f0024b58e338a92b6f866995e585fa1"
+      },
+      "focused_finalization": {
+        "status": "PASS",
+        "tests": 4,
+        "scope": "Final stronger CLI fixture starts with successful phase report, then changes status only during finish; CLI rejects."
+      },
+      "scaffold": {
+        "status": "PASS",
+        "tests": 18,
+        "seconds": 8.427
+      },
+      "metadata": "PASS",
+      "diff_check": "PASS"
+    }
   }
 }

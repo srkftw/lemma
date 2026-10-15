@@ -1586,3 +1586,50 @@ The same real-guest UART conformance checker accepts `--launcher
 /absolute/path/to/lemmasim-native/run.py` instead of `--native-bundle`, with the
 same `--package` and an unused `--work-dir`. Every machine/init/course command
 then executes the extracted launcher from/tmp with isolated Python-I.
+
+The course-preserving Save guest is prepared as
+`build/native/task006-course-preserving-save-notebook-a1` and
+`build/browser/task006-course-preserving-save-a1`. In the course view, ordinary
+Save now publishes Pending and waits for the real status reply while retaining
+the authored text and annotation pixels. The fast machine has executed annotation,
+explicit Saved/detail0 and an independent cold reopening with exact full display
+and medium bytes. Its RTL and browser qualifications remain separate running cases.
+Launch the ordinary native session with the prepared bundle, or serve the static
+Wasm machine locally:
+
+```sh
+./scripts/lemmasim session --backend qemu --profile lemma-silicon-dev/0.3.0 \
+  --native-bundle build/native/task006-course-preserving-save-notebook-a1 \
+  --disk /your/notebook.raw --session-dir build/AN_UNUSED_COURSE_SAVE_SESSION \
+  --mode student
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-course-preserving-save-a1 --port 8799
+```
+
+A reusable regression command opens the first installed package's node0 body on
+notebook1/page1, annotates it through raw pen input, presses idle Save, and creates
+a second cold CPU to compare the complete course/ink display and medium. Its
+`--disk` is an existing actual guest-created medium containing that package;
+`--package` is the matching immutable package for independent pixel observation.
+The command copies the input privately and does not install or format it.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_course_save.py \
+  --backend qemu --disk build/browser/task006-pointer-ink-save-browser-export-a1/medium.raw \
+  --package build/courses/task006-package-qualified-a5/package/arithmetic.lcp \
+  --native-bundle build/native/task006-course-preserving-save-notebook-a1 \
+  --guest-build build/kernel/task006-course-preserving-save-notebook-notebook-a1 \
+  --guest-source-root build/courses/task006-course-preserving-save-notebook-whole-a1/consumed-source-root \
+  --work-dir build/courses/AN_UNUSED_COURSE_SAVE_CHECK
+```
+
+`--backend rtl` uses the same workflow and exact machine clocks. The declared
+limits are3B aggregate units,1B per cold,400M per course opening,200M for the
+annotation and60M for explicit Save; host ceilings are900s fast/21600s RTL.
+The independent observer requires a newly completed scan and the actual
+Pending/Saved receipt, with complete pixel/medium equality. Fast units do not
+establish RTL pipeline timing or arbitrary cached-state checkpoint continuation.
+The prepared native distribution2 archive for this guest is
+`build/distribution/task006-course-preserving-save-native-a1.tar.gz`. Use its
+extracted `run.py` as above; packaging admission passes, while extracted latest
+image execution, clean-host installation and redistribution rights remain separate.
