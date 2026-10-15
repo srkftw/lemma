@@ -1,8 +1,8 @@
 {
   "schema": "lemma-course-control-aligned-evidence/1",
-  "status": "PASS_COMPONENT_AND_FOUR_ORDINARY_ARTIFACTS_WHOLE_WORKFLOW_PENDING",
+  "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
   "contract": "docs/contracts/006-course-control-aligned-v1.md",
-  "scope": "Same Notebook controls and identity renderer, no host document authority. Complete linked audits, new CPU/controller performance and workflows remain pending.",
+  "scope": "The same maintained Notebook uses control spans1. Both fresh whole images/full ordinary audits and42-phase fast course/math/learner/ink/newcold/reopen plus real partial-pwrite/failure/cold/retry pass. New native/browser actual timing acceptance remains running. No whole-machine completion.",
   "reports": {
     "component": {
       "path": "build/courses/task006-control-qualified-a1/result.json",
@@ -56,10 +56,118 @@
     "earlier_schema_and_argv_observer_failures_retained": true
   },
   "boundaries": {
-    "full_linked_images": "NOT_RUN_AT_THIS_MILESTONE",
-    "actual_guest_workflow": "NOT_RUN_AT_THIS_MILESTONE",
-    "canonical_RTL_400M_course": "RETAINED_SOURCE7_FAILURE_UNCHANGED",
+    "full_linked_images": "PASS_BOTH_ORDINARY_AUDITS",
+    "actual_guest_workflow": "PASS_FAST_42_PHASES_AND_ACTUAL_PARTIAL_WRITE_FAILURE",
+    "canonical_RTL_400M_course": "NEW_SOURCE8_RUNNING_ORIGINAL_SOURCE7_FAIL_RETAINED",
     "cached_state_fast_parity": "OPEN",
-    "physical_closure": "OPEN"
+    "physical_closure": "OPEN",
+    "browser": "NEW_SOURCE8_COLD_RUNNING_SOURCE7_COLD_PASS_AND_400M_COURSE_FAIL_RETAINED"
+  },
+  "whole_pair": {
+    "path": "build/courses/task006-control-notebook-whole-a1/result.json",
+    "sha256": "454a498cb0b76205a8292a143294c4578d27514ea1904170ef4cf69eb07514a9",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "source_commit": "092bfc072fe87ee4cfb747280f115fce5a6be4e6",
+    "source_count": 406,
+    "seconds": 1007.1489209329011,
+    "source_seal": {
+      "path": "build/courses/task006-control-notebook-whole-a1/source-seal.json",
+      "sha256": "ae3e72b1cd34b1b5e4b7c669eec0c8d0f02e39d185b8c0411cc7c5734ee0baec",
+      "status": "PASS_SOURCE_SEAL"
+    },
+    "external_supervision": {
+      "path": "build/courses/task006-control-notebook-whole-supervision-a1/result.json",
+      "sha256": "df2ced32b0856fcf37960ae6a5104ac19ee9b863b6eef5ffbdcac0655f9e205b",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP"
+    },
+    "external_seconds": 1012.0521641439991,
+    "peak_owned_rss_bytes": 1917239296
+  },
+  "prepared_bundles": {
+    "native": {
+      "path": "build/native/task006-control-notebook-a1",
+      "manifest_sha256": "ffe65b762e4b928fd89f0d33e77e05749e0d08cc847e479bbe0f4a3ac7dc7b16"
+    },
+    "browser": {
+      "path": "build/browser/task006-control-notebook-a1",
+      "manifest_sha256": "297e524b2618c08b480b40bad7d1ae7eb7ab2e0a59a177a54ab165cc6d2f2952"
+    }
+  },
+  "fast_workflow": {
+    "path": "build/courses/task006-control-notebook-fast-a1/result.json",
+    "sha256": "bfac95fa20c8375d7c1518cf8a7a3412efd1684efb3078bd15a12b096d1b8057",
+    "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+    "supervision": {
+      "path": "build/courses/task006-control-notebook-fast-supervision-a1/result.json",
+      "sha256": "6d77ae1568f62adab579841075a12cefce655e2a87612757ade39f25e15877df",
+      "status": "PASS_FUNCTIONAL_FAST_SUPERVISED"
+    },
+    "phases": 42,
+    "instruction_clocks": 2615000279,
+    "seconds": 336.15244676405564,
+    "supervised_seconds": 337.9968587079784,
+    "peak_owned_rss_bytes": 440803328,
+    "previous_same_input_and_runtime_instruction_clocks": 2639000287,
+    "reduction_percent": 0.9094355964350072,
+    "first_course_instruction_clocks": 135000020,
+    "previous_first_course_instruction_clocks": 136000021,
+    "host_duration_scope": "Concurrent host loads differ. Old306.845s versus new336.152s is not a controlled host speedup. QEMU instruction clocks do not establish RTL timing.",
+    "independent_cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "cold_reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    }
+  },
+  "actual_failed_write": {
+    "path": "build/courses/task006-control-notebook-failed-a2/result.json",
+    "sha256": "a0ee1bdc8e22876d19ca032413410590a34d488099392dd987cb5b6b0290f463",
+    "status": "PASS",
+    "supervision": {
+      "path": "build/courses/task006-control-notebook-failed-supervision-a2/result.json",
+      "sha256": "d1a58b83f0492a8d77e06ab22ebc728524c5cc7158cce8e96810b80936c8e56e",
+      "status": "PASS_REAL_FAILURE_SUPERVISED"
+    },
+    "seconds": 191.14186614903156,
+    "supervised_seconds": 193.3868291779654,
+    "actual_outcome": [
+      240,
+      4913777968,
+      1,
+      134237696,
+      512,
+      2,
+      27
+    ],
+    "failed_save": {
+      "no_new_saved": true,
+      "partial_bytes": 2,
+      "durable_barrier_unchanged": true,
+      "old_workspace_and_all_objects_exact": true
+    },
+    "independent_cold": {
+      "new_cpu": true,
+      "all_backing_bytes_exact": true,
+      "all_closed_controller_pixels_exact": true,
+      "actual_course_body": true,
+      "old_workspace_exact": true
+    },
+    "ordinary_retry": {
+      "one_durable_workspace_transaction": true,
+      "history_and_learner_prefixes_exact": true,
+      "raw_ink_samples": 3,
+      "no_new_checker_request": true
+    },
+    "original_prelaunch_harness_failure": {
+      "path": "build/courses/task006-control-notebook-failed-supervision-a1/result.json",
+      "sha256": "eab19720cc4073448cd8c0b6f763668ad605919cfc490abab75ef41cf5cb65fa",
+      "status": "FAIL"
+    },
+    "harness_repair": "Missing two identity environment values, before any guest launch. New supervisor passes declared audited guest/runtime values; actual identity checks unchanged."
   }
 }

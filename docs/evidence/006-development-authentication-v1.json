@@ -114,5 +114,46 @@
       "sha256": "65eefc9434bf30a57c3e243d9a20cb328896fdf5b1bb4a527056acc2713aa271"
     }
   },
-  "candidate_ci": "NOT_RUN for this increment; new separate bounded crypto-rv64 job preserves metadata host-only scope, checks12actualRV64digests/strictROMaudit/layout andretainsfailures. Previousfe87446CI38721862601SUCCESS10/10 is baselineonly."
+  "candidate_ci": "NOT_RUN for this increment; new separate bounded crypto-rv64 job preserves metadata host-only scope, checks12actualRV64digests/strictROMaudit/layout andretainsfailures. Previousfe87446CI38721862601SUCCESS10/10 is baselineonly.",
+  "actual_cold_bad_trial_fallback": {
+    "status": "PASS_ACTUAL_AUTHENTICATED_COLD_BAD_TRIAL_CONFIRMED_FALLBACK",
+    "source_scope": "Existing immutable authenticated ROMa3/source archive and audited ordinary CryptoProbe; PUBLIC DEVELOPMENT KEY ONLY",
+    "actor": {
+      "path": "build/boot/task006-auth-fallback-plan-a1/check.py",
+      "sha256": "a5681703213fc26ea277890e4a153adf38fa040c43c4c9bd263648e0aac8aebf"
+    },
+    "report": {
+      "path": "build/boot/task006-development-auth-fallback-a1/result.json",
+      "sha256": "3fa52cc972dfe9c9ae5414b37d72d7aaa43e9fe7f0b2e74c4c0b0d54b49cd748"
+    },
+    "supervision": {
+      "path": "build/boot/task006-development-auth-fallback-supervision-a1/result.json",
+      "sha256": "a654a1cab4a3d9eeac0e7ff45494c978f6159b07b10f152e6fffba8c0ca08af6",
+      "status": "PASS_AUTH_RTL_SUPERVISED",
+      "seconds": 191.85703300207388,
+      "peak_owned_rss_bytes": 433844224
+    },
+    "cycles": 20900000,
+    "cold_cycles": 6400000,
+    "seconds": 189.4948391969083,
+    "confirmed_slot": 0,
+    "confirmed_identity": 1001,
+    "trial_identity": 1002,
+    "actual_trial_attempts": 1,
+    "all_document_medium_bytes_unchanged": true,
+    "snapshot_restore": false,
+    "actual_computed_RV64_digest_results": 12,
+    "not_qualified": [
+      "production identity/entropy/antirollback",
+      "full notebook authenticated update",
+      "interrupted tag/payload/confirmation/power campaign",
+      "browser authentication"
+    ],
+    "loaded_bytes": {
+      "path": "build/boot/task006-development-auth-fallback-a1/confirmed-loaded-bytes.json",
+      "sha256": "4b759a4322c48c7484bb87042427532171197bd4c2e7d0d36340c4fc8a726e11",
+      "status": "PASS_PASSIVE_CONFIRMED_LOADED_HEADER_AND_CODE"
+    },
+    "scope_limit": "Trial and confirmed payload code are identical; their headers/identities/tags differ. Actual confirmed loaded header/tag/context and all file bytes verified; arbitrary different-program trial recovery remains separate."
+  }
 }

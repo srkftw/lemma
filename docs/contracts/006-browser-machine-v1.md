@@ -252,3 +252,23 @@ key. That process failure and its retained completed observations are explicit
 in the existing evidence. This is no exact same-boundary suffix comparison.
 The typed new4063-byte edition3 request is now admitted and executing; admission
 still does not claim guest installation or complete course/math acceptance.
+
+
+## Extracted local distribution1
+
+`lemma-local-browser-distribution/1` packages an already validated immutable
+browser bundle, the unchanged server/validator host modules and their two real
+metadata imports. `serve.py` validates the complete distribution before
+importing those modules, then uses the existing complete bundle validator and
+inventoried-file loopback server. Missing, changed, unlisted, symlinked or
+contradictory files reject. No repository or build runtime is required at
+launch; Python3.10+ stdlib and the admitted browser are required. The original
+machine identities, state contracts, OPFS barriers and guest permissions are
+unchanged. A manifest checksum does not authenticate a sender.
+
+The archive contains relative regular-file names with fixed tar metadata and
+a fixed gzip timestamp. It grants no redistribution license; original source
+identities and dependency notices remain included. Packaging/extraction/HTTP
+checks establish prepared distribution only. They do not establish Ready,
+course checking, cold saved-document recovery or physical qualification.
+The native prepared bundle's Nix runtime/checkout relocation remains separate.

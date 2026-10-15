@@ -190,3 +190,15 @@ mutations are qualified. Canonical controls+identity stores fall20,520→3,615,
 with no framebuffer reads; this is not yet a CPU speedup claim. Fresh whole
 images and actual native/browser controller/workflow qualification remain
 required. See [control spans1 evidence](../evidence/006-course-control-aligned-v1.json).
+
+
+Control spans1/source092bfc0 now has a fresh406-input initializer/notebook pair
+and both full audits,1012.052s supervised/1.917GB peak. The same42 fast phases
+and real partial-pwrite failure/newcold/retry pass; total2.615B versus2.639B
+instruction clocks, no controlled host speedup or RTL timing parity claim.
+Native8 and browser8 are running original cold/400M bounds. Static browser
+packaging now includes a standalone extracted stdlib launcher and original
+validator/server; actual isolated launch from/tmp and exact HTTP assets pass.
+This closes that launch dependency only: native runtime relocation, browser-local
+compiler, full browser workflow and redistribution permission remain open.
+See [distribution evidence](../evidence/006-local-browser-distribution-v1.json).

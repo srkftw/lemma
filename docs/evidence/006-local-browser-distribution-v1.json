@@ -1,0 +1,50 @@
+{
+  "schema": "lemma-local-browser-distribution-evidence/1",
+  "status": "PASS_PREPARED_EXTRACTED_LOCAL_LAUNCH_ONLY",
+  "scope": "Reusable packaging of the existing exact static machine and standalone stdlib launcher. Original compiled guest/ROM/Wasm/controller files unchanged; no new full browser workflow, coldReady or distribution-license claim.",
+  "producer": "scripts/package_browser.py",
+  "launcher": "sim/browser/serve_local.py",
+  "package": {
+    "status": "PASS_PREPARED_LOCAL_BROWSER_DISTRIBUTION",
+    "directory": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-browser-a3",
+    "manifest_sha256": "28b9c14c2204a2fc7dec68998a2f8a9f8bfbea2484b7e519dbc29d6fd882411a",
+    "source_bundle_sha256": "297e524b2618c08b480b40bad7d1ae7eb7ab2e0a59a177a54ab165cc6d2f2952",
+    "files": 286,
+    "bytes": 17216837,
+    "standalone_verification": "PASS_LOCAL_BROWSER_DISTRIBUTION_BYTES",
+    "archive": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/distribution/task006-control-browser-a3.tar.gz",
+      "sha256": "5f9b74f4319102824d3cc4662cd59984067e54c82231bd0c37c0cf242d722011",
+      "bytes": 2052683
+    },
+    "seconds": 2.5666360409231856
+  },
+  "extracted_server": {
+    "path": "build/distribution/task006-browser-package-qualification-a1/extracted-server-result.json",
+    "sha256": "480211725a718dcb1831c62973def9f052e97f97c19d9533ec0fd7b717ce26ae",
+    "status": "PASS_EXTRACTED_LOCAL_SERVER_AND_EXACT_MACHINE_ASSETS"
+  },
+  "extracted_server_command": "python3 -I /home/sreekumaar/Downloads/lemma/build/distribution/task006-browser-extracted-a1/lemmasim-browser/serve.py --port 8797",
+  "working_directory": "/tmp",
+  "qualified_platform": "Linux x86-64, Python3.13.9; no repository/PYTHONPATH/site-package dependency during isolated launch",
+  "unit_checks": {
+    "path": "build/distribution/task006-browser-package-qualification-a1/unit-a2.log",
+    "cases": 3,
+    "scope": "Missing/changed/unlisted/traversal/symlink files and contradictory original identity; no simulated machine success fixture"
+  },
+  "original_failure": {
+    "log": "build/distribution/task006-browser-package-qualification-a1/package.log",
+    "stderr": "build/distribution/task006-browser-package-qualification-a1/extracted-failure.log",
+    "producer_source": "build/distribution/task006-browser-package-qualification-a1/consumed-package-producer-a1.py",
+    "cause": "Two real top-level metadata imports were missing from the standalone host tool closure. Add both exact unchanged modules; do not bypass the existing validator."
+  },
+  "active_origin": "http://127.0.0.1:8797/",
+  "active_worker": "Existing new-source8 cold worker continues, no reset/reload/snapshot restore at static server replacement. All machine asset bytes identical.",
+  "remaining": [
+    "Full browser mathematics/course/save/durable-reload acceptance",
+    "Prepared native relocation and offline dynamic library/runtime closure",
+    "Browser-local compiler",
+    "Project-wide redistribution permission remains unresolved; no license changed",
+    "Exact fast timing/cached-state parity and physical closure"
+  ]
+}

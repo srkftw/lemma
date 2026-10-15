@@ -1336,3 +1336,44 @@ Its normal commands are`create-medium`, `launch`, `install`, `tag`, `publish`,
 requires a source-validated opaque product package and a slot-specific tag made
 with`scripts/package_development_auth_tag.py --public-development-key`. No host
 preinstallation of a running image is part of this path.
+
+
+The current control-spans1 pair is prepared at
+`build/native/task006-control-notebook-a1` and
+`build/browser/task006-control-notebook-a1`. Both full ordinary image audits
+pass. The42-phase fast course/mathematics/learner/ink/independent-cold workflow
+and actual2-byte partial-pwrite failure/cold/retry pass. Total instruction clocks
+fall2,639,000,287→2,615,000,279 (0.91%); new RTL/browser timing acceptance is
+still running. Original400M COURSE failures remain failures. Use the same
+session/course/snapshot commands above with this native bundle. Exact
+[control evidence](docs/evidence/006-course-control-aligned-v1.json) separates
+compilation, fast functional results and canonical timing.
+
+A static browser machine can now be packaged with its own local launcher and
+extracted away from the checkout. The package uses the original validator and
+loopback server, unchanged guest/ROM/Wasm/controller bytes and only Python's
+standard library. This is a local prepared development distribution; original
+notices and unresolved redistribution permission remain in NOTICE.txt.
+
+```sh
+python3 scripts/package_browser.py \
+  --bundle build/browser/task006-control-notebook-a1 \
+  --output-dir build/distribution/AN_UNUSED_BROWSER_PACKAGE \
+  --archive build/distribution/AN_UNUSED_BROWSER_PACKAGE.tar.gz
+tar -xzf build/distribution/AN_UNUSED_BROWSER_PACKAGE.tar.gz -C YOUR_EXTRACTION_DIRECTORY
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-browser/serve.py --verify-only
+python3 -I YOUR_EXTRACTION_DIRECTORY/lemmasim-browser/serve.py --port 8787
+```
+
+Open `http://127.0.0.1:8787/`. Python3.10+ is required; isolated launch from
+another working directory has been exercised on Linux. No checkout, Nix,
+Lean/LLVM, Python package installation or network download is used by this
+launcher. This does not add a browser-local compiler. The prepared current
+archive is `build/distribution/task006-control-browser-a3.tar.gz` (2,052,683
+bytes); [actual extraction/server evidence](docs/evidence/006-local-browser-distribution-v1.json)
+records the identities and retained original missing-import failure.
+Keep the chosen port to retain the same browser storage origin, and export raw
+backing bytes for backup. Restoring a checkpoint is continuation; reopening
+raw backing invokes guest cold recovery. Complete browser course/mathematics,
+durable reload and native distribution without external Nix libraries remain
+separate unfinished obligations.

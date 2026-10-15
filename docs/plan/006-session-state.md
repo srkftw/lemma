@@ -2214,3 +2214,78 @@ under their original bounds; actual image installation/authenticated handoff
 has completed339.8M/1604.197s, not yet Notebook Ready/cold acceptance. Frozen
 actor imports stay unchanged. PR9 remains draft/unmerged; all broader digital,
 fast timing/cached checkpoints, distribution and physical obligations remain open.
+
+
+## Control8 whole/fast/failure milestone and extracted browser launcher
+
+Implementation092bfc072fe87ee4cfb747280f115fce5a6be4e6: fresh whole pair at
+build/courses/task006-control-notebook-whole-a1 passes ordinary full audits,
+source/archive seals and owned cleanup.406 inputs,1007.149s actor/1012.052s
+supervised, peak1,917,239,296B. Normal698272B SHA2e6f3d1c..., init698280B
+SHA0ace19d4.... Source/HEAD hold has been released. Exact unchanged native
+8e5ce4ee/fast188e5447/Wasmfb15aade backends now serve matched bundles at
+build/{native,browser}/task006-control-notebook-a1.
+
+The full42-phase fast course/checker/learner/ink/newcold/reopen run passes
+2,615,000,279 clocks/336.152s (337.997s supervised/440,803,328B). Oldsameinput
+2,639,000,287:0.91% fewer instruction clocks; firstCOURSE136,000,021→135,000,020.
+Concurrent host load differs: no controlled host speedup claim. Actual partial
+pwrite512requested/2persisted/EFBIG27, noSaved/durability advance, newCPUold
+workspace/allpixels/allbytes and ordinary one-commit retry+3raw Saved pass
+191.142s/193.387s supervised. Original missing environment-values harness
+attempt failed1.788s before actor/CPU construction and remains FAIL; corrected
+A2 passes the exact declared image/runtime IDs without weakening actual guards.
+Read expanded control evidence for reports, hashes and exact input identities.
+
+Native8 original400M primary actor runs under21600s/6B aggregate at
+build/courses/task006-native-control-notebook-a1/actor and
+build/courses/task006-native-control-notebook-supervision-a1. Its30 actual host
+imports are frozen in consumed-host-inputs.json; do not edit them. Target source
+can advance independently of its sealed original guest archive. One prospectively
+added Ready observational cut reuses this required cold prefix for a future
+native/Wasm comparison; the two existing close-queue cuts remain required.
+Total3 cuts fit unchanged12GiB output/21600s bounds. No target clock or drain is
+added by a cut. Do not infer full workflow success from startup.
+
+Browser8 tab28/origin8797/mediumcontrol-course-a1 imports the original raw
+packages-only medium, opens paused atCycle0, then runs original1B/7200s until
+actual Ready. It is running, no new Ready observed yet. The new static package
+producer/launcher uses the exact original immutable bundle and existing local
+server/validator. Two missing top-level metadata imports caused the retained A1
+extracted-launch failure; including both actual modules repairs it. A3 exact
+archive2,052,683B,286 files/17,216,837B extracted; isolatedPython-I launch from/tmp
+and exact machine HTTP bytes/headers/served-file boundary pass. Three focused
+host integrity tests pass. Native relocation and offline Nix runtime closure
+remain open; this is not a new browser Ready/course/physical or licensing pass.
+
+The owned static server was replaced at the same8797 origin by the extracted
+package server (session52959); existing worker was not reset/reloaded/restored.
+All machine asset bytes are identical. The source7 browser failed400M suffix is
+being replayed on native Node with the exact same Wasm module, actual captured
+outcomes/raw events/private backing, original3600s bound, at
+build/browser/task006-aligned-notebook-replay-a1. This is continuation of a
+retained failure, not course acceptance or C++/Wasm/QEMU migration.
+
+Actual authenticated cold bad-trial fallback passes20.9M/189.495s,
+191.857s supervised/433,844,224B, separate from the ongoing full old-Product10
+Notebook. Guest installs/publishes trial1002, persists a valid-CRC wrongMAC,
+then independent cold ROM loads confirmed slot0/id1001, retains trialattempt1,
+executes12 computed RV64 answers and leaves the attached document medium exact.
+A passive complete-CRC check also establishes distinct loaded confirmed header,
+tag/context and all file bytes. Both identities use the same compiled payload;
+different-program trial recovery and interrupted authenticated full updates
+remain open. The original A4 NV source and all original media remain unchanged.
+
+The full authenticated Notebook actor remains under original bounds. One
+external public observational cut at1234.8M is retained in its own workdir;
+actor continues, no snapshot cold-recovery or Ready claim. Companion corrected
+A2 has now actually reached coldReady and is processing guest package install;
+lostACK/restart/reconcile/newcold results remain pending. Its14 frozen sources
+remain unchanged. No new cold prefix is restarted.
+
+Actual092bfc0 candidate CI38744503578 is terminal SUCCESS11/11, every step
+successful/no skips, including fresh control component. d287 CI38736737619 is
+also SUCCESS11/11; fe CI38721862601 SUCCESS10/10. The new local packaging code
+needs its own candidate checks. PR9 remains draft/unmerged, no authorization to
+merge it. Wider digital functions, exact fast timing/cached-state continuation,
+complete native/browser distribution and full physical closure remain open.
