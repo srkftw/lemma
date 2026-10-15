@@ -87,8 +87,9 @@ def contract(unit):
             'Package Notebook exact entry root/ABI differs')
     require(set(signature_set(unit)) <= set(rows), 'Package Notebook complete owned source family missing')
     corrected = COUNTER_ADDRESS_SOURCE in rows
-    return {'contract_version': VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
-            'private_layout': PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
+    delta = delta_selected(unit)
+    return {'contract_version': DELTA_VERSION if delta else VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
+            'private_layout': DELTA_LAYOUT if delta else PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
             'owned_functions': len(signature_set(unit))}
 
 def _bodies(ir):
@@ -152,9 +153,16 @@ def validate(ir, unit, *, optimized):
     corrected = COUNTER_ADDRESS_SOURCE in _rows(unit)
     pins = {key: {**values, **COUNTER_LAYOUT_V2_PINS[key]} for key, values in PRODUCTION_PINS.items()} if corrected else PRODUCTION_PINS
     layout = PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768}
+    callers = {key: {**values, **COUNTER_LAYOUT_V2_CALLER_ADDITIONS[key]} for key, values in PRODUCTION_CALLERS.items()} if corrected else PRODUCTION_CALLERS
+    version = VERSION if corrected else LEGACY_VERSION
+    if delta_selected(unit):
+        pins = {phase: {**{name: value for name, value in values.items() if name not in DELTA_REMOVED},
+                        **DELTA_PINS[phase]} for phase, values in pins.items()}
+        callers = {phase: {**{name: value for name, value in values.items() if name not in DELTA_REMOVED},
+                           **DELTA_CALLERS[phase]} for phase, values in callers.items()}
+        layout, version = DELTA_LAYOUT, DELTA_VERSION
     return _validate_bodies(ir, unit, optimized=optimized, pins=pins,
-                           callers={key: {**values, **COUNTER_LAYOUT_V2_CALLER_ADDITIONS[key]} for key, values in PRODUCTION_CALLERS.items()} if corrected else PRODUCTION_CALLERS,
-                           layout=layout, version=VERSION if corrected else LEGACY_VERSION,
+                           callers=callers, layout=layout, version=version,
                            signatures=signature_set(unit))
 
 
@@ -1472,7 +1480,11 @@ COUNTER_ADDRESS_SOURCE = 'Lemma.Applications.Notebook.packageAllocationAddress'
 def signature_set(unit):
     # This real source-owned address declaration identifies layout2 in the
     # emitted catalog. The same catalog must match both pre/post bodies.
-    return {**SIGNATURES, COUNTER_ADDRESS_SOURCE: ([], [])} if COUNTER_ADDRESS_SOURCE in _rows(unit) else SIGNATURES
+    signatures = {**SIGNATURES, COUNTER_ADDRESS_SOURCE: ([], [])} if COUNTER_ADDRESS_SOURCE in _rows(unit) else SIGNATURES
+    if delta_selected(unit):
+        return {**{name: value for name, value in signatures.items() if name not in DELTA_REMOVED},
+                **DELTA_SIGNATURES}
+    return signatures
 
 # Derived from the separately qualified genuine complete pre/post export.
 COUNTER_LAYOUT_V2_PINS = {'post': {'Lemma.Applications.Notebook.allocatePackage': '25b03c7928619e4d703693daad63a460e1950317fdc6bb93d0893c9c33faf8a4',
@@ -1502,3 +1514,146 @@ COUNTER_LAYOUT_V2_CALLER_ADDITIONS = {'post': {'Lemma.Applications.Notebook.pack
                                                                   'Lemma.Applications.Notebook.pumpPackageWork']}}
 
 COUNTER_LAYOUT_V2_AUTHORITY = {'scope': 'genuine selected818-function User2 export and complete normalized source relation; whole artifact/CPU qualification separate', 'normalized_relation': {'path': 'build/courses/task006-package-counter-repair-a2/qualified-layout2-a2.json', 'sha256': '48e7850d50776bd69acaccf5fbbe3305ae120c5f7cc6a1ceb1683152a8507c5a'}, 'cohort_qualification': {'path': 'build/courses/task006-package-counter-repair-a2/cohort-qualification.json', 'sha256': '007cb8b830691e014c6ee830bf05a2e8d20d8f656ff173764bbbf24729f6b373'}, 'artifacts': {'unit.json': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/unit.json', 'sha256': 'ffc5f5d2a618f44df2c446338e4ec5323f88c5ff4eac51811cc9a9ef36b75826'}, 'program.ll': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/program.ll', 'sha256': '31d51bcc92e7b76de7f7cdbb49e0b76440c9205b6f9381cc5befa868f42d1b90'}, 'program.opt.ll': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/program.opt.ll', 'sha256': 'e1283e16db1c2a21ab147ec35e01f8601f981573a8f77c1c0fab267ad89a7e00'}, 'normalized.txt': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/normalized.txt', 'sha256': 'b55864fbcfc1cfd44b2e4a638b0ebbc419f5269736e06b181599707c7d4b00b9'}}}
+
+
+# Text-delta1 is a separately qualified software cohort. Historical panel1 and
+# layout1/layout2 bodies remain pinned without accepting mixed implementations.
+DELTA_VERSION = 'lemma-installed-package-notebook/3'
+DELTA_LAYOUT = {**PRIVATE_LAYOUT, 'text_delta_contract': 'lemma-course-text-delta/1',
+                'changed_columns': 13, 'changed_rows': 10,
+                'projection': 'columns-low13-rows-next10-cartesian-cover',
+                'persistent_pixel_cache': False}
+DELTA_REMOVED = frozenset('Lemma.Courses.PackageRender.' + name for name in
+                          ('render', 'renderStep', 'renderSelected', 'renderHeaderSelected'))
+DELTA_SIGNATURES = {
+    'Lemma.Courses.PackageRender.' + name: (args, effects) for name, args, effects in (
+        ('readByteStep', ['u32', 'u32'] + ['u64'] * 5, ['checked-access', 'virtual-read']),
+        ('readWord', ['u64'], ['checked-access', 'virtual-read']),
+        ('deltaStep', ['u32', 'u32'] + ['u64'] * 5, ['checked-access', 'virtual-read', 'virtual-write']),
+        ('renderDelta', ['u64'] * 3, ['checked-access', 'virtual-read', 'virtual-write']),
+        ('renderSelectedDelta', ['u64'] * 8, ['checked-access', 'virtual-read', 'virtual-write']),
+        ('renderHeaderSelectedDelta', ['u64'] * 7, ['checked-access', 'virtual-read', 'virtual-write']))}
+
+
+def delta_selected(unit):
+    rows = _rows(unit)
+    found = set(rows) & set(DELTA_SIGNATURES)
+    if not found:
+        return False
+    require(found == set(DELTA_SIGNATURES) and COUNTER_ADDRESS_SOURCE in rows and
+            not set(rows) & DELTA_REMOVED,
+            'Package Notebook mixed/incomplete text-delta cohort')
+    return True
+
+# Exact whole-source delta cohort, qualified against prior genuine layout2.
+DELTA_PINS = {'post': {'Lemma.Applications.Notebook.packageTileStep': '8bec2a41e3a79a8153d1f1a1ade2a702184db65c68922466a7b87a2813bb8bf8',
+          'Lemma.Applications.Notebook.renderPackageText': '1aa597093d62c535068161db392b1111cd7f03c622d2da22f6ec47ad408803a6',
+          'Lemma.Courses.PackageBinding.captureField': '603fad700e34ada7757ba206e5b1ae8026ee2f56670c79ba6fb02cd1c52432ef',
+          'Lemma.Courses.PackageRender.deltaStep': 'ba09c848eb7e6da665fb0e1a4f78862ffe885faf6c21d2f9ed350689d3bf65e7',
+          'Lemma.Courses.PackageRender.readByteStep': '7d6c8493fcfba9b34dda820211f284b066a2280beeb5a408fb6427a6e2300741',
+          'Lemma.Courses.PackageRender.readWord': '929662f3286748520cfeada924832ef67288806373b8df3f6e7b2f60bbd3c642',
+          'Lemma.Courses.PackageRender.renderDelta': '1dd81c42218c2717ac3f016b392e3a3038c19684d722f704e5aeb6d5fb9d2c36',
+          'Lemma.Courses.PackageRender.renderHeaderSelectedDelta': '6a4a0db042b4526e4a70a8cc7587024666d84dc8b5983926d9cf72c2101fbf51',
+          'Lemma.Courses.PackageRender.renderSelectedDelta': 'daf30a700db369264b93392e6ecb138b88ae382931bcde3ee1adb3fb10cb4240'},
+ 'pre': {'Lemma.Applications.Notebook.packageTileStep': 'ad59e514d12eb034fd5baf1b398832696f1e8948432b552f08266ab5d4607c12',
+         'Lemma.Applications.Notebook.renderPackageText': '80f27a8a27584016c4309a8f71df2b4b6f3439f14ec384f30d9e11ded76de0d3',
+         'Lemma.Courses.PackageRender.deltaStep': '056b162e987454091bed96f99b056f7b376a4082eabc3b625a2a136bae7be131',
+         'Lemma.Courses.PackageRender.readByteStep': 'fdb8b15262ee6ae761635a4f40aeb25ae4526cc1779ad190d697b8cfcb00e84d',
+         'Lemma.Courses.PackageRender.readWord': '74774ff6fdac7030f73e992093bd3b134f3efc2f5a923817bfd4fc9e163837a2',
+         'Lemma.Courses.PackageRender.renderDelta': '7a3a7699cf8b5fbfa60b501a4064d249d63a27e861fe56651d63efbae36de237',
+         'Lemma.Courses.PackageRender.renderHeaderSelectedDelta': '3aa68569190bf2860854eeed2a90925a6091f1c0581442bf0fa941365d4c703d',
+         'Lemma.Courses.PackageRender.renderSelectedDelta': '9d3f3580700b6d4ce4ccefd5fda71a6bd02168a0abc5363578bd35d44f28cdd1'}}
+DELTA_CALLERS = {'post': {'Lemma.Courses.PackageRender.deltaStep': ['Lemma.Courses.PackageRender.renderDelta'],
+          'Lemma.Courses.PackageRender.panelWord': ['Lemma.Applications.Notebook.packageControlStep',
+                                                    'Lemma.Applications.Notebook.packageIdentityStep',
+                                                    'Lemma.Courses.PackageRender.deltaStep'],
+          'Lemma.Courses.PackageRender.prepare': ['Lemma.Courses.PackageRender.renderSelectedDelta'],
+          'Lemma.Courses.PackageRender.prepareHeader': ['Lemma.Courses.PackageRender.renderHeaderSelectedDelta'],
+          'Lemma.Courses.PackageRender.readByteStep': ['Lemma.Courses.PackageRender.readWord'],
+          'Lemma.Courses.PackageRender.readWord': ['Lemma.Courses.PackageRender.deltaStep'],
+          'Lemma.Courses.PackageRender.renderByteStep': ['Lemma.Courses.PackageRender.deltaStep'],
+          'Lemma.Courses.PackageRender.renderDelta': ['Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                      'Lemma.Courses.PackageRender.renderSelectedDelta'],
+          'Lemma.Courses.PackageRender.renderHeaderSelectedDelta': ['Lemma.Applications.Notebook.renderPackageText'],
+          'Lemma.Courses.PackageRender.renderSelectedDelta': ['Lemma.Applications.Notebook.renderPackageText'],
+          'Lemma.Courses.PackageRender.separate': ['Lemma.Courses.PackageRender.prepare',
+                                                   'Lemma.Courses.PackageRender.prepareHeader',
+                                                   'Lemma.Courses.PackageRender.renderDelta',
+                                                   'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                   'Lemma.Courses.PackageRender.renderSelectedDelta']},
+ 'pre': {'Lemma.Courses.PackageFormat.malformed': ['Lemma.Courses.PackageBinding.capture',
+                                                   'Lemma.Courses.PackageBinding.fieldsValid',
+                                                   'Lemma.Courses.PackageBinding.validate',
+                                                   'Lemma.Courses.PackageFormat.referenceStatus',
+                                                   'Lemma.Courses.PackageReader.accept',
+                                                   'Lemma.Courses.PackageReader.beginPiece',
+                                                   'Lemma.Courses.PackageReader.cancel',
+                                                   'Lemma.Courses.PackageReader.configuration',
+                                                   'Lemma.Courses.PackageReader.finish',
+                                                   'Lemma.Courses.PackageReader.pollPiece',
+                                                   'Lemma.Courses.PackageReader.start',
+                                                   'Lemma.Courses.PackageReader.step',
+                                                   'Lemma.Courses.PackageRender.prepare',
+                                                   'Lemma.Courses.PackageRender.prepareHeader',
+                                                   'Lemma.Courses.PackageRender.renderDelta',
+                                                   'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                   'Lemma.Courses.PackageRender.renderSelectedDelta',
+                                                   'Lemma.Courses.PackageTarget.reservedStep',
+                                                   'Lemma.Courses.PackageTarget.validate',
+                                                   'Lemma.Courses.PackageTarget.validateBody',
+                                                   'Lemma.Courses.PackageTarget.validateEntry',
+                                                   'Lemma.Courses.PackageTarget.validateSpan',
+                                                   'Lemma.Courses.PackageWorkspace.captureSelection',
+                                                   'Lemma.Courses.PackageWorkspace.create',
+                                                   'Lemma.Courses.PackageWorkspace.equalEventsStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalHistoryStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalSubmissionStep',
+                                                   'Lemma.Courses.PackageWorkspace.equalWordsStep',
+                                                   'Lemma.Courses.PackageWorkspace.snapshotSelection',
+                                                   'Lemma.Courses.PackageWorkspace.stageCompleted',
+                                                   'Lemma.Courses.PackageWorkspace.stageCompletedUnknown',
+                                                   'Lemma.Courses.PackageWorkspace.stageRefresh',
+                                                   'Lemma.Courses.PackageWorkspace.stageUnknownSelection',
+                                                   'Lemma.Courses.PackageWorkspace.transitionBase',
+                                                   'Lemma.Courses.PackageWorkspace.validate',
+                                                   'Lemma.Courses.PackageWorkspace.validateAttempt',
+                                                   'Lemma.Courses.PackageWorkspace.validateSelection',
+                                                   'Lemma.Courses.PackageWorkspace.zeroCheck'],
+         'Lemma.Courses.PackageFormat.resourceLimit': ['Lemma.Courses.PackageBinding.capture',
+                                                       'Lemma.Courses.PackageBinding.fieldsValid',
+                                                       'Lemma.Courses.PackageReader.accept',
+                                                       'Lemma.Courses.PackageReader.beginPiece',
+                                                       'Lemma.Courses.PackageReader.configuration',
+                                                       'Lemma.Courses.PackageReader.pollPiece',
+                                                       'Lemma.Courses.PackageRender.renderDelta',
+                                                       'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                       'Lemma.Courses.PackageRender.renderSelectedDelta',
+                                                       'Lemma.Courses.PackageTarget.validate',
+                                                       'Lemma.Courses.PackageTarget.validateSpan',
+                                                       'Lemma.Courses.PackageWorkspace.stageCompleted',
+                                                       'Lemma.Courses.PackageWorkspace.stageCompletedUnknown'],
+         'Lemma.Courses.PackageRender.cacheBytes': ['Lemma.Courses.PackageRender.prepare',
+                                                    'Lemma.Courses.PackageRender.prepareHeader',
+                                                    'Lemma.Courses.PackageRender.renderDelta',
+                                                    'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                    'Lemma.Courses.PackageRender.renderSelectedDelta'],
+         'Lemma.Courses.PackageRender.columns': ['Lemma.Courses.PackageRender.deltaStep',
+                                                 'Lemma.Courses.PackageRender.textStep'],
+         'Lemma.Courses.PackageRender.deltaStep': ['Lemma.Courses.PackageRender.renderDelta'],
+         'Lemma.Courses.PackageRender.panelWord': ['Lemma.Applications.Notebook.packageControlStep',
+                                                   'Lemma.Applications.Notebook.packageIdentityStep',
+                                                   'Lemma.Courses.PackageRender.deltaStep'],
+         'Lemma.Courses.PackageRender.prepare': ['Lemma.Courses.PackageRender.renderSelectedDelta'],
+         'Lemma.Courses.PackageRender.prepareHeader': ['Lemma.Courses.PackageRender.renderHeaderSelectedDelta'],
+         'Lemma.Courses.PackageRender.readByteStep': ['Lemma.Courses.PackageRender.readWord'],
+         'Lemma.Courses.PackageRender.readWord': ['Lemma.Courses.PackageRender.deltaStep'],
+         'Lemma.Courses.PackageRender.renderByteStep': ['Lemma.Courses.PackageRender.deltaStep'],
+         'Lemma.Courses.PackageRender.renderDelta': ['Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                     'Lemma.Courses.PackageRender.renderSelectedDelta'],
+         'Lemma.Courses.PackageRender.renderHeaderSelectedDelta': ['Lemma.Applications.Notebook.renderPackageText'],
+         'Lemma.Courses.PackageRender.renderSelectedDelta': ['Lemma.Applications.Notebook.renderPackageText'],
+         'Lemma.Courses.PackageRender.separate': ['Lemma.Courses.PackageRender.prepare',
+                                                  'Lemma.Courses.PackageRender.prepareHeader',
+                                                  'Lemma.Courses.PackageRender.renderDelta',
+                                                  'Lemma.Courses.PackageRender.renderHeaderSelectedDelta',
+                                                  'Lemma.Courses.PackageRender.renderSelectedDelta']}}

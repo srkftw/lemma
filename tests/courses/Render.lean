@@ -163,7 +163,74 @@ def check : IO Unit := do
     (PackageRender.renderSelected source image.size.toUInt64 0 1 0 cache width height)
   if result != (243,0) || rejected.framebuffer != before.framebuffer || !rejected.writes.isEmpty then
     throw <| IO.userError "connected CRC failure published partial display/cache"
+  let (delta,differential) ← observe before
+    (PackageRender.renderSelectedDelta source image.size.toUInt64 0 1 0 cache width height)
+  if delta.1 != 0 || delta.2 &&& 0xffffffff != 9 ||
+      differential.framebuffer != rendered.framebuffer || differential.glyphs != rendered.glyphs then
+    throw <| IO.userError "delta renderer changed actual pagination/cache/full framebuffer"
+  let touched := delta.2 >>> 32
+  if touched >>> 23 != 0 then throw <| IO.userError "delta result exceeded its declared23-bit projection"
+  for y in [:height.toNat] do
+    for x in [:width.toNat] do
+      let offset := y*(width.toNat/2)+x/2
+      if before.framebuffer[offset]! != differential.framebuffer[offset]! then
+        let column := x/32
+        let row := y/32-10
+        if column ≥ 13 || row ≥ 10 || touched &&& (1 <<< column.toUInt64) == 0 ||
+            touched &&& (1 <<< (13+row).toUInt64) == 0 then
+          throw <| IO.userError "delta projection omitted a changed actual framebuffer pixel"
+  let (same,unchanged) ← observe differential
+    (PackageRender.renderSelectedDelta source image.size.toUInt64 0 1 0 cache width height)
+  if same != (0,9) || unchanged.framebuffer != differential.framebuffer ||
+      unchanged.writes.any (fun row => row.1 ≥ Lemma.Ink.Surface.framebuffer) then
+    throw <| IO.userError "unchanged text uploaded pixels or retained a stale dirty projection"
+  -- Perturb actual pixels, not a cached glyph/token. A repeat must repair them,
+  -- including both32-pixel tiles crossed by the first16-pixel unaligned word.
+  let target := Lemma.Ink.Surface.framebuffer+320*825+12
+  let offset := (target-Lemma.Ink.Surface.framebuffer).toNat
+  let damaged := {differential with framebuffer := (differential.framebuffer.set! offset
+      (differential.framebuffer[offset]! ^^^ 255))}
+  let (repair,repaired) ← observe damaged (PackageRender.renderDelta cache width height)
+  if repair != (0,8195) || repaired.framebuffer != differential.framebuffer ||
+      repaired.writes != #[(target,1),(target+1,1),(target+2,1),(target+3,1),
+        (target+4,1),(target+5,1),(target+6,1),(target+7,1)] then
+    throw <| IO.userError "actual framebuffer repair lost its real crossed-tile/eight-byte prefix"
+  let (fault,noWrite) ← observe {damaged with readFault := target}
+    (PackageRender.renderDelta cache width height)
+  if fault != (71,0) || !noWrite.writes.isEmpty || noWrite.framebuffer != damaged.framebuffer then
+    throw <| IO.userError "delta framebuffer read fault reached a write or lost status"
+  let (fault,partialWrite) ← observe {damaged with writeFault := target+1}
+    (PackageRender.renderDelta cache width height)
+  if fault.1 != 72 || partialWrite.writes != #[(target,1),(target+1,1)] ||
+      partialWrite.framebuffer[offset]! != differential.framebuffer[offset]! ||
+      partialWrite.framebuffer[offset+1]! != damaged.framebuffer[offset+1]! then
+    throw <| IO.userError "delta write fault changed real ordered partial effects"
+  let (header,originalHeader) ← observe differential
+    (PackageRender.renderHeaderSelected source image.size.toUInt64 0 0 cache width height)
+  let (headerDelta,changedHeader) ← observe differential
+    (PackageRender.renderHeaderSelectedDelta source image.size.toUInt64 0 0 cache width height)
+  if header != (0,4) || headerDelta.1 != 0 || headerDelta.2 &&& 0xffffffff != 4 ||
+      changedHeader.framebuffer != originalHeader.framebuffer || changedHeader.glyphs != originalHeader.glyphs then
+    throw <| IO.userError "delta header transition changed real selected title/pagination/pixels"
+  let (back,bodyAgain) ← observe changedHeader
+    (PackageRender.renderSelectedDelta source image.size.toUInt64 0 1 0 cache width height)
+  if back.1 != 0 || back.2 &&& 0xffffffff != 9 || bodyAgain.framebuffer != differential.framebuffer then
+    throw <| IO.userError "delta text transition retained stale header glyphs or omitted erasure"
+  let odd : Model := {prepared with framebuffer := ByteArray.mk (Array.replicate (826*640) 0xaa)}
+  let (originalOdd,oldOddPixels) ← observe odd (PackageRender.render cache 1651 height)
+  let (changedOdd,newOddPixels) ← observe odd (PackageRender.renderDelta cache 1651 height)
+  if originalOdd != (0,0) || changedOdd.1 != 0 || changedOdd.2 == 0 ||
+      newOddPixels.framebuffer != oldOddPixels.framebuffer then
+    throw <| IO.userError "delta odd-width/stride alignment changed full framebuffer pixels"
+  for action in #[PackageRender.renderSelectedDelta source image.size.toUInt64 0 1 0
+        Lemma.Ink.Surface.framebuffer width height,
+      PackageRender.renderSelectedDelta Lemma.Ink.Surface.framebuffer image.size.toUInt64 0 1 0 cache width height,
+      PackageRender.renderHeaderSelectedDelta source image.size.toUInt64 4 0 cache width height] do
+    let (bad,rejected) ← observe before action
+    if bad.1 == 0 || !rejected.reads.isEmpty || !rejected.writes.isEmpty then
+      throw <| IO.userError "delta selection admission consumed invalid/aliased source or display"
   IO.println "COURSE_RENDER_ACTIONS:PASS actual immutable package text, explicit pagination, independent glyph/cell and528000-byte Gray4 oracle,CRC/authority/fault/partial-effect guards; component only"
+  IO.println "COURSE_RENDER_DELTA:PASS all actual pixels/pagination, changed-tile coverage, no unchanged framebuffer writes, crossed-tile repair and real read/write fault prefixes; component only"
 
 end CourseRenderTests
 

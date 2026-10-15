@@ -1842,3 +1842,18 @@ original400M course actor remains frozen and running; its stale first-title
 expectation must be retained and independently corrected against default body,
 without altering that live actor. Browser tab25/8794 remains running under its
 original1B/7200s cold bounds. No installed-course RTL/browser pass is inferred.
+
+The next genuine Lean product change is text-delta1: compare freshly prepared
+course text against actual owned framebuffer words and mark only a conservative
+changed-tile product in the existing queue. No persistent cache, extra pages,
+storage change or host pixel construction. Old panel1/layout1/layout2 cohorts
+retain their exact pins. Canonical full-frame/pagination, header/body erasure,
+odd-stride, unchanged-write suppression, crossed-tile repair and real read/write
+fault prefixes pass host Actions. The real Notebook callback queues exactly two
+crossed tiles and leaves an empty projection untouched. All812 other preIR
+bodies are identical. Five actual verifier-valid semantic LLVM mutants and six
+incomplete cohorts reject;433 kernel/468 foundation/18 scaffold checks pass.
+Original fixture-syntax and optimizer-output-path failures are retained. Contract
+006-course-text-delta-v1 and concise evidence006-course-text-delta-v1.json bind
+the new User2 software cohort3. Full fresh RV64 pair/audits and target-cycle
+benefit are next; component observations do not establish either.

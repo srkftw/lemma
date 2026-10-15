@@ -169,6 +169,19 @@ def check : IO Unit := do
   let revision : UInt64 := 0x8000000000000001
   expect (label 4 revision 0 == 56 && label 19 revision 0 == 49 && label 22 revision 1 == 49)
     "visible revision loses bit63 or domain is not actual canonical field"
+  r.set ({} : Model)
+  let tile : UInt32 → UInt32 → UInt64 → UInt64 → UInt64 → UInt64 → UInt64 → Action :=
+    notebookAction% "packageTileStep"
+  for i in [:130] do
+    let observed ← run r (tile i.toUInt32 130 0 1650 8195 0 0)
+    expect (observed.1 == 0) "actual delta dirty-tile queue failed"
+  expect ((← word r (stateBase+456)) == 2 && (← word r (stateBase+472)) == 2 &&
+      (← r.get).calls.isEmpty) "delta projection bypassed/overfilled the real queue or acquired device authority"
+  let before := (← r.get).memory
+  for i in [:130] do
+    let observed ← run r (tile i.toUInt32 130 0 1650 0 0 0)
+    expect (observed.1 == 0) "empty delta projection failed"
+  expect ((← r.get).memory == before) "empty delta dirtied pixels or changed the pending queue"
   IO.println "NOTEBOOK_PACKAGE_ACTIONS:PASS actual private EOF/framing/sequence/wait/fault/cancel/partial-allocation/checker guards; no CPU or durability claim"
 end NotebookPackageTests
 

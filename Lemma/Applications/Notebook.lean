@@ -2619,8 +2619,12 @@ where
     .bind (packagePut 16 1) fun s _ => if statusFailed s = true then .done s 0 else
     .bind (packagePut 24 0) fun s _ => if statusFailed s = true then .done s 0 else packagePut 32 3
 
-private def packageTileStep (i _ : UInt32) (acc width _ _ _ : UInt64) : Action :=
-  .bind (markDirtyTile ((10 + i.toUInt64 / 13) * ((width + 31) / 32) + i.toUInt64 % 13)) fun s _ => .done s acc
+private def packageTileStep (i _ : UInt32) (acc width changed _ _ : UInt64) : Action :=
+  let column := i.toUInt64 % 13
+  let row := i.toUInt64 / 13
+  if changed &&& ((1 : UInt64) <<< column) = 0 then .done 0 acc else
+  if changed &&& ((1 : UInt64) <<< (13 + row)) = 0 then .done 0 acc else
+  .bind (markDirtyTile ((10 + row) * ((width + 31) / 32) + column)) fun s _ => .done s acc
 
 /-- The existing genuine package renderer validates source/cache/framebuffer
 spans and builds its actual owned pixels. Only the old Notebook dirty/controller
@@ -2635,13 +2639,15 @@ private def renderPackageText : Action :=
   .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
   .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
    .bind (if role < 8 then
-    Lemma.Courses.PackageRender.renderSelected packageBytes length ordinal role position packageGlyphs width height
+    Lemma.Courses.PackageRender.renderSelectedDelta packageBytes length ordinal role position packageGlyphs width height
     else if role < 12 then
-    Lemma.Courses.PackageRender.renderHeaderSelected packageBytes length (role - 8) position packageGlyphs width height
+    Lemma.Courses.PackageRender.renderHeaderSelectedDelta packageBytes length (role - 8) position packageGlyphs width height
     else .done 241 0)
     fun s next => if statusFailed s = true then .done s 0 else
-  .boundedFoldU64 130 packageTileStep 130 0 width 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (packagePut 64 next) fun s _ => if statusFailed s = true then .done s 0 else dirty 0 320 416 640
+  let changed := next >>> 32
+  .boundedFoldU64 130 packageTileStep 130 0 width changed 0 0 fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (packagePut 64 (next &&& 0xffffffff)) fun s _ => if statusFailed s = true then .done s 0 else
+  if changed = 0 then .done 0 0 else dirty 0 320 416 640
   else .done 244 0
 
 /-- Stage an explicitly selected exercise, with its canonical typed goal and

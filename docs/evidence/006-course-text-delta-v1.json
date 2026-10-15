@@ -1,0 +1,154 @@
+{
+  "schema": "lemma-course-text-delta-component/1",
+  "status": "PASS_HOST_ACTIONS_GENUINE_WHOLE_USER2_IR_AND_CLOSED_COHORTS",
+  "scope": "Real maintained Lean Actions, genuine elaboration/checked User2 lowering and complete old/new source/body/caller authority; whole audited RV64 pair and actual target timing/workflow NOT_RUN",
+  "contract": "docs/contracts/006-course-text-delta-v1.md",
+  "target_sources": {
+    "Lemma/Courses/PackageRender.lean": "5d49eb2e9b0dd904d8843bdad259d82f416a24f5fa3a3987bd63fb8221d19584",
+    "Lemma/Applications/Notebook.lean": "091b1ee30d2493feb5d0465db689094172388e05ef0e5e7f7c1e1345e0350477"
+  },
+  "complete_source_relation": {
+    "added": [
+      "Lemma.Courses.PackageRender.deltaStep",
+      "Lemma.Courses.PackageRender.readByteStep",
+      "Lemma.Courses.PackageRender.readWord",
+      "Lemma.Courses.PackageRender.renderDelta",
+      "Lemma.Courses.PackageRender.renderHeaderSelectedDelta",
+      "Lemma.Courses.PackageRender.renderSelectedDelta"
+    ],
+    "removed": [
+      "Lemma.Courses.PackageRender.render",
+      "Lemma.Courses.PackageRender.renderHeaderSelected",
+      "Lemma.Courses.PackageRender.renderSelected",
+      "Lemma.Courses.PackageRender.renderStep"
+    ],
+    "phases": {
+      "pre": {
+        "changed": [
+          "Lemma.Applications.Notebook.packageTileStep",
+          "Lemma.Applications.Notebook.renderPackageText"
+        ],
+        "unchanged": 812
+      },
+      "post": {
+        "changed": [
+          "Lemma.Applications.Notebook.packageTileStep",
+          "Lemma.Applications.Notebook.renderPackageText",
+          "Lemma.Courses.PackageBinding.captureField"
+        ],
+        "unchanged": 809
+      }
+    }
+  },
+  "qualification": {
+    "status": "PASS_LAYOUT1_LAYOUT2_DELTA3_COMPLETE_PRE_POST_AND_READONLY",
+    "cohorts": [
+      {
+        "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/1",
+          "post": "lemma-installed-package-notebook/1"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6
+      },
+      {
+        "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/2",
+          "post": "lemma-installed-package-notebook/2"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6
+      },
+      {
+        "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+        "phases": {
+          "pre": "lemma-installed-package-notebook/3",
+          "post": "lemma-installed-package-notebook/3"
+        },
+        "readonly_sites": 4,
+        "readonly_tables": 6
+      }
+    ]
+  },
+  "mutations": {
+    "status": "PASS_FIVE_VALID_LLVM_SEMANTIC_MUTANTS_AND_SIX_INCOMPLETE_COHORTS_REJECT",
+    "scope": "actual verifier-valid optimized LLVM semantic mutations against complete selected software authority",
+    "negatives": [
+      {
+        "name": "equality-inverted",
+        "valid_llvm": true,
+        "sha256": "88b3384195960fc255fd59d8170b292547381be18e84ac178fb9d2d42f75d88c",
+        "rejection": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.deltaStep/post"
+      },
+      {
+        "name": "first-tile-offset",
+        "valid_llvm": true,
+        "sha256": "1acea7b60025e78e9dcac16b51a7e758a1026c0ce88426b043a818d1a7cc9aaa",
+        "rejection": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.deltaStep/post"
+      },
+      {
+        "name": "crossed-tile-omission",
+        "valid_llvm": true,
+        "sha256": "53a8671ba25370c7aa7e56ef328b06fc3d4cf45b4b8f259e327debee7b754bd2",
+        "rejection": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.deltaStep/post"
+      },
+      {
+        "name": "row-bit-overlap",
+        "valid_llvm": true,
+        "sha256": "1c69a4380e420598a3a426d92c3d75809a5fa230610296b4316f8128a48eea78",
+        "rejection": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.deltaStep/post"
+      },
+      {
+        "name": "forgotten-previous-changes",
+        "valid_llvm": true,
+        "sha256": "e2dbcc080f76de20333942d47456cc534c4bfb3439d602a2c2732e7dba523d64",
+        "rejection": "Package Notebook complete checked body differs: Lemma.Courses.PackageRender.deltaStep/post"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.readByteStep",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.readWord",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.deltaStep",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.renderDelta",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.renderSelectedDelta",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      },
+      {
+        "name": "missing-cohort-Lemma.Courses.PackageRender.renderHeaderSelectedDelta",
+        "rejection": "Package Notebook mixed/incomplete text-delta cohort"
+      }
+    ]
+  },
+  "receipts": {
+    "build/courses/task006-package-delta-component-a1/cohort-generation.json": "f5942ca2cb965d3f6c67125970ecaf13979a28e4e7c40bd87892e99a3cf58896",
+    "build/courses/task006-package-delta-component-a1/cohort-qualification.json": "9ce953d2a7a026785ee5ddcf2ffb59125dba8e2bc07563e0261dc7b1fed7eebe",
+    "build/courses/task006-package-delta-component-a1/mutations.json": "c1066f0b1930c19e434830e34db6b5f33f32d5075ef7a12452643c0680128795",
+    "build/courses/task006-package-delta-component-a1/notebook-queue-a1.log": "0db35f456bf73ce86095acb0f27259c457d3a270c09ae93aa7a102705f731f44",
+    "build/courses/task006-package-delta-component-a1/render-host-a3.log": "183a383769997feedb7c907c3fdf810f595363f59dfbe371ce6384cbb8acb42d",
+    "build/courses/task006-package-delta-component-a1/kernel-host.log": "e380ebb780095da6ddf055247a65bf1a065d133f54cb4a013185338b379984d2",
+    "build/courses/task006-package-delta-component-a1/foundation-host.log": "f2a5cf367d43e90e71204122a759cfed74b423ab59f95b5d54bc68238a1cbf90"
+  },
+  "original_failures": [
+    "build/courses/task006-descriptor-direct-integration-a1/delta-host-a1.log: fixture syntax error before execution",
+    "build/courses/task006-package-delta-component-a1/export.log: source export succeeded into nested output; original optimizer path failed; existing generated LLVM optimized separately at its actual path",
+    "build/courses/task006-package-delta-component-a1/original-guard-rejection.json: unqualified new source family rejected"
+  ],
+  "memory_layout_change": false,
+  "language_runtime_extension": false,
+  "pixel_cache": false,
+  "target_speedup": "NOT_MEASURED",
+  "ordinary_full_audits": "NEXT"
+}
