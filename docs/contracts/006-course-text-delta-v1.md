@@ -52,6 +52,14 @@ host Action observations. Full audited RV64 artifacts and observed target
 performance/connected workflow have their own results; component success does
 not imply them.
 
+The first whole initializer compiled in127.740s but its audit failed because
+the independent Surface gate recognized only software cohorts1/2. All five
+Surface bodies and the cohort2 boot root are byte-identical after source-owner
+rebinding in cohort3. The gate now explicitly admits3 only after complete
+package-cohort validation and those original exact Surface/root hashes. Genuine
+cohorts1/2/3 pass; a verified LLVM copy-stride mutation still rejects. The first
+whole failure/source seal/cleanup are retained and a fresh full pair is required.
+
 ```sh
 nix develop --no-write-lock-file --command lake build Lemma.Applications.Notebook
 nix develop --no-write-lock-file --command \

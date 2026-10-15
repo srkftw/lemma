@@ -139,7 +139,8 @@
     "build/courses/task006-package-delta-component-a1/notebook-queue-a1.log": "0db35f456bf73ce86095acb0f27259c457d3a270c09ae93aa7a102705f731f44",
     "build/courses/task006-package-delta-component-a1/render-host-a3.log": "183a383769997feedb7c907c3fdf810f595363f59dfbe371ce6384cbb8acb42d",
     "build/courses/task006-package-delta-component-a1/kernel-host.log": "e380ebb780095da6ddf055247a65bf1a065d133f54cb4a013185338b379984d2",
-    "build/courses/task006-package-delta-component-a1/foundation-host.log": "f2a5cf367d43e90e71204122a759cfed74b423ab59f95b5d54bc68238a1cbf90"
+    "build/courses/task006-package-delta-component-a1/foundation-host.log": "f2a5cf367d43e90e71204122a759cfed74b423ab59f95b5d54bc68238a1cbf90",
+    "build/courses/task006-package-delta-component-a1/surface-cohort-qualification.json": "672741fe257efb2570dec31b39b9591c6e0945f14ff81adc2347e64f9623d9a5"
   },
   "original_failures": [
     "build/courses/task006-descriptor-direct-integration-a1/delta-host-a1.log: fixture syntax error before execution",
@@ -150,5 +151,69 @@
   "language_runtime_extension": false,
   "pixel_cache": false,
   "target_speedup": "NOT_MEASURED",
-  "ordinary_full_audits": "NEXT"
+  "ordinary_full_audits": "Original attemptFAILon old Surface cohort label; exact unchanged Surface/boot bodies independently qualified; fresh complete retry required",
+  "original_whole_attempt": {
+    "status": "FAIL",
+    "error": "Core0Error('Surface-v2 Package source cohort is unknown')",
+    "seconds": 263.63899850996677,
+    "source_commit": "b9bc91d8b6b94a135b03e6ba5fa38cb041c303dd",
+    "initializer": {
+      "build_seconds": 127.74006818199996,
+      "build_status": "BUILT",
+      "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+      "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-delta-initializer-a1",
+      "image_bytes": 692728,
+      "image_sha256": "5ac30a45864f655ed4107ec1628ef4a84a1be412c8817cc4a13f355d1503b063"
+    },
+    "report": "build/courses/task006-package-delta-whole-a1/result.json",
+    "sha256": "20d5b365e578dcc037f5d271f26794ede9b521f45612287975b0a227018e01c9",
+    "supervisor": "build/courses/task006-package-delta-whole-supervision-a1/result.json",
+    "cleanup": "no killed or surviving processes; original source seal passed"
+  },
+  "independent_surface_cohort": {
+    "status": "PASS_THREE_COMPLETE_SURFACE_COHORTS_AND_CORRUPT_COPY_REJECT",
+    "scope": "independent Surface preIR authority across genuine old/new selected exports; no new CPU or whole-audit success",
+    "positive": [
+      {
+        "path": "build/kernel/task006-package-closure-notebook-a1/users/notebook",
+        "body_identities": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea"
+        }
+      },
+      {
+        "path": "build/kernel/task006-descriptor-direct-notebook-a3/users/notebook",
+        "body_identities": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f"
+        }
+      },
+      {
+        "path": "build/courses/task006-package-delta-component-a1/users/notebook/users/notebook",
+        "body_identities": {
+          "Lemma.Ink.Surface.allocateBulk": "6a2506e89ec1a74c323ba421320e9d6031a87dc43d7af9fac844d111a0538105",
+          "Lemma.Ink.Surface.bulkCopyWord": "ce5e1f87129239e65a8e53d1ee70453e9caf2e524b466eaa907adfd5806bf286",
+          "Lemma.Ink.Surface.bulkPrepareStep": "d1040f79b4cef3800f033542cec949f587ec5921e03422281e234a9f18402d8a",
+          "Lemma.Ink.Surface.bulkUploadStep": "bd38f3c4b118369edf10e3da4b634e74d22d6ab1b04e2663c8895c4169396faa",
+          "Lemma.Ink.Surface.uploadAllBulk": "c2acbef2d1ebfee4df40247c134f7d3aaa15283aa2533603cafe94e370eb38c5",
+          "Lemma.Applications.Notebook.mainPackageClosureBulk": "4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f"
+        }
+      }
+    ],
+    "negative": [
+      {
+        "name": "actual-source-copy-stride",
+        "valid_llvm": true,
+        "reason": "Surface-v2 ownership/copy/geometry/PIO/packet/root authority differs: Lemma.Ink.Surface.bulkCopyWord"
+      }
+    ]
+  }
 }

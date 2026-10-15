@@ -1857,3 +1857,11 @@ Original fixture-syntax and optimizer-output-path failures are retained. Contrac
 006-course-text-delta-v1 and concise evidence006-course-text-delta-v1.json bind
 the new User2 software cohort3. Full fresh RV64 pair/audits and target-cycle
 benefit are next; component observations do not establish either.
+
+Whole text-delta a1 compiled initializer5ac30a45 in127.740s but failed its audit
+on Surface-v2's old software-version label list (263.639s total,267.944s supervised,
+source seal PASS/no survivors). All five actual Surface bodies and layout2 root
+are unchanged in software3; their independent three-cohort comparison passes
+and an actual valid-LLVM copy-stride mutation rejects. The gate now admits the
+explicit complete cohort3 with the same original hashes, preserving cohorts1/2.
+Fresh complete compilation/audits remain required; no original FAIL is replaced.
