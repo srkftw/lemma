@@ -155,14 +155,19 @@ class IPCTrace(Trace):
             own = task["key"]=="clienta" and b in {requestbase+16,requestbase+17,requestbase+18,requestbase+19}
             sender=a if own else self.role("server")
             if c!=sender or not 64<=d<=256: raise Core0Error("copied packet lacks full authenticated sender or valid actual length")
+            if any(row[1:3]==[a,b] for row in self.packets):
+                raise Core0Error("duplicate authenticated packet witness")
             self.packets.append(list(event))
         elif tag == 0x232:
             task=self.actual_user(a,{"clienta","clientb"}); base=task["nonce"]*256
             own=task["key"]=="clienta" and b in {base+16,base+17,base+18,base+19}
             nonce=task["nonce"] ^ (0x5a5a5a5a if own and b==base+19 else 0)
             length = {16:0,17:192,18:24,19:24}.get(b-base) if own else {1:192,2:24,3:8,257:24,513:24,769:24}.get(b-base) if task["key"]=="clienta" else {1:192,2:24,3:0}.get(b-base)
+            # These are separate Console syscalls in IPCClients.packet. Another
+            # task may report between them; retain exact per-transaction order.
+            packets=[row for row in self.packets if row[1:3]==[a,b]]
             if (length is None or c!=length or d!=digest(nonce,length,0 if own else 0xa5)
-                    or not self.packets or self.packets[-1][1:3]!=[a,b] or self.packets[-1][4]!=64+length):
+                    or len(packets)!=1 or packets[0][4]!=64+length):
                 raise Core0Error("actual binary payload/length differs from independent host reference")
             if any(row[1:3]==[a,b] for row in self.payloads): raise Core0Error("duplicate payload witness")
             self.payloads.append(list(event))

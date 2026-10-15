@@ -954,5 +954,40 @@
       }
     ],
     "scope": "Terminal actual job/step observation: both prior inventory and missing-Notebook-module repairs pass. Later native-refresh/registry-count changes require their own candidate; this is not their inherited CI pass."
+  },
+  "subsequent_candidate_552": {
+    "commit": "552d39ece2884224ec9564477057f98a0a59a460",
+    "tested_pr_merge": "927f7434fd60ea2e06dd83d6f7a19f6a6073f468",
+    "run_id": 38676442848,
+    "status": "completed",
+    "conclusion": "failure",
+    "jobs_success": 9,
+    "jobs_failure": 1,
+    "failed_job": "Task003 Gates F-I RV64 acceptance",
+    "failed_job_id": 116231026411,
+    "skipped": [
+      "Require all managed-kernel artifacts and actual sessions"
+    ],
+    "original_job_log": {
+      "path": "build/ci/task006-552-failure-a1/managed-job.log",
+      "sha256": "c46702459e2a04d324213d6c4e4baa8ff77a231e79010c123beb0997e1305f8b"
+    },
+    "retained_artifact": {
+      "path": "build/ci/task006-552-failure-a1/managed-artifact.zip",
+      "sha256": "ffc4a6022a145ca5cc25b7a4a62bdd5ad52bc561a1a8c31f26f1098f791b8bae"
+    },
+    "artifact_id": 11945799676,
+    "observed_failure": "I-O2 original observation rejected correct clientB192-byte payload after clientA preempted between separate Console packet/payload syscalls. Actual digest15530704513209412611 equals independent A5 reference; prior same task/request packet length256 is present. Original whole protocol remains FAIL, its unexecuted suffix is not passed.",
+    "repair": "Correlate one prior packet by full task/request instead of last global packet. Retain exact sender, size, digest, per-transaction order and payload uniqueness; additionally reject duplicate packet witnesses.",
+    "retained_observation": {
+      "path": "build/ci/task006-552-failure-a1/correlation-observation.json",
+      "sha256": "97e65888569a452068456f9aa7fa6726b2106dd4d3b0be1e220d9e5c004def99"
+    },
+    "negative_scope": "Six mutations of actual retained CI records reject: digest, length, request, missing/duplicate packet and sender.",
+    "host_tests": {
+      "path": "build/ci/task006-552-failure-a1/correlation-unit.log",
+      "sha256": "29a913317fb7742f997e4077d94f41ea1d9fb2555f346697fef473df73c579c9"
+    },
+    "fresh_full_protocol": "NOT_RUN; required before claiming candidate correction passed."
   }
 }
