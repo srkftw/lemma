@@ -563,5 +563,77 @@
       }
     ],
     "scope": "Exact pushed candidate CI; does not certify new installed-course/browser workflows or unfinished whole-machine gates."
+  },
+  "subsequent_candidate_454": {
+    "source_commit": "454e016e497c64f7e6bab922010c71b3499e43dc",
+    "actual_ci_run": 38657621454,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "success",
+    "jobs_passed": 10,
+    "failed_jobs": [],
+    "skipped_steps": [],
+    "jobs": [
+      {
+        "id": 116171031963,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032065,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032143,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032145,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032204,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032206,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032231,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032235,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032249,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116171032321,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Terminal run and all steps observed. This does not qualify the separately repaired package counter or later observer source."
   }
 }

@@ -80,7 +80,14 @@ def validate(ir,unit,*,optimized):
    if special!=modern or special and ('ProductBulk' in source or 'USBBulk' in source) and not source.endswith('.'+wrapper):del selected[source]
  else:
   if unit['configuration'] in PACKAGE_CONFIGURATIONS:
-   selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea'
+   from package_notebook_target import validate as validate_package
+   package = validate_package(ir, unit, optimized=False)
+   if package is None: raise Core0Error('Surface-v2 Package root lacks complete source cohort')
+   if package['contract_version'] == 'lemma-installed-package-notebook/2':
+    selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f'
+   elif package['contract_version'] == 'lemma-installed-package-notebook/1':
+    selected['Lemma.Applications.Notebook.mainPackageClosureBulk']='0318d48be82d75b41e30cbb2034da5e6f2ea22f6bea86d344f70747d9ff1b5ea'
+   else: raise Core0Error('Surface-v2 Package source cohort is unknown')
   elif unit['configuration'] in CLOSURE_CONFIGURATIONS:
    selected['Lemma.Applications.Notebook.mainClosureBulk']='435236b7dba59e7ff115a510fce38c4157b1e8c120e07695bacfa937b9cabf82'
   for source in list(selected):

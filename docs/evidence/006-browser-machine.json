@@ -187,6 +187,42 @@
     "workflow_plan": {
       "path": "build/browser/task006-package-connected-owner-a1/workflow-plan.json",
       "sha256": "6448afcc8d57426ea6ce84bae4a4d16f79cbc8a89a3bbdf011826fc40c82f51a"
+    },
+    "installed_guest_workflow": {
+      "status": "PASS_GUEST_INSTALL_DUPLICATE_ALL_BYTES; COURSE_OPEN_FAIL_COUNTER_COLLISION",
+      "result": {
+        "path": "build/browser/task006-package-connected-owner-a1/installation-byte-result.json",
+        "sha256": "b7bbf0ef36a1d98c32ae90013b512e50c42cdffbb1053ba00da2ec48fca7c2d5"
+      },
+      "guest_installed_sequence": "5",
+      "guest_duplicate_error": "223",
+      "whole256MiB_matches_native": true,
+      "reader_failure_and_repair": "Native found real old-layout counter/Store-packet collision; layout2 fresh whole qualification is separate."
     }
+  },
+  "package_private_ink_exact_suffix": {
+    "scope": "same-Wasm native-host replay of actual browser private continuation with installed packages and queued rawpen; no C++ migration/cold/proof-kernel claim",
+    "status": "PASS_MISSING_ONLY_EXACT_REPLAY_RESOURCE_CLEANUP",
+    "browser_first_cycle": "1074550000",
+    "browser_final_cycle": "1099550000",
+    "actual_raw_pen_samples": 3,
+    "guest_save_state": "Pending5, no Saved inferred",
+    "controller_completed_panels": 3,
+    "exact_archive_sha256": "7dc3aa675ec38d62cb541ee34ecc78f91a8e0e3400ff9c559107bfb6fa4dab50",
+    "all_authoritative_archive_bytes_equal": true,
+    "heap_bytes": 345964544,
+    "supervised_host_seconds": 111.06615760189015,
+    "peak_owned_rss_bytes": 1690873856,
+    "minimum_available_bytes": 10364698624,
+    "all_owned_processes_reaped": true,
+    "result": {
+      "path": "build/browser/task006-package-private-ink-replay-a3/result.json",
+      "sha256": "7aa4dff1df8a052eef7d3244b6e2f687b45d6213a6b6f45c4e3c613a242651b4"
+    },
+    "original_failures": [
+      "AS8 resource failure before machine creation; independent no-target actual-module VmSize/RSS probe retained",
+      "header-only outcome tape correctly rejected; selected suffix has no new backing outcomes, existing optional no-tape route uses isolated snapshot bytes"
+    ],
+    "limits": "original600s complete-attempt failure preserved; missing-only300s case qualified. Target25M and unchanged existing64M helper bound."
   }
 }

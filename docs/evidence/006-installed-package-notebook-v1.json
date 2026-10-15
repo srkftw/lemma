@@ -437,6 +437,22 @@
       "direct-offset prototype fixture/genuine export retained; natural address declaration provides explicit cohort identity",
       "source relation observer initial8-functions count vs actual7; normalized argument grammar correction"
     ],
-    "scope": "real counter/storage isolation fix; no new whole-image or course-open acceptance claim"
+    "scope": "real counter/storage isolation fix; no new whole-image or course-open acceptance claim",
+    "whole_audit_original_failure": {
+      "result": {
+        "path": "build/courses/task006-package-layout2-whole-supervision-a2/result.json",
+        "sha256": "f41a8ea66df0f666443ebe22dcb2194d0bb12b5e846eb3a439fec3ebe13ec691"
+      },
+      "initializer_image_sha256": "b0d31c3a3090f9c9ce745a32ed06fbed8d12e4c46e14490e0e684c009e6c1dff",
+      "build_seconds": 95.46585474698804,
+      "scope": "fresh initializer compilation passed; actual full audit rejected old Surface-v2 root body identity after the real counter repair. Normal role not built; original failure retained."
+    },
+    "surface_root_observer_correction": {
+      "result": {
+        "path": "build/courses/task006-package-counter-repair-a2/surface-root-correction.json",
+        "sha256": "925ad29c9a6df59d21133c4901fc9248a95097eded8e94dbbb1ad145248d3344"
+      },
+      "scope": "new exact root identity admitted only after complete190-source layout2 validation; old189-source cohort retained; independent actual copy-word stride corruption rejects"
+    }
   }
 }

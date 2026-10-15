@@ -1516,3 +1516,36 @@ at1062.55M (+85M/462.323s machine calls), then duplicate223 at1074.55M
 same known course-open bug, so that failing operation is not repeated. Byte
 qualification and the corrected-layout whole pair are next. Pushed454e016 CI
 38657621454 was observed IN_PROGRESS; prior d64 run38648367594 passed10/10.
+
+
+Layout2 whole attempts: a1 failed closed before target compilation on a stale
+output-path template; its387-file capture sealedPASS and no old output changed.
+The corrected a2 driver reused that exact capture and compiled initializer
+b0d31c3a (691688B) in95.466s. Full audit then rejected the old Surface-v2 main
+root pin; normal role was NOT_RUN. All a2 children reaped; originalFAIL retained.
+The repaired exact root pin is selected only after full layout2/190-owner
+validation. Actual old/new preIR positives and an independent copy-stride
+corruption rejectPASS; full fresh pair is next on a coherent new source binding.
+Do not call the original audit failure harmless or the initializer fully audited.
+
+Browser installed edition3 and duplicate223 now have a retained complete256MiB
+byte observation equal to the native publication. A separate restored private
+fork accepted3 raw pen events and ran25M cycles to genuine Pending5 with2 new
+completed panels; no Saved was inferred. Its native-host same-Wasm replay first
+failed before instantiation at an8GiB AS limit; an independent actual-module
+probe needs9813720KiB virtual space but only62780KiB RSS before target creation.
+A16GiB-AS retry then correctly rejected a header-only outcome log. The selected
+suffix has no new backing outcomes; the existing optional no-tape path is now
+being checked against isolated snapshot bytes, with unchanged exact64M helper
+limit and separate300s/4GiB RSS resource bounds. Original attempts remainFAIL.
+
+
+The missing-only same-Wasm replay a3 passed all authoritative archive bytes at
+1099550000 after25M cycles: expected/actualSHA7dc3aa675ec38d62cb541ee34ecc78f91a8e0e3400ff9c559107bfb6fa4dab50.
+Guest remains Pending5, with3 total completed panels and all3 rawsamples consumed.
+No Saved/cold recovery/new mathematics is inferred. Case duration111.066s,
+sampled owned peak1690873856B, heap345964544B, no survivors. The original AS8
+and empty-tape failures remain retained. Result: build/browser/task006-package-
+private-ink-replay-a3/result.json. Tabs20/21 retain the original and privatefork.
+Current Code344dfa3 CI38661101254 was last observedIN_PROGRESS; prior454e016
+CI38657621454 is confirmedSUCCESS10/10 with no skipped steps.
