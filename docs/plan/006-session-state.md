@@ -1549,3 +1549,49 @@ and empty-tape failures remain retained. Result: build/browser/task006-package-
 private-ink-replay-a3/result.json. Tabs20/21 retain the original and privatefork.
 Current Code344dfa3 CI38661101254 was last observedIN_PROGRESS; prior454e016
 CI38657621454 is confirmedSUCCESS10/10 with no skipped steps.
+
+
+### Layout2 full artifact milestone and active user workflow
+
+Source5703369c61c3126f72e94822360744c46c6bb8eb full matched pairPASS:387 inputs,
+479.758s ordinary build/audits,483.405s external supervision,1913217024B peak
+RSS/126820213B outputs, full source sealPASS/no survivors. Init b0d31c3a and
+normal a20c6530 are each691688B. Exact strict native38f88a00 at
+build/native/task006-package-layout2-a3 and static browser6b7e9f7f at
+build/browser/task006-package-layout2-a3 preserve3d265e/fe167c cores.
+
+Actual new native resetCPU actor1456817 began2026-10-15T01:08:10Z, absolute
+aggregate deadline07:08:10Z; source hold is
+build/courses/task006-native-package-layout2-a3/actor/consumed-host-inputs.json.
+Do not edit its29 consumed host files or actual ignored actor/observer modules.
+The new source has its own explicitly declared21600s/6B aggregate; original
+1B cold and all virtual interaction caps remain. Two observed original cold
+phases already used7121s, plus319s installation before UI/check work, which
+independently rules out7200 as a whole-case ceiling. Old error95/failure cases
+remain unchanged. New actor aborts on unexpected actual course454 status and
+preserves an observational failure checkpoint before teardown. No new Ready
+or connected-mathematics pass is claimed yet.
+
+Browser corrected server is8791 (owned tool session64267), tab22/layout2Tab;
+new origin task006_layout2_cold_a1 imports the untouched two-package medium,
+opensCPU0 paused, then bounded cold execution. Plan:
+build/browser/task006-package-layout2-cold-a1/plan.json. The same source/artifacts
+run on native/browser; each cold and UI outcome remains separately observed.
+
+Candidate344dfa3 CI38661101254 is now terminalFAILURE:9/10 jobs passed. The
+foundation host suite ran468 tests and failed one exact CI log inventory
+assertion because the new NotebookPackage regression log was missing from
+its expected list. The five later host steps were skipped. Original job log
+and full job/step records are retained at build/ci/task006-344-failure-a1.
+The one-line expected inventory correction passes all468 foundation tests in
+34.954s; it retains every timeout/pipefail/log and rejection guard. This local
+repair does not change the original CI failure into a pass.
+
+Browser tab22 now visibly opened paused atCycle0, then started its predeclared
+1B/7200s bounded cold run with stop-on-Ready checked. No restore/initializer or
+raw input was used. Its244.8s initial elapsed includes time spent paused before
+Run; simulation calls were0.0s at launch. Launch observation is retained beside
+the original preconstruction plan. Native actor1456817 remains running under
+the existing29-source hold. A separate same-guest QEMU instruction-clock
+diagnostic checks package/course/actual arithmetic/edit/learner controls; it
+does not replace canonical timing acceptance or cached-state continuation.

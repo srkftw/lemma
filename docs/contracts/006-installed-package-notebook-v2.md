@@ -36,3 +36,13 @@ nix develop --no-write-lock-file --command lake build Lemma.Applications.Noteboo
 nix develop --no-write-lock-file --command \
   lake env lean --run tests/courses/NotebookPackage.lean
 ```
+
+
+The fresh matched initializer/notebook pair now passes full ordinary audits
+on one sealed387-input5703369 archive in479.758 seconds (483.405 supervised).
+Owned peak was1913217024B, outputs126820213B and all children were reaped.
+Both images are691688B; native bundle38f88a00 and browser6b7e9f7f reuse the
+original source-validated machine cores. New resetCPU course acceptance remains
+running and is not inferred from compilation. The earlier Surface-root audit
+failure remains retained; its exact new root identity requires complete layout2
+validation, while an independent corrupted copy stride still rejects.

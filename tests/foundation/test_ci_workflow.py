@@ -132,6 +132,7 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/owned-arena.log", "metadata/arithmetic-ipc.log",
                          "metadata/arithmetic-object-budget.log",
                          "metadata/backing-io.log", "metadata/companion-peer.log",
+                         "metadata/notebook-package-state-layout.log",
                          "metadata/managed-notebook-deployment.log",
                          "metadata/user-word-inline.log",
                          "metadata/arithmetic-execution-identity.log",

@@ -414,7 +414,7 @@
     "wall_seconds": 584.5756074349629
   },
   "layout2_counter_repair": {
-    "status": "PASS_GENUINE_SOURCE_COHORT_AND_ACTION_FIXTURE; FRESH_WHOLE_AND_CPU_NOT_RUN",
+    "status": "PASS_FRESH_MATCHED_WHOLE_PAIR_AND_FULL_AUDITS; CORRECTED_GUEST_WORKFLOW_RUNNING",
     "contract": "docs/contracts/006-installed-package-notebook-v2.md",
     "root_cause": "state+768 aliases existing Store outgoing0x20b00; actual owned RAM3553995772503344460 equalsLEMASTR1 and no package page was mapped",
     "new_state_offset": 752,
@@ -453,6 +453,87 @@
         "sha256": "925ad29c9a6df59d21133c4901fc9248a95097eded8e94dbbb1ad145248d3344"
       },
       "scope": "new exact root identity admitted only after complete190-source layout2 validation; old189-source cohort retained; independent actual copy-word stride corruption rejects"
+    },
+    "whole_pair": {
+      "path": "build/courses/task006-package-layout2-whole-a3/result.json",
+      "sha256": "07a8b89bdad940b1f6ef76dff032521b2e97e7e89941bdc3ecbbbf2ffef8a696"
+    },
+    "whole_source_seal": {
+      "path": "build/courses/task006-package-layout2-whole-a3/source-seal.json",
+      "sha256": "d2ebc56f619a8e6194539dcbdbd31bde96480d7dd76aa9297f2afa0066e1ab5e"
+    },
+    "whole_supervision": {
+      "path": "build/courses/task006-package-layout2-whole-supervision-a3/result.json",
+      "sha256": "eaf333f7c2ffb2c921c1793567a6574cd920fb60f3148d8ca57439fee981c381"
+    },
+    "source_commit": "5703369c61c3126f72e94822360744c46c6bb8eb",
+    "source_count": 387,
+    "source_root": "build/courses/task006-package-layout2-whole-a3/consumed-source-root",
+    "whole_pair_seconds": 479.7575136970263,
+    "supervised_seconds": 483.40536526497453,
+    "peak_owned_rss_bytes": 1913217024,
+    "minimum_available_bytes": 11143184384,
+    "owned_output_bytes": 126820213,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 152.11125327902846,
+        "audit_sha256": "deeab754aa71944ccfa974c118876099a716b339314dfb29636372ccd6d1f6c5",
+        "audit_status": "PASS",
+        "build_seconds": 87.83165166305844,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-layout2-initializer-a3",
+        "image_bytes": 691688,
+        "image_sha256": "b0d31c3a3090f9c9ce745a32ed06fbed8d12e4c46e14490e0e684c009e6c1dff",
+        "provenance_sha256": "326d3f726b3b0d7a770817f90cfb8cc2697af507f2f224fe2dba914c48f8d936"
+      },
+      "notebook": {
+        "audit_seconds": 150.1892030760646,
+        "audit_sha256": "407ce42945b3a1b3ca7529f320e130a470ddae5bca605e798d346e93e4b83ccc",
+        "audit_status": "PASS",
+        "build_seconds": 89.45865733805113,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-layout2-notebook-a3",
+        "image_bytes": 691688,
+        "image_sha256": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+        "provenance_sha256": "bc0756b96778487c006d5658c86cd79f686cc50ad529ef920212f686709e186d"
+      }
+    },
+    "all_owned_children_reaped": true,
+    "prepared_native_bundle": {
+      "directory": "build/native/task006-package-layout2-a3",
+      "manifest": {
+        "path": "build/native/task006-package-layout2-a3/bundle.json",
+        "sha256": "38f88a00423b99841d94a481a1e727d3f7079fb25bae27d9f7d87fa37e8a1356"
+      }
+    },
+    "prepared_browser_bundle": {
+      "directory": "build/browser/task006-package-layout2-a3",
+      "manifest": {
+        "path": "build/browser/task006-package-layout2-a3/bundle.json",
+        "sha256": "6b7e9f7f4a3c1297f04a950e55cc3f1887bc7aadb36f56f42fc31bf51306aa2c"
+      }
+    },
+    "corrected_native_campaign": {
+      "status": "RUNNING_NEWCPU; NO_READY_OR_COURSE_CLAIM",
+      "directory": "build/courses/task006-native-package-layout2-a3",
+      "plan": {
+        "path": "build/courses/task006-notebook-package-integration-draft-a1/layout2-connected-plan.json",
+        "sha256": "17e5fd6cd593e175fb509fa78c4adb5387d4125c2d4e25f29ec06b35ee7e6476"
+      },
+      "start": {
+        "path": "build/courses/task006-native-package-layout2-a3/supervisor-start.json",
+        "sha256": "9198a0fe58835efb334776a0cd0ac23499c75d051d6f18535829077b490f2f22"
+      },
+      "source_hold": {
+        "path": "build/courses/task006-native-package-layout2-a3/actor/consumed-host-inputs.json",
+        "sha256": "cdbdd544c2f2a8f0d3977775b643431db9b1c7f397f04f786394da59db7cbde2"
+      },
+      "deadline": "2026-10-15T07:08:10Z",
+      "cold_target_cap": 1000000000,
+      "whole_target_cap": 6000000000,
+      "whole_host_seconds": 21600
     }
   }
 }

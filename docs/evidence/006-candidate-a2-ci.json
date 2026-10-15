@@ -635,5 +635,119 @@
       }
     ],
     "scope": "Terminal run and all steps observed. This does not qualify the separately repaired package counter or later observer source."
+  },
+  "subsequent_candidate_344": {
+    "source_commit": "344dfa382cc8a7f54ef15d81037d07ad76fa4fac",
+    "actual_ci_run": 38661101254,
+    "actual_ci_status": "completed",
+    "actual_ci_conclusion": "failure",
+    "jobs_passed": 9,
+    "failed_jobs": [
+      {
+        "id": 116182278381,
+        "name": "Metadata and host-only suites",
+        "conclusion": "failure"
+      }
+    ],
+    "skipped_steps": [
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Observe checked memory copying and power authority in Lean"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Check indexed frames, exact mathematics and external backing outcomes"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Qualify IPC authority and managed notebook lowering"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Run kernel host-harness suite"
+      },
+      {
+        "job": "Metadata and host-only suites",
+        "step": "Run silicon host orchestration and observation suite"
+      }
+    ],
+    "jobs": [
+      {
+        "id": 116182278096,
+        "name": "Task 003 implemented Gates A-E RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278265,
+        "name": "Legacy Core0 RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278300,
+        "name": "Task 003 Buffer service RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278307,
+        "name": "Task 003 Gates F-I RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278321,
+        "name": "Foundation Gates 1-9 and clean qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278328,
+        "name": "Task 003 source-negative RV64 qualification",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278334,
+        "name": "RTL device and digital power conformance with literal host stimuli",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278360,
+        "name": "Task 004 real notebook O0/O2 writing and cold recovery",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 116182278381,
+        "name": "Metadata and host-only suites",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      {
+        "id": 116182278479,
+        "name": "Task 003 architectural containment RV64 acceptance",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "original_log": {
+      "path": "build/ci/task006-344-failure-a1/job-116182278381.log",
+      "sha256": "52b09064bacbf32694b7e2af1d271e69ea5994f6084e835186dfd6b102f35203"
+    },
+    "cause": "The exact logged-pipeline inventory in tests/foundation/test_ci_workflow.py omitted the new bounded NotebookPackage.lean regression log. Actual468 foundation tests ran; one static inventory assertion failed. Later five host steps were skipped. Nine other jobs passed.",
+    "repair": "Add only metadata/notebook-package-state-layout.log to the expected ordered inventory. The CI command, timeout, pipefail, retained logs and independent rejection tests remain enforced.",
+    "local_validation": {
+      "status": "PASS",
+      "tests": 468,
+      "seconds": 34.954,
+      "log": {
+        "path": "build/ci/task006-344-failure-a1/foundation-repaired.log",
+        "sha256": "2343a6d06db6617d9e4c48143a8314e991d227c5de943dd43efc63ba04079aa1"
+      }
+    },
+    "replacement_ci": "NOT_RUN for this unpushed repair; original candidate remains FAILURE."
   }
 }

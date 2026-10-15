@@ -1131,7 +1131,7 @@ Launch the prepared native machine on a privately backed existing medium:
 
 ```sh
 ./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
-  --native-bundle build/native/task006-package-closure-entry2-a1 \
+  --native-bundle build/native/task006-package-layout2-a3 \
   --workload notebook --mode developer --paused \
   --session-dir build/AN_UNUSED_PACKAGE_SESSION --disk YOUR_PRIVATE_MEDIUM.raw
 ./scripts/lemmasim course-install --session-dir build/AN_UNUSED_PACKAGE_SESSION \
@@ -1149,10 +1149,10 @@ The prepared browser runs the same audited guest on the existing RTL/Wasm core:
 
 ```sh
 ./scripts/lemmasim browser-serve \
-  --bundle build/browser/task006-package-closure-entry2-a1 --port 8790
+  --bundle build/browser/task006-package-layout2-a3 --port 8791
 ```
 
-At `http://127.0.0.1:8790/`, select Developer before opening, import an existing
+At `http://127.0.0.1:8791/`, select Developer before opening, import an existing
 raw medium under a new name, then Open. **Install a course package** sends the
 selected `.lcp` through the modeled UART and pauses for ordered admission;
 Resume runs the guest installer. The installation label observes only complete
