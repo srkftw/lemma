@@ -1,0 +1,27 @@
+{
+  "schema": "lemma-ci-mutation-fixture-path/1",
+  "status": "PASS_DETERMINISTIC_HOST_REPRODUCER_REPAIR_CANDIDATE_CI_PENDING",
+  "actual_candidate": "07e717194be5ab838e318a19f27a2c9705bcb89e",
+  "actual_run": 38714540020,
+  "actual_result": "FAILURE:9 jobs success; Task003 A-E job failed kernel-host setup; required subsequent evidence step skipped",
+  "actual_job": 116354040660,
+  "artifact_id": 11962196437,
+  "artifact_zip_sha256": "8e158c7eaeb98d31e382b98318fa03ac5a12054e2d82f0d37fed1e806ce7761b",
+  "actual_log": "build/ci/task006-07e-kernel-failure-a1/build/kernel/ci-prefix/logs/kernel-host.log",
+  "actual_log_sha256": "fe24c13c0dddf2f033640bb9c98a560f0019f31bb47700c8fa76b9187e0d52a3",
+  "observed_defect": "Mock replay selected O0 whenever any path ancestor contained O0. A deterministic O0 ancestor reproduces the same11 fixture setup errors; metadata host invocation had passed separately. CI log does not print the temporary ancestor, so that final path attribution is an inference supported by this reproducer.",
+  "original_reproducer": {
+    "path": "build/ci/task006-host-O0-parent-reproducer-a1/original-fixture.log",
+    "sha256": "940b9f174916765965abf5bf4908c538f8d544822b60a1f82731d221cf5eb2c0",
+    "tests": 17,
+    "errors": 11
+  },
+  "corrected_reproducer": {
+    "path": "build/ci/task006-host-O0-parent-reproducer-a1/fixed-fixture.log",
+    "sha256": "0ae87203dbdbe7281850e27dc9c039354797494c6496844e667f26395a79a72f",
+    "tests": 17,
+    "errors": 0
+  },
+  "repair": "Mock selects only the exact declared mutant_run/inner-session/result.json path. Every fixture deliberately uses an O0 ancestor. Production mutation validation and all expected inner-failure/cleanup checks remain unchanged.",
+  "later_full_kernel_host": "433 PASS at current modified source; whole A-E/CI requires its own execution result"
+}
