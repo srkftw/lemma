@@ -1,12 +1,13 @@
 """Raw command frame and exact deployment admission, not guest durability."""
-import copy,struct,sys,tempfile,unittest
+import copy,struct,sys,tempfile,unittest,json,hashlib
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
-from lemmasim_course import frame
+from lemmasim_course import frame,send
 from check_course_guest import Machine
 from check_course_cold import admitted_writer, capture_failure
 from core0_common import sha256
 from unittest.mock import patch
+from types import SimpleNamespace
 from silicon_guest_bundle import development_configuration
 
 class CourseCommand(unittest.TestCase):
@@ -27,6 +28,36 @@ class CourseCommand(unittest.TestCase):
   with self.assertRaises(ValueError):development_configuration('lemma-silicon-dev/0.2.0','notebook',course,'developer')
   ordinary='lemmasim-silicon-array-bulk-notebook'
   self.assertEqual(development_configuration('lemma-silicon-dev/0.3.0','notebook',ordinary,'student'),ordinary)
+
+class CompanionCourseCommand(unittest.TestCase):
+ def fixture(self,root,configuration,profile):
+  build=root/'guest';build.mkdir();image=build/'image.elf';image.write_bytes(b'host admission fixture, never executed')
+  (build/'build.json').write_text(json.dumps({'configuration':configuration}))
+  session=root/'session';session.mkdir();(session/'session.json').write_text(json.dumps({
+   'schema':'lemmasim-live/1','mode':'developer','backend':'rtl',
+   'identity':{'profile':profile,'guest':hashlib.sha256(image.read_bytes()).hexdigest()},
+   'argv':['machine','--image',str(image)]}))
+  package=root/'untrusted.lcp';raw=bytearray(128);struct.pack_into('<2Q',raw,24,1,2);struct.pack_into('<Q',raw,80,17);package.write_bytes(raw)
+  return SimpleNamespace(session_dir=session,command='course-install',package=package,transaction=7,cycle=None),bytes(raw)
+ def test_exact_companion_pair_transports_untrusted_bytes_without_receipt(self):
+  for suffix in ('notebook','initialize'):
+   with self.subTest(suffix=suffix),tempfile.TemporaryDirectory() as temporary:
+    args,raw=self.fixture(Path(temporary),'lemmasim-silicon-usb-clocked-package-retry-bulk-'+suffix,'lemma-silicon-dev/0.13.0')
+    with patch('lemmasim_course.request',return_value={'admitted':True}) as request:
+     result=send(args)
+    self.assertEqual(result['status'],'RAW_COMMAND_ADMITTED');self.assertIn('No persistence receipt',result['receipt'])
+    packet=bytes.fromhex(request.call_args.args[1]['hex'])
+    self.assertEqual(packet,frame(1,1,2,128,7,17)+raw)
+    self.assertEqual(args.package.read_bytes(),raw)
+ def test_foreign_hardware_and_three_role_image_cannot_gain_installer_authority(self):
+  for configuration,profile in [
+   ('lemmasim-silicon-usb-clocked-package-retry-bulk-notebook','lemma-silicon-dev/0.3.0'),
+   ('lemmasim-silicon-package-closure-entry2-bulk-notebook','lemma-silicon-dev/0.13.0'),
+   ('lemmasim-silicon-usb-clocked-closure-retry-bulk-notebook','lemma-silicon-dev/0.13.0')]:
+   with self.subTest(configuration=configuration,profile=profile),tempfile.TemporaryDirectory() as temporary:
+    args,_=self.fixture(Path(temporary),configuration,profile)
+    with patch('lemmasim_course.request') as request,self.assertRaises(ValueError):send(args)
+    request.assert_not_called()
 
 class CourseCommandBudgets(unittest.TestCase):
  def test_each_command_gets_the_declared_budget_from_actual_admission(self):

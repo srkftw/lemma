@@ -15,15 +15,16 @@ AUTHORITY=Path(__file__).resolve().parents[1]/'tooling/package-companion-target-
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 def selected(unit):return unit.get('configuration') in CONFIGURATIONS
 def role_key(unit):
+ if unit.get('role')=='firmware':return 'firmware-init' if unit['configuration'].endswith('-initialize') else 'firmware'
  if unit.get('role')=='kernel':return 'kernel-init' if unit['configuration'].endswith('-initialize') else 'kernel'
  if unit.get('role')=='user' and unit.get('image_key') in USER_ROOTS:return unit['image_key']
- raise Core0Error('Package recovery role outside exact six-role component authority')
+ raise Core0Error('Package recovery role outside exact firmware/kernel/four-user artifact authority')
 def contract(unit):
  if not selected(unit):return None
  if unit.get('software_deployment')!=SOFTWARE_DEPLOYMENT:raise Core0Error('Package recovery hardware/software tuple differs')
  if not AUTHORITY.is_file():raise Core0Error('Package recovery complete genuine authority missing')
  authority=json.loads(AUTHORITY.read_text())
- if authority.get('schema')!=VERSION or set(authority.get('roles',{}))!={'kernel','kernel-init',*USER_ROOTS}:raise Core0Error('Package recovery authority schema/roles differ')
+ if authority.get('schema')!=VERSION or set(authority.get('roles',{}))!={'firmware','firmware-init','kernel','kernel-init',*USER_ROOTS}:raise Core0Error('Package recovery authority schema/roles differ')
  key=role_key(unit);wanted=authority['roles'][key]
  if digest(unit)!=wanted['catalog_sha256']:raise Core0Error('Package recovery complete typed/effect/root catalog differs: '+key)
  return key,wanted

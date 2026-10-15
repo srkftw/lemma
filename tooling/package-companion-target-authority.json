@@ -1,56 +1,98 @@
 {
-  "schema": "lemma-package-clocked-recovery4-target/1",
+  "firmware_supplement": {
+    "initializer_failed_pair_result_sha256": "6bb12fd56bcbfe40b00f43d572d0d1dedbcfa4fe7e0fdd31b57014aa93e3f9d4",
+    "normal_result_sha256": "385ab0fa9d1049177fa4a68472052710d0e4fe5d136bbd9417635baf6a142cf4",
+    "roles": {
+      "firmware": {
+        "artifacts": {
+          "program.ll": "91b5c43e72be6c5c5f90f9a7a7edf4cf21bd165a0d21d0dfaf42e8f9caf38cb7",
+          "program.o": "3acd11598872267b40de418538a5d878fabed0b3f859aa3072836d151823e450",
+          "program.opt.ll": "a4e03381f26d29b8ac6209b89924ca87aceccc4b06f02cc2cef53beea3efecdc",
+          "unit.json": "fb0e2937dcd0280ae405750692d6949589b291742a8d53312ee447227f1c8c6f"
+        },
+        "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-companion-firmware-a1"
+      },
+      "firmware-init": {
+        "artifacts": {
+          "program.ll": "64e00e2bbacaafbccd7a3b4a7b54241e12e48719a8fb2ec628cf708ba2953ce2",
+          "program.o": "587391e563b560c6afeff59936b9afcfad117b4dd0b2f60faebda39b4beb8d5f",
+          "program.opt.ll": "5d7964375c62240bb5441ac9426209870ac65b9b5baa1b992cc6841524a0fe4a",
+          "unit.json": "ab66033bd53ddccf1c1e0825cebc117bf244c5b52ae21ee59155c342b7601b90"
+        },
+        "path": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-package-companion-initializer-a1/firmware"
+      }
+    },
+    "scope": "Actual genuine normal firmware export and retained original initializer BUILT artifacts; original ordinary audit failure preserved",
+    "source_seal_sha256": "0cf5132bf803f21cd1c94d5d0bc3ab7895ee1cd7f052523073ddd337b3da3a3a"
+  },
   "origin": "build/courses/task006-package-companion-component-a3",
   "origin_sha256": "66dd0f0882b1eb3e7318938824d5f9e0cebd4914229b3b6424357b336cc61c3e",
-  "scope": "Fresh actual six-role genuine LLVM/RV64 capture after exact library-module selection repair and shared checked Surface callback inlining. Old prototype and failed component2 remain retained.",
   "roles": {
-    "kernel": {
-      "catalog_sha256": "10a107e995ab4f65b1240123f4a3cb749e49312f8d62d61023e8471e790a798c",
-      "function_count": 1287,
-      "pre_sha256": "c5c24940195f81259ad6b09cc9cb22f3edf9c095e89f243b4f0c0c0d42e42ea2",
-      "pre_function_count": 1287,
-      "post_sha256": "f0ad15c4b6af60cedf0b8b71c3536eadbd6bc7086b25f5e0784b59d97f0d50cb",
-      "post_function_count": 1287
-    },
-    "kernel-init": {
-      "catalog_sha256": "b325e278ba144a329111e678500314b97f955fad9653a95fd9f66d9041ff6949",
-      "function_count": 1287,
-      "pre_sha256": "48a27e4d96125c8c11a589af795681ef2f67c01f42252cb5df943915329e1acd",
-      "pre_function_count": 1287,
-      "post_sha256": "cdbf8a913da02bab456220ca9df6ada0b075fce54267d86521abbaa7352ee7ea",
-      "post_function_count": 1287
-    },
-    "store": {
-      "catalog_sha256": "b543bcf528b7465f736c663bc4898222ee2c7e91ea6b97e3ddd88e53668664f0",
-      "function_count": 298,
-      "pre_sha256": "f955119df3c12a12e962496fc2e1e99194c694ceba498bdaaf9f93bb3615929b",
-      "pre_function_count": 298,
-      "post_sha256": "4067ca9e6649428e703deabaf72bba606f2c59dc32e55faac4f29b7d52b9257b",
-      "post_function_count": 298
-    },
-    "notebook": {
-      "catalog_sha256": "695812fcac79b161bb5925c8ede6b894f8afc780e59ef414bc4774cf604eab0e",
-      "function_count": 875,
-      "pre_sha256": "c767be40798a1479869143553e5de8b751802c228e7f721eb11735cff1f2e626",
-      "pre_function_count": 875,
-      "post_sha256": "8dc999779d716111b9def2ce5c50af12f5487ad9d86257cf4788c8e09add9a2c",
-      "post_function_count": 873
-    },
     "arithmetic": {
       "catalog_sha256": "b47d2eec497fe770fe80d17642097562e5768f6d4a17d8e3021c0feb3c9ad9a1",
       "function_count": 169,
-      "pre_sha256": "922a8ac084ee0f6623a9503e0b47b6d4ebb8ca0af840ef1b23d9223c4911c081",
-      "pre_function_count": 169,
+      "post_function_count": 169,
       "post_sha256": "0a0a4408d1c114f672b8a169e3e5a5f983f0f843e115f8cf0de75dd2ba8d2517",
-      "post_function_count": 169
+      "pre_function_count": 169,
+      "pre_sha256": "922a8ac084ee0f6623a9503e0b47b6d4ebb8ca0af840ef1b23d9223c4911c081"
     },
     "course": {
       "catalog_sha256": "53ae2711013468c4f562e0837e4796fce7f9d2eb0328c4bc9f8e24f9bdaaed60",
       "function_count": 169,
-      "pre_sha256": "fd0cfca9d24c9756607dcb973eaab3512223dcc2230288ecaefc5f802e44c35d",
-      "pre_function_count": 169,
+      "post_function_count": 169,
       "post_sha256": "226ee09aa3662b48b1973fcf882c293ca57394b93e60e8178111473b31254487",
-      "post_function_count": 169
+      "pre_function_count": 169,
+      "pre_sha256": "fd0cfca9d24c9756607dcb973eaab3512223dcc2230288ecaefc5f802e44c35d"
+    },
+    "firmware": {
+      "catalog_sha256": "3aae8209402b04e63e316676d12e4ef9cb32eaed37879d9457d01d11cb77e816",
+      "function_count": 18,
+      "post_function_count": 18,
+      "post_sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2",
+      "pre_function_count": 18,
+      "pre_sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+    },
+    "firmware-init": {
+      "catalog_sha256": "4625d93837d930900ea60c8013f1d3961936426fcc05b93f83d3f345103e6b12",
+      "function_count": 18,
+      "post_function_count": 18,
+      "post_sha256": "7c73c8c0c8ad4fcf22e7bbb70d2759d66632574d0df53725c70e7aa4d909ecf2",
+      "pre_function_count": 18,
+      "pre_sha256": "4c43a8911c57f931dfa49f41ceb1dd9d101662c1c3812df0bdcedcd8af3a8fb4"
+    },
+    "kernel": {
+      "catalog_sha256": "10a107e995ab4f65b1240123f4a3cb749e49312f8d62d61023e8471e790a798c",
+      "function_count": 1287,
+      "post_function_count": 1287,
+      "post_sha256": "f0ad15c4b6af60cedf0b8b71c3536eadbd6bc7086b25f5e0784b59d97f0d50cb",
+      "pre_function_count": 1287,
+      "pre_sha256": "c5c24940195f81259ad6b09cc9cb22f3edf9c095e89f243b4f0c0c0d42e42ea2"
+    },
+    "kernel-init": {
+      "catalog_sha256": "b325e278ba144a329111e678500314b97f955fad9653a95fd9f66d9041ff6949",
+      "function_count": 1287,
+      "post_function_count": 1287,
+      "post_sha256": "cdbf8a913da02bab456220ca9df6ada0b075fce54267d86521abbaa7352ee7ea",
+      "pre_function_count": 1287,
+      "pre_sha256": "48a27e4d96125c8c11a589af795681ef2f67c01f42252cb5df943915329e1acd"
+    },
+    "notebook": {
+      "catalog_sha256": "695812fcac79b161bb5925c8ede6b894f8afc780e59ef414bc4774cf604eab0e",
+      "function_count": 875,
+      "post_function_count": 873,
+      "post_sha256": "8dc999779d716111b9def2ce5c50af12f5487ad9d86257cf4788c8e09add9a2c",
+      "pre_function_count": 875,
+      "pre_sha256": "c767be40798a1479869143553e5de8b751802c228e7f721eb11735cff1f2e626"
+    },
+    "store": {
+      "catalog_sha256": "b543bcf528b7465f736c663bc4898222ee2c7e91ea6b97e3ddd88e53668664f0",
+      "function_count": 298,
+      "post_function_count": 298,
+      "post_sha256": "4067ca9e6649428e703deabaf72bba606f2c59dc32e55faac4f29b7d52b9257b",
+      "pre_function_count": 298,
+      "pre_sha256": "f955119df3c12a12e962496fc2e1e99194c694ceba498bdaaf9f93bb3615929b"
     }
-  }
+  },
+  "schema": "lemma-package-clocked-recovery4-target/1",
+  "scope": "Fresh actual six-role genuine LLVM/RV64 capture after exact library-module selection repair and shared checked Surface callback inlining. Old prototype and failed component2 remain retained."
 }
