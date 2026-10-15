@@ -25,7 +25,9 @@ def main():
   return q.stdout.decode()
  try:
   capture=json.loads((origin/'result.json').read_text());authority=json.loads(AUTHORITY.read_text())
-  if capture.get('status')!='PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY' or not capture.get('source_inputs_equal') or not capture.get('archive_equal') or authority['origin']['sha256']!=sha256(origin/'result.json'):raise Core0Error('complete genuine original capture/authority required')
+  origins=[authority]+([authority['restored_v1']] if 'restored_v1' in authority else [])
+  matched=[row for row in origins if row.get('origin',{}).get('sha256')==sha256(origin/'result.json')]
+  if capture.get('status')!='PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY' or not capture.get('source_inputs_equal') or not capture.get('archive_equal') or len(matched)!=1:raise Core0Error('complete genuine original capture/authority required')
   if set(capture['roles'])!={'canonical','canonical-init','companion','companion-init'}:raise Core0Error('complete four actual catalog matrix required')
   for n,h in capture['source_inputs'].items():
    if sha256(origin/'consumed-source-root'/n)!=h or n.startswith('Lemma/') and sha256(ROOT/n)!=h:raise Core0Error('actual target/compiler source binding differs: '+n)
@@ -51,17 +53,25 @@ def main():
    readonly=validate_object(sections,symbols,relocs,raws,audits['post']['readonly_optimizer_tables'],'program.o');backend=inspect_backend_jump_tables(inspect,d,object_file='program.o',section_text=sections,symbol_text=symbols,relocation_text=relocs,unit=u,optimization='O2',readonly_tables=readonly['readonly_tables']);r['roles'][name]={'status':'PASS_GENERIC_UNIT_IR_READONLY_OBJECT_JUMPS','functions':len(u['functions']),'pre':audits['pre'],'post':audits['post'],'readonly':readonly,'backend':backend};print(name,'PASS_GENERIC_OBJECT',len(u['functions']),flush=True)
   d=out/'canonical';u=json.loads((d/'unit.json').read_text());ir=(d/'program.ll').read_text();rows={canonical(x['source']):x for x in u['functions']};mutants=[]
   import re
-  for name,source,pattern,replacement in [
+  cases=[
    ('over-budget-batch','Lemma.Ink.Surface.uploadIndexedBulk',r'icmp ult i64 4, %arg4',r'icmp ult i64 5, %arg4'),
    ('wrong-queue-wrap','Lemma.Applications.Notebook.consumeDirtyIndexStep',r'urem i64 (%[-\w.]+), 16384',r'urem i64 \1, 16383'),
-   ('wrong-completed-prefix','Lemma.Applications.Notebook.uploadDirtyBatch',r'(%cast43 = trunc i64 )%action.call.value40( to i32)',r'\g<1>%call41\2')]:
-   body=_ir_definition_body(ir,rows[source]['symbol']);bad,n=re.subn(pattern,replacement,body,count=1)
-   if n!=1:raise Core0Error('prospective actual semantic mutation site missing: '+name)
+   ('wrong-completed-prefix','Lemma.Applications.Notebook.uploadDirtyBatch',r'(%cast43 = trunc i64 )%action.call.value40( to i32)',r'\g<1>%call41\2')]
+  restored='Lemma.Applications.Notebook.restorePaperBatch'
+  if restored in rows:
+   minimum=rows['Lemma.Applications.Notebook.minimum']['symbol']
+   cases=[
+    ('over-budget-restoration',restored,r'(call i64 @'+re.escape(minimum)+r'\(i64 )4(, i64 )',r'\g<1>5\2'),
+    ('wrong-restoration-prefix',restored,r'add i64 (%action.call.value\d+), %action.call.value\d+',r'add i64 \1, 4'),
+    ('wrong-restoration-lane',restored,r'(and i64 )32(, 63)',r'\g<1>31\2')]
+  for name,source,pattern,replacement in cases:
+   body=_ir_definition_body(ir,rows[source]['symbol']);all_sites=name=='over-budget-restoration';bad,n=re.subn(pattern,replacement,body,count=0 if all_sites else 1)
+   if n!=(4 if all_sites else 1):raise Core0Error('prospective actual semantic mutation site missing: '+name)
    changed=ir.replace(body,bad,1);f=out/(name+'.ll');f.write_text(changed);run(name+'-verify',[tools['opt'],'-passes=verify','-disable-output',str(f)])
    try:validate(changed,u,optimized=False)
    except Core0Error as e:mutants.append({'name':name,'valid_llvm':True,'reason':str(e),'sha256':sha256(f)})
    else:raise Core0Error('actual semantic mutant admitted: '+name)
-  r.update(status='PASS_DIRTY_BATCH_NOTEBOOK_ARTIFACTS_ONLY',mutants=mutants)
+  r.update(status='PASS_RESTORED_BATCH_NOTEBOOK_ARTIFACTS_ONLY' if restored in rows else 'PASS_DIRTY_BATCH_NOTEBOOK_ARTIFACTS_ONLY',mutants=mutants)
  except BaseException as e:r['error']=repr(e);raise
  finally:
   r['seconds']=time.monotonic()-start;r['observer_inputs_equal']=all(sha256(ROOT/n)==h for n,h in before.items())

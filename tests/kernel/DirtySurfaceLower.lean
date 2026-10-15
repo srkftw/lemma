@@ -6,7 +6,8 @@ import Lemma.Applications.Notebook
 This compiler component does not establish RV64 or notebook acceptance. -/
 open Lean Elab Command Lemma.Core0 Lemma.Compiler
 def exportDirtySurface (env : Environment) : IO Unit := do
-  let roots := #[`Lemma.Ink.Surface.uploadIndexedBulk, `Lemma.Applications.Notebook.pumpRefreshBatched]
+  let roots := #[`Lemma.Ink.Surface.uploadIndexedBulk, `Lemma.Applications.Notebook.pumpRefreshBatched,
+    `Lemma.Applications.Notebook.restorePaperBatch, `Lemma.Applications.Notebook.pumpRefreshRestoredBatched]
   let suite ← IO.ofExcept <| (checkAndLowerActionSuiteForProfile env .user_v0_1 roots).mapError (·.render)
   let lowered ← IO.ofExcept <| lowerActionSuiteExecution .user_v0_1 suite {symbolPrefix := "lemma_dirty_surface_"}
   let mut declarations : Array LLVM.Declaration := #[]
@@ -20,7 +21,7 @@ def exportDirtySurface (env : Environment) : IO Unit := do
         returnType := .checkedResult
         parameters := spec.machineArguments.map (fun _ => .i64) }
   let module : LLVM.Module := {
-    sourceName := "Genuine Lean dirty tile batch1"
+    sourceName := "Genuine Lean dirty and restored tile batch2"
     functions := lowered.functions
     declarations := declarations }
   IO.ofExcept <| LLVM.validateModule module
@@ -40,7 +41,7 @@ def exportDirtySurface (env : Environment) : IO Unit := do
   IO.FS.createDirAll path
   IO.FS.writeFile (path/"program.ll") module.render
   IO.FS.writeFile (path/"unit.json") <| (Json.mkObj [
-    ("schema",.str "lemma-dirty-surface-component/1"),
+    ("schema",.str "lemma-dirty-surface-component/2"),
     ("profile",.str Profile.user_v0_1.contractVersion),("functions",.arr rows),
     ("roots",.arr (roots.map fun root => .str root.toString)),
     ("scope",.str "Genuine checked Lean/LLVM component only; whole ordinary audits/execution pending")]).pretty++"\n"

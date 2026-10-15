@@ -28,5 +28,37 @@
       "post_function_count": 884,
       "post_sha256": "4f1440241d35b4bd23db6e255ac3ba2aa515dab5cdcae553d41b91eedb4fa7bc"
     }
+  },
+  "restored_v1": {
+    "schema": "lemma-restored-surface-notebook-artifact/1",
+    "origin": {
+      "path": "build/courses/task006-restored-batch-notebook-component-a6/result.json",
+      "sha256": "cf2965bb861ff4a7192493d0d0fee8ab3794a530845c188bca3ceb00b24ec307",
+      "genuine_capture_scope": "fresh ordinary Lean declarations, both exact deployment catalogs; no constructed AST"
+    },
+    "deployments": {
+      "canonical": {
+        "package_notebook_version": 10,
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-package-closure-entry2-bulk-notebook": "af060d9b38b2c4ee9849451cf73fa725dda7c688f1326fd2b0279863b52c8355",
+          "lemmasim-silicon-package-closure-entry2-bulk-initialize": "bf1c98acc53fca752e195bd9dc6d602091a985b6b6c0c6878839fb18d178bdc8"
+        },
+        "pre_function_count": 849,
+        "pre_sha256": "ad2e45d577ed2c71753a744ab5e99340eee86fd55290596e9aa6f5f90bd41de2",
+        "post_function_count": 847,
+        "post_sha256": "c88fc10fa2c768d68ce147c6c305f5e0c00b1292ef0082361a61840301a9b1f4"
+      },
+      "companion": {
+        "package_notebook_version": 10,
+        "catalog_sha256_by_configuration": {
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "c1e393b244c4fb336a5a63055be9801abad01b040fe6328f76f06a69ec1d9bdf",
+          "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "f7e39e808e53830451f8ec33844efabfdaf126e5084148b4a88b4b7f14965dc1"
+        },
+        "pre_function_count": 887,
+        "pre_sha256": "ffe74310c10ebe34250540b4a090df7db907416b73ed336555634a9f882c95ba",
+        "post_function_count": 885,
+        "post_sha256": "63ee915fd4c4d5d4d471a6ea0b28b1a46cbb62dd9a27161ddab25b46cd68d0c1"
+      }
+    }
   }
 }

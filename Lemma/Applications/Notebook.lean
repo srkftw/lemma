@@ -253,6 +253,29 @@ private def restorePaperStep (_ _ : UInt32) (acc surface dimensions _ _ : UInt64
   .bind (uploadTileIndex surface dimensions index) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 488 (index + 1)) fun s _ => if statusFailed s = true then .done s 0 else .done 0 (acc + 1)
 
+/-- Full-controller restoration uses the same four-tile budget and owned
+Surface-v2 packet as ordinary dirty progress. The cursor names only the prefix
+actually accepted by the controller; a failed suffix remains for retry. -/
+def restorePaperBatch (surface dimensions : UInt64) : Action :=
+  .bind (get 488) fun s index => if statusFailed s = true then .done s 0 else
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let total := ((width + 31) / 32) * ((height + 31) / 32)
+  if total ≤ index then .done 0 0 else
+  if 4096 < width then .done 16 0 else if 4096 < height then .done 16 0 else
+  let amount := minimum 4 (total - index)
+  let lanes := index ||| ((index + 1) <<< 16) |||
+    ((index + 2) <<< 32) ||| ((index + 3) <<< 48)
+  -- Surface-v2 requires zero inactive lanes. Avoid a shift by 64 for the
+  -- complete batch; a single mask clips the final one, two or three lanes.
+  let packed := if amount = 4 then lanes else
+    lanes &&& (((1 : UInt64) <<< (amount * 16)) - 1)
+  .bind (Surface.uploadIndexedBulk surface width height packed amount) fun result completed =>
+  if amount < completed then .done 95 0 else
+  if completed = 0 then .done result 0 else
+  .bind (put 488 (index + completed)) fun s _ =>
+  if statusFailed s = true then .done s 0 else .done result completed
+
 private def uploadDirtyStep (_ _ : UInt32) (acc surface dimensions _ _ : UInt64) : Action :=
   .bind (get 456) fun s count => if statusFailed s = true then .done s 0 else
   if count = 0 then .done 0 acc else if 16384 < count then .done 234 0 else
@@ -384,6 +407,57 @@ def pumpRefreshBatched : Action :=
   .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
   .bind (if recovery = 1 then
     .boundedFoldU64 4 restorePaperStep 4 0 surface (width ||| (height <<< 16)) 0 0 fun s count => .done s count
+    else .done 0 0) fun s uploaded => if statusFailed s = true then .done s 0 else
+  .bind (get 488) fun s restored => if statusFailed s = true then .done s 0 else
+  if (if recovery = 1 then
+    if restored < ((width + 31) / 32) * ((height + 31) / 32) then true else false
+    else false) = true then .done 0 0 else
+  -- At most four uploads per main-loop iteration. FIFO consumption and store
+  -- progress continue between batches; a refresh names only uploaded pixels.
+  .bind (uploadDirtyBatch (4 - uploaded) surface (width ||| (height <<< 16))) fun s _ =>
+  if statusFailed s = true then .done s 0 else
+  .bind (get 456) fun s pending => if statusFailed s = true then .done s 0 else
+  if pending = 0 then
+  .bind (Surface.acceptedSequence surface) fun s previous => if statusFailed s = true then .done s 0 else
+  if previous = 0xffffffffffffffff then .done 170 0 else
+  .bind (Surface.refresh surface (previous + 1) x0 y0 (x1 - x0) (y1 - y0) 2) fun s sequence =>
+  if s = 171 then .done 0 0 else if statusFailed s = true then .done s 0 else
+  .bind (put 480 (if recovery = 1 then 2 else 0)) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 336 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 344 0xffff) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 352 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 360 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 440) fun s opened => if statusFailed s = true then .done s 0 else
+  .bind (if opened = 1 then reportCommitState 0x425 sequence 0 else .done 0 0)
+    fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (put 440 0) fun s _ => .done s sequence
+  else .done 0 0
+
+/-- Package cohort10: batch the complete restored framebuffer as well as dirty FIFO tiles. -/
+def pumpRefreshRestoredBatched : Action :=
+  .bind (get 0) fun s surface => if statusFailed s = true then .done s 0 else
+  .bind (Surface.status surface) fun s status => if statusFailed s = true then .done s 0 else
+  if status &&& 1 = 1 then .done 0 0 else
+  .bind (get 32) fun s width => if statusFailed s = true then .done s 0 else
+  .bind (get 40) fun s height => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  -- A completed full quality request alone clears controller bit8. If that
+  -- accepted request was reset too, start a new complete framebuffer upload.
+  .bind (if status &&& 8 = 8 then
+    if recovery = 1 then .done 0 0 else
+    .bind clearDirtyTiles fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 488 0) fun s _ => if statusFailed s = true then .done s 0 else
+    .bind (put 480 1) fun s _ => if statusFailed s = true then .done s 0 else
+    dirty 0 0 width height
+    else put 480 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (get 336) fun s x0 => if statusFailed s = true then .done s 0 else
+  if x0 = 0xffff then .done 0 0 else
+  .bind (get 344) fun s y0 => if statusFailed s = true then .done s 0 else
+  .bind (get 352) fun s x1 => if statusFailed s = true then .done s 0 else
+  .bind (get 360) fun s y1 => if statusFailed s = true then .done s 0 else
+  .bind (get 480) fun s recovery => if statusFailed s = true then .done s 0 else
+  .bind (if recovery = 1 then
+    restorePaperBatch surface (width ||| (height <<< 16))
     else .done 0 0) fun s uploaded => if statusFailed s = true then .done s 0 else
   .bind (get 488) fun s restored => if statusFailed s = true then .done s 0 else
   if (if recovery = 1 then
@@ -3511,7 +3585,7 @@ private def packageStep : Action :=
   .bind pumpPackageArithmetic fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpCancelledRedraw fun s _ => if statusFailed s = true then .done s 0 else
   .bind pumpPackageWork fun s _ => if statusFailed s = true then .done s 0 else
-  .bind pumpRefreshBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (if count = 384 then enqueue else if active = 0 then enqueue else .done 0 0)
@@ -4020,7 +4094,7 @@ def packageRecoverableStep : Action :=
   .bind (if retained = 0 then pumpPackageArithmetic else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (if retained = 0 then pumpPackageWork else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (if retained = 0 then pumpCancelledRedraw else .done 0 0) fun s _ => if statusFailed s = true then .done s 0 else
-  .bind pumpRefreshBatched fun s _ => if statusFailed s = true then .done s 0 else
+  .bind pumpRefreshRestoredBatched fun s _ => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s count => if statusFailed s = true then .done s 0 else
   .bind (get 104) fun s active => if statusFailed s = true then .done s 0 else
   .bind (get 664) fun s overflow => if statusFailed s = true then .done s 0 else

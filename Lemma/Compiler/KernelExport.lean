@@ -921,6 +921,20 @@ private def validateRoots (configuration role : String) (suite : CheckedActionSu
 
 private def exportUnit (env : Environment) (configuration role : String) (names : Array Name)
     (directory : System.FilePath) (image? : Option UserImageSpec := none) : IO Unit := do
+  -- Host-only diagnostics; no catalog, accepted language or RV64 bytes change.
+  let traceEnabled := (← IO.getEnv "LEMMA_EXPORT_TRACE") == some "1"
+  let traceFile ← IO.getEnv "LEMMA_EXPORT_TRACE_FILE"
+  let traceStart ← IO.monoMsNow
+  let trace (phase : String) : IO Unit := do
+    if traceEnabled then
+      let line := s!"LEMMA_EXPORT {configuration} {role} {phase} elapsed_ms={(← IO.monoMsNow) - traceStart}"
+      IO.eprintln line
+      (← IO.getStderr).flush
+      if let some file := traceFile then
+        IO.FS.withFile file .append fun handle => do
+          handle.putStrLn line
+          handle.flush
+  trace "start"
   let profile ← IO.ofExcept (roleProfile role configuration image?)
   IO.ofExcept <| validateSelectedRoots configuration role names image?
   for imported in env.header.moduleNames do
@@ -935,6 +949,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
   let suite ← match checkAndLowerActionSuiteForProfile env profile names with
     | .ok suite => pure suite
     | .error diagnostic => throw <| IO.userError diagnostic.render
+  trace s!"checked-suite scalars={suite.scalarFunctions.size} actions={suite.actionFunctions.size}"
   IO.ofExcept (validateRoots configuration role suite image?)
   for function in suite.scalarFunctions do
     unless productionName function.name && allowedDevelopmentSource configuration role function.name image? &&
@@ -954,6 +969,7 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     inlineLiteralConstants := closedInlineFor configuration,
     inlinePrimitiveWrappers := closedInlineFor configuration && role == "kernel" && !isProductNotebookConfiguration configuration,
     inlineUserWordWrappers := (isManagedNotebookConfiguration configuration || isSumsNotebookConfiguration configuration || isBytesNotebookConfiguration configuration || isArrayNotebookConfiguration configuration || isStringNotebookConfiguration configuration || isClosureNotebookConfiguration configuration || isUSBClosureRecoveryNotebookConfiguration configuration) && role == "user" && (profile == .user_v0_2 || profile == .user_v0_3 || profile == .user_v0_4 || profile == .user_v0_5 || profile == .user_v0_6 || profile == .user_v0_7) }
+  trace s!"lowered functions={lowered.functions.size}"
   let mut declarations : Array LLVM.Declaration := #[]
   for spec in suite.usedExecutionOps do
     if let some name := spec.primitiveSymbol? then
@@ -968,11 +984,14 @@ private def exportUnit (env : Environment) (configuration role : String) (names 
     declarations
     functions := lowered.functions }
   IO.ofExcept <| LLVM.validateModule module
+  trace "validated-module"
   let manifest ← IO.ofExcept <| unitManifest env configuration role suite lowered image?
+  trace "manifest"
   IO.FS.createDirAll directory
   for (filename, contents) in #[("program.ll", module.render), ("unit.json", manifest.pretty ++ "\n"),
       ("normalized.txt", normalized configuration role suite image?), ("symbols.txt", lowered.renderSymbolManifest)] do
     IO.FS.writeFile (directory / filename) contents
+  trace "published"
 
 private def userTextBaseFor (configuration : String) : Nat :=
   if configuration.startsWith "lemmasim-" then 0x1000000 else Layout.userTextBase

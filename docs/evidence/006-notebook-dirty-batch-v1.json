@@ -445,5 +445,117 @@
     },
     "original_failure_retained": "Original full-state/CRC passive observer used field10 as busy and original owner overstated input as saved notebook. Corrected from primary serialization and actual medium census, no CPU rerun or hidden boundary action.",
     "next_case": "Original400M/absolute2026-10-15T20:33:15.020525Z authored body observation is running; no current pass."
+  },
+  "restored_surface_cohort10": {
+    "status": "PASS_COMPLETE_COMPILER_ARTIFACTS_LINKED_IMAGES_AND_GUEST_NOT_RUN",
+    "contract": "docs/contracts/006-restored-surface-notebook-v1.md",
+    "behavior": "The ordinary maintained Lean Package loops submit up to four consecutive restoration tiles through the existing owned Surface-v2 packet. Cursor advances by actual completed prefix, inactive lanes are zero, refresh waits for complete restoration and dirty work. Geometry/capacity/ownership/journal/profile unchanged.",
+    "sources": {
+      "Lemma/Applications/Notebook.lean": "3c44acd19185519b50b4e0a4b6179cade4d0ed60e558e824354def4d35d5d500",
+      "Lemma/Compiler/KernelExport.lean": "5561f5f6e51709585df9f249e31dd11a22cd90082486893ff6a0ce42c6c5c6e7",
+      "scripts/dirty_batch_notebook_target.py": "b124486dc57e46a282d5d3034b6c1a77dad2d1a19ae941724948f1db29e73b6d",
+      "tooling/dirty-batch-notebook-target-authority.json": "70f2d4c0b8bc72878ef0c54e7f6b5c7270551d8b667d738556d3e4eb7b747119"
+    },
+    "component": {
+      "path": "build/courses/task006-restored-batch-component-a7/result.json",
+      "sha256": "7d94d7ad71205dc1685730c544b614441b2b431a3566e234f5782295029ac309",
+      "status": "PASS_LITERAL_AND_GENUINE_RESTORED_BATCH_COMPONENT_ONLY",
+      "seconds": 26.575519906939007
+    },
+    "complete_capture": {
+      "path": "build/courses/task006-restored-batch-notebook-component-a6/result.json",
+      "sha256": "cf2965bb861ff4a7192493d0d0fee8ab3794a530845c188bca3ceb00b24ec307",
+      "status": "PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY",
+      "seconds": 393.85996861895546,
+      "source_commit": "616e8db0ea2605136ad02d697ac2f1ac30da4c65",
+      "source_inputs_equal": true,
+      "archive_equal": true,
+      "reused_prefix": {
+        "original_status": "FAIL",
+        "original_error": null,
+        "supervision": "FAIL",
+        "roles": [
+          "canonical",
+          "canonical-init",
+          "companion"
+        ],
+        "original_absolute_deadline": "2026-10-15T20:41:27.119188+00:00",
+        "classification": "Exact closed source-bound compiler/object prefix reused; prior failed collector remains FAIL."
+      }
+    },
+    "capture_supervision": {
+      "path": "build/courses/task006-restored-batch-notebook-component-supervision-a6/result.json",
+      "sha256": "0a0e1f32a9ac1cef36cd0021fa7368146b3096630914502f8703176a9c197ddd",
+      "status": "PASS_GENUINE_COMPONENT_SOURCE_AND_RESOURCES_SUPERVISED",
+      "seconds": 400.44466549996287,
+      "owned_peak_rss_bytes": 1828941824
+    },
+    "all_common_bodies": {
+      "path": "build/courses/task006-restored-batch-authority-draft-a1/common-body-result.json",
+      "sha256": "531e2c56f0b9624cbfe5ca1b65f3e43728b08a0df4d0cf79e75e392ca7e37816",
+      "status": "PASS_GENUINE_COMMON_BODY_COMPARISON"
+    },
+    "historical9_and_new10_preserved": {
+      "path": "build/courses/task006-restored-batch-authority-draft-a1/direct-validation-a1.json",
+      "sha256": "0bbc90344b78a908a7233e642ebdd8cc55d3fe41a8caea95a4223354ae70a995",
+      "status": "PASS_BOTH_COMPLETE_HISTORICAL9_AND_RESTORED10_COHORTS",
+      "seconds": 23.418772376026027
+    },
+    "whole_artifacts": {
+      "path": "build/courses/task006-restored-batch-notebook-artifacts-a1/result.json",
+      "sha256": "81019c41f8cfe246b9df80d9dc80b79f068e766b1b09b35ce877e78a502e5090",
+      "status": "PASS_RESTORED_BATCH_NOTEBOOK_ARTIFACTS_ONLY",
+      "seconds": 382.95256459200755,
+      "mutants": [
+        {
+          "name": "over-budget-restoration",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "0eee0f5211528db777fdf8b6199c9c1405fe612ffbce79ac95c888d8ddc5ca35"
+        },
+        {
+          "name": "wrong-restoration-prefix",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "184b908a41dcb7d32b54b4ee4356f81805971fc61a46714974707f17ee0151bd"
+        },
+        {
+          "name": "wrong-restoration-lane",
+          "valid_llvm": true,
+          "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+          "sha256": "cd87f5e00c353cbbe811891e976688c6b0ceca5d5b6992ba645770cd1809295c"
+        }
+      ],
+      "observer_inputs_equal": true
+    },
+    "role_counts": {
+      "canonical_pre": 849,
+      "canonical_post": 847,
+      "companion_pre": 887,
+      "companion_post": 885
+    },
+    "host_checks": {
+      "kernel_tests": 433,
+      "kernel_seconds": 10.38,
+      "scaffold_tests": 18,
+      "scaffold_seconds": 9.629,
+      "metadata": "PASS"
+    },
+    "retained_failures": [
+      "component AS4GiB thread creation",
+      "initial typed literal fixture",
+      "inactive-lane tail check (corrected mask; original check retained)",
+      "four-role180s compiler collection timeout",
+      "A5 supervisor retained900s hard stop while declared1800s; three closed roles reused, missing fourth finished within original absolute1800s deadline"
+    ],
+    "build_diagnostics": "Opt-in host-only LEMMA_EXPORT_TRACE=1 and optional LEMMA_EXPORT_TRACE_FILE expose actual genuine compiler stages. Canonical export published194.855s; existing maintained whole build command bound300s retained. No guest deadline change.",
+    "reproduce": "nix develop --no-write-lock-file --command python3 scripts/check_dirty_batch_notebook_target.py --component build/courses/task006-restored-batch-notebook-component-a6 --work-dir build/courses/restored-batch-artifact-recheck-unused",
+    "remaining": [
+      "fresh linked whole images/full audits",
+      "actual source10 guest execution and comparable performance",
+      "browser mathematics/save/durable reopen",
+      "exact fast timing and arbitrary cached-state continuation",
+      "physical panel and whole-chip closure"
+    ]
   }
 }

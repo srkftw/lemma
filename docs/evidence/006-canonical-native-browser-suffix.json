@@ -394,5 +394,55 @@
       "bytes": 5512,
       "sha256": "b8022126b0bd7bd1c3569bdd185a0742b6be97247dd6bf8490134f9422342035"
     }
-  ]
+  ],
+  "package_cohort9_course_suffix": {
+    "status": "PASS_REAL_BROWSER_COURSE_BODY_EXACT_APPLICABLE_NATIVE_SUFFIX",
+    "scope": "Same actual source9 browser cold machine806M, real raw COURSE tap, complete authored body then exact native/Wasm cut1107M. Not another cold run or full mathematical workflow.",
+    "result": {
+      "path": "build/browser/task006-dirty-course-native-wasm-export-a1/result-missing-only-a2.json",
+      "sha256": "d7082faacb58a0ce0d69917b4a18f1c296d3f345d2b534eec46fe588015192da",
+      "status": "PASS_REAL_BROWSER_COURSE_BODY_EXACT_APPLICABLE_NATIVE_SUFFIX",
+      "cycle": 1107000000,
+      "clocks": 301000000,
+      "seconds": 54.3802408099873,
+      "all_wrapper_bytes_exact": true,
+      "generated_model_payload_exact": true,
+      "guest_uart_exact": true,
+      "all3630000_controller_pixels_exact": true,
+      "independent_complete_authored_body": true,
+      "entire_medium_bytes_exact": true,
+      "io_suffix_records": 15,
+      "io_pending": false,
+      "snapshot_sha256": "8617ddf665e985ae622a3f35980d81f49646afa9378d76d2f0e1b85bd95ff096",
+      "native_snapshot_sha256": "4c0693af851d119df4a0649efab255b7be4b90b3fde315fa1e280fd25ff080ea",
+      "medium_sha256": "9cf412c0558101cf490ed98dd5183170b87a10561632981a1f1324b4c576b5dd"
+    },
+    "native": {
+      "path": "build/browser/task006-dirty-course-native-reference-a1/result.json",
+      "sha256": "6849190716e08c6bd00023b698e002ff0733e167a8d0584578fe524ed4881198",
+      "status": "PASS_NATIVE_REFERENCE_FULL_COURSE_BODY",
+      "clock_units": 301000000,
+      "seconds": 1710.6195934129646,
+      "whole_seconds": 1716.3268364779651
+    },
+    "bounds": {
+      "maximum_suffix_cycles": 400000000,
+      "maximum_host_seconds": 3600,
+      "absolute_deadline_utc": "2026-10-15T20:33:15.020525+00:00",
+      "actual_suffix_cycles": 301000000,
+      "actual_aligned_tool_observation_utc": "2026-10-15T20:33:10.656Z",
+      "elapsed_seconds": 3595.635475
+    },
+    "timestamp_observer_correction": "Original passive FAIL used a later bookkeeping timestamp20:33:17.487303. Missing-only observer reads primary current-task tool output at20:33:10.656; deadline unchanged. Original FAIL and primary selection retained; no CPU rerun.",
+    "primary_observations": {
+      "path": "build/browser/task006-dirty-course-native-wasm-export-a1/current-tool-timestamps-a1.json",
+      "sha256": "028be282a50a9e570ca2e7dad6b7529eed84584e1b18bdf3aad1d2f607b2f539"
+    },
+    "full_state_relation": "Entire wrapper bytes and generated RTL payload exact, entire256MiB medium, all guest UART and3630000 controller pixels exact;15 accepted LMIOLOG2 request/outcome boundaries exact. Native/Wasm implementation identities retain declared different header fields.",
+    "limits": [
+      "specific applicable same RTL suffix",
+      "no general QEMU cache/timing parity",
+      "browser full math/ink/Save/cold recovery still separately pending"
+    ]
+  }
 }

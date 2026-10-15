@@ -1001,5 +1001,30 @@
     "native_relation": "All43wrapper scalars/fullRAM/ROM/UART/controller arrays/every pixel/generated model payload equal independently retained native806MReady cut. Different archive headers/identities retained.",
     "evidence": "build/browser/task006-dirty-batch-cold-ready-export-a1/missing-only-result-a2.json",
     "gaps": "Full browser course/math/ink/Save/durable-onlyreopen and broader continuation remain open; original source-description and passive-field10 observer errors retained."
+  },
+  "restored_surface_milestone": {
+    "status": "COMPLETE_ARTIFACTS_ONLY",
+    "contract": "docs/contracts/006-restored-surface-notebook-v1.md",
+    "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
+    "guest_execution": "NOT_RUN",
+    "distribution": "NOT_RUN",
+    "physical": "UNVERIFIED"
+  },
+  "browser_course_body_milestone": {
+    "status": "PASS_REAL_BROWSER_COURSE_BODY_EXACT_APPLICABLE_NATIVE_SUFFIX",
+    "cycles": 301000000,
+    "host_seconds": 3595.635475,
+    "heap_bytes": 201326592,
+    "evidence": "docs/evidence/006-canonical-native-browser-suffix.json",
+    "whole_browser_workflow": "OPEN"
+  },
+  "latest_observed_candidate_ci": {
+    "commit": "616e8db0ea2605136ad02d697ac2f1ac30da4c65",
+    "run": 38798208435,
+    "conclusion": "SUCCESS",
+    "jobs": 11,
+    "every_reported_step": "SUCCESS",
+    "skipped_steps": 0,
+    "scope": "Committed native distribution2; local restored-surface10 excluded"
   }
 }

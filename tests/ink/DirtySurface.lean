@@ -162,7 +162,49 @@ def check : IO Unit := do
   let s ← broken.get
   require (s.packets=0 && read s (Lemma.Applications.Notebook.state+456)=6 && read s (Lemma.Applications.Notebook.state+464)=16382 &&
     byte s Lemma.Applications.Notebook.dirtyBitmap=63) "preparation fault published/consumed a partial packet"
+  let restoration : State := {indices := #[0,1,2,3,4,5]}
+  let dimensions := (64 : UInt64) ||| ((96 : UInt64) <<< 16)
+  let cursor := Lemma.Applications.Notebook.state + 488
+  let restored ← IO.mkRef restoration
+  require ((← execute restored (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(0,4))
+    "full restoration did not submit four consecutive tiles"
+  let s ← restored.get
+  require (s.packets=1 && s.accepted=4 && read s cursor=4 && s.refreshes=0)
+    "restoration cursor/budget differs"
+  require ((← execute restored (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(0,2))
+    "restoration tail differs"
+  let s ← restored.get
+  require (s.packets=2 && s.accepted=6 && read s cursor=6 && s.refreshes=0)
+    "restoration tail advanced beyond actual completed prefix"
+  require ((← execute restored (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(0,0))
+    "completed restoration submitted extra work"
+  require ((← restored.get).packets=2) "empty restoration touched controller"
+  let partialRestore ← IO.mkRef {restoration with status:=171,completedPrefix:=2}
+  require ((← execute partialRestore (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(171,2))
+    "restoration lost actual controller error/completed prefix"
+  require (read (← partialRestore.get) cursor=2) "failed restoration skipped uncompleted tiles"
+  partialRestore.modify fun s => {s with status:=0}
+  require ((← execute partialRestore (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(0,4))
+    "restoration retry did not begin at remaining prefix"
+  require ((← partialRestore.get).accepted=6 && read (← partialRestore.get) cursor=6)
+    "restoration retry duplicated or omitted tiles"
+  for fault in #[cursor,Surface.framebuffer] do
+    let brokenRestore ← IO.mkRef {restoration with failure:=fault}
+    require ((← execute brokenRestore (Lemma.Applications.Notebook.restorePaperBatch 73 dimensions))=(95,0))
+      "restoration cursor/preparation fault changed"
+    require ((← brokenRestore.get).packets=0 && read (← brokenRestore.get) cursor=0)
+      "failed restoration preparation published or advanced"
+  for (width,height,start,indices) in #[
+      ((35 : UInt64),(33 : UInt64),(0 : UInt64),#[(0 : UInt64),1,2,3]),
+      (35,33,3,#[(3 : UInt64)]),
+      (1650,2200,3585,#[(3585 : UInt64),3586,3587])] do
+    let base : State := {width,height,indices}
+    let edge ← IO.mkRef (write base cursor start)
+    require ((← execute edge (Lemma.Applications.Notebook.restorePaperBatch 73 (width ||| (height <<< 16))))=
+      (0,indices.size.toUInt64)) "restoration final clipped tile geometry/bytes differ"
+    require (read (← edge.get) cursor=start+indices.size.toUInt64) "restoration final cursor differs"
   IO.println "DIRTY_SURFACE:PASS noncontiguous literal bytes, queue wrap, four-tile budget, partial controller prefix/retry, malformed indices and late preparation fault"
+  IO.println "RESTORED_SURFACE:PASS four/tail, exact error/prefix/retry, cursor/preparation faults and odd/canonical final tiles"
 end DirtySurfaceFixture
 open Lean Elab Command
 run_cmd liftIO DirtySurfaceFixture.check

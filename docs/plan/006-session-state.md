@@ -2656,3 +2656,44 @@ succeeded, no skips. It covers the committed rawUART milestone, not the local
 native-distribution2 or proposed restored-batch10 changes. PR9 stays draft and
 unmerged. The latter has component-only qualification; no admitted whole10
 artifact, measured boot improvement or guest10 execution yet.
+
+
+Restored Surface cohort10 now has complete four-role compiler/artifact
+qualification (849/847 canonical pre/post functions;887/885 companion).
+Both maintained Package loops batch full restoration through the existing
+owned four-tile Surface-v2 packet, including zeroed inactive lanes and actual
+completed-prefix cursor updates. Only the two selected loop bodies differ;
+two ordinary helpers are added and the old selected pump becomes unreachable.
+All other common bodies/arguments/effects/globals compare exactly. Historical9
+and new10 catalogs/pre/post complete corpora both validate. Three validLLVM
+budget/cursor/lane mutants reject. Generic IR/object/readonly/jump checks pass
+382.953s;433 kernel host tests/18scaffold/metadata pass. No linked10 image or
+measured guest10 improvement yet. See restored Surface contract and the nested
+cohort10 entry in existing dirty-batch evidence.
+
+The initial900s collector supervision FAIL remains; its three closed roles
+were reused after complete source/archive equality, and only missing companion
+initializer was genuinely produced within the original declared absolute1800s
+window. Remainder393.860s actor/400.445s supervised,1,828,941,824B peak. Original
+180s compiler collection failures remain. Opt-in host compiler diagnostics
+locate canonical checked suite1.160s/lowered91.297s/validated194.008s/published
+194.855s; maintained whole-build300s command bounds already accommodate this.
+No guest timeout or compiler/runtime semantics changed.
+
+The actual source9 browser cold machine subsequently opened the complete
+authored fraction explanation. Same raw COURSE events and actual301M suffix
+match nativeRTL at1107M: entire wrapper/generated RTL payload, guestUART,
+256MiB medium, every controller pixel and15 accepted backing outcomes exact.
+Independent glyph observer confirms the full authored body. Browser aligned
+observation20:33:10.656UTC lies4.365s inside original20:33:15.020525 deadline;
+3595.635475s elapsed,192MiB heap. Preserve original passive FAIL using a later
+bookkeeping timestamp; missing-only correction uses primary current-task tool
+output without rerun or deadline change. Full browser mathematics/Save/cold
+recovery and general cached-state/fast timing remain separate open obligations.
+
+Candidate616e8db CI38798208435 is terminalSUCCESS11/11, all reported steps
+success with no skips. That candidate covers native distribution2, not the
+local restored-surface10 work. PR9 stays draft/unmerged. Current browser pointer
+annotation/Save, canonical9 workflow and older6 companion cases retain their
+original plans, source holds and deadlines; do not treat in-progress default
+FAIL as a terminal result or extend limits.
