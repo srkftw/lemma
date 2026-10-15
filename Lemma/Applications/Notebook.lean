@@ -2497,17 +2497,21 @@ private def packageOutgoing : UInt64 := packageContext + 512
 private def packageIncoming : UInt64 := packageContext + 256
 private def packageBindingScratch : UInt64 := packageContext + 1024
 private def packageSubmitted : UInt64 := packageContext + 1152
+-- Layout2 keeps this owned word below the Store outgoing packet.
+private def packageAllocationAddress : UInt64 := state + 752
 private def packageGet (offset : UInt64) : Action := Memory.read64 (packageState + offset)
 private def packagePut (offset value : UInt64) : Action := Memory.write64 (packageState + offset) value
 
+-- The old offset768 aliases Notebook.outgoing. Keep this counter wholly
+-- below its0x20b00 Store packet, including across mount/save traffic.
 private def packageAllocateStep (i _ : UInt32) (acc _ _ _ _ : UInt64) : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if i.toUInt64 < allocated then .done 0 (acc + 1) else
   if i.toUInt64 = allocated then
   let address := packageBytes + i.toUInt64 * 4096
   .bind (Syscall.allocatePage address) fun s actual => if statusFailed s = true then .done s 0 else
   if actual = address then
-  .bind (put 768 (allocated + 1)) fun s _ => if statusFailed s = true then .done s 0 else .done 0 (acc + 1)
+  .bind (Memory.write64 packageAllocationAddress (allocated + 1)) fun s _ => if statusFailed s = true then .done s 0 else .done 0 (acc + 1)
   else failed else failed
 
 /-- Twelve lazy owned pages retain zero-before-publication, generation/quota
@@ -2515,7 +2519,7 @@ and mapping checks. A checked allocation failure keeps its actual completed
 prefix for a later explicit attempt; pumps cannot touch these private spans
 until the complete count12 is present. It does not stop ordinary ink handling. -/
 private def allocatePackage : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if 12 < allocated then failed else if allocated = 12 then .done 0 0 else
   .boundedFoldU64 12 packageAllocateStep 12 0 0 0 0 0 fun s actual =>
   if statusFailed s = true then .done s 0 else if actual = 12 then .done 0 0 else failed
@@ -3046,7 +3050,7 @@ private def cancelPackageRead : Action :=
   packagePut 152 0
 
 private def cancelPackageWork : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
   .bind cancelPackageRead fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packageGet 96) fun s opening => if statusFailed s = true then .done s 0 else
@@ -3226,7 +3230,7 @@ private def packageCancelInput : Action :=
   .bind cancelArithmetic fun s _ => if statusFailed s = true then .done s 0 else cancelInput
 
 private def packageCloseState : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
   .bind (packagePut 96 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (packagePut 120 0) fun s _ => if statusFailed s = true then .done s 0 else
@@ -3332,7 +3336,7 @@ where
 Reader/open/presentation work runs only with the shared syscall slot idle.
 A stalled or failed checker, read or Save preserves ordinary raw ink pumps. -/
 private def pumpPackageWork : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
   .bind (get 160) fun s pending => if statusFailed s = true then .done s 0 else
   .bind (get 112) fun s rawCount => if statusFailed s = true then .done s 0 else
@@ -3367,7 +3371,7 @@ private def pumpPackageWork : Action :=
   else .done 0 0 else .done 0 0 else .done 0 0 else .done 0 0
 
 private def packageBusy : Action :=
-  .bind (get 768) fun s allocated => if statusFailed s = true then .done s 0 else
+  .bind (Memory.read64 packageAllocationAddress) fun s allocated => if statusFailed s = true then .done s 0 else
   if allocated = 12 then
   .bind (packageGet 96) fun s opening => if statusFailed s = true then .done s 0 else
   .bind (packageGet 32) fun s reading => if statusFailed s = true then .done s 0 else
@@ -3419,7 +3423,7 @@ it never waits on its own formatting. Historical boot roots are unchanged. -/
 def mainPackageClosureBulk (bootArgument : UInt64) : Action :=
   if (if bootArgument = 2 then (1 : UInt64) else if bootArgument = 3 then 1 else 0) = 0 then failed else
   .boundedFoldU64 80 clearStep 80 0 0 0 0 0 fun s _ => if statusFailed s = true then .done s 0 else
-  .bind (put 768 0) fun s _ => if statusFailed s = true then .done s 0 else
+  .bind (Memory.write64 packageAllocationAddress 0) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 576 7) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (put 584 1) fun s _ => if statusFailed s = true then .done s 0 else
   .bind (Capability.bootGrant 0) fun s surface => if statusFailed s = true then .done s 0 else

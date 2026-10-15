@@ -1,0 +1,38 @@
+# Installed-package Notebook state layout2
+
+Layout2 fixes a guest memory collision observed in the actual four-process
+canonical RTL workflow. Layout1 placed the package allocation counter at
+`Notebook.state + 768 = 0x20b00`, the existing Store outgoing packet. Mount/save
+traffic wrote the genuine `LEMASTR1` header there. The subsequent course open
+returned error95 before mapping any package page. The original failure and
+observational1376M-cycle checkpoint remain retained; installation of edition3
+and its immutable duplicate rejection passed separately.
+
+The counter now occupies the whole word at `state + 752 = 0x20af0`, ending
+before the Store packet. A genuine Lean `packageAllocationAddress` declaration
+owns this address. Initialization, allocation, cancellation and all guarded
+pumps use it. Twelve private pages, successful-prefix accounting, quota/errors,
+zero-before-publication, workspace1/Doc8 formats and Closure7 protocol remain
+unchanged. No host changes a live guest word or bypasses allocation.
+
+The emitted source catalog identifies the layout cohort. The audit checks all
+190 layout2 signatures, complete pre/post bodies and exact caller sets. The
+original189-function layout1 cohort retains its own original pins and source
+identity. Catalogs cannot mix the two layouts between pre/post optimization.
+Readonly and jump-table content checks remain load-bearing. The separately
+qualified normalized source change affects seven Actions plus the real scalar
+address declaration; it supplies no manual target AST or foreign helper.
+
+`tests/courses/NotebookPackage.lean` executes the maintained Store header writer
+and actual private allocation Actions. It checks packet/counter separation,
+all12 allocations, no reallocation after subsequent framing, OOM11 retaining
+a successful private prefix, and retry from the next page. Existing EOF,
+sequence, cancellation and missing-checker negatives remain. This host Action
+fixture is not RV64 execution; fresh whole artifacts and a new guest workflow
+are separate required observations.
+
+```sh
+nix develop --no-write-lock-file --command lake build Lemma.Applications.Notebook
+nix develop --no-write-lock-file --command \
+  lake env lean --run tests/courses/NotebookPackage.lean
+```

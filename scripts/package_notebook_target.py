@@ -21,14 +21,15 @@ SOFTWARE_DEPLOYMENT = {
                       'arithmetic': 'core0-user-v0.7', 'course': 'core0-user-v0.1'},
 }
 ROOT = 'Lemma.Applications.Notebook.mainPackageClosureBulk'
-VERSION = 'lemma-installed-package-notebook/1'
+VERSION = 'lemma-installed-package-notebook/2'
+LEGACY_VERSION = 'lemma-installed-package-notebook/1'
 PRIVATE_LAYOUT = {
     'package_bytes': (0x332000, 32768), 'glyph_cache': (0x33a000, 4096),
     'workspace': (0x33b000, 3712), 'context': (0x33c000, 4096),
     'document_staging': (0x33d000, 2496),
     'record_context_offset': 128, 'incoming_offset': 256, 'outgoing_offset': 512,
     'binding_offset': 1024, 'submission_offset': 1152, 'state_offset': 2048,
-    'owned_pages': 12, 'allocation_count_state_offset': 768,
+    'owned_pages': 12, 'allocation_count_state_offset': 752,
     'workspace_version': 1, 'document_version': 8, 'protocol_version': 7,
     'text_panel': [24, 320, 384, 320], 'controls_panel': [24, 640, 384, 120],
     'header_panel_extension': 1, 'header_roles': [8, 9, 10, 11],
@@ -84,9 +85,11 @@ def contract(unit):
              for row in unit.get('roots', [])]
     require(roots == [{'source': ROOT, 'id': 1, 'args': ['u64']}],
             'Package Notebook exact entry root/ABI differs')
-    require(set(SIGNATURES) <= set(rows), 'Package Notebook complete owned source family missing')
-    return {'contract_version': VERSION, 'root': ROOT, 'private_layout': PRIVATE_LAYOUT,
-            'owned_functions': len(SIGNATURES)}
+    require(set(signature_set(unit)) <= set(rows), 'Package Notebook complete owned source family missing')
+    corrected = COUNTER_ADDRESS_SOURCE in rows
+    return {'contract_version': VERSION if corrected else LEGACY_VERSION, 'root': ROOT,
+            'private_layout': PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768},
+            'owned_functions': len(signature_set(unit))}
 
 def _bodies(ir):
     matches = re.findall(r'(?ms)^define [^\n]*@([^ (]+)\([^\n]*\)[^\n]*\{\n(.*?)^\}', ir)
@@ -102,7 +105,8 @@ def normalized_body(body, names):
                   lambda match: names.get(match[1], match[1]), body)
     return ' '.join(' '.join(line.split(';', 1)[0] for line in body.splitlines()).split())
 
-def _validate_bodies(ir, unit, *, optimized, pins, callers):
+def _validate_bodies(ir, unit, *, optimized, pins, callers, layout=None, version=None, signatures=None):
+    signatures = SIGNATURES if signatures is None else signatures
     rows = _rows(unit)
     names = {row['symbol']: source for source, row in rows.items()}
     bodies = _bodies(ir)
@@ -120,9 +124,9 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers):
     references = {name: set(re.findall(r'@([^ (]+)\(', body)) for name, body in bodies.items()}
     observed = {}
     phase = 'post' if optimized else 'pre'
-    require(set(pins[phase]) == set(SIGNATURES) == set(callers[phase]),
+    require(set(pins[phase]) == set(signatures) == set(callers[phase]),
             'Package Notebook version authority incomplete')
-    for source, (args, effects) in SIGNATURES.items():
+    for source, (args, effects) in signatures.items():
         require(source in rows, 'Package Notebook owned declaration missing: ' + source)
         row = rows[source]
         require(row.get('args') == args and row.get('effects') == effects,
@@ -137,15 +141,22 @@ def _validate_bodies(ir, unit, *, optimized, pins, callers):
                 'Package Notebook private caller closure differs: ' + source + '/' + phase)
         observed[source] = digest
     return {'phase': phase, 'owned_functions': len(observed), 'complete_bodies': observed,
-            'exact_callers': callers[phase], 'layout': PRIVATE_LAYOUT}
+            'exact_callers': callers[phase], 'layout': layout if layout is not None else PRIVATE_LAYOUT,
+            'contract_version': version if version is not None else VERSION}
 
 def validate(ir, unit, *, optimized):
     if contract(unit) is None:
         return None
     require(PRODUCTION_PINS is not None and PRODUCTION_CALLERS is not None,
             'Package Notebook production authority not yet independently qualified')
-    return _validate_bodies(ir, unit, optimized=optimized,
-                            pins=PRODUCTION_PINS, callers=PRODUCTION_CALLERS)
+    corrected = COUNTER_ADDRESS_SOURCE in _rows(unit)
+    pins = {key: {**values, **COUNTER_LAYOUT_V2_PINS[key]} for key, values in PRODUCTION_PINS.items()} if corrected else PRODUCTION_PINS
+    layout = PRIVATE_LAYOUT if corrected else {**PRIVATE_LAYOUT, 'allocation_count_state_offset': 768}
+    return _validate_bodies(ir, unit, optimized=optimized, pins=pins,
+                           callers={key: {**values, **COUNTER_LAYOUT_V2_CALLER_ADDITIONS[key]} for key, values in PRODUCTION_CALLERS.items()} if corrected else PRODUCTION_CALLERS,
+                           layout=layout, version=VERSION if corrected else LEGACY_VERSION,
+                           signatures=signature_set(unit))
+
 
 
 READONLY_SCHEMA = 'installed-package-notebook-v1'
@@ -1455,3 +1466,39 @@ PRODUCTION_CALLERS = {
     },
 }
 PRODUCER_AUTHORITY = {'producer_result_sha256': '7508b98d1c6aacaf3392febef43f88033fe67190bd641f209a73966f3526fe52', 'source_count': 315, 'producer_head': 'ff48d048519bfaa78dd05466106bd1df75496789', 'actual_artifacts': {'program.ll': '677306d2bf35e56161924a328092673490c05b7d9efcc6b9879d968dd8892caa', 'program.opt.ll': '3064efc4577b0ca62bcbaaa0418002c70cdbb0930ae318e4b16237e4d00b5370', 'unit.json': '80747181cb4e4ccd8a5e4497a923fabe233aa10ff3b7ebdae6239a3e11ee6a07'}}
+
+
+COUNTER_ADDRESS_SOURCE = 'Lemma.Applications.Notebook.packageAllocationAddress'
+def signature_set(unit):
+    # This real source-owned address declaration identifies layout2 in the
+    # emitted catalog. The same catalog must match both pre/post bodies.
+    return {**SIGNATURES, COUNTER_ADDRESS_SOURCE: ([], [])} if COUNTER_ADDRESS_SOURCE in _rows(unit) else SIGNATURES
+
+# Derived from the separately qualified genuine complete pre/post export.
+COUNTER_LAYOUT_V2_PINS = {'post': {'Lemma.Applications.Notebook.allocatePackage': '25b03c7928619e4d703693daad63a460e1950317fdc6bb93d0893c9c33faf8a4',
+          'Lemma.Applications.Notebook.cancelPackageWork': '804063d13e587530ad3a4076f17d9d74fbc18da36e14a4277211936a80935216',
+          'Lemma.Applications.Notebook.mainPackageClosureBulk': '67ba11f86f61796b0b596545d86423ebc2b0f02fd7117bad07e1b9489d4b11d4',
+          'Lemma.Applications.Notebook.packageAllocateStep': '3753b9c1804d731b5d0b35c8c335617df7ac951e6ea9620fbe70d5f07ed95300',
+          'Lemma.Applications.Notebook.packageAllocationAddress': '2698705d65c78d62222503221fa9bcf9e49b13093e96b740017fb6a87291a035',
+          'Lemma.Applications.Notebook.packageBusy': 'c7761f9e0ec2fbb0f97b58e240b52c52c8bdd5df5e42cf6c84c230f26754908f',
+          'Lemma.Applications.Notebook.packageCloseState': '454215d5356befa8ba32b00e7fd01d559bfb2b8cfafc3d95ece337ff276aeef2',
+          'Lemma.Applications.Notebook.packageControlCharacter': '917eb8ee0a0e377c2e99c80517e69b73be29547d4d5e89eb977f7ce285712d2f',
+          'Lemma.Applications.Notebook.pumpPackageWork': 'e4a43acc73e946a4f0c49a9c1b5f30ab098286135d7f5225d2ab837808d865f4'},
+ 'pre': {'Lemma.Applications.Notebook.allocatePackage': '71dab202c5a098ef566081c9922635a6651e5037fba97ec8456dd531a36ebe23',
+         'Lemma.Applications.Notebook.cancelPackageWork': '14935c35837cefa73c31a920a55dd920c8efd1c2561f73c612915c2d7c4940a4',
+         'Lemma.Applications.Notebook.mainPackageClosureBulk': '4d65240a23cc144f0ecd618284855d5b2b8361688ba8eed82b00e6d5f9bbcb7f',
+         'Lemma.Applications.Notebook.packageAllocateStep': 'ebe79336d958ddc4080684aebe603963caf3175bb627807155bd55c817a1a02e',
+         'Lemma.Applications.Notebook.packageAllocationAddress': '5628140255b93b3e6c97c55c7edf4c4e22988e3e58dc217a3ab324e789dd15aa',
+         'Lemma.Applications.Notebook.packageBusy': '08b9718a43c66ec2e1b4b5deb5355c2e5a9cb7eab136a1edc777abbe0c46efa7',
+         'Lemma.Applications.Notebook.packageCloseState': 'a75568e824ae22a141762d853dcd32c9bbdceb7159b4a5949811fb7396b705d1',
+         'Lemma.Applications.Notebook.pumpPackageWork': '2f9fccf63cf702305ae0c85275fd31261505fa57c1771720a824164732036222'}}
+COUNTER_LAYOUT_V2_CALLER_ADDITIONS = {'post': {'Lemma.Applications.Notebook.packageAllocationAddress': []},
+ 'pre': {'Lemma.Applications.Notebook.packageAllocationAddress': ['Lemma.Applications.Notebook.allocatePackage',
+                                                                  'Lemma.Applications.Notebook.cancelPackageWork',
+                                                                  'Lemma.Applications.Notebook.mainPackageClosureBulk',
+                                                                  'Lemma.Applications.Notebook.packageAllocateStep',
+                                                                  'Lemma.Applications.Notebook.packageBusy',
+                                                                  'Lemma.Applications.Notebook.packageCloseState',
+                                                                  'Lemma.Applications.Notebook.pumpPackageWork']}}
+
+COUNTER_LAYOUT_V2_AUTHORITY = {'scope': 'genuine selected818-function User2 export and complete normalized source relation; whole artifact/CPU qualification separate', 'normalized_relation': {'path': 'build/courses/task006-package-counter-repair-a2/qualified-layout2-a2.json', 'sha256': '48e7850d50776bd69acaccf5fbbe3305ae120c5f7cc6a1ceb1683152a8507c5a'}, 'cohort_qualification': {'path': 'build/courses/task006-package-counter-repair-a2/cohort-qualification.json', 'sha256': '007cb8b830691e014c6ee830bf05a2e8d20d8f656ff173764bbbf24729f6b373'}, 'artifacts': {'unit.json': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/unit.json', 'sha256': 'ffc5f5d2a618f44df2c446338e4ec5323f88c5ff4eac51811cc9a9ef36b75826'}, 'program.ll': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/program.ll', 'sha256': '31d51bcc92e7b76de7f7cdbb49e0b76440c9205b6f9381cc5befa868f42d1b90'}, 'program.opt.ll': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/program.opt.ll', 'sha256': 'e1283e16db1c2a21ab147ec35e01f8601f981573a8f77c1c0fab267ad89a7e00'}, 'normalized.txt': {'path': 'build/courses/task006-package-counter-repair-a2/users/notebook/normalized.txt', 'sha256': 'b55864fbcfc1cfd44b2e4a638b0ebbc419f5269736e06b181599707c7d4b00b9'}}}

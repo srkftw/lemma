@@ -1491,3 +1491,28 @@ a final renamed-key diagnostic print error, remain explicit. No exact different-
 cut microstate comparison is claimed. Owner: build/browser/task006-package-
 connected-owner-a1. Typed edition3 input4063B admitted via real modeledUART;
 installation receipt and complete workflow remain pending.
+
+
+### Load-bearing course-open repair in progress
+
+The private native package workflow installed edition3 in84M clocks and rejected
+its immutable duplicate in11M, then actual first COURSE input returned95. It was
+stopped at1376M before future controls; exact failing snapshot and owned/Sv39
+read-only diagnosis are under build/courses/task006-native-installed-package-a2.
+All its owned processes are reaped. State+768 equals outgoing0x20b00 and contained
+LEMASTR1, not an allocation count; no package page was mapped. This is a target
+defect, not a harmless observer or timeout. Original failures remain retained.
+
+Maintained Lean now uses the real packageAllocationAddress atstate+752 below
+the Store packet. Layout2 has a separate190-function exact compiler/audit cohort;
+original layout1/189 pins remain. Real Store-header/allocation/OOM/retry Actions
+and genuine818-function pre/post source-cohort qualification pass. The new focused
+Action check is included in the bounded CI step. Full fresh pair/audits/newCPU
+course acceptance are pending. Do not load new code by editing the saved RAM.
+
+The original package browser independently reports Installed edition3/sequence5
+at1062.55M (+85M/462.323s machine calls), then duplicate223 at1074.55M
+(+12M/47.411s); backingwrite47/barrier48 unchanged. Its original guest has the
+same known course-open bug, so that failing operation is not repeated. Byte
+qualification and the corrected-layout whole pair are next. Pushed454e016 CI
+38657621454 was observed IN_PROGRESS; prior d64 run38648367594 passed10/10.

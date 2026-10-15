@@ -92,6 +92,34 @@ private def setupEOF (r : IO.Ref Model) (count mode sequence : UInt64) : IO Unit
 
 def check : IO Unit := do
   let r ← IO.mkRef ({} : Model)
+  -- Real Store framing must not overwrite the lazy-page allocation counter.
+  -- This reproduces the observed CPU error95: old offset768 is outgoing magic.
+  let counter := stateBase + 752
+  let packet := Lemma.Applications.Notebook.outgoing
+  let framed ← run r (Lemma.Services.Store.Protocol.header packet 1 1 0 0 0 0)
+  expect (framed.1 == 0 && (← word r packet) == Lemma.Services.Store.Protocol.magic &&
+    (← word r counter) == 0) "Store framing clobbered the package allocation counter"
+  r.modify fun m => {m with returns := (Array.range 12).map fun i => (0,0x332000+i.toUInt64*4096)}
+  let allocated ← run r (notebookAction% "allocatePackage")
+  expect (allocated.1 == 0 && (← word r counter) == 12 &&
+    (← word r packet) == Lemma.Services.Store.Protocol.magic && (← r.get).calls.size == 12)
+    "framed Store traffic prevents the actual12-page allocation Action"
+  let calls := (← r.get).calls
+  let reframed ← run r (Lemma.Services.Store.Protocol.header packet 5 1 1 0 0 64)
+  let repeated ← run r (notebookAction% "allocatePackage")
+  expect (reframed.1 == 0 && repeated == (0,0) && (← word r counter) == 12 &&
+    (← r.get).calls == calls) "Store read framing causes package page reallocation"
+  r.set ({} : Model)
+  r.modify fun m => {m with returns := #[(0,0x332000),(11,0)]}
+  let exhausted ← run r (notebookAction% "allocatePackage")
+  expect (exhausted.1 == 11 && (← word r counter) == 1 && (← r.get).calls.size == 2)
+    "allocation exhaustion lost the successful private prefix or its status"
+  let framedAgain ← run r (Lemma.Services.Store.Protocol.header packet 1 1 0 0 0 0)
+  r.modify fun m => {m with returns := (Array.range 11).map fun i => (0,0x333000+i.toUInt64*4096)}
+  let retried ← run r (notebookAction% "allocatePackage")
+  expect (framedAgain.1 == 0 && retried.1 == 0 && (← word r counter) == 12 &&
+    (← r.get).calls.size == 13 && (← r.get).calls[2]!.2.1 == 0x333000)
+    "framed retry repeated an allocated page or lost the remaining prefix"
   setupEOF r 0 1 8
   let good ← run r ((notebookAction% "packageReadEOF") 5)
   expect (good == (0,0) && (← word r (app+32)) == 2 && (← word r (context+80)) == 0 &&
@@ -114,9 +142,9 @@ def check : IO Unit := do
   expect (failed.1 == 17 && (← word r (context+80)) == 0 && (← word r (app+32)) == 5)
     "actual publication-write fault was hidden/rolled back"
   r.set ({} : Model)
-  set r (stateBase+768) 11
+  set r (stateBase+752) 11
   let unopened ← run r (notebookAction% "pumpPackageWork")
-  expect (unopened == (0,0) && (← r.get).reads == #[stateBase+768] && (← r.get).writes.isEmpty)
+  expect (unopened == (0,0) && (← r.get).reads == #[stateBase+752] && (← r.get).writes.isEmpty)
     "partially allocated package context was accessed"
   setupEOF r 0 1 8
   r.modify fun m => {m with returns := #[(IPCABI.alreadyCompleted,0),(0,128)]}

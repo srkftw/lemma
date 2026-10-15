@@ -137,11 +137,12 @@ for(const phase of ['adapter','device']){
  assert.equal(f.sent.at(-1).transaction,'9007199254740993');
  f.worker.onmessage({data:{type:'course-admission',accepted:37,total:37,bytes:4040,error:null}});
  assert.match(f.node('#course-admission').textContent,/Admitted 4040 package bytes/);
- assert.match(f.node('#course-admission').textContent,/awaiting a guest receipt/);
+ assert.match(f.node('#course-admission').textContent,/guest installation result below/);
  const emit=guestCourse=>f.worker.onmessage({data:{type:'state',guestCourse,state:{cycle:'1'},running:false,guestObservation:'boot',readyAt:null,heapBytes:1048576,timing:{elapsedSeconds:0,simulationCallSeconds:0,backingCallSecondsDuringRun:0}}});
  emit(null);assert.match(f.node('#course-result').textContent,/No installation result/);
  emit({state:'installed',identity:'1',edition:'2',sequence:'9007199254740993'});
  assert.match(f.node('#course-result').textContent,/Guest reports installed package 1, edition 2, durable sequence 9007199254740993/);
+ assert.doesNotMatch(f.node('#course-admission').textContent,/awaiting/);
  emit({state:'failed',identity:'1',edition:'2',status:'223'});
  assert.match(f.node('#course-result').textContent,/failure \(223\)/);
  f.worker.onmessage({data:{type:'course-admission',accepted:2,total:37,bytes:4040,error:'queue exhausted'}});

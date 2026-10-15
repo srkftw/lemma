@@ -89,7 +89,7 @@
     "cold_ready_cycle": 978000000,
     "cold_ready_host_seconds_since_original_start": 3560.6561720371246,
     "private_corrected_suffix": {
-      "status": "RUNNING",
+      "status": "FAIL_ACTUAL_GUEST_COURSE_ERROR95",
       "directory": "build/courses/task006-native-installed-package-a2",
       "actor_pid": 1431014,
       "absolute_deadline_unchanged": "2026-10-15T00:44:50Z",
@@ -127,7 +127,16 @@
           "host_seconds": 31.50845115305856
         }
       ],
-      "remaining": "course reading/binding/check/revision/learner/ink/cold workflow not yet qualified"
+      "remaining": "course reading/binding/check/revision/learner/ink/cold workflow not yet qualified",
+      "failure": {
+        "path": "build/courses/task006-native-installed-package-a2/failed-course-open-observed.json",
+        "sha256": "4617959112b772e5cf20181d6465bc9fd2d9b85117ad885f2979cd0dd75731fe"
+      },
+      "owned_state": {
+        "path": "build/courses/task006-native-installed-package-a2/failed-course-owned-state.json",
+        "sha256": "178e54e22911829c09664ee27f5d20005c831191a53320bb77eef4603f2ba05d"
+      },
+      "all_owned_processes_reaped": true
     }
   },
   "jti_supplement": {
@@ -403,5 +412,31 @@
     "source_root": "/home/sreekumaar/Downloads/lemma/build/courses/task006-package-closure-whole-a1/consumed-source-root",
     "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
     "wall_seconds": 584.5756074349629
+  },
+  "layout2_counter_repair": {
+    "status": "PASS_GENUINE_SOURCE_COHORT_AND_ACTION_FIXTURE; FRESH_WHOLE_AND_CPU_NOT_RUN",
+    "contract": "docs/contracts/006-installed-package-notebook-v2.md",
+    "root_cause": "state+768 aliases existing Store outgoing0x20b00; actual owned RAM3553995772503344460 equalsLEMASTR1 and no package page was mapped",
+    "new_state_offset": 752,
+    "owned_source_functions": 190,
+    "genuine_source_relation": {
+      "path": "build/courses/task006-package-counter-repair-a2/qualified-layout2-a2.json",
+      "sha256": "48e7850d50776bd69acaccf5fbbe3305ae120c5f7cc6a1ceb1683152a8507c5a"
+    },
+    "cohort_qualification": {
+      "path": "build/courses/task006-package-counter-repair-a2/cohort-qualification.json",
+      "sha256": "007cb8b830691e014c6ee830bf05a2e8d20d8f656ff173764bbbf24729f6b373"
+    },
+    "host_Action_fixture": {
+      "path": "build/courses/task006-package-counter-repair-a2/export-and-fixtures.log",
+      "sha256": "23660e60f0ef340ca40736d52831541fa72a2e15c0ee6b8fba83e7fa51c1988f"
+    },
+    "original_failures_preserved": [
+      "native1376M error95 and all exactstate",
+      "fixturea1 tuple-projection syntax error",
+      "direct-offset prototype fixture/genuine export retained; natural address declaration provides explicit cohort identity",
+      "source relation observer initial8-functions count vs actual7; normalized argument grammar correction"
+    ],
+    "scope": "real counter/storage isolation fix; no new whole-image or course-open acceptance claim"
   }
 }
