@@ -380,4 +380,74 @@ def uploadAllBulk (cap width height : UInt64) : Action :=
   let count := ((width + 31) / 32) * ((height + 31) / 32)
   .boundedFoldU64 2341 bulkUploadStep ((count + 6) / 7).toUInt32 0 cap (width ||| (height <<< 16)) count 0 fun s uploaded => .done s uploaded
 
+/-- Four FIFO tile indices fit in one scalar argument. Unused slots are zero;
+duplicates and out-of-range indices reject before any controller transaction.
+The caller still owns the framebuffer and staging page throughout the call. -/
+private def indexedValidStep (i _ : UInt32) (acc packed total _ _ : UInt64) : Action :=
+  let slot := i.toUInt64
+  let index := (packed >>> (slot * 16)) &&& 65535
+  if total ≤ index then .done 234 0 else
+  let duplicate := if slot = 0 then false else
+    if index = packed &&& 65535 then true else
+    if slot = 1 then false else
+    if index = (packed >>> 16) &&& 65535 then true else
+    if slot = 2 then false else index = (packed >>> 32) &&& 65535
+  if duplicate then .done 234 0 else .done 0 (acc + 1)
+
+/-- Keep the historical bulkCopyWord callback's closed optimization ownership
+unchanged. This successor uses the existing checked word primitives normally. -/
+private def indexedCopyWord (i _ : UInt32) (acc destination _ _ _ : UInt64) : Action :=
+  .bind (Memory.read64 (tile + i.toUInt64 * 8)) fun s word => if s = 0 then
+  .bind (Memory.write64 (destination + i.toUInt64 * 8) word) fun s _ => .done s acc
+  else .done s 0
+
+private def indexedPrepareStep (i _ : UInt32) (acc dimensions packed _ _ : UInt64) : Action :=
+  let width := dimensions &&& 0xffff
+  let height := dimensions >>> 16
+  let columns := (width + 31) / 32
+  let index := (packed >>> (i.toUInt64 * 16)) &&& 65535
+  let x := (index % columns) * 32
+  let y := (index / columns) * 32
+  let w := if 32 < width - x then 32 else width - x
+  let h := if 32 < height - y then 32 else height - y
+  let entry := bulkPacket + 32 + i.toUInt64 * 32
+  let destination := bulkPacket + 256 + i.toUInt64 * 512
+  .bind (loadTile x y width height) fun s _ => if s = 0 then
+  .bind (if w = 32 then .done 0 0 else
+    .boundedFoldU64 512 compactStep (((w + 1) / 2) * h).toUInt32 0 ((w + 1) / 2) 0 0 0 fun s _ => .done s 0) fun s _ => if s = 0 then
+  .bind (Memory.write64 entry x) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 8) y) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 16) w) fun s _ => if s = 0 then
+  .bind (Memory.write64 (entry + 24) h) fun s _ => if s = 0 then
+  .boundedFoldU64 64 indexedCopyWord 64 0 destination 0 0 0 fun s _ => .done s (acc + 1)
+  else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0 else .done s 0
+
+/-- Prepare at most four arbitrary tiles, then use the existing owned-page
+Surface-v2 ABI. No syscall occurs until the complete guest packet is prepared.
+Kernel rectangle/owned-copy checks remain authoritative. A failed controller
+call returns its actual completed prefix; this is not an atomic upload. -/
+def uploadIndexedBulk (cap width height packed count : UInt64) : Action :=
+  if count = 0 then .done 0 0 else
+  if 4 < count then .done 16 0 else
+  if width = 0 then .done 16 0 else if 4096 < width then .done 16 0 else
+  if height = 0 then .done 16 0 else if 4096 < height then .done 16 0 else
+  if count < 4 then if packed >>> (count * 16) = 0 then prepare else .done 234 0
+  else prepare
+where
+  prepare : Action :=
+    let total := ((width + 31) / 32) * ((height + 31) / 32)
+    .boundedFoldU64 4 indexedValidStep count.toUInt32 0 packed total 0 0 fun s _ => if s = 0 then
+    .boundedFoldU64 4 indexedPrepareStep count.toUInt32 0 (width ||| (height <<< 16)) packed 0 0 fun s prepared => if s = 0 then
+    if prepared = count then
+    .bind (Memory.write64 bulkPacket 2) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 8) count) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 16) 0) fun s _ => if s = 0 then
+    .bind (Memory.write64 (bulkPacket + 24) 0) fun s _ => if s = 0 then
+    .bind (Syscall.call 64 cap 5 bulkPacket count 0) fun s completed =>
+    if count < completed then .done 95 0 else
+    if s = 0 then if completed = count then .done 0 completed else .done 95 0
+    else .done s completed
+    else .done s 0 else .done s 0 else .done s 0 else .done s 0
+    else .done 95 0 else .done s 0 else .done s 0
+
 end Lemma.Ink.Surface

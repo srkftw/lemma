@@ -1,0 +1,82 @@
+{
+  "schema": "lemma-notebook-dirty-batch-evidence/1",
+  "status": "PASS_GENUINE_COMPONENT_CORPUS_AND_OBJECTS_ONLY",
+  "scope": "Ordinary maintained Lean FIFO batching through existing owned Surface-v2 packet, same fourtile cadence; no whole RV64 execution or timing result yet",
+  "contract": "docs/contracts/006-notebook-dirty-batch-v1.md",
+  "target_sources": {
+    "Lemma/Applications/Notebook.lean": "708a35ae615b07279f2746df6d3ac99d444c75fd44bb32d0a3ebbbfd9289ebc4",
+    "Lemma/Ink/Surface.lean": "8ea04bc5881b8c10a62a2cdc18429f0363471b91f45fbea96121f3b7925a6c60"
+  },
+  "action_fixture": {
+    "path": "build/distribution/task006-native-package-qualification-a1/dirty-batch-action-a6.log",
+    "sha256": "bce898888cce8321630e1ec9b5ba34e0e1d20cfb69c90493e8e770f01f96987b",
+    "scope": "Literal Action interpreter fixture, not target execution; noncontiguous wrapped FIFO, four/tail, partial completed-prefix/error/retry, malformed/lateprep failure and clipped35x33/canonical bytes"
+  },
+  "genuine_capture": {
+    "path": "build/courses/task006-dirty-batch-notebook-component-a2/result.json",
+    "sha256": "30b10948d6ce83c399cf24f9f65a4f084ca37a33d327c477b89b39b5f14ce592",
+    "status": "PASS_GENUINE_NOTEBOOK_COMPONENTS_ONLY"
+  },
+  "capture_supervision": {
+    "path": "build/courses/task006-dirty-batch-notebook-component-supervision-a2/result.json",
+    "sha256": "dc3097235b54724410446fd6c2d87fcfb842a1863a7b84bb17ef9fa60b8173cf",
+    "status": "PASS_GENUINE_COMPONENT_SOURCE_AND_RESOURCES_SUPERVISED"
+  },
+  "independent_original_pre_body_comparison": {
+    "path": "build/courses/task006-dirty-batch-notebook-authority-draft-a1/common-body-result.json",
+    "sha256": "3c858f7405a1d3192b207798b4c8a019341e27304d7c2969b3a2df9b18560609",
+    "status": "PASS_GENUINE_COMMON_BODY_COMPARISON"
+  },
+  "artifact_qualification": {
+    "path": "build/courses/task006-dirty-batch-notebook-artifacts-a1/result.json",
+    "sha256": "3c9eaafac139677169511739b527f38b007a0f63e3780750b470aa847b3daae2",
+    "status": "PASS_DIRTY_BATCH_NOTEBOOK_ARTIFACTS_ONLY",
+    "seconds": 298.57988174806815,
+    "roles": {
+      "canonical": "PASS_GENERIC_UNIT_IR_READONLY_OBJECT_JUMPS",
+      "canonical-init": "PASS_CATALOG_IR_AND_EXACT_NORMAL_OBJECT_BYTES",
+      "companion": "PASS_GENERIC_UNIT_IR_READONLY_OBJECT_JUMPS",
+      "companion-init": "PASS_CATALOG_IR_AND_EXACT_NORMAL_OBJECT_BYTES"
+    },
+    "valid_llvm_rejected_mutants": [
+      {
+        "name": "over-budget-batch",
+        "valid_llvm": true,
+        "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "3bcd1c86b7c470895ed88855fc13d5451ae61fd85dcea365b10f31216cda23eb"
+      },
+      {
+        "name": "wrong-queue-wrap",
+        "valid_llvm": true,
+        "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "69f2e4f88070df08a51a005f78cdbed75303bd6ac96aba566883e9b014aecd1f"
+      },
+      {
+        "name": "wrong-completed-prefix",
+        "valid_llvm": true,
+        "reason": "Dirty batch complete body/global/caller corpus differs: canonical/pre",
+        "sha256": "021247b304d72001e933e4584fb3bf789f240d44a7a6bada77c3c3df153ae925"
+      }
+    ],
+    "observer_inputs_equal": true
+  },
+  "artifact_cohort": "lemma-installed-package-notebook/9; original1..8 authorities remain exact",
+  "original_functions": "None removed; all original unoptimized bodies/signatures/effects/globals identical except selected Package mainloop call in each hardware deployment",
+  "retained_failure": {
+    "path": "build/courses/task006-dirty-batch-notebook-component-a1/result.json",
+    "reason": "Compiler correctly rejects foreign caller of old closed bulkCopyWord optimization. New ordinary indexedCopyWord preserves old ownership gate; no exception broadened."
+  },
+  "host_checks": {
+    "kernel433": "PASS8.134s",
+    "scaffold18": "PASS7.481s",
+    "metadata": "PASS; bounded foundation metadata only"
+  },
+  "reproduce": [
+    "nix develop --no-write-lock-file --command lake env lean tests/ink/DirtySurface.lean",
+    "nix develop --no-write-lock-file --command python3 scripts/check_dirty_batch_notebook_target.py --component build/courses/task006-dirty-batch-notebook-component-a2 --work-dir build/courses/UNUSED-artifacts"
+  ],
+  "whole_images": "NOT_RUN",
+  "actual_guest_execution": "NOT_RUN",
+  "timing_improvement": "NOT_MEASURED",
+  "remaining": "Full audited linked images, actual fast workflow/failure/cold, nativeRTL/browser original bounded scenarios; broader runtime/digital/checkpoint/distribution/physical obligations remain"
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "lemma-dirty-surface-notebook-artifact/1",
+  "origin": {
+    "path": "build/courses/task006-dirty-batch-notebook-component-a2/result.json",
+    "sha256": "30b10948d6ce83c399cf24f9f65a4f084ca37a33d327c477b89b39b5f14ce592",
+    "genuine_capture_scope": "fresh ordinary Lean declarations, both exact deployment catalogs; no constructed AST"
+  },
+  "deployments": {
+    "canonical": {
+      "package_notebook_version": 9,
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-package-closure-entry2-bulk-notebook": "ef50c00a36f6009e102d717354fc2c132517d74022047162820b7dea4db5e10b",
+        "lemmasim-silicon-package-closure-entry2-bulk-initialize": "723fd60d9a18efc58cd505f9dd5f1dcecdf9729a0f3a7734c4e346053cbacd5b"
+      },
+      "pre_function_count": 848,
+      "pre_sha256": "9309148c0d2b9ed01b8b82e61866b5b8a005e1b66ce52c08728a4f3fb9bf1812",
+      "post_function_count": 846,
+      "post_sha256": "de9d3831dbebf723047442decbf3e7d6baf06d978bd1b5e0b6feae63bedf8223"
+    },
+    "companion": {
+      "package_notebook_version": 9,
+      "catalog_sha256_by_configuration": {
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-notebook": "f7a49bbceb2771b78f0a1f177cee86350af070903a8d60e894a63d2f30bbf34a",
+        "lemmasim-silicon-usb-clocked-package-retry-bulk-initialize": "99e6dd1446d15c5593e505301e060f34b8d4d2205cc235bfef3d1e9f8b27ed6b"
+      },
+      "pre_function_count": 886,
+      "pre_sha256": "f215d995420cbbeb10db52bcc3ec0024a29a88bd2599925f373d803b0ff88500",
+      "post_function_count": 884,
+      "post_sha256": "4f1440241d35b4bd23db6e255ac3ba2aa515dab5cdcae553d41b91eedb4fa7bc"
+    }
+  }
+}

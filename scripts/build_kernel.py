@@ -361,6 +361,10 @@ def source_inputs(root: Path) -> dict[str, str]:
     if aligned_authority.is_file():inputs.append(aligned_authority)
     control_authority=root / 'tooling/control-notebook-target-authority.json'
     if control_authority.is_file():inputs.append(control_authority)
+    dirty_helper=root / 'scripts/dirty_batch_notebook_target.py'
+    if dirty_helper.is_file():inputs.append(dirty_helper)
+    dirty_authority=root / 'tooling/dirty-batch-notebook-target-authority.json'
+    if dirty_authority.is_file():inputs.append(dirty_authority)
     inputs += sorted((root / "Lemma").rglob("*.lean"))
     return {str(path.relative_to(root)): sha256(path) for path in inputs}
 

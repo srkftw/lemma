@@ -14,10 +14,14 @@ ADDED=frozenset('Lemma.Courses.PackageRender.'+n for n in ('alignedDeltaStep','a
 REMOVED=frozenset('Lemma.Courses.PackageRender.'+n for n in ('deltaStep','readWord','renderDelta','renderHeaderSelectedDelta','renderSelectedDelta'))
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 def candidate(unit):
+ from dirty_batch_notebook_target import candidate as dirty_candidate
+ if dirty_candidate(unit):return True
  from control_notebook_target import candidate as controls_candidate
  if controls_candidate(unit):return True
  return bool(ADDED & {canonical(r.get('source','')) for r in unit.get('functions',[])})
 def contract(unit):
+ from dirty_batch_notebook_target import candidate as dirty_candidate,contract as dirty_contract
+ if dirty_candidate(unit):return dirty_contract(unit)
  from control_notebook_target import candidate as controls_candidate,contract as controls_contract
  if controls_candidate(unit):return controls_contract(unit)
  if not candidate(unit):return None
@@ -52,6 +56,8 @@ def semantics(ir,unit,scope):
  return {'ordinary_Notebook_entry_connected':True,'same_384x320_Gray4_footprint':'qualified separately by real Action/scalar comparison','scope':'source/IR authority, not controller execution'}
 
 def validate(ir,unit,*,optimized):
+ from dirty_batch_notebook_target import candidate as dirty_candidate,validate as dirty_validate
+ if dirty_candidate(unit):return dirty_validate(ir,unit,optimized=optimized)
  from control_notebook_target import candidate as controls_candidate,validate as controls_validate
  if controls_candidate(unit):return controls_validate(ir,unit,optimized=optimized)
  found=contract(unit)
