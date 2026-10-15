@@ -2110,3 +2110,36 @@ identifies a fixture full-path O0 substring bug and keeps production evidence
 validation unchanged. The next candidate must receive its own full CI result.
 DraftPR9 remains unmerged. Digital completion, fast cached/timing parity,
 distribution and full physical closure remain separate unfinished obligations.
+
+## Aligned2 ordinary pair and actual fast workflow qualified
+
+Sourcefe87446ec67ab0e9b1f6b7596fb7256095eb2863 produces both complete canonical
+images/full audits from395 frozen inputs. Whole684.389s/final688.388s,
+peak1,946,288,128B, minimumavailable9,346,588,672B,128,723,845B outputs; source/
+archive seals and owned cleanup pass. Notebook118354bcca359dcc/initfbd0bda6df7aeaa.
+The native and static browser bundles are build/{native,browser}/task006-aligned-notebook-a1.
+
+The exact original42-phase fast workload passes2,639,000,287 instruction clocks,
+306.845s actor/308.348s supervised/423,165,952B peak. Oldsameinput/runtime
+2,649,000,283, firstCOURSE137M versus136M and coldreopen143M versus142M.
+This is0.38% aggregate instruction-clock improvement, not a pipeline or controlled
+host-duration comparison. Every acknowledged byte/object/full controller pixel
+passes independent newCPUcold; full course reopening adds no checker request.
+
+Actualpartialpwrite captures512requested/2persisted/EFBIG27 at134237696, noSaved
+or durability advancement; newCPUoldworkspace/allclosedpixels and ordinary
+retry/hint+3raw Saved pass151.243s/152.749s supervised/774,860,800B.
+See the expanded aligned2 evidence for exact reports/hashes/commands.
+
+Native canonical actor is owned by supervisor1709670 at
+build/courses/task006-native-aligned-notebook-supervision-a1; cold/COURSE is
+not qualified until its actual receipts. Native host imports remain frozen.
+Browser tab27/origin8796/mediumaligned-course-a1 imports only acknowledged raw
+bytes, opens paused atCycle0, and runs one original1B/7200s coldReady campaign.
+No new Ready has been observed. Loopbackserver session34551. Both prior source6
+(native) and source4(browser)400M COURSE failures are untouched. Tabs16–27
+are marked handoff and retained; do not reload/close old owners. The separate
+companion supervisor1697989 still runs its original four-role acceptance.
+
+Actual candidatefe87446 CI38721862601 was last observed5SUCCESS/5active,
+including active A-E. PR9 remains draft/unmerged; no new merge authorization.

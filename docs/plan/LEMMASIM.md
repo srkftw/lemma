@@ -166,3 +166,15 @@ now qualifies across text/controls/mathematics with exact pixels and ordered
 memory effects; fresh whole artifacts and performance remain required. This
 advances the existing guest/product lane while all wider G2/G4–G7, exact timing/
 checkpoint, distribution and physical obligations keep their separate status.
+
+Aligned2/sourcefe87446 now has a fresh395-input canonical matched pair and both
+full ordinary audits. The existing G2/G4–G7/S4–S6 slice passes all42 fast phases
+under original3B/900s, including actual course/checker/learner/ink, complete cold
+pixels/objects and full cold reopen. Actual2-byte partialpwrite/EFBIG Failed,
+newcold and ordinary retry/rawink also pass. Total instruction clocks2.639B
+versus2.649B with the same actual input/runtime; this does not establish RTL
+timing parity. New native7 and browser7 cold/course campaigns are running.
+Their prior source6/native and source4/browser400M failures remain failures.
+The separate four-process companion recovery4 acceptance is also running.
+See [aligned2 evidence](../evidence/006-course-aligned-delta-v2.json); all broader
+G2/G4–G7, fast/checkpoint, distribution and physical obligations remain open.

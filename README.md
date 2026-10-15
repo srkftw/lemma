@@ -1297,3 +1297,19 @@ and [source-bound evidence](docs/evidence/006-package-companion-recovery4.json).
 The current aligned course renderer has passed source/Action/object qualification;
 its linked canonical/native/browser timing acceptance is pending. The previous
 source6 native and source4 browser400M course failures remain failures.
+
+The aligned2 notebook pair is fully linked/audited and prepared locally in
+`build/native/task006-aligned-notebook-a1` and
+`build/browser/task006-aligned-notebook-a1`. Its42-phase fast course/checker/
+learner/ink/newcold/reopen and actual partial-write failure/retry cases pass.
+New RTL and browser cold/course runs are still active. Launch the prepared
+local browser with:
+
+```sh
+./scripts/lemmasim browser-serve \
+  --bundle build/browser/task006-aligned-notebook-a1 --port 8796
+```
+
+Use the existing session/init/snapshot commands above with the native bundle.
+The original source6/native and source4/browser400M course failures are retained;
+see [aligned2 evidence](docs/evidence/006-course-aligned-delta-v2.json).

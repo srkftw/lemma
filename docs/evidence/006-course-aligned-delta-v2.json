@@ -1,8 +1,8 @@
 {
   "schema": "lemma-course-aligned-delta2-evidence/1",
-  "status": "PASS_ACTIONS_GENUINE_NOTEBOOK_ARTIFACTS_LINKED_CPU_NOT_RUN",
+  "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
   "contract": "docs/contracts/006-course-aligned-delta-v2.md",
-  "scope": "Current same-machine Notebook source uses the alignment-aware byte-prefix/aligned-word/byte-suffix renderer. Full linked/source audits, actual400M canonical controller completion and browser execution remain pending.",
+  "scope": "Current same-machine Notebook uses aligned-delta2. Both fresh canonical linked images/full audits and42phase fast workflow plus actual partial-pwrite/failure/cold/retry/ink pass. New native RTL and local browser cold/course campaigns are running; no new400M controller acceptance inferred.",
   "genuine_captures": {
     "canonical": {
       "functions": 837,
@@ -79,5 +79,145 @@
     "unchanged_repair_real_fault_prefixes": true,
     "not_claimed": "Target cycle/host performance speedup until real guest/controller workload executes"
   },
-  "prior_controller_deadlines": "Source6 native original400M and source4 browser original400M both FAIL with complete RAM body and incomplete controller pixels; retained separately. No bound changed."
+  "prior_controller_deadlines": "Source6 native original400M and source4 browser original400M both FAIL with complete RAM body and incomplete controller pixels; retained separately. No bound changed.",
+  "implementation_source": "fe87446ec67ab0e9b1f6b7596fb7256095eb2863",
+  "whole_linked": {
+    "path": "build/courses/task006-aligned-notebook-whole-a1/result.json",
+    "sha256": "ec34e720a32babc2b83b27378720597719855976abf4505b29a6611a21b7edc4",
+    "status": "PASS_FRESH_WHOLE_PACKAGE_CLOSURE_PAIR",
+    "seconds": 684.3890238519525,
+    "inputs": 395,
+    "roles": {
+      "initializer": {
+        "audit_seconds": 201.30477407900617,
+        "audit_sha256": "ed861ed354f65463038bc8c517a024c87b7d94af10b7b6ba4a9a07dc4c28c657",
+        "audit_status": "PASS",
+        "build_seconds": 145.57790264103096,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-initialize",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-aligned-notebook-initializer-a1",
+        "image_bytes": 697016,
+        "image_sha256": "fbd0bda6df7aeaaf68c10a811a930609a3746c52ece4a4835f4b59c86210c5e4",
+        "provenance_sha256": "052d9eb9ed53dcfcf7675649b3d67c511d3ddad01d893e98724a86b65110a0e9"
+      },
+      "notebook": {
+        "audit_seconds": 195.93421411700547,
+        "audit_sha256": "a8f6790197e3b53db91adb5f8cd45bf952cb568bce922288a638873c87d562a0",
+        "audit_status": "PASS",
+        "build_seconds": 141.43671661510598,
+        "build_status": "BUILT",
+        "configuration": "lemmasim-silicon-package-closure-entry2-bulk-notebook",
+        "directory": "/home/sreekumaar/Downloads/lemma/build/kernel/task006-aligned-notebook-notebook-a1",
+        "image_bytes": 697008,
+        "image_sha256": "118354bcca359dcc68ee7ebd6e6d74650e81118256e513216e9635154d62ab0a",
+        "provenance_sha256": "0e87e080ae808bf0e03704cf5dfe4d7e44facf347909e1e2f51bdeb804a8acd4"
+      }
+    },
+    "supervision": {
+      "path": "build/courses/task006-aligned-notebook-whole-supervision-a1/result.json",
+      "sha256": "90653774321f9b77619e3fde7a6e6f906410bf6c352447eec25df15df5a3ce4c",
+      "status": "PASS_FRESH_PAIR_SOURCE_RESOURCES_OWNED_CLEANUP",
+      "seconds": 688.3881288219709,
+      "peak_owned_rss_bytes": 1946288128,
+      "minimum_available_bytes": 9346588672,
+      "outputs_bytes": 128723845,
+      "survivors": {}
+    }
+  },
+  "distribution": {
+    "native": {
+      "path": "build/native/task006-aligned-notebook-a1/bundle.json",
+      "sha256": "274a9d40f34623fb2ebc5b614fc110ca23b66f762595c5d05b4813a3aa4f9985",
+      "status": "PREPARED"
+    },
+    "browser": {
+      "path": "build/browser/task006-aligned-notebook-a1/bundle.json",
+      "sha256": "bfb01f524aa698b6f9fb3d9997e128e89e25504b985d5dd7f858ab27dba5d518",
+      "status": "PREPARED_AND_ACTUAL_COLD_RUNNING",
+      "origin": "http://127.0.0.1:8796/",
+      "tab": "27",
+      "plan": {
+        "path": "build/browser/task006-aligned-notebook-cold-a1/plan.json",
+        "sha256": "4b89a2e8c4c6df46f5dc12c728100542a57a3642fd388cbd61cee9120d463a16"
+      }
+    },
+    "scope": "Same exact audited guest pair, retained validated RTL/fast/Wasm inputs; local development bundles; redistribution and complete role/compiler obligations open"
+  },
+  "fast_workflow": {
+    "path": "build/courses/task006-aligned-notebook-fast-a1/result.json",
+    "sha256": "5ea668973ca4dd838a594b3940cf533c365906ee2bf68ded70cdb8aa8adcc03b",
+    "status": "PASS_FAST_FUNCTIONAL_COURSE_MATH_LEARNER_INK_COLD",
+    "phase_count": 42,
+    "instruction_clocks": 2639000287,
+    "seconds": 306.8445450779982,
+    "supervised_seconds": 308.3483229429694,
+    "peak_owned_rss_bytes": 423165952,
+    "bounds": "unchanged3B/900s",
+    "cold": {
+      "new_cpu": true,
+      "all_controller_pixels_exact": true,
+      "all_acknowledged_objects_exact": true
+    },
+    "reopen": {
+      "actual_body_pixels": true,
+      "exact_workspace_and_all_objects": true,
+      "all_medium_bytes_exact": true,
+      "no_new_checker_request": true
+    },
+    "comparison": {
+      "path": "build/courses/task006-aligned-notebook-integration-a1/fast-comparison.json",
+      "sha256": "2cbb1fc891a3c9322f3edd47cb3f28cb874a24c987d80542073d73e7d426224a"
+    },
+    "old_clocks": 2649000283,
+    "new_clocks": 2639000287,
+    "reduction_percent": 0.37750075242253195,
+    "scope": "Instruction-clock functional evidence; no RTL timing/fast cached-state parity claim; wall durations under different concurrent load"
+  },
+  "actual_unsuccessful_save": {
+    "path": "build/courses/task006-aligned-notebook-failed-a1/result.json",
+    "sha256": "6aea8e79317d34fb1476b60027dbbbdc8dd0f2557bd2672f64000265867f8b1a",
+    "status": "PASS",
+    "seconds": 151.24328664399218,
+    "supervised_seconds": 152.74911381304264,
+    "peak_owned_rss_bytes": 774860800,
+    "captured_failure": [
+      240,
+      4934977760,
+      1,
+      134237696,
+      512,
+      2,
+      27
+    ],
+    "failed_save": {
+      "no_new_saved": true,
+      "partial_bytes": 2,
+      "durable_barrier_unchanged": true,
+      "old_workspace_and_all_objects_exact": true
+    },
+    "cold_recovery": {
+      "new_cpu": true,
+      "all_backing_bytes_exact": true,
+      "all_closed_controller_pixels_exact": true,
+      "actual_course_body": true,
+      "old_workspace_exact": true
+    },
+    "retry": {
+      "one_durable_workspace_transaction": true,
+      "history_and_learner_prefixes_exact": true,
+      "raw_ink_samples": 3,
+      "no_new_checker_request": true
+    }
+  },
+  "new_canonical_rtl": {
+    "status": "RUNNING_NOT_QUALIFIED",
+    "work_dir": "build/courses/task006-native-aligned-notebook-a1/actor",
+    "bounds": "original1B cold/400M COURSE/6B aggregate/21600s; no automatic restart"
+  },
+  "candidate_ci": {
+    "commit": "fe87446ec67ab0e9b1f6b7596fb7256095eb2863",
+    "run": 38721862601,
+    "status": "IN_PROGRESS_LAST_OBSERVED",
+    "known": "5 completed jobsSUCCESS,5 active; previous07e FAILURE retained"
+  }
 }

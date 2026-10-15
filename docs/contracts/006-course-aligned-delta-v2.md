@@ -2,8 +2,9 @@
 
 `lemma-course-text-aligned-delta/2` is an additive guest Action, compiled by the
 existing User2 frontend and LLVM lowering. The current installed-package notebook selects
-this renderer. Separate full Notebook artifacts are qualified; linked CPU and
-controller execution remain pending. This change does not close the retained native6 or browser4
+this renderer. Separate full Notebook artifacts and both linked canonical images are qualified.
+The42-phase fast course/checker/learner/ink/newcold/reopen workflow and real
+partial-pwrite failure/cold/retry pass; new RTL/browser timing acceptance is pending. This change does not close the retained native6 or browser4
 400-million-cycle course failures.
 
 The source is a freshly prepared, private4096-byte glyph cache, disjoint from
@@ -32,5 +33,5 @@ and9640 writes covering exactly61440 bytes. Delta1's decomposition requires
 measured target-cycle speedup. Genuine checked User2 lowering, LLVM verification
 and RV64 object/helper inspection have separate evidence. Both Notebook
 deployments and both initializer catalogs pass complete source-family/IR and
-object checks. Whole linked artifacts and actual canonical controller
-completion remain required.
+object checks. Both whole linked artifacts pass. Actual canonical controller completion
+at the original400M course bound remains required.
