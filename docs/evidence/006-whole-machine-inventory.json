@@ -825,6 +825,27 @@
       "sha256": "0d4b359d98e63afa602c0be0cf58fb95f9ab81cd96ca6ac20b624c82c7cca52d",
       "status": "PASS_FAST_GUEST_WFI_IMMEDIATE_RESET_SCOPE",
       "scope": "same genuine ELF fast guest records and immediate reset; no timing/cache parity"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-a4/result.json",
+      "bytes": 8946,
+      "sha256": "7d24020cdffaab2291c83739e3be91a2ded47ef18d0e3198b263b819d042faef",
+      "status": "PASS_ACTUAL_RTL_DEVELOPMENT_AUTH_INSTALL_HANDOFF",
+      "scope": "Actual public-development-key immutableROM install, validCRC badMAC240, correctpublication/authenticatedhandoff and12computed digests; fullnotebook/cold/update separate"
+    },
+    {
+      "path": "build/courses/task006-native-aligned-notebook-a1/actor/result.json",
+      "bytes": 10493,
+      "sha256": "c9fe94a5ee2d2c96da644f16c51e80b3c33319c5e4f0bf94cbf8291672ff5ca7",
+      "status": "FAIL",
+      "scope": "Retained original400M COURSE FAIL at1.280B; model shows acceptedrefresh4stillWAIT_TIME, bodyRAM/staging/scan exact"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-supervision-a4/result.json",
+      "bytes": 636,
+      "sha256": "6745c229e1e4dc3bd9a2f773c36332791ac56fc005ccbbaa1079e38e70378e7d",
+      "status": "PASS_AUTH_RTL_SUPERVISED",
+      "scope": "Owned resource/deadline/cleanup supervision of actual authenticatedROMcase"
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",

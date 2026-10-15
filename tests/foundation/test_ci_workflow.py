@@ -12,7 +12,7 @@ WORKFLOW = ROOT / ".github/workflows/core0.yml"
 
 JOBS = ("lemmasim-writing-rv64", "metadata", "kernel-managed-rv64", "kernel-services-rv64", "legacy-rv64",
         "foundation-rv64", "kernel-rv64", "kernel-source-negatives-rv64",
-        "kernel-architecture-rv64", "silicon-devices-rtl")
+        "kernel-architecture-rv64", "silicon-devices-rtl", "crypto-rv64")
 
 
 def job_block(source: str, job: str) -> str:
@@ -150,6 +150,7 @@ class CiWorkflowTests(unittest.TestCase):
                          "metadata/ipc-poll-borrow.log",
                          "metadata/kernel-host-unittest.log",
                          "metadata/silicon-host-unittest.log"),
+            "crypto-rv64": ("crypto-rv64.log", "development-auth-rom.log", "development-auth-layout.log"),
             "legacy-rv64": ("legacy-rv64.log",),
             "foundation-rv64": ("foundation-gates1-9.log", "foundation-qualification.log"),
             "kernel-managed-rv64": ("kernel-managed-rv64.log",),
@@ -188,6 +189,16 @@ class CiWorkflowTests(unittest.TestCase):
                          'if-no-files-found: error', 'retention-days: 14'):
             self.assertIn(required, lane)
         self.assertEqual(lane.count('timeout --foreground --signal=TERM --kill-after=30s'), 2)
+
+    def test_crypto_lane_requires_real_rv64_and_exact_rom_source(self):
+        lane = self.blocks['crypto-rv64']
+        for required in ('scripts/check_crypto.py', 'scripts/build_development_auth_boot.py',
+                         '--public-development-key', 'tests/boot/DevelopmentAuthentication.lean',
+                         'PASS_GENUINE_RV64_SHA256_HMAC_COMPONENT',
+                         'PASS_GENUINE_DEVELOPMENT_AUTH_ROM', "report['source_commit'] != head",
+                         "report['dirty_paths']", "report['source_inputs'].items()",
+                         'DEVELOPMENT_AUTH_LAYOUT:PASS', 'if-no-files-found: error'):
+            self.assertIn(required, lane)
 
     def test_job_slice_cannot_absorb_an_added_sibling(self):
         source = "jobs:\n  metadata:\n    run: host-only\n  new-job:\n    run: qemu\n  legacy-rv64:\n    run: guest\n"

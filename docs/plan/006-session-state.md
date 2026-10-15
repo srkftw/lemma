@@ -1,6 +1,39 @@
 <!--
 # Task006 checkpoint
 
+
+Development-authentication milestone (October15): ordinary Lean SHA256/HMAC256
+now has real RV64 computed-digest execution and an immutable public-development-
+key Product10ROM. Real RTL installation rejects a valid-CRC bad MAC with240,
+accepts the correct tag only after guest checks/barriers, hands off and executes
+all12 independently checked payload digests:17.7M cycles/88.187s,254279680B
+supervised peak RSS. Both scratch-placement failures remainFAIL; unchanged
+compiled access/PIO checks exposed them. All buffers now fit the original
+16KiB scratch and have a disjointness/admission fixture. The public00..1f key
+is deliberately development-only: production identity/entropy/trust state and
+anti-rollback remainOPEN. `docs/evidence/006-development-authentication-v1.json`
+binds actual reports, commands, source/tool identities and failures. A separate
+600M-install/1.3B-each-cold/21600s actual authenticated notebook/rawSave/newCPU
+campaign isRUNNING at`build/boot/task006-development-auth-notebook-a2`; no
+notebook, independentcold or interrupted-update result is inferred from the
+successful diagnostic payload. Use`./scripts/lemmasim-auth --help` with the
+mandatory`--public-development-key` option for the additive prepared path.
+
+Sourcefe87446 actual CI38721862601 completedSUCCESS10/10, every step successful.
+That CI result belongs tofe87446, before this authentication increment. PR9
+remains draft/unmerged. The aligned7 native COURSE test retained its original
+400M FAIL at1.280B clocks: exact owned RAM/staging/scan body, completedsequence3
+and acceptedsequence4 stillbusy inWAIT_TIME. The private generated-state reader
+performed no clocks/eval; it disproved an intermediate presentation-defect
+hypothesis. Do not relabel unfinishedscan asReady. Browser aligned7 independently
+reached cold Ready801.4M/5871.2s (192MiB heap), original1B/7200s bound; exported
+full-pixel/media/capture qualification remains required. Companion Recovery4
+originalcold observer omitted11 retained ink pixels by selecting the raw count
+as a page ID. Its original7200sFAIL remains; corrected page-index selection
+matches the complete exported frame, and a same-bound corrected fullcampaign
+isRUNNING at`build/usb/task006-package-companion-connected-a2`. No lostACK/
+reconciliation/cold acceptance is inferred yet.
+
 Task006 remains a substantial partial increment, not a completed Lemma One.
 Resume `task/006-whole-machine-lemmasim`. At the start of the October12
 continuation, PR8 was already merged at `b2fe214258345f9e48ae1f836fd80b0773d933a6`;

@@ -929,3 +929,67 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 6
+
+  crypto-rv64:
+    name: Public-development SHA/HMAC RV64 and authenticated ROM audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Execute genuine SHA/HMAC RV64 known answers
+        run: |
+          set -euo pipefail
+          mkdir -p build/ci
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/check_crypto.py --work-dir build/boot/ci-crypto-rv64 \
+            2>&1 | tee build/ci/crypto-rv64.log
+      - name: Audit genuine authenticated development ROM and scratch admission
+        run: |
+          set -euo pipefail
+          timeout --foreground --signal=TERM --kill-after=30s 10m \
+            nix develop --no-write-lock-file --command \
+              python3 scripts/build_development_auth_boot.py --public-development-key \
+                --work-dir build/boot/ci-auth-rom \
+            2>&1 | tee build/ci/development-auth-rom.log
+          timeout --foreground --signal=TERM --kill-after=30s 2m \
+            nix develop --no-write-lock-file --command \
+              lake env lean tests/boot/DevelopmentAuthentication.lean \
+            2>&1 | tee build/ci/development-auth-layout.log
+          python3 - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          for path, expected in [('build/boot/ci-crypto-rv64/result.json','PASS_GENUINE_RV64_SHA256_HMAC_COMPONENT'),
+                                 ('build/boot/ci-auth-rom/build.json','PASS_GENUINE_DEVELOPMENT_AUTH_ROM')]:
+              report = json.loads(Path(path).read_text())
+              if report['status'] != expected or report['source_commit'] != head or report['dirty_paths']:
+                  raise RuntimeError('Missing exact clean-source cryptographic observation')
+              for name, digest in report['source_inputs'].items():
+                  if hashlib.sha256(Path(name).read_bytes()).hexdigest() != digest:
+                      raise RuntimeError('Cryptographic source changed')
+          if 'DEVELOPMENT_AUTH_LAYOUT:PASS' not in Path('build/ci/development-auth-layout.log').read_text():
+              raise RuntimeError('Missing actual ROM scratch admission/disjointness result')
+          PY
+      - name: Retain cryptographic execution, ROM audits and failures
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: crypto-rv64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/boot/ci-crypto-rv64/
+            build/boot/ci-auth-rom/
+            build/ci/crypto-rv64.log
+            build/ci/development-auth-rom.log
+            build/ci/development-auth-layout.log
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6

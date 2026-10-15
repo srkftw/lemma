@@ -1313,3 +1313,26 @@ local browser with:
 Use the existing session/init/snapshot commands above with the native bundle.
 The original source6/native and source4/browser400M course failures are retained;
 see [aligned2 evidence](docs/evidence/006-course-aligned-delta-v2.json).
+
+
+The additive public-development-key authenticated Product10ROM is documented in
+[the development authentication contract](docs/contracts/006-development-boot-authentication-v1.md).
+It uses the same native RTL machine and guest recovery transactions. The key
+`00..1f` is public test material; production identity and anti-rollback remain
+open. Actual MAC rejection/positive handoff passed; full authenticated notebook
+and update/power acceptance have separate results.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_crypto.py \
+  --work-dir build/boot/crypto-new
+nix develop --no-write-lock-file --command python3 scripts/build_development_auth_boot.py \
+  --public-development-key --work-dir build/boot/auth-rom-new
+./scripts/lemmasim-auth --public-development-key --help
+```
+
+The retained prepared instance is`build/boot/task006-development-auth-prepared-a6`.
+Its normal commands are`create-medium`, `launch`, `install`, `tag`, `publish`,
+`status`, `boot`, `capacity` and`key-info`; use each command's`--help`. Installation
+requires a source-validated opaque product package and a slot-specific tag made
+with`scripts/package_development_auth_tag.py --public-development-key`. No host
+preinstallation of a running image is part of this path.

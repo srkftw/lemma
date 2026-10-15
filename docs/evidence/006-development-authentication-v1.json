@@ -1,0 +1,118 @@
+{
+  "schema": "lemma-development-authentication-evidence/1",
+  "status": "PASS_ACTUAL_RTL_INSTALL_MAC_ENFORCEMENT_AND_HANDOFF_NOTEBOOK_RUNNING",
+  "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance.",
+  "contract": "docs/contracts/006-development-boot-authentication-v1.md",
+  "source_origin": "ee81d85 plus explicitly recorded dirty inputs; each original report records exact source/tool/artifact identities",
+  "actual_results": [
+    {
+      "path": "build/boot/task006-sha-hmac-rv64-a6/result.json",
+      "sha256": "a832382b56edb8c1f0ba6ac88bfd862a10464ec41bd7b5e3f3e70280efab7cb9"
+    },
+    {
+      "path": "build/boot/task006-sha-hmac-rv64-supervision-a6/result.json",
+      "sha256": "9443dcd19fa7b32cb1f0ed6ffb089a9a2b58398a924b6bf1fc2eb33dcf7641e8"
+    },
+    {
+      "path": "build/boot/task006-development-auth-rom-a3/build.json",
+      "sha256": "81ecf9f563ef1a03d12b5bab72bb534f7dc6d5ffe84b764e65633ada96cf274a"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-a4/result.json",
+      "sha256": "7d24020cdffaab2291c83739e3be91a2ded47ef18d0e3198b263b819d042faef"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-supervision-a4/result.json",
+      "sha256": "6745c229e1e4dc3bd9a2f773c36332791ac56fc005ccbbaa1079e38e70378e7d"
+    },
+    {
+      "path": "build/boot/task006-auth-load-snapshot-a1/ram-observation.json",
+      "sha256": "2504c16e52f606a28d288ec9bbbd507eda9ca9f622d232490adcdfcb517f9ad3"
+    }
+  ],
+  "crypto_component": {
+    "host_action_tests": "NIST/RFC4231/boundary/split/alias/resource/partial-update-poison checks",
+    "actual_RV64_computed_digests": 12,
+    "seconds": 24.743727,
+    "target_runtime": "generated I/O fence only; genuine checked core0-boot-v0.1 through LLVM; no hostedtarget runtime",
+    "later_host_audit_refactor": "audit_elf accepts explicit base/literal sets; exercised by actual new ROMaudits, A6targetbytes not reclassified"
+  },
+  "actual_RTL": {
+    "cycles": 17700000,
+    "host_seconds": 88.18701168696862,
+    "supervised_seconds": 90.28361200296786,
+    "peak_owned_rss_bytes": 254279680,
+    "bad_MAC_status": 240,
+    "bad_MAC_valid_sector_CRC": true,
+    "rejected_publication_medium_unchanged": true,
+    "correct_MAC_publication_barrier": true,
+    "authenticated_entry": 2147483648,
+    "actual_payload_computed_digests": 12
+  },
+  "retained_failures": [
+    {
+      "path": "build/boot/task006-development-auth-connected-a1/result.json",
+      "status": "FAIL",
+      "actual_status": 211,
+      "defect": "new tag buffer outside original PIO scratch span; actual snapshot proved fullimage/header exact, tag unread"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-a2/result.json",
+      "status": "FAIL",
+      "defect": "same tag admission; unqualified fullRAM-dump option removed ratherthan advertised"
+    },
+    {
+      "path": "build/boot/task006-development-auth-connected-a3/result.json",
+      "status": "FAIL",
+      "actual_status": 7,
+      "defect": "new crypto workspace beyond unchanged compiled physical scratch region; moved everybuffer into admitted disjoint slots"
+    },
+    {
+      "path": "build/boot/task006-development-auth-notebook-a1/result.json",
+      "status": "FAIL",
+      "defect": "hostfixture confused rootpagecount withselectedpage beforeCPUlaunch; corrected usingactual rootformat"
+    }
+  ],
+  "new_notebook_campaign": {
+    "status": "RUNNING_NOT_QUALIFIED",
+    "path": "build/boot/task006-development-auth-notebook-a2",
+    "plan": "build/boot/task006-auth-draft-a1/auth-notebook-plan-a2.json",
+    "bounds": "600M/3600s install;1.3B/7200s each Ready;300M/3600s rawSave;3.5B/21600s aggregate",
+    "same_maintained_image": "build/boot/task006-product-executed-image-a3",
+    "genuine_source_archive": "build/kernel/task006-product-executed-bulk-notebook-a2/consumed-source-root",
+    "no_running_image_preload": true,
+    "no_snapshot_as_cold": true
+  },
+  "open": [
+    "production keyprovisioning/owneridentity/entropy/immutabletrust/antirollback",
+    "authenticated interruptedupdate/watchdog/brownout/notebook confirmation campaign",
+    "independent authenticatedcold andconfirmedfallback before thoseactualruns complete",
+    "latest managedcourse/kernel integration on Product10",
+    "browserauthenticatedboot",
+    "same-backend arbitrarycached continuation/fastRTL timing",
+    "full device/radio/distribution/physicalclosure"
+  ],
+  "verification": {
+    "lake": {
+      "path": "build/boot/task006-auth-draft-a1/lake-build-a1.log",
+      "sha256": "6ab377cea8eeff1d30af2b3ba748c7f8ac5ebd529ff70016bb0b3efef464dfbe"
+    },
+    "scaffold": {
+      "path": "build/boot/task006-auth-draft-a1/scaffold-a2.log",
+      "sha256": "a3888d429fde0747f374ebaa64d3cf85597ba857c5d6e085001536bb4f93aa7c"
+    },
+    "scaffold18": {
+      "path": "build/boot/task006-auth-draft-a1/scaffold-tests-a2.log",
+      "sha256": "4391dd239217787df8be05b0a747dc759436e057fce93a6184091ba8d7ad44f8"
+    },
+    "foundation469": {
+      "path": "build/boot/task006-auth-draft-a1/foundation-tests-a1.log",
+      "sha256": "adfb67989025942f8c16d9c2aa9ed804aee02156c1dc983582586e290aee2d9a"
+    },
+    "ciWorkflow14": {
+      "path": "build/boot/task006-auth-draft-a1/ci-workflow-tests-a1.log",
+      "sha256": "65eefc9434bf30a57c3e243d9a20cb328896fdf5b1bb4a527056acc2713aa271"
+    }
+  },
+  "candidate_ci": "NOT_RUN for this increment; new separate bounded crypto-rv64 job preserves metadata host-only scope, checks12actualRV64digests/strictROMaudit/layout andretainsfailures. Previousfe87446CI38721862601SUCCESS10/10 is baselineonly."
+}
