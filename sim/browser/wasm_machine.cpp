@@ -105,7 +105,9 @@ public:
  void apply_recorded(const lemma::BackingRequest&r,const lemma::BackingOutcome&o) override {
   if(r.kind==lemma::BackingKind::Write&&o.transferred){int n=backing_write(o.bytes.data(),o.transferred,r.offset);
    if(n!=int(o.transferred))throw std::runtime_error("browser private replay write failed");}
-  if(r.kind==lemma::BackingKind::Barrier&&!o.error&&backing_barrier())throw std::runtime_error("browser private replay barrier failed");
+  // The recorded error is the guest result. Applying a fork still requires a
+  // real local barrier, including when the original barrier returned failure.
+  if(r.kind==lemma::BackingKind::Barrier&&backing_barrier())throw std::runtime_error("browser private replay barrier failed");
  }
 };
 std::unique_ptr<lemma::Machine> machine;

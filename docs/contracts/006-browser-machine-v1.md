@@ -125,6 +125,13 @@ device/pipeline qualification; switching or device loss cancels active contact
 with the existing raw loss/resynchronization flags before pointer rebinding.
 The same retained controller plane is presented after the renderer changes.
 
+The power control has one pointer owner. A second contact and stale release
+or capture-loss notification cannot change its held level. Pointer up, cancel
+or capture loss for that owner supplies exactly one raw release; Close supplies
+that release before its close request. These are external button inputs, with
+all debounce, wake, reset and power decisions still in the machine/guest.
+The input fix changes neither the profile nor any target or snapshot format.
+
 ## Origin persistence and faults
 
 The backing interface is `lemma-backing-io/1`. A worker holds an exclusive OPFS

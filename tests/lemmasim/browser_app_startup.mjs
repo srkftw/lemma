@@ -9,7 +9,7 @@ const deferred=()=>{let resolve;const promise=new Promise(r=>{resolve=r;});retur
 const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
 async function appFixture(gpu){
  const nodes=new Map(),sent=[],images=[],canvases=[],gpuBytes=[];let worker,current,rect={left:0,top:0,width:100,height:100};
- const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){}});return nodes.get(id);};
+ const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',checked:false,textContent:'',files:[],dataset:{},setPointerCapture(){},releasePointerCapture(){}});return nodes.get(id);};
  function canvas(){const c={width:3,height:1,style:{},setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect:()=>rect,
   cloneNode:()=>canvas(),replaceWith(next){assert.equal(current,this);current=next;},getContext(kind){if(kind==='2d')return {createImageData:(w,h)=>({data:new Uint8Array(w*h*4)}),putImageData:image=>images.push(Array.from(image.data))};
    if(kind==='webgpu')return {configure(){},getCurrentTexture:()=>({createView:()=>({})})};throw Error('unexpected context');}};canvases.push(c);return c;}
@@ -84,6 +84,27 @@ async function appFixture(gpu){
  f.node('#warm').onclick();assert.equal(f.sent.at(-2).flags,10);assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'reset',cold:false});
  down(44);f.node('#cold').onclick();assert.equal(f.sent.at(-2).flags,10);assert.deepEqual(JSON.parse(JSON.stringify(f.sent.at(-1))),{action:'reset',cold:true});
  down(45);f.actions.find(n=>n.dataset.action==='close').onclick();assert.equal(f.sent.at(-2).flags,10);assert.equal(f.sent.at(-1).action,'close');
+}
+// One pointer owns the raw power level. Other fingers and stale capture
+// notifications cannot release that hold; real capture loss releases it once.
+// Close releases into the current machine before asking the worker to close.
+{
+ const f=await appFixture(undefined),power=f.node('#power');
+ const levels=()=>f.sent.filter(m=>m.action==='button').map(m=>m.level);
+ power.onpointerdown({pointerId:51});power.onpointerdown({pointerId:52});
+ assert.deepEqual(levels(),[1]);
+ power.onpointerup({pointerId:52});assert.deepEqual(levels(),[1]);
+ power.onlostpointercapture({pointerId:51});assert.deepEqual(levels(),[1,0]);
+ power.onpointercancel({pointerId:51});power.onpointerup({pointerId:51});
+ assert.deepEqual(levels(),[1,0]);
+ power.onpointerdown({pointerId:53});power.onlostpointercapture({pointerId:51});
+ assert.deepEqual(levels(),[1,0,1]);
+ power.onpointerup({pointerId:53});assert.deepEqual(levels(),[1,0,1,0]);
+ power.onpointerdown({pointerId:54});power.onpointercancel({pointerId:54});
+ assert.deepEqual(levels(),[1,0,1,0,1,0]);
+ power.onpointerdown({pointerId:55});f.actions.find(n=>n.dataset.action==='close').onclick();
+ assert.deepEqual(JSON.parse(JSON.stringify(f.sent.slice(-2))),[{action:'button',level:0},{action:'close'}]);
+ power.onlostpointercapture({pointerId:55});assert.deepEqual(levels(),[1,0,1,0,1,0,1,0]);
 }
 // View scaling cannot advance a clock or change controller pixels. Scrolled,
 // scaled geometry still supplies raw normalized device coordinates; a held

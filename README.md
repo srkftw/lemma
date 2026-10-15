@@ -1131,9 +1131,13 @@ Launch the prepared native machine on a privately backed existing medium:
 
 ```sh
 ./scripts/lemmasim session --backend rtl --profile lemma-silicon-dev/0.3.0 \
-  --native-bundle build/native/task006-package-layout2-a3 \
+  --native-bundle build/native/task006-package-layout2-fsize-a4 \
   --workload notebook --mode developer --paused \
   --session-dir build/AN_UNUSED_PACKAGE_SESSION --disk YOUR_PRIVATE_MEDIUM.raw
+./scripts/lemmasim session-control --session-dir build/AN_UNUSED_PACKAGE_SESSION \
+  --request '{"action":"run","cycles":1000000000}'
+./scripts/lemmasim session-control --session-dir build/AN_UNUSED_PACKAGE_SESSION \
+  --request '{"action":"inspect"}'
 ./scripts/lemmasim course-install --session-dir build/AN_UNUSED_PACKAGE_SESSION \
   --package YOUR_ORIGINAL_COURSE.lcp --transaction 1
 ./scripts/lemmasim session-control --session-dir build/AN_UNUSED_PACKAGE_SESSION \
@@ -1144,15 +1148,17 @@ The course command sends raw UART bytes. `RAW_COMMAND_ADMITTED` is not a durable
 installation. The guest validates the package and reports its actual `0x4b1`
 result after Store publication. Use the existing course authoring path; keep
 the original transaction for reconciliation after an uncertain outcome.
+Run installation after the machine displays Ready. The1B-clock request is
+bounded execution; other media and workloads require their own observed Ready.
 
 The prepared browser runs the same audited guest on the existing RTL/Wasm core:
 
 ```sh
 ./scripts/lemmasim browser-serve \
-  --bundle build/browser/task006-package-layout2-a3 --port 8791
+  --bundle build/browser/task006-package-layout2-fsize-a6 --port 8793
 ```
 
-At `http://127.0.0.1:8791/`, select Developer before opening, import an existing
+At `http://127.0.0.1:8793/`, select Developer before opening, import an existing
 raw medium under a new name, then Open. **Install a course package** sends the
 selected `.lcp` through the modeled UART and pauses for ordered admission;
 Resume runs the guest installer. The installation label observes only complete

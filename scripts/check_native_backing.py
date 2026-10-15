@@ -40,7 +40,9 @@ def main():
         prefixes=set(re.findall(r'^\s*VERILATOR_ROOT\s*=\s*(\S+)\s*$',version,re.M))
         if len(prefixes)!=1:raise ValueError('Missing/ambiguous pinned Verilator root')
         prefix=Path(prefixes.pop());obj=build/'obj'
-        names=['machine_runtime.o','backing_io.o','backing_io_posix.o','verilated.o','verilated_save.o','verilated_threads.o','verilated_dpi.o','Vlemma_soc__ALL.a']
+        names=['machine_runtime.o','backing_io.o','backing_io_posix.o',
+               'backing_peer.o','ble_peer_transport.o','usb_transport.o',
+               'verilated.o','verilated_save.o','verilated_threads.o','verilated_dpi.o','Vlemma_soc__ALL.a']
         inputs={str(obj/n):sha(obj/n) for n in names}
         source=ROOT/('tests/lemmasim/native_pending.cpp' if a.fixture=='pending' else 'tests/lemmasim/native_fault_pending.cpp');binary=out/'test'
         run(['c++','-O2','-std=c++17','-I',ROOT/'sim/rtl/host','-I',obj,'-I',prefix/'include','-I',prefix/'include/vltstd',source,*[obj/n for n in names],'-pthread','-o',binary],out/'compile.log',60)

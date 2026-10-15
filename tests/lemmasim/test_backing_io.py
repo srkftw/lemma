@@ -10,6 +10,21 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class BackingIO(unittest.TestCase):
+    def test_default_file_limit_signal_is_captured_without_global_policy_change(self):
+        compiler = shutil.which('c++')
+        self.assertIsNotNone(compiler, 'The backing-I/O check requires a host C++ compiler')
+        with tempfile.TemporaryDirectory() as directory:
+            executable = Path(directory) / 'file-limit-signal'
+            subprocess.run([compiler, '-std=c++17', '-Wall', '-Wextra', '-Werror', '-pthread',
+                            str(ROOT/'sim/host/backing_io.cpp'),
+                            str(ROOT/'sim/host/backing_io_posix.cpp'),
+                            str(ROOT/'tests/lemmasim/backing_fsize_signal.cpp'),
+                            '-o', str(executable)], check=True, timeout=60)
+            result = subprocess.run([str(executable), directory], capture_output=True,
+                                    text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('PASS actual default-SIGXFSZ partial pwrite/EFBIG capture', result.stdout)
+
     def test_timed_c_boundary_actual_failures_private_replay(self):
         compiler = shutil.which('c++')
         self.assertIsNotNone(compiler, 'The backing-I/O check requires a host C++ compiler')

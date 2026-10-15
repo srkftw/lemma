@@ -101,3 +101,16 @@ separate evidence; original native600k reboot completion failures remain. These
 advances do not close any broader digital, fast-timing/checkpoint, distribution
 or physical obligation. Exact receipts remain in the existing capability
 inventory and006-session-state.md.
+
+Local storage now captures actual Linux file-limit partial writes with the
+default signal disposition. The current exact-pinned QEMU/RV64 command passes
+guest Compact -> raw failed Save -> independent cold recovery of all bytes and
+pixels -> resumed raw Saved8. Native Pending partial-write/fsync failures have
+their own exact private suffix qualification. The original-source canonical
+Wasm port now preserves those two authoritative suffixes and actually flushes
+private replay barriers even for recorded original errors; a failed private
+barrier poisons and stops the fork. Current native and static browser packages
+retain the same audited Layout2 guest. These advance the existing local-storage,
+checkpoint and S4-S6 columns; full new package-course/browser cold acceptance,
+archived-fast refresh, general fast timing/caches, distribution rights and
+physical qualification remain separate open obligations.

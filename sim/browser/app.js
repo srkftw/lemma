@@ -44,7 +44,7 @@ function download(name,bytes){const u=URL.createObjectURL(new Blob([bytes])),a=d
 document.querySelector('#open').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,paused:document.querySelector('#open-paused').checked});
 document.querySelector('#initialize').onclick=()=>send('open',{name:document.querySelector('#medium').value,mode:sessionMode.value,initialize:true});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
- if(b.dataset.action==='close')cancelContact();send(b.dataset.action);});
+ if(b.dataset.action==='close'){cancelContact();cancelPower();}send(b.dataset.action);});
 document.querySelector('#run-bounded').onclick=()=>send('run',{cycles:document.querySelector('#run-cycles').value,stopOnReady:document.querySelector('#stop-ready').checked,stopOnPanel:document.querySelector('#stop-panel').checked,hostSeconds:document.querySelector('#run-seconds').value||null});
 document.querySelector('#admit-raw').onclick=()=>send('raw',{row:document.querySelector('#raw-event').value});
 document.querySelector('#admit-batch').onclick=()=>send('raw-batch',{rows:document.querySelector('#raw-batch').value});
@@ -66,7 +66,11 @@ document.querySelector('#replay').onclick=async()=>{try{
  const checkpoint=await c.arrayBuffer(),replayLog=await io.arrayBuffer(),events=JSON.parse(await raw.text());
  send('replay',{name:document.querySelector('#medium').value,mode:sessionMode.value,checkpoint,replayLog,events},[checkpoint,replayLog]);
  }catch(e){status.textContent=String(e);}};
-const power=document.querySelector('#power');power.onpointerdown=e=>{power.setPointerCapture(e.pointerId);send('button',{level:1});};power.onpointerup=power.onpointercancel=()=>send('button',{level:0});
+const power=document.querySelector('#power');let powerPointer=null;
+function cancelPower(){if(powerPointer===null)return;const pointer=powerPointer;powerPointer=null;
+ send('button',{level:0});try{power.releasePointerCapture(pointer);}catch(e){} }
+power.onpointerdown=e=>{if(powerPointer!==null)return;power.setPointerCapture(e.pointerId);powerPointer=e.pointerId;send('button',{level:1});};
+power.onpointerup=power.onpointercancel=power.onlostpointercapture=e=>{if(e.pointerId===powerPointer)cancelPower();};
 function point(e,contact,cancel=false){const r=canvas.getBoundingClientRect();
  last={x:Math.max(0,Math.min(65535,Math.round((e.clientX-r.left)/r.width*65535))),y:Math.max(0,Math.min(65535,Math.round((e.clientY-r.top)/r.height*65535)))};
  // Pressure is a raw browser device capability. A mouse is explicitly a

@@ -1595,3 +1595,90 @@ the original preconstruction plan. Native actor1456817 remains running under
 the existing29-source hold. A separate same-guest QEMU instruction-clock
 diagnostic checks package/course/actual arithmetic/edit/learner controls; it
 does not replace canonical timing acceptance or cached-state continuation.
+
+
+### Browser power pointer owner and separate fast diagnostic
+
+The actual app now keeps one power-button pointer owner, releases once on
+its up/cancel/capture loss, ignores other/stale pointers and submits release
+before Close. The original app fails the new independent host fixture with
+press levels[1,1] instead of[1]; repaired app/worker tests2PASS1.353s. New static
+bundle build/browser/task006-package-layout2-power-a4 reuses the exact audited
+a20c6530 guest andfe167c21 core. It is a frontend input fix; active tab22 keeps
+its unchanged a3 bundle and cold prefix. No target or power timing claim.
+
+Fast Layout2 diagnostica1 reached actual instruction-clock coldReady269000002
+in28.026s, then failed its original100M view cap at firstCOURSE. Actual guest
+created and acknowledged workspace5, but the expected package title was absent;
+no mathematical input was admitted afterward. A separate actual Saved5-media
+newCPU cold diagnostica2 reached275000006 in28.286s and independently fails the
+same100M view cap. Its final architecture/device state, full medium/controller
+exports and observational checkpoint are retained under
+build/courses/task006-package-fast-layout2-a2. This is a real unfinished fast
+workflow, not canonical timing acceptance. No deadline/tolerance is enlarged.
+The native actor retains its original predeclared400M open phase and remains
+running; do not alter its consumed29-host-source closure.
+
+### Real POSIX partial failure and current candidate
+
+The package Layout2 native actor reached real cold Ready978000000 after
+3894.109s, then guest edition3 installation in84M/332.981s and immutable
+duplicate rejection in11M/42.566s. The COURSE phase remains running within
+its original400M bound; later mathematics, learner controls and independent
+cold acceptance are not yet claimed. The browser's independent Layout2 cold
+run remains active under its original1B/7200s bounds.
+
+Actual default SIGXFSZ terminated an unpatched backing writer on EFBIG. The
+shared POSIX adapter now guards only the calling thread around actual pwrite,
+captures the real error and partial bytes, and preserves prior signal state.
+Four focused tests and294 host tests pass. Rebuilt native8e5ce4ee/runtime7a59b9e6
+qualifies two-byte partial writes, real fsync EBADF, observational Pending cuts,
+controller IOERR DMA and exact private suffixes in12.027s. The literal fixture
+does not claim guest-issued Save. Complete254-input native archive is sealed;
+its new portable build is in progress. Native package:
+build/native/task006-package-layout2-fsize-a4. Its archived QEMU remains old;
+standalone prepared QEMU188e5447 includes the repair and both matched guest roles.
+
+The actual a20c6530 RV64 guest compacted its journal through Store, then received
+real partial pwrite/EFBIG under a private Linux file limit. It reported Failed
+without Saved or a new durability barrier; exactly two observed backing bytes
+changed. An independent newCPU cold run recovered every acknowledged object,
+all observed medium bytes and the complete controller plane, then actual raw
+writing reached Saved8. Original a1 presentation and a2 typed-ink observer
+failures remain FAIL. The corrected kind3 observer rechecks the retained actual
+scenario with three independent rejecting mutations; no CPU replay is inferred.
+See docs/evidence/006-native-backing-pending.json and the reproducible command
+in docs/contracts/006-backing-io-v1.md.
+
+Pushed f609fd05 CI38664945609 is terminal FAILURE:9/10 jobs passed. Its foundation
+suite passed; fresh CI lacked Notebook.olean at the actual imported regression.
+The kernel and silicon host steps after that failure were skipped. Adding the
+explicit module to the existing bounded Lake build passes13 workflow guards
+and the actual65-job module build plus Lean regression locally. The original
+failure and exact logs are retained; replacement CI is not yet run.
+
+The final exact-pinned maintained POSIX guest command now has its own fresh
+PASS at build/lemmasim/task006-guest-fsize-failure-a4/result.json (86.535s).
+Both newCPU cold cuts use275000006/275000004 instruction-clock units;
+Compact66M, real failed ink36M and resumed Saved8 ink35M remain within their
+original caps. Older a1/a2 failures and retained corrected a3 observation
+remain separate.
+
+The portable comparison exposed a real additional browser defect: recorded
+failed barriers skipped the private local flush. The actual a3 failed check
+is retained. BrowserBacking now requires that flush; local failure poisons the
+owner without completion and rejects future clock/checkpoint work. New port
+fb15aade/wasm bd17589f built76.585s from the sealed254-input native source plus
+the separately identified portable shim. Both literal actual-failure cuts have
+complete authoritative prefix/suffix equality under the existing explicit
+identity relation, all corrupt/foreign/no-tape rejections and a real local
+flush-failure callback check: PASS14.859s/1371992KiB peak. No original file/peer,
+cold prefix or guest computation was used. Original observer/setup failures
+remain retained. Reproduce through scripts/check_wasm_backing_pending.py and
+the commands in docs/contracts/006-backing-io-v1.md.
+
+Prepared repaired static bundle02f4381e is
+build/browser/task006-package-layout2-fsize-a6; server8793/tool16988/tab24.
+It includes the power-pointer owner fix and new portable barrier behavior.
+It has not started another cold prefix; active tab22 remains on its original
+bundle. Native source hold/actor1456817 and all original phase bounds remain.

@@ -224,5 +224,88 @@
       "header-only outcome tape correctly rejected; selected suffix has no new backing outcomes, existing optional no-tape route uses isolated snapshot bytes"
     ],
     "limits": "original600s complete-attempt failure preserved; missing-only300s case qualified. Target25M and unchanged existing64M helper bound."
+  },
+  "power_pointer_ownership_repair": {
+    "scope": "Actual app module under independent DOM/worker fixtures; raw-input frontend only. No new power RTL, RV64 or browser cold acceptance claim.",
+    "defect": "A second pointer emitted another press and any pointerup could release a different held contact. Capture loss had no release handler.",
+    "behavior": "Exactly one pointer owns the raw power level. Only its up/cancel/capture-loss releases once; stale notifications cannot release a new owner. Close submits the actual release before the close request.",
+    "original_rejection": {
+      "path": "build/browser/task006-package-layout2-cold-a1/power-capture-original-failure.log",
+      "sha256": "c2f966e22223b789700b81231f038ff8106473852d3aca16265fab89935627c9"
+    },
+    "local_validation": {
+      "status": "PASS",
+      "tests": 2,
+      "seconds": 1.353,
+      "log": {
+        "path": "build/browser/task006-package-layout2-cold-a1/power-capture-repaired.log",
+        "sha256": "e0984aeb810f364c9f208c8904ba25697a928a209c8b0d3225625ad1ff5ae5f0"
+      }
+    },
+    "changed_sources": [
+      {
+        "path": "sim/browser/app.js",
+        "sha256": "e35eee910be64a857a04b3be7dca713c3a767e3fe4a45633a3cfc57bfb2a4704"
+      },
+      {
+        "path": "tests/lemmasim/browser_app_startup.mjs",
+        "sha256": "d7552dc77542e8e9a5dce33b1a731637fc6b378ee8a0f6e79bccb4203865c6af"
+      }
+    ],
+    "prepared_bundle": {
+      "path": "build/browser/task006-package-layout2-power-a4/bundle.json",
+      "sha256": "fe37642405bc450ab05e3a3de16bf9f674b315ac458e7ca96452b80cf9267fd2"
+    },
+    "same_audited_guest": "a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370",
+    "same_wasm_core": "fe167c21fe704436650efabf550fcb0767c666c8cae99b379f85dead20ca1895",
+    "active_cold_bundle": "Unchanged6b7e9f7f at tab22/port8791; no active machine was reloaded or altered."
+  },
+  "canonical_private_failed_barrier_repair": {
+    "status": "PASS_FINITE_NATIVE_PORTABLE_RELATION",
+    "result": {
+      "path": "build/lemmasim/task006-fsize-native-wasm-a5/actual/result.json",
+      "sha256": "3a20173148a53d129fbd907eb8cf38fbbefb5903653428c953069eb5fce7effa"
+    },
+    "host_seconds": 14.859275108,
+    "peak_rss_kib": 1371992,
+    "cases": [
+      {
+        "name": "partial",
+        "checkpoint_bytes": 145639254,
+        "suffix_cycles": 2000,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_corruption_and_no_tape_rejected": true,
+        "private_calls": {
+          "read": 256,
+          "write": 1,
+          "barrier": 0
+        },
+        "blank_creation_reads": 256,
+        "wasm_heap_bytes": 345964544,
+        "no_original_contact": true
+      },
+      {
+        "name": "barrier",
+        "checkpoint_bytes": 145638222,
+        "suffix_cycles": 2000,
+        "complete_authoritative_prefix_and_suffix_equal": true,
+        "foreign_identity_corruption_and_no_tape_rejected": true,
+        "private_calls": {
+          "read": 512,
+          "write": 0,
+          "barrier": 1
+        },
+        "blank_creation_reads": 256,
+        "wasm_heap_bytes": 345964544,
+        "no_original_contact": true,
+        "private_barrier_failure_stops_without_completion": true
+      }
+    ],
+    "bundle": {
+      "path": "build/browser/task006-package-layout2-fsize-a6/bundle.json",
+      "sha256": "02f4381ee60b2c7e38d999e1113bcd95bc748455b3d405747b0733ac6a877c35"
+    },
+    "local_launch": "./scripts/lemmasim browser-serve --bundle build/browser/task006-package-layout2-fsize-a6 --port 8793",
+    "scope": "Actual compiled portable RTL Machine, two literal Pending native failed-I/O cuts and private local flush failure; not browser OPFS quota acceptance, cold course workflow or arbitrary migration. No original medium/peer consulted."
   }
 }

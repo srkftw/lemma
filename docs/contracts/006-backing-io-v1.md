@@ -108,3 +108,69 @@ QEMU parity, USB/companion completion, browser distribution or physical storage.
 The native Pending checkpoint successor is specified in [v5](006-companion-backing-dev-v5.md); the synchronous v1 observations above retain their original scope.
 
 -->
+
+The native Linux POSIX adapter now captures file-size-limit failures with the
+default `SIGXFSZ` disposition. Each `pwrite` temporarily blocks that signal on
+its calling thread, consumes only a newly generated file-limit signal after
+`EFBIG`, and restores the original mask. A previously pending signal is retained;
+no process-wide handler is installed. The actual partial prefix and errno still
+enter the ordinary backing record before controller completion. Signal-drain
+interference is bounded to16 interruptions; an unknown host failure poisons the
+operation through the existing exception path. I/O `EINTR` is still captured.
+Emscripten uses its existing virtual-file path without these Unix signal calls.
+
+The original default-disposition child terminated with signal25. The repaired
+real-syscall regression preserves a128-byte prefix, `EFBIG`, default disposition,
+original mask and an independently preexisting pending signal. The rebuilt
+canonical native runtime additionally qualifies actual two-byte partial write
+and `fsync/EBADF` Pending snapshots, IOERR status DMA, retained unacknowledged
+effects and exact private recorded suffixes. This latter fixture explicitly
+seeds coherent logical/cached controller state; it is literal runtime evidence,
+not a guest-issued Save or cold-recovery result. Original failed fixtures remain.
+
+Native binary8e5ce4ee and snapshot identity7a59b9e6 have their own source binding;
+older runtime/checkpoint identities retain their historical scope. The new
+prepared native bundle is `build/native/task006-package-layout2-fsize-a4`, with
+the unchanged fully audited Layout2 RV64 pair. Active earlier cold machines
+continue on their original runtime. The exact qualification command is:
+
+```sh
+nix-shell tooling/silicon/sim.nix --run 'python3 scripts/check_native_backing.py --fixture fault-pending --rtl-build build/silicon/task006-fsize-signal-native-a1 --guest-bundle build/native/task006-package-layout2-a3 --work-dir build/AN_UNUSED_NATIVE_FAULT_CHECK'
+```
+
+The complete maintained guest scenario additionally passes with exact QEMU
+binary188e5447 and audited guest a20c6530. The guest performs Compact, raw ink,
+unsuccessful Save after a real two-byte partial `pwrite/EFBIG`, independent cold
+recovery and new raw writing through Saved8. It checks every observed medium
+byte, acknowledged object and controller pixel at the cold boundary. The OS
+file limit applies only to its owned child and is restored before teardown.
+The original observer failures remain retained; the final complete command has
+its own PASS receipt. This is functional instruction-clock evidence.
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/check_guest_posix_save_failure.py \
+  --disk build/courses/task006-package-fast-layout2-a2/final-observed.raw \
+  --work-dir build/AN_UNUSED_GUEST_POSIX_CASE \
+  --expected-guest-sha256 a20c6530c845a69a6b9d521c491ab0abdee1b406210b763762d0b92d3313f370 \
+  --expected-runtime-sha256 188e544730915c0c781f22a1937c0b758fd5931a65e995c8eb69df3fad0fd674
+```
+
+Portable private replay now requires a successful local barrier even when the
+recorded original barrier failed. The recorded error remains the guest outcome;
+a failure applying the private barrier instead poisons and stops that fork.
+The repaired canonical port qualifies both actual native failure cuts with
+complete authoritative prefix/suffix equality under explicitly admitted
+implementation identities, plus foreign identity, corrupt state/tape, missing
+tape and private-barrier-failure rejection. It never consults the original file
+or peer. Its two literal2000-clock suffixes do not establish guest Save,
+arbitrary microstate migration, browser OPFS failure handling or cold recovery.
+
+```sh
+python3 scripts/check_wasm_backing_pending.py \
+  --wasm-build build/browser/task006-fsize-native-port-a2 \
+  --rtl-build build/silicon/task006-fsize-signal-native-a1 \
+  --rtl-source-root build/silicon/task006-fsize-signal-native-a1/consumed-source-root \
+  --native-bundle build/native/task006-package-layout2-fsize-a4 \
+  --native-result build/lemmasim/task006-fsize-signal-native-boundary-a8/result.json \
+  --work-dir build/AN_UNUSED_PORTABLE_FAULT_CHECK
+```
