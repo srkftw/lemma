@@ -2473,3 +2473,77 @@ run38759753901 is CANCELLED: ten jobs pass, Notebook is canceled and its exact
 candidate step skipped. PR9 remains draft/unmerged; no authorization for it is
 inferred from the historical PR8 merge. The in-progress dirty-batch successor
 has only genuine component/corpus observations so far; no new timing pass.
+
+### Dirty-batch9: linked images, connected fast workflow and actual I/O failure
+
+Implementation `ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b` batches at most four
+FIFO dirty tiles through the existing owned Surface-v2 packet. The old Surface
+and pumpRefresh remain byte-identical; only the two Package loops choose the
+new orchestration. Every other original unoptimized body/args/effects/global
+agrees independently, with nine added ordinary Lean functions and no removed
+function. The initial componentA1 correctly rejects a foreign caller of the
+old closed bulkCopyWord optimization; a separate ordinary checked callback
+repairs the source without relaxing that gate. Literal wrapped/noncontiguous,
+four/tail, partial-prefix/retry, malformed/late-preparation-fault and clipped
+geometry fixtures pass. Four genuine catalogs848/886 and complete generic
+pre/post IR/readonly/RV64 object/jump gates pass298.580s; all three actual
+LLVM-valid semantic mutants reject.
+
+Both fresh canonical linked images/full ordinary audits pass from408 frozen
+inputs. Pair788.186s/supervised792.366s, peak1927938048B, full source seal and
+no survivors. Notebook SHA8ab77e837697507f860078c21842c7815727f78b9611bdf266a7192ae84e3778,
+initializer8b3e3f3cac1980e024a1e2c992a37e2a9ad3006375b06f0ff4dd8ad612991ccf.
+The immutable prepared pair is `build/native/task006-dirty-batch-notebook-a1`
+and `build/browser/task006-dirty-batch-notebook-a1`; exact original native RTL,
+fast and Wasm implementation identities remain8e5ce4ee/188e5447/fb15aade.
+
+The42-phase actual new fast workflow passes course/anchors/worked/exercise,
+guest5/6 Verified and edited5/7 Invalid, hint/review/learner, Unsupported,
+budget0 Indeterminate, raw ink/Save, independent newCPUcold/all bytes/all pixels
+and reopen without recomputing old evidence. Same medium/packages/runtime total
+instruction clocks2,615,000,279->2,302,000,127 (11.9694% fewer); firstCOURSE
+135,000,020->114,000,011; header33,000,006->26,000,002; rawSave40,000,006->
+34,000,002. Cold239M and independent274M are effectively unchanged. The original
+fast100M first-view diagnostic still fails and remains separate from the
+prospectively declared400M functional ceiling. Actor246.444s/supervised247.488s,
+453349376B peak, no survivors. Shared-host elapsed is not controlled speedup or
+RTL pipeline timing. Original new9 prelaunch binder read qemu.binary instead
+of qemu.qemu, then incorrectly launched the dependent actor. Root interrupted
+that exact owned tree: terminalFAIL22.186s, original outputs retained, no
+completed phase claimed. CorrectedA2 binds actual audited artifacts before
+launch and explicitly checks actual guest/runtime before its first target clock.
+
+Actual real2/512-byte pwrite/EFBIG failure, no Saved/durability advance, observed
+partial persistence, newCPUcold exact old workspace/all backing bytes/pixels,
+one ordinary workspace retry and three more raw samples/Saved all pass:
+`build/courses/task006-dirty-batch-notebook-failed-a2/result.json`,147.380s actor/
+149.274s supervised,999702528B peak and no survivors. No snapshot is used.
+
+New prepared native/static-browser archives are under build/distribution/
+task006-dirty-batch-native-a1.tar.gz and task006-dirty-batch-browser-a1.tar.gz.
+Native preparation25.008s, archive28491434B; standalone extracted Python-I init
+from/tmp runs the new audited initializer in25000000 instruction clocks/0.986s,
+real durability acknowledgment and independently empty store sequence0. Logs
+and views are outside the immutable package. Existing licensing/new-host and
+optional adapter limits remain. Browser serves its extracted package from/tmp
+at8798; tab29 uses unique OPFS dirty-retained9-a1 and actual acknowledged raw
+notebook+packages SHA25a4eb97..., imported without target RAM or snapshot.
+Initial cycle0/openpaused was observed before the single bounded1B/7200s run.
+This retained input differs from source8 browser's packages-only input; no
+matched browser cold-performance claim follows. Exact RTL source9 is also
+running the original21600s/6B and original per-phase limits. Its owner is
+build/courses/task006-native-dirty-batch-notebook-a1/actor. Do not restart either
+cold prefix or edit their actual consumed host inputs. Their final results,
+whole browser workflow and applicable native comparison remain open.
+
+[The dirty-batch evidence](../evidence/006-notebook-dirty-batch-v1.json) records
+source/tool/artifact identities, original failures and exact plans. Source8
+browser's exported failed cut separately passes fullCRC and a missing-only
+scalar census correction: cycle is field1, openedsequence1, panelcompleted0.
+Its original host-limit FAIL stays unchanged; original passive observer Path/
+bytes and field0 failures remain, no CPU rerun. Candidatead897e1 CI38770831309
+was8jobsSUCCESS/3active with no reported failures/skips at last observation;
+that is not a full CI pass. Original22fbd06 CI11/11 remains separate. PR9 stays
+draft/unmerged. Companion Saved12 remains under its original owned supervision;
+no live peer attaches to restored forks. Broader digital/runtime/proof/tutor/
+radio, exact fast/checkpoint, distribution and physical obligations remain open.

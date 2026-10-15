@@ -863,9 +863,9 @@
     },
     {
       "path": "docs/evidence/006-course-control-aligned-v1.json",
-      "sha256": "cac670e8383dca2f51432e73bc6f6dda38b15f69f2a8ee3f186b88b18cd0c2bd",
-      "bytes": 9844,
+      "sha256": "1e98e8ee0e0ca823006d862b10d7c278911999bd2198d06a57186e99c9a0f80f",
       "status": "PASS_LINKED_FAST_WORKFLOW_AND_FAILURE_RTL_COURSE_BODY_PASS_HEADER_FAIL_BROWSER_HOST_LIMIT_FAIL",
+      "bytes": 10412,
       "scope": "Same maintained source8 Notebook/full ordinary images and42-phase fast functionality plus real partial-pwrite failure/recovery pass. Canonical RTL first COURSE body reaches all expected pixels within398M; next title/header fails original100M. Browser cold fails original7200s host bound before Ready. No whole-machine completion."
     },
     {
@@ -888,22 +888,29 @@
       "bytes": 3447,
       "status": "UNADOPTED_RTL_COMPONENT_PASS_PHYSICAL_FAIL",
       "scope": "Single changed-source standalone256-entry pen experiment; actual mapped cones and failed global/detailed route. Not signoff or full-chip closure."
+    },
+    {
+      "path": "docs/evidence/006-notebook-dirty-batch-v1.json",
+      "sha256": "5636a334b2bd309d0ebeee331ad74a07f49031494317e68e30b1ff4c6d7e0ba9",
+      "status": "PASS_FRESH_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+      "bytes": 17207,
+      "scope": "Same maintained Lean Notebook batches dirty FIFO tiles through existing owned Surface-v2. Fresh full audited images and42phase fast mathematical/course/learner/ink/newcold/reopen plus real partial-write failure/cold/retry pass. New exactRTL/browser campaigns remain running; no timing parity/whole-machine closure."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "Actual older Product10 authenticated immutableROM install -> canonical Ready -> rawSaved14 -> independent authenticated cold allbytes/allpixels PASS2.3308B/12123.862s, no snapshot. Latest source8 RTL firstCOURSE398M PASS then original100M headerFAIL; browser original7200s hostFAIL at796.15M beforeReady. New dirtybatch9 component capture passes; linked/execution qualification still pending. CompanionSaved12 independentcold/lostACK case remains running. Pen emptyhead physical attempt regresses setup/hold and times out; unadopted. Digital, fast/checkpoint, distribution and physical completion remain separate.",
+  "continuation_note": "New ordinary dirtybatch9 compiled full canonical pair/audits PASS and actual42phasefast plus real partialpwrite/failure/newcold/retry PASS;2,615,000,279->2,302,000,127 instructionclocks(11.97%), not RTLtiming. Same newguest paired native/browser and extracted local packages; real extracted initializer passes. Canonical RTL and browser retained-medium cold/workflows running under originalbounds. Older Product10 authenticatedfullcold PASS; companionSaved12 scenario still owned/running. Digital, fast/checkpoint, distribution and physical completion remain separate.",
   "package_closure_milestone": {
-    "implementation_source": "092bfc072fe87ee4cfb747280f115fce5a6be4e6",
+    "implementation_source": "ad897e1d5ceb3e64936c7ffa4cda805bb3c3922b",
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
-    "model_rtl": "Source8 Ready802M/4161.268s and firstCOURSE398M/2506.894s actual fullpixelsPASS; nexttitle/header original100MFAIL at1.379B; independentcold not reached. Browser8 original7200s hostFAIL at796.15M beforeReady. Source7 original400MFAIL and exact sameWasmfailedsuffixPASS retain scope.",
+    "model_rtl": "Exact source9 canonicalRTL/native/browser campaigns now running originalcaps; source8 body398MPASS/header100MFAIL/browserhost7200sFAIL preserved; source7 sameWasmfailed400Msuffix exact replay retains scope.",
     "guest_artifacts": "Fresh ordinary406-input canonical source8 pair/full audits PASS1007.149s actor/1012.052s supervised, peak1,917,239,296B. Notebook2e6f3d1c/initializer0ace19d4. New alignedControl1 exact partialfailure/repair component qualified.",
-    "guest_execution": "Source8 full42phasefast and real2byte pwrite/EFBIG noSaved/newcold/retry pass. Extracted native command40live+missing-only2cold/reopen pass under original3B/absolute900s with separately qualified census observer. New source9 execution not yet qualified.",
+    "guest_execution": "Dirtybatch9 actual42phasefast course/math/learner/ink/newCPUcold/reopen PASS2,302,000,127clocks/246.444s;11.97% fewer clocks than source8 on same inputs/runtime. Real2byte partialpwrite/EFBIG/noSaved/newcoldallbytes/pixels/retry+3ink SavedPASS147.380s. Original new9 abort22.186s retained.",
     "distribution": "Native extractedsource8 actualcourse/math/learner/rawSaved/liveclosed40phases plus missing-onlynewCPUcold/reopen2phases qualify2,615,000,279instructionclocks within originalabsolute900s, with retained censusFAIL and independent declared-wrapper correction. CurrentA4 realguestinitializer/help/immutablepackagePASS. Staticbrowser extractedserverPASS; fullbrowser and exactRTL course/Save/cold stillrunning. New-hostexecution, optionaladapters, license and cachetiming remainopen.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
-    "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json; docs/evidence/006-course-packed-row-restore.json; docs/evidence/006-course-aligned-delta-v2.json; docs/evidence/006-course-control-aligned-v1.json; docs/evidence/006-local-native-distribution-v1.json; docs/evidence/006-local-browser-distribution-v1.json",
-    "candidate_ci": "22fbd068a13ae95aeb691b6e13f3915719bcb83d CI38763196031 SUCCESS11/11 every reportedstep/no skips. 9ab8fc5 CI38759753901 CANCELLED:10jobsSUCCESS andNotebookCANCELLED/required candidate stepSKIPPED. Earlier original failures retained.",
+    "evidence": "docs/evidence/006-notebook-dirty-batch-v1.json",
+    "candidate_ci": "ad897e1 CI38770831309 inprogress:8jobsSUCCESS/3active, no reported failure/skips at last inspection. Prior22fbd06 CI38763196031SUCCESS11/11/allsteps. Other originalfailures/cancel/skips retained.",
     "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2."
   }
 }

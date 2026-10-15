@@ -220,6 +220,12 @@
     },
     "no_snapshot_used_for_cold": true,
     "original_failure_retained": true,
-    "after_stop": "paused; observational exports only; no resumed cold claim"
+    "after_stop": "paused; observational exports only; no resumed cold claim",
+    "passive_missing_only_census": {
+      "path": "build/browser/task006-control-notebook-cold-failure-a1/passive-missing-only-a3.json",
+      "sha256": "095fc786913d285aef0f0f86d49e888d520c17a3690b358b6d156d4c41462f0a",
+      "status": "PASS_PASSIVE_FAILED_CUT_CRC_AND_CENSUS_ONLY"
+    },
+    "passive_census_scope": "Actual completeCRC pass retained from observerA2; corrected scalar field1 cycle and structured UART0x420/0x425: openedsequence1, panelcompleted0, so not controllerReady. Original A1Path/bytes and A2field0 observerFAILs retained; no CPU executed."
   }
 }

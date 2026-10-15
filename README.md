@@ -1435,3 +1435,52 @@ and unchanged package integrity pass on A4. Initializer logs default beside the
 external medium as `new.raw.initialize`. Exact RTL/browser workflow deadlines,
 new-host installation, fast timing/cached-state continuation and permissioned
 tutor transport remain separate.
+
+The current dirty-batch9 guest keeps the same canonical machine and submits up
+to four queued dirty tiles in one owned Surface packet. Both fresh full image
+audits, the42-phase fast course/math/learner/ink/cold/reopen workflow and real
+partial-write/failure/cold/retry pass. Same-workload fast instruction clocks
+fall2,615,000,279→2,302,000,127 (11.97%); exact RTL/browser timing is still running.
+Read [the evidence and limits](docs/evidence/006-notebook-dirty-batch-v1.json).
+
+Build and audit a fresh notebook from the current maintained Lean source using
+an unused output directory (the initializer uses configuration
+`lemmasim-silicon-package-closure-entry2-bulk-initialize`):
+
+```sh
+nix develop --no-write-lock-file --command python3 scripts/build_kernel.py \
+  --stage supervisor --opt-level O2 \
+  --configuration lemmasim-silicon-package-closure-entry2-bulk-notebook \
+  --output-dir build/kernel/my-dirty9-notebook --timeout 300
+nix develop --no-write-lock-file --command python3 scripts/audit_kernel.py \
+  build/kernel/my-dirty9-notebook --timeout 300
+```
+
+Prepared, audited guests are in `build/native/task006-dirty-batch-notebook-a1`.
+The local extracted native archive is
+`build/distribution/task006-dirty-batch-native-a1.tar.gz`. After extraction,
+use its `lemmasim-native/run.py`; keep media/session paths outside the package:
+
+```sh
+python3 -I /path/to/lemmasim-native/run.py init --backend qemu \
+  --profile lemma-silicon-dev/0.3.0 --disk /outside/new.raw
+python3 -I /path/to/lemmasim-native/run.py session --backend qemu \
+  --profile lemma-silicon-dev/0.3.0 --disk /outside/new.raw \
+  --session-dir /outside/student-session --mode student
+```
+
+The graphical native presentation needs host Python/Tk; the existing
+`--headless` and Developer raw-control paths remain available. Snapshot,
+private restore and replay use the same commands documented above. The current
+course-install command uses RTL Developer/Laboratory transport; fast raw UART
+installation remains unsupported. Copy an existing guest-acknowledged course
+medium privately to use its installed courses in fast mode. No host document
+or journal reconstruction supplies the guest. Native package v1 still excludes
+optional product/USB/radio adapters, and new-host/licensing limits remain.
+
+The matching extracted static browser archive is
+`build/distribution/task006-dirty-batch-browser-a1.tar.gz`. Run its standalone
+launcher with `python3 -I /path/to/lemmasim-browser/serve.py --port 8798`.
+It uses the exact new RV64 guest and existing RTL Wasm machine, not a browser
+notebook implementation. The active retained-medium cold case is at8798 with
+private medium `dirty-retained9-a1`; its original1B/7200s result is still pending.
