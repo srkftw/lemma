@@ -423,6 +423,32 @@ def resolvePurpose (owner handle expected : UInt64) : Action :=
   if failed s = true then .done s 0 else
   if actual = expected then .done 0 frame else .done purposeDenied 0
 
+/-- Registry-count borrow v1. The sole AddressSpace registry caller has just
+read and validated runtimeCount=8192 in the same nonpreemptible S Action.
+That immutable configuration is borrowed, never a frame's authority: the live
+owner, generation and purpose are still read in their original order for each
+entry. No configuration/frame/mapping change may intervene. Other callers use
+resolvePurpose and establish their own runtime configuration as before. -/
+def resolveRegistry8192 (owner handle : UInt64) : Action :=
+  if ownerValid owner = false then .done invalidFrame 0 else
+  if handle < 8192 then .done invalidFrame 0 else
+  let index := handle &&& 8191
+  let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32
+  .bind (Access.read64 slot) fun s liveOwner =>
+  if s = 0 then
+    if liveOwner = owner then
+      .bind (Access.read64 (slot + 24)) fun s generation =>
+      if s = 0 then
+        if generation = handle >>> 13 then
+          .bind (Access.read64 (slot + 8)) fun s actual =>
+          if s = 0 then
+            if actual = 1 then .done 0 (pool + index * bytes) else .done purposeDenied 0
+          else .done s 0
+        else .done notOwned 0
+      else .done s 0
+    else .done notOwned 0
+  else .done s 0
+
 /-- Pins count revocable owner references (user leaves and owned page-table
 trees), not the trusted S management alias of the physical pool. -/
 def mappingCount (owner handle : UInt64) : Action :=

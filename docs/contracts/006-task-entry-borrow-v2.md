@@ -67,3 +67,25 @@ actual reads and writes. These are component/static observations. Original new
 canonical native boot still failed its500M bound; no unchanged cold run or
 post-hoc deadline increase is authorized by this component.
 -->
+
+The additive `lemma-owned-registry-count-borrow-v1` algorithm borrows only the
+freshly checked count8192 during one registry validation Action. The descriptor
+and root still establish their own ordinary frame authority. All eight registry
+entries retain live owner, generation and purpose reads, recorded-physical
+comparison, both duplicate groups and pin checks in their original order.
+The configuration cell is boot-only S metadata: no configure, allocation,
+release, mapping, scheduling, DMA alias or reset may intervene. Reset abandons
+the old Action. No count or grant is cached across an entry or syscall.
+
+The borrowed helper admits no arbitrary count or purpose argument. The sole
+checked caller is the registry8192 callback; its sole caller is the complete
+registry validator after successful runtimeCount and exact8192 admission. Other
+counts retain their prior callback, and legacy512 behavior is unchanged. The
+new exact pre/post body cohort and signatures/callers are checked separately
+from the original artifact cohort; mixed or partial families reject. Repeated
+reads of the immutable configuration are omitted, with the same stable-metadata
+and transient-fault scope as the entry borrow above. Frame authority remains
+live, rather than being inherited from the count witness.
+
+Host semantic checks and LLVM artifact admission alone do not establish a
+linked image, target speedup or completion of the installed-course workflow.

@@ -374,5 +374,34 @@
       "clean_save_explanation": "Store.Server.application operation8 is an unchanged durable-status query. Same alreadyacknowledged29/zero flushes is correct, not attempted newflush failure.",
       "raw_tuple_observer_failure": "build/managed/task-entry2-failed-save-observer-suffix-a1/result.json"
     }
+  },
+  "registry_count_borrow_v1_component": {
+    "status": "PASS_COMPONENT_ONLY",
+    "contract": "lemma-owned-registry-count-borrow-v1",
+    "source": {
+      "Lemma/Kernel/Memory/Frames.lean": "34feeb9fe4982c364204a205a9f5f4033b4e4f1b8b29c729db019eaff3ec89bb",
+      "Lemma/Kernel/Memory/AddressSpace.lean": "142dc1b40c484500d4ec10e034522977c8b4d5f91dbf091439132ffb69b25612",
+      "scripts/task_entry_borrow.py": "a44d56bec4e47c541b74f673b09ced4bb5ee984d11014eaee15a1c75a6d3b0c2",
+      "tests/kernel/OwnedCapacity.lean": "62b747ed3b0a27f7b4e0238e1b8c7f0ff341221abc82014531bfee9897c58f0f"
+    },
+    "genuine_old_and_new_pre_post": {
+      "path": "build/courses/task006-registry-borrow-component-a1/cohort-qualification.json",
+      "sha256": "fc587c2e4068d6a71371a63b04e948d8244a98a759c096046af3a18f0b8ff3b3"
+    },
+    "original_guard_failure": {
+      "path": "build/courses/task006-registry-borrow-component-a1/original-guard-failure.json",
+      "sha256": "de63d9f6ea31b23d2396fb5930e7b8c40bfd1387ed979c91071c5e6810c6eb2d"
+    },
+    "negative_artifacts": {
+      "path": "build/courses/task006-registry-borrow-component-a1/negative-qualification-a2.json",
+      "sha256": "723ee06f04c1ad732b5025c926296ae82e19248d4ddf20f85fcd5cba85b75142"
+    },
+    "negative_scope": "10 independently LLVM-verified mutations of actual source-derived bodies: removed owner check, wrong generation/purpose/count and foreign caller; both phases reject. Original pre-IR mutator pattern failure remains retained.",
+    "host_semantics": {
+      "path": "build/courses/task006-registry-borrow-component-a1/host-semantics.log",
+      "sha256": "0af728ddd3058083cfff6a0065304d33a899e75e27fe5165d6441abdd99583c5"
+    },
+    "semantics": "Fresh protected count8192 once per registry validation; all8 live frame owners/generations/purposes, recorded physical addresses, both duplicate groups and pins remain checked. Whole descriptor config reads3 vs original11; no count cache across Action/syscall. Legacy512/1024 paths retain their original callback.",
+    "scope": "No linked image, target speedup or successful installed-course opening claimed; new complete matched pair and actual canonical workflow remain required."
   }
 }

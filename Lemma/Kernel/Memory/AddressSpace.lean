@@ -191,6 +191,40 @@ private def validateRegistryStep (i count : UInt32) (packed address owner first 
   else validateRegistryGenericStep i count packed address owner first group
   else validateRegistryGenericStep i count packed address owner first group
 
+/-- Canonical registry-count borrow. Only the admitted count8192 branch below
+calls this callback, after the same fresh configuration check as the generic
+path. Reads of every entry, live frame authority and pins retain their order;
+the count cannot change inside this single-hart nonpreemptible Action. -/
+private def validateRegistry8192Step (i _ : UInt32) (packed address owner first group : UInt64) : Action :=
+  let ordinal := group + i.toUInt64
+  if Frames.pool ≤ address then
+  if address ≤ Frames.expandedPoolLimit - 4096 then
+  if address % 4096 = 0 then
+  if ordinal < 8 then
+  let cursor := address + registryList + ordinal * 16
+  .bind (Access.read64 cursor) fun s handle =>
+  if failed s = true then .done s 0 else
+  .bind (Frames.resolveRegistry8192 owner handle) fun s physical =>
+  if failed s = true then .done s 0 else
+  .bind (Access.read64 (cursor + 8)) fun s recorded =>
+  if failed s = true then .done s 0 else
+  if physical = recorded then
+    let index := (physical - Frames.pool) / Frames.bytes
+    if index < 8192 then
+      if (if group = 4 then packedMember first 4 index else false) = true then .done invalidDescriptor 0 else
+      if packedMember packed i.toUInt64 index = true then .done invalidDescriptor 0 else
+      let slot := Lemma.Platform.LemmaVM.Layout.metadataValue + 0x1000 + index * 32 + 16
+      .bind (Access.read64 slot) fun s pins =>
+      if failed s = true then .done s 0 else
+      if pins = 0 then .done 0 (packed ||| (index <<< (i.toUInt64 * 13)))
+      else .done invalidDescriptor 0
+    else .done invalidDescriptor 0
+  else .done invalidDescriptor 0
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+  else validateRegistryGenericStep i 4 packed address owner first group
+
 private def validateRegistry (address owner version leafCapacity : UInt64) : Action :=
   .bind (get address registryCount) fun s amount => if failed s = true then .done s 0 else
   if version = 1 then
@@ -205,9 +239,14 @@ private def validateRegistry (address owner version leafCapacity : UInt64) : Act
       if amount = 8 then
         .bind Frames.runtimeCount fun s frames => if failed s = true then .done s 0 else
         if (if version = 3 then if frames = 8192 then true else false else Frames.expanded frames) = true then
-          .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
-          if failed s = true then .done s 0 else
-          .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
+          if frames = 8192 then
+            .boundedFoldU64 4 validateRegistry8192Step 4 0 address owner 0 0 fun s first =>
+            if failed s = true then .done s 0 else
+            .boundedFoldU64 4 validateRegistry8192Step 4 0 address owner first 4 fun s _ => .done s 0
+          else
+            .boundedFoldU64 4 validateRegistryStep 4 0 address owner 0 0 fun s first =>
+            if failed s = true then .done s 0 else
+            .boundedFoldU64 4 validateRegistryStep 4 0 address owner first 4 fun s _ => .done s 0
         else .done invalidDescriptor 0
       else .done invalidDescriptor 0
     else .done invalidDescriptor 0

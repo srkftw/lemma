@@ -12,6 +12,36 @@ PINS={'pre': {'Lemma.Kernel.Task.entryContextV2': '829f8289ccab93ff2b3b1360e6d55
 
 FAMILY=('Lemma.Kernel.Task.entryContextV2','Lemma.Kernel.Task.entryDispatchesV2',
         'Lemma.Kernel.Scheduler.entryV2','Lemma.Kernel.Scheduler.stepEntryV2')
+REGISTRY_BORROW_SOURCES=('Lemma.Kernel.Memory.Frames.resolveRegistry8192',
+ 'Lemma.Kernel.Memory.AddressSpace.validateRegistry8192Step')
+REGISTRY_BORROW_PINS={
+ 'pre':{REGISTRY_BORROW_SOURCES[0]:'a9deee61033f7f1004b712ed52398605eea30b4b360e3be19d8575d3b8577f7f',
+        REGISTRY_BORROW_SOURCES[1]:'8725124868881a1f08537416a2f42bf1d6708bd072ee3a323e6c4243220f5fff',
+        'Lemma.Kernel.Memory.AddressSpace.validateRegistry':'65965736fb73d436a8d25b5a80a55a94b5e6c07982ce9339b73981e33c14864b'},
+ 'post':{REGISTRY_BORROW_SOURCES[0]:'500cc4d7998f92d1d522e1c93feedd6ef97469e5bef21eb23efd7a251145b798',
+         REGISTRY_BORROW_SOURCES[1]:'9ba1dd9537b982a913480f8c02593ccb9b7d8203c7b6e2706adc004bedc8d40b',
+         'Lemma.Kernel.Memory.AddressSpace.validateRegistry':'1671c9c7515be795b9625fd124872691a19fcb665f1f357de382214ec4aebc02'}}
+
+def validate_registry_borrow(ir,rows,names,phase):
+ """A complete genuine count-borrow cohort; old artifacts keep their old pins."""
+ from audit_kernel import _ir_definition_body,_local_call_arguments
+ present=set(REGISTRY_BORROW_SOURCES)&set(rows)
+ if not present:return {}
+ require(present==set(REGISTRY_BORROW_SOURCES),'partial owned registry-count borrow family')
+ for source,args in zip(REGISTRY_BORROW_SOURCES,(['u64']*2,['u32']*2+['u64']*5)):
+  row=rows[source];require(row['args']==args and row['effects']==['checked-access','physical-read'],
+      'registry-count borrow changed signature or acquired mutation effects')
+  body=_ir_definition_body(ir,row['symbol'])
+  require(body is not None and hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==REGISTRY_BORROW_PINS[phase][source],
+      'complete owned registry-count body differs: '+source+'/'+phase)
+ for target,caller in zip(REGISTRY_BORROW_SOURCES,(REGISTRY_BORROW_SOURCES[1],
+                         'Lemma.Kernel.Memory.AddressSpace.validateRegistry')):
+  incoming={source for source,row in rows.items()
+            if _local_call_arguments(_ir_definition_body(ir,row['symbol']),rows[target]['symbol'])}
+  require(incoming=={caller},'owned registry-count borrow acquired another/missing caller')
+ return {'contract_version':'lemma-owned-registry-count-borrow-v1','body_count':3,
+         'count_authority':'fresh runtimeCount=8192 in the same protected Action',
+         'live_checks':'per-frame owner/generation/purpose, recorded physical, duplicates and pins'}
 CONFIGURATIONS={'lemmasim-silicon-closure-entry2-bulk-notebook':'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot',
  'lemmasim-silicon-closure-entry2-bulk-initialize':'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2InitializeMedium'}
 BOOT_SIGNATURES={'Lemma.Platform.LemmaSim.NotebookKernel.powerStepEntryV2': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'privilege-transition', 'wait-state']), 'Lemma.Platform.LemmaSim.NotebookKernel.bootSelectedEntryV2': (['u64', 'u64', 'u64', 'u64'], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge']), 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2Boot': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge']), 'Lemma.Platform.LemmaSim.NotebookKernel.siliconClosureEntry2InitializeMedium': ([], ['checked-access', 'mmio-read', 'mmio-write', 'io-order', 'machine-state', 'interrupt-state', 'physical-read', 'physical-write', 'firmware-call', 'address-space', 'instruction-sync', 'privilege-transition', 'wait-state', 'may-diverge'])}
@@ -101,10 +131,12 @@ def validate_component(ir,unit,*,optimized):
  require(len(rows)==len(entries) and set(SIGNATURES)<=set(rows),'Entry2 complete authority family missing/duplicated')
  names={x['symbol']:s for s,x in rows.items()};require(len(names)==len(rows),'Entry2 duplicate symbols')
  phase='post' if optimized else 'pre';bodies={}
+ registry=validate_registry_borrow(ir,rows,names,phase)
  for source,(args,effects) in SIGNATURES.items():
   require(rows[source]['args']==args and rows[source]['effects']==effects,'Entry2 exact signature/effects differ')
   body=_ir_definition_body(ir,rows[source]['symbol']);require(body is not None,'Entry2 actual body missing')
-  require(hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==PINS[phase][source],
+  expected=REGISTRY_BORROW_PINS[phase].get(source,PINS[phase][source]) if registry else PINS[phase][source]
+  require(hashlib.sha256(normalized_body(body,names).encode()).hexdigest()==expected,
           'Entry2 complete original checked body differs: '+source+'/'+phase);bodies[source]=body
  for target,caller in zip(FAMILY[:3],(FAMILY[2],FAMILY[2],FAMILY[3])):
   incoming=set()
@@ -123,6 +155,7 @@ def validate_component(ir,unit,*,optimized):
  gate_rows=dict(rows);gate_rows['_genuine_ir']={'ir':ir}
  flow=checked_entry_data_flow(bodies[FAMILY[2]],gate_rows,optimized=optimized)
  return {'contract_version':'lemma-scheduler-entry-borrow-v2','body_count':len(SIGNATURES),'phase':phase,'data_flow':flow,
+         **({'registry_count_borrow':registry} if registry else {}),
          'scope':'Component only; actual production boot/cfg admission separately required'}
 
 def validate_if_present(ir,unit,*,optimized):
