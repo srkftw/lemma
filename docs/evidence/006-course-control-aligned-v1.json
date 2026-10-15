@@ -1,8 +1,8 @@
 {
   "schema": "lemma-course-control-aligned-evidence/1",
-  "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
+  "status": "PASS_LINKED_FAST_WORKFLOW_AND_FAILURE_RTL_COURSE_BODY_PASS_HEADER_FAIL_BROWSER_HOST_LIMIT_FAIL",
   "contract": "docs/contracts/006-course-control-aligned-v1.md",
-  "scope": "The same maintained Notebook uses control spans1. Both fresh whole images/full ordinary audits and42-phase fast course/math/learner/ink/newcold/reopen plus real partial-pwrite/failure/cold/retry pass. New native/browser actual timing acceptance remains running. No whole-machine completion.",
+  "scope": "Same maintained source8 Notebook/full ordinary images and42-phase fast functionality plus real partial-pwrite failure/recovery pass. Canonical RTL first COURSE body reaches all expected pixels within398M; next title/header fails original100M. Browser cold fails original7200s host bound before Ready. No whole-machine completion.",
   "reports": {
     "component": {
       "path": "build/courses/task006-control-qualified-a1/result.json",
@@ -169,5 +169,57 @@
       "status": "FAIL"
     },
     "harness_repair": "Missing two identity environment values, before any guest launch. New supervisor passes declared audited guest/runtime values; actual identity checks unchanged."
+  },
+  "actual_native_terminal": {
+    "path": "build/courses/task006-native-control-notebook-a1/actor/result.json",
+    "sha256": "94ba887bed2c69bf215a033a2ea79f13f2cd663b170631e8de61805575d42d93",
+    "bytes": 14065,
+    "status": "FAIL",
+    "error": "ValueError('prospective phase/aggregate resourcebound exceeded in originalheader-title')",
+    "ready": {
+      "cycles": 802000000,
+      "seconds": 4161.267686432
+    },
+    "course_body": {
+      "cycles": 398000000,
+      "seconds": 2506.893663109,
+      "within_original_400M": true
+    },
+    "next_header": {
+      "cycles": 100000000,
+      "status": "FAIL_ORIGINAL_PHASE_BOUND"
+    },
+    "final_cycle": 1379000000,
+    "actor_seconds": 7508.51676937507,
+    "supervision": {
+      "path": "build/courses/task006-native-control-notebook-supervision-a1/result.json",
+      "sha256": "2790e45ab86fb01a31b7906adc4959e27f4bc04166cd0ddd0e76bfc20e903011",
+      "bytes": 803,
+      "status": "FAIL"
+    },
+    "cold_recovery": "NOT_REACHED",
+    "failure_checkpoint": {
+      "path": "/home/sreekumaar/Downloads/lemma/build/courses/task006-native-control-notebook-a1/actor/failure-observational-checkpoint",
+      "observational": true,
+      "cycle": 1379000000
+    }
+  },
+  "actual_browser_terminal": {
+    "path": "build/browser/task006-control-notebook-cold-failure-a1/result.json",
+    "sha256": "f4103dd67135d604c7685206087bbe1ec85d633de3fa5d6b6c0a4b1b083ec464",
+    "bytes": 1941,
+    "status": "FAIL_ORIGINAL_BROWSER_HOST_LIMIT_BEFORE_READY",
+    "cycle": 796150000,
+    "ready_observed": false,
+    "ui_at_original_stop": {
+      "heap_mib": 192,
+      "elapsed_seconds": 7258.2,
+      "simulation_call_seconds": 7124.9,
+      "backing_seconds": 0.0,
+      "stop_reason": "host-limit"
+    },
+    "no_snapshot_used_for_cold": true,
+    "original_failure_retained": true,
+    "after_stop": "paused; observational exports only; no resumed cold claim"
   }
 }

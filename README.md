@@ -1319,8 +1319,11 @@ The additive public-development-key authenticated Product10ROM is documented in
 [the development authentication contract](docs/contracts/006-development-boot-authentication-v1.md).
 It uses the same native RTL machine and guest recovery transactions. The key
 `00..1f` is public test material; production identity and anti-rollback remain
-open. Actual MAC rejection/positive handoff passed; full authenticated notebook
-and update/power acceptance have separate results.
+open. Actual MAC rejection, authenticated canonical Ready, raw ink/Save and
+independent authenticated cold recovery pass on the older Product10 notebook.
+Installation plus both boots and Save take 2.3308 billion RTL clocks and
+12,123.862 host seconds. The latest course image and interrupted authenticated
+update/power acceptance remain separate open results.
 
 ```sh
 nix develop --no-write-lock-file --command python3 scripts/check_crypto.py \
@@ -1343,8 +1346,10 @@ The current control-spans1 pair is prepared at
 `build/browser/task006-control-notebook-a1`. Both full ordinary image audits
 pass. The42-phase fast course/mathematics/learner/ink/independent-cold workflow
 and actual2-byte partial-pwrite failure/cold/retry pass. Total instruction clocks
-fall2,639,000,287→2,615,000,279 (0.91%); new RTL/browser timing acceptance is
-still running. Original400M COURSE failures remain failures. Use the same
+fall2,639,000,287→2,615,000,279 (0.91%). Actual canonical RTL reaches Ready in
+802M clocks and the first COURSE body in398M; the next title/header fails its
+original100M limit. Browser cold fails its original7200s host bound at796.15M
+clocks before Ready. Original400M COURSE failures remain failures. Use the same
 session/course/snapshot commands above with this native bundle. Exact
 [control evidence](docs/evidence/006-course-control-aligned-v1.json) separates
 compilation, fast functional results and canonical timing.

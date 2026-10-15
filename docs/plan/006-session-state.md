@@ -2424,3 +2424,52 @@ backing itself is256MiB; A2 has an independently sufficient384MiB bound and
 the same200k/60s. Its original report labels the normal CLI bounded-nonfinished
 exit3 FAIL; main.cpp and the separate nonempty census qualify the diagnostic
 only, no guest-success reclassification. No further prefix was run.
+
+### Terminal authenticated cold, course bounds and empty-head pen result
+
+The full older Product10 authenticated notebook campaign is now terminal PASS:
+`build/boot/task006-development-auth-notebook-a2/result.json`. Immutable
+Lean ROM validates and loads the actual724-sector image through guest device
+transactions. Installation339.8M/1604.197s, canonical Ready898M/4649.195s,
+raw ink and acknowledged Saved14 in84M/458.558s, and a new independent CPU
+ authenticated cold in1.009B/5403.452s all pass. Total2.3308B clocks,
+12123.862s actor/12126.061s supervised,583352320B peak RSS and no survivors.
+Every expected controller pixel, acknowledged byte and prior immutable raw
+object agrees. Four external pen samples include the initial resync release;
+the durable new stroke has three samples. No snapshot supplies cold state.
+The earlier live-only milestone remains historical. Published development key,
+latest course image, interrupted authenticated update/power, owner identity,
+entropy, antirollback and browser authenticated boot retain their limits in
+[the authentication evidence](../evidence/006-development-authentication-v1.json).
+
+Source8 native is terminal FAIL at the next title/header original100M bound,
+after actual first COURSE body full pixels PASS in398M/2506.894s. Ready802M,
+install69M and duplicate10M retain their original observations. Final1.379B,
+7508.517s actor/7510.115s supervised,385044480B peak; both owned processes
+reaped. The failure checkpoint is observational and cold recovery is not reached.
+Browser8 single cold is terminal original7200s host-limit FAIL at796150000
+clocks before Ready:192MiB heap,7258.2s UI elapsed/7124.9s simulation calls.
+The UI checks its cooperative limit between calls; no extension or tolerance is
+introduced. It stays paused. Checkpoint/backing/outcome/event exports do not
+advance its cycle. [Control evidence](../evidence/006-course-control-aligned-v1.json)
+retains the full reports, original bounds, matching sealed source8 artifacts,
+native Ready/failure cuts and browser failure exports.
+
+The empty-head pen experiment is terminal physical FAIL and unadopted. Every-edge
+and independent full256-entry corpus plus both compiled mutants qualify its
+finite behavior. Static181->0 invalid-high-input head D cones/17->8 cell stages
+do not predict the actual100MHz/IHP-TT result: global setup WNS−2.981935ns and
+hold WNS−0.283493ns, both worse than maintained−1.732748ns/positive hold.
+Detailed routing times out during pin access at the original900s bound;
+outer905.847s,4575535104B peak,3802112000B minimum available, no survivors,
+all consumed flow inputs unchanged. Maintained pen2bab7e33 is untouched.
+[The receipt and reconstructible patch](../evidence/006-pen-empty-head.json)
+preserve this failed changed-source attempt. No unchanged rerun, clock/rule
+waiver, completed route/DRC/LVS/routedPEX/postroute or full-chip claim follows.
+
+Candidate22fbd068a13ae95aeb691b6e13f3915719bcb83d CI38763196031 is terminal
+SUCCESS11/11 with every reported step successful and no skips. Prior9ab8fc5
+run38759753901 is CANCELLED: ten jobs pass, Notebook is canceled and its exact
+candidate step skipped. PR9 remains draft/unmerged; no authorization for it is
+inferred from the historical PR8 merge. The in-progress dirty-batch successor
+has only genuine component/corpus observations so far; no new timing pass.

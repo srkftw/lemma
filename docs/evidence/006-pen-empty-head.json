@@ -1,0 +1,77 @@
+{
+  "schema": "lemma-pen-empty-head-experiment/1",
+  "status": "UNADOPTED_RTL_COMPONENT_PASS_PHYSICAL_FAIL",
+  "scope": "Single changed-source standalone256-entry pen experiment; actual mapped cones and failed global/detailed route. Not signoff or full-chip closure.",
+  "decision": "Do not adopt: setup and hold both regress. Maintained2bab7e33 unchanged; no unchanged retry.",
+  "maintained_sha256": "2bab7e3356a1ebfa13366c19b57de7d63a757236ee6fff749409839707f76ce3",
+  "prototype_sha256": "3ec9ae083182a38cfac4551b94e8374fa15cf79073f4f388bd494fc3d2ef515d",
+  "reconstructible_patch": {
+    "path": "docs/evidence/006-pen-empty-head.patch",
+    "sha256": "f09ee0e6198f4044e38468fd7937806bb5cbef91ed0da0afcf1e84f29feb35f6",
+    "apply_option": "--unidiff-zero in a private source copy only"
+  },
+  "literal_qualification": {
+    "path": "build/silicon/pen-empty-head-qualification-a1/result.json",
+    "sha256": "6d7089fd0f9956a7b90b18047c64e69d8b8a1961bcd562f38ccf74796edf715d",
+    "bytes": 9127,
+    "status": "PASS"
+  },
+  "mapped_cones": {
+    "path": "build/silicon/pen-empty-head-owner-a1/mapped-cone-result.json",
+    "sha256": "a5c96440b3bd9a10259a742732e96bb0a1cc0cb8b089ed62c8a47e368efa3027",
+    "bytes": 1956194,
+    "status": "PASS_INVALID_HIGH_INPUTS_REMOVED_FROM_ALL_HEAD_D_CONES"
+  },
+  "cone_observation": "181 head D cones with invalid high raw sample ancestors ->0; max cell stages17->8. Static graph property only.",
+  "negative_mutants": {
+    "missing_empty_timestamp_mask": "FAIL edge17",
+    "overwrite_one_head": "FAIL edge647"
+  },
+  "mapping": {
+    "path": "build/silicon/physical/pen-empty-head-map-a1/result.json",
+    "sha256": "590c9a38e6dc784491e5263a02cfd01eb483f12fb650e78bd81a63d295f7399c",
+    "bytes": 5277,
+    "status": "PASS"
+  },
+  "physical": {
+    "path": "build/silicon/physical/pen-empty-head-a1/result.json",
+    "sha256": "b01df637a2f5cda456678da4307a6e787fb56764830bf59cf6b689dbbd9f58a0",
+    "bytes": 7413,
+    "status": "FAIL"
+  },
+  "supervision": {
+    "path": "build/silicon/pen-empty-head-owner-a1/physical-supervision.json",
+    "sha256": "838adb0a8a01f413414f4bd680fc167f5c5d20c0b2bee6f33edd87c396c4f11e",
+    "bytes": 8601,
+    "status": "FAIL"
+  },
+  "global_route": {
+    "cell_area_um2": 5106202.416,
+    "core_area_um2": 17401157.424,
+    "utilization_percent": 29.344038971553875,
+    "instances": 237537,
+    "clock_period_ns": 10,
+    "timing_model": "global-route RC estimate before detailed signal routing",
+    "power_grid": "NOT_IMPLEMENTED",
+    "process_drc": "NOT_RUN",
+    "lvs": "NOT_RUN",
+    "setup_worst_slack_ns": -2.981935,
+    "setup_timing": "VIOLATED",
+    "hold_worst_slack_ns": -0.283493,
+    "hold_timing": "VIOLATED"
+  },
+  "maintained_global_setup_wns_ns": -1.732748,
+  "detailed_route": "900s original flow deadline FAIL during pin access; no completed route/export",
+  "supervised_seconds": 905.8474115310237,
+  "peak_tree_rss_bytes": 4575535104,
+  "minimum_machine_available_bytes": 3802112000,
+  "owned_survivors": {},
+  "flow_inputs_unchanged": true,
+  "unchanged_constraints": "100MHz/IHP SG13G2TT; no false paths/clock relaxation/rule omission",
+  "open": [
+    "Complete detailed route/layout export",
+    "Enclosure/CUTCLASS rule coverage; not established as timeout cause",
+    "Controller processDRC/LVS/routedPEX/postroute setup/hold/electrical checks",
+    "Paper routing and full-SoC/RAM/NVM/pads/CDC/reset/power/analog/RF/panel closure"
+  ]
+}

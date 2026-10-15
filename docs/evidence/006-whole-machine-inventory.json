@@ -863,10 +863,10 @@
     },
     {
       "path": "docs/evidence/006-course-control-aligned-v1.json",
-      "sha256": "a6fb0a22cdea752ecb0f28874a0f064a94d78256643cf81f1339493b4d669bdf",
-      "status": "PASS_LINKED_FAST_WORKFLOW_AND_REAL_FAILURE_NATIVE_BROWSER_RUNNING",
-      "bytes": 7861,
-      "scope": "The same maintained Notebook uses control spans1. Both fresh whole images/full ordinary audits and42-phase fast course/math/learner/ink/newcold/reopen plus real partial-pwrite/failure/cold/retry pass. New native/browser actual timing acceptance remains running. No whole-machine completion."
+      "sha256": "cac670e8383dca2f51432e73bc6f6dda38b15f69f2a8ee3f186b88b18cd0c2bd",
+      "bytes": 9844,
+      "status": "PASS_LINKED_FAST_WORKFLOW_AND_FAILURE_RTL_COURSE_BODY_PASS_HEADER_FAIL_BROWSER_HOST_LIMIT_FAIL",
+      "scope": "Same maintained source8 Notebook/full ordinary images and42-phase fast functionality plus real partial-pwrite failure/recovery pass. Canonical RTL first COURSE body reaches all expected pixels within398M; next title/header fails original100M. Browser cold fails original7200s host bound before Ready. No whole-machine completion."
     },
     {
       "path": "docs/evidence/006-course-aligned-delta-v2.json",
@@ -877,26 +877,33 @@
     },
     {
       "path": "docs/evidence/006-development-authentication-v1.json",
-      "sha256": "18a886bf096ad95129ba5f7171ec2bda2bf9dcd64e65c7e28435910fa6559751",
-      "status": "PASS_ACTUAL_RTL_INSTALL_MAC_ENFORCEMENT_AND_HANDOFF_NOTEBOOK_RUNNING",
-      "bytes": 9058,
+      "sha256": "66edb1089cc4ed1830ff48faebfcc3494f1037138d159d3551f188b014a3949a",
+      "bytes": 11156,
+      "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_AND_INDEPENDENT_COLD",
       "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance."
+    },
+    {
+      "path": "docs/evidence/006-pen-empty-head.json",
+      "sha256": "05f62160bb5b0505f1f7599db3a3d27bf52939589c617786a192d4746634a7b0",
+      "bytes": 3447,
+      "status": "UNADOPTED_RTL_COMPONENT_PASS_PHYSICAL_FAIL",
+      "scope": "Single changed-source standalone256-entry pen experiment; actual mapped cones and failed global/detailed route. Not signoff or full-chip closure."
     }
   ],
   "prior_implementation_commit": "9946e7ef75486f328d4e71e1ea34e9412a3bd0ab",
   "fast_checkpoint_limit": "GAP_CONFIRMED: QEMU soft TLB/TB/jump caches are not serialized; tested serialized-state/suffix relations are not arbitrary cached-state continuation",
-  "continuation_note": "New source8 actual canonical Ready802M/4161.268s, fullfast and actualpartialfailure/cold/retryPASS; RTL fullcourse/independentcold and browser cold/fullworkflow remainrunning. OldProduct10 authenticatedROM install339.8M->Ready898M->rawSaved14in84M complete; newCPUauthenticatedcold running. Companion A2 originalinstallobserverFAIL retained; independent frozen observer proves actualSaved12install, newSaved12 cold/lostACK case running. Native/browser extracted distribution bounded qualification complete as scoped; digital, fast/checkpoint, distribution and physical completion remain separate.",
+  "continuation_note": "Actual older Product10 authenticated immutableROM install -> canonical Ready -> rawSaved14 -> independent authenticated cold allbytes/allpixels PASS2.3308B/12123.862s, no snapshot. Latest source8 RTL firstCOURSE398M PASS then original100M headerFAIL; browser original7200s hostFAIL at796.15M beforeReady. New dirtybatch9 component capture passes; linked/execution qualification still pending. CompanionSaved12 independentcold/lostACK case remains running. Pen emptyhead physical attempt regresses setup/hold and times out; unadopted. Digital, fast/checkpoint, distribution and physical completion remain separate.",
   "package_closure_milestone": {
     "implementation_source": "092bfc072fe87ee4cfb747280f115fce5a6be4e6",
     "behavior": "versioned installed-package reading/binding/workspace and existing Closure7 checking",
-    "model_rtl": "Source8 actual canonical coldReady802M/4161.268s; unchanged400M firstCOURSE acceptance stillrunning. Source7 original400MFAIL retained at1280M. Source7 same-Wasm failedsuffix400M exactarchive replayPASS3590.528s/original3600s.",
+    "model_rtl": "Source8 Ready802M/4161.268s and firstCOURSE398M/2506.894s actual fullpixelsPASS; nexttitle/header original100MFAIL at1.379B; independentcold not reached. Browser8 original7200s hostFAIL at796.15M beforeReady. Source7 original400MFAIL and exact sameWasmfailedsuffixPASS retain scope.",
     "guest_artifacts": "Fresh ordinary406-input canonical source8 pair/full audits PASS1007.149s actor/1012.052s supervised, peak1,917,239,296B. Notebook2e6f3d1c/initializer0ace19d4. New alignedControl1 exact partialfailure/repair component qualified.",
-    "guest_execution": "Source8 full42phasefastPASS2,615,000,279clocks/336.152s;0.91% fewer clocks than source7, no hostspeedupclaim. Real2byte pwrite/EFBIG Failed/noSaved/newcold exactfullbytes/pixels/workspace/retry+3rawSavedPASS191.142s. Canonical source8 course/fullcold stillrunning.",
+    "guest_execution": "Source8 full42phasefast and real2byte pwrite/EFBIG noSaved/newcold/retry pass. Extracted native command40live+missing-only2cold/reopen pass under original3B/absolute900s with separately qualified census observer. New source9 execution not yet qualified.",
     "distribution": "Native extractedsource8 actualcourse/math/learner/rawSaved/liveclosed40phases plus missing-onlynewCPUcold/reopen2phases qualify2,615,000,279instructionclocks within originalabsolute900s, with retained censusFAIL and independent declared-wrapper correction. CurrentA4 realguestinitializer/help/immutablepackagePASS. Staticbrowser extractedserverPASS; fullbrowser and exactRTL course/Save/cold stillrunning. New-hostexecution, optionaladapters, license and cachetiming remainopen.",
     "fast_checkpoint": "no new fasttiming/arbitrarycached-continuation claim",
     "physical": "unchanged unresolved fullphysical closure",
     "evidence": "docs/evidence/006-course-text-delta-v1.json; docs/evidence/006-course-white-word-v1.json; docs/evidence/006-registry-course-performance.json; docs/evidence/006-course-packed-row-restore.json; docs/evidence/006-course-aligned-delta-v2.json; docs/evidence/006-course-control-aligned-v1.json; docs/evidence/006-local-native-distribution-v1.json; docs/evidence/006-local-browser-distribution-v1.json",
-    "candidate_ci": "b58b1be38751055352SUCCESS11/11/allsteps;092bfc038744503578SUCCESS11/11; new native packaging candidate not yet run. Prior07eFAIL retained.",
+    "candidate_ci": "22fbd068a13ae95aeb691b6e13f3915719bcb83d CI38763196031 SUCCESS11/11 every reportedstep/no skips. 9ab8fc5 CI38759753901 CANCELLED:10jobsSUCCESS andNotebookCANCELLED/required candidate stepSKIPPED. Earlier original failures retained.",
     "workspace_envelope": "All3712 decoded bytes retained in actual272\u20131256B envelope2. Full464-word restore, exact newcold/reopen and real partialwrite/cold/retry/ink qualified in6. Store/Doc8/rawink formats unchanged; old1\u20134 cannotread2."
   }
 }

@@ -1,6 +1,6 @@
 {
   "schema": "lemma-development-authentication-evidence/1",
-  "status": "PASS_ACTUAL_RTL_INSTALL_MAC_ENFORCEMENT_AND_HANDOFF_NOTEBOOK_RUNNING",
+  "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_AND_INDEPENDENT_COLD",
   "scope": "Genuine Lean SHA/HMAC and immutable public-development-key ROM on reusable Product10RTL. This is executable integrity/authentication policy with a published test key, not production owner identity or wholeboot/update acceptance.",
   "contract": "docs/contracts/006-development-boot-authentication-v1.md",
   "source_origin": "ee81d85 plus explicitly recorded dirty inputs; each original report records exact source/tool/artifact identities",
@@ -74,7 +74,7 @@
     }
   ],
   "new_notebook_campaign": {
-    "status": "RUNNING_NOT_QUALIFIED",
+    "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_INDEPENDENT_COLD",
     "path": "build/boot/task006-development-auth-notebook-a2",
     "plan": "build/boot/task006-auth-draft-a1/auth-notebook-plan-a2.json",
     "bounds": "600M/3600s install;1.3B/7200s each Ready;300M/3600s rawSave;3.5B/21600s aggregate",
@@ -189,5 +189,62 @@
     "acknowledged_sequence": 14,
     "raw_samples": 3,
     "scope": "Actual canonical Ready/allpixels followed by guest raw ink and barrier-backed Saved14/allpixels/prior immutable objects; live closed normally, independent no-snapshot authenticated cold running."
+  },
+  "full_notebook_terminal": {
+    "path": "build/boot/task006-development-auth-notebook-a2/result.json",
+    "sha256": "e9c84997209e8906a32dd474cb09352a3886b723c2d9f6dd1003fd1d0c5bccad",
+    "bytes": 63467,
+    "status": "PASS_ACTUAL_AUTHENTICATED_NOTEBOOK_RAW_SAVE_INDEPENDENT_COLD",
+    "supervision": {
+      "path": "build/boot/task006-development-auth-notebook-supervision-a2/result.json",
+      "sha256": "5e97be8914d1e4755857c1a9d5af1d16348b66fff9f37dd08360c6fdbf9bbff9",
+      "bytes": 697,
+      "status": "PASS_AUTH_NOTEBOOK_RTL_SUPERVISED"
+    },
+    "source_scope": "Older maintained Product10 public-development-key ROM and Notebook; latest Package8/9 not qualified",
+    "install": {
+      "cycles": 339800000,
+      "seconds": 1604.1971069580177,
+      "payload_sectors": 724
+    },
+    "phases": [
+      {
+        "name": "authenticated-product-canonical-Ready",
+        "initial_cycle": 339800000,
+        "final_cycle": 1237800000,
+        "cycles": 898000000,
+        "seconds": 4649.195430341992
+      },
+      {
+        "name": "actual-raw-ink-and-acknowledged-Save",
+        "initial_cycle": 1237800000,
+        "final_cycle": 1321800000,
+        "cycles": 84000000,
+        "seconds": 458.55837051197886
+      },
+      {
+        "name": "new-CPU-authenticated-cold-all-pixels",
+        "initial_cycle": 0,
+        "final_cycle": 1009000000,
+        "cycles": 1009000000,
+        "seconds": 5403.4518799539655
+      }
+    ],
+    "total_cycles": 2330800000,
+    "actor_seconds": 12123.861708519049,
+    "supervised_seconds": 12126.061277100001,
+    "peak_tree_rss_bytes": 583352320,
+    "acknowledged_sequence": 14,
+    "new_durable_raw_samples": 3,
+    "external_samples_including_resync_release": 4,
+    "snapshot_restore": false,
+    "all_expected_controller_pixels": true,
+    "all_acknowledged_bytes": true,
+    "qualification_limits": [
+      "production identity/entropy/antirollback",
+      "interrupted authenticated update/power campaign",
+      "latest managed course/checking image",
+      "browser authenticated boot"
+    ]
   }
 }

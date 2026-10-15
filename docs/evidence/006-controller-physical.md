@@ -291,4 +291,19 @@ was used. [The separate receipt](006-pen-local-refill.json) preserves all source
 map, waveform, mutation, serializer, flow and partial-route identities. The
 maintained pen remains 2bab7e33; all older results keep their original meanings.
 
+The later empty-head capture prototype also remains **unadopted**. Capturing
+private head bytes while empty and masking public empty reads removes invalid
+high input ancestors from all181 mapped head D cones (17->8 maximum stages).
+Every-edge, independent full256 and two compiled mutant observations pass.
+Actual100MHz/IHP-TT global setup WNS is nevertheless **−2.981935ns** and hold
+WNS **−0.283493ns**, both worse than the maintained source. Detailed routing
+hits its original900s deadline in pin access. Supervisor905.847s,
+4575535104B peak RSS,3802112000B minimum available; no survivors and all
+consumed flow inputs unchanged. No completed layout export, process DRC, LVS,
+routed PEX, postroute timing or full-chip closure follows. The enclosure/
+CUTCLASS coverage gap is separate and not established as the timeout cause.
+[The receipt and patch](006-pen-empty-head.json) retain this one changed-source
+failure. Maintained full256 source2bab7e33 remains unchanged; no unchanged
+retry or constraint/rule waiver was used.
+
 -->

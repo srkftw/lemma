@@ -1,0 +1,46 @@
+--- a/sim/rtl/lemma_pen.sv
++++ b/sim/rtl/lemma_pen.sv
+@@ -101,8 +101,8 @@
+-      256: rdata = head_entry.sequence_id;
+-      264: rdata = head_entry.timestamp;
+-      272: rdata = {48'b0,head_entry.x};
+-      280: rdata = {48'b0,head_entry.y};
+-      288: rdata = {52'b0,head_entry.pressure};
+-      296: rdata = {60'b0,head_entry.flags};
+-      304: rdata = {62'b0,head_entry.tool};
+-      312: rdata = {61'b0,head_entry.buttons};
++      256: rdata = count != 0 ? head_entry.sequence_id : 0;
++      264: rdata = count != 0 ? head_entry.timestamp : 0;
++      272: rdata = count != 0 ? {48'b0,head_entry.x} : 0;
++      280: rdata = count != 0 ? {48'b0,head_entry.y} : 0;
++      288: rdata = count != 0 ? {52'b0,head_entry.pressure} : 0;
++      296: rdata = count != 0 ? {60'b0,head_entry.flags} : 0;
++      304: rdata = count != 0 ? {62'b0,head_entry.tool} : 0;
++      312: rdata = count != 0 ? {61'b0,head_entry.buttons} : 0;
+@@ -127,0 +128,13 @@
++  // A head captured while empty is private. Public head fields are zero
++  // until the unchanged acceptance logic publishes count. A first accepted
++  // sample and its count become visible on the same edge. Thus raw validation
++  // does not drive this181-bit hold mux, and invalid/unaccepted fields cannot
++  // become visible or enter a FIFO row. Refill preserves its original edge.
++  always @(posedge clk) begin
++    if (!reset_n) head_entry <= '0;
++    else if (refill == 1) head_entry <= selected_head;
++    else if (count == 0)
++      head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
++        sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
++  end
++
+@@ -143 +156 @@
+-      head_entry <= '0; ingress_entry <= '0; ingress_index <= 0;
++      ingress_entry <= '0; ingress_index <= 0;
+@@ -152 +164,0 @@
+-      head_entry <= selected_head;
+@@ -163 +174,0 @@
+-          else head_entry <= '0;
+@@ -167 +177,0 @@
+-          head_entry <= '0;
+@@ -177,3 +186,0 @@
+-        if (count == 0)
+-          head_entry <= {next_sequence, sample_time, sample_x[15:0], sample_y[15:0],
+-            sample_pressure[11:0],sample_flags[3:0],sample_tool[1:0],sample_buttons[2:0]};
